@@ -18,6 +18,7 @@
 namespace AZ
 {
     class JobGraphEvent;
+    class JobGraph;
 
     namespace Internal
     {
@@ -30,9 +31,7 @@ namespace AZ
                 AZStd::vector<TypeErasedJob>&& jobs,
                 AZStd::unordered_map<uint32_t, AZStd::vector<uint32_t>>& links,
                 size_t linkCount,
-                bool retained);
-
-            ~CompiledJobGraph();
+                JobGraph* parent);
 
             AZStd::vector<TypeErasedJob>& Jobs() noexcept
             {
@@ -40,19 +39,19 @@ namespace AZ
             }
 
             // Indicate that a constituent job has finished and decrement a counter to determine if the
-            // graph should be freed
-            void Release();
+            // graph should be freed (returns the value after atomic decrement)
+            uint32_t Release();
 
         private:
             friend class JobGraph;
             friend class JobWorker;
 
             AZStd::vector<TypeErasedJob> m_jobs;
-            AZStd::vector<uint32_t> m_successors;
-            AZStd::atomic<uint32_t>* m_dependencyCounts = nullptr;
+            AZStd::vector<TypeErasedJob*> m_successors;
             JobGraphEvent* m_waitEvent = nullptr;
+            // The pointer to the parent graph is set only if it is retained
+            JobGraph* m_parent = nullptr;
             AZStd::atomic<uint32_t> m_remaining;
-            bool m_retained;
         };
 
         class JobWorker;

@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/Jobs/JobDescriptor.h>
+#include <AzCore/std/containers/fixed_vector.h>
 #include <AzCore/std/typetraits/is_assignable.h>
 #include <AzCore/std/typetraits/is_destructible.h>
 #include <AzCore/std/parallel/atomic.h>
@@ -105,15 +106,16 @@ namespace AZ::Internal
     class alignas(alignof(max_align_t)) TypeErasedJob final
     {
     public:
-        // The inline buffer allows the TypeErasedJob to span two cache lines. Lambdas can capture 56
-        // bytes of data (7 pointers/references on a 64-bit machine) before spilling to the heap.
-        constexpr static size_t BufferSize = 128 - sizeof(size_t) * 6 - sizeof(uint32_t) - sizeof(JobDescriptor);
+        // The inline buffer allows the TypeErasedJob to span two cache lines. Lambdas can capture 48
+        // bytes of data (6 pointers/references on a 64-bit machine) before spilling to the heap.
+        constexpr static size_t BufferSize =
+            128 - sizeof(size_t) * 6 - sizeof(uint32_t) - sizeof(JobDescriptor) - sizeof(AZStd::atomic<uint32_t>);
 
         TypeErasedJob() = default;
 
-        template <typename Lambda>
+        template<typename Lambda>
         TypeErasedJob(JobDescriptor const& desc, Lambda&& lambda) noexcept
-            : m_descriptor{desc}
+            : m_descriptor{ desc }
         {
             JobTypeEraser<Lambda> eraser;
             m_invoker = eraser.ErasedInvoker();
@@ -147,9 +149,9 @@ namespace AZ::Internal
         // Indicates if this job is a root of the graph (with no dependencies)
         bool IsRoot();
 
-        void AttachToJobGraph(CompiledJobGraph& graph) noexcept
+        void Init() noexcept
         {
-            m_graph = &graph;
+            m_dependencyCount = m_inboundLinkCount;
         }
 
         void Invoke()
@@ -167,7 +169,7 @@ namespace AZ::Internal
         friend class JobWorker;
 
         // This relocation avoids branches needed if the lambda type is unknown
-        template <typename Lambda>
+        template<typename Lambda>
         void TypedRelocate(Lambda&& lambda, char* destination)
         {
             if constexpr (AZStd::is_trivially_move_constructible_v<Lambda>)
@@ -195,6 +197,7 @@ namespace AZ::Internal
         // class to equal the alignment of the largest scalar type available on the system (generally
         // 16 bytes).
         char m_buffer[BufferSize];
+        AZStd::atomic<uint32_t> m_dependencyCount;
 
         // This value is an offset in a buffer that stores dependency tracking information.
         uint32_t m_successorOffset = 0;

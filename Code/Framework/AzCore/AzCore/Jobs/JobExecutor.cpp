@@ -29,19 +29,18 @@ namespace AZ
             AZStd::vector<TypeErasedJob>&& jobs,
             AZStd::unordered_map<uint32_t, AZStd::vector<uint32_t>>& links,
             size_t linkCount,
-            bool retained)
-            : m_remaining{ jobs.size() }
-            , m_retained{ retained }
+            JobGraph* parent)
+            : m_parent{ parent }
         {
             m_jobs = AZStd::move(jobs);
-            m_dependencyCounts = reinterpret_cast<AZStd::atomic<uint32_t>*>(azcalloc(sizeof(AZStd::atomic<uint32_t>) * m_jobs.size()));
             m_successors.resize(linkCount);
 
-            uint32_t* cursor = m_successors.data();
+            TypeErasedJob** cursor = m_successors.data();
 
             for (size_t i = 0; i != m_jobs.size(); ++i)
             {
                 TypeErasedJob& job = m_jobs[i];
+                job.m_graph = this;
                 job.m_successorOffset = cursor - m_successors.data();
                 cursor += job.m_outboundLinkCount;
 
@@ -49,54 +48,42 @@ namespace AZ
 
                 for (uint32_t j = 0; j != job.m_outboundLinkCount; ++j)
                 {
-                    m_successors[static_cast<size_t>(job.m_successorOffset) + j] = links[i][j];
-                }
-
-                if (job.m_inboundLinkCount > 0)
-                {
-                    m_dependencyCounts[i].store(job.m_inboundLinkCount, AZStd::memory_order_release);
+                    m_successors[static_cast<size_t>(job.m_successorOffset) + j] = &m_jobs[links[i][j]];
                 }
             }
 
             // TODO: Check for dependency cycles
         }
 
-        CompiledJobGraph::~CompiledJobGraph()
+        uint32_t CompiledJobGraph::Release()
         {
-            if (m_dependencyCounts)
-            {
-                azfree(m_dependencyCounts);
-            }
-        }
+            uint32_t remaining = --m_remaining;
 
-        void CompiledJobGraph::Release()
-        {
-            if (--m_remaining == 0)
+            if (m_parent)
             {
-                if (m_retained)
+                if (remaining == 1)
                 {
-                    m_remaining = m_jobs.size();
-                    for (size_t i = 0; i != m_jobs.size(); ++i)
-                    {
-                        TypeErasedJob& job = m_jobs[i];
-                        if (job.m_inboundLinkCount > 0)
-                        {
-                            m_dependencyCounts[i].store(job.m_inboundLinkCount, AZStd::memory_order_release);
-                        }
-                    }
+                    // Allow the parent graph to be submitted again
+                    m_parent->m_submitted = false;
                 }
-
+            }
+            else if (remaining == 0)
+            {
                 if (m_waitEvent)
                 {
-                    m_waitEvent->m_submitted = false;
                     m_waitEvent->Signal();
                 }
 
-                if (!m_retained)
-                {
-                    azdestroy(this);
-                }
+                azdestroy(this);
+                return remaining;
             }
+
+            if (m_waitEvent && remaining == (m_parent ? 1 : 0))
+            {
+                m_waitEvent->Signal();
+            }
+
+            return remaining;
         }
 
         struct QueueStatus
@@ -124,7 +111,7 @@ namespace AZ
             JobQueue(const JobQueue&) = delete;
             JobQueue& operator=(const JobQueue&) = delete;
 
-            bool Enqueue(TypeErasedJob* job);
+            void Enqueue(TypeErasedJob* job);
             TypeErasedJob* TryDequeue();
 
         private:
@@ -132,7 +119,7 @@ namespace AZ
             TypeErasedJob* m_queues[PriorityLevelCount][MaxQueueSize] = {};
         };
 
-        bool JobQueue::Enqueue(TypeErasedJob* job)
+        void JobQueue::Enqueue(TypeErasedJob* job)
         {
             uint8_t priority = job->GetPriorityNumber();
             QueueStatus& status = m_status[priority];
@@ -159,7 +146,7 @@ namespace AZ
                             expectedReserve = reserve;
                         }
 
-                        return status.head == status.tail - 1; 
+                        return;
                     }
 
                     // We failed to reserve a slot, try again
@@ -233,9 +220,11 @@ namespace AZ
 
             void Enqueue(TypeErasedJob* job)
             {
-                if (m_queue.Enqueue(job))
+                m_queue.Enqueue(job);
+
+                if (!m_busy.exchange(true))
                 {
-                    // The queue was empty prior to enqueueing the job, release the semaphore
+                    // The worker was idle prior to enqueueing the job, release the semaphore
                     m_semaphore.release();
                 }
             }
@@ -245,13 +234,15 @@ namespace AZ
             {
                 while (m_active)
                 {
+                    m_busy = false;
                     m_semaphore.acquire();
-                    // m_semaphore.try_acquire_for(AZStd::chrono::microseconds{ 10 });
 
                     if (!m_active)
                     {
                         return;
                     }
+
+                    m_busy = true;
 
                     TypeErasedJob* job = m_queue.TryDequeue();
                     while (job)
@@ -260,10 +251,10 @@ namespace AZ
                         // Decrement counts for all job successors
                         for (size_t j = 0; j != job->m_outboundLinkCount; ++j)
                         {
-                            uint32_t successorIndex = job->m_graph->m_successors[job->m_successorOffset + j];
-                            if (--job->m_graph->m_dependencyCounts[successorIndex] == 0)
+                            TypeErasedJob* successor = job->m_graph->m_successors[job->m_successorOffset + j];
+                            if (--successor->m_dependencyCount == 0)
                             {
-                                m_executor->Submit(job->m_graph->m_jobs[successorIndex]);
+                                m_executor->Submit(*successor);
                             }
                         }
 
@@ -277,6 +268,7 @@ namespace AZ
 
             AZStd::thread m_thread;
             AZStd::atomic<bool> m_active;
+            AZStd::atomic<bool> m_busy;
             AZStd::binary_semaphore m_semaphore;
 
             ::AZ::JobExecutor* m_executor;
@@ -327,11 +319,6 @@ namespace AZ
 
     void JobExecutor::Submit(Internal::CompiledJobGraph& graph)
     {
-        for (Internal::TypeErasedJob& job : graph.Jobs())
-        {
-            job.AttachToJobGraph(graph);
-        }
-
         // Submit all jobs that have no inbound edges
         for (Internal::TypeErasedJob& job : graph.Jobs())
         {

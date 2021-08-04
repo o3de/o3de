@@ -12,7 +12,7 @@
 // suited in the private CompiledJobGraph implementation instead to keep this header lean.
 #include <AzCore/Jobs/Internal/JobTypeEraser.h>
 #include <AzCore/Jobs/JobDescriptor.h>
-#include <AzCore/std/containers/fixed_vector.h>
+#include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
@@ -30,9 +30,13 @@ namespace AZ
     class JobToken final
     {
     public:
-        // Indicate that this job must finish before the job passed as the argument
+        // Indicate that this job must finish before the job token(s) passed as the argument
         template <typename... JT>
         void Precedes(JT&... tokens);
+
+        // Indicate that this job must finish after the job token(s) passed as the argument
+        template <typename... JT>
+        void Succeeds(JT&... tokens);
 
     private:
         friend class JobGraph;
@@ -67,7 +71,6 @@ namespace AZ
         void Signal();
 
         AZStd::binary_semaphore m_semaphore;
-        bool m_submitted = false;
     };
 
     // The JobGraph encapsulates a set of jobs and their interdependencies. After adding
@@ -81,13 +84,18 @@ namespace AZ
     public:
         ~JobGraph();
 
+        // Reset the state of the job graph to begin recording jobs and edges again
+        // NOTE: Graph must be in a "settled" state (cannot be in-flight)
+        void Reset();
+
         // Add a job to the graph, retrieiving a token that can be used to express dependencies
         // between jobs. The first argument specifies the JobKind, used for tracking the job.
+        // NOTE: This operation is invalid if the graph is in-flight
         template<typename Lambda>
         JobToken AddJob(JobDescriptor const& descriptor, Lambda&& lambda);
 
         template <typename... Lambdas>
-        AZStd::fixed_vector<JobToken, sizeof...(Lambdas)> AddJobs(JobDescriptor const& descriptor, Lambdas&&... lambdas);
+        AZStd::array<JobToken, sizeof...(Lambdas)> AddJobs(JobDescriptor const& descriptor, Lambdas&&... lambdas);
 
         // By default, you are responsible for retaining the JobGraph, indicating you promise that
         // this JobGraph will live as long as it takes for all constituent jobs to complete.
@@ -103,6 +111,7 @@ namespace AZ
         // of the job graph is expected to rely on either indirection, or safe overwriting
         // of previously used memory to supply new data (this can even be done as the first
         // job in the graph).
+        // NOTE: This operation is invalid if the graph is in-flight
         void Detach();
 
         // Invoke the job graph, asserting if there are dependency violations. Note that
@@ -122,6 +131,7 @@ namespace AZ
 
     private:
         friend class JobToken;
+        friend class Internal::CompiledJobGraph;
 
         Internal::CompiledJobGraph* m_compiledJobGraph = nullptr;
 
@@ -132,7 +142,7 @@ namespace AZ
 
         uint32_t m_linkCount = 0;
         bool m_retained = true;
-        bool m_submitted = false;
+        AZStd::atomic<bool> m_submitted = false;
     };
 } // namespace AZ
 

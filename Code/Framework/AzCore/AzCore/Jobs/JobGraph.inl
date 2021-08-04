@@ -22,15 +22,19 @@ namespace AZ
         (PrecedesInternal(tokens), ...);
     }
 
+    template <typename... JT>
+    inline void JobToken::Succeeds(JT&... tokens)
+    {
+        (tokens.PrecedesInternal(*this), ...);
+    }
+
     inline bool JobGraphEvent::IsSignaled()
     {
-        AZ_Assert(m_submitted, "Querying the status of a job graph event that was never submitted along with the jobgraph");
         return m_semaphore.try_acquire_for(AZStd::chrono::milliseconds{ 0 });
     }
 
     inline void JobGraphEvent::Wait()
     {
-        AZ_Assert(m_submitted, "Waiting on a job graph event that was never submitted along with the jobgraph");
         m_semaphore.acquire();
     }
 
@@ -42,7 +46,7 @@ namespace AZ
     template<typename Lambda>
     inline JobToken JobGraph::AddJob(JobDescriptor const& desc, Lambda&& lambda)
     {
-        AZ_Assert(!m_submitted, "Cannot mutate a JobGraph that was previously submitted.");
+        AZ_Assert(!m_submitted, "Cannot mutate a JobGraph that was previously submitted or in flight.");
 
         m_jobs.emplace_back(desc, AZStd::forward<Lambda>(lambda));
 
@@ -50,9 +54,9 @@ namespace AZ
     }
 
     template <typename... Lambdas>
-    inline AZStd::fixed_vector<JobToken, sizeof...(Lambdas)>  AddJobs(JobDescriptor const& descriptor, Lambdas&&... lambdas)
+    inline AZStd::array<JobToken, sizeof...(Lambdas)> JobGraph::AddJobs(JobDescriptor const& descriptor, Lambdas&&... lambdas)
     {
-        return { AddJob(descriptor, lambdas)... };
+        return { AddJob(descriptor, AZStd::forward<Lambdas>(lambdas))... };
     }
 
     inline void JobGraph::Detach()

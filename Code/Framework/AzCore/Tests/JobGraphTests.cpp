@@ -336,8 +336,7 @@ namespace UnitTest
         //   d
 
         a.Precedes(b, c);
-        b.Precedes(d);
-        c.Precedes(d);
+        d.Succeeds(b, c);
 
         JobGraphEvent ev;
         graph.SubmitOnExecutor(*m_executor, &ev);
@@ -487,8 +486,7 @@ namespace UnitTest
         a.Precedes(b, c);
         b.Precedes(d);
         c.Precedes(e, f);
-        e.Precedes(g);
-        f.Precedes(g);
+        g.Succeeds(e, f);
         g.Precedes(d);
 
         JobGraphEvent ev;
@@ -511,338 +509,94 @@ namespace Benchmark
     class JobGraphBenchmarkFixture : public ::benchmark::Fixture
     {
     public:
-        static const int32_t LIGHT_WEIGHT_JOB_CALCULATE_PI_DEPTH = 1;
-        static const int32_t MEDIUM_WEIGHT_JOB_CALCULATE_PI_DEPTH = 1024;
-        static const int32_t HEAVY_WEIGHT_JOB_CALCULATE_PI_DEPTH = 1048576;
-
-        static const int32_t SMALL_NUMBER_OF_JOBS = 10;
-        static const int32_t MEDIUM_NUMBER_OF_JOBS = 1024;
-        static const int32_t LARGE_NUMBER_OF_JOBS = 16384;
-        static AZStd::atomic<int32_t> s_numIncompleteJobs;
-
-        int m_depth = 1;
-        JobGraph* graphs;
-
         void SetUp(benchmark::State&) override
         {
-            s_numIncompleteJobs = 0;
-
-            m_executor = aznew JobExecutor(0);
-            graphs = new JobGraph[4];
-
-            // Generate some random priorities
-            m_randomPriorities.resize(LARGE_NUMBER_OF_JOBS);
-            std::mt19937_64 randomPriorityGenerator(1); // Always use the same seed
-            std::uniform_int_distribution<> randomPriorityDistribution(0, static_cast<uint8_t>(AZ::JobPriority::PRIORITY_COUNT));
-            std::generate(
-                m_randomPriorities.begin(), m_randomPriorities.end(),
-                [&randomPriorityDistribution, &randomPriorityGenerator]()
-                {
-                    return randomPriorityDistribution(randomPriorityGenerator);
-                });
-
-            // Generate some random depths
-            m_randomDepths.resize(LARGE_NUMBER_OF_JOBS);
-            std::mt19937_64 randomDepthGenerator(1); // Always use the same seed
-            std::uniform_int_distribution<> randomDepthDistribution(
-                LIGHT_WEIGHT_JOB_CALCULATE_PI_DEPTH, HEAVY_WEIGHT_JOB_CALCULATE_PI_DEPTH);
-            std::generate(
-                m_randomDepths.begin(), m_randomDepths.end(),
-                [&randomDepthDistribution, &randomDepthGenerator]()
-                {
-                    return randomDepthDistribution(randomDepthGenerator);
-                });
-
-            for (size_t i = 0; i != 4; ++i)
-            {
-                graphs[i].AddJob(
-                    descriptors[i],
-                    [this]
-                    {
-                        benchmark::DoNotOptimize(CalculatePi(m_depth));
-                        --s_numIncompleteJobs;
-                    });
-            }
+            executor = new JobExecutor;
+            graph = new JobGraph;
         }
 
         void TearDown(benchmark::State&) override
         {
-            delete[] graphs;
-            azdestroy(m_executor);
-            m_randomDepths = {};
-            m_randomPriorities = {};
+            delete graph;
+            delete executor;
         }
 
         JobDescriptor descriptors[4] = { { "critical", "benchmark", JobPriority::CRITICAL },
                                          { "high", "benchmark", JobPriority::HIGH },
-                                         { "mediium", "benchmark", JobPriority::MEDIUM },
+                                         { "medium", "benchmark", JobPriority::MEDIUM },
                                          { "low", "benchmark", JobPriority::LOW } };
 
-        static inline double CalculatePi(AZ::u32 depth)
-        {
-            double pi = 0.0;
-            for (AZ::u32 i = 0; i < depth; ++i)
-            {
-                const double numerator = static_cast<double>(((i % 2) * 2) - 1);
-                const double denominator = static_cast<double>((2 * i) - 1);
-                pi += numerator / denominator;
-            }
-            return (pi - 1.0) * 4;
-        }
-
-        void RunCalculatePiJob(int32_t depth, int8_t priority)
-        {
-            m_depth = depth;
-            ++s_numIncompleteJobs;
-
-            graphs[priority].SubmitOnExecutor(*m_executor);
-        }
-
-        void RunMultipleCalculatePiJobsWithDefaultPriority(uint32_t numberOfJobs, int32_t depth)
-        {
-            for (size_t i = 0; i != numberOfJobs; ++i)
-            {
-                RunCalculatePiJob(depth, 2);
-            }
-
-            while (s_numIncompleteJobs > 0)
-            {
-            }
-        }
-
-        void RunMultipleCalculatePiJobsWithRandomPriority(uint32_t numberOfJobs, int32_t depth)
-        {
-            for (size_t i = 0; i != numberOfJobs; ++i)
-            {
-                RunCalculatePiJob(depth, m_randomPriorities[i]);
-            }
-
-            while (s_numIncompleteJobs > 0)
-            {
-            }
-        }
-
-        void RunMultipleCalculatePiJobsWithRandomDepthAndDefaultPriority(uint32_t numberOfJobs)
-        {
-            for (size_t i = 0; i != numberOfJobs; ++i)
-            {
-                RunCalculatePiJob(m_randomDepths[i], 0);
-            }
-
-            while (s_numIncompleteJobs > 0)
-            {
-            }
-        }
-
-        void RunMultipleCalculatePiJobsWithRandomDepthAndRandomPriority(uint32_t numberOfJobs)
-        {
-            for (size_t i = 0; i != numberOfJobs; ++i)
-            {
-                RunCalculatePiJob(m_randomDepths[i], m_randomPriorities[i]);
-            }
-
-            while (s_numIncompleteJobs > 0)
-            {
-            }
-        }
-
-        JobExecutor* m_executor;
-        AZStd::vector<AZ::u32> m_randomDepths;
-        AZStd::vector<AZ::s8> m_randomPriorities;
+        JobGraph* graph;
+        JobExecutor* executor;
     };
 
-    AZStd::atomic<int32_t> JobGraphBenchmarkFixture::s_numIncompleteJobs = 0;
-
-    BENCHMARK_F(JobGraphBenchmarkFixture, RunSmallNumberOfLightWeightJobsWithDefaultPriority)(benchmark::State& state)
+    BENCHMARK_F(JobGraphBenchmarkFixture, QueueToDequeue)(benchmark::State& state)
     {
+        graph->AddJob(
+            descriptors[2],
+            []
+            {
+            });
         for (auto _ : state)
         {
-            RunMultipleCalculatePiJobsWithDefaultPriority(SMALL_NUMBER_OF_JOBS, LIGHT_WEIGHT_JOB_CALCULATE_PI_DEPTH);
+            JobGraphEvent ev;
+            graph->SubmitOnExecutor(*executor, &ev);
+            ev.Wait();
         }
     }
 
-    BENCHMARK_F(JobGraphBenchmarkFixture, RunMediumNumberOfLightWeightJobsWithDefaultPriority)(benchmark::State& state)
+    BENCHMARK_F(JobGraphBenchmarkFixture, OneAfterAnother)(benchmark::State& state)
     {
+        auto a = graph->AddJob(
+            descriptors[2],
+            []
+            {
+            });
+        auto b = graph->AddJob(
+            descriptors[2],
+            []
+            {
+            });
+        a.Precedes(b);
+
         for (auto _ : state)
         {
-            RunMultipleCalculatePiJobsWithDefaultPriority(MEDIUM_NUMBER_OF_JOBS, LIGHT_WEIGHT_JOB_CALCULATE_PI_DEPTH);
+            JobGraphEvent ev;
+            graph->SubmitOnExecutor(*executor, &ev);
+            ev.Wait();
         }
+        executor->Drain();
     }
 
-    BENCHMARK_F(JobGraphBenchmarkFixture, RunLargeNumberOfLightWeightJobsWithDefaultPriority)(benchmark::State& state)
+    BENCHMARK_F(JobGraphBenchmarkFixture, FourToOneJoin)(benchmark::State& state)
     {
-        for (auto _ : state)
-        {
-            RunMultipleCalculatePiJobsWithDefaultPriority(LARGE_NUMBER_OF_JOBS, LIGHT_WEIGHT_JOB_CALCULATE_PI_DEPTH);
-        }
-    }
+        auto [a, b, c, d, e] = graph->AddJobs(
+            descriptors[2],
+            []
+            {
+            },
+            []
+            {
+            },
+            []
+            {
+            },
+            []
+            {
+            },
+            []
+            {
+            });
 
-    BENCHMARK_F(JobGraphBenchmarkFixture, RunSmallNumberOfMediumWeightJobsWithDefaultPriority)(benchmark::State& state)
-    {
-        for (auto _ : state)
-        {
-            RunMultipleCalculatePiJobsWithDefaultPriority(SMALL_NUMBER_OF_JOBS, MEDIUM_WEIGHT_JOB_CALCULATE_PI_DEPTH);
-        }
-    }
+        e.Succeeds(a, b, c, d);
 
-    BENCHMARK_F(JobGraphBenchmarkFixture, RunMediumNumberOfMediumWeightJobsWithDefaultPriority)(benchmark::State& state)
-    {
         for (auto _ : state)
         {
-            RunMultipleCalculatePiJobsWithDefaultPriority(MEDIUM_NUMBER_OF_JOBS, MEDIUM_WEIGHT_JOB_CALCULATE_PI_DEPTH);
+            JobGraphEvent ev;
+            graph->SubmitOnExecutor(*executor, &ev);
+            ev.Wait();
         }
-    }
-
-    BENCHMARK_F(JobGraphBenchmarkFixture, RunLargeNumberOfMediumWeightJobsWithDefaultPriority)(benchmark::State& state)
-    {
-        for (auto _ : state)
-        {
-            RunMultipleCalculatePiJobsWithDefaultPriority(LARGE_NUMBER_OF_JOBS, MEDIUM_WEIGHT_JOB_CALCULATE_PI_DEPTH);
-        }
-    }
-
-    BENCHMARK_F(JobGraphBenchmarkFixture, RunSmallNumberOfHeavyWeightJobsWithDefaultPriority)(benchmark::State& state)
-    {
-        for (auto _ : state)
-        {
-            RunMultipleCalculatePiJobsWithDefaultPriority(SMALL_NUMBER_OF_JOBS, HEAVY_WEIGHT_JOB_CALCULATE_PI_DEPTH);
-        }
-    }
-
-    BENCHMARK_F(JobGraphBenchmarkFixture, RunMediumNumberOfHeavyWeightJobsWithDefaultPriority)(benchmark::State& state)
-    {
-        for (auto _ : state)
-        {
-            RunMultipleCalculatePiJobsWithDefaultPriority(MEDIUM_NUMBER_OF_JOBS, HEAVY_WEIGHT_JOB_CALCULATE_PI_DEPTH);
-        }
-    }
-
-    BENCHMARK_F(JobGraphBenchmarkFixture, RunLargeNumberOfHeavyWeightJobsWithDefaultPriority)(benchmark::State& state)
-    {
-        for (auto _ : state)
-        {
-            RunMultipleCalculatePiJobsWithDefaultPriority(LARGE_NUMBER_OF_JOBS, HEAVY_WEIGHT_JOB_CALCULATE_PI_DEPTH);
-        }
-    }
-
-    BENCHMARK_F(JobGraphBenchmarkFixture, RunSmallNumberOfRandomWeightJobsWithDefaultPriority)(benchmark::State& state)
-    {
-        for (auto _ : state)
-        {
-            RunMultipleCalculatePiJobsWithRandomDepthAndDefaultPriority(SMALL_NUMBER_OF_JOBS);
-        }
-    }
-
-    BENCHMARK_F(JobGraphBenchmarkFixture, RunMediumNumberOfRandomWeightJobsWithDefaultPriority)(benchmark::State& state)
-    {
-        for (auto _ : state)
-        {
-            RunMultipleCalculatePiJobsWithRandomDepthAndDefaultPriority(MEDIUM_NUMBER_OF_JOBS);
-        }
-    }
-
-    BENCHMARK_F(JobGraphBenchmarkFixture, RunLargeNumberOfRandomWeightJobsWithDefaultPriority)(benchmark::State& state)
-    {
-        for (auto _ : state)
-        {
-            RunMultipleCalculatePiJobsWithRandomDepthAndDefaultPriority(LARGE_NUMBER_OF_JOBS);
-        }
-    }
-
-    BENCHMARK_F(JobGraphBenchmarkFixture, RunSmallNumberOfLightWeightJobsWithRandomPriorities)(benchmark::State& state)
-    {
-        for (auto _ : state)
-        {
-            RunMultipleCalculatePiJobsWithRandomPriority(SMALL_NUMBER_OF_JOBS, LIGHT_WEIGHT_JOB_CALCULATE_PI_DEPTH);
-        }
-    }
-
-    BENCHMARK_F(JobGraphBenchmarkFixture, RunMediumNumberOfLightWeightJobsWithRandomPriorities)(benchmark::State& state)
-    {
-        for (auto _ : state)
-        {
-            RunMultipleCalculatePiJobsWithRandomPriority(MEDIUM_NUMBER_OF_JOBS, LIGHT_WEIGHT_JOB_CALCULATE_PI_DEPTH);
-        }
-    }
-
-    BENCHMARK_F(JobGraphBenchmarkFixture, RunLargeNumberOfLightWeightJobsWithRandomPriorities)(benchmark::State& state)
-    {
-        for (auto _ : state)
-        {
-            RunMultipleCalculatePiJobsWithRandomPriority(LARGE_NUMBER_OF_JOBS, LIGHT_WEIGHT_JOB_CALCULATE_PI_DEPTH);
-        }
-    }
-
-    BENCHMARK_F(JobGraphBenchmarkFixture, RunSmallNumberOfMediumWeightJobsWithRandomPriorities)(benchmark::State& state)
-    {
-        for (auto _ : state)
-        {
-            RunMultipleCalculatePiJobsWithRandomPriority(SMALL_NUMBER_OF_JOBS, MEDIUM_WEIGHT_JOB_CALCULATE_PI_DEPTH);
-        }
-    }
-
-    BENCHMARK_F(JobGraphBenchmarkFixture, RunMediumNumberOfMediumWeightJobsWithRandomPriorities)(benchmark::State& state)
-    {
-        for (auto _ : state)
-        {
-            RunMultipleCalculatePiJobsWithRandomPriority(MEDIUM_NUMBER_OF_JOBS, MEDIUM_WEIGHT_JOB_CALCULATE_PI_DEPTH);
-        }
-    }
-
-    BENCHMARK_F(JobGraphBenchmarkFixture, RunLargeNumberOfMediumWeightJobsWithRandomPriorities)(benchmark::State& state)
-    {
-        for (auto _ : state)
-        {
-            RunMultipleCalculatePiJobsWithRandomPriority(LARGE_NUMBER_OF_JOBS, MEDIUM_WEIGHT_JOB_CALCULATE_PI_DEPTH);
-        }
-    }
-
-    BENCHMARK_F(JobGraphBenchmarkFixture, RunSmallNumberOfHeavyWeightJobsWithRandomPriorities)(benchmark::State& state)
-    {
-        for (auto _ : state)
-        {
-            RunMultipleCalculatePiJobsWithRandomPriority(SMALL_NUMBER_OF_JOBS, HEAVY_WEIGHT_JOB_CALCULATE_PI_DEPTH);
-        }
-    }
-
-    BENCHMARK_F(JobGraphBenchmarkFixture, RunMediumNumberOfHeavyWeightJobsWithRandomPriorities)(benchmark::State& state)
-    {
-        for (auto _ : state)
-        {
-            RunMultipleCalculatePiJobsWithRandomPriority(MEDIUM_NUMBER_OF_JOBS, HEAVY_WEIGHT_JOB_CALCULATE_PI_DEPTH);
-        }
-    }
-
-    BENCHMARK_F(JobGraphBenchmarkFixture, RunLargeNumberOfHeavyWeightJobsWithRandomPriorities)(benchmark::State& state)
-    {
-        for (auto _ : state)
-        {
-            RunMultipleCalculatePiJobsWithRandomPriority(LARGE_NUMBER_OF_JOBS, HEAVY_WEIGHT_JOB_CALCULATE_PI_DEPTH);
-        }
-    }
-
-    BENCHMARK_F(JobGraphBenchmarkFixture, RunSmallNumberOfRandomWeightJobsWithRandomPriorities)(benchmark::State& state)
-    {
-        for (auto _ : state)
-        {
-            RunMultipleCalculatePiJobsWithRandomDepthAndRandomPriority(SMALL_NUMBER_OF_JOBS);
-        }
-    }
-
-    BENCHMARK_F(JobGraphBenchmarkFixture, RunMediumNumberOfRandomWeightJobsWithRandomPriorities)(benchmark::State& state)
-    {
-        for (auto _ : state)
-        {
-            RunMultipleCalculatePiJobsWithRandomDepthAndRandomPriority(MEDIUM_NUMBER_OF_JOBS);
-        }
-    }
-
-    BENCHMARK_F(JobGraphBenchmarkFixture, RunLargeNumberOfRandomWeightJobsWithRandomPriorities)(benchmark::State& state)
-    {
-        for (auto _ : state)
-        {
-            RunMultipleCalculatePiJobsWithRandomDepthAndRandomPriority(LARGE_NUMBER_OF_JOBS);
-        }
+        executor->Drain();
     }
 } // namespace Benchmark
 #endif

@@ -30,8 +30,25 @@ namespace AZ
     {
         if (m_retained && m_compiledJobGraph)
         {
-            azdestroy(m_compiledJobGraph);
+            // This job graph has already finished and we are potentially responsible for its destruction
+            if (m_compiledJobGraph->Release() == 0)
+            {
+                azdestroy(m_compiledJobGraph);
+            }
         }
+    }
+
+    void JobGraph::Reset()
+    {
+        AZ_Assert(!m_submitted, "Cannot reset a job graph while it is in flight");
+        if (m_compiledJobGraph)
+        {
+            azdestroy(m_compiledJobGraph);
+            m_compiledJobGraph = nullptr;
+        }
+        m_jobs.clear();
+        m_links.clear();
+        m_linkCount = 0;
     }
 
     void JobGraph::Submit(JobGraphEvent* waitEvent)
@@ -41,20 +58,28 @@ namespace AZ
 
     void JobGraph::SubmitOnExecutor(JobExecutor& executor, JobGraphEvent* waitEvent)
     {
-        m_submitted = true;
-
         if (!m_compiledJobGraph)
         {
-            m_compiledJobGraph = aznew CompiledJobGraph(AZStd::move(m_jobs), m_links, m_linkCount, m_retained);
+            m_compiledJobGraph = aznew CompiledJobGraph(AZStd::move(m_jobs), m_links, m_linkCount, m_retained ? this : nullptr);
         }
 
         m_compiledJobGraph->m_waitEvent = waitEvent;
+        m_compiledJobGraph->m_remaining = m_compiledJobGraph->m_jobs.size() + (m_retained ? 1 : 0);
+        for (size_t i = 0; i != m_compiledJobGraph->m_jobs.size(); ++i)
+        {
+            m_compiledJobGraph->m_jobs[i].Init();
+        }
 
         executor.Submit(*m_compiledJobGraph);
 
-        if (waitEvent)
+        if (m_retained)
         {
-            waitEvent->m_submitted = true;
+            m_submitted = true;
+        }
+        else
+        {
+            m_compiledJobGraph = nullptr;
+            Reset();
         }
     }
 }
