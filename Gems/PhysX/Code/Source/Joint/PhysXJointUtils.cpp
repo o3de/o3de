@@ -190,8 +190,9 @@ namespace PhysX {
             {
                 PxJointActorData actorData = GetJointPxActors(sceneHandle, parentBodyHandle, childBodyHandle);
 
-                if (!actorData.parentActor || !actorData.childActor)
+                if (actorData.parentActor == nullptr && actorData.childActor == nullptr)
                 {
+                    AZ_Warning("PhysX Joint", false, "CreateJoint failed - at least one body must be a PxRigidActor.");
                     return nullptr;
                 }
 
@@ -239,7 +240,8 @@ namespace PhysX {
             {
                 PxJointActorData actorData = GetJointPxActors(sceneHandle, parentBodyHandle, childBodyHandle);
 
-                if (!actorData.parentActor || !actorData.childActor)
+                //only check the child actor, as a null parent actor means this joint is a global constraint.
+                if (!actorData.childActor)
                 {
                     return nullptr;
                 }
@@ -252,7 +254,8 @@ namespace PhysX {
 
                 {
                     PHYSX_SCENE_READ_LOCK(actorData.childActor->getScene());
-                    joint = physx::PxFixedJointCreate(PxGetPhysics(), 
+                    joint = physx::PxFixedJointCreate(
+                        PxGetPhysics(), 
                         actorData.parentActor, PxMathConvert(parentLocalTM),
                         actorData.childActor, PxMathConvert(childLocalTM));
                 }
@@ -272,7 +275,8 @@ namespace PhysX {
             {
                 PxJointActorData actorData = GetJointPxActors(sceneHandle, parentBodyHandle, childBodyHandle);
 
-                if (!actorData.parentActor || !actorData.childActor)
+                // only check the child actor, as a null parent actor means this joint is a global constraint.
+                if (!actorData.childActor)
                 {
                     return nullptr;
                 }
@@ -306,7 +310,8 @@ namespace PhysX {
             {
                 PxJointActorData actorData = GetJointPxActors(sceneHandle, parentBodyHandle, childBodyHandle);
 
-                if (!actorData.parentActor || !actorData.childActor)
+                // only check the child actor, as a null parent actor means this joint is a global constraint.
+                if (!actorData.childActor)
                 {
                     return nullptr;
                 }
