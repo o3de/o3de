@@ -12,6 +12,8 @@
 
 #include <GridMate/Containers/list.h>
 
+#include <AzCore/std/string/string.h>
+
 namespace GridMate
 {
     /**

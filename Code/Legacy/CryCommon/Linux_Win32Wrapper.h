@@ -378,7 +378,7 @@ typedef struct _finddata_t
 extern int _findnext64(intptr_t last, __finddata64_t* pFindData);
 extern intptr_t _findfirst64(const char* pFileName, __finddata64_t* pFindData);
 
-extern DWORD GetFileAttributes(LPCSTR lpFileName);
+extern DWORD GetFileAttributesW(LPCWSTR lpFileName);
 
 extern const bool GetFilenameNoCase(const char* file, char*, const bool cCreateNew = false);
 

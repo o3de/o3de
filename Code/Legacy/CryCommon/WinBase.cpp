@@ -1648,12 +1648,33 @@ DWORD GetFileAttributes(LPCWSTR lpFileNameW)
 
 uint32 CryGetFileAttributes(const char* lpFileName)
 {
-    
     AZStd::string fn = lpFileName;
     adaptFilenameToLinux(fn);
     const char* buffer = fn.c_str();
-    return GetFileAttributes(buffer);
     
+    struct stat fileStats;
+    const int success = stat(buffer, &fileStats);
+    if (success == -1)
+    {
+        char adjustedFilename[MAX_PATH];
+        GetFilenameNoCase(buffer, adjustedFilename);
+        if (stat(adjustedFilename, &fileStats) == -1)
+        {
+            return (DWORD)INVALID_FILE_ATTRIBUTES;
+        }
+    }
+    DWORD ret = 0;
+
+    const int acc = (fileStats.st_mode & S_IWRITE);
+
+    if (acc != 0)
+    {
+        if (S_ISDIR(fileStats.st_mode) != 0)
+        {
+            ret |= FILE_ATTRIBUTE_DIRECTORY;
+        }
+    }
+    return (ret == 0) ? FILE_ATTRIBUTE_NORMAL : ret;//return file attribute normal as the default value, must only be set if no other attributes have been found    
 }
 
 __finddata64_t::~__finddata64_t()

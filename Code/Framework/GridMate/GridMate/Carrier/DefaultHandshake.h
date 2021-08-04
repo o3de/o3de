@@ -9,6 +9,7 @@
 #define GM_DEFAULT_HANDSHAKE_H
 
 #include <GridMate/Carrier/Handshake.h>
+#include <AzCore/std/string/string.h>
 
 namespace GridMate
 {

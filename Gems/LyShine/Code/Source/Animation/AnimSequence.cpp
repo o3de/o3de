@@ -594,6 +594,8 @@ void CUiAnimSequence::Activate()
     }
 }
 
+typedef AZStd::fixed_string<512> stack_string;
+
 //////////////////////////////////////////////////////////////////////////
 void CUiAnimSequence::Deactivate()
 {
