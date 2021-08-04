@@ -10,6 +10,8 @@
 #include <AzCore/Math/MatrixUtils.h>
 #include <AzCore/Component/TransformBus.h>
 
+#include <AzFramework/Viewport/CameraState.h>
+
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
 
@@ -87,30 +89,12 @@ namespace Camera
             {
                 if (auto view = viewSystem->GetCurrentView(viewSystem->GetDefaultViewportContextName()))
                 {
-                    const auto& viewToClip = view->GetViewToClipMatrix();
-                    cfg.m_fovRadians = AZ::GetPerspectiveMatrixFOV(viewToClip);
+                    AzFramework::CameraState cam;
+                    AzFramework::SetCameraClippingVolumeFromPerspectiveFovMatrixRH(cam, view->GetViewToClipMatrix());
 
-                    // A = f / (n - f)
-                    // B = n * f / (n - f)
-                    // Then...
-                    //    B / A
-                    // =  (n * f / (n - f)) / (f / (n - f)) 
-                    // =  (n * f) / (f)
-                    // = n
-                    // and...
-                    //    n * f / (n - f) = B
-                    //    n * ((n - f) / f)^-1 = B
-                    //    n * (n/f - 1)^-1 = B
-                    //    (n/f - 1)^-1 = B/n
-                    //    n/f - 1 = n/B
-                    //    f = n/(n/B + 1)
-                    const float A = viewToClip.GetElement(2, 2);
-                    const float B = viewToClip.GetElement(2, 3);
-                    cfg.m_nearClipDistance = B / A;
-                    cfg.m_farClipDistance = cfg.m_nearClipDistance / (cfg.m_nearClipDistance / B + 1.f);
-
-                    // NB: assumes reversed depth!
-                    AZStd::swap(cfg.m_farClipDistance, cfg.m_nearClipDistance);
+                    cfg.m_fovRadians = cam.m_fovOrZoom;
+                    cfg.m_nearClipDistance = cam.m_nearClip;
+                    cfg.m_farClipDistance = cam.m_farClip;
 
                     // No idea what to do here. Seems to be unused?
                     cfg.m_frustumWidth = cfg.m_frustumHeight = 1.0f;
