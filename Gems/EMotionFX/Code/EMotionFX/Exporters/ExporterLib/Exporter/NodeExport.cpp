@@ -18,21 +18,6 @@
 
 namespace ExporterLib
 {
-    void WriteObbToNodeChunk(EMotionFX::FileFormat::Actor_Node& nodeChunk, const MCore::OBB& obb)
-    {
-        AZ::Transform obbMatrix = obb.GetTransformation();
-        obbMatrix.GetBasisX().StoreToFloat3(nodeChunk.mOBB);
-        nodeChunk.mOBB[3] = 0.0f;
-        obbMatrix.GetBasisY().StoreToFloat3(nodeChunk.mOBB + 4);
-        nodeChunk.mOBB[7] = 0.0f;
-        obbMatrix.GetBasisZ().StoreToFloat3(nodeChunk.mOBB + 8);
-        nodeChunk.mOBB[11] = 0.0f;
-        nodeChunk.mOBB[12] = 0.0f;
-        nodeChunk.mOBB[13] = 0.0f;
-        nodeChunk.mOBB[14] = 0.0f;
-        nodeChunk.mOBB[15] = 1.0f;
-    }
-
     void SaveNode(MCore::Stream* file, EMotionFX::Actor* actor, EMotionFX::Node* node, MCore::Endian::EEndianType targetEndianType)
     {
         MCORE_ASSERT(file);
@@ -47,7 +32,7 @@ namespace ExporterLib
         const uint32                numChilds           = node->GetNumChildNodes();
         const EMotionFX::Transform& transform           = actor->GetBindPose()->GetLocalSpaceTransform(nodeIndex);
         AZ::PackedVector3f          position            = AZ::PackedVector3f(transform.mPosition);
-        AZ::Quaternion              rotation            = transform.mRotation.GetNormalized();;
+        AZ::Quaternion              rotation            = transform.mRotation.GetNormalized();
 
         #ifndef EMFX_SCALE_DISABLED
             AZ::PackedVector3f scale = AZ::PackedVector3f(transform.mScale);
@@ -56,14 +41,13 @@ namespace ExporterLib
         #endif
 
         // create the node chunk and copy over the information
-        EMotionFX::FileFormat::Actor_Node nodeChunk;
-        memset(&nodeChunk, 0, sizeof(EMotionFX::FileFormat::Actor_Node));
+        EMotionFX::FileFormat::Actor_Node2 nodeChunk;
+        memset(&nodeChunk, 0, sizeof(EMotionFX::FileFormat::Actor_Node2));
 
         CopyVector(nodeChunk.mLocalPos,    position);
         CopyQuaternion(nodeChunk.mLocalQuat,   rotation);
         CopyVector(nodeChunk.mLocalScale,  scale);
 
-        //nodeChunk.mImportanceFactor   = FLT_MAX;//importance;
         nodeChunk.mNumChilds        = numChilds;
         nodeChunk.mParentIndex      = parentIndex;
 
@@ -97,10 +81,6 @@ namespace ExporterLib
         {
             nodeChunk.mNodeFlags &= ~EMotionFX::Node::ENodeFlags::FLAG_CRITICAL;
         }
-
-        // OBB
-        WriteObbToNodeChunk(nodeChunk, actor->GetNodeOBB(node->GetNodeIndex()));
-
 
         // log the node chunk information
         MCore::LogDetailedInfo("- Node: name='%s' index=%i", actor->GetSkeleton()->GetNode(nodeIndex)->GetName(), nodeIndex);
@@ -140,18 +120,12 @@ namespace ExporterLib
         ConvertUnsignedInt(&nodeChunk.mNumChilds,          targetEndianType);
         ConvertUnsignedInt(&nodeChunk.mSkeletalLODs,       targetEndianType);
 
-        for (uint32 j = 0; j < 16; ++j)
-        {
-            ConvertFloat(&nodeChunk.mOBB[j], targetEndianType);
-        }
-
         // write it
-        file->Write(&nodeChunk, sizeof(EMotionFX::FileFormat::Actor_Node));
+        file->Write(&nodeChunk, sizeof(EMotionFX::FileFormat::Actor_Node2));
 
         // write the name of the node and parent
         SaveString(node->GetName(), file, targetEndianType);
     }
-
 
     void SaveNodes(MCore::Stream* file, EMotionFX::Actor* actor, MCore::Endian::EEndianType targetEndianType)
     {
@@ -167,10 +141,10 @@ namespace ExporterLib
         // chunk information
         EMotionFX::FileFormat::FileChunk chunkHeader;
         chunkHeader.mChunkID = EMotionFX::FileFormat::ACTOR_CHUNK_NODES;
-        chunkHeader.mVersion = 1;
+        chunkHeader.mVersion = 2;
 
         // get the nodes chunk size
-        chunkHeader.mSizeInBytes = sizeof(EMotionFX::FileFormat::Actor_Nodes) + numNodes * sizeof(EMotionFX::FileFormat::Actor_Node);
+        chunkHeader.mSizeInBytes = sizeof(EMotionFX::FileFormat::Actor_Nodes2) + numNodes * sizeof(EMotionFX::FileFormat::Actor_Node2);
         for (i = 0; i < numNodes; i++)
         {
             chunkHeader.mSizeInBytes += GetStringChunkSize(actor->GetSkeleton()->GetNode(i)->GetName());
@@ -181,23 +155,15 @@ namespace ExporterLib
         file->Write(&chunkHeader, sizeof(EMotionFX::FileFormat::FileChunk));
 
         // nodes chunk
-        EMotionFX::FileFormat::Actor_Nodes nodesChunk;
+        EMotionFX::FileFormat::Actor_Nodes2 nodesChunk;
         nodesChunk.mNumNodes        = numNodes;
         nodesChunk.mNumRootNodes    = actor->GetSkeleton()->GetNumRootNodes();
-        nodesChunk.mStaticBoxMin.mX = actor->GetStaticAabb().GetMin().GetX();
-        nodesChunk.mStaticBoxMin.mY = actor->GetStaticAabb().GetMin().GetY();
-        nodesChunk.mStaticBoxMin.mZ = actor->GetStaticAabb().GetMin().GetZ();
-        nodesChunk.mStaticBoxMax.mX = actor->GetStaticAabb().GetMax().GetX();
-        nodesChunk.mStaticBoxMax.mY = actor->GetStaticAabb().GetMax().GetY();
-        nodesChunk.mStaticBoxMax.mZ = actor->GetStaticAabb().GetMax().GetZ();
 
         // endian conversion and write it
         ConvertUnsignedInt(&nodesChunk.mNumNodes, targetEndianType);
         ConvertUnsignedInt(&nodesChunk.mNumRootNodes, targetEndianType);
-        ConvertFileVector3(&nodesChunk.mStaticBoxMin, targetEndianType);
-        ConvertFileVector3(&nodesChunk.mStaticBoxMax, targetEndianType);
 
-        file->Write(&nodesChunk, sizeof(EMotionFX::FileFormat::Actor_Nodes));
+        file->Write(&nodesChunk, sizeof(EMotionFX::FileFormat::Actor_Nodes2));
 
         // write the nodes
         for (uint32 n = 0; n < numNodes; n++)
