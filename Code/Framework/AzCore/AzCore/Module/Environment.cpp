@@ -75,6 +75,44 @@ namespace AZ
         bool operator==(const OSStdAllocator& a, const OSStdAllocator& b) { (void)a; (void)b; return true; }
         bool operator!=(const OSStdAllocator& a, const OSStdAllocator& b) { (void)a; (void)b; return false; }
 
+        void EnvironmentVariableHolderBase::UnregisterAndDestroy(void (*destruct)(EnvironmentVariableHolderBase *, DestroyTarget), bool module_release)
+        {
+            bool release_by_module = false;
+            const bool release_by_use_count = (--m_useCount == 0);
+            if (module_release && !m_canTransferOwnership && m_moduleOwner == AZ::Environment::GetModuleId())
+            {
+                release_by_module = true;
+            }
+            if (!module_release && !release_by_use_count)
+            {
+                m_mutex.unlock();
+                return;
+            }
+            // if the environment that created us is gone the owner can be null
+            // which means (assuming intermodule allocator) that the variable is still alive
+            // but can't be found as it's not part of any environment.
+            if (m_environmentOwner)
+            {
+                m_environmentOwner->RemoveVariable(m_guid);
+                m_environmentOwner = nullptr;
+            }
+            if (m_isConstructed)
+            {
+                destruct(this, DestroyTarget::Member); // destruct the value
+            }
+
+            m_mutex.unlock();
+
+            if (release_by_use_count)
+            {
+                // m_mutex is unlocked before this is deleted
+                Environment::AllocatorInterface* allocator = m_allocator;
+                // Call child class dtor and clear the memory
+                destruct(this, DestroyTarget::Self);
+                allocator->DeAllocate(this);
+            }
+        }
+
         // instance of the environment
         EnvironmentInterface* EnvironmentInterface::s_environment = nullptr;
 
@@ -110,7 +148,7 @@ namespace AZ
 #ifdef AZ_ENVIRONMENT_VALIDATE_ON_EXIT
                 AZ_Assert(m_numAttached == 0, "We should not delete an environment while there are %d modules attached! Unload all DLLs first!", m_numAttached);
 #endif
-                
+
                 for (auto variableIt : m_variableMap)
                 {
                     EnvironmentVariableHolderBase* holder = reinterpret_cast<EnvironmentVariableHolderBase*>(variableIt.second);
