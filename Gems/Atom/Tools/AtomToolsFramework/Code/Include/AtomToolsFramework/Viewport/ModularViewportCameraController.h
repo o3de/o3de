@@ -22,7 +22,7 @@ namespace AtomToolsFramework
     using CameraControllerPriorityFn =
         AZStd::function<AzFramework::ViewportControllerPriority(const AzFramework::CameraSystem& cameraSystem)>;
 
-    //! The default behavior for what priority the ModularViewportCameraControllerInstance should respond to events.
+    //! The default behavior for what priority the camera controller should respond to events at.
     //! @note This can change based on the state of the camera controller/system.
     AzFramework::ViewportControllerPriority DefaultCameraControllerPriority(const AzFramework::CameraSystem& cameraSystem);
 
