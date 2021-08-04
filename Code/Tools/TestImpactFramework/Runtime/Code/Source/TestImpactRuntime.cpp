@@ -305,17 +305,17 @@ namespace TestImpact
                 m_hasImpactAnalysisData = true;
 
                 // Enumerate new test targets
-                const auto testTargetsWithNoEnumeration = m_dynamicDependencyMap->GetNotCoveringTests();
-                if (!testTargetsWithNoEnumeration.empty())
-                {
-                    m_testEngine->UpdateEnumerationCache(
-                        testTargetsWithNoEnumeration,
-                        Policy::ExecutionFailure::Ignore,
-                        Policy::TestFailure::Continue,
-                        AZStd::nullopt,
-                        AZStd::nullopt,
-                        AZStd::nullopt);
-                }
+                //const auto testTargetsWithNoEnumeration = m_dynamicDependencyMap->GetNotCoveringTests();
+                //if (!testTargetsWithNoEnumeration.empty())
+                //{
+                //    m_testEngine->UpdateEnumerationCache(
+                //        testTargetsWithNoEnumeration,
+                //        Policy::ExecutionFailure::Ignore,
+                //        Policy::TestFailure::Continue,
+                //        AZStd::nullopt,
+                //        AZStd::nullopt,
+                //        AZStd::nullopt);
+                //}
             }
         }
         catch (const DependencyException& e)
@@ -388,7 +388,7 @@ namespace TestImpact
         const AZStd::unordered_set<const TestTarget*> selectedTestTargetSet(selectedTestTargets.begin(), selectedTestTargets.end());
 
         // Update the enumeration caches of mutated targets regardless of the current sharding policy
-        EnumerateMutatedTestTargets(changeDependencyList);
+        //EnumerateMutatedTestTargets(changeDependencyList);
 
         // The test targets in the main list not in the selected test target set are the test targets not selected for this change list
         for (const auto& testTarget : m_dynamicDependencyMap->GetTestTargetList().GetTargets())

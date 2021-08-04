@@ -89,7 +89,7 @@
       "CONFIGURATION": "profile",
       "SCRIPT_PATH": "scripts/build/TestImpactAnalysis/tiaf_driver.py",
       "SCRIPT_PARAMETERS": 
-      "--config=\"!OUTPUT_DIRECTORY!/bin/TestImpactFramework/persistent/tiaf.profile.json\" --suite=main --test-failure-policy=continue --branch=!BRANCH_NAME! --pipeline=!PIPELINE_NAME! --commit=!CHANGE_ID! --seeding-branches=!BUILD_SNAPSHOTS! --seeding-pipelines=default --snapshot=!SNAPSHOT!"
+      "--config=\"!OUTPUT_DIRECTORY!/bin/TestImpactFramework/profile/Persistent/tiaf.json\" --suite=main --test-failure-policy=continue --branch=!BRANCH_NAME! --pipeline=!PIPELINE_NAME! --commit=!CHANGE_ID! --seeding-branches=!BUILD_SNAPSHOTS! --seeding-pipelines=default --snapshot=!SNAPSHOT!"
     }
   },
   "debug_vs2019": {

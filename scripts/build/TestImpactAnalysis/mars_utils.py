@@ -11,7 +11,6 @@ import json
 import socket
 import argparse
 import os
-import boto3
 
 class FilebeatExn(Exception):
     pass
@@ -40,7 +39,7 @@ class FilebeatClient(object):
         data = json.dumps(event, sort_keys=True) + "\n"
         data = data.encode()
 
-        print(f"-> {data}")
+        #print(f"-> {data}")
         self._send_data(data)
 
     def _open_socket(self):
@@ -76,28 +75,27 @@ def generate_mars_timestamp(t0_offset_milliseconds, t0_timestamp):
     t0_offset_timestamp = t0_timestamp + t0_offset_seconds
     return format_timestamp(t0_offset_timestamp)
 
-def generate_mars_job(tiaf_result, snapshot, driver_args):
+def generate_mars_job(tiaf_result, driver_args):
     mars_job = {key:tiaf_result[key] for key in 
     [
         "src_commit",
         "dst_commit",
         "commit_distance",
-        "branch",
+        "src_branch",
+        "dst_branch",
         "suite",
-        "pipeline",
-        "seeding_branches",
-        "seeding_pipelines",
-        "is_seeding_branch",
-        "is_seeding_pipeline",
+        "coverage_update_branches",
+        "is_coverage_update_branch",
         "use_test_impact_analysis",
+        "has_change_list",
+        "has_historic_data",
+        "s3_bucket",
         "has_change_list",
         "runtime_args",
         "return_code"
     ]}
 
-    mars_job["snapshot"] = snapshot
     mars_job["driver_args"] = driver_args
-    mars_job.pop("report", None)
     return mars_job
 
 def generate_test_run_list(test_runs):
@@ -138,7 +136,17 @@ def generate_mars_test_runs(test_run_selection, test_run_report, t0_timestamp):
 
     return mars_test_runs
 
-def generate_mars_sequence(sequence_report, mars_job, test_impact_data, change_list, t0_timestamp):
+def generate_test_runs_from_list(test_run_list):
+    test_run_list = {
+    "total_num_test_runs": len(test_run_list),
+    "num_included_test_runs": len(test_run_list),
+    "num_excluded_test_runs": 0,
+    "included_test_runs": test_run_list,
+    "excluded_test_runs": []
+    }
+    return test_run_list
+
+def generate_mars_sequence(sequence_report, mars_job, change_list, t0_timestamp):
     #
     mars_sequence = {key:sequence_report[key] for key in 
     [
@@ -172,8 +180,12 @@ def generate_mars_sequence(sequence_report, mars_job, test_impact_data, change_l
     test_run_selection = {}
     test_run_selection["selected"] = generate_mars_test_runs(sequence_report["selected_test_runs"], sequence_report["selected_test_run_report"], t0_timestamp)
     if sequence_report["type"] == "impact_analysis" or sequence_report["type"] == "safe_impact_analysis":
-        test_run_selection["selected"]["efficiency"] = (1.0 - (test_run_selection["selected"]["total_num_test_runs"] / sequence_report["total_num_test_runs"])) * 100
-        test_run_selection["drafted"] = generate_mars_test_runs(sequence_report["drafted_test_runs"], sequence_report["drafted_test_run_report"], t0_timestamp)
+        total_test_runs = sequence_report["total_num_test_runs"]
+        if total_test_runs > 0:
+            test_run_selection["selected"]["efficiency"] = (1.0 - (test_run_selection["selected"]["total_num_test_runs"] / total_test_runs)) * 100
+        else:
+            test_run_selection["selected"]["efficiency"] = 100
+        test_run_selection["drafted"] = generate_mars_test_runs(generate_test_runs_from_list(sequence_report["drafted_test_runs"]), sequence_report["drafted_test_run_report"], t0_timestamp)
         if sequence_report["type"] == "safe_impact_analysis":
             test_run_selection["discarded"] = generate_mars_test_runs(sequence_report["discarded_test_runs"], sequence_report["discarded_test_run_report"], t0_timestamp)
     else:
@@ -185,7 +197,6 @@ def generate_mars_sequence(sequence_report, mars_job, test_impact_data, change_l
     mars_sequence["policy"] = sequence_report["policy"]
     mars_sequence["test_run_selection"] = test_run_selection
     mars_sequence["change_list"] = change_list
-    mars_sequence["test_impact_data"] = test_impact_data
 
     return mars_sequence
 
@@ -225,12 +236,12 @@ def extract_mars_test_runs_from_report(test_run_report, instrumentation, mars_jo
 
     return mars_test_runs
 
-def generate_mars_test_targets(sequence_report, mars_job):
+def generate_mars_test_targets(sequence_report, mars_job, t0_timestamp):
     mars_test_targets = []
-    if sequence_report["type"] == "regular" or sequence_report["policy"]["dynamic_dependency_map"] == "discard":
-        instrumentation = False
-    else:
+    if sequence_report["type"] == "seed" or sequence_report["type"] == "safe_impact_analysis" or (sequence_report["type"] == "impact_analysis" and sequence_report["policy"]["dynamic_dependency_map"] == "update"):
         instrumentation = True
+    else:
+        instrumentation = False
     
     mars_test_targets += extract_mars_test_runs_from_report(sequence_report["selected_test_run_report"], instrumentation, mars_job, t0_timestamp)
     if sequence_report["type"] == "impact_analysis" or sequence_report["type"] == "safe_impact_analysis":
@@ -240,81 +251,18 @@ def generate_mars_test_targets(sequence_report, mars_job):
 
     return mars_test_targets
 
+def transmit_report_to_mars(tiaf_result, driver_args):
+    filebeat = FilebeatClient("localhost", 9000, 60)
+    t0_timestamp = datetime.datetime.now().timestamp()
+    #
+    mars_job = generate_mars_job(tiaf_result, driver_args)
+    filebeat.send_event(mars_job, "jonawals.tiaf.job")
 
-def output_s3(rendered, bucket, object):
-    s3 = boto3.resource("s3")
-    s3.Object(bucket, object).put(Body=rendered)
-
-if __name__ == "__main__":
-    
-    #output_s3("Hello World!", "tiaf", "hello/world/contents.txt")
-
-    s3 = boto3.resource("s3")
-    bucket = s3.Bucket("tiaf")
-
-    # Secondly, delete old objects.
-    objects = sorted(
-        bucket.objects.filter(Prefix="hello/"),
-        key=lambda obj: obj.last_modified,
-        reverse=True,
-    )
-
-    for obj in objects:
-        print(obj)
-        s3.Object(obj.bucket_name, obj.key).download_file(
-        f'test.txt')
-
-    
-    #try:
-    #    def file_path(value):
-    #        if os.path.isfile(value):
-    #            return value
-    #        else:
-    #            raise FileNotFoundError(value)
-#
-    #    def dir_path(value):
-    #        if os.path.isdir(value):
-    #            return value
-    #        else:
-    #            raise FileNotFoundError(value)
-#
-    #    parser = argparse.ArgumentParser()
-    #    parser.add_argument('--inputReport', dest="input_report", type=file_path, help="Path to the test impact analysis framework sequence report file", required=True)
-    #    parser.add_argument('--outputPath', dest="output_path", type=dir_path, help="Path to output the report and test target files (if not specified, stdout will be used)", required=False)
-    #    parser.add_argument('--exportTestTargets', action="store_true", help="Flag to specify whether or not to output the test targets", required=False)
-    #    args = parser.parse_args()
-#
-    #    t0_timestamp = datetime.datetime.now().timestamp()
-#
-    #    sequence_result = {}
-    #    sequence_result["src_commit"] = "self.__src_commit"
-    #    sequence_result["dst_commit"] = "self.__dst_commit"
-    #    sequence_result["commit_distance"] = "self.__commit_distance"
-    #    sequence_result["branch"] = "self.__branch"
-    #    sequence_result["suite"] = "suite"
-    #    sequence_result["pipeline"] = "self.__pipeline"
-    #    sequence_result["seeding_branches"] = "self.__seeding_branches"
-    #    sequence_result["seeding_pipelines"] = "self.__seeding_pipelines"
-    #    sequence_result["is_seeding_branch"] = "self.__is_seeding_branch"
-    #    sequence_result["is_seeding_pipeline"] = "self.__is_seeding_pipeline"
-    #    sequence_result["use_test_impact_analysis"] = "self.__use_test_impact_analysis"
-    #    sequence_result["has_change_list"] = "self.__has_change_list"
-    #    sequence_result["runtime_args"] = "runtime_args"
-    #    sequence_result["return_code"] = 1
-#
-    #    with open(args.input_report, "r") as sequence_report_data:
-    #        sequence_report = json.load(sequence_report_data)
-#
-    #    mars_job = generate_mars_job(sequence_result, "snapshot", "--args=foo")
-    #    mars_sequence = generate_mars_sequence(sequence_report, mars_job, "tiaf data", {"createdFiles": [], "updatedFiles": [], "deletedFiles": []}, t0_timestamp)
-    #    mars_test_targets = generate_mars_test_targets(sequence_report, mars_job)
-#
-    #    filebeat = FilebeatClient("localhost", 9000, 60)
-    #    filebeat.send_event(mars_job, "jonawals.tiaf.job")
-    #    filebeat.send_event(mars_sequence, "jonawals.tiaf.sequence")
-    #    for mars_test_target in mars_test_targets:
-    #        filebeat.send_event(mars_test_target, "jonawals.tiaf.test_target")
-#
-    #    sys.exit(0)
-    #except Exception as e:
-    #    print(e)
+    if tiaf_result["report"] is not None:
+        #
+        mars_sequence = generate_mars_sequence(tiaf_result["report"], mars_job, tiaf_result["change_list"], t0_timestamp)
+        filebeat.send_event(mars_sequence, "jonawals.tiaf.sequence")
+        #
+        mars_test_targets = generate_mars_test_targets(tiaf_result["report"], mars_job, t0_timestamp)
+        for mars_test_target in mars_test_targets:
+            filebeat.send_event(mars_test_target, "jonawals.tiaf.test_target")

@@ -11,7 +11,7 @@ import subprocess
 import git
 
 # Attempts to create a diff from the src and dst commits and write to the specified output file
-def create_diff_file(src_commit_hash, dst_commit_hash, output_path):
+def create_diff_file(src_commit_hash : str, dst_commit_hash : str, output_path : str):
     if os.path.isfile(output_path):
         os.remove(output_path)
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
@@ -32,13 +32,13 @@ class Repo:
         return branch.name
 
     # Returns True if the dst commit descends from the src commit, otherwise False
-    def is_descendent(src_commit_hash, dst_commit_hash):
-        if src_commit_hash is None or dst_commit_hash is None:
+    def is_descendent(self, src_commit_hash : str, dst_commit_hash : str):
+        if not src_commit_hash and not dst_commit_hash:
             return False
         result = subprocess.run(["git", "merge-base", "--is-ancestor", src_commit_hash, dst_commit_hash])
         return result.returncode == 0
 
     # Returns the distance between two commits
-    def commit_distance(self, src_commit, dst_commit):
+    def commit_distance(self, src_commit : str, dst_commit : str):
         commits = self.__repo.iter_commits(src_commit + '..' + dst_commit)
         return len(list(commits))
