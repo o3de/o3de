@@ -29,8 +29,6 @@
 #define MULTITHREAD_H_SECTION_IMPLEMENT_CRYINTERLOCKEDCOMPAREEXCHANGE64 8
 #endif
 
-#define THREAD_NAME_LENGTH_MAX 64
-
 #define WRITE_LOCK_VAL (1 << 16)
 
 // Traits
@@ -46,61 +44,6 @@
 #define MULTITHREAD_H_TRAIT_USE_SALTED_LINKEDLISTHEADER 1
 #endif
 #endif
-
-//as PowerPC operates via cache line reservation, lock variables should reside ion their own cache line
-template <class T>
-struct SAtomicVar
-{
-    T val;
-
-    inline operator T() const{return val; }
-    inline operator T() volatile const{return val; }
-    inline SAtomicVar& operator =(const T& rV){val = rV; return *this; }
-    inline void Assign(const T& rV){val = rV; }
-    inline void Assign(const T& rV) volatile{val = rV; }
-    inline T* Addr() {return &val; }
-    inline volatile T* Addr() volatile {return &val; }
-
-    inline bool operator<(const T& v) const{return val < v; }
-    inline bool operator<(const SAtomicVar<T>& v) const{return val < v.val; }
-    inline bool operator>(const T& v) const{return val > v; }
-    inline bool operator>(const SAtomicVar<T>& v) const{return val > v.val; }
-    inline bool operator<=(const T& v) const{return val <= v; }
-    inline bool operator<=(const SAtomicVar<T>& v) const{return val <= v.val; }
-    inline bool operator>=(const T& v) const{return val >= v; }
-    inline bool operator>=(const SAtomicVar<T>& v) const{return val >= v.val; }
-    inline bool operator==(const T& v) const{return val == v; }
-    inline bool operator==(const SAtomicVar<T>& v) const{return val == v.val; }
-    inline bool operator!=(const T& v) const{return val != v; }
-    inline bool operator!=(const SAtomicVar<T>& v) const{return val != v.val; }
-    inline T operator*(const T& v) const{return val * v; }
-    inline T operator/(const T& v) const{return val / v; }
-    inline T operator+(const T& v) const{return val + v; }
-    inline T operator-(const T& v) const{return val - v; }
-
-    inline bool operator<(const T& v) volatile const{return val < v; }
-    inline bool operator<(const SAtomicVar<T>& v) volatile const{return val < v.val; }
-    inline bool operator>(const T& v) volatile const{return val > v; }
-    inline bool operator>(const SAtomicVar<T>& v) volatile const{return val > v.val; }
-    inline bool operator<=(const T& v) volatile const{return val <= v; }
-    inline bool operator<=(const SAtomicVar<T>& v) volatile const{return val <= v.val; }
-    inline bool operator>=(const T& v) volatile const{return val >= v; }
-    inline bool operator>=(const SAtomicVar<T>& v) volatile const{return val >= v.val; }
-    inline bool operator==(const T& v) volatile const{return val == v; }
-    inline bool operator==(const SAtomicVar<T>& v) volatile const{return val == v.val; }
-    inline bool operator!=(const T& v) volatile const{return val != v; }
-    inline bool operator!=(const SAtomicVar<T>& v) volatile const{return val != v.val; }
-    inline T operator*(const T& v) volatile const{return val * v; }
-    inline T operator/(const T& v) volatile const{return val / v; }
-    inline T operator+(const T& v) volatile const{return val + v; }
-    inline T operator-(const T& v) volatile const{return val - v; }
-};
-
-typedef SAtomicVar<int> TIntAtomic;
-typedef SAtomicVar<unsigned int> TUIntAtomic;
-typedef SAtomicVar<float> TFloatAtomic;
-
-#define __add_db16cycl__ NIntrinsics::YieldFor16Cycles();
 
 void CrySpinLock(volatile int* pLock, int checkVal, int setVal);
 void CryReleaseSpinLock   (volatile int*, int);
@@ -208,37 +151,6 @@ ILINE void CryReleaseSpinLock(volatile int* pLock, int setVal)
 }
 
 //////////////////////////////////////////////////////////////////////////
-#if defined(APPLE) || defined(LINUX64)
-// Fixes undefined reference to CryInterlockedAdd(unsigned long volatile*, long) on
-// Mac and linux.
-ILINE void CryInterLockedAdd(volatile LONG* pVal, LONG iAdd)
-{
-    (void) CryInterlockedExchangeAdd(pVal, iAdd);
-}
-
-
-/*
-ILINE void CryInterLockedAdd(volatile unsigned long *pVal, long iAdd)
-{
-    long r;
-    __asm__ __volatile__ (
-    #if defined(LINUX64) || defined(MAC)  // long is 64 bits on amd64.
-        "lock ; xaddq %0, (%1) \n\t"
-    #else
-        "lock ; xaddl %0, (%1) \n\t"
-    #endif
-        : "=r" (r)
-        : "r" (pVal), "0" (iAdd)
-        : "memory"
-    );
-    (void) r;
-}*/
-/*ILINE void CryInterlockedAdd(volatile size_t *pVal, ptrdiff_t iAdd) {
-   //(void)CryInterlockedExchangeAdd((volatile long*)pVal,(long)iAdd);
-    (void) __sync_fetch_and_add(pVal,iAdd);
-}*/
-
-#endif
 ILINE void CryInterlockedAdd(volatile int* pVal, int iAdd)
 {
 #ifdef _CPU_X86
@@ -381,52 +293,6 @@ void CryInitializeSListHead(SLockFreeSingleLinkedListHeader& list);
 // flush the whole list
 void* CryInterlockedFlushSList(SLockFreeSingleLinkedListHeader& list);
 
-ILINE void CryReadLock(volatile int* rw, bool yield)
-{
-    CryInterlockedAdd(rw, 1);
-#ifdef NEED_ENDIAN_SWAP
-    volatile char* pw = (volatile char*)rw + 1;
-#else
-    volatile char* pw = (volatile char*)rw + 2;
-#endif
-
-    uint64 loops = 0;
-    for (; *pw; )
-    {
-        if (yield)
-        {
-#   if !defined(ANDROID) && !defined(IOS) && !defined(MULTITHREAD_H_TRAIT_NO_MM_PAUSE)
-            _mm_pause();
-#   endif
-
-            if (!(++loops & 0x7F))
-            {
-                // give other threads with other prio right to run
-#if defined(AZ_RESTRICTED_PLATFORM)
-    #define AZ_RESTRICTED_SECTION MULTITHREAD_H_SECTION_CRYINTERLOCKEDFLUSHSLIST_PT1
-    #include AZ_RESTRICTED_FILE(MultiThread_h)
-#elif defined (LINUX)
-                usleep(1);
-#endif
-            }
-            else if (!(loops & 0x3F))
-            {
-                // give threads with same prio chance to run
-#if defined(AZ_RESTRICTED_PLATFORM)
-    #define AZ_RESTRICTED_SECTION MULTITHREAD_H_SECTION_CRYINTERLOCKEDFLUSHSLIST_PT2
-    #include AZ_RESTRICTED_FILE(MultiThread_h)
-#elif defined (LINUX)
-                sched_yield();
-#endif
-            }
-        }
-    }
-}
-
-ILINE void CryReleaseReadLock(volatile int* rw)
-{
-    CryInterlockedAdd(rw, -1);
-}
 
 ILINE void CryWriteLock(volatile int* rw)
 {
@@ -439,91 +305,10 @@ ILINE void CryReleaseWriteLock(volatile int* rw)
 }
 
 //////////////////////////////////////////////////////////////////////////
-struct ReadLock
-{
-    ILINE ReadLock(volatile int& rw)
-    {
-        CryInterlockedAdd(prw = &rw, 1);
-#ifdef NEED_ENDIAN_SWAP
-        volatile char* pw = (volatile char*)&rw + 1;
-        for (; * pw; )
-        {
-            ;
-        }
-#else
-        volatile char* pw = (volatile char*)&rw + 2;
-        for (; * pw; )
-        {
-            ;
-        }
-#endif
-    }
-    ILINE ReadLock(volatile int& rw, bool yield)
-    {
-        CryReadLock(prw = &rw, yield);
-    }
-    ~ReadLock()
-    {
-        CryReleaseReadLock(prw);
-    }
-private:
-    volatile int* prw;
-};
-
-struct ReadLockCond
-{
-    ILINE ReadLockCond(volatile int& rw, int bActive)
-    {
-        if (bActive)
-        {
-            CryInterlockedAdd(&rw, 1);
-            bActivated = 1;
-#ifdef NEED_ENDIAN_SWAP
-            volatile char* pw = (volatile char*)&rw + 1;
-            for (; * pw; )
-            {
-                ;
-            }
-#else
-            volatile char* pw = (volatile char*)&rw + 2;
-            for (; * pw; )
-            {
-                ;
-            }
-#endif
-        }
-        else
-        {
-            bActivated = 0;
-        }
-        prw = &rw;
-    }
-    void SetActive(int bActive = 1) { bActivated = bActive; }
-    void Release() { CryInterlockedAdd(prw, -bActivated); }
-    ~ReadLockCond()
-    {
-        CryInterlockedAdd(prw, -bActivated);
-    }
-
-private:
-    volatile int* prw;
-    int bActivated;
-};
-
-//////////////////////////////////////////////////////////////////////////
 struct WriteLock
 {
     ILINE WriteLock(volatile int& rw) { CryWriteLock(&rw); prw = &rw; }
     ~WriteLock() { CryReleaseWriteLock(prw); }
-private:
-    volatile int* prw;
-};
-
-//////////////////////////////////////////////////////////////////////////
-struct WriteAfterReadLock
-{
-    ILINE WriteAfterReadLock(volatile int& rw) { CrySpinLock(&rw, 1, WRITE_LOCK_VAL + 1); prw = &rw; }
-    ~WriteAfterReadLock() { CryInterlockedAdd(prw, -WRITE_LOCK_VAL); }
 private:
     volatile int* prw;
 };
@@ -562,12 +347,6 @@ ILINE int64 CryInterlockedCompareExchange64(volatile int64* addr, int64 exchange
     // This is OK, because long is signed int64 on Linux x86_64
     //return CryInterlockedCompareExchange((volatile long*)addr, (long)exchange, (long)comperand);
 }
-
-ILINE int64 CryInterlockedExchange64(volatile int64* addr, int64 exchange)
-{
-    __sync_synchronize();
-    return __sync_lock_test_and_set(addr, exchange);
-}
 #else
 ILINE int64 CryInterlockedCompareExchange64(volatile int64* addr, int64 exchange, int64 compare)
 {
@@ -583,21 +362,3 @@ ILINE int64 CryInterlockedCompareExchange64(volatile int64* addr, int64 exchange
 #endif
 }
 #endif
-
-//////////////////////////////////////////////////////////////////////////
-#if defined(EXCLUDE_PHYSICS_THREAD)
-ILINE void SpinLock(volatile int* pLock, int checkVal, int setVal) { *(int*)pLock = setVal; }
-ILINE void AtomicAdd(volatile int* pVal, int iAdd) {   *(int*)pVal += iAdd; }
-ILINE void AtomicAdd(volatile unsigned int* pVal, int iAdd) { *(unsigned int*)pVal += iAdd; }
-
-ILINE void JobSpinLock(volatile int* pLock, int checkVal, int setVal) { CrySpinLock(pLock, checkVal, setVal); }
-#else
-ILINE void SpinLock(volatile int* pLock, int checkVal, int setVal) { CrySpinLock(pLock, checkVal, setVal); }
-ILINE void AtomicAdd(volatile int* pVal, int iAdd) {    CryInterlockedAdd(pVal, iAdd); }
-ILINE void AtomicAdd(volatile unsigned int* pVal, int iAdd) { CryInterlockedAdd((volatile int*)pVal, iAdd); }
-
-ILINE void JobSpinLock(volatile int* pLock, int checkVal, int setVal) { SpinLock(pLock, checkVal, setVal); }
-#endif
-
-ILINE void JobAtomicAdd(volatile int* pVal, int iAdd) { CryInterlockedAdd(pVal, iAdd); }
-ILINE void JobAtomicAdd(volatile unsigned int* pVal, int iAdd) { CryInterlockedAdd((volatile int*)pVal, iAdd); }
