@@ -23,6 +23,7 @@
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzTest/Utils.h>
+#include <Utils/Utils.h>
 namespace // anonymous
 {
     static const int s_totalAssets = 12;
@@ -51,13 +52,6 @@ namespace UnitTest
         , public AZ::Data::AssetCatalogRequestBus::Handler
     {
     public:
-        AZStd::string GetTempFolder()
-        {
-            QTemporaryDir dir;
-            QDir tempPath(dir.path());
-            return tempPath.absolutePath().toUtf8().data();
-        }
-
         void SetUp() override
         {
             using namespace AZ::Data;
@@ -73,7 +67,7 @@ namespace UnitTest
 
             m_application->Start(AzFramework::Application::Descriptor());
 
-            const AZStd::string cacheProjectRootFolder = GetTempFolder().c_str();
+            const AZStd::string cacheProjectRootFolder = m_tempDir.GetDirectory();
             registry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_CacheProjectRootFolder, cacheProjectRootFolder);
             AZ::IO::FileIOBase::GetInstance()->SetAlias("@assets@", cacheProjectRootFolder.c_str());
 
@@ -813,6 +807,7 @@ namespace UnitTest
         AZStd::string m_assetsPath[s_totalAssets];
         AZStd::string m_assetsPathFull[s_totalTestPlatforms][s_totalAssets];
         AZ::Data::AssetId m_testDynamicSliceAssetId;
+        UnitTest::ScopedTemporaryDirectory m_tempDir;
     };
 
     TEST_F(AssetSeedManagerTest, AssetSeedManager_SaveSeedListFile_FileIsReadOnly)

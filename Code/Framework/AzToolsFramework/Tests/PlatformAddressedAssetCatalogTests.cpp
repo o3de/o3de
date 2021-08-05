@@ -19,9 +19,8 @@
 #include <AzFramework/Platform/PlatformDefaults.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzTest/AzTest.h>
-#include <QTemporaryDir>
-#include <QDir>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
+#include <Utils/Utils.h>
 
 namespace 
 {
@@ -34,13 +33,6 @@ namespace UnitTest
         : public AllocatorsFixture
     {
     public:
-
-        AZStd::string GetTempFolder()
-        {
-            QTemporaryDir dir;
-            QDir tempPath(dir.path());
-            return tempPath.absolutePath().toUtf8().data();
-        }
 
         void SetUp() override
         {
@@ -61,7 +53,7 @@ namespace UnitTest
             // in the unit tests.
             AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
-            const AZStd::string cacheProjectRootFolder = GetTempFolder().c_str();
+            const AZStd::string cacheProjectRootFolder = m_tempDir.GetDirectory();
             registry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_CacheProjectRootFolder, cacheProjectRootFolder);
             AZ::IO::FileIOBase::GetInstance()->SetAlias("@assets@", cacheProjectRootFolder.c_str());
 
@@ -155,6 +147,7 @@ namespace UnitTest
 
         AzToolsFramework::PlatformAddressedAssetCatalogManager* m_PlatformAddressedAssetCatalogManager;
         ToolsTestApplication* m_application;
+        UnitTest::ScopedTemporaryDirectory m_tempDir;
         AZ::IO::FileIOBase* m_priorFileIO = nullptr;
         AZ::IO::FileIOBase* m_localFileIO = nullptr;
         AZ::IO::FileIOStream m_fileStreams[AzFramework::PlatformId::NumPlatformIds][s_totalAssets];
