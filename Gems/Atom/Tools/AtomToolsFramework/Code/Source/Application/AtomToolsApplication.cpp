@@ -11,6 +11,7 @@
 #include <AtomToolsFramework/Util/Util.h>
 #include <AtomToolsFramework/Application/AtomToolsApplication.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindowFactoryRequestBus.h>
+#include <AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h>
 
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Utils/Utils.h>
@@ -70,6 +71,8 @@ namespace AtomToolsFramework
     AtomToolsApplication ::~AtomToolsApplication()
     {
         AtomToolsMainWindowNotificationBus::Handler::BusDisconnect();
+        AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusDisconnect();
+        AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusDisconnect();
     }
 
     void AtomToolsApplication::CreateReflectionManager()
@@ -93,14 +96,12 @@ namespace AtomToolsFramework
 
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            auto targetName = GetBuildTargetName();
-
             // this will put these methods into the 'azlmbr.AtomTools.general' module
-            auto addGeneral = [targetName](AZ::BehaviorContext::GlobalMethodBuilder methodBuilder)
+            auto addGeneral = [](AZ::BehaviorContext::GlobalMethodBuilder methodBuilder)
             {
                 methodBuilder->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                     ->Attribute(AZ::Script::Attributes::Category, "Editor")
-                    ->Attribute(AZ::Script::Attributes::Module, targetName);
+                    ->Attribute(AZ::Script::Attributes::Module, "atomtools.general");
             };
             // The reflection here is based on patterns in CryEditPythonHandler::Reflect
             addGeneral(behaviorContext->Method(
@@ -288,6 +289,13 @@ namespace AtomToolsFramework
 
     void AtomToolsApplication::ProcessCommandLine(const AZ::CommandLine& commandLine)
     {
+        const AZStd::string activateWindowSwitchName = "activatewindow";
+        if (commandLine.HasSwitch(activateWindowSwitchName))
+        {
+            AtomToolsFramework::AtomToolsMainWindowRequestBus::Broadcast(
+                &AtomToolsFramework::AtomToolsMainWindowRequestBus::Handler::ActivateWindow);
+        }
+
         const AZStd::string timeoputSwitchName = "timeout";
         if (commandLine.HasSwitch(timeoputSwitchName))
         {

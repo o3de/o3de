@@ -24,7 +24,6 @@ namespace ShaderManagementConsole
         using Base = AtomToolsFramework::AtomToolsApplication;
 
         ShaderManagementConsoleApplication(int* argc, char*** argv);
-        virtual ~ShaderManagementConsoleApplication();
 
         //////////////////////////////////////////////////////////////////////////
         // AzFramework::Application
@@ -32,7 +31,7 @@ namespace ShaderManagementConsole
         const char* GetCurrentConfigurationName() const override;
 
     private:
-        void ProcessCommandLine();
+        void ProcessCommandLine(const AZ::CommandLine& commandLine);
         AZStd::string GetBuildTargetName() const override;
         AZStd::vector<AZStd::string> GetCriticalAssetFilters() const override;
     };

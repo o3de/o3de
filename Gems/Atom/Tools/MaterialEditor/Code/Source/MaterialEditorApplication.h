@@ -26,7 +26,6 @@ namespace MaterialEditor
         using Base = AtomToolsFramework::AtomToolsApplication;
 
         MaterialEditorApplication(int* argc, char*** argv);
-        virtual ~MaterialEditorApplication();
 
         //////////////////////////////////////////////////////////////////////////
         // AzFramework::Application

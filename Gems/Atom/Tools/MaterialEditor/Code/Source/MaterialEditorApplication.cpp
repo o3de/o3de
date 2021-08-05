@@ -17,7 +17,6 @@
 #include <Atom/Window/MaterialEditorWindowModule.h>
 
 #include <AtomToolsFramework/Util/Util.h>
-#include <AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h>
 
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Utils/Utils.h>
@@ -76,14 +75,9 @@ namespace MaterialEditor
     {
         QApplication::setApplicationName("O3DE Material Editor");
 
+        // The settings registry has been created at this point, so add the CMake target
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(
             *AZ::SettingsRegistry::Get(), GetBuildTargetName());
-    }
-
-    MaterialEditorApplication::~MaterialEditorApplication()
-    {
-        AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusDisconnect();
-        AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusDisconnect();
     }
 
     void MaterialEditorApplication::CreateStaticModules(AZStd::vector<AZ::Module*>& outModules)
@@ -101,13 +95,6 @@ namespace MaterialEditor
 
     void MaterialEditorApplication::ProcessCommandLine(const AZ::CommandLine& commandLine)
     {
-        const AZStd::string activateWindowSwitchName = "activatewindow";
-        if (commandLine.HasSwitch(activateWindowSwitchName))
-        {
-            AtomToolsFramework::AtomToolsMainWindowRequestBus::Broadcast(
-                &AtomToolsFramework::AtomToolsMainWindowRequestBus::Handler::ActivateWindow);
-        }
-
         // Process command line options for opening one or more material documents on startup
         size_t openDocumentCount = commandLine.GetNumMiscValues();
         for (size_t openDocumentIndex = 0; openDocumentIndex < openDocumentCount; ++openDocumentIndex)
