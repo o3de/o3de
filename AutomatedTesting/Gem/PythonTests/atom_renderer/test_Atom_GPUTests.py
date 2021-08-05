@@ -17,7 +17,6 @@ from ly_test_tools.image.screenshot_compare_qssim import qssim as compare_screen
 from ly_test_tools.benchmark.data_aggregator import BenchmarkDataAggregator
 
 import editor_python_test_tools.hydra_test_utils as hydra
-from atom_renderer.atom_utils.atom_component_helper import LIGHT_TYPES
 
 logger = logging.getLogger(__name__)
 DEFAULT_SUBFOLDER_PATH = 'user/PythonTests/Automated/Screenshots'
@@ -76,7 +75,7 @@ class TestAllComponentsIndepthTests(object):
             TEST_DIRECTORY,
             editor,
             "hydra_GPUTest_BasicLevelSetup.py",
-            timeout=300,
+            timeout=180,
             expected_lines=level_creation_expected_lines,
             unexpected_lines=unexpected_lines,
             halt_on_unexpected=True,
@@ -118,30 +117,7 @@ class TestAllComponentsIndepthTests(object):
             golden_image_path = os.path.join(golden_images_directory(), golden_image)
             golden_images.append(golden_image_path)
 
-        sphere_light_type = LIGHT_TYPES[1]
-        spot_disk_light_type = LIGHT_TYPES[2]
-        capsule_light_type = LIGHT_TYPES[3]
-        expected_lines = [
-            # Level save/load
-            "Level is saved successfully: True",
-            "New entity created: True",
-            "New entity deleted: True",
-            # Area Light Component
-            "area_light Entity successfully created",
-            "area_light_test: Component added to the entity: True",
-            "area_light_test: Entered game mode: True",
-            "area_light_test: Exit game mode: True",
-            f"area_light_test: Property value is {capsule_light_type} which matches {capsule_light_type}",
-            f"area_light_test: Property value is {spot_disk_light_type} which matches {spot_disk_light_type}",
-            f"area_light_test: Property value is {sphere_light_type} which matches {sphere_light_type}",
-            # Spot Light Component
-            "spot_light Entity successfully created",
-            "spot_light_test: Component added to the entity: True",
-            "spot_light_test: Entered game mode: True",
-            "spot_light_test: Exit game mode: True",
-            f"spot_light_test: Property value is {spot_disk_light_type} which matches {spot_disk_light_type}",
-            "Component tests completed",
-        ]
+        expected_lines = ["Light component tests completed."]
         unexpected_lines = [
             "Trace::Assert",
             "Trace::Error",
@@ -153,11 +129,12 @@ class TestAllComponentsIndepthTests(object):
             TEST_DIRECTORY,
             editor,
             "hydra_GPUTest_LightComponent.py",
-            timeout=240,
+            timeout=180,
             expected_lines=expected_lines,
             unexpected_lines=unexpected_lines,
             halt_on_unexpected=True,
             cfg_args=[level],
+            null_renderer=False,
         )
 
         for test_screenshot, golden_screenshot in zip(screenshot_images, golden_images):
@@ -193,7 +170,7 @@ class TestPerformanceBenchmarkSuite(object):
             TEST_DIRECTORY,
             editor,
             "hydra_GPUTest_AtomFeatureIntegrationBenchmark.py",
-            timeout=EDITOR_TIMEOUT,
+            timeout=600,
             expected_lines=expected_lines,
             unexpected_lines=unexpected_lines,
             halt_on_unexpected=True,
