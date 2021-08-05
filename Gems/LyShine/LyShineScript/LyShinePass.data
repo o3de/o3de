@@ -1,0 +1,20 @@
+    {
+        "Name": "LyShinePass",
+        "TemplateName": "LyShineParentTemplate",
+        "Connections": [
+            {
+                "LocalSlot": "ColorInputOutput",
+                "AttachmentRef": {
+                    "Pass": "DebugOverlayPass",
+                    "Attachment": "InputOutput"
+                }
+            },
+            {
+                "LocalSlot": "DepthInputOutput",
+                "AttachmentRef": {
+                    "Pass": "DepthPrePass",
+                    "Attachment": "Depth"
+                }
+            }
+        ]
+    }

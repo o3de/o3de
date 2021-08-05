@@ -9,9 +9,9 @@
 #pragma once
 
 #include <CoreLights/EsmShadowmapsPass.h>
-#include <CoreLights/IndexedDataVector.h>
 
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
+#include <Atom/Feature/Utils/IndexedDataVector.h>
 #include <Atom/Feature/CoreLights/DirectionalLightFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/Buffer/Buffer.h>

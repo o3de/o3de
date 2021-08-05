@@ -640,7 +640,8 @@ namespace AZ
                     Aabb localAabb = lod.m_subMeshProperties[i].m_aabb;
                     modelLodCreator.SetMeshAabb(AZStd::move(localAabb));
 
-                    modelLodCreator.SetMeshMaterialAsset(lod.m_subMeshProperties[i].m_material);
+                    modelCreator.AddMaterialSlot(lod.m_subMeshProperties[i].m_materialSlot);
+                    modelLodCreator.SetMeshMaterialSlot(lod.m_subMeshProperties[i].m_materialSlot.m_stableId);
 
                     modelLodCreator.EndMesh();
                 }
