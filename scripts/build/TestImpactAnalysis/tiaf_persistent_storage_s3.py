@@ -60,9 +60,11 @@ class PersistentStorageS3(PersistentStorage):
 
                 return
         except KeyError as e:
-            print(f"The config does not contain the key {str(e)}.")
+            raise SystemError(f"The config does not contain the key {str(e)}.")
         except botocore.exceptions.BotoCoreError as e:
-            print(f"There was a problem with the s3 bucket: {e}")
+            raise SystemError(f"There was a problem with the s3 bucket: {e}")
+        except botocore.exceptions.ClientError as e:
+            raise SystemError(f"There was a problem with the s3 client: {e}")
 
     def _store_historic_data(self, historic_data_json: str):
         """
@@ -78,4 +80,6 @@ class PersistentStorageS3(PersistentStorage):
             print("Upload complete.")
         except botocore.exceptions.BotoCoreError as e:
             print(f"There was a problem with the s3 bucket: {e}")
+        except botocore.exceptions.ClientError as e:
+            print(f"There was a problem with the s3 client: {e}")
         

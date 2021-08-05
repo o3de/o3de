@@ -39,9 +39,9 @@ class PersistentStorageLocal(PersistentStorage):
                     self._unpack_historic_data(historic_data_json)
 
         except KeyError as e:
-             print(f"The config does not contain the key {str(e)}.")
+            raise SystemError(f"The config does not contain the key {str(e)}.")
         except EnvironmentError as e:
-            print(f"There was a problem the historic data file '{self._historic_data_file}': '{e}'.")
+            raise SystemError(f"There was a problem the historic data file '{self._historic_data_file}': '{e}'.")
 
     def _store_historic_data(self, historic_data_json: str):
         """

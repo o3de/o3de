@@ -53,8 +53,8 @@ if __name__ == "__main__":
     
     try:
         args = parse_args()
-        tiaf = TestImpact(args.config_file, args.src_branch, args.dst_branch, args.commit)
-        tiaf_result = tiaf.run(args.s3_bucket, args.suite, args.test_failure_policy, args.safe_mode, args.test_timeout, args.global_timeout)
+        tiaf = TestImpact(args.config_file)
+        tiaf_result = tiaf.run(args.commit, args.src_branch, args.dst_branch, args.s3_bucket, args.suite, args.test_failure_policy, args.safe_mode, args.test_timeout, args.global_timeout)
         
         if args.mars_index_prefix is not None:
             print("Transmitting report to MARS...")
@@ -64,6 +64,9 @@ if __name__ == "__main__":
         # Non-gating will be removed from this script and handled at the job level in SPEC-7413
         #sys.exit(result.return_code)
         sys.exit(0)
+    except PermissionError as e:
+        print(f"Restricted TIAF files checked into repo: '{e}'.")
+        #return -1
     except Exception as e:
         # Non-gating will be removed from this script and handled at the job level in SPEC-7413
-        print(f"Exception caught by TIAF driver: {e}")
+        print(f"Exception caught by TIAF driver: '{e}''.")
