@@ -45,6 +45,16 @@ namespace AZ
                 return f4;
             }
 
+            AMD::float4 ToAMDFloat4(const AZ::Color& color)
+            {
+                AMD::float4 f4;
+                f4.x = color.GetR();
+                f4.y = color.GetG();
+                f4.z = color.GetB();
+                f4.w = color.GetA();
+                return f4;
+            }
+
             //!=====================================================================================
             //!
             //!                                 DynamicHairData 
