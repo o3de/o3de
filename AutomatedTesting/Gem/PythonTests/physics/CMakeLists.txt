@@ -20,6 +20,19 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
             Physics
     )
     ly_add_pytest(
+        NAME AutomatedTesting::PhysicsTests_Main_Optimized
+        TEST_SUITE main
+        TEST_SERIAL
+        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Main_Test.py
+        TIMEOUT 1500
+        RUNTIME_DEPENDENCIES
+            Legacy::Editor
+            AZ::AssetProcessor
+            AutomatedTesting.Assets
+        COMPONENT
+            Physics
+    )
+    ly_add_pytest(
         NAME AutomatedTesting::PhysicsTests_Periodic
         TEST_SUITE periodic
         TEST_SERIAL

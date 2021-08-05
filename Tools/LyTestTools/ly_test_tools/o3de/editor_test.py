@@ -334,7 +334,6 @@ class EditorTestSuite():
                             # Teardown step for wrap_run
                             next(wrap, None)
                     return single_run
-                setattr(self.obj, name, make_test_func(name, test_spec))
                 f = make_test_func(name, test_spec)
                 if hasattr(test_spec, "pytestmark"):
                     f.pytestmark = test_spec.pytestmark
@@ -555,8 +554,11 @@ class EditorTestSuite():
                 json_output = json_result["output"]
 
                 # Cut the editor log so it only has the output for this run
-                m = json_result["log_match"]
-                end = m.end() if test_spec != test_spec_list[-1] else -1
+                if "log_match" in json_result:
+                    m = json_result["log_match"]
+                    end = m.end() if test_spec != test_spec_list[-1] else -1
+                else:
+                    end = -1
                 cur_log = editor_log_content[log_start : end]
                 log_start = end
 
@@ -681,6 +683,7 @@ class EditorTestSuite():
             for key, result in results.items():
                 if isinstance(result, Result.Unknown):
                     results[key] = Result.Timeout.create(result.output, total_timeout, result.editor_log)
+                    # FIX-ME
 
         return results
     
@@ -785,7 +788,7 @@ class EditorTestSuite():
 
     # Retrieves the number of parallel preference cmdline overrides
     def _get_number_parallel_editors(self, request):
-        parallel_editors_value = request.config.getoption("parallel_editors", None)
+        parallel_editors_value = request.config.getoption("--editors-parallel", None)
         if parallel_editors_value:
             return int(parallel_editors_value)
 
