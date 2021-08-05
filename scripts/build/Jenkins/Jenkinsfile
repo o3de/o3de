@@ -370,7 +370,7 @@ def TestMetrics(Map pipelineConfig, String workspace, String branchName, String 
                 def command = "${pipelineConfig.PYTHON_DIR}/python.cmd -u mars/scripts/python/ctest_test_metric_scraper.py " +
                               '-e jenkins.creds.user %username% -e jenkins.creds.pass %apitoken% ' +
                               "-e jenkins.base_url ${env.JENKINS_URL} " +
-                              "${cmakeBuildDir} ${branchName} %BUILD_NUMBER% AR ${configuration} ${repoName} --url ${env.BUILD_URL}"
+                              "${cmakeBuildDir} ${branchName} %BUILD_NUMBER% AR ${configuration} ${repoName} --url ${env.BUILD_URL}.replace('%','%%')"
                 bat label: "Publishing ${buildJobName} Test Metrics",
                     script: command
             }
