@@ -17,6 +17,10 @@ else()
     return()
 endif()
 
+# IMPORTANT: CPACK_WIX_ROOT is a built-in variable that is required to propagate the path supplied
+# via command line down to the cpack internals
+set(CPACK_WIX_ROOT ${LY_INSTALLER_WIX_ROOT})
+
 set(CPACK_GENERATOR WIX)
 
 set(_cmake_package_name "cmake-${CPACK_DESIRED_CMAKE_VERSION}-windows-x86_64")
