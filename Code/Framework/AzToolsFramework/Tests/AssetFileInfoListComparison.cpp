@@ -50,17 +50,20 @@ namespace UnitTest
         void SetUp() override
         {
             using namespace AZ::Data;
-            m_application = new ToolsTestApplication("AssetFileInfoListComparisonTest");
+            constexpr size_t MaxCommandArgsCount = 128;
+            using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+            using ArgumentContainer = AZStd::fixed_vector<char*, MaxCommandArgsCount>;
+            // The first command line argument is assumed to be the executable name so add a blank entry for it
+            ArgumentContainer argContainer{ {} };
+
+            // Append Command Line override for the Project Cache Path
+            auto projectCachePathOverride = FixedValueString::format(R"(--project-cache-path="%s")", m_tempDir.GetDirectory());
+            auto projectPathOverride = FixedValueString{ R"(--project-path=AutomatedTesting)" };
+            argContainer.push_back(projectCachePathOverride.data());
+            argContainer.push_back(projectPathOverride.data());
+            m_application = new ToolsTestApplication("AssetFileInfoListComparisonTest", aznumeric_caster(argContainer.size()), argContainer.data());
             AzToolsFramework::AssetSeedManager assetSeedManager;
             AzFramework::AssetRegistry assetRegistry;
-
-            m_localFileIO = aznew AZ::IO::LocalFileIO();
-
-            m_priorFileIO = AZ::IO::FileIOBase::GetInstance();
-            AZ::IO::FileIOBase::SetInstance(nullptr);
-            AZ::IO::FileIOBase::SetInstance(m_localFileIO);
-
-            SetAssetFolder(m_tempDir.GetDirectory());
 
             const AZStd::string assetRoot = AzToolsFramework::PlatformAddressedAssetCatalog::GetAssetRootForPlatform(AzFramework::PlatformId::PC);
 
@@ -94,10 +97,6 @@ namespace UnitTest
             assetRegistry.RegisterAssetDependency(m_assets[3], AZ::Data::ProductDependency(m_assets[4], 0));
 
             m_application->Start(AzFramework::Application::Descriptor());
-
-            // Starting the application ends up calling ComponentApplication::MergeSettingsToRegistry,
-            // which mangles the registry's cache folder entries. Setting it again the temporary folder to restore it.
-            SetAssetFolder(m_tempDir.GetDirectory());
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
@@ -204,28 +203,9 @@ namespace UnitTest
             }
 
             delete m_pcCatalog;
-            delete m_localFileIO;
-            m_localFileIO = nullptr;
-            AZ::IO::FileIOBase::SetInstance(nullptr);
-            AZ::IO::FileIOBase::SetInstance(m_priorFileIO);
             m_application->Stop();
             delete m_application;
 
-        }
-
-        void SetAssetFolder(const AZStd::string& folder)
-        {
-            const AZStd::string cacheProjectRootFolder = folder;
-            const AZStd::string cacheRootFolder = cacheProjectRootFolder + AZ_CORRECT_FILESYSTEM_SEPARATOR + AzFramework::PlatformHelper::GetPlatformName(AzFramework::PlatformId::PC);
-
-            // Set the asset folder alias to the temporary directory
-            AZ::IO::FileIOBase::GetInstance()->SetAlias("@assets@", cacheRootFolder.c_str());
-
-            // Set the asset folder to the settings registry
-            auto settingsRegistry = AZ::SettingsRegistry::Get();
-            ASSERT_TRUE(settingsRegistry != nullptr);
-            settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_CacheProjectRootFolder, cacheProjectRootFolder);
-            settingsRegistry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder, cacheRootFolder);
         }
 
         void AssetFileInfoValidation_DeltaComparison_Valid()
@@ -775,8 +755,6 @@ namespace UnitTest
         ToolsTestApplication* m_application;
         UnitTest::ScopedTemporaryDirectory m_tempDir;
         AzToolsFramework::PlatformAddressedAssetCatalog* m_pcCatalog;
-        AZ::IO::FileIOBase* m_priorFileIO = nullptr;
-        AZ::IO::FileIOBase* m_localFileIO = nullptr;
         AZ::IO::FileIOStream m_fileStreams[TotalAssets];
         AZ::Data::AssetId m_assets[TotalAssets];
         AZStd::string m_assetsPath[TotalAssets];

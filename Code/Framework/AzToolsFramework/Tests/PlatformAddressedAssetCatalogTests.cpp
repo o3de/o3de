@@ -37,15 +37,19 @@ namespace UnitTest
         void SetUp() override
         {
             using namespace AZ::Data;
-            m_application = new ToolsTestApplication("AddressedAssetCatalogManager"); // Shorter name because Setting Registry
-                                                                                      // specialization are 32 characters max.
+            constexpr size_t MaxCommandArgsCount = 128;
+            using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+            using ArgumentContainer = AZStd::fixed_vector<char*, MaxCommandArgsCount>;
+            // The first command line argument is assumed to be the executable name so add a blank entry for it
+            ArgumentContainer argContainer{ {} };
 
-            AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
-
-            auto projectPathKey =
-                AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
-            registry->Set(projectPathKey, "AutomatedTesting");
-            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
+            // Append Command Line override for the Project Cache Path
+            AZ::IO::Path cacheProjectRootFolder{ m_tempDir.GetDirectory() };
+            auto projectCachePathOverride = FixedValueString::format(R"(--project-cache-path="%s")", cacheProjectRootFolder.c_str());
+            auto projectPathOverride = FixedValueString{ R"(--project-path=AutomatedTesting)" };
+            argContainer.push_back(projectCachePathOverride.data());
+            argContainer.push_back(projectPathOverride.data());
+            m_application = new ToolsTestApplication("AddressedAssetCatalogManager", aznumeric_caster(argContainer.size()), argContainer.data());
 
             m_application->Start(AzFramework::Application::Descriptor());
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
@@ -53,9 +57,6 @@ namespace UnitTest
             // in the unit tests.
             AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
-            const AZStd::string cacheProjectRootFolder = m_tempDir.GetDirectory();
-            registry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_CacheProjectRootFolder, cacheProjectRootFolder);
-            AZ::IO::FileIOBase::GetInstance()->SetAlias("@assets@", cacheProjectRootFolder.c_str());
 
             for (int platformNum = AzFramework::PlatformId::PC; platformNum < AzFramework::PlatformId::NumPlatformIds; ++platformNum)
             {
@@ -71,17 +72,17 @@ namespace UnitTest
                 {
                     m_assets[platformNum][idx] = AssetId(AZ::Uuid::CreateRandom(), 0);
                     AZ::Data::AssetInfo info;
-                    info.m_relativePath = AZStd::string::format("%s%sAsset%d.txt", platformName.c_str(), AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING, idx);
+                    info.m_relativePath = AZStd::move((AZ::IO::Path(platformName) / AZStd::string::format("Asset%d.txt", idx)).Native());
                     info.m_assetId = m_assets[platformNum][idx];
                     assetRegistry->RegisterAsset(m_assets[platformNum][idx], info);
-                    m_assetsPath[platformNum][idx] = cacheProjectRootFolder + AZ_CORRECT_FILESYSTEM_SEPARATOR + info.m_relativePath;
+                    m_assetsPath[platformNum][idx] = AZStd::move((cacheProjectRootFolder / info.m_relativePath).Native());
                     AZ_TEST_START_TRACE_SUPPRESSION;
                     if (m_fileStreams[platformNum][idx].Open(m_assetsPath[platformNum][idx].c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeBinary | AZ::IO::OpenMode::ModeCreatePath))
                     {
                         AZ::IO::SizeType bytesWritten = m_fileStreams[platformNum][idx].Write(info.m_relativePath.size(), info.m_relativePath.data());
                         EXPECT_EQ(bytesWritten, info.m_relativePath.size());
                         m_fileStreams[platformNum][idx].Close();
-                        AZ_TEST_STOP_TRACE_SUPPRESSION(1); // writing to asset cache folder
+                        AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT; // writing to asset cache folder
                     }
                     else
                     {
@@ -105,40 +106,6 @@ namespace UnitTest
 
         void TearDown() override
         {
-            AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
-            for (int platformNum = AzFramework::PlatformId::PC; platformNum < AzFramework::PlatformId::NumPlatformIds; ++platformNum)
-            {
-                AZStd::string platformName{ AzFramework::PlatformHelper::GetPlatformName(static_cast<AzFramework::PlatformId>(platformNum)) };
-                if (!platformName.length())
-                {
-                    // Do not test disabled platforms
-                    continue;
-                }
-                AZStd::string catalogPath = AzToolsFramework::PlatformAddressedAssetCatalog::GetCatalogRegistryPathForPlatform(static_cast<AzFramework::PlatformId>(platformNum));
-
-                if (fileIO->Exists(catalogPath.c_str()))
-                {
-                    AZ_TEST_START_TRACE_SUPPRESSION;
-                    AZ::IO::Result result = fileIO->Remove(catalogPath.c_str());
-                    EXPECT_EQ(result.GetResultCode(), AZ::IO::ResultCode::Success);
-                    AZ_TEST_STOP_TRACE_SUPPRESSION(1); // removing from asset cache folder
-                }
-                // Deleting all the temporary files
-                for (int idx = 0; idx < s_totalAssets; idx++)
-                {
-                    if (fileIO->Exists(m_assetsPath[platformNum][idx].c_str()))
-                    {
-                        AZ_TEST_START_TRACE_SUPPRESSION;
-                        AZ::IO::Result result = fileIO->Remove(m_assetsPath[platformNum][idx].c_str());
-                        EXPECT_EQ(result.GetResultCode(), AZ::IO::ResultCode::Success);
-                        AZ_TEST_STOP_TRACE_SUPPRESSION(1); // removing from asset cache folder
-                    }
-                }
-            }
-
-            delete m_localFileIO;
-            m_localFileIO = nullptr;
-            AZ::IO::FileIOBase::SetInstance(m_priorFileIO);
             delete m_PlatformAddressedAssetCatalogManager;
             m_application->Stop();
             delete m_application;
@@ -148,8 +115,6 @@ namespace UnitTest
         AzToolsFramework::PlatformAddressedAssetCatalogManager* m_PlatformAddressedAssetCatalogManager;
         ToolsTestApplication* m_application;
         UnitTest::ScopedTemporaryDirectory m_tempDir;
-        AZ::IO::FileIOBase* m_priorFileIO = nullptr;
-        AZ::IO::FileIOBase* m_localFileIO = nullptr;
         AZ::IO::FileIOStream m_fileStreams[AzFramework::PlatformId::NumPlatformIds][s_totalAssets];
 
         AZ::Data::AssetId m_assets[AzFramework::PlatformId::NumPlatformIds][s_totalAssets];
@@ -186,7 +151,7 @@ namespace UnitTest
             AZ_TEST_START_TRACE_SUPPRESSION;
             AZ::IO::Result result = AZ::IO::FileIOBase::GetInstance()->Remove(androidCatalogPath.c_str());
             EXPECT_EQ(result.GetResultCode(), AZ::IO::ResultCode::Success);
-            AZ_TEST_STOP_TRACE_SUPPRESSION(1); // removing from asset cache folder
+            AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT; // removing from asset cache folder
         }
         EXPECT_EQ(AzToolsFramework::PlatformAddressedAssetCatalog::CatalogExists(AzFramework::PlatformId::ANDROID_ID), false);
     }
@@ -218,17 +183,19 @@ namespace UnitTest
     public:
         void SetUp() override
         {
-            m_application = new ToolsTestApplication("MessageTest");
+            constexpr size_t MaxCommandArgsCount = 128;
+            using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+            using ArgumentContainer = AZStd::fixed_vector<char*, MaxCommandArgsCount>;
+            // The first command line argument is assumed to be the executable name so add a blank entry for it
+            ArgumentContainer argContainer{ {} };
 
-            AZ::IO::FileIOBase::SetInstance(nullptr); // The API requires the old instance to be destroyed first
-            AZ::IO::FileIOBase::SetInstance(new AZ::IO::LocalFileIO());
-
-            auto registry = AZ::SettingsRegistry::Get();
-            ASSERT_TRUE(registry != nullptr);
-
-            const AZStd::string cacheProjectRootFolder = m_tempDir.GetDirectory();
-            registry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_CacheProjectRootFolder, cacheProjectRootFolder);
-            AZ::IO::FileIOBase::GetInstance()->SetAlias("@assets@", cacheProjectRootFolder.c_str());
+            // Append Command Line override for the Project Cache Path
+            AZ::IO::Path cacheProjectRootFolder{ m_tempDir.GetDirectory() };
+            auto projectCachePathOverride = FixedValueString::format(R"(--project-cache-path="%s")", cacheProjectRootFolder.c_str());
+            auto projectPathOverride = FixedValueString{ R"(--project-path=AutomatedTesting)" };
+            argContainer.push_back(projectCachePathOverride.data());
+            argContainer.push_back(projectPathOverride.data());
+            m_application = new ToolsTestApplication("MessageTest", aznumeric_caster(argContainer.size()), argContainer.data());
 
             m_platformAddressedAssetCatalogManager = AZStd::make_unique<AzToolsFramework::PlatformAddressedAssetCatalogManager>(AzFramework::PlatformId::Invalid);
         }
