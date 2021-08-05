@@ -57,6 +57,31 @@ TEST_GEM_JSON_PAYLOAD = '''
 }
 '''
 
+TEST_O3DE_MANIFEST_JSON_PAYLOAD = '''
+{
+    "o3de_manifest_name": "testuser",
+    "origin": "C:/Users/testuser/.o3de",
+    "default_engines_folder": "C:/Users/testuser/.o3de/Engines",
+    "default_projects_folder": "C:/Users/testuser/.o3de/Projects",
+    "default_gems_folder": "C:/Users/testuser/.o3de/Gems",
+    "default_templates_folder": "C:/Users/testuser/.o3de/Templates",
+    "default_restricted_folder": "C:/Users/testuser/.o3de/Restricted",
+    "default_third_party_folder": "C:/Users/testuser/.o3de/3rdParty",
+    "projects": [
+        "D:/MinimalProject"
+    ],
+    "external_subdirectories": [],
+    "templates": [],
+    "restricted": [],
+    "repos": [],
+    "engines": [
+        "D:/o3de/o3de"
+    ],
+    "engines_path": {
+        "o3de": "D:/o3de/o3de"
+    }
+}
+'''
 
 @pytest.fixture(scope='class')
 def init_enable_gem_data(request):
@@ -94,6 +119,11 @@ class TestEnableGemCommand:
                 self.enable_gem.project_data = new_project_data
             return True
 
+        def load_o3de_manifest(manifest_path: pathlib.Path = None) -> dict:
+            if not manifest_path:
+                return json.loads(TEST_O3DE_MANIFEST_JSON_PAYLOAD)
+            return None
+
         def get_project_json_data(json_data: pathlib.Path, project_path: pathlib.Path):
             return self.enable_gem.project_data
 
@@ -110,7 +140,8 @@ class TestEnableGemCommand:
             return 0
 
         with patch('pathlib.Path.is_dir', return_value=True) as pathlib_is_dir_patch,\
-                patch('pathlib.Path.is_file', return_value=True) as pathlib_is_file_patch,\
+                patch('pathlib.Path.is_file', return_value=True) as pathlib_is_file_patch, \
+                patch('o3de.manifest.load_o3de_manifest', side_effect=load_o3de_manifest) as load_o3de_manifest_patch, \
                 patch('o3de.manifest.save_o3de_manifest', side_effect=save_o3de_manifest) as save_o3de_manifest_patch,\
                 patch('o3de.manifest.get_registered', side_effect=get_registered_path) as get_registered_patch,\
                 patch('o3de.manifest.get_gem_json_data', side_effect=get_gem_json_data) as get_gem_json_data_patch,\
