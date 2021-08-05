@@ -1505,11 +1505,11 @@ namespace UnitTest
             AZStd::string childName(child.GetElementMetadata()->m_name);
             if (childName.compare("GroupFloat") == 0)
             {
-                EXPECT_EQ(child.GetGroupElementMetadata()->m_description, "Normal Group");
+                EXPECT_EQ(strcmp(child.GetGroupElementMetadata()->m_description, "Normal Group"), 0);
             }
             if (childName.compare("ToggleGroupInt") == 0)
             {
-                EXPECT_EQ(child.GetGroupElementMetadata()->m_description, "Group Toggle");
+                EXPECT_EQ(strcmp(child.GetGroupElementMetadata()->m_description, "Group Toggle"), 0);
             }
             if ((childName.compare("SubDataNormal") == 0) || (childName.compare("SubDataToggle") == 0))
             {
@@ -1518,11 +1518,11 @@ namespace UnitTest
                     childName = subChild.GetElementMetadata()->m_name;
                     if (childName.compare("SubInt") == 0)
                     {
-                        EXPECT_EQ(subChild.GetGroupElementMetadata()->m_description, "Normal SubGroup");
+                        EXPECT_EQ(strcmp(subChild.GetGroupElementMetadata()->m_description, "Normal SubGroup"), 0);
                     }
                     if (childName.compare("SubFloat") == 0)
                     {
-                        EXPECT_EQ(subChild.GetGroupElementMetadata()->m_description, "SubGroup Toggle");
+                        EXPECT_EQ(strcmp(subChild.GetGroupElementMetadata()->m_description, "SubGroup Toggle"), 0);
                     }
                 }
             }
