@@ -1427,7 +1427,7 @@ namespace EMotionFX
             }
 
             // create the new group inside the actor
-            NodeGroup* newGroup = NodeGroup::Create(groupName, fileGroup.mNumNodes, fileGroup.mDisabledOnDefault ? false : true);
+            NodeGroup* newGroup = aznew NodeGroup(groupName, fileGroup.mNumNodes, fileGroup.mDisabledOnDefault ? false : true);
 
             // read the node numbers
             uint16 nodeIndex;

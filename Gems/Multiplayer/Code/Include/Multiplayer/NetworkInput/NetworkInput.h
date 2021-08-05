@@ -45,6 +45,9 @@ namespace Multiplayer
         AZ::TimeMs GetHostTimeMs() const;
         AZ::TimeMs& ModifyHostTimeMs();
 
+        void SetHostBlendFactor(float hostBlendFactor);
+        float GetHostBlendFactor() const;
+
         void AttachNetBindComponent(NetBindComponent* netBindComponent);
 
         bool Serialize(AzNetworking::ISerializer& serializer);
@@ -73,6 +76,7 @@ namespace Multiplayer
         ClientInputId m_inputId = ClientInputId{ 0 };
         HostFrameId m_hostFrameId = InvalidHostFrameId;
         AZ::TimeMs m_hostTimeMs = AZ::TimeMs{ 0 };
+        float m_hostBlendFactor = 0.f;
         ConstNetworkEntityHandle m_owner;
         bool m_wasAttached = false;
     };

@@ -46,6 +46,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/API/EditorAnimationSystemRequestBus.h>
 #include <AzToolsFramework/SourceControl/QtSourceControlNotificationHandler.h>
 #include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
+#include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
 
 // AzQtComponents
 #include <AzQtComponents/Buses/ShortcutDispatch.h>
@@ -731,32 +732,84 @@ void MainWindow::InitActions()
         .SetStatusTip(tr("Restore saved state (Fetch)"));
 
     // Modify actions
-    am->AddAction(ID_EDITMODE_MOVE, tr("Move"))
+    am->AddAction(AzToolsFramework::EditModeMove, tr("Move"))
         .SetIcon(Style::icon("Move"))
         .SetApplyHoverEffect()
         .SetShortcut(tr("1"))
         .SetToolTip(tr("Move (1)"))
         .SetCheckable(true)
         .SetStatusTip(tr("Select and move selected object(s)"))
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateEditmodeMove);
-    am->AddAction(ID_EDITMODE_ROTATE, tr("Rotate"))
+        .RegisterUpdateCallback([](QAction* action)
+            {
+                Q_ASSERT(action->isCheckable());
+
+                AzToolsFramework::EditorTransformComponentSelectionRequests::Mode mode;
+                AzToolsFramework::EditorTransformComponentSelectionRequestBus::EventResult(
+                    mode, AzToolsFramework::GetEntityContextId(),
+                    &AzToolsFramework::EditorTransformComponentSelectionRequests::GetTransformMode);
+
+                action->setChecked(mode == AzToolsFramework::EditorTransformComponentSelectionRequests::Mode::Translation);
+            })
+        .Connect(
+            &QAction::triggered,
+            []()
+            {
+                EditorTransformComponentSelectionRequestBus::Event(
+                    GetEntityContextId(), &EditorTransformComponentSelectionRequests::SetTransformMode,
+                    EditorTransformComponentSelectionRequests::Mode::Translation);
+            });                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               
+    am->AddAction(AzToolsFramework::EditModeRotate, tr("Rotate"))
         .SetIcon(Style::icon("Translate"))
         .SetApplyHoverEffect()
         .SetShortcut(tr("2"))
         .SetToolTip(tr("Rotate (2)"))
         .SetCheckable(true)
         .SetStatusTip(tr("Select and rotate selected object(s)"))
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateEditmodeRotate);
-    am->AddAction(ID_EDITMODE_SCALE, tr("Scale"))
+        .RegisterUpdateCallback([](QAction* action)
+            {
+                Q_ASSERT(action->isCheckable());
+
+                AzToolsFramework::EditorTransformComponentSelectionRequests::Mode mode;
+                AzToolsFramework::EditorTransformComponentSelectionRequestBus::EventResult(
+                    mode, AzToolsFramework::GetEntityContextId(),
+                    &AzToolsFramework::EditorTransformComponentSelectionRequests::GetTransformMode);
+
+                action->setChecked(mode == AzToolsFramework::EditorTransformComponentSelectionRequests::Mode::Rotation);
+            })
+        .Connect(
+            &QAction::triggered,
+            []()
+            {
+                EditorTransformComponentSelectionRequestBus::Event(
+                    GetEntityContextId(), &EditorTransformComponentSelectionRequests::SetTransformMode,
+                    EditorTransformComponentSelectionRequests::Mode::Rotation);
+            });
+    am->AddAction(AzToolsFramework::EditModeScale, tr("Scale"))
         .SetIcon(Style::icon("Scale"))
         .SetApplyHoverEffect()
         .SetShortcut(tr("3"))
         .SetToolTip(tr("Scale (3)"))
         .SetCheckable(true)
         .SetStatusTip(tr("Select and scale selected object(s)"))
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateEditmodeScale);
+        .RegisterUpdateCallback([](QAction* action)
+            {
+                Q_ASSERT(action->isCheckable());
 
-    am->AddAction(ID_SNAP_TO_GRID, tr("Snap to grid"))
+                AzToolsFramework::EditorTransformComponentSelectionRequests::Mode mode;
+                AzToolsFramework::EditorTransformComponentSelectionRequestBus::EventResult(
+                    mode, AzToolsFramework::GetEntityContextId(),
+                    &AzToolsFramework::EditorTransformComponentSelectionRequests::GetTransformMode);
+
+                action->setChecked(mode == AzToolsFramework::EditorTransformComponentSelectionRequests::Mode::Scale);
+            })
+        .Connect( &QAction::triggered,[]()
+            {
+                EditorTransformComponentSelectionRequestBus::Event(
+                    GetEntityContextId(), &EditorTransformComponentSelectionRequests::SetTransformMode,
+                    EditorTransformComponentSelectionRequests::Mode::Scale);
+            });
+
+    am->AddAction(AzToolsFramework::SnapToGrid, tr("Snap to grid"))
         .SetIcon(Style::icon("Grid"))
         .SetApplyHoverEffect()
         .SetShortcut(tr("G"))
@@ -769,7 +822,7 @@ void MainWindow::InitActions()
         })
         .Connect(&QAction::triggered, []() { SandboxEditor::SetGridSnapping(!SandboxEditor::GridSnappingEnabled()); });
 
-    am->AddAction(ID_SNAPANGLE, tr("Snap angle"))
+    am->AddAction(AzToolsFramework::SnapAngle, tr("Snap angle"))
         .SetIcon(Style::icon("Angle"))
         .SetApplyHoverEffect()
         .SetStatusTip(tr("Snap angle"))

@@ -10,7 +10,7 @@
 
 #include <Atom/Feature/CoreLights/QuadLightFeatureProcessorInterface.h>
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
-#include <CoreLights/IndexedDataVector.h>
+#include <Atom/Feature/Utils/IndexedDataVector.h>
 
 namespace AZ
 {

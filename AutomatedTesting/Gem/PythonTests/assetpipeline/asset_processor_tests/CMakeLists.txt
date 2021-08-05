@@ -97,7 +97,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         PATH ${CMAKE_CURRENT_LIST_DIR}/asset_bundler_batch_tests.py
         EXCLUDE_TEST_RUN_TARGET_FROM_IDE
         TEST_SERIAL 
-        TIMEOUT 1500
+        TIMEOUT 2400
         TEST_SUITE periodic
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor

@@ -306,6 +306,19 @@ namespace AZ
             m_meshFeatureProcessor = nullptr;
             m_skinnedMeshFeatureProcessor = nullptr;
         }
+        
+        RPI::ModelMaterialSlotMap AtomActorInstance::GetModelMaterialSlots() const
+        {
+            Data::Asset<const RPI::ModelAsset> modelAsset = GetModelAsset();
+            if (modelAsset.IsReady())
+            {
+                return modelAsset->GetMaterialSlots();
+            }
+            else
+            {
+                return {};
+            }
+        }
 
         MaterialAssignmentId AtomActorInstance::FindMaterialAssignmentId(
             const MaterialAssignmentLodIndex lod, const AZStd::string& label) const
@@ -500,16 +513,18 @@ namespace AZ
                     const AZStd::vector< SkinnedSubMeshProperties>& subMeshProperties = inputLod.GetSubMeshProperties();
                     for (const SkinnedSubMeshProperties& submesh : subMeshProperties)
                     {
-                        AZ_Error("AtomActorInstance", submesh.m_material, "Actor does not have a valid default material in lod %d", lodIndex);
-                        if (submesh.m_material)
+                        Data::Asset<RPI::MaterialAsset> materialAsset = submesh.m_materialSlot.m_defaultMaterialAsset;
+                        AZ_Error("AtomActorInstance", materialAsset, "Actor does not have a valid default material in lod %d", lodIndex);
+
+                        if (materialAsset)
                         {
-                            if (!submesh.m_material->IsReady())
+                            if (!materialAsset->IsReady())
                             {
                                 // Start listening for the material's OnAssetReady event.
                                 // AtomActorInstance::Create is called on the main thread, so there should be no need to synchronize with the OnAssetReady event handler
                                 // since those events will also come from the main thread
-                                m_waitForMaterialLoadIds.insert(submesh.m_material->GetId());
-                                Data::AssetBus::MultiHandler::BusConnect(submesh.m_material->GetId());
+                                m_waitForMaterialLoadIds.insert(materialAsset->GetId());
+                                Data::AssetBus::MultiHandler::BusConnect(materialAsset->GetId());
                             }
                         }
                     }
