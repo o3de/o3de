@@ -703,7 +703,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(0 == azwcsicmp(wstrBuffer, L"BlaBla 5"));
 
         // char buffer to wchar_t buffer
-        memset(wstrBuffer, 0, AZ_ARRAY_SIZE(wstrBuffer));
+        memset(wstrBuffer, L' ', AZ_ARRAY_SIZE(wstrBuffer)); // to check that the null terminator is properly placed
         to_wstring(wstrBuffer, 9, strBuffer);
         AZ_TEST_ASSERT(0 == azwcsicmp(wstrBuffer, L"BLABLA 5"));
 

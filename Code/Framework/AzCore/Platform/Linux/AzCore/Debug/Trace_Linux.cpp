@@ -15,7 +15,7 @@ namespace AZ
     {
         namespace Platform
         {
-            void OutputToDebugger(const char* title, const char* message)
+            void OutputToDebugger([[maybe_unused]] const char* title, [[maybe_unused]] const char* message)
             {
                 // std::cout << title << ": " << message;
             }

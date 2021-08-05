@@ -58,15 +58,15 @@ namespace AZStd
                 }
             }
 
-            static inline void to_string(char* dest, size_t destSize, const wchar_t* first, const wchar_t* last)
+            static inline char* to_string(char* dest, size_t destSize, const wchar_t* first, const wchar_t* last)
             {
                 if constexpr (Size == 2)
                 {
-                    Utf8::Unchecked::utf16to8(first, last, dest, destSize);
+                    return Utf8::Unchecked::utf16to8(first, last, dest, destSize);
                 }
                 else if constexpr (Size == 4)
                 {
-                    Utf8::Unchecked::utf32to8(first, last, dest, destSize);
+                    return Utf8::Unchecked::utf32to8(first, last, dest, destSize);
                 }
             }
 
@@ -96,15 +96,15 @@ namespace AZStd
                 }
             }
 
-            static inline void to_wstring(wchar_t* dest, size_t destSize, const char* first, const char* last)
+            static inline wchar_t* to_wstring(wchar_t* dest, size_t destSize, const char* first, const char* last)
             {
                 if constexpr (Size == 2)
                 {
-                    Utf8::Unchecked::utf8to16(first, last, dest, destSize);
+                    return Utf8::Unchecked::utf8to16(first, last, dest, destSize);
                 }
                 else if constexpr (Size == 4)
                 {
-                    Utf8::Unchecked::utf8to32(first, last, dest, destSize);
+                    return Utf8::Unchecked::utf8to32(first, last, dest, destSize);
                 }
             }
         };
@@ -337,7 +337,11 @@ namespace AZStd
 
         if (srcLen > 0)
         {
-            Internal::WCharTPlatformConverter<>::to_string(dest, destSize, str, str + srcLen + 1); // copy null terminator
+            char* endStr = Internal::WCharTPlatformConverter<>::to_string(dest, destSize, str, str + srcLen);
+            if (*(endStr - 1) != '\0')
+            {
+                *endStr = '\0'; // copy null terminator
+            }
         }
     }
 
@@ -485,12 +489,16 @@ namespace AZStd
     {
         if (srcLen == 0)
         {
-            srcLen = strlen(str) + 1;
+            srcLen = strlen(str);
         }
 
         if (srcLen > 0)
         {
-            Internal::WCharTPlatformConverter<>::to_wstring(dest, destSize, str, str + srcLen + 1); // copy null terminator
+            wchar_t* endWStr = Internal::WCharTPlatformConverter<>::to_wstring(dest, destSize, str, str + srcLen);
+            if (*(endWStr - 1) != '\0')
+            {
+                *endWStr = '\0'; // copy null terminator
+            }
         }
     }
 
