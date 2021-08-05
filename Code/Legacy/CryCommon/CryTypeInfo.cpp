@@ -131,7 +131,8 @@ const CTypeInfo&PtrTypeInfo()
 // bool
 AZStd::string ToString(bool const& val)
 {
-    static AZStd::string sTrue = "true", sFalse = "false";
+    static AZStd::fixed_string sTrue = "true";
+    static AZStd::fixed_string sFalse = "false";
     return val ? sTrue : sFalse;
 }
 

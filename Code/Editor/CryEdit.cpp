@@ -1883,11 +1883,6 @@ void CCryEditApp::UnregisterEventLoopHook(IEventLoopHook* pHookToRemove)
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::LoadFile(QString fileName)
 {
-    //CEditCommandLineInfo cmdLine;
-    //ProcessCommandLine(cmdinfo);
-
-    //bool bBuilding = false;
-    //CString file = cmdLine.SpanExcluding()
     if (GetIEditor()->GetViewManager()->GetViewCount() == 0)
     {
         return;

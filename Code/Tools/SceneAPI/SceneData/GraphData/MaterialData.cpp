@@ -18,10 +18,10 @@ namespace AZ
         {
             namespace DataTypes = AZ::SceneAPI::DataTypes;
 
-            const AZStd::string MaterialData::s_DiffuseMapName = "Diffuse";
-            const AZStd::string MaterialData::s_SpecularMapName = "Specular";
-            const AZStd::string MaterialData::s_BumpMapName = "Bump";
-            const AZStd::string MaterialData::s_emptyString = "";
+            const AZStd::fixed_string<8> MaterialData::s_DiffuseMapName = "Diffuse";
+            const AZStd::fixed_string<9> MaterialData::s_SpecularMapName = "Specular";
+            const AZStd::fixed_string<5> MaterialData::s_BumpMapName = "Bump";
+            const AZStd::fixed_string<1> MaterialData::s_emptyString = "";
 
             MaterialData::MaterialData()
                 : m_isNoDraw(false)

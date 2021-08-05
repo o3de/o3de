@@ -173,7 +173,7 @@ int CSystem::GetApplicationInstance()
         AZStd::wstring suffix;
         for (int instance = 0;; ++instance)
         {
-            suffix = AZStd::wstring::format(L"LumberyardApplication(%d)", instance);
+            suffix = AZStd::wstring::format(L"O3DEApplication(%d)", instance);
 
             CreateMutexW(NULL, TRUE, suffix.c_str());
             // search for duplicates
@@ -222,25 +222,6 @@ struct CryDbgModule
 };
 
 #ifdef WIN32
-//////////////////////////////////////////////////////////////////////////
-class CStringOrder
-{
-public:
-    bool operator () (const char* szLeft, const char* szRight) const {return azstricmp(szLeft, szRight) < 0; }
-};
-typedef std::map<const char*, unsigned, CStringOrder> StringToSizeMap;
-void AddSize (StringToSizeMap& mapSS, const char* szString, unsigned nSize)
-{
-    StringToSizeMap::iterator it = mapSS.find (szString);
-    if (it == mapSS.end())
-    {
-        mapSS.insert (StringToSizeMap::value_type(szString, nSize));
-    }
-    else
-    {
-        it->second += nSize;
-    }
-}
 
 //////////////////////////////////////////////////////////////////////////
 const char* GetModuleGroup (const char* szString)

@@ -96,10 +96,10 @@ namespace AZ
 
                 bool m_isNoDraw;
 
-                const static AZStd::string s_DiffuseMapName;
-                const static AZStd::string s_SpecularMapName;
-                const static AZStd::string s_BumpMapName;
-                const static AZStd::string s_emptyString;
+                const static AZStd::fixed_string<8> s_DiffuseMapName;
+                const static AZStd::fixed_string<9> s_SpecularMapName;
+                const static AZStd::fixed_string<5> s_BumpMapName;
+                const static AZStd::fixed_string<1> s_emptyString;
 
                 // A unique id which is used to identify a material in a fbx. 
                 // This is the same as the ID in the fbx file's FbxNode

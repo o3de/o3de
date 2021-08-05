@@ -572,9 +572,6 @@ void CLogFile::OnWriteToConsole(const char* sText, bool bNewLine)
             }
             if (bNewLine)
             {
-                //str = CString("\r\n") + str.TrimLeft();
-                //str = CString("\r\n") + str;
-                //str = CString("\r") + str;
                 str = QString("\r\n") + str;
                 str = str.trimmed();
             }

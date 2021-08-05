@@ -77,7 +77,7 @@ private:
         if (strchr(name, ' ') != 0)
         {
             assert(0 && "Spaces in Value name not supported");
-            CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "!Spaces in Value name not supported: %s in Group %s", name, GetStackInfo());
+            CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "!Spaces in Value name not supported: %s in Group %s", name, GetStackInfo().c_str());
             return;
         }
         if (GetISystem()->IsDevMode() && CurNode())
@@ -86,7 +86,7 @@ private:
             if (CurNode()->haveAttr(name))
             {
                 assert(0);
-                CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "!Duplicate tag Value( \"%s\" ) in Group %s", name, GetStackInfo());
+                CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "!Duplicate tag Value( \"%s\" ) in Group %s", name, GetStackInfo().c_str());
             }
         }
 
@@ -115,8 +115,8 @@ private:
     }
 
     // Used for printing currebnt stack info for warnings.
-    const char* GetStackInfo() const;
-    const char* GetLuaStackInfo() const;
+    AZStd::string GetStackInfo() const;
+    AZStd::string GetLuaStackInfo() const;
 
     //////////////////////////////////////////////////////////////////////////
     // Check For Defaults.

@@ -88,7 +88,7 @@ public:
     void BeginGroup(const char* szName);
     bool BeginOptionalGroup(const char* szName, bool condition);
     void EndGroup();
-    const char* GetStackInfo() const;
+    AZStd::string GetStackInfo() const;
 
     void GetMemoryUsage(ICrySizer* pSizer) const;
 

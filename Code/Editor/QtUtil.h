@@ -34,7 +34,6 @@ public:
 
 namespace QtUtil
 {
-    // Replacement for CString::trimRight()
     inline QString trimRight(const QString& str)
     {
         // We prepend a char, so that the left doesn't get trimmed, then we remove it after trimming

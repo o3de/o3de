@@ -245,8 +245,8 @@ namespace Path
     /// Get the data folder
     AZStd::string GetEditingGameDataFolder()
     {
-        static AZStd::string s_currentModName;
-        // query the editor root.  The bus exists in case we want tools to be able to override this.
+        // Define here the mod name
+        static AZStd::fixed_string<AZ::IO::MaxPathLength> s_currentModName;
 
         if (s_currentModName.empty())
         {

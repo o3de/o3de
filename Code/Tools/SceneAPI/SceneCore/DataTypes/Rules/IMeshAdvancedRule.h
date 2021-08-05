@@ -18,7 +18,8 @@ namespace AZ
     {
         namespace DataTypes
         {
-            const static AZStd::string s_advancedDisabledString = "Disabled";
+            const static AZStd::fixed_string s_advancedDisabledString = "Disabled";
+
             class IMeshAdvancedRule
                 : public IRule
             {
