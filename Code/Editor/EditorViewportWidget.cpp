@@ -2377,14 +2377,9 @@ void EditorViewportWidget::SetDefaultCamera()
 //////////////////////////////////////////////////////////////////////////
 AZ::RPI::ViewPtr EditorViewportWidget::GetCurrentAtomView() const
 {
-if (m_renderViewport && m_renderViewport->GetViewportContext())
-{
-    return m_viewportContext->GetDefaultView();
-}
-    if (atomViewportRequests)
+    if (m_renderViewport && m_renderViewport->GetViewportContext())
     {
-        const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
-        return atomViewportRequests->GetCurrentView(contextName);
+        return m_renderViewport->GetViewportContext()->GetDefaultView();
     }
     else
     {
