@@ -274,7 +274,7 @@ namespace AZ
                 AZ_Assert(self->m_isConstructed, "Variable is not constructed. Please check your logic and guard if needed!");
                 self->m_isConstructed = false;
                 self->m_moduleOwner = nullptr;
-                if constexpr(AZStd::is_trivially_destructible_v<T>)
+                if constexpr(!AZStd::is_trivially_destructible_v<T>)
                 {
                     reinterpret_cast<T*>(&self->m_value)->~T();
                 }
