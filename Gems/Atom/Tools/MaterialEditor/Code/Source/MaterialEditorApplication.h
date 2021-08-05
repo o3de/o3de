@@ -35,9 +35,6 @@ namespace MaterialEditor
     private:
         void ProcessCommandLine(const AZ::CommandLine& commandLine) override;
         AZStd::string GetBuildTargetName() const override;
-
-        //! List of common asset filters for things that need to be compiled to run the material editor
-            //! Some of these things will not be necessary once we have proper support for queued asset loading and reloading
         AZStd::vector<AZStd::string> GetCriticalAssetFilters() const override;
      };
 } // namespace MaterialEditor

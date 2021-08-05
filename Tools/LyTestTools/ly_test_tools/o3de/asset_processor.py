@@ -594,7 +594,7 @@ class AssetProcessor(object):
         output_list = None
         if capture_output:
             if decode:
-                output_list = run_result.stdout.decode('utf-8').splitlines()
+                output_list = run_result.stdout.decode('utf-8', errors="replace").splitlines()
             else:
                 output_list = run_result.stdout.splitlines()
 

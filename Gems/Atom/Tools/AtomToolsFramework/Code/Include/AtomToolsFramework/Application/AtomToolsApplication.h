@@ -96,7 +96,10 @@ namespace AtomToolsFramework
         void OnExceptionMessage(AZStd::string_view message) override;
         ////////////////////////////////////////////////////////////////////////
 
+        //! Executable target name generally used as a prefix for logging and other saved files
         virtual AZStd::string GetBuildTargetName() const;
+
+        //! List of filters for assets that need to be pre-built to run the application
         virtual AZStd::vector<AZStd::string> GetCriticalAssetFilters() const;
 
         virtual void LoadSettings();

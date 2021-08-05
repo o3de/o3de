@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <Asset/BlastSliceAsset.h>
+#include <Asset/BlastChunksAsset.h>
 #include <Atom/Feature/Mesh/MeshFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/Model/Model.h>
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
@@ -43,14 +43,14 @@ namespace Blast
         // EditorComponentBase
         void BuildGameEntity(AZ::Entity* gameEntity) override;
 
-        const AZ::Data::Asset<BlastSliceAsset>& GetBlastSliceAsset() const;
+        const AZ::Data::Asset<BlastChunksAsset>& GetBlastChunksAsset() const;
         const AZStd::vector<AZ::Data::Asset<AZ::RPI::ModelAsset>>& GetMeshAssets() const;
 
         void OnMaterialsUpdated(const AZ::Render::MaterialAssignmentMap& materials) override;
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
     private:
-        void OnSliceAssetChanged();
+        void OnBlastChunksAssetChanged();
         void OnMeshAssetsChanged();
         AZ::Crc32 GetMeshAssetsVisibility() const;
         void OnMeshAssetsVisibilityChanged();
@@ -62,7 +62,7 @@ namespace Blast
         //////////////////////////////////////////////////////////////////////////
         // Reflected data
         bool m_showMeshAssets = false;
-        AZ::Data::Asset<BlastSliceAsset> m_blastSliceAsset;
+        AZ::Data::Asset<BlastChunksAsset> m_blastChunksAsset;
         AZStd::vector<AZ::Data::Asset<AZ::RPI::ModelAsset>> m_meshAssets;
         //////////////////////////////////////////////////////////////////////////
 

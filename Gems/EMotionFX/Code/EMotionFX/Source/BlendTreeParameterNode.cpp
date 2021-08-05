@@ -395,7 +395,7 @@ namespace EMotionFX
         }
 
         // If new parameter matches the last deleted parameter, we add it back to the parameter mask.
-        if (!m_deletedParameterNames.empty() && newParameterName == m_deletedParameterNames.back())
+        if (!m_deletedParameterNames.empty() && newParameterName == m_deletedParameterNames.top())
         {
             m_parameterNames.push_back(newParameterName);
             SortAndRemoveDuplicates(GetAnimGraph(), m_parameterNames); // make sure the mask is sorted correctly.

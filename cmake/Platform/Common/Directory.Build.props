@@ -17,7 +17,12 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
     </PropertyGroup>
     <ItemDefinitionGroup>
         <ClCompile>
-          <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+            <!-- We pass the external flags directly since CMake did not support it. Once the minimal version of CMake
+                 handles external headers in MSVC, we can remove that code and this
+            -->
+            <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
         </ClCompile>
     </ItemDefinitionGroup>
+    <!-- Continue scanning upwards to pick up all Directory.Build.props -->
+    <Import Condition="'@scan_above_directory_build_props@' != ''" Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
 </Project>

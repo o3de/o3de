@@ -18,29 +18,29 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/Utils/Utils.h>
 
-#include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/Network/AssetProcessorConnection.h>
+#include <AzFramework/StringFunc/StringFunc.h>
 
-#include <AzToolsFramework/AzToolsFrameworkModule.h>
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
-#include <AzToolsFramework/UI/UICore/QWidgetSavedState.h>
-#include <AzToolsFramework/UI/UICore/QTreeViewStateSaver.hxx>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
-#include <AzToolsFramework/SourceControl/PerforceComponent.h>
 #include <AzToolsFramework/Asset/AssetSystemComponent.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserComponent.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
+#include <AzToolsFramework/AzToolsFrameworkModule.h>
+#include <AzToolsFramework/SourceControl/PerforceComponent.h>
+#include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerComponent.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyManagerComponent.h>
-#include <AzToolsFramework/SourceControl/SourceControlAPI.h>
+#include <AzToolsFramework/UI/UICore/QTreeViewStateSaver.hxx>
+#include <AzToolsFramework/UI/UICore/QWidgetSavedState.h>
 
-#include <Source/ShaderManagementConsoleApplication.h>
 #include <ShaderManagementConsole_Traits_Platform.h>
+#include <Source/ShaderManagementConsoleApplication.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
-#include <QObject>
 #include <QMessageBox>
+#include <QObject>
 AZ_POP_DISABLE_WARNING
 
 namespace ShaderManagementConsole
@@ -48,7 +48,7 @@ namespace ShaderManagementConsole
     //! This function returns the build system target name of "ShaderManagementConsole"
     AZStd::string ShaderManagementConsoleApplication::GetBuildTargetName() const
     {
-#if !defined (LY_CMAKE_TARGET)
+#if !defined(LY_CMAKE_TARGET)
 #error "LY_CMAKE_TARGET must be defined in order to add this source file to a CMake executable target"
 #endif
         return AZStd::string_view{ LY_CMAKE_TARGET };
@@ -90,7 +90,7 @@ namespace ShaderManagementConsole
     void ShaderManagementConsoleApplication::ProcessCommandLine(const AZ::CommandLine& commandLine)
     {
         // Process command line options for opening one or more documents on startup
-        size_t openDocumentCount = m_commandLine.GetNumMiscValues();
+        size_t openDocumentCount = commandLine.GetNumMiscValues();
         for (size_t openDocumentIndex = 0; openDocumentIndex < openDocumentCount; ++openDocumentIndex)
         {
             const AZStd::string openDocumentPath = commandLine.GetMiscValue(openDocumentIndex);
