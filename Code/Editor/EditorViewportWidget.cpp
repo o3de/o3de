@@ -1486,11 +1486,6 @@ bool EditorViewportWidget::AddCameraMenuItems(QMenu* menu)
     AZ::EBusAggregateResults<AZ::EntityId> getCameraResults;
     Camera::CameraBus::BroadcastResult(getCameraResults, &Camera::CameraRequests::GetCameras);
 
-    const int numCameras = getCameraResults.values.size();
-
-    // only enable if we're editing a sequence in Track View and have cameras in the level
-    //bool enableSequenceCameraMenu = (GetIEditor()->GetAnimation()->GetSequence() && numCameras);
-
     QVector<QAction*> additionalCameras;
     additionalCameras.reserve(getCameraResults.values.size());
 
