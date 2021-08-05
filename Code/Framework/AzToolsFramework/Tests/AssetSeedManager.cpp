@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Asset/AssetDebugInfo.h>
 #include <AzCore/UnitTest/TestTypes.h>
@@ -82,7 +78,7 @@ namespace UnitTest
             }
 
             m_testPlatforms[0] = AzFramework::PlatformId::PC;
-            m_testPlatforms[1] = AzFramework::PlatformId::ES3;
+            m_testPlatforms[1] = AzFramework::PlatformId::ANDROID_ID;
 
             int platformCount = 0;
             for(auto thisPlatform : m_testPlatforms)
@@ -92,10 +88,12 @@ namespace UnitTest
                 for (int idx = 0; idx < s_totalAssets; idx++)
                 {
                     AzFramework::StringFunc::Path::Join(assetRoot.c_str(), m_assetsPath[idx].c_str(), m_assetsPathFull[platformCount][idx]);
+                    AZ_TEST_START_TRACE_SUPPRESSION;
                     if (m_fileStreams[platformCount][idx].Open(m_assetsPathFull[platformCount][idx].c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeBinary | AZ::IO::OpenMode::ModeCreatePath))
                     {
                         m_fileStreams[platformCount][idx].Write(m_assetsPath[idx].size(), m_assetsPath[idx].data());
                         m_fileStreams[platformCount][idx].Close();
+                        AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT; // writing to asset cache folder, only invalid for PC, not invalid in Jenkins
                     }
                     else
                     {
@@ -117,7 +115,9 @@ namespace UnitTest
             m_testDynamicSliceAssetId = testDynamicSliceAsset;
             m_assetRegistry->RegisterAsset(testDynamicSliceAsset, dynamicSliceAssetInfo);
 
+            AZ_TEST_START_TRACE_SUPPRESSION;
             AZ::IO::FileIOStream dynamicSliceFileIOStream(TestDynamicSliceAssetPath, AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeText);
+            AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT; // writing to asset cache folder, not invalid in Jenkins
 
             AZ::Data::AssetInfo sliceAssetInfo;
             sliceAssetInfo.m_relativePath = TestSliceAssetPath;
@@ -129,7 +129,9 @@ namespace UnitTest
             secondSliceAssetInfo.m_assetId = secondTestSliceAsset;
             m_assetRegistry->RegisterAsset(secondTestSliceAsset, secondSliceAssetInfo);
 
+            AZ_TEST_START_TRACE_SUPPRESSION;
             AZ::IO::FileIOStream sliceFileIOStream(TestSliceAssetPath, AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeText);
+            AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT; // writing to asset cache folder, not invalid in Jenkins
 
             // asset0 -> asset1 -> asset2 -> asset4
             //                 --> asset3
@@ -170,20 +172,20 @@ namespace UnitTest
             AzFramework::AssetCatalog assetCatalog(useRequestBus);
 
             AZStd::string pcCatalogFile = AzToolsFramework::PlatformAddressedAssetCatalog::GetCatalogRegistryPathForPlatform(AzFramework::PlatformId::PC);
-            AZStd::string es3CatalogFile = AzToolsFramework::PlatformAddressedAssetCatalog::GetCatalogRegistryPathForPlatform(AzFramework::PlatformId::ES3);
+            AZStd::string androidCatalogFile = AzToolsFramework::PlatformAddressedAssetCatalog::GetCatalogRegistryPathForPlatform(AzFramework::PlatformId::ANDROID_ID);
 
             if (!assetCatalog.SaveCatalog(pcCatalogFile.c_str(), m_assetRegistry))
             {
                 GTEST_FATAL_FAILURE_(AZStd::string::format("Unable to save the asset catalog (PC) file.\n").c_str());
             }
 
-            if (!assetCatalog.SaveCatalog(es3CatalogFile.c_str(), m_assetRegistry))
+            if (!assetCatalog.SaveCatalog(androidCatalogFile.c_str(), m_assetRegistry))
             {
-                GTEST_FATAL_FAILURE_(AZStd::string::format("Unable to save the asset catalog (ES3) file.\n").c_str());
+                GTEST_FATAL_FAILURE_(AZStd::string::format("Unable to save the asset catalog (ANDROID) file.\n").c_str());
             }
 
             m_pcCatalog = new AzToolsFramework::PlatformAddressedAssetCatalog(AzFramework::PlatformId::PC);
-            m_es3Catalog = new AzToolsFramework::PlatformAddressedAssetCatalog(AzFramework::PlatformId::ES3);
+            m_androidCatalog = new AzToolsFramework::PlatformAddressedAssetCatalog(AzFramework::PlatformId::ANDROID_ID);
 
             const AZStd::string engroot = AZ::Test::GetEngineRootPath();
             AZ::IO::FileIOBase::GetInstance()->SetAlias("@engroot@", engroot.c_str());
@@ -191,7 +193,6 @@ namespace UnitTest
             AZ::IO::Path assetRoot(AZ::Utils::GetProjectPath());
             assetRoot /= "Cache";
             AZ::IO::FileIOBase::GetInstance()->SetAlias("@root@", assetRoot.c_str());
-
         }
 
         void TearDown() override
@@ -200,7 +201,9 @@ namespace UnitTest
 
             if (fileIO->Exists(s_catalogFile))
             {
+                AZ_TEST_START_TRACE_SUPPRESSION;
                 fileIO->Remove(s_catalogFile);
+                AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT; // deleting from asset cache folder, not invalid in Jenkins
             }
 
             for (size_t platformCount = 0; platformCount < s_totalTestPlatforms; ++platformCount)
@@ -211,37 +214,45 @@ namespace UnitTest
                     // we need to close the handle before we try to remove the file
                     if (fileIO->Exists(m_assetsPathFull[platformCount][idx].c_str()))
                     {
+                        AZ_TEST_START_TRACE_SUPPRESSION;
                         fileIO->Remove(m_assetsPathFull[platformCount][idx].c_str());
+                        AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT; // deleting from asset cache folder, not invalid in Jenkins
                     }
                 }
             }
 
             if (fileIO->Exists(TestSliceAssetPath))
             {
+                AZ_TEST_START_TRACE_SUPPRESSION;
                 fileIO->Remove(TestSliceAssetPath);
+                AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT; // deleting from asset cache folder, not invalid in Jenkins
             }
 
             if (fileIO->Exists(TestDynamicSliceAssetPath))
             {
+                AZ_TEST_START_TRACE_SUPPRESSION;
                 fileIO->Remove(TestDynamicSliceAssetPath);
+                AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT; // deleting from asset cache folder, not invalid in Jenkins
             }
 
             auto pcCatalogFile = AzToolsFramework::PlatformAddressedAssetCatalog::GetCatalogRegistryPathForPlatform(AzFramework::PlatformId::PC);
-            auto es3CatalogFile = AzToolsFramework::PlatformAddressedAssetCatalog::GetCatalogRegistryPathForPlatform(AzFramework::PlatformId::ES3);
+            auto androidCatalogFile = AzToolsFramework::PlatformAddressedAssetCatalog::GetCatalogRegistryPathForPlatform(AzFramework::PlatformId::ANDROID_ID);
             if (fileIO->Exists(pcCatalogFile.c_str()))
             {
+                AZ_TEST_START_TRACE_SUPPRESSION;
                 fileIO->Remove(pcCatalogFile.c_str());
+                AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT; // deleting from asset cache folder, not invalid in Jenkins
             }
 
-            if (fileIO->Exists(es3CatalogFile.c_str()))
+            if (fileIO->Exists(androidCatalogFile.c_str()))
             {
-                fileIO->Remove(es3CatalogFile.c_str());
+                fileIO->Remove(androidCatalogFile.c_str());
             }
 
             delete m_assetSeedManager;
             delete m_assetRegistry;
             delete m_pcCatalog;
-            delete m_es3Catalog;
+            delete m_androidCatalog;
             m_application->Stop();
             delete m_application;
         }
@@ -271,7 +282,9 @@ namespace UnitTest
             AZ::IO::SystemFile::SetWritable(filePath.c_str(), false);
 
             // Attempt to save to the same file. Should not be allowed.
+            AZ_TEST_START_TRACE_SUPPRESSION;
             EXPECT_FALSE(m_assetSeedManager->Save(filePath));
+            AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT; // writing to asset cache folder, not invalid in Jenkins
 
             // Clean up the test environment
             AZ::IO::SystemFile::SetWritable(filePath.c_str(), true);
@@ -295,7 +308,9 @@ namespace UnitTest
             AZ::IO::SystemFile::SetWritable(filePath.c_str(), false);
 
             // Attempt to save to the same file. Should not be allowed.
+            AZ_TEST_START_TRACE_SUPPRESSION;
             EXPECT_FALSE(m_assetSeedManager->SaveAssetFileInfo(filePath, AzFramework::PlatformFlags::Platform_PC, {}));
+            AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT; // writing to asset cache folder, not invalid in Jenkins
 
             // Clean up the test environment
             AZ::IO::SystemFile::SetWritable(filePath.c_str(), true);
@@ -342,10 +357,10 @@ namespace UnitTest
             m_assetSeedManager->AddSeedAsset(assets[2], AzFramework::PlatformFlags::Platform_PC);
 
             // Step we are testing
-            m_assetSeedManager->AddPlatformToAllSeeds(AzFramework::PlatformId::ES3);
+            m_assetSeedManager->AddPlatformToAllSeeds(AzFramework::PlatformId::ANDROID_ID);
 
             // Verification
-            AzFramework::PlatformFlags expectedPlatformFlags = AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_ES3;
+            AzFramework::PlatformFlags expectedPlatformFlags = AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_ANDROID;
             for (const auto& seedInfo : m_assetSeedManager->GetAssetSeedList())
             {
                 EXPECT_EQ(seedInfo.m_platformFlags, expectedPlatformFlags);
@@ -358,14 +373,16 @@ namespace UnitTest
             m_assetSeedManager->AddSeedAsset(assets[0], AzFramework::PlatformFlags::Platform_PC);
             m_assetSeedManager->AddSeedAsset(assets[1], AzFramework::PlatformFlags::Platform_PC);
 
-            m_es3Catalog->UnregisterAsset(assets[2]);
+            m_androidCatalog->UnregisterAsset(assets[2]);
             m_assetSeedManager->AddSeedAsset(assets[2], AzFramework::PlatformFlags::Platform_PC);
 
             // Step we are testing
-            m_assetSeedManager->AddPlatformToAllSeeds(AzFramework::PlatformId::ES3);
+            AZ_TEST_START_TRACE_SUPPRESSION;
+            m_assetSeedManager->AddPlatformToAllSeeds(AzFramework::PlatformId::ANDROID_ID);
+            AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT; // writing to asset cache folder, not invalid in Jenkins
 
             // Verification
-            AzFramework::PlatformFlags expectedPlatformFlags = AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_ES3;
+            AzFramework::PlatformFlags expectedPlatformFlags = AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_ANDROID;
             for (const auto& seedInfo : m_assetSeedManager->GetAssetSeedList())
             {
                 if (seedInfo.m_assetId == assets[2])
@@ -383,14 +400,14 @@ namespace UnitTest
         {
             // Setup
             m_assetSeedManager->AddSeedAsset(assets[0], AzFramework::PlatformFlags::Platform_PC);
-            m_assetSeedManager->AddSeedAsset(assets[0], AzFramework::PlatformFlags::Platform_ES3);
+            m_assetSeedManager->AddSeedAsset(assets[0], AzFramework::PlatformFlags::Platform_ANDROID);
             m_assetSeedManager->AddSeedAsset(assets[1], AzFramework::PlatformFlags::Platform_PC);
-            m_assetSeedManager->AddSeedAsset(assets[1], AzFramework::PlatformFlags::Platform_ES3);
+            m_assetSeedManager->AddSeedAsset(assets[1], AzFramework::PlatformFlags::Platform_ANDROID);
             m_assetSeedManager->AddSeedAsset(assets[2], AzFramework::PlatformFlags::Platform_PC);
-            m_assetSeedManager->AddSeedAsset(assets[2], AzFramework::PlatformFlags::Platform_ES3);
+            m_assetSeedManager->AddSeedAsset(assets[2], AzFramework::PlatformFlags::Platform_ANDROID);
 
             // Step we are testing
-            m_assetSeedManager->RemovePlatformFromAllSeeds(AzFramework::PlatformId::ES3);
+            m_assetSeedManager->RemovePlatformFromAllSeeds(AzFramework::PlatformId::ANDROID_ID);
 
             // Verification
             for (const auto& seedInfo : m_assetSeedManager->GetAssetSeedList())
@@ -514,8 +531,8 @@ namespace UnitTest
 
         void DependencyValidation_MultipleAssetSeeds_MultiplePlatformFlags_ListValid()
         {
-            m_assetSeedManager->AddSeedAsset(assets[0], AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_ES3);
-            m_assetSeedManager->AddSeedAsset(assets[5], AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_ES3);
+            m_assetSeedManager->AddSeedAsset(assets[0], AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_ANDROID);
+            m_assetSeedManager->AddSeedAsset(assets[5], AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_ANDROID);
 
             AzToolsFramework::AssetFileInfoList assetList = m_assetSeedManager->GetDependencyList(AzFramework::PlatformId::PC);
 
@@ -531,7 +548,7 @@ namespace UnitTest
 
             assetList.m_fileInfoList.clear();
 
-            m_assetSeedManager->AddSeedAsset(assets[8], AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_ES3);
+            m_assetSeedManager->AddSeedAsset(assets[8], AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_ANDROID);
 
             assetList = m_assetSeedManager->GetDependencyList(AzFramework::PlatformId::PC);
 
@@ -547,7 +564,7 @@ namespace UnitTest
             EXPECT_TRUE(Search(assetList, assets[8]));
 
             assetList.m_fileInfoList.clear();
-            m_assetSeedManager->RemoveSeedAsset(assets[5], AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_ES3);
+            m_assetSeedManager->RemoveSeedAsset(assets[5], AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_ANDROID);
 
             assetList = m_assetSeedManager->GetDependencyList(AzFramework::PlatformId::PC);
 
@@ -562,7 +579,7 @@ namespace UnitTest
             EXPECT_TRUE(Search(assetList, assets[8]));
 
             // Removing the android flag from the asset should still produce the same result 
-            m_assetSeedManager->RemoveSeedAsset(assets[8], AzFramework::PlatformFlags::Platform_ES3);
+            m_assetSeedManager->RemoveSeedAsset(assets[8], AzFramework::PlatformFlags::Platform_ANDROID);
 
             assetList = m_assetSeedManager->GetDependencyList(AzFramework::PlatformId::PC);
 
@@ -576,7 +593,7 @@ namespace UnitTest
             EXPECT_TRUE(Search(assetList, assets[7]));
             EXPECT_TRUE(Search(assetList, assets[8]));
 
-            assetList = m_assetSeedManager->GetDependencyList(AzFramework::PlatformId::ES3);
+            assetList = m_assetSeedManager->GetDependencyList(AzFramework::PlatformId::ANDROID_ID);
 
             EXPECT_EQ(assetList.m_fileInfoList.size(), 5);
             EXPECT_TRUE(Search(assetList, assets[0]));
@@ -586,8 +603,8 @@ namespace UnitTest
             EXPECT_TRUE(Search(assetList, assets[4]));
 
             // Adding the android flag again to the asset 
-            m_assetSeedManager->AddSeedAsset(assets[8], AzFramework::PlatformFlags::Platform_ES3);
-            assetList = m_assetSeedManager->GetDependencyList(AzFramework::PlatformId::ES3);
+            m_assetSeedManager->AddSeedAsset(assets[8], AzFramework::PlatformFlags::Platform_ANDROID);
+            assetList = m_assetSeedManager->GetDependencyList(AzFramework::PlatformId::ANDROID_ID);
 
             EXPECT_EQ(assetList.m_fileInfoList.size(), 8);
             EXPECT_TRUE(Search(assetList, assets[0]));
@@ -628,11 +645,13 @@ namespace UnitTest
 
             EXPECT_EQ(assetList1.m_fileInfoList.size(), 1);
             EXPECT_TRUE(Search(assetList1, assets[fileIndex]));
+            AZ_TEST_START_TRACE_SUPPRESSION;
             if (m_fileStreams[0][fileIndex].Open(m_assetsPathFull[0][fileIndex].c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeBinary | AZ::IO::OpenMode::ModeCreatePath))
             {
                 AZStd::string fileContent = AZStd::string::format("asset%d.txt", fileIndex);
                 m_fileStreams[0][fileIndex].Write(fileContent.size(), fileContent.c_str());
                 m_fileStreams[0][fileIndex].Close();
+                AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT; // writing to asset cache folder, not invalid in Jenkins
             }
 
             AzToolsFramework::AssetFileInfoList assetList2 = m_assetSeedManager->GetDependencyList(AzFramework::PlatformId::PC);
@@ -659,11 +678,13 @@ namespace UnitTest
 
             EXPECT_EQ(assetList1.m_fileInfoList.size(), 1);
             EXPECT_TRUE(Search(assetList1, assets[fileIndex]));
+            AZ_TEST_START_TRACE_SUPPRESSION;
             if (m_fileStreams[0][fileIndex].Open(m_assetsPathFull[0][fileIndex].c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeBinary | AZ::IO::OpenMode::ModeCreatePath))
             {
                 AZStd::string fileContent = AZStd::string::format("asset%d.txt", fileIndex + 1);// changing file content
                 m_fileStreams[0][fileIndex].Write(fileContent.size(), fileContent.c_str());
                 m_fileStreams[0][fileIndex].Close();
+                AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT; // writing to asset cache folder, not invalid in Jenkins
             }
 
             AzToolsFramework::AssetFileInfoList assetList2 = m_assetSeedManager->GetDependencyList(AzFramework::PlatformId::PC);
@@ -773,7 +794,7 @@ namespace UnitTest
         AzFramework::AssetRegistry* m_assetRegistry;
         ToolsTestApplication* m_application;
         AzToolsFramework::PlatformAddressedAssetCatalog* m_pcCatalog;
-        AzToolsFramework::PlatformAddressedAssetCatalog* m_es3Catalog;
+        AzToolsFramework::PlatformAddressedAssetCatalog* m_androidCatalog;
         AZ::IO::FileIOStream m_fileStreams[s_totalTestPlatforms][s_totalAssets];
         AzFramework::PlatformId m_testPlatforms[s_totalTestPlatforms];
         AZStd::string m_assetsPath[s_totalAssets];
@@ -936,7 +957,7 @@ namespace UnitTest
     TEST_F(AssetSeedManagerTest, AddSeedAssetForValidPlatforms_AllPlatformsValid_SeedAddedForEveryInputPlatform)
     {
         using namespace AzFramework;
-        PlatformFlags validPlatforms = PlatformFlags::Platform_PC | PlatformFlags::Platform_ES3;
+        PlatformFlags validPlatforms = PlatformFlags::Platform_PC | PlatformFlags::Platform_ANDROID;
         AZStd::pair<AZ::Data::AssetId, PlatformFlags> result = m_assetSeedManager->AddSeedAssetForValidPlatforms(TestDynamicSliceAssetPath, validPlatforms);
 
         // Verify the function outputs
@@ -953,8 +974,8 @@ namespace UnitTest
     TEST_F(AssetSeedManagerTest, AddSeedAssetForValidPlatforms_SomePlatformsValid_SeedAddedForEveryValidPlatform)
     {
         using namespace AzFramework;
-        PlatformFlags validPlatforms = PlatformFlags::Platform_PC | PlatformFlags::Platform_ES3;
-        PlatformFlags inputPlatforms = validPlatforms | PlatformFlags::Platform_OSX;
+        PlatformFlags validPlatforms = PlatformFlags::Platform_PC | PlatformFlags::Platform_ANDROID;
+        PlatformFlags inputPlatforms = validPlatforms | PlatformFlags::Platform_MAC;
         AZStd::pair<AZ::Data::AssetId, PlatformFlags> result = m_assetSeedManager->AddSeedAssetForValidPlatforms(TestDynamicSliceAssetPath, inputPlatforms);
 
         // Verify the function outputs
@@ -971,7 +992,7 @@ namespace UnitTest
     TEST_F(AssetSeedManagerTest, AddSeedAssetForValidPlatforms_NoPlatformsValid_NoSeedAdded)
     {
         using namespace AzFramework;
-        PlatformFlags inputPlatforms = PlatformFlags::Platform_OSX;
+        PlatformFlags inputPlatforms = PlatformFlags::Platform_MAC;
         AZStd::pair<AZ::Data::AssetId, PlatformFlags> result = m_assetSeedManager->AddSeedAssetForValidPlatforms(TestDynamicSliceAssetPath, inputPlatforms);
 
         // Verify the function outputs
@@ -985,30 +1006,30 @@ namespace UnitTest
 
     TEST_F(AssetSeedManagerTest, Valid_Seed_Remove_ForAllPlatform_OK)
     {
-        m_assetSeedManager->AddSeedAsset(assets[0], AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_OSX);
+        m_assetSeedManager->AddSeedAsset(assets[0], AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_MAC);
 
-        m_assetSeedManager->RemoveSeedAsset(assets[0].ToString<AZStd::string>(), AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_OSX);
+        m_assetSeedManager->RemoveSeedAsset(assets[0].ToString<AZStd::string>(), AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_MAC);
         const AzFramework::AssetSeedList& seedList = m_assetSeedManager->GetAssetSeedList();
 
         EXPECT_EQ(seedList.size(), 0);
 
-        m_assetSeedManager->AddSeedAsset(assets[0], AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_OSX);
+        m_assetSeedManager->AddSeedAsset(assets[0], AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_MAC);
 
-        m_assetSeedManager->RemoveSeedAsset("asset0.txt", AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_OSX);
+        m_assetSeedManager->RemoveSeedAsset("asset0.txt", AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_MAC);
         const AzFramework::AssetSeedList& secondSeedList = m_assetSeedManager->GetAssetSeedList();
         EXPECT_EQ(secondSeedList.size(), 0);
     }
 
     TEST_F(AssetSeedManagerTest, Valid_Seed_Remove_ForSpecificPlatform_OK)
     {
-        m_assetSeedManager->AddSeedAsset(assets[0], AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_OSX);
+        m_assetSeedManager->AddSeedAsset(assets[0], AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_MAC);
 
-        m_assetSeedManager->RemoveSeedAsset(assets[0].ToString<AZStd::string>(), AzFramework::PlatformFlags::Platform_OSX);
+        m_assetSeedManager->RemoveSeedAsset(assets[0].ToString<AZStd::string>(), AzFramework::PlatformFlags::Platform_MAC);
         const AzFramework::AssetSeedList& seedList = m_assetSeedManager->GetAssetSeedList();
 
         EXPECT_EQ(seedList.size(), 1);
 
-        m_assetSeedManager->AddSeedAsset(assets[0], AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_OSX);
+        m_assetSeedManager->AddSeedAsset(assets[0], AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_MAC);
 
         m_assetSeedManager->RemoveSeedAsset("asset0.txt", AzFramework::PlatformFlags::Platform_PC);
         const AzFramework::AssetSeedList& secondSeedList = m_assetSeedManager->GetAssetSeedList();
@@ -1017,14 +1038,14 @@ namespace UnitTest
 
     TEST_F(AssetSeedManagerTest, Invalid_NotRemove_SeedForAllPlatform_Ok)
     {
-        m_assetSeedManager->AddSeedAsset(assets[0], AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_OSX);
+        m_assetSeedManager->AddSeedAsset(assets[0], AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_MAC);
 
-        m_assetSeedManager->RemoveSeedAsset(assets[1].ToString<AZStd::string>(), AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_OSX);
+        m_assetSeedManager->RemoveSeedAsset(assets[1].ToString<AZStd::string>(), AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_MAC);
         const AzFramework::AssetSeedList& seedList = m_assetSeedManager->GetAssetSeedList();
 
         EXPECT_EQ(seedList.size(), 1);
 
-        m_assetSeedManager->RemoveSeedAsset("asset1.txt", AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_OSX);
+        m_assetSeedManager->RemoveSeedAsset("asset1.txt", AzFramework::PlatformFlags::Platform_PC | AzFramework::PlatformFlags::Platform_MAC);
         const AzFramework::AssetSeedList& secondSeedList = m_assetSeedManager->GetAssetSeedList();
         EXPECT_EQ(secondSeedList.size(), 1);
     }

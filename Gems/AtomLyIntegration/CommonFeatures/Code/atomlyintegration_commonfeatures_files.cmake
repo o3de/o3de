@@ -1,12 +1,9 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 #
 
 set(FILES
@@ -43,10 +40,16 @@ set(FILES
     Source/Decals/DecalComponent.cpp
     Source/Decals/DecalComponentController.h
     Source/Decals/DecalComponentController.cpp
-    Source/DiffuseProbeGrid/DiffuseProbeGridComponent.h
-    Source/DiffuseProbeGrid/DiffuseProbeGridComponent.cpp
-    Source/DiffuseProbeGrid/DiffuseProbeGridComponentController.h
-    Source/DiffuseProbeGrid/DiffuseProbeGridComponentController.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridComponent.h
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridComponent.cpp
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridComponentController.h
+    Source/DiffuseGlobalIllumination/DiffuseProbeGridComponentController.cpp
+    Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationComponent.h
+    Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationComponent.cpp
+    Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationComponentController.h
+    Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationComponentController.cpp
+    Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationComponentConfig.h
+    Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationComponentConfig.cpp
     Source/Grid/GridComponent.h
     Source/Grid/GridComponent.cpp
     Source/Grid/GridComponentConfig.cpp
@@ -66,6 +69,10 @@ set(FILES
     Source/Mesh/MeshComponent.cpp
     Source/Mesh/MeshComponentController.h
     Source/Mesh/MeshComponentController.cpp
+    Source/OcclusionCullingPlane/OcclusionCullingPlaneComponent.h
+    Source/OcclusionCullingPlane/OcclusionCullingPlaneComponent.cpp
+    Source/OcclusionCullingPlane/OcclusionCullingPlaneComponentController.h
+    Source/OcclusionCullingPlane/OcclusionCullingPlaneComponentController.cpp
     Source/PostProcess/PostFxLayerComponent.cpp
     Source/PostProcess/PostFxLayerComponent.h
     Source/PostProcess/PostFxLayerComponentConfig.cpp

@@ -1,27 +1,8 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-"""
-
-
-"""
-C22715182 - Components are updated when nodes are added/removed/updated
-
-1. Open Level.
-2. Open the graph on LC_BushFlowerBlender.slice
-3. Find the Rotation Modifier node on the BushSpawner entity
-4. Delete the Rotation Modifier node
-5. Ensure the Vegetation Rotation Modifier component is removed from the BushSpawner entity
-6. Delete the Vegetation Layer Spawner node from the graph
-7. Ensure BushSpawner entity is deleted
-8. Change connection from second Rotation Modifier node to a different Gradient
-9. Ensure Gradient reference on component is updated
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 import os
@@ -50,6 +31,31 @@ class TestGraphUpdatesUpdateComponents(EditorTestHelper):
         EditorTestHelper.__init__(self, log_prefix="GraphUpdatesUpdateComponents", args=["level"])
 
     def run_test(self):
+        """
+        Summary:
+        This test verifies that components are properly updated as nodes are added/removed/updated.
+
+        Expected Behavior:
+        Landscape Canvas node CRUD properly updates component entities.
+
+        Test Steps:
+            1. Open Level.
+            2. Open the graph on LC_BushFlowerBlender.slice
+            3. Find the Rotation Modifier node on the BushSpawner entity
+            4. Delete the Rotation Modifier node
+            5. Ensure the Vegetation Rotation Modifier component is removed from the BushSpawner entity
+            6. Delete the Vegetation Layer Spawner node from the graph
+            7. Ensure BushSpawner entity is deleted
+            8. Change connection from second Rotation Modifier node to a different Gradient
+            9. Ensure Gradient reference on component is updated
+
+        Note:
+        - This test file must be called from the Open 3D Engine Editor command terminal
+        - Any passed and failed tests are written to the Editor.log file.
+                Parsing the file or running a log_monitor are required to observe the test results.
+
+        :return: None
+        """
         # Create a new empty level and instantiate LC_BushFlowerBlender.slice
         self.test_success = self.create_level(
             self.args["level"],

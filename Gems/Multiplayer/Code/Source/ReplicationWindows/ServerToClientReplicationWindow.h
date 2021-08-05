@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -48,7 +44,7 @@ namespace Multiplayer
         //! @{
         bool ReplicationSetUpdateReady() override;
         const ReplicationSet& GetReplicationSet() const override;
-        uint32_t GetMaxEntityReplicatorSendCount() const override;
+        uint32_t GetMaxProxyEntityReplicatorSendCount() const override;
         bool IsInWindow(const ConstNetworkEntityHandle& entityPtr, NetEntityRole& outNetworkRole) const override;
         void UpdateWindow() override;
         void DebugDraw() const override;
@@ -59,7 +55,6 @@ namespace Multiplayer
         void OnEntityDeactivated(AZ::Entity* entity);
 
         //void CollectControlledEntitiesRecursive(ReplicationSet& replicationSet, EntityHierarchyComponent::Authority& hierarchyController);
-        //void OnAddFilteredEntity(NetEntityId filteredEntityId);
 
         void EvaluateConnection();
         void AddEntityToReplicationSet(ConstNetworkEntityHandle& entityHandle, float priority, float distanceSquared);
@@ -78,7 +73,6 @@ namespace Multiplayer
         AZ::EntityActivatedEvent::Handler m_entityActivatedEventHandler;
         AZ::EntityDeactivatedEvent::Handler m_entityDeactivatedEventHandler;
 
-        //FilteredEntityComponent::Authority* m_controlledFilteredEntityComponent = nullptr;
         //NetBindComponent* m_controlledNetBindComponent = nullptr;
 
         const AzNetworking::IConnection* m_connection = nullptr;

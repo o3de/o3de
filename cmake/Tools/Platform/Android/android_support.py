@@ -1,16 +1,15 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 #
 
 import imghdr
+import configparser
 import datetime
+import fnmatch
 import logging
 import os
 import json
@@ -32,6 +31,13 @@ if ROOT_DEV_PATH not in sys.path:
 
 from cmake.Tools import common
 
+
+ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP = {
+    '4.2.0': {'min_gradle_version': '6.7.1',
+              'sdk_build': '30.0.2',
+              'default_ndk': '21.4.7075529',
+              'min_cmake_version': '3.20'}
+}
 
 APP_NAME = 'app'
 ANDROID_MANIFEST_FILE = 'AndroidManifest.xml'
@@ -86,83 +92,93 @@ PYTHON_SCRIPT = 'python.cmd' if platform.system() == 'Windows' else 'python.sh'
 
 ANDROID_LAUNCHER_NAME_PATTERN = "{project_name}.GameLauncher"
 
+
 class AndroidProjectManifestEnvironment(object):
     """
-    This class manages the environment for the AndroidManifiest.xml template file, based on project settings and environments
+    This class manages the environment for the AndroidManifest.xml template file, based on project settings and environments
     that were passed in or calculated from the command line arguments.
     """
 
-    def __init__(self, engine_root, project_path, android_sdk_version_number, android_ndk_platform_number, is_test:bool):
+    def __init__(self, engine_root, project_path, android_sdk_version_number, is_test:bool):
         """
         Initialize the object with the project specific parameters and values for the game project
 
         :param engine_root:                 The path where the engine is located
         :param project_path:                The path were the project is located
         :param android_sdk_version_number:  The android SDK platform version
-        :param android_ndk_platform_number: The android NDK platform version
         :param is_test:                     Indicates if theAzTestRunner application should be run
         """
 
-        if is_test:
-            # The AzTestRunner project.json is located under {engine_root}/Code/Tools/AzTestRunner/Platform/Android/android_project.json
-            project_properties_path = engine_root / 'Code' / 'Tools' / 'AzTestRunner' / 'Platform' / 'Android' / 'android_project.json'
-        else:
-            # The project.json file is located under the game name folder
-            project_properties_path = project_path / 'project.json'
-        # Read and parse the project.json file into a dictionary to process the specific attributes needed for the manifest template
-        project_properties_content = project_properties_path.resolve(strict=True)\
-                                                                             .read_text(encoding=common.DEFAULT_TEXT_READ_ENCODING,
-                                                                                        errors=common.ENCODING_ERROR_HANDLINGS)
-        self.project_path = project_path
+        try:
+            if is_test:
+                # The AzTestRunner project.json is located under {engine_root}/Code/Tools/AzTestRunner/Platform/Android/android_project.json
+                project_properties_path = engine_root / 'Code' / 'Tools' / 'AzTestRunner' / 'Platform' / 'Android' / 'android_project.json'
+                assert project_properties_path.is_file(), f'Missing required android settings file {project_properties_path.resolve()}'
+                project_properties_content = project_properties_path.read_text(encoding=common.DEFAULT_TEXT_READ_ENCODING,
+                                                                               errors=common.ENCODING_ERROR_HANDLINGS)
+                project_json = json.loads(project_properties_content)
 
-        # Extract the key attributes we need to process and build up our environment table
-        project_json = json.loads(project_properties_content)
+                android_settings = project_json['android_settings']
 
-        project_name = project_json.get('project_name')
-        if not project_name:
-            raise common.LmbrCmdError(f"Missing required 'project_name' from project.json for project at '{str(project_path)}'")
-        product_name = project_json.get('product_name', project_name)
+            else:
+                # O3DE projects have both a project.json and an android_project.json files (unless its internal)
+                project_properties_path = project_path / 'project.json'
+                assert project_properties_path.is_file(), f'Missing required project settings file {project_properties_path.resolve()}'
+                project_properties_content = project_properties_path.read_text(encoding=common.DEFAULT_TEXT_READ_ENCODING,
+                                                                               errors=common.ENCODING_ERROR_HANDLINGS)
+                project_json = json.loads(project_properties_content)
 
-        game_project_android_settings = project_json['android_settings']
+                android_project_properties_path = project_path / 'Platform' / 'Android' / 'android_project.json'
+                if android_project_properties_path.is_file():
+                    android_project_properties_content = android_project_properties_path.read_text(encoding=common.DEFAULT_TEXT_READ_ENCODING,
+                                                                                                   errors=common.ENCODING_ERROR_HANDLINGS)
+                    android_project_json = json.loads(android_project_properties_content)
+                    android_settings = android_project_json['android_settings']
+                else:
+                    android_settings = project_json['android_settings']
 
-        package_name = game_project_android_settings["package_name"]
+            self.project_path = project_path
 
-        package_path = package_name.replace('.', '/')
+            project_name = project_json['project_name']
+            product_name = project_json.get('product_name', project_name)
+            package_name = android_settings["package_name"]
+            package_path = package_name.replace('.', '/')
 
-        project_activity = f'{TEST_RUNNER_PROJECT}Activity' if is_test else f'{project_name}Activity'
+            project_activity = f'{TEST_RUNNER_PROJECT}Activity' if is_test else f'{project_name}Activity'
 
-        # Multiview options require special processing
-        multi_window_options = AndroidProjectManifestEnvironment.process_android_multi_window_options(game_project_android_settings)
+            # Multiview options require special processing
+            multi_window_options = AndroidProjectManifestEnvironment.process_android_multi_window_options(android_settings)
 
-        self.internal_dict = {
-            'ANDROID_PACKAGE':                  package_name,
-            'ANDROID_PACKAGE_PATH':             package_path,
-            'ANDROID_VERSION_NUMBER':           game_project_android_settings["version_number"],
-            "ANDROID_VERSION_NAME":             game_project_android_settings["version_name"],
-            "ANDROID_SCREEN_ORIENTATION":       game_project_android_settings["orientation"],
-            'ANDROID_APP_NAME':                 TEST_RUNNER_PROJECT if is_test else product_name,       # external facing name
-            'ANDROID_PROJECT_NAME':             TEST_RUNNER_PROJECT if is_test else project_name,     # internal facing name
-            'ANDROID_PROJECT_ACTIVITY':         project_activity,
-            'ANDROID_LAUNCHER_NAME':            TEST_RUNNER_PROJECT if is_test else ANDROID_LAUNCHER_NAME_PATTERN.format(project_name=project_name),
-            'ANDROID_CONFIG_CHANGES':           multi_window_options['ANDROID_CONFIG_CHANGES'],
-            'ANDROID_APP_PUBLIC_KEY':           game_project_android_settings.get('app_public_key', 'NoKey'),
-            'ANDROID_APP_OBFUSCATOR_SALT':      game_project_android_settings.get('app_obfuscator_salt', ''),
-            'ANDROID_USE_MAIN_OBB':             game_project_android_settings.get('use_main_obb', 'false'),
-            'ANDROID_USE_PATCH_OBB':            game_project_android_settings.get('use_patch_obb', 'false'),
-            'ANDROID_ENABLE_KEEP_SCREEN_ON':    game_project_android_settings.get('enable_keep_screen_on', 'false'),
-            'ANDROID_DISABLE_IMMERSIVE_MODE':   game_project_android_settings.get('disable_immersive_mode', 'false'),
-            'ANDROID_MIN_SDK_VERSION':          android_ndk_platform_number,
-            'ANDROID_TARGET_SDK_VERSION':       android_sdk_version_number,
-            'ICONS':                            game_project_android_settings.get('icons', None),
-            'SPLASH_SCREEN':                    game_project_android_settings.get('splash_screen', None),
+            self.internal_dict = {
+                'ANDROID_PACKAGE':                  package_name,
+                'ANDROID_PACKAGE_PATH':             package_path,
+                'ANDROID_VERSION_NUMBER':           android_settings["version_number"],
+                "ANDROID_VERSION_NAME":             android_settings["version_name"],
+                "ANDROID_SCREEN_ORIENTATION":       android_settings["orientation"],
+                'ANDROID_APP_NAME':                 TEST_RUNNER_PROJECT if is_test else product_name,       # external facing name
+                'ANDROID_PROJECT_NAME':             TEST_RUNNER_PROJECT if is_test else project_name,     # internal facing name
+                'ANDROID_PROJECT_ACTIVITY':         project_activity,
+                'ANDROID_LAUNCHER_NAME':            TEST_RUNNER_PROJECT if is_test else ANDROID_LAUNCHER_NAME_PATTERN.format(project_name=project_name),
+                'ANDROID_CONFIG_CHANGES':           multi_window_options['ANDROID_CONFIG_CHANGES'],
+                'ANDROID_APP_PUBLIC_KEY':           android_settings.get('app_public_key', 'NoKey'),
+                'ANDROID_APP_OBFUSCATOR_SALT':      android_settings.get('app_obfuscator_salt', ''),
+                'ANDROID_USE_MAIN_OBB':             android_settings.get('use_main_obb', 'false'),
+                'ANDROID_USE_PATCH_OBB':            android_settings.get('use_patch_obb', 'false'),
+                'ANDROID_ENABLE_KEEP_SCREEN_ON':    android_settings.get('enable_keep_screen_on', 'false'),
+                'ANDROID_DISABLE_IMMERSIVE_MODE':   android_settings.get('disable_immersive_mode', 'false'),
+                'ANDROID_TARGET_SDK_VERSION':       android_sdk_version_number,
+                'ICONS':                            android_settings.get('icons', None),
+                'SPLASH_SCREEN':                    android_settings.get('splash_screen', None),
 
-            'ANDROID_MULTI_WINDOW':             multi_window_options['ANDROID_MULTI_WINDOW'],
-            'ANDROID_MULTI_WINDOW_PROPERTIES':  multi_window_options['ANDROID_MULTI_WINDOW_PROPERTIES'],
+                'ANDROID_MULTI_WINDOW':             multi_window_options['ANDROID_MULTI_WINDOW'],
+                'ANDROID_MULTI_WINDOW_PROPERTIES':  multi_window_options['ANDROID_MULTI_WINDOW_PROPERTIES'],
 
-            'SAMSUNG_DEX_KEEP_ALIVE':           multi_window_options['SAMSUNG_DEX_KEEP_ALIVE'],
-            'SAMSUNG_DEX_LAUNCH_WIDTH':         multi_window_options['SAMSUNG_DEX_LAUNCH_WIDTH'],
-            'SAMSUNG_DEX_LAUNCH_HEIGHT':        multi_window_options['SAMSUNG_DEX_LAUNCH_HEIGHT']
-        }
+                'SAMSUNG_DEX_KEEP_ALIVE':           multi_window_options['SAMSUNG_DEX_KEEP_ALIVE'],
+                'SAMSUNG_DEX_LAUNCH_WIDTH':         multi_window_options['SAMSUNG_DEX_LAUNCH_WIDTH'],
+                'SAMSUNG_DEX_LAUNCH_HEIGHT':        multi_window_options['SAMSUNG_DEX_LAUNCH_HEIGHT']
+            }
+        except KeyError as e:
+            raise common.LmbrCmdError(f"Missing key from android project settings for project at {project_path}:'{e}' ")
 
     def __getitem__(self, item):
         return self.internal_dict.get(item)
@@ -306,12 +322,13 @@ asset_deploy_type={asset_type}
 android_sdk_path={android_sdk_path}
 embed_assets_in_apk={embed_assets_in_apk}
 is_unit_test={is_unit_test}
+android_gradle_plugin={android_gradle_plugin_version}
 """
 
 NATIVE_CMAKE_SECTION_ANDROID_FORMAT = """
     externalNativeBuild {{
         cmake {{
-            buildStagingDirectory "."
+            buildStagingDirectory "{native_build_path}"
             version "{cmake_version}"
             path "{absolute_cmakelist_path}"
         }}
@@ -425,26 +442,28 @@ class AndroidProjectGenerator(object):
     Class the manages the process to generate an android project folder in order to build with gradle/android studio
     """
 
-    def __init__(self, engine_root, build_dir, android_ndk_path, android_sdk_path, android_sdk_version, android_ndk_platform,
-                 project_path, third_party_path, cmake_version, override_cmake_path, override_gradle_path, override_ninja_path,
-                 android_sdk_build_tool_version, include_assets_in_apk, asset_mode, asset_type, signing_config, is_test_project=False, 
-                 overwrite_existing=True):
+    def __init__(self, engine_root, build_dir, android_sdk_path, build_tool, android_sdk_platform, android_native_api_level, android_ndk,
+                 project_path, third_party_path, cmake_version, override_cmake_path, override_gradle_path, gradle_version, gradle_plugin_version,
+                 override_ninja_path, include_assets_in_apk, asset_mode, asset_type, signing_config, native_build_path, is_test_project=False,
+                 overwrite_existing=True, unity_build_enabled=False):
         """
         Initialize the object with all the required parameters needed to create an Android Project. The parameters should be verified before initializing this object
-        
+
         :param engine_root:             The engine root that contains the engine
         :param build_dir:               The target folder under the where the android project folder will be created
-        :param android_ndk_path:        The path to the ANDROID_NDK used for building the native android code 
         :param android_sdk_path:        The path to the ANDROID_SDK used for building the android java code
-        :param android_sdk_version:     The android platform version number to use for the Android SDK related builds
-        :param android_ndk_platform:    The android platform version number to use for the Android NDK related builds
+        :param build_tool:              The android SDK build-tool version.
+        :param android_sdk_platform:    The android sdk platform version number to use for the Android SDK related builds
+        :param android_native_api_level:The android native API level (ANDROID_NATIVE_API_LEVEL) to set
+        :param android_ndk:             The android ndk version number to use for the native builds
         :param project_path:            The path to the project
         :param third_party_path:        The required path to the lumberyard 3rd party path
         :param cmake_version:           The version number of cmake that will be used by gradle
         :param override_cmake_path:     The override path to cmake if it does not exists in the system path
         :param override_gradle_path:    The override path to gradle if it does not exists in the system path
+        :param gradle_version:          The detected version of gradle being used
+        :param gradle_plugin_version:   The android gradle plugin version
         :param override_ninja_path:     The override path to ninja if it does not exists in the system path
-        :param android_sdk_build_tool_version:  The preferred android SDK build-tool version. Will default to the first one detected in the android sdk path
         :param include_assets_in_apk:
         :param asset_mode:
         :param asset_type:
@@ -458,17 +477,16 @@ class AndroidProjectGenerator(object):
 
         self.build_dir = build_dir
 
-        self.android_ndk_path = android_ndk_path
-
         self.android_sdk_path = android_sdk_path
 
         self.android_project_builder_path = self.engine_root / 'Code/Tools/Android/ProjectBuilder'
 
-        self.android_sdk_version = android_sdk_version
+        self.android_sdk_platform = android_sdk_platform
+        self.android_sdk_build_tool_version = build_tool.version
 
-        self.android_sdk_build_tool_version = android_sdk_build_tool_version
-
-        self.android_ndk_platform = android_ndk_platform
+        self.android_ndk = android_ndk
+        self.android_ndk_version = android_ndk.version
+        self.android_native_api_level = android_native_api_level
 
         self.project_path = project_path
 
@@ -480,9 +498,15 @@ class AndroidProjectGenerator(object):
 
         self.override_gradle_path = override_gradle_path
 
+        self.gradle_version = gradle_version
+
+        self.gradle_plugin_version = gradle_plugin_version
+
         self.override_ninja_path = override_ninja_path
 
         self.include_assets_in_apk = include_assets_in_apk
+
+        self.native_build_path = native_build_path
 
         self.asset_mode = asset_mode
 
@@ -493,6 +517,8 @@ class AndroidProjectGenerator(object):
         self.is_test_project = is_test_project
 
         self.overwrite_existing = overwrite_existing
+
+        self.unity_build_enabled = unity_build_enabled
 
     def execute(self):
         """
@@ -511,8 +537,10 @@ class AndroidProjectGenerator(object):
         project_names.extend(self.create_lumberyard_app(project_names))
 
         root_gradle_env = {
-            'SDK_VER': self.android_sdk_version,
-            'NDK_PLATFORM_VER': self.android_ndk_platform,
+            'ANDROID_GRADLE_PLUGIN_VERSION': str(self.gradle_plugin_version),
+            'SDK_VER': self.android_sdk_platform,
+            'MIN_SDK_VER': self.android_sdk_platform,
+            'NDK_VERSION': self.android_ndk_version,
             'SDK_BUILD_TOOL_VER': self.android_sdk_build_tool_version,
             'LY_ENGINE_ROOT': common.normalize_path_for_settings(self.engine_root)
         }
@@ -557,7 +585,7 @@ class AndroidProjectGenerator(object):
         if self.override_gradle_path:
             gradle_wrapper_cmd = [self.override_gradle_path]
         else:
-            gradle_wrapper_cmd = ['gradle.bat' if platform.system() == 'Windows' else 'gradle']
+            gradle_wrapper_cmd = ['gradle']
 
         gradle_wrapper_cmd.extend(['wrapper', '-p', str(self.build_dir.resolve())])
 
@@ -580,7 +608,8 @@ class AndroidProjectGenerator(object):
                                                                         asset_type='',
                                                                         android_sdk_path=str(self.android_sdk_path),
                                                                         embed_assets_in_apk=True,
-                                                                        is_unit_test=True)
+                                                                        is_unit_test=True,
+                                                                        android_gradle_plugin_version=self.gradle_plugin_version)
         else:
             platform_settings_content = PLATFORM_SETTINGS_FORMAT.format(generation_timestamp=str(datetime.datetime.now().strftime("%c")),
                                                                         platform='android',
@@ -589,16 +618,28 @@ class AndroidProjectGenerator(object):
                                                                         asset_type=self.asset_type,
                                                                         android_sdk_path=str(self.android_sdk_path),
                                                                         embed_assets_in_apk=str(self.include_assets_in_apk),
-                                                                        is_unit_test=False)
+                                                                        is_unit_test=False,
+                                                                        android_gradle_plugin_version=self.gradle_plugin_version)
 
         platform_settings_file = self.build_dir / 'platform.settings'
+
+        # Check if there already exists the build folder and a 'platform.settings' file. If there is an android gradle
+        # plugin version set and it is different than the one configured here, we will always overwrite it since
+        # there could be significant differences from one plug-in to the next
+        if platform_settings_file.is_file():
+            config = configparser.ConfigParser()
+            config.read([str(platform_settings_file.resolve(strict=True))])
+            if config.has_option('android', 'android_gradle_plugin'):
+                exist_agp_version = config.get('android', 'android_gradle_plugin')
+                if exist_agp_version != self.gradle_plugin_version:
+                    self.overwrite_existing = True
+
         platform_settings_file.open('w').write(platform_settings_content)
 
     def create_default_local_properties(self):
         """
         Create the default 'local.properties' file in the build folder
         """
-        template_android_ndk_path = common.normalize_path_for_settings(self.android_ndk_path, True)
         template_android_sdk_path = common.normalize_path_for_settings(self.android_sdk_path, True)
         if self.override_cmake_path:
             # The cmake dir references the base cmake folder, not the executable path itself, so resolve to the base folder
@@ -608,7 +649,6 @@ class AndroidProjectGenerator(object):
 
         local_properties_env = {
             "GENERATION_TIMESTAMP": str(datetime.datetime.now().strftime("%c")),
-            "ANDROID_NDK_PATH": template_android_ndk_path,
             "ANDROID_SDK_PATH": template_android_sdk_path,
             "CMAKE_DIR_LINE": f'cmake.dir={template_cmake_path}' if template_cmake_path else ''
         }
@@ -626,8 +666,7 @@ class AndroidProjectGenerator(object):
         # before we can process it.
         android_libraries_substitution_table = {
             "ANDROID_SDK_HOME": common.normalize_path_for_settings(self.android_sdk_path, False),
-            "ANDROID_NDK_HOME": common.normalize_path_for_settings(self.android_ndk_path, False),
-            "ANDROID_SDK_VERSION": "android-".format(self.android_sdk_version)
+            "ANDROID_SDK_VERSION": f"android-{self.android_sdk_platform}"
         }
         android_libraries_template_json_path = self.android_project_builder_path / ANDROID_LIBRARIES_JSON_FILE
 
@@ -717,7 +756,10 @@ class AndroidProjectGenerator(object):
 
         template_engine_root = common.normalize_path_for_settings(self.engine_root)
         template_third_party_path = common.normalize_path_for_settings(self.third_party_path)
-        template_ndk_path = common.normalize_path_for_settings(self.android_ndk_path)
+        template_ndk_path = common.normalize_path_for_settings(os.path.join(self.android_sdk_path, self.android_ndk.location))
+        template_unity_build = 1 if self.unity_build_enabled else 0
+
+        native_build_path = pathlib.Path(self.native_build_path).resolve().as_posix() if self.native_build_path else '.'
 
         gradle_build_env = dict()
 
@@ -728,11 +770,10 @@ class AndroidProjectGenerator(object):
 
         gradle_build_env['TARGET_TYPE'] = 'application'
         gradle_build_env['PROJECT_DEPENDENCIES'] = PROJECT_DEPENDENCIES_VALUE_FORMAT.format(dependencies='\n'.join(gradle_project_dependencies))
-        gradle_build_env['NATIVE_CMAKE_SECTION_ANDROID'] = NATIVE_CMAKE_SECTION_ANDROID_FORMAT.format(cmake_version=str(self.cmake_version), absolute_cmakelist_path=absolute_cmakelist_path)
+        gradle_build_env['NATIVE_CMAKE_SECTION_ANDROID'] = NATIVE_CMAKE_SECTION_ANDROID_FORMAT.format(cmake_version=str(self.cmake_version), native_build_path=native_build_path, absolute_cmakelist_path=absolute_cmakelist_path)
         gradle_build_env['NATIVE_CMAKE_SECTION_DEFAULT_CONFIG'] = NATIVE_CMAKE_SECTION_DEFAULT_CONFIG_NDK_FORMAT_STR.format(abi=ANDROID_ARCH)
 
         gradle_build_env['OVERRIDE_JAVA_SOURCESET'] = OVERRIDE_JAVA_SOURCESET_STR.format(absolute_azandroid_path=absolute_azandroid_path)
-
 
         gradle_build_env['OPTIONAL_JNI_SRC_LIB_SET'] = ', "outputs/native-lib"'
 
@@ -747,7 +788,8 @@ class AndroidProjectGenerator(object):
                 f'"-S{template_engine_root}"',
                 f'"-DCMAKE_BUILD_TYPE={native_config_lower}"',
                 f'"-DCMAKE_TOOLCHAIN_FILE={template_engine_root}/cmake/Platform/Android/Toolchain_Android.cmake"',
-                f'"-DLY_3RDPARTY_PATH={template_third_party_path}"']
+                f'"-DLY_3RDPARTY_PATH={template_third_party_path}"',
+                f'"-DLY_UNITY_BUILD={template_unity_build}"']
 
             if not self.is_test_project:
                 cmake_argument_list.append(f'"-DLY_PROJECTS={pathlib.PurePath(self.project_path).as_posix()}"')
@@ -755,7 +797,7 @@ class AndroidProjectGenerator(object):
                 cmake_argument_list.append('"-DLY_TEST_PROJECT=1"')
 
             cmake_argument_list.extend([
-                f'"-DANDROID_NATIVE_API_LEVEL={self.android_ndk_platform}"',
+                f'"-DANDROID_NATIVE_API_LEVEL={self.android_native_api_level}"',
                 f'"-DLY_NDK_DIR={template_ndk_path}"',
                 '"-DANDROID_STL=c++_shared"',
                 '"-Wno-deprecated"',
@@ -835,8 +877,7 @@ class AndroidProjectGenerator(object):
         dest_src_main_path.mkdir(parents=True)
         az_android_package_env = AndroidProjectManifestEnvironment(engine_root=self.engine_root,
                                                                    project_path=self.project_path,
-                                                                   android_sdk_version_number=self.android_sdk_version,
-                                                                   android_ndk_platform_number=self.android_ndk_platform,
+                                                                   android_sdk_version_number=self.android_sdk_platform,
                                                                    is_test=self.is_test_project)
         self.create_file_from_project_template(src_template_file=ANDROID_MANIFEST_FILE,
                                                template_env=az_android_package_env,
@@ -1304,218 +1345,7 @@ class AndroidProjectGenerator(object):
             self.new = new
 
 
-ANDROID_PLATFORM_PATTERN = re.compile(r'([\w\d]*-)?(\d+\d*)')   # Regex to handle android platform naming for both SDKs and NDKs
-
-
-def validate_android_platform_input(input_android_platform, platform_variable_type, min_version, max_version):
-    """
-    Helper tool to support android platform number inputs and perform min/max version validation
-
-    :param input_android_platform:  The inpuit argument to evaluate
-    :param platform_variable_type: The type of platform version to validate (android sdk / android ndk)
-    :param min_version:     The minimum version to validate against
-    :param max_version:     The maximum version to validate against
-    :return: The int version of the extracted platform number from the input
-    """
-    # Validate the platform number's format and against the supported versions
-    platform_number_match = ANDROID_PLATFORM_PATTERN.search(input_android_platform)
-    if not platform_number_match or not platform_number_match.group(2) or (platform_number_match.group(1) and platform_number_match.group(1) != 'android-'):
-        raise common.LmbrCmdError(f"Invalid {platform_variable_type} version value ({input_android_platform}). It must be "
-                                  f"either 'XX' or android-'XX' where 'XX' is a platform number.",
-                                  common.ERROR_CODE_INVALID_PARAMETER)
-
-    android_platform_number = int(platform_number_match.group(2))
-    if android_platform_number < min_version:
-        raise common.LmbrCmdError(f"Invalid {platform_variable_type} version value ({input_android_platform}) is less than the minimum "
-                                  f"supported version ({min_version}).",
-                                  common.ERROR_CODE_INVALID_PARAMETER)
-    if android_platform_number > max_version:
-        raise common.LmbrCmdError(f"Invalid {platform_variable_type} version value ({input_android_platform}) is greater than the maximum "
-                                  f"supported version ({max_version}).",
-                                  common.ERROR_CODE_INVALID_PARAMETER)
-    return android_platform_number
-
-
 ANDROID_SDK_ENV_NAME = 'ANDROID_SDK'
-ANDROID_SDK_MIN_PLATFORM = 28
-ANDROID_SDK_MAX_PLATFORM = 29
-
-
-def verify_android_sdk(android_sdk_platform, argument_name, override_android_sdk_path=None, preferred_sdk_build_tools_ver=None):
-    """
-    Verify the android sdk and the requested platform platform against the android sdk path
-
-    :param android_sdk_platform:            The android sdk platform to use (e.g. '28' or 'android-28')
-    :param argument_name:                   The name of the argument for descriptive errors to present
-    :param override_android_sdk_path:       The location of the android SDK path if not set through the environment variable
-    :param preferred_sdk_build_tools_ver:   Option prefered built tool version under the android SDK if available. Will fallback to the first one discovered
-    :returns    tuple of the verified android sdk platform number, path to the Android SDK path and the build tool version
-    """
-    android_sdk_platform_number = validate_android_platform_input(input_android_platform=android_sdk_platform,
-                                                                  platform_variable_type='android sdk',
-                                                                  min_version=ANDROID_SDK_MIN_PLATFORM,
-                                                                  max_version=ANDROID_SDK_MAX_PLATFORM)
-
-    # Get the candidate android sdk path from either the override argument or the system environment variable
-    if override_android_sdk_path:
-        check_android_sdk_path = override_android_sdk_path
-    else:
-        check_android_sdk_path = os.environ.get(ANDROID_SDK_ENV_NAME)
-        if not check_android_sdk_path:
-            raise common.LmbrCmdError(f"Android SDK path not set. Make sure that either the '{ANDROID_SDK_ENV_NAME}' environment is "
-                                      f"set or it is passed in through the {argument_name} argument")
-
-    # The android sdk folder structure is expected to have a 'platforms' sub folder based on the android sdk-platform number
-    check_android_sdk_path = pathlib.Path(check_android_sdk_path)
-    android_sdk_platforms_path = check_android_sdk_path / 'platforms'
-    if not android_sdk_platforms_path.is_dir():
-        raise common.LmbrCmdError(f"Invalid Android SDK path '{str(check_android_sdk_path)}': Missing 'platforms' directory.")
-
-    # Collect the available platform numbers from the platforms subdirectory
-    validated_android_platforms = []
-    for dir_item in android_sdk_platforms_path.iterdir():
-        if not dir_item.is_dir():
-            continue
-        check_file = dir_item / 'package.xml'
-        if check_file.is_file():
-            validated_android_platforms.append(dir_item.name)
-
-    if not validated_android_platforms:
-        raise common.LmbrCmdError(f"Invalid Android SDK path '{str(check_android_sdk_path)}': Unable to find any android platforms.")
-
-    # Normalize the android_sdk argument to fit the same folder name pattern
-    android_sdk_platform_name = f'android-{android_sdk_platform_number}'
-    if android_sdk_platform_name not in validated_android_platforms:
-        raise common.LmbrCmdError(f"Android SDK platform {android_sdk_platform_name} is not a valid for the android SDK located under '{str(check_android_sdk_path)}'")
-
-    # Enumerate through the build tools under android sdk
-    android_sdk_build_tools_dir = check_android_sdk_path / 'build-tools'
-    if not android_sdk_build_tools_dir.is_dir():
-        raise common.LmbrCmdError(f"Invalid Android SDK path '{str(check_android_sdk_path)}': Unable to find any built-tools folder.")
-    supported_build_tools = [str(build_tool.name) for build_tool in android_sdk_build_tools_dir.iterdir() if build_tool.is_dir()]
-    if not supported_build_tools:
-        raise common.LmbrCmdError(f"Invalid Android SDK path '{str(check_android_sdk_path)}': Unable to find any built-tools.")
-    if preferred_sdk_build_tools_ver:
-        if preferred_sdk_build_tools_ver in supported_build_tools:
-            validated_build_tool = preferred_sdk_build_tools_ver
-        else:
-            validated_build_tool = supported_build_tools[0]
-            logging.warning("Unable to locate android sdk build tool version {preferred_sdk_build_tools_ver}. Defaulting to version {validated_build_tool}")
-
-    else:
-        validated_build_tool = supported_build_tools[0]
-
-    return android_sdk_platform_number, check_android_sdk_path, validated_build_tool
-
-
-ANDROID_NDK_ENV_NAME = 'ANDROID_NDK'
-ANDROID_NDK_MIN_PLATFORM = 21
-ANDROID_NDK_MAX_PLATFORM = 29
-ANDROID_NDK_SOURCE_PROPERTIES_REVISION_PATTERN = re.compile(r'Pkg.Revision\s*=\s*(\d+.\d+.\d+)')
-
-
-def verify_android_ndk(android_ndk_platform, argument_name, override_android_ndk_path=None):
-    """
-    Verify the android ndk and requested platform against the android ndk path
-
-    :param android_ndk_platform:        The android ndk platform to use (e.g. '21' or 'android-21')
-    :param argument_name:               The name of the argument for descriptive errors to present
-    :param override_android_ndk_path:   The location of the android NDK path if not set through the environment variable
-    :returns    tuple of the verified android ndk platform number and the Path to the Android SDK path and the
-    """
-
-    android_ndk_platform_number = validate_android_platform_input(input_android_platform=android_ndk_platform,
-                                                                  platform_variable_type='android ndk',
-                                                                  min_version=ANDROID_NDK_MIN_PLATFORM,
-                                                                  max_version=ANDROID_NDK_MAX_PLATFORM)
-
-    # Get the candidate android ndk path from either the override argument or the system environment variable
-    if override_android_ndk_path:
-        check_android_ndk_path = str(override_android_ndk_path)
-    else:
-        check_android_ndk_path = os.environ.get(ANDROID_NDK_ENV_NAME)
-        if not check_android_ndk_path:
-            raise common.LmbrCmdError(f"Android NDK path not set. Make sure that either the {ANDROID_NDK_ENV_NAME} environment "
-                                      f"is set or it is passed in through the {argument_name} argument")
-    check_android_ndk_path = pathlib.Path(check_android_ndk_path)
-
-    # Validate the android ndk path
-
-    # Determine the NDK revision by reading the source.properties file
-    ndk_source_properties_file = check_android_ndk_path / 'source.properties'
-    if not ndk_source_properties_file.is_file():
-        raise common.LmbrCmdError(f"Invalid Android NDK path '{str(check_android_ndk_path)}'. Missing 'source.properties' file.",
-                                  common.ERROR_CODE_INVALID_PARAMETER)
-    ndk_source_properties_file_content = ndk_source_properties_file.read_text(encoding=common.DEFAULT_TEXT_READ_ENCODING,
-                                                                              errors=common.ENCODING_ERROR_HANDLINGS)
-
-    ndk_revision_match = ANDROID_NDK_SOURCE_PROPERTIES_REVISION_PATTERN.search(ndk_source_properties_file_content)
-    if not ndk_revision_match:
-        raise common.LmbrCmdError(f"Invalid Android NDK path '{str(check_android_ndk_path)}'. Unable to extract version from 'source.properties' file.",
-                                  common.ERROR_CODE_INVALID_PARAMETER)
-    ndk_revision_number = LooseVersion(ndk_revision_match.group(1))
-    logging.info(f"Detected Android NDK Revision {str(ndk_revision_number)}")
-
-    # Collect the supported android platforms from the required 'platforms' folder under the ndk path
-    android_ndk_platforms_path = check_android_ndk_path / 'platforms'
-    if not android_ndk_platforms_path.is_dir():
-        raise common.LmbrCmdError(f"Invalid Android NDK path '{str(check_android_ndk_path)}'. Missing 'platforms' folder.",
-                                  common.ERROR_CODE_INVALID_PARAMETER)
-
-    validated_android_platforms = []
-    for dir_item in android_ndk_platforms_path.iterdir():
-        if not dir_item.is_dir():
-            continue
-        api_version_match = ANDROID_PLATFORM_PATTERN.search(dir_item.name)
-        if not api_version_match or api_version_match.group(1) != 'android-':
-            continue
-
-        check_lib_path = dir_item / 'arch-arm64/usr/lib'
-        if check_lib_path.is_dir():
-            validated_android_platforms.append(dir_item.name)
-
-    # For NDK revisions 19 and up, there is a mapping file for version numbers that map to other version.
-    platforms_map_aliases = {}
-    if ndk_revision_number >= LooseVersion('19.0.0'):
-        platforms_map_file = check_android_ndk_path / 'meta/platforms.json'
-        if platforms_map_file.exists():
-            with open(platforms_map_file, 'r') as platforms_map_file_handle:
-                platforms_map_file_json = json.load(platforms_map_file_handle)
-            platforms_map_aliases = platforms_map_file_json['aliases']
-    elif validated_android_platforms:
-        # Revisions before 19 does not have a mapping file for API versions, they fall back to the previous one
-        # So we need to make a mapping file that does the same
-        platforms_map_aliases = {}
-        validated_android_platforms.sort()
-        max_supported_api_number = int(ANDROID_PLATFORM_PATTERN.search(validated_android_platforms[-1]).group(2))
-        for validated_android_platform in validated_android_platforms:
-            current_api_version = int(ANDROID_PLATFORM_PATTERN.search(validated_android_platform).group(2))
-            next_api_version = current_api_version + 1
-            while f'android-{next_api_version}' not in validated_android_platforms and next_api_version <= max_supported_api_number:
-                platforms_map_aliases[str(next_api_version)] = current_api_version
-                next_api_version += 1
-
-    # Go through the aliases and add to the validated platforms if it is mapped to an existing platform
-    for alias_key, alias_value in platforms_map_aliases.items():
-        if not ANDROID_PLATFORM_PATTERN.search(f'android-{alias_key}'):
-            # Skip any non android-XX (XX = number) aliases
-            continue
-        aliased_platform_key = f'android-{alias_value}'
-        if aliased_platform_key in validated_android_platforms:
-            validated_android_platforms.append(f'android-{alias_key}')
-
-    if not validated_android_platforms:
-        raise common.LmbrCmdError(f"Invalid Android NDK path {str(check_android_ndk_path)}")
-
-    # Verify the ndk platform against the ndk path
-    android_ndk_platform_name = f'android-{android_ndk_platform_number}'
-    if android_ndk_platform_name not in validated_android_platforms:
-        raise common.LmbrCmdError(f"Android NDK platform {android_ndk_platform_name} is not a valid for the Android NDK located under '{str(check_android_ndk_path)}'")
-
-    return android_ndk_platform_number, check_android_ndk_path
-
-
-ADB_TARGET = 'adb.exe' if platform.system() == 'Windows' else 'adb'
 
 
 def resolve_adb_tool(android_sdk_path):
@@ -1528,9 +1358,16 @@ def resolve_adb_tool(android_sdk_path):
     if isinstance(android_sdk_path, str):
         android_sdk_path = pathlib.Path(android_sdk_path)
 
-    check_adb_target = android_sdk_path / 'platform-tools' / ADB_TARGET
-    if not check_adb_target.exists():
-        raise common.LmbrCmdError(f"Invalid Android SDK path '{str(android_sdk_path)}': Unable to locate '{ADB_TARGET}'.")
+    file_found = False
+    for executable_path_ext in common.PLATFORM_EXECUTABLE_EXTENSIONS:
+        check_adb_target = android_sdk_path / 'platform-tools' / f'adb{executable_path_ext}'
+        if check_adb_target.is_file():
+            file_found = True
+            break
+
+    if not file_found:
+        raise common.LmbrCmdError(f"Invalid Android SDK path '{str(android_sdk_path)}': Unable to locate 'adb'.")
+
     return check_adb_target
 
 
@@ -1633,3 +1470,196 @@ class AdbTool(common.CommandLineExec):
         else:
             adb_params = arguments
         return super().popen(adb_params, cwd)
+
+
+class AndroidGradlePluginInfo(object):
+
+    def __init__(self, android_gradle_plugin_version):
+
+        if android_gradle_plugin_version not in ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP.keys():
+            raise common.LmbrCmdError(f"Android Gradle Plugin version {android_gradle_plugin_version} is not supported. "
+                                      f"Only the following version(s) are supported: {','.join(ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP.keys())}")
+
+        details = ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP[android_gradle_plugin_version]
+        self.default_sdk_build_tools_version = LooseVersion(details.get('sdk_build'))
+
+        self.default_ndk_version = LooseVersion(details.get('default_ndk'))
+
+        self.min_gradle_version = LooseVersion(details.get('min_gradle_version'))
+
+        self.min_cmake_version = LooseVersion(details.get('min_cmake_version'))
+
+        max_cmake_version_number = details.get('max_cmake_version')
+        self.max_cmake_version = None if max_cmake_version_number is None else LooseVersion(max_cmake_version_number)
+
+
+class AndroidSDKResolver(object):
+    """
+    Class that manages the Android SDK tool to validate, install packages (e.g. built tools, sdk platforms, ndk, etc)
+    """
+
+    class InstalledPackage(object):
+        def __init__(self, installed_package_components):
+            assert len(installed_package_components) == 4, '4 sections expected for installed package components (path, version, description, location)'
+            self.path = installed_package_components[0]
+            self.version = LooseVersion(installed_package_components[1])
+            self.description = installed_package_components[2]
+            self.location = installed_package_components[3]
+
+    class AvailablePackage(object):
+        def __init__(self, available_package_components):
+            assert len(available_package_components) == 3, '3 sections expected for installed package components (path, version, description)'
+            self.path = available_package_components[0]
+            self.version = LooseVersion(available_package_components[1])
+            self.description = available_package_components[2]
+
+    class AvailableUpdate(object):
+        def __init__(self, available_update_components):
+            assert len(available_update_components) == 3, '3 sections expected for installed package components (path, version, available)'
+            self.path = available_update_components[0]
+            self.version = LooseVersion(available_update_components[1])
+            self.available = available_update_components[2]
+
+    def __init__(self, android_sdk_path):
+
+        self.android_sdk_path = android_sdk_path or os.environ.get(ANDROID_SDK_ENV_NAME)
+        if not self.android_sdk_path:
+            raise common.LmbrCmdError(f"Android SDK path not set or it was not passed into the command to generate the android project")
+        if not os.path.isdir(self.android_sdk_path):
+            raise common.LmbrCmdError(f"Android SDK path {self.android_sdk_path} is not valid")
+        if platform.system() == 'Windows':
+            self.sdk_manager_path = pathlib.Path(self.android_sdk_path) / 'tools' / 'bin' / 'sdkmanager.bat'
+        else:
+            raise common.LmbrCmdError(f"This tool is not supported on the current platform {platform.system()}")
+        if not self.sdk_manager_path.is_file():
+            raise common.LmbrCmdError(f"Android SDK path {self.android_sdk_path} is not valid or complete. Missing {self.sdk_manager_path}")
+
+        self.sdk_manager = common.CommandLineExec(str(self.sdk_manager_path.resolve()))
+
+        self.installed_packages = {}
+        self.available_packages = {}
+        self.available_updates = {}
+        self.refresh_sdk_installation()
+
+    def refresh_sdk_installation(self):
+        """
+        Utilize the sdk_manager command line tool from the Android SDK to collect / refresh the list of
+        installed, available, and updateable packages that are managed by the android SDK.
+        """
+        self.installed_packages = {}
+        self.available_packages = {}
+        self.available_updates = {}
+
+        def _factory_installed_package(package_map, item_components):
+            package_map[item_components[0]] = AndroidSDKResolver.InstalledPackage(item_components)
+
+        def _factory_available_package(package_map, item_components):
+            package_map[item_components[0]] = AndroidSDKResolver.AvailablePackage(item_components)
+
+        def _factory_available_update(package_map, item_components):
+            package_map[item_components[0]] = AndroidSDKResolver.AvailableUpdate(item_components)
+
+        # Use the SDK manager to collect the available and installed packages
+        result_code, result_stdout, result_stderr = self.sdk_manager.exec(['--list'], capture_stdout=True, suppress_stderr=True)
+
+        current_append_map = None
+        current_item_factory = None
+        for package_item in result_stdout.split('\n'):
+            package_item_stripped = package_item.strip()
+            if not package_item_stripped:
+                continue
+            if '|' not in package_item_stripped:
+                if package_item_stripped.upper() == 'INSTALLED PACKAGES:':
+                    current_append_map = self.installed_packages
+                    current_item_factory = _factory_installed_package
+                elif package_item_stripped.upper() == 'AVAILABLE PACKAGES:':
+                    current_append_map = self.available_packages
+                    current_item_factory = _factory_available_package
+                elif package_item_stripped.upper() == 'AVAILABLE UPDATES:':
+                    current_append_map = self.available_updates
+                    current_item_factory = _factory_available_update
+                else:
+                    current_append_map = None
+                    current_item_factory = None
+                continue
+            item_parts = [split.strip() for split in package_item_stripped.split('|')]
+            if len(item_parts) < 3:
+                continue
+            elif item_parts[1].upper() in ('VERSION', 'INSTALLED', '-------'):
+                continue
+            elif current_append_map is None:
+                continue
+            if current_append_map is not None and current_item_factory is not None:
+                current_item_factory(current_append_map, item_parts)
+
+    def is_package_installed(self, search_package_path):
+        """
+        Check if a package path to see if its a package that is installed. The path can use wildcard '*'s
+        The function will return a list of the results that match the package paths, ordered by the newest version first
+        """
+        def _package_sort(package):
+            return package.version
+        package_detail_result_list = []
+        for installed_package_path, installed_package_details in self.installed_packages.items():
+            if fnmatch.fnmatch(installed_package_path, search_package_path):
+                package_detail_result_list.append(installed_package_details)
+        package_detail_result_list.sort(reverse=True, key=_package_sort)
+        return package_detail_result_list
+
+    def is_package_available(self, search_package_path):
+        """
+        Check if a package path to see if its an available package to install. The path can use wildcard '*'s
+        The function will return a list of the results that match the package paths, ordered by the newest version first
+        """
+        def _package_sort(package):
+            return package.version
+        package_detail_result_list = []
+        for available_package_path, available_package_details in self.available_packages.items():
+            if fnmatch.fnmatch(available_package_path, search_package_path):
+                package_detail_result_list.append(available_package_details)
+        package_detail_result_list.sort(reverse=True, key=_package_sort)
+        return package_detail_result_list
+
+    def install_package(self, package_install_path, package_description):
+        """
+        Install a package based on the path of an available android sdk package
+        """
+
+        # Skip installation if the package is already installed
+        package_result_list = self.is_package_installed(package_install_path)
+        if package_result_list:
+            installed_package_detail = package_result_list[0]
+            logging.info(f"{installed_package_detail.description} (version {installed_package_detail.version}) Detected")
+            return installed_package_detail
+
+        # Make sure the package name is available
+        package_result_list = self.is_package_available(package_install_path)
+        if not package_result_list:
+            raise common.LmbrCmdError(f"Invalid Android SDK Package {package_description}: Bad package path {package_install_path}")
+
+        # Reverse sort and pick the first item, which should be the latest (if the install path contains wildcards)
+        def _available_sort(item):
+            return item.path
+
+        package_result_list.sort(reverse=True, key=_available_sort)
+
+        available_package_to_install = package_result_list[0]  # For multiple hits, resolve to the first item which will be the latest version
+
+        # Perform the package installation
+        logging.info(f"Installing {available_package_to_install.description} ...")
+        result_code, result_stdout, result_stderr = self.sdk_manager.exec(['--install', available_package_to_install.path], capture_stdout=True, suppress_stderr=True)
+        if result_code != 0:
+            raise common.LmbrCmdError(f"Error installing package {available_package_to_install.path}: \n{result_stderr}")
+
+        # Refresh the tracked SDK Contents
+        self.refresh_sdk_installation()
+
+        # Get the package details to verify
+        package_result_list = self.is_package_installed(package_install_path)
+        if package_result_list:
+            installed_package_detail = package_result_list[0]
+            logging.info(f"{installed_package_detail.description} (version {installed_package_detail.version}) Installed")
+            return installed_package_detail
+        else:
+            raise common.LmbrCmdError(f"Error installing package {available_package_to_install.path}: \n{result_stderr}")
+

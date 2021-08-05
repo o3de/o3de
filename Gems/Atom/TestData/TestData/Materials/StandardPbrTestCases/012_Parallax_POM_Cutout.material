@@ -13,13 +13,15 @@
             "textureMap": "TestData/Textures/checker8x8_512.png"
         },
         "parallax": {
-            "algorithm": "POM",
-            "enable": true,
             "factor": 0.10000000149011612,
             "quality": "High",
             "textureMap": "TestData/Textures/TextureHaven/4k_castle_brick_02_red/4k_castle_brick_02_red_disp.png"
         },
         "uv": {
+            "center": [
+                0.0,
+                0.0
+            ],
             "scale": 0.5
         }
     }

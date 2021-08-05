@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 // include required headers
 #include "OBB.h"
@@ -96,9 +92,9 @@ namespace MCore
         // create the AABB of (box1 in space of box0)
         const AZ::Transform& mtx = _1in0.mRotation;
 
-        AZ::Vector3 transformedAxisX = mtx.GetScale() * (mtx.GetRotation().GetConjugate().TransformVector(AZ::Vector3::CreateAxisX()));
-        AZ::Vector3 transformedAxisY = mtx.GetScale() * (mtx.GetRotation().GetConjugate().TransformVector(AZ::Vector3::CreateAxisY()));
-        AZ::Vector3 transformedAxisZ = mtx.GetScale() * (mtx.GetRotation().GetConjugate().TransformVector(AZ::Vector3::CreateAxisZ()));
+        AZ::Vector3 transformedAxisX = mtx.GetUniformScale() * (mtx.GetRotation().GetConjugate().TransformVector(AZ::Vector3::CreateAxisX()));
+        AZ::Vector3 transformedAxisY = mtx.GetUniformScale() * (mtx.GetRotation().GetConjugate().TransformVector(AZ::Vector3::CreateAxisY()));
+        AZ::Vector3 transformedAxisZ = mtx.GetUniformScale() * (mtx.GetRotation().GetConjugate().TransformVector(AZ::Vector3::CreateAxisZ()));
 
         float f = transformedAxisX.GetAbs().Dot(mExtents) - box.mExtents.GetX();
         if (f > _1in0.mCenter.GetX())

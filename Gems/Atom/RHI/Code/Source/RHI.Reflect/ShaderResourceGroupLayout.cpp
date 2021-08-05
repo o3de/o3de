@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayout.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Utils/TypeHash.h>
@@ -22,8 +18,9 @@ namespace AZ
             if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<ShaderResourceGroupLayout>()
-                    ->Version(7)
+                    ->Version(8) // ATOM-15472
                     ->Field("m_name", &ShaderResourceGroupLayout::m_name)
+                    ->Field("m_azslFileOfOrigin", &ShaderResourceGroupLayout::m_uniqueId)
                     ->Field("m_staticSamplers", &ShaderResourceGroupLayout::m_staticSamplers)
                     ->Field("m_inputsForBuffers", &ShaderResourceGroupLayout::m_inputsForBuffers)
                     ->Field("m_inputsForImages", &ShaderResourceGroupLayout::m_inputsForImages)
@@ -249,9 +246,9 @@ namespace AZ
 
         bool ShaderResourceGroupLayout::Finalize()
         {
-            if (!ValidateFinalizeState(ValidateFinalizeStateExpect::NotFinalized))
+            if (IsFinalized())
             {
-                return false;
+                return true;
             }
 
             if (m_bindingSlot.IsNull())

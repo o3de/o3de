@@ -1,14 +1,11 @@
 # coding:utf-8
 #!/usr/bin/python
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 #
 # -- This line is 75 characters -------------------------------------------
 import sys
@@ -137,8 +134,9 @@ def get_dccsi_config(dccsi_dirpath=return_stub_dir()):
 
 
 # -------------------------------------------------------------------------
-def get_current_project(dev_folder=get_stub_check_path()):
-    """Uses regex in lumberyard Dev\\bootstrap.cfg to retreive project tag str"""
+def get_current_project_cfg(dev_folder=get_stub_check_path()):
+    """Uses regex in lumberyard Dev\\bootstrap.cfg to retreive project tag str
+    Note: boostrap.cfg will be deprecated.  Don't use this method anymore."""
     boostrap_filepath = Path(dev_folder, "bootstrap.cfg")
     if boostrap_filepath.exists():
         bootstrap = open(str(boostrap_filepath), "r")
@@ -150,6 +148,35 @@ def get_current_project(dev_folder=get_stub_check_path()):
                 _LOGGER.debug('Project is: {}'.format(game_folder_match.group(1)))
                 return game_folder_match.group(1)
     return None
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+def get_current_project():
+    """Gets o3de project via .o3de data in user directory"""
+
+    from azpy.constants import PATH_USER_O3DE_BOOTSTRAP
+    from collections import OrderedDict
+    from box import Box
+    
+    bootstrap_box = None
+
+    try:
+        bootstrap_box = Box.from_json(filename=str(Path(PATH_USER_O3DE_BOOTSTRAP).resolve()),
+                                     encoding="utf-8",
+                                     errors="strict",
+                                     object_pairs_hook=OrderedDict)
+    except Exception as e:
+        # this file runs in py2.7 for Maya 2020, FileExistsError is not defined
+        _LOGGER.error('FileExistsError: {}'.format(PATH_USER_O3DE_BOOTSTRAP))
+        _LOGGER.error('exception is: {}'.format(e))
+
+    if bootstrap_box:
+        # this seems fairly hard coded - what if the data changes?
+        project_path=Path(bootstrap_box.Amazon.AzCore.Bootstrap.project_path)
+        return project_path.resolve()
+    else:
+        return None
 # -------------------------------------------------------------------------
 
 
@@ -194,7 +221,11 @@ if __name__ == '__main__':
 
     _LOGGER.info('LY_DEV: {}'.format(get_stub_check_path('engine.json')))
 
-    _LOGGER.info('LY_PROJECT: {}'.format(get_current_project(get_stub_check_path('bootstrap.cfg'))))
+    # this will be deprecated and shouldn't work soon (returns None)
+    _LOGGER.info('LY_PROJECT: {}'.format(get_current_project_cfg(get_stub_check_path('bootstrap.cfg'))))
+
+    # new o3de version
+    _LOGGER.info('LY_PROJECT: {}'.format(get_current_project()))
 
     _LOGGER.info('DCCSI_PYTHON_LIB_PATH: {}'.format(bootstrap_dccsi_py_libs(return_stub_dir('dccsi_stub'))))
 

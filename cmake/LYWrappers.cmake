@@ -1,12 +1,9 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 #
 
 set(LY_UNITY_BUILD OFF CACHE BOOL "UNITY builds")
@@ -53,7 +50,6 @@ define_property(TARGET PROPERTY GEM_MODULE
 # \arg:HEADERONLY (bool) defines this target to be a header only library. A ${NAME}_HEADERS project will be created for the IDE
 # \arg:EXECUTABLE (bool) defines this target to be an executable
 # \arg:APPLICATION (bool) defines this target to be an application (executable that is not a console)
-# \arg:UNKNOWN (bool) defines this target to be unknown. This is used when importing installed targets from Find files
 # \arg:IMPORTED (bool) defines this target to be imported.
 # \arg:NAMESPACE namespace declaration for this target. It will be used for IDE and dependencies
 # \arg:OUTPUT_NAME (optional) overrides the name of the output target. If not specified, the name will be used.
@@ -77,7 +73,7 @@ define_property(TARGET PROPERTY GEM_MODULE
 # \arg:AUTOGEN_RULES a set of AutoGeneration rules to be passed to the AzAutoGen expansion system
 function(ly_add_target)
 
-    set(options STATIC GEM_STATIC SHARED MODULE GEM_MODULE HEADERONLY EXECUTABLE APPLICATION UNKNOWN IMPORTED AUTOMOC AUTOUIC AUTORCC NO_UNITY)
+    set(options STATIC SHARED MODULE GEM_STATIC GEM_MODULE HEADERONLY EXECUTABLE APPLICATION IMPORTED AUTOMOC AUTOUIC AUTORCC NO_UNITY)
     set(oneValueArgs NAME NAMESPACE OUTPUT_SUBDIRECTORY OUTPUT_NAME)
     set(multiValueArgs FILES_CMAKE GENERATED_FILES INCLUDE_DIRECTORIES COMPILE_DEFINITIONS BUILD_DEPENDENCIES RUNTIME_DEPENDENCIES PLATFORM_INCLUDE_FILES TARGET_PROPERTIES AUTOGEN_RULES)
 
@@ -87,7 +83,7 @@ function(ly_add_target)
     if(NOT ly_add_target_NAME)
         message(FATAL_ERROR "You must provide a name for the target")
     endif()
-    if(NOT ly_add_target_IMPORTED)
+    if(NOT ly_add_target_IMPORTED AND NOT ly_add_target_HEADERONLY)
         if(NOT ly_add_target_FILES_CMAKE)
             message(FATAL_ERROR "You must provide a list of _files.cmake files for the target")
         endif()
@@ -106,23 +102,27 @@ function(ly_add_target)
         ly_include_cmake_file_list(${file_cmake})
     endforeach()
 
-    set(linking_options)
-    set(linking_count)
+    unset(linking_options)
+    unset(linking_count)
+    unset(target_type_options)
     if(ly_add_target_STATIC)
         set(linking_options STATIC)
+        set(target_type_options STATIC)
         set(linking_count "${linking_count}1")
     endif()
     if(ly_add_target_SHARED)
         set(linking_options SHARED)
+        set(target_type_options SHARED)
         set(linking_count "${linking_count}1")
     endif()
     if(ly_add_target_MODULE)
         set(linking_options ${PAL_LINKOPTION_MODULE})
+        set(target_type_options ${PAL_LINKOPTION_MODULE})
         set(linking_count "${linking_count}1")
     endif()
-
     if(ly_add_target_HEADERONLY)
         set(linking_options INTERFACE)
+        set(target_type_options INTERFACE)
         set(linking_count "${linking_count}1")
     endif()
     if(ly_add_target_EXECUTABLE)
@@ -133,12 +133,11 @@ function(ly_add_target)
         set(linking_options APPLICATION)
         set(linking_count "${linking_count}1")
     endif()
-    if(ly_add_target_UNKNOWN)
-        set(linking_options UNKNOWN)
-        set(linking_count "${linking_count}1")
-    endif()
     if(NOT ("${linking_count}" STREQUAL "1"))
-        message(FATAL_ERROR "More than one of the following options [STATIC | SHARED | MODULE | HEADERONLY | EXECUTABLE | APPLICATION | UNKNOWN] was specified and they are mutually exclusive")
+        message(FATAL_ERROR "More than one of the following options [STATIC | SHARED | MODULE | HEADERONLY | EXECUTABLE | APPLICATION ] was specified and they are mutually exclusive")
+    endif()
+    if(ly_add_target_IMPORTED)
+        list(APPEND target_type_options IMPORTED GLOBAL)
     endif()
 
     if(ly_add_target_NAMESPACE)
@@ -149,29 +148,32 @@ function(ly_add_target)
 
     set(project_NAME ${ly_add_target_NAME})
     if(ly_add_target_EXECUTABLE)
-        add_executable(${ly_add_target_NAME}
+        add_executable(${ly_add_target_NAME} 
+            ${target_type_options}
             ${ALLFILES} ${ly_add_target_GENERATED_FILES}
         )
         ly_apply_platform_properties(${ly_add_target_NAME})
+        if(ly_add_target_IMPORTED)
+            set_target_properties(${ly_add_target_NAME} PROPERTIES LINKER_LANGUAGE CXX)
+        endif()
     elseif(ly_add_target_APPLICATION)
-        add_executable(${ly_add_target_NAME}
+        add_executable(${ly_add_target_NAME} 
+            ${target_type_options}
             ${PAL_EXECUTABLE_APPLICATION_FLAG}
             ${ALLFILES} ${ly_add_target_GENERATED_FILES}
         )
         ly_apply_platform_properties(${ly_add_target_NAME})
+        if(ly_add_target_IMPORTED)
+            set_target_properties(${ly_add_target_NAME} PROPERTIES LINKER_LANGUAGE CXX)
+        endif()
     elseif(ly_add_target_HEADERONLY)
         add_library(${ly_add_target_NAME}
-            ${linking_options}
+            ${target_type_options}
             ${ALLFILES} ${ly_add_target_GENERATED_FILES}
-        )
-    elseif(ly_add_target_UNKNOWN)
-        add_library(${ly_add_target_NAME}
-            ${linking_options}
-            IMPORTED
         )
     else()
         add_library(${ly_add_target_NAME}
-            ${linking_options}
+            ${target_type_options}
             ${ALLFILES} ${ly_add_target_GENERATED_FILES}
         )
         ly_apply_platform_properties(${ly_add_target_NAME})
@@ -209,7 +211,7 @@ function(ly_add_target)
     endif()
 
     if (ly_add_target_INCLUDE_DIRECTORIES)
-        ly_target_include_directories(${ly_add_target_NAME}
+        target_include_directories(${ly_add_target_NAME}
             ${ly_add_target_INCLUDE_DIRECTORIES}
         )
     endif()
@@ -256,14 +258,7 @@ function(ly_add_target)
     # IDE organization
     ly_source_groups_from_folders("${ALLFILES}")
     source_group("Generated Files" REGULAR_EXPRESSION "(${CMAKE_BINARY_DIR})") # Any file coming from the output folder
-    file(RELATIVE_PATH project_path ${LY_ROOT_FOLDER} ${CMAKE_CURRENT_SOURCE_DIR})
-    # Visual Studio cannot load a project with a FOLDER that starts with a "../" relative path
-    # Strip away any leading ../ and then add a prefix of ExternalTargets/ as that in this scenario
-    # A relative directory with ../ would be outside of the Lumberyard Engine Root therefore it is external
-    set(ide_path ${project_path})
-    if (${project_path} MATCHES [[^(\.\./)+(.*)]])
-        set(ide_path "${CMAKE_MATCH_2}")
-    endif()
+    ly_get_vs_folder_directory(${CMAKE_CURRENT_SOURCE_DIR} ide_path)
     set_property(TARGET ${project_NAME} PROPERTY FOLDER ${ide_path})
 
 
@@ -284,8 +279,6 @@ function(ly_add_target)
     foreach(prop IN ITEMS AUTOMOC AUTORCC)
         if(${ly_add_target_${prop}})
             set_property(TARGET ${ly_add_target_NAME} PROPERTY ${prop} ON)
-            # Flag this target as depending on Qt
-            set_property(GLOBAL PROPERTY LY_DETECT_QT_DEPENDENCY_${ly_add_target_NAME} ON)
         endif()
     endforeach()
     if(${ly_add_target_AUTOUIC})
@@ -306,10 +299,19 @@ function(ly_add_target)
     endif()
 
     # Store the target so we can walk through all of them in LocationDependencies.cmake
-    set_property(GLOBAL APPEND PROPERTY LY_ALL_TARGETS ${ly_add_target_NAME})
+    set_property(GLOBAL APPEND PROPERTY LY_ALL_TARGETS ${interface_name})
+
+    # Store the aliased target into a DIRECTORY property
+    set_property(DIRECTORY APPEND PROPERTY LY_DIRECTORY_TARGETS ${interface_name})
+    # Store the directory path in a GLOBAL property so that it can be accessed
+    # in the layout install logic. Skip if the directory has already been added
+    get_property(ly_all_target_directories GLOBAL PROPERTY LY_ALL_TARGET_DIRECTORIES)
+    if(NOT CMAKE_CURRENT_SOURCE_DIR IN_LIST ly_all_target_directories)
+        set_property(GLOBAL APPEND PROPERTY LY_ALL_TARGET_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR})
+    endif()
 
     set(runtime_dependencies_list SHARED MODULE EXECUTABLE APPLICATION)
-    if(linking_options IN_LIST runtime_dependencies_list)
+    if(NOT ly_add_target_IMPORTED AND linking_options IN_LIST runtime_dependencies_list)
 
         add_custom_command(TARGET ${ly_add_target_NAME} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -P ${CMAKE_BINARY_DIR}/runtime_dependencies/$<CONFIG>/${ly_add_target_NAME}.cmake
@@ -318,14 +320,6 @@ function(ly_add_target)
             VERBATIM
         )
 
-        detect_qt_dependency(${ly_add_target_NAME} QT_DEPENDENCY)
-        if(QT_DEPENDENCY)
-            if(NOT COMMAND ly_qt_deploy)
-                message(FATAL_ERROR "Could not find function \"ly_qt_deploy\", this function should be defined in cmake/3rdParty/Platform/${PAL_PLATFORM_NAME}/Qt_${PAL_PLATFORM_NAME_LOWERCASE}.cmake")
-            endif()
-
-            ly_qt_deploy(TARGET ${ly_add_target_NAME})
-        endif()
     endif()
 
     if(ly_add_target_AUTOGEN_RULES)
@@ -334,22 +328,6 @@ function(ly_add_target)
             INCLUDE_DIRECTORIES ${ly_add_target_INCLUDE_DIRECTORIES}
             AUTOGEN_RULES ${ly_add_target_AUTOGEN_RULES}
             ALLFILES ${ALLFILES}
-        )
-    endif()
-
-    if(NOT ly_add_target_IMPORTED)
-        if(NOT ly_add_target_INSTALL_COMPONENT)
-            set(ly_add_target_INSTALL_COMPONENT ${LY_DEFAULT_INSTALL_COMPONENT})
-        endif()
-
-        ly_install_target(
-            ${ly_add_target_NAME}
-            NAMESPACE ${ly_add_target_NAMESPACE}
-            INCLUDE_DIRECTORIES ${ly_add_target_INCLUDE_DIRECTORIES}
-            BUILD_DEPENDENCIES ${ly_add_target_BUILD_DEPENDENCIES}
-            RUNTIME_DEPENDENCIES ${ly_add_target_RUNTIME_DEPENDENCIES}
-            COMPILE_DEFINITIONS ${ly_add_target_COMPILE_DEFINITIONS}
-            COMPONENT ${ly_add_target_INSTALL_COMPONENT}
         )
     endif()
 
@@ -403,21 +381,21 @@ function(ly_delayed_target_link_libraries)
             cmake_parse_arguments(ly_delayed_target_link_libraries "" "" "${visibilities}" ${delayed_link})
 
             foreach(visibility ${visibilities})
-                foreach(item ${ly_delayed_target_link_libraries_${visibility}})
+                foreach(alias_item ${ly_delayed_target_link_libraries_${visibility}})
 
-                    if(TARGET ${item})
-                        get_target_property(item_type ${item} TYPE)
+                    if(TARGET ${alias_item})
+                        get_target_property(item_type ${alias_item} TYPE)
+                        ly_de_alias_target(${alias_item} item)
                     else()
                         unset(item_type)
+                        set(item ${alias_item})
                     endif()
 
                     if(item_type STREQUAL MODULE_LIBRARY)
-                        ly_target_include_directories(${target} ${visibility} $<TARGET_PROPERTY:${item},INTERFACE_INCLUDE_DIRECTORIES>)
-                        target_link_libraries(${target} ${visibility} $<TARGET_PROPERTY:${item},INTERFACE_LINK_LIBRARIES>)
-                        target_compile_definitions(${target} ${visibility} $<TARGET_PROPERTY:${item},INTERFACE_COMPILE_DEFINITIONS>)
-                        target_compile_options(${target} ${visibility} $<TARGET_PROPERTY:${item},INTERFACE_COMPILE_OPTIONS>)
-                        # Add it also as a manual dependency so runtime_dependencies walks it through
-                        ly_add_dependencies(${target} ${item})
+                        target_include_directories(${target} ${visibility} $<GENEX_EVAL:$<TARGET_PROPERTY:${item},INTERFACE_INCLUDE_DIRECTORIES>>)
+                        target_link_libraries(${target} ${visibility} $<GENEX_EVAL:$<TARGET_PROPERTY:${item},INTERFACE_LINK_LIBRARIES>>)
+                        target_compile_definitions(${target} ${visibility} $<GENEX_EVAL:$<TARGET_PROPERTY:${item},INTERFACE_COMPILE_DEFINITIONS>>)
+                        target_compile_options(${target} ${visibility} $<GENEX_EVAL:$<TARGET_PROPERTY:${item},INTERFACE_COMPILE_OPTIONS>>)
                     else()
                         ly_parse_third_party_dependencies(${item})
                         target_link_libraries(${target} ${visibility} ${item})
@@ -431,60 +409,6 @@ function(ly_delayed_target_link_libraries)
 
     endforeach()
     set_property(GLOBAL PROPERTY LY_DELAYED_LINK_TARGETS)
-
-endfunction()
-
-#! detect_qt_dependency: Determine if a target will link directly to a Qt library
-#
-# qt deployment introspects a shared library or executable for its direct
-# dependencies on Qt libraries. In CMake, this will be true if a target, or any
-# of its link libraries which are static libraries, recursively, links to Qt.
-function(detect_qt_dependency TARGET_NAME OUTPUT_VARIABLE)
-
-    if(TARGET ${TARGET_NAME})
-        get_target_property(alias ${TARGET_NAME} ALIASED_TARGET)
-        if(alias)
-            set(TARGET_NAME ${alias})
-        endif()
-    endif()
-
-    get_property(cached_is_qt_dependency GLOBAL PROPERTY LY_DETECT_QT_DEPENDENCY_${TARGET_NAME})
-    if(cached_is_qt_dependency)
-        set(${OUTPUT_VARIABLE} ${cached_is_qt_dependency} PARENT_SCOPE)
-        return()
-    endif()
-
-    if(${TARGET_NAME} MATCHES "^3rdParty::Qt::.*")
-        set_property(GLOBAL PROPERTY LY_DETECT_QT_DEPENDENCY_${TARGET_NAME} ON)
-        set(${OUTPUT_VARIABLE} ON PARENT_SCOPE)
-        return()
-    endif()
-
-    get_property(delayed_link GLOBAL PROPERTY LY_DELAYED_LINK_${TARGET_NAME})
-    set(exclude_library_types SHARED_LIBRARY MODULE_LIBRARY)
-    foreach(library IN LISTS delayed_link)
-
-        if(TARGET ${library})
-            get_target_property(child_target_type ${library} TYPE)
-
-            # If the dependency to Qt has to go through a shared/module library,
-            # it is not a direct dependency
-            if (child_target_type IN_LIST exclude_library_types)
-                continue()
-            endif()
-        endif()
-
-        detect_qt_dependency(${library} child_depends_on_qt)
-        if(child_depends_on_qt)
-            set_property(GLOBAL PROPERTY LY_DETECT_QT_DEPENDENCY_${TARGET_NAME} ON)
-            set(${OUTPUT_VARIABLE} ON PARENT_SCOPE)
-            return()
-        endif()
-
-    endforeach()
-
-    set_property(GLOBAL PROPERTY LY_DETECT_QT_DEPENDENCY_${TARGET_NAME} OFF)
-    set(${OUTPUT_VARIABLE} OFF PARENT_SCOPE)
 
 endfunction()
 
@@ -513,7 +437,7 @@ endfunction()
 # Looks at the the following variables within the platform include file to set the equivalent target properties
 # LY_FILES_CMAKE -> extract list of files -> target_sources
 # LY_FILES -> target_source
-# LY_INCLUDE_DIRECTORIES -> ly_target_include_directories
+# LY_INCLUDE_DIRECTORIES -> target_include_directories
 # LY_COMPILE_DEFINITIONS -> target_compile_definitions
 # LY_COMPILE_OPTIONS -> target_compile_options
 # LY_LINK_OPTIONS -> target_link_options
@@ -539,7 +463,11 @@ macro(ly_configure_target_platform_properties)
             message(FATAL_ERROR "The supplied PLATFORM_INCLUDE_FILE(${platform_include_file}) cannot be included.\
  Parsing of target will halt")
         endif()
-        target_sources(${ly_add_target_NAME} PRIVATE ${platform_include_file})
+        if(ly_add_target_HEADERONLY)
+            target_sources(${ly_add_target_NAME} INTERFACE ${platform_include_file})
+        else()
+            target_sources(${ly_add_target_NAME} PRIVATE ${platform_include_file})
+        endif()
         ly_source_groups_from_folders("${platform_include_file}")
 
         if(LY_FILES_CMAKE)
@@ -555,7 +483,7 @@ macro(ly_configure_target_platform_properties)
             target_sources(${ly_add_target_NAME} PRIVATE ${LY_FILES})
         endif()
         if (LY_INCLUDE_DIRECTORIES)
-            ly_target_include_directories(${ly_add_target_NAME} ${LY_INCLUDE_DIRECTORIES})
+            target_include_directories(${ly_add_target_NAME} ${LY_INCLUDE_DIRECTORIES})
         endif()
         if(LY_COMPILE_DEFINITIONS)
             target_compile_definitions(${ly_add_target_NAME} ${LY_COMPILE_DEFINITIONS})
@@ -658,42 +586,6 @@ function(ly_add_source_properties)
 
 endfunction()
 
-function(ly_target_include_directories TARGET)
-
-    # Add the includes to the build and install interface
-    set(reserved_keywords PRIVATE PUBLIC INTERFACE)
-    unset(last_keyword)
-    foreach(include ${ARGN})
-        if(${include} IN_LIST reserved_keywords)
-            list(APPEND adapted_includes ${include})
-        elseif(IS_ABSOLUTE ${include})
-            list(APPEND adapted_includes
-                $<BUILD_INTERFACE:${include}>
-            )
-        else()
-            string(GENEX_STRIP ${include} include_genex_expr)
-            if(include_genex_expr STREQUAL include) # only for cases where there are no generation expressions
-                # We will be installing the includes using the same directory structure used in our source tree.
-                # The INSTALL_INTERFACE path tells CMake the location of the includes relative to the install prefix.
-                # When the target is imported into an external project, cmake will find these includes at <install_prefix>/include/<path_relative_to_root>
-                # where <install_prefix> is the location of the lumberyard install on disk.
-                file(REAL_PATH ${include} include_real)
-                file(RELATIVE_PATH install_dir ${CMAKE_SOURCE_DIR} ${include_real})
-                list(APPEND adapted_includes
-                    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/${include}>
-                    $<INSTALL_INTERFACE:include/${install_dir}>
-                )
-            else()
-                list(APPEND adapted_includes
-                    ${include}
-                )
-            endif()
-        endif()
-    endforeach()
-    target_include_directories(${TARGET} ${adapted_includes})
-
-endfunction()
-
 
 #! ly_project_add_subdirectory: calls add_subdirectory() if the project name is in the project list
 #
@@ -735,7 +627,6 @@ function(ly_de_alias_target target_name output_variable_name)
 
     while(target_name)
         set(de_aliased_target_name ${target_name})
-
         get_target_property(target_name ${target_name} ALIASED_TARGET)
     endwhile()
 
@@ -743,4 +634,39 @@ function(ly_de_alias_target target_name output_variable_name)
         message(FATAL_ERROR "Empty de_aliased for ${target_name}")
     endif()
     set(${output_variable_name} ${de_aliased_target_name} PARENT_SCOPE)
+endfunction()
+
+#! ly_get_vs_folder_directory: Sets the Visual Studio folder name used for organizing vcxproj
+#  in the IDE
+#
+# Visual Studio cannot load projects that with a ".." relative path or contain a colon ":" as part of its FOLDER
+# Therefore if the .vcxproj is absolute, the drive letter must be removed from the folder name
+#
+# What this method does is first check if the target being added to the Visual Studio solution is within
+# the LY_ROOT_FOLDER(i.e is the LY_ROOT_FOLDER a prefix of the target source directory)
+# If it is a relative path to the target is used as the folder name
+# Otherwise the target directory would either 
+# 1. Be a path outside of the LY_ROOT_FOLDER on the same drive.
+#    In that case forming a relative path would cause it to start with ".." which will not work
+# 2. Be an path outside of the LY_ROOT_FOLDER on a different drive
+#    Here a relative path cannot be formed and therefore the path would start with "<drive>:/Path/To/Project"
+#    Which shows up as unloaded due to containing a colon
+# In this scenario the relative part of the path from the drive letter is used as the FOLDER name
+# to make sure the projects show up in the loaded .sln
+function(ly_get_vs_folder_directory absolute_target_source_dir output_source_dir)
+    # Get a relative directory to the LY_ROOT_FOLDER if possible for the Visual Studio solution hierarchy
+    # If a relative path cannot be formed, then retrieve a path with the drive letter stripped from it
+    cmake_path(IS_PREFIX LY_ROOT_FOLDER ${absolute_target_source_dir} is_target_prefix_of_engine_root)
+    if(is_target_prefix_of_engine_root)
+        cmake_path(RELATIVE_PATH absolute_target_source_dir BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE relative_target_source_dir)
+    else()
+        cmake_path(IS_PREFIX CMAKE_SOURCE_DIR ${absolute_target_source_dir} is_target_prefix_of_source_dir)
+        if(is_target_prefix_of_source_dir)
+            cmake_path(RELATIVE_PATH absolute_target_source_dir BASE_DIRECTORY ${CMAKE_SOURCE_DIR} OUTPUT_VARIABLE relative_target_source_dir)
+        else()
+            cmake_path(GET absolute_target_source_dir RELATIVE_PART relative_target_source_dir)
+        endif()
+    endif()
+
+    set(${output_source_dir} ${relative_target_source_dir} PARENT_SCOPE)
 endfunction()

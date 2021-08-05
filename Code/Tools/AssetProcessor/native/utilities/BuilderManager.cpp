@@ -1,23 +1,21 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "BuilderManager.h"
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzCore/Utils/Utils.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
 #include <native/connection/connectionManager.h>
 #include <native/connection/connection.h>
 #include <native/utilities/AssetBuilderInfo.h>
 #include <QCoreApplication>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 
 namespace AssetProcessor
 {
@@ -186,10 +184,9 @@ namespace AssetProcessor
         QDir projectCacheRoot;
         AssetUtilities::ComputeProjectCacheRoot(projectCacheRoot);
 
-        QString gameName = AssetUtilities::ComputeProjectName();
-        QString projectPath = AssetUtilities::ComputeProjectPath();
-        QDir engineRoot;
-        AssetUtilities::ComputeEngineRoot(engineRoot);
+        AZ::SettingsRegistryInterface::FixedValueString projectName = AZ::Utils::GetProjectName();
+        AZ::IO::FixedMaxPathString projectPath = AZ::Utils::GetProjectPath();
+        AZ::IO::FixedMaxPathString enginePath = AZ::Utils::GetEnginePath();
 
         int portNumber = 0;
         ApplicationServerBus::BroadcastResult(portNumber, &ApplicationServerBus::Events::GetServerListeningPort);
@@ -197,14 +194,14 @@ namespace AssetProcessor
         AZStd::string params;
 #if !AZ_TRAIT_OS_PLATFORM_APPLE && !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
         params = AZStd::string::format(
-            R"(-task=%s -id="%s" -project-name="%s" -project-cache-path="%s" -project-path="%s" -engine-path="%s" -port %d)", task,
-            builderGuid.c_str(), gameName.toUtf8().constData(), projectCacheRoot.absolutePath().toUtf8().constData(),
-            projectPath.toUtf8().constData(), engineRoot.absolutePath().toUtf8().constData(), portNumber);
+            R"(-task=%s -id="%s" -project-name="%s" -project-cache-path="%s" -project-path="%s" -engine-path="%s" -port %d)",
+            task, builderGuid.c_str(), projectName.c_str(), projectCacheRoot.absolutePath().toUtf8().constData(),
+            projectPath.c_str(), enginePath.c_str(), portNumber);
 #else
         params = AZStd::string::format(
             R"(-task=%s -id="%s" -project-name="\"%s\"" -project-cache-path="\"%s\"" -project-path="\"%s\"" -engine-path="\"%s\"" -port %d)",
-            task, builderGuid.c_str(), gameName.toUtf8().constData(), projectCacheRoot.absolutePath().toUtf8().constData(),
-            projectPath.toUtf8().constData(), engineRoot.absolutePath().toUtf8().constData(), portNumber);
+            task, builderGuid.c_str(), projectName.c_str(), projectCacheRoot.absolutePath().toUtf8().constData(),
+            projectPath.c_str(), enginePath.c_str(), portNumber);
 #endif // !AZ_TRAIT_OS_PLATFORM_APPLE && !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
 
         if (moduleFilePath && moduleFilePath[0])
@@ -223,6 +220,26 @@ namespace AssetProcessor
         #else
             params = AZStd::string::format(R"(%s -input="\"%s\"" -output="\"%s\"")", params.c_str(), jobDescriptionFile.c_str(), jobResponseFile.c_str());
         #endif // !AZ_TRAIT_OS_PLATFORM_APPLE && !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
+        }
+
+        auto settingsRegistry = AZ::SettingsRegistry::Get();
+        AZ::CommandLine commandLine;
+        AZ::SettingsRegistryMergeUtils::GetCommandLineFromRegistry(*settingsRegistry, commandLine);
+        AZStd::fixed_vector optionKeys{ "regset", "regremove" };
+        for (auto&& optionKey : optionKeys)
+        {
+            size_t commandOptionCount = commandLine.GetNumSwitchValues(optionKey);
+            for (size_t optionIndex = 0; optionIndex < commandOptionCount; ++optionIndex)
+            {
+                const AZStd::string& optionValue = commandLine.GetSwitchValue(optionKey, optionIndex);
+                params.append(AZStd::string::format(
+#if !AZ_TRAIT_OS_PLATFORM_APPLE && !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
+                    R"( --%s="%s")",
+#else
+                    R"( --%s="\"%s\"")",
+#endif
+                    optionKey, optionValue.c_str()));
+            }
         }
 
         return params;

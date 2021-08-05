@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RPI.Public/RPISystem.h>
 
@@ -23,6 +19,7 @@
 #include <Atom/RPI.Reflect/System/RenderPipelineDescriptor.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 
+#include <Atom/RPI.Public/AssetInitBus.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Public/GpuQuery/GpuQueryTypes.h>
 #include <Atom/RPI.Public/Scene.h>
@@ -112,8 +109,9 @@ namespace AZ
         void RPISystem::Shutdown()
         {
             m_viewportContextManager.Shutdown();
-            m_viewSrgAsset.Reset();
-            m_sceneSrgAsset.Reset();
+            m_viewSrgLayout = nullptr;
+            m_sceneSrgLayout = nullptr;
+            m_commonShaderAssetForSrgs.Reset();
 
 #if AZ_RPI_PRINT_GLOBAL_STATE_ON_ASSERT
             Debug::TraceMessageBus::Handler::BusDisconnect();
@@ -212,16 +210,22 @@ namespace AZ
             return nullptr;
         }
 
-        Data::Asset<ShaderResourceGroupAsset> RPISystem::GetSceneSrgAsset() const
+        Data::Asset<ShaderAsset> RPISystem::GetCommonShaderAssetForSrgs() const
         {
             AZ_Assert(m_systemAssetsInitialized, "InitializeSystemAssets() should be called once when asset catalog loaded'");
-            return m_sceneSrgAsset;
+            return m_commonShaderAssetForSrgs;
         }
 
-        Data::Asset<ShaderResourceGroupAsset> RPISystem::GetViewSrgAsset() const
+        RHI::Ptr<RHI::ShaderResourceGroupLayout> RPISystem::GetSceneSrgLayout() const
         {
             AZ_Assert(m_systemAssetsInitialized, "InitializeSystemAssets() should be called once when asset catalog loaded'");
-            return m_viewSrgAsset;
+            return m_sceneSrgLayout;
+        }
+
+        RHI::Ptr<RHI::ShaderResourceGroupLayout> RPISystem::GetViewSrgLayout() const
+        {
+            AZ_Assert(m_systemAssetsInitialized, "InitializeSystemAssets() should be called once when asset catalog loaded'");
+            return m_viewSrgLayout;
         }
 
         void RPISystem::OnSystemTick()
@@ -239,6 +243,8 @@ namespace AZ
                 return;
             }
             AZ_ATOM_PROFILE_FUNCTION("RPI", "RPISystem: SimulationTick");
+
+            AssetInitBus::Broadcast(&AssetInitBus::Events::PostLoadInit);
 
             // Update tick time info
             FillTickTimeInfo();
@@ -279,24 +285,27 @@ namespace AZ
 
             m_rhiSystem.FrameUpdate(
                 [this](RHI::FrameGraphBuilder& frameGraphBuilder)
-            {
-                // Pass system's frame update, which includes the logic of adding scope producers, has to be added here since the scope producers only can be added to the frame
-                // when frame started which cleans up previous scope producers. 
-                m_passSystem.FrameUpdate(frameGraphBuilder);
+                {
+                    // Pass system's frame update, which includes the logic of adding scope producers, has to be added here since the
+                    // scope producers only can be added to the frame when frame started which cleans up previous scope producers.
+                    m_passSystem.FrameUpdate(frameGraphBuilder);
 
-                // Update View Srgs
+                    // Update View Srgs
+                    for (auto& scenePtr : m_scenes)
+                    {
+                        scenePtr->UpdateSrgs();
+                    }
+                });
+
+            {
+                AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "RPISystem: FrameEnd");
+                m_dynamicDraw.FrameEnd();
+                m_passSystem.FrameEnd();
+
                 for (auto& scenePtr : m_scenes)
                 {
-                    scenePtr->UpdateSrgs();
+                    scenePtr->OnFrameEnd();
                 }
-            });
-           
-            m_dynamicDraw.FrameEnd();
-            m_passSystem.FrameEnd();
-
-            for (auto& scenePtr : m_scenes)
-            {
-                scenePtr->OnFrameEnd();
             }
 
             m_renderTick++;
@@ -353,14 +362,23 @@ namespace AZ
                 m_descriptor.m_rhiSystemDescriptor.m_platformLimits = RPI::GetDataFromAnyAsset<RHI::PlatformLimits>(platformLimitsAsset);
             }
 
-            m_viewSrgAsset = AssetUtils::LoadCriticalAsset<ShaderResourceGroupAsset>( m_descriptor.m_viewSrgAssetPath.c_str());
-            if (!m_viewSrgAsset.IsReady())
+            m_commonShaderAssetForSrgs = AssetUtils::LoadCriticalAsset<ShaderAsset>( m_descriptor.m_commonSrgsShaderAssetPath.c_str());
+            if (!m_commonShaderAssetForSrgs.IsReady())
             {
                 return;
             }
-            m_sceneSrgAsset = AssetUtils::LoadCriticalAsset<ShaderResourceGroupAsset>(m_descriptor.m_sceneSrgAssetPath.c_str());
-            if (!m_sceneSrgAsset.IsReady())
+            m_sceneSrgLayout = m_commonShaderAssetForSrgs->FindShaderResourceGroupLayout(SrgBindingSlot::Scene);
+            if (!m_sceneSrgLayout)
             {
+                AZ_Error("RPISystem", false, "Failed to find SceneSrg by slot=<%u> from shader asset at path <%s>", SrgBindingSlot::Scene,
+                    m_descriptor.m_commonSrgsShaderAssetPath.c_str());
+                return;
+            }
+            m_viewSrgLayout = m_commonShaderAssetForSrgs->FindShaderResourceGroupLayout(SrgBindingSlot::View);
+            if (!m_viewSrgLayout)
+            {
+                AZ_Error("RPISystem", false, "Failed to find ViewSrg by slot=<%u> from shader asset at path <%s>", SrgBindingSlot::View,
+                    m_descriptor.m_commonSrgsShaderAssetPath.c_str());
                 return;
             }
 

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -27,12 +23,58 @@ namespace AzNetworking
     class IConnectionListener;
     class ICompressor;
 
-    // 20 byte IPv4 header + 8 byte UDP header
-    static const uint32_t UdpPacketHeaderSize = 20 + 8;
-    static const uint32_t DtlsPacketHeaderSize = 13; // DTLS1_RT_HEADER_LENGTH
+    static const uint32_t UdpPacketHeaderSize = 20 + 8; //!< 20 byte IPv4 header + 8 byte UDP header
+    static const uint32_t DtlsPacketHeaderSize = 13; //!< DTLS1_RT_HEADER_LENGTH
 
     //! @class UdpNetworkInterface
     //! @brief This class implements a UDP network interface.
+    //!
+    //! UdpNetworkInterface is an implementation of AzNetworking::INetworkInterface. Since UDP is a very bare bones protocol,
+    //! the Open 3D Engine implementation has to provide significantly more than its TCP counterpart (since TCP implements a
+    //! significant number of reliability features.)
+    //! 
+    //! When sent through UDP, a packet can have additional actions performed on it depending on which features are enabled and
+    //! configured. Each feature listed in this description is in the order a packet will see them on Send.
+    //! 
+    //! ### Packet structure
+    //! 
+    //! The general structure of a UDP packet is:
+    //! 
+    //! * Flags - A bitfield a receiving endpoint can quickly inspect to learn about configuration of a packet
+    //! * Header - Details the type of packet and other information related to reliability
+    //! * Payload - The actual serialized content of the packet
+    //! 
+    //! For more information, read [Networking Packets](http://o3de.org/docs/user-guide/networking/packets) in the O3DE documentation.
+    //! 
+    //! ### Reliability
+    //! 
+    //! UDP packets can be sent reliably or unreliably. Reliably sent packets are registered for tracking first. This causes the
+    //! reliable packet to be resent if a timeout on the packet is reached. Once the packet is acknowledged, the packet is
+    //! unregistered.
+    //! 
+    //! ### Fragmentation
+    //! 
+    //! If the raw packet size exceeds the configured maximum transmission unit (MTU) then the packet is broken into
+    //! multiple reliable fragments to avoid fragmentation at the routing level. Fragments are always reliable so the original
+    //! packet can be reconstructed. Operations that alter the payload generally follow this step so that they can be
+    //! separately applied to the Fragments in addition to not being applied to both the original and Fragments.
+    //! 
+    //! ### Compression
+    //! 
+    //! Compression here refers to content insensitive compression using libraries like LZ4. If enabled, the target payload is
+    //! run through the compressor and replaces the original payload if it's in fact smaller. To tell if compression is enabled
+    //! on a given packet, we operate on a bit in the packet's Flags. The Sender writes this bit while the Receiver checks it to
+    //! see if a packet needs to be decompressed.
+    //! 
+    //! O3DE could potentially move from over MTU to under with compression, and the UDP interface doesn't check for this. Detecting a change
+    //! that would reduce the number of fragmented packets would require pre-emptively compressing payloads to tell if that change happened,
+    //! which could potentially lead to a lot of unnecessary calls to the compressor.
+    //! 
+    //! ### Encryption
+    //! 
+    //! AzNetworking uses the [OpenSSL](https://www.openssl.org/) library to implement Datagram Layer Transport Security (DTLS) encryption
+    //! on UDP traffic. Encryption operates as described in [O3DE Networking Encryption](http://o3de.org/docs/user-guide/networking/encryption)
+    //! on the documentation website. Once both endpoints have completed their handshake, all traffic is expected to be fully encrypted.
     class UdpNetworkInterface final
         : public INetworkInterface
     {
@@ -60,7 +102,10 @@ namespace AzNetworking
         bool SendReliablePacket(ConnectionId connectionId, const IPacket& packet) override;
         PacketId SendUnreliablePacket(ConnectionId connectionId, const IPacket& packet) override;
         bool WasPacketAcked(ConnectionId connectionId, PacketId packetId) override;
+        bool StopListening() override;
         bool Disconnect(ConnectionId connectionId, DisconnectReason reason) override;
+        void SetTimeoutEnabled(bool timeoutEnabled) override;
+        bool IsTimeoutEnabled() const override;
         //! @}
 
         //! Returns true if this is an encrypted socket, false if not.
@@ -136,6 +181,7 @@ namespace AzNetworking
         TrustZone m_trustZone;
         uint16_t m_port = 0;
         bool m_allowIncomingConnections = false;
+        bool m_timeoutEnabled = true;
         IConnectionListener& m_connectionListener;
         UdpConnectionSet m_connectionSet;
         TimeoutQueue m_connectionTimeoutQueue;

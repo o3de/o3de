@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
@@ -88,9 +84,11 @@ namespace UnitTest
                     info.m_assetId = m_assets[platformNum][idx];
                     assetRegistry->RegisterAsset(m_assets[platformNum][idx], info);
                     m_assetsPath[platformNum][idx] = info.m_relativePath;
+                    AZ_TEST_START_TRACE_SUPPRESSION;
                     if (m_fileStreams[platformNum][idx].Open(m_assetsPath[platformNum][idx].c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeBinary | AZ::IO::OpenMode::ModeCreatePath))
                     {
                         m_fileStreams[platformNum][idx].Write(info.m_relativePath.size(), info.m_relativePath.data());
+                        AZ_TEST_STOP_TRACE_SUPPRESSION(1); // writing to asset cache folder
                     }
                     else
                     {
@@ -136,7 +134,9 @@ namespace UnitTest
                     m_fileStreams[platformNum][idx].Close();
                     if (fileIO->Exists(m_assetsPath[platformNum][idx].c_str()))
                     {
+                        AZ_TEST_START_TRACE_SUPPRESSION;
                         fileIO->Remove(m_assetsPath[platformNum][idx].c_str());
+                        AZ_TEST_STOP_TRACE_SUPPRESSION(1); // removing from asset cache folder
                     }
                 }
             }
@@ -184,13 +184,13 @@ namespace UnitTest
     TEST_F(PlatformAddressedAssetCatalogManagerTest, PlatformAddressedAssetCatalogManager_CatalogExistsChecks_Success)
     {
 
-        EXPECT_EQ(AzToolsFramework::PlatformAddressedAssetCatalog::CatalogExists(AzFramework::PlatformId::ES3), true);
-        AZStd::string es3CatalogPath = AzToolsFramework::PlatformAddressedAssetCatalog::GetCatalogRegistryPathForPlatform(AzFramework::PlatformId::ES3);
-        if (AZ::IO::FileIOBase::GetInstance()->Exists(es3CatalogPath.c_str()))
+        EXPECT_EQ(AzToolsFramework::PlatformAddressedAssetCatalog::CatalogExists(AzFramework::PlatformId::ANDROID_ID), true);
+        AZStd::string androidCatalogPath = AzToolsFramework::PlatformAddressedAssetCatalog::GetCatalogRegistryPathForPlatform(AzFramework::PlatformId::ANDROID_ID);
+        if (AZ::IO::FileIOBase::GetInstance()->Exists(androidCatalogPath.c_str()))
         {
-            AZ::IO::FileIOBase::GetInstance()->Remove(es3CatalogPath.c_str());
+            AZ::IO::FileIOBase::GetInstance()->Remove(androidCatalogPath.c_str());
         }
-        EXPECT_EQ(AzToolsFramework::PlatformAddressedAssetCatalog::CatalogExists(AzFramework::PlatformId::ES3), false);
+        EXPECT_EQ(AzToolsFramework::PlatformAddressedAssetCatalog::CatalogExists(AzFramework::PlatformId::ANDROID_ID), false);
     }
 
     class PlatformAddressedAssetCatalogMessageTest : public AzToolsFramework::PlatformAddressedAssetCatalog
@@ -251,7 +251,9 @@ namespace UnitTest
         AzFramework::AssetSystem::NetworkAssetUpdateInterface* notificationInterface = AZ::Interface<AzFramework::AssetSystem::NetworkAssetUpdateInterface>::Get();
         EXPECT_NE(notificationInterface, nullptr);
 
-        auto* mockCatalog = new ::testing::NiceMock<PlatformAddressedAssetCatalogMessageTest>(AzFramework::PlatformId::ES3);
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        auto* mockCatalog = new ::testing::NiceMock<PlatformAddressedAssetCatalogMessageTest>(AzFramework::PlatformId::ANDROID_ID);
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
         AZStd::unique_ptr< ::testing::NiceMock<PlatformAddressedAssetCatalogMessageTest>> catalogHolder;
         catalogHolder.reset(mockCatalog);
 
@@ -259,7 +261,7 @@ namespace UnitTest
         EXPECT_CALL(*mockCatalog, AssetChanged(testing::_)).Times(0);
         notificationInterface->AssetChanged(testMessage);
 
-        testMessage.m_platform = "es3";
+        testMessage.m_platform = "android";
         EXPECT_CALL(*mockCatalog, AssetChanged(testing::_)).Times(1);
         notificationInterface->AssetChanged(testMessage);
 
@@ -270,7 +272,7 @@ namespace UnitTest
         EXPECT_CALL(*mockCatalog, AssetRemoved(testing::_)).Times(0);
         notificationInterface->AssetRemoved(testMessage);
 
-        testMessage.m_platform = "es3";
+        testMessage.m_platform = "android";
         EXPECT_CALL(*mockCatalog, AssetRemoved(testing::_)).Times(1);
         notificationInterface->AssetRemoved(testMessage);
     }

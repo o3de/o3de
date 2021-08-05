@@ -10,6 +10,9 @@
       "PythonAssetBuilder.Editor": {
         "AutoLoad": false
       },
+      "AWSCore": {
+        "AutoLoad": false
+      },
       "AWSCore.Editor": {
         "AutoLoad": false
       },
@@ -20,6 +23,9 @@
         "AutoLoad": false
       },
       "AWSMetrics": {
+        "AutoLoad": false
+      },
+      "AWSMetrics.Editor": {
         "AutoLoad": false
       }
     }

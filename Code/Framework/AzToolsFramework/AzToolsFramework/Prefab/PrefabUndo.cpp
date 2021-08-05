@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Interface/Interface.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
@@ -70,12 +66,20 @@ namespace AzToolsFramework
             const AZ::EntityId& entityId)
         {
             //get the entity alias for future undo/redo
-            InstanceOptionalReference instanceOptionalReference = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
-            AZ_Error("Prefab", instanceOptionalReference,
+            auto instanceReference = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
+            AZ_Error("Prefab", instanceReference,
                 "Failed to find an owning instance for the entity with id %llu.", static_cast<AZ::u64>(entityId));
-            Instance& instance = instanceOptionalReference->get();
+            Instance& instance = instanceReference->get();
             m_templateId = instance.GetTemplateId();
-            m_entityAlias = (instance.GetEntityAlias(entityId)).value();
+            auto aliasReference = instance.GetEntityAlias(entityId);
+            if (!aliasReference.has_value())
+            {
+                AZ_Error(
+                    "Prefab", aliasReference.has_value(), "Failed to find the entity alias for entity %s.", entityId.ToString().c_str());
+                return;
+            }
+
+            m_entityAlias = aliasReference.value();
 
             //generate undo/redo patches
             m_instanceToTemplateInterface->GeneratePatch(m_redoPatch, initialState, endState);
@@ -103,6 +107,17 @@ namespace AzToolsFramework
             AZ_Error(
                 "Prefab", isPatchApplicationSuccessful,
                 "Applying the redo patch on the entity with alias '%s' in template with id '%llu' was unsuccessful", m_entityAlias.c_str(),
+                m_templateId);
+        }
+
+        void PrefabUndoEntityUpdate::Redo(InstanceOptionalReference instanceToExclude)
+        {
+            [[maybe_unused]] bool isPatchApplicationSuccessful =
+                m_instanceToTemplateInterface->PatchTemplate(m_redoPatch, m_templateId, instanceToExclude);
+
+            AZ_Error(
+                "Prefab", isPatchApplicationSuccessful,
+                "Applying the patch on the entity with alias '%s' in template with id '%llu' was unsuccessful", m_entityAlias.c_str(),
                 m_templateId);
         }
 
@@ -247,8 +262,13 @@ namespace AzToolsFramework
             instanceDom.CopyFrom(instanceDomRef->get(), instanceDom.GetAllocator());
 
             //apply the patch to the template within the target
-            AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::ApplyPatch(instanceDom,
-                instanceDom.GetAllocator(), patch, AZ::JsonMergeApproach::JsonPatch);
+            AZ::JsonSerializationResult::ResultCode result = PrefabDomUtils::ApplyPatches(instanceDom, instanceDom.GetAllocator(), patch);
+
+            AZ_Error(
+                "Prefab",
+                result.GetOutcome() == AZ::JsonSerializationResult::Outcomes::PartialSkip ||
+                    result.GetOutcome() == AZ::JsonSerializationResult::Outcomes::Success,
+                "Some of the patches are not successfully applied.");
 
             //remove the link id placed into the instance
             auto linkIdIter = instanceDom.FindMember(PrefabDomUtils::LinkIdName);
@@ -290,7 +310,12 @@ namespace AzToolsFramework
             UpdateLink(m_linkDomNext);
         }
 
-        void PrefabUndoLinkUpdate::UpdateLink(PrefabDom& linkDom)
+        void PrefabUndoLinkUpdate::Redo(InstanceOptionalReference instanceToExclude)
+        {
+            UpdateLink(m_linkDomNext, instanceToExclude);
+        }
+
+        void PrefabUndoLinkUpdate::UpdateLink(PrefabDom& linkDom, InstanceOptionalReference instanceToExclude)
         {
             LinkReference link = m_prefabSystemComponentInterface->FindLink(m_linkId);
 
@@ -304,7 +329,7 @@ namespace AzToolsFramework
 
             //propagate the link changes
             link->get().UpdateTarget();
-            m_prefabSystemComponentInterface->PropagateTemplateChanges(link->get().GetTargetTemplateId());
+            m_prefabSystemComponentInterface->PropagateTemplateChanges(link->get().GetTargetTemplateId(), instanceToExclude);
 
             //mark as dirty
             m_prefabSystemComponentInterface->SetTemplateDirtyFlag(link->get().GetTargetTemplateId(), true);

@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -14,6 +10,7 @@
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
+#include <AWSCoreInternalBus.h>
 #include <Editor/UI/AWSCoreResourceMappingToolAction.h>
 
 namespace AWSCore
@@ -108,17 +105,24 @@ namespace AWSCore
         {
             return "";
         }
+
+        AZStd::string profileName = "default";
+        AWSCoreInternalRequestBus::BroadcastResult(profileName, &AWSCoreInternalRequests::GetProfileName);
+
+        AZStd::string configPath = "";
+        AWSCoreInternalRequestBus::BroadcastResult(configPath, &AWSCoreInternalRequests::GetResourceMappingConfigFolderPath);
+
         if (m_isDebug)
         {
             return AZStd::string::format(
-                "%s debug %s --binaries_path %s --debug",
-                m_enginePythonEntryPath.c_str(), m_toolScriptPath.c_str(), m_toolQtBinDirectoryPath.c_str());
+                "%s debug %s --binaries_path %s --debug --profile %s --config_path %s", m_enginePythonEntryPath.c_str(),
+                m_toolScriptPath.c_str(), m_toolQtBinDirectoryPath.c_str(), profileName.c_str(), configPath.c_str());
         }
         else
         {
             return AZStd::string::format(
-                "%s %s --binaries_path %s",
-                m_enginePythonEntryPath.c_str(), m_toolScriptPath.c_str(), m_toolQtBinDirectoryPath.c_str());
+                "%s %s --binaries_path %s --profile %s --config_path %s", m_enginePythonEntryPath.c_str(),
+                m_toolScriptPath.c_str(), m_toolQtBinDirectoryPath.c_str(), profileName.c_str(), configPath.c_str());
         }
     }
 

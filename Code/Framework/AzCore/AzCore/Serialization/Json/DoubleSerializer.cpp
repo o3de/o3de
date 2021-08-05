@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Serialization/Json/DoubleSerializer.h>
 
@@ -62,19 +58,26 @@ namespace AZ
         }
 
         template <typename T>
-        static JsonSerializationResult::Result Load(T* outputValue, const rapidjson::Value& inputValue, JsonDeserializerContext& context)
+        static JsonSerializationResult::Result Load(
+            T* outputValue, const rapidjson::Value& inputValue, JsonDeserializerContext& context, bool isExplicitDefault)
         {
             namespace JSR = JsonSerializationResult; // Used remove name conflicts in AzCore in uber builds.
 
             static_assert(AZStd::is_floating_point<T>::value, "Expected T to be a floating point type");
             AZ_Assert(outputValue, "Expected a valid pointer to load from json value.");
 
+            if (isExplicitDefault)
+            {
+                *outputValue = {};
+                return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::DefaultsUsed, "Floating point value set to default of 0.0.");
+            }
+
             switch (inputValue.GetType())
             {
             case rapidjson::kArrayType:
-            // fallthrough
+                [[fallthrough]];
             case rapidjson::kObjectType:
-            // fallthrough
+                [[fallthrough]];
             case rapidjson::kNullType:
                 return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Unsupported,
                     "Unsupported type. Floating point values can't be read from arrays, objects or null.");
@@ -83,7 +86,7 @@ namespace AZ
                 return TextToValue(outputValue, inputValue.GetString(), context);
 
             case rapidjson::kFalseType:
-            // fallthrough
+                [[fallthrough]];
             case rapidjson::kTrueType:
                 *outputValue = inputValue.GetBool() ? 1.0f : 0.0f;
                 return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Success,
@@ -144,7 +147,8 @@ namespace AZ
             "Unable to deserialize double to json because the provided type is %s",
             outputValueTypeId.ToString<AZStd::string>().c_str());
         AZ_UNUSED(outputValueTypeId);
-        return SerializerFloatingPointInternal::Load(reinterpret_cast<double*>(outputValue), inputValue, context);
+        return SerializerFloatingPointInternal::Load(
+            reinterpret_cast<double*>(outputValue), inputValue, context, IsExplicitDefault(inputValue));
     }
 
     JsonSerializationResult::Result JsonDoubleSerializer::Store(rapidjson::Value& outputValue, const void* inputValue,
@@ -156,6 +160,11 @@ namespace AZ
         return SerializerFloatingPointInternal::Store<double>(outputValue, inputValue, defaultValue, context);
     }
 
+    auto JsonDoubleSerializer::GetOperationsFlags() const -> OperationFlags
+    {
+        return OperationFlags::InitializeNewInstance;
+    }
+
     JsonSerializationResult::Result JsonFloatSerializer::Load(void* outputValue, const Uuid& outputValueTypeId, const rapidjson::Value& inputValue,
         JsonDeserializerContext& context)
     {
@@ -163,7 +172,8 @@ namespace AZ
             "Unable to deserialize float to json because the provided type is %s",
             outputValueTypeId.ToString<AZStd::string>().c_str());
         AZ_UNUSED(outputValueTypeId);
-        return SerializerFloatingPointInternal::Load(reinterpret_cast<float*>(outputValue), inputValue, context);
+        return SerializerFloatingPointInternal::Load(
+            reinterpret_cast<float*>(outputValue), inputValue, context, IsExplicitDefault(inputValue));
     }
 
     JsonSerializationResult::Result JsonFloatSerializer::Store(rapidjson::Value& outputValue, const void* inputValue,
@@ -173,5 +183,10 @@ namespace AZ
             valueTypeId.ToString<AZStd::string>().c_str());
         AZ_UNUSED(valueTypeId);
         return SerializerFloatingPointInternal::Store<float>(outputValue, inputValue, defaultValue, context);
+    }
+
+    auto JsonFloatSerializer::GetOperationsFlags() const -> OperationFlags
+    {
+        return OperationFlags::InitializeNewInstance;
     }
 } // namespace AZ

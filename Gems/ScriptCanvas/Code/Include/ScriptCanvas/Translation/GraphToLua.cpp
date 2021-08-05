@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "GraphToLua.h"
 
@@ -29,8 +25,6 @@
 #include <ScriptCanvas/Grammar/PrimitivesExecution.h>
 
 #include "GraphToLuaUtility.h"
-#include "TranslationContext.h"
-#include "TranslationContextBus.h"
 
 namespace GraphToLuaCpp
 {
@@ -97,9 +91,7 @@ namespace ScriptCanvas
         {
             SystemRequestBus::BroadcastResult(m_systemConfiguration, &SystemRequests::GetSystemComponentConfiguration);
             MarkTranslationStart();
-            RequestBus::BroadcastResult(m_context, &RequestTraits::GetTranslationContext);
-            AZ_Assert(m_context, "Nothing is possible without the context");
-
+            
             m_tableName = GraphToLuaCpp::FileNameToTableName(m_model.GetSource().m_name);
             m_tableName += m_configuration.m_suffix;
 
@@ -143,12 +135,12 @@ namespace ScriptCanvas
 
         const AZStd::string& GraphToLua::FindAbbreviation(AZStd::string_view dependency) const
         {
-            return m_context->FindAbbreviation(dependency);
+            return m_context.FindAbbreviation(dependency);
         }
 
         const AZStd::string& GraphToLua::FindLibrary(AZStd::string_view dependency) const
         {
-            return m_context->FindLibrary(dependency);
+            return m_context.FindLibrary(dependency);
         }
 
         AZStd::string_view GraphToLua::GetOperatorString(Grammar::ExecutionTreeConstPtr execution)
@@ -811,7 +803,7 @@ namespace ScriptCanvas
 
             m_dotLua.Write("(");
 
-            if (execution->IsStart() && execution->IsPure())
+            if (execution == m_model.GetStart() && execution->IsPure())
             {
                 m_dotLua.Write(Grammar::k_executionStateVariableName);
 
@@ -1220,8 +1212,18 @@ namespace ScriptCanvas
 
         void GraphToLua::WriteClassPropertyRead(Grammar::ExecutionTreeConstPtr execution)
         {
-            WriteFunctionCallInput(execution, 0, IsFormatStringInput::No);
-            m_dotLua.Write(".%s", Grammar::ToIdentifier(execution->GetName()).c_str());
+            if (execution->GetInputCount() > 0)
+            {
+                WriteFunctionCallInput(execution, 0, IsFormatStringInput::No);
+                m_dotLua.Write(".");
+            }
+            else
+            {
+                // it's a constant
+                WriteResolvedScope(execution, execution->GetNameLexicalScope());
+            }
+
+            m_dotLua.Write(Grammar::ToIdentifier(execution->GetName()).c_str());
         }
 
         void GraphToLua::WriteClassPropertyWrite(Grammar::ExecutionTreeConstPtr execution)
@@ -1509,20 +1511,7 @@ namespace ScriptCanvas
                     }
                     else
                     {
-                        const AZStd::string resolvedScope = ResolveScope(lexicalScope.m_namespaces);
-
-                        auto& abbreviation = FindAbbreviation(resolvedScope);
-
-                        if (!abbreviation.empty())
-                        {
-                            m_dotLua.Write("%s%.*s", abbreviation.c_str(),
-                                aznumeric_cast<int>(m_configuration.m_lexicalScopeDelimiter.size()), m_configuration.m_lexicalScopeDelimiter.data());
-                        }
-                        else if (!resolvedScope.empty())
-                        {
-                            m_dotLua.Write("%s%.*s", resolvedScope.c_str(),
-                                aznumeric_cast<int>(m_configuration.m_lexicalScopeDelimiter.size()), m_configuration.m_lexicalScopeDelimiter.data());
-                        }
+                        WriteResolvedScope(execution, lexicalScope);
                     }
                 }
                 break;
@@ -1597,8 +1586,10 @@ namespace ScriptCanvas
                 break;
             }
 
-            // #functions2 pure on graph start nodes with dependencies can only be added to the graph as variables
-//             if (execution->IsStart() && execution->IsPure())
+            // #functions2 pure on graph start nodes with dependencies can only be added to the graph as variables, which is a work-flow we may never want to support
+            // as it effectively duplicates the Component-Entity-System. Technically, if this functionality is desired, one could just add another script component
+            // with the additional graph...
+//             if (execution->IsStartCall() && execution->IsPure())
 //             {
 //                 WriteFunctionCallInputOfChildStart(execution);
 //             }
@@ -1952,7 +1943,8 @@ namespace ScriptCanvas
                 {
                     const auto requirement = ParseConstructionRequirement(variable);
 
-                    if (requirement == Grammar::VariableConstructionRequirement::None || (requirement != Grammar::VariableConstructionRequirement::Static && !execution->IsStart()))
+                    if (requirement == Grammar::VariableConstructionRequirement::None
+                    || requirement != Grammar::VariableConstructionRequirement::Static && execution != m_model.GetStart())
                     {
                         m_dotLua.WriteLineIndented("local %s = %s", variable->m_name.data(), ToValueString(variable->m_datum, m_configuration).data());
                     }
@@ -2413,5 +2405,28 @@ namespace ScriptCanvas
             }
         }
 
+        void GraphToLua::WriteResolvedScope(Grammar::ExecutionTreeConstPtr execution, const Grammar::LexicalScope& lexicalScope)
+        {
+            if (lexicalScope.m_type != Grammar::LexicalScopeType::Class && lexicalScope.m_type != Grammar::LexicalScopeType::Namespace)
+            {
+                AddError(execution, aznew Internal::ParseError(execution->GetNodeId(), "Invalid arguments to WriteResolvedScope."));
+                return;
+            }
+
+            const AZStd::string resolvedScope = ResolveScope(lexicalScope.m_namespaces);
+
+            auto& abbreviation = FindAbbreviation(resolvedScope);
+
+            if (!abbreviation.empty())
+            {
+                m_dotLua.Write("%s%.*s", abbreviation.c_str(),
+                    aznumeric_cast<int>(m_configuration.m_lexicalScopeDelimiter.size()), m_configuration.m_lexicalScopeDelimiter.data());
+            }
+            else if (!resolvedScope.empty())
+            {
+                m_dotLua.Write("%s%.*s", resolvedScope.c_str(),
+                    aznumeric_cast<int>(m_configuration.m_lexicalScopeDelimiter.size()), m_configuration.m_lexicalScopeDelimiter.data());
+            }
+        }
     } 
 } 

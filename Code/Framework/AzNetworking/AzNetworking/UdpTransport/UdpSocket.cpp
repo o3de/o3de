@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzNetworking/Utilities/NetworkCommon.h>
 #include <AzNetworking/UdpTransport/UdpSocket.h>
@@ -130,7 +126,7 @@ namespace AzNetworking
 #ifdef ENABLE_LATENCY_DEBUG
         if (connectionQuality.m_lossPercentage > 0)
         {
-            if (int32_t(m_random.GetRandom() % 100) < (connectionQuality.m_lossPercentage / 2))
+            if (int32_t(m_random.GetRandom() % 100) < (connectionQuality.m_lossPercentage))
             {
                 // Pretend we sent, but don't actually send
                 return true;
@@ -161,9 +157,11 @@ namespace AzNetworking
 #ifdef ENABLE_LATENCY_DEBUG
         else if ((connectionQuality.m_latencyMs > AZ::TimeMs{ 0 }) || (connectionQuality.m_varianceMs > AZ::TimeMs{ 0 }))
         {
-            const AZ::TimeMs jitterMs = aznumeric_cast<AZ::TimeMs>(m_random.GetRandom()) % (connectionQuality.m_varianceMs / aznumeric_cast<AZ::TimeMs>(2));
+            const AZ::TimeMs jitterMs = aznumeric_cast<AZ::TimeMs>(m_random.GetRandom()) % (connectionQuality.m_varianceMs > AZ::TimeMs{ 0 }
+                                      ? connectionQuality.m_varianceMs
+                                      : AZ::TimeMs{ 1 });
             const AZ::TimeMs currTimeMs = AZ::GetElapsedTimeMs();
-            const AZ::TimeMs deferTimeMs = (connectionQuality.m_latencyMs / aznumeric_cast<AZ::TimeMs>(2)) + jitterMs;
+            const AZ::TimeMs deferTimeMs = (connectionQuality.m_latencyMs) + jitterMs;
 
             DeferredData deferred = DeferredData(address, data, size, encrypt, dtlsEndpoint);
             AZ::Interface<AZ::IEventScheduler>::Get()->AddCallback([&, deferredData = deferred]

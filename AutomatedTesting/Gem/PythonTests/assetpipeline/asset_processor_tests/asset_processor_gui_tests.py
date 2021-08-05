@@ -1,12 +1,8 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 
 General Asset Processor GUI Tests
 """
@@ -77,6 +73,13 @@ class TestsAssetProcessorGUI_Windows(object):
     def test_SendInputOnControlChannel_ReceivedAndResponded(self, asset_processor):
         """
         Test that the control channel connects and that communication works both directions
+
+        Test Steps:
+        1. Start Asset Processor
+        2. Send a Ping message to Asset Processor
+        3. Listen for Asset Processor response
+        4. Verify Asset Processor responds
+        5. Stop asset Processor
         """
 
         asset_processor.create_temp_asset_root()
@@ -129,7 +132,15 @@ class TestsAssetProcessorGUI_Windows(object):
         # fmt:on
         """
         Asset Processor Deletes processed assets when source is removed from project folder (while running)
+
+        Test Steps:
+        1. Create a temporary test environment
+        2. Run Asset Processor GUI set to stay open on idle and verify that it does not fail
+        3. Verify that assets were copied to the cache
+        4. Delete the source test asset directory
+        5. Verify assets are deleted from the cache
         """
+
         env = ap_setup_fixture
 
         # Copy test assets to project folder and verify test assets folder exists
@@ -170,7 +181,18 @@ class TestsAssetProcessorGUI_Windows(object):
         # fmt:on
         """
         Processing changed files (while running)
+
+        Test Steps:
+        1. Create temporary test environment with test assets
+        2. Open Asset Processor GUI with set to stay open after idle and verify it does not fail
+        3. Verify contents of source asset for later comparison
+        4. Verify contents of product asset for later comparison
+        5. Modify contents of source asset
+        6. Wait for Asset Processor to go back to idle state
+        7. Verify contents of source asset are the modified version
+        8. Verify contents of product asset are the modified version
         """
+
         env = ap_setup_fixture
 
         # Copy test assets to project folder and verify test assets folder exists
@@ -184,7 +206,7 @@ class TestsAssetProcessorGUI_Windows(object):
         result, _ = asset_processor.gui_process(quitonidle=False)
         assert result, "AP GUI failed"
 
-        # Verify contents of test asset in project folder before modication
+        # Verify contents of test asset in project folder before modification
         with open(project_asset_path, "r") as project_asset_file:
             assert project_asset_file.read() == "before_state"
 
@@ -217,7 +239,14 @@ class TestsAssetProcessorGUI_Windows(object):
     def test_WindowsPlatforms_RunAP_ProcessesIdle(self, asset_processor):
         """
         Asset Processor goes idle
+
+        Test Steps:
+        1. Create a temporary testing evnironment
+        2. Run Asset Processor GUI without quitonidle
+        3. Verify AP Goes Idle
+        4. Verify AP goes below 1% CPU usage
         """
+
         CPU_USAGE_THRESHOLD = 1.0  # CPU usage percentage delimiting idle from active
         CPU_USAGE_WIND_DOWN = 10  # Time allowed in seconds for idle processes to stop using CPU
 
@@ -245,7 +274,16 @@ class TestsAssetProcessorGUI_Windows(object):
     ):
         """
         Processing newly added files to project folder (while running)
+
+        Test Steps:
+        1. Create a temporary testing environment with test assets
+        2. Create a secondary set of testing assets that have not been copied into the the testing environment
+        3. Start Asset Processor without quitonidle
+        4. While Asset Processor is running add secondary set of testing assets to the testing environment
+        5. Wait for Asset Processor to go idle
+        6. Verify that all assets are in the cache
         """
+
         env = ap_setup_fixture
         level_name = "C1564064_level"
         new_asset = "C1564064.scriptcanvas"
@@ -316,7 +354,14 @@ class TestsAssetProcessorGUI_Windows(object):
     def test_WindowsPlatforms_LaunchAP_LogReportsIdle(self, asset_processor, workspace, ap_idle):
         """
         Asset Processor creates a log entry when it goes idle
+
+        Test Steps:
+        1. Create temporary testing environment
+        2. Run Asset Processor batch to pre-process assets
+        3. Run Asset Processor GUI
+        4. Check if Asset Processor GUI reports that it has gone idle
         """
+
         asset_processor.create_temp_asset_root()
         # Run batch process to ensure project assets are processed
         assert asset_processor.batch_process(), "AP Batch failed"
@@ -331,6 +376,17 @@ class TestsAssetProcessorGUI_Windows(object):
 
     @pytest.mark.assetpipeline
     def test_APStopTimesOut_ExceptionThrown(self, ap_setup_fixture, asset_processor):
+        """
+        Tests whether or not Asset Processor will Time Out
+
+        Test Steps:
+        1. Create a temporary testing environment
+        2. Start the Asset Processor
+        3. Copy in assets to the test environment
+        4. Try to stop the Asset Processor with a timeout of 1 second (This cannot be done manually).
+        5. Verify that Asset Processor times out and returns the expected error
+        """
+
         asset_processor.create_temp_asset_root()
         asset_processor.start()
 
@@ -347,9 +403,20 @@ class TestsAssetProcessorGUI_Windows(object):
 
     @pytest.mark.assetpipeline
     def test_APStopDefaultTimeout_NoException(self, asset_processor):
-        # If this test fails, it means other tests using the default timeout may have issues.
-        # In that case, either the default timeout should either be raised, or the performance
-        # of AP launching should be improved.
+        """
+        Tests the default timeout of the Asset Processor
+
+        If this test fails, it means other tests using the default timeout may have issues.
+        In that case, either the default timeout should either be raised, or the performance
+        of AP launching should be improved.
+
+        Test Steps:
+        1. Create a temporary testing environment
+        2. Start the Asset Processor
+        3. Stop the asset Processor without sending a timeout to it
+        4. Verify that the asset processor times out and returns the expected error
+        """
+
         asset_processor.create_temp_asset_root()
         asset_processor.start()
         ap_quit_timed_out = False

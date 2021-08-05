@@ -1,15 +1,18 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
+#include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/JSON/rapidjson.h>
+#include <AzCore/JSON/document.h>
+#include <AzCore/Serialization/Json/JsonSerialization.h>
+#include <AzCore/Serialization/Json/JsonSerializationResult.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzFramework/FileFunc/FileFunc.h>
 #include "Exporter.h"
 #include <MCore/Source/ReflectionSerializer.h>
 #include <EMotionFX/Source/MotionEvent.h>
@@ -33,17 +36,38 @@ namespace ExporterLib
             return;
         }
 
-        AZ::Outcome<AZStd::string> serializedMotionEventTable = MCore::ReflectionSerializer::Serialize(motionEventTable);
-        if (!serializedMotionEventTable.IsSuccess())
+        AZ::SerializeContext* context = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+        if (!context)
         {
+            AZ_Error("EMotionFX", false, "Can't save motion events. Can't get serialize context from component application.");
             return;
         }
-        const size_t serializedTableSizeInBytes = serializedMotionEventTable.GetValue().size();
+
+        AZ::JsonSerializerSettings settings;
+        settings.m_serializeContext = context;
+        rapidjson::Document jsonDocument;
+        auto jsonResult = AZ::JsonSerialization::Store(jsonDocument, jsonDocument.GetAllocator(), *motionEventTable, settings);
+        if (jsonResult.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
+        {
+            AZ_Error("EMotionFX", false, "JSON serialization failed: %s", jsonResult.ToString("").c_str());
+            return;
+        }
+        
+        AZStd::string serializedMotionEventTable;
+        auto writeToStringOutcome = AzFramework::FileFunc::WriteJsonToString(jsonDocument, serializedMotionEventTable);
+        if (!writeToStringOutcome.IsSuccess())
+        {
+            AZ_Error("EMotionFX", false, "WriteJsonToString failed: %s", writeToStringOutcome.GetError().c_str());
+            return;
+        }
+
+        const size_t serializedTableSizeInBytes = serializedMotionEventTable.size();
 
         // the motion event table chunk header
         EMotionFX::FileFormat::FileChunk chunkHeader;
         chunkHeader.mChunkID = EMotionFX::FileFormat::SHARED_CHUNK_MOTIONEVENTTABLE;
-        chunkHeader.mVersion = 2;
+        chunkHeader.mVersion = 3;
 
         chunkHeader.mSizeInBytes = static_cast<uint32>(serializedTableSizeInBytes + sizeof(EMotionFX::FileFormat::FileMotionEventTableSerialized));
 
@@ -56,6 +80,6 @@ namespace ExporterLib
         // save the chunk header and the chunk
         file->Write(&chunkHeader, sizeof(EMotionFX::FileFormat::FileChunk));
         file->Write(&tableHeader, sizeof(EMotionFX::FileFormat::FileMotionEventTableSerialized));
-        file->Write(serializedMotionEventTable.GetValue().c_str(), serializedTableSizeInBytes);
+        file->Write(serializedMotionEventTable.c_str(), serializedTableSizeInBytes);
     }
 } // namespace ExporterLib

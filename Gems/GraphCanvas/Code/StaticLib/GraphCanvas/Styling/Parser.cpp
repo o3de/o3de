@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <GraphCanvas/Styling/Parser.h>
 #include <GraphCanvas/Styling/Style.h>
@@ -725,23 +721,23 @@ namespace GraphCanvas
                 case Attribute::LineColor:
                 case Attribute::StripeColor:
                 {
-                    QString value(member->value.GetString());
+                    QString valueStr(member->value.GetString());
 
-                    if (IsColorValid(value))
+                    if (IsColorValid(valueStr))
                     {
-                        style->SetAttribute(attribute, ParseColor(value));
+                        style->SetAttribute(attribute, ParseColor(valueStr));
                     }
                     break;
                 }
                 case Attribute::BackgroundImage:
                 {
-                    QString value(member->value.GetString());
+                    QString valueStr(member->value.GetString());
 
-                    if (value.startsWith(QStringLiteral(":/")))
+                    if (valueStr.startsWith(QStringLiteral(":/")))
                     {
-                        value = QString("qrc%1").arg(value);
+                        valueStr = QString("qrc%1").arg(valueStr);
                     }
-                    QUrl url(value);
+                    QUrl url(valueStr);
                     if (url.isValid())
                     {
                         style->SetAttribute(attribute, url);
@@ -844,103 +840,103 @@ namespace GraphCanvas
                 case Attribute::BorderStyle:
                 case Attribute::LineStyle:
                 {
-                    QString value(member->value.GetString());
+                    QString valueStr(member->value.GetString());
 
-                    if (IsLineStyleValid(value))
+                    if (IsLineStyleValid(valueStr))
                     {
-                        style->SetAttribute(attribute, QVariant::fromValue(ParseLineStyle(value)));
+                        style->SetAttribute(attribute, QVariant::fromValue(ParseLineStyle(valueStr)));
                     }
                     break;
                 }
 
                 case Attribute::LineCurve:
                 {
-                    QString value(member->value.GetString());
+                    QString valueStr(member->value.GetString());
 
-                    if (IsLineCurveValid(value))
+                    if (IsLineCurveValid(valueStr))
                     {
-                        style->SetAttribute(attribute, QVariant::fromValue(ParseLineCurve(value)));
+                        style->SetAttribute(attribute, QVariant::fromValue(ParseLineCurve(valueStr)));
                     }
                     break;
                 }
 
                 case Attribute::CapStyle:
                 {
-                    QString value(member->value.GetString());
+                    QString valueStr(member->value.GetString());
 
-                    if (IsCapStyleValid(value))
+                    if (IsCapStyleValid(valueStr))
                     {
-                        style->SetAttribute(attribute, QVariant::fromValue(ParseCapStyle(value)));
+                        style->SetAttribute(attribute, QVariant::fromValue(ParseCapStyle(valueStr)));
                     }
                     break;
                 }
 
                 case Attribute::FontFamily:
                 {
-                    QString value(member->value.GetString());
+                    QString valueStr(member->value.GetString());
 
-                    if (QString::compare(value, QLatin1String("default"), Qt::CaseInsensitive) == 0)
+                    if (QString::compare(valueStr, QLatin1String("default"), Qt::CaseInsensitive) == 0)
                     {
-                        value = defaultFontInfo.family();
+                        valueStr = defaultFontInfo.family();
                     }
                     else
                     {
-                        QFont font(value);
+                        QFont font(valueStr);
                         QFontInfo info(font);
                         if (!info.exactMatch())
                         {
-                            qWarning() << "Invalid font-family:" << value;
+                            qWarning() << "Invalid font-family:" << valueStr;
                         }
                     }
-                    style->SetAttribute(attribute, value);
+                    style->SetAttribute(attribute, valueStr);
                 }
                 case Attribute::FontStyle:
                 {
-                    QString value(member->value.GetString());
+                    QString valueStr(member->value.GetString());
 
-                    if (QString::compare(value, QLatin1String("default"), Qt::CaseInsensitive) == 0)
+                    if (QString::compare(valueStr, QLatin1String("default"), Qt::CaseInsensitive) == 0)
                     {
                         style->SetAttribute(attribute, defaultFontInfo.style());
                     }
                     else
                     {
-                        if (IsFontStyleValid(value))
+                        if (IsFontStyleValid(valueStr))
                         {
-                            style->SetAttribute(attribute, ParseFontStyle(value));
+                            style->SetAttribute(attribute, ParseFontStyle(valueStr));
                         }
                     }
                     break;
                 }
                 case Attribute::FontWeight:
                 {
-                    QString value(member->value.GetString());
+                    QString valueStr(member->value.GetString());
 
-                    if (QString::compare(value, QLatin1String("default"), Qt::CaseInsensitive) == 0)
+                    if (QString::compare(valueStr, QLatin1String("default"), Qt::CaseInsensitive) == 0)
                     {
                         style->SetAttribute(attribute, defaultFontInfo.weight());
                     }
                     else
                     {
-                        if (IsFontWeightValid(value))
+                        if (IsFontWeightValid(valueStr))
                         {
-                            style->SetAttribute(attribute, ParseFontWeight(value));
+                            style->SetAttribute(attribute, ParseFontWeight(valueStr));
                         }
                     }
                     break;
                 }
                 case Attribute::FontVariant:
                 {
-                    QString value(member->value.GetString());
+                    QString valueStr(member->value.GetString());
 
-                    if (QString::compare(value, QLatin1String("default"), Qt::CaseInsensitive) == 0)
+                    if (QString::compare(valueStr, QLatin1String("default"), Qt::CaseInsensitive) == 0)
                     {
                         style->SetAttribute(attribute, defaultFont.capitalization());
                     }
                     else
                     {
-                        if (IsFontVariantValid(value))
+                        if (IsFontVariantValid(valueStr))
                         {
-                            style->SetAttribute(attribute, value);
+                            style->SetAttribute(attribute, valueStr);
                         }
                     }
                     break;
@@ -965,23 +961,23 @@ namespace GraphCanvas
                     break;
                 case Attribute::PaletteStyle:
                 {
-                    QString value(member->value.GetString());
-                    style->SetAttribute(attribute, QVariant::fromValue(ParsePaletteStyle(value)));
+                    QString valueStr(member->value.GetString());
+                    style->SetAttribute(attribute, QVariant::fromValue(ParsePaletteStyle(valueStr)));
                     break;
                 }
                 case Attribute::PatternTemplate:
                 case Attribute::PatternPalettes:
                 {
-                    QString value(member->value.GetString());
-                    style->SetAttribute(attribute, value);
+                    QString valueStr(member->value.GetString());
+                    style->SetAttribute(attribute, valueStr);
                     break;
                 }
                 case Attribute::Steps:
                 {
                     QList<QVariant> stepList;
-                    QString value(member->value.GetString());
+                    QString valueStr(member->value.GetString());
 
-                    QStringList splitValues = value.split("|");
+                    QStringList splitValues = valueStr.split("|");
 
                     for (QString currentString : splitValues)
                     {
@@ -1072,8 +1068,7 @@ namespace GraphCanvas
 
                     if (!id.empty())
                     {
-                        Selector selector = Selector::Get(id);
-                        result.emplace_back(selector);
+                        result.emplace_back(Selector::Get(id));
                         continue;
                     }
 
@@ -1111,8 +1106,7 @@ namespace GraphCanvas
                         {
                             bits.emplace_back(stateSelector);
                         }
-                        Selector selector = aznew CompoundSelector(std::move(bits));
-                        nestedSelectors.emplace_back(selector);
+                        nestedSelectors.emplace_back(aznew CompoundSelector(std::move(bits)));
                     }
                 }
 

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
@@ -572,9 +568,11 @@ namespace MaterialEditor
     {
         if (m_compilePending)
         {
-            m_materialInstance->Compile();
-            m_compilePending = false;
-            AZ::TickBus::Handler::BusDisconnect();
+            if (m_materialInstance->Compile())
+            {
+                m_compilePending = false;
+                AZ::TickBus::Handler::BusDisconnect();
+            }
         }
     }
 
@@ -819,10 +817,10 @@ namespace MaterialEditor
         // is implemented.
         AtomToolsFramework::DynamicPropertyConfig propertyConfig;
         propertyConfig.m_dataType = AtomToolsFramework::DynamicPropertyType::Asset;
-        propertyConfig.m_id = "details.materialType";
+        propertyConfig.m_id = "overview.materialType";
         propertyConfig.m_nameId = "materialType";
         propertyConfig.m_displayName = "Material Type";
-        propertyConfig.m_groupName = "Details";
+        propertyConfig.m_groupName = "Overview";
         propertyConfig.m_description = "The material type defines the layout, properties, default values, shader connections, and other "
                                        "data needed to create and edit a derived material.";
         propertyConfig.m_defaultValue = AZStd::any(materialTypeAsset);
@@ -834,10 +832,10 @@ namespace MaterialEditor
 
         propertyConfig = {};
         propertyConfig.m_dataType = AtomToolsFramework::DynamicPropertyType::Asset;
-        propertyConfig.m_id = "details.parentMaterial";
+        propertyConfig.m_id = "overview.parentMaterial";
         propertyConfig.m_nameId = "parentMaterial";
         propertyConfig.m_displayName = "Parent Material";
-        propertyConfig.m_groupName = "Details";
+        propertyConfig.m_groupName = "Overview";
         propertyConfig.m_description =
             "The parent material provides an initial configuration whose properties are inherited and overriden by a derived material.";
         propertyConfig.m_defaultValue = AZStd::any(parentMaterialAsset);
@@ -860,7 +858,7 @@ namespace MaterialEditor
             propertyConfig.m_id = MaterialPropertyId(UvGroupName, shaderInput).GetCStr();
             propertyConfig.m_nameId = shaderInput;
             propertyConfig.m_displayName = shaderInput;
-            propertyConfig.m_groupName = "UV Names";
+            propertyConfig.m_groupName = "UV Sets";
             propertyConfig.m_description = shaderInput;
             propertyConfig.m_defaultValue = uvName;
             propertyConfig.m_originalValue = uvName;

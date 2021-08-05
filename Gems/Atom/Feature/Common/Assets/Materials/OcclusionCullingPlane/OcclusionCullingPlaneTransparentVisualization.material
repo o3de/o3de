@@ -1,0 +1,22 @@
+{
+    "materialType": "Materials\\Types\\StandardPBR.materialtype",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "general": {
+            "enableShadows": false,
+            "enableDirectionalLights": false,
+            "enablePunctualLights": false,
+            "enableAreaLights": false,
+            "enableIBL":  true
+        },
+        "baseColor": {
+           "color": [ 0.0, 1.0, 0.0 ]
+        },
+        "opacity": {
+            "alphaSource": "None",
+            "doubleSided": true,
+            "factor": 0.25,
+            "mode": "TintedTransparent"
+        }
+    }
+}

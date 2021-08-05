@@ -1,12 +1,9 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 #
 
 ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
@@ -19,9 +16,6 @@ set(AUDIOENGINEWWISE_COMPILEDEFINITIONS
 )
 
 find_package(Wwise MODULE)
-if (NOT Wwise_FOUND)
-    message(STATUS "** Update the LY_WWISE_INSTALL_PATH cache variable if you intend to use Wwise.")
-endif()
 
 ################################################################################
 # Server / Unsupported
@@ -92,6 +86,9 @@ ly_add_target(
         PRIVATE
             Gem::AudioEngineWwise.Static
 )
+
+# we'll load the above "Gem::AudioEngineWwise" module in clients.
+ly_create_alias(NAME AudioEngineWwise.Clients NAMESPACE Gem TARGETS Gem::AudioEngineWwise)
 
 ################################################################################
 # Tests
@@ -206,6 +203,8 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AssetBuilderSDK
                 Gem::AudioEngineWwise.Static
                 Gem::AudioSystem.Editor
+        RUNTIME_DEPENDENCIES
+            Gem::AudioSystem.Editor
     )
 
     ly_add_target(
@@ -229,6 +228,10 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
         RUNTIME_DEPENDENCIES
             Gem::AudioSystem.Editor
     )
+
+    # by default, we'll load the above "Gem::AudioEngineWwise.Editor" module in builders and tools.
+    ly_create_alias(NAME AudioEngineWwise.Builders NAMESPACE Gem TARGETS Gem::AudioEngineWwise.Editor)
+    ly_create_alias(NAME AudioEngineWwise.Tools NAMESPACE Gem TARGETS Gem::AudioEngineWwise.Editor)
 
     if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         ly_add_target(

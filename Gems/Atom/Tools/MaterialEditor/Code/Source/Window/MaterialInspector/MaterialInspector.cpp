@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -79,8 +75,8 @@ namespace MaterialEditor
 
         if (!m_documentId.IsNull() && isOpen)
         {
-            // Create the top group for displaying details about the material
-            AddDetailsGroup();
+            // Create the top group for displaying overview info about the material
+            AddOverviewGroup();
             // Create groups for displaying editable UV names
             AddUvNamesGroup();
             // Create groups for displaying editable properties
@@ -105,25 +101,25 @@ namespace MaterialEditor
         return property && AtomToolsFramework::ArePropertyValuesEqual(property->GetValue(), property->GetConfig().m_parentValue);
     }
 
-    void MaterialInspector::AddDetailsGroup()
+    void MaterialInspector::AddOverviewGroup()
     {
         const AZ::RPI::MaterialTypeSourceData* materialTypeSourceData = nullptr;
         MaterialDocumentRequestBus::EventResult(
             materialTypeSourceData, m_documentId, &MaterialDocumentRequestBus::Events::GetMaterialTypeSourceData);
 
-        const AZStd::string groupNameId = "details";
-        const AZStd::string groupDisplayName = "Details";
+        const AZStd::string groupNameId = "overview";
+        const AZStd::string groupDisplayName = "Overview";
         const AZStd::string groupDescription = materialTypeSourceData->m_description;
         auto& group = m_groups[groupNameId];
 
         AtomToolsFramework::DynamicProperty property;
         MaterialDocumentRequestBus::EventResult(
-            property, m_documentId, &MaterialDocumentRequestBus::Events::GetProperty, AZ::Name("details.materialType"));
+            property, m_documentId, &MaterialDocumentRequestBus::Events::GetProperty, AZ::Name("overview.materialType"));
         group.m_properties.push_back(property);
 
         property = {};
         MaterialDocumentRequestBus::EventResult(
-            property, m_documentId, &MaterialDocumentRequestBus::Events::GetProperty, AZ::Name("details.parentMaterial"));
+            property, m_documentId, &MaterialDocumentRequestBus::Events::GetProperty, AZ::Name("overview.parentMaterial"));
         group.m_properties.push_back(property);
 
         // Passing in same group as main and comparison instance to enable custom value comparison for highlighting modified properties
@@ -139,7 +135,7 @@ namespace MaterialEditor
         MaterialDocumentRequestBus::EventResult(materialAsset, m_documentId, &MaterialDocumentRequestBus::Events::GetAsset);
 
         const AZStd::string groupNameId = UvGroupName;
-        const AZStd::string groupDisplayName = "UV Names";
+        const AZStd::string groupDisplayName = "UV Sets";
         const AZStd::string groupDescription = "UV set names in this material, which can be renamed to match those in the model.";
         auto& group = m_groups[groupNameId];
 

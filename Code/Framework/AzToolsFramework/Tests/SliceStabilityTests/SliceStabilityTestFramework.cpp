@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Tests/SliceStabilityTests/SliceStabilityTestFramework.h>
 
@@ -141,7 +137,7 @@ namespace UnitTest
 
         // Set the new entity's transform to non zero values
         // This helps validate in comparison tests that the transform values of created entities persist during slice operations
-        entityTransform->SetLocalScale(AZ::Vector3(5, 5, 5));
+        entityTransform->SetLocalUniformScale(5);
         entityTransform->SetLocalRotation(AZ::Vector3RadToDeg(AZ::Vector3(90, 90, 90)));
         entityTransform->SetLocalTranslation(AZ::Vector3(100, 100, 100));
 

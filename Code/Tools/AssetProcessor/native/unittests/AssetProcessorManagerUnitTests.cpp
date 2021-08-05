@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/base.h>
 
@@ -90,34 +86,34 @@ namespace AssetProcessor
             //AZ_TracePrintf("test", "-------------------------\n");
         }
 
-        void ComputeFingerprints(unsigned int& fingerprintForPC, unsigned int& fingerprintForES3, PlatformConfiguration& config, QString scanFolderPath, QString relPath)
+        void ComputeFingerprints(unsigned int& fingerprintForPC, unsigned int& fingerprintForANDROID, PlatformConfiguration& config, QString scanFolderPath, QString relPath)
         {
             QString extraInfoForPC;
-            QString extraInfoForES3;
+            QString extraInfoForANDROID;
             RecognizerPointerContainer output;
             QString filePath = scanFolderPath + "/" + relPath;
             config.GetMatchingRecognizers(filePath, output);
             for (const AssetRecognizer* assetRecogniser : output)
             {
                 extraInfoForPC.append(assetRecogniser->m_platformSpecs["pc"].m_extraRCParams);
-                extraInfoForES3.append(assetRecogniser->m_platformSpecs["es3"].m_extraRCParams);
+                extraInfoForANDROID.append(assetRecogniser->m_platformSpecs["android"].m_extraRCParams);
                 extraInfoForPC.append(assetRecogniser->m_version);
-                extraInfoForES3.append(assetRecogniser->m_version);
+                extraInfoForANDROID.append(assetRecogniser->m_version);
             }
 
-            //Calculating fingerprints for the file for pc and es3 platforms
+            //Calculating fingerprints for the file for pc and android platforms
             AZ::Uuid sourceId = AZ::Uuid("{2206A6E0-FDBC-45DE-B6FE-C2FC63020BD5}");
             JobEntry jobEntryPC(scanFolderPath, relPath, relPath, 0, { "pc", {"desktop", "renderer"} }, "", 0, 1, sourceId);
-            JobEntry jobEntryES3(scanFolderPath, relPath, relPath, 0, { "es3", {"mobile", "renderer"} }, "", 0, 2, sourceId);
+            JobEntry jobEntryANDROID(scanFolderPath, relPath, relPath, 0, { "android", {"mobile", "renderer"} }, "", 0, 2, sourceId);
 
             JobDetails jobDetailsPC;
             jobDetailsPC.m_extraInformationForFingerprinting = extraInfoForPC.toUtf8().constData();
             jobDetailsPC.m_jobEntry = jobEntryPC;
-            JobDetails jobDetailsES3;
-            jobDetailsES3.m_extraInformationForFingerprinting = extraInfoForES3.toUtf8().constData();
-            jobDetailsES3.m_jobEntry = jobEntryES3;
+            JobDetails jobDetailsANDROID;
+            jobDetailsANDROID.m_extraInformationForFingerprinting = extraInfoForANDROID.toUtf8().constData();
+            jobDetailsANDROID.m_jobEntry = jobEntryANDROID;
             fingerprintForPC = AssetUtilities::GenerateFingerprint(jobDetailsPC);
-            fingerprintForES3 = AssetUtilities::GenerateFingerprint(jobDetailsES3);
+            fingerprintForANDROID = AssetUtilities::GenerateFingerprint(jobDetailsANDROID);
         }
     }
 
@@ -175,6 +171,16 @@ namespace AssetProcessor
         UNIT_TEST_EXPECT_FALSE(gameName.isEmpty());
         // should create cache folder in the root, and read everything from there.
 
+        // There is a sub-case of handling mixed cases, but is only supported on case-insensitive filesystems. 
+#if defined(AZ_PLATFORM_LINUX)
+        // Linux is case-sensitive, so 'basefile.txt' will stay the same case as the other subfolder versions
+        constexpr const char* subfolder3BaseFilePath = "subfolder3/basefile.txt";
+        constexpr int expectedLegacyAssetIdCount = 1;
+#else
+        constexpr const char* subfolder3BaseFilePath = "subfolder3/BaseFile.txt";
+        constexpr int expectedLegacyAssetIdCount = 2;
+#endif
+
         QSet<QString> expectedFiles;
         // set up some interesting files:
         expectedFiles << tempPath.absoluteFilePath("rootfile2.txt");
@@ -185,7 +191,9 @@ namespace AssetProcessor
         expectedFiles << tempPath.absoluteFilePath("subfolder2/aaa/bbb/basefile.txt");
         expectedFiles << tempPath.absoluteFilePath("subfolder2/aaa/bbb/ccc/basefile.txt");
         expectedFiles << tempPath.absoluteFilePath("subfolder2/aaa/bbb/ccc/ddd/basefile.txt");
-        expectedFiles << tempPath.absoluteFilePath("subfolder3/BaseFile.txt"); // note the case upper here
+
+        expectedFiles << tempPath.absoluteFilePath(subfolder3BaseFilePath); 
+
         expectedFiles << tempPath.absoluteFilePath("subfolder8/a/b/c/test.txt");
 
         // subfolder3 is not recursive so none of these should show up in any scan or override check
@@ -242,7 +250,7 @@ namespace AssetProcessor
 
         PlatformConfiguration config;
         config.EnablePlatform({ "pc",{ "desktop", "renderer" } }, true);
-        config.EnablePlatform({ "es3",{ "mobile", "renderer" } }, true);
+        config.EnablePlatform({ "android",{ "mobile", "renderer" } }, true);
         config.EnablePlatform({ "fandago",{ "console", "renderer" } }, false);
         AZStd::vector<AssetBuilderSDK::PlatformInfo> platforms;
         config.PopulatePlatformsForScanFolder(platforms);
@@ -261,9 +269,9 @@ namespace AssetProcessor
 
         AssetRecognizer rec;
         AssetPlatformSpec specpc;
-        AssetPlatformSpec speces3;
+        AssetPlatformSpec specandroid;
 
-        speces3.m_extraRCParams = "somerandomparam";
+        specandroid.m_extraRCParams = "somerandomparam";
         rec.m_name = "random files";
         rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.random", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
         rec.m_platformSpecs.insert("pc", specpc);
@@ -271,13 +279,13 @@ namespace AssetProcessor
         UNIT_TEST_EXPECT_TRUE(mockAppManager.RegisterAssetRecognizerAsBuilder(rec));
 
         specpc.m_extraRCParams = ""; // blank must work
-        speces3.m_extraRCParams = "testextraparams";
+        specandroid.m_extraRCParams = "testextraparams";
 
         const char* builderTxt1Name = "txt files";
         rec.m_name = builderTxt1Name;
         rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
         rec.m_platformSpecs.insert("pc", specpc);
-        rec.m_platformSpecs.insert("es3", speces3);
+        rec.m_platformSpecs.insert("android", specandroid);
 
         config.AddRecognizer(rec);
 
@@ -307,21 +315,21 @@ namespace AssetProcessor
         rec.m_testLockSource = false;
 
         specpc.m_extraRCParams = "pcparams";
-        speces3.m_extraRCParams = "es3params";
+        specandroid.m_extraRCParams = "androidparams";
 
         rec.m_name = "xxx files";
         rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.xxx", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
         rec.m_platformSpecs.insert("pc", specpc);
-        rec.m_platformSpecs.insert("es3", speces3);
+        rec.m_platformSpecs.insert("android", specandroid);
         config.AddRecognizer(rec);
         mockAppManager.RegisterAssetRecognizerAsBuilder(rec);
 
         // two recognizers for the same pattern.
         rec.m_name = "xxx files 2 (builder2)";
         specpc.m_extraRCParams = "pcparams2";
-        speces3.m_extraRCParams = "es3params2";
+        specandroid.m_extraRCParams = "androidparams2";
         rec.m_platformSpecs.insert("pc", specpc);
-        rec.m_platformSpecs.insert("es3", speces3);
+        rec.m_platformSpecs.insert("android", specandroid);
         config.AddRecognizer(rec);
         mockAppManager.RegisterAssetRecognizerAsBuilder(rec);
 
@@ -332,7 +340,7 @@ namespace AssetProcessor
         ignore_rec.m_name = "ignore files";
         ignore_rec.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.ignore", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
         ignore_rec.m_platformSpecs.insert("pc", specpc);
-        ignore_rec.m_platformSpecs.insert("es3", ignore_spec);
+        ignore_rec.m_platformSpecs.insert("android", ignore_spec);
         config.AddRecognizer(ignore_rec);
         mockAppManager.RegisterAssetRecognizerAsBuilder(ignore_rec);
 
@@ -434,7 +442,7 @@ namespace AssetProcessor
 
         sortAssetToProcessResultList(processResults);
 
-        UNIT_TEST_EXPECT_TRUE(processResults.size() == 1); // 1, since we have one recognizer for .ignore, but the 'es3' platform is marked as skip
+        UNIT_TEST_EXPECT_TRUE(processResults.size() == 1); // 1, since we have one recognizer for .ignore, but the 'android' platform is marked as skip
         UNIT_TEST_EXPECT_TRUE((processResults[0].m_jobEntry.m_platformInfo.m_identifier == "pc"));
 
 
@@ -457,16 +465,16 @@ namespace AssetProcessor
 
         sortAssetToProcessResultList(processResults);
 
-        UNIT_TEST_EXPECT_TRUE(processResults.size() == 4); // 2 each for pc and es3,since we have two recognizer for .txt file
+        UNIT_TEST_EXPECT_TRUE(processResults.size() == 4); // 2 each for pc and android,since we have two recognizer for .txt file
         UNIT_TEST_EXPECT_TRUE(processResults[0].m_jobEntry.m_platformInfo.m_identifier == processResults[1].m_jobEntry.m_platformInfo.m_identifier);
         UNIT_TEST_EXPECT_TRUE(processResults[2].m_jobEntry.m_platformInfo.m_identifier == processResults[3].m_jobEntry.m_platformInfo.m_identifier);
-        UNIT_TEST_EXPECT_TRUE((processResults[0].m_jobEntry.m_platformInfo.m_identifier == "es3"));
-        UNIT_TEST_EXPECT_TRUE((processResults[1].m_jobEntry.m_platformInfo.m_identifier == "es3"));
+        UNIT_TEST_EXPECT_TRUE((processResults[0].m_jobEntry.m_platformInfo.m_identifier == "android"));
+        UNIT_TEST_EXPECT_TRUE((processResults[1].m_jobEntry.m_platformInfo.m_identifier == "android"));
         UNIT_TEST_EXPECT_TRUE((processResults[2].m_jobEntry.m_platformInfo.m_identifier == "pc"));
         UNIT_TEST_EXPECT_TRUE((processResults[3].m_jobEntry.m_platformInfo.m_identifier == "pc"));
 
 
-        QList<int> es3JobsIndex;
+        QList<int> androidJobsIndex;
         QList<int> pcJobsIndex;
         for (int checkIdx = 0; checkIdx < 4; ++checkIdx)
         {
@@ -664,19 +672,19 @@ namespace AssetProcessor
         // ---------- test successes ----------
 
 
-        QStringList es3outs;
-        es3outs.push_back(cacheRoot.filePath(QString("es3/basefile.arc1")));
-        es3outs.push_back(cacheRoot.filePath(QString("es3/basefile.arc2")));
+        QStringList androidouts;
+        androidouts.push_back(cacheRoot.filePath(QString("android/basefile.arc1")));
+        androidouts.push_back(cacheRoot.filePath(QString("android/basefile.arc2")));
 
         // feed it the messages its waiting for (create the files)
-        UNIT_TEST_EXPECT_TRUE(CreateDummyFile(es3outs[0], "products."));
-        UNIT_TEST_EXPECT_TRUE(CreateDummyFile(es3outs[1], "products."))
+        UNIT_TEST_EXPECT_TRUE(CreateDummyFile(androidouts[0], "products."));
+        UNIT_TEST_EXPECT_TRUE(CreateDummyFile(androidouts[1], "products."))
 
-        //Invoke Asset Processed for es3 platform , txt files job description
+        //Invoke Asset Processed for android platform , txt files job description
         AssetBuilderSDK::ProcessJobResponse response;
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(es3outs[0].toUtf8().constData(), AZ::Uuid::CreateNull(), 1));
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(es3outs[1].toUtf8().constData(), AZ::Uuid::CreateNull(), 2));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(androidouts[0].toUtf8().constData(), AZ::Uuid::CreateNull(), 1));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(androidouts[1].toUtf8().constData(), AZ::Uuid::CreateNull(), 2));
 
         // make sure legacy SubIds get stored in the DB and in asset response messages.
         // also make sure they don't get filed for the wrong asset.
@@ -695,8 +703,8 @@ namespace AssetProcessor
         UNIT_TEST_EXPECT_TRUE(changedInputResults.size() == 1);
 
         // always RELATIVE, always with the product name.
-        UNIT_TEST_EXPECT_TRUE(assetMessages[0].m_platform == "es3");
-        UNIT_TEST_EXPECT_TRUE(assetMessages[1].m_platform == "es3");
+        UNIT_TEST_EXPECT_TRUE(assetMessages[0].m_platform == "android");
+        UNIT_TEST_EXPECT_TRUE(assetMessages[1].m_platform == "android");
         UNIT_TEST_EXPECT_TRUE(assetMessages[0].m_data == "basefile.arc1");
         UNIT_TEST_EXPECT_TRUE(assetMessages[1].m_data == "basefile.arc2");
         UNIT_TEST_EXPECT_TRUE(assetMessages[0].m_type == AzFramework::AssetSystem::AssetNotificationMessage::AssetChanged);
@@ -795,14 +803,14 @@ namespace AssetProcessor
         changedInputResults.clear();
         assetMessages.clear();
 
-        es3outs.clear();
-        es3outs.push_back(cacheRoot.filePath(QString("es3/basefile.azm")));
-        UNIT_TEST_EXPECT_TRUE(CreateDummyFile(es3outs[0], "products."));
+        androidouts.clear();
+        androidouts.push_back(cacheRoot.filePath(QString("android/basefile.azm")));
+        UNIT_TEST_EXPECT_TRUE(CreateDummyFile(androidouts[0], "products."));
 
-        //Invoke Asset Processed for es3 platform , txt files2 job description
+        //Invoke Asset Processed for android platform , txt files2 job description
         response.m_outputProducts.clear();
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(es3outs[0].toUtf8().constData()));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(androidouts[0].toUtf8().constData()));
 
         QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[1].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
 
@@ -814,7 +822,7 @@ namespace AssetProcessor
         UNIT_TEST_EXPECT_TRUE(changedInputResults.size() == 1);
 
         // always RELATIVE, always with the product name.
-        UNIT_TEST_EXPECT_TRUE(assetMessages[0].m_platform == "es3");
+        UNIT_TEST_EXPECT_TRUE(assetMessages[0].m_platform == "android");
         UNIT_TEST_EXPECT_TRUE(assetMessages[0].m_data == "basefile.azm");
 
         changedInputResults.clear();
@@ -1004,11 +1012,11 @@ namespace AssetProcessor
         sortAssetToProcessResultList(processResults);
 
         // --------- same result as above ----------
-        UNIT_TEST_EXPECT_TRUE(processResults.size() == 4); // 2 each for pc and es3,since we have two recognizer for .txt file
+        UNIT_TEST_EXPECT_TRUE(processResults.size() == 4); // 2 each for pc and android,since we have two recognizer for .txt file
         UNIT_TEST_EXPECT_TRUE(processResults[0].m_jobEntry.m_platformInfo.m_identifier == processResults[1].m_jobEntry.m_platformInfo.m_identifier);
         UNIT_TEST_EXPECT_TRUE(processResults[2].m_jobEntry.m_platformInfo.m_identifier == processResults[3].m_jobEntry.m_platformInfo.m_identifier);
-        UNIT_TEST_EXPECT_TRUE((processResults[0].m_jobEntry.m_platformInfo.m_identifier == "es3"));
-        UNIT_TEST_EXPECT_TRUE((processResults[1].m_jobEntry.m_platformInfo.m_identifier == "es3"));
+        UNIT_TEST_EXPECT_TRUE((processResults[0].m_jobEntry.m_platformInfo.m_identifier == "android"));
+        UNIT_TEST_EXPECT_TRUE((processResults[1].m_jobEntry.m_platformInfo.m_identifier == "android"));
         UNIT_TEST_EXPECT_TRUE((processResults[2].m_jobEntry.m_platformInfo.m_identifier == "pc"));
         UNIT_TEST_EXPECT_TRUE((processResults[3].m_jobEntry.m_platformInfo.m_identifier == "pc"));
         UNIT_TEST_EXPECT_TRUE(processResults[0].m_jobEntry.m_computedFingerprint != 0);
@@ -1027,25 +1035,25 @@ namespace AssetProcessor
 
         // this time make different products:
 
-        QStringList oldes3outs;
+        QStringList oldandroidouts;
         QStringList oldpcouts;
-        oldes3outs = es3outs;
+        oldandroidouts = androidouts;
         oldpcouts.append(pcouts);
-        QStringList es3outs2;
+        QStringList androidouts2;
         QStringList pcouts2;
-        es3outs.clear();
+        androidouts.clear();
         pcouts.clear();
-        es3outs.push_back(cacheRoot.filePath(QString("es3/basefilea.arc1")));
-        es3outs2.push_back(cacheRoot.filePath(QString("es3/basefilea.azm")));
-        // note that the ES3 outs have changed
+        androidouts.push_back(cacheRoot.filePath(QString("android/basefilea.arc1")));
+        androidouts2.push_back(cacheRoot.filePath(QString("android/basefilea.azm")));
+        // note that the android outs have changed
         // but the pc outs are still the same.
         pcouts.push_back(cacheRoot.filePath(QString("pc/basefile.arc1")));
         pcouts2.push_back(cacheRoot.filePath(QString("pc/basefile.azm")));
 
         // feed it the messages its waiting for (create the files)
-        UNIT_TEST_EXPECT_TRUE(CreateDummyFile(es3outs[0], "newfile."));
+        UNIT_TEST_EXPECT_TRUE(CreateDummyFile(androidouts[0], "newfile."));
         UNIT_TEST_EXPECT_TRUE(CreateDummyFile(pcouts[0], "newfile."));
-        UNIT_TEST_EXPECT_TRUE(CreateDummyFile(es3outs2[0], "newfile."));
+        UNIT_TEST_EXPECT_TRUE(CreateDummyFile(androidouts2[0], "newfile."));
         UNIT_TEST_EXPECT_TRUE(CreateDummyFile(pcouts2[0], "newfile."));
 
         QCoreApplication::processEvents(QEventLoop::AllEvents | QEventLoop::WaitForMoreEvents, 50);
@@ -1057,12 +1065,12 @@ namespace AssetProcessor
 
         response.m_outputProducts.clear();
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(es3outs[0].toUtf8().constData()));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(androidouts[0].toUtf8().constData()));
         QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[0].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
 
         response.m_outputProducts.clear();
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(es3outs2[0].toUtf8().constData()));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(androidouts2[0].toUtf8().constData()));
         QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[1].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
 
         response.m_outputProducts.clear();
@@ -1085,12 +1093,12 @@ namespace AssetProcessor
         // The files removed should be the ones we did not emit this time
         // note that order isn't guarantee but an example output it this
 
-        // [0] Removed: ES3, basefile.arc1
-        // [1] Removed: ES3, basefile.arc2
-        // [2] Changed: ES3, basefilea.arc1 (added)
+        // [0] Removed: ANDROID, basefile.arc1
+        // [1] Removed: ANDROID, basefile.arc2
+        // [2] Changed: ANDROID, basefilea.arc1 (added)
 
-        // [3] Removed: ES3, basefile.azm
-        // [4] Changed: ES3, basefilea.azm (added)
+        // [3] Removed: ANDROID, basefile.azm
+        // [4] Changed: ANDROID, basefilea.azm (added)
 
         // [5] changed: PC, basefile.arc1 (changed)
         // [6] changed: PC, basefile.azm (changed)
@@ -1112,18 +1120,18 @@ namespace AssetProcessor
             if (element.m_data == "basefilea.arc1")
             {
                 UNIT_TEST_EXPECT_TRUE(element.m_type == AzFramework::AssetSystem::AssetNotificationMessage::AssetChanged);
-                UNIT_TEST_EXPECT_TRUE(element.m_platform == "es3");
+                UNIT_TEST_EXPECT_TRUE(element.m_platform == "android");
             }
 
             if (element.m_data == "basefile.arc2")
             {
                 UNIT_TEST_EXPECT_TRUE(element.m_type == AzFramework::AssetSystem::AssetNotificationMessage::AssetRemoved);
-                UNIT_TEST_EXPECT_TRUE(element.m_platform == "es3");
+                UNIT_TEST_EXPECT_TRUE(element.m_platform == "android");
             }
         }
 
         // original products must no longer exist since it should have found and deleted them!
-        for (QString outFile: oldes3outs)
+        for (QString outFile: oldandroidouts)
         {
             UNIT_TEST_EXPECT_FALSE(QFile::exists(outFile));
         }
@@ -1147,11 +1155,11 @@ namespace AssetProcessor
         sortAssetToProcessResultList(processResults);
 
         // --------- same result as above ----------
-        UNIT_TEST_EXPECT_TRUE(processResults.size() == 4); // pc and es3
+        UNIT_TEST_EXPECT_TRUE(processResults.size() == 4); // pc and android
         UNIT_TEST_EXPECT_TRUE(processResults[0].m_jobEntry.m_platformInfo.m_identifier == processResults[1].m_jobEntry.m_platformInfo.m_identifier);
         UNIT_TEST_EXPECT_TRUE(processResults[2].m_jobEntry.m_platformInfo.m_identifier == processResults[3].m_jobEntry.m_platformInfo.m_identifier);
-        UNIT_TEST_EXPECT_TRUE((processResults[0].m_jobEntry.m_platformInfo.m_identifier == "es3"));
-        UNIT_TEST_EXPECT_TRUE((processResults[1].m_jobEntry.m_platformInfo.m_identifier == "es3"));
+        UNIT_TEST_EXPECT_TRUE((processResults[0].m_jobEntry.m_platformInfo.m_identifier == "android"));
+        UNIT_TEST_EXPECT_TRUE((processResults[1].m_jobEntry.m_platformInfo.m_identifier == "android"));
         UNIT_TEST_EXPECT_TRUE((processResults[2].m_jobEntry.m_platformInfo.m_identifier == "pc"));
         UNIT_TEST_EXPECT_TRUE((processResults[3].m_jobEntry.m_platformInfo.m_identifier == "pc"));
         UNIT_TEST_EXPECT_TRUE(processResults[0].m_jobEntry.m_computedFingerprint != 0);
@@ -1171,12 +1179,12 @@ namespace AssetProcessor
 
         response.m_outputProducts.clear();
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(es3outs[0].toUtf8().constData()));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(androidouts[0].toUtf8().constData()));
         QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[0].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
 
         response.m_outputProducts.clear();
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(es3outs2[0].toUtf8().constData()));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(androidouts2[0].toUtf8().constData()));
         QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[1].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
 
         response.m_outputProducts.clear();
@@ -1207,11 +1215,11 @@ namespace AssetProcessor
         sortAssetToProcessResultList(processResults);
 
         // --------- same result as above ----------
-        UNIT_TEST_EXPECT_TRUE(processResults.size() == 4); // 2 each for pc and es3,since we have two recognizer for .txt file
+        UNIT_TEST_EXPECT_TRUE(processResults.size() == 4); // 2 each for pc and android,since we have two recognizer for .txt file
         UNIT_TEST_EXPECT_TRUE(processResults[0].m_jobEntry.m_platformInfo.m_identifier == processResults[1].m_jobEntry.m_platformInfo.m_identifier);
         UNIT_TEST_EXPECT_TRUE(processResults[2].m_jobEntry.m_platformInfo.m_identifier == processResults[3].m_jobEntry.m_platformInfo.m_identifier);
-        UNIT_TEST_EXPECT_TRUE((processResults[0].m_jobEntry.m_platformInfo.m_identifier == "es3"));
-        UNIT_TEST_EXPECT_TRUE((processResults[1].m_jobEntry.m_platformInfo.m_identifier == "es3"));
+        UNIT_TEST_EXPECT_TRUE((processResults[0].m_jobEntry.m_platformInfo.m_identifier == "android"));
+        UNIT_TEST_EXPECT_TRUE((processResults[1].m_jobEntry.m_platformInfo.m_identifier == "android"));
         UNIT_TEST_EXPECT_TRUE((processResults[2].m_jobEntry.m_platformInfo.m_identifier == "pc"));
         UNIT_TEST_EXPECT_TRUE((processResults[3].m_jobEntry.m_platformInfo.m_identifier == "pc"));
         UNIT_TEST_EXPECT_TRUE(processResults[0].m_jobEntry.m_computedFingerprint != 0);
@@ -1222,12 +1230,12 @@ namespace AssetProcessor
 
         response.m_outputProducts.clear();
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(es3outs[0].toUtf8().constData()));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(androidouts[0].toUtf8().constData()));
         QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[0].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
 
         response.m_outputProducts.clear();
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(es3outs2[0].toUtf8().constData()));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(androidouts2[0].toUtf8().constData()));
         QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[1].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
 
         response.m_outputProducts.clear();
@@ -1245,9 +1253,9 @@ namespace AssetProcessor
 
         // deleting the fingerprint file should not have erased the products
         UNIT_TEST_EXPECT_TRUE(QFile::exists(pcouts[0]));
-        UNIT_TEST_EXPECT_TRUE(QFile::exists(es3outs[0]));
+        UNIT_TEST_EXPECT_TRUE(QFile::exists(androidouts[0]));
         UNIT_TEST_EXPECT_TRUE(QFile::exists(pcouts2[0]));
-        UNIT_TEST_EXPECT_TRUE(QFile::exists(es3outs2[0]));
+        UNIT_TEST_EXPECT_TRUE(QFile::exists(androidouts2[0]));
 
         changedInputResults.clear();
         assetMessages.clear();
@@ -1306,9 +1314,9 @@ namespace AssetProcessor
         }
 
         UNIT_TEST_EXPECT_FALSE(QFile::exists(pcouts[0]));
-        UNIT_TEST_EXPECT_FALSE(QFile::exists(es3outs[0]));
+        UNIT_TEST_EXPECT_FALSE(QFile::exists(androidouts[0]));
         UNIT_TEST_EXPECT_FALSE(QFile::exists(pcouts2[0]));
-        UNIT_TEST_EXPECT_FALSE(QFile::exists(es3outs2[0]));
+        UNIT_TEST_EXPECT_FALSE(QFile::exists(androidouts2[0]));
 
         changedInputResults.clear();
         assetMessages.clear();
@@ -1323,28 +1331,28 @@ namespace AssetProcessor
         sortAssetToProcessResultList(processResults);
 
         // --------- same result as above ----------
-        UNIT_TEST_EXPECT_TRUE(processResults.size() == 4); // 2 each for pc and es3,since we have two recognizer for .txt file
+        UNIT_TEST_EXPECT_TRUE(processResults.size() == 4); // 2 each for pc and android,since we have two recognizer for .txt file
         UNIT_TEST_EXPECT_TRUE(processResults[0].m_jobEntry.m_platformInfo.m_identifier == processResults[1].m_jobEntry.m_platformInfo.m_identifier);
         UNIT_TEST_EXPECT_TRUE(processResults[2].m_jobEntry.m_platformInfo.m_identifier == processResults[3].m_jobEntry.m_platformInfo.m_identifier);
-        UNIT_TEST_EXPECT_TRUE((processResults[0].m_jobEntry.m_platformInfo.m_identifier == "es3"));
-        UNIT_TEST_EXPECT_TRUE((processResults[1].m_jobEntry.m_platformInfo.m_identifier == "es3"));
+        UNIT_TEST_EXPECT_TRUE((processResults[0].m_jobEntry.m_platformInfo.m_identifier == "android"));
+        UNIT_TEST_EXPECT_TRUE((processResults[1].m_jobEntry.m_platformInfo.m_identifier == "android"));
         UNIT_TEST_EXPECT_TRUE((processResults[2].m_jobEntry.m_platformInfo.m_identifier == "pc"));
         UNIT_TEST_EXPECT_TRUE((processResults[3].m_jobEntry.m_platformInfo.m_identifier == "pc"));
         UNIT_TEST_EXPECT_TRUE(processResults[0].m_jobEntry.m_computedFingerprint != 0);
 
-        UNIT_TEST_EXPECT_TRUE(CreateDummyFile(es3outs[0], "newfile."));
-        UNIT_TEST_EXPECT_TRUE(CreateDummyFile(es3outs2[0], "newfile."));
+        UNIT_TEST_EXPECT_TRUE(CreateDummyFile(androidouts[0], "newfile."));
+        UNIT_TEST_EXPECT_TRUE(CreateDummyFile(androidouts2[0], "newfile."));
         UNIT_TEST_EXPECT_TRUE(CreateDummyFile(pcouts2[0], "newfile."));
 
         // send both done messages simultaneously!
         response.m_outputProducts.clear();
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(es3outs[0].toUtf8().constData()));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(androidouts[0].toUtf8().constData()));
         QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[0].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
 
         response.m_outputProducts.clear();
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(es3outs2[0].toUtf8().constData()));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(androidouts2[0].toUtf8().constData()));
         QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[1].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
 
         // send one failure only for PC :
@@ -1422,12 +1430,12 @@ namespace AssetProcessor
         UNIT_TEST_EXPECT_TRUE(changedInputResults.size() == 3);
         UNIT_TEST_EXPECT_TRUE(assetMessages.size() == 3);
 
-        // which should be for the ES3:
+        // which should be for the ANDROID:
         UNIT_TEST_EXPECT_TRUE(AssetUtilities::NormalizeFilePath(changedInputResults[0].first) == absolutePath);
 
         // always RELATIVE, always with the product name.
         UNIT_TEST_EXPECT_TRUE(assetMessages[0].m_data == "basefilea.arc1" || assetMessages[0].m_data == "basefilea.azm");
-        UNIT_TEST_EXPECT_TRUE(assetMessages[0].m_platform == "es3");
+        UNIT_TEST_EXPECT_TRUE(assetMessages[0].m_platform == "android");
 
         for (auto& payload : payloadList)
         {
@@ -1521,35 +1529,36 @@ namespace AssetProcessor
 
         // -------------- override test -----------------
         // set up by letting it compile basefile.txt from 3:
-        absolutePath = AssetUtilities::NormalizeFilePath(tempPath.absoluteFilePath("subfolder3/BaseFile.txt"));
+
+        absolutePath = AssetUtilities::NormalizeFilePath(tempPath.absoluteFilePath(subfolder3BaseFilePath));
         QMetaObject::invokeMethod(&apm, "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, absolutePath));
         UNIT_TEST_EXPECT_TRUE(BlockUntil(idling, 5000));
 
         sortAssetToProcessResultList(processResults);
 
         // --------- same result as above ----------
-        UNIT_TEST_EXPECT_TRUE(processResults.size() == 4); // 2 each for pc and es3,since we have two recognizer for .txt file
+        UNIT_TEST_EXPECT_TRUE(processResults.size() == 4); // 2 each for pc and android,since we have two recognizer for .txt file
         UNIT_TEST_EXPECT_TRUE(processResults[0].m_jobEntry.m_platformInfo.m_identifier == processResults[1].m_jobEntry.m_platformInfo.m_identifier);
         UNIT_TEST_EXPECT_TRUE(processResults[2].m_jobEntry.m_platformInfo.m_identifier == processResults[3].m_jobEntry.m_platformInfo.m_identifier);
-        UNIT_TEST_EXPECT_TRUE((processResults[0].m_jobEntry.m_platformInfo.m_identifier == "es3"));
-        UNIT_TEST_EXPECT_TRUE((processResults[1].m_jobEntry.m_platformInfo.m_identifier == "es3"));
+        UNIT_TEST_EXPECT_TRUE((processResults[0].m_jobEntry.m_platformInfo.m_identifier == "android"));
+        UNIT_TEST_EXPECT_TRUE((processResults[1].m_jobEntry.m_platformInfo.m_identifier == "android"));
         UNIT_TEST_EXPECT_TRUE((processResults[2].m_jobEntry.m_platformInfo.m_identifier == "pc"));
         UNIT_TEST_EXPECT_TRUE((processResults[3].m_jobEntry.m_platformInfo.m_identifier == "pc"));
         UNIT_TEST_EXPECT_TRUE(processResults[0].m_jobEntry.m_computedFingerprint != 0);
 
-        es3outs.clear();
-        es3outs2.clear();
+        androidouts.clear();
+        androidouts2.clear();
         pcouts.clear();
         pcouts2.clear();
-        es3outs.push_back(cacheRoot.filePath(QString("es3/basefilez.arc2")));
-        es3outs2.push_back(cacheRoot.filePath(QString("es3/basefileaz.azm2")));
-        // note that the ES3 outs have changed
+        androidouts.push_back(cacheRoot.filePath(QString("android/basefilez.arc2")));
+        androidouts2.push_back(cacheRoot.filePath(QString("android/basefileaz.azm2")));
+        // note that the android outs have changed
         // but the pc outs are still the same.
         pcouts.push_back(cacheRoot.filePath(QString("pc/basefile.arc2")));
         pcouts2.push_back(cacheRoot.filePath(QString("pc/basefile.azm2")));
-        UNIT_TEST_EXPECT_TRUE(CreateDummyFile(es3outs[0], "newfile."));
+        UNIT_TEST_EXPECT_TRUE(CreateDummyFile(androidouts[0], "newfile."));
         UNIT_TEST_EXPECT_TRUE(CreateDummyFile(pcouts[0], "newfile."));
-        UNIT_TEST_EXPECT_TRUE(CreateDummyFile(es3outs2[0], "newfile."));
+        UNIT_TEST_EXPECT_TRUE(CreateDummyFile(androidouts2[0], "newfile."));
         UNIT_TEST_EXPECT_TRUE(CreateDummyFile(pcouts2[0], "newfile."));
         changedInputResults.clear();
         assetMessages.clear();
@@ -1557,12 +1566,12 @@ namespace AssetProcessor
         // send all the done messages simultaneously:
         response.m_outputProducts.clear();
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(es3outs[0].toUtf8().constData(), AZ::Uuid::CreateNull(), 1));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(androidouts[0].toUtf8().constData(), AZ::Uuid::CreateNull(), 1));
         QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[0].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
 
         response.m_outputProducts.clear();
         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(es3outs2[0].toUtf8().constData(), AZ::Uuid::CreateNull(), 2));
+        response.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(androidouts2[0].toUtf8().constData(), AZ::Uuid::CreateNull(), 2));
         QMetaObject::invokeMethod(&apm, "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, processResults[1].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, response));
 
         response.m_outputProducts.clear();
@@ -1583,8 +1592,7 @@ namespace AssetProcessor
         UNIT_TEST_EXPECT_TRUE(assetMessages.size() == 4);
         for (auto element : assetMessages)
         {
-            // because the source asset had UPPER CASE in it, we should have multiple legacy IDs
-            UNIT_TEST_EXPECT_TRUE(element.m_legacyAssetIds.size() == 2);
+            UNIT_TEST_EXPECT_TRUE(element.m_legacyAssetIds.size() == expectedLegacyAssetIdCount);
         }
 
         // ------------- setup complete, now do the test...
@@ -1607,7 +1615,7 @@ namespace AssetProcessor
 
         // delete the highest priority override file and ensure that it generates tasks
         // for the next highest priority!  Basically, deleting this file should "reveal" the file underneath it in the other subfolder
-        QString deletedFile = tempPath.absoluteFilePath("subfolder3/BaseFile.txt");
+        QString deletedFile = tempPath.absoluteFilePath(subfolder3BaseFilePath);
         QString expectedReplacementInputFile = AssetUtilities::NormalizeFilePath(tempPath.absoluteFilePath("subfolder2/basefile.txt"));
 
         UNIT_TEST_EXPECT_TRUE(QFile::remove(deletedFile));
@@ -1621,12 +1629,17 @@ namespace AssetProcessor
 
         sortAssetToProcessResultList(processResults);
 
+#if defined(AZ_PLATFORM_LINUX)
+        // On Linux, because of we cannot change the case of the source file, the job fingerprint is not updated due the case-switch so
+        // there will be actually nothing to process
+        UNIT_TEST_EXPECT_TRUE(processResults.size() == 0);
+#else
         // --------- same result as above ----------
-        UNIT_TEST_EXPECT_TRUE(processResults.size() == 4); // 2 each for pc and es3,since we have two recognizer for .txt file
+        UNIT_TEST_EXPECT_TRUE(processResults.size() == 4); // 2 each for pc and android,since we have two recognizer for .txt file
         UNIT_TEST_EXPECT_TRUE(processResults[0].m_jobEntry.m_platformInfo.m_identifier == processResults[1].m_jobEntry.m_platformInfo.m_identifier);
         UNIT_TEST_EXPECT_TRUE(processResults[2].m_jobEntry.m_platformInfo.m_identifier == processResults[3].m_jobEntry.m_platformInfo.m_identifier);
-        UNIT_TEST_EXPECT_TRUE((processResults[0].m_jobEntry.m_platformInfo.m_identifier == "es3"));
-        UNIT_TEST_EXPECT_TRUE((processResults[1].m_jobEntry.m_platformInfo.m_identifier == "es3"));
+        UNIT_TEST_EXPECT_TRUE((processResults[0].m_jobEntry.m_platformInfo.m_identifier == "android"));
+        UNIT_TEST_EXPECT_TRUE((processResults[1].m_jobEntry.m_platformInfo.m_identifier == "android"));
         UNIT_TEST_EXPECT_TRUE((processResults[2].m_jobEntry.m_platformInfo.m_identifier == "pc"));
         UNIT_TEST_EXPECT_TRUE((processResults[3].m_jobEntry.m_platformInfo.m_identifier == "pc"));
         UNIT_TEST_EXPECT_TRUE(processResults[0].m_jobEntry.m_computedFingerprint != 0);
@@ -1641,15 +1654,15 @@ namespace AssetProcessor
             UNIT_TEST_EXPECT_TRUE(processFile1.startsWith(platformFolder));
             UNIT_TEST_EXPECT_TRUE(processResults[checkIdx].m_jobEntry.m_computedFingerprint != 0);
         }
-
+#endif // defined(AZ_PLATFORM_LINUX)
         relativePathFromWatchFolder = "somefile.xxx";
         watchFolderPath = tempPath.absoluteFilePath("subfolder3");
         absolutePath = watchFolderPath + "/" + relativePathFromWatchFolder;
 
         unsigned int fingerprintForPC = 0;
-        unsigned int fingerprintForES3 = 0;
+        unsigned int fingerprintForANDROID = 0;
 
-        ComputeFingerprints(fingerprintForPC, fingerprintForES3, config, watchFolderPath, relativePathFromWatchFolder);
+        ComputeFingerprints(fingerprintForPC, fingerprintForANDROID, config, watchFolderPath, relativePathFromWatchFolder);
 
         processResults.clear();
         QMetaObject::invokeMethod(&apm, "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, absolutePath));
@@ -1657,11 +1670,11 @@ namespace AssetProcessor
 
         sortAssetToProcessResultList(processResults);
 
-        UNIT_TEST_EXPECT_TRUE(processResults.size() == 4); // // 2 each for pc and es3,since we have two recognizer for .xxx file
+        UNIT_TEST_EXPECT_TRUE(processResults.size() == 4); // // 2 each for pc and android,since we have two recognizer for .xxx file
         UNIT_TEST_EXPECT_TRUE(processResults[0].m_jobEntry.m_platformInfo.m_identifier == processResults[1].m_jobEntry.m_platformInfo.m_identifier);
         UNIT_TEST_EXPECT_TRUE(processResults[2].m_jobEntry.m_platformInfo.m_identifier == processResults[3].m_jobEntry.m_platformInfo.m_identifier);
-        UNIT_TEST_EXPECT_TRUE((processResults[0].m_jobEntry.m_platformInfo.m_identifier == "es3"));
-        UNIT_TEST_EXPECT_TRUE((processResults[1].m_jobEntry.m_platformInfo.m_identifier == "es3"));
+        UNIT_TEST_EXPECT_TRUE((processResults[0].m_jobEntry.m_platformInfo.m_identifier == "android"));
+        UNIT_TEST_EXPECT_TRUE((processResults[1].m_jobEntry.m_platformInfo.m_identifier == "android"));
         UNIT_TEST_EXPECT_TRUE((processResults[2].m_jobEntry.m_platformInfo.m_identifier == "pc"));
         UNIT_TEST_EXPECT_TRUE((processResults[3].m_jobEntry.m_platformInfo.m_identifier == "pc"));
 
@@ -1683,11 +1696,11 @@ namespace AssetProcessor
         // we never actually submitted any fingerprints or indicated success, so the same number of jobs should occur as before
         sortAssetToProcessResultList(processResults);
 
-        UNIT_TEST_EXPECT_TRUE(processResults.size() == 4); // // 2 each for pc and es3,since we have two recognizer for .xxx file
+        UNIT_TEST_EXPECT_TRUE(processResults.size() == 4); // // 2 each for pc and android,since we have two recognizer for .xxx file
         UNIT_TEST_EXPECT_TRUE(processResults[0].m_jobEntry.m_platformInfo.m_identifier == processResults[1].m_jobEntry.m_platformInfo.m_identifier);
         UNIT_TEST_EXPECT_TRUE(processResults[2].m_jobEntry.m_platformInfo.m_identifier == processResults[3].m_jobEntry.m_platformInfo.m_identifier);
-        UNIT_TEST_EXPECT_TRUE((processResults[0].m_jobEntry.m_platformInfo.m_identifier == "es3"));
-        UNIT_TEST_EXPECT_TRUE((processResults[1].m_jobEntry.m_platformInfo.m_identifier == "es3"));
+        UNIT_TEST_EXPECT_TRUE((processResults[0].m_jobEntry.m_platformInfo.m_identifier == "android"));
+        UNIT_TEST_EXPECT_TRUE((processResults[1].m_jobEntry.m_platformInfo.m_identifier == "android"));
         UNIT_TEST_EXPECT_TRUE((processResults[2].m_jobEntry.m_platformInfo.m_identifier == "pc"));
         UNIT_TEST_EXPECT_TRUE((processResults[3].m_jobEntry.m_platformInfo.m_identifier == "pc"));
 
@@ -1707,7 +1720,7 @@ namespace AssetProcessor
         // now re-perform the same test, this time only the pc ones should re-appear.
         // this should happen because we're changing the extra params, which should be part of the fingerprint
         // if this unit test fails, check to make sure that the extra params are being ingested into the fingerprint computation functions
-        // and also make sure that the jobs that are for the remaining es3 platform don't change.
+        // and also make sure that the jobs that are for the remaining android platform don't change.
 
         // store the UUID so that we can insert the new one with the same UUID
         AZStd::shared_ptr<InternalMockBuilder> builderTxt2Builder;
@@ -1745,12 +1758,12 @@ namespace AssetProcessor
         // ---------------------
 
         unsigned int newfingerprintForPC = 0;
-        unsigned int newfingerprintForES3 = 0;
+        unsigned int newfingerprintForANDROID = 0;
 
-        ComputeFingerprints(newfingerprintForPC, newfingerprintForES3, config, watchFolderPath, relativePathFromWatchFolder);
+        ComputeFingerprints(newfingerprintForPC, newfingerprintForANDROID, config, watchFolderPath, relativePathFromWatchFolder);
 
         UNIT_TEST_EXPECT_TRUE(newfingerprintForPC != fingerprintForPC);//Fingerprints should be different
-        UNIT_TEST_EXPECT_TRUE(newfingerprintForES3 == fingerprintForES3);//Fingerprints are same
+        UNIT_TEST_EXPECT_TRUE(newfingerprintForANDROID == fingerprintForANDROID);//Fingerprints are same
 
         config.RemoveRecognizer("xxx files 2 (builder2)");
         mockAppManager.UnRegisterAssetRecognizerAsBuilder("xxx files 2 (builder2)");
@@ -1765,18 +1778,18 @@ namespace AssetProcessor
         absolutePath = AssetUtilities::NormalizeFilePath(absolutePath);
         QMetaObject::invokeMethod(&apm, "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, absolutePath));
         UNIT_TEST_EXPECT_TRUE(BlockUntil(idling, 5000));
-        UNIT_TEST_EXPECT_TRUE(processResults.size() == 2); // pc and es3
+        UNIT_TEST_EXPECT_TRUE(processResults.size() == 2); // pc and android
         UNIT_TEST_EXPECT_TRUE(processResults[0].m_jobEntry.m_platformInfo.m_identifier != processResults[1].m_jobEntry.m_platformInfo.m_identifier);
-        UNIT_TEST_EXPECT_TRUE((processResults[0].m_jobEntry.m_platformInfo.m_identifier == "pc") || (processResults[0].m_jobEntry.m_platformInfo.m_identifier == "es3"));
-        UNIT_TEST_EXPECT_TRUE((processResults[1].m_jobEntry.m_platformInfo.m_identifier == "pc") || (processResults[1].m_jobEntry.m_platformInfo.m_identifier == "es3"));
+        UNIT_TEST_EXPECT_TRUE((processResults[0].m_jobEntry.m_platformInfo.m_identifier == "pc") || (processResults[0].m_jobEntry.m_platformInfo.m_identifier == "android"));
+        UNIT_TEST_EXPECT_TRUE((processResults[1].m_jobEntry.m_platformInfo.m_identifier == "pc") || (processResults[1].m_jobEntry.m_platformInfo.m_identifier == "android"));
 
         unsigned int newfingerprintForPCAfterVersionChange = 0;
-        unsigned int newfingerprintForES3AfterVersionChange = 0;
+        unsigned int newfingerprintForANDROIDAfterVersionChange = 0;
 
-        ComputeFingerprints(newfingerprintForPCAfterVersionChange, newfingerprintForES3AfterVersionChange, config, watchFolderPath, relativePathFromWatchFolder);
+        ComputeFingerprints(newfingerprintForPCAfterVersionChange, newfingerprintForANDROIDAfterVersionChange, config, watchFolderPath, relativePathFromWatchFolder);
 
         UNIT_TEST_EXPECT_TRUE((newfingerprintForPCAfterVersionChange != fingerprintForPC) || (newfingerprintForPCAfterVersionChange != newfingerprintForPC));//Fingerprints should be different
-        UNIT_TEST_EXPECT_TRUE((newfingerprintForES3AfterVersionChange != fingerprintForES3) || (newfingerprintForES3AfterVersionChange != newfingerprintForES3));//Fingerprints should be different
+        UNIT_TEST_EXPECT_TRUE((newfingerprintForANDROIDAfterVersionChange != fingerprintForANDROID) || (newfingerprintForANDROIDAfterVersionChange != newfingerprintForANDROID));//Fingerprints should be different
 
         //------Test for Files which are excluded
         processResults.clear();
@@ -1921,7 +1934,7 @@ namespace AssetProcessor
 
         UNIT_TEST_EXPECT_TRUE(processResults.size() == 0); // nothing to process
 
-        // we are aware that 4 products went missing (es3 and pc versions of the 2 files since we renamed the SOURCE folder)
+        // we are aware that 4 products went missing (android and pc versions of the 2 files since we renamed the SOURCE folder)
         UNIT_TEST_EXPECT_TRUE(assetMessages.size() == 4);
         for (auto element : assetMessages)
         {
@@ -2180,8 +2193,8 @@ namespace AssetProcessor
         UNIT_TEST_EXPECT_TRUE(assetMessages[2].m_assetId != AZ::Data::AssetId());
         UNIT_TEST_EXPECT_TRUE(assetMessages[3].m_assetId != AZ::Data::AssetId());
 
-        UNIT_TEST_EXPECT_TRUE(assetMessages[0].m_platform == "es3");
-        UNIT_TEST_EXPECT_TRUE(assetMessages[1].m_platform == "es3");
+        UNIT_TEST_EXPECT_TRUE(assetMessages[0].m_platform == "android");
+        UNIT_TEST_EXPECT_TRUE(assetMessages[1].m_platform == "android");
         UNIT_TEST_EXPECT_TRUE(assetMessages[2].m_platform == "pc");
         UNIT_TEST_EXPECT_TRUE(assetMessages[3].m_platform == "pc");
 
@@ -2214,12 +2227,12 @@ namespace AssetProcessor
         mockAppManager.UnRegisterAllBuilders();
 
         AssetRecognizer abt_rec1;
-        AssetPlatformSpec abt_speces3;
+        AssetPlatformSpec abt_specandroid;
         abt_rec1.m_name = "UnitTestTextBuilder1";
         abt_rec1.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.txt", AssetBuilderSDK::AssetBuilderPattern::Wildcard);
         //abt_rec1.m_regexp.setPatternSyntax(QRegExp::Wildcard);
         //abt_rec1.m_regexp.setPattern("*.txt");
-        abt_rec1.m_platformSpecs.insert("es3", speces3);
+        abt_rec1.m_platformSpecs.insert("android", specandroid);
         mockAppManager.RegisterAssetRecognizerAsBuilder(abt_rec1);
 
         AssetRecognizer abt_rec2;
@@ -2268,8 +2281,8 @@ namespace AssetProcessor
 
         sortAssetToProcessResultList(processResults);
 
-        UNIT_TEST_EXPECT_TRUE(processResults.size() == 2); // 1 for pc and es3
-        UNIT_TEST_EXPECT_TRUE(processResults[0].m_jobEntry.m_platformInfo.m_identifier == "es3");
+        UNIT_TEST_EXPECT_TRUE(processResults.size() == 2); // 1 for pc and android
+        UNIT_TEST_EXPECT_TRUE(processResults[0].m_jobEntry.m_platformInfo.m_identifier == "android");
         UNIT_TEST_EXPECT_TRUE(processResults[1].m_jobEntry.m_platformInfo.m_identifier == "pc");
         UNIT_TEST_EXPECT_TRUE(QString::compare(processResults[0].m_jobEntry.GetAbsoluteSourcePath(), absolutePath, Qt::CaseInsensitive) == 0);
         UNIT_TEST_EXPECT_TRUE(QString::compare(processResults[1].m_jobEntry.GetAbsoluteSourcePath(), absolutePath, Qt::CaseInsensitive) == 0);
@@ -2721,7 +2734,12 @@ namespace AssetProcessor
                 {
                     AssetBuilderSDK::JobDescriptor secondDescriptor = descriptor;
                     secondDescriptor.m_jobKey = "yyy";
+                    #if defined(AZ_PLATFORM_WINDOWS)
                     sourceFileDependency.m_sourceFileDependencyPath = "some\\random/Folders/FILEa.TxT";
+                    #else
+                    sourceFileDependency.m_sourceFileDependencyPath = "some/random/folders/FileA.txt";
+                    #endif // defined(AZ_PLATFORM_WINDOWS)
+
                     // ... declare a job dependency on job A ('FileA.txt', 'xxx', platform)
                     AssetBuilderSDK::JobDependency jobDependency("xxx", platformInfo.m_identifier.c_str(), AssetBuilderSDK::JobDependencyType::Fingerprint, sourceFileDependency);
                     secondDescriptor.m_jobDependencyList.push_back(jobDependency);
@@ -2805,11 +2823,11 @@ namespace AssetProcessor
         QDir cacheRoot;
         UNIT_TEST_EXPECT_TRUE(AssetUtilities::ComputeProjectCacheRoot(cacheRoot));
 
-        QString productFileAPath = cacheRoot.filePath(QString("pc/FileAProduct.txt"));
-        QString productFileBPath = cacheRoot.filePath(QString("pc/FileBProduct1.txt"));
-        QString product2FileBPath = cacheRoot.filePath(QString("pc/FileBProduct2.txt"));
-        QString productFileCPath = cacheRoot.filePath(QString("pc/FileCProduct.txt"));
-        QString product2FileCPath = cacheRoot.filePath(QString("pc/FileCProduct2.txt"));
+        QString productFileAPath = cacheRoot.filePath(QString("pc/fileaproduct.txt"));
+        QString productFileBPath = cacheRoot.filePath(QString("pc/filebproduct1.txt"));
+        QString product2FileBPath = cacheRoot.filePath(QString("pc/filebproduct2.txt"));
+        QString productFileCPath = cacheRoot.filePath(QString("pc/filecproduct.txt"));
+        QString product2FileCPath = cacheRoot.filePath(QString("pc/filecproduct2.txt"));
 
         UNIT_TEST_EXPECT_TRUE(CreateDummyFile(sourceFileAPath, ""));
         UNIT_TEST_EXPECT_TRUE(CreateDummyFile(sourceFileBPath, ""));

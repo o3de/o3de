@@ -1,12 +1,9 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 #
 
 # Shader Headers
@@ -69,4 +66,21 @@ ly_add_target_files(
        ${CMAKE_CURRENT_SOURCE_DIR}/AZSL/Platform/Android/Vulkan/PlatformHeader.hlsli
    OUTPUT_SUBDIRECTORY
        Builders/ShaderHeaders/Platform/Android/Vulkan
+)
+
+ly_add_target_files(
+   TARGETS Atom_Asset_Shader.Builders
+   FILES 
+       ${CMAKE_CURRENT_SOURCE_DIR}/AZSL/Platform/Linux/Vulkan/AzslcHeader.azsli
+       ${CMAKE_CURRENT_SOURCE_DIR}/AZSL/Platform/Linux/Vulkan/PlatformHeader.hlsli
+   OUTPUT_SUBDIRECTORY
+       Builders/ShaderHeaders/Platform/Linux/Vulkan
+)
+
+ly_add_target_files(
+   TARGETS Atom_Asset_Shader.Builders
+   FILES 
+       ${CMAKE_CURRENT_SOURCE_DIR}/AZSL/Platform/Linux/Null/AzslcHeader.azsli
+   OUTPUT_SUBDIRECTORY
+       Builders/ShaderHeaders/Platform/Linux/Null
 )

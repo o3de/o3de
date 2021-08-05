@@ -21,7 +21,7 @@
             }
         },
         "PlatformsPresets": {
-            "es3": {
+            "android": {
                 "UUID": "{F359CD3B-37E6-4627-B4F6-2DFC2C0E3C1C}",
                 "Name": "Skybox",
                 "FileMasks": [
@@ -55,7 +55,7 @@
                     "RequiresConvolve": false
                 }
             },
-            "osx_gl": {
+            "mac": {
                 "UUID": "{F359CD3B-37E6-4627-B4F6-2DFC2C0E3C1C}",
                 "Name": "Skybox",
                 "FileMasks": [

@@ -1,12 +1,9 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 #
 
 ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
@@ -56,6 +53,10 @@ ly_add_target(
         Gem::AtomLyIntegration_CommonFeatures
 )
 
+# use the NvCloth module in clients and servers:
+ly_create_alias(NAME NvCloth.Clients NAMESPACE Gem TARGETS Gem::NvCloth)
+ly_create_alias(NAME NvCloth.Servers NAMESPACE Gem TARGETS Gem::NvCloth)
+
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
         NAME NvCloth.Editor.Static STATIC
@@ -97,6 +98,10 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         RUNTIME_DEPENDENCIES
             Gem::AtomLyIntegration_CommonFeatures.Editor
     )
+
+    # use the NvCloth.Editor module in dev tools:
+    ly_create_alias(NAME NvCloth.Builders NAMESPACE Gem TARGETS Gem::NvCloth.Editor)
+    ly_create_alias(NAME NvCloth.Tools    NAMESPACE Gem TARGETS Gem::NvCloth.Editor)
 endif()
 
 ################################################################################

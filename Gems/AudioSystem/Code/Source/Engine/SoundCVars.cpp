@@ -1,32 +1,25 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #include <SoundCVars.h>
 #include <AudioLogger.h>
+#include <AudioInternalInterfaces.h>
 #include <AudioSystem_Traits_Platform.h>
 
+#include <AzCore/Console/ConsoleTypeHelpers.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
-#include <ISystem.h>
-#include <IConsole.h>
 #include <MicrophoneBus.h>
 
 
-namespace Audio
+namespace Audio::CVars
 {
-    extern CAudioLogger g_audioLogger;
-
-
     // CVar: s_EnableRaycasts
     // Usage: s_EnableRaycasts=true (false)
     AZ_CVAR(bool, s_EnableRaycasts, true,
@@ -98,7 +91,7 @@ namespace Audio
     // CVar: s_RaycastSmoothFactor
     // Usage: s_RaycastSmoothFactor=5.0
     AZ_CVAR(float, s_RaycastSmoothFactor, 7.f,
-        [](const float& smoothFactor) ->void
+        [](const float& smoothFactor) -> void
         {
             static constexpr float s_absoluteMinRaycastSmoothFactor = 0.f;
             static constexpr float s_absoluteMaxRaycastSmoothFactor = 10.f;
@@ -111,483 +104,452 @@ namespace Audio
         "How slowly the smoothing of obstruction/occlusion values should smooth to target: delta / (smoothFactor^2 + 1).  "
         "Low values will smooth faster, high values will smooth slower.");
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    CSoundCVars::CSoundCVars()
-        : m_nATLPoolSize(0)
-        , m_nFileCacheManagerSize(0)
-        , m_nAudioObjectPoolSize(0)
-        , m_nAudioEventPoolSize(0)
-        , m_nAudioProxiesInitType(0)
-        , m_fPositionUpdateThreshold(0.0f)
-        , m_fVelocityTrackingThreshold(0.0f)
-        , m_audioListenerTranslationPercentage(0.f)
-        , m_audioListenerTranslationZOffset(0.f)
+    AZ_CVAR(AZ::u64, s_ATLMemorySize, AZ_TRAIT_AUDIOSYSTEM_ATL_POOL_SIZE,
+        nullptr, AZ::ConsoleFunctorFlags::Null,
+        "The size in KiB of memory to be used by the ATL/Audio System.\n"
+        "Usage: s_ATLMemorySize=" AZ_TRAIT_AUDIOSYSTEM_ATL_POOL_SIZE_DEFAULT_TEXT "\n");
 
-    #if !defined(AUDIO_RELEASE)
-        , m_nIgnoreWindowFocus(0)
-        , m_nDrawAudioDebug(0)
-        , m_nFileCacheManagerDebugFilter(0)
-        , m_nAudioLoggingOptions(0)
-        , m_nShowActiveAudioObjectsOnly(0)
-        , m_pAudioTriggersDebugFilter(nullptr)
-        , m_pAudioObjectsDebugFilter(nullptr)
-    #endif // !AUDIO_RELEASE
+    AZ_CVAR(AZ::u64, s_FileCacheManagerMemorySize, AZ_TRAIT_AUDIOSYSTEM_FILE_CACHE_MANAGER_SIZE,
+        nullptr, AZ::ConsoleFunctorFlags::Null,
+        "The size in KiB the File Cache Manager will use for banks.\n"
+        "Usage: s_FileCacheManagerMemorySize=" AZ_TRAIT_AUDIOSYSTEM_FILE_CACHE_MANAGER_SIZE_DEFAULT_TEXT "\n");
+
+    AZ_CVAR(AZ::u64, s_AudioEventPoolSize, AZ_TRAIT_AUDIOSYSTEM_AUDIO_EVENT_POOL_SIZE,
+        nullptr, AZ::ConsoleFunctorFlags::Null,
+        "The number of audio events to preallocate in a pool.\n"
+        "Usage: s_AudioEventPoolSize=" AZ_TRAIT_AUDIOSYSTEM_AUDIO_EVENT_POOL_SIZE_DEFAULT_TEXT "\n");
+
+    AZ_CVAR(AZ::u64, s_AudioObjectPoolSize, AZ_TRAIT_AUDIOSYSTEM_AUDIO_OBJECT_POOL_SIZE,
+        nullptr, AZ::ConsoleFunctorFlags::Null,
+        "The number of audio objects to preallocate in a pool.\n"
+        "Usage: s_AudioObjectPoolSize=" AZ_TRAIT_AUDIOSYSTEM_AUDIO_OBJECT_POOL_SIZE_DEFAULT_TEXT "\n");
+
+    AZ_CVAR(float, s_PositionUpdateThreshold, 0.1f,
+        nullptr, AZ::ConsoleFunctorFlags::Null,
+        "An audio object needs to move by this distance in order to issue a position update to the audio system.\n"
+        "Usage: s_PositionUpdateThreshold=5.0\n");
+
+    AZ_CVAR(float, s_VelocityTrackingThreshold, 0.1f,
+        nullptr, AZ::ConsoleFunctorFlags::Null,
+        "An audio object needs to have its velocity changed by this amount in order to issue an 'object_speed' Rtpc update to the audio system.\n"
+        "Usage: s_VelocityTrackingThreshold=0.5\n");
+
+    AZ_CVAR(AZ::u32, s_AudioProxiesInitType, 0,
+        [](const AZ::u32& initType) -> void
+        {
+            static constexpr AZ::u32 s_numAudioProxyInitTypes = 3;
+            if (initType < s_numAudioProxyInitTypes)
+            {
+                s_AudioProxiesInitType = initType;
+            }
+        },
+        AZ::ConsoleFunctorFlags::Null,
+        "Overrides the initialization mode of audio proxies globally.\n"
+        "0: AudioProxy-specific initiaization (Default).\n"
+        "1: All AudioProxy's initialize synchronously.\n"
+        "2: All AudioProxy's initialize asynchronously.\n"
+        "Usage: s_AudioProxiesInitType=2\n");
+
+    auto OnChangeAudioLanguage = []([[maybe_unused]] const AZ::CVarFixedString& language) -> void
     {
-    }
+        SAudioRequest languageRequest;
+        SAudioManagerRequestData<eAMRT_CHANGE_LANGUAGE> languageRequestData;
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    CSoundCVars::~CSoundCVars()
-    {
-    }
+        languageRequest.pData = &languageRequestData;
+        languageRequest.nFlags = Audio::eARF_PRIORITY_HIGH;
+        AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequest, languageRequest);
+    };
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CSoundCVars::RegisterVariables()
-    {
-        m_nATLPoolSize          = AZ_TRAIT_AUDIOSYSTEM_ATL_POOL_SIZE;
-        m_nAudioEventPoolSize   = AZ_TRAIT_AUDIOSYSTEM_AUDIO_EVENT_POOL_SIZE;
-        m_nAudioObjectPoolSize  = AZ_TRAIT_AUDIOSYSTEM_AUDIO_OBJECT_POOL_SIZE;
-        m_nFileCacheManagerSize = AZ_TRAIT_AUDIOSYSTEM_FILE_CACHE_MANAGER_SIZE;
-
-        // Common Cross-Platform Defaults
-        m_nAudioProxiesInitType         = 0;
-        m_fPositionUpdateThreshold      = 0.1f;
-        m_fVelocityTrackingThreshold    = 0.1f;
-
-        REGISTER_CVAR2("s_ATLPoolSize", &m_nATLPoolSize, m_nATLPoolSize, VF_REQUIRE_APP_RESTART,
-            "Specifies the size (in KiB) of the memory pool to be used by the ATL.\n"
-            "Usage: s_ATLPoolSize [0/...]\n"
-            "Default: " AZ_TRAIT_AUDIOSYSTEM_ATL_POOL_SIZE_DEFAULT_TEXT "\n");
-
-        REGISTER_CVAR2("s_AudioEventPoolSize", &m_nAudioEventPoolSize, m_nAudioEventPoolSize, VF_REQUIRE_APP_RESTART,
-            "Sets the number of preallocated audio events.\n"
-            "Usage: s_AudioEventPoolSize [0/...]\n"
-            "Default: " AZ_TRAIT_AUDIOSYSTEM_AUDIO_EVENT_POOL_SIZE_DEFAULT_TEXT "\n");
-
-        REGISTER_CVAR2("s_AudioObjectPoolSize", &m_nAudioObjectPoolSize, m_nAudioObjectPoolSize, VF_REQUIRE_APP_RESTART,
-            "Sets the number of preallocated audio objects and corresponding audio proxies.\n"
-            "Usage: s_AudioObjectPoolSize [0/...]\n"
-            "Default: " AZ_TRAIT_AUDIOSYSTEM_AUDIO_OBJECT_POOL_SIZE_DEFAULT_TEXT "\n");
-
-        REGISTER_CVAR2("s_FileCacheManagerSize", &m_nFileCacheManagerSize, m_nFileCacheManagerSize, VF_REQUIRE_APP_RESTART,
-            "Sets the size in KiB the AFCM will allocate on the heap.\n"
-            "Usage: s_FileCacheManagerSize [0/...]\n"
-            "Default: " AZ_TRAIT_AUDIOSYSTEM_FILE_CACHE_MANAGER_SIZE_DEFAULT_TEXT "\n");
-
-
-        REGISTER_CVAR2("s_PositionUpdateThreshold", &m_fPositionUpdateThreshold, m_fPositionUpdateThreshold, VF_CHEAT | VF_CHEAT_NOCHECK,
-            "An audio object has to move by at least this amount to issue a position update request to the audio system.\n"
-            "This kind of optimization should ideally be done by the parent system so this is here for convenience.\n"
-            "Usage: s_PositionUpdateThreshold [0/...]\n"
-            "Default: 0.1 (10 cm)\n");
-
-        REGISTER_CVAR2("s_VelocityTrackingThreshold", &m_fVelocityTrackingThreshold, m_fVelocityTrackingThreshold, VF_CHEAT | VF_CHEAT_NOCHECK,
-            "An audio object has to change its velocity by at least this amount to issue an \"object_speed\" RTPC update request to the audio system.\n"
-            "Usage: s_VelocityTrackingThreshold [0/...]\n"
-            "Default: 0.1 (10 cm/s)\n");
-
-        REGISTER_CVAR2("s_AudioProxiesInitType", &m_nAudioProxiesInitType, m_nAudioProxiesInitType, VF_NULL,
-            "Can override AudioProxies' init type on a global scale.\n"
-            "If set it determines whether AudioProxies initialize synchronously or asynchronously.\n"
-            "This is a performance type cvar as asynchronously initializing AudioProxies\n"
-            "will have a greatly reduced impact on the calling thread.\n"
-            "Be aware though that when set to initialize asynchronously that audio will play back delayed.\n"
-            "By how much will greatly depend on the audio thread's work load.\n"
-            "0: AudioProxy specific initialization.\n"
-            "1: All AudioProxies initialize synchronously.\n"
-            "2: All AudioProxies initialize asynchronously.\n"
-            "Usage: s_AudioProxiesInitType [0/1/2]\n"
-            "Default: 0\n");
-
-        REGISTER_CVAR2("s_AudioListenerTranslationZOffset", &m_audioListenerTranslationZOffset, 0.f, VF_NULL,
-            "Use this to specify a Z-Offset (\"Up\") for the audio listener's position.\n"
-            "Usage: s_AudioListenerTranslationZOffset 1.3\n"
-            "Default: 0.0\n");
-
-        REGISTER_CVAR2("s_AudioListenerTranslationPercentage", &m_audioListenerTranslationPercentage, 0.f, VF_NULL,
-            "Use this to specify a percentage of translation of the audio listener between two points\n"
-            "(usually these are the camera's location and player's location).\n"
-            "Usage: s_AudioListenerTranslationPercentage [0.0..1.0]\n"
-            "Default: 0.0\n");
+    AZ_CVAR(AZ::CVarFixedString, g_languageAudio, "", OnChangeAudioLanguage, AZ::ConsoleFunctorFlags::Null, "");
 
 #if !defined(AUDIO_RELEASE)
-        REGISTER_COMMAND("s_ExecuteTrigger", CmdExecuteTrigger, VF_CHEAT,
-            "Execute an Audio Trigger.\n"
-            "The first argument is the name of the AudioTrigger to be executed, the second argument is an optional AudioObject ID.\n"
-            "If the second argument is provided, the AudioTrigger is executed on the AudioObject with the given ID,\n"
-            "otherwise, the AudioTrigger is executed on the GlobalAudioObject\n"
-            "Usage: s_ExecuteTrigger Play_chicken_idle 605 or s_ExecuteTrigger MuteDialog\n");
+    AZ_CVAR(bool, s_IgnoreWindowFocus, false,
+        nullptr, AZ::ConsoleFunctorFlags::Null,
+        "Determines whether application focus should issue events to the audio system or not.\n"
+        "false: Window focus event should be issued (Default).\n"
+        "true: Ignore window focus events.\n"
+        "Usage: s_IgnoreWindowFocus=true\n");
 
-        REGISTER_COMMAND("s_StopTrigger", CmdStopTrigger, VF_CHEAT,
-            "Execute an Audio Trigger.\n"
-            "The first argument is the name of the AudioTrigger to be stopped, the second argument is an optional AudioObject ID.\n"
-            "If the second argument is provided, the AudioTrigger is stopped on the AudioObject with the given ID,\n"
-            "otherwise, the AudioTrigger is stopped on the GlobalAudioObject\n"
-            "Usage: s_StopTrigger Play_chicken_idle 605 or s_StopTrigger MuteDialog\n");
+    AZ_CVAR(bool, s_ShowActiveAudioObjectsOnly, false,
+        nullptr, AZ::ConsoleFunctorFlags::Null,
+        "Determines whether active or all audio objects should be drawn when debug drawing is enabled.\n"
+        "false: Draws all audio objects (Default).\n"
+        "true: Draws only active audio objects.\n"
+        "Usage: s_ShowActiveAudioObjectsOnly=true\n");
 
-        REGISTER_COMMAND("s_SetRtpc", CmdSetRtpc, VF_CHEAT,
-            "Set an Audio RTPC value.\n"
-            "The first argument is the name of the AudioRtpc to be set, the second argument is the float value to be set,"
-            "the third argument is an optional AudioObject ID.\n"
-            "If the third argument is provided, the AudioRtpc is set on the AudioObject with the given ID,\n"
-            "otherwise, the AudioRtpc is set on the GlobalAudioObject\n"
-            "Usage: s_SetRtpc character_speed  0.0  601 or s_SetRtpc volume_music 1.0\n");
+    AZ_CVAR(AZ::CVarFixedString, s_AudioTriggersDebugFilter, "",
+        nullptr, AZ::ConsoleFunctorFlags::Null,
+        "Filters debug drawing to only audio triggers that match this filter as sub-string.\n"
+        "Usage: s_AudioTriggersDebugFilter=impact_hit\n");
 
-        REGISTER_COMMAND("s_SetSwitchState", CmdSetSwitchState, VF_CHEAT,
-            "Set an Audio Switch to a provided State.\n"
-            "The first argument is the name of the AudioSwitch to, the second argument is the name of the SwitchState to be set,"
-            "the third argument is an optional AudioObject ID.\n"
-            "If the third argument is provided, the AudioSwitch is set on the AudioObject with the given ID,\n"
-            "otherwise, the AudioSwitch is set on the GlobalAudioObject\n"
-            "Usage: s_SetSwitchState SurfaceType concrete 601 or s_SetSwitchState weather rain\n");
+    AZ_CVAR(AZ::CVarFixedString, s_AudioObjectsDebugFilter, "",
+        nullptr, AZ::ConsoleFunctorFlags::Null,
+        "Filters debug drawing to only audio objects whose name matches this filter as a sub-string.\n"
+        "Usage: s_AudioObjectsDebugFilter=weapon_axe\n");
 
-        REGISTER_COMMAND("s_LoadPreload", CmdLoadPreload, VF_CHEAT,
-            "Load an Audio Preload to the FileCacheManager.\n"
-            "The first argument is the name of the ATL preload.\n"
-            "Usage: s_LoadPreload GlobalBank\n");
-
-        REGISTER_COMMAND("s_UnloadPreload", CmdUnloadPreload, VF_CHEAT,
-            "Unload an Audio Preload from the FileCacheManager.\n"
-            "The first argument is the name of the ATL Prelaod.\n"
-            "Usage: s_UnloadPreload GlobalBank\n");
-
-        REGISTER_COMMAND("s_PlayFile", CmdPlayFile, VF_CHEAT,
-            "Play an audio file directly.  Uses Audio Input Source (Wwise).\n"
-            "First argument is the name of the file to play.  Only .wav and .pcm (raw) files are supported right now.\n"
-            "Second argument is the name of the audio trigger to use."
-            "Usage: s_PlayFile \"sounds\\wwise\\external_sources\\sfx\\my_file.wav\" Play_audio_input_2D\n"
-            );
-
-        REGISTER_COMMAND("s_Microphone", CmdMicrophone, VF_CHEAT,
-            "Turn on/off microphone input.  Uses Audio Input Source (Wwise).\n"
-            "First argument is 0 or 1 to turn off or on the Microphone, respectively.\n"
-            "Second argument is the name of the ATL trigger to use (when turning microphone on) for Audio Input.\n"
-            "Usage: s_Microphone 1 Play_audio_input_2D\n"
-            "Usage: s_Microphone 0\n"
-        );
-
-        REGISTER_COMMAND("s_PlayExternalSource", CmdPlayExternalSource, VF_CHEAT,
-            "Execute an 'External Source' audio trigger.\n"
-            "The first argument is the name of the audio trigger to execute.\n"
-            "The second argument is the collection Id.\n"
-            "The third argument is the language Id.\n"
-            "The fourth argument is the file Id.\n"
-            "Usage: s_PlayExternalSource Play_ext_vo 0 0 1\n"
-        );
-
-        REGISTER_COMMAND("s_SetPanningMode", CmdSetPanningMode, VF_CHEAT,
-            "Set the Panning mode to either 'speakers' or 'headphones'.\n"
-            "Speakers will have a 60 degree angle from the listener to the L/R speakers.\n"
-            "Headphones will have a 180 degree angle from the listener to the L/R speakers.\n"
-            "Usage: s_SetPanningMode speakers    (default)\n"
-            "Usage: s_SetPanningMode headphones\n"
-        );
-
-        REGISTER_CVAR2("s_IgnoreWindowFocus", &m_nIgnoreWindowFocus, 0, VF_DEV_ONLY,
-            "If set to 1, the sound system will continue playing when the Editor or Game window loses focus.\n"
-            "Usage: s_IgnoreWindowFocus [0/1]\n"
-            "Default: 0 (off)\n");
-
-        REGISTER_CVAR2("s_DrawAudioDebug", &m_nDrawAudioDebug, 0, VF_CHEAT | VF_CHEAT_NOCHECK | VF_BITFIELD,
-            "Draws AudioTranslationLayer related debug data to the screen.\n"
-            "Usage: s_DrawAudioDebug [0ab...] (flags can be combined)\n"
-            "0: No audio debug info on the screen.\n"
-            "a: Draw spheres around active audio objects.\n"
-            "b: Show text labels for active audio objects.\n"
-            "c: Show trigger names for active audio objects.\n"
-            "d: Show current states for active audio objects.\n"
-            "e: Show RTPC values for active audio objects.\n"
-            "f: Show Environment amounts for active audio objects.\n"
-            "g: Draw occlusion rays.\n"
-            "h: Show occlusion ray labels.\n"
-            "i: Draw sphere around active audio listener.\n"
-            "v: List active Events.\n"
-            "w: List active Audio Objects.\n"
-            "x: Show FileCache Manager debug info.\n"
-            "y: Show memory pool usage info for the audio impl.\n"
-            );
-
-        REGISTER_CVAR2("s_FileCacheManagerDebugFilter", &m_nFileCacheManagerDebugFilter, 0, VF_CHEAT | VF_CHEAT_NOCHECK | VF_BITFIELD,
-            "Allows for filtered display of the different AFCM entries such as Globals, Level Specifics, Game Hints and so on.\n"
-            "Usage: s_FileCacheManagerDebugFilter [0ab...] (flags can be combined)\n"
-            "Default: 0 (all)\n"
-            "a: Globals\n"
-            "b: Level Specifics\n"
-            "c: Game Hints\n"
-            "d: Currently Loaded\n");
-
-        REGISTER_CVAR2("s_AudioLoggingOptions", &m_nAudioLoggingOptions, AlphaBits("ab"), VF_CHEAT | VF_CHEAT_NOCHECK | VF_BITFIELD,
-            "Toggles the logging of audio related messages.\n"
-            "Usage: s_AudioLoggingOptions [ab...] (flags can be combined)\n"
-            "Default: ab (Errors & Warnings)\n"
-            "a: Errors\n"
-            "b: Warnings\n"
-            "c: Comments\n");
-
-        REGISTER_CVAR2("s_ShowActiveAudioObjectsOnly", &m_nShowActiveAudioObjectsOnly, 1, VF_DEV_ONLY,
-            "When drawing audio object names on the screen this cvar can be used to choose between all registered audio objects or only those that reference active audio triggers.\n"
-            "Usage: s_ShowActiveAudioObjectsOnly [0/1]\n"
-            "Default: 1 (active only)\n");
-
-        m_pAudioTriggersDebugFilter = REGISTER_STRING("s_AudioTriggersDebugFilter", "", 0,
-            "Allows for filtered display of audio triggers by a search string.\n"
-            "Usage: s_AudioTriggersDebugFilter laser\n"
-            "Default: \"\" (all)\n");
-
-        m_pAudioObjectsDebugFilter = REGISTER_STRING("s_AudioObjectsDebugFilter", "", 0,
-            "Allows for filtered display of audio objects by a search string.\n"
-            "Usage: s_AudioObjectsDebugFilter spaceship.\n"
-            "Default: \"\" (all)\n");
-
-#endif // !AUDIO_RELEASE
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CSoundCVars::UnregisterVariables()
+    auto OnChangeLogOptions = [](const AZ::CVarFixedString& options) -> void
     {
-        UNREGISTER_CVAR("s_ATLPoolSize");
-
-
-        UNREGISTER_CVAR("s_PositionUpdateThreshold");
-        UNREGISTER_CVAR("s_VelocityTrackingThreshold");
-        UNREGISTER_CVAR("s_FileCacheManagerSize");
-        UNREGISTER_CVAR("s_AudioObjectPoolSize");
-        UNREGISTER_CVAR("s_AudioEventPoolSize");
-        UNREGISTER_CVAR("s_AudioProxiesInitType");
-        UNREGISTER_CVAR("s_AudioListenerTranslationYOffset");
-        UNREGISTER_CVAR("s_AudioListenerTranslationPercentage");
-
-#if !defined(AUDIO_RELEASE)
-        UNREGISTER_COMMAND("s_ExecuteTrigger");
-        UNREGISTER_COMMAND("s_StopTrigger");
-        UNREGISTER_COMMAND("s_SetRtpc");
-        UNREGISTER_COMMAND("s_SetSwitchState");
-        UNREGISTER_COMMAND("s_LoadPreload");
-        UNREGISTER_COMMAND("s_UnloadPreload");
-        UNREGISTER_COMMAND("s_PlayFile");
-        UNREGISTER_COMMAND("s_PlayExternalSource");
-        UNREGISTER_COMMAND("s_SetPanningMode");
-        UNREGISTER_CVAR("s_IgnoreWindowFocus");
-        UNREGISTER_CVAR("s_DrawAudioDebug");
-        UNREGISTER_CVAR("s_FileCacheManagerDebugFilter");
-        UNREGISTER_CVAR("s_AudioLoggingOptions");
-        UNREGISTER_CVAR("s_ShowActiveAudioObjectsOnly");
-        UNREGISTER_CVAR("s_AudioTriggersDebugFilter");
-        UNREGISTER_CVAR("s_AudioObjectsDebugFilter");
-#endif // !AUDIO_RELEASE
-    }
-
-
-#if !defined(AUDIO_RELEASE)
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CSoundCVars::CmdExecuteTrigger(IConsoleCmdArgs* pCmdArgs)
-    {
-        const int nArgCount = pCmdArgs->GetArgCount();
-
-        if ((nArgCount == 2) || (nArgCount == 3))
+        if (options == "0")
         {
-            TAudioControlID nTriggerID = INVALID_AUDIO_CONTROL_ID;
-            AudioSystemRequestBus::BroadcastResult(nTriggerID, &AudioSystemRequestBus::Events::GetAudioTriggerID, pCmdArgs->GetArg(1));
+            Audio::Log::s_audioLogOptions = Log::Options::None;
+            return;
+        }
 
-            if (nTriggerID != INVALID_AUDIO_CONTROL_ID)
+        Audio::Flags<AZ::u32> flags;
+        flags.SetFlags(Log::Options::Errors, options.contains("a"));
+        flags.SetFlags(Log::Options::Warnings, options.contains("b"));
+        flags.SetFlags(Log::Options::Comments, options.contains("c"));
+        Audio::Log::s_audioLogOptions = flags.GetRawFlags();
+    };
+
+    AZ_CVAR(AZ::CVarFixedString, s_AudioLoggingOptions, "ab",
+        OnChangeLogOptions,
+        AZ::ConsoleFunctorFlags::Null,
+        "Toggles the log level of audio related messages.\n"
+        "Usage: s_AudioLoggingOptions=abc (flags can be combined)\n"
+        "Default: ab (Errors & Warnings)\n"
+        "a: Errors\n"
+        "b: Warnings\n"
+        "c: Comments\n");
+
+    auto OnChangeDebugDrawOptions = [](const AZ::CVarFixedString& options) -> void
+    {
+        s_debugDrawOptions.ClearAllFlags();
+        if (options == "0")
+        {
+            return;
+        }
+
+        s_debugDrawOptions.SetFlags(DebugDraw::Options::DrawObjects, options.contains("a"));
+        s_debugDrawOptions.SetFlags(DebugDraw::Options::ObjectLabels, options.contains("b"));
+        s_debugDrawOptions.SetFlags(DebugDraw::Options::ObjectTriggers, options.contains("c"));
+        s_debugDrawOptions.SetFlags(DebugDraw::Options::ObjectStates, options.contains("d"));
+        s_debugDrawOptions.SetFlags(DebugDraw::Options::ObjectRtpcs, options.contains("e"));
+        s_debugDrawOptions.SetFlags(DebugDraw::Options::ObjectEnvironments, options.contains("f"));
+        s_debugDrawOptions.SetFlags(DebugDraw::Options::DrawRays, options.contains("g"));
+        s_debugDrawOptions.SetFlags(DebugDraw::Options::RayLabels, options.contains("h"));
+        s_debugDrawOptions.SetFlags(DebugDraw::Options::DrawListener, options.contains("i"));
+        s_debugDrawOptions.SetFlags(DebugDraw::Options::ActiveEvents, options.contains("v"));
+        s_debugDrawOptions.SetFlags(DebugDraw::Options::ActiveObjects, options.contains("w"));
+        s_debugDrawOptions.SetFlags(DebugDraw::Options::FileCacheInfo, options.contains("x"));
+        s_debugDrawOptions.SetFlags(DebugDraw::Options::MemoryInfo, options.contains("y"));
+    };
+
+    AZ_CVAR(AZ::CVarFixedString, s_DrawAudioDebug, "",
+        OnChangeDebugDrawOptions,
+        AZ::ConsoleFunctorFlags::IsCheat,
+        "Draws AudioTranslationLayer related debug data to the screen.\n"
+        "Usage: s_DrawAudioDebug=abcde (flags can be combined)\n"
+        "0: Turn off.\n"
+        "a: Draw spheres around active audio objects.\n"
+        "b: Show text labels for active audio objects.\n"
+        "c: Show trigger names for active audio objects.\n"
+        "d: Show current states for active audio objects.\n"
+        "e: Show RTPC values for active audio objects.\n"
+        "f: Show Environment amounts for active audio objects.\n"
+        "g: Draw occlusion rays.\n"
+        "h: Show occlusion ray labels.\n"
+        "i: Draw sphere around active audio listener.\n"
+        "v: List active Events.\n"
+        "w: List active Audio Objects.\n"
+        "x: Show FileCache Manager debug info.\n"
+        "y: Show memory usage info for the audio engine.\n");
+
+    auto OnChangeFileCacheManagerFilterOptions = [](const AZ::CVarFixedString& options) -> void
+    {
+        s_fcmDrawOptions.ClearAllFlags();
+        if (options == "0")
+        {
+            return;
+        }
+
+        s_fcmDrawOptions.SetFlags(FileCacheManagerDebugDraw::Options::Global, options.contains("a"));
+        s_fcmDrawOptions.SetFlags(FileCacheManagerDebugDraw::Options::LevelSpecific, options.contains("b"));
+        s_fcmDrawOptions.SetFlags(FileCacheManagerDebugDraw::Options::UseCounted, options.contains("c"));
+        s_fcmDrawOptions.SetFlags(FileCacheManagerDebugDraw::Options::Loaded, options.contains("d"));
+    };
+
+    AZ_CVAR(AZ::CVarFixedString, s_FileCacheManagerDebugFilter, "",
+        OnChangeFileCacheManagerFilterOptions,
+        AZ::ConsoleFunctorFlags::IsCheat,
+        "Allows for filtered display of the file cache entries such as Globals, Level Specifics, Use Counted and so on.\n"
+        "Usage: s_FileCacheManagerDebugFilter [0ab...] (flags can be combined)\n"
+        "Default: 0 (all)\n"
+        "a: Globals\n"
+        "b: Level Specifics\n"
+        "c: Use Counted\n"
+        "d: Currently Loaded\n");
+
+    static void s_ExecuteTrigger(const AZ::ConsoleCommandContainer& args);
+    static void s_StopTrigger(const AZ::ConsoleCommandContainer& args);
+    static void s_SetRtpc(const AZ::ConsoleCommandContainer& args);
+    static void s_SetSwitchState(const AZ::ConsoleCommandContainer& args);
+    static void s_LoadPreload(const AZ::ConsoleCommandContainer& args);
+    static void s_UnloadPreload(const AZ::ConsoleCommandContainer& args);
+    static void s_PlayFile(const AZ::ConsoleCommandContainer& args);
+    static void s_Microphone(const AZ::ConsoleCommandContainer& args);
+    static void s_PlayExternalSource(const AZ::ConsoleCommandContainer& args);
+    static void s_SetPanningMode(const AZ::ConsoleCommandContainer& args);
+
+    AZ_CONSOLEFREEFUNC(s_ExecuteTrigger, AZ::ConsoleFunctorFlags::IsCheat,
+        "Execute an Audio Trigger.\n"
+        "The first argument is the name of the AudioTrigger to be executed, the second argument is an optional AudioObject ID.\n"
+        "If the second argument is provided, the AudioTrigger is executed on the AudioObject with the given ID,\n"
+        "otherwise, the AudioTrigger is executed on the GlobalAudioObject\n"
+        "Usage: s_ExecuteTrigger Play_chicken_idle 605 or s_ExecuteTrigger MuteDialog\n");
+
+    AZ_CONSOLEFREEFUNC(s_StopTrigger, AZ::ConsoleFunctorFlags::IsCheat,
+        "Stops an Audio Trigger.\n"
+        "The first argument is the name of the AudioTrigger to be stopped, the second argument is an optional AudioObject ID.\n"
+        "If the second argument is provided, the AudioTrigger is stopped on the AudioObject with the given ID,\n"
+        "otherwise, the AudioTrigger is stopped on the GlobalAudioObject\n"
+        "Usage: s_StopTrigger Play_chicken_idle 605 or s_StopTrigger MuteDialog\n");
+
+    AZ_CONSOLEFREEFUNC(s_SetRtpc, AZ::ConsoleFunctorFlags::IsCheat,
+        "Set an Audio RTPC value.\n"
+        "The first argument is the name of the AudioRtpc to be set, the second argument is the float value to be set,"
+        "the third argument is an optional AudioObject ID.\n"
+        "If the third argument is provided, the AudioRtpc is set on the AudioObject with the given ID,\n"
+        "otherwise, the AudioRtpc is set on the GlobalAudioObject\n"
+        "Usage: s_SetRtpc character_speed  0.0  601 or s_SetRtpc volume_music 1.0\n");
+
+    AZ_CONSOLEFREEFUNC(s_SetSwitchState, AZ::ConsoleFunctorFlags::IsCheat,
+        "Set an Audio Switch to a provided State.\n"
+        "The first argument is the name of the AudioSwitch to, the second argument is the name of the SwitchState to be set,"
+        "the third argument is an optional AudioObject ID.\n"
+        "If the third argument is provided, the AudioSwitch is set on the AudioObject with the given ID,\n"
+        "otherwise, the AudioSwitch is set on the GlobalAudioObject\n"
+        "Usage: s_SetSwitchState SurfaceType concrete 601 or s_SetSwitchState weather rain\n");
+
+    AZ_CONSOLEFREEFUNC(s_LoadPreload, AZ::ConsoleFunctorFlags::IsCheat,
+        "Load an Audio Preload to the FileCacheManager.\n"
+        "The first argument is the name of the ATL preload.\n"
+        "Usage: s_LoadPreload GlobalBank\n");
+
+    AZ_CONSOLEFREEFUNC(s_UnloadPreload, AZ::ConsoleFunctorFlags::IsCheat,
+        "Unload an Audio Preload from the FileCacheManager.\n"
+        "The first argument is the name of the ATL Prelaod.\n"
+        "Usage: s_UnloadPreload GlobalBank\n");
+
+    AZ_CONSOLEFREEFUNC(s_PlayFile, AZ::ConsoleFunctorFlags::IsCheat,
+        "Play an audio file directly.\n"
+        "First argument is the name of the file to play.  Only .wav and .pcm (raw) files are supported right now.\n"
+        "Second argument is the name of the audio trigger to use."
+        "Usage: s_PlayFile \"sounds\\wwise\\external_sources\\sfx\\my_file.wav\" Play_audio_input_2D\n");
+
+    AZ_CONSOLEFREEFUNC(s_Microphone, AZ::ConsoleFunctorFlags::IsCheat,
+        "Turn on/off microphone input.\n"
+        "First argument is 0 or 1 to turn off or on the Microphone, respectively.\n"
+        "Second argument is the name of the ATL trigger to use (when turning microphone on) for Audio Input.\n"
+        "Usage: s_Microphone 1 Play_audio_input_2D\n"
+        "Usage: s_Microphone 0\n");
+
+    AZ_CONSOLEFREEFUNC(s_PlayExternalSource, AZ::ConsoleFunctorFlags::IsCheat,
+        "Execute an 'External Source' audio trigger.\n"
+        "The first argument is the name of the audio trigger to execute.\n"
+        "The second argument is the collection Id.\n"
+        "The third argument is the language Id.\n"
+        "The fourth argument is the file Id.\n"
+        "Usage: s_PlayExternalSource Play_external_VO 0 0 1\n");
+
+    AZ_CONSOLEFREEFUNC(s_SetPanningMode, AZ::ConsoleFunctorFlags::IsCheat,
+        "Set the Panning mode to either 'speakers' or 'headphones'.\n"
+        "Speakers will have a 60 degree angle from the listener to the L/R speakers.\n"
+        "Headphones will have a 180 degree angle from the listener to the L/R speakers.\n"
+        "Usage: s_SetPanningMode speakers    (default)\n"
+        "Usage: s_SetPanningMode headphones\n");
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    static void s_ExecuteTrigger(const AZ::ConsoleCommandContainer& args)
+    {
+        if (args.size() == 1 || args.size() == 2)
+        {
+            AZStd::string triggerName(args[0]);
+            TAudioControlID triggerId = INVALID_AUDIO_CONTROL_ID;
+            AudioSystemRequestBus::BroadcastResult(triggerId, &AudioSystemRequestBus::Events::GetAudioTriggerID, triggerName.c_str());
+
+            if (triggerId != INVALID_AUDIO_CONTROL_ID)
             {
-                TAudioObjectID nObjectID = INVALID_AUDIO_OBJECT_ID;
-                if (nArgCount == 3)
+                TAudioObjectID objectId = INVALID_AUDIO_OBJECT_ID;
+                if (args.size() == 2)
                 {
-                    const int nTempID = atoi(pCmdArgs->GetArg(2));
-                    if (nTempID > 0)
+                    if (!AZ::ConsoleTypeHelpers::StringToValue<TAudioObjectID>(objectId, args[1]))
                     {
-                        nObjectID = static_cast<TAudioObjectID>(nTempID);
-                    }
-                    else
-                    {
-                        g_audioLogger.Log(eALT_ERROR, "Invalid Object ID: %s", pCmdArgs->GetArg(2));
-                    }
-                }
-
-                SAudioRequest oRequest;
-                SAudioObjectRequestData<eAORT_EXECUTE_TRIGGER> oRequestData(nTriggerID, 0.0f);
-
-                oRequest.nAudioObjectID = nObjectID;
-                oRequest.nFlags = eARF_PRIORITY_NORMAL;
-                oRequest.pData = &oRequestData;
-
-                AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequest, oRequest);
-            }
-            else
-            {
-                g_audioLogger.Log(eALT_ERROR, "Unknown trigger name: %s", pCmdArgs->GetArg(1));
-            }
-        }
-        else
-        {
-            g_audioLogger.Log(eALT_ERROR, "Usage: s_ExecuteTrigger [TriggerName] [[Optional Object ID]]");
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CSoundCVars::CmdStopTrigger(IConsoleCmdArgs* pCmdArgs)
-    {
-        const int nArgCount = pCmdArgs->GetArgCount();
-
-        if ((nArgCount == 2) || (nArgCount == 3))
-        {
-            TAudioControlID nTriggerID = INVALID_AUDIO_CONTROL_ID;
-            AudioSystemRequestBus::BroadcastResult(nTriggerID, &AudioSystemRequestBus::Events::GetAudioTriggerID, pCmdArgs->GetArg(1));
-
-            if (nTriggerID != INVALID_AUDIO_CONTROL_ID)
-            {
-                TAudioObjectID nObjectID = INVALID_AUDIO_OBJECT_ID;
-                if (nArgCount == 3)
-                {
-                    const int nTempID = atoi(pCmdArgs->GetArg(2));
-                    if (nTempID > 0)
-                    {
-                        nObjectID = static_cast<TAudioObjectID>(nTempID);
-                    }
-                    else
-                    {
-                        g_audioLogger.Log(eALT_ERROR, "Invalid Object ID: %s", pCmdArgs->GetArg(2));
-                    }
-                }
-
-                SAudioRequest oRequest;
-                SAudioObjectRequestData<eAORT_STOP_TRIGGER> oRequestData(nTriggerID);
-
-                oRequest.nAudioObjectID = nObjectID;
-                oRequest.nFlags = eARF_PRIORITY_NORMAL;
-                oRequest.pData = &oRequestData;
-
-                AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequest, oRequest);
-            }
-            else
-            {
-                g_audioLogger.Log(eALT_ERROR, "Unknown trigger name: %s", pCmdArgs->GetArg(1));
-            }
-        }
-        else
-        {
-            g_audioLogger.Log(eALT_ERROR, "Usage: s_StopTrigger [TriggerName] [[Optional Object ID]]");
-        }
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CSoundCVars::CmdSetRtpc(IConsoleCmdArgs* pCmdArgs)
-    {
-        const int nArgCount = pCmdArgs->GetArgCount();
-
-        if ((nArgCount == 3) || (nArgCount == 4))
-        {
-            TAudioControlID nRtpcID = INVALID_AUDIO_CONTROL_ID;
-            AudioSystemRequestBus::BroadcastResult(nRtpcID, &AudioSystemRequestBus::Events::GetAudioRtpcID, pCmdArgs->GetArg(1));
-
-            if (nRtpcID != INVALID_AUDIO_CONTROL_ID)
-            {
-                double fValue = atof(pCmdArgs->GetArg(2));
-
-                TAudioObjectID nObjectID = INVALID_AUDIO_OBJECT_ID;
-                if (nArgCount == 4)
-                {
-                    const int nTempID = atoi(pCmdArgs->GetArg(3));
-                    if (nTempID > 0)
-                    {
-                        nObjectID = static_cast<TAudioObjectID>(nTempID);
-                    }
-                    else
-                    {
-                        g_audioLogger.Log(eALT_ERROR, "Invalid Object ID: %s", pCmdArgs->GetArg(3));
+                        g_audioLogger.Log(eALT_ERROR, "Invalid Object ID: %.*s", AZ_STRING_ARG(args[1]));
                         return;
                     }
                 }
 
-                SAudioRequest oRequest;
-                SAudioObjectRequestData<eAORT_SET_RTPC_VALUE> oRequestData(nRtpcID, static_cast<float>(fValue));
+                SAudioRequest request;
+                SAudioObjectRequestData<eAORT_EXECUTE_TRIGGER> requestData(triggerId, 0.0f);
 
-                oRequest.nAudioObjectID = nObjectID;
-                oRequest.nFlags = eARF_PRIORITY_NORMAL;
-                oRequest.pData = &oRequestData;
+                request.nAudioObjectID = objectId;
+                request.nFlags = eARF_PRIORITY_NORMAL;
+                request.pData = &requestData;
 
-                AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequest, oRequest);
+                AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequest, request);
             }
             else
             {
-                g_audioLogger.Log(eALT_ERROR, "Unknown Rtpc name: %s", pCmdArgs->GetArg(1));
+                g_audioLogger.Log(eALT_ERROR, "Unknown trigger name: %.*s", AZ_STRING_ARG(args[0]));
             }
         }
         else
         {
-            g_audioLogger.Log(eALT_ERROR, "Usage: s_SetRtpc [RtpcName] [RtpcValue] [[Optional Object ID]]");
+            g_audioLogger.Log(eALT_ERROR, "Usage: s_ExecuteTrigger TriggerName [Optional Object ID]");
         }
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CSoundCVars::CmdSetSwitchState(IConsoleCmdArgs* pCmdArgs)
+    static void s_StopTrigger(const AZ::ConsoleCommandContainer& args)
     {
-        const int nArgCount = pCmdArgs->GetArgCount();
-
-        if ((nArgCount == 3) || (nArgCount == 4))
+        if (args.size() == 1 || args.size() == 2)
         {
-            TAudioControlID nSwitchID = INVALID_AUDIO_CONTROL_ID;
-            AudioSystemRequestBus::BroadcastResult(nSwitchID, &AudioSystemRequestBus::Events::GetAudioSwitchID, pCmdArgs->GetArg(1));
+            AZStd::string triggerName(args[0]);
+            TAudioControlID triggerId = INVALID_AUDIO_CONTROL_ID;
+            AudioSystemRequestBus::BroadcastResult(triggerId, &AudioSystemRequestBus::Events::GetAudioTriggerID, triggerName.c_str());
 
-            if (nSwitchID != INVALID_AUDIO_CONTROL_ID)
+            if (triggerId != INVALID_AUDIO_CONTROL_ID)
             {
-                TAudioSwitchStateID nSwitchStateID = INVALID_AUDIO_SWITCH_STATE_ID;
-                AudioSystemRequestBus::BroadcastResult(nSwitchStateID, &AudioSystemRequestBus::Events::GetAudioSwitchStateID, nSwitchID, pCmdArgs->GetArg(2));
-
-                if (nSwitchStateID != INVALID_AUDIO_SWITCH_STATE_ID)
+                TAudioObjectID objectId = INVALID_AUDIO_OBJECT_ID;
+                if (args.size() == 2)
                 {
-                    TAudioObjectID nObjectID = INVALID_AUDIO_OBJECT_ID;
-                    if (nArgCount == 4)
+                    if (!AZ::ConsoleTypeHelpers::StringToValue<TAudioObjectID>(objectId, args[1]))
                     {
-                        const int nTempID = atoi(pCmdArgs->GetArg(3));
-                        if (nTempID > 0)
+                        g_audioLogger.Log(eALT_ERROR, "Invalid Object ID: %.*s", AZ_STRING_ARG(args[1]));
+                        return;
+                    }
+                }
+
+                SAudioRequest request;
+                SAudioObjectRequestData<eAORT_STOP_TRIGGER> requestData(triggerId);
+
+                request.nAudioObjectID = objectId;
+                request.nFlags = eARF_PRIORITY_NORMAL;
+                request.pData = &requestData;
+
+                AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequest, request);
+            }
+            else
+            {
+                g_audioLogger.Log(eALT_ERROR, "Unknown trigger name: %.*s", AZ_STRING_ARG(args[0]));
+            }
+        }
+        else
+        {
+            g_audioLogger.Log(eALT_ERROR, "Usage: s_StopTrigger TriggerName [Optional Object ID]");
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    static void s_SetRtpc(const AZ::ConsoleCommandContainer& args)
+    {
+        if (args.size() == 2 || args.size() == 3)
+        {
+            AZStd::string rtpcName(args[0]);
+            TAudioControlID rtpcId = INVALID_AUDIO_CONTROL_ID;
+            AudioSystemRequestBus::BroadcastResult(rtpcId, &AudioSystemRequestBus::Events::GetAudioRtpcID, rtpcName.c_str());
+
+            if (rtpcId != INVALID_AUDIO_CONTROL_ID)
+            {
+                float value = 0.f;
+                if (!AZ::ConsoleTypeHelpers::StringToValue<float>(value, args[1]))
+                {
+                    g_audioLogger.Log(eALT_ERROR, "Invalid float number: %.*s", AZ_STRING_ARG(args[1]));
+                    return;
+                }
+
+                TAudioObjectID objectId = INVALID_AUDIO_OBJECT_ID;
+                if (args.size() == 3)
+                {
+                    if (!AZ::ConsoleTypeHelpers::StringToValue<TAudioObjectID>(objectId, args[2]))
+                    {
+                        g_audioLogger.Log(eALT_ERROR, "Invalid Object ID: %.*s", AZ_STRING_ARG(args[2]));
+                        return;
+                    }
+                }
+
+                SAudioRequest request;
+                SAudioObjectRequestData<eAORT_SET_RTPC_VALUE> requestData(rtpcId, value);
+
+                request.nAudioObjectID = objectId;
+                request.nFlags = eARF_PRIORITY_NORMAL;
+                request.pData = &requestData;
+
+                AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequest, request);
+            }
+            else
+            {
+                g_audioLogger.Log(eALT_ERROR, "Unknown Rtpc name: %.*s", AZ_STRING_ARG(args[0]));
+            }
+        }
+        else
+        {
+            g_audioLogger.Log(eALT_ERROR, "Usage: s_SetRtpc RtpcName RtpcValue [Optional Object ID]");
+        }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////
+    static void s_SetSwitchState(const AZ::ConsoleCommandContainer& args)
+    {
+        if (args.size() == 2 || args.size() == 3)
+        {
+            AZStd::string switchName(args[0]);
+            TAudioControlID switchId = INVALID_AUDIO_CONTROL_ID;
+            AudioSystemRequestBus::BroadcastResult(switchId, &AudioSystemRequestBus::Events::GetAudioSwitchID, switchName.c_str());
+
+            if (switchId != INVALID_AUDIO_CONTROL_ID)
+            {
+                AZStd::string stateName(args[1]);
+                TAudioSwitchStateID stateId = INVALID_AUDIO_SWITCH_STATE_ID;
+                AudioSystemRequestBus::BroadcastResult(
+                    stateId, &AudioSystemRequestBus::Events::GetAudioSwitchStateID, switchId, stateName.c_str());
+
+                if (stateId != INVALID_AUDIO_SWITCH_STATE_ID)
+                {
+                    TAudioObjectID objectId = INVALID_AUDIO_OBJECT_ID;
+                    if (args.size() == 3)
+                    {
+                        if (!AZ::ConsoleTypeHelpers::StringToValue<TAudioObjectID>(objectId, args[2]))
                         {
-                            nObjectID = static_cast<TAudioObjectID>(nTempID);
-                        }
-                        else
-                        {
-                            g_audioLogger.Log(eALT_ERROR, "Invalid Object ID: %s", pCmdArgs->GetArg(3));
+                            g_audioLogger.Log(eALT_ERROR, "Invalid Object ID: %.*s", AZ_STRING_ARG(args[2]));
                             return;
                         }
                     }
 
-                    SAudioRequest oRequest;
-                    SAudioObjectRequestData<eAORT_SET_SWITCH_STATE> oRequestData(nSwitchID, nSwitchStateID);
+                    SAudioRequest request;
+                    SAudioObjectRequestData<eAORT_SET_SWITCH_STATE> requestData(switchId, stateId);
 
-                    oRequest.nAudioObjectID = nObjectID;
-                    oRequest.nFlags = eARF_PRIORITY_NORMAL;
-                    oRequest.pData = &oRequestData;
+                    request.nAudioObjectID = objectId;
+                    request.nFlags = eARF_PRIORITY_NORMAL;
+                    request.pData = &requestData;
 
-                    AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequest, oRequest);
+                    AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::PushRequest, request);
                 }
                 else
                 {
-                    g_audioLogger.Log(eALT_ERROR, "Invalid  Switch State name: %s", pCmdArgs->GetArg(2));
+                    g_audioLogger.Log(eALT_ERROR, "Invalid Switch State name: %.*s", AZ_STRING_ARG(args[1]));
                 }
             }
             else
             {
-                g_audioLogger.Log(eALT_ERROR, "Unknown Switch name: %s", pCmdArgs->GetArg(1));
+                g_audioLogger.Log(eALT_ERROR, "Unknown Switch name: %.*s", AZ_STRING_ARG(args[0]));
             }
         }
         else
         {
-            g_audioLogger.Log(eALT_ERROR, "Usage: s_SetSwitchState [SwitchName] [SwitchStateName] [[Optional Object ID]]");
+            g_audioLogger.Log(eALT_ERROR, "Usage: s_SetSwitchState SwitchName SwitchStateName [Optional Object ID]");
         }
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CSoundCVars::CmdLoadPreload(IConsoleCmdArgs* cmdArgs)
+    static void s_LoadPreload(const AZ::ConsoleCommandContainer& args)
     {
-        const int argCount = cmdArgs->GetArgCount();
-
-        if (argCount == 2)
+        if (args.size() == 1)
         {
-            const char* preloadName = cmdArgs->GetArg(1);
-
+            AZStd::string preloadName(args[0]);
             TAudioPreloadRequestID preloadId = INVALID_AUDIO_PRELOAD_REQUEST_ID;
-            AudioSystemRequestBus::BroadcastResult(preloadId, &AudioSystemRequestBus::Events::GetAudioPreloadRequestID, preloadName);
+            AudioSystemRequestBus::BroadcastResult(preloadId, &AudioSystemRequestBus::Events::GetAudioPreloadRequestID, preloadName.c_str());
             if (preloadId != INVALID_AUDIO_PRELOAD_REQUEST_ID)
             {
                 SAudioRequest request;
@@ -599,26 +561,23 @@ namespace Audio
             }
             else
             {
-                g_audioLogger.Log(eALT_ERROR, "Preload named %s not found", preloadName);
+                g_audioLogger.Log(eALT_ERROR, "Preload named %.*s not found", AZ_STRING_ARG(args[0]));
             }
         }
         else
         {
-            g_audioLogger.Log(eALT_ERROR, "Usage: s_LoadPreload [PreloadName]");
+            g_audioLogger.Log(eALT_ERROR, "Usage: s_LoadPreload PreloadName");
         }
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CSoundCVars::CmdUnloadPreload(IConsoleCmdArgs* cmdArgs)
+    static void s_UnloadPreload(const AZ::ConsoleCommandContainer& args)
     {
-        const int argCount = cmdArgs->GetArgCount();
-
-        if (argCount == 2)
+        if (args.size() == 1)
         {
-            const char* preloadName = cmdArgs->GetArg(1);
-
+            AZStd::string preloadName(args[0]);
             TAudioPreloadRequestID preloadId = INVALID_AUDIO_PRELOAD_REQUEST_ID;
-            AudioSystemRequestBus::BroadcastResult(preloadId, &AudioSystemRequestBus::Events::GetAudioPreloadRequestID, preloadName);
+            AudioSystemRequestBus::BroadcastResult(preloadId, &AudioSystemRequestBus::Events::GetAudioPreloadRequestID, preloadName.c_str());
             if (preloadId != INVALID_AUDIO_PRELOAD_REQUEST_ID)
             {
                 SAudioRequest request;
@@ -630,26 +589,25 @@ namespace Audio
             }
             else
             {
-                g_audioLogger.Log(eALT_ERROR, "Preload named %s not found", preloadName);
+                g_audioLogger.Log(eALT_ERROR, "Preload named %.*s not found", AZ_STRING_ARG(args[0]));
             }
         }
         else
         {
-            g_audioLogger.Log(eALT_ERROR, "Usage: s_UnloadPreload [PreloadName]");
+            g_audioLogger.Log(eALT_ERROR, "Usage: s_UnloadPreload PreloadName");
         }
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CSoundCVars::CmdPlayFile(IConsoleCmdArgs* cmdArgs)
+    static void s_PlayFile(const AZ::ConsoleCommandContainer& args)
     {
-        const int argCount = cmdArgs->GetArgCount();
-
-        if (argCount >= 3)
+        if (args.size() >= 2)
         {
-            const char* filename = cmdArgs->GetArg(1);
+            AZStd::string filename(args[0]);
 
             AZStd::string fileext;
-            AZ::StringFunc::Path::GetExtension(filename, fileext, false);
+            AZStd::to_lower(fileext.begin(), fileext.end());
+            AZ::StringFunc::Path::GetExtension(filename.c_str(), fileext, false);
 
             AudioInputSourceType audioInputType = AudioInputSourceType::Unsupported;
 
@@ -666,20 +624,29 @@ namespace Audio
             if (audioInputType != AudioInputSourceType::Unsupported)
             {
                 // Setup the configuration...
-                SAudioInputConfig audioInputConfig(audioInputType, filename);
+                SAudioInputConfig audioInputConfig(audioInputType, filename.c_str());
 
                 if (audioInputType == AudioInputSourceType::PcmFile)
                 {
-                    if (argCount == 5)
+                    if (args.size() == 4)
                     {
                         audioInputConfig.m_bitsPerSample = 16;
-                        audioInputConfig.m_numChannels = std::strtoul(cmdArgs->GetArg(3), nullptr, 10);
-                        audioInputConfig.m_sampleRate = std::strtoul(cmdArgs->GetArg(4), nullptr, 10);
+                        if (!AZ::ConsoleTypeHelpers::StringToValue<AZ::u32>(audioInputConfig.m_numChannels, args[2]))
+                        {
+                            g_audioLogger.Log(eALT_ERROR, "Invalid number of channels '%.*s'", AZ_STRING_ARG(args[2]));
+                            return;
+                        }
+                        if (!AZ::ConsoleTypeHelpers::StringToValue<AZ::u32>(audioInputConfig.m_sampleRate, args[3]))
+                        {
+                            g_audioLogger.Log(eALT_ERROR, "Invalid sample rate '%.*s'", AZ_STRING_ARG(args[3]));
+                            return;
+                        }
                         audioInputConfig.m_sampleType = AudioInputSampleType::Int;
                     }
                     else
                     {
-                        g_audioLogger.Log(eALT_ERROR, "Using PCM file, additional parameters needed: [NumChannels] [SampleRate] (e.g. 2 16000)");
+                        g_audioLogger.Log(
+                            eALT_ERROR, "Using PCM file, additional parameters needed: [NumChannels] [SampleRate] (e.g. 2 16000)");
                         return;
                     }
                 }
@@ -690,7 +657,8 @@ namespace Audio
                 if (sourceId != INVALID_AUDIO_SOURCE_ID)
                 {
                     TAudioControlID triggerId = INVALID_AUDIO_CONTROL_ID;
-                    AudioSystemRequestBus::BroadcastResult(triggerId, &AudioSystemRequestBus::Events::GetAudioTriggerID, cmdArgs->GetArg(2));
+                    AudioSystemRequestBus::BroadcastResult(
+                        triggerId, &AudioSystemRequestBus::Events::GetAudioTriggerID, args[1].data());
 
                     if (triggerId != INVALID_AUDIO_CONTROL_ID)
                     {
@@ -704,7 +672,7 @@ namespace Audio
                     else
                     {
                         AudioSystemRequestBus::Broadcast(&AudioSystemRequestBus::Events::DestroyAudioSource, sourceId);
-                        g_audioLogger.Log(eALT_ERROR, "Failed to find the trigger named %s", cmdArgs->GetArg(2));
+                        g_audioLogger.Log(eALT_ERROR, "Failed to find the trigger named %.*s", AZ_STRING_ARG(args[1]));
                     }
                 }
                 else
@@ -714,36 +682,39 @@ namespace Audio
             }
             else
             {
-                g_audioLogger.Log(eALT_ERROR, "Audio files with extension .%s are unsupported", fileext.c_str());
+                g_audioLogger.Log(eALT_ERROR, "Audio files with extension '.%s' are unsupported", fileext.c_str());
             }
         }
         else
         {
-            g_audioLogger.Log(eALT_ERROR, "Usage: s_PlayFile \"path\\to\\myfile.wav\" \"Play_audio_input_2D\"");
+            g_audioLogger.Log(eALT_ERROR, "Usage: s_PlayFile \"path\\to\\myfile.wav\" Play_audio_input_2D");
         }
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CSoundCVars::CmdMicrophone(IConsoleCmdArgs* pCmdArgs)
+    static void s_Microphone(const AZ::ConsoleCommandContainer& args)
     {
-        static bool micState = false;   // mic is off initially
+        static bool micState = false; // mic is off initially
         static TAudioSourceId micSourceId = INVALID_AUDIO_SOURCE_ID;
         static TAudioControlID triggerId = INVALID_AUDIO_CONTROL_ID;
 
-        const int argCount = pCmdArgs->GetArgCount();
-
-        if (argCount == 3)
+        if (args.size() == 2)
         {
-            int state = std::strtol(pCmdArgs->GetArg(1), nullptr, 10);
+            AZ::u32 state;
+            if (!AZ::ConsoleTypeHelpers::StringToValue<AZ::u32>(state, args[0]))
+            {
+                g_audioLogger.Log(eALT_ERROR, "Invalid number passed '%.*s', should be 0 or 1", AZ_STRING_ARG(args[0]));
+                return;
+            }
 
-            const char* triggerName = pCmdArgs->GetArg(2);
+            AZStd::string triggerName(args[1]);
 
             if (state == 1 && !micState && micSourceId == INVALID_AUDIO_SOURCE_ID && triggerId == INVALID_AUDIO_CONTROL_ID)
             {
-                g_audioLogger.Log(eALT_ALWAYS, "Turning on Microhpone with %s\n", triggerName);
+                g_audioLogger.Log(eALT_ALWAYS, "Turning on Microhpone with %s\n", triggerName.c_str());
                 bool success = true;
 
-                AudioSystemRequestBus::BroadcastResult(triggerId, &AudioSystemRequestBus::Events::GetAudioTriggerID, triggerName);
+                AudioSystemRequestBus::BroadcastResult(triggerId, &AudioSystemRequestBus::Events::GetAudioTriggerID, triggerName.c_str());
                 if (triggerId != INVALID_AUDIO_CONTROL_ID)
                 {
                     // Start the mic session
@@ -756,9 +727,9 @@ namespace Audio
 
                         // If you want to test resampling, set the values here before you create an Audio Source.
                         // In this case, we would be specifying 16kHz, 16-bit integers.
-                        //micConfig.m_sampleRate = 16000;
-                        //micConfig.m_bitsPerSample = 16;
-                        //micConfig.m_sampleType = AudioInputSampleType::Int;
+                        // micConfig.m_sampleRate = 16000;
+                        // micConfig.m_bitsPerSample = 16;
+                        // micConfig.m_sampleType = AudioInputSampleType::Int;
 
                         AudioSystemRequestBus::BroadcastResult(micSourceId, &AudioSystemRequestBus::Events::CreateAudioSource, micConfig);
 
@@ -786,7 +757,7 @@ namespace Audio
                 else
                 {
                     success = false;
-                    g_audioLogger.Log(eALT_ERROR, "Failed to find the trigger named %s", triggerName);
+                    g_audioLogger.Log(eALT_ERROR, "Failed to find the trigger named %s", triggerName.c_str());
                 }
 
                 if (success)
@@ -806,9 +777,14 @@ namespace Audio
                 g_audioLogger.Log(eALT_ERROR, "Error encountered while turning on/off microphone");
             }
         }
-        else if (argCount == 2)
+        else if (args.size() == 1)
         {
-            int state = std::strtol(pCmdArgs->GetArg(1), nullptr, 10);
+            AZ::u32 state;
+            if (!AZ::ConsoleTypeHelpers::StringToValue<AZ::u32>(state, args[0]))
+            {
+                g_audioLogger.Log(eALT_ERROR, "Invalid number passed '%.*s', should be 0 or 1", AZ_STRING_ARG(args[0]));
+                return;
+            }
 
             if (state == 0 && micState && micSourceId != INVALID_AUDIO_SOURCE_ID && triggerId != INVALID_AUDIO_CONTROL_ID)
             {
@@ -836,34 +812,49 @@ namespace Audio
         }
         else
         {
-            g_audioLogger.Log(eALT_ERROR, "Usage: s_Microphone 1 Play_audio_input_2D  /  s_Microphone 0");
+            g_audioLogger.Log(eALT_ERROR, "Usage: s_Microphone 1 Play_audio_input_2D\nUsage: s_Microphone 0");
         }
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CSoundCVars::CmdPlayExternalSource(IConsoleCmdArgs* pCmdArgs)
+    static void s_PlayExternalSource(const AZ::ConsoleCommandContainer& args)
     {
         // This cookie value is a hash on the name of the External Source.
         // By default when you add an External Source to a sound, it gives the name 'External_Source' and has this hash.
         // Apparently it can be changed in the Wwise project, so it's unfortunately content-dependent.  But there's no easy
         // way to extract that info in this context.
-        const AZ::u64 externalSourceCookieValue = 618371124ull;
+        static constexpr AZ::u64 externalSourceCookieValue = 618371124ull;
 
         TAudioControlID triggerId = INVALID_AUDIO_CONTROL_ID;
 
-        if (pCmdArgs->GetArgCount() == 5)
+        if (args.size() == 4)
         {
-            const char* triggerName = pCmdArgs->GetArg(1);
-            AudioSystemRequestBus::BroadcastResult(triggerId, &AudioSystemRequestBus::Events::GetAudioTriggerID, triggerName);
+            AZStd::string triggerName(args[0]);
+            AudioSystemRequestBus::BroadcastResult(triggerId, &AudioSystemRequestBus::Events::GetAudioTriggerID, triggerName.c_str());
             if (triggerId == INVALID_AUDIO_CONTROL_ID)
             {
-                g_audioLogger.Log(eALT_ERROR, "Failed to find the trigger named '%s'\n", triggerName);
+                g_audioLogger.Log(eALT_ERROR, "Failed to find the trigger named '%s'\n", triggerName.c_str());
                 return;
             }
 
-            int collection = std::strtol(pCmdArgs->GetArg(2), nullptr, 10);
-            int language = std::strtol(pCmdArgs->GetArg(3), nullptr, 10);
-            int file = std::strtol(pCmdArgs->GetArg(4), nullptr, 10);
+            AZ::u64 collection;
+            if (!AZ::ConsoleTypeHelpers::StringToValue<AZ::u64>(collection, args[1]))
+            {
+                g_audioLogger.Log(eALT_ERROR, "Invalid collection number passed '%.*s'", AZ_STRING_ARG(args[1]));
+                return;
+            }
+            AZ::u64 language;
+            if (!AZ::ConsoleTypeHelpers::StringToValue<AZ::u64>(language, args[2]))
+            {
+                g_audioLogger.Log(eALT_ERROR, "Invalid language number passed '%.*s'", AZ_STRING_ARG(args[2]));
+                return;
+            }
+            AZ::u64 file;
+            if (!AZ::ConsoleTypeHelpers::StringToValue<AZ::u64>(file, args[3]))
+            {
+                g_audioLogger.Log(eALT_ERROR, "Invalid file number passed '%.*s'", AZ_STRING_ARG(args[3]));
+                return;
+            }
 
             SAudioSourceInfo sourceInfo(externalSourceCookieValue, file, language, collection, eACT_PCM);
 
@@ -881,25 +872,28 @@ namespace Audio
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////
-    void CSoundCVars::CmdSetPanningMode(IConsoleCmdArgs* pCmdArgs)
+    static void s_SetPanningMode(const AZ::ConsoleCommandContainer& args)
     {
-        if (pCmdArgs->GetArgCount() == 2)
+        if (args.size() == 1)
         {
             PanningMode panningMode;
-            const char* mode = pCmdArgs->GetArg(1);
-            if (azstricmp(mode, "speakers") == 0)
+            AZStd::string mode(args[0]);
+            AZStd::to_lower(mode.begin(), mode.end());
+            if (mode == "speakers")
             {
                 panningMode = PanningMode::Speakers;
-                g_audioLogger.Log(eALT_COMMENT, "Setting Panning Mode to 'Speakers'.\n");
+                g_audioLogger.Log(eALT_COMMENT, "Setting Panning Mode to 'Speakers'\n");
             }
-            else if (azstricmp(mode, "headphones") == 0)
+            else if (mode == "headphones")
             {
                 panningMode = PanningMode::Headphones;
-                g_audioLogger.Log(eALT_COMMENT, "Setting Panning Mode to 'Headphones'.\n");
+                g_audioLogger.Log(eALT_COMMENT, "Setting Panning Mode to 'Headphones'\n");
             }
             else
             {
-                g_audioLogger.Log(eALT_ERROR, "Panning mode '%s' is invalid.  Please specify either 'speakers' or 'headphones'\n", mode);
+                g_audioLogger.Log(eALT_ERROR,
+                    "Panning mode '%.*s' is invalid.  Please specify either 'speakers' or 'headphones'\n",
+                    AZ_STRING_ARG(args[0]));
                 return;
             }
 
@@ -912,10 +906,10 @@ namespace Audio
         }
         else
         {
-            g_audioLogger.Log(eALT_ERROR, "Usage: s_SetPanningMode speakers\nUsage: s_SetPanningMode headphones");
+            g_audioLogger.Log(eALT_ERROR, "Usage: s_SetPanningMode (speakers|headphones)\n");
         }
     }
 
 #endif // !AUDIO_RELEASE
 
-} // namespace Audio
+} // namespace Audio::CVars

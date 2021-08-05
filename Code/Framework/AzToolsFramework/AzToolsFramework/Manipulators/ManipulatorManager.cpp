@@ -1,17 +1,13 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
-#include "BaseManipulator.h"
 #include "ManipulatorManager.h"
+#include "BaseManipulator.h"
 
 #include <AzCore/std/tuple.h>
 #include <AzToolsFramework/Picking/BoundInterface.h>
@@ -51,7 +47,8 @@ namespace AzToolsFramework
 
         if (manipulator->Registered())
         {
-            AZ_Assert(manipulator->GetManipulatorManagerId() == m_manipulatorManagerId,
+            AZ_Assert(
+                manipulator->GetManipulatorManagerId() == m_manipulatorManagerId,
                 "This manipulator was registered with a different manipulator manager!");
             return;
         }
@@ -75,8 +72,7 @@ namespace AzToolsFramework
     }
 
     Picking::RegisteredBoundId ManipulatorManager::UpdateBound(
-        const ManipulatorId manipulatorId, const Picking::RegisteredBoundId boundId,
-        const Picking::BoundRequestShapeBase& boundShapeData)
+        const ManipulatorId manipulatorId, const Picking::RegisteredBoundId boundId, const Picking::BoundRequestShapeBase& boundShapeData)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
@@ -99,8 +95,7 @@ namespace AzToolsFramework
             AZ_Assert(boundItr->second == manipulatorId, "Manipulator and its bounds are out of synchronization!");
         }
 
-        const Picking::RegisteredBoundId newBoundId =
-            m_boundManager.UpdateOrRegisterBound(boundShapeData, boundId);
+        const Picking::RegisteredBoundId newBoundId = m_boundManager.UpdateOrRegisterBound(boundShapeData, boundId);
 
         if (newBoundId != boundId)
         {
@@ -142,13 +137,6 @@ namespace AzToolsFramework
         }
     }
 
-    void ManipulatorManager::CheckModifierKeysChanged(
-        [[maybe_unused]] const ViewportInteraction::KeyboardModifiers keyboardModifiers,
-        const ViewportInteraction::MousePick& mousePick)
-    {
-        RefreshMouseOverState(mousePick);
-    }
-
     void ManipulatorManager::DrawManipulators(
         AzFramework::DebugDisplayRequests& debugDisplay,
         const AzFramework::CameraState& cameraState,
@@ -181,7 +169,8 @@ namespace AzToolsFramework
             if (found != m_boundIdToManipulatorIdMap.end())
             {
                 const auto manipulatorFound = m_manipulatorIdToPtrMap.find(found->second);
-                AZ_Assert(manipulatorFound != m_manipulatorIdToPtrMap.end(),
+                AZ_Assert(
+                    manipulatorFound != m_manipulatorIdToPtrMap.end(),
                     "Found a bound without a corresponding Manipulator, "
                     "it's likely a bound was not cleaned up correctly");
                 rayIntersectionDistance = hitItr.second;
@@ -194,10 +183,9 @@ namespace AzToolsFramework
 
     bool ManipulatorManager::ConsumeViewportMousePress(const ViewportInteraction::MouseInteraction& interaction)
     {
-        if (auto pickedManipulator = PickManipulator(interaction.m_mousePick);
-            pickedManipulator.has_value())
+        if (auto pickedManipulator = PickManipulator(interaction.m_mousePick); pickedManipulator.has_value())
         {
-            auto[manipulator, intersectionDistance] = pickedManipulator.value();
+            auto [manipulator, intersectionDistance] = pickedManipulator.value();
 
             if (interaction.m_mouseButtons.Left())
             {
@@ -249,24 +237,19 @@ namespace AzToolsFramework
         const ViewportInteraction::MousePick& mousePick)
     {
         float intersectionDistance = 0.0f;
-        const AZStd::shared_ptr<BaseManipulator> pickedManipulator = PerformRaycast(
-            mousePick.m_rayOrigin, mousePick.m_rayDirection, intersectionDistance);
+        const AZStd::shared_ptr<BaseManipulator> pickedManipulator =
+            PerformRaycast(mousePick.m_rayOrigin, mousePick.m_rayDirection, intersectionDistance);
 
-        return pickedManipulator.get() != nullptr
-            ? AZStd::make_optional(AZStd::make_tuple(pickedManipulator, intersectionDistance))
-            : AZStd::nullopt;
+        return pickedManipulator.get() != nullptr ? AZStd::make_optional(AZStd::make_tuple(pickedManipulator, intersectionDistance))
+                                                  : AZStd::nullopt;
     }
 
-    ManipulatorManager::PickedManipulatorId ManipulatorManager::PickManipulatorId(
-        const ViewportInteraction::MousePick& mousePick)
+    ManipulatorManager::PickedManipulatorId ManipulatorManager::PickManipulatorId(const ViewportInteraction::MousePick& mousePick)
     {
-        auto [manipulator, intersectionDistance] =
-            PickManipulator(mousePick).value_or(PickedManipulator(nullptr, 0.0f));
-        const ManipulatorId pickedManipulatorId = manipulator
-            ? manipulator->GetManipulatorId()
-            : InvalidManipulatorId;
+        auto [manipulator, intersectionDistance] = PickManipulator(mousePick).value_or(PickedManipulator(nullptr, 0.0f));
+        const ManipulatorId pickedManipulatorId = manipulator ? manipulator->GetManipulatorId() : InvalidManipulatorId;
 
-        return PickedManipulatorId{pickedManipulatorId, intersectionDistance};
+        return PickedManipulatorId{ pickedManipulatorId, intersectionDistance };
     }
 
     ManipulatorManager::ConsumeMouseMoveResult ManipulatorManager::ConsumeViewportMouseMove(

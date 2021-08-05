@@ -1,12 +1,8 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 import os
@@ -31,6 +27,26 @@ class TestGraphClosedOnEntityDelete(EditorTestHelper):
         EditorTestHelper.__init__(self, log_prefix="GraphClosedOnEntityDelete", args=["level"])
 
     def run_test(self):
+        """
+        Summary:
+        This test verifies that Landscape Canvas graphs are auto-closed when the corresponding entity is deleted.
+
+        Expected Behavior:
+        When a Landscape Canvas root entity is deleted, the corresponding graph automatically closes.
+
+        Test Steps:
+         1) Create a new level
+         2) Open Landscape Canvas and create a new graph
+         3) Delete the automatically created entity
+         4) Verify the open graph is closed
+
+        Note:
+        - This test file must be called from the Open 3D Engine Editor command terminal
+        - Any passed and failed tests are written to the Editor.log file.
+                Parsing the file or running a log_monitor are required to observe the test results.
+
+        :return: None
+        """
 
         def onEntityCreated(parameters):
             global newRootEntityId

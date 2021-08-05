@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -51,7 +47,6 @@ namespace EMotionFX
         EVENT_TYPE_MOTION_INSTANCE_LAST_EVENT = EVENT_TYPE_ON_QUEUE_MOTION_INSTANCE,
 
         EVENT_TYPE_ON_DELETE_ACTOR,
-        EVENT_TYPE_ON_DELETE_ACTOR_INSTANCE,
         EVENT_TYPE_ON_SIMULATE_PHYSICS,
         EVENT_TYPE_ON_CUSTOM_EVENT,
         EVENT_TYPE_ON_DRAW_LINE,
@@ -64,7 +59,6 @@ namespace EMotionFX
         EVENT_TYPE_ON_CREATE_MOTION_INSTANCE,
         EVENT_TYPE_ON_CREATE_MOTION_SYSTEM,
         EVENT_TYPE_ON_CREATE_ACTOR,
-        EVENT_TYPE_ON_CREATE_ACTOR_INSTANCE,
         EVENT_TYPE_ON_POST_CREATE_ACTOR,
         EVENT_TYPE_ON_DELETE_ANIM_GRAPH,
         EVENT_TYPE_ON_DELETE_ANIM_GRAPH_INSTANCE,
@@ -298,15 +292,6 @@ namespace EMotionFX
          */
         virtual void OnDeleteActor(Actor* actor)                                                                                            { MCORE_UNUSED(actor); }
 
-        /**
-         * The event that gets triggered once an ActorInstance object is being deleted.
-         * You could for example use this event to delete any allocations you have done inside the
-         * custom user data object linked with the ActorInstance object.
-         * You can get and set this data object with the ActorInstance::GetCustomData() and ActorInstance::SetCustomData(...) methods.
-         * @param actorInstance The actorInstance that is being deleted.
-         */
-        virtual void OnDeleteActorInstance(ActorInstance* actorInstance)                                                                    { MCORE_UNUSED(actorInstance); }
-
         virtual void OnSimulatePhysics(float timeDelta)                                                                                     { MCORE_UNUSED(timeDelta); }
         virtual void OnCustomEvent(uint32 eventType, void* data)                                                                            { MCORE_UNUSED(eventType); MCORE_UNUSED(data); }
 
@@ -321,7 +306,6 @@ namespace EMotionFX
         virtual void OnCreateMotionInstance(MotionInstance* motionInstance)                                                                 { MCORE_UNUSED(motionInstance); }
         virtual void OnCreateMotionSystem(MotionSystem* motionSystem)                                                                       { MCORE_UNUSED(motionSystem); }
         virtual void OnCreateActor(Actor* actor)                                                                                            { MCORE_UNUSED(actor); }
-        virtual void OnCreateActorInstance(ActorInstance* actorInstance)                                                                    { MCORE_UNUSED(actorInstance); }
         virtual void OnPostCreateActor(Actor* actor)                                                                                        { MCORE_UNUSED(actor); }
 
         // delete callbacks

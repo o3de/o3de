@@ -1,19 +1,14 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-
-#include "Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h"
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <PostProcess/DisplayMapper/EditorDisplayMapperComponent.h>
+#include <Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h>
 
 namespace AZ
 {
@@ -35,7 +30,7 @@ namespace AZ
                         ->ClassElement(Edit::ClassElements::EditorData, "")
                         ->Attribute(Edit::Attributes::Category, "Atom")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg") // [GFX TODO][ATOM-2672][PostFX] need to create icons for PostProcessing.
-                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.png") // [GFX TODO][ATOM-2672][PostFX] need to create icons for PostProcessing.
+                        ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.svg") // [GFX TODO][ATOM-2672][PostFX] need to create icons for PostProcessing.
                         ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZStd::vector<AZ::Crc32>({ AZ_CRC("Level", 0x9aeacc13), AZ_CRC("Game", 0x232b318c) }))
                         ->Attribute(Edit::Attributes::AutoExpand, true)
                         ->Attribute(Edit::Attributes::HelpPageURL, "https://") // [GFX TODO][ATOM-2672][PostFX] need to create page for PostProcessing.
@@ -54,54 +49,89 @@ namespace AZ
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
+                        // m_overrideDefaults
                         ->DataElement(
                             AZ::Edit::UIHandlers::CheckBox, &AcesParameterOverrides::m_overrideDefaults, "Override Defaults",
                             "When enabled allows parameter overrides for ACES configuration")
                         ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
 
+                        // m_alterSurround
                         ->DataElement(
                             AZ::Edit::UIHandlers::CheckBox, &AcesParameterOverrides::m_alterSurround, "Alter Surround",
                             "Apply gamma adjustment to compensate for dim surround")
                         ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+
+                        // m_applyDesaturation
                         ->DataElement(
                             AZ::Edit::UIHandlers::CheckBox, &AcesParameterOverrides::m_applyDesaturation, "Alter Desaturation",
                             "Apply desaturation to compensate for luminance difference")
                         ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+
+                        // m_applyCATD60toD65
                         ->DataElement(
                             AZ::Edit::UIHandlers::CheckBox, &AcesParameterOverrides::m_applyCATD60toD65, "Alter CAT D60 to D65",
                             "Apply Color appearance transform (CAT) from ACES white point to assumed observer adapted white point")
                         ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
-                        
+
+                        // m_cinemaLimitsBlack
                         ->DataElement(
-                            Edit::UIHandlers::Default, &AcesParameterOverrides::m_cinemaLimitsBlack,
+                            Edit::UIHandlers::Slider, &AcesParameterOverrides::m_cinemaLimitsBlack,
                             "Cinema Limit (black)",
                             "Reference black luminance value")
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.02f)
+                        ->Attribute(AZ::Edit::Attributes::Max, &AcesParameterOverrides::m_cinemaLimitsWhite)
+                        ->Attribute(AZ::Edit::Attributes::Step, 0.005f)
+                        ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+
+                        // m_cinemaLimitsWhite
                         ->DataElement(
-                            Edit::UIHandlers::Default, &AcesParameterOverrides::m_cinemaLimitsWhite,
+                            Edit::UIHandlers::Slider, &AcesParameterOverrides::m_cinemaLimitsWhite,
                             "Cinema Limit (white)",
                             "Reference white luminance value")
+                        ->Attribute(AZ::Edit::Attributes::Min, &AcesParameterOverrides::m_cinemaLimitsBlack)
+                        ->Attribute(AZ::Edit::Attributes::Max, 4000.f)
+                        ->Attribute(AZ::Edit::Attributes::Step, 0.005f)
                         ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
 
+                        // m_minPoint
                         ->DataElement(
-                            Edit::UIHandlers::Vector2, &AcesParameterOverrides::m_minPoint, "Min Point (luminance)",
+                            Edit::UIHandlers::Slider, &AcesParameterOverrides::m_minPoint, "Min Point (luminance)",
                             "Linear extension below this")
-                        ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.002f)
+                        ->Attribute(AZ::Edit::Attributes::Max, &AcesParameterOverrides::m_midPoint)
+                        ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::AttributesAndValues)
+
+                        // m_midPoint
+                        ->DataElement(Edit::UIHandlers::Slider, &AcesParameterOverrides::m_midPoint,
+                            "Mid Point (luminance)", "Middle gray")
+                        ->Attribute(AZ::Edit::Attributes::Min, &AcesParameterOverrides::m_minPoint)
+                        ->Attribute(AZ::Edit::Attributes::Max, &AcesParameterOverrides::m_maxPoint)
+                        ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::AttributesAndValues)
+
+                        // m_maxPoint
                         ->DataElement(
-                            Edit::UIHandlers::Vector2, &AcesParameterOverrides::m_midPoint, "Mid Point (luminance)",
-                            "Middle gray")
-                        ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
-                        ->DataElement(
-                            Edit::UIHandlers::Vector2, &AcesParameterOverrides::m_maxPoint, "Max Point (luminance)",
+                            Edit::UIHandlers::Slider, &AcesParameterOverrides::m_maxPoint, "Max Point (luminance)",
                             "Linear extension above this")
+                        ->Attribute(AZ::Edit::Attributes::Min, &AcesParameterOverrides::m_midPoint)
+                        ->Attribute(AZ::Edit::Attributes::Max, 4000.f)
+                        ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::AttributesAndValues)
+
+                        // m_surroundGamma
+                        ->DataElement(
+                            AZ::Edit::UIHandlers::Slider, &AcesParameterOverrides::m_surroundGamma, "Surround Gamma",
+                            "Gamma adjustment to be applied to compensate for the condition of the viewing environment")
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.6f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 1.2f)
+                        ->Attribute(AZ::Edit::Attributes::Step, 0.005f)
                         ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
 
+                        // m_gamma
                         ->DataElement(
-                            AZ::Edit::UIHandlers::Default, &AcesParameterOverrides::m_surroundGamma, "Surround Gamma",
-                            "Gamma adjustment to be applied to compensate for the condition of the viewing environment")
-                        ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
-                        ->DataElement(
-                            AZ::Edit::UIHandlers::Default, &AcesParameterOverrides::m_gamma, "Gamma",
+                            AZ::Edit::UIHandlers::Slider, &AcesParameterOverrides::m_gamma, "Gamma",
                             "Optional gamma value that is applied as basic gamma curve OETF")
+                        ->Attribute(AZ::Edit::Attributes::Min, 0.2f)
+                        ->Attribute(AZ::Edit::Attributes::Max, 4.0f)
+                        ->Attribute(AZ::Edit::Attributes::Step, 0.005f)
                         ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
 
                         // Load preset group
@@ -145,6 +175,8 @@ namespace AZ
 
             if (auto behaviorContext = azrtti_cast<BehaviorContext*>(context))
             {
+                behaviorContext->Class<EditorDisplayMapperComponent>()->RequestBus("DisplayMapperComponentRequestBus");
+
                 behaviorContext->ConstantProperty("EditorDisplayMapperComponentTypeId", BehaviorConstant(Uuid(EditorDisplayMapperComponentTypeId)))
                     ->Attribute(AZ::Script::Attributes::Module, "render")
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation);

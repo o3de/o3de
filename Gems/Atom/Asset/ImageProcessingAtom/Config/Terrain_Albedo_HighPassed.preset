@@ -15,7 +15,7 @@
             }
         },
         "PlatformsPresets": {
-            "es3": {
+            "android": {
                 "UUID": "{7827AA52-0A7B-43E7-8CD4-55E0BC513AF1}",
                 "Name": "Terrain_Albedo_HighPassed",
                 "SourceColor": "Linear",
@@ -37,7 +37,7 @@
                     "MipGenType": "Box"
                 }
             },
-            "osx_gl": {
+            "mac": {
                 "UUID": "{7827AA52-0A7B-43E7-8CD4-55E0BC513AF1}",
                 "Name": "Terrain_Albedo_HighPassed",
                 "SourceColor": "Linear",

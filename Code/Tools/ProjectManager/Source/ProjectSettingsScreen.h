@@ -1,28 +1,25 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <ScreenWidget.h>
 #include <ProjectInfo.h>
+#include <ScreenWidget.h>
 #endif
 
-namespace Ui
-{
-    class ProjectSettingsClass;
-}
+QT_FORWARD_DECLARE_CLASS(QHBoxLayout)
+QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
 
 namespace O3DE::ProjectManager
 {
+    QT_FORWARD_DECLARE_CLASS(FormLineEditWidget)
+    QT_FORWARD_DECLARE_CLASS(FormBrowseEditWidget)
+
     class ProjectSettingsScreen
         : public ScreenWidget
     {
@@ -31,16 +28,21 @@ namespace O3DE::ProjectManager
         ~ProjectSettingsScreen() = default;
         ProjectManagerScreen GetScreenEnum() override;
 
-        ProjectInfo GetProjectInfo();
-        void SetProjectInfo();
+        virtual ProjectInfo GetProjectInfo();
 
-        bool Validate();
+        virtual bool Validate();
 
     protected slots:
-        void HandleGemsButton();
+        virtual bool ValidateProjectName();
+        virtual bool ValidateProjectPath();
 
-    private:
-        QScopedPointer<Ui::ProjectSettingsClass> m_ui;
+    protected:
+        QString GetDefaultProjectPath();
+
+        QHBoxLayout* m_horizontalLayout;
+        QVBoxLayout* m_verticalLayout;
+        FormLineEditWidget* m_projectName;
+        FormBrowseEditWidget* m_projectPath;
     };
 
 } // namespace O3DE::ProjectManager

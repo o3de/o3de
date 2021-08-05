@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "ExecutionStateInterpreted.h"
 
@@ -25,6 +21,7 @@ namespace ExecutionStateInterpretedCpp
 
     AZ::Data::Asset<RuntimeAsset> GetSubgraphAssetForDebug(const AZ::Data::AssetId& id)
     {
+        // #functions2 this may have to be made recursive
         auto asset = AZ::Data::AssetManager::Instance().GetAsset<SubgraphInterfaceAsset>(id, AZ::Data::AssetLoadBehavior::PreLoad);
         asset.BlockUntilLoadComplete();
         return asset;
@@ -37,7 +34,7 @@ namespace ScriptCanvas
         : ExecutionState(config)
         , m_interpretedAsset(config.runtimeData.m_script)
     {}
-    
+
     void ExecutionStateInterpreted::ClearLuaRegistryIndex()
     {
         m_luaRegistryIndex = LUA_NOREF;
@@ -45,8 +42,8 @@ namespace ScriptCanvas
 
     const Grammar::DebugExecution* ExecutionStateInterpreted::GetDebugSymbolIn(size_t index) const
     {
-        return index < m_component->GetAssetData().m_debugMap.m_ins.size()
-            ? &(m_component->GetAssetData().m_debugMap.m_ins[index])
+        return index < m_component->GetRuntimeAssetData().m_debugMap.m_ins.size()
+            ? &(m_component->GetRuntimeAssetData().m_debugMap.m_ins[index])
             : nullptr;
     }
 
@@ -60,8 +57,8 @@ namespace ScriptCanvas
 
     const Grammar::DebugExecution* ExecutionStateInterpreted::GetDebugSymbolOut(size_t index) const
     {
-        return index < m_component->GetAssetData().m_debugMap.m_outs.size()
-            ? &(m_component->GetAssetData().m_debugMap.m_outs[index])
+        return index < m_component->GetRuntimeAssetData().m_debugMap.m_outs.size()
+            ? &(m_component->GetRuntimeAssetData().m_debugMap.m_outs[index])
             : nullptr;
     }
 
@@ -75,8 +72,8 @@ namespace ScriptCanvas
 
     const Grammar::DebugExecution* ExecutionStateInterpreted::GetDebugSymbolReturn(size_t index) const
     {
-        return index < m_component->GetAssetData().m_debugMap.m_returns.size()
-            ? &(m_component->GetAssetData().m_debugMap.m_returns[index])
+        return index < m_component->GetRuntimeAssetData().m_debugMap.m_returns.size()
+            ? &(m_component->GetRuntimeAssetData().m_debugMap.m_returns[index])
             : nullptr;
     }
 
@@ -90,8 +87,8 @@ namespace ScriptCanvas
 
     const Grammar::DebugDataSource* ExecutionStateInterpreted::GetDebugSymbolVariableChange(size_t index) const
     {
-        return index < m_component->GetAssetData().m_debugMap.m_variables.size()
-            ? &(m_component->GetAssetData().m_debugMap.m_variables[index])
+        return index < m_component->GetRuntimeAssetData().m_debugMap.m_variables.size()
+            ? &(m_component->GetRuntimeAssetData().m_debugMap.m_variables[index])
             : nullptr;
     }
 
@@ -136,6 +133,8 @@ namespace ScriptCanvas
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(reflectContext))
         {
             behaviorContext->Class<ExecutionStateInterpreted>()
+                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::List)
+                ->Attribute(AZ::ScriptCanvasAttributes::VariableCreationForbidden, AZ::AttributeIsValid::IfPresent)
                 ;
         }
     }
@@ -153,5 +152,4 @@ namespace ScriptCanvas
         luaL_unref(m_luaState, LUA_REGISTRYINDEX, m_luaRegistryIndex);
         m_luaRegistryIndex = LUA_NOREF;
     }
-
-} 
+}

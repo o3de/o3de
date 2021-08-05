@@ -1,28 +1,28 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "AngularManipulator.h"
 
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
-#include <AzToolsFramework/Manipulators/ManipulatorView.h>
 #include <AzToolsFramework/Manipulators/ManipulatorSnapping.h>
+#include <AzToolsFramework/Manipulators/ManipulatorView.h>
 
 namespace AzToolsFramework
 {
-    static const float s_circularRotateThresholdDegrees = 80.0f;
+    static const float CircularRotateThresholdDegrees = 80.0f;
 
     AngularManipulator::ActionInternal AngularManipulator::CalculateManipulationDataStart(
-        const Fixed& fixed, const AZ::Transform& worldFromLocal, const AZ::Transform& localTransform,
-        const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, const float rayDistance)
+        const Fixed& fixed,
+        const AZ::Transform& worldFromLocal,
+        const AZ::Transform& localTransform,
+        const AZ::Vector3& rayOrigin,
+        const AZ::Vector3& rayDirection,
+        const float rayDistance)
     {
         const AZ::Transform worldFromLocalWithTransform = worldFromLocal * localTransform;
         const AZ::Vector3 worldAxis = TransformDirectionNoScaling(worldFromLocalWithTransform, fixed.m_axis);
@@ -35,7 +35,7 @@ namespace AzToolsFramework
         // if angular manipulator axis is at right angles to us, use initial ray direction
         // as plane normal and use hit position on manipulator as plane point
         const float pickAngle = AZ::RadToDeg(AZ::Acos(AZ::Abs(rayDirection.Dot(worldAxis))));
-        if (pickAngle > s_circularRotateThresholdDegrees)
+        if (pickAngle > CircularRotateThresholdDegrees)
         {
             actionInternal.m_start.m_planeNormal = -rayDirection;
             actionInternal.m_start.m_planePoint = rayOrigin + rayDirection * rayDistance;
@@ -43,8 +43,8 @@ namespace AzToolsFramework
 
         // store initial world hit position
         Internal::CalculateRayPlaneIntersectingPoint(
-            rayOrigin, rayDirection, actionInternal.m_start.m_planePoint,
-            actionInternal.m_start.m_planeNormal, actionInternal.m_current.m_worldHitPosition);
+            rayOrigin, rayDirection, actionInternal.m_start.m_planePoint, actionInternal.m_start.m_planeNormal,
+            actionInternal.m_current.m_worldHitPosition);
 
         // store entity transform (to go from local to world space)
         // and store our own starting local transform
@@ -56,31 +56,33 @@ namespace AzToolsFramework
     }
 
     AngularManipulator::Action AngularManipulator::CalculateManipulationDataAction(
-        const Fixed& fixed, ActionInternal& actionInternal, const AZ::Transform& worldFromLocal,
-        const AZ::Transform& localTransform, const bool snapping, const float angleStepDegrees,
-        const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection,
+        const Fixed& fixed,
+        ActionInternal& actionInternal,
+        const AZ::Transform& worldFromLocal,
+        const AZ::Transform& localTransform,
+        const bool snapping,
+        const float angleStepDegrees,
+        const AZ::Vector3& rayOrigin,
+        const AZ::Vector3& rayDirection,
         const ViewportInteraction::KeyboardModifiers keyboardModifiers)
     {
         const AZ::Transform worldFromLocalWithTransform = worldFromLocal * localTransform;
         const AZ::Vector3 worldAxis = TransformDirectionNoScaling(worldFromLocalWithTransform, fixed.m_axis);
 
         AZ::Vector3 worldHitPosition = AZ::Vector3::CreateZero();
-        Internal::CalculateRayPlaneIntersectingPoint(rayOrigin, rayDirection,
-            actionInternal.m_start.m_planePoint, actionInternal.m_start.m_planeNormal,
-            worldHitPosition);
+        Internal::CalculateRayPlaneIntersectingPoint(
+            rayOrigin, rayDirection, actionInternal.m_start.m_planePoint, actionInternal.m_start.m_planeNormal, worldHitPosition);
 
         // get vector from center of rotation for current and previous frame
         const AZ::Vector3 center = worldFromLocalWithTransform.GetTranslation();
         const AZ::Vector3 currentWorldHitVector = (worldHitPosition - center).GetNormalizedSafe();
-        const AZ::Vector3 previousWorldHitVector =
-            (actionInternal.m_current.m_worldHitPosition - center).GetNormalizedSafe();
+        const AZ::Vector3 previousWorldHitVector = (actionInternal.m_current.m_worldHitPosition - center).GetNormalizedSafe();
 
         // calculate which direction we rotated
         const AZ::Vector3 worldAxisRight = worldAxis.Cross(previousWorldHitVector);
         const float rotateSign = Sign(currentWorldHitVector.Dot(worldAxisRight));
         // how far did we rotate this frame
-        const float rotationAngleRad = AZ::Acos(AZ::GetMin<float>(
-            1.0f, currentWorldHitVector.Dot(previousWorldHitVector)));
+        const float rotationAngleRad = AZ::Acos(AZ::GetMin<float>(1.0f, currentWorldHitVector.Dot(previousWorldHitVector)));
         actionInternal.m_current.m_worldHitPosition = worldHitPosition;
 
         // if we're snapping, only increment current radians when we know
@@ -148,16 +150,13 @@ namespace AzToolsFramework
         // calculate initial state when mouse press first happens
         m_actionInternal = CalculateManipulationDataStart(
             m_fixed, TransformNormalizedScale(GetSpace()), TransformNormalizedScale(GetLocalTransform()),
-            interaction.m_mousePick.m_rayOrigin, interaction.m_mousePick.m_rayDirection,
-            rayIntersectionDistance);
+            interaction.m_mousePick.m_rayOrigin, interaction.m_mousePick.m_rayDirection, rayIntersectionDistance);
 
         if (m_onLeftMouseDownCallback)
         {
             m_onLeftMouseDownCallback(CalculateManipulationDataAction(
-                m_fixed, m_actionInternal, m_actionInternal.m_start.m_worldFromLocal,
-                m_actionInternal.m_start.m_localTransform, snapping, angleStep,
-                interaction.m_mousePick.m_rayOrigin, interaction.m_mousePick.m_rayDirection,
-                interaction.m_keyboardModifiers));
+                m_fixed, m_actionInternal, m_actionInternal.m_start.m_worldFromLocal, m_actionInternal.m_start.m_localTransform, snapping,
+                angleStep, interaction.m_mousePick.m_rayOrigin, interaction.m_mousePick.m_rayDirection, interaction.m_keyboardModifiers));
         }
     }
 
@@ -167,12 +166,9 @@ namespace AzToolsFramework
         {
             // calculate delta rotation
             m_onMouseMoveCallback(CalculateManipulationDataAction(
-                m_fixed, m_actionInternal, m_actionInternal.m_start.m_worldFromLocal,
-                m_actionInternal.m_start.m_localTransform,
-                AngleSnapping(interaction.m_interactionId.m_viewportId),
-                AngleStep(interaction.m_interactionId.m_viewportId),
-                interaction.m_mousePick.m_rayOrigin, interaction.m_mousePick.m_rayDirection,
-                interaction.m_keyboardModifiers));
+                m_fixed, m_actionInternal, m_actionInternal.m_start.m_worldFromLocal, m_actionInternal.m_start.m_localTransform,
+                AngleSnapping(interaction.m_interactionId.m_viewportId), AngleStep(interaction.m_interactionId.m_viewportId),
+                interaction.m_mousePick.m_rayOrigin, interaction.m_mousePick.m_rayDirection, interaction.m_keyboardModifiers));
         }
     }
 
@@ -181,12 +177,9 @@ namespace AzToolsFramework
         if (m_onLeftMouseUpCallback)
         {
             m_onLeftMouseUpCallback(CalculateManipulationDataAction(
-                m_fixed, m_actionInternal, m_actionInternal.m_start.m_worldFromLocal,
-                m_actionInternal.m_start.m_localTransform,
-                AngleSnapping(interaction.m_interactionId.m_viewportId),
-                AngleStep(interaction.m_interactionId.m_viewportId),
-                interaction.m_mousePick.m_rayOrigin, interaction.m_mousePick.m_rayDirection,
-                interaction.m_keyboardModifiers));
+                m_fixed, m_actionInternal, m_actionInternal.m_start.m_worldFromLocal, m_actionInternal.m_start.m_localTransform,
+                AngleSnapping(interaction.m_interactionId.m_viewportId), AngleStep(interaction.m_interactionId.m_viewportId),
+                interaction.m_mousePick.m_rayOrigin, interaction.m_mousePick.m_rayDirection, interaction.m_keyboardModifiers));
         }
     }
 
@@ -197,12 +190,9 @@ namespace AzToolsFramework
         const ViewportInteraction::MouseInteraction& mouseInteraction)
     {
         m_manipulatorView->Draw(
-            GetManipulatorManagerId(), managerState,
-            GetManipulatorId(), {
-                ApplySpace(GetLocalTransform()), GetNonUniformScale(),
-                AZ::Vector3::CreateZero(), MouseOver()
-            },
-            debugDisplay, cameraState, mouseInteraction);
+            GetManipulatorManagerId(), managerState, GetManipulatorId(),
+            { ApplySpace(GetLocalTransform()), GetNonUniformScale(), AZ::Vector3::CreateZero(), MouseOver() }, debugDisplay, cameraState,
+            mouseInteraction);
     }
 
     void AngularManipulator::SetAxis(const AZ::Vector3& axis)

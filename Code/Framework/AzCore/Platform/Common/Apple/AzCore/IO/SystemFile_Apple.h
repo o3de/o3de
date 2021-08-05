@@ -1,19 +1,18 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <sys/syslimits.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <sys/stat.h>
+
+#include <AzCore/std/typetraits/underlying_type.h>
 
 namespace AZ
 {
@@ -22,9 +21,10 @@ namespace AZ
         namespace Internal
         {
             using SizeType = AZ::u64;
+            using SeekSizeType = AZ::s64;
             using FileHandleType = int;
         }
-    
+
         namespace PosixInternal
         {
             enum class OpenFlags : int
@@ -36,7 +36,7 @@ namespace AZ
 #else
                 Temporary    = 0,            // (Not applicable for this platform) Applies only when used with CREAT. Creates a file as temporary; the file is deleted when the last file descriptor is closed. PermissionMode equired when CREAT is specified.
 #endif
-                Exclusive    = O_EXCL,       // Applies only when used with CREAT. Returns an error value if a file specified by filename exists. 
+                Exclusive    = O_EXCL,       // Applies only when used with CREAT. Returns an error value if a file specified by filename exists.
                 Truncate     = O_TRUNC,      // Opens a file and truncates it to zero length; the file must have write permission. Cannot be specified with RDONLY.
                                              // Note: The TRUNC flag destroys the contents of the specified file.
 

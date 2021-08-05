@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Math/Quaternion.h>
@@ -45,6 +41,7 @@
 
 #include <MCore/Source/IDGenerator.h>
 #include <MCore/Source/Compare.h>
+#include <MCore/Source/LogManager.h>
 #include <MCore/Source/OBB.h>
 
 #include <Atom/RPI.Reflect/Model/MorphTargetDelta.h>
@@ -125,7 +122,6 @@ namespace EMotionFX
 
     Actor::~Actor()
     {
-        AZ::Data::AssetBus::MultiHandler::BusDisconnect();
         ActorNotificationBus::Broadcast(&ActorNotificationBus::Events::OnActorDestroyed, this);
         GetEventManager().OnDeleteActor(this);
 
@@ -1019,7 +1015,7 @@ namespace EMotionFX
         const uint32 numGroups = mNodeGroups.GetLength();
         for (uint32 i = 0; i < numGroups; ++i)
         {
-            mNodeGroups[i]->Destroy();
+            delete mNodeGroups[i];
         }
         mNodeGroups.Clear();
     }
@@ -1463,108 +1459,78 @@ namespace EMotionFX
         return morphTargetMetaAssetInfo.m_assetId.IsValid();
     }
 
-    void Actor::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
-    {
-        if (asset == m_meshAsset)
-        {
-            m_meshAsset = asset;
-        }
-        if (asset == m_skinMetaAsset)
-        {
-            m_skinMetaAsset = asset;
-        }
-        if (asset == m_morphTargetMetaAsset)
-        {
-            m_morphTargetMetaAsset = asset;
-        }
-
-        CheckFinalizeActor();
-    }
-
-    void Actor::CheckFinalizeActor()
+    void Actor::Finalize(LoadRequirement loadReq)
     {
         AZStd::scoped_lock<AZStd::recursive_mutex> lock(m_mutex);
 
-        if (m_meshAsset.IsReady())
+        // Load the mesh asset, skin meta asset and morph target asset.
+        // Those sub assets should have already been setup as dependency of actor asset, so they should already be loaded when we reach here.
+        // Only exception is that when the actor is not loaded by an actor asset, for which we need to do a blocking load.
+        if (m_meshAssetId.IsValid())
         {
-            const AZ::Data::AssetId meshAssetId = m_meshAsset.GetId();
-            const bool skinMetaAssetExists = DoesSkinMetaAssetExist(meshAssetId);
-            const bool morphTargetMetaAssetExists = DoesMorphTargetMetaAssetExist(m_meshAsset.GetId());
+            // Get the mesh asset.
+            m_meshAsset = AZ::Data::AssetManager::Instance().GetAsset<AZ::RPI::ModelAsset>(m_meshAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
 
-            m_skinToSkeletonIndexMap.clear();
-
-            // Skin and morph target meta assets are ready, fill the runtime mesh data.
-            if ((!skinMetaAssetExists || m_skinMetaAsset.IsReady()) &&
-                (!morphTargetMetaAssetExists || m_morphTargetMetaAsset.IsReady()))
+            // Get the skin meta asset.
+            const AZ::Data::AssetId skinMetaAssetId = ConstructSkinMetaAssetId(m_meshAssetId);
+            if (DoesSkinMetaAssetExist(m_meshAssetId) && skinMetaAssetId.IsValid())
             {
-                // Optional, not all actors have a skinned meshes.
-                if (skinMetaAssetExists)
+                m_skinMetaAsset = AZ::Data::AssetManager::Instance().GetAsset<AZ::RPI::SkinMetaAsset>(
+                    skinMetaAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
+            }
+
+            // Get the morph target meta asset.
+            const AZ::Data::AssetId morphTargetMetaAssetId = ConstructMorphTargetMetaAssetId(m_meshAssetId);
+            if (DoesMorphTargetMetaAssetExist(m_meshAssetId) && morphTargetMetaAssetId.IsValid())
+            {
+                m_morphTargetMetaAsset = AZ::Data::AssetManager::Instance().GetAsset<AZ::RPI::MorphTargetMetaAsset>(
+                    morphTargetMetaAssetId, AZ::Data::AssetLoadBehavior::PreLoad);
+            }
+
+            if (loadReq == LoadRequirement::RequireBlockingLoad)
+            {
+                if (m_skinMetaAsset.IsLoading())
                 {
-                    m_skinToSkeletonIndexMap = ConstructSkinToSkeletonIndexMap(m_skinMetaAsset);
+                    m_skinMetaAsset.BlockUntilLoadComplete();
                 }
-
-                ConstructMeshes(m_skinToSkeletonIndexMap);
-
-                // Optional, not all actors have morph targets.
-                if (morphTargetMetaAssetExists)
+                if (m_morphTargetMetaAsset.IsLoading())
                 {
-                    ConstructMorphTargets();
+                    m_morphTargetMetaAsset.BlockUntilLoadComplete();
                 }
-                else
+                if (m_meshAsset.IsLoading())
                 {
-                    // Optional, not all actors have morph targets.
-                    const size_t numLODLevels = m_meshAsset->GetLodAssets().size();
-                    mMorphSetups.Resize(numLODLevels);
-                    for (AZ::u32 i = 0; i < numLODLevels; ++i)
-                    {
-                        mMorphSetups[i] = nullptr;
-                    }
+                    m_meshAsset.BlockUntilLoadComplete();
                 }
-
-                SetActorReady();
-
-                // Do not release the mesh assets. We need the mesh data to initialize future instances of the render actor instances.
-                //m_meshAsset.Release();
-                //m_skinMetaAsset.Release();
-                //m_morphTargetMetaAsset.Release();
             }
         }
-    }
 
-    void Actor::LoadRemainingAssets()
-    {
-        // Everything is ready already or no (skeleton-only) or an invalid mesh asset assigned. Emit ready signal directly.
-        if (m_isReady || !m_meshAssetId.IsValid())
+        if (m_meshAsset.IsReady())
         {
-            SetActorReady();
-            return;
+            if (m_skinMetaAsset.IsReady())
+            {
+                m_skinToSkeletonIndexMap = ConstructSkinToSkeletonIndexMap(m_skinMetaAsset);
+            }
+            ConstructMeshes();
+
+            if (m_morphTargetMetaAsset.IsReady())
+            {
+                ConstructMorphTargets();
+            }
+            else
+            {
+                // Optional, not all actors have morph targets.
+                const size_t numLODLevels = m_meshAsset->GetLodAssets().size();
+                mMorphSetups.Resize(numLODLevels);
+                for (AZ::u32 i = 0; i < numLODLevels; ++i)
+                {
+                    mMorphSetups[i] = nullptr;
+                }
+            }
         }
 
-        LoadMeshAssetsQueued();
-    }
-
-    void Actor::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
-    {
-        if (asset == m_meshAsset)
-        {
-            m_meshAsset = asset;
-        }
-        if (asset == m_skinMetaAsset)
-        {
-            m_skinMetaAsset = asset;
-        }
-        if (asset == m_morphTargetMetaAsset)
-        {
-            m_morphTargetMetaAsset = asset;
-        }
-
-        CheckFinalizeActor();
-    }
-
-    void Actor::SetActorReady()
-    {
         m_isReady = true;
         ActorNotificationBus::Broadcast(&ActorNotificationBus::Events::OnActorReady, this);
+        // Do not release the mesh assets. We need the mesh data to initialize future instances of the render actor instances.
     }
 
     // update the static AABB (very heavy as it has to create an actor instance, update mesh deformers, calculate the mesh based bounds etc)
@@ -2119,7 +2085,7 @@ namespace EMotionFX
     {
         if (delFromMem)
         {
-            mNodeGroups[index]->Destroy();
+            delete mNodeGroups[index];
         }
 
         mNodeGroups.Remove(index);
@@ -2131,7 +2097,7 @@ namespace EMotionFX
         mNodeGroups.RemoveByValue(group);
         if (delFromMem)
         {
-            group->Destroy();
+            delete group;
         }
     }
 
@@ -2792,37 +2758,6 @@ namespace EMotionFX
         m_meshAssetId = assetId;
     }
 
-    void Actor::LoadMeshAssetsQueued()
-    {
-        AZStd::scoped_lock<AZStd::recursive_mutex> lock(m_mutex);
-
-        // Mesh asset will be queue loaded on post init.
-        if (m_meshAssetId.IsValid())
-        {
-            m_isReady = false;
-            AZ::Data::AssetBus::MultiHandler::BusDisconnect();
-
-            AZ::Data::AssetBus::MultiHandler::BusConnect(m_meshAssetId);
-            m_meshAsset = AZ::Data::AssetManager::Instance().GetAsset<AZ::RPI::ModelAsset>(m_meshAssetId, AZ::Data::AssetLoadBehavior::Default);
-
-            // Skin meta asset
-            if (DoesSkinMetaAssetExist(m_meshAssetId))
-            {
-                const AZ::Data::AssetId skinMetaAssetId = ConstructSkinMetaAssetId(m_meshAssetId);
-                AZ::Data::AssetBus::MultiHandler::BusConnect(skinMetaAssetId);
-                m_skinMetaAsset = AZ::Data::AssetManager::Instance().GetAsset<AZ::RPI::SkinMetaAsset>(skinMetaAssetId, AZ::Data::AssetLoadBehavior::Default);
-            }
-
-            // Morph target meta asset
-            if (DoesMorphTargetMetaAssetExist(m_meshAssetId))
-            {
-                const AZ::Data::AssetId morphTargetMetaAssetId = ConstructMorphTargetMetaAssetId(m_meshAssetId);
-                AZ::Data::AssetBus::MultiHandler::BusConnect(morphTargetMetaAssetId);
-                m_morphTargetMetaAsset = AZ::Data::AssetManager::Instance().GetAsset<AZ::RPI::MorphTargetMetaAsset>(morphTargetMetaAssetId, AZ::Data::AssetLoadBehavior::Default);
-            }
-        }
-    }
-
     Node* Actor::FindMeshJoint(const AZ::Data::Asset<AZ::RPI::ModelLodAsset>& lodModelAsset) const
     {
         const AZStd::array_view<AZ::RPI::ModelLodAsset::Mesh>& sourceMeshes = lodModelAsset->GetMeshes();
@@ -2843,7 +2778,7 @@ namespace EMotionFX
         return mSkeleton->GetNode(0);
     }
 
-    void Actor::ConstructMeshes(const AZStd::unordered_map<AZ::u16, AZ::u16>& skinToSkeletonIndexMap)
+    void Actor::ConstructMeshes()
     {
         AZ_Assert(m_meshAsset.IsReady(), "Mesh asset should be fully loaded and ready.");
 
@@ -2855,7 +2790,8 @@ namespace EMotionFX
         SetNumLODLevels(numLODLevels, /*adjustMorphSetup=*/false);
         const uint32 numNodes = mSkeleton->GetNumNodes();
 
-        // Remove all the materials and add them back based on the meshAsset. Eventually we will remove all the material from Actor and GLActor.
+        // Remove all the materials and add them back based on the meshAsset. Eventually we will remove all the material from Actor and
+        // GLActor.
         RemoveAllMaterials();
         mMaterials.Resize(numLODLevels);
 
@@ -2866,7 +2802,7 @@ namespace EMotionFX
             lodLevels[lodLevel].mNodeInfos.Resize(numNodes);
 
             // Create a single mesh for the actor.
-            Mesh* mesh = Mesh::CreateFromModelLod(lodAsset, skinToSkeletonIndexMap);
+            Mesh* mesh = Mesh::CreateFromModelLod(lodAsset, m_skinToSkeletonIndexMap);
 
             // Find an owning joint for the mesh.
             Node* meshJoint = FindMeshJoint(lodAsset);
@@ -2896,13 +2832,14 @@ namespace EMotionFX
                     continue;
                 }
 
-                EMotionFX::SkinningInfoVertexAttributeLayer* skinLayer = static_cast<EMotionFX::SkinningInfoVertexAttributeLayer*>(vertexAttributeLayer);
+                EMotionFX::SkinningInfoVertexAttributeLayer* skinLayer =
+                    static_cast<EMotionFX::SkinningInfoVertexAttributeLayer*>(vertexAttributeLayer);
                 const AZ::u32 numOrgVerts = skinLayer->GetNumAttributes();
                 AZStd::set<AZ::u32> localJointIndices = skinLayer->CalcLocalJointIndices(numOrgVerts);
                 const AZ::u32 numLocalJoints = static_cast<AZ::u32>(localJointIndices.size());
 
-                // The information about if we want to use dual quat skinning is baked into the mesh chunk and we don't have access to that anymore.
-                // Default to dual quat skinning.
+                // The information about if we want to use dual quat skinning is baked into the mesh chunk and we don't have access to that
+                // anymore. Default to dual quat skinning.
                 const bool dualQuatSkinning = true;
                 if (dualQuatSkinning)
                 {
@@ -2970,7 +2907,8 @@ namespace EMotionFX
 
     void Actor::ConstructMorphTargets()
     {
-        AZ_Assert(m_meshAsset.IsReady() && m_morphTargetMetaAsset.IsReady(), "Mesh as well as morph target meta asset asset should be fully loaded and ready.");
+        AZ_Assert(m_meshAsset.IsReady() && m_morphTargetMetaAsset.IsReady(),
+            "Mesh as well as morph target meta asset asset should be fully loaded and ready.");
         AZStd::vector<LODLevel>& lodLevels = m_meshLodData.m_lodLevels;
         const AZStd::array_view<AZ::Data::Asset<AZ::RPI::ModelLodAsset>>& lodAssets = m_meshAsset->GetLodAssets();
         const size_t numLODLevels = lodAssets.size();

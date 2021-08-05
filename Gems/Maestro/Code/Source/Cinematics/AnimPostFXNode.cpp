@@ -1,17 +1,12 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
-#include "Maestro_precompiled.h"
+
 #include <AzCore/Serialization/SerializeContext.h>
 #include "AnimPostFXNode.h"
 #include "AnimSplineTrack.h"
@@ -281,7 +276,6 @@ void CAnimPostFXNode::SerializeAnims(XmlNodeRef& xmlNode, bool bLoading, bool bL
                 paramType.Serialize(trackNode, true);
                 // Don't use APARAM_USER because it could change in newer versions
                 // CAnimNode::SerializeAnims will then take care of that
-                static const unsigned int OLD_APARAM_USER = 100;
                 paramType = static_cast<AnimParamType>(static_cast<int>(paramType.GetType()) + OLD_APARAM_USER);
                 paramType.Serialize(trackNode, false);
             }

@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -14,10 +10,10 @@
 
 namespace UnitTest
 {
-    class CustomManipulatorManager
-        : public AzToolsFramework::ManipulatorManager
+    class CustomManipulatorManager : public AzToolsFramework::ManipulatorManager
     {
         using ManagerBase = AzToolsFramework::ManipulatorManager;
+
     public:
         using ManagerBase::ManagerBase;
 
@@ -27,17 +23,17 @@ namespace UnitTest
         }
     };
 
-    class AzManipulatorTestFrameworkCustomManagerTestFixture
-        : public LinearManipulatorTestFixture
+    class AzManipulatorTestFrameworkCustomManagerTestFixture : public LinearManipulatorTestFixture
     {
     protected:
         AzManipulatorTestFrameworkCustomManagerTestFixture()
-            : LinearManipulatorTestFixture(AzToolsFramework::ManipulatorManagerId(AZ::Crc32("TestManipulatorManagerId"))) {}
+            : LinearManipulatorTestFixture(AzToolsFramework::ManipulatorManagerId(AZ::Crc32("TestManipulatorManagerId")))
+        {
+        }
 
         void SetUpEditorFixtureImpl() override
         {
-            m_manipulatorManager =
-                AZStd::make_shared<CustomManipulatorManager>(m_manipulatorManagerId);
+            m_manipulatorManager = AZStd::make_shared<CustomManipulatorManager>(m_manipulatorManagerId);
 
             LinearManipulatorTestFixture::SetUpEditorFixtureImpl();
         }
@@ -115,9 +111,9 @@ namespace UnitTest
 
         m_linearManipulator->InstallMouseMoveCallback(
             [&movementAlongAxis](const AzToolsFramework::LinearManipulator::Action& action)
-        {
-            movementAlongAxis = action.m_current.m_localPositionOffset;
-        });
+            {
+                movementAlongAxis = action.m_current.m_localPositionOffset;
+            });
 
         // consume the mouse down event
         m_manipulatorManager->ConsumeViewportMousePress(m_interaction);
@@ -141,4 +137,3 @@ namespace UnitTest
         EXPECT_EQ(movementAlongAxis, expectedPositionAfterMovementAlongAxis);
     }
 } // namespace UnitTest
-

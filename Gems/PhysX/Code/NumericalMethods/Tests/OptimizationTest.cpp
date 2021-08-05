@@ -1,16 +1,11 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
-#include <NumericalMethods_precompiled.h>
 #include <AzTest/AzTest.h>
 #include <NumericalMethods/Optimization.h>
 #include <Optimization/SolverBFGS.h>
@@ -158,12 +153,12 @@ namespace NumericalMethods::Optimization
         double f_x0 = f_alpha0;
         double df_x0 = df_alpha0;
         LineSearchResult lineSearchResult = SelectStepSizeFromInterval(alpha0, alpha1, f_alpha0, f_alpha1, df_alpha0,
-            testFunctionRosenbrock, x0, searchDirection, f_x0, df_x0, c1, c2);
+            testFunctionRosenbrock, x0, searchDirection, f_x0, df_x0, WolfeConditionsC1, WolfeConditionsC2);
 
         EXPECT_TRUE(lineSearchResult.m_outcome == LineSearchOutcome::Success);
         // check that the Wolfe conditions are satisfied by the returned step size
-        EXPECT_TRUE(lineSearchResult.m_functionValue < f_x0 + c1 * df_x0 * lineSearchResult.m_stepSize);
-        EXPECT_TRUE(fabs(lineSearchResult.m_derivativeValue) <= -c2 * df_x0);
+        EXPECT_TRUE(lineSearchResult.m_functionValue < f_x0 + WolfeConditionsC1 * df_x0 * lineSearchResult.m_stepSize);
+        EXPECT_TRUE(fabs(lineSearchResult.m_derivativeValue) <= -WolfeConditionsC2 * df_x0);
     }
 
     TEST(OptimizationTest, LineSearch_VariousSearchDirections_SatisfiesWolfeCondition)
@@ -180,8 +175,8 @@ namespace NumericalMethods::Optimization
 
             EXPECT_TRUE(lineSearchResult.m_outcome == LineSearchOutcome::Success);
             // check that the Wolfe conditions are satisfied by the returned step size
-            EXPECT_TRUE(lineSearchResult.m_functionValue < f_x0 + c1 * df_x0 * lineSearchResult.m_stepSize);
-            EXPECT_TRUE(fabs(lineSearchResult.m_derivativeValue) <= -c2 * df_x0);
+            EXPECT_TRUE(lineSearchResult.m_functionValue < f_x0 + WolfeConditionsC1 * df_x0 * lineSearchResult.m_stepSize);
+            EXPECT_TRUE(fabs(lineSearchResult.m_derivativeValue) <= -WolfeConditionsC2 * df_x0);
         }
     }
 

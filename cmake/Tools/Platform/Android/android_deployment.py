@@ -1,12 +1,9 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 #
 
 import datetime
@@ -62,7 +59,7 @@ class AndroidDeployment(object):
         :param deployment_type:         The type of deployment (DEPLOY_APK_ONLY, DEPLOY_ASSETS_ONLY, or DEPLOY_BOTH)
         :param game_name:               The name of the game whose assets are being deployed. None if is_test_project is True
         :param asset_mode:              The asset mode of deployment (LOOSE, PAK, VFS). None if is_test_project is True
-        :param asset_type:              The asset type (for android, 'es3'). None if is_test_project is True
+        :param asset_type:              The asset type. None if is_test_project is True
         :param embedded_assets:         Boolean to indicate if the assets are embedded in the APK or not
         :param is_unit_test:            Boolean to indicate if this is a unit test deployment
         """
@@ -184,11 +181,15 @@ class AndroidDeployment(object):
 
         call_arguments.extend(arg_list)
 
-        output = subprocess.check_output(call_arguments,
-                                         shell=True,
-                                         stderr=subprocess.DEVNULL).decode(common.DEFAULT_TEXT_READ_ENCODING,
-                                                                           common.ENCODING_ERROR_HANDLINGS)
-        return output
+        try:
+            output = subprocess.check_output(call_arguments,
+                                             shell=True,
+                                             stderr=subprocess.PIPE).decode(common.DEFAULT_TEXT_READ_ENCODING,
+                                                                               common.ENCODING_ERROR_HANDLINGS)
+            return output
+        except subprocess.CalledProcessError as err:
+            raise common.LmbrCmdError(err.stderr.decode(common.DEFAULT_TEXT_READ_ENCODING,
+                                                        common.ENCODING_ERROR_HANDLINGS))
 
     def adb_shell(self, command, device_id):
         """

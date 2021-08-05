@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Utils/TypeHash.h>
 
@@ -17,6 +13,7 @@
 #include <Atom/RPI.Public/DynamicDraw/DynamicBuffer.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawContext.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
+#include <Atom/RPI.Public/Pass/RasterPass.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 
 #include <Atom/RPI.Public/View.h>
@@ -30,25 +27,7 @@ namespace AZ
             constexpr const char* PerContextSrgName = "PerContextSrg";
             constexpr const char* PerDrawSrgName = "PerDrawSrg";
         };
-
-        bool CompareTargetBlendState(const RHI::TargetBlendState& firstState, const RHI::TargetBlendState& secondState)
-        {
-            return !(firstState.m_enable != secondState.m_enable
-                || firstState.m_blendOp != secondState.m_blendOp
-                || firstState.m_blendDest != secondState.m_blendDest
-                || firstState.m_blendSource != secondState.m_blendSource
-                || firstState.m_blendAlphaDest != secondState.m_blendAlphaDest
-                || firstState.m_blendAlphaOp != secondState.m_blendAlphaOp
-                || firstState.m_blendAlphaSource != secondState.m_blendAlphaSource);
-        }
-
-        bool CompareDepthState(const RHI::DepthState& firstState, const RHI::DepthState& secondState)
-        {
-            return !(firstState.m_enable != secondState.m_enable
-                || firstState.m_func != secondState.m_func
-                || firstState.m_writeMask != secondState.m_writeMask);
-        }
-
+               
         void DynamicDrawContext::MultiStates::UpdateHash(const DrawStateOptions& drawStateOptions)
         {
             if (!m_isDirty)
@@ -70,9 +49,19 @@ namespace AZ
                 seed = TypeHash64(m_depthState.m_writeMask, seed);
             }
 
-            if (RHI::CheckBitsAny(drawStateOptions, DrawStateOptions::EnableStencil))
+            if (RHI::CheckBitsAny(drawStateOptions, DrawStateOptions::StencilState))
             {
-                seed = TypeHash64(m_enableStencil, seed);
+                seed = TypeHash64(m_stencilState.m_enable, seed);
+                seed = TypeHash64(m_stencilState.m_readMask, seed);
+                seed = TypeHash64(m_stencilState.m_writeMask, seed);
+                seed = TypeHash64(m_stencilState.m_frontFace.m_failOp, seed);
+                seed = TypeHash64(m_stencilState.m_frontFace.m_depthFailOp, seed);
+                seed = TypeHash64(m_stencilState.m_frontFace.m_passOp, seed);
+                seed = TypeHash64(m_stencilState.m_frontFace.m_func, seed);
+                seed = TypeHash64(m_stencilState.m_backFace.m_failOp, seed);
+                seed = TypeHash64(m_stencilState.m_backFace.m_depthFailOp, seed);
+                seed = TypeHash64(m_stencilState.m_backFace.m_passOp, seed);
+                seed = TypeHash64(m_stencilState.m_backFace.m_func, seed);
             }
 
             if (RHI::CheckBitsAny(drawStateOptions, DrawStateOptions::FaceCullMode))
@@ -137,17 +126,17 @@ namespace AZ
             }
 
             // Create per context srg if it exist
-            auto shaderAsset = shader->GetAsset();
-            auto contextSrgAsset = shaderAsset->FindShaderResourceGroupAsset(Name{ PerContextSrgName });
-            if (contextSrgAsset.GetId().IsValid())
+            auto contextSrgLayout = m_shader->FindShaderResourceGroupLayout(Name { PerContextSrgName });
+            if (contextSrgLayout)
             {
-                m_srgPerContext = AZ::RPI::ShaderResourceGroup::Create(contextSrgAsset);
+                m_srgPerContext = AZ::RPI::ShaderResourceGroup::Create(
+                    m_shader->GetAsset(), m_shader->GetSupervariantIndex(), Name { PerContextSrgName });
                 m_srgGroups[0] = m_srgPerContext->GetRHIShaderResourceGroup();
             }
 
             // Save per draw srg asset which can be used to create draw srg later
-            m_drawSrgAsset = shaderAsset->FindShaderResourceGroupAsset(SrgBindingSlot::Draw);
-            m_hasShaderVariantKeyFallbackEntry = (m_drawSrgAsset && m_drawSrgAsset->GetLayout()->HasShaderVariantKeyFallbackEntry());
+            m_drawSrgLayout = m_shader->FindShaderResourceGroupLayout(SrgBindingSlot::Draw);
+            m_hasShaderVariantKeyFallbackEntry = (m_drawSrgLayout && m_drawSrgLayout->HasShaderVariantKeyFallbackEntry());
         }
 
         void DynamicDrawContext::InitVertexFormat(const AZStd::vector<VertexChannel>& vertexChannels)
@@ -185,9 +174,7 @@ namespace AZ
 
         void DynamicDrawContext::EndInit()
         {
-            AZ_Assert(m_scene != nullptr, "DynamicDrawContext should always belong to a scene");
-
-            AZ_Warning("RPI", m_pipelineState, "Failed to initialized shader for DynamicDrawContext");
+            AZ_Warning("RPI", m_pipelineState, "Failed to initialize shader for DynamicDrawContext");
             AZ_Warning("RPI", m_drawListTag.IsValid(), "DynamicDrawContext doesn't have a valid DrawListTag");
 
             if (!m_drawListTag.IsValid() || m_pipelineState == nullptr)
@@ -195,20 +182,106 @@ namespace AZ
                 return;
             }
 
-            m_pipelineState->SetOutputFromScene(m_scene, m_drawListTag);
-            m_pipelineState->Finalize();
+            if (m_outputScope == OutputScopeType::RenderPipeline || m_outputScope == OutputScopeType::Scene)
+            {
+                m_pipelineState->SetOutputFromScene(m_scene, m_drawListTag);
+            }
+            else if (m_outputScope == OutputScopeType::RasterPass)
+            {
+                m_pipelineState->SetOutputFromPass(m_pass);
+            }
+            else
+            {                
+                AZ_Assert(false, "DynamicDrawContext need to set output scope before end initialization");
+                return;
+            }
+
+            m_rhiPipelineState = m_pipelineState->Finalize();
+
+            if (!m_rhiPipelineState)
+            {
+                AZ_Warning("RPI", false, "Failed to initialize PipelineState for DynamicDrawContext");
+                return;
+            }
             m_initialized = true;
 
             // Acquire MultiStates from m_pipelineState
             m_currentStates.m_cullMode = m_pipelineState->ConstDescriptor().m_renderStates.m_rasterState.m_cullMode;
             m_currentStates.m_topology = m_pipelineState->ConstDescriptor().m_inputStreamLayout.GetTopology();
             m_currentStates.m_depthState = m_pipelineState->ConstDescriptor().m_renderStates.m_depthStencilState.m_depth;
-            m_currentStates.m_enableStencil = m_pipelineState->ConstDescriptor().m_renderStates.m_depthStencilState.m_stencil.m_enable;
+            m_currentStates.m_stencilState = m_pipelineState->ConstDescriptor().m_renderStates.m_depthStencilState.m_stencil;
             m_currentStates.m_blendState0 = m_pipelineState->ConstDescriptor().m_renderStates.m_blendState.m_targets[0];
             m_currentStates.UpdateHash(m_drawStateOptions);
 
             m_cachedRhiPipelineStates[m_currentStates.m_hash] = m_pipelineState->GetRHIPipelineState();
             m_rhiPipelineState = m_pipelineState->GetRHIPipelineState();
+        }
+
+        void DynamicDrawContext::SetOutputScope(Scene* scene)
+        {
+            AZ_Assert(scene, "SetOutputScope was called with an invalid Scene");
+            if (!scene)
+            {
+                return;
+            }
+
+            m_outputScope = OutputScopeType::Scene;
+            m_scene = scene;
+            m_pass = nullptr;
+            m_drawFilter = RHI::DrawFilterMaskDefaultValue;
+                        
+            ReInit();
+        }
+
+        void DynamicDrawContext::SetOutputScope(RenderPipeline* pipeline)
+        {
+            AZ_Assert(pipeline, "SetOutputScope was called with an invalid RenderPipeline");
+            AZ_Assert(pipeline->GetScene(), "SetOutputScope called with a RenderPipeline without adding to a scene");
+            if (!pipeline || !pipeline->GetScene())
+            {
+                return;
+            }
+            
+            m_outputScope = OutputScopeType::RenderPipeline;
+            m_scene = pipeline->GetScene();
+            m_pass = nullptr;
+            m_drawFilter = pipeline->GetDrawFilterMask();
+            
+            ReInit();
+        }
+
+        void DynamicDrawContext::SetOutputScope(RasterPass* pass)
+        {
+            AZ_Assert(pass, "SetOutputScope was called with an invalid RasterPass");
+            if (!pass)
+            {
+                return;
+            }
+
+            m_outputScope = OutputScopeType::RasterPass;
+            m_scene = nullptr;
+            m_pass = pass;
+            m_drawFilter = RHI::DrawFilterMaskDefaultValue;
+
+            ReInit();
+        }
+        
+        void DynamicDrawContext::ReInit()
+        {
+         // Reinitialize if it was initialized
+            if (m_initialized)
+            {
+                // Report warning if there were some draw data
+                AZ_Warning(
+                    "DynamicDrawContext", m_cachedDrawItems.size() == 0,
+                    "DynamicDrawContext::SetForScene should be called"
+                    " when there is no cached draw data");
+                // Clear some cached data
+                FrameEnd();
+                m_cachedRhiPipelineStates.clear();
+                // Reinitialize
+                EndInit();
+            }
         }
 
         bool DynamicDrawContext::IsReady()
@@ -255,7 +328,7 @@ namespace AZ
         {
             if (RHI::CheckBitsAny(m_drawStateOptions, DrawStateOptions::DepthState))
             {
-                if (!CompareDepthState(m_currentStates.m_depthState, depthState))
+                if (!(m_currentStates.m_depthState == depthState))
                 {
                     m_currentStates.m_depthState = depthState;
                     m_currentStates.m_isDirty = true;
@@ -267,19 +340,19 @@ namespace AZ
             }
         }
 
-        void DynamicDrawContext::SetEnableStencil(bool enable)
+        void DynamicDrawContext::SetStencilState(RHI::StencilState stencilState)
         {
-            if (RHI::CheckBitsAny(m_drawStateOptions, DrawStateOptions::EnableStencil))
+            if (RHI::CheckBitsAny(m_drawStateOptions, DrawStateOptions::StencilState))
             {
-                if (m_currentStates.m_enableStencil != enable)
+                if (!(m_currentStates.m_stencilState == stencilState))
                 {
-                    m_currentStates.m_enableStencil = enable;
+                    m_currentStates.m_stencilState = stencilState;
                     m_currentStates.m_isDirty = true;
                 }
             }
             else
             {
-                AZ_Warning("RHI", false, "Can't set SetEnableStencil if DrawVariation::EnableStencil wasn't enabled");
+                AZ_Warning("RHI", false, "Can't set SetStencilState if DrawVariation::StencilState wasn't enabled");
             }
 
         }
@@ -304,7 +377,7 @@ namespace AZ
         {
             if (RHI::CheckBitsAny(m_drawStateOptions, DrawStateOptions::BlendMode))
             {
-                if (!CompareTargetBlendState(m_currentStates.m_blendState0, blendState))
+                if (!(m_currentStates.m_blendState0 == blendState))
                 {
                     m_currentStates.m_blendState0 = blendState;
                     m_currentStates.m_isDirty = true;
@@ -354,6 +427,16 @@ namespace AZ
             m_useViewport = false;
         }
 
+        void DynamicDrawContext::SetStencilReference(uint8_t stencilRef)
+        {
+            m_stencilRef = stencilRef;
+        }
+
+        uint8_t DynamicDrawContext::GetStencilReference() const
+        {
+            return m_stencilRef;
+        }
+
         void DynamicDrawContext::SetShaderVariant(ShaderVariantId shaderVariantId)
         {
             AZ_Assert( m_initialized && m_supportShaderVariants, "DynamicDrawContext is not initialized or unable to support shader variants. "
@@ -361,17 +444,23 @@ namespace AZ
             m_currentShaderVariantId = shaderVariantId;
         }
 
-        void DynamicDrawContext::DrawIndexed(void* vertexData, uint32_t vertexCount, void* indexData, uint32_t indexCount, RHI::IndexFormat indexFormat, Data::Instance < ShaderResourceGroup> drawSrg)
+        void DynamicDrawContext::DrawIndexed(const void* vertexData, uint32_t vertexCount, const void* indexData, uint32_t indexCount, RHI::IndexFormat indexFormat, Data::Instance < ShaderResourceGroup> drawSrg)
         {
             if (!m_initialized)
             {
                 AZ_Assert(false, "DynamicDrawContext isn't initialized");
                 return;
             }
-
-            if (m_drawSrgAsset.GetId().IsValid() && drawSrg == nullptr)
+            
+            if (m_drawFinalized)
             {
-                AZ_Assert(false, "PerDrawSrg need to be provided since the shader uses it");
+                AZ_Assert(false, "Can't add draw calls after draw data was finalized");
+                return;
+            }
+
+            if (m_drawSrgLayout && !drawSrg)
+            {
+                AZ_Assert(false, "drawSrg need to be provided since the shader requires it");
                 return;
             }
 
@@ -412,12 +501,12 @@ namespace AZ
             vertexBuffer->Write(vertexData, vertexDataSize);
             m_cachedStreamBufferViews.push_back(vertexBuffer->GetStreamBufferView(m_perVertexDataSize));
             drawItem.m_streamBufferViewCount = 1;
-            drawItemInfo.m_vertexBufferViewIndex = uint32_t(m_cachedStreamBufferViews.size() - 1);
+            drawItemInfo.m_vertexBufferViewIndex = static_cast<BufferViewIndexType>(m_cachedStreamBufferViews.size() - 1);
 
             // Write data to index buffer and set up index buffer view for DrawItem
             indexBuffer->Write(indexData, indexDataSize);
             m_cachedIndexBufferViews.push_back(indexBuffer->GetIndexBufferView(indexFormat));
-            drawItemInfo.m_indexBufferViewIndex = uint32_t(m_cachedIndexBufferViews.size() - 1);
+            drawItemInfo.m_indexBufferViewIndex = static_cast<BufferViewIndexType>(m_cachedIndexBufferViews.size() - 1);
 
             // Setup per context srg if it exists
             if (m_srgPerContext)
@@ -447,11 +536,14 @@ namespace AZ
                 drawItem.m_viewports = &m_viewport;
             }
 
+            // Set stencil reference. Used when stencil is enabled.
+            drawItem.m_stencilRef = m_stencilRef;
+
             drawItemInfo.m_sortKey = m_sortKey++;
             m_cachedDrawItems.emplace_back(drawItemInfo);
         }
-                
-        void DynamicDrawContext::DrawLinear(void* vertexData, uint32_t vertexCount, Data::Instance<ShaderResourceGroup> drawSrg)
+
+        void DynamicDrawContext::DrawLinear(const void* vertexData, uint32_t vertexCount, Data::Instance<ShaderResourceGroup> drawSrg)
         {
             if (!m_initialized)
             {
@@ -459,9 +551,15 @@ namespace AZ
                 return;
             }
 
-            if (m_drawSrgAsset.GetId().IsValid() && drawSrg == nullptr)
+            if (m_drawFinalized)
             {
-                AZ_Assert(false, "PerDrawSrg need to be provided since the shader uses it");
+                AZ_Assert(false, "Can't add draw calls after draw data was finalized");
+                return;
+            }
+            
+            if (m_drawSrgLayout && !drawSrg)
+            {
+                AZ_Assert(false, "drawSrg need to be provided since the shader requires it");
                 return;
             }
 
@@ -532,14 +630,13 @@ namespace AZ
             m_cachedDrawItems.emplace_back(drawItemInfo);
         }
 
-
         Data::Instance<ShaderResourceGroup> DynamicDrawContext::NewDrawSrg()
         {
-            if (!m_drawSrgAsset.IsReady())
+            if (!m_drawSrgLayout)
             {
                 return nullptr;
             }
-            auto drawSrg = AZ::RPI::ShaderResourceGroup::Create(m_drawSrgAsset);
+            auto drawSrg = AZ::RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(), m_drawSrgLayout->GetName());
 
             // Set fallback value for shader variant if draw srg contains constant for shader variant fallback 
             if (m_hasShaderVariantKeyFallbackEntry)
@@ -589,18 +686,14 @@ namespace AZ
             return m_sortKey;
         }
 
-        void DynamicDrawContext::SubmitDrawData(ViewPtr view)
+        void DynamicDrawContext::FinalizeDrawList()
         {
-            if (!m_initialized)
+            if (m_drawFinalized)
             {
                 return;
             }
+            AZ_Assert(m_cachedDrawList.size() == 0, "m_cachedDrawList should be cleared ine the end of last frame ");
 
-            if (!view->HasDrawListTag(m_drawListTag))
-            {
-                return;
-            }
- 
             for (auto& drawItemInfo : m_cachedDrawItems)
             {
                 if (drawItemInfo.m_indexBufferViewIndex != InvalidIndex)
@@ -617,10 +710,34 @@ namespace AZ
                 drawItemProperties.m_sortKey = drawItemInfo.m_sortKey;
                 drawItemProperties.m_item = &drawItemInfo.m_drawItem;
                 drawItemProperties.m_drawFilterMask = m_drawFilter;
+                m_cachedDrawList.emplace_back(drawItemProperties);
+            }
+            m_drawFinalized = true;
+        }
+
+        void DynamicDrawContext::SubmitDrawList(ViewPtr view)
+        {
+            if (!m_initialized || m_outputScope == OutputScopeType::RasterPass)
+            {
+                return;
+            }
+
+            if (!view->HasDrawListTag(m_drawListTag))
+            {
+                return;
+            }
+
+            for (auto& drawItemProperties : m_cachedDrawList)
+            {                
                 view->AddDrawItem(m_drawListTag, drawItemProperties);
             }
         }
 
+        RHI::DrawListView DynamicDrawContext::GetDrawList()
+        {
+            return m_cachedDrawList;
+        }
+        
         void DynamicDrawContext::FrameEnd()
         {
             m_sortKey = 0;
@@ -628,6 +745,8 @@ namespace AZ
             m_cachedStreamBufferViews.clear();
             m_cachedIndexBufferViews.clear();
             m_cachedDrawSrg.clear();
+            m_cachedDrawList.clear();
+            m_drawFinalized = false;
         }
 
         const RHI::PipelineState* DynamicDrawContext::GetCurrentPipelineState()
@@ -659,9 +778,9 @@ namespace AZ
                 {
                     m_pipelineState->RenderStatesOverlay().m_depthStencilState.m_depth = m_currentStates.m_depthState;
                 }
-                if (RHI::CheckBitsAny(m_drawStateOptions, DrawStateOptions::EnableStencil))
+                if (RHI::CheckBitsAny(m_drawStateOptions, DrawStateOptions::StencilState))
                 {
-                    m_pipelineState->RenderStatesOverlay().m_depthStencilState.m_stencil.m_enable = m_currentStates.m_enableStencil;
+                    m_pipelineState->RenderStatesOverlay().m_depthStencilState.m_stencil = m_currentStates.m_stencilState;
                 }
                 if (RHI::CheckBitsAny(m_drawStateOptions, DrawStateOptions::FaceCullMode))
                 {

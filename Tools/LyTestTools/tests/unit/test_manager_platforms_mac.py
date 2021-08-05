@@ -1,12 +1,8 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 
 Unit tests for ly_test_tools._internal.managers.platforms.mac
 """
@@ -14,6 +10,7 @@ Unit tests for ly_test_tools._internal.managers.platforms.mac
 import unittest.mock as mock
 import os
 import pytest
+import ly_test_tools
 
 from ly_test_tools._internal.managers.platforms.mac import (
     _MacResourceLocator, MacWorkspaceManager,
@@ -22,11 +19,6 @@ from ly_test_tools import MAC
 
 pytestmark = pytest.mark.SUITE_smoke
 
-if not MAC:
-    pytestmark = pytest.mark.skipif(
-        not MAC,
-        reason="test_manager_platforms_mac.py only runs on Mac")
-
 mock_engine_root = 'mock_engine_root'
 mock_dev_path = 'mock_dev_path'
 mock_build_directory = 'mock_build_directory'
@@ -34,16 +26,16 @@ mock_project = 'mock_project'
 mock_tmp_path = 'mock_tmp_path'
 mock_output_path = 'mock_output_path'
 
-mac_resource_locator = _MacResourceLocator(
-    build_directory=mock_build_directory,
-    project=mock_project)
-
 
 @mock.patch('ly_test_tools._internal.managers.abstract_resource_locator._find_engine_root',
-            mock.MagicMock(return_value=(mock_engine_root, mock_dev_path)))
+            mock.MagicMock(return_value=mock_engine_root))
+@mock.patch('ly_test_tools._internal.managers.abstract_resource_locator._find_project_json',
+            mock.MagicMock(return_value=mock_project))
 class TestMacResourceLocator(object):
 
     def test_PlatformConfigFile_HasPath_ReturnsPath(self):
+        mac_resource_locator = ly_test_tools._internal.managers.platforms.mac._MacResourceLocator(mock_build_directory,
+                                                                                                  mock_project)
         expected = os.path.join(
             mac_resource_locator.engine_root(),
             CONFIG_FILE)
@@ -51,6 +43,8 @@ class TestMacResourceLocator(object):
         assert mac_resource_locator.platform_config_file() == expected
 
     def test_PlatformCache_HasPath_ReturnsPath(self):
+        mac_resource_locator = ly_test_tools._internal.managers.platforms.mac._MacResourceLocator(mock_build_directory,
+                                                                                                  mock_project)
         expected = os.path.join(
             mac_resource_locator.project_cache(),
             CACHE_DIR)
@@ -58,6 +52,8 @@ class TestMacResourceLocator(object):
         assert mac_resource_locator.platform_cache() == expected
 
     def test_ProjectLog_HasPath_ReturnsPath(self):
+        mac_resource_locator = ly_test_tools._internal.managers.platforms.mac._MacResourceLocator(mock_build_directory,
+                                                                                                  mock_project)
         expected = os.path.join(
             mac_resource_locator.project(),
             'user',
@@ -66,6 +62,8 @@ class TestMacResourceLocator(object):
         assert mac_resource_locator.project_log() == expected
 
     def test_ProjectScreenshots_HasPath_ReturnsPath(self):
+        mac_resource_locator = ly_test_tools._internal.managers.platforms.mac._MacResourceLocator(mock_build_directory,
+                                                                                                  mock_project)
         expected = os.path.join(
             mac_resource_locator.project(),
             'user',
@@ -74,6 +72,8 @@ class TestMacResourceLocator(object):
         assert mac_resource_locator.project_screenshots() == expected
 
     def test_EditorLog_HasPath_ReturnsPath(self):
+        mac_resource_locator = ly_test_tools._internal.managers.platforms.mac._MacResourceLocator(mock_build_directory,
+                                                                                                  mock_project)
         expected = os.path.join(
             mac_resource_locator.project_log(),
             'editor.log')
@@ -82,7 +82,9 @@ class TestMacResourceLocator(object):
 
 
 @mock.patch('ly_test_tools._internal.managers.abstract_resource_locator._find_engine_root',
-            mock.MagicMock(return_value=(mock_engine_root, mock_dev_path)))
+            mock.MagicMock(return_value=mock_engine_root))
+@mock.patch('ly_test_tools._internal.managers.abstract_resource_locator._find_project_json',
+            mock.MagicMock(return_value=mock_project))
 class TestMacWorkspaceManager(object):
 
     def test_Init_SetDummyParams_ReturnsMacWorkspaceManager(self):

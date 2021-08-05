@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #ifndef PLATFORMCONFIGURATION_H
 #define PLATFORMCONFIGURATION_H
 
@@ -43,6 +39,21 @@ namespace AssetProcessor
     class ScanFolderInfo;
     extern const char AssetConfigPlatformDir[];
     extern const char AssetProcessorPlatformConfigFileName[];
+
+    struct AssetImporterPathsVisitor
+        : AZ::SettingsRegistryInterface::Visitor
+    {
+        AssetImporterPathsVisitor(AZ::SettingsRegistryInterface* settingsRegistry, AZStd::vector<AZStd::string>& supportedExtension)
+            : m_settingsRegistry(settingsRegistry)
+            , m_supportedFileExtensions(supportedExtension)
+        {
+        }
+
+        void Visit(AZStd::string_view path, AZStd::string_view, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override;
+
+        AZ::SettingsRegistryInterface* m_settingsRegistry;
+        AZStd::vector<AZStd::string> m_supportedFileExtensions;
+    };
 
     //! Information for a given recognizer, on a specific platform
     //! essentially a plain data holder, but with helper funcs

@@ -1,0 +1,127 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+// returns the normalized camera view ray into the scene for this raytracing dispatch thread
+float3 GetViewRayDirection(float4x4 viewProjectionInverseMatrix)
+{
+    float2 pixel = ((float2)DispatchRaysIndex().xy + float2(0.5f, 0.5f)) / (float2)DispatchRaysDimensions();
+    float2 ndc = pixel * float2(2.0f, -2.0f) + float2(-1.0f, 1.0f);
+    return normalize(mul(viewProjectionInverseMatrix, float4(ndc, 0.0f, 1.0f)).xyz);
+}
+
+// returns the vertex indices for the primitive hit by the ray
+// Note: usable only in a raytracing Hit shader
+uint3 GetHitIndices(RayTracingSceneSrg::MeshInfo meshInfo)
+{
+    // compute the array index of the index buffer for this mesh in the m_meshBuffers unbounded array
+    uint meshIndexBufferArrayIndex = meshInfo.m_bufferStartIndex + MESH_INDEX_BUFFER_OFFSET;
+
+    // compute the offset into the index buffer for this primitve of the mesh
+    uint offsetBytes = meshInfo.m_indexOffset + (PrimitiveIndex() * 12);
+
+    // load the indices for this primitive from the index buffer
+    return RayTracingSceneSrg::m_meshBuffers[meshIndexBufferArrayIndex].Load3(offsetBytes);
+}
+
+// returns the interpolated vertex data for the primitive hit by the ray
+// Note: usable only in a raytracing hit shader
+struct VertexData
+{
+    float3 m_position;
+    float3 m_normal;
+    float4 m_tangent;       // optional: use only if MESH_BUFFER_FLAG_TANGENT in MeshData.m_bufferFlags is set
+    float3 m_bitangent;     // optional: use only if MESH_BUFFER_FLAG_BITANGENT in MeshData.m_bufferFlags is set
+    float2 m_uv;            // optional: use only if MESH_BUFFER_FLAG_UV in MeshData.m_bufferFlags is set
+};
+
+VertexData GetHitInterpolatedVertexData(RayTracingSceneSrg::MeshInfo meshInfo, float2 builtInBarycentrics)
+{
+    // retrieve the poly indices
+    uint3 indices = GetHitIndices(meshInfo);
+
+    // compute barycentrics
+    float3 barycentrics = float3((1.0f - builtInBarycentrics.x - builtInBarycentrics.y), builtInBarycentrics.x, builtInBarycentrics.y);    
+
+    // compute the vertex data using barycentric interpolation
+    VertexData vertexData = (VertexData)0;
+    for (uint i = 0; i < 3; ++i)
+    {
+        // position
+        {
+            // array index of the position buffer for this mesh in the m_meshBuffers unbounded array
+            uint meshVertexPositionArrayIndex = meshInfo.m_bufferStartIndex + MESH_POSITION_BUFFER_OFFSET;
+
+            // offset into the position buffer for this vertex
+            uint positionOffset = meshInfo.m_positionOffset + (indices[i] * 12);
+
+            // load the position data
+            vertexData.m_position += asfloat(RayTracingSceneSrg::m_meshBuffers[meshVertexPositionArrayIndex].Load3(positionOffset)) * barycentrics[i];
+        }
+
+        // normal
+        {
+            // array index of the normal buffer for this mesh in the m_meshBuffers unbounded array
+            uint meshVertexNormalArrayIndex = meshInfo.m_bufferStartIndex + MESH_NORMAL_BUFFER_OFFSET;
+
+            // offset into the normal buffer for this vertex
+            uint normalOffset = meshInfo.m_normalOffset + (indices[i] * 12);
+
+            // load the normal data
+            vertexData.m_normal += asfloat(RayTracingSceneSrg::m_meshBuffers[meshVertexNormalArrayIndex].Load3(normalOffset)) * barycentrics[i];
+        }
+
+        // optional streams begin after MESH_NORMAL_BUFFER_OFFSET
+        uint optionalBufferOffset = MESH_NORMAL_BUFFER_OFFSET + 1;
+
+        // tangent
+        if (meshInfo.m_bufferFlags & MESH_BUFFER_FLAG_TANGENT)
+        {
+            // array index of the tangent buffer for this mesh in the m_meshBuffers unbounded array
+            uint meshVertexTangentArrayIndex = meshInfo.m_bufferStartIndex + optionalBufferOffset++;
+
+            // offset into the tangent buffer for this vertex
+            uint tangentOffset = meshInfo.m_tangentOffset + (indices[i] * 16);
+
+            // load the tangent data
+            vertexData.m_tangent += asfloat(RayTracingSceneSrg::m_meshBuffers[meshVertexTangentArrayIndex].Load4(tangentOffset)) * barycentrics[i];
+        }
+
+        // bitangent
+        if (meshInfo.m_bufferFlags & MESH_BUFFER_FLAG_BITANGENT)
+        {
+            // array index of the bitangent buffer for this mesh in the m_meshBuffers unbounded array
+            uint meshVertexBitangentArrayIndex = meshInfo.m_bufferStartIndex + optionalBufferOffset++;
+
+            // offset into the bitangent buffer for this vertex
+            uint bitangentOffset = meshInfo.m_bitangentOffset + (indices[i] * 12);
+
+            // load the bitangent data
+            vertexData.m_bitangent += asfloat(RayTracingSceneSrg::m_meshBuffers[meshVertexBitangentArrayIndex].Load3(bitangentOffset)) * barycentrics[i];
+        }
+
+        // UV
+        if (meshInfo.m_bufferFlags & MESH_BUFFER_FLAG_UV)
+        {
+            // array index of the UV buffer for this mesh in the m_meshBuffers unbounded array
+            uint meshVertexUVArrayIndex = meshInfo.m_bufferStartIndex + optionalBufferOffset++;
+    
+            // offset into the UV buffer for this vertex
+            uint uvOffset = meshInfo.m_uvOffset + (indices[i] * 8);    
+    
+            // load the UV data
+            vertexData.m_uv += asfloat(RayTracingSceneSrg::m_meshBuffers[meshVertexUVArrayIndex].Load2(uvOffset)) * barycentrics[i];
+        }
+    }
+    
+    vertexData.m_normal = normalize(vertexData.m_normal);
+    vertexData.m_tangent.xyz = normalize(vertexData.m_tangent.xyz);
+    vertexData.m_tangent.w = sign(vertexData.m_tangent.w);
+    vertexData.m_bitangent = normalize(vertexData.m_bitangent);
+
+    return vertexData;
+}

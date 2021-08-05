@@ -1,12 +1,9 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 #
 
 ly_add_target(
@@ -58,9 +55,35 @@ ly_add_target(
         Gem::CertificateManager
 )
 
+ly_add_target(
+    NAME Multiplayer.Debug ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAMESPACE Gem
+    FILES_CMAKE
+        multiplayer_debug_files.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            Source
+            .
+        PUBLIC
+            Include
+    BUILD_DEPENDENCIES
+        PRIVATE
+            AZ::AzCore
+            AZ::AtomCore
+            AZ::AzFramework
+            AZ::AzNetworking
+            Gem::Atom_Feature_Common.Static
+            Gem::Multiplayer.Static
+            Gem::ImGui.Static
+)
+
+# The  "Multiplayer" target is used by clients and servers, Debug is used only on clients.
+ly_create_alias(NAME Multiplayer.Clients NAMESPACE Gem TARGETS Gem::Multiplayer Gem::Multiplayer.Debug)
+ly_create_alias(NAME Multiplayer.Servers NAMESPACE Gem TARGETS Gem::Multiplayer)
+
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
-        NAME Multiplayer.Tools.Static STATIC
+        NAME Multiplayer.Builders.Static STATIC
         NAMESPACE Gem
         FILES_CMAKE
             multiplayer_tools_files.cmake
@@ -80,10 +103,11 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::Multiplayer.Static
     )
 
+    # by naming this target Multiplayer.Builders it ensures that it is loaded
+    # in any pipeline tools (Like Asset Processor, AssetBuilder, etc)
     ly_add_target(
-        NAME Multiplayer.Tools MODULE
+        NAME Multiplayer.Builders GEM_MODULE
         NAMESPACE Gem
-        OUTPUT_NAME Gem.Multiplayer.Tools
         FILES_CMAKE
             multiplayer_tools_files.cmake
         INCLUDE_DIRECTORIES
@@ -94,7 +118,9 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Include
         BUILD_DEPENDENCIES
             PRIVATE
-                Gem::Multiplayer.Tools.Static
+                Gem::Multiplayer.Builders.Static
+        RUNTIME_DEPENDENCIES
+            Gem::Multiplayer.Editor
     )
 
     ly_add_target(
@@ -121,9 +147,11 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzNetworking
                 AZ::AzToolsFramework
                 Gem::Multiplayer.Static
-                Gem::Multiplayer.Tools
+                Gem::Multiplayer.Builders
     )
 
+    # use the Multiplayer.Editor module in tools like the Editor:  Such tools also get the visual debug view:
+    ly_create_alias(NAME Multiplayer.Tools     NAMESPACE Gem TARGETS Gem::Multiplayer.Editor Gem::Multiplayer.Debug Gem::Multiplayer.Builders)
 endif()
 
 if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
@@ -151,7 +179,7 @@ if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     
     if (PAL_TRAIT_BUILD_HOST_TOOLS)
         ly_add_target(
-            NAME Multiplayer.Tools.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+            NAME Multiplayer.Builders.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
             NAMESPACE Gem
             FILES_CMAKE
                 multiplayer_tools_tests_files.cmake
@@ -165,33 +193,11 @@ if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     AZ::AzTest
                     AZ::AzTestShared
                     AZ::AzToolsFrameworkTestCommon
-                    Gem::Multiplayer.Tools.Static
+                    Gem::Multiplayer.Builders.Static
         )
         ly_add_googletest(
-            NAME Gem::Multiplayer.Tools.Tests
+            NAME Gem::Multiplayer.Builders.Tests
         )
     endif()
 
 endif()
-
-ly_add_target(
-    NAME Multiplayer.Debug ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
-    NAMESPACE Gem
-    FILES_CMAKE
-        multiplayer_debug_files.cmake
-    INCLUDE_DIRECTORIES
-        PRIVATE
-            Source
-            .
-        PUBLIC
-            Include
-    BUILD_DEPENDENCIES
-        PRIVATE
-            AZ::AzCore
-            AZ::AtomCore
-            AZ::AzFramework
-            AZ::AzNetworking
-            Gem::Atom_Feature_Common.Static
-            Gem::Multiplayer.Static
-            Gem::ImGui.Static
-)

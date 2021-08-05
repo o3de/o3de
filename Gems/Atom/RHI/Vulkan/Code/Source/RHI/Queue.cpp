@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-#include "Atom_RHI_Vulkan_precompiled.h"
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/iterator.h>
 #include <RHI/Conversion.h>
@@ -45,7 +40,7 @@ namespace AZ
             Fence* fenceToSignal)
         {
             AZStd::vector<VkCommandBuffer> vkCommandBuffers;
-            AZStd::vector<VkSemaphore> vkWaitSemaphores;
+            AZStd::vector<VkSemaphore> vkWaitSemaphoreVector; // vulkan.h has a #define called vkWaitSemaphores, so we name this differently
             AZStd::vector<VkPipelineStageFlags> vkWaitPipelineStages;
             AZStd::vector<VkSemaphore> vkSignalSemaphores;
             VkSubmitInfo submitInfo;
@@ -65,11 +60,11 @@ namespace AZ
                     return item->GetNativeSemaphore(); 
                 });
                 vkWaitPipelineStages.reserve(waitSemaphoresInfo.size());
-                vkWaitSemaphores.reserve(waitSemaphoresInfo.size());
+                vkWaitSemaphoreVector.reserve(waitSemaphoresInfo.size());
                 AZStd::for_each(waitSemaphoresInfo.begin(), waitSemaphoresInfo.end(), [&](auto& item) 
                 { 
                     vkWaitPipelineStages.push_back(item.first);
-                    vkWaitSemaphores.push_back(item.second->GetNativeSemaphore());
+                    vkWaitSemaphoreVector.push_back(item.second->GetNativeSemaphore());
                     // Wait until the wait semaphores has been submitted for signaling.
                     item.second->WaitEvent();
                 });
@@ -77,8 +72,8 @@ namespace AZ
                 submitInfo = {};
                 submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
                 submitInfo.pNext = nullptr;
-                submitInfo.waitSemaphoreCount = static_cast<uint32_t>(vkWaitSemaphores.size());
-                submitInfo.pWaitSemaphores = vkWaitSemaphores.empty() ? nullptr : vkWaitSemaphores.data();
+                submitInfo.waitSemaphoreCount = static_cast<uint32_t>(vkWaitSemaphoreVector.size());
+                submitInfo.pWaitSemaphores = vkWaitSemaphoreVector.empty() ? nullptr : vkWaitSemaphoreVector.data();
                 submitInfo.pWaitDstStageMask = vkWaitPipelineStages.empty() ? nullptr : vkWaitPipelineStages.data();
                 submitInfo.commandBufferCount = static_cast<uint32_t>(vkCommandBuffers.size());
                 submitInfo.pCommandBuffers = vkCommandBuffers.empty() ? nullptr : vkCommandBuffers.data();

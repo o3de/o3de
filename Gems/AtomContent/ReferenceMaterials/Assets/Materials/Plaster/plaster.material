@@ -28,17 +28,6 @@
         },
         "specularF0": {
             "factor": 1.0
-        },
-        "subsurfaceScattering": {
-            "quality": 0.9838383793830872,
-            "scatterColor": [
-                0.143602654337883,
-                0.012634470127522946,
-                0.0005798428319394589,
-                1.0
-            ],
-            "scatterDistance": 18.383838653564454,
-            "subsurfaceScatterFactor": 0.1414141058921814
         }
     }
 }

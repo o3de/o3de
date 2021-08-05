@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "LineHoverSelection.h"
 
@@ -22,17 +18,15 @@
 
 namespace AzToolsFramework
 {
-    static const AZ::Color s_lineSelectManipulatorColor = AZ::Color(0.0f, 1.0f, 0.0f, 1.0f);
+    static const AZ::Color LineSelectManipulatorColor = AZ::Color(0.0f, 1.0f, 0.0f, 1.0f);
 
     template<typename Vertex>
-    static void UpdateLineSegmentPosition(
-        const size_t vertIndex, const AZ::EntityId entityId, LineSegmentSelectionManipulator& lineSegment)
+    static void UpdateLineSegmentPosition(const size_t vertIndex, const AZ::EntityId entityId, LineSegmentSelectionManipulator& lineSegment)
     {
         Vertex start;
         bool foundStart = false;
         AZ::FixedVerticesRequestBus<Vertex>::EventResult(
-            foundStart, entityId, &AZ::FixedVerticesRequestBus<Vertex>::Handler::GetVertex,
-            vertIndex, start);
+            foundStart, entityId, &AZ::FixedVerticesRequestBus<Vertex>::Handler::GetVertex, vertIndex, start);
 
         if (foundStart)
         {
@@ -40,14 +34,12 @@ namespace AzToolsFramework
         }
 
         size_t size = 0;
-        AZ::FixedVerticesRequestBus<Vertex>::EventResult(
-            size, entityId, &AZ::FixedVerticesRequestBus<Vertex>::Handler::Size);
+        AZ::FixedVerticesRequestBus<Vertex>::EventResult(size, entityId, &AZ::FixedVerticesRequestBus<Vertex>::Handler::Size);
 
         Vertex end;
         bool foundEnd = false;
         AZ::FixedVerticesRequestBus<Vertex>::EventResult(
-            foundEnd, entityId, &AZ::FixedVerticesRequestBus<Vertex>::Handler::GetVertex,
-            (vertIndex + 1) % size, end);
+            foundEnd, entityId, &AZ::FixedVerticesRequestBus<Vertex>::Handler::GetVertex, (vertIndex + 1) % size, end);
 
         if (foundEnd)
         {
@@ -56,8 +48,7 @@ namespace AzToolsFramework
 
         // update the view
         const float lineWidth = 0.05f;
-        lineSegment.SetView(
-            CreateManipulatorViewLineSelect(lineSegment, s_lineSelectManipulatorColor, lineWidth));
+        lineSegment.SetView(CreateManipulatorViewLineSelect(lineSegment, LineSelectManipulatorColor, lineWidth));
     }
 
     template<typename Vertex>
@@ -66,9 +57,8 @@ namespace AzToolsFramework
         : m_entityId(entityComponentIdPair.GetEntityId())
     {
         // create a line segment manipulator from vertex positions and setup its callback
-        auto setupLineSegment = [this] (
-            const AZ::EntityComponentIdPair& entityComponentIdPair,
-            const ManipulatorManagerId managerId, const size_t vertIndex)
+        auto setupLineSegment =
+            [this](const AZ::EntityComponentIdPair& entityComponentIdPair, const ManipulatorManagerId managerId, const size_t vertIndex)
         {
             m_lineSegmentManipulators.push_back(LineSegmentSelectionManipulator::MakeShared());
             AZStd::shared_ptr<LineSegmentSelectionManipulator>& lineSegmentManipulator = m_lineSegmentManipulators.back();
@@ -81,11 +71,9 @@ namespace AzToolsFramework
 
             lineSegmentManipulator->InstallLeftMouseUpCallback(
                 [vertIndex, entityComponentIdPair](const LineSegmentSelectionManipulator::Action& action)
-            {
-                InsertVertexAfter<Vertex>(
-                    entityComponentIdPair, vertIndex,
-                    AZ::AdaptVertexIn<Vertex>(action.m_localLineHitPosition));
-            });
+                {
+                    InsertVertexAfter<Vertex>(entityComponentIdPair, vertIndex, AZ::AdaptVertexIn<Vertex>(action.m_localLineHitPosition));
+                });
         };
 
         // create all line segment manipulators for the polygon prism (used for selection bounds)
@@ -150,8 +138,7 @@ namespace AzToolsFramework
     void LineSegmentHoverSelection<Vertex>::Refresh()
     {
         size_t vertexCount = 0;
-        AZ::FixedVerticesRequestBus<Vertex>::EventResult(
-            vertexCount, m_entityId, &AZ::FixedVerticesRequestBus<Vertex>::Handler::Size);
+        AZ::FixedVerticesRequestBus<Vertex>::EventResult(vertexCount, m_entityId, &AZ::FixedVerticesRequestBus<Vertex>::Handler::Size);
 
         // update the start/end positions of all the line segment manipulators to ensure
         // they stay consistent with the polygon prism shape

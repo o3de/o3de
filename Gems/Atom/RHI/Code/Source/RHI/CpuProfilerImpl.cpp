@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RHI/CpuProfilerImpl.h>
 
@@ -16,6 +12,7 @@
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 
 #include <AzCore/Debug/Timer.h>
+#include <Atom/RHI/RHIUtils.h>
 
 namespace AZ
 {
@@ -83,6 +80,7 @@ namespace AZ
         {
             Interface<CpuProfiler>::Register(this);
             m_initialized = true;
+            SystemTickBus::Handler::BusConnect();
         }
 
         void CpuProfilerImpl::Shutdown()
@@ -103,6 +101,7 @@ namespace AZ
             m_registeredThreads.clear();
             m_timeRegionMap.clear();
             m_initialized = false;
+            SystemTickBus::Handler::BusDisconnect();
         }
 
         void CpuProfilerImpl::BeginTimeRegion(TimeRegion& timeRegion)
@@ -137,26 +136,9 @@ namespace AZ
             }
         }
 
-        void CpuProfilerImpl::FlushTimeRegionMap(TimeRegionMap& timeRegionMap)
+        const CpuProfiler::TimeRegionMap& CpuProfilerImpl::GetTimeRegionMap() const 
         {
-            AZStd::unique_lock<AZStd::mutex> lock(m_threadRegisterMutex);
-
-            // Iterate through all the threads, and collect the thread's cached time regions
-            for (auto& threadLocal : m_registeredThreads)
-            {
-                CpuProfiler::ThreadTimeRegionMap& threadMapEntry = m_timeRegionMap[threadLocal->m_executingThreadId];
-                threadLocal->TryFlushCachedMap(threadMapEntry);
-            }
-
-            // Clear all TLS that flagged themselves to be deleted, meaning that the thread is already terminated
-            AZStd::remove_if(m_registeredThreads.begin(), m_registeredThreads.end(), [](const RHI::Ptr<CpuTimingLocalStorage>& thread)
-            {
-                return thread->m_deleteFlag.load();
-            });
-
-            // Flush all the cached time regions to the provided map
-            timeRegionMap = AZStd::move(m_timeRegionMap);
-            m_timeRegionMap.clear();
+            return m_timeRegionMap;
         }
 
         void CpuProfilerImpl::SetProfilerEnabled(bool enabled)
@@ -184,6 +166,37 @@ namespace AZ
             {
                 m_enabled = false;
             }
+        }
+
+        bool CpuProfilerImpl::IsProfilerEnabled() const
+        {
+            return m_enabled;
+        }
+
+        void CpuProfilerImpl::OnSystemTick()
+        {
+            if (!m_enabled)
+            {
+                return;
+            }
+            AZStd::unique_lock<AZStd::mutex> lock(m_threadRegisterMutex);
+
+            // Iterate through all the threads, and collect the thread's cached time regions
+            TimeRegionMap newMap;
+            for (auto& threadLocal : m_registeredThreads)
+            {
+                ThreadTimeRegionMap& threadMapEntry = newMap[threadLocal->m_executingThreadId];
+                threadLocal->TryFlushCachedMap(threadMapEntry);
+            }
+
+            // Clear all TLS that flagged themselves to be deleted, meaning that the thread is already terminated
+            AZStd::remove_if(m_registeredThreads.begin(), m_registeredThreads.end(), [](const RHI::Ptr<CpuTimingLocalStorage>& thread)
+            {
+                return thread->m_deleteFlag.load();
+            });
+
+            // Update our saved time regions to the last frame's collected data
+            m_timeRegionMap = AZStd::move(newMap);
         }
 
         void CpuProfilerImpl::RegisterThreadStorage()
@@ -215,6 +228,7 @@ namespace AZ
             {
                 m_clearContainers = false;
 
+                m_stackLevel = 0;
                 m_cachedTimeRegionMap.clear();
                 m_timeRegionStack.clear();
                 m_cachedTimeRegions.clear();
@@ -260,6 +274,10 @@ namespace AZ
         // Gets called when region ends and all data is set
         void CpuTimingLocalStorage::AddCachedRegion(CachedTimeRegion&& timeRegionCached)
         {
+            if (m_hitSizeLimitMap[timeRegionCached.m_groupRegionName->m_regionName])
+            {
+                return;
+            }
             // Add an entry to the cached region
             m_cachedTimeRegions.push_back(timeRegionCached);
 
@@ -275,7 +293,13 @@ namespace AZ
                 // Add the cached regions to the map
                 for (auto& cachedTimeRegion : m_cachedTimeRegions)
                 {
-                    m_cachedTimeRegionMap[cachedTimeRegion.m_groupRegionName->m_regionName] = cachedTimeRegion;
+                    const AZStd::string regionName = cachedTimeRegion.m_groupRegionName->m_regionName;
+                    AZStd::vector<CachedTimeRegion>& regionVec = m_cachedTimeRegionMap[regionName];
+                    regionVec.push_back(cachedTimeRegion);
+                    if (regionVec.size() >= TimeRegionStackSize)
+                    {
+                        m_hitSizeLimitMap[cachedTimeRegion.m_groupRegionName->m_regionName] = true;
+                    }
                 }
 
                 // Clear the cached regions
@@ -294,6 +318,7 @@ namespace AZ
                 {
                     cachedTimeRegionMap = AZStd::move(m_cachedTimeRegionMap);
                     m_cachedTimeRegionMap.clear();
+                    m_hitSizeLimitMap.clear();
                 }
                 m_cachedTimeRegionMutex.unlock();
             }

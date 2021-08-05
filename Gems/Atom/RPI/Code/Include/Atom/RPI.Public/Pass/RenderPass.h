@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <AtomCore/Instance/Instance.h>
@@ -60,10 +56,7 @@ namespace AZ
 
             //! Get MultisampleState of this pass from its output attachments
             RHI::MultisampleState GetMultisampleState() const;
-
-            //! Capture pass's output and input/output attachments in following frames
-            void ReadbackAttachment(AZStd::shared_ptr<AttachmentReadback> readback, const PassAttachment* attachment);
-
+            
             //! Returns a pointer to the Pass ShaderResourceGroup
             Data::Instance<ShaderResourceGroup> GetShaderResourceGroup();
 
@@ -96,7 +89,7 @@ namespace AZ
             void BindPassSrg(const RHI::FrameGraphCompileContext& context, Data::Instance<ShaderResourceGroup>& shaderResourceGroup);
 
             // Pass behavior overrides...
-            void OnBuildAttachmentsFinishedInternal() override;
+            void InitializeInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
             void FrameEndInternal() override;
 
@@ -149,9 +142,6 @@ namespace AZ
 
             // Readback the results from the ScopeQueries
             void ReadbackScopeQueryResults();
-
-            // For read back attachments
-            AZStd::shared_ptr<AttachmentReadback> m_attachmentReadback;
 
             AZStd::weak_ptr<ImageAttachmentCopy> m_attachmentCopy;
 

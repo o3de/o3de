@@ -1,25 +1,20 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/string/string_view.h>
+#include <AzCore/XML/rapidxml.h>
 
 #include <ACETypes.h>
-
-#include <platform.h>
-#include <IXml.h>
 
 namespace AudioControls
 {
@@ -120,14 +115,14 @@ namespace AudioControls
         //! @param node XML node where the connection is defined.
         //! @param atlControlType The type of the ATL control you are connecting to.
         //! @return A pointer to the newly created connection.
-        virtual TConnectionPtr CreateConnectionFromXMLNode(XmlNodeRef node, EACEControlType atlControlType) = 0;
+        virtual TConnectionPtr CreateConnectionFromXMLNode(AZ::rapidxml::xml_node<char>* node, EACEControlType atlControlType) = 0;
 
         //! When serializing connections between controls this function will be called once per connection to serialize its properties.
         //! This function should be in sync with CreateConnectionToControl as whatever it's written here will have to be read there.
         //! @param connection Connection to serialize.
         //! @param atlControlType Type of the ATL control that has this connection.
         //! @return XML node with the connection serialized.
-        virtual XmlNodeRef CreateXMLNodeFromConnection(const TConnectionPtr connection, const EACEControlType atlControlType) = 0;
+        virtual AZ::rapidxml::xml_node<char>* CreateXMLNodeFromConnection(const TConnectionPtr connection, const EACEControlType atlControlType) = 0;
 
         //! Whenever a connection is removed from an ATL control this function should be called.
         //! To keep the system informed of which controls have been connected and which ones haven't.
@@ -151,7 +146,7 @@ namespace AudioControls
         //! Gets the folder where the implementation specific controls data are stored.
         //! This is used by the ACE to update if controls are changed while the editor is open.
         //! @return String with the path to the folder where the implementation specific controls are stored.
-        virtual AZStd::string GetDataPath() const = 0;
+        virtual AZ::IO::FixedMaxPath GetDataPath() const = 0;
 
         //! Informs the plugin that the ACE has saved the data in case it needs to do any clean up.
         virtual void DataSaved() = 0;

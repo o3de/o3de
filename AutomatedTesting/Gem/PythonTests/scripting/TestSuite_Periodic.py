@@ -1,12 +1,8 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 import pytest
@@ -113,10 +109,6 @@ class TestAutomation(TestAutomationBase):
         from . import Debugger_HappyPath_TargetMultipleGraphs as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    def test_Debugging_TargetMultipleGraphs(self, request, workspace, editor, launcher_platform, project):
-        from . import Debugging_TargetMultipleGraphs as test_module
-        self._run_test(request, workspace, editor, test_module)
-
     @pytest.mark.parametrize("level", ["tmp_level"])
     def test_Debugger_HappyPath_TargetMultipleEntities(self, request, workspace, editor, launcher_platform, project, level):
         def teardown():
@@ -188,6 +180,18 @@ class TestAutomation(TestAutomationBase):
 
     def test_Node_HappyPath_DuplicateNode(self, request, workspace, editor, launcher_platform):
         from . import Node_HappyPath_DuplicateNode as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_ScriptEvent_AddRemoveParameter_ActionsSuccessful(self, request, workspace, editor, launcher_platform):
+        def teardown():
+            file_system.delete(
+                [os.path.join(workspace.paths.project(), "ScriptCanvas", "test_file.scriptevent")], True, True
+            )
+        request.addfinalizer(teardown)
+        file_system.delete(
+            [os.path.join(workspace.paths.project(), "ScriptCanvas", "test_file.scriptevent")], True, True
+        )
+        from . import ScriptEvent_AddRemoveParameter_ActionsSuccessful as test_module
         self._run_test(request, workspace, editor, test_module)
 
 # NOTE: We had to use hydra_test_utils.py, as TestAutomationBase run_test method
@@ -313,6 +317,32 @@ class TestScriptCanvasTests(object):
             TEST_DIRECTORY,
             editor,
             "ScriptEvent_AddRemoveMethod_UpdatesInSC.py",
+            expected_lines,
+            auto_test_mode=False,
+            timeout=60,
+        )
+
+    def test_ScriptEvents_AllParamDatatypes_CreationSuccess(self, request, workspace, editor, launcher_platform):
+        def teardown():
+            file_system.delete(
+                [os.path.join(workspace.paths.project(), "TestAssets", "test_file.scriptevents")], True, True
+            )
+        request.addfinalizer(teardown)
+        file_system.delete(
+            [os.path.join(workspace.paths.project(), "TestAssets", "test_file.scriptevents")], True, True
+        )
+        expected_lines = [
+            "Success: New Script Event created",
+            "Success: Child Event created",
+            "Success: New parameters added",
+            "Success: Script event file saved",
+            "Success: Node found in Script Canvas",
+        ]
+        hydra.launch_and_validate_results(
+            request,
+            TEST_DIRECTORY,
+            editor,
+            "ScriptEvents_AllParamDatatypes_CreationSuccess.py",
             expected_lines,
             auto_test_mode=False,
             timeout=60,

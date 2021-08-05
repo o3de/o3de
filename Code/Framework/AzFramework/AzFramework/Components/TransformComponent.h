@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -112,22 +108,7 @@ namespace AzFramework
         float GetLocalZ() override;
 
         // Rotation modifiers
-        void SetRotation(const AZ::Vector3& eulerAnglesRadian) override;
-        void SetRotationQuaternion(const AZ::Quaternion& quaternion) override;
-        void SetRotationX(float eulerAngleRadian) override;
-        void SetRotationY(float eulerAngleRadian) override;
-        void SetRotationZ(float eulerAngleRadian) override;
-
-        void RotateByX(float eulerAngleRadian) override;
-        void RotateByY(float eulerAngleRadian) override;
-        void RotateByZ(float eulerAngleRadian) override;
-
-        AZ::Vector3 GetRotationEulerRadians() override;
-        AZ::Quaternion GetRotationQuaternion() override;
-
-        float GetRotationX() override;
-        float GetRotationY() override;
-        float GetRotationZ() override;
+        void SetWorldRotationQuaternion(const AZ::Quaternion& quaternion) override;
 
         AZ::Vector3 GetWorldRotation() override;
         AZ::Quaternion GetWorldRotationQuaternion() override;
@@ -143,9 +124,7 @@ namespace AzFramework
         AZ::Quaternion GetLocalRotationQuaternion() override;
 
         // Scale Modifiers
-        void SetLocalScale(const AZ::Vector3& scale) override;
         AZ::Vector3 GetLocalScale() override;
-        AZ::Vector3 GetWorldScale() override;
 
         void SetLocalUniformScale(float scale) override;
         float GetLocalUniformScale() override;

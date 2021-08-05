@@ -1,16 +1,13 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/Serialization/Json/JsonSerializationSettings.h>
 #include <AzCore/std/string/string_view.h>
 #include <Tests/Serialization/Json/JsonSerializationTests.h>
 
@@ -48,7 +45,9 @@ namespace JsonSerializationTests
         }
 
         void CheckApplyPatchOutcome(const char* target, const char* patch,
-            AZ::JsonSerializationResult::Outcomes outcome, AZ::JsonSerializationResult::Processing processing)
+            AZ::JsonSerializationResult::Outcomes outcome,
+            AZ::JsonSerializationResult::Processing processing,
+            const AZ::JsonApplyPatchSettings& settings = AZ::JsonApplyPatchSettings{})
         {
             m_jsonDocument->Parse(target);
             ASSERT_FALSE(m_jsonDocument->HasParseError());
@@ -58,10 +57,22 @@ namespace JsonSerializationTests
             ASSERT_FALSE(patchDocument.HasParseError());
 
             AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::ApplyPatch(*m_jsonDocument,
-                m_jsonDocument->GetAllocator(), patchDocument, AZ::JsonMergeApproach::JsonPatch);
+                m_jsonDocument->GetAllocator(), patchDocument, AZ::JsonMergeApproach::JsonPatch, settings);
             EXPECT_EQ(result.GetTask(), AZ::JsonSerializationResult::Tasks::Merge);
             EXPECT_EQ(result.GetOutcome(), outcome);
             EXPECT_EQ(result.GetProcessing(), processing);
+        }
+
+        void CheckApplyPatchOutcome(
+            const char* target,
+            const char* patch,
+            const char* expectedPatchedResult,
+            AZ::JsonSerializationResult::Outcomes outcome,
+            AZ::JsonSerializationResult::Processing processing,
+            const AZ::JsonApplyPatchSettings& settings = AZ::JsonApplyPatchSettings{})
+        {
+            CheckApplyPatchOutcome(target, patch, outcome, processing, settings);
+            Expect_DocStrEq(expectedPatchedResult);
         }
 
         void CheckCreatePatch_Core(const char* source, AZStd::string_view patch, const char* target,
@@ -267,6 +278,36 @@ namespace JsonSerializationTests
             Outcomes::TypeMismatch, Processing::Halted);
     }
 
+    TEST_F(JsonPatchingSerializationTests, ApplyPatch_UseJsonPatchWithCustomReportingCallback_ReportPartialSkip)
+    {
+        using namespace AZ::JsonSerializationResult;
+        auto issueReportingCallback = [](AZStd::string_view, AZ::JsonSerializationResult::ResultCode result,
+                                         AZStd::string_view) -> AZ::JsonSerializationResult::ResultCode
+        {
+            using namespace AZ::JsonSerializationResult;
+            if (result.GetProcessing() == Processing::Halted)
+            {
+                return ResultCode(result.GetTask(), Outcomes::PartialSkip);
+            }
+            return result;
+        };
+
+        AZ::JsonApplyPatchSettings applyPatchSettings;
+        applyPatchSettings.m_reporting = AZStd::move(issueReportingCallback);
+        CheckApplyPatchOutcome(
+            R"({})",
+            R"([
+                { "op": "add", "path": "/nonexistent_key/new_member", "value": "someValue" },
+                { "op": "add", "path": "/test", "value": "someValue" }
+            ])",
+            R"(
+                { "test": "someValue" }
+            )",
+            Outcomes::PartialSkip,
+            Processing::Completed,
+            AZStd::move(applyPatchSettings));
+    }
+
     TEST_F(JsonPatchingSerializationTests, ApplyPatch_UseJsonPatchAddUnnamedMember_ReportsSuccess)
     {
         CheckApplyPatch(
@@ -301,6 +342,29 @@ namespace JsonSerializationTests
                     { "op": "remove", "path": "/foo/1" }
                 ])",
             R"( { "foo": [ "bar", "baz" ] })");
+    }
+
+    TEST_F(JsonPatchingSerializationTests, ApplyPatch_UseJsonPatchRemoveArrayMembersInCorrectOrder_ReportsSuccess)
+    {
+        CheckApplyPatch(
+            R"( { "foo": [ "bar", "qux", "baz" ] })",
+            R"( [
+                    { "op": "remove", "path": "/foo/2" },
+                    { "op": "remove", "path": "/foo/1" }
+                ])",
+            R"( { "foo": [ "bar" ] })");
+    }
+
+    TEST_F(JsonPatchingSerializationTests, ApplyPatch_UseJsonPatchRemoveArrayMembersInWrongOrder_ReportsError)
+    {
+        using namespace AZ::JsonSerializationResult;
+        CheckApplyPatchOutcome(
+            R"( { "foo": [ "bar", "qux", "baz" ] })",
+            R"( [
+                    { "op": "remove", "path": "/foo/1" },
+                    { "op": "remove", "path": "/foo/2" }
+                ])",
+            Outcomes::Invalid, Processing::Halted);
     }
 
     TEST_F(JsonPatchingSerializationTests, ApplyPatch_UseJsonPatchRemoveOperationInvalidParent_ReportError)
@@ -947,6 +1011,27 @@ namespace JsonSerializationTests
                     { "op": "remove", "path": "/2" }
                 ])"
         );
+    }
+
+    TEST_F(JsonPatchingSerializationTests, CreatePatch_UseJsonPatchRemoveLastArrayEntries_MultipleOperationsInCorrectOrder)
+    {
+        CheckCreatePatch(
+            R"( [ "foo", "hello", "bar" ])", R"( [ "foo" ])",
+            R"( [
+                    { "op": "remove", "path": "/2" },
+                    { "op": "remove", "path": "/1" }
+                ])");
+    }
+
+    TEST_F(JsonPatchingSerializationTests, CreatePatch_UseJsonPatchRemoveAllArrayEntries_MultipleOperationsInCorrectOrder)
+    {
+        CheckCreatePatch(
+            R"( [ "foo", "hello", "bar" ])", R"( [])",
+            R"( [
+                    { "op": "remove", "path": "/2" },
+                    { "op": "remove", "path": "/1" },
+                    { "op": "remove", "path": "/0" }
+                ])");
     }
 
     TEST_F(JsonPatchingSerializationTests, CreatePatch_UseJsonPatchRemoveObjectFromArrayInMiddle_OperationToUpdateMember)

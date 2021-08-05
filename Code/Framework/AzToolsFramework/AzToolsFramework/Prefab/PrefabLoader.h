@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -30,6 +26,8 @@ namespace AzToolsFramework
     namespace Prefab
     {
         class PrefabSystemComponentInterface;
+        class Template;
+        using TemplateReference = AZStd::optional<AZStd::reference_wrapper<Template>>;
 
         /**
         * The Prefab Loader helps saving/loading Prefab files.
@@ -73,6 +71,16 @@ namespace AzToolsFramework
             bool SaveTemplate(TemplateId templateId) override;
 
             /**
+             * Saves a Prefab Template to the provided absolute source path, which needs to match the relative path in the template.
+             * Converts Prefab Template form into .prefab form by collapsing nested Template info
+             * into a source path and patches.
+             * @param templateId Id of the template to be saved
+             * @param absolutePath Absolute path to save the file to
+             * @return bool on whether the operation succeeded or not
+             */
+            bool SaveTemplateToFile(TemplateId templateId, AZ::IO::PathView absolutePath) override;
+
+            /**
              * Saves a Prefab Template into the provided output string.
              * Converts Prefab Template form into .prefab form by collapsing nested Template info
              * into a source path and patches.
@@ -91,14 +99,26 @@ namespace AzToolsFramework
             //! The path will always have the correct separator for the current OS
             AZ::IO::Path GetFullPath(AZ::IO::PathView path) override;
 
-            //! Converts path into a relative path to the project, this will be the paths in .prefab file.
-            //! The path will always have '/' separator.
-            AZ::IO::Path GetRelativePathToProject(AZ::IO::PathView path) override;
+            //! Converts path into a path that's relative to the highest-priority containing folder of all the folders registered
+            //! with the engine.
+            //! This path will be the path that appears in the .prefab file.
+            //! The path will always use the '/' separator.
+            AZ::IO::Path GenerateRelativePath(AZ::IO::PathView path) override;
 
             //! Returns if the path is a valid path for a prefab
             static bool IsValidPrefabPath(AZ::IO::PathView path);
 
         private:
+            /**
+             * Copies the template dom provided and manipulates it into the proper format to be saved to disk.
+             * @param templateRef The template whose dom we want to transform into the proper format to be saved to disk.
+             * @param[out] output The PrefabDom reference we want to store the result into.
+             * @return True if the operation was completed correctly, false otherwise.
+             */
+            bool CopyTemplateIntoPrefabFileFormat(
+                TemplateReference templateRef,
+                PrefabDom& output
+            );
 
             /**
              * Load Prefab Template from given file path to memory and return the id of loaded Template.
@@ -133,6 +153,20 @@ namespace AzToolsFramework
                 PrefabDomValue::MemberIterator& instanceIterator,
                 TemplateId targetTemplateId,
                 AZStd::unordered_set<AZ::IO::Path>& progressedFilePathsSet);
+
+            /*
+             * Manipulate the provided PrefabDom into the right format to be stored in memory for editor usage.
+             * @param loadedTemplateDom The template to manipulate. Changes will be applied in place.
+             * @return True if the manipulations where applied correctly, false otherwise.
+             */
+            bool SanitizeLoadedTemplate(PrefabDomReference loadedTemplateDom);
+            
+            /*
+             * Manipulate the provided PrefabDom into the right format to be stored to disk.
+             * @param savingTemplateDom The template to manipulate. Changes will be applied in place.
+             * @return True if the manipulations where applied correctly, false otherwise.
+             */
+            bool SanitizeSavingTemplate(PrefabDomReference savingTemplateDom);
 
             //! Retrieves Dom content and its path from a template id
             AZStd::optional<AZStd::pair<PrefabDom, AZ::IO::Path>> StoreTemplateIntoFileFormat(TemplateId templateId);

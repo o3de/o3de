@@ -4,7 +4,7 @@
 			<Class name="AZStd::string" field="name" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 		</Class>
 		<Class name="AZStd::vector" field="nodes" type="{023260FD-3D32-570B-A75E-4099359BE960}">
-			<Class name="RagdollNodeConfiguration" field="element" version="4" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
+			<Class name="RagdollNodeConfiguration" field="element" version="5" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
 				<Class name="RigidBodyConfiguration" field="BaseClass1" version="2" type="{ACFA8900-8530-4744-AF00-AA533C868A8E}">
 					<Class name="WorldBodyConfiguration" field="BaseClass1" version="1" type="{6EEB377C-DC60-4E10-AF12-9626C0763B2D}">
 						<Class name="AZStd::string" field="name" value="C_pelvis_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -27,9 +27,9 @@
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
-				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
-					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{90C5C23D-16C0-4F23-AD50-A190E402388E}">
-						<Class name="JointLimitConfiguration" field="BaseClass1" version="1" type="{C9B70C4D-22D7-45AB-9B0A-30A4ED5E42DB}">
+				<Class name="AZStd::shared_ptr" field="JointConfig" type="{B7A3D04D-1ECC-5D84-8C93-B4C9E4F8F6B8}">
+					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{88E067B4-21E8-4FFA-9142-6C52605B704C}">
+						<Class name="JointConfiguration" field="BaseClass1" version="1" type="{DF91D39A-4901-48C4-9159-93FD2ACA5252}">
 							<Class name="Quaternion" field="ParentLocalRotation" value="-0.0391054 -0.7143280 0.0391054 0.6976625" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
 							<Class name="Vector3" field="ParentLocalPosition" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 							<Class name="Quaternion" field="ChildLocalRotation" value="0.0000000 -0.0117843 0.0553034 0.9984280" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
@@ -42,7 +42,7 @@
 					</Class>
 				</Class>
 			</Class>
-			<Class name="RagdollNodeConfiguration" field="element" version="4" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
+			<Class name="RagdollNodeConfiguration" field="element" version="5" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
 				<Class name="RigidBodyConfiguration" field="BaseClass1" version="2" type="{ACFA8900-8530-4744-AF00-AA533C868A8E}">
 					<Class name="WorldBodyConfiguration" field="BaseClass1" version="1" type="{6EEB377C-DC60-4E10-AF12-9626C0763B2D}">
 						<Class name="AZStd::string" field="name" value="L_arm_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -65,9 +65,9 @@
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
-				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
-					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{90C5C23D-16C0-4F23-AD50-A190E402388E}">
-						<Class name="JointLimitConfiguration" field="BaseClass1" version="1" type="{C9B70C4D-22D7-45AB-9B0A-30A4ED5E42DB}">
+				<Class name="AZStd::shared_ptr" field="JointConfig" type="{B7A3D04D-1ECC-5D84-8C93-B4C9E4F8F6B8}">
+					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{88E067B4-21E8-4FFA-9142-6C52605B704C}">
+						<Class name="JointConfiguration" field="BaseClass1" version="1" type="{DF91D39A-4901-48C4-9159-93FD2ACA5252}">
 							<Class name="Quaternion" field="ParentLocalRotation" value="0.0288827 -0.3743261 -0.0537340 0.9254376" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
 							<Class name="Vector3" field="ParentLocalPosition" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 							<Class name="Quaternion" field="ChildLocalRotation" value="0.0000000 -0.0054825 -0.0006252 1.0001229" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
@@ -80,7 +80,7 @@
 					</Class>
 				</Class>
 			</Class>
-			<Class name="RagdollNodeConfiguration" field="element" version="4" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
+			<Class name="RagdollNodeConfiguration" field="element" version="5" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
 				<Class name="RigidBodyConfiguration" field="BaseClass1" version="2" type="{ACFA8900-8530-4744-AF00-AA533C868A8E}">
 					<Class name="WorldBodyConfiguration" field="BaseClass1" version="1" type="{6EEB377C-DC60-4E10-AF12-9626C0763B2D}">
 						<Class name="AZStd::string" field="name" value="C_spine_01_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -103,9 +103,9 @@
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
-				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
-					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{90C5C23D-16C0-4F23-AD50-A190E402388E}">
-						<Class name="JointLimitConfiguration" field="BaseClass1" version="1" type="{C9B70C4D-22D7-45AB-9B0A-30A4ED5E42DB}">
+				<Class name="AZStd::shared_ptr" field="JointConfig" type="{B7A3D04D-1ECC-5D84-8C93-B4C9E4F8F6B8}">
+					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{88E067B4-21E8-4FFA-9142-6C52605B704C}">
+						<Class name="JointConfiguration" field="BaseClass1" version="1" type="{DF91D39A-4901-48C4-9159-93FD2ACA5252}">
 							<Class name="Quaternion" field="ParentLocalRotation" value="0.0000000 -0.0045330 0.0049514 1.0000752" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
 							<Class name="Vector3" field="ParentLocalPosition" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 							<Class name="Quaternion" field="ChildLocalRotation" value="0.0000000 -0.0045330 0.0049514 1.0000751" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
@@ -118,7 +118,7 @@
 					</Class>
 				</Class>
 			</Class>
-			<Class name="RagdollNodeConfiguration" field="element" version="4" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
+			<Class name="RagdollNodeConfiguration" field="element" version="5" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
 				<Class name="RigidBodyConfiguration" field="BaseClass1" version="2" type="{ACFA8900-8530-4744-AF00-AA533C868A8E}">
 					<Class name="WorldBodyConfiguration" field="BaseClass1" version="1" type="{6EEB377C-DC60-4E10-AF12-9626C0763B2D}">
 						<Class name="AZStd::string" field="name" value="C_spine_02_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -141,9 +141,9 @@
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
-				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
-					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{90C5C23D-16C0-4F23-AD50-A190E402388E}">
-						<Class name="JointLimitConfiguration" field="BaseClass1" version="1" type="{C9B70C4D-22D7-45AB-9B0A-30A4ED5E42DB}">
+				<Class name="AZStd::shared_ptr" field="JointConfig" type="{B7A3D04D-1ECC-5D84-8C93-B4C9E4F8F6B8}">
+					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{88E067B4-21E8-4FFA-9142-6C52605B704C}">
+						<Class name="JointConfiguration" field="BaseClass1" version="1" type="{DF91D39A-4901-48C4-9159-93FD2ACA5252}">
 							<Class name="Quaternion" field="ParentLocalRotation" value="0.0000000 0.0000000 -0.0000000 1.0001725" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
 							<Class name="Vector3" field="ParentLocalPosition" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 							<Class name="Quaternion" field="ChildLocalRotation" value="0.0000000 0.0000000 -0.0000000 1.0001724" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
@@ -156,7 +156,7 @@
 					</Class>
 				</Class>
 			</Class>
-			<Class name="RagdollNodeConfiguration" field="element" version="4" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
+			<Class name="RagdollNodeConfiguration" field="element" version="5" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
 				<Class name="RigidBodyConfiguration" field="BaseClass1" version="2" type="{ACFA8900-8530-4744-AF00-AA533C868A8E}">
 					<Class name="WorldBodyConfiguration" field="BaseClass1" version="1" type="{6EEB377C-DC60-4E10-AF12-9626C0763B2D}">
 						<Class name="AZStd::string" field="name" value="C_spine_03_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -179,9 +179,9 @@
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
-				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
-					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{90C5C23D-16C0-4F23-AD50-A190E402388E}">
-						<Class name="JointLimitConfiguration" field="BaseClass1" version="1" type="{C9B70C4D-22D7-45AB-9B0A-30A4ED5E42DB}">
+				<Class name="AZStd::shared_ptr" field="JointConfig" type="{B7A3D04D-1ECC-5D84-8C93-B4C9E4F8F6B8}">
+					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{88E067B4-21E8-4FFA-9142-6C52605B704C}">
+						<Class name="JointConfiguration" field="BaseClass1" version="1" type="{DF91D39A-4901-48C4-9159-93FD2ACA5252}">
 							<Class name="Quaternion" field="ParentLocalRotation" value="0.0000000 0.0000000 0.0000000 1.0002152" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
 							<Class name="Vector3" field="ParentLocalPosition" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 							<Class name="Quaternion" field="ChildLocalRotation" value="0.0000000 0.0000000 0.0000000 1.0002151" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
@@ -194,7 +194,7 @@
 					</Class>
 				</Class>
 			</Class>
-			<Class name="RagdollNodeConfiguration" field="element" version="4" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
+			<Class name="RagdollNodeConfiguration" field="element" version="5" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
 				<Class name="RigidBodyConfiguration" field="BaseClass1" version="2" type="{ACFA8900-8530-4744-AF00-AA533C868A8E}">
 					<Class name="WorldBodyConfiguration" field="BaseClass1" version="1" type="{6EEB377C-DC60-4E10-AF12-9626C0763B2D}">
 						<Class name="AZStd::string" field="name" value="C_spine_04_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -217,9 +217,9 @@
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
-				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
-					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{90C5C23D-16C0-4F23-AD50-A190E402388E}">
-						<Class name="JointLimitConfiguration" field="BaseClass1" version="1" type="{C9B70C4D-22D7-45AB-9B0A-30A4ED5E42DB}">
+				<Class name="AZStd::shared_ptr" field="JointConfig" type="{B7A3D04D-1ECC-5D84-8C93-B4C9E4F8F6B8}">
+					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{88E067B4-21E8-4FFA-9142-6C52605B704C}">
+						<Class name="JointConfiguration" field="BaseClass1" version="1" type="{DF91D39A-4901-48C4-9159-93FD2ACA5252}">
 							<Class name="Quaternion" field="ParentLocalRotation" value="0.0000000 -0.0004615 -0.1719919 0.9851767" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
 							<Class name="Vector3" field="ParentLocalPosition" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 							<Class name="Quaternion" field="ChildLocalRotation" value="0.0000000 -0.0004615 -0.1719919 0.9851766" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
@@ -232,7 +232,7 @@
 					</Class>
 				</Class>
 			</Class>
-			<Class name="RagdollNodeConfiguration" field="element" version="4" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
+			<Class name="RagdollNodeConfiguration" field="element" version="5" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
 				<Class name="RigidBodyConfiguration" field="BaseClass1" version="2" type="{ACFA8900-8530-4744-AF00-AA533C868A8E}">
 					<Class name="WorldBodyConfiguration" field="BaseClass1" version="1" type="{6EEB377C-DC60-4E10-AF12-9626C0763B2D}">
 						<Class name="AZStd::string" field="name" value="L_clavicle_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -255,9 +255,9 @@
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
-				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
-					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{90C5C23D-16C0-4F23-AD50-A190E402388E}">
-						<Class name="JointLimitConfiguration" field="BaseClass1" version="1" type="{C9B70C4D-22D7-45AB-9B0A-30A4ED5E42DB}">
+				<Class name="AZStd::shared_ptr" field="JointConfig" type="{B7A3D04D-1ECC-5D84-8C93-B4C9E4F8F6B8}">
+					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{88E067B4-21E8-4FFA-9142-6C52605B704C}">
+						<Class name="JointConfiguration" field="BaseClass1" version="1" type="{DF91D39A-4901-48C4-9159-93FD2ACA5252}">
 							<Class name="Quaternion" field="ParentLocalRotation" value="-0.0195780 -0.7155011 0.0194289 0.6982983" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
 							<Class name="Vector3" field="ParentLocalPosition" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 							<Class name="Quaternion" field="ChildLocalRotation" value="0.0000000 -0.0135283 0.0381485 0.9993421" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
@@ -270,7 +270,7 @@
 					</Class>
 				</Class>
 			</Class>
-			<Class name="RagdollNodeConfiguration" field="element" version="4" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
+			<Class name="RagdollNodeConfiguration" field="element" version="5" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
 				<Class name="RigidBodyConfiguration" field="BaseClass1" version="2" type="{ACFA8900-8530-4744-AF00-AA533C868A8E}">
 					<Class name="WorldBodyConfiguration" field="BaseClass1" version="1" type="{6EEB377C-DC60-4E10-AF12-9626C0763B2D}">
 						<Class name="AZStd::string" field="name" value="L_wrist_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -293,9 +293,9 @@
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
-				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
-					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{90C5C23D-16C0-4F23-AD50-A190E402388E}">
-						<Class name="JointLimitConfiguration" field="BaseClass1" version="1" type="{C9B70C4D-22D7-45AB-9B0A-30A4ED5E42DB}">
+				<Class name="AZStd::shared_ptr" field="JointConfig" type="{B7A3D04D-1ECC-5D84-8C93-B4C9E4F8F6B8}">
+					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{88E067B4-21E8-4FFA-9142-6C52605B704C}">
+						<Class name="JointConfiguration" field="BaseClass1" version="1" type="{DF91D39A-4901-48C4-9159-93FD2ACA5252}">
 							<Class name="Quaternion" field="ParentLocalRotation" value="0.0000000 -0.0883498 0.0613066 0.9941655" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
 							<Class name="Vector3" field="ParentLocalPosition" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 							<Class name="Quaternion" field="ChildLocalRotation" value="0.0000000 -0.0883498 0.0613066 0.9941654" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
@@ -308,7 +308,7 @@
 					</Class>
 				</Class>
 			</Class>
-			<Class name="RagdollNodeConfiguration" field="element" version="4" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
+			<Class name="RagdollNodeConfiguration" field="element" version="5" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
 				<Class name="RigidBodyConfiguration" field="BaseClass1" version="2" type="{ACFA8900-8530-4744-AF00-AA533C868A8E}">
 					<Class name="WorldBodyConfiguration" field="BaseClass1" version="1" type="{6EEB377C-DC60-4E10-AF12-9626C0763B2D}">
 						<Class name="AZStd::string" field="name" value="L_elbow_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -331,9 +331,9 @@
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
-				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
-					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{90C5C23D-16C0-4F23-AD50-A190E402388E}">
-						<Class name="JointLimitConfiguration" field="BaseClass1" version="1" type="{C9B70C4D-22D7-45AB-9B0A-30A4ED5E42DB}">
+				<Class name="AZStd::shared_ptr" field="JointConfig" type="{B7A3D04D-1ECC-5D84-8C93-B4C9E4F8F6B8}">
+					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{88E067B4-21E8-4FFA-9142-6C52605B704C}">
+						<Class name="JointConfiguration" field="BaseClass1" version="1" type="{DF91D39A-4901-48C4-9159-93FD2ACA5252}">
 							<Class name="Quaternion" field="ParentLocalRotation" value="0.0000000 0.0000000 0.6087880 0.7948525" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
 							<Class name="Vector3" field="ParentLocalPosition" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 							<Class name="Quaternion" field="ChildLocalRotation" value="0.0000000 -0.0000001 0.0000000 1.0002161" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
@@ -346,7 +346,7 @@
 					</Class>
 				</Class>
 			</Class>
-			<Class name="RagdollNodeConfiguration" field="element" version="4" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
+			<Class name="RagdollNodeConfiguration" field="element" version="5" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
 				<Class name="RigidBodyConfiguration" field="BaseClass1" version="2" type="{ACFA8900-8530-4744-AF00-AA533C868A8E}">
 					<Class name="WorldBodyConfiguration" field="BaseClass1" version="1" type="{6EEB377C-DC60-4E10-AF12-9626C0763B2D}">
 						<Class name="AZStd::string" field="name" value="C_neck_01_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -369,9 +369,9 @@
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
-				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
-					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{90C5C23D-16C0-4F23-AD50-A190E402388E}">
-						<Class name="JointLimitConfiguration" field="BaseClass1" version="1" type="{C9B70C4D-22D7-45AB-9B0A-30A4ED5E42DB}">
+				<Class name="AZStd::shared_ptr" field="JointConfig" type="{B7A3D04D-1ECC-5D84-8C93-B4C9E4F8F6B8}">
+					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{88E067B4-21E8-4FFA-9142-6C52605B704C}">
+						<Class name="JointConfiguration" field="BaseClass1" version="1" type="{DF91D39A-4901-48C4-9159-93FD2ACA5252}">
 							<Class name="Quaternion" field="ParentLocalRotation" value="0.0000000 -0.0000000 0.0967176 0.9951238" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
 							<Class name="Vector3" field="ParentLocalPosition" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 							<Class name="Quaternion" field="ChildLocalRotation" value="0.0000000 -0.0000000 0.0000000 0.9998127" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
@@ -384,7 +384,7 @@
 					</Class>
 				</Class>
 			</Class>
-			<Class name="RagdollNodeConfiguration" field="element" version="4" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
+			<Class name="RagdollNodeConfiguration" field="element" version="5" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
 				<Class name="RigidBodyConfiguration" field="BaseClass1" version="2" type="{ACFA8900-8530-4744-AF00-AA533C868A8E}">
 					<Class name="WorldBodyConfiguration" field="BaseClass1" version="1" type="{6EEB377C-DC60-4E10-AF12-9626C0763B2D}">
 						<Class name="AZStd::string" field="name" value="C_head_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -407,9 +407,9 @@
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
-				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
-					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{90C5C23D-16C0-4F23-AD50-A190E402388E}">
-						<Class name="JointLimitConfiguration" field="BaseClass1" version="1" type="{C9B70C4D-22D7-45AB-9B0A-30A4ED5E42DB}">
+				<Class name="AZStd::shared_ptr" field="JointConfig" type="{B7A3D04D-1ECC-5D84-8C93-B4C9E4F8F6B8}">
+					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{88E067B4-21E8-4FFA-9142-6C52605B704C}">
+						<Class name="JointConfiguration" field="BaseClass1" version="1" type="{DF91D39A-4901-48C4-9159-93FD2ACA5252}">
 							<Class name="Quaternion" field="ParentLocalRotation" value="0.0000000 -0.0029691 0.5012505 0.8653531" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
 							<Class name="Vector3" field="ParentLocalPosition" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 							<Class name="Quaternion" field="ChildLocalRotation" value="0.0000000 -0.0029691 0.5012505 0.8653531" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
@@ -422,7 +422,7 @@
 					</Class>
 				</Class>
 			</Class>
-			<Class name="RagdollNodeConfiguration" field="element" version="4" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
+			<Class name="RagdollNodeConfiguration" field="element" version="5" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
 				<Class name="RigidBodyConfiguration" field="BaseClass1" version="2" type="{ACFA8900-8530-4744-AF00-AA533C868A8E}">
 					<Class name="WorldBodyConfiguration" field="BaseClass1" version="1" type="{6EEB377C-DC60-4E10-AF12-9626C0763B2D}">
 						<Class name="AZStd::string" field="name" value="C_neck_02_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -445,9 +445,9 @@
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
-				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
-					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{90C5C23D-16C0-4F23-AD50-A190E402388E}">
-						<Class name="JointLimitConfiguration" field="BaseClass1" version="1" type="{C9B70C4D-22D7-45AB-9B0A-30A4ED5E42DB}">
+				<Class name="AZStd::shared_ptr" field="JointConfig" type="{B7A3D04D-1ECC-5D84-8C93-B4C9E4F8F6B8}">
+					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{88E067B4-21E8-4FFA-9142-6C52605B704C}">
+						<Class name="JointConfiguration" field="BaseClass1" version="1" type="{DF91D39A-4901-48C4-9159-93FD2ACA5252}">
 							<Class name="Quaternion" field="ParentLocalRotation" value="0.0000000 0.0000000 0.0028993 1.0001502" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
 							<Class name="Vector3" field="ParentLocalPosition" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 							<Class name="Quaternion" field="ChildLocalRotation" value="-0.0000000 0.0000000 0.0028993 1.0001502" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
@@ -460,7 +460,7 @@
 					</Class>
 				</Class>
 			</Class>
-			<Class name="RagdollNodeConfiguration" field="element" version="4" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
+			<Class name="RagdollNodeConfiguration" field="element" version="5" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
 				<Class name="RigidBodyConfiguration" field="BaseClass1" version="2" type="{ACFA8900-8530-4744-AF00-AA533C868A8E}">
 					<Class name="WorldBodyConfiguration" field="BaseClass1" version="1" type="{6EEB377C-DC60-4E10-AF12-9626C0763B2D}">
 						<Class name="AZStd::string" field="name" value="R_clavicle_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -483,9 +483,9 @@
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
-				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
-					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{90C5C23D-16C0-4F23-AD50-A190E402388E}">
-						<Class name="JointLimitConfiguration" field="BaseClass1" version="1" type="{C9B70C4D-22D7-45AB-9B0A-30A4ED5E42DB}">
+				<Class name="AZStd::shared_ptr" field="JointConfig" type="{B7A3D04D-1ECC-5D84-8C93-B4C9E4F8F6B8}">
+					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{88E067B4-21E8-4FFA-9142-6C52605B704C}">
+						<Class name="JointConfiguration" field="BaseClass1" version="1" type="{DF91D39A-4901-48C4-9159-93FD2ACA5252}">
 							<Class name="Quaternion" field="ParentLocalRotation" value="0.0195778 0.7154908 0.0194290 0.6983082" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
 							<Class name="Vector3" field="ParentLocalPosition" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 							<Class name="Quaternion" field="ChildLocalRotation" value="0.0135140 -0.0000000 -0.9993417 0.0381484" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
@@ -498,7 +498,7 @@
 					</Class>
 				</Class>
 			</Class>
-			<Class name="RagdollNodeConfiguration" field="element" version="4" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
+			<Class name="RagdollNodeConfiguration" field="element" version="5" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
 				<Class name="RigidBodyConfiguration" field="BaseClass1" version="2" type="{ACFA8900-8530-4744-AF00-AA533C868A8E}">
 					<Class name="WorldBodyConfiguration" field="BaseClass1" version="1" type="{6EEB377C-DC60-4E10-AF12-9626C0763B2D}">
 						<Class name="AZStd::string" field="name" value="R_wrist_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -521,9 +521,9 @@
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
-				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
-					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{90C5C23D-16C0-4F23-AD50-A190E402388E}">
-						<Class name="JointLimitConfiguration" field="BaseClass1" version="1" type="{C9B70C4D-22D7-45AB-9B0A-30A4ED5E42DB}">
+				<Class name="AZStd::shared_ptr" field="JointConfig" type="{B7A3D04D-1ECC-5D84-8C93-B4C9E4F8F6B8}">
+					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{88E067B4-21E8-4FFA-9142-6C52605B704C}">
+						<Class name="JointConfiguration" field="BaseClass1" version="1" type="{DF91D39A-4901-48C4-9159-93FD2ACA5252}">
 							<Class name="Quaternion" field="ParentLocalRotation" value="0.0883390 0.0000000 -0.9943419 0.0613376" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
 							<Class name="Vector3" field="ParentLocalPosition" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 							<Class name="Quaternion" field="ChildLocalRotation" value="0.0883390 -0.0000000 -0.9943417 0.0613376" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
@@ -536,7 +536,7 @@
 					</Class>
 				</Class>
 			</Class>
-			<Class name="RagdollNodeConfiguration" field="element" version="4" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
+			<Class name="RagdollNodeConfiguration" field="element" version="5" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
 				<Class name="RigidBodyConfiguration" field="BaseClass1" version="2" type="{ACFA8900-8530-4744-AF00-AA533C868A8E}">
 					<Class name="WorldBodyConfiguration" field="BaseClass1" version="1" type="{6EEB377C-DC60-4E10-AF12-9626C0763B2D}">
 						<Class name="AZStd::string" field="name" value="R_arm_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -559,9 +559,9 @@
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
-				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
-					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{90C5C23D-16C0-4F23-AD50-A190E402388E}">
-						<Class name="JointLimitConfiguration" field="BaseClass1" version="1" type="{C9B70C4D-22D7-45AB-9B0A-30A4ED5E42DB}">
+				<Class name="AZStd::shared_ptr" field="JointConfig" type="{B7A3D04D-1ECC-5D84-8C93-B4C9E4F8F6B8}">
+					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{88E067B4-21E8-4FFA-9142-6C52605B704C}">
+						<Class name="JointConfiguration" field="BaseClass1" version="1" type="{DF91D39A-4901-48C4-9159-93FD2ACA5252}">
 							<Class name="Quaternion" field="ParentLocalRotation" value="0.3743524 0.0288702 -0.9254135 -0.0538333" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
 							<Class name="Vector3" field="ParentLocalPosition" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 							<Class name="Quaternion" field="ChildLocalRotation" value="0.0024797 -0.0000000 -1.0001022 0.0071253" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
@@ -574,7 +574,7 @@
 					</Class>
 				</Class>
 			</Class>
-			<Class name="RagdollNodeConfiguration" field="element" version="4" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
+			<Class name="RagdollNodeConfiguration" field="element" version="5" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
 				<Class name="RigidBodyConfiguration" field="BaseClass1" version="2" type="{ACFA8900-8530-4744-AF00-AA533C868A8E}">
 					<Class name="WorldBodyConfiguration" field="BaseClass1" version="1" type="{6EEB377C-DC60-4E10-AF12-9626C0763B2D}">
 						<Class name="AZStd::string" field="name" value="R_elbow_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -597,9 +597,9 @@
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
-				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
-					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{90C5C23D-16C0-4F23-AD50-A190E402388E}">
-						<Class name="JointLimitConfiguration" field="BaseClass1" version="1" type="{C9B70C4D-22D7-45AB-9B0A-30A4ED5E42DB}">
+				<Class name="AZStd::shared_ptr" field="JointConfig" type="{B7A3D04D-1ECC-5D84-8C93-B4C9E4F8F6B8}">
+					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{88E067B4-21E8-4FFA-9142-6C52605B704C}">
+						<Class name="JointConfiguration" field="BaseClass1" version="1" type="{DF91D39A-4901-48C4-9159-93FD2ACA5252}">
 							<Class name="Quaternion" field="ParentLocalRotation" value="0.0000000 -0.0000000 0.8197944 -0.5787863" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
 							<Class name="Vector3" field="ParentLocalPosition" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 							<Class name="Quaternion" field="ChildLocalRotation" value="-0.0000031 0.0000000 1.0002232 0.0000017" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
@@ -612,7 +612,7 @@
 					</Class>
 				</Class>
 			</Class>
-			<Class name="RagdollNodeConfiguration" field="element" version="4" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
+			<Class name="RagdollNodeConfiguration" field="element" version="5" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
 				<Class name="RigidBodyConfiguration" field="BaseClass1" version="2" type="{ACFA8900-8530-4744-AF00-AA533C868A8E}">
 					<Class name="WorldBodyConfiguration" field="BaseClass1" version="1" type="{6EEB377C-DC60-4E10-AF12-9626C0763B2D}">
 						<Class name="AZStd::string" field="name" value="L_leg_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -635,9 +635,9 @@
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
-				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
-					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{90C5C23D-16C0-4F23-AD50-A190E402388E}">
-						<Class name="JointLimitConfiguration" field="BaseClass1" version="1" type="{C9B70C4D-22D7-45AB-9B0A-30A4ED5E42DB}">
+				<Class name="AZStd::shared_ptr" field="JointConfig" type="{B7A3D04D-1ECC-5D84-8C93-B4C9E4F8F6B8}">
+					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{88E067B4-21E8-4FFA-9142-6C52605B704C}">
+						<Class name="JointConfiguration" field="BaseClass1" version="1" type="{DF91D39A-4901-48C4-9159-93FD2ACA5252}">
 							<Class name="Quaternion" field="ParentLocalRotation" value="0.2611587 0.9659281 -0.0034238 -0.0126628" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
 							<Class name="Vector3" field="ParentLocalPosition" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 							<Class name="Quaternion" field="ChildLocalRotation" value="0.0000000 0.0000000 -0.0000000 0.9998225" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
@@ -650,7 +650,7 @@
 					</Class>
 				</Class>
 			</Class>
-			<Class name="RagdollNodeConfiguration" field="element" version="4" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
+			<Class name="RagdollNodeConfiguration" field="element" version="5" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
 				<Class name="RigidBodyConfiguration" field="BaseClass1" version="2" type="{ACFA8900-8530-4744-AF00-AA533C868A8E}">
 					<Class name="WorldBodyConfiguration" field="BaseClass1" version="1" type="{6EEB377C-DC60-4E10-AF12-9626C0763B2D}">
 						<Class name="AZStd::string" field="name" value="L_foot_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -673,9 +673,9 @@
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
-				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
-					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{90C5C23D-16C0-4F23-AD50-A190E402388E}">
-						<Class name="JointLimitConfiguration" field="BaseClass1" version="1" type="{C9B70C4D-22D7-45AB-9B0A-30A4ED5E42DB}">
+				<Class name="AZStd::shared_ptr" field="JointConfig" type="{B7A3D04D-1ECC-5D84-8C93-B4C9E4F8F6B8}">
+					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{88E067B4-21E8-4FFA-9142-6C52605B704C}">
+						<Class name="JointConfiguration" field="BaseClass1" version="1" type="{DF91D39A-4901-48C4-9159-93FD2ACA5252}">
 							<Class name="Quaternion" field="ParentLocalRotation" value="-0.0073839 -0.0140681 0.5175676 0.8556790" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
 							<Class name="Vector3" field="ParentLocalPosition" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 							<Class name="Quaternion" field="ChildLocalRotation" value="0.0000000 0.0000000 -0.0000000 1.0001576" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
@@ -688,7 +688,7 @@
 					</Class>
 				</Class>
 			</Class>
-			<Class name="RagdollNodeConfiguration" field="element" version="4" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
+			<Class name="RagdollNodeConfiguration" field="element" version="5" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
 				<Class name="RigidBodyConfiguration" field="BaseClass1" version="2" type="{ACFA8900-8530-4744-AF00-AA533C868A8E}">
 					<Class name="WorldBodyConfiguration" field="BaseClass1" version="1" type="{6EEB377C-DC60-4E10-AF12-9626C0763B2D}">
 						<Class name="AZStd::string" field="name" value="L_knee_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -711,9 +711,9 @@
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
-				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
-					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{90C5C23D-16C0-4F23-AD50-A190E402388E}">
-						<Class name="JointLimitConfiguration" field="BaseClass1" version="1" type="{C9B70C4D-22D7-45AB-9B0A-30A4ED5E42DB}">
+				<Class name="AZStd::shared_ptr" field="JointConfig" type="{B7A3D04D-1ECC-5D84-8C93-B4C9E4F8F6B8}">
+					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{88E067B4-21E8-4FFA-9142-6C52605B704C}">
+						<Class name="JointConfiguration" field="BaseClass1" version="1" type="{DF91D39A-4901-48C4-9159-93FD2ACA5252}">
 							<Class name="Quaternion" field="ParentLocalRotation" value="0.0000000 -0.0000000 0.3640593 -0.9358648" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
 							<Class name="Vector3" field="ParentLocalPosition" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 							<Class name="Quaternion" field="ChildLocalRotation" value="0.0000000 -0.0000000 -0.0000000 0.9999046" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
@@ -726,7 +726,7 @@
 					</Class>
 				</Class>
 			</Class>
-			<Class name="RagdollNodeConfiguration" field="element" version="4" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
+			<Class name="RagdollNodeConfiguration" field="element" version="5" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
 				<Class name="RigidBodyConfiguration" field="BaseClass1" version="2" type="{ACFA8900-8530-4744-AF00-AA533C868A8E}">
 					<Class name="WorldBodyConfiguration" field="BaseClass1" version="1" type="{6EEB377C-DC60-4E10-AF12-9626C0763B2D}">
 						<Class name="AZStd::string" field="name" value="R_leg_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -749,9 +749,9 @@
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
-				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
-					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{90C5C23D-16C0-4F23-AD50-A190E402388E}">
-						<Class name="JointLimitConfiguration" field="BaseClass1" version="1" type="{C9B70C4D-22D7-45AB-9B0A-30A4ED5E42DB}">
+				<Class name="AZStd::shared_ptr" field="JointConfig" type="{B7A3D04D-1ECC-5D84-8C93-B4C9E4F8F6B8}">
+					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{88E067B4-21E8-4FFA-9142-6C52605B704C}">
+						<Class name="JointConfiguration" field="BaseClass1" version="1" type="{DF91D39A-4901-48C4-9159-93FD2ACA5252}">
 							<Class name="Quaternion" field="ParentLocalRotation" value="-0.2770883 -0.9615672 -0.0035520 -0.0123266" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
 							<Class name="Vector3" field="ParentLocalPosition" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 							<Class name="Quaternion" field="ChildLocalRotation" value="0.0000005 0.0000000 0.9998229 0.0000000" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
@@ -764,7 +764,7 @@
 					</Class>
 				</Class>
 			</Class>
-			<Class name="RagdollNodeConfiguration" field="element" version="4" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
+			<Class name="RagdollNodeConfiguration" field="element" version="5" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
 				<Class name="RigidBodyConfiguration" field="BaseClass1" version="2" type="{ACFA8900-8530-4744-AF00-AA533C868A8E}">
 					<Class name="WorldBodyConfiguration" field="BaseClass1" version="1" type="{6EEB377C-DC60-4E10-AF12-9626C0763B2D}">
 						<Class name="AZStd::string" field="name" value="R_foot_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -787,9 +787,9 @@
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
-				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
-					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{90C5C23D-16C0-4F23-AD50-A190E402388E}">
-						<Class name="JointLimitConfiguration" field="BaseClass1" version="1" type="{C9B70C4D-22D7-45AB-9B0A-30A4ED5E42DB}">
+				<Class name="AZStd::shared_ptr" field="JointConfig" type="{B7A3D04D-1ECC-5D84-8C93-B4C9E4F8F6B8}">
+					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{88E067B4-21E8-4FFA-9142-6C52605B704C}">
+						<Class name="JointConfiguration" field="BaseClass1" version="1" type="{DF91D39A-4901-48C4-9159-93FD2ACA5252}">
 							<Class name="Quaternion" field="ParentLocalRotation" value="0.0140685 -0.0073837 -0.8556802 0.5175687" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
 							<Class name="Vector3" field="ParentLocalPosition" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 							<Class name="Quaternion" field="ChildLocalRotation" value="0.0000004 -0.0000000 -1.0001591 0.0000003" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
@@ -802,7 +802,7 @@
 					</Class>
 				</Class>
 			</Class>
-			<Class name="RagdollNodeConfiguration" field="element" version="4" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
+			<Class name="RagdollNodeConfiguration" field="element" version="5" type="{A1796586-85AB-496E-93C9-C5841F03B1AD}">
 				<Class name="RigidBodyConfiguration" field="BaseClass1" version="2" type="{ACFA8900-8530-4744-AF00-AA533C868A8E}">
 					<Class name="WorldBodyConfiguration" field="BaseClass1" version="1" type="{6EEB377C-DC60-4E10-AF12-9626C0763B2D}">
 						<Class name="AZStd::string" field="name" value="R_knee_JNT" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
@@ -825,9 +825,9 @@
 					<Class name="Matrix3x3" field="Inertia tensor" value="1.0000000 0.0000000 0.0000000 0.0000000 1.0000000 0.0000000 0.0000000 0.0000000 1.0000000" type="{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}"/>
 					<Class name="float" field="Maximum Angular Velocity" value="100.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
 				</Class>
-				<Class name="AZStd::shared_ptr" field="JointLimit" type="{F5C4DCF0-277D-5536-921B-A6A4AEEF7226}">
-					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{90C5C23D-16C0-4F23-AD50-A190E402388E}">
-						<Class name="JointLimitConfiguration" field="BaseClass1" version="1" type="{C9B70C4D-22D7-45AB-9B0A-30A4ED5E42DB}">
+				<Class name="AZStd::shared_ptr" field="JointConfig" type="{B7A3D04D-1ECC-5D84-8C93-B4C9E4F8F6B8}">
+					<Class name="D6JointLimitConfiguration" field="element" version="1" type="{88E067B4-21E8-4FFA-9142-6C52605B704C}">
+						<Class name="JointConfiguration" field="BaseClass1" version="1" type="{DF91D39A-4901-48C4-9159-93FD2ACA5252}">
 							<Class name="Quaternion" field="ParentLocalRotation" value="-0.0000033 0.0000092 -0.9416476 -0.3386196" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>
 							<Class name="Vector3" field="ParentLocalPosition" value="0.0000000 0.0000000 0.0000000" type="{8379EB7D-01FA-4538-B64B-A6543B4BE73D}"/>
 							<Class name="Quaternion" field="ChildLocalRotation" value="0.0000000 -0.0000000 -0.9999050 0.0000000" type="{73103120-3DD3-4873-BAB3-9713FA2804FB}"/>

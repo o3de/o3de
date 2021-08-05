@@ -1,17 +1,14 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Math/IntersectSegment.h>
 #include <AzCore/Math/Spline.h>
+#include <AzCore/std/limits.h>
 #include <AzToolsFramework/Picking/ContextBoundAPI.h>
 #include <AzToolsFramework/Picking/Manipulators/ManipulatorBounds.h>
 
@@ -23,8 +20,7 @@ namespace AzToolsFramework
             const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& rayIntersectionDistance)
         {
             float vecRayIntersectionDistance;
-            if (AZ::Intersect::IntersectRaySphere(
-                rayOrigin, rayDirection, m_center, m_radius, vecRayIntersectionDistance) > 0)
+            if (AZ::Intersect::IntersectRaySphere(rayOrigin, rayDirection, m_center, m_radius, vecRayIntersectionDistance) > 0)
             {
                 rayIntersectionDistance = vecRayIntersectionDistance;
                 return true;
@@ -45,8 +41,9 @@ namespace AzToolsFramework
         bool ManipulatorBoundBox::IntersectRay(
             const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& rayIntersectionDistance)
         {
-            return AZ::Intersect::IntersectRayBox(rayOrigin, rayDirection, m_center, m_axis1, m_axis2, m_axis3,
-                m_halfExtents.GetX(), m_halfExtents.GetY(), m_halfExtents.GetZ(), rayIntersectionDistance) > 0;
+            return AZ::Intersect::IntersectRayBox(
+                       rayOrigin, rayDirection, m_center, m_axis1, m_axis2, m_axis3, m_halfExtents.GetX(), m_halfExtents.GetY(),
+                       m_halfExtents.GetZ(), rayIntersectionDistance) > 0;
         }
 
         void ManipulatorBoundBox::SetShapeData(const BoundRequestShapeBase& shapeData)
@@ -66,8 +63,7 @@ namespace AzToolsFramework
         {
             float t1 = std::numeric_limits<float>::max();
             float t2 = std::numeric_limits<float>::max();
-            if (AZ::Intersect::IntersectRayCappedCylinder(
-                rayOrigin, rayDirection, m_base, m_axis, m_height, m_radius, t1, t2) > 0)
+            if (AZ::Intersect::IntersectRayCappedCylinder(rayOrigin, rayDirection, m_base, m_axis, m_height, m_radius, t1, t2) > 0)
             {
                 rayIntersectionDistance = AZStd::GetMin(t1, t2);
                 return true;
@@ -92,8 +88,7 @@ namespace AzToolsFramework
         {
             float t1 = std::numeric_limits<float>::max();
             float t2 = std::numeric_limits<float>::max();
-            if (AZ::Intersect::IntersectRayCone(
-                rayOrigin, rayDirection, m_apexPosition, m_dir, m_height, m_radius, t1, t2) > 0)
+            if (AZ::Intersect::IntersectRayCone(rayOrigin, rayDirection, m_apexPosition, m_dir, m_height, m_radius, t1, t2) > 0)
             {
                 rayIntersectionDistance = AZStd::GetMin(t1, t2);
                 return true;
@@ -117,7 +112,7 @@ namespace AzToolsFramework
             const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection, float& rayIntersectionDistance)
         {
             return AZ::Intersect::IntersectRayQuad(
-                rayOrigin, rayDirection, m_corner1, m_corner2, m_corner3, m_corner4, rayIntersectionDistance) > 0;
+                       rayOrigin, rayDirection, m_corner1, m_corner2, m_corner3, m_corner4, rayIntersectionDistance) > 0;
         }
 
         void ManipulatorBoundQuad::SetShapeData(const BoundRequestShapeBase& shapeData)
@@ -157,8 +152,7 @@ namespace AzToolsFramework
             float rayProportion, lineSegmentProportion;
             // note: here out param is proportion/percentage of line
             AZ::Intersect::ClosestSegmentSegment(
-                rayOrigin, rayOrigin + rayDirection * rayLength,
-                m_worldStart, m_worldEnd, rayProportion, lineSegmentProportion,
+                rayOrigin, rayOrigin + rayDirection * rayLength, m_worldStart, m_worldEnd, rayProportion, lineSegmentProportion,
                 closestPosRay, closestPosLineSegment);
 
             float distanceFromLine = (closestPosRay - closestPosLineSegment).GetLength();
@@ -188,8 +182,7 @@ namespace AzToolsFramework
         {
             if (const AZStd::shared_ptr<const AZ::Spline> spline = m_spline.lock())
             {
-                AZ::RaySplineQueryResult splineQueryResult =
-                    AZ::IntersectSpline(m_transform, rayOrigin, rayDirection, *spline);
+                AZ::RaySplineQueryResult splineQueryResult = AZ::IntersectSpline(m_transform, rayOrigin, rayDirection, *spline);
 
                 if (splineQueryResult.m_distanceSq <= m_width * m_width)
                 {
@@ -214,22 +207,25 @@ namespace AzToolsFramework
         }
 
         bool IntersectHollowCylinder(
-            const AZ::Vector3& rayOrigin, const AZ::Vector3& rayDirection,
-            const AZ::Vector3& center, const AZ::Vector3& axis,
-            const float minorRadius, const float majorRadius,
+            const AZ::Vector3& rayOrigin,
+            const AZ::Vector3& rayDirection,
+            const AZ::Vector3& center,
+            const AZ::Vector3& axis,
+            const float minorRadius,
+            const float majorRadius,
             float& rayIntersectionDistance)
         {
-            float t1 = std::numeric_limits<float>::max();
-            float t2 = std::numeric_limits<float>::max();
+            float t1 = AZStd::numeric_limits<float>::max();
+            float t2 = AZStd::numeric_limits<float>::max();
             const AZ::Vector3 base = center - axis * minorRadius;
 
             if (AZ::Intersect::IntersectRayCappedCylinder(
-                rayOrigin, rayDirection, base, axis, minorRadius * 2.0f, majorRadius + minorRadius, t1, t2) > 0)
+                    rayOrigin, rayDirection, base, axis, minorRadius * 2.0f, majorRadius + minorRadius, t1, t2) > 0)
             {
-                const float thresholdSq = powf(majorRadius - minorRadius, 2.0f);
+                const float threshold = majorRadius - minorRadius;
+                const float thresholdSq = threshold * threshold;
                 // util lambda used for distance checks at both 't' values
-                const auto validHolowCylinderHit =
-                    [&rayOrigin, &rayDirection, &center, thresholdSq](const float t)
+                const auto validHolowCylinderHit = [&rayOrigin, &rayDirection, &center, thresholdSq](const float t)
                 {
                     // only return a valid intersection if the hit was
                     // not in the 'hollow' part of the cylinder

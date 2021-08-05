@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -304,6 +300,24 @@ namespace AzNetworking
             serializer.Serialize(values[2], "zValue");
             serializer.Serialize(values[3], "wValue");
             value = AZ::Quaternion::CreateFromFloat4(values);
+            return serializer.IsValid();
+        }
+    };
+
+    template <>
+    struct SerializeObjectHelper<AZ::Transform>
+    {
+        static bool SerializeObject(ISerializer& serializer, AZ::Transform& value)
+        {
+            AZ::Vector3 translation = value.GetTranslation();
+            AZ::Quaternion rotation = value.GetRotation();
+            float uniformScale = value.GetUniformScale();
+            serializer.Serialize(translation, "Translation");
+            serializer.Serialize(rotation, "Rotation");
+            serializer.Serialize(uniformScale, "Scale");
+            value.SetTranslation(translation);
+            value.SetRotation(rotation);
+            value.SetUniformScale(uniformScale);
             return serializer.IsValid();
         }
     };

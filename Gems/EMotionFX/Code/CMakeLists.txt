@@ -1,12 +1,9 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 #
 
 ly_get_list_relative_pal_filename(core_pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
@@ -36,10 +33,10 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             Legacy::CryCommon
-            Gem::LmbrCentral
         PUBLIC
             AZ::AtomCore
             Gem::Atom_RPI.Public
+            Gem::LmbrCentral
     COMPILE_DEFINITIONS
         PUBLIC
             EMFX_DEVELOPMENT_BUILD
@@ -66,6 +63,10 @@ ly_add_target(
     RUNTIME_DEPENDENCIES
         Gem::LmbrCentral
 )
+
+# Clients and servers use the above EMotionFX module
+ly_create_alias(NAME EMotionFX.Clients NAMESPACE Gem TARGETS EMotionFX)
+ly_create_alias(NAME EMotionFX.Servers NAMESPACE Gem TARGETS EMotionFX)
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
     
@@ -129,6 +130,11 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
         RUNTIME_DEPENDENCIES
             Gem::LmbrCentral.Editor
     )
+
+    # builders and tools use the above EMotionFX.Editor module
+    ly_create_alias(NAME EMotionFX.Builders NAMESPACE Gem TARGETS EMotionFX.Editor)
+    ly_create_alias(NAME EMotionFX.Tools NAMESPACE Gem TARGETS EMotionFX.Editor)
+
 endif()
 
 ################################################################################
@@ -213,8 +219,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             ${CMAKE_CURRENT_SOURCE_DIR}/Tests/TestAssets/EMotionFXBuilderTestAssets/AnimGraphExampleNoDependency.animgraph
             ${CMAKE_CURRENT_SOURCE_DIR}/Tests/TestAssets/EMotionFXBuilderTestAssets/EmptyAnimGraphExample.animgraph
             ${CMAKE_CURRENT_SOURCE_DIR}/Tests/TestAssets/EMotionFXBuilderTestAssets/EmptyMotionSetExample.motionset
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/TestAssets/EMotionFXBuilderTestAssets/LegacyAnimGraphExample.animgraph
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/TestAssets/EMotionFXBuilderTestAssets/LegacyMotionSetExample.motionset
             ${CMAKE_CURRENT_SOURCE_DIR}/Tests/TestAssets/EMotionFXBuilderTestAssets/MotionSetExample.motionset
             ${CMAKE_CURRENT_SOURCE_DIR}/Tests/TestAssets/EMotionFXBuilderTestAssets/MotionSetExampleNoDependency.motionset
         OUTPUT_SUBDIRECTORY

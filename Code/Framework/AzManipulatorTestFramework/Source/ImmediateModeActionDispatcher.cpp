@@ -1,17 +1,13 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include <AzManipulatorTestFramework/ImmediateModeActionDispatcher.h>
 #include <AzManipulatorTestFramework/AzManipulatorTestFrameworkUtils.h>
+#include <AzManipulatorTestFramework/ImmediateModeActionDispatcher.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 
@@ -33,8 +29,7 @@ namespace AzManipulatorTestFramework
     using KeyboardModifier = AzToolsFramework::ViewportInteraction::KeyboardModifier;
     using MouseInteractionEvent = AzToolsFramework::ViewportInteraction::MouseInteractionEvent;
 
-    ImmediateModeActionDispatcher::ImmediateModeActionDispatcher(
-        ManipulatorViewportInteraction& viewportManipulatorInteraction)
+    ImmediateModeActionDispatcher::ImmediateModeActionDispatcher(ManipulatorViewportInteraction& viewportManipulatorInteraction)
         : m_viewportManipulatorInteraction(viewportManipulatorInteraction)
     {
     }
@@ -126,8 +121,7 @@ namespace AzManipulatorTestFramework
     void ImmediateModeActionDispatcher::EnterComponentModeImpl(const AZ::Uuid& uuid)
     {
         using AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus;
-        ComponentModeSystemRequestBus::Broadcast(
-            &ComponentModeSystemRequestBus::Events::AddSelectedComponentModesOfType, uuid);
+        ComponentModeSystemRequestBus::Broadcast(&ComponentModeSystemRequestBus::Events::AddSelectedComponentModesOfType, uuid);
     }
 
     const AzToolsFramework::ViewportInteraction::MouseInteractionEvent* ImmediateModeActionDispatcher::GetMouseInteractionEvent() const
@@ -144,8 +138,7 @@ namespace AzManipulatorTestFramework
 
     AzToolsFramework::ViewportInteraction::MouseInteractionEvent* ImmediateModeActionDispatcher::GetMouseInteractionEvent()
     {
-        return const_cast<MouseInteractionEvent*>(
-            static_cast<const ImmediateModeActionDispatcher*>(this)->GetMouseInteractionEvent());
+        return const_cast<MouseInteractionEvent*>(static_cast<const ImmediateModeActionDispatcher*>(this)->GetMouseInteractionEvent());
     }
 
     ImmediateModeActionDispatcher* ImmediateModeActionDispatcher::ExpectTrue(bool result)
@@ -162,8 +155,7 @@ namespace AzManipulatorTestFramework
         return this;
     }
 
-    ImmediateModeActionDispatcher* ImmediateModeActionDispatcher::GetEntityWorldTransform(
-        AZ::EntityId entityId, AZ::Transform& transform)
+    ImmediateModeActionDispatcher* ImmediateModeActionDispatcher::GetEntityWorldTransform(AZ::EntityId entityId, AZ::Transform& transform)
     {
         Log("Getting entity world transform");
         transform = AzToolsFramework::GetWorldTransform(entityId);

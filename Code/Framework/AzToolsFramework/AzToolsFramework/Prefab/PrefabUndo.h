@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 #include <AzToolsFramework/Undo/UndoSystem.h>
@@ -71,11 +67,12 @@ namespace AzToolsFramework
 
             void Capture(
                 PrefabDom& initialState,
-                PrefabDom& endState,
-                const AZ::EntityId& entity);
+                PrefabDom& endState, const AZ::EntityId& entity);
 
             void Undo() override;
             void Redo() override;
+            //! Overload to allow to apply the change, but prevent instanceToExclude from being refreshed.
+            void Redo(InstanceOptionalReference instanceToExclude);
 
         private:
             InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
@@ -139,9 +136,11 @@ namespace AzToolsFramework
 
             void Undo() override;
             void Redo() override;
+            //! Overload to allow to apply the change, but prevent instanceToExclude from being refreshed.
+            void Redo(InstanceOptionalReference instanceToExclude);
 
         private:
-            void UpdateLink(PrefabDom& linkDom);
+            void UpdateLink(PrefabDom& linkDom, InstanceOptionalReference instanceToExclude = AZStd::nullopt);
 
             LinkId m_linkId;
             PrefabDom m_linkDomNext;  //data for delete/update

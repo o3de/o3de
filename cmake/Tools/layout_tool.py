@@ -1,12 +1,9 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 #
 
 
@@ -107,7 +104,7 @@ def verify_layout(layout_dir, platform_name, project_path, asset_mode, asset_typ
     project_name_lower = project_path.lower()
     layout_path = pathlib.Path(layout_dir)
 
-    bootstrap_path = layout_path / 'Registry'
+    bootstrap_path = pathlib.Path(ROOT_ENGINE_PATH) / 'Registry'
     bootstrap_values = common.get_bootstrap_values(str(bootstrap_path), [f'{platform_name_lower}_remote_filesystem',
                                                                          f'{platform_name_lower}_connect_to_remote',
                                                                          f'{platform_name_lower}_wait_for_connect',

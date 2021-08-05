@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Math/Obb.h>
 #include <AzCore/Math/Aabb.h>
@@ -119,10 +115,10 @@ namespace UnitTest
 
     TEST(MATH_Obb, Contains)
     {
-        const Vector3 position(1.0f, 2.0f, 3.0f);
-        const Quaternion rotation = Quaternion::CreateRotationZ(DegToRad(30.0f));
-        const Vector3 halfLengths(2.0f, 1.0f, 2.5f);
-        const Obb obb = Obb::CreateFromPositionRotationAndHalfLengths(position, rotation, halfLengths);
+        const Vector3 testPosition(1.0f, 2.0f, 3.0f);
+        const Quaternion testRotation = Quaternion::CreateRotationZ(DegToRad(30.0f));
+        const Vector3 testHalfLengths(2.0f, 1.0f, 2.5f);
+        const Obb obb = Obb::CreateFromPositionRotationAndHalfLengths(testPosition, testRotation, testHalfLengths);
         // test some pairs of points which should be just either side of the Obb boundary
         EXPECT_TRUE(obb.Contains(Vector3(1.35f, 3.35f, 3.5f)));
         EXPECT_FALSE(obb.Contains(Vector3(1.35f, 3.4f, 3.5f)));
@@ -134,10 +130,10 @@ namespace UnitTest
 
     TEST(MATH_Obb, GetDistance)
     {
-        const Vector3 position(5.0f, 3.0f, 2.0f);
-        const Quaternion rotation = Quaternion::CreateRotationX(DegToRad(60.0f));
-        const Vector3 halfLengths(0.5f, 2.0f, 1.5f);
-        const Obb obb = Obb::CreateFromPositionRotationAndHalfLengths(position, rotation, halfLengths);
+        const Vector3 testPosition(5.0f, 3.0f, 2.0f);
+        const Quaternion testRotation = Quaternion::CreateRotationX(DegToRad(60.0f));
+        const Vector3 testHalfLengths(0.5f, 2.0f, 1.5f);
+        const Obb obb = Obb::CreateFromPositionRotationAndHalfLengths(testPosition, testRotation, testHalfLengths);
         EXPECT_NEAR(obb.GetDistance(Vector3(5.3f, 3.2f, 1.8f)), 0.0f, 1e-3f);
         EXPECT_NEAR(obb.GetDistance(Vector3(5.1f, 1.1f, 3.7f)), 0.9955f, 1e-3f);
         EXPECT_NEAR(obb.GetDistance(Vector3(4.7f, 4.5f, 4.2f)), 0.6553f, 1e-3f);
@@ -146,10 +142,10 @@ namespace UnitTest
 
     TEST(MATH_Obb, GetDistanceSq)
     {
-        const Vector3 position(1.0f, 4.0f, 3.0f);
-        const Quaternion rotation = Quaternion::CreateRotationY(DegToRad(45.0f));
-        const Vector3 halfLengths(1.5f, 3.0f, 1.0f);
-        const Obb obb = Obb::CreateFromPositionRotationAndHalfLengths(position, rotation, halfLengths);
+        const Vector3 testPosition(1.0f, 4.0f, 3.0f);
+        const Quaternion testRotation = Quaternion::CreateRotationY(DegToRad(45.0f));
+        const Vector3 testHalfLengths(1.5f, 3.0f, 1.0f);
+        const Obb obb = Obb::CreateFromPositionRotationAndHalfLengths(testPosition, testRotation, testHalfLengths);
         EXPECT_NEAR(obb.GetDistanceSq(Vector3(1.1f, 4.3f, 2.7f)), 0.0f, 1e-3f);
         EXPECT_NEAR(obb.GetDistanceSq(Vector3(-0.7f, 3.5f, 2.0f)), 0.8266f, 1e-3f);
         EXPECT_NEAR(obb.GetDistanceSq(Vector3(2.4f, 0.5f, 1.5f)), 0.5532f, 1e-3f);

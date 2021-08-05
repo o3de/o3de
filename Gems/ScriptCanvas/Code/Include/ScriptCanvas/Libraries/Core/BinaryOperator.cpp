@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "BinaryOperator.h"
 
@@ -80,20 +76,6 @@ namespace ScriptCanvas
             }
         }
 
-        void ArithmeticExpression::OnInputSignal(const SlotId& slotId)
-        {
-            if (slotId == GetSlotId(k_evaluateName))
-            {
-                const Datum output = Evaluate(*FindDatumByIndex(k_datumIndexLHS), *FindDatumByIndex(k_datumIndexRHS));
-                if (auto slot = GetSlot(GetOutputSlotId()))
-                {
-                    PushOutput(output, *slot);
-                }
-
-                SignalOutput(GetSlotId(k_outName));
-            }
-        }
-
         void ArithmeticExpression::Reflect(AZ::ReflectContext* reflection)
         {
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection))
@@ -110,17 +92,6 @@ namespace ScriptCanvas
                         ;
                 }
             }
-        }
-
-        Datum BinaryOperator::Evaluate([[maybe_unused]] const Datum& lhs, [[maybe_unused]] const Datum& rhs)
-        {
-            AZ_Assert(false, "Evaluate must be overridden");
-            return Datum();
-        };
-
-        void BinaryOperator::OnInputSignal([[maybe_unused]] const SlotId& slot)
-        {
-            AZ_Assert(false, "OnInputSignal must be overridden");
         }
 
         void BinaryOperator::OnInit()
@@ -162,28 +133,6 @@ namespace ScriptCanvas
         void BooleanExpression::InitializeBooleanExpression()
         {
             AZ_Assert(false, "InitializeBooleanExpression must be overridden");
-        }
-
-        void BooleanExpression::OnInputSignal(const SlotId& slotId)
-        {
-            if (slotId == GetSlotId(k_evaluateName))
-            {
-                const Datum output = Evaluate(*FindDatumByIndex(k_datumIndexLHS), *FindDatumByIndex(k_datumIndexRHS));
-                if (auto slot = GetSlot(GetOutputSlotId()))
-                {
-                    PushOutput(output, *slot);
-                }
-
-                const bool* result = output.GetAs<bool>();
-                if (result && *result)
-                {
-                    SignalOutput(GetSlotId(k_onTrue));
-                }
-                else
-                {
-                    SignalOutput(GetSlotId(k_onFalse));
-                }
-            }
         }
 
         void BooleanExpression::OnInit()

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 /*
     This compute shader analyzes the depth buffer and for each tile, find the min / max depths.  
@@ -70,9 +66,7 @@ void StoreTransparentMinMaxIntoSharedMemory(float2 data)
 
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
-    // We will use one or the other depending upon if MSAA is enabled or not
-    Texture2D<float4> m_depthBuffer;   
-    Texture2DMS<float4> m_depthBufferMSAA;   
+    Texture2DMS<float4> m_depthBufferMSAA;
 
     // Depth buffer where we rendered the nearest pixels of transparent objects
     Texture2D<float4> m_depthBufferTransparentMin;   
@@ -286,9 +280,19 @@ void MainCS(
 
     float2 minmaxDepth_transparent = ReadTransparentMinMaxMSAA(dispatchThreadID.xy);
 
-    if (o_msaaMode == MsaaMode::Msaa2x)
+    if (o_msaaMode == MsaaMode::None || o_msaaMode == MsaaMode::Msaa2x)
     {
-        float2 opaqueDepthSamples = ReadOpaqueDepthSamples2xMSAA(dispatchThreadID.xy);    
+        float2 opaqueDepthSamples;
+        if (o_msaaMode == MsaaMode::None)
+        {
+            float depth = PassSrg::m_depthBufferMSAA.Load(dispatchThreadID.xy, 0).x;
+            opaqueDepthSamples = float2(depth, depth);
+        }
+        else if (o_msaaMode == MsaaMode::Msaa2x)
+        {
+            opaqueDepthSamples = ReadOpaqueDepthSamples2xMSAA(dispatchThreadID.xy);
+        }
+        
         // Transparent geometry can't be behind opaque geometry. Just pick the first MSAA sample since we are trying to reduce reading from MSAA buffer
         minmaxDepth_transparent = DEPTH_MIN(minmaxDepth_transparent, opaqueDepthSamples.x);
         opaqueDepthSamples = ReplaceSkyPixelsWithFurthestPixelsFromTransparentObjects2x(opaqueDepthSamples, minmaxDepth_transparent);

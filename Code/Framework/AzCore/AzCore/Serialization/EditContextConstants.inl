@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -123,6 +119,7 @@ namespace AZ
 
             const static AZ::Crc32 NameLabelOverride = AZ_CRC("NameLabelOverride", 0x9ff79cab);
             const static AZ::Crc32 AssetPickerTitle = AZ_CRC_CE("AssetPickerTitle");
+            const static AZ::Crc32 HideProductFilesInAssetPicker = AZ_CRC_CE("HideProductFilesInAssetPicker");
             const static AZ::Crc32 ChildNameLabelOverride = AZ_CRC("ChildNameLabelOverride", 0x73dd2909);
             //! Container attribute that is used to override labels for its elements given the index of the element
             const static AZ::Crc32 IndexedChildNameLabelOverride = AZ_CRC("IndexedChildNameLabelOverride", 0x5f313ac2);
@@ -185,7 +182,7 @@ namespace AZ
             //! @code{.cpp}
             //! editContext->Class<ScriptEditorComponent>("Lua Script", "The Lua Script component allows you to add arbitrary Lua logic to an entity in the form of a Lua script")
             //!   ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-            //!   ->Attribute(AZ::Edit::Attributes::HelpPageURL, "http://docs.aws.amazon.com/lumberyard/latest/userguide/component-lua-script.html")
+            //!   ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/lua-script/")
             //! @endcode
             const static AZ::Crc32 HelpPageURL = AZ_CRC("HelpPageURL", 0xa344d681);
 

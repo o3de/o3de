@@ -1,13 +1,8 @@
 /*
- * All or portions of this file Copyright(c) Amazon.com, Inc.or its affiliates
- *or its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root
- *of this distribution(the "License").All use of this software is governed by
- *the License, or, if provided, by the license below or the license
- *accompanying this file.Do not remove or modify any license notices.This file
- *is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- *KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -114,7 +109,7 @@ namespace AZ
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<ModelAssetBuilderComponent, SceneAPI::SceneCore::ExportingComponent>()
-                    ->Version(27);  // [ATOM-14975]
+                    ->Version(31);  // [ATOM-14975]
             }
         }
 
@@ -372,6 +367,9 @@ namespace AZ
 
             MorphTargetMetaAssetCreator morphTargetMetaCreator;
             morphTargetMetaCreator.Begin(MorphTargetMetaAsset::ConstructAssetId(modelAssetId, modelAssetName));
+            
+            ModelAssetCreator modelAssetCreator;
+            modelAssetCreator.Begin(modelAssetId);
 
             uint32_t lodIndex = 0;
             for (const SourceMeshContentList& sourceMeshContentList : sourceMeshContentListsByLod)
@@ -434,7 +432,7 @@ namespace AZ
 
                     for (const ProductMeshView& meshView : lodMeshViews)
                     {
-                        if (!CreateMesh(meshView, indexBuffer, streamBuffers, lodAssetCreator, context.m_materialsByUid))
+                        if (!CreateMesh(meshView, indexBuffer, streamBuffers, modelAssetCreator, lodAssetCreator, context.m_materialsByUid))
                         {
                             return AZ::SceneAPI::Events::ProcessingResult::Failure;
                         }
@@ -473,10 +471,6 @@ namespace AZ
                 lodIndex++;
             }
             sourceMeshContentListsByLod.clear();
-
-            // Build the final asset structure
-            ModelAssetCreator modelAssetCreator;
-            modelAssetCreator.Begin(modelAssetId);
 
             // Finalize all LOD assets
             for (auto& lodAsset : lodAssets)
@@ -545,7 +539,9 @@ namespace AZ
                 }
                 else
                 {
-                    AZ_Warning(s_builderName, false, "Found multiple tangent data sets. Only the first will be used.");
+                    AZ_Warning(s_builderName, false,
+                        "Found multiple tangent data sets for mesh '%s'. Only the first will be used.",
+                        content.m_name.GetCStr());
                 }
             }
             else if (azrtti_istypeof<BitangentData>(data.get()))
@@ -557,7 +553,9 @@ namespace AZ
                 }
                 else
                 {
-                    AZ_Warning(s_builderName, false, "Found multiple bitangent data sets. Only the first will be used.");
+                    AZ_Warning(s_builderName, false,
+                        "Found multiple bitangent data sets for mesh '%s'. Only the first will be used.",
+                        content.m_name.GetCStr());
                 }
             }
             else if (azrtti_istypeof<MaterialData>(data.get()))
@@ -1001,7 +999,7 @@ namespace AZ
                 if (numInfluencesExcess > 0)
                 {
                     AZ_Warning(s_builderName, warnedExcessOfSkinInfluences,
-                        "Mesh %s has more skin influences (%d) than the maximum (%d). Skinning influences won't be normalized. Maximum number of skin influences can be increased with a Skin Modifier in FBX Settings.",
+                        "Mesh %s has more skin influences (%d) than the maximum (%d). Skinning influences won't be normalized. Maximum number of skin influences can be increased with a Skin Modifier in Scene Settings.",
                         sourceMesh.m_name.GetCStr(),
                         m_numSkinJointInfluencesPerVertex + numInfluencesExcess,
                         m_numSkinJointInfluencesPerVertex);
@@ -1823,6 +1821,7 @@ namespace AZ
             const ProductMeshView& meshView,
             const BufferAssetView& lodIndexBuffer,
             const AZStd::vector<ModelLodAsset::Mesh::StreamBufferInfo>& lodStreamBuffers,
+            ModelAssetCreator& modelAssetCreator,
             ModelLodAssetCreator& lodAssetCreator,
             const MaterialAssetsByUid& materialAssetsByUid)
         {
@@ -1833,8 +1832,13 @@ namespace AZ
                 auto iter = materialAssetsByUid.find(meshView.m_materialUid);
                 if (iter != materialAssetsByUid.end())
                 {
-                    const Data::Asset<MaterialAsset>& materialAsset = iter->second.m_asset;
-                    lodAssetCreator.SetMeshMaterialAsset(materialAsset);
+                    ModelMaterialSlot materialSlot;
+                    materialSlot.m_stableId = meshView.m_materialUid;
+                    materialSlot.m_displayName = iter->second.m_name;
+                    materialSlot.m_defaultMaterialAsset = iter->second.m_asset;
+
+                    modelAssetCreator.AddMaterialSlot(materialSlot);
+                    lodAssetCreator.SetMeshMaterialSlot(materialSlot.m_stableId);
                 }
             }
 

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Visibility/EntityBoundsUnionBus.h>
@@ -327,97 +323,11 @@ namespace AzFramework
         return localZ;
     }
 
-    void TransformComponent::SetRotation(const AZ::Vector3& eulerAnglesRadian)
+    void TransformComponent::SetWorldRotationQuaternion(const AZ::Quaternion& quaternion)
     {
-        AZ_Warning("TransformComponent", false, "SetRotation is deprecated, please use SetLocalRotation");
-
-        AZ::Transform newWorldTransform = m_worldTM;
-        newWorldTransform.SetRotation(AZ::ConvertEulerRadiansToQuaternion(eulerAnglesRadian));
-        SetWorldTM(newWorldTransform);
-    }
-
-    void TransformComponent::SetRotationQuaternion(const AZ::Quaternion& quaternion)
-    {
-        AZ_Warning("TransformComponent", false, "SetRotationQuaternion is deprecated, please use SetLocalRotationQuaternion");
-
         AZ::Transform newWorldTransform = m_worldTM;
         newWorldTransform.SetRotation(quaternion);
         SetWorldTM(newWorldTransform);
-    }
-
-    void TransformComponent::SetRotationX(float eulerAngleRadian)
-    {
-        AZ_Warning("TransformComponent", false, "SetRotationX is deprecated, please use SetLocalRotation");
-
-        AZ::Transform newWorldTransform = m_worldTM;
-        newWorldTransform.SetRotation(AZ::Quaternion::CreateRotationX(eulerAngleRadian));
-        SetWorldTM(newWorldTransform);
-    }
-
-    void TransformComponent::SetRotationY(float eulerAngleRadian)
-    {
-        AZ_Warning("TransformComponent", false, "SetRotationY is deprecated, please use SetLocalRotation");
-
-        AZ::Transform newWorldTransform = m_worldTM;
-        newWorldTransform.SetRotation(AZ::Quaternion::CreateRotationY(eulerAngleRadian));
-        SetWorldTM(newWorldTransform);
-    }
-
-    void TransformComponent::SetRotationZ(float eulerAngleRadian)
-    {
-        AZ_Warning("TransformComponent", false, "SetRotationZ is deprecated, please use SetLocalRotation");
-
-        AZ::Transform newWorldTransform = m_worldTM;
-        newWorldTransform.SetRotation(AZ::Quaternion::CreateRotationZ(eulerAngleRadian));
-        SetWorldTM(newWorldTransform);
-    }
-
-    void TransformComponent::RotateByX(float eulerAngleRadian)
-    {
-        AZ_Warning("TransformComponent", false, "RotateByX is deprecated, please use RotateAroundLocalX");
-        RotateAroundLocalX(eulerAngleRadian);
-    }
-
-    void TransformComponent::RotateByY(float eulerAngleRadian)
-    {
-        AZ_Warning("TransformComponent", false, "RotateByY is deprecated, please use RotateAroundLocalY");
-        RotateAroundLocalY(eulerAngleRadian);
-    }
-
-    void TransformComponent::RotateByZ(float eulerAngleRadian)
-    {
-        AZ_Warning("TransformComponent", false, "RotateByZ is deprecated, please use RotateAroundLocalZ");
-        RotateAroundLocalZ(eulerAngleRadian);
-    }
-
-    AZ::Vector3 TransformComponent::GetRotationEulerRadians()
-    {
-        AZ_Warning("TransformComponent", false, "GetRotationEulerRadians is deprecated, please use GetWorldRotation");
-        return m_worldTM.GetRotation().GetEulerRadians();
-    }
-
-    AZ::Quaternion TransformComponent::GetRotationQuaternion()
-    {
-        AZ_Warning("TransformComponent", false, "GetRotationQuaternion is deprecated, please use GetWorldRotationQuaternion");
-        return m_worldTM.GetRotation();
-    }
-
-    float TransformComponent::GetRotationX()
-    {
-        AZ_Warning("TransformComponent", false, "GetRotationX is deprecated, please use GetWorldRotation");
-        return GetRotationEulerRadians().GetX();
-    }
-
-    float TransformComponent::GetRotationY()
-    {
-        AZ_Warning("TransformComponent", false, "GetRotationY is deprecated, please use GetWorldRotation");
-        return GetRotationEulerRadians().GetY();
-    }
-
-    float TransformComponent::GetRotationZ()
-    {
-        AZ_Warning("TransformComponent", false, "GetRotationZ is deprecated, please use GetWorldRotation");
-        return GetRotationEulerRadians().GetZ();
     }
 
     AZ::Vector3 TransformComponent::GetWorldRotation()
@@ -492,21 +402,10 @@ namespace AzFramework
         return m_localTM.GetRotation();
     }
 
-    void TransformComponent::SetLocalScale(const AZ::Vector3& scale)
-    {
-        AZ::Transform newLocalTM = m_localTM;
-        newLocalTM.SetScale(scale);
-        SetLocalTM(newLocalTM);
-    }
-
     AZ::Vector3 TransformComponent::GetLocalScale()
     {
-        return m_localTM.GetScale();
-    }
-
-    AZ::Vector3 TransformComponent::GetWorldScale()
-    {
-        return m_worldTM.GetScale();
+        AZ_WarningOnce("TransformComponent", false, "GetLocalScale is deprecated, please use GetLocalUniformScale instead");
+        return AZ::Vector3(m_localTM.GetUniformScale());
     }
 
     void TransformComponent::SetLocalUniformScale(float scale)
@@ -830,45 +729,7 @@ namespace AzFramework
                 ->Event("GetLocalX", &AZ::TransformBus::Events::GetLocalX)
                 ->Event("GetLocalY", &AZ::TransformBus::Events::GetLocalY)
                 ->Event("GetLocalZ", &AZ::TransformBus::Events::GetLocalZ)
-                ->Event("RotateByX", &AZ::TransformBus::Events::RotateByX)
-                    ->Attribute(AZ::Script::Attributes::Deprecated, true)
-                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
-                ->Event("RotateByY", &AZ::TransformBus::Events::RotateByY)
-                    ->Attribute(AZ::Script::Attributes::Deprecated, true)
-                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
-                ->Event("RotateByZ", &AZ::TransformBus::Events::RotateByZ)
-                    ->Attribute(AZ::Script::Attributes::Deprecated, true)
-                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
-                ->Event("SetEulerRotation", &AZ::TransformBus::Events::SetRotation)
-                    ->Attribute(AZ::Script::Attributes::Deprecated, true)
-                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
-                ->Event("SetRotationQuaternion", &AZ::TransformBus::Events::SetRotationQuaternion)
-                    ->Attribute(AZ::Script::Attributes::Deprecated, true)
-                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
-                ->Event("SetRotationX", &AZ::TransformBus::Events::SetRotationX)
-                    ->Attribute(AZ::Script::Attributes::Deprecated, true)
-                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
-                ->Event("SetRotationY", &AZ::TransformBus::Events::SetRotationY)
-                    ->Attribute(AZ::Script::Attributes::Deprecated, true)
-                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
-                ->Event("SetRotationZ", &AZ::TransformBus::Events::SetRotationZ)
-                    ->Attribute(AZ::Script::Attributes::Deprecated, true)
-                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
-                ->Event("GetEulerRotation", &AZ::TransformBus::Events::GetRotationEulerRadians)
-                    ->Attribute(AZ::Script::Attributes::Deprecated, true)
-                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
-                ->Event("GetRotationQuaternion", &AZ::TransformBus::Events::GetRotationQuaternion)
-                    ->Attribute(AZ::Script::Attributes::Deprecated, true)
-                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
-                ->Event("GetRotationX", &AZ::TransformBus::Events::GetRotationX)
-                    ->Attribute(AZ::Script::Attributes::Deprecated, true)
-                   ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
-                ->Event("GetRotationY", &AZ::TransformBus::Events::GetRotationY)
-                    ->Attribute(AZ::Script::Attributes::Deprecated, true)
-                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
-                ->Event("GetRotationZ", &AZ::TransformBus::Events::GetRotationZ)
-                    ->Attribute(AZ::Script::Attributes::Deprecated, true)
-                    ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
+                ->Event("SetWorldRotationQuaternion", &AZ::TransformBus::Events::SetWorldRotationQuaternion)
                 ->Event("GetWorldRotation", &AZ::TransformBus::Events::GetWorldRotation)
                 ->Event("GetWorldRotationQuaternion", &AZ::TransformBus::Events::GetWorldRotationQuaternion)
                 ->Event("SetLocalRotation", &AZ::TransformBus::Events::SetLocalRotation)
@@ -880,11 +741,11 @@ namespace AzFramework
                 ->Event("GetLocalRotationQuaternion", &AZ::TransformBus::Events::GetLocalRotationQuaternion)
                     ->Attribute("Rotation", AZ::Edit::Attributes::PropertyRotation)
                 ->VirtualProperty("Rotation", "GetLocalRotationQuaternion", "SetLocalRotationQuaternion")
-                ->Event("SetLocalScale", &AZ::TransformBus::Events::SetLocalScale)
                 ->Event("GetLocalScale", &AZ::TransformBus::Events::GetLocalScale)
                     ->Attribute("Scale", AZ::Edit::Attributes::PropertyScale)
-                ->VirtualProperty("Scale", "GetLocalScale", "SetLocalScale")
-                ->Event("GetWorldScale", &AZ::TransformBus::Events::GetWorldScale)
+                ->Event("SetLocalUniformScale", &AZ::TransformBus::Events::SetLocalUniformScale)
+                ->Event("GetLocalUniformScale", &AZ::TransformBus::Events::GetLocalUniformScale)
+                ->VirtualProperty("Uniform Scale", "GetLocalUniformScale", "SetLocalUniformScale")
                 ->Event("GetChildren", &AZ::TransformBus::Events::GetChildren)
                 ->Event("GetAllDescendants", &AZ::TransformBus::Events::GetAllDescendants)
                 ->Event("GetEntityAndAllDescendants", &AZ::TransformBus::Events::GetEntityAndAllDescendants)

@@ -1,16 +1,12 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
-#include "precompiled.h"
+#include <AzCore/PlatformDef.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800 4244, "-Wunknown-warning-option")
 #include <QScopedValueRollback>
@@ -43,9 +39,6 @@ AZ_POP_DISABLE_WARNING
 #include <ScriptCanvas/Libraries/Core/EBusEventHandler.h>
 #include <ScriptCanvas/Libraries/Core/FunctionDefinitionNode.h>
 #include <Editor/Include/ScriptCanvas/GraphCanvas/MappingBus.h>
-
-#include <Core/PureData.h>
-
 #include <Editor/Include/ScriptCanvas/GraphCanvas/NodeDescriptorBus.h>
 #include <Editor/Nodes/NodeCreateUtils.h>
 #include <Editor/Nodes/NodeDisplayUtils.h>
@@ -68,7 +61,6 @@ AZ_POP_DISABLE_WARNING
 #include <Editor/GraphCanvas/PropertyInterfaces/ScriptCanvasEnumComboBoxPropertyDataInterface.h>
 #include <Editor/GraphCanvas/PropertyInterfaces/ScriptCanvasStringPropertyDataInterface.h>
 
-#include <Editor/Nodes/ScriptCanvasAssetNode.h>
 #include <Editor/Translation/TranslationHelper.h>
 #include <Editor/View/Dialogs/SettingsDialog.h>
 #include <Editor/View/Widgets/ScriptCanvasNodePaletteDockWidget.h>
@@ -91,7 +83,8 @@ AZ_POP_DISABLE_WARNING
 #include <ScriptCanvas/Variable/VariableBus.h>
 #include <ScriptCanvas/Libraries/UnitTesting/UnitTestingLibrary.h>
 
-////
+    AZ_CVAR(bool, g_disableDeprecatedNodeUpdates, false, {}, AZ::ConsoleFunctorFlags::Null,
+        "Disables automatic update attempts of deprecated nodes, so that graphs that require and update can be viewed in their original form");
 
 namespace EditorGraphCpp
 {
@@ -1089,66 +1082,6 @@ namespace ScriptCanvasEditor
         ScriptCanvas::Endpoint scTargetEndpoint = ConvertToScriptCanvasEndpoint(targetPoint);
 
         return CanCreateConnectionBetween(scSourceEndpoint, scTargetEndpoint).IsSuccess();
-    }
-
-    GraphCanvas::ConnectionValidationTooltip Graph::GetConnectionValidityTooltip(const GraphCanvas::Endpoint& sourcePoint, const GraphCanvas::Endpoint& targetPoint) const
-    {
-        ScriptCanvas::Endpoint scSourceEndpoint = ConvertToScriptCanvasEndpoint(sourcePoint);
-        ScriptCanvas::Endpoint scTargetEndpoint = ConvertToScriptCanvasEndpoint(targetPoint);
-
-        AZ::Outcome<void, AZStd::string> connectionResult = CanCreateConnectionBetween(scSourceEndpoint, scTargetEndpoint);
-
-        GraphCanvas::ConnectionValidationTooltip validationTooltip;
-
-        validationTooltip.m_isValid = connectionResult.IsSuccess();
-
-        if (!connectionResult)
-        {
-            validationTooltip.m_failureReason = connectionResult.GetError();
-        }
-
-        return validationTooltip;
-    }
-
-    bool Graph::IsValidVariableAssignment(const AZ::EntityId& variableId, const GraphCanvas::Endpoint& targetPoint) const
-    {
-        AZStd::any* userData = nullptr;
-        GraphCanvas::NodeRequestBus::EventResult(userData, variableId, &GraphCanvas::NodeRequests::GetUserData);
-        AZ::EntityId variableNodeId = (userData && userData->is<AZ::EntityId>()) ? *AZStd::any_cast<AZ::EntityId>(userData) : AZ::EntityId();
-
-        ScriptCanvas::SlotId variableSlotId;
-        ScriptCanvas::NodeRequestBus::EventResult(variableSlotId, variableNodeId, &ScriptCanvas::NodeRequests::GetSlotId, ScriptCanvas::PureData::k_getThis);
-
-        ScriptCanvas::Endpoint variableSourceEndpoint(variableNodeId, variableSlotId);
-        ScriptCanvas::Endpoint targetEndpoint = ConvertToScriptCanvasEndpoint(targetPoint);
-
-        return CanCreateConnectionBetween(variableSourceEndpoint, targetEndpoint).IsSuccess();
-    }
-
-    GraphCanvas::ConnectionValidationTooltip Graph::GetVariableAssignmentValidityTooltip(const AZ::EntityId& variableId, const GraphCanvas::Endpoint& targetPoint) const
-    {
-        AZStd::any* userData = nullptr;
-        GraphCanvas::NodeRequestBus::EventResult(userData, variableId, &GraphCanvas::NodeRequests::GetUserData);
-        AZ::EntityId variableNodeId = (userData && userData->is<AZ::EntityId>()) ? *AZStd::any_cast<AZ::EntityId>(userData) : AZ::EntityId();
-
-        ScriptCanvas::SlotId variableSlotId;
-        ScriptCanvas::NodeRequestBus::EventResult(variableSlotId, variableNodeId, &ScriptCanvas::NodeRequests::GetSlotId, ScriptCanvas::PureData::k_getThis);
-
-        ScriptCanvas::Endpoint variableSourceEndpoint(variableNodeId, variableSlotId);
-        ScriptCanvas::Endpoint targetEndpoint = ConvertToScriptCanvasEndpoint(targetPoint);
-
-        AZ::Outcome<void, AZStd::string> connectionResult = CanCreateConnectionBetween(variableSourceEndpoint, targetEndpoint);
-
-        GraphCanvas::ConnectionValidationTooltip validationTooltip;
-
-        validationTooltip.m_isValid = connectionResult.IsSuccess();
-
-        if (!connectionResult)
-        {
-            validationTooltip.m_failureReason = connectionResult.GetError();
-        }
-
-        return  validationTooltip;
     }
 
     AZStd::string Graph::GetDataTypeString(const AZ::Uuid& typeId)
@@ -3194,16 +3127,6 @@ namespace ScriptCanvasEditor
         }
     }
 
-    bool Graph::IsRuntimeGraph() const
-    {
-        return GetAssetType() == azrtti_typeid<ScriptCanvas::RuntimeAsset>();
-    }
-
-    bool Graph::IsFunctionGraph() const
-    {
-        return GetAssetType() == azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>();
-    }
-
     bool Graph::CanExposeEndpoint(const GraphCanvas::Endpoint& endpoint)
     {
         bool isEnabled = false;
@@ -3642,7 +3565,7 @@ namespace ScriptCanvasEditor
 
                 if (scriptCanvasNode)
                 {
-                    if (scriptCanvasNode->IsDeprecated())
+                     if (scriptCanvasNode->IsDeprecated() && !g_disableDeprecatedNodeUpdates)
                     {
                         ScriptCanvas::NodeConfiguration nodeConfig = scriptCanvasNode->GetReplacementNodeConfiguration();
                         if (nodeConfig.IsValid())

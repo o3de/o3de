@@ -1,21 +1,18 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
 #include <PxPhysicsAPI.h>
 #include <AzFramework/Physics/Material.h>
 #include <AzFramework/Physics/MaterialBus.h>
-#include <AzCore/Asset/AssetCommon.h>
+#include <AzFramework/Physics/ShapeConfiguration.h>
+#include <AzFramework/Physics/Common/PhysicsEvents.h>
 #include <AzCore/std/smart_ptr/enable_shared_from_this.h>
 
 namespace PhysX
@@ -58,9 +55,9 @@ namespace PhysX
 
         // Physics::Material
         AZ::Crc32 GetSurfaceType() const override;
-        void SetSurfaceType(AZ::Crc32 surfaceType) override;
 
-        const AZStd::string& GetSurfaceTypeName() const override { return m_surfaceString; }
+        const AZStd::string& GetSurfaceTypeName() const override;
+        void SetSurfaceTypeName(const AZStd::string& surfaceTypeName) override;
 
         float GetDynamicFriction() const override;
         void SetDynamicFriction(float dynamicFriction) override;
@@ -80,6 +77,9 @@ namespace PhysX
         float GetDensity() const override;
         void SetDensity(float density) override;
 
+        AZ::Color GetDebugColor() const override;
+        void SetDebugColor(const AZ::Color& debugColor) override;
+
         AZ::u32 GetCryEngineSurfaceId() const override;
 
         void* GetNativePointer() override;
@@ -92,6 +92,7 @@ namespace PhysX
         AZ::u32 m_cryEngineSurfaceId = -1;
         AZStd::string m_surfaceString;
         float m_density = 1000.0f;
+        AZ::Color m_debugColor = AZ::Colors::White;
     };
 
     /// Bus with requests to MaterialsManager
@@ -108,9 +109,17 @@ namespace PhysX
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
 
+        /// Returns weak pointers to physx::PxMaterial.
+        /// Equivalent to PhysicsMaterialRequests::GetMaterials but it returns physx::PxMaterial pointers instead.
+        /// @param materialSelection MaterialSelection instance to create or get materials for
+        /// @param outMaterials vector of pointers to physx::PxMaterial to fill with. The vector will be cleared inside the function.
         virtual void GetPxMaterials(const Physics::MaterialSelection& materialSelection, AZStd::vector<physx::PxMaterial*>& outMaterials) = 0;
 
-        virtual const AZStd::shared_ptr<Material>& GetDefaultMaterial() = 0;
+        /// Returns default material
+        /// @return default PhysX::Material instance
+        virtual AZStd::shared_ptr<Material> GetDefaultMaterial() = 0;
+
+        /// Releases ownership of all materials created before.
         virtual void ReleaseAllMaterials() = 0;
     };
     using MaterialManagerRequestsBus = AZ::EBus<MaterialManagerRequests>;
@@ -120,6 +129,9 @@ namespace PhysX
     ///
     /// Material managers creates PhysX::Material instances from MaterialLibraryAsset and assumes their ownership.
     /// Also keeps a reference to the default material.
+    ///
+    /// Note: Materials will be created on the fly while doing queries and
+    ///       they will be updated when the material library changes.
     class MaterialsManager
         : public MaterialManagerRequestsBus::Handler
         , public Physics::PhysicsMaterialRequestBus::Handler
@@ -131,35 +143,19 @@ namespace PhysX
         MaterialsManager();
         ~MaterialsManager() override;
 
-        /// Returns a vector of weak pointers to materials selected. 
-        /// To be notified if the pointers are deleted, connect to PhysicsMaterialNotifications::MaterialsReleased().
-        /// @param materialSelection MaterialSelection instance to create or get materials for.
-        /// @param outMaterials Collection of material weak pointers corresponding to the material selection to be returned.
+        // PhysicsMaterialRequestBus::Handler overrides...
         void GetMaterials(const Physics::MaterialSelection& materialSelection
-            , AZStd::vector<AZStd::weak_ptr<Physics::Material>>& outMaterials) override;
-
-        /// Returns a weak pointer to physics material with the given name.
-        AZStd::weak_ptr<Physics::Material> GetMaterialByName(const AZStd::string& name) override;
-
-        /// Returns index of selected material in its material library. 0 is the Default material.
-        /// @param materialSelection Selection of materials.
-        AZ::u32 GetFirstSelectedMaterialIndex(const Physics::MaterialSelection& materialSelection) override;
-
-        /// Slightly faster version of GetMaterials that returns physx::PxMaterial pointers instead. \n
-        /// The rest is equivalent to GetMaterials function.
-        /// @param materialSelection MaterialSelection instance to create or get materials for
-        /// @param outMaterials vector of pointers to physx::PxMaterial to fill with. The vector will be cleared inside the function.
-        void GetPxMaterials(const Physics::MaterialSelection& materialSelection, AZStd::vector<physx::PxMaterial*>& outMaterials) override;
-
-        /// Returns default material
-        /// @return default PhysX::Material instance
-        const AZStd::shared_ptr<Material>& GetDefaultMaterial() override;
-
-        /// Return default material
-        /// @return default Physics::Material instance
+            , AZStd::vector<AZStd::shared_ptr<Physics::Material>>& outMaterials) override;
+        AZStd::shared_ptr<Physics::Material> GetMaterialById(Physics::MaterialId id) override;
+        AZStd::shared_ptr<Physics::Material> GetMaterialByName(const AZStd::string& name) override;
+        void UpdateMaterialSelectionFromPhysicsAsset(
+            const Physics::ShapeConfiguration& shapeConfiguration,
+            Physics::MaterialSelection& materialSelection) override;
         AZStd::shared_ptr<Physics::Material> GetGenericDefaultMaterial() override;
 
-        /// Releases ownership of all materials created before.
+        // MaterialManagerRequestsBus::Handler overrides...
+        void GetPxMaterials(const Physics::MaterialSelection& materialSelection, AZStd::vector<physx::PxMaterial*>& outMaterials) override;
+        AZStd::shared_ptr<Material> GetDefaultMaterial() override;
         void ReleaseAllMaterials() override;
 
         /// Connect to any necessary buses
@@ -169,9 +165,31 @@ namespace PhysX
         void Disconnect();
 
     private:
-        void InitializeMaterials(const Physics::MaterialSelection& materialSelection);
+        using Materials = AZStd::unordered_map<AZ::Uuid, AZStd::shared_ptr<Material>>;
 
-        AZStd::unordered_map<AZ::Uuid, AZStd::shared_ptr<Material>> m_materialsFromAssets;
+        /// Search a material by id, if it exists already it returns its iterator,
+        /// if it doesn't exist it tries to create it and add it to the list.
+        /// If the material id is null or not part of the material library then the
+        /// iterator returned is end of material list.
+        Materials::iterator FindOrCreateMaterial(Physics::MaterialId materialId);
+
+        /// Search a material by name, if it exists already it returns its iterator,
+        /// if it doesn't exist it tries to create it and add it to the list.
+        /// If the material id is null or not part of the material library then the
+        /// iterator returned is end of material list.
+        Materials::iterator FindOrCreateMaterial(const AZStd::string& materialName);
+
+        /// Returns the material library of the project.
+        Physics::MaterialLibraryAsset* GetMaterialLibrary();
+
+        void OnPhysicsConfigurationChanged(const AzPhysics::SystemConfiguration* config);
+        void OnMaterialLibraryChanged(const AZ::Data::AssetId& materialLibraryAssetId);
+
+        Materials m_materials;
         AZStd::shared_ptr<Material> m_defaultMaterial;
+        Physics::MaterialConfiguration m_defaultMaterialConfiguration;
+
+        AzPhysics::SystemEvents::OnConfigurationChangedEvent::Handler m_physicsConfigChangedHandler;
+        AzPhysics::SystemEvents::OnMaterialLibraryChangedEvent::Handler m_materialLibraryChangedHandler;
     };
 }

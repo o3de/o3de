@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -135,6 +131,12 @@ namespace AZ
                 arguments.append(QString("--rhi=%1").arg(apiName.GetCStr()));
             }
 
+            AZ::IO::FixedMaxPathString projectPath(AZ::Utils::GetProjectPath());
+            if (!projectPath.empty())
+            {
+                arguments.append(QString("--project-path=%1").arg(projectPath.c_str()));
+            }
+
             AtomToolsFramework::LaunchTool("MaterialEditor", ".exe", arguments);
         }
 
@@ -151,6 +153,7 @@ namespace AZ
                 m_openMaterialEditorAction->setShortcut(QKeySequence(Qt::Key_M));
                 m_openMaterialEditorAction->setCheckable(false);
                 m_openMaterialEditorAction->setChecked(false);
+                m_openMaterialEditorAction->setIcon(QIcon(":/Menu/material_editor.svg"));
                 QObject::connect(
                     m_openMaterialEditorAction, &QAction::triggered, m_openMaterialEditorAction, [this]()
                     {
@@ -158,7 +161,7 @@ namespace AZ
                     }
                 );
 
-                AzToolsFramework::EditorMenuRequestBus::Broadcast(&AzToolsFramework::EditorMenuRequestBus::Handler::AddMenuAction, "ToolMenu", m_openMaterialEditorAction);
+                AzToolsFramework::EditorMenuRequestBus::Broadcast(&AzToolsFramework::EditorMenuRequestBus::Handler::AddMenuAction, "ToolMenu", m_openMaterialEditorAction, true);
             }
         }
 

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -22,7 +18,16 @@
 namespace AzNetworking
 {
     //! @class INetworkInterface
-    //! @brief pure virtual network interface class to abstract client/server and tcp/udp concerns from application code.
+    //! @brief Network interface class to abstract client/server and protocol concerns from application code.
+    //!
+    //! INetworkInterface provides an abstract API capable of receiving and opening IConnection objects, sending IPacket objects with optional
+    //! reliability, and determining the delivery status of packets that have been sent unreliably (delivery of reliable packets
+    //! is guaranteed as long as the associated connection remains open). INetworkInterface must be provided an
+    //! IConnectionListener instance that outlives the INetworkInterface itself. The INetworkInterface also creates and manages
+    //! the IConnectionSet, which tracks all open connections bound to the interface. INetworkInterface also provides GetMetrics
+    //! functions which can be used to fetch a struct detailing a variety of metrics relating to send and receive rates for both
+    //! packets and bytes in addition to the effect of features on those rates (such as packet size reduction due to compression.)
+    
     class INetworkInterface
     {
     public:
@@ -88,11 +93,23 @@ namespace AzNetworking
         //! @return boolean true if the packet is confirmed acknowledged, false if the packet number is out of range, lost, or still pending acknowledgment
         virtual bool WasPacketAcked(ConnectionId connectionId, PacketId packetId) = 0;
 
+        //! Closes the network interface to stop accepting new incoming connections.
+        //! @return boolean true if the operation was successful, false if it failed
+        virtual bool StopListening() = 0;
+
         //! Disconnects the specified connection.
         //! @param connectionId identifier of the connection to terminate
         //! @param reason      reason for the disconnect
         //! @return boolean true on success
         virtual bool Disconnect(ConnectionId connectionId, DisconnectReason reason) = 0;
+
+        //! Sets whether this connection interface can disconnect by virtue of a timeout
+        //! @param timeoutEnabled If this connection interface will automatically disconnect due to a timeout
+        virtual void SetTimeoutEnabled(bool timeoutEnabled) = 0;
+
+        //! Whether this connection interface will disconnect by virtue of a time out (does not account for cvars affecting all connections)
+        //! @return boolean true if this connection will not disconnect on timeout (does not account for cvars affecting all connections)
+        virtual bool IsTimeoutEnabled() const = 0;
 
         //! Const access to the metrics tracked by this network interface.
         //! @return const reference to the metrics tracked by this network interface

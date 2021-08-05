@@ -8,6 +8,17 @@
             "PassClass": "RasterPass",
             "Slots": [
                 {
+                    "Name": "DepthInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "DepthStencil",
+                    "LoadStoreAction": {
+                        "ClearValue": {
+                            "Type": "DepthStencil"
+                        },
+                        "LoadActionStencil": "Clear"
+                    }
+                },
+                {
                     "Name": "InputOutput",
                     "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "RenderTarget"

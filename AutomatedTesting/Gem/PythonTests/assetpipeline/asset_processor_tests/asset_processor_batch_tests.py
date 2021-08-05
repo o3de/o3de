@@ -1,12 +1,8 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 
 General Asset Processor Batch Tests
 """
@@ -100,9 +96,17 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     def test_RunAPBatch_TwoPlatforms_ExitCodeZero(self, asset_processor):
+        """
+        Tests Process assets for PC & Mac and verifies that processing exited without error
+
+        Test Steps:
+        1. Add Mac and PC as enabled platforms
+        2. Process Assets
+        3. Validate that AP exited cleanly
+        """
         asset_processor.create_temp_asset_root()
         asset_processor.enable_asset_processor_platform("pc")
-        asset_processor.enable_asset_processor_platform("osx_gl")
+        asset_processor.enable_asset_processor_platform("mac")
         result, _ = asset_processor.batch_process()
         assert result, "AP Batch failed"
 
@@ -111,6 +115,14 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
     @pytest.mark.assetpipeline
     @pytest.mark.test_case_id('C1571826')
     def test_RunAPBatch_OnlyIncludeInvalidAssets_NoAssetsAdded(self, asset_processor, ap_setup_fixture):
+        """
+        Tests processing invalid assets and validating that no assets were moved to the cache
+
+        Test Steps:
+        1. Create a test environment with invalid assets
+        2. Run asset processor
+        3. Validate that no assets were found in the cache
+        """
         asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "test_ProcessAssets_OnlyIncludeInvalidAssets_NoAssetsAdded")
 
         result, _ = asset_processor.batch_process()
@@ -127,6 +139,16 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
                "recognized as failing in the logs.  There appears to be a window where the AutoFailJob doesn't complete"
                "before the shutdown completes and the failure doesn't end up counting")
     def test_ProcessAssets_IncludeTwoAssetsWithSameProduct_FailingOnSecondAsset(self, asset_processor, ap_setup_fixture):
+        """
+        Tests processing two source assets with the same product file and validates that the second source will error
+
+        Test Steps:
+        1. Create a test environment that has two source files with the same product
+        2. Run asset processor
+        3. Validate that 1 asset failed to process
+        4. Validate that only one product file with the expected name is found in the cache
+        """
+
         asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "test_ProcessAssets_IncludeTwoAssetsWithSameProduct_FailingOnSecondAsset")
         result, output = asset_processor.batch_process(capture_output = True, expect_failure = True)
 
@@ -143,6 +165,17 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
     @pytest.mark.assetpipeline
     @pytest.mark.test_case_id('C1587615')
     def test_ProcessAndDeleteCache_APBatchShouldReprocess(self, asset_processor, ap_setup_fixture):
+        """
+        Tests processing once, deleting the generated cache, then processing again and validates the cache is created
+
+        Test Steps:
+        1. Run asset processor
+        2. Compare the cache with expected output
+        3. Delete Cache
+        4. Compare the cache with expected output to verify that cache is gone
+        5. Run asset processor with fastscan disabled
+        6. Compare the cache with expected output
+        """
         # Deleting assets from Cache will make them re-processed in AP (after start)
 
         # Copying test assets to project folder and deleting them from cache to make sure APBatch will process them
@@ -174,6 +207,18 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
     @pytest.mark.assetpipeline
     @pytest.mark.test_case_id('C1591564')
     def test_ProcessAndChangeSource_APBatchShouldReprocess(self, asset_processor, ap_setup_fixture):
+        """
+        Tests reprocessing of a modified asset and verifies that it was reprocessed
+
+        Test Steps:
+        1. Prepare test environment and copy test asset over
+        2. Run asset processor
+        3. Verify asset processed
+        4. Verify asset is in cache
+        4. Modify asset
+        5. Re-run asset processor
+        6. Verify asset was processed
+        """
         # AP Batch Processing changed files (after start)
 
         # Copying test assets to project folder and deleting them from cache to make sure APBatch will process them
@@ -208,6 +253,18 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     def test_ProcessByBothApAndBatch_Md5ShouldMatch(self, asset_processor, ap_setup_fixture):
+        """
+        Tests that a cache generated by AP GUI is the same as AP Batch
+
+        Test Steps:
+        1. Create test environment with test assets
+        2. Call asset processor batch
+        3. Get checksum for file cache
+        4. Clean up test environment
+        5. Call asset processor gui with quitonidle
+        6. Get checksum for file cache
+        7. Verify that checksums are equal
+        """
         # AP Batch and AP app processed assets MD5 sums should be the same
 
         # Copying test assets to project folder and deleting them from cache to make sure APBatch will process them
@@ -240,6 +297,16 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
     @pytest.mark.assetpipeline
     @pytest.mark.test_case_id('C1612446')
     def test_AddSameAssetsDifferentNames_ShouldProcess(self, asset_processor, ap_setup_fixture):
+        """
+        Tests Asset Processing of duplicate assets with different names and verifies that both assets are processed
+
+        Test Steps:
+        1. Create test environment with two identical source assets with different names
+        2. Run asset processor
+        3. Verify that assets didn't fail to process
+        4. Verify the correct number of jobs were performed
+        5. Verify that product files are in the cache
+        """
         # Feed two similar slices and texture with different names - should process without any issues
 
         # Copying test assets to project folder and deleting them from cache to make sure APBatch will process them
@@ -277,6 +344,19 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
                "recognized as failing in the logs.  There appears to be a window where the AutoFailJob doesn't complete"
                "before the shutdown completes and the failure doesn't end up counting")
     def test_AddTwoTexturesWithSameName_ShouldProcessAfterRename(self, asset_processor, ap_setup_fixture):
+        """
+        Tests processing of two textures with the same name then verifies that AP will successfully process after
+        renaming one of the textures
+
+        Test Steps:
+        1. Create test environment with two textures that have the same name
+        2. Launch Asset Processor
+        3. Validate that Asset Processor generates an error
+        4. Rename texture files
+        5. Run asset processor
+        6. Verify that asset processor does not error
+        7. Verify that expected product files are in the cache
+        """
         # Feed two different textures with same name (but different extensions) - ap will fail
         # Rename one of textures and failure should go away
 
@@ -312,6 +392,15 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     def test_InvalidServerAddress_Warning_Logs(self, asset_processor):
+        """
+        Tests running Asset Processor with an invalid server address and verifies that AP returns a warning about
+        an invalid server address
+
+        Test Steps:
+        1. Launch asset processor while providing an invalid server address
+        2. Verify asset processor does not fail
+        3. Verify that asset processor generated a warning informing the user about an invalid server address
+        """
 
         asset_processor.create_temp_asset_root()
         # Launching AP and making sure that the warning exists
@@ -327,6 +416,12 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
     def test_AllSupportedPlatforms_IncludeValidAssets_AssetsProcessed(self, asset_processor, ap_setup_fixture):
         """
         AssetProcessorBatch is successfully processing newly added assets
+
+        Test Steps:
+        1. Create a test environment with test assets
+        2. Launch Asset Processor
+        3. Verify that asset processor does not fail to process
+        4. Verify assets are not missing from the cache
         """
         env = ap_setup_fixture
 
@@ -350,6 +445,14 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
     def test_AllSupportedPlatforms_DeletedAssets_DeletedFromCache(self, asset_processor, ap_setup_fixture):
         """
         AssetProcessor successfully deletes cached items when removed from project
+
+        Test Steps:
+        1. Create a test environment with test assets
+        2. Run asset processor
+        3. Verify expected assets are in the cache
+        4. Delete test assets
+        5. Run asset processor
+        6. Verify expected assets are in the cache
         """
         env = ap_setup_fixture
 
@@ -385,6 +488,10 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         """
         Tests that when cache is deleted (no cache) and AssetProcessorBatch runs,
         it successfully starts and processes assets.
+
+        Test Steps:
+        1. Run asset processor
+        2. Verify asset processor exits cleanly
         """
         asset_processor.create_temp_asset_root()
 
@@ -402,6 +509,14 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         # fmt:on
         """
         AssetProcessor successfully recovers assets from cache when deleted.
+
+        Test Steps:
+        1. Create test enviornment with test assets
+        2. Run Asset Processor and verify it exits cleanly
+        3. Make sure cache folder was generated
+        4. Delete temp cache assets but leave database behind
+        5. Run asset processor and verify it exits cleanly
+        6. Verify expected files were generated in the cache
         """
         env = ap_setup_fixture
 
@@ -434,6 +549,14 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
     @pytest.mark.assetpipeline
     # fmt:off
     def test_AllSupportedPlatforms_RunFastScanOnEmptyCache_FullScanRuns(self, ap_setup_fixture, asset_processor):
+        """
+        Tests fast scan processing on an empty cache and verifies that a full analyis will be peformed
+
+        Test Steps:
+        1. Create a test environment
+        2. Execute asset processor batch with fast scan enabled
+        3. Verify that a full analysis is performed
+        """
         # fmt:on
         env = ap_setup_fixture
         asset_processor.create_temp_asset_root()
@@ -455,6 +578,11 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         """
         After running the APBatch and AP GUI, Logs directory should exist (C1564055),
         JobLogs, Batch log, and GUI log should exist in the logs directory (C1564056)
+
+        Test Steps:
+        1. Run asset processor batch
+        2. Run asset processor gui with quit on idle
+        3. Verify that logs exist for both AP Batch & AP GUI
         """
         asset_processor.create_temp_asset_root()
         LOG_PATH = {
@@ -536,6 +664,11 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         """
         Utilizing corrupted test assets, run the batch process to verify the
         AP logs the failure to process the corrupted file.
+
+        Test Steps:
+        1. Create test environment with corrupted slice
+        2. Launch Asset Processor
+        3. Verify that asset processor fails to process corrupted slice
         """
         env = ap_setup_fixture
         error_line_found = False
@@ -552,6 +685,15 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     def test_validateDirectPreloadDependency_Found(self, asset_processor, ap_setup_fixture, workspace):
+        """
+        Tests processing an asset with a circular dependency and verifies that Asset Processor will return an error
+        notifying the user about a circular dependency.
+
+        Test Steps:
+        1. Create test environment with an asset that has a circular dependency
+        2. Launch asset processor
+        3. Verify that error is returned informing the user that the asset has a circular dependency
+        """
         env = ap_setup_fixture
         error_line_found = False
 
@@ -567,6 +709,15 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     def test_validateNestedPreloadDependency_Found(self, asset_processor, ap_setup_fixture, workspace):
+        """
+        Tests processing of a nested circular dependency and verifies that Asset Processor will return an error
+        notifying the user about a circular depdency
+
+        Test Steps:
+        1. Create test environment with an asset that has a nested circular dependency
+        2. Launch asset processor
+        3. Verify that error is returned informing the user that the asset has a circular dependency
+        """
 
         env = ap_setup_fixture
         error_line_found = False

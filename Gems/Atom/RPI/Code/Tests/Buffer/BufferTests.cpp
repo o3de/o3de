@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RPI.Reflect/Buffer/BufferAssetCreator.h>
 #include <Atom/RPI.Reflect/ResourcePoolAssetCreator.h>
@@ -474,6 +470,7 @@ namespace UnitTest
         desc.m_poolType = RPI::CommonBufferPoolType::ReadOnly;
         desc.m_bufferName = "Buffer1";
         desc.m_byteCount = bufferInfo.m_bufferDescriptor.m_byteCount;
+        desc.m_isUniqueName = true;
 
         Data::Instance<RPI::Buffer> bufferInst = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
         // buffer created
@@ -488,8 +485,33 @@ namespace UnitTest
         EXPECT_EQ(bufferFound2.get(), nullptr);
     }
 
-    // Failed if creates a buffer with duplicated name with existing buffer
-    TEST_F(BufferTests, BufferSystem_CreateDuplicatedNamedBuffer_Fail)
+    // Failed if creates a buffe which has a same name with existing buffer
+    // and has m_isUniqueName is enabled
+    TEST_F(BufferTests, BufferSystem_CreateDuplicatedNamedBufferEnableUniqueName_Fail)
+    {
+        using namespace AZ;
+
+        ExpectedBuffer bufferInfo = CreateValidBuffer();
+
+        RPI::CommonBufferDescriptor desc;
+        desc.m_poolType = RPI::CommonBufferPoolType::ReadOnly;
+        desc.m_bufferName = "Buffer1";
+        desc.m_byteCount = bufferInfo.m_bufferDescriptor.m_byteCount;
+        desc.m_isUniqueName = true;
+
+        Data::Instance<RPI::Buffer> bufferInst = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+        // buffer created
+        EXPECT_NE(bufferInst.get(), nullptr);
+
+        AZ_TEST_START_ASSERTTEST;
+        Data::Instance<RPI::Buffer> bufferInst2 = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
+        AZ_TEST_STOP_ASSERTTEST(1);
+        // buffer NOT created
+        EXPECT_EQ(bufferInst2.get(), nullptr);
+    }
+
+    // create a buffer which has a same name with existing buffer 
+    TEST_F(BufferTests, BufferSystem_CreateDuplicatedNamedBuffers_Success)
     {
         using namespace AZ;
 
@@ -503,12 +525,10 @@ namespace UnitTest
         Data::Instance<RPI::Buffer> bufferInst = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
         // buffer created
         EXPECT_NE(bufferInst.get(), nullptr);
-
-        AZ_TEST_START_ASSERTTEST;
+                
         Data::Instance<RPI::Buffer> bufferInst2 = RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(desc);
-        AZ_TEST_STOP_ASSERTTEST(1);
-        // buffer NOT created
-        EXPECT_EQ(bufferInst2.get(), nullptr);
+        // buffer created
+        EXPECT_NE(bufferInst2.get(), nullptr);
     }
 
     // Buffer instance creation unit tests

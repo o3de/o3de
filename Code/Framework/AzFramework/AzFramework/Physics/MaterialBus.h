@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates, or
-* a third party where indicated.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include "Material.h"
@@ -17,6 +13,9 @@
 
 namespace Physics
 {
+    class ShapeConfiguration;
+    class MaterialSelection;
+
     /// Listens to requests for physics materials.
     class PhysicsMaterialRequests
         : public AZ::EBusTraits
@@ -25,21 +24,26 @@ namespace Physics
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single; // Implemented by sole owner of materials, e.g. class MaterialManager in PhysX gem.
 
-        /// Get default material
+        /// Get default material.
         virtual AZStd::shared_ptr<Physics::Material> GetGenericDefaultMaterial() = 0;
 
         /// Returns weak pointers to physics materials.
         /// Connect to PhysicsMaterialNotifications::MaterialsReleased to be informed when material pointers are deleted by owner.
         virtual void GetMaterials(const MaterialSelection& materialSelection
-            , AZStd::vector<AZStd::weak_ptr<Physics::Material>>& outMaterials) = 0;
+            , AZStd::vector<AZStd::shared_ptr<Physics::Material>>& outMaterials) = 0;
+
+        /// Returns a weak pointer to physics material with the given id.
+        virtual AZStd::shared_ptr<Physics::Material> GetMaterialById(Physics::MaterialId id) = 0;
 
         /// Returns a weak pointer to physics material with the given name.
-        virtual AZStd::weak_ptr<Physics::Material> GetMaterialByName(const AZStd::string& name) = 0;
+        virtual AZStd::shared_ptr<Physics::Material> GetMaterialByName(const AZStd::string& name) = 0;
 
-        /// Returns index of the first selected material in MaterialSelection's material library. 
-        /// A MaterialSelection can contain multiple material selections.
-        /// Returned index is 0-based where 0 is the Default material, and materials from the material library are 1 and onwards.
-        virtual AZ::u32 GetFirstSelectedMaterialIndex(const MaterialSelection& materialSelection) = 0;
+        /// Updates the material selection from the physics asset or sets it to default if there's no asset provided.
+        /// @param shapeConfiguration The shape information that contains the physics asset.
+        /// @param materialSelection The material selection to update.
+        virtual void UpdateMaterialSelectionFromPhysicsAsset(
+            const ShapeConfiguration& shapeConfiguration,
+            MaterialSelection& materialSelection) = 0;
     };
     using PhysicsMaterialRequestBus = AZ::EBus<PhysicsMaterialRequests>;
 

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <SkyBox/SkyBoxFeatureProcessor.h>
 
@@ -89,6 +85,10 @@ namespace AZ
             m_cubemapIndex.Reset();
             m_cubemapRotationMatrixIndex.Reset();
             m_cubemapExposureIndex.Reset();
+            m_fogEnableIndex.Reset();
+            m_fogColorIndex.Reset();
+            m_fogTopHeightIndex.Reset();
+            m_fogBottomHeightIndex.Reset();
 
             if (m_buffer)
             {
@@ -160,6 +160,14 @@ namespace AZ
                              m_mapBuffer = false;
                          }
 
+                        m_sceneSrg->SetConstant(m_fogEnableIndex, m_fogSettings.m_enable);
+                        if (m_fogSettings.m_enable)
+                        {
+                            m_sceneSrg->SetConstant(m_fogTopHeightIndex, m_fogSettings.m_topHeight);
+                            m_sceneSrg->SetConstant(m_fogBottomHeightIndex, m_fogSettings.m_bottomHeight);
+                            m_sceneSrg->SetConstant(m_fogColorIndex, m_fogSettings.m_color);
+                        }
+
                         m_sceneSrg->SetConstant(m_physicalSkyIndex, true);
                         break;
                     }
@@ -193,7 +201,7 @@ namespace AZ
 
             RPI::CommonBufferDescriptor desc;
             desc.m_poolType = RPI::CommonBufferPoolType::Constant;
-            desc.m_bufferName = AZStd::string::format("SkyboxBuffer_%p", this);
+            desc.m_bufferName = "SkyboxBuffer";
             desc.m_byteCount = byteCount;
             desc.m_elementSize = byteCount;
             desc.m_bufferData = &m_physicalSkyData;
@@ -213,7 +221,7 @@ namespace AZ
             m_enable = enable;
         }
 
-        bool SkyBoxFeatureProcessor::IsEnable()
+        bool SkyBoxFeatureProcessor::IsEnabled()
         {
             return m_enable;
         }
@@ -236,6 +244,36 @@ namespace AZ
         void SkyBoxFeatureProcessor::SetSkyboxMode(SkyBoxMode mode)
         {
             m_skyboxMode = mode;
+        }
+
+        void SkyBoxFeatureProcessor::SetFogSettings(const SkyBoxFogSettings& fogSettings)
+        {
+            m_fogSettings = fogSettings;
+        }
+
+        void SkyBoxFeatureProcessor::SetFogEnabled(bool enable)
+        {
+            m_fogSettings.m_enable = enable;
+        }
+
+        bool SkyBoxFeatureProcessor::IsFogEnabled()
+        {
+            return m_fogSettings.m_enable;
+        }
+
+        void SkyBoxFeatureProcessor::SetFogColor(const AZ::Color& color)
+        {
+            m_fogSettings.m_color = color;
+        }
+
+        void SkyBoxFeatureProcessor::SetFogTopHeight(float topHeight)
+        {
+            m_fogSettings.m_topHeight = topHeight;
+        }
+
+        void SkyBoxFeatureProcessor::SetFogBottomHeight(float bottomHeight)
+        {
+            m_fogSettings.m_bottomHeight = bottomHeight;
         }
 
         void SkyBoxFeatureProcessor::SetSunPosition(SunPosition sunPosition)

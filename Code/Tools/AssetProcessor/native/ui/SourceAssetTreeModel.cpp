@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "SourceAssetTreeModel.h"
 #include "SourceAssetTreeItemData.h"
@@ -16,12 +12,13 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/IO/Path/Path.h>
 #include <native/utilities/assetUtils.h>
-
+#include <AzCore/Console/IConsole.h>
 
 namespace AssetProcessor
 {
+    AZ_CVAR(bool, ap_disableAssetTreeView, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Disable asset tree for automated tests.");
 
-    SourceAssetTreeModel::SourceAssetTreeModel(AZStd::shared_ptr<AzToolsFramework::AssetDatabase::AssetDatabaseConnection> sharedDbConnection, QObject *parent) :
+    SourceAssetTreeModel::SourceAssetTreeModel(AZStd::shared_ptr<AzToolsFramework::AssetDatabase::AssetDatabaseConnection> sharedDbConnection, QObject* parent) :
         AssetTreeModel(sharedDbConnection, parent)
     {
     }
@@ -32,15 +29,20 @@ namespace AssetProcessor
 
     void SourceAssetTreeModel::ResetModel()
     {
+        if (ap_disableAssetTreeView)
+        {
+            return;
+        }
+
         m_sourceToTreeItem.clear();
         m_sourceIdToTreeItem.clear();
 
         m_sharedDbConnection->QuerySourceAndScanfolder(
             [&](AzToolsFramework::AssetDatabase::SourceAndScanFolderDatabaseEntry& sourceAndScanFolder)
-        {
-            AddOrUpdateEntry(sourceAndScanFolder, sourceAndScanFolder, true);
-            return true; // return true to continue iterating over additional results, we are populating a container
-        });
+            {
+                AddOrUpdateEntry(sourceAndScanFolder, sourceAndScanFolder, true);
+                return true; // return true to continue iterating over additional results, we are populating a container
+            });
     }
 
     void SourceAssetTreeModel::AddOrUpdateEntry(
@@ -63,8 +65,7 @@ namespace AssetProcessor
         }
 
 
-        auto fullPath = AZ::IO::Path(scanFolder.m_scanFolder) / source.m_sourceName;
-
+        AZ::IO::Path fullPath = AZ::IO::Path(scanFolder.m_scanFolder) / source.m_sourceName;
 
         // It's common for Open 3D Engine game projects and scan folders to be in a subfolder
         // of the engine install. To improve readability of the source files, strip out
@@ -75,37 +76,39 @@ namespace AssetProcessor
         }
         if (m_assetRootSet)
         {
-            AzFramework::StringFunc::Replace(fullPath.Native(), m_assetRoot.absolutePath().toUtf8(), "");
+            fullPath = fullPath.LexicallyProximate(m_assetRoot.absolutePath().toUtf8().constData());
         }
 
-
-        AZStd::vector<AZStd::string> tokens;
-        AzFramework::StringFunc::Tokenize(fullPath.c_str(), tokens, AZ_CORRECT_DATABASE_SEPARATOR, false, true);
-
-        if (tokens.empty())
+        if (fullPath.empty())
         {
-            AZ_Warning("AssetProcessor", false, "Source id %s has an invalid name: %s",
-                source.m_sourceGuid.ToString<AZStd::string>().c_str(), source.m_sourceName.c_str());
+            AZ_Warning(
+                "AssetProcessor", false, "Source id %s has an invalid name: %s", source.m_sourceGuid.ToString<AZStd::string>().c_str(),
+                source.m_sourceName.c_str());
             return;
         }
 
         QModelIndex newIndicesStart;
 
         AssetTreeItem* parentItem = m_root.get();
-        AZStd::string fullFolderName;
-        for (int i = 0; i < tokens.size() - 1; ++i)
+        // Use posix path separator for each child item
+        AZ::IO::Path currentFullFolderPath(AZ::IO::PosixPathSeparator);
+        const AZ::IO::FixedMaxPath filename = fullPath.Filename();
+        fullPath.RemoveFilename();
+        AZStd::fixed_string<AZ::IO::MaxPathLength> currentPath;
+        for (auto pathIt = fullPath.begin(); pathIt != fullPath.end(); ++pathIt)
         {
-            AzFramework::StringFunc::AssetDatabasePath::Join(fullFolderName.c_str(), tokens[i].c_str(), fullFolderName);
-            AssetTreeItem* nextParent = parentItem->GetChildFolder(tokens[i].c_str());
+            currentPath = pathIt->FixedMaxPathString();
+            currentFullFolderPath /= currentPath;
+            AssetTreeItem* nextParent = parentItem->GetChildFolder(currentPath.c_str());
             if (!nextParent)
             {
                 if (!modelIsResetting)
                 {
-                    QModelIndex parentIndex = parentItem == m_root.get() ? QModelIndex() : createIndex(parentItem->GetRow(), 0, parentItem);
+                    QModelIndex parentIndex = createIndex(parentItem->GetRow(), 0, parentItem);
                     beginInsertRows(parentIndex, parentItem->getChildCount(), parentItem->getChildCount());
                 }
-                nextParent = parentItem->CreateChild(SourceAssetTreeItemData::MakeShared(nullptr, nullptr, fullFolderName, tokens[i].c_str(), true));
-                m_sourceToTreeItem[fullFolderName] = nextParent;
+                nextParent = parentItem->CreateChild(SourceAssetTreeItemData::MakeShared(nullptr, nullptr, currentFullFolderPath.Native(), currentPath.c_str(), true));
+                m_sourceToTreeItem[currentFullFolderPath.Native()] = nextParent;
                 // Folders don't have source IDs, don't add to m_sourceIdToTreeItem
                 if (!modelIsResetting)
                 {
@@ -117,12 +120,12 @@ namespace AssetProcessor
 
         if (!modelIsResetting)
         {
-            QModelIndex parentIndex = parentItem == m_root.get() ? QModelIndex() : createIndex(parentItem->GetRow(), 0, parentItem);
+            QModelIndex parentIndex = createIndex(parentItem->GetRow(), 0, parentItem);
             beginInsertRows(parentIndex, parentItem->getChildCount(), parentItem->getChildCount());
         }
 
         m_sourceToTreeItem[source.m_sourceName] =
-            parentItem->CreateChild(SourceAssetTreeItemData::MakeShared(&source, &scanFolder, source.m_sourceName, tokens[tokens.size() - 1].c_str(), false));
+            parentItem->CreateChild(SourceAssetTreeItemData::MakeShared(&source, &scanFolder, source.m_sourceName, AZStd::fixed_string<AZ::IO::MaxPathLength>(filename.Native()).c_str(), false));
         m_sourceIdToTreeItem[source.m_sourceID] = m_sourceToTreeItem[source.m_sourceName];
         if (!modelIsResetting)
         {
@@ -132,16 +135,21 @@ namespace AssetProcessor
 
     void SourceAssetTreeModel::OnSourceFileChanged(const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
     {
+        if (ap_disableAssetTreeView)
+        {
+            return;
+        }
+
         // Model changes need to be run on the main thread.
         AZ::SystemTickBus::QueueFunction([&, entry]()
-        {
-            m_sharedDbConnection->QueryScanFolderBySourceID(entry.m_sourceID,
-                [&, entry](AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry& scanFolder)
             {
-                AddOrUpdateEntry(entry, scanFolder, false);
-                return true;
+                m_sharedDbConnection->QueryScanFolderBySourceID(entry.m_sourceID,
+                    [&, entry](AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry& scanFolder)
+                    {
+                        AddOrUpdateEntry(entry, scanFolder, false);
+                        return true;
+                    });
             });
-        });
     }
 
     void SourceAssetTreeModel::RemoveFoldersIfEmpty(AssetTreeItem* itemToCheck)
@@ -186,22 +194,32 @@ namespace AssetProcessor
 
     void SourceAssetTreeModel::OnSourceFileRemoved(AZ::s64 sourceId)
     {
+        if (ap_disableAssetTreeView)
+        {
+            return;
+        }
+
         // UI changes need to be done on the main thread.
         AZ::SystemTickBus::QueueFunction([&, sourceId]()
-        {
-            auto existingSource = m_sourceIdToTreeItem.find(sourceId);
-            if (existingSource == m_sourceIdToTreeItem.end() || !existingSource->second)
             {
-                // If the asset being removed wasn't previously cached, then something has gone wrong. Reset the model.
-                Reset();
-                return;
-            }
-            RemoveAssetTreeItem(existingSource->second);
-        });
+                auto existingSource = m_sourceIdToTreeItem.find(sourceId);
+                if (existingSource == m_sourceIdToTreeItem.end() || !existingSource->second)
+                {
+                    // If the asset being removed wasn't previously cached, then something has gone wrong. Reset the model.
+                    Reset();
+                    return;
+                }
+                RemoveAssetTreeItem(existingSource->second);
+            });
     }
 
     QModelIndex SourceAssetTreeModel::GetIndexForSource(const AZStd::string& source)
     {
+        if (ap_disableAssetTreeView)
+        {
+            return QModelIndex();
+        }
+
         auto sourceItem = m_sourceToTreeItem.find(source);
         if (sourceItem == m_sourceToTreeItem.end())
         {

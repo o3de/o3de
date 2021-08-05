@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -38,7 +34,7 @@ namespace AZ
             : public AssetBuilderSDK::AssetBuilderCommandBus::Handler
         {
         public:
-            AZ_TYPE_INFO(ShaderAssetBuilder, "{AEC304A9-940C-4851-AEF0-7D00482598F9}");
+            AZ_TYPE_INFO(ShaderAssetBuilder, "{C94DA151-82BC-4475-86FA-E6C92A0BD6F8}");
 
             static constexpr const char* ShaderAssetBuilderJobKey = "Shader Asset";
 

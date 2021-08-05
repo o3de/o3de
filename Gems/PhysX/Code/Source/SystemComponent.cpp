@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-#include <PhysX_precompiled.h>
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <Source/SystemComponent.h>
 
 #include <AzCore/Serialization/EditContext.h>
@@ -20,7 +15,6 @@
 #include <Source/Utils.h>
 #include <Source/Collision.h>
 #include <Source/Shape.h>
-#include <Source/Joint.h>
 #include <Source/Pipeline/MeshAssetHandler.h>
 #include <Source/Pipeline/HeightFieldAssetHandler.h>
 #include <Source/PhysXCharacters/API/CharacterUtils.h>
@@ -93,8 +87,7 @@ namespace PhysX
 
     void SystemComponent::Reflect(AZ::ReflectContext* context)
     {
-        D6JointLimitConfiguration::Reflect(context);
-        Pipeline::MeshAssetData::Reflect(context);
+        Pipeline::MeshAsset::Reflect(context);
 
         PhysX::ReflectionUtils::ReflectPhysXOnlyApi(context);
 
@@ -102,6 +95,7 @@ namespace PhysX
         {
             serialize->Class<SystemComponent, AZ::Component>()
                 ->Version(1)
+                ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("AssetBuilder") }))
                 ->Field("Enabled", &SystemComponent::m_enabled)
             ;
 
@@ -129,13 +123,14 @@ namespace PhysX
         incompatible.push_back(AZ_CRC("PhysXService", 0x75beae2d));
     }
 
-    void SystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
+    void SystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("AssetDatabaseService", 0x3abf5601));
     }
 
-    void SystemComponent::GetDependentServices([[maybe_unused]]AZ::ComponentDescriptor::DependencyArrayType& dependent)
+    void SystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
+        dependent.push_back(AZ_CRC_CE("AssetDatabaseService"));
+        dependent.push_back(AZ_CRC_CE("AssetCatalogService"));
     }
 
     SystemComponent::SystemComponent()
@@ -347,70 +342,6 @@ namespace PhysX
         return AZStd::make_shared<PhysX::Material>(materialConfiguration);
     }
 
-    AZStd::vector<AZStd::shared_ptr<Physics::Material>> SystemComponent::CreateMaterialsFromLibrary(const Physics::MaterialSelection& materialSelection)
-    {
-        AZStd::vector<physx::PxMaterial*> pxMaterials;
-        m_materialManager.GetPxMaterials(materialSelection, pxMaterials);
-
-        AZStd::vector<AZStd::shared_ptr<Physics::Material>> genericMaterials;
-        genericMaterials.reserve(pxMaterials.size());
-
-        for (physx::PxMaterial* pxMaterial : pxMaterials)
-        {
-            genericMaterials.push_back(static_cast<PhysX::Material*>(pxMaterial->userData)->shared_from_this());
-        }
-
-        return genericMaterials;
-    }
-
-    AZStd::shared_ptr<Physics::Material> SystemComponent::GetDefaultMaterial()
-    {
-        return m_materialManager.GetDefaultMaterial();
-    }
-
-    AZStd::vector<AZ::TypeId> SystemComponent::GetSupportedJointTypes()
-    {
-        return JointUtils::GetSupportedJointTypes();
-    }
-
-    AZStd::shared_ptr<Physics::JointLimitConfiguration> SystemComponent::CreateJointLimitConfiguration(AZ::TypeId jointType)
-    {
-        return JointUtils::CreateJointLimitConfiguration(jointType);
-    }
-
-    AZStd::shared_ptr<Physics::Joint> SystemComponent::CreateJoint(const AZStd::shared_ptr<Physics::JointLimitConfiguration>& configuration,
-        AzPhysics::SimulatedBody* parentBody, AzPhysics::SimulatedBody* childBody)
-    {
-        return JointUtils::CreateJoint(configuration, parentBody, childBody);
-    }
-
-    void SystemComponent::GenerateJointLimitVisualizationData(
-        const Physics::JointLimitConfiguration& configuration,
-        const AZ::Quaternion& parentRotation,
-        const AZ::Quaternion& childRotation,
-        float scale,
-        AZ::u32 angularSubdivisions,
-        AZ::u32 radialSubdivisions,
-        AZStd::vector<AZ::Vector3>& vertexBufferOut,
-        AZStd::vector<AZ::u32>& indexBufferOut,
-        AZStd::vector<AZ::Vector3>& lineBufferOut,
-        AZStd::vector<bool>& lineValidityBufferOut)
-    {
-        JointUtils::GenerateJointLimitVisualizationData(configuration, parentRotation, childRotation, scale,
-            angularSubdivisions, radialSubdivisions, vertexBufferOut, indexBufferOut, lineBufferOut, lineValidityBufferOut);
-    }
-
-    AZStd::unique_ptr<Physics::JointLimitConfiguration> SystemComponent::ComputeInitialJointLimitConfiguration(
-        const AZ::TypeId& jointLimitTypeId,
-        const AZ::Quaternion& parentWorldRotation,
-        const AZ::Quaternion& childWorldRotation,
-        const AZ::Vector3& axis,
-        const AZStd::vector<AZ::Quaternion>& exampleLocalRotations)
-    {
-        return JointUtils::ComputeInitialJointLimitConfiguration(jointLimitTypeId, parentWorldRotation,
-            childWorldRotation, axis, exampleLocalRotations);
-    }
-
     void SystemComponent::ReleaseNativeMeshObject(void* nativeMeshObject)
     {
         if (nativeMeshObject)
@@ -482,58 +413,6 @@ namespace PhysX
     {
         //TEMP until this in moved over
         return m_physXSystem->GetPxCooking();
-    }
-
-    bool SystemComponent::UpdateMaterialSelection(const Physics::ShapeConfiguration& shapeConfiguration,
-        Physics::ColliderConfiguration& colliderConfiguration)
-    {
-        Physics::MaterialSelection& materialSelection = colliderConfiguration.m_materialSelection;
-
-        // If the material library is still not set, we can't update the material selection
-        if (!materialSelection.IsMaterialLibraryValid())
-        {
-            AZ_Warning("PhysX", false,
-                "UpdateMaterialSelection: Material Selection tried to use an invalid/non-existing Physics material library: \"%s\". "
-                "Please make sure the file exists or re-assign another library", materialSelection.GetMaterialLibraryAssetHint().c_str());
-            return false;
-        }
-
-        // If there's no material library data loaded, try to load it
-        if (materialSelection.GetMaterialLibraryAssetData() == nullptr)
-        {
-            AZ::Data::AssetId materialLibraryAssetId = materialSelection.GetMaterialLibraryAssetId();
-            materialSelection.SetMaterialLibrary(materialLibraryAssetId);
-        }
-
-        // If there's still not material library data, we can't update the material selection 
-        if (materialSelection.GetMaterialLibraryAssetData() == nullptr)
-        {
-            AZ::Data::AssetId materialLibraryAssetId = materialSelection.GetMaterialLibraryAssetId();
-
-            auto materialLibraryAsset =
-                AZ::Data::AssetManager::Instance().GetAsset<Physics::MaterialLibraryAsset>(materialLibraryAssetId, AZ::Data::AssetLoadBehavior::Default);
-
-            materialLibraryAsset.BlockUntilLoadComplete();
-
-            // Log the asset path to help find out the incorrect library reference
-            AZStd::string assetPath = materialLibraryAsset.GetHint();
-            AZ_Warning("PhysX", false,
-                "UpdateMaterialSelection: Unable to load the material library for a material selection."
-                " Please check if the asset %s exists in the asset cache.", assetPath.c_str());
-
-            return false;
-        }
-
-        if (shapeConfiguration.GetShapeType() == Physics::ShapeType::PhysicsAsset)
-        {
-            const Physics::PhysicsAssetShapeConfiguration& assetConfiguration =
-                static_cast<const Physics::PhysicsAssetShapeConfiguration&>(shapeConfiguration);
-
-            // Use the materials data from the asset to update the collider data
-            return UpdateMaterialSelectionFromPhysicsAsset(assetConfiguration, colliderConfiguration);
-        }
-
-        return true;
     }
 
     void SystemComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
@@ -613,66 +492,5 @@ namespace PhysX
         }
 
         m_windProvider = AZStd::make_unique<WindProvider>();
-    }
-
-    bool SystemComponent::UpdateMaterialSelectionFromPhysicsAsset(
-        const Physics::PhysicsAssetShapeConfiguration& assetConfiguration,
-        Physics::ColliderConfiguration& colliderConfiguration)
-    {
-        Physics::MaterialSelection& materialSelection = colliderConfiguration.m_materialSelection;
-
-        if (!assetConfiguration.m_asset.GetId().IsValid())
-        {
-            // Set the default selection if there's no physics asset.
-            materialSelection.SetMaterialSlots(Physics::MaterialSelection::SlotsArray());
-            return false;
-        }
-
-        if (!assetConfiguration.m_asset.IsReady())
-        {
-            // The asset is valid but is still loading, 
-            // Do not set the empty slots in this case to avoid the entity being in invalid state
-            return false;
-        }
-
-        Pipeline::MeshAsset* meshAsset = assetConfiguration.m_asset.GetAs<Pipeline::MeshAsset>();
-        if (!meshAsset)
-        {
-            materialSelection.SetMaterialSlots(Physics::MaterialSelection::SlotsArray());
-            AZ_Warning("PhysX", false, "UpdateMaterialSelectionFromPhysicsAsset: MeshAsset is invalid");
-            return false;
-        }
-
-        // Set the slots from the mesh asset
-        materialSelection.SetMaterialSlots(meshAsset->m_assetData.m_surfaceNames);
-
-        if (!assetConfiguration.m_useMaterialsFromAsset)
-        {
-            return false;
-        }
-
-        const Physics::MaterialLibraryAsset* materialLibrary = materialSelection.GetMaterialLibraryAssetData();
-        const AZStd::vector<AZStd::string>& meshMaterialNames = meshAsset->m_assetData.m_materialNames;
-
-        // Update material IDs in the selection for each slot
-        int slotIndex = 0;
-        for (const AZStd::string& meshMaterialName : meshMaterialNames)
-        {
-            Physics::MaterialFromAssetConfiguration materialData;
-            bool found = materialLibrary->GetDataForMaterialName(meshMaterialName, materialData);
-
-            AZ_Warning("PhysX", found, 
-                "UpdateMaterialSelectionFromPhysicsAsset: No material found for surfaceType (%s) in the collider material library", 
-                meshMaterialName.c_str());
-
-            if (found)
-            {
-                materialSelection.SetMaterialId(materialData.m_id, slotIndex);
-            }
-
-            slotIndex++;
-        }
-
-        return true;
     }
 } // namespace PhysX

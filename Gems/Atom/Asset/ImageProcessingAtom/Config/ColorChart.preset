@@ -15,7 +15,7 @@
             "IsColorChart": true
         },
         "PlatformsPresets": {
-            "es3": {
+            "android": {
                 "UUID": "{0A17A85F-07EE-48A0-8BF8-D42F0A5E0B3C}",
                 "Name": "ColorChart",
                 "SourceColor": "Linear",
@@ -37,7 +37,7 @@
                 "PixelFormat": "R8G8B8X8",
                 "IsColorChart": true
             },
-            "osx_gl": {
+            "mac": {
                 "UUID": "{0A17A85F-07EE-48A0-8BF8-D42F0A5E0B3C}",
                 "Name": "ColorChart",
                 "SourceColor": "Linear",

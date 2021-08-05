@@ -9,10 +9,6 @@
         [
             "pc"
         ],
-        "ShaderResourceGroupAssets":
-        [
-            "diffuseprobegridblenddistance_passsrg.azsrg"
-        ],
         "RootShaderVariantAssets":
         [
             {

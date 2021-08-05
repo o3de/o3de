@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -913,6 +909,11 @@ namespace AZ::IO
     constexpr int PathView::Compare(const value_type* path) const noexcept
     {
         return compare_string_view(path);
+    }
+
+    constexpr AZStd::fixed_string<MaxPathLength> PathView::FixedMaxPathString() const noexcept
+    {
+        return AZStd::fixed_string<MaxPathLength>(m_path.begin(), m_path.end());
     }
 
     // decomposition
@@ -1951,7 +1952,7 @@ namespace AZ::IO
     }
 
     template <typename StringType>
-    constexpr size_t hash_value(const BasicPath<StringType>& pathToHash)
+    inline size_t hash_value(const BasicPath<StringType>& pathToHash)
     {
         return AZStd::hash<BasicPath<StringType>>{}(pathToHash);
     }
@@ -2082,13 +2083,28 @@ namespace AZStd
     template <>
     struct hash<AZ::IO::PathView>
     {
-        constexpr size_t operator()(const AZ::IO::PathView& pathToHash) noexcept
+        /// Path is using FNV-1a algorithm 64 bit version.
+        static size_t hash_path(AZStd::string_view pathSegment, const char pathSeparator)
+        {
+            size_t hash = 14695981039346656037ULL;
+            constexpr size_t fnvPrime = 1099511628211ULL;
+
+            for (const char first : pathSegment)
+            {
+                hash ^= static_cast<size_t>((pathSeparator == AZ::IO::PosixPathSeparator)
+                    ? first : tolower(first));
+                hash *= fnvPrime;
+            }
+            return hash;
+        }
+
+        size_t operator()(const AZ::IO::PathView& pathToHash) noexcept
         {
             auto pathParser = AZ::IO::parser::PathParser::CreateBegin(pathToHash.Native(), pathToHash.m_preferred_separator);
             size_t hash_value = 0;
             while (pathParser)
             {
-                AZStd::hash_combine(hash_value, AZStd::hash<AZStd::string_view>{}(*pathParser));
+                AZStd::hash_combine(hash_value, hash_path(*pathParser, pathToHash.m_preferred_separator));
                 ++pathParser;
             }
             return hash_value;
@@ -2097,7 +2113,7 @@ namespace AZStd
     template <typename StringType>
     struct hash<AZ::IO::BasicPath<StringType>>
     {
-        constexpr size_t operator()(const AZ::IO::BasicPath<StringType>& pathToHash) noexcept
+        const size_t operator()(const AZ::IO::BasicPath<StringType>& pathToHash) noexcept
         {
             return AZStd::hash<AZ::IO::PathView>{}(pathToHash);
         }
@@ -2108,11 +2124,11 @@ namespace AZStd
     template struct hash<AZ::IO::FixedMaxPath>;
 }
 
-// Explicit instantations of our support Path classes
+// Explicit instantiations of our support Path classes
 namespace AZ::IO
 {
     // PathView hash
-    constexpr size_t hash_value(const PathView& pathToHash) noexcept
+    inline size_t hash_value(const PathView& pathToHash) noexcept
     {
         return AZStd::hash<PathView>{}(pathToHash);
     }

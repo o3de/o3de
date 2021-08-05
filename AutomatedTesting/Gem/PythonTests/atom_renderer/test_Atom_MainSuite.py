@@ -1,12 +1,8 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 
 Main suite tests for the Atom renderer.
 """
@@ -16,9 +12,10 @@ import os
 import pytest
 
 import editor_python_test_tools.hydra_test_utils as hydra
+from atom_renderer.atom_utils.atom_component_helper import LIGHT_TYPES
 
 logger = logging.getLogger(__name__)
-EDITOR_TIMEOUT = 300
+EDITOR_TIMEOUT = 120
 TEST_DIRECTORY = os.path.join(os.path.dirname(__file__), "atom_hydra_scripts")
 
 
@@ -177,6 +174,67 @@ class TestAtomEditorComponentsMain(object):
             TEST_DIRECTORY,
             editor,
             "hydra_AtomEditorComponents_AddedToEntity.py",
+            timeout=EDITOR_TIMEOUT,
+            expected_lines=expected_lines,
+            unexpected_lines=unexpected_lines,
+            halt_on_unexpected=True,
+            null_renderer=True,
+            cfg_args=cfg_args,
+        )
+
+    def test_AtomEditorComponents_LightComponent(
+            self, request, editor, workspace, project, launcher_platform, level):
+        """
+        Please review the hydra script run by this test for more specific test info.
+        Tests that the Light component has the expected property options available to it.
+        """
+        cfg_args = [level]
+
+        expected_lines = [
+            "light_entity Entity successfully created",
+            "Entity has a Light component",
+            "light_entity_test: Component added to the entity: True",
+            f"light_entity_test: Property value is {LIGHT_TYPES['sphere']} which matches {LIGHT_TYPES['sphere']}",
+            "Controller|Configuration|Shadows|Enable shadow set to True",
+            "light_entity Controller|Configuration|Shadows|Shadowmap size: SUCCESS",
+            "Controller|Configuration|Shadows|Shadow filter method set to 1",  # PCF
+            "Controller|Configuration|Shadows|Filtering sample count set to 4",
+            "Controller|Configuration|Shadows|Filtering sample count set to 64",
+            "Controller|Configuration|Shadows|PCF method set to 0",
+            "Controller|Configuration|Shadows|PCF method set to 1",
+            "Controller|Configuration|Shadows|Shadow filter method set to 2",  # ESM
+            "Controller|Configuration|Shadows|ESM exponent set to 50.0",
+            "Controller|Configuration|Shadows|ESM exponent set to 5000.0",
+            "Controller|Configuration|Shadows|Shadow filter method set to 3",  # ESM+PCF
+            f"light_entity_test: Property value is {LIGHT_TYPES['spot_disk']} which matches {LIGHT_TYPES['spot_disk']}",
+            f"light_entity_test: Property value is {LIGHT_TYPES['capsule']} which matches {LIGHT_TYPES['capsule']}",
+            f"light_entity_test: Property value is {LIGHT_TYPES['quad']} which matches {LIGHT_TYPES['quad']}",
+            "light_entity Controller|Configuration|Fast approximation: SUCCESS",
+            "light_entity Controller|Configuration|Both directions: SUCCESS",
+            f"light_entity_test: Property value is {LIGHT_TYPES['polygon']} which matches {LIGHT_TYPES['polygon']}",
+            f"light_entity_test: Property value is {LIGHT_TYPES['simple_point']} "
+            f"which matches {LIGHT_TYPES['simple_point']}",
+            "Controller|Configuration|Attenuation radius|Mode set to 0",
+            "Controller|Configuration|Attenuation radius|Radius set to 100.0",
+            f"light_entity_test: Property value is {LIGHT_TYPES['simple_spot']} "
+            f"which matches {LIGHT_TYPES['simple_spot']}",
+            "Controller|Configuration|Shutters|Outer angle set to 45.0",
+            "Controller|Configuration|Shutters|Outer angle set to 90.0",
+            "light_entity_test: Component added to the entity: True",
+            "Light component test (non-GPU) completed.",
+        ]
+
+        unexpected_lines = [
+            "Trace::Assert",
+            "Trace::Error",
+            "Traceback (most recent call last):",
+        ]
+
+        hydra.launch_and_validate_results(
+            request,
+            TEST_DIRECTORY,
+            editor,
+            "hydra_AtomEditorComponents_LightComponent.py",
             timeout=EDITOR_TIMEOUT,
             expected_lines=expected_lines,
             unexpected_lines=unexpected_lines,

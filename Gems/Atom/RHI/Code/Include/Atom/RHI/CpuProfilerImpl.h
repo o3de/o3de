@@ -1,23 +1,22 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI.Reflect/Base.h>
 
+#include <AzCore/Component/TickBus.h>
 #include <AzCore/Memory/OSAllocator.h>
+#include <AzCore/std/containers/map.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/shared_mutex.h>
 #include <AzCore/std/smart_ptr/intrusive_refcount.h>
+
 
 namespace AZ
 {
@@ -75,6 +74,9 @@ namespace AZ
 
             // When the thread is terminated, it will flag itself for deletion
             AZStd::atomic_bool m_deleteFlag = false;
+
+            // Keep track of the regions that have hit the size limit so we don't have to lock to check
+            AZStd::map<AZStd::string, bool> m_hitSizeLimitMap;
         };
 
         //! CpuProfiler will keep track of the registered threads, and
@@ -82,6 +84,7 @@ namespace AZ
         //! cached regions, which are stored on a per thread frequency.
         class CpuProfilerImpl final
             : public CpuProfiler
+            , public SystemTickBus::Handler
         {
             friend class CpuTimingLocalStorage;
 
@@ -97,19 +100,24 @@ namespace AZ
             //! Unregisters the CpuProfilerImpl instance from the interface 
             void Shutdown();
 
+            // SystemTickBus::Handler overrides
+            // When fired, the profiler collects all profiling data from registered threads and updates
+            // m_timeRegionMap so that the next frame has up-to-date profiling data.
+            void OnSystemTick() final override;
+
             //! CpuProfiler overrides...
             void BeginTimeRegion(TimeRegion& timeRegion) final;
             void EndTimeRegion() final;
-            void FlushTimeRegionMap(TimeRegionMap& timeRegionMap) final;
+            const TimeRegionMap& GetTimeRegionMap() const final;
             void SetProfilerEnabled(bool enabled) final;
+            bool IsProfilerEnabled() const final;
 
         private:
             // Lazily create and register the local thread data
             void RegisterThreadStorage();
 
             // ThreadId -> ThreadTimeRegionMap
-            // When the user requests the cached time regions from the system, it will use this map as an intermediate
-            // storage point to flush each thread's cached regions into this map.
+            // On the start of each frame, this map will be updated with the last frame's profiling data. 
             TimeRegionMap m_timeRegionMap;
 
             // Set of registered threads when created

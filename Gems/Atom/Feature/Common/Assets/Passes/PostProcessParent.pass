@@ -16,6 +16,10 @@
                     "Name": "Depth",
                     "SlotType": "Input"
                 },
+                {
+                    "Name": "MotionVectors",
+                    "SlotType": "Input"
+                },
                 // SwapChain here is only used to reference the frame height and format
                 {
                     "Name": "SwapChainOutput",
@@ -40,8 +44,8 @@
                 {
                     "LocalSlot": "Output",
                     "AttachmentRef": {
-                        "Pass": "LightAdaptation",
-                        "Attachment": "Output"
+                        "Pass": "ContrastAdaptiveSharpeningPass",
+                        "Attachment": "OutputColor"
                     }
                 },
                 {
@@ -81,6 +85,34 @@
                     ]
                 },
                 {
+                    "Name": "TaaPass",
+                    "TemplateName": "TaaTemplate",
+                    "Enabled": false,
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputColor",
+                            "AttachmentRef": {
+                                "Pass": "SMAA1xApplyLinearHDRColorPass",
+                                "Attachment": "OutputColor"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputDepth",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "Depth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "MotionVectors",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "MotionVectors"
+                            }
+                        }
+                    ]
+                },
+                {
                     "Name": "DepthOfFieldPass",
                     "TemplateName": "DepthOfFieldTemplate",
                     "Enabled": true,
@@ -88,7 +120,7 @@
                         {
                             "LocalSlot": "DoFColorInput",
                             "AttachmentRef": {
-                                "Pass": "SMAA1xApplyLinearHDRColorPass",
+                                "Pass": "TaaPass",
                                 "Attachment": "OutputColor"
                             }
                         },
@@ -131,6 +163,20 @@
                             "AttachmentRef": {
                                 "Pass": "Parent",
                                 "Attachment": "SwapChainOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "ContrastAdaptiveSharpeningPass",
+                    "TemplateName": "ContrastAdaptiveSharpeningTemplate",
+                    "Enabled": false,
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputColor",
+                            "AttachmentRef": {
+                                "Pass": "LightAdaptation",
+                                "Attachment": "Output"
                             }
                         }
                     ]

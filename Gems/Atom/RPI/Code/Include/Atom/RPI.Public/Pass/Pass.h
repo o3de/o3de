@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <Atom/RPI.Public/Base.h>
@@ -40,6 +36,7 @@
     friend class PassSystem;                                                        \
     friend class PassFactory;                                                       \
     friend class ParentPass;                                                        \
+    friend class RenderPipeline;                                                    \
     friend class UnitTest::PassTests;                                               \
 
 namespace UnitTest
@@ -61,6 +58,7 @@ namespace AZ
         class PassTemplate;
         struct PassRequest;
         struct PassValidationResults;
+        class AttachmentReadback;
 
         using SortedPipelineViewTags = AZStd::set<PipelineViewTag, AZNameSortAscending>;
         using PassesByDrawList = AZStd::map<RHI::DrawListTag, const Pass*>;
@@ -69,7 +67,12 @@ namespace AZ
         const uint32_t PassInputBindingCountMax = 16;
         const uint32_t PassInputOutputBindingCountMax = PassInputBindingCountMax;
         const uint32_t PassOutputBindingCountMax = PassInputBindingCountMax;
-
+                
+        enum class PassAttachmentReadbackOption : uint8_t
+        {
+            Input = 0,
+            Output
+        };
 
         //! Atom's base pass class (every pass class in Atom must derive from this class).
         //! 
@@ -78,9 +81,9 @@ namespace AZ
         //! 
         //! When authoring a new pass class, inherit from Pass and override any of the virtual functions
         //! ending with 'Internal' to define the behavior of your passes. These virtual are recursively
-        //! called in Preorder order throughout the pass tree. Only FramePrepare and FrameEnd are
+        //! called in preorder traversal throughout the pass tree. Only FrameBegin and FrameEnd are
         //! guaranteed to be called per frame. The other override-able functions are called as needed 
-        //! when scheduled with the PassSystem. See QueueForBuildAttachments and QueueForRemoval.
+        //! when scheduled with the PassSystem. See QueueForBuildAndInitialization, QueueForRemoval and QueueForInitialization.
         //! 
         //! Passes are created by the PassFactory. They can be created using either Pass Name,
         //! a PassTemplate, or a PassRequest. To register your pass class with the PassFactory,
@@ -153,11 +156,14 @@ namespace AZ
 
             // --- Utility functions ---
             
-            //! Queues the pass to have BuildAttachments() called by the PassSystem on frame update 
-            void QueueForBuildAttachments();
+            //! Queues the pass to have Build() and Initialize() called by the PassSystem on frame update 
+            void QueueForBuildAndInitialization();
 
             //! Queues the pass to have RemoveFromParent() called by the PassSystem on frame update
-            void QueueForRemoval(bool needsDeletion = false);
+            void QueueForRemoval();
+
+            //! Queues the pass to have Initialize() called by the PassSystem on frame update 
+            void QueueForInitialization();
 
             //! Adds an attachment binding to the list of this Pass' attachment bindings
             void AddAttachmentBinding(PassAttachmentBinding attachmentBinding);
@@ -173,8 +179,8 @@ namespace AZ
 
             //! Attach an external buffer resource as attachment to specified slot
             //! The buffer will be added as a pass attachment then attach to the pass slot
-            //! Note: the pass attachment and binding will be removed after the general BuildAttachments call.
-            //!       you can add this call in pass' BuildAttachmentsInternal so it will be added whenever attachments get rebuilt
+            //! Note: the pass attachment and binding will be removed after the general Build call.
+            //!       you can add this call in pass' BuildInternal so it will be added whenever attachments get rebuilt
             void AttachBufferToSlot(AZStd::string_view slot, Data::Instance<Buffer> buffer);
             void AttachBufferToSlot(const Name& slot, Data::Instance<Buffer> buffer);
             void AttachImageToSlot(const Name& slot, Data::Instance<AttachmentImage> image);
@@ -184,8 +190,8 @@ namespace AZ
             //! Collect all different view tags from this pass 
             virtual void GetPipelineViewTags(SortedPipelineViewTags& outTags) const;
 
-           //! Adds this pass' DrawListTags to the outDrawListMask.
-           virtual void GetViewDrawListInfo(RHI::DrawListMask& outDrawListMask, PassesByDrawList& outPassesByDrawList, const PipelineViewTag& viewTag) const;
+            //! Adds this pass' DrawListTags to the outDrawListMask.
+            virtual void GetViewDrawListInfo(RHI::DrawListMask& outDrawListMask, PassesByDrawList& outPassesByDrawList, const PipelineViewTag& viewTag) const;
 
             //! Check if the pass has a DrawListTag. Pass' DrawListTag can be used to filter draw items.
             virtual RHI::DrawListTag GetDrawListTag() const;
@@ -223,6 +229,14 @@ namespace AZ
             //! Enables/Disables PipelineStatistics queries for this pass
             virtual void SetPipelineStatisticsQueryEnabled(bool enable);
 
+            //! Readback an attachment attached to the specified slot name
+            //! @param readback The AttachmentReadback object which is used for readback. Its callback function will be called when readback is finished.
+            //! @param slotName The attachment bind to the slot with this slotName is to be readback
+            //! @param option The option is used for choosing input or output state when readback an InputOutput attachment.
+            //!               It's ignored if the attachment isn't an InputOutput attachment.
+            //! Return true if the readback request was successful. User may expect the AttachmentReadback's callback function would be called. 
+            bool ReadbackAttachment(AZStd::shared_ptr<AttachmentReadback> readback, const Name& slotName, PassAttachmentReadbackOption option = PassAttachmentReadbackOption::Output);
+
             //! Returns whether the Timestamp queries is enabled/disabled for this pass
             bool IsTimestampQueryEnabled() const;
 
@@ -255,6 +269,17 @@ namespace AZ
 
             //! Returns pointer to the parent pass
             ParentPass* GetParent() const;
+
+            PassState GetPassState() const;
+
+            // Update all bindings on this pass that are connected to bindings on other passes
+            void UpdateConnectedBindings();
+
+            // Update input and input/output bindings on this pass that are connected to bindings on other passes
+            void UpdateConnectedInputBindings();
+
+            // Update output bindings on this pass that are connected to bindings on other passes
+            void UpdateConnectedOutputBindings();
 
         protected:
             explicit Pass(const PassDescriptor& descriptor);
@@ -309,18 +334,23 @@ namespace AZ
             // customize it's behavior, hence why these functions are called the pass behavior functions.
 
             // Resets everything in the pass (like Attachments).
-            // Called from PassSystem when pass is QueueForBuildAttachments.
+            // Called from PassSystem when pass is QueueForBuildAndInitialization.
             void Reset();
             virtual void ResetInternal() { }
 
             // Builds and sets up any attachments and input/output connections the pass needs.
-            // Called from PassSystem when pass is QueueForBuildAttachments.
-            void BuildAttachments();
-            virtual void BuildAttachmentsInternal() { }
+            // Called from PassSystem when pass is QueueForBuildAndInitialization.
+            void Build(bool calledFromPassSystem = false);
+            virtual void BuildInternal() { }
 
-            // Called after the pass build phase has finished. Allows passes to reset build flags.
-            void OnBuildAttachmentsFinished();
-            virtual void OnBuildAttachmentsFinishedInternal() { };
+            // Allows for additional pass initialization between building and rendering
+            // Can be queued independently of Build so as to only invoke Initialize() without Build()
+            void Initialize();
+            virtual void InitializeInternal() { };
+
+            // Called after the pass initialization phase has finished. Allows passes to reset various states and flags.
+            void OnInitializationFinished();
+            virtual void OnInitializationFinishedInternal() { };
 
             // The Pass's 'Render' function. Called every frame, here the pass sets up it's rendering logic with
             // the FrameGraphBuilder. This is where your derived pass needs to call ImportScopeProducer on
@@ -333,6 +363,7 @@ namespace AZ
             void FrameEnd();
             virtual void FrameEndInternal() { }
 
+            void UpdateReadbackAttachment(FramePrepareParams params, bool beforeAddScopes);
 
             // --- Protected Members ---
 
@@ -378,21 +409,36 @@ namespace AZ
                 {
                     struct
                     {
+                        // Whether this pass was created with a PassRequest (in which case m_request holds valid data)
                         uint64_t m_createdByPassRequest : 1;
-                        uint64_t m_initialized : 1;
+
+                        // Whether the pass is enabled (behavior can be customized by overriding IsEnabled() )
                         uint64_t m_enabled : 1;
+
+                        // False if parent or one of it's ancestors is disabled
                         uint64_t m_parentEnabled : 1;
-                        uint64_t m_alreadyCreated : 1;
-                        uint64_t m_alreadyReset : 1;
-                        uint64_t m_alreadyPrepared : 1;
+
+                        // If this is a parent pass, indicates if the pass has already created children this frame
+                        // Prevents ParentPass::CreateChildPasses from executing multiple times in the same pass 
+                        uint64_t m_alreadyCreatedChildren : 1;
+
+                        // If this is a parent pass, indicates whether the pass needs to create child passes
+                        uint64_t m_createChildren : 1;
+
+                        // Whether this pass belongs to the pass hierarchy, i.e. if you can trace it's parents up to the Root pass
                         uint64_t m_partOfHierarchy : 1;
+
+                        // Whether this pass has a DrawListTag
                         uint64_t m_hasDrawListTag : 1;
+
+                        // Whether this pass has a PipelineViewTag
                         uint64_t m_hasPipelineViewTag : 1;
-                        uint64_t m_queuedForBuildAttachment : 1;
+
+                        // Whether the pass should gather timestamp query metrics
                         uint64_t m_timestampQueryEnabled : 1;
+
+                        // Whether the pass should gather pipeline statics
                         uint64_t m_pipelineStatisticsQueryEnabled : 1;
-                        uint64_t m_isBuildingAttachments : 1;
-                        uint64_t m_isRendering : 1;
                     };
                     uint64_t m_allFlags = 0;
                 };
@@ -411,6 +457,10 @@ namespace AZ
             // Sort type to be used by the default sort implementation. Passes can also provide
             // fully custom sort implementations by overriding the SortDrawList() function.
             RHI::DrawListSortType m_drawListSortType = RHI::DrawListSortType::KeyThenDepth;
+            
+            // For read back attachment
+            AZStd::shared_ptr<AttachmentReadback> m_attachmentReadback;
+            PassAttachmentReadbackOption m_readbackOption;
 
         private:
             // Return the Timestamp result of this pass
@@ -422,6 +472,10 @@ namespace AZ
             // Used to maintain references to imported attachments so they're underlying
             // buffers and images don't get deleted during attachment build phase
             void StoreImportedAttachmentReferences();
+
+            // Used by the RenderPipeline to create it's passes immediately instead of waiting on
+            // the next Pass System update. The function internally build and initializes the pass.
+            void ManualPipelineBuildAndInitialize();
 
             // --- Hierarchy related functions ---
 
@@ -459,9 +513,6 @@ namespace AZ
             // Updates a binding on this pass using the binding it is connected to.
             // This sets the binding's attachment pointer to the connected binding's attachment
             void UpdateConnectedBinding(PassAttachmentBinding& binding);
-
-            // Update all bindings on this pass that are connected to bindings on other passes
-            void UpdateConnectedBindings();
 
             // Process a PassFallbackConnection to connect an output to an input to act as a short-circuit for when Pass is disabled 
             void ProcessFallbackConnection(const PassFallbackConnection& connection);
@@ -502,6 +553,7 @@ namespace AZ
             // buffers and images don't get deleted during attachment build phase
             AZStd::vector<Ptr<PassAttachment>> m_importedAttachmentStore;
 
+            // Name of the pass. Will be concatenated with parent names to form a unique path
             Name m_name;
 
             // Path of the pass in the hierarchy. Example: Root.Ssao.Downsample
@@ -510,6 +562,12 @@ namespace AZ
             // Depth of the tree hierarchy this pass is at.
             // Example: Root would be depth 0, Root.Ssao.Downsample depth 2
             uint32_t m_treeDepth = 0;
+
+            // Used to track what phase of build/execution the pass is in
+            PassState m_state = PassState::Uninitialized;
+
+            // Used to track what phases of build/initialization the pass is queued for
+            PassQueueState m_queueState = PassQueueState::NoQueue;
         };
 
         //! Struct used to return results from Pass hierarchy validation

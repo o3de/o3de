@@ -1,12 +1,8 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 
 General Asset Processor Batch Tests
 """
@@ -80,6 +76,15 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         # fmt:on
         """
         Tests that fast scan mode can be used and is faster than full scan mode.
+
+        Test Steps:
+        1. Ensure all assets are processed
+        2. Run Asset Processor without fast scan and measure the time it takes to run
+        3. Capture Full Analysis was performed and number of assets processed
+        4. Run Asset Processor with full scan and measure the time it takes to run
+        5. Capture Full Analysis wans't performed and number of assets processed
+        6. Verify that fast scan was faster than full scan
+        7. Verify that full scan scanned more assets
         """
 
         asset_processor.create_temp_asset_root()
@@ -111,76 +116,23 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         assert full_scan_time > fast_scan_time, "Fast scan was slower that full scan"
         assert full_scan_analysis[0] > fast_scan_analysis[0], "Full scan did not process more assets than fast scan"
 
-    @pytest.mark.test_case_id("C18787404")
-    @pytest.mark.BAT
-    @pytest.mark.assetpipeline
-    @pytest.mark.skip(reason="External project is currently broken.")  # LY-119863
-    def test_AllSupportedPlatforms_ExternalProject_APRuns(self, workspace, ap_external_project_setup_fixture):
-
-        external_resources = ap_external_project_setup_fixture
-        logger.info(f"Running external project test at path {external_resources['project_dir']}")
-        # Delete existing "external project" build if it exists
-        if os.path.exists(external_resources["project_dir"]):
-            fs.delete([external_resources["project_dir"]], True, True)
-
-        # fmt:off
-        assert not os.path.exists(external_resources["project_dir"]), \
-            f'{external_resources["project_dir"]} was not deleted'
-        # fmt:on
-
-        lmbr_cmd = [
-            workspace.paths.lmbr(),
-            "projects",
-            "create",
-            external_resources["project_name"],
-            "--template",
-            "EmptyTemplate",
-            "--app-root",
-            external_resources["project_dir"],
-        ]
-
-        logger.info(f"Running lmbr projects create command '{lmbr_cmd}'")
-
-        try:
-            subprocess.check_call(lmbr_cmd)
-        except subprocess.CalledProcessError as e:
-            assert False, f"lmbr projects create failed\n{e.stderr}"
-
-        logger.info("...lmbr finished")
-        assert os.path.exists(external_resources["project_dir"]), "Project folder was not created"
-
-        # AssetProcessor for new External project. Uses mock workspace to emulate external project workspace
-        external_ap = AssetProcessor(external_resources["external_workspace"])
-
-        # fmt:off
-        assert external_ap.batch_process(fastscan=False), \
-            "Asset Processor Batch failed on external project"
-        # fmt:on
-
-        # Parse log looking for errors or failures
-        log = APLogParser(workspace.paths.ap_batch_log())
-        failures, errors = log.runs[-1]["Failures"], log.runs[-1]["Errors"]
-        assert failures == 0, f"There were {failures} asset processing failures"
-        assert errors == 0, f"There were {errors} asset processing errors"
-
-        # Check that project cache was created (DNE until AP makes it)
-        project_cache = os.path.join(external_resources["project_dir"], "Cache")
-        assert os.path.exists(project_cache), f"{project_cache} was not created by AP"
-
-        # Clean up external project
-        fs.delete([external_resources["project_dir"]], True, True)
-
-        # fmt:off
-        assert not os.path.exists(external_resources["project_dir"]), \
-            f"{external_resources['project_dir']} was not deleted"
-        # fmt:on
-
     @pytest.mark.test_case_id("C4874121")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     @pytest.mark.parametrize("clear_type", ["rewrite", "delete_asset", "delete_dir"])
     def test_AllSupportedPlatforms_DeleteBadAssets_BatchFailedJobsCleared(
             self, workspace, request, ap_setup_fixture, asset_processor,  clear_type):
+        """
+        Tests the ability of Asset Processor to recover from processing of bad assets by removing them from scan folder
+
+        Test Steps:
+        1. Create testing environment with good and multiple bad assets
+        2. Run Asset Processor
+        3. Verify that bad assets fail to process
+        4. Fix a bad asset & delete the others
+        5. Run Asset Processor
+        6. Verify Asset Processor does not have any asset failues
+        """
         env = ap_setup_fixture
         error_search_terms = ["WWWWWWWWWWWW"]
 
@@ -250,11 +202,20 @@ class TestsAssetProcessorBatch_Windows(object):
         Verify the AP batch and Gui can run and process assets independent of the Editor
         We do not want or need to kill running Editors here as they can be involved in other tests
         or simply being run locally in this branch or another
+
+        Test Steps:
+        1. Create temporary testing environment
+        2. Run asset processor GUI
+        3. Verify AP GUI doesn't error
+        4. Stop AP GUI
+        5. Run Asset Processor Batch with Fast Scan
+        5. Verify Asset Processor Batch exits cleanly
         """
 
         asset_processor.create_temp_asset_root()
         # Start the processor
-        asset_processor.gui_process(quitonidle=False, connect_to_ap=True)
+        # using -ap_disableAssetTreeView=true to skip the UI building of the Asset Tree for this test
+        asset_processor.gui_process(quitonidle=False, connect_to_ap=True, extra_params=[f'-ap_disableAssetTreeView=true'])
         asset_processor.stop()
 
         # fmt:off
@@ -272,6 +233,11 @@ class TestsAssetProcessorBatch_Windows(object):
         """
         Request a run for an invalid platform
         "AssetProcessor: Error: Platform in config file or command line 'notaplatform'" should be present in the logs
+
+        Test Steps:
+        1. Create temporary testing environment
+        2. Run Asset Processor with an invalid platform
+        3. Check that asset processor returns an Error notifying the user that the invalid platform is not supported
         """
         asset_processor.create_temp_asset_root()
         error_search_terms = 'AssetProcessor: Error: The list of enabled platforms in the settings registry does not contain platform ' \

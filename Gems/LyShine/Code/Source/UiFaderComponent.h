@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <LyShine/Bus/UiCanvasUpdateNotificationBus.h>
@@ -22,6 +18,7 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Math/Color.h>
+#include <Atom/RHI.Reflect/AttachmentId.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 class UiFaderComponent
@@ -160,11 +157,8 @@ private: // data
     //! This is generated from the entity ID and cached
     AZStd::string m_renderTargetName;
 
-    //! When rendering to a texture this is the texture ID of the render target
-    int m_renderTargetHandle = -1;
-
-    //! When rendering to a texture this is our depth surface
-    SDepthTexture* m_renderTargetDepthSurface = nullptr;
+    //! When rendering to a texture this is the attachment image for the render target
+    AZ::RHI::AttachmentId m_attachmentImageId;
     
     //! The positions used for the render to texture viewport and to render the render target to the screen
     AZ::Vector2 m_viewportTopLeft;

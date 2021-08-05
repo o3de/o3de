@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-#include "AzToolsFramework_precompiled.h"
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "ReflectedPropertyEditor.hxx"
 #include "PropertyRowWidget.hxx"
 #include <AzCore/UserSettings/UserSettings.h>
@@ -22,6 +17,8 @@
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QDialogButtonBox>
 #include <QtWidgets/QVBoxLayout>
+#include <QtWidgets/QScrollArea>
+#include <QtWidgets/QApplication>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'QTextFormat::d': class 'QSharedDataPointer<QTextFormatPrivate>' needs to have dll-interface to be used by clients of class 'QTextFormat'
 #include <QtWidgets/QInputDialog>
 AZ_POP_DISABLE_WARNING
@@ -172,6 +169,8 @@ namespace AzToolsFramework
         InstanceDataHierarchyList           m_instances; ///< List of instance sets to display, other one can aggregate other instances.
         InstanceDataHierarchy::ValueComparisonFunction m_valueComparisonFunction;
         ReflectedPropertyEditor::WidgetList m_widgets;
+        ReflectedPropertyEditor::WidgetList m_specialGroupWidgets;
+        InstanceDataNode* groupSourceNode = nullptr;
         RowContainerType m_widgetsInDisplayOrder;
         UserWidgetToDataMap m_userWidgetsToData;
         VisibilityCallback m_visibilityCallback;
@@ -504,6 +503,7 @@ namespace AzToolsFramework
             // if the node is in a group then create the widget for the group
             if (groupElementData)
             {
+                bool isToggleGroup = false;
                 const char* groupName = groupElementData->m_description;
                 PropertyRowWidget*& widgetEntry = m_groupWidgets[{parent, groupName}];
 
@@ -512,14 +512,34 @@ namespace AzToolsFramework
                 {
                     widgetEntry = CreateOrPullFromPool();
                     widgetEntry->SetFilterString(m_editor->GetFilterString());
-                    widgetEntry->Initialize(groupName, parent, depth, m_propertyLabelWidth);
+
+                    // Initialized normally if the group does not have a member variable attached to it,
+                    // otherwise initialize it as a group that will have a toggle switch.
+                    if (groupElementData->IsClassElement())
+                    {
+                        widgetEntry->Initialize(groupName, parent, depth, m_propertyLabelWidth);
+                    }
+                    else
+                    {
+                        widgetEntry->InitializeToggleGroup(groupName, parent, depth, groupSourceNode, m_propertyLabelWidth);
+                        QWidget* toggleSwitch = widgetEntry->GetToggle();
+                        PropertyHandlerBase* pHandler = widgetEntry->GetHandler();
+                        m_userWidgetsToData[toggleSwitch] = groupSourceNode;
+                        m_specialGroupWidgets[groupSourceNode] = widgetEntry;
+                        pHandler->ConsumeAttributes_Internal(toggleSwitch, groupSourceNode);
+                        pHandler->ReadValuesIntoGUI_Internal(toggleSwitch, groupSourceNode);
+                        widgetEntry->OnValuesUpdated();
+                        isToggleGroup = true;
+                    }
+
                     widgetEntry->SetLeafIndentation(m_leafIndentation);
                     widgetEntry->SetTreeIndentation(m_treeIndentation);
                     widgetEntry->setObjectName(groupName);
 
                     for (const AZ::Edit::AttributePair& attribute : groupElementData->m_attributes)
                     {
-                        PropertyAttributeReader reader(node->GetParent()->FirstInstance(), attribute.second);
+                        InstanceDataNode* readerNode = (isToggleGroup) ? groupSourceNode : node;
+                        PropertyAttributeReader reader(readerNode->GetParent()->FirstInstance(), attribute.second);
                         QString descriptionOut;
                         bool foundDescription = false;
                         widgetEntry->ConsumeAttribute(attribute.first, reader, true, &descriptionOut, &foundDescription);
@@ -611,7 +631,7 @@ namespace AzToolsFramework
     // creates and populates the GUI to edit the property if not already created
     void ReflectedPropertyEditor::Impl::CreateEditorWidget(PropertyRowWidget* pWidget)
     {
-        if (!pWidget->HasChildWidgetAlready())
+        if (!pWidget->HasChildWidgetAlready() && !pWidget->GetToggle())
         {
             PropertyHandlerBase* pHandler = pWidget->GetHandler();
             if (pHandler)
@@ -738,36 +758,44 @@ namespace AzToolsFramework
                         }
                     }
                 }
-
-                pWidget = CreateOrPullFromPool();
-                pWidget->show();
-
-                pWidget->SetFilterString(m_editor->GetFilterString());
-                pWidget->Initialize(pParent, node, depth, m_propertyLabelWidth);
-
-                if (labelOverride != "")
+                if (!node->GetElementEditMetadata() || (node->GetElementEditMetadata()->m_elementId != AZ::Edit::ClassElements::Group))
                 {
-                    pWidget->SetNameLabel(labelOverride.data());
+                    pWidget = CreateOrPullFromPool();
+                    pWidget->show();
+
+                    pWidget->SetFilterString(m_editor->GetFilterString());
+                    pWidget->Initialize(pParent, node, depth, m_propertyLabelWidth);
+
+                    if (labelOverride != "")
+                    {
+                        pWidget->SetNameLabel(labelOverride.data());
+                    }
+
+                    pWidget->setObjectName(pWidget->label());
+                    pWidget->SetSelectionEnabled(m_selectionEnabled);
+                    pWidget->SetLeafIndentation(m_leafIndentation);
+                    pWidget->SetTreeIndentation(m_treeIndentation);
+
+                    m_widgets[node] = pWidget;
+                    m_widgetsInDisplayOrder.insert(widgetDisplayOrder, pWidget);
+
+                    if (pParent)
+                    {
+                        pParent->AddedChild(pWidget);
+                    }
+
+                    if (pParent || !m_hideRootProperties)
+                    {
+                        depth += 1;
+                    }
+                    pParent = pWidget;
                 }
 
-                pWidget->setObjectName(pWidget->label());
-                pWidget->SetSelectionEnabled(m_selectionEnabled);
-                pWidget->SetLeafIndentation(m_leafIndentation);
-                pWidget->SetTreeIndentation(m_treeIndentation);
-
-                m_widgets[node] = pWidget;
-                m_widgetsInDisplayOrder.insert(widgetDisplayOrder, pWidget);
-
-                if (pParent)
+                // Save the last InstanceDataNode that is a Group ClassElement so that we can use it as the source node for its widget.
+                if (node->GetElementEditMetadata() && (node->GetElementEditMetadata()->m_elementId == AZ::Edit::ClassElements::Group))
                 {
-                    pParent->AddedChild(pWidget);
+                    groupSourceNode = node;
                 }
-
-                if (pParent || !m_hideRootProperties)
-                {
-                    depth += 1;
-                }
-                pParent = pWidget;
             }
         }
 
@@ -1359,9 +1387,13 @@ namespace AzToolsFramework
             return;
         }
 
-        // get the property editor
+        // Get the property editor from either the widget map or the special toggle group widgets
         auto rowWidget = m_widgets.find(it->second);
-        if (rowWidget != m_widgets.end())
+        if (rowWidget == m_widgets.end())
+        {
+            rowWidget = m_specialGroupWidgets.find(it->second);
+        }
+        if (rowWidget != m_widgets.end() || rowWidget != m_specialGroupWidgets.end())
         {
             InstanceDataNode* node = rowWidget->first;
             PropertyRowWidget* widget = rowWidget->second;

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates, or
-* a third party where indicated.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <AzCore/Asset/AssetManagerBus.h>
@@ -25,6 +21,7 @@
 #include <System/PhysXSdkCallbacks.h>
 
 #include <PhysX/Configuration/PhysXConfiguration.h>
+#include <System/PhysXJointInterface.h>
 
 namespace physx
 {
@@ -64,8 +61,6 @@ namespace PhysX
         AZStd::pair<AzPhysics::SceneHandle, AzPhysics::SimulatedBodyHandle> FindAttachedBodyHandleFromEntityId(AZ::EntityId entityId) override;
         const AzPhysics::SystemConfiguration* GetConfiguration() const override;
         void UpdateConfiguration(const AzPhysics::SystemConfiguration* newConfig, bool forceReinitialization = false) override;
-        void UpdateDefaultMaterialLibrary(const AZ::Data::Asset<Physics::MaterialLibraryAsset>& materialLibrary) override;
-        const AZ::Data::Asset<Physics::MaterialLibraryAsset>& GetDefaultMaterialLibrary() const override;
         void UpdateDefaultSceneConfiguration(const AzPhysics::SceneConfiguration& sceneConfiguration) override;
         const AzPhysics::SceneConfiguration& GetDefaultSceneConfiguration() const override;
 
@@ -74,6 +69,8 @@ namespace PhysX
 
         //! Accessor to get the Settings Registry Manager.
         const PhysXSettingsRegistryManager& GetSettingsRegistryManager() const;
+
+        void UpdateMaterialLibrary(const AZ::Data::Asset<Physics::MaterialLibraryAsset>& materialLibrary);
 
         //TEMP -- until these are fully moved over here
         physx::PxPhysics* GetPxPhysics() { return m_physXSdk.m_physics; }
@@ -92,7 +89,7 @@ namespace PhysX
         //! @param cookingParams The cooking params to use when setting up PhysX cooking interface. 
         void InitializePhysXSdk(const physx::PxCookingParams& cookingParams);
         void ShutdownPhysXSdk();
-        bool LoadDefaultMaterialLibrary();
+        bool LoadMaterialLibrary();
 
         // AzFramework::AssetCatalogEventBus::Handler ...
         void OnCatalogLoaded(const char* catalogFile) override;
@@ -128,12 +125,15 @@ namespace PhysX
         Debug::PhysXDebug m_physXDebug; //! Handler for the PhysXDebug Interface.
         PhysXSettingsRegistryManager& m_registryManager; //! Handles all settings registry interactions.
         PhysXSceneInterface m_sceneInterface; //! Implemented the Scene Az::Interface.
+        PhysXJointHelpersInterface m_jointHelperInterface; //! Implementation of the JointHelpersInterface.
 
         class MaterialLibraryAssetHelper
             : private AZ::Data::AssetBus::Handler
         {
         public:
-            MaterialLibraryAssetHelper(PhysXSystem* physXSystem);
+            using OnMaterialLibraryReloadedCallback = AZStd::function<void(const AZ::Data::Asset<Physics::MaterialLibraryAsset>& materialLibrary)>;
+
+            MaterialLibraryAssetHelper(OnMaterialLibraryReloadedCallback callback);
 
             void Connect(const AZ::Data::AssetId& materialLibraryId);
             void Disconnect();
@@ -142,7 +142,7 @@ namespace PhysX
             // AZ::Data::AssetBus::Handler
             void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
 
-            PhysXSystem* m_physXSystem;
+            OnMaterialLibraryReloadedCallback m_onMaterialLibraryReloadedCallback;
         };
         MaterialLibraryAssetHelper m_materialLibraryAssetHelper;
     };

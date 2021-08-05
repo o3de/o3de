@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "MainWindow.h"
 
@@ -460,12 +456,19 @@ namespace LandscapeCanvasEditor
         GraphCanvas::StyleManagerRequestBus::Event(editorId, &GraphCanvas::StyleManagerRequests::RegisterDataPaletteStyle, LandscapeCanvas::AreaTypeId, "VegetationAreaDataColorPalette");
 
         LandscapeCanvas::LandscapeCanvasRequestBus::Handler::BusConnect();
-        AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
         AzToolsFramework::EditorPickModeNotificationBus::Handler::BusConnect(AzToolsFramework::GetEntityContextId());
         AzToolsFramework::EntityCompositionNotificationBus::Handler::BusConnect();
         AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusConnect();
+        AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
         CrySystemEventBus::Handler::BusConnect();
         AZ::EntitySystemBus::Handler::BusConnect();
+
+        // Listen for Entity notifications if a level is already loaded
+        // Otherwise, we will connect/disconnect from this bus when levels are loaded/closed
+        if (GetLegacyEditor()->IsLevelLoaded())
+        {
+            AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
+        }
 
         // Create our temporary Node Inspector using a Pinned Inspector
         m_customNodeInspector = aznew CustomNodeInspectorDockWidget(this);
@@ -480,6 +483,7 @@ namespace LandscapeCanvasEditor
     {
         AZ::EntitySystemBus::Handler::BusDisconnect();
         CrySystemEventBus::Handler::BusDisconnect();
+        AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::ToolsApplicationNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorPickModeNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
@@ -883,6 +887,10 @@ namespace LandscapeCanvasEditor
                 if (landscapeCanvasComponent)
                 {
                     landscapeCanvasComponent->m_graph = *m_serializeContext->CloneObject(graph.get());
+
+                    // Mark the Landscape Canvas entity as dirty so the changes to the graph will be picked up on the next save
+                    AzToolsFramework::ScopedUndoBatch undo("Update Landscape Canvas Graph");
+                    AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity, rootEntityId);
                 }
             }
         }
@@ -1572,7 +1580,7 @@ namespace LandscapeCanvasEditor
 
     void MainWindow::HandleEditorEntityCreated(const AZ::EntityId& entityId, GraphCanvas::GraphId graphId)
     {
-        if (m_ignoreGraphUpdates)
+        if (m_ignoreGraphUpdates || m_prefabPropagationInProgress)
         {
             return;
         }
@@ -1622,6 +1630,11 @@ namespace LandscapeCanvasEditor
 
     void MainWindow::OnEditorEntityDeleted(const AZ::EntityId& entityId)
     {
+        if (m_prefabPropagationInProgress)
+        {
+            return;
+        }
+
         m_queuedEntityDeletes.push_back(entityId);
 
         QTimer::singleShot(0, [this, entityId]() {
@@ -2456,6 +2469,11 @@ namespace LandscapeCanvasEditor
 
     void MainWindow::EntityParentChanged(AZ::EntityId entityId, AZ::EntityId newParentId, AZ::EntityId oldParentId)
     {
+        if (m_prefabPropagationInProgress)
+        {
+            return;
+        }
+
         GraphCanvas::GraphId oldGraphId = FindGraphContainingEntity(oldParentId);
         GraphCanvas::GraphId newGraphId = FindGraphContainingEntity(newParentId);
 
@@ -2482,6 +2500,20 @@ namespace LandscapeCanvasEditor
         }
     }
 
+    void MainWindow::OnPrefabInstancePropagationBegin()
+    {
+        // Ignore graph updates during prefab propagation because the entities will be
+        // deleted and re-created, which would inadvertantly trigger our logic to close
+        // the graph when the corresponding entity is deleted.
+        m_prefabPropagationInProgress = true;
+    }
+
+    void MainWindow::OnPrefabInstancePropagationEnd()
+    {
+        // See comment above in OnPrefabInstancePropagationBegin
+        m_prefabPropagationInProgress = false;
+    }
+
     void MainWindow::OnCryEditorEndCreate()
     {
         UpdateGraphEnabled();
@@ -2490,6 +2522,15 @@ namespace LandscapeCanvasEditor
     void MainWindow::OnCryEditorEndLoad()
     {
         UpdateGraphEnabled();
+
+        AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
+    }
+
+    void MainWindow::OnCryEditorCloseScene()
+    {
+        UpdateGraphEnabled();
+
+        AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
     }
 
     void MainWindow::OnCryEditorSceneClosed()

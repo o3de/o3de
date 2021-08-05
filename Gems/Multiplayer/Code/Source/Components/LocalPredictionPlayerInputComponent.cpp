@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Multiplayer/Components/LocalPredictionPlayerInputComponent.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -25,6 +21,7 @@ namespace Multiplayer
     AZ_CVAR(AZ::TimeMs, cl_MaxRewindHistoryMs, AZ::TimeMs{ 2000 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Maximum number of milliseconds to keep for server correction rewind and replay");
 #ifndef AZ_RELEASE_BUILD
     AZ_CVAR(float, cl_DebugHackTimeMultiplier, 1.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "Scalar value used to simulate clock hacking cheats for validating bank time system and anticheat");
+    AZ_CVAR(bool, cl_EnableDesyncDebugging, false, nullptr, AZ::ConsoleFunctorFlags::Null, "If enabled, debug logs will contain verbose information on detected state desyncs");
 #endif
 
     AZ_CVAR(bool, sv_EnableCorrections, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Enables server corrections on autonomous proxy desyncs");
@@ -158,9 +155,12 @@ namespace Multiplayer
             // Discard move input events, client may be speed hacking
             if (m_clientBankedTime < sv_MaxBankTimeWindowSec)
             {
+                // Client blends from previous frame to target so here we subtract blend factor to get to that state
+                const float blendFactor = AZStd::min(AZStd::max(0.f, input.GetHostBlendFactor()), 1.f);
+                const AZ::TimeMs blendMs = AZ::TimeMs(static_cast<float>(static_cast<AZ::TimeMs>(cl_InputRateMs)) * (1.f - blendFactor));
                 m_clientBankedTime = AZStd::min(m_clientBankedTime + clientInputRateSec, (double)sv_MaxBankTimeWindowSec); // clamp to boundary
                 {
-                    ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs(), invokingConnection->GetConnectionId());
+                    ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs() - blendMs, input.GetHostBlendFactor(), invokingConnection->GetConnectionId());
                     GetNetBindComponent()->ProcessInput(input, static_cast<float>(clientInputRateSec));
                 }
 
@@ -214,11 +214,12 @@ namespace Multiplayer
                 // Send correction
                 SendClientInputCorrection(GetLastInputId(), correction);
 
-#ifdef _DEBUG
-                // In debug, show which states caused the correction
+#ifndef AZ_RELEASE_BUILD
                 AZStd::string clientStateString;
                 AZStd::string serverStateString;
+                if (cl_EnableDesyncDebugging)
                 {
+                    // In debug, show which states caused the correction
                     // Write in client state
                     AzNetworking::NetworkOutputSerializer clientStateSerializer(clientState.GetBuffer(), clientState.GetSize());
                     GetNetBindComponent()->SerializeEntityCorrection(clientStateSerializer);
@@ -236,11 +237,13 @@ namespace Multiplayer
                     GetNetBindComponent()->SerializeEntityCorrection(serverValues);
 
                     AZStd::map<AZStd::string, AZStd::pair<AZStd::string, AZStd::string>> mapComparison;
+
                     // put the server value in the first part of the pair
                     for (const auto& pair : serverValues.GetValueMap())
                     {
                         mapComparison[pair.first].first = pair.second;
                     }
+
                     // put the client value in the second part of the pair
                     for (const auto& pair : clientValues.GetValueMap())
                     {
@@ -266,12 +269,13 @@ namespace Multiplayer
                         }
                     }
                 }
-#else
-                const AZStd::string clientStateString = "available in debug only";
-                const AZStd::string serverStateString = "available in debug only";
-#endif
-
+                else
+                {
+                    clientStateString = "available in debug only";
+                    serverStateString = "available in debug only";
+                }
                 AZLOG_ERROR("** Autonomous proxy desync detected! ** clientState=[%s], serverState=[%s]", clientStateString.c_str(), serverStateString.c_str());
+#endif
             }
         }
     }
@@ -310,7 +314,7 @@ namespace Multiplayer
             ++ModifyLastInputId();
             input.SetClientInputId(GetLastInputId());
 
-            ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs(), invokingConnection->GetConnectionId());
+            ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs(), input.GetHostBlendFactor(), invokingConnection->GetConnectionId());
             GetNetBindComponent()->ProcessInput(input, clientInputRateSec);
 
             AZLOG
@@ -390,7 +394,7 @@ namespace Multiplayer
         {
             // Reprocess the input for this frame
             NetworkInput& input = m_inputHistory[replayIndex];
-            ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs(), invokingConnection->GetConnectionId());
+            ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs(), input.GetHostBlendFactor(), invokingConnection->GetConnectionId());
             GetNetBindComponent()->ProcessInput(input, clientInputRateSec);
 
             AZLOG
@@ -416,7 +420,7 @@ namespace Multiplayer
 
     ClientInputId LocalPredictionPlayerInputComponentController::GetLastInputId() const
     {
-        return m_clientInputId;
+        return m_lastClientInputId;
     }
 
     HostFrameId LocalPredictionPlayerInputComponentController::GetInputFrameId(const NetworkInput& input) const
@@ -498,6 +502,7 @@ namespace Multiplayer
             input.SetClientInputId(m_clientInputId);
             input.SetHostFrameId(networkTime->GetHostFrameId());
             input.SetHostTimeMs(multiplayer->GetCurrentHostTimeMs());
+            input.SetHostBlendFactor(multiplayer->GetCurrentBlendFactor());
 
             // Allow components to form the input for this frame
             GetNetBindComponent()->CreateInput(input, inputRate);
@@ -520,10 +525,13 @@ namespace Multiplayer
 
             // In debug, send the entire client output state to the server to make it easier to debug desync issues
             AzNetworking::PacketEncodingBuffer processInputResult;
-#ifdef _DEBUG
-            AzNetworking::NetworkInputSerializer processInputResultSerializer(processInputResult.GetBuffer(), processInputResult.GetCapacity());
-            GetNetBindComponent()->SerializeEntityCorrection(processInputResultSerializer);
-            processInputResult.Resize(processInputResultSerializer.GetSize());
+#ifndef AZ_RELEASE_BUILD
+            if (cl_EnableDesyncDebugging)
+            {
+                AzNetworking::NetworkInputSerializer processInputResultSerializer(processInputResult.GetBuffer(), processInputResult.GetCapacity());
+                GetNetBindComponent()->SerializeEntityCorrection(processInputResultSerializer);
+                processInputResult.Resize(processInputResultSerializer.GetSize());
+            }
 #endif
 
             // Save this input and discard move history outside our client rewind window
@@ -569,7 +577,7 @@ namespace Multiplayer
 
             NetworkInput& input = m_lastInputReceived[0];
             {
-                ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs(), AzNetworking::InvalidConnectionId);
+                ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs(), DefaultBlendFactor, AzNetworking::InvalidConnectionId);
                 GetNetBindComponent()->ProcessInput(input, inputRate);
             }
 

@@ -5,13 +5,13 @@
                 "Platform pc": {
                     "tags": "tools,renderer"
                 },
-                "Platform es3": {
+                "Platform android": {
                     "tags": "android,mobile,renderer"
                 },
                 "Platform ios": {
                     "tags": "mobile,renderer"
                 },
-                "Platform osx_gl": {
+                "Platform mac": {
                     "tags": "tools,renderer"
                 },
                 "Platform server": {
@@ -21,7 +21,7 @@
                     "tags": "console,renderer"
                 },
                 "Platforms": {
-                    "es3": "enabled",
+                    "android": "enabled",
                     "ios": "enabled",
                     "server": "enabled"
                 },
@@ -54,14 +54,14 @@
                     "display": "folder1output",
                     "recursive": 1,
                     "order": 50000,
-                    "include": "es3"
+                    "include": "android"
                 },
                 "ScanFolder Folder2": {
                     "watch": "@ENGINEROOT@/Folder2",
                     "display": "folder2output",
                     "recursive": 1,
                     "order": 60000,
-                    "exclude": "es3"
+                    "exclude": "android"
                 },
                 "ScanFolder Folder3": {
                     "watch": "@ENGINEROOT@/Folder3",
@@ -80,7 +80,7 @@
                     "glob": "*.i_caf",
                     "params": "defaultparams",
                     "server": "skip",
-                    "es3": "mobile",
+                    "android": "mobile",
                     "test": "copy",
                     "priority": 5
                 },
@@ -92,7 +92,7 @@
                 "RC mov": {
                     "glob": "*.mov",
                     "params": "copy",
-                    "es3": "platformspecificoverride",
+                    "android": "platformspecificoverride",
                     "renderer": "rendererparams"
                 },
                 "RC rend": {

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <ReflectionProbe/EditorReflectionProbeComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -39,6 +35,7 @@ namespace AZ
                 serializeContext->Class<EditorReflectionProbeComponent, BaseClass>()
                     ->Version(2, ConvertToEditorRenderComponentAdapter<1>)
                     ->Field("useBakedCubemap", &EditorReflectionProbeComponent::m_useBakedCubemap)
+                    ->Field("bakedCubeMapQualityLevel", &EditorReflectionProbeComponent::m_bakedCubeMapQualityLevel)
                     ->Field("bakedCubeMapRelativePath", &EditorReflectionProbeComponent::m_bakedCubeMapRelativePath)
                     ->Field("authoredCubeMapAsset", &EditorReflectionProbeComponent::m_authoredCubeMapAsset)
                 ;
@@ -50,7 +47,7 @@ namespace AZ
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::Category, "Atom")
                             ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg")
-                            ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.png")
+                            ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Component_Placeholder.svg")
                             ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
@@ -67,6 +64,13 @@ namespace AZ
                             ->DataElement(AZ::Edit::UIHandlers::Default, &EditorReflectionProbeComponent::m_useBakedCubemap, "Use Baked Cubemap", "Selects between a cubemap that captures the environment at location in the scene or a preauthored cubemap")
                                 ->Attribute(AZ::Edit::Attributes::ChangeValidate, &EditorReflectionProbeComponent::OnUseBakedCubemapValidate)
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorReflectionProbeComponent::OnUseBakedCubemapChanged)
+                            ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorReflectionProbeComponent::m_bakedCubeMapQualityLevel, "Baked Cubemap Quality", "Resolution of the baked cubemap")
+                                ->Attribute(AZ::Edit::Attributes::Visibility, &EditorReflectionProbeComponent::GetBakedCubemapVisibilitySetting)
+                                ->EnumAttribute(BakedCubeMapQualityLevel::VeryLow, "Very Low")
+                                ->EnumAttribute(BakedCubeMapQualityLevel::Low, "Low")
+                                ->EnumAttribute(BakedCubeMapQualityLevel::Medium, "Medium")
+                                ->EnumAttribute(BakedCubeMapQualityLevel::High, "High")
+                                ->EnumAttribute(BakedCubeMapQualityLevel::VeryHigh, "Very High")
                             ->DataElement(AZ::Edit::UIHandlers::MultiLineEdit, &EditorReflectionProbeComponent::m_bakedCubeMapRelativePath, "Baked Cubemap Path", "Baked Cubemap Path")
                                 ->Attribute(AZ::Edit::Attributes::ReadOnly, true)
                                 ->Attribute(AZ::Edit::Attributes::Visibility, &EditorReflectionProbeComponent::GetBakedCubemapVisibilitySetting)
@@ -209,8 +213,8 @@ namespace AZ
             AZ::Vector3 position = AZ::Vector3::CreateZero();
             AZ::TransformBus::EventResult(position, GetEntityId(), &AZ::TransformBus::Events::GetWorldTranslation);
 
-            AZ::Vector3 scale = AZ::Vector3::CreateOne();
-            AZ::TransformBus::EventResult(scale, GetEntityId(), &AZ::TransformBus::Events::GetLocalScale);
+            float scale = 1.0f;
+            AZ::TransformBus::EventResult(scale, GetEntityId(), &AZ::TransformBus::Events::GetLocalUniformScale);
 
             // draw AABB at probe position using the inner dimensions
             Color color(0.0f, 0.0f, 1.0f, 1.0f);
@@ -332,6 +336,12 @@ namespace AZ
                     // clear it to force the generation of a new filename
                     cubeMapRelativePath.clear();
                 }
+
+                // if the quality level changed we need to generate a new filename
+                if (m_controller.m_configuration.m_bakedCubeMapQualityLevel != m_bakedCubeMapQualityLevel)
+                {
+                    cubeMapRelativePath.clear();
+                }
             }
 
             // build a new cubemap path if necessary
@@ -345,7 +355,10 @@ namespace AZ
                 AZStd::string uuidString;
                 uuid.ToString(uuidString);
 
-                cubeMapRelativePath = "ReflectionProbes/" + entity->GetName() + "_" + uuidString + "_iblspecularcm.dds";
+                // determine the filemask suffix from the cubemap quality level setting
+                AZStd::string fileSuffix = BakedCubeMapFileSuffixes[aznumeric_cast<uint32_t>(m_bakedCubeMapQualityLevel)];
+
+                cubeMapRelativePath = "ReflectionProbes/" + entity->GetName() + "_" + uuidString + fileSuffix;
 
                 // replace any invalid filename characters
                 auto invalidCharacters = [](char letter)
@@ -384,6 +397,7 @@ namespace AZ
             // save the relative source path in the configuration
             AzToolsFramework::ScopedUndoBatch undoBatch("Cubemap path changed.");
             m_controller.m_configuration.m_bakedCubeMapRelativePath = cubeMapRelativePath;
+            m_controller.m_configuration.m_bakedCubeMapQualityLevel = m_bakedCubeMapQualityLevel;
             SetDirty();
 
             // update UI cubemap path display

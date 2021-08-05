@@ -1,20 +1,14 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <Atom/RPI.Reflect/Base.h>
-#include <Atom/RPI.Reflect/Shader/ShaderResourceGroupAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
-#include <Atom/RPI.Reflect/Shader/ShaderAsset2.h>
 #include <Atom/RPI.Reflect/Shader/ShaderVariantKey.h>
 
 #include <Atom/RPI.Public/Shader/ShaderResourceGroupPool.h>
@@ -25,6 +19,7 @@
 #include <Atom/RHI/ShaderResourceGroup.h>
 
 #include <AtomCore/std/containers/array_view.h>
+#include <AtomCore/Instance/InstanceId.h>
 #include <AtomCore/Instance/InstanceData.h>
 
 namespace AZ
@@ -55,19 +50,21 @@ namespace AZ
             : public AZ::Data::InstanceData
         {
             friend class ShaderSystem;
+            friend class ShaderResourceGroupPool;
+
         public:
             AZ_INSTANCE_DATA(ShaderResourceGroup, "{88B52D0C-9CBF-4B4D-B9E2-180BA602E1EA}");
             AZ_CLASS_ALLOCATOR(ShaderResourceGroup, AZ::SystemAllocator, 0);
 
-            /// Instantiates or returns an existing streaming image instance using its paired asset.
-            static Data::Instance<ShaderResourceGroup> FindOrCreate(const Data::Asset<ShaderResourceGroupAsset>& srgAsset);
+            /// Instantiates a unique shader resource group instance using its paired asset but with a random InstanceId.
+            /// This version uses the system-wide supervariant (if available) specified by the ShaderSystem or the Default supervariant.
+            static Data::Instance<ShaderResourceGroup> Create(
+                const Data::Asset<ShaderAsset>& shaderAsset, const AZ::Name& srgName);
 
-            /// Instantiates a unique shader resource group instance using its paired asset.
-            static Data::Instance<ShaderResourceGroup> Create(const Data::Asset<ShaderResourceGroupAsset>& srgAsset);
-
-            /// [GFX TODO] [ATOM-15472] Shader Build Pipeline: Remove Deprecated Files And Functions That Predate The Shader Supervariants
-            /// This is a temporary hack to enable integration of the new supervariant system.
-            bool ReplaceSrgLayoutUsingShaderAsset(Data::Asset<ShaderAsset2> shaderAsset, const Name& supervariantName, const Name& srgName);
+            /// Instantiates a unique shader resource group instance using its paired asset but with a random InstanceId.
+            /// This version uses the supervariant specified by the caller.
+            static Data::Instance<ShaderResourceGroup> Create(
+                const Data::Asset<ShaderAsset>& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName);
 
             /// Queues a request that the underlying hardware shader resource group be compiled.
             void Compile();
@@ -84,8 +81,8 @@ namespace AZ
             RHI::ShaderInputBufferUnboundedArrayIndex FindShaderInputBufferUnboundedArrayIndex(const Name& name) const;
             RHI::ShaderInputImageUnboundedArrayIndex  FindShaderInputImageUnboundedArrayIndex(const Name& name) const;
 
-            /// Returns the parent shader resource group asset.
-            const Data::Asset<ShaderResourceGroupAsset>& GetAsset() const;
+            /// Returns the parent shader shader asset where the SRG layout data came from.
+            /// const Data::Asset<ShaderAsset>& GetAsset() const;
 
             /// Returns the RHI shader resource group layout.
             const RHI::ShaderResourceGroupLayout* GetLayout() const;
@@ -283,9 +280,34 @@ namespace AZ
         private:
             ShaderResourceGroup() = default;
 
-            RHI::ResultCode Init(ShaderResourceGroupAsset& shaderResourceGroupAsset);
+            //! Will be passed as AZStd::any to CreateInternal.
+            //! The data comes from the same parameters of ::Create() or ::FindOrCreate().
+            struct SrgInitParams
+            {
+                AZ_TYPE_INFO(SrgInitParams, "{FDBDDB75-3DE6-4383-8D19-C0092246A411}");
+                SupervariantIndex m_supervariantIndex;
+                AZ::Name m_srgName;
+            };
 
-            static AZ::Data::Instance<ShaderResourceGroup> CreateInternal(ShaderResourceGroupAsset& srgAsset);
+            //! Usually subclasses of AZ::Data::InstanceData leverage the AssetId of the given asset as a means to define
+            //! the AZ::Data::InstanceId. This works well when there's a one-to-one relationship between the Asset and the InstanceData.
+            //!
+            //! ShaderResourceGroup & ShaderResourceGroupPool are different because one ShaderAsset can have several
+            //! ShaderResourceGroupLayouts defined in it. This means that using only the AssetId is not sufficient.
+            //!
+            //! This function searches the ShaderResourceGroupLayout of the given @srgName in the @shaderAsset. If it finds such
+            //! ShaderResourceGroupLayout it makes an InstanceId based on:
+            //! - The azsl file of origin where the ShaderResourceGroup was defined.
+            //! - The supervariant index.
+            //! - The name of the srg.
+            //! @param shaderAsset: The shader asset where the ShaderResourceGroupLayout will be searched.
+            //! @param supervariantIndex: The supervariant index in @shaderAsset where the search will be conducted.
+            //! @param srgName: Name of the ShaderResourceGroup as it was declared in the azsl file of origin.
+            static Data::InstanceId MakeInstanceId(const Data::Asset<ShaderAsset>& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName);
+
+            RHI::ResultCode Init(ShaderAsset& shaderAsset, const SupervariantIndex& supervariantIndex, const AZ::Name& srgName);
+
+            static AZ::Data::Instance<ShaderResourceGroup> CreateInternal(ShaderAsset& shaderAsset, const AZStd::any* srgInitParams);
 
             /// A name to be used in error messages
             static const char* s_traceCategoryName;
@@ -295,6 +317,9 @@ namespace AZ
 
             /// Allows us to return const& to a null Buffer
             static const Data::Instance<Buffer> s_nullBuffer;
+
+            /// If true, Init() was called and was successful.
+            bool m_isInitialized = false;
 
             /// Pool for allocating RHI::ShaderResourceGroup objects
             Data::Instance<ShaderResourceGroupPool> m_pool;
@@ -306,10 +331,7 @@ namespace AZ
             RHI::Ptr<RHI::ShaderResourceGroup> m_shaderResourceGroup;
 
             /// A reference to the SRG asset used to initialize and manipulate this group.
-            AZ::Data::Asset<ShaderResourceGroupAsset> m_asset;
-
-            /// A reference to the shader asset used to initialize and manipulate this group.
-            AZ::Data::Asset<ShaderAsset2> m_shaderAsset;
+            AZ::Data::Asset<ShaderAsset> m_asset;
 
             /// A pointer to the layout inside of m_srgAsset
             const RHI::ShaderResourceGroupLayout* m_layout = nullptr;

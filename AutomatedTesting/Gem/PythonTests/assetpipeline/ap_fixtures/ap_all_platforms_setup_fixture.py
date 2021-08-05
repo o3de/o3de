@@ -1,12 +1,8 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 
 Fixture for organizing directories associated with tests that involve assets for all platforms
 
@@ -34,10 +30,10 @@ def ap_all_platforms_setup_fixture(request, workspace, ap_setup_fixture) -> Dict
 
     # Specific platform cache locations
     resources["pc_cache_location"] = os.path.join(cache_dir, "pc")
-    resources["es3_cache_location"] = os.path.join(cache_dir, "es3")
+    resources["android_cache_location"] = os.path.join(cache_dir, "android")
     resources["ios_cache_location"] = os.path.join(cache_dir, "ios")
-    resources["osx_gl_cache_location"] = os.path.join(cache_dir, "osx_gl")
+    resources["mac_cache_location"] = os.path.join(cache_dir, "mac")
     resources["provo_cache_location"] = os.path.join(cache_dir, "provo")
-    resources["all_platforms"] = ["pc", "es3", "ios", "osx_gl", "provo"]
+    resources["all_platforms"] = ["pc", "android", "ios", "mac", "provo"]
 
     return resources

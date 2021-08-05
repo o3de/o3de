@@ -20,6 +20,19 @@
                 {
                     "Name": "SwapChainOutput",
                     "SlotType": "InputOutput"
+                },
+                {
+                    "Name": "MotionVectorOutput",
+                    "SlotType": "Output"
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "MotionVectorOutput",
+                    "AttachmentRef": {
+                        "Pass": "MeshMotionVectorPass",
+                        "Attachment": "MotionInputOutput"
+                    }
                 }
             ],
             "PassRequests": [
@@ -49,6 +62,13 @@
                             "AttachmentRef": {
                                 "Pass": "Parent",
                                 "Attachment": "SkinnedMeshes"
+                            }
+                        },
+                        {
+                            "LocalSlot": "MotionInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "CameraMotionVectorPass",
+                                "Attachment": "Output"
                             }
                         }
                     ],

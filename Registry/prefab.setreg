@@ -1,0 +1,14 @@
+{
+    "O3DE":
+    {
+        "AzFramework":
+        {
+            "Spawnables":
+            {
+                // Any requests with a priorty value equal or smaller than this will be considered a high priority request.
+                // The range for this value is between 0 and 255.
+                "HighPriorityThreshold" : 64
+            }
+        }
+    }
+}

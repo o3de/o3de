@@ -1,23 +1,21 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Component/NonUniformScaleBus.h>
 
 #include <AtomCore/Instance/InstanceDatabase.h>
 
+#include <AzFramework/Render/GeometryIntersectionBus.h>
 #include <AzFramework/Visibility/BoundsBus.h>
 
 #include <Atom/RPI.Public/Model/Model.h>
@@ -32,9 +30,7 @@ namespace AZ
 {
     namespace Render
     {
-        /**
-         * A configuration structure for the MeshComponentController
-         */
+        //! A configuration structure for the MeshComponentController
         class MeshComponentConfig final
             : public AZ::ComponentConfig
         {
@@ -57,6 +53,7 @@ namespace AZ
         class MeshComponentController final
             : private MeshComponentRequestBus::Handler
             , public AzFramework::BoundsRequestBus::Handler
+            , public AzFramework::RenderGeometry::IntersectionRequestBus::Handler
             , private TransformNotificationBus::Handler
             , private MaterialReceiverRequestBus::Handler
             , private MaterialComponentNotificationBus::Handler
@@ -77,7 +74,7 @@ namespace AZ
             MeshComponentController() = default;
             MeshComponentController(const MeshComponentConfig& config);
 
-            void Activate(AZ::EntityId entityId);
+            void Activate(const AZ::EntityComponentIdPair& entityComponentIdPair);
             void Deactivate();
             void SetConfiguration(const MeshComponentConfig& config);
             const MeshComponentConfig& GetConfiguration() const;
@@ -103,14 +100,20 @@ namespace AZ
             void SetVisibility(bool visible) override;
             bool GetVisibility() const override;
 
-            // BoundsRequestBus and MeshComponentRequestBus ...
+            // BoundsRequestBus and MeshComponentRequestBus overrides ...
             AZ::Aabb GetWorldBounds() override;
             AZ::Aabb GetLocalBounds() override;
+
+            // IntersectionRequestBus overrides ...
+            AzFramework::RenderGeometry::RayResult RenderGeometryIntersect(const AzFramework::RenderGeometry::RayRequest& ray) override;
 
             // TransformNotificationBus::Handler overrides ...
             void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
             // MaterialReceiverRequestBus::Handler overrides ...
+            virtual MaterialAssignmentId FindMaterialAssignmentId(
+                const MaterialAssignmentLodIndex lod, const AZStd::string& label) const override;
+            RPI::ModelMaterialSlotMap GetModelMaterialSlots() const override;
             MaterialAssignmentMap GetMaterialAssignments() const override;
             AZStd::unordered_set<AZ::Name> GetModelUvNames() const override;
 
@@ -134,7 +137,7 @@ namespace AZ
             Render::MeshFeatureProcessorInterface* m_meshFeatureProcessor = nullptr;
             Render::MeshFeatureProcessorInterface::MeshHandle m_meshHandle;
             TransformInterface* m_transformInterface = nullptr;
-            AZ::EntityId m_entityId;
+            AZ::EntityComponentIdPair m_entityComponentIdPair;
             bool m_isVisible = true;
             MeshComponentConfig m_configuration;
             AZ::Vector3 m_cachedNonUniformScale = AZ::Vector3::CreateOne();

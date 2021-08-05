@@ -1,32 +1,69 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 #
 
 import argparse
+import pathlib
 import sys
-import os
-
-# Resolve the common python module
-ROOT_DEV_PATH = os.path.realpath(os.path.join(os.path.dirname(__file__), '..'))
-if ROOT_DEV_PATH not in sys.path:
-    sys.path.append(ROOT_DEV_PATH)
-
-from cmake.Tools import engine_template
-from cmake.Tools import global_project
-from cmake.Tools import registration
 
 
 def add_args(parser, subparsers) -> None:
-    global_project.add_args(parser, subparsers)
-    engine_template.add_args(parser, subparsers)
-    registration.add_args(parser, subparsers)
+    """
+    add_args is called to add expected parser arguments and subparsers arguments to each command such that it can be
+    invoked by o3de.py
+    Ex o3de.py can invoke the register  downloadable commands by importing register,
+    call add_args and execute: python o3de.py register --gem-path "C:/TestGem"
+    :param parser: the caller instantiates a parser and passes it in here
+    :param subparsers: the caller instantiates subparsers and passes it in here
+    """
+
+    # As o3de.py shares the same name as the o3de package attempting to use a regular
+    # from o3de import <module> line tries to import from the current o3de.py script and not the package
+    # So the {current script directory} / 'o3de' is added to the front of the sys.path
+    script_dir = pathlib.Path(__file__).parent
+    o3de_package_dir = (script_dir / 'o3de').resolve()
+    # add the scripts/o3de directory to the front of the sys.path
+    sys.path.insert(0, str(o3de_package_dir))
+    from o3de import engine_properties, engine_template, gem_properties, global_project, register, print_registration, get_registration, \
+        enable_gem, disable_gem, project_properties, sha256
+    # Remove the temporarily added path
+    sys.path = sys.path[1:]
+
+    # global_project
+    global_project.add_args(subparsers)
+    # engine templaate
+    engine_template.add_args(subparsers)
+
+    # register
+    register.add_args(subparsers)
+
+    # show
+    print_registration.add_args(subparsers)
+
+    # get-registered
+    get_registration.add_args(subparsers)
+
+    # add a gem to a project
+    enable_gem.add_args(subparsers)
+
+    # remove a gem from a project
+    disable_gem.add_args(subparsers)
+
+    # modify engine properties
+    engine_properties.add_args(subparsers)
+
+    # modify project properties
+    project_properties.add_args(subparsers)
+
+    # modify gem properties
+    gem_properties.add_args(subparsers)
+    
+    # sha256
+    sha256.add_args(subparsers)
 
 
 if __name__ == "__main__":

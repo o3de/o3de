@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "native/utilities/PlatformConfiguration.h"
 #include "native/AssetManager/FileStateCache.h"
 
@@ -18,6 +14,7 @@
 #include <AzCore/Utils/Utils.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Gem/GemInfo.h>
+#include <AzToolsFramework/Asset/AssetUtils.h>
 
 namespace
 {
@@ -27,6 +24,21 @@ namespace
 
 namespace AssetProcessor
 {
+
+    void AssetImporterPathsVisitor::Visit([[maybe_unused]] AZStd::string_view path, AZStd::string_view, AZ::SettingsRegistryInterface::Type,
+        AZStd::string_view value)
+    {
+        auto found = value.find('.');
+        if (found != AZStd::string::npos)
+        {
+            m_supportedFileExtensions.emplace_back(value.substr(found + 1));
+        }
+        else
+        {
+            m_supportedFileExtensions.emplace_back(value);
+        }
+    }
+
     struct PlatformsInfoVisitor
         : AZ::SettingsRegistryInterface::Visitor
     {
@@ -1130,6 +1142,17 @@ namespace AssetProcessor
 
         MetaDataTypesVisitor visitor;
         settingsRegistry->Visit(visitor, AZ::SettingsRegistryInterface::FixedValueString(AssetProcessorSettingsKey) + "/MetaDataTypes");
+
+        using namespace AzToolsFramework::AssetUtils;
+        AZStd::vector<AZStd::string> supportedFileExtensions;
+        AssetImporterPathsVisitor assetImporterVisitor{ settingsRegistry, supportedFileExtensions };
+        settingsRegistry->Visit(assetImporterVisitor, AZ::SettingsRegistryInterface::FixedValueString(AssetImporterSettingsKey) + "/" + AssetImporterSupportedFileTypeKey);
+
+        for (auto& entry : assetImporterVisitor.m_supportedFileExtensions)
+        {
+            visitor.m_metaDataTypes.push_back({ AZStd::string::format("%s.assetinfo", entry.c_str()), entry });
+        }
+
         for (const auto& metaDataType : visitor.m_metaDataTypes)
         {
             QString fileType = AssetUtilities::NormalizeFilePath(QString::fromUtf8(metaDataType.m_fileType.c_str(),

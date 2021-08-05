@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Serialization/Json/ArraySerializer.h>
 #include <AzCore/std/containers/array.h>
@@ -126,9 +122,9 @@ namespace JsonSerializationTests
         {
             auto array = AZStd::shared_ptr<Array>(new Array(), Deleter);
             (*array)[0] = nullptr;
-            (*array)[1] = aznew MultipleInheritence();
+            (*array)[1] = nullptr;
             (*array)[2] = nullptr;
-            (*array)[3] = aznew MultipleInheritence();
+            (*array)[3] = nullptr;
             return array;
         }
 
@@ -154,6 +150,7 @@ namespace JsonSerializationTests
                 null,
                 null,
                 {
+                    "$type": "MultipleInheritence",
                     "base_var": 242.0,
                     "var1" : 142
                 }
@@ -246,54 +243,19 @@ namespace JsonSerializationTests
             ])";
         }
 
-        AZStd::string_view GetJsonFor_Store_SerializeFullySetInstance() override
-        {
-            // This is a unique situation because the $type is determined separate from other values, so all
-            // member values can be changed, but since the default type matches the stored type the $type
-            // will only be written if default values are explicitly kept.
-            return R"(
-            [
-                {
-                    "$type": "MultipleInheritence",
-                    "base_var": 1142.0,
-                    "base2_var1": 1242.0,
-                    "base2_var2": 1342.0,
-                    "base2_var3": 1442.0,
-                    "var1" : 1542,
-                    "var2" : 1642.0
-                },
-                {
-                    "base_var": 2142.0,
-                    "base2_var1": 2242.0,
-                    "base2_var2": 2342.0,
-                    "base2_var3": 2442.0,
-                    "var1" : 2542,
-                    "var2" : 2642.0
-                },
-                {
-                    "$type": "MultipleInheritence",
-                    "base_var": 3142.0,
-                    "base2_var1": 3242.0,
-                    "base2_var2": 3342.0,
-                    "base2_var3": 3442.0,
-                    "var1" : 3542,
-                    "var2" : 3642.0
-                },
-                {
-                    "base_var": 4142.0,
-                    "base2_var1": 4242.0,
-                    "base2_var2": 4342.0,
-                    "base2_var3": 4442.0,
-                    "var1" : 4542,
-                    "var2" : 4642.0
-                }
-            ])";
-        }
-
         void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             Base::Reflect(context);
             MultipleInheritence::Reflect(context, true);
+        }
+
+        void ConfigureFeatures(JsonSerializerConformityTestDescriptorFeatures& features) override
+        {
+            Base::ConfigureFeatures(features);
+            // These tests don't work with pointers because there'll be a random value in the pointer
+            // which the Json Serialization will try to delete. The POD version of these tests already cover
+            // these cases.
+            features.m_enableNewInstanceTests = false;
         }
 
         bool AreEqual(const Array& lhs, const Array& rhs) override
@@ -309,6 +271,11 @@ namespace JsonSerializationTests
                 if (lhs[i] == nullptr)
                 {
                     return rhs[i] == nullptr;
+                }
+
+                if (rhs[i] == nullptr)
+                {
+                    return false;
                 }
 
                 if (!static_cast<const MultipleInheritence*>(lhs[i])->Equals(*static_cast<const MultipleInheritence*>(rhs[i]), true))

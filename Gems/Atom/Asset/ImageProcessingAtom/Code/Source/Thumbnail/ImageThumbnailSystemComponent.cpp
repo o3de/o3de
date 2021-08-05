@@ -1,20 +1,16 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
-#include "ImageProcessing_precompiled.h"
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Utils/Utils.h>
+#include <AzCore/Jobs/JobFunction.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
@@ -115,8 +111,7 @@ namespace ImageProcessingAtom
         void ImageThumbnailSystemComponent::RenderThumbnail(
             AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey, int thumbnailSize)
         {
-            auto sourceKey = azrtti_cast<const AzToolsFramework::AssetBrowser::SourceThumbnailKey*>(thumbnailKey.data());
-            if (sourceKey)
+            if (auto sourceKey = azrtti_cast<const AzToolsFramework::AssetBrowser::SourceThumbnailKey*>(thumbnailKey.data()))
             {
                 bool foundIt = false;
                 AZ::Data::AssetInfo assetInfo;
@@ -129,52 +124,72 @@ namespace ImageProcessingAtom
                 {
                     AZStd::string fullPath;
                     AZ::StringFunc::Path::Join(watchFolder.c_str(), assetInfo.m_relativePath.c_str(), fullPath);
-                    if (RenderThumbnailFromImage(thumbnailKey, thumbnailSize, IImageObjectPtr(LoadImageFromFile(fullPath))))
-                    {
-                        return;
-                    }
+                    RenderThumbnailFromImage(thumbnailKey, thumbnailSize,
+                        [fullPath]() { return IImageObjectPtr(LoadImageFromFile(fullPath)); }
+                    );
                 }
             }
-
-            auto productKey = azrtti_cast<const AzToolsFramework::AssetBrowser::ProductThumbnailKey*>(thumbnailKey.data());
-            if (productKey)
+            else if (auto productKey = azrtti_cast<const AzToolsFramework::AssetBrowser::ProductThumbnailKey*>(thumbnailKey.data()))
             {
-                if (RenderThumbnailFromImage(thumbnailKey, thumbnailSize, Utils::LoadImageFromImageAsset(productKey->GetAssetId())))
-                {
-                    return;
-                }
+                RenderThumbnailFromImage(thumbnailKey, thumbnailSize,
+                    [assetId = productKey->GetAssetId()]() { return Utils::LoadImageFromImageAsset(assetId); }
+                );
             }
-
-            AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Event(
-                thumbnailKey, &AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications::ThumbnailFailedToRender);
+            else
+            {
+                AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Event(
+                    thumbnailKey, &AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications::ThumbnailFailedToRender);
+            }
         }
 
-        bool ImageThumbnailSystemComponent::RenderThumbnailFromImage(
-            AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey, int thumbnailSize, IImageObjectPtr previewImage) const
+        template<class MkImageFn>
+        void ImageThumbnailSystemComponent::RenderThumbnailFromImage(
+            AzToolsFramework::Thumbnailer::SharedThumbnailKey thumbnailKey, int thumbnailSize, MkImageFn mkPreviewImage) const
         {
-            if (!previewImage)
+            const auto JobRunner = [mkPreviewImage, thumbnailKey, thumbnailSize]() mutable
             {
-                return false;
-            }
+                IImageObjectPtr previewImage = mkPreviewImage();
+                if (!previewImage)
+                {
+                    AZ::SystemTickBus::QueueFunction(
+                    [
+                        thumbnailKey
+                    ]()
+                    {
+                        AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Event(
+                            thumbnailKey, &AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications::ThumbnailFailedToRender);
+                    });
 
-            ImageToProcess imageToProcess(previewImage);
-            imageToProcess.ConvertFormat(ePixelFormat_R8G8B8A8);
-            previewImage = imageToProcess.Get();
+                    return;
+                }
 
-            AZ::u8* imageBuf = nullptr;
-            AZ::u32 mip = 0;
-            AZ::u32 pitch = 0;
-            previewImage->GetImagePointer(mip, imageBuf, pitch);
-            const AZ::u32 width = previewImage->GetWidth(mip);
-            const AZ::u32 height = previewImage->GetHeight(mip);
+                ImageToProcess imageToProcess(previewImage);
+                imageToProcess.ConvertFormat(ePixelFormat_R8G8B8A8);
+                previewImage = imageToProcess.Get();
 
-            QImage image(imageBuf, width, height, pitch, QImage::Format_RGBA8888);
+                AZ::u8* imageBuf = nullptr;
+                AZ::u32 mip = 0;
+                AZ::u32 pitch = 0;
+                previewImage->GetImagePointer(mip, imageBuf, pitch);
+                const AZ::u32 width = previewImage->GetWidth(mip);
+                const AZ::u32 height = previewImage->GetHeight(mip);
 
-            AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Event(
-                thumbnailKey, &AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications::ThumbnailRendered,
-                QPixmap::fromImage(image.scaled(QSize(thumbnailSize, thumbnailSize), Qt::KeepAspectRatio, Qt::SmoothTransformation)));
+                // Note that this image holds a non-owning pointer to the `previewImage' raw data buffer
+                const QImage image(imageBuf, width, height, pitch, QImage::Format_RGBA8888);
 
-            return true;
+                // Dispatch event on main thread
+                AZ::SystemTickBus::QueueFunction(
+                [
+                    thumbnailKey, thumbnailSize,
+                    pixmap = QPixmap::fromImage(image.scaled(QSize(thumbnailSize, thumbnailSize), Qt::KeepAspectRatio, Qt::SmoothTransformation))
+                ]() mutable
+                {
+                    AzToolsFramework::Thumbnailer::ThumbnailerRendererNotificationBus::Event(
+                        thumbnailKey, &AzToolsFramework::Thumbnailer::ThumbnailerRendererNotifications::ThumbnailRendered,
+                        pixmap);
+                });
+            };
+            AZ::CreateJobFunction(JobRunner, true)->Start();
         }
     } // namespace Thumbnails
 } // namespace ImageProcessingAtom

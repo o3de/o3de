@@ -1,12 +1,8 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 """
@@ -23,9 +19,9 @@ import azlmbr.areasystem as areasystem
 import azlmbr.legacy.general as general
 import azlmbr
 import azlmbr.bus as bus
-import azlmbr.editor as editor
+import azlmbr.components as components
 import azlmbr.math as math
-import azlmbr.entity as EntityId
+import azlmbr.entity as entity
 import azlmbr.paths
 
 sys.path.append(os.path.join(azlmbr.paths.devroot, 'AutomatedTesting', 'Gem', 'PythonTests'))
@@ -139,20 +135,14 @@ class TestVegLayerBlenderCreated(EditorTestHelper):
                     purple_count += 1
             self.test_success = pink_count == purple_count and (pink_count + purple_count == num_expected) and self.test_success
 
-        # 5) Create a new entity with a Camera component for testing in the launcher
-        entity_position = math.Vector3(500.0, 500.0, 47.0)
-        rot_degrees_vector = math.Vector3(radians(-55.0), radians(28.5), radians(-17.0))
-        camera_component = ["Camera"]
-        camera_id = editor.ToolsApplicationRequestBus(
-            bus.Broadcast, "CreateNewEntityAtPosition", entity_position, EntityId.EntityId()
-        )
-        if camera_id.IsValid():
-            self.log("Camera entity created")
-        camera_entity = hydra.Entity("Camera Entity", camera_id)
-        camera_entity.components = []
-        for component in camera_component:
-            camera_entity.components.append(hydra.add_component(component, camera_id))
-        azlmbr.components.TransformBus(bus.Event, "SetLocalRotation", camera_id, rot_degrees_vector)
+        # 5) Move the default Camera entity for testing in the launcher
+        cam_position = math.Vector3(500.0, 500.0, 47.0)
+        cam_rot_degrees_vector = math.Vector3(radians(-55.0), radians(28.5), radians(-17.0))
+        search_filter = entity.SearchFilter()
+        search_filter.names = ["Camera"]
+        search_entity_ids = entity.SearchBus(bus.Broadcast, 'SearchEntities', search_filter)
+        components.TransformBus(bus.Event, "MoveEntity", search_entity_ids[0], cam_position)
+        azlmbr.components.TransformBus(bus.Event, "SetLocalRotation", search_entity_ids[0], cam_rot_degrees_vector)
 
         # 6) Save and export level
         general.save_level()

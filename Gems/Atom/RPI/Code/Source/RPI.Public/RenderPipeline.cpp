@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 
 #include <Atom/RHI/DrawListTagRegistry.h>
@@ -107,7 +103,7 @@ namespace AZ
             pipeline->m_originalRenderSettings = desc.m_renderSettings;
             pipeline->m_activeRenderSettings = desc.m_renderSettings;
             pipeline->m_rootPass->SetRenderPipeline(pipeline);
-            pipeline->BuildPipelineViews();
+            pipeline->m_rootPass->ManualPipelineBuildAndInitialize();
         }
 
         RenderPipeline::~RenderPipeline()
@@ -320,8 +316,8 @@ namespace AZ
                 Ptr<ParentPass> newRoot = m_rootPass->Recreate();
                 newRoot->SetRenderPipeline(this);
 
-                // Force processing of queued changes so we can validate the new pipeline
-                passSystem->ProcessQueuedChanges();
+                // Manually build the pipeline
+                newRoot->ManualPipelineBuildAndInitialize();
 
                 // Validate the new root
                 PassValidationResults validation;
@@ -329,9 +325,8 @@ namespace AZ
                 if (validation.IsValid())
                 {
                     // Remove old pass
-                    bool deletePass = true;
                     m_rootPass->SetRenderPipeline(nullptr);
-                    m_rootPass->QueueForRemoval(deletePass);
+                    m_rootPass->QueueForRemoval();
 
                     // Set new root
                     m_rootPass = newRoot;

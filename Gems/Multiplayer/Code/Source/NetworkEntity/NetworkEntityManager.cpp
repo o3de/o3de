@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -96,7 +92,7 @@ namespace Multiplayer
             {
                 AZ_Assert(entityHandle.GetNetBindComponent(), "No NetBindComponent found on networked entity");
                 [[maybe_unused]] const bool isClientOnlyEntity = false;// (ServerIdFromEntityId(it->first) == InvalidHostId);
-                AZ_Assert(entityHandle.GetNetBindComponent()->IsAuthority() || isClientOnlyEntity, "Trying to delete a proxy entity, this will lead to issues deserializing entity updates");
+                AZ_Assert(entityHandle.GetNetBindComponent()->IsNetEntityRoleAuthority() || isClientOnlyEntity, "Trying to delete a proxy entity, this will lead to issues deserializing entity updates");
             }
             m_removeList.push_back(entityHandle.GetNetEntityId());
             m_removeEntitiesEvent.Enqueue(AZ::TimeMs{ 0 });
@@ -263,9 +259,9 @@ namespace Multiplayer
         // Validate that we aren't already planning to remove this entity
         if (safeToExit)
         {
-            for (auto entityId : m_removeList)
+            for (auto remoteEntityId : m_removeList)
             {
-                if (entityId == entityId)
+                if (remoteEntityId == remoteEntityId)
                 {
                     safeToExit = false;
                 }
@@ -282,15 +278,6 @@ namespace Multiplayer
     {
         //RewindableObjectState::ClearRewoundEntities();
 
-        // Keystone has refactored these API's, rewrite required
-        //AZ::SliceComponent* rootSlice = nullptr;
-        //{
-        //    AzFramework::EntityContextId gameContextId = AzFramework::EntityContextId::CreateNull();
-        //    AzFramework::GameEntityContextRequestBus::BroadcastResult(gameContextId, &AzFramework::GameEntityContextRequests::GetGameEntityContextId);
-        //    AzFramework::EntityContextRequestBus::BroadcastResult(rootSlice, &AzFramework::EntityContextRequests::GetRootSlice);
-        //    AZ_Assert(rootSlice != nullptr, "Root slice returned was NULL");
-        //}
-
         AZStd::vector<NetEntityId> removeList;
         removeList.swap(m_removeList);
         for (NetEntityId entityId : removeList)
@@ -304,13 +291,12 @@ namespace Multiplayer
                 AZ_Assert(netBindComponent != nullptr, "NetBindComponent not found on networked entity");
                 netBindComponent->StopEntity();
 
-                // Delete Entity, method depends on how it was loaded
-                // Try slice removal first, then force delete
-                //AZ::Entity* rawEntity = removeEntity.GetEntity();
-                //if (!rootSlice->RemoveEntity(rawEntity))
-                //{
-                //    delete rawEntity;
-                //}
+                // At the moment, we spawn one entity at a time and avoid Prefab API calls and never get a spawn ticket,
+                // so this is the right way for now. Once we support prefabs we can use AzFramework::SpawnableEntitiesContainer
+                // Additionally, prefabs spawning is async! Whereas we currently create entities immediately, see:
+                // @NetworkEntityManager::CreateEntitiesImmediate
+                AzFramework::GameEntityContextRequestBus::Broadcast(
+                    &AzFramework::GameEntityContextRequestBus::Events::DestroyGameEntity, netBindComponent->GetEntityId());
             }
 
             m_networkEntityTracker.erase(entityId);
@@ -402,8 +388,12 @@ namespace Multiplayer
         const AZ::Transform& transform
     )
     {
-        INetworkEntityManager::EntityList returnList;
-
+        EntityList returnList;
+        if (!AZ::Data::AssetManager::IsReady())
+        {
+            return returnList;
+        }
+        
         auto spawnableAssetId = m_networkPrefabLibrary.GetAssetIdByName(prefabEntryId.m_prefabName);
         // Required for sync-instantiation. Todo: keep the reference in NetworkSpawnableLibrary
         auto netSpawnableAsset = AZ::Data::AssetManager::Instance().GetAsset<AzFramework::Spawnable>(spawnableAssetId, AZ::Data::AssetLoadBehavior::PreLoad);

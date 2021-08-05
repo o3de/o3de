@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Math/MathReflection.h>
@@ -88,7 +84,7 @@ namespace AZ
                         auto* bitangentData = AZStd::any_cast<AZ::SceneData::GraphData::MeshVertexBitangentData>(&data);
                         bitangentData->AppendBitangent(AZ::Vector3{0.12f, 0.34f, 0.56f});
                         bitangentData->AppendBitangent(AZ::Vector3{0.77f, 0.88f, 0.99f});
-                        bitangentData->SetTangentSpace(AZ::SceneAPI::DataTypes::TangentSpace::FromFbx);
+                        bitangentData->SetGenerationMethod(AZ::SceneAPI::DataTypes::TangentGenerationMethod::FromSourceScene);
                         bitangentData->SetBitangentSetIndex(1);
                         return true;
                     }
@@ -98,7 +94,7 @@ namespace AZ
                         tangentData->AppendTangent(AZ::Vector4{0.12f, 0.34f, 0.56f, 0.78f});
                         tangentData->AppendTangent(AZ::Vector4{0.18f, 0.28f, 0.19f, 0.29f});
                         tangentData->AppendTangent(AZ::Vector4{0.21f, 0.43f, 0.65f, 0.87f});
-                        tangentData->SetTangentSpace(AZ::SceneAPI::DataTypes::TangentSpace::EMotionFX);
+                        tangentData->SetGenerationMethod(AZ::SceneAPI::DataTypes::TangentGenerationMethod::MikkT);
                         tangentData->SetTangentSetIndex(2);
                         return true;
                     }
@@ -322,7 +318,7 @@ namespace AZ
                 ExpectExecute("TestExpectFloatEquals(bitangentData.y, 0.88)");
                 ExpectExecute("TestExpectFloatEquals(bitangentData.z, 0.99)");
                 ExpectExecute("TestExpectIntegerEquals(meshVertexBitangentData:GetBitangentSetIndex(), 1)");
-                ExpectExecute("TestExpectTrue(meshVertexBitangentData:GetTangentSpace(), MeshVertexBitangentData.FromFbx)");
+                ExpectExecute("TestExpectTrue(meshVertexBitangentData:GetGenerationMethod(), MeshVertexBitangentData.FromSourceScene)");
             }
 
             TEST_F(GrapDatahBehaviorScriptTest, SceneGraph_MeshVertexTangentData_AccessWorks)
@@ -341,7 +337,7 @@ namespace AZ
                 ExpectExecute("TestExpectFloatEquals(tangentData.z, 0.19)");
                 ExpectExecute("TestExpectFloatEquals(tangentData.w, 0.29)");
                 ExpectExecute("TestExpectIntegerEquals(meshVertexTangentData:GetTangentSetIndex(), 2)");
-                ExpectExecute("TestExpectTrue(meshVertexTangentData:GetTangentSpace(), MeshVertexTangentData.EMotionFX)");
+                ExpectExecute("TestExpectTrue(meshVertexTangentData:GetGenerationMethod(), MeshVertexTangentData.EMotionFX)");
             }
 
             TEST_F(GrapDatahBehaviorScriptTest, SceneGraph_AnimationData_AccessWorks)

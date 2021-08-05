@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -35,7 +31,15 @@ namespace AZ
             ModelKdTree() = default;
 
             bool Build(const ModelAsset* model);
-            bool RayIntersection(const AZ::Vector3& raySrc, const AZ::Vector3& rayDir, float& distance, AZ::Vector3& normal) const;
+            //! Return if a ray intersected the model.
+            //! @param raySrc The starting point of the ray.
+            //! @param rayDir The direction and length of the ray (magnitude is encoded in the direction).
+            //! @param[out] The normalized distance of the intersection (in the range 0.0-1.0) - to calculate the actual
+            //! distance, multiply distanceNormalized by the magnitude of rayDir.
+            //! @param[out] The surface normal of the intersection with the model.
+            //! @return Return true if there was an intersection with the model, false otherwise.
+            bool RayIntersection(
+                const AZ::Vector3& raySrc, const AZ::Vector3& rayDir, float& distanceNormalized, AZ::Vector3& normal) const;
             void GetPenetratedBoxes(const AZ::Vector3& raySrc, const AZ::Vector3& rayDir, AZStd::vector<AZ::Aabb>& outBoxes);
 
             enum ESplitAxis
@@ -53,12 +57,19 @@ namespace AZ
         private:
 
             void BuildRecursively(ModelKdTreeNode* pNode, const AZ::Aabb& boundbox, AZStd::vector<ObjectIdTriangleIndices>& indices);
-            bool RayIntersectionRecursively(ModelKdTreeNode* pNode, const AZ::Vector3& raySrc, const AZ::Vector3& rayDir, float& distance, AZ::Vector3& normal) const;
-            void GetPenetratedBoxesRecursively(ModelKdTreeNode* pNode, const AZ::Vector3& raySrc, const AZ::Vector3& rayDir, AZStd::vector<AZ::Aabb>& outBoxes);
+            bool RayIntersectionRecursively(
+                ModelKdTreeNode* pNode,
+                const AZ::Vector3& raySrc,
+                const AZ::Vector3& rayDir,
+                float& distanceNormalized,
+                AZ::Vector3& normal) const;
+            void GetPenetratedBoxesRecursively(
+                ModelKdTreeNode* pNode, const AZ::Vector3& raySrc, const AZ::Vector3& rayDir, AZStd::vector<AZ::Aabb>& outBoxes);
             void ConstructMeshList(const ModelAsset* model, const AZ::Transform& matParent);
 
             static const int s_MinimumVertexSizeInLeafNode = 3 * 10;
-
+            // Stop splitting the tree if more than 10% of the triangles are straddling the split axis
+            static constexpr float s_MaximumSplitAxisStraddlingTriangles = 1.1;
             AZStd::unique_ptr<ModelKdTreeNode> m_pRootNode;
 
             struct MeshData

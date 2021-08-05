@@ -1,0 +1,38 @@
+{
+    "template_name": "AssetGem",
+    "origin": "The primary repo for AssetGem goes here: i.e. http://www.mydomain.com",
+    "license": "What license AssetGem uses goes here: i.e. https://opensource.org/licenses/MIT",
+    "display_name": "AssetGem",
+    "summary": "A short description of AssetGem template.",
+    "canonical_tags": [],
+    "user_tags": [
+        "AssetGem"
+    ],
+    "icon_path": "preview.png",
+    "copyFiles": [
+        {
+            "file": "CMakeLists.txt",
+            "origin": "CMakeLists.txt",
+            "isTemplated": true,
+            "isOptional": false
+        },
+        {
+            "file": "gem.json",
+            "origin": "gem.json",
+            "isTemplated": true,
+            "isOptional": false
+        },
+        {
+            "file": "preview.png",
+            "origin": "preview.png",
+            "isTemplated": false,
+            "isOptional": false
+        }
+    ],
+    "createDirectories": [
+        {
+            "dir": "Assets",
+            "origin": "Assets"
+        }
+    ]
+}

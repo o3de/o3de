@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Math/Color.h>
@@ -36,6 +32,12 @@ namespace AZ
         Color* color = reinterpret_cast<Color*>(outputValue);
         AZ_Assert(color, "Output value for JsonColorSerializer can't be null.");
 
+        if (IsExplicitDefault(inputValue))
+        {
+            *color = Color::CreateZero();
+            return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::DefaultsUsed, "Color value set to default of zero.");
+        }
+
         switch (inputValue.GetType())
         {
         case rapidjson::kArrayType:
@@ -43,10 +45,14 @@ namespace AZ
         case rapidjson::kObjectType:
             return LoadObject(*color, inputValue, context);
         
-        case rapidjson::kStringType: // fall through
-        case rapidjson::kNumberType: // fall through
-        case rapidjson::kNullType:   // fall through
-        case rapidjson::kFalseType:  // fall through
+        case rapidjson::kStringType:
+            [[fallthrough]];
+        case rapidjson::kNumberType:
+            [[fallthrough]];
+        case rapidjson::kNullType:
+            [[fallthrough]];
+        case rapidjson::kFalseType:
+            [[fallthrough]];
         case rapidjson::kTrueType:
             return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Unsupported,
                 "Unsupported type. Colors can only be read from arrays or objects.");
@@ -89,6 +95,11 @@ namespace AZ
         {
             return context.Report(JSR::Tasks::WriteValue, JSR::Outcomes::PartialDefaults, "Color partially stored.");
         }
+    }
+
+    auto JsonColorSerializer::GetOperationsFlags() const -> OperationFlags
+    {
+        return OperationFlags::InitializeNewInstance;
     }
 
     JsonSerializationResult::Result JsonColorSerializer::LoadObject(Color& output, const rapidjson::Value& inputValue, 

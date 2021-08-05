@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates, or
-* a third party where indicated.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <AzCore/EBus/Event.h>
@@ -130,13 +126,6 @@ namespace AzPhysics
         //! @param forceReinitialization Flag to force a reinitialization of the physics system. Default false.
         virtual void UpdateConfiguration(const SystemConfiguration* newConfig, bool forceReinitialization = false) = 0;
 
-        //! Update the default material library.
-        //! @param materialLibrary The new material library asset to use.
-        virtual void UpdateDefaultMaterialLibrary(const AZ::Data::Asset<Physics::MaterialLibraryAsset>& materialLibrary) = 0;
-
-        //! Accessor to get the current Material Library. This is also available in the PhysXSystemConfiguration.
-        virtual const AZ::Data::Asset<Physics::MaterialLibraryAsset>& GetDefaultMaterialLibrary() const = 0;
-
         //! Update the current default scene configuration.
         //! This is the configuration used to to create scenes without a custom configuration.
         //! @param sceneConfiguration The new configuration to apply.
@@ -169,9 +158,12 @@ namespace AzPhysics
         //! Register to receive notifications when the SystemConfiguration changes.
         //! @param handler The handler to receive the event.
         void RegisterSystemConfigurationChangedEvent(SystemEvents::OnConfigurationChangedEvent::Handler& handler) { handler.Connect(m_configChangeEvent); }
-        //! Register a handler to receive an event when the default material library changes.
+        //! Register a handler to receive an event when the material library changes.
         //! @param handler The handler to receive the event.
-        void RegisterOnDefaultMaterialLibraryChangedEventHandler(SystemEvents::OnDefaultMaterialLibraryChangedEvent::Handler& handler) { handler.Connect(m_onDefaultMaterialLibraryChangedEvent); }
+        void RegisterOnMaterialLibraryChangedEventHandler(SystemEvents::OnMaterialLibraryChangedEvent::Handler& handler) { handler.Connect(m_onMaterialLibraryChangedEvent); }
+        //! Register a handler to receive an event when the material library fails to load on startup.
+        //! @param handler The handler to receive the event.
+        void RegisterOnMaterialLibraryLoadErrorEventHandler(SystemEvents::OnMaterialLibraryLoadErrorEvent::Handler& handler) { handler.Connect(m_onMaterialLibraryLoadErrorEvent); }
         //! Register a handler to receive an event when the default SceneConfiguration changes.
         //! @param handler The handler to receive the event.
         void RegisterOnDefaultSceneConfigurationChangedEventHandler(SystemEvents::OnDefaultSceneConfigurationChangedEvent::Handler& handler) { handler.Connect(m_onDefaultSceneConfigurationChangedEvent); }
@@ -185,7 +177,8 @@ namespace AzPhysics
         SystemEvents::OnSceneAddedEvent m_sceneAddedEvent;
         SystemEvents::OnSceneRemovedEvent m_sceneRemovedEvent;
         SystemEvents::OnConfigurationChangedEvent m_configChangeEvent;
-        SystemEvents::OnDefaultMaterialLibraryChangedEvent m_onDefaultMaterialLibraryChangedEvent;
+        SystemEvents::OnMaterialLibraryChangedEvent m_onMaterialLibraryChangedEvent;
+        SystemEvents::OnMaterialLibraryLoadErrorEvent m_onMaterialLibraryLoadErrorEvent;
         SystemEvents::OnDefaultSceneConfigurationChangedEvent m_onDefaultSceneConfigurationChangedEvent;
     };
 } // namespace AzPhysics

@@ -1,12 +1,9 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 #
 
 if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
@@ -44,26 +41,8 @@ ly_add_target(
             AZ::AzCore
 )
 
-# DEPRECATED: this target was marked as deprecated in the VS filter
 ly_add_target(
-    NAME AmazonStyle APPLICATION
-    NAMESPACE AZ
-    AUTOMOC
-    AUTOUIC
-    FILES_CMAKE
-        AzQtComponents/azqtcomponents_style_files.cmake
-    INCLUDE_DIRECTORIES
-        PRIVATE
-            .
-            AzQtComponents
-    BUILD_DEPENDENCIES
-        PRIVATE
-            3rdParty::Qt::Widgets
-            AZ::AzQtComponents
-)
-
-ly_add_target(
-    NAME AmazonQtControlGallery APPLICATION
+    NAME O3DEQtControlGallery APPLICATION
     NAMESPACE AZ
     AUTOMOC
     AUTOUIC

@@ -1,17 +1,22 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <NewProjectSettingsScreen.h>
+#include <ProjectManagerDefs.h>
 #include <PythonBindingsInterface.h>
+#include <FormBrowseEditWidget.h>
+#include <FormLineEditWidget.h>
+#include <TemplateButtonWidget.h>
+#include <PathValidator.h>
+#include <EngineInfo.h>
+#include <CreateProjectCtrl.h>
+#include <TagWidget.h>
+#include <AzQtComponents/Components/FlowLayout.h>
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -23,72 +28,138 @@
 #include <QPushButton>
 #include <QSpacerItem>
 #include <QStandardPaths>
+#include <QFrame>
+#include <QScrollArea>
+#include <QAbstractButton>
 
 namespace O3DE::ProjectManager
 {
-    constexpr const char* k_pathProperty = "Path";
+    constexpr const char* k_templateIndexProperty = "TemplateIndex";
 
     NewProjectSettingsScreen::NewProjectSettingsScreen(QWidget* parent)
-        : ScreenWidget(parent)
+        : ProjectSettingsScreen(parent)
     {
-        QHBoxLayout* hLayout = new QHBoxLayout();
-        this->setLayout(hLayout);
+        const QString defaultName{ "NewProject" };
+        const QString defaultPath = QDir::toNativeSeparators(GetDefaultProjectPath() + "/" + defaultName);
 
-        QVBoxLayout* vLayout = new QVBoxLayout(this);
+        m_projectName->lineEdit()->setText(defaultName);
+        m_projectPath->lineEdit()->setText(defaultPath);
 
-        QLabel* projectNameLabel = new QLabel(tr("Project Name"), this);
-        vLayout->addWidget(projectNameLabel);
-
-        m_projectNameLineEdit = new QLineEdit(tr("New Project"), this);
-        vLayout->addWidget(m_projectNameLineEdit);
-
-        QLabel* projectPathLabel = new QLabel(tr("Project Location"), this);
-        vLayout->addWidget(projectPathLabel);
-
+        // if we don't use a QFrame we cannot "contain" the widgets inside and move them around
+        // as a group
+        QFrame* projectTemplateWidget = new QFrame(this);
+        projectTemplateWidget->setObjectName("projectTemplate");
+        QVBoxLayout* containerLayout = new QVBoxLayout();
+        containerLayout->setAlignment(Qt::AlignTop);
         {
-            QHBoxLayout* projectPathLayout = new QHBoxLayout(this);
+            QLabel* projectTemplateLabel = new QLabel(tr("Select a Project Template"));
+            projectTemplateLabel->setObjectName("projectTemplateLabel");
+            containerLayout->addWidget(projectTemplateLabel);
 
-            m_projectPathLineEdit = new QLineEdit(QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation), this);
-            projectPathLayout->addWidget(m_projectPathLineEdit);
+            QLabel* projectTemplateDetailsLabel = new QLabel(tr("Project templates are pre-configured with relevant Gems that provide "
+                                                                "additional functionality and content to the project."));
+            projectTemplateDetailsLabel->setWordWrap(true);
+            projectTemplateDetailsLabel->setObjectName("projectTemplateDetailsLabel");
+            containerLayout->addWidget(projectTemplateDetailsLabel);
 
-            QPushButton* browseButton = new QPushButton(tr("Browse"), this);
-            connect(browseButton, &QPushButton::pressed, this, &NewProjectSettingsScreen::HandleBrowseButton);
-            projectPathLayout->addWidget(browseButton);
 
-            vLayout->addLayout(projectPathLayout);
-        }
+            // we might have enough templates that we need to scroll
+            QScrollArea* templatesScrollArea = new QScrollArea(this);
+            QWidget* scrollWidget = new QWidget();
 
-        QLabel* projectTemplateLabel = new QLabel(this);
-        projectTemplateLabel->setText("Project Template");
-        vLayout->addWidget(projectTemplateLabel);
+            FlowLayout* flowLayout = new FlowLayout(0, s_spacerSize, s_spacerSize);
+            scrollWidget->setLayout(flowLayout);
 
-        QHBoxLayout* templateLayout = new QHBoxLayout(this);
-        vLayout->addItem(templateLayout);
+            templatesScrollArea->setWidget(scrollWidget);
+            templatesScrollArea->setWidgetResizable(true);
 
-        m_projectTemplateButtonGroup = new QButtonGroup(this);
-        auto templatesResult = PythonBindingsInterface::Get()->GetProjectTemplates();
-        if (templatesResult.IsSuccess() && !templatesResult.GetValue().isEmpty())
-        {
-            for (auto projectTemplate : templatesResult.GetValue())
+            m_projectTemplateButtonGroup = new QButtonGroup(this);
+            m_projectTemplateButtonGroup->setObjectName("templateButtonGroup");
+
+            // QButtonGroup has overloaded buttonClicked methods so we need the QOverload
+            connect(
+                m_projectTemplateButtonGroup, QOverload<QAbstractButton*>::of(&QButtonGroup::buttonClicked), this,
+                [=](QAbstractButton* button)
+                {
+                    if (button && button->property(k_templateIndexProperty).isValid())
+                    {
+                        int projectTemplateIndex = button->property(k_templateIndexProperty).toInt();
+                        if (m_selectedTemplateIndex != projectTemplateIndex)
+                        {
+                            const int oldIndex = m_selectedTemplateIndex;
+                            m_selectedTemplateIndex = projectTemplateIndex;
+                            UpdateTemplateDetails(m_templates.at(m_selectedTemplateIndex));
+                            emit OnTemplateSelectionChanged(/*oldIndex=*/oldIndex, /*newIndex=*/m_selectedTemplateIndex);
+                        }
+                    }
+                });
+
+            auto templatesResult = PythonBindingsInterface::Get()->GetProjectTemplates();
+            if (templatesResult.IsSuccess() && !templatesResult.GetValue().isEmpty())
             {
-                QRadioButton* radioButton = new QRadioButton(projectTemplate.m_name, this);
-                radioButton->setProperty(k_pathProperty, projectTemplate.m_path);
-                m_projectTemplateButtonGroup->addButton(radioButton);
+                m_templates = templatesResult.GetValue();
 
-                templateLayout->addWidget(radioButton);
+                // sort alphabetically by display name (but putting Standard first) because they could be in any order
+                std::sort(m_templates.begin(), m_templates.end(), [](const ProjectTemplateInfo& arg1, const ProjectTemplateInfo& arg2)
+                {
+                    if (arg1.m_displayName == "Standard")
+                    {
+                        return true;
+                    }
+                    else if (arg2.m_displayName == "Standard")
+                    {
+                        return false;
+                    }
+                    else
+                    {
+                        return arg1.m_displayName.toLower() < arg2.m_displayName.toLower();
+                    }
+                });
+
+                for (int index = 0; index < m_templates.size(); ++index)
+                {
+                    ProjectTemplateInfo projectTemplate = m_templates.at(index);
+                    QString projectPreviewPath = QDir(projectTemplate.m_path).filePath(ProjectPreviewImagePath);
+                    QFileInfo doesPreviewExist(projectPreviewPath);
+                    if (!doesPreviewExist.exists() || !doesPreviewExist.isFile())
+                    {
+                        projectPreviewPath = ":/DefaultTemplate.png";
+                    }
+                    TemplateButton* templateButton = new TemplateButton(projectPreviewPath, projectTemplate.m_displayName, this);
+                    templateButton->setCheckable(true);
+                    templateButton->setProperty(k_templateIndexProperty, index);
+                    
+                    m_projectTemplateButtonGroup->addButton(templateButton);
+
+                    flowLayout->addWidget(templateButton);
+                }
+
+                // Select the first project template (default selection).
+                SelectProjectTemplate(0, /*blockSignals=*/true);
             }
-
-            m_projectTemplateButtonGroup->buttons().first()->setChecked(true);
+            containerLayout->addWidget(templatesScrollArea);
         }
+        projectTemplateWidget->setLayout(containerLayout);
+        m_verticalLayout->addWidget(projectTemplateWidget);
 
-        QSpacerItem* verticalSpacer = new QSpacerItem(20, 40, QSizePolicy::Minimum, QSizePolicy::Expanding);
-        vLayout->addItem(verticalSpacer);
+        QFrame* projectTemplateDetails = CreateTemplateDetails(s_templateDetailsContentMargin);
+        projectTemplateDetails->setObjectName("projectTemplateDetails");
+        m_horizontalLayout->addWidget(projectTemplateDetails);
+    }
 
-        hLayout->addItem(vLayout);
-
-        QWidget* gemsListPlaceholder = new QWidget(this);
-        gemsListPlaceholder->setFixedWidth(250);
-        hLayout->addWidget(gemsListPlaceholder);
+    QString NewProjectSettingsScreen::GetDefaultProjectPath()
+    {
+        QString defaultPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+        AZ::Outcome<EngineInfo> engineInfoResult = PythonBindingsInterface::Get()->GetEngineInfo();
+        if (engineInfoResult.IsSuccess())
+        {
+            QDir path(QDir::toNativeSeparators(engineInfoResult.GetValue().m_defaultProjectsFolder));
+            if (path.exists())
+            {
+                defaultPath = path.absolutePath();
+            }
+        }
+        return defaultPath;
     }
 
     ProjectManagerScreen NewProjectSettingsScreen::GetScreenEnum()
@@ -96,54 +167,97 @@ namespace O3DE::ProjectManager
         return ProjectManagerScreen::NewProjectSettings;
     }
 
-    void NewProjectSettingsScreen::HandleBrowseButton()
+    void NewProjectSettingsScreen::NotifyCurrentScreen()
     {
-        QString defaultPath = m_projectPathLineEdit->text();
-        if (defaultPath.isEmpty())
+        if (!m_templates.isEmpty())
         {
-            defaultPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+            UpdateTemplateDetails(m_templates.first());
         }
 
-        QString directory = QDir::toNativeSeparators(QFileDialog::getExistingDirectory(this, tr("New project path"), defaultPath));
-        if (!directory.isEmpty())
-        {
-            m_projectPathLineEdit->setText(directory);
-        }
-    }
-
-    ProjectInfo NewProjectSettingsScreen::GetProjectInfo()
-    {
-        ProjectInfo projectInfo;
-        projectInfo.m_projectName = m_projectNameLineEdit->text();
-        projectInfo.m_path        = QDir::toNativeSeparators(m_projectPathLineEdit->text() + "/" + projectInfo.m_projectName);
-        return projectInfo;
+        Validate();
     }
 
     QString NewProjectSettingsScreen::GetProjectTemplatePath()
     {
-        return m_projectTemplateButtonGroup->checkedButton()->property(k_pathProperty).toString();
+        AZ_Assert(m_selectedTemplateIndex == m_projectTemplateButtonGroup->checkedButton()->property(k_templateIndexProperty).toInt(),
+            "Selected template index not in sync with the currently checked project template button.");
+        return m_templates.at(m_selectedTemplateIndex).m_path;
     }
 
-    bool NewProjectSettingsScreen::Validate()
+    QFrame* NewProjectSettingsScreen::CreateTemplateDetails(int margin)
     {
-        bool projectNameIsValid = true;
-        if (m_projectNameLineEdit->text().isEmpty())
+        QFrame* projectTemplateDetails = new QFrame(this);
+        projectTemplateDetails->setObjectName("projectTemplateDetails");
+        QVBoxLayout* templateDetailsLayout = new QVBoxLayout();
+        templateDetailsLayout->setContentsMargins(margin, margin, margin, margin);
+        templateDetailsLayout->setAlignment(Qt::AlignTop);
         {
-            projectNameIsValid = false;
+            m_templateDisplayName = new QLabel(this);
+            m_templateDisplayName->setObjectName("displayName");
+            templateDetailsLayout->addWidget(m_templateDisplayName);
+
+            m_templateSummary = new QLabel(this);
+            m_templateSummary->setObjectName("summary");
+            m_templateSummary->setWordWrap(true);
+            templateDetailsLayout->addWidget(m_templateSummary);
+
+            QLabel* includedGemsTitle = new QLabel(tr("Included Gems"), this);
+            includedGemsTitle->setObjectName("includedGemsTitle");
+            templateDetailsLayout->addWidget(includedGemsTitle);
+
+            m_templateIncludedGems = new TagContainerWidget(this);
+            m_templateIncludedGems->setObjectName("includedGems");
+            templateDetailsLayout->addWidget(m_templateIncludedGems);
+
+#ifdef TEMPLATE_GEM_CONFIGURATION_ENABLED
+            QLabel* moreGemsLabel = new QLabel(tr("Looking for more Gems?"), this);
+            moreGemsLabel->setObjectName("moreGems");
+            templateDetailsLayout->addWidget(moreGemsLabel);
+
+            QLabel* browseCatalogLabel = new QLabel(tr("Browse the  Gems Catalog to further customize your project."), this);
+            browseCatalogLabel->setObjectName("browseCatalog");
+            browseCatalogLabel->setWordWrap(true);
+            templateDetailsLayout->addWidget(browseCatalogLabel);
+
+            QPushButton* configureGemsButton = new QPushButton(tr("Configure with more Gems"), this);
+            connect(configureGemsButton, &QPushButton::clicked, this, [=]()
+                    {
+                        emit ChangeScreenRequest(ProjectManagerScreen::GemCatalog);
+                    });
+            templateDetailsLayout->addWidget(configureGemsButton);
+#endif // TEMPLATE_GEM_CONFIGURATION_ENABLED 
+        }
+        projectTemplateDetails->setLayout(templateDetailsLayout);
+        return projectTemplateDetails;
+    }
+
+    void NewProjectSettingsScreen::UpdateTemplateDetails(const ProjectTemplateInfo& templateInfo)
+    {
+        m_templateDisplayName->setText(templateInfo.m_displayName);
+        m_templateSummary->setText(templateInfo.m_summary);
+        m_templateIncludedGems->Update(templateInfo.m_includedGems);
+    }
+
+    void NewProjectSettingsScreen::SelectProjectTemplate(int index, bool blockSignals)
+    {
+        const QList<QAbstractButton*> buttons = m_projectTemplateButtonGroup->buttons();
+        if (index >= buttons.size())
+        {
+            return;
         }
 
-        bool projectPathIsValid = true;
-        if (m_projectPathLineEdit->text().isEmpty())
+        if (blockSignals)
         {
-            projectPathIsValid = false;
+            m_projectTemplateButtonGroup->blockSignals(true);
         }
 
-        QDir path(QDir::toNativeSeparators(m_projectPathLineEdit->text() + "/" + m_projectNameLineEdit->text()));
-        if (path.exists() && !path.isEmpty())
-        {
-            projectPathIsValid = false;
-        }
+        QAbstractButton* button = buttons.at(index);
+        button->setChecked(true);
+        m_selectedTemplateIndex = button->property(k_templateIndexProperty).toInt();
 
-        return projectNameIsValid && projectPathIsValid;
+        if (blockSignals)
+        {
+            m_projectTemplateButtonGroup->blockSignals(false);
+        }
     }
 } // namespace O3DE::ProjectManager

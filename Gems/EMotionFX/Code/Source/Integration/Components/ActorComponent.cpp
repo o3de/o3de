@@ -1,16 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-
-#include "EMotionFX_precompiled.h"
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -31,6 +25,12 @@
 #include <EMotionFX/Source/Transform.h>
 #include <EMotionFX/Source/RagdollInstance.h>
 #include <EMotionFX/Source/DebugDraw.h>
+#include <EMotionFX/Source/AttachmentSkin.h>
+#include <EMotionFX/Source/Node.h>
+#include <EMotionFX/Source/TransformData.h>
+#include <EMotionFX/Source/AttachmentNode.h>
+
+#include <MCore/Source/AzCoreConversions.h>
 
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
@@ -58,13 +58,67 @@ namespace EMotionFX
         };
 
         //////////////////////////////////////////////////////////////////////////
+        void ActorComponent::BoundingBoxConfiguration::Set(ActorInstance* actor) const
+        {
+            if (m_autoUpdateBounds)
+            {
+                actor->SetupAutoBoundsUpdate(m_updateTimeFrequency, m_boundsType, m_updateItemFrequency);
+            }
+            else
+            {
+                actor->SetBoundsUpdateType(m_boundsType);
+                actor->SetBoundsUpdateEnabled(false);
+            }
+        }
+
+        void ActorComponent::BoundingBoxConfiguration::SetAndUpdate(ActorInstance* actor) const
+        {
+            Set(actor);
+            const AZ::u32 freq = actor->GetBoundsUpdateEnabled() ? actor->GetBoundsUpdateItemFrequency() : 1;
+            actor->UpdateBounds(0, actor->GetBoundsUpdateType(), freq);
+        }
+
+        void ActorComponent::BoundingBoxConfiguration::Reflect(AZ::ReflectContext * context)
+        {
+            if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+            {
+                serializeContext->Class<BoundingBoxConfiguration>()
+                    ->Version(2, [](AZ::SerializeContext& sc, AZ::SerializeContext::DataElementNode& node)
+                    {
+                        if (node.GetVersion() < 2)
+                        {
+                            // m_boundsType used to be an enum class with `int' underlying type, is now `u8'
+                            static const char* m_boundsType_name = "m_boundsType";
+                            static AZ::Crc32 m_boundsType_nameCrc(m_boundsType_name);
+
+                            int m_boundsType_as_int;
+                            if (!node.GetChildData(m_boundsType_nameCrc, m_boundsType_as_int))
+                            {
+                                return false;
+                            }
+                            if (!node.RemoveElementByName(m_boundsType_nameCrc)) return false;
+                            if (node.AddElementWithData(sc, m_boundsType_name, (AZ::u8)m_boundsType_as_int) == -1) return false;
+                        }
+                        return true;
+                    })
+                    ->Field("m_boundsType", &BoundingBoxConfiguration::m_boundsType)
+                    ->Field("m_autoUpdateBounds", &BoundingBoxConfiguration::m_autoUpdateBounds)
+                    ->Field("m_updateTimeFrequency", &BoundingBoxConfiguration::m_updateTimeFrequency)
+                    ->Field("m_updateItemFrequency", &BoundingBoxConfiguration::m_updateItemFrequency)
+                    ;
+            }
+        }
+
+        //////////////////////////////////////////////////////////////////////////
         void ActorComponent::Configuration::Reflect(AZ::ReflectContext* context)
         {
+            BoundingBoxConfiguration::Reflect(context);
+
             auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
             if (serializeContext)
             {
                 serializeContext->Class<Configuration>()
-                    ->Version(3)
+                    ->Version(4)
                     ->Field("ActorAsset", &Configuration::m_actorAsset)
                     ->Field("MaterialPerLOD", &Configuration::m_materialPerLOD)
                     ->Field("RenderSkeleton", &Configuration::m_renderSkeleton)
@@ -74,6 +128,7 @@ namespace EMotionFX
                     ->Field("AttachmentTarget", &Configuration::m_attachmentTarget)
                     ->Field("SkinningMethod", &Configuration::m_skinningMethod)
                     ->Field("LODLevel", &Configuration::m_lodLevel)
+                    ->Field("BoundingBoxConfig", &Configuration::m_bboxConfig)
                     ->Field("ForceJointsUpdateOOV", &Configuration::m_forceUpdateJointsOOV)
                 ;
             }
@@ -154,17 +209,15 @@ namespace EMotionFX
             Actor* actor = m_configuration.m_actorAsset->GetActor();
             if (actor)
             {
-                OnActorReady(actor);
+                CheckActorCreation();
             }
         }
 
         //////////////////////////////////////////////////////////////////////////
         ActorComponent::ActorComponent(const Configuration* configuration)
             : m_debugDrawRoot(false)
-            , m_sceneFinishSimHandler([this](
-                [[maybe_unused]] AzPhysics::SceneHandle sceneHandle,
-                float fixedDeltatime
-                )
+            , m_sceneFinishSimHandler([this]([[maybe_unused]] AzPhysics::SceneHandle sceneHandle,
+                float fixedDeltatime)
                 {
                     if (m_actorInstance)
                     {
@@ -192,18 +245,9 @@ namespace EMotionFX
 
             if (cfg.m_actorAsset.GetId().IsValid())
             {
-                EMotionFX::ActorNotificationBus::Handler::BusDisconnect();
                 AZ::Data::AssetBus::Handler::BusDisconnect();
-                EMotionFX::ActorNotificationBus::Handler::BusConnect();
                 AZ::Data::AssetBus::Handler::BusConnect(cfg.m_actorAsset.GetId());
                 cfg.m_actorAsset.QueueLoad();
-
-                // In case the asset was already loaded fully, create the actor directly.
-                if (cfg.m_actorAsset.IsReady() &&
-                    cfg.m_actorAsset->GetActor())
-                {
-                    cfg.m_actorAsset->GetActor()->LoadRemainingAssets();
-                }
             }
 
             AZ::TickBus::Handler::BusConnect();
@@ -231,7 +275,6 @@ namespace EMotionFX
             LmbrCentral::AttachmentComponentNotificationBus::Handler::BusDisconnect();
             AZ::TransformNotificationBus::MultiHandler::BusDisconnect();
             AZ::Data::AssetBus::Handler::BusDisconnect();
-            EMotionFX::ActorNotificationBus::Handler::BusDisconnect();
 
             DestroyActor();
             m_configuration.m_actorAsset.Release();
@@ -311,31 +354,14 @@ namespace EMotionFX
         void ActorComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
         {
             m_configuration.m_actorAsset = asset;
-            Actor* actor = m_configuration.m_actorAsset->GetActor();
-            AZ_Assert(m_configuration.m_actorAsset.IsReady() && actor, "Actor asset should be loaded and actor valid.");
+            AZ_Assert(m_configuration.m_actorAsset.IsReady() && m_configuration.m_actorAsset->GetActor(), "Actor asset should be loaded and actor valid.");
 
-            actor->LoadRemainingAssets();
-            actor->CheckFinalizeActor();
+            CheckActorCreation();
         }
 
         void ActorComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
         {
-            DestroyActor();
-            m_configuration.m_actorAsset = asset;
-
-            const Actor* oldActor = m_configuration.m_actorAsset->GetActor();
-            AZ::Data::Asset<AZ::RPI::ModelAsset> meshAsset = oldActor->GetMeshAsset();
-            AZ::Data::Asset<AZ::RPI::SkinMetaAsset> skinMetaAsset = oldActor->GetSkinMetaAsset();
-            AZ::Data::Asset<AZ::RPI::MorphTargetMetaAsset> morphTargetMetaAsset = oldActor->GetMorphTargetMetaAsset();
-
-            m_configuration.m_actorAsset = asset;
-            Actor* newActor = m_configuration.m_actorAsset->GetActor();
-            AZ_Assert(m_configuration.m_actorAsset.IsReady() && newActor, "Actor asset should be loaded and actor valid.");
-
-            newActor->SetMeshAsset(meshAsset);
-            newActor->SetSkinMetaAsset(skinMetaAsset);
-            newActor->SetMorphTargetMetaAsset(morphTargetMetaAsset);
-            newActor->CheckFinalizeActor();
+            OnAssetReady(asset);
         }
 
         bool ActorComponent::IsPhysicsSceneSimulationFinishEventConnected() const
@@ -378,6 +404,8 @@ namespace EMotionFX
             AZ::TransformNotificationBus::MultiHandler::BusConnect(GetEntityId());
 
             m_actorInstance->UpdateWorldTransform();
+            // Set bounds update mode and compute bbox first time 
+            m_configuration.m_bboxConfig.SetAndUpdate(m_actorInstance.get());
             m_actorInstance->UpdateBounds(0, ActorInstance::EBoundsType::BOUNDS_STATIC_BASED);
 
             // Creating the render actor AFTER both actor asset and mesh asset loaded.
@@ -511,7 +539,7 @@ namespace EMotionFX
                 if (!m_configuration.m_forceUpdateJointsOOV)
                 {
                     const bool isInCameraFrustum = m_renderActorInstance->IsInCameraFrustum();
-                    m_actorInstance->SetIsVisible(isInCameraFrustum);
+                    m_actorInstance->SetIsVisible(isInCameraFrustum && m_configuration.m_renderCharacter);
                 }
 
                 RenderActorInstance::DebugOptions debugOptions;
@@ -848,14 +876,6 @@ namespace EMotionFX
             if (targetActorInstance)
             {
                 m_actorInstance->RemoveAttachment(targetActorInstance);
-            }
-        }
-
-        void ActorComponent::OnActorReady(Actor* actor)
-        {
-            if (m_configuration.m_actorAsset && m_configuration.m_actorAsset->GetActor() == actor)
-            {
-                CheckActorCreation();
             }
         }
     } // namespace Integration

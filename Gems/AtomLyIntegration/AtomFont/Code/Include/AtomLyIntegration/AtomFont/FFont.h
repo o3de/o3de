@@ -1,15 +1,11 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 // Description : Font class.
 
@@ -23,6 +19,8 @@
 #include <CryCommon/Cry_Math.h>
 #include <CryCommon/Cry_Color.h>
 #include <CryCommon/CryString.h>
+#include <CryCommon/VertexFormats.h>
+#include <CryCommon/IRenderer.h>
 #include "AtomFont.h"
 
 #include <AzCore/std/parallel/mutex.h>
@@ -42,10 +40,8 @@
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
+#include <Atom/RPI.Public/WindowContext.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
-
-#include <Atom/Bootstrap/DefaultWindowBus.h>
-#include <Atom/Bootstrap/BootstrapNotificationBus.h>
 
 struct ISystem;
 
@@ -68,7 +64,6 @@ namespace AZ
         : public IFFont
         , public AZStd::intrusive_refcount<AZStd::atomic_uint, FontDeleter>
         , public AzFramework::FontDrawInterface
-        , private AZ::Render::Bootstrap::NotificationBus::Handler
     {
         using ref_count = AZStd::intrusive_refcount<AZStd::atomic_uint, FontDeleter>;
         friend FontDeleter;
@@ -168,8 +163,8 @@ namespace AZ
 
         struct FontShaderData
         {
-            AZ::RHI::ShaderInputImageIndex m_imageInputIndex;
-            AZ::RHI::ShaderInputConstantIndex m_viewProjInputIndex;
+            AZ::RHI::ShaderInputNameIndex m_imageInputIndex = "m_texture";
+            AZ::RHI::ShaderInputNameIndex m_viewProjInputIndex = "m_worldToProj";
         };
 
     public:
@@ -230,7 +225,6 @@ namespace AZ
 
     private:
         virtual ~FFont();
-        bool InitFont(AZ::RPI::Scene* renderScene);
         bool InitTexture();
         bool InitCache();
 
@@ -281,8 +275,6 @@ namespace AZ
 
         void ScaleCoord(const RHI::Viewport& viewport, float& x, float& y) const;
 
-        void OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene) override;
-
         RPI::WindowContextSharedPtr GetDefaultWindowContext() const;
         RPI::ViewportContextPtr GetDefaultViewportContext() const;
 
@@ -303,6 +295,8 @@ namespace AZ
         string m_name;
         string m_curPath;
 
+        AZ::Name m_dynamicDrawContextName = AZ::Name(AZ::AtomFontDynamicDrawContextName);
+
         FontTexture* m_fontTexture = nullptr;
 
         size_t m_fontBufferSize = 0;
@@ -315,13 +309,6 @@ namespace AZ
         AtomFont* m_atomFont = nullptr;
 
         bool m_fontTexDirty = false;
-        enum class InitializationState : AZ::u8
-        {
-            Uninitialized,
-            Initializing,
-            Initialized
-        };
-        AZStd::atomic<InitializationState> m_fontInitializationState = InitializationState::Uninitialized;
 
         FontEffects m_effects;
 
@@ -356,6 +343,7 @@ namespace AZ
         if (font && font->m_atomFont)
         {
             font->m_atomFont->UnregisterFont(font->m_name);
+            font->m_atomFont = nullptr;
         }
 
         delete font;

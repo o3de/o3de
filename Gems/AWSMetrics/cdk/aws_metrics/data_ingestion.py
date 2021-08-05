@@ -1,12 +1,8 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 from aws_cdk import (
@@ -16,9 +12,10 @@ from aws_cdk import (
     aws_kinesis as kinesis
 )
 
-from . import aws_metrics_constants
-
 import json
+
+from . import aws_metrics_constants
+from .aws_utils import resource_name_sanitizer
 
 
 class DataIngestion:
@@ -33,7 +30,8 @@ class DataIngestion:
         self._input_stream = kinesis.Stream(
             self._stack,
             id='InputStream',
-            stream_name=f'{self._stack.stack_name}-InputStream',
+            stream_name=resource_name_sanitizer.sanitize_resource_name(
+                f'{self._stack.stack_name}-InputStream', 'kinesis_stream'),
             shard_count=1
         )
 
@@ -73,14 +71,14 @@ class DataIngestion:
 
         api_id_output = core.CfnOutput(
             self._stack,
-            id='RestApiId',
+            id='RESTApiId',
             description='Service API Id for the analytics pipeline',
             export_name=f"{application_name}:RestApiId",
             value=self._rest_api.rest_api_id)
 
         stage_output = core.CfnOutput(
             self._stack,
-            id='DeploymentStage',
+            id='RESTApiStage',
             description='Stage for the REST API deployment',
             export_name=f"{application_name}:DeploymentStage",
             value=self._rest_api.deployment_stage.stage_name)

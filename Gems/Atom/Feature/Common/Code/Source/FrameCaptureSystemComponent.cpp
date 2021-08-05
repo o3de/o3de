@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "FrameCaptureSystemComponent.h"
 
@@ -16,11 +12,14 @@
 #include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/Pass/RenderPass.h>
 #include <Atom/RPI.Public/Pass/Specific/SwapChainPass.h>
+#include <Atom/RPI.Public/ViewportContextManager.h>
 
 #include <Atom/Utils/DdsFile.h>
 #include <Atom/Utils/PpmFile.h>
 
 #include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Jobs/JobFunction.h>
+#include <AzCore/Jobs/JobCompletion.h>
 
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -55,6 +54,43 @@ namespace AZ
         FrameCaptureOutputResult PngFrameCaptureOutput(
             const AZStd::string& outputFilePath, const AZ::RPI::AttachmentReadback::ReadbackResult& readbackResult)
         {
+            AZStd::shared_ptr<AZStd::vector<uint8_t>> buffer = readbackResult.m_dataBuffer;
+
+            // convert bgra to rgba by swapping channels
+            const int numChannels = AZ::RHI::GetFormatComponentCount(readbackResult.m_imageDescriptor.m_format);
+            if (readbackResult.m_imageDescriptor.m_format == RHI::Format::B8G8R8A8_UNORM)
+            {
+                buffer = AZStd::make_shared<AZStd::vector<uint8_t>>(readbackResult.m_dataBuffer->size());
+                AZStd::copy(readbackResult.m_dataBuffer->begin(), readbackResult.m_dataBuffer->end(), buffer->begin());
+
+                AZ::JobCompletion jobCompletion;
+                const int numThreads = 8;
+                const int numPixelsPerThread = buffer->size() / numChannels / numThreads;
+                for (int i = 0; i < numThreads; ++i)
+                {
+                    int startPixel = i * numPixelsPerThread;
+
+                    AZ::Job* job = AZ::CreateJobFunction(
+                        [&, startPixel, numPixelsPerThread]()
+                        {
+                            for (int pixelOffset = 0; pixelOffset < numPixelsPerThread; ++pixelOffset)
+                            {
+                                if (startPixel * numChannels + numChannels < buffer->size())
+                                {
+                                    AZStd::swap(
+                                        buffer->data()[(startPixel + pixelOffset) * numChannels],
+                                        buffer->data()[(startPixel + pixelOffset) * numChannels + 2]
+                                    );
+                                }
+                            }
+                        }, true, nullptr);
+
+                    job->SetDependent(&jobCompletion);
+                    job->Start();
+                }
+                jobCompletion.StartAndWaitForCompletion();
+            }
+
             using namespace OIIO;
             AZStd::unique_ptr<ImageOutput> out = ImageOutput::create(outputFilePath.c_str());
             if (out)
@@ -62,13 +98,13 @@ namespace AZ
                 ImageSpec spec(
                     readbackResult.m_imageDescriptor.m_size.m_width,
                     readbackResult.m_imageDescriptor.m_size.m_height,
-                    AZ::RHI::GetFormatComponentCount(readbackResult.m_imageDescriptor.m_format)
+                    numChannels
                 );
                 spec.attribute("png:compressionLevel", r_pngCompressionLevel);
 
                 if (out->open(outputFilePath.c_str(), spec))
                 {
-                    out->write_image(TypeDesc::UINT8, readbackResult.m_dataBuffer->data());
+                    out->write_image(TypeDesc::UINT8, buffer->data());
                     out->close();
                     return FrameCaptureOutputResult{FrameCaptureResult::Success, AZStd::nullopt};
                 }
@@ -250,11 +286,7 @@ namespace AZ
 
         bool FrameCaptureSystemComponent::CaptureScreenshot(const AZStd::string& filePath)
         {
-            AzFramework::NativeWindowHandle windowHandle = nullptr;
-            AzFramework::WindowSystemRequestBus::BroadcastResult(
-                windowHandle,
-                &AzFramework::WindowSystemRequestBus::Events::GetDefaultWindowHandle);
-
+            AzFramework::NativeWindowHandle windowHandle = AZ::RPI::ViewportContextRequests::Get()->GetDefaultViewportContext()->GetWindowHandle();
             if (windowHandle)
             {
                 return CaptureScreenshotForWindow(filePath, windowHandle);
@@ -312,7 +344,7 @@ namespace AZ
         }
 
         bool FrameCaptureSystemComponent::CapturePassAttachment(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slot,
-            const AZStd::string& outputFilePath)
+            const AZStd::string& outputFilePath, RPI::PassAttachmentReadbackOption option)
         {
             InitReadback();
 
@@ -345,40 +377,22 @@ namespace AZ
                 return false;
             }
 
-            AZ::RPI::RenderPass* renderPass = azrtti_cast<AZ::RPI::RenderPass*>(foundPasses[0]);
-            if (renderPass)
+            AZ::RPI::Pass* pass = foundPasses[0];
+            if (pass->ReadbackAttachment(m_readback, Name(slot), option))
             {
-                Name slotName = Name(slot);
-                AZ::RPI::PassAttachment* attachment = nullptr;
-                for (auto& binding : renderPass->GetAttachmentBindings())
-                {
-                    if (binding.m_name == slotName)
-                    {
-                        attachment = binding.m_attachment.get();
-                        break;
-                    }
-                }
-                if (attachment)
-                {
-                    m_state = State::Pending;
-                    m_result = FrameCaptureResult::None;
-                    SystemTickBus::Handler::BusConnect();
-                    renderPass->ReadbackAttachment(m_readback, attachment);
-                }
-                else
-                {
-                    AZ_Warning("FrameCaptureSystemComponent", false, "Failed to find attachment bound to pass [%s] slot [%s]",
-                        renderPass->GetName().GetCStr(), slotName.GetCStr());
-                    return false;
-                }
+                m_state = State::Pending;
+                m_result = FrameCaptureResult::None;
+                SystemTickBus::Handler::BusConnect();
+                return true;
             }
-            return true;
+            AZ_Warning("FrameCaptureSystemComponent", false, "Failed to readback the attachment bound to pass [%s] slot [%s]", pass->GetName().GetCStr(), slot.c_str());
+            return false;
         }
 
         bool FrameCaptureSystemComponent::CapturePassAttachmentWithCallback(const AZStd::vector<AZStd::string>& passHierarchy, const AZStd::string& slotName
-            , RPI::AttachmentReadback::CallbackFunction callback)
+            , RPI::AttachmentReadback::CallbackFunction callback, RPI::PassAttachmentReadbackOption option)
         {
-            bool result = CapturePassAttachment(passHierarchy, slotName, "");
+            bool result = CapturePassAttachment(passHierarchy, slotName, "", option);
 
             // Append state change to user provided call back
             AZ::RPI::AttachmentReadback::CallbackFunction callbackSetState = [&, callback](const AZ::RPI::AttachmentReadback::ReadbackResult& result)
@@ -460,13 +474,23 @@ namespace AZ
 #if defined(OPEN_IMAGE_IO_ENABLED)
                     else if (extension == "png")
                     {
-                        AZStd::string folderPath;
-                        AzFramework::StringFunc::Path::GetFolderPath(m_outputFilePath.c_str(), folderPath);
-                        AZ::IO::SystemFile::CreateDir(folderPath.c_str());
+                        if (readbackResult.m_imageDescriptor.m_format == RHI::Format::R8G8B8A8_UNORM ||
+                            readbackResult.m_imageDescriptor.m_format == RHI::Format::B8G8R8A8_UNORM)
+                        {
+                            AZStd::string folderPath;
+                            AzFramework::StringFunc::Path::GetFolderPath(m_outputFilePath.c_str(), folderPath);
+                            AZ::IO::SystemFile::CreateDir(folderPath.c_str());
 
-                        const auto frameCaptureResult = PngFrameCaptureOutput(m_outputFilePath, readbackResult);
-                        m_result = frameCaptureResult.m_result;
-                        m_latestCaptureInfo = frameCaptureResult.m_errorMessage.value_or("");
+                            const auto frameCaptureResult = PngFrameCaptureOutput(m_outputFilePath, readbackResult);
+                            m_result = frameCaptureResult.m_result;
+                            m_latestCaptureInfo = frameCaptureResult.m_errorMessage.value_or("");
+                        }
+                        else
+                        {
+                            m_latestCaptureInfo = AZStd::string::format(
+                                "Can't save image with format %s to a png file", RHI::ToString(readbackResult.m_imageDescriptor.m_format));
+                            m_result = FrameCaptureResult::UnsupportedFormat;
+                        }
                     }
 #endif
                     else

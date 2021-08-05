@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -268,7 +264,7 @@ namespace EditorPythonBindings
                 reinterpret_cast<PythonProxyNotificationHandler*>(userData)->OnEventGenericHook(eventName, eventIndex, result, numParameters, parameters);
             }
 
-            void OnEventGenericHook(const char* eventName, [[maybe_unused]] int eventIndex, [[maybe_unused]] AZ::BehaviorValueParameter* result, int numParameters, AZ::BehaviorValueParameter* parameters)
+            void OnEventGenericHook(const char* eventName, [[maybe_unused]] int eventIndex, AZ::BehaviorValueParameter* result, int numParameters, AZ::BehaviorValueParameter* parameters)
             {
                 // find the callback for the event
                 const auto& callbackEntry = m_callbackMap.find(eventName);
@@ -303,12 +299,17 @@ namespace EditorPythonBindings
                         // reset/prepare the stack allocator
                         m_stackVariableAllocator = {};
 
-                        AZ::BehaviorValueParameter coverted;
+                        // Reset the result parameter
+                        m_resultParam = {};
+
                         const AZ::u32 traits = result->m_traits;
-                        if (Convert::PythonToBehaviorValueParameter(*result, pyResult, coverted, m_stackVariableAllocator))
+                        if (Convert::PythonToBehaviorValueParameter(*result, pyResult, m_resultParam, m_stackVariableAllocator))
                         {
-                            result->Set(coverted);
-                            result->m_value = coverted.GetValueAddress();
+                            // Setting result parameter into the output parameter will not fix its pointers
+                            // to use output parameter's internal memory, because of this, result parameter
+                            // needs to be a member so its memory is still valid when accessed in BehaviorEBusHandler::CallResult.
+                            result->Set(m_resultParam);
+                            result->m_value = m_resultParam.GetValueAddress();
                             if ((traits & AZ::BehaviorParameter::TR_POINTER) == AZ::BehaviorParameter::TR_POINTER)
                             {
                                 result->m_value = &result->m_value;
@@ -327,6 +328,7 @@ namespace EditorPythonBindings
             AZ::BehaviorEBusHandler* m_handler = nullptr;
             AZStd::unordered_map<AZStd::string, pybind11::function> m_callbackMap;
             Convert::StackVariableAllocator m_stackVariableAllocator;
+            AZ::BehaviorValueParameter m_resultParam;
         };
     }
 

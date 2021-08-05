@@ -1,16 +1,11 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
-#include <PhysX_precompiled.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <AzToolsFramework/UI/PropertyEditor/InstanceDataHierarchy.h>
@@ -37,14 +32,15 @@ namespace PhysX
             const Debug::DebugDisplayData& debugDisplayData)
         {
             m_physxSystemConfiguration = physxSystemConfiguration;
-            m_defaultPhysicsMaterialLibrary.m_asset = m_physxSystemConfiguration.m_defaultMaterialLibrary;
+            m_physicsMaterialInfo.m_defaultMaterialConfiguration = m_physxSystemConfiguration.m_defaultMaterialConfiguration;
+            m_physicsMaterialInfo.m_materialLibraryAsset = m_physxSystemConfiguration.m_materialLibraryAsset;
             m_defaultSceneConfiguration = defaultSceneConfiguration;
             m_debugDisplayData = debugDisplayData;
 
             blockSignals(true);
             m_propertyEditor->ClearInstances();
             m_propertyEditor->AddInstance(&m_physxSystemConfiguration);
-            m_propertyEditor->AddInstance(&m_defaultPhysicsMaterialLibrary);
+            m_propertyEditor->AddInstance(&m_physicsMaterialInfo);
             m_propertyEditor->AddInstance(&m_defaultSceneConfiguration);
             m_propertyEditor->AddInstance(&m_debugDisplayData);
             m_propertyEditor->AddInstance(&m_physxSystemConfiguration.m_windConfiguration);
@@ -88,7 +84,8 @@ namespace PhysX
 
         void SettingsWidget::SetPropertyEditingComplete(AzToolsFramework::InstanceDataNode* /*node*/)
         {
-            m_physxSystemConfiguration.m_defaultMaterialLibrary = m_defaultPhysicsMaterialLibrary.m_asset;
+            m_physxSystemConfiguration.m_defaultMaterialConfiguration = m_physicsMaterialInfo.m_defaultMaterialConfiguration;
+            m_physxSystemConfiguration.m_materialLibraryAsset = m_physicsMaterialInfo.m_materialLibraryAsset;
             emit onValueChanged(m_physxSystemConfiguration,
                 m_defaultSceneConfiguration,
                 m_debugDisplayData

@@ -1,12 +1,9 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 #
 
 set(FILES
@@ -25,6 +22,7 @@ set(FILES
     Include/Multiplayer/EntityDomains/IEntityDomain.h
     Include/Multiplayer/NetworkEntity/INetworkEntityManager.h
     Include/Multiplayer/INetworkSpawnableLibrary.h
+    Include/Multiplayer/NetworkEntity/IFilterEntityManager.h
     Include/Multiplayer/NetworkEntity/NetworkEntityRpcMessage.h
     Include/Multiplayer/NetworkEntity/NetworkEntityUpdateMessage.h
     Include/Multiplayer/NetworkEntity/NetworkEntityHandle.h
@@ -33,11 +31,14 @@ set(FILES
     Include/Multiplayer/NetworkInput/IMultiplayerComponentInput.h
     Include/Multiplayer/NetworkInput/NetworkInput.h
     Include/Multiplayer/NetworkTime/INetworkTime.h
+    Include/Multiplayer/NetworkTime/RewindableArray.h
+    Include/Multiplayer/NetworkTime/RewindableArray.inl
+    Include/Multiplayer/NetworkTime/RewindableFixedVector.h
+    Include/Multiplayer/NetworkTime/RewindableFixedVector.inl
     Include/Multiplayer/NetworkTime/RewindableObject.h
     Include/Multiplayer/NetworkTime/RewindableObject.inl
+    Include/Multiplayer/Physics/PhysicsUtils.h
     Include/Multiplayer/ReplicationWindows/IReplicationWindow.h
-    Source/Multiplayer_precompiled.cpp
-    Source/Multiplayer_precompiled.h
     Source/MultiplayerSystemComponent.cpp
     Source/MultiplayerSystemComponent.h
     Source/MultiplayerStats.cpp
@@ -103,6 +104,7 @@ set(FILES
     Source/Pipeline/NetBindMarkerComponent.h
     Source/Pipeline/NetworkSpawnableHolderComponent.cpp
     Source/Pipeline/NetworkSpawnableHolderComponent.h
+    Source/Physics/PhysicsUtils.cpp
     Source/ReplicationWindows/NullReplicationWindow.cpp
     Source/ReplicationWindows/NullReplicationWindow.h
     Source/ReplicationWindows/ServerToClientReplicationWindow.cpp

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzTest/AzTest.h>
 #include <AzCore/Math/Transform.h>
@@ -30,7 +26,7 @@ namespace AZ
 
                 Vector3 m_translation = Vector3(10.0f, 20.0f, 30.0f);
                 Vector3 m_rotation = Vector3(30.0f, 45.0f, 60.0f);
-                Vector3 m_scale = Vector3(2.0f, 3.0f, 4.0f);
+                float m_scale = 3.0f;
             };
 
             TEST_F(TransformRowWidgetTest, GetTranslation_TranslationInMatrix_TranslationCanBeRetrievedDirectly)
@@ -83,26 +79,22 @@ namespace AZ
 
             TEST_F(TransformRowWidgetTest, GetScale_ScaleInMatrix_ScaleCanBeRetrievedDirectly)
             {
-                m_transform = Transform::CreateScale(m_scale);
+                m_transform = Transform::CreateUniformScale(m_scale);
                 m_expanded.SetTransform(m_transform);
 
-                const Vector3& returned = m_expanded.GetScale();
-                EXPECT_NEAR(m_scale.GetX(), returned.GetX(), 0.1f);
-                EXPECT_NEAR(m_scale.GetY(), returned.GetY(), 0.1f);
-                EXPECT_NEAR(m_scale.GetZ(), returned.GetZ(), 0.1f);
+                const float returned = m_expanded.GetScale();
+                EXPECT_NEAR(m_scale, returned, 0.1f);
             }
 
             TEST_F(TransformRowWidgetTest, GetScale_ScaleInMatrix_ScaleCanBeRetrievedFromTransform)
             {
-                m_transform = Transform::CreateScale(m_scale);
+                m_transform = Transform::CreateUniformScale(m_scale);
                 m_expanded.SetTransform(m_transform);
 
                 Transform rebuild;
                 m_expanded.GetTransform(rebuild);
-                Vector3 returned = rebuild.GetScale();
-                EXPECT_NEAR(m_scale.GetX(), returned.GetX(), 0.1f);
-                EXPECT_NEAR(m_scale.GetY(), returned.GetY(), 0.1f);
-                EXPECT_NEAR(m_scale.GetZ(), returned.GetZ(), 0.1f);
+                float returned = rebuild.GetUniformScale();
+                EXPECT_NEAR(m_scale, returned, 0.1f);
             }
 
             TEST_F(TransformRowWidgetTest, GetTransform_RotateAndTranslateInMatrix_ReconstructedTransformMatchesOriginal)
@@ -121,7 +113,7 @@ namespace AZ
             {
                 Quaternion quaternion = AZ::ConvertEulerDegreesToQuaternion(m_rotation);
                 m_transform = Transform::CreateFromQuaternionAndTranslation(quaternion, m_translation);
-                m_transform.MultiplyByScale(m_scale);
+                m_transform.MultiplyByUniformScale(m_scale);
                 m_expanded.SetTransform(m_transform);
 
                 Transform rebuild;

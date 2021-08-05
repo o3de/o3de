@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Script/ScriptTimePoint.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
@@ -27,8 +23,6 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
-        const int AssetBrowserModel::m_column = static_cast<int>(AssetBrowserEntry::Column::DisplayName);
-
         AssetBrowserModel::AssetBrowserModel(QObject* parent)
             : QAbstractItemModel(parent)
             , m_rootEntry(nullptr)
@@ -143,8 +137,9 @@ namespace AzToolsFramework
             
             if (parent.isValid())
             {
-                if ((parent.column() != static_cast<int>(AssetBrowserEntry::Column::DisplayName)) &&
-                    (parent.column() != static_cast<int>(AssetBrowserEntry::Column::Name)))
+                if ((parent.column() != aznumeric_cast<int>(AssetBrowserEntry::Column::DisplayName)) &&
+                    (parent.column() != aznumeric_cast<int>(AssetBrowserEntry::Column::Name)) &&
+                    (parent.column() != aznumeric_cast<int>(AssetBrowserEntry::Column::Path)))
                 {
                     return 0;
                 }
@@ -164,7 +159,7 @@ namespace AzToolsFramework
 
         int AssetBrowserModel::columnCount(const QModelIndex& /*parent*/) const
         {
-            return static_cast<int>(AssetBrowserEntry::Column::Count);
+            return aznumeric_cast<int>(AssetBrowserEntry::Column::Count);
         }
 
         QVariant AssetBrowserModel::data(const QModelIndex& index, int role) const
@@ -393,7 +388,7 @@ namespace AzToolsFramework
             }
 
             int row = entry->row();
-            index = createIndex(row, m_column, entry);
+            index = createIndex(row, aznumeric_cast<int>(AssetBrowserEntry::Column::DisplayName), entry);
             return true;
         }
 

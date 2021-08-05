@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Math/MathReflection.h>
 #include <AzCore/Serialization/Json/ArraySerializer.h>
@@ -24,7 +20,12 @@
 #include <AzCore/Serialization/Json/StringSerializer.h>
 #include <AzCore/Serialization/Json/TupleSerializer.h>
 #include <AzCore/Serialization/Json/UnorderedSetSerializer.h>
+#include <AzCore/Serialization/Json/UnsupportedTypesSerializer.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/any.h>
+#include <AzCore/std/optional.h>
+#include <AzCore/std/tuple.h>
+#include <AzCore/std/utils.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/fixed_vector.h>
 #include <AzCore/std/containers/forward_list.h>
@@ -33,12 +34,11 @@
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/containers/variant.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <AzCore/std/tuple.h>
-#include <AzCore/std/utils.h>
 
 namespace AZ
 {
@@ -97,6 +97,13 @@ namespace AZ
 
             jsonContext->Serializer<JsonArraySerializer>()
                 ->HandlesType<AZStd::array>();
+
+            jsonContext->Serializer<JsonAnySerializer>()
+                ->HandlesType<AZStd::any>();
+            jsonContext->Serializer<JsonVariantSerializer>()
+                ->HandlesType<AZStd::variant>();
+            jsonContext->Serializer<JsonOptionalSerializer>()
+                ->HandlesType<AZStd::optional>();
 
             MathReflect(jsonContext);
         }

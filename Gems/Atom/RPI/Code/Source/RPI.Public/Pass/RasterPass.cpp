@@ -1,29 +1,25 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RHI/CommandList.h>
-#include <Atom/RHI/ShaderResourceGroup.h>
 #include <Atom/RHI/DrawListTagRegistry.h>
-
-#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
-#include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI/ShaderResourceGroup.h>
+
+#include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
+#include <Atom/RPI.Public/Pass/RasterPass.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
-#include <Atom/RPI.Public/Pass/RasterPass.h>
 
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <Atom/RPI.Reflect/Pass/RasterPassData.h>
-#include <Atom/RPI.Reflect/Shader/ShaderResourceGroupAsset.h>
 
 namespace AZ
 {
@@ -51,26 +47,31 @@ namespace AZ
             SetDrawListTag(rasterData->m_drawListTag);
             m_drawListSortType = rasterData->m_drawListSortType;
 
-            // Get SRG asset
-            Data::Asset<ShaderResourceGroupAsset> srgAsset;
-            if (rasterData->m_passSrgReference.m_assetId.IsValid())
+            // Get the shader asset that contains the SRG Layout.
+            Data::Asset<ShaderAsset> shaderAsset;
+            if (rasterData->m_passSrgShaderReference.m_assetId.IsValid())
             {
-                srgAsset = AssetUtils::LoadAssetById<ShaderResourceGroupAsset>(rasterData->m_passSrgReference.m_assetId, AssetUtils::TraceLevel::Error);
+                shaderAsset = AssetUtils::LoadAssetById<ShaderAsset>(rasterData->m_passSrgShaderReference.m_assetId, AssetUtils::TraceLevel::Error);
             }
-            else if (!rasterData->m_passSrgReference.m_filePath.empty())
+            else if (!rasterData->m_passSrgShaderReference.m_filePath.empty())
             {
-                srgAsset = AssetUtils::LoadAssetByProductPath<ShaderResourceGroupAsset>(rasterData->m_passSrgReference.m_filePath.c_str(), AssetUtils::TraceLevel::Error);
+                shaderAsset = AssetUtils::LoadAssetByProductPath<ShaderAsset>(
+                    rasterData->m_passSrgShaderReference.m_filePath.c_str(), AssetUtils::TraceLevel::Error);
             }
 
-            if (srgAsset)
+            if (shaderAsset)
             {
-                m_shaderResourceGroup = ShaderResourceGroup::Create(srgAsset);
+                const auto srgLayout = shaderAsset->FindShaderResourceGroupLayout(SrgBindingSlot::Pass);
+                if (srgLayout)
+                {
+                    m_shaderResourceGroup = ShaderResourceGroup::Create(shaderAsset, srgLayout->GetName());
 
-                AZ_Assert(m_shaderResourceGroup, "[RasterPass '%s']: Failed to create SRG from shader asset '%s'",
-                    GetPathName().GetCStr(),
-                    rasterData->m_passSrgReference.m_filePath.data());
+                    AZ_Assert(
+                        m_shaderResourceGroup, "[RasterPass '%s']: Failed to create SRG from shader asset '%s'", GetPathName().GetCStr(),
+                        rasterData->m_passSrgShaderReference.m_filePath.data());
 
-                PassUtils::BindDataMappingsToSrg(descriptor, m_shaderResourceGroup.get());
+                    PassUtils::BindDataMappingsToSrg(descriptor, m_shaderResourceGroup.get());
+                }
             }
 
 
@@ -133,10 +134,19 @@ namespace AZ
                 m_viewportState = params.m_viewportState;
             }
 
-            // -- View & DrawList --
-            const AZStd::vector<ViewPtr>& views = m_pipeline->GetViews(GetPipelineViewTag());
-            m_drawListView = {};
+            UpdateDrawList();
 
+            RenderPass::FrameBeginInternal(params);
+        }
+
+        void RasterPass::UpdateDrawList()
+        {
+             // DrawLists from dynamic draw
+            AZStd::vector<RHI::DrawListView> drawLists = DynamicDrawInterface::Get()->GetDrawListsForPass(this);
+
+            // Get DrawList from view
+            const AZStd::vector<ViewPtr>& views = m_pipeline->GetViews(GetPipelineViewTag());
+            RHI::DrawListView viewDrawList;
             if (!views.empty())
             {
                 const ViewPtr& view = views.front();
@@ -144,11 +154,40 @@ namespace AZ
                 // Assert the view has our draw list (the view's DrawlistTags are collected from passes using its viewTag)
                 AZ_Assert(view->HasDrawListTag(m_drawListTag), "View's DrawListTags out of sync with pass'. ");
 
-                // Draw List 
-                m_drawListView = view->GetDrawList(m_drawListTag);
+                viewDrawList = view->GetDrawList(m_drawListTag);
             }
 
-            RenderPass::FrameBeginInternal(params);
+            // clean up data
+            m_drawListView = {};
+            m_combinedDrawList.clear();
+
+            // draw list from view was sorted and if it's the only draw list then we can use it directly
+            if (viewDrawList.size() > 0 && drawLists.size() == 0)
+            {
+                m_drawListView = viewDrawList;
+                return;
+            }
+
+            // add view's draw list to drawLists too
+            drawLists.push_back(viewDrawList);
+
+            // combine draw items from mutiple draw lists to one draw list and sort it.
+            size_t itemCount = 0;
+            for (auto drawList : drawLists)
+            {
+                itemCount += drawList.size();
+            }
+            m_combinedDrawList.resize(itemCount);
+            RHI::DrawItemProperties* currentBuffer = m_combinedDrawList.data();
+            for (auto drawList : drawLists)
+            {
+                memcpy(currentBuffer, drawList.data(), drawList.size()*sizeof(RHI::DrawItemProperties));
+                currentBuffer += drawList.size();
+            }
+            SortDrawList(m_combinedDrawList);
+
+            // have the final draw list point to the combined draw list.
+            m_drawListView = m_combinedDrawList;
         }
 
         // --- DrawList and PipelineView Tags ---

@@ -6,6 +6,9 @@
     "properties": {
         "blend": {
             "blendSource": "BlendMaskVertexColors"
+        },
+        "parallax": {
+            "quality": "Medium"
         }
     }
 }

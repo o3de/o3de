@@ -1,18 +1,15 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Windows.h>
 #include <AzFramework/Windowing/NativeWindow.h>
 
+#include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/PlatformIncl.h>
 
 namespace AzFramework
@@ -22,7 +19,7 @@ namespace AzFramework
     {
     public:
         AZ_CLASS_ALLOCATOR(NativeWindowImpl_Win32, AZ::SystemAllocator, 0);
-        NativeWindowImpl_Win32() = default;
+        NativeWindowImpl_Win32();
         ~NativeWindowImpl_Win32() override;
 
         // NativeWindow::Implementation overrides...
@@ -38,6 +35,7 @@ namespace AzFramework
         bool GetFullScreenState() const override;
         void SetFullScreenState(bool fullScreenState) override;
         bool CanToggleFullScreenState() const override { return true; }
+        float GetDpiScaleFactor() const override;
 
     private:
         static DWORD ConvertToWin32WindowStyleMask(const WindowStyleMasks& styleMasks);
@@ -54,6 +52,9 @@ namespace AzFramework
         RECT m_windowRectToRestoreOnFullScreenExit; //!< The position and size of the window to restore when exiting full screen.
         UINT m_windowStyleToRestoreOnFullScreenExit; //!< The style(s) of the window to restore when exiting full screen.
         bool m_isInBorderlessWindowFullScreenState = false; //!< Was a borderless window used to enter full screen state?
+
+        using GetDpiForWindowType = UINT(HWND hwnd);
+        GetDpiForWindowType* m_getDpiFunction = nullptr;
     };
 
     const char* NativeWindowImpl_Win32::s_defaultClassName = "O3DEWin32Class";
@@ -61,6 +62,15 @@ namespace AzFramework
     NativeWindow::Implementation* NativeWindow::Implementation::Create()
     {
         return aznew NativeWindowImpl_Win32();
+    }
+
+    NativeWindowImpl_Win32::NativeWindowImpl_Win32()
+    {
+        // Attempt to load GetDpiForWindow from user32 at runtime, available on Windows 10+ versions >= 1607
+        if (auto user32module = AZ::DynamicModuleHandle::Create("user32"); user32module->Load(false))
+        {
+            m_getDpiFunction = user32module->GetFunction<GetDpiForWindowType*>("GetDpiForWindow");
+        }
     }
 
     NativeWindowImpl_Win32::~NativeWindowImpl_Win32()
@@ -242,6 +252,12 @@ namespace AzFramework
             // Send all other WM_SYSKEYDOWN messages to the default WndProc.
             break;
         }
+        case WM_DPICHANGED:
+        {
+            const float newScaleFactor = nativeWindowImpl->GetDpiScaleFactor();
+            WindowNotificationBus::Event(nativeWindowImpl->GetWindowHandle(), &WindowNotificationBus::Events::OnDpiScaleFactorChanged, newScaleFactor);
+            break;
+        }
         default:
             return DefWindowProc(hWnd, message, wParam, lParam);
             break;
@@ -335,6 +351,17 @@ namespace AzFramework
         }
     }
 
+    float NativeWindowImpl_Win32::GetDpiScaleFactor() const
+    {
+        constexpr UINT defaultDotsPerInch = 96;
+        UINT dotsPerInch = defaultDotsPerInch;
+        if (m_getDpiFunction)
+        {
+            dotsPerInch = m_getDpiFunction(m_win32Handle);
+        }
+        return aznumeric_cast<float>(dotsPerInch) / aznumeric_cast<float>(defaultDotsPerInch);
+    }
+
     void NativeWindowImpl_Win32::EnterBorderlessWindowFullScreen()
     {
         if (m_isInBorderlessWindowFullScreenState)
@@ -353,6 +380,7 @@ namespace AzFramework
 
         // Get the dimensions of the display device on which the window is currently displayed.
         MONITORINFO monitorInfo;
+        memset(&monitorInfo, 0, sizeof(MONITORINFO)); // C4701 potentially uninitialized local variable 'monitorInfo' used
         monitorInfo.cbSize = sizeof(MONITORINFO);
         const BOOL success = monitor ? GetMonitorInfo(monitor, &monitorInfo) : FALSE;
         if (!success)

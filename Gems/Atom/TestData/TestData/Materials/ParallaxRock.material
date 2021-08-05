@@ -17,7 +17,6 @@
             "textureMap": "TestData/Textures/cc0/Rock030_2K_Normal.jpg"
         },
         "parallax": {
-            "enable": true,
             "algorithm": "POM",
             "factor": 0.03,
             "quality": "High",

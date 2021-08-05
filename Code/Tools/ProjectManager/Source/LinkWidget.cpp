@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <LinkWidget.h>
 #include <QDesktopServices>
@@ -37,7 +33,7 @@ namespace O3DE::ProjectManager
 
     void LinkLabel::enterEvent([[maybe_unused]] QEvent* event)
     {
-        setStyleSheet("font-size: 9pt; color: #94D2FF; text-decoration: underline;");
+        setStyleSheet("font-size: 10px; color: #94D2FF; text-decoration: underline;");
     }
 
     void LinkLabel::leaveEvent([[maybe_unused]] QEvent* event)
@@ -52,6 +48,6 @@ namespace O3DE::ProjectManager
 
     void LinkLabel::SetDefaultStyle()
     {
-        setStyleSheet("font-size: 9pt; color: #94D2FF;");
+        setStyleSheet("font-size: 10px; color: #94D2FF;");
     }
 } // namespace O3DE::ProjectManager

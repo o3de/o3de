@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Libraries/Libraries.h>
 
@@ -16,8 +12,6 @@
 
 namespace ScriptCanvas
 {
-   
-    
     static bool OldEntityIdIsValidNodeVersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& rootNodeElement)
     {
         int nodeElementIndex = rootNodeElement.FindElement(AZ_CRC("BaseClass1", 0xd4925735));
@@ -29,10 +23,10 @@ namespace ScriptCanvas
 
         // The DataElementNode is being copied purposefully in this statement to clone the data
         AZ::SerializeContext::DataElementNode baseNodeElement = rootNodeElement.GetSubElement(nodeElementIndex);
-        if (!rootNodeElement.Convert(context, azrtti_typeid<EntityIDNodes::IsValidNode>()))
+        if (!rootNodeElement.Convert(context, azrtti_typeid<EntityNodes::IsValidNode>()))
         {
             AZ_Error("Script Canvas", false, "Unable to convert old Entity::IsValid function node(%s) to new EntityId::IsValid function node(%s)",
-                rootNodeElement.GetId().ToString<AZStd::string>().data(), azrtti_typeid<EntityIDNodes::IsValidNode>().ToString<AZStd::string>().data());
+                rootNodeElement.GetId().ToString<AZStd::string>().data(), azrtti_typeid<EntityNodes::IsValidNode>().ToString<AZStd::string>().data());
             return false;
         }
 
@@ -69,7 +63,7 @@ namespace ScriptCanvas
                 const AZ::TypeId nodeFunctionGenericMultiReturnTemplateTypeId("{DC5B1799-6C5B-4190-8D90-EF0C2D1BCE4E}");
                 const AZ::TypeId oldEntityIdIsValidFuncSignatureTypeId = azrtti_typeid<bool(*)(AZ::EntityId)>();
                 const AZ::TypeId oldEntityIdIsValidTypeId("{7CEC53AE-E12B-4738-B542-4587B8B95DC2}");
-                
+
                 // Aggregate NodeFunctionGenericMultiReturn<bool(*)(AZ::EntityId), OldIsValidTraits> typeid
                 // NOTE: Aggregation order addition is not commutative and must be in the added last to first: (FirstUuid + ( SecondUuid + (ThirdUuid + ... + (NthUuid))
                 const AZ::TypeId oldIsValidNodeAggregateTypeId = nodeFunctionGenericMultiReturnTemplateTypeId + (oldEntityIdIsValidFuncSignatureTypeId + oldEntityIdIsValidTypeId);
@@ -77,8 +71,6 @@ namespace ScriptCanvas
             }
             if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(reflection))
             {
-                using namespace ScriptCanvas::Nodes::Entity;
-                SCRIPT_CANVAS_GENERICS_TO_VM(EntityIDNodes::Registrar, EntityID, behaviorContext, EntityIDNodes::k_categoryName);
                 SCRIPT_CANVAS_GENERICS_TO_VM(EntityNodes::Registrar, Entity, behaviorContext, EntityNodes::k_categoryName);
             }
 
@@ -87,25 +79,13 @@ namespace ScriptCanvas
 
         void Entity::InitNodeRegistry(NodeRegistry& nodeRegistry)
         {
-            using namespace ScriptCanvas::Nodes::Entity;
-            AddNodeToRegistry<Entity, Rotate>(nodeRegistry);
-            AddNodeToRegistry<Entity, EntityID>(nodeRegistry);
-            AddNodeToRegistry<Entity, EntityRef>(nodeRegistry);
-            EntityIDNodes::Registrar::AddToRegistry<Entity>(nodeRegistry);
             EntityNodes::Registrar::AddToRegistry<Entity>(nodeRegistry);
         }
 
         AZStd::vector<AZ::ComponentDescriptor*> Entity::GetComponentDescriptors()
         {
-            AZStd::vector<AZ::ComponentDescriptor*> descriptors = {
-                ScriptCanvas::Nodes::Entity::Rotate::CreateDescriptor(),
-                ScriptCanvas::Nodes::Entity::EntityID::CreateDescriptor(),
-                ScriptCanvas::Nodes::Entity::EntityRef::CreateDescriptor()
-            };
-
-            EntityIDNodes::Registrar::AddDescriptors(descriptors);
+            AZStd::vector<AZ::ComponentDescriptor*> descriptors;
             EntityNodes::Registrar::AddDescriptors(descriptors);
-
             return descriptors;
         }
     }

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -17,10 +13,11 @@
 #include <AzFramework/Physics/Shape.h>
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 #include <AzFramework/Physics/RagdollPhysicsBus.h>
-#include <AzFramework/Physics/Joint.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
+#include <AzFramework/Physics/Common/PhysicsJoint.h>
 #include <AzFramework/Physics/Configuration/RigidBodyConfiguration.h>
 #include <AzFramework/Physics/Configuration/SimulatedBodyConfiguration.h>
+#include <AzFramework/Physics/Configuration/JointConfiguration.h>
 
 namespace Physics
 {
@@ -37,7 +34,7 @@ namespace Physics
         RagdollNodeConfiguration();
         RagdollNodeConfiguration(const RagdollNodeConfiguration& settings) = default;
 
-        AZStd::shared_ptr<JointLimitConfiguration> m_jointLimit;
+        AZStd::shared_ptr<AzPhysics::JointConfiguration> m_jointConfig;
     };
 
     class RagdollConfiguration
@@ -73,7 +70,7 @@ namespace Physics
         virtual AzPhysics::RigidBody& GetRigidBody() = 0;
         virtual ~RagdollNode() = default;
 
-        virtual const AZStd::shared_ptr<Physics::Joint>& GetJoint() const = 0;
+        virtual AzPhysics::Joint* GetJoint() = 0;
         virtual bool IsSimulating() const = 0;
     };
 
@@ -102,7 +99,7 @@ namespace Physics
 
         /// Is the ragdoll currently simulated?
         /// @result True in case the ragdoll is simulated, false if not.
-        virtual bool IsSimulated() = 0;
+        virtual bool IsSimulated() const = 0;
 
         /// Writes the state for all of the bodies in the ragdoll to the provided output.
         /// The caller owns the output state and can safely manipulate it without affecting the physics simulation.

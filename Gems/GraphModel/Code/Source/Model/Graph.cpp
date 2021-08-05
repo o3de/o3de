@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 // AZ
 #include <AzCore/std/smart_ptr/make_shared.h>
@@ -37,7 +33,7 @@ namespace GraphModel
         if (serializeContext)
         {
             serializeContext->Class<Graph>()
-                ->Version(1)
+                ->Version(2)
                 ->Field("m_nodes", &Graph::m_nodes)
                 ->Field("m_connections", &Graph::m_connections)
                 ->Field("m_uiMetadata", &Graph::m_uiMetadata)
@@ -279,8 +275,8 @@ namespace GraphModel
             m_connections.erase(iter);
 
 #if defined(AZ_ENABLE_TRACING)
-            auto iter = AZStd::find(m_connections.begin(), m_connections.end(), connection);
-            AZ_Assert(iter == m_connections.end(), "Graph is broken. The same connection object was found multiple times.");
+            auto iterConnection = AZStd::find(m_connections.begin(), m_connections.end(), connection);
+            AZ_Assert(iterConnection == m_connections.end(), "Graph is broken. The same connection object was found multiple times.");
 #endif
 
             return true;
@@ -312,19 +308,19 @@ namespace GraphModel
     }
 
 
-    void Graph::SetUiMetadata(const AZStd::any& uiMetadata)
+    void Graph::SetUiMetadata(const GraphModelIntegration::GraphCanvasMetadata& uiMetadata)
     {
         m_uiMetadata = uiMetadata;
     }
 
 
-    const AZStd::any& Graph::GetUiMetadata() const
+    const GraphModelIntegration::GraphCanvasMetadata& Graph::GetUiMetadata() const
     {
         return m_uiMetadata;
     }
 
 
-    AZStd::any& Graph::GetUiMetadata()
+    GraphModelIntegration::GraphCanvasMetadata& Graph::GetUiMetadata()
     {
         return m_uiMetadata;
     }

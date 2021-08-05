@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -32,7 +28,12 @@ namespace AtomToolsFramework
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
         //! Begin a smooth transition of the camera to the requested transform.
-        virtual void InterpolateToTransform(const AZ::Transform& worldFromLocal) = 0;
+        //! @param worldFromLocal The transform of where the camera should end up.
+        //! @param lookAtDistance The distance between the camera transform and the imagined look at point.
+        virtual void InterpolateToTransform(const AZ::Transform& worldFromLocal, float lookAtDistance) = 0;
+
+        //! Look at point after an interpolation has finished and no translation has occurred.
+        virtual AZStd::optional<AZ::Vector3> LookAtAfterInterpolation() const = 0;
 
     protected:
         ~ModularViewportCameraControllerRequests() = default;

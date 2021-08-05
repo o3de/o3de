@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #pragma once
@@ -57,6 +53,9 @@ namespace AZ
             /// Returns srgVisibility data
             const ShaderResourceGroupVisibility& GetSrgResourcesVisibility(uint32_t index) const;
             
+            /// Returns srgVisibility hash
+            const AZ::HashValue64 GetSrgResourcesVisibilityHash(uint32_t index) const;
+            
             /// Returns the root constant specific layout information
             uint32_t GetRootConstantsSize() const;
             uint32_t GetRootConstantsSlotIndex() const;
@@ -83,6 +82,9 @@ namespace AZ
             
             /// Cache Visibility across all the resources within the SRG
             AZStd::fixed_vector<ShaderResourceGroupVisibility, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_srgResourcesVisibility;
+            
+            /// Cache Visibility hash across all the resources within the SRG
+            AZStd::fixed_vector<AZ::HashValue64, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> m_srgResourcesVisibilityHash;
             
             uint32_t m_rootConstantSlotIndex = (uint32_t)-1;
             uint32_t m_rootConstantsSize = 0;

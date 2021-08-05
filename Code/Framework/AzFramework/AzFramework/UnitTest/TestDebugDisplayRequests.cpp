@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "TestDebugDisplayRequests.h"
 
@@ -36,7 +32,7 @@ namespace UnitTest
 
     void TestDebugDisplayRequests::DrawWireBox(const AZ::Vector3& min, const AZ::Vector3& max)
     {
-        const AZ::Transform& tm = m_transforms.back();
+        const AZ::Transform& tm = m_transforms.top();
         m_points.push_back(tm.TransformPoint(AZ::Vector3(min.GetX(), min.GetY(), min.GetZ())));
         m_points.push_back(tm.TransformPoint(AZ::Vector3(min.GetX(), min.GetY(), max.GetZ())));
         m_points.push_back(tm.TransformPoint(AZ::Vector3(min.GetX(), max.GetY(), min.GetZ())));
@@ -54,7 +50,7 @@ namespace UnitTest
 
     void TestDebugDisplayRequests::DrawWireQuad(float width, float height)
     {
-        const AZ::Transform& tm = m_transforms.back();
+        const AZ::Transform& tm = m_transforms.top();
         m_points.push_back(tm.TransformPoint(AZ::Vector3(-0.5f * width, 0.0f, -0.5f * height)));
         m_points.push_back(tm.TransformPoint(AZ::Vector3(-0.5f * width, 0.0f, 0.5f * height)));
         m_points.push_back(tm.TransformPoint(AZ::Vector3(0.5f * width, 0.0f, -0.5f * height)));
@@ -68,7 +64,7 @@ namespace UnitTest
 
     void TestDebugDisplayRequests::DrawPoints(const AZStd::vector<AZ::Vector3>& points)
     {
-        const AZ::Transform& tm = m_transforms.back();
+        const AZ::Transform& tm = m_transforms.top();
         for (const auto& point : points)
         {
             m_points.push_back(tm.TransformPoint(point));
@@ -104,7 +100,7 @@ namespace UnitTest
 
     void TestDebugDisplayRequests::PushMatrix(const AZ::Transform& tm)
     {
-        m_transforms.push(m_transforms.back() * tm);
+        m_transforms.push(m_transforms.top() * tm);
     }
 
     void TestDebugDisplayRequests::PopMatrix()

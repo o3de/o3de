@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #ifndef TRANSFORMCOMPONENTBUS_H_
 #define TRANSFORMCOMPONENTBUS_H_
 
@@ -30,7 +26,8 @@ namespace AzToolsFramework
             EditorTransform()
             {
                 m_translate = AZ::Vector3::CreateZero();
-                m_scale = AZ::Vector3::CreateOne();
+                m_legacyScale = AZ::Vector3::CreateOne();
+                m_uniformScale = 1.0f;
                 m_rotate = AZ::Vector3::CreateZero();
                 m_locked = false;
             }
@@ -40,9 +37,10 @@ namespace AzToolsFramework
                 return EditorTransform();
             }
 
-            AZ::Vector3 m_translate; //! Translation in engine units (meters)
-            AZ::Vector3 m_scale;
-            AZ::Vector3 m_rotate; //! Rotation in degrees
+            AZ::Vector3 m_translate; //!< Translation in engine units (meters)
+            AZ::Vector3 m_legacyScale; //!< Legacy vector scale value, retained only for migration.
+            float m_uniformScale; //!< Single scale value applied uniformly.
+            AZ::Vector3 m_rotate; //!< Rotation in degrees
             bool m_locked;
         };
 

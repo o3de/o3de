@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
@@ -74,34 +70,34 @@ namespace AzToolsFramework
                 QPoint iconTopLeft(remainingRect.x(), remainingRect.y() + (remainingRect.height() / 2) - (m_iconSize / 2));
 
                 auto sourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(entry);
-
-                int thumbX = DrawThumbnail(painter, iconTopLeft, iconSize, entry->GetThumbnailKey());
-
                 QPalette actualPalette(option.palette);
-
-                if (sourceEntry)
+                if (index.column() == aznumeric_cast<int>(AssetBrowserEntry::Column::Name))
                 {
-                    if (m_showSourceControl)
+                    int thumbX = DrawThumbnail(painter, iconTopLeft, iconSize, entry->GetThumbnailKey());
+                    if (sourceEntry)
                     {
-                        DrawThumbnail(painter, iconTopLeft, iconSize, sourceEntry->GetSourceControlThumbnailKey());
+                        if (m_showSourceControl)
+                        {
+                            DrawThumbnail(painter, iconTopLeft, iconSize, sourceEntry->GetSourceControlThumbnailKey());
+                        }
+                        // sources with no children should be greyed out.
+                        if (sourceEntry->GetChildCount() == 0)
+                        {
+                            isEnabled = false; // draw in disabled style.
+                            actualPalette.setCurrentColorGroup(QPalette::Disabled);
+                        }
                     }
-                    // sources with no children should be greyed out.
-                    if (sourceEntry->GetChildCount() == 0)
-                    {
-                        isEnabled = false; // draw in disabled style.
-                        actualPalette.setCurrentColorGroup(QPalette::Disabled);
-                    }
+
+                    remainingRect.adjust(thumbX, 0, 0, 0); // bump it to the right by the size of the thumbnail
+                    remainingRect.adjust(ENTRY_SPACING_LEFT_PIXELS, 0, 0, 0); // bump it to the right by the spacing.
                 }
+                QString displayString = index.column() == aznumeric_cast<int>(AssetBrowserEntry::Column::Name)
+                    ? qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::Name)))
+                    : qvariant_cast<QString>(entry->data(aznumeric_cast<int>(AssetBrowserEntry::Column::Path)));
 
-                remainingRect.adjust(thumbX, 0, 0, 0); // bump it to the right by the size of the thumbnail
-                remainingRect.adjust(ENTRY_SPACING_LEFT_PIXELS, 0, 0, 0); // bump it to the right by the spacing.
-
-                style->drawItemText(painter,
-                    remainingRect,
-                    option.displayAlignment,
-                    actualPalette,
-                    isEnabled,
-                    entry->GetDisplayName(),
+                style->drawItemText(
+                    painter, remainingRect, option.displayAlignment, actualPalette, isEnabled,
+                    displayString,
                     isSelected ? QPalette::HighlightedText : QPalette::Text);
             }
         }
@@ -126,9 +122,9 @@ namespace AzToolsFramework
             {
                 return 0;
             }
-            bool thumbnailLoading;
-            ThumbnailerRequestsBus::BroadcastResult(thumbnailLoading, &ThumbnailerRequests::IsLoading, thumbnailKey, m_thumbnailContext.c_str());
-            if (thumbnailLoading)
+
+            const Thumbnail::State thumbnailState = thumbnail->GetState();
+            if (thumbnailState == Thumbnail::State::Loading)
             {
                 AzQtComponents::StyledBusyLabel* busyLabel;
                 AssetBrowserComponentRequestBus::BroadcastResult(busyLabel , &AssetBrowserComponentRequests::GetStyledBusyLabel);
@@ -137,13 +133,17 @@ namespace AzToolsFramework
                     busyLabel->DrawTo(painter, QRectF(point.x(), point.y(), size.width(), size.height()));
                 }
             }
-            else
+            else if (thumbnailState == Thumbnail::State::Ready)
             {
                 // Scaling and centering pixmap within bounds to preserve aspect ratio
                 const QPixmap pixmap = thumbnail->GetPixmap().scaled(size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
                 const QSize sizeDelta = size - pixmap.size();
                 const QPoint pointDelta = QPoint(sizeDelta.width() / 2, sizeDelta.height() / 2);
                 painter->drawPixmap(point + pointDelta, pixmap);
+            }
+            else
+            {
+                AZ_Assert(false, "Thumbnail state %d unexpected here", int(thumbnailState));
             }
             return m_iconSize;
         }

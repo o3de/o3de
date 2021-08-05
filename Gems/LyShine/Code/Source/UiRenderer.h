@@ -1,24 +1,25 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
+
+#include <CryCommon/BaseTypes.h>
 
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawContext.h>
 #include <Atom/RPI.Public/WindowContext.h>
 #include <Atom/RPI.Public/ViewportContext.h>
+#include <Atom/RHI.Reflect/RenderStates.h>
 #include <Atom/Bootstrap/BootstrapNotificationBus.h>
 
 #ifndef _RELEASE
 #include <AzCore/std/containers/unordered_set.h>
 #endif
+
+class ITexture;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! UI render interface
@@ -35,7 +36,45 @@ public: // types
         AZ::RHI::ShaderInputConstantIndex m_viewProjInputIndex;
         AZ::RHI::ShaderInputConstantIndex m_isClampInputIndex;
 
-        AZ::RPI::ShaderVariantId m_shaderVariantDefault;
+        AZ::RPI::ShaderVariantId m_shaderVariantTextureLinear;
+        AZ::RPI::ShaderVariantId m_shaderVariantTextureSrgb;
+        AZ::RPI::ShaderVariantId m_shaderVariantAlphaTestMask;
+        AZ::RPI::ShaderVariantId m_shaderVariantGradientMask;
+    };
+
+    // Base state
+    struct BaseState
+    {
+        BaseState()
+        {
+            ResetToDefault();
+        }
+
+        void ResetToDefault()
+        {
+            // Enable blend/color write
+            m_blendState.m_enable = true;
+            m_blendState.m_writeMask = 0xF;
+            m_blendState.m_blendSource = AZ::RHI::BlendFactor::AlphaSource;
+            m_blendState.m_blendDest = AZ::RHI::BlendFactor::AlphaSourceInverse;
+            m_blendState.m_blendOp = AZ::RHI::BlendOp::Add;
+            m_blendState.m_blendAlphaSource = AZ::RHI::BlendFactor::One;
+            m_blendState.m_blendAlphaDest = AZ::RHI::BlendFactor::Zero;
+            m_blendState.m_blendAlphaOp = AZ::RHI::BlendOp::Add;
+
+            // Disable stencil
+            m_stencilState = AZ::RHI::StencilState();
+            m_stencilState.m_enable = 0;
+
+            m_useAlphaTest = false;
+            m_modulateAlpha = false;
+        }
+
+        AZ::RHI::TargetBlendState m_blendState;
+        AZ::RHI::StencilState m_stencilState;
+        bool m_useAlphaTest = false;
+        bool m_modulateAlpha = false;
+        bool m_srgbWrite = true;
     };
 
 public: // member functions
@@ -62,6 +101,8 @@ public: // member functions
     //! Return the dynamic draw context associated with this UI renderer
     AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> GetDynamicDrawContext();
 
+    AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> CreateDynamicDrawContextForRTT(const AZStd::string& rttName);
+
     //! Return the shader data for the ui shader
     const UiShaderData& GetUiShaderData();
 
@@ -72,10 +113,13 @@ public: // member functions
     AZ::Vector2 GetViewportSize();
 
     //! Get the current base state
-    int GetBaseState();
+    BaseState GetBaseState();
 
     //! Set the base state
-    void SetBaseState(int state);
+    void SetBaseState(BaseState state);
+
+    //! Get the shader variant based on current render properties
+    AZ::RPI::ShaderVariantId GetCurrentShaderVariant();
 
     //! Get the current stencil test reference value
     uint32 GetStencilRef();
@@ -88,6 +132,9 @@ public: // member functions
 
     //! Decrement the current stencil reference value
     void DecrementStencilRef();
+
+    //! Return the viewport context set by the user, or the default if not set
+    AZStd::shared_ptr<AZ::RPI::ViewportContext> GetViewportContext();
 
 #ifndef _RELEASE
     //! Setup to record debug texture data before rendering
@@ -109,10 +156,9 @@ private: // member functions
     AZ::RPI::ScenePtr CreateScene(AZStd::shared_ptr<AZ::RPI::ViewportContext> viewportContext);
 
     //! Create a dynamic draw context for this renderer
-    void CreateDynamicDrawContext(AZ::RPI::ScenePtr scene, AZ::Data::Instance<AZ::RPI::Shader>);
-
-    //! Return the viewport context set by the user, or the default if not set
-    AZStd::shared_ptr<AZ::RPI::ViewportContext> GetViewportContext();
+    AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> CreateDynamicDrawContext(
+        AZ::RPI::ScenePtr scene,
+        AZ::Data::Instance<AZ::RPI::Shader> uiShader);
 
     //! Bind the global white texture for all the texture units we use
     void BindNullTexture();
@@ -124,8 +170,8 @@ protected: // attributes
 
     static constexpr char LogName[] = "UiRenderer";
 
-    int m_baseState;
-    uint32 m_stencilRef;
+    BaseState m_baseState;
+    uint32 m_stencilRef = 0;
 
     UiShaderData m_uiShaderData;
     AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> m_dynamicDraw;
@@ -134,10 +180,10 @@ protected: // attributes
     // Set by user when viewport context is not the main/default viewport
     AZStd::shared_ptr<AZ::RPI::ViewportContext> m_viewportContext;
 
+    AZ::RPI::ScenePtr m_scene;
+
 #ifndef _RELEASE
     int m_debugTextureDataRecordLevel = 0;
-#ifdef LYSHINE_ATOM_TODO // Convert debug code to Atom
-    AZStd::unordered_set<ITexture*> m_texturesUsedInFrame;
-#endif
+    AZStd::unordered_set<ITexture*> m_texturesUsedInFrame; // LYSHINE_ATOM_TODO - convert to RPI::Image
 #endif
 };

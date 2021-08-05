@@ -14,7 +14,7 @@
             "PixelFormat": "R8G8"
         },
         "PlatformsPresets": {
-            "es3": {
+            "android": {
                 "UUID": "{3791319D-043B-4011-8B6F-3DE96D0C4309}",
                 "Name": "LUT_RG8",
                 "SourceColor": "Linear",
@@ -34,7 +34,7 @@
                 ],
                 "PixelFormat": "R8G8"
             },
-            "osx_gl": {
+            "mac": {
                 "UUID": "{3791319D-043B-4011-8B6F-3DE96D0C4309}",
                 "Name": "LUT_RG8",
                 "SourceColor": "Linear",

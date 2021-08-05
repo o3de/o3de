@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Multiplayer/NetworkEntity/EntityReplication/ReplicationRecord.h>
 
@@ -49,19 +45,19 @@ namespace Multiplayer
     }
 
     ReplicationRecord::ReplicationRecord(NetEntityRole netEntityRole)
-        : m_netEntityRole(netEntityRole)
+        : m_remoteNetEntityRole(netEntityRole)
     {
         ;
     }
 
-    void ReplicationRecord::SetNetworkRole(NetEntityRole netEntityRole)
+    void ReplicationRecord::SetRemoteNetworkRole(NetEntityRole remoteNetEntityRole)
     {
-        m_netEntityRole = netEntityRole;
+        m_remoteNetEntityRole = remoteNetEntityRole;
     }
 
-    NetEntityRole ReplicationRecord::GetNetworkRole() const
+    NetEntityRole ReplicationRecord::GetRemoteNetworkRole() const
     {
-        return m_netEntityRole;
+        return m_remoteNetEntityRole;
     }
 
     bool ReplicationRecord::AreAllBitsConsumed() const
@@ -196,26 +192,28 @@ namespace Multiplayer
 
     bool ReplicationRecord::ContainsAuthorityToClientBits() const
     {
-        return (m_netEntityRole != NetEntityRole::Authority)
-            || (m_netEntityRole == NetEntityRole::InvalidRole);
+        // Check != Authority here since several modes require information about client updates
+        // (i.e. Autonomous when performing corrections)
+        return (m_remoteNetEntityRole != NetEntityRole::Authority)
+            || (m_remoteNetEntityRole == NetEntityRole::InvalidRole);
     }
 
     bool ReplicationRecord::ContainsAuthorityToServerBits() const
     {
-        return (m_netEntityRole == NetEntityRole::Server)
-            || (m_netEntityRole == NetEntityRole::InvalidRole);
+        return (m_remoteNetEntityRole == NetEntityRole::Server)
+            || (m_remoteNetEntityRole == NetEntityRole::InvalidRole);
     }
 
     bool ReplicationRecord::ContainsAuthorityToAutonomousBits() const
     {
-        return (m_netEntityRole == NetEntityRole::Autonomous || m_netEntityRole == NetEntityRole::Server)
-            || (m_netEntityRole == NetEntityRole::InvalidRole);
+        return (m_remoteNetEntityRole == NetEntityRole::Autonomous || m_remoteNetEntityRole == NetEntityRole::Server)
+            || (m_remoteNetEntityRole == NetEntityRole::InvalidRole);
     }
 
     bool ReplicationRecord::ContainsAutonomousToAuthorityBits() const
     {
-        return (m_netEntityRole == NetEntityRole::Authority)
-            || (m_netEntityRole == NetEntityRole::InvalidRole);
+        return (m_remoteNetEntityRole == NetEntityRole::Authority)
+            || (m_remoteNetEntityRole == NetEntityRole::InvalidRole);
     }
 
     uint32_t ReplicationRecord::GetRemainingAuthorityToClientBits() const

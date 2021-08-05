@@ -1,19 +1,16 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/Math/Matrix4x4.h>
 #include <AzCore/Math/Transform.h>
+#include <AzCore/Math/VectorConversions.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
@@ -23,6 +20,15 @@
 
 namespace UnitTest
 {
+     // transform a point from normalized device coordinates to world space, and then from world space back to normalized device coordinates
+    AZ::Vector2 ScreenNDCToWorldToScreenNDC(
+        const AZ::Vector2& ndcPoint, const AzFramework::CameraState& cameraState)
+    {
+        const auto worldResult = AzFramework::ScreenNDCToWorld(ndcPoint, InverseCameraView(cameraState), InverseCameraProjection(cameraState));
+        const auto ndcResult = AzFramework::WorldToScreenNDC(worldResult, CameraView(cameraState), CameraProjection(cameraState));
+        return AZ::Vector3ToVector2(ndcResult);
+    }
+
     // transform a point from screen space to world space, and then from world space back to screen space
     AzFramework::ScreenPoint ScreenToWorldToScreen(
         const AzFramework::ScreenPoint& screenPoint, const AzFramework::CameraState& cameraState)
@@ -30,7 +36,8 @@ namespace UnitTest
         const auto worldResult = AzFramework::ScreenToWorld(screenPoint, cameraState);
         return AzFramework::WorldToScreen(worldResult, cameraState);
     }
-
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // ScreenPoint tests
     TEST(ViewportScreen, WorldToScreenAndScreenToWorldReturnsTheSameValueIdentityCameraOffsetFromOrigin)
     {
         using AzFramework::ScreenPoint;
@@ -38,8 +45,6 @@ namespace UnitTest
         const auto screenDimensions = AZ::Vector2(800.0f, 600.0f);
         const auto cameraPosition = AZ::Vector3::CreateAxisY(-10.0f);
 
-        // note: nearClip is 0.1 - the world space value returned will be aligned to the near clip
-        // plane of the camera so use that to confirm the mapping to/from is correct
         const auto cameraState = AzFramework::CreateIdentityDefaultCamera(cameraPosition, screenDimensions);
         {
             const auto expectedScreenPoint = ScreenPoint{600, 450};
@@ -81,6 +86,8 @@ namespace UnitTest
         EXPECT_EQ(resultScreenPoint, expectedScreenPoint);
     }
 
+    // note: nearClip is 0.1 - the world space value returned will be aligned to the near clip
+    // plane of the camera so use that to confirm the mapping to/from is correct
     TEST(ViewportScreen, ScreenToWorldReturnsPositionOnNearClipPlaneInWorldSpace)
     {
         using AzFramework::ScreenPoint;
@@ -94,7 +101,75 @@ namespace UnitTest
         const auto worldResult = AzFramework::ScreenToWorld(ScreenPoint{400, 300}, cameraState);
         EXPECT_THAT(worldResult, IsClose(AZ::Vector3(10.1f, 0.0f, 0.0f)));
     }
+    
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // NDC tests
+    TEST(ViewportScreen, WorldToScreenNDCAndScreenNDCToWorldReturnsTheSameValueIdentityCameraOffsetFromOrigin)
+    {
+        using NdcPoint = AZ::Vector2;
+        
+        const auto screenDimensions = AZ::Vector2(800.0f, 600.0f);
+        const auto cameraPosition = AZ::Vector3::CreateAxisY(-10.0f);
 
+        const auto cameraState = AzFramework::CreateIdentityDefaultCamera(cameraPosition, screenDimensions);
+        {
+            const auto expectedNdcPoint = NdcPoint{0.75f, 0.75f};
+            const auto resultNdcPoint = ScreenNDCToWorldToScreenNDC(expectedNdcPoint, cameraState);
+            EXPECT_THAT(resultNdcPoint, IsClose(expectedNdcPoint));
+        }
+
+        {
+            const auto expectedNdcPoint = NdcPoint{0.5f, 0.5f};
+            const auto resultNdcPoint = ScreenNDCToWorldToScreenNDC(expectedNdcPoint, cameraState);
+            EXPECT_THAT(resultNdcPoint, IsClose(expectedNdcPoint));
+        }
+
+        {
+            const auto expectedNdcPoint = NdcPoint{0.0f, 0.0f};
+            const auto resultNdcPoint = ScreenNDCToWorldToScreenNDC(expectedNdcPoint, cameraState);
+            EXPECT_THAT(resultNdcPoint, IsClose(expectedNdcPoint));
+        }
+
+        {
+            const auto expectedNdcPoint = NdcPoint{1.0f, 1.0f};
+            const auto resultNdcPoint = ScreenNDCToWorldToScreenNDC(expectedNdcPoint, cameraState);
+            EXPECT_THAT(resultNdcPoint, IsClose(expectedNdcPoint));
+        }
+    }
+
+    TEST(ViewportScreen, WorldToScreenNDCAndScreenNDCToWorldReturnsTheSameValueOrientatedCamera)
+    {
+        using NdcPoint = AZ::Vector2;
+
+        const auto screenDimensions = AZ::Vector2(800.0f, 600.0f);
+        const auto cameraTransform =
+            AZ::Transform::CreateRotationX(AZ::DegToRad(45.0f)) * AZ::Transform::CreateRotationZ(AZ::DegToRad(90.0f));
+
+        const auto cameraState = AzFramework::CreateDefaultCamera(cameraTransform, screenDimensions);
+
+        const auto expectedNdcPoint = NdcPoint{0.25f, 0.5f};
+        const auto resultNdcPoint = ScreenNDCToWorldToScreenNDC(expectedNdcPoint, cameraState);
+        EXPECT_THAT(resultNdcPoint, IsClose(expectedNdcPoint));
+    }
+
+    // note: nearClip is 0.1 - the world space value returned will be aligned to the near clip
+    // plane of the camera so use that to confirm the mapping to/from is correct
+    TEST(ViewportScreen, ScreenNDCToWorldReturnsPositionOnNearClipPlaneInWorldSpace)
+    {
+        using NdcPoint = AZ::Vector2;
+
+        const auto screenDimensions = AZ::Vector2(800.0f, 600.0f);
+        const auto cameraTransform = AZ::Transform::CreateTranslation(AZ::Vector3(10.0f, 0.0f, 0.0f)) *
+            AZ::Transform::CreateRotationZ(AZ::DegToRad(-90.0f));
+
+        const auto cameraState = AzFramework::CreateDefaultCamera(cameraTransform, screenDimensions);
+
+        const auto worldResult = AzFramework::ScreenNDCToWorld(NdcPoint{0.5f, 0.5f}, InverseCameraView(cameraState), InverseCameraProjection(cameraState));
+        EXPECT_THAT(worldResult, IsClose(AZ::Vector3(10.1f, 0.0f, 0.0f)));
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // ScreenVector tests
     TEST(ViewportScreen, SubstractingScreenPointGivesScreenVector)
     {
         using AzFramework::ScreenPoint;
@@ -220,6 +295,8 @@ namespace UnitTest
         EXPECT_NEAR(AzFramework::ScreenVectorLength(ScreenVector(12, 15)), 19.20937f, 0.001f);
     }
 
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Other tests
     TEST(ViewportScreen, CanGetCameraTransformFromCameraViewAndBack)
     {
         const auto screenDimensions = AZ::Vector2(1024.0f, 768.0f);

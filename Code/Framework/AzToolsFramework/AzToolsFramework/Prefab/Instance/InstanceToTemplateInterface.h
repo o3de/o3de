@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 #include <AzCore/Component/EntityId.h>
@@ -47,8 +43,13 @@ namespace AzToolsFramework
 
             virtual void AppendEntityAliasToPatchPaths(PrefabDom& providedPatch, const AZ::EntityId& entityId) = 0;
 
-            //! Updates the template links (updating instances) for the given templateId using the providedPatch
-            virtual bool PatchTemplate(PrefabDomValue& providedPatch, TemplateId templateId) = 0;
+            //! Updates the template links (updating instances) for the given template and triggers propagation on its instances.
+            //! @param providedPatch The patch to apply to the template.
+            //! @param templateId The id of the template to update.
+            //! @param instanceToExclude An optional reference to an instance of the template being updated that should not be refreshes as part of propagation.
+            //!     Defaults to nullopt, which means that all instances will be refreshed.
+            //! @return True if the template was patched correctly, false if the operation failed.
+            virtual bool PatchTemplate(PrefabDomValue& providedPatch, TemplateId templateId, InstanceOptionalReference instanceToExclude = AZStd::nullopt) = 0;
 
             virtual void ApplyPatchesToInstance(const AZ::EntityId& entityId, PrefabDom& patches, const Instance& instanceToAddPatches) = 0;
 

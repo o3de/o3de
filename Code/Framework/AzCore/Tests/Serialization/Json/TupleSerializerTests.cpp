@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Serialization/Json/TupleSerializer.h>
 #include <AzCore/std/containers/vector.h>
@@ -48,12 +44,12 @@ namespace JsonSerializationTests
 
         AZStd::shared_ptr<Pair> CreateDefaultInstance() override
         {
-            return AZStd::make_shared<Pair>(142, 242.0);
+            return AZStd::make_shared<Pair>(0, 0.0);
         }
 
         AZStd::shared_ptr<Pair> CreatePartialDefaultInstance() override
         {
-            return AZStd::make_shared<Pair>(142, 288.0);
+            return AZStd::make_shared<Pair>(0, 288.0);
         }
 
         AZStd::shared_ptr<Pair> CreateFullySetInstance() override
@@ -102,12 +98,12 @@ namespace JsonSerializationTests
 
         AZStd::shared_ptr<Tuple> CreateDefaultInstance() override
         {
-            return AZStd::make_shared<Tuple>(142, 242.0, 342.0f);
+            return AZStd::make_shared<Tuple>(0, 0.0, 0.0f);
         }
 
         AZStd::shared_ptr<Tuple> CreatePartialDefaultInstance() override
         {
-            return AZStd::make_shared<Tuple>(142, 288.0, 342.0f);
+            return AZStd::make_shared<Tuple>(0, 288.0, 0.0f);
         }
 
         AZStd::shared_ptr<Tuple> CreateFullySetInstance() override
@@ -345,6 +341,7 @@ namespace JsonSerializationTests
         {
             TupleSerializerTestsInternal::ConfigureFeatures(features);
             features.m_supportsPartialInitialization = true;
+            features.m_enableNewInstanceTests = false;
         }
 
         void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
@@ -447,14 +444,14 @@ namespace JsonSerializationTests
         {
             return AZStd::make_shared<Tuple>(
                 AZStd::vector<int>(), 
-                AZStd::make_pair(442, ""));
+                AZStd::make_pair(0, ""));
         }
 
         AZStd::shared_ptr<Tuple> CreatePartialDefaultInstance() override
         {
             return AZStd::make_shared<Tuple>(
                 AZStd::vector<int>(),
-                AZStd::make_pair(442, "hello"));
+                AZStd::make_pair(0, "hello"));
         }
 
         AZStd::shared_ptr<Tuple> CreateFullySetInstance() override

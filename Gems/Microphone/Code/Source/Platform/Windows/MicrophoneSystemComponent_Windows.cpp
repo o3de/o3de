@@ -1,16 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-
-#include "Microphone_precompiled.h"
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "MicrophoneSystemComponent.h"
 
@@ -51,11 +45,11 @@ namespace Audio
             // To avoid errors, we initialize COM here with the same model.
             CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
 
-            const CLSID CLSID_MMDeviceEnumerator = __uuidof(MMDeviceEnumerator);
-            const IID IID_IMMDeviceEnumerator = __uuidof(IMMDeviceEnumerator);
+            const CLSID CLSID_MMDeviceEnumerator_UUID = __uuidof(MMDeviceEnumerator);
+            const IID IID_IMMDeviceEnumerator_UUID = __uuidof(IMMDeviceEnumerator);
             HRESULT hresult = CoCreateInstance(
-                CLSID_MMDeviceEnumerator, nullptr,
-                CLSCTX_ALL, IID_IMMDeviceEnumerator,
+                CLSID_MMDeviceEnumerator_UUID, nullptr,
+                CLSCTX_ALL, IID_IMMDeviceEnumerator_UUID,
                 reinterpret_cast<void**>(&m_enumerator)
             );
 
@@ -106,7 +100,11 @@ namespace Audio
                 }
 
                 PropVariantClear(&endpointName);
-                SAFE_RELEASE(m_deviceProps);
+                if (m_deviceProps)
+                {
+                    m_deviceProps->Release();
+                    m_deviceProps = nullptr;
+                }
             }
 
             return true;
@@ -120,8 +118,16 @@ namespace Audio
             // Assert: m_audioClient and m_audioCaptureClient are both nullptr!  (i.e. the capture thread is not running)
             AZ_Assert(!m_audioClient && !m_audioCaptureClient, "ShutdownDevice - Audio Client pointers are not null!  You need to call EndSession first!\n");
 
-            SAFE_RELEASE(m_device);
-            SAFE_RELEASE(m_enumerator);
+            if (m_device)
+            {
+                m_device->Release();
+                m_device = nullptr;
+            }
+            if (m_enumerator)
+            {
+                m_enumerator->Release();
+                m_enumerator = nullptr;
+            }
 
             CoUninitialize();
         }
@@ -133,8 +139,8 @@ namespace Audio
             AZ_Assert(m_device != nullptr, "Attempting to start a Microphone session while the device is uninitialized - Windows!\n");
 
             // Get the IAudioClient from the device
-            const IID IID_IAudioClient = __uuidof(IAudioClient);
-            HRESULT hresult = m_device->Activate(IID_IAudioClient, CLSCTX_ALL, nullptr, reinterpret_cast<void**>(&m_audioClient));
+            const IID IID_IAudioClient_UUID = __uuidof(IAudioClient);
+            HRESULT hresult = m_device->Activate(IID_IAudioClient_UUID, CLSCTX_ALL, nullptr, reinterpret_cast<void**>(&m_audioClient));
 
             if (FAILED(hresult))
             {
@@ -182,8 +188,8 @@ namespace Audio
             }
 
             // Get the IAudioCaptureClient
-            const IID IID_IAudioCaptureClient = __uuidof(IAudioCaptureClient);
-            hresult = m_audioClient->GetService(IID_IAudioCaptureClient, reinterpret_cast<void**>(&m_audioCaptureClient));
+            const IID IID_IAudioCaptureClient_UUID = __uuidof(IAudioCaptureClient);
+            hresult = m_audioClient->GetService(IID_IAudioCaptureClient_UUID, reinterpret_cast<void**>(&m_audioCaptureClient));
 
             if (FAILED(hresult))
             {
@@ -322,8 +328,16 @@ namespace Audio
                 }
             }
 
-            SAFE_RELEASE(m_audioCaptureClient);
-            SAFE_RELEASE(m_audioClient);
+            if (m_audioCaptureClient)
+            {
+                m_audioCaptureClient->Release();
+                m_audioCaptureClient = nullptr;
+            }
+            if (m_audioClient)
+            {
+                m_audioClient->Release();
+                m_audioClient = nullptr;
+            }
             CoTaskMemFree(m_streamFormat);
             m_streamFormat = nullptr;
 
@@ -422,12 +436,12 @@ namespace Audio
                 if (stereoToMono)
                 {
                     // Samples are interleaved now, copy only left channel to the output
-                    float* inputData = reinterpret_cast<float*>(m_conversionBufferIn.m_data);
-                    float* outputData = reinterpret_cast<float*>(m_conversionBufferOut.m_data);
+                    float* bufferInputData = reinterpret_cast<float*>(m_conversionBufferIn.m_data);
+                    float* bufferOutputData = reinterpret_cast<float*>(m_conversionBufferOut.m_data);
                     for (AZ::u32 frame = 0; frame < numFrames; ++frame)
                     {
-                        outputData[frame] = *inputData++;
-                        ++inputData;
+                        bufferOutputData[frame] = *bufferInputData++;
+                        ++bufferInputData;
                     }
                 }
                 else // monoToStereo
@@ -435,21 +449,21 @@ namespace Audio
                     // Split single samples to both left and right channels
                     if (shouldDeinterleave)
                     {
-                        float* inputData = reinterpret_cast<float*>(m_conversionBufferIn.m_data);
-                        float** outputData = reinterpret_cast<float**>(m_conversionBufferOut.m_data);
+                        float* bufferInputData = reinterpret_cast<float*>(m_conversionBufferIn.m_data);
+                        float** bufferOutputData = reinterpret_cast<float**>(m_conversionBufferOut.m_data);
                         for (AZ::u32 frame = 0; frame < numFrames; ++frame)
                         {
-                            outputData[0][frame] = outputData[1][frame] = inputData[frame];
+                            bufferOutputData[0][frame] = bufferOutputData[1][frame] = bufferInputData[frame];
                         }
                     }
                     else
                     {
-                        float* inputData = reinterpret_cast<float*>(m_conversionBufferIn.m_data);
-                        float* outputData = reinterpret_cast<float*>(m_conversionBufferOut.m_data);
+                        float* bufferInputData = reinterpret_cast<float*>(m_conversionBufferIn.m_data);
+                        float* bufferOutputData = reinterpret_cast<float*>(m_conversionBufferOut.m_data);
                         for (AZ::u32 frame = 0; frame < numFrames; ++frame)
                         {
-                            *outputData++ = inputData[frame];
-                            *outputData++ = inputData[frame];
+                            *bufferOutputData++ = bufferInputData[frame];
+                            *bufferOutputData++ = bufferInputData[frame];
                         }
                     }
                 }

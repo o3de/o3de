@@ -48,8 +48,8 @@
             "textureMap": "TestData/Textures/cc0/Concrete019_1K_Color.jpg"
         },
         "parallax": {
-            "enable": true,
-            "pdo": true
+            "pdo": true,
+            "quality": "Medium"
         }
     }
 }

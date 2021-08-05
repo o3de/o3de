@@ -13,31 +13,16 @@
             ],
             "textureMap": "Textures/chain_basecolor.png"
         },
-        "general": {
-            "applySpecularAA": true
-        },
-        "irradiance": {
+        "emissive": {
             "color": [
-                0.4891279339790344,
-                0.7931944727897644,
-                1.0,
+                0.0,
+                0.0,
+                0.0,
                 1.0
             ]
         },
-        "metallic": {
-            "textureMap": "Textures/chain_alpha.png"
-        },
-        "normal": {
-            "textureMap": "Textures/chain_normal.jpg"
-        },
         "opacity": {
-            "alphaSource": "Split",
-            "factor": 0.30000001192092898,
-            "mode": "Cutout",
-            "textureMap": "Textures/chain_alpha.png"
-        },
-        "roughness": {
-            "factor": 0.4000000059604645
+            "factor": 1.0
         }
     }
 }

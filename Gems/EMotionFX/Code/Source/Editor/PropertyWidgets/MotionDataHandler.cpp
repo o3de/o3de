@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "MotionDataHandler.h"
 #include <Integration/Assets/MotionSetAsset.h>
@@ -81,7 +77,7 @@ namespace EMotionFX
         const MotionDataFactory& factory = GetEMotionFX().GetMotionManager()->GetMotionDataFactory();
         for (size_t i = 0; i < factory.GetNumRegistered(); ++i)
         {
-            GUI->addItem(factory.GetRegistered(i)->GetFbxSettingsName());
+            GUI->addItem(factory.GetRegistered(i)->GetSceneSettingsName());
             m_typeIds.emplace_back(factory.GetRegistered(i)->RTTI_GetType());
         }
 
@@ -91,10 +87,10 @@ namespace EMotionFX
         }
         else 
         {
-            AZ::Outcome<size_t> index = factory.FindRegisteredIndexByTypeId(instance);
-            if (index.IsSuccess())
+            AZ::Outcome<size_t> motionIndex = factory.FindRegisteredIndexByTypeId(instance);
+            if (motionIndex.IsSuccess())
             {
-                GUI->setCurrentIndex(static_cast<int>(index.GetValue() + 1)); // +1 because we inserted an 'Automatic' one as first entry.
+                GUI->setCurrentIndex(static_cast<int>(motionIndex.GetValue() + 1)); // +1 because we inserted an 'Automatic' one as first entry.
             }
             else
             {

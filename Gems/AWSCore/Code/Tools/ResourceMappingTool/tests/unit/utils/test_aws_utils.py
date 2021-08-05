@@ -1,12 +1,8 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 from typing import List
@@ -37,13 +33,12 @@ class TestAWSUtils(TestCase):
         .build()
 
     def setUp(self) -> None:
-        client_patcher: patch = patch("boto3.client")
-        self.addCleanup(client_patcher.stop)
-        self._mock_client: MagicMock = client_patcher.start()
-
         session_patcher: patch = patch("boto3.session.Session")
         self.addCleanup(session_patcher.stop)
         self._mock_session: MagicMock = session_patcher.start()
+        self._mock_client: MagicMock = self._mock_session.return_value.client
+
+        aws_utils.setup_default_session("default")
 
     def test_get_default_account_id_return_expected_account_id(self) -> None:
         mocked_sts_client: MagicMock = self._mock_client.return_value
@@ -257,6 +252,25 @@ class TestAWSUtils(TestCase):
         mocked_iterator.resume_token = None
         mocked_paginator.paginate.return_value = mocked_iterator
         mocked_iterator.__iter__.return_value = [{"StackResourceSummaries": []}]
+
+        actual_stack_resources: List[BasicResourceAttributes] = \
+            aws_utils.list_cloudformation_stack_resources(TestAWSUtils._expected_stack, TestAWSUtils._expected_region)
+        self._mock_client.assert_called_once_with(aws_utils.AWSConstants.CLOUDFORMATION_SERVICE_NAME,
+                                                  region_name=TestAWSUtils._expected_region)
+        mocked_cloudformation_client.get_paginator.assert_called_once_with(
+            aws_utils.AWSConstants.CLOUDFORMATION_LIST_STACK_RESOURCES_API_NAME)
+        mocked_paginator.paginate.assert_called_once_with(StackName=TestAWSUtils._expected_stack, PaginationConfig=ANY)
+        assert not actual_stack_resources
+
+    def test_list_cloudformation_stack_resources_return_empty_list_when_resource_has_invalid_attributes(self) -> None:
+        mocked_cloudformation_client: MagicMock = self._mock_client.return_value
+        mocked_paginator: MagicMock = MagicMock()
+        mocked_cloudformation_client.get_paginator.return_value = mocked_paginator
+        mocked_iterator: MagicMock = MagicMock()
+        mocked_iterator.resume_token = None
+        mocked_paginator.paginate.return_value = mocked_iterator
+        mocked_iterator.__iter__.return_value = [{"StackResourceSummaries": [
+            {"DummyAttribute": "DummyValue"}]}]
 
         actual_stack_resources: List[BasicResourceAttributes] = \
             aws_utils.list_cloudformation_stack_resources(TestAWSUtils._expected_stack, TestAWSUtils._expected_region)

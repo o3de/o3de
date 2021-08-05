@@ -1,23 +1,23 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <SceneAPI/SceneCore/Containers/SceneGraph.h>
+#include <SceneAPI/SceneCore/Containers/Views/PairIterator.h>
+#include <SceneAPI/SceneCore/Containers/Views/SceneGraphDownwardsIterator.h>
 #include <SceneAPI/SceneCore/DataTypes/Rules/IRule.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IBoneData.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMeshData.h>
 #include <SceneAPI/SceneCore/DataTypes/Groups/ISceneNodeGroup.h>
+#include <SceneAPI/SceneData/GraphData/RootBoneData.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
 #include <SceneAPIExt/Groups/ActorGroup.h>
@@ -79,6 +79,22 @@ namespace EMotionFX
             void ActorGroup::SetSelectedRootBone(const AZStd::string & selectedRootBone)
             {
                 m_selectedRootBone = selectedRootBone;
+            }
+
+            void ActorGroup::SetBestMatchingRootBone(const AZ::SceneAPI::Containers::SceneGraph& sceneGraph)
+            {
+                auto nameContentView = AZ::SceneAPI::Containers::Views::MakePairView(sceneGraph.GetNameStorage(), sceneGraph.GetContentStorage());
+                auto graphDownwardsView = AZ::SceneAPI::Containers::Views::MakeSceneGraphDownwardsView<AZ::SceneAPI::Containers::Views::BreadthFirst>(
+                    sceneGraph, sceneGraph.GetRoot(), nameContentView.begin(), true);
+
+                for (auto it = graphDownwardsView.begin(); it != graphDownwardsView.end(); ++it)
+                {
+                    if (it->second && it->second->RTTI_IsTypeOf(AZ::SceneData::GraphData::RootBoneData::TYPEINFO_Uuid()))
+                    {
+                        SetSelectedRootBone(it->first.GetPath());
+                        return;
+                    }
+                }
             }
 
             void ActorGroup::Reflect(AZ::ReflectContext* context)

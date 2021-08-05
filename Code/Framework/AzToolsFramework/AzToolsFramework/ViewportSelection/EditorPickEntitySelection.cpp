@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "EditorPickEntitySelection.h"
 
@@ -19,9 +15,8 @@ namespace AzToolsFramework
 {
     AZ_CLASS_ALLOCATOR_IMPL(EditorPickEntitySelection, AZ::SystemAllocator, 0)
 
-    EditorPickEntitySelection::EditorPickEntitySelection(
-        const EditorVisibleEntityDataCache* entityDataCache)
-            : m_editorHelpers(AZStd::make_unique<EditorHelpers>(entityDataCache))
+    EditorPickEntitySelection::EditorPickEntitySelection(const EditorVisibleEntityDataCache* entityDataCache)
+        : m_editorHelpers(AZStd::make_unique<EditorHelpers>(entityDataCache))
     {
     }
 
@@ -29,8 +24,7 @@ namespace AzToolsFramework
     {
         if (m_hoveredEntityId.IsValid())
         {
-            ToolsApplicationRequestBus::Broadcast(
-                &ToolsApplicationRequests::SetEntityHighlighted, m_hoveredEntityId, false);
+            ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetEntityHighlighted, m_hoveredEntityId, false);
         }
     }
 
@@ -41,8 +35,7 @@ namespace AzToolsFramework
     // highlighted - hoveredEntityId is an in/out param that is updated based on the change in
     // entityIdUnderCursor.
     static void HandleAccents(
-        const AZ::EntityId entityIdUnderCursor, AZ::EntityId& hoveredEntityId,
-        const ViewportInteraction::MouseButtons mouseButtons)
+        const AZ::EntityId entityIdUnderCursor, AZ::EntityId& hoveredEntityId, const ViewportInteraction::MouseButtons mouseButtons)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
@@ -55,8 +48,7 @@ namespace AzToolsFramework
         {
             if (hoveredEntityId.IsValid())
             {
-                ToolsApplicationRequestBus::Broadcast(
-                    &ToolsApplicationRequests::SetEntityHighlighted, hoveredEntityId, false);
+                ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetEntityHighlighted, hoveredEntityId, false);
 
                 hoveredEntityId.SetInvalid();
             }
@@ -68,8 +60,7 @@ namespace AzToolsFramework
         {
             if (entityIdUnderCursor.IsValid() && entityIdUnderCursor != hoveredEntityId)
             {
-                ToolsApplicationRequestBus::Broadcast(
-                    &ToolsApplicationRequests::SetEntityHighlighted, entityIdUnderCursor, true);
+                ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetEntityHighlighted, entityIdUnderCursor, true);
 
                 hoveredEntityId = entityIdUnderCursor;
             }
@@ -93,8 +84,7 @@ namespace AzToolsFramework
             if (m_cachedEntityIdUnderCursor.IsValid())
             {
                 // if we clicked on a valid entity id, actually try to set it
-                EditorPickModeRequestBus::Broadcast(
-                    &EditorPickModeRequests::PickModeSelectEntity, m_cachedEntityIdUnderCursor);
+                EditorPickModeRequestBus::Broadcast(&EditorPickModeRequests::PickModeSelectEntity, m_cachedEntityIdUnderCursor);
             }
 
             // after a click, always stop pick mode, whether we set an entity or not
@@ -105,16 +95,18 @@ namespace AzToolsFramework
     }
 
     void EditorPickEntitySelection::DisplayViewportSelection(
-        const AzFramework::ViewportInfo& viewportInfo,
-        AzFramework::DebugDisplayRequests& debugDisplay)
+        const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
         const AzFramework::CameraState cameraState = GetCameraState(viewportInfo.m_viewportId);
 
         m_editorHelpers->DisplayHelpers(
-            viewportInfo, cameraState, debugDisplay, [](AZ::EntityId){ return true; });
+            viewportInfo, cameraState, debugDisplay,
+            [](AZ::EntityId)
+            {
+                return true;
+            });
 
         HandleAccents(
-            m_cachedEntityIdUnderCursor, m_hoveredEntityId,
-            ViewportInteraction::BuildMouseButtons(QGuiApplication::mouseButtons()));
+            m_cachedEntityIdUnderCursor, m_hoveredEntityId, ViewportInteraction::BuildMouseButtons(QGuiApplication::mouseButtons()));
     }
 } // namespace AzToolsFramework

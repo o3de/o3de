@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzFramework/Physics/Collision/CollisionEvents.h>
 
@@ -37,9 +33,10 @@ namespace AzPhysics
         if (auto* behaviorContext = azdynamic_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<TriggerEvent>()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
-                ->Method("GetTriggerEntityId", &TriggerEvent::GetTriggerEntityId)
-                ->Method("GetOtherEntityId", &TriggerEvent::GetOtherEntityId)
+                ->Attribute(AZ::Script::Attributes::Module, "physics")
+                ->Attribute(AZ::Script::Attributes::Category, "Physics")
+                ->Method("Get Trigger EntityId", &TriggerEvent::GetTriggerEntityId)
+                ->Method("Get Other EntityId", &TriggerEvent::GetOtherEntityId)
                 ;
         }
     }
@@ -104,10 +101,11 @@ namespace AzPhysics
         if (auto* behaviorContext = azdynamic_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->Class<CollisionEvent>()
-                ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
-                ->Property("Contacts", BehaviorValueProperty(&CollisionEvent::m_contacts))
-                ->Method("GetBody1EntityId", &CollisionEvent::GetBody1EntityId)
-                ->Method("GetBody2EntityId", &CollisionEvent::GetBody2EntityId)
+                ->Attribute(AZ::Script::Attributes::Module, "physics")
+                ->Attribute(AZ::Script::Attributes::Category, "Physics")
+                ->Property("Contacts", BehaviorValueGetter(&CollisionEvent::m_contacts), nullptr)
+                ->Method("Get Body 1 EntityId", &CollisionEvent::GetBody1EntityId)
+                ->Method("Get Body 2 EntityId", &CollisionEvent::GetBody2EntityId)
                 ;
         }
     }

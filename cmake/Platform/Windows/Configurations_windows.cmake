@@ -1,12 +1,9 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 #
 
 ly_set(CMAKE_RC_FLAGS /nologo)
@@ -106,7 +103,7 @@ if(NOT CMAKE_GENERATOR MATCHES "Visual Studio")
     endforeach()
 
     if(NOT version VERSION_EQUAL CMAKE_SYSTEM_VERSION)
-        message(STATUS "Selecting Windows SDK version ${version} to target Windows ${CMAKE_SYSTEM_VERSION}.")
+        message(STATUS "Using Windows SDK version ${version} to target Windows ${CMAKE_SYSTEM_VERSION}")
     endif()
 
     ly_set(CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION "${version}")
@@ -116,4 +113,3 @@ endif()
 if(NOT CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION MATCHES "10.0")
     message(FATAL_ERROR "Unsupported version of Windows SDK ${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}, specify \"-DCMAKE_SYSTEM_VERSION=10.0\" when invoking cmake")
 endif()
-message(STATUS "Using Windows target SDK ${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}")

@@ -1,12 +1,9 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 #
 
 ly_get_list_relative_pal_filename(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
@@ -29,6 +26,9 @@ ly_add_target(
             Gem::HttpRequestor
             3rdParty::AWSNativeSDK::AWSClientAuth
             3rdParty::AWSNativeSDK::Core
+    RUNTIME_DEPENDENCIES
+        Gem::AWSCore
+        Gem::HttpRequestor
 )
 
 ly_add_target( 
@@ -44,12 +44,22 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             Gem::AWSCore
-            Gem::HttpRequestor
             3rdParty::AWSNativeSDK::AWSClientAuth
             3rdParty::AWSNativeSDK::Core
         PUBLIC
             Gem::AWSClientAuth.Static
+    RUNTIME_DEPENDENCIES
+        Gem::AWSCore
+        Gem::HttpRequestor
 )
+
+# Load the "Gem::AWSClientAuth" module in all types of applications.
+ly_create_alias(NAME AWSClientAuth.Servers NAMESPACE Gem TARGETS Gem::AWSClientAuth)
+ly_create_alias(NAME AWSClientAuth.Clients NAMESPACE Gem TARGETS Gem::AWSClientAuth)
+if (PAL_TRAIT_BUILD_HOST_TOOLS)
+    ly_create_alias(NAME AWSClientAuth.Tools NAMESPACE Gem TARGETS Gem::AWSClientAuth)
+    ly_create_alias(NAME AWSClientAuth.Builders NAMESPACE Gem TARGETS Gem::AWSClientAuth)
+endif()
 
 ################################################################################
 # Tests
@@ -71,10 +81,14 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 3rdParty::AWSNativeSDK::AWSClientAuth
                 AZ::AzCore
                 AZ::AzFramework
-                Gem::AWSCore
-                Gem::AWSClientAuth.Static
                 AZ::AWSNativeSDKInit
+                Gem::AWSClientAuth.Static
+                Gem::AWSCore
                 Gem::HttpRequestor
+        RUNTIME_DEPENDENCIES
+            Gem::AWSCore
+            AZ::AWSNativeSDKInit
+            Gem::HttpRequestor
    )
    ly_add_googletest(
         NAME Gem::AWSClientAuth.Tests

@@ -1,27 +1,22 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzToolsFramework/Manipulators/AngularManipulator.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
+#include <AzToolsFramework/Manipulators/AngularManipulator.h>
 
 namespace AzToolsFramework
 {
-    /// RotationManipulators is an aggregation of 3 angular manipulators who share the same origin
-    /// in addition to a view aligned angular manipulator (facing the camera).
-    class RotationManipulators
-        : public Manipulators
+    //! RotationManipulators is an aggregation of 3 angular manipulators who share the same origin
+    //! in addition to a view aligned angular manipulator (facing the camera).
+    class RotationManipulators : public Manipulators
     {
     public:
         AZ_RTTI(RotationManipulators, "{5D1F1D47-1D5B-4E42-B47E-23F108F8BF7D}")
@@ -40,12 +35,10 @@ namespace AzToolsFramework
         void SetLocalOrientationImpl(const AZ::Quaternion& localOrientation) override;
         void RefreshView(const AZ::Vector3& worldViewPosition) override;
 
-        void SetLocalAxes(
-            const AZ::Vector3& axis1, const AZ::Vector3& axis2, const AZ::Vector3& axis3);
+        void SetLocalAxes(const AZ::Vector3& axis1, const AZ::Vector3& axis2, const AZ::Vector3& axis3);
         void SetViewAxis(const AZ::Vector3& axis);
 
-        void ConfigureView(
-            float radius, const AZ::Color& axis1Color, const AZ::Color& axis2Color, const AZ::Color& axis3Color);
+        void ConfigureView(float radius, const AZ::Color& axis1Color, const AZ::Color& axis2Color, const AZ::Color& axis3Color);
 
         bool PerformingActionViewAxis() const;
 

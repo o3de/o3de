@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <CoreLights/LightCullingTilePreparePass.h>
 
@@ -167,37 +163,34 @@ namespace AZ
             AZ_Assert(setOk, "LightCullingTilePreparePass::SetConstantData() - could not set constant data");
         }
 
-        void LightCullingTilePreparePass::BuildAttachmentsInternal()
+        void LightCullingTilePreparePass::BuildInternal()
         {
             ChooseShaderVariant();
         }
 
-        void LightCullingTilePreparePass::OnShaderReinitialized(const AZ::RPI::Shader&)
+        void LightCullingTilePreparePass::OnShaderReloaded()
         {
             LoadShader();
-            if (!m_flags.m_queuedForBuildAttachment && !m_flags.m_isBuildingAttachments)
-            {
-                ChooseShaderVariant();
-            }
-        }
-        void LightCullingTilePreparePass::OnShaderAssetReinitialized(const Data::Asset<AZ::RPI::ShaderAsset>&)
-        {
-            LoadShader();
-            if (!m_flags.m_queuedForBuildAttachment && !m_flags.m_isBuildingAttachments)
+            AZ_Assert(GetPassState() != RPI::PassState::Rendering, "LightCullingTilePreparePass: Trying to reload shader during rendering");
+            if (GetPassState() == RPI::PassState::Idle)
             {
                 ChooseShaderVariant();
             }
         }
 
-        void LightCullingTilePreparePass::OnShaderVariantReinitialized(
-             const AZ::RPI::Shader&,  const AZ::RPI::ShaderVariantId&,
-             AZ::RPI::ShaderVariantStableId)
+        void LightCullingTilePreparePass::OnShaderReinitialized(const AZ::RPI::Shader&)
         {
-            LoadShader();
-            if (!m_flags.m_queuedForBuildAttachment && !m_flags.m_isBuildingAttachments)
-            {
-                ChooseShaderVariant();
-            }
+            OnShaderReloaded();
+        }
+
+        void LightCullingTilePreparePass::OnShaderAssetReinitialized(const Data::Asset<AZ::RPI::ShaderAsset>&)
+        {
+            OnShaderReloaded();
+        }
+
+        void LightCullingTilePreparePass::OnShaderVariantReinitialized(const AZ::RPI::ShaderVariant&)
+        {
+            OnShaderReloaded();
         }
 
     }   // namespace Render

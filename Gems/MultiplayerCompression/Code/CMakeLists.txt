@@ -1,15 +1,10 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
 #
-
-set(LY_ENABLE_MULTIPLAYER_COMPRESSION OFF CACHE BOOL "Enables usage of Multiplayer Compressor.")
+#
 
 ly_add_target(
     NAME MultiplayerCompression.Static STATIC
@@ -38,6 +33,11 @@ ly_add_target(
         PRIVATE
             Gem::MultiplayerCompression.Static
 )
+
+# use the MultiplayerCompression module everywhere except builders:
+ly_create_alias(NAME MultiplayerCompression.Clients NAMESPACE Gem TARGETS Gem::MultiplayerCompression)
+ly_create_alias(NAME MultiplayerCompression.Tools   NAMESPACE Gem TARGETS Gem::MultiplayerCompression)
+ly_create_alias(NAME MultiplayerCompression.Servers NAMESPACE Gem TARGETS Gem::MultiplayerCompression)
 
 ################################################################################
 # Tests

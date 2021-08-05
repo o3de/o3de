@@ -1,12 +1,9 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 #
 
 set(FILES
@@ -54,17 +51,15 @@ set(FILES
     Tests/UI/AnimGraphUIFixture.h
     Tests/UI/MenuUIFixture.cpp
     Tests/UI/MenuUIFixture.h
-    Tests/UI/LY-92269.cpp
-    Tests/UI/LY-92748.cpp
-    Tests/UI/LY-93621.cpp
+    Tests/UI/CanRenameParameter_ParameterNodeUpdates.cpp
+    Tests/UI/CanDeleteAnimGraphNode_AnimGraphModelUpdates.cpp
+    Tests/UI/CanAdjustGroupParameter.cpp
     Tests/UI/CanAddJointAndChildren.cpp
     Tests/Integration/CanAddActor.cpp
     Tests/Integration/CanAddSimpleMotionComponent.cpp
     Tests/Integration/CanDeleteJackEntity.cpp
     Tests/Bugs/CanDeleteMotionWhenMotionIsBeingBlended.cpp
-    Tests/Bugs/LY-92860.cpp
-    Tests/D6JointLimitConfiguration.cpp
-    Tests/D6JointLimitConfiguration.h
+    Tests/Bugs/CanUndoParameterDeletionAndRestoreBlendTreeConnections.cpp
     Tests/Editor/FileManagerTests.cpp
     Tests/Editor/ParametersGroupDefaultValues.cpp
     Tests/Editor/MotionSetLoadEscalation.cpp

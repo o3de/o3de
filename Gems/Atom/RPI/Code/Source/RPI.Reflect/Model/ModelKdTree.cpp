@@ -1,16 +1,13 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/std/numeric.h>
+#include <AzCore/std/limits.h>
 #include <Atom/RPI.Reflect/Model/ModelKdTree.h>
 #include <AzCore/Math/IntersectSegment.h>
 
@@ -88,7 +85,11 @@ namespace AZ
 
             // If either the top or bottom contain all the input indices, the triangles are too close to cut any
             // further and the split failed
-            return indices.size() != outInfo.m_aboveIndices.size() && indices.size() != outInfo.m_belowIndices.size();
+            // Additionally, if too many triangles straddle the split-axis,
+            // the triangles are too close and the split failed
+            // [ATOM-15944] - Use a more sophisticated method to terminate KdTree generation
+            return indices.size() != outInfo.m_aboveIndices.size() && indices.size() != outInfo.m_belowIndices.size()
+                && aznumeric_cast<float>(outInfo.m_aboveIndices.size() + outInfo.m_belowIndices.size()) / aznumeric_cast<float>(indices.size()) < s_MaximumSplitAxisStraddlingTriangles;
         }
 
         bool ModelKdTree::Build(const ModelAsset* model)
@@ -191,10 +192,10 @@ namespace AZ
 
             if (ModelLodAsset* lodAssetPtr = model->GetLodAssets()[0].Get())
             {
-                AZ_Warning("ModelKdTree", lodAssetPtr->GetMeshes().size() <= std::numeric_limits<AZ::u8>::max() + 1,
+                AZ_Warning("ModelKdTree", lodAssetPtr->GetMeshes().size() <= AZStd::numeric_limits<AZ::u8>::max() + 1,
                     "KdTree generation doesn't support models with greater than 256 meshes. RayIntersection results will be incorrect "
                     "unless the meshes are merged or broken up into multiple models");
-                const size_t size = AZStd::min<size_t>(lodAssetPtr->GetMeshes().size(), std::numeric_limits<AZ::u8>::max() + 1);
+                const size_t size = AZStd::min<size_t>(lodAssetPtr->GetMeshes().size(), AZStd::numeric_limits<AZ::u8>::max() + 1);
                 m_meshes.reserve(size);
                 AZStd::transform(
                     lodAssetPtr->GetMeshes().begin(), AZStd::next(lodAssetPtr->GetMeshes().begin(), size),
@@ -204,20 +205,42 @@ namespace AZ
             }
         }
 
-        bool ModelKdTree::RayIntersection(const AZ::Vector3& raySrc, const AZ::Vector3& rayDir, float& distance, AZ::Vector3& normal) const
+        bool ModelKdTree::RayIntersection(
+            const AZ::Vector3& raySrc, const AZ::Vector3& rayDir, float& distanceNormalized, AZ::Vector3& normal) const
         {
-            return RayIntersectionRecursively(m_pRootNode.get(), raySrc, rayDir, distance, normal);
+            float shortestDistanceNormalized = AZStd::numeric_limits<float>::max();
+            if (RayIntersectionRecursively(m_pRootNode.get(), raySrc, rayDir, shortestDistanceNormalized, normal))
+            {
+                distanceNormalized = shortestDistanceNormalized;
+                return true;
+            }
+
+            return false;
         }
 
-        bool ModelKdTree::RayIntersectionRecursively(ModelKdTreeNode* pNode, const AZ::Vector3& raySrc, const AZ::Vector3& rayDir, float& distance, AZ::Vector3& normal) const
+        bool ModelKdTree::RayIntersectionRecursively(
+            ModelKdTreeNode* pNode,
+            const AZ::Vector3& raySrc,
+            const AZ::Vector3& rayDir,
+            float& distanceNormalized,
+            AZ::Vector3& normal) const
         {
+            using Intersect::IntersectRayAABB2;
+            using Intersect::IntersectSegmentTriangleCCW;
+            using Intersect::ISECT_RAY_AABB_NONE;
+
             if (!pNode)
             {
                 return false;
             }
 
             float start, end;
-            if (AZ::Intersect::IntersectRayAABB2(raySrc, rayDir.GetReciprocal(), pNode->GetBoundBox(), start, end) == Intersect::ISECT_RAY_AABB_NONE)
+            if (IntersectRayAABB2(raySrc, rayDir.GetReciprocal(), pNode->GetBoundBox(), start, end) == ISECT_RAY_AABB_NONE)
+            {
+                return false;
+            }
+
+            if (start > distanceNormalized)
             {
                 return false;
             }
@@ -235,17 +258,13 @@ namespace AZ
                     return false;
                 }
 
-                AZ::Vector3 intersectionNormal;
-                float hitDistanceNormalized;
-                const float maxDist(FLT_MAX);
-                float nearestDist = maxDist;
-
+                float nearestDistanceNormalized = distanceNormalized;
                 for (AZ::u32 i = 0; i < nVBuffSize; ++i)
                 {
                     const auto& [first, second, third] = pNode->GetVertexIndex(i);
                     const AZ::u32 nObjIndex = pNode->GetObjIndex(i);
 
-                    AZStd::array_view<float> positionBuffer = m_meshes[nObjIndex].m_vertexData;
+                    const AZStd::array_view<float> positionBuffer = m_meshes[nObjIndex].m_vertexData;
 
                     if (positionBuffer.empty())
                     {
@@ -258,25 +277,23 @@ namespace AZ
                         AZ::Vector3{positionBuffer[third * 3 + 0], positionBuffer[third * 3 + 1], positionBuffer[third * 3 + 2]},
                     };
 
-                    const AZ::Vector3 rayEnd = raySrc + rayDir * distance;
-
-                    if (AZ::Intersect::IntersectSegmentTriangleCCW(raySrc, rayEnd, trianglePoints[0], trianglePoints[1], trianglePoints[2],
-                        intersectionNormal, hitDistanceNormalized) != Intersect::ISECT_RAY_AABB_NONE)
+                    float hitDistanceNormalized;
+                    AZ::Vector3 intersectionNormal;
+                    const AZ::Vector3 rayEnd = raySrc + rayDir;
+                    if (IntersectSegmentTriangleCCW(raySrc, rayEnd, trianglePoints[0], trianglePoints[1], trianglePoints[2],
+                        intersectionNormal, hitDistanceNormalized) != ISECT_RAY_AABB_NONE)
                     {
-                        float hitDistance = hitDistanceNormalized * distance;
-
-                        if (nearestDist > hitDistance)
+                        if (nearestDistanceNormalized > hitDistanceNormalized)
                         {
                             normal = intersectionNormal;
+                            nearestDistanceNormalized = hitDistanceNormalized;
                         }
-
-                        nearestDist = AZStd::GetMin(nearestDist, hitDistance);
                     }
                 }
 
-                if (nearestDist < maxDist)
+                if (nearestDistanceNormalized < distanceNormalized)
                 {
-                    distance = AZStd::GetMin(distance, nearestDist);
+                    distanceNormalized = nearestDistanceNormalized;
                     return true;
                 }
 
@@ -284,8 +301,8 @@ namespace AZ
             }
 
             // running both sides to find the closest intersection
-            const bool bFoundChild0 = RayIntersectionRecursively(pNode->GetChild(0), raySrc, rayDir, distance, normal);
-            const bool bFoundChild1 = RayIntersectionRecursively(pNode->GetChild(1), raySrc, rayDir, distance, normal);
+            const bool bFoundChild0 = RayIntersectionRecursively(pNode->GetChild(0), raySrc, rayDir, distanceNormalized, normal);
+            const bool bFoundChild1 = RayIntersectionRecursively(pNode->GetChild(1), raySrc, rayDir, distanceNormalized, normal);
 
             return bFoundChild0 || bFoundChild1;
         }
@@ -311,5 +328,5 @@ namespace AZ
             GetPenetratedBoxesRecursively(pNode->GetChild(0), raySrc, rayDir, outBoxes);
             GetPenetratedBoxesRecursively(pNode->GetChild(1), raySrc, rayDir, outBoxes);
         }
-    }
-}
+    } // namespace RPI
+} // namespace AZ

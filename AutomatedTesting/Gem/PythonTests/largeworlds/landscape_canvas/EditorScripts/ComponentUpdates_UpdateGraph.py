@@ -1,30 +1,8 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-"""
-
-
-"""
-C22602072 - Graph is updated when underlying components are added/removed
-
-1. Open Level.
-2. Find LandscapeCanvas named entity.
-3. Ensure Vegetation Distribution Component is present on the BushSpawner entity.
-4. Open graph and ensure Distribution Filter wrapped node is present.
-5. Delete the Vegetation Distribution Filter component from the BushSpawner entity via Entity Inspector.
-6. Ensure the Vegetation Distribution Filter component was deleted from the BushSpawner entity and node is no longer 
-present in the graph.
-7. Add Vegetation Altitude Filter to the BushSpawner entity through Entity Inspector.
-8. Ensure Altitude Filter was added to the BushSpawner node in the open graph.
-9. Add a new entity with unique name as a child of the Landscape Canvas entity.
-10. Add a Box Shape component to the new child entity.
-11. Ensure Box Shape node is present on the open graph.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 import os
@@ -50,6 +28,36 @@ class TestComponentUpdatesUpdateGraph(EditorTestHelper):
         EditorTestHelper.__init__(self, log_prefix="ComponentUpdatesUpdateGraph", args=["level"])
 
     def run_test(self):
+        """
+        Summary:
+        This test verifies that the Landscape Canvas graphs update properly when components are added/removed outside of
+        Landscape Canvas.
+
+        Expected Behavior:
+        Graphs properly reflect component changes made to entities outside of Landscape Canvas.
+
+        Test Steps:
+            1. Open Level
+            2. Find LandscapeCanvas named entity
+            3. Ensure Vegetation Distribution Component is present on the BushSpawner entity
+            4. Open graph and ensure Distribution Filter wrapped node is present
+            5. Delete the Vegetation Distribution Filter component from the BushSpawner entity via Entity Inspector
+            6. Ensure the Vegetation Distribution Filter component was deleted from the BushSpawner entity and node is
+            no longer present in the graph
+            7. Add Vegetation Altitude Filter to the BushSpawner entity through Entity Inspector
+            8. Ensure Altitude Filter was added to the BushSpawner node in the open graph
+            9. Add a new entity with unique name as a child of the Landscape Canvas entity
+            10. Add a Box Shape component to the new child entity
+            11. Ensure Box Shape node is present on the open graph
+
+        Note:
+        - This test file must be called from the Open 3D Engine Editor command terminal
+        - Any passed and failed tests are written to the Editor.log file.
+                Parsing the file or running a log_monitor are required to observe the test results.
+
+        :return: None
+        """
+
         # Create a new empty level and instantiate LC_BushFlowerBlender.slice
         self.test_success = self.create_level(
             self.args["level"],

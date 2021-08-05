@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 //////////////////////////////////////////////////////////////////////////
@@ -96,7 +92,12 @@
 #endif
 
 /// Aligns a declaration.
-#   define AZ_ALIGN(_decl, _alignment) __declspec(align(_alignment)) _decl
+#   define AZ_ALIGN(_decl, _alignment) \
+    AZ_PUSH_DISABLE_WARNING(4324, "-Wunknown-warning-option") \
+    __declspec(align(_alignment)) \
+    _decl \
+    AZ_POP_DISABLE_WARNING
+
 /// Return the alignment of a type. This if for internal use only (use AZStd::alignment_of<>())
 #   define AZ_INTERNAL_ALIGNMENT_OF(_type) __alignof(_type)
 /// Pointer will be aliased.
@@ -123,7 +124,12 @@
 
 #   define AZ_FORCE_INLINE  inline
 /// Aligns a declaration.
-#   define AZ_ALIGN(_decl, _alignment) _decl __attribute__((aligned(_alignment)))
+#   define AZ_ALIGN(_decl, _alignment) \
+    AZ_PUSH_DISABLE_WARNING(4324, "-Wunknown-warning-option") \
+    _decl \
+    __attribute__((aligned(_alignment)))
+    AZ_POP_DISABLE_WARNING
+
 /// Return the alignment of a type. This if for internal use only (use AZStd::alignment_of<>())
 #   define AZ_INTERNAL_ALIGNMENT_OF(_type) __alignof__(_type)
 /// Pointer will be aliased.

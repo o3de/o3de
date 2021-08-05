@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -18,12 +14,14 @@
 #include <CoreLights/AreaLightComponent.h>
 #include <CoreLights/DirectionalLightComponent.h>
 #include <Decals/DecalComponent.h>
-#include <DiffuseProbeGrid/DiffuseProbeGridComponent.h>
+#include <DiffuseGlobalIllumination/DiffuseProbeGridComponent.h>
+#include <DiffuseGlobalIllumination/DiffuseGlobalIlluminationComponent.h>
 #include <Grid/GridComponent.h>
 #include <ImageBasedLights/ImageBasedLightComponent.h>
 #include <Material/MaterialComponent.h>
 #include <Mesh/MeshComponent.h>
 #include <ReflectionProbe/ReflectionProbeComponent.h>
+#include <OcclusionCullingPlane/OcclusionCullingPlaneComponent.h>
 #include <PostProcess/PostFxLayerComponent.h>
 #include <PostProcess/Bloom/BloomComponent.h>
 #include <PostProcess/DepthOfField/DepthOfFieldComponent.h>
@@ -47,7 +45,8 @@
 #include <CoreLights/EditorAreaLightComponent.h>
 #include <CoreLights/EditorDirectionalLightComponent.h>
 #include <Decals/EditorDecalComponent.h>
-#include <DiffuseProbeGrid/EditorDiffuseProbeGridComponent.h>
+#include <DiffuseGlobalIllumination/EditorDiffuseProbeGridComponent.h>
+#include <DiffuseGlobalIllumination/EditorDiffuseGlobalIlluminationComponent.h>
 #include <Grid/EditorGridComponent.h>
 #include <ImageBasedLights/EditorImageBasedLightComponent.h>
 #include <Material/EditorMaterialComponent.h>
@@ -55,6 +54,7 @@
 #include <Mesh/EditorMeshComponent.h>
 #include <Mesh/EditorMeshSystemComponent.h>
 #include <ReflectionProbe/EditorReflectionProbeComponent.h>
+#include <OcclusionCullingPlane/EditorOcclusionCullingPlaneComponent.h>
 #include <PostProcess/EditorPostFxLayerComponent.h>
 #include <PostProcess/Bloom/EditorBloomComponent.h>
 #include <PostProcess/DepthOfField/EditorDepthOfFieldComponent.h>
@@ -111,9 +111,11 @@ namespace AZ
                         EntityReferenceComponent::CreateDescriptor(),
                         GradientWeightModifierComponent::CreateDescriptor(),
                         DiffuseProbeGridComponent::CreateDescriptor(),
+                        DiffuseGlobalIlluminationComponent::CreateDescriptor(),
                         DeferredFogComponent::CreateDescriptor(),
                         SurfaceData::SurfaceDataMeshComponent::CreateDescriptor(),
                         AttachmentComponent::CreateDescriptor(),
+                        OcclusionCullingPlaneComponent::CreateDescriptor(),
 
 #ifdef ATOMLYINTEGRATION_FEATURE_COMMON_EDITOR
                         EditorAreaLightComponent::CreateDescriptor(),
@@ -142,9 +144,11 @@ namespace AZ
                         EditorEntityReferenceComponent::CreateDescriptor(),
                         EditorGradientWeightModifierComponent::CreateDescriptor(),
                         EditorDiffuseProbeGridComponent::CreateDescriptor(),
+                        EditorDiffuseGlobalIlluminationComponent::CreateDescriptor(),
                         EditorDeferredFogComponent::CreateDescriptor(),
                         SurfaceData::EditorSurfaceDataMeshComponent::CreateDescriptor(),
                         EditorAttachmentComponent::CreateDescriptor(),
+                        EditorOcclusionCullingPlaneComponent::CreateDescriptor(),
 #endif
                     });
             }

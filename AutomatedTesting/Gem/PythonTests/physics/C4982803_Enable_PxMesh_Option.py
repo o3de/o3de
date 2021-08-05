@@ -1,12 +1,8 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 
 Test case ID : C4982803
 Test Case Title : Verify that when the shape Physics Asset is selected,
@@ -26,6 +22,7 @@ class Tests():
     add_physx_shape_collider = ("Added PhysX Shape Collider",          "Failed to add PhysX Shape Collider")
     add_box_shape            = ("Added Box Shape",                     "Failed to add Box Shape")
     enter_game_mode          = ("Entered game mode",                   "Failed to enter game mode")
+    exit_game_mode           = ("Exited game mode",                    "Failed to exit game mode")
     test_collision           = ("Entity collided with terrain",        "Failed to collide with terrain")
 # fmt: on
 
@@ -127,7 +124,6 @@ def C4982803_Enable_PxMesh_Option():
         touched_ground = False
 
     terrain_id = general.find_game_entity("Terrain")
-
     def on_collision_begin(args):
         other_id = args[0]
         if other_id.Equal(terrain_id):
@@ -141,6 +137,8 @@ def C4982803_Enable_PxMesh_Option():
     helper.wait_for_condition(lambda: Collider.touched_ground, TIMEOUT)
     Report.result(Tests.test_collision, Collider.touched_ground)
 
+    # 8) Exit game mode
+    helper.exit_game_mode(Tests.exit_game_mode)
 
 if __name__ == "__main__":
     import ImportPathHelper as imports

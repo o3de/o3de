@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "RuntimeAsset.h"
 
@@ -20,8 +16,18 @@ namespace ScriptCanvasRuntimeAssetCpp
     {
         AddDependencies = 3,
         ChangeScriptRequirementToAsset,
-        // add your entry above
+
+        // add description above
         Current
+    };
+
+    enum class RuntimeDataOverridesVersion : unsigned int
+    {
+        Initial = 0,
+        AddRuntimeAsset,
+
+        // add description above
+        Current,
     };
 
     enum class FunctionRuntimeDataVersion
@@ -30,7 +36,8 @@ namespace ScriptCanvasRuntimeAssetCpp
         AddSubgraphInterface,
         RemoveLegacyData,
         RemoveConnectionToRuntimeData,
-        // add your entry above
+
+        // add description above
         Current
     };
 }
@@ -92,9 +99,9 @@ namespace ScriptCanvas
     {
         return data.m_input.GetConstructorParameterCount() != 0
             || AZStd::any_of(data.m_requiredAssets.begin(), data.m_requiredAssets.end(), [](const AZ::Data::Asset<RuntimeAsset>& asset)
-                {
-                    return RequiresDependencyConstructionParametersRecurse(asset.Get()->m_runtimeData);
-                });
+        {
+            return RequiresDependencyConstructionParametersRecurse(asset.Get()->m_runtimeData);
+        });
     }
 
     bool RuntimeData::RequiresStaticInitialization() const
@@ -102,6 +109,80 @@ namespace ScriptCanvas
         return !m_cloneSources.empty();
     }
 
+    bool RuntimeDataOverrides::IsPreloadBehaviorEnforced(const RuntimeDataOverrides& overrides)
+    {
+        if (overrides.m_runtimeAsset.GetAutoLoadBehavior() != AZ::Data::AssetLoadBehavior::PreLoad)
+        {
+            return false;
+        }
+
+        for (auto& dependency : overrides.m_dependencies)
+        {
+            if (!IsPreloadBehaviorEnforced(dependency))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    void RuntimeDataOverrides::EnforcePreloadBehavior()
+    {
+        m_runtimeAsset.SetAutoLoadBehavior(AZ::Data::AssetLoadBehavior::PreLoad);
+
+        for (auto& dependency : m_dependencies)
+        {
+            dependency.EnforcePreloadBehavior();
+        }
+    }
+
+    void RuntimeDataOverrides::Reflect(AZ::ReflectContext* context)
+    {
+        RuntimeVariable::Reflect(context);
+
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<RuntimeDataOverrides>()
+                ->Version(static_cast<unsigned int>(ScriptCanvasRuntimeAssetCpp::RuntimeDataOverridesVersion::Current))
+                ->Field("runtimeAsset", &RuntimeDataOverrides::m_runtimeAsset)
+                ->Field("variables", &RuntimeDataOverrides::m_variables)
+                ->Field("variableIndices", &RuntimeDataOverrides::m_variableIndices)
+                ->Field("entityIds", &RuntimeDataOverrides::m_entityIds)
+                ->Field("dependencies", &RuntimeDataOverrides::m_dependencies)
+                ;
+        }
+    }
+
+    RuntimeVariable::RuntimeVariable(const AZStd::any& source)
+        : value(source)
+    {
+    }
+
+    RuntimeVariable::RuntimeVariable(AZStd::any&& source)
+        : value(AZStd::move(source))
+    {
+    }
+
+    void RuntimeVariable::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<RuntimeVariable>()
+                ->Field("value", &RuntimeVariable::value)
+                ;
+
+            if (auto editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<RuntimeVariable>("RuntimeVariable", "RuntimeVariable")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &RuntimeVariable::value, "value", "")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, true)
+                    ;
+            }
+        }
+    }
 
     ////////////////////////
     // SubgraphInterfaceData
@@ -123,7 +204,7 @@ namespace ScriptCanvas
     {
         *this = AZStd::move(other);
     }
-    
+
     SubgraphInterfaceData& SubgraphInterfaceData::operator=(SubgraphInterfaceData&& other)
     {
         if (this != &other)

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
@@ -150,7 +146,7 @@ namespace UnitTest
         EntityAlias entityAlias = wheelTemplateEntityAliases.front();
         PrefabDomValue* wheelEntityComponents =
             PrefabTestDomUtils::GetPrefabDomComponentsPath(entityAlias).Get(wheelTemplateDom);
-        ASSERT_TRUE(wheelEntityComponents == nullptr);
+        ASSERT_TRUE(wheelEntityComponents->IsArray() && wheelEntityComponents->Size() == 0);
 
         // Create an axle with 0 entities and 1 wheel instance.
         AZStd::unique_ptr<Instance> wheel1UnderAxle = m_prefabSystemComponent->InstantiatePrefab(wheelTemplateId);
@@ -278,6 +274,7 @@ namespace UnitTest
         InstanceAlias aliasOfWheelInstanceToRetain = wheelInstanceAliasesUnderAxle.front();
         AZStd::unique_ptr<Instance> detachedInstance = axleInstance->DetachNestedInstance(wheelInstanceAliasesUnderAxle.back());
         ASSERT_TRUE(detachedInstance);
+        m_prefabSystemComponent->RemoveLink(detachedInstance->GetLinkId());
         PrefabDom updatedAxleInstanceDom;
         ASSERT_TRUE(PrefabDomUtils::StoreInstanceInPrefabDom(*axleInstance, updatedAxleInstanceDom));
         m_prefabSystemComponent->UpdatePrefabTemplate(axleTemplateId, updatedAxleInstanceDom);
@@ -345,7 +342,7 @@ namespace UnitTest
 
         // Validate that the wheel entity does not have a component under it.
         wheelEntityComponents = PrefabTestDomUtils::GetPrefabDomComponentsPath(entityAlias).Get(wheelTemplateDom);
-        ASSERT_TRUE(wheelEntityComponents == nullptr);
+        ASSERT_TRUE(wheelEntityComponents->IsArray() && wheelEntityComponents->Size() == 0);
 
         // Validate that the wheels under the axle have the same DOM as the wheel template.
         PrefabTestDomUtils::ValidatePrefabDomInstances(wheelInstanceAliasesUnderAxle, axleTemplateDom, wheelTemplateDom);
@@ -404,15 +401,14 @@ namespace UnitTest
         m_prefabSystemComponent->UpdatePrefabTemplate(wheelTemplateId, updatedWheelInstanceDom);
         m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
 
-        // Validate that the prefabTestComponent in the wheel template DOM doesn't have a BoolProperty.
-        // Even though we changed the property to false, it won't be serialized out because it's a default value.
+        // Validate that the BoolProperty of the prefabTestComponent in the wheel template DOM is set to false.
         wheelEntityComponents = PrefabTestDomUtils::GetPrefabDomComponentsPath(entityAlias).Get(wheelTemplateDom);
         ASSERT_TRUE(wheelEntityComponents != nullptr && wheelEntityComponents->IsObject());
         EXPECT_EQ(wheelEntityComponents->MemberCount(), 1);
 
         PrefabDomValueReference wheelEntityComponentBoolPropertyValue =
             PrefabDomUtils::FindPrefabDomValue(wheelEntityComponents->MemberBegin()->value, PrefabTestDomUtils::BoolPropertyName);
-        ASSERT_FALSE(wheelEntityComponentBoolPropertyValue.has_value());
+        ASSERT_TRUE(wheelEntityComponentBoolPropertyValue.has_value() && wheelEntityComponentBoolPropertyValue->get() == false);
 
         // Validate that the wheels under the axle have the same DOM as the wheel template.
         PrefabTestDomUtils::ValidatePrefabDomInstances(wheelInstanceAliasesUnderAxle, axleTemplateDom, wheelTemplateDom);

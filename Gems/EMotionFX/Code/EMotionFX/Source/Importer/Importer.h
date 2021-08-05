@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -112,17 +108,14 @@ namespace EMotionFX
             MCore::Array<uint32> mChunkIDsToIgnore;  /**< Add the ID's of the chunks you wish to ignore. */
         };
 
-
         /**
          * The motion set import options.
          * This can be used in combination with the LoadMotionSet method.
          */
         struct EMFX_API MotionSetSettings
         {
-            bool mForceLoading = false;         /**< Set to true in case you want to load the motion set even if a motion set with the given filename is already inside the motion manager. */
             bool m_isOwnedByRuntime = false;
         };
-
 
         /**
          * The node map import options.
@@ -134,29 +127,14 @@ namespace EMotionFX
             bool mLoadNodes = true;             /**< Add nodes to the map? (default=true) */
         };
 
-
-        /**
-         * The anim graph import settings.
-         */
-        struct EMFX_API AnimGraphSettings
-        {
-            bool mForceLoading = false;              /**< Set to true in case you want to load the anim graph even if an anim graph with the given filename is already inside the anim graph manager. */
-            bool mDisableNodeVisualization = true;  /**< Force disabling of node visualization code execution inside the anim graph nodes? */
-        };
-
-
         struct EMFX_API ImportParameters
         {
             Actor*                              mActor = nullptr;
             Motion*                             mMotion = nullptr;
-            MotionSet*                          mMotionSet = nullptr;
             Importer::ActorSettings*            mActorSettings = nullptr;
             Importer::MotionSettings*           mMotionSettings = nullptr;
             MCore::Array<SharedData*>*          mSharedData = nullptr;
             MCore::Endian::EEndianType          mEndianType = MCore::Endian::ENDIAN_LITTLE;
-
-            AnimGraph*                          mAnimGraph = nullptr;
-            Importer::AnimGraphSettings*        mAnimGraphSettings = nullptr;
 
             NodeMap*                            mNodeMap = nullptr;
             Importer::NodeMapSettings*          mNodeMapSettings = nullptr;
@@ -255,41 +233,22 @@ namespace EMotionFX
         //-------------------------------------------------------------------------------------------------
 
         /**
-         * Load a anim graph file from a given file object.
-         * @param f The file object.
-         * @param settings The importer settings, or nullptr to use default settings.
-         * @result The anim graph object, or nullptr when failed.
-         */
-        AnimGraph* LoadAnimGraph(MCore::File* f, AnimGraphSettings* settings = nullptr);
-
-        /**
          * Load a anim graph file by filename.
          * @param filename The filename to load from.
-         * @param settings The anim graph importer settings, or nullptr to use default settings.
          * @param loadFilter The filter descriptor for loading anim graph from file
          * @result The anim graph object, or nullptr in case loading failed.
          */
-        AnimGraph* LoadAnimGraph(AZStd::string, AnimGraphSettings* settings = nullptr, const AZ::ObjectStream::FilterDescriptor& loadFilter = AZ::ObjectStream::FilterDescriptor(nullptr, AZ::ObjectStream::FILTERFLAG_IGNORE_UNKNOWN_CLASSES));
+        AnimGraph* LoadAnimGraph(AZStd::string, const AZ::ObjectStream::FilterDescriptor& loadFilter = AZ::ObjectStream::FilterDescriptor(nullptr, AZ::ObjectStream::FILTERFLAG_IGNORE_UNKNOWN_CLASSES));
 
         /**
          * Load a anim graph file from a memory location.
          * @param memoryStart The start address of the file in memory.
          * @param lengthInBytes The length of the file, in bytes.
-         * @param settings The settings to use during loading, or nullptr when you want to use default settings, which would load everything.
          * @result The anim graph object, or nullptr in case loading failed.
          */
-        AnimGraph* LoadAnimGraph(uint8* memoryStart, size_t lengthInBytes, AnimGraphSettings* settings = nullptr);
+        AnimGraph* LoadAnimGraph(uint8* memoryStart, size_t lengthInBytes);
 
         //-------------------------------------------------------------------------------------------------
-
-        /**
-         * Load a motion set from a given file.
-         * A file does not have to be stored on disk, but can also be in memory or in an archive or  on some network stream. Anything is possible.
-         * @param f The file to load the motion set from (after load, the file will be closed).
-         * @param settings The motion set importer settings, or nullptr to use default settings.
-         * @result The motion set object, or nullptr in case loading failed.
-         */
-        MotionSet* LoadMotionSet(MCore::File* f, MotionSetSettings* settings = nullptr);
 
         /**
          * Loads a motion set from a file on disk.
@@ -433,30 +392,6 @@ namespace EMotionFX
          * @result Returns true when the file is a valid actor file that can be processed by the importer. Otherwise false is returned.
          */
         bool CheckIfIsValidMotionFile(MCore::File* f, MCore::Endian::EEndianType* outEndianType) const;
-
-        /**
-         * Verify if the given file is a valid motion set file that can be processed by the importer.
-         * Please note that the specified must already been opened and must also be pointing to the location where the
-         * XPM file header will be stored (the start of the file). The file will not be closed after this method!
-         * The endian type of the file will be written inside the outEndianType parameter.
-         * Also note that the file position (read position / cursor) will point after the header after this function has been executed.
-         * @param f The file to perform the check on.
-         * @param outEndianType The value that will contain the endian type used by the file.
-         * @result Returns true when the file is a valid actor file that can be processed by the importer. Otherwise false is returned.
-         */
-        bool CheckIfIsValidMotionSetFile(MCore::File* f, MCore::Endian::EEndianType* outEndianType) const;
-
-        /**
-         * Verify if the given file is a valid anim graph file that can be processed by the importer.
-         * Please note that the specified must already been opened and must also be pointing to the location where the
-         * XPM file header will be stored (the start of the file). The file will not be closed after this method!
-         * The endian type of the file will be written inside the outEndianType parameter.
-         * Also note that the file position (read position / cursor) will point after the header after this function has been executed.
-         * @param f The file to perform the check on.
-         * @param outEndianType The value that will contain the endian type used by the file.
-         * @result Returns true when the file is a valid actor file that can be processed by the importer. Otherwise false is returned.
-         */
-        bool CheckIfIsValidAnimGraphFile(MCore::File* f, MCore::Endian::EEndianType* outEndianType) const;
 
         /**
          * Verify if the given file is a valid node map file that can be processed by the importer.

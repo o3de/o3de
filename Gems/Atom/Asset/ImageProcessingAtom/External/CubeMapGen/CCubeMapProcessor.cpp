@@ -1,10 +1,8 @@
 //=============================================================================
 // (C) 2005 ATI Research, Inc., All rights reserved.
 //=============================================================================
-// modifications by Crytek GmbH 
-// modifications by Amazon
+// Modified from original
 
-#include <ImageProcessing_precompiled.h>
 #include "CCubeMapProcessor.h"
 
 #include <AzCore/std/bind/bind.h>
@@ -1106,7 +1104,7 @@ namespace ImageProcessingAtom
                    //fractional amount to apply change in tap intensity along edge to taps 
                    //  in a perpendicular direction to edge 
                    CP_ITYPE fixupFrac = (CP_ITYPE)(fixupDist - iFixup) / (CP_ITYPE)(fixupDist); 
-                   CP_ITYPE fixupWeight;
+                   CP_ITYPE fixupWeight = 0.0f;
 
                    switch(a_FixupType )
                    {

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 
 #include <AzToolsFramework/Prefab/PrefabLoader.h>
@@ -18,7 +14,9 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
+#include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/FileFunc/FileFunc.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
@@ -72,7 +70,7 @@ namespace AzToolsFramework
                 return InvalidTemplateId;
             }
 
-            auto readResult = AZ::Utils::ReadFile(GetFullPath(filePath).Native(), MaxPrefabFileSize);
+            auto readResult = AZ::Utils::ReadFile(GetFullPath(filePath).Native(), AZStd::numeric_limits<size_t>::max());
             if (!readResult.IsSuccess())
             {
                 AZ_Error(
@@ -112,7 +110,7 @@ namespace AzToolsFramework
                 return InvalidTemplateId;
             }
 
-            AZ::IO::Path relativePath = GetRelativePathToProject(originPath);
+            AZ::IO::Path relativePath = GenerateRelativePath(originPath);
 
             // Cyclical dependency detected if the prefab file is already part of the progressed
             // file path set.
@@ -149,6 +147,10 @@ namespace AzToolsFramework
                 return InvalidTemplateId;
             }
 
+            // Add or replace the Source parameter in the dom
+            PrefabDomPath sourcePath = PrefabDomPath((AZStd::string("/") + PrefabDomUtils::SourceName).c_str());
+            sourcePath.Set(readPrefabFileResult.GetValue(), relativePath.Native().c_str());
+
             // Create new Template with the Prefab DOM.
             TemplateId newTemplateId = m_prefabSystemComponentInterface->AddTemplate(relativePath, readPrefabFileResult.TakeValue());
             if (newTemplateId == InvalidTemplateId)
@@ -171,7 +173,7 @@ namespace AzToolsFramework
             progressedFilePathsSet.emplace(relativePath);
 
             // Get 'Instances' value from Template.
-            bool isLoadedWithErrors = false;
+            bool isLoadSuccessful = true;
             PrefabDomValueReference instancesReference = newTemplate.GetInstancesValue();
             if (instancesReference.has_value())
             {
@@ -184,7 +186,7 @@ namespace AzToolsFramework
                 {
                     if (!LoadNestedInstance(instanceIterator, newTemplateId, progressedFilePathsSet))
                     {
-                        isLoadedWithErrors = true;
+                        isLoadSuccessful = false;
                         AZ_Error(
                             "Prefab", false,
                             "PrefabLoader::LoadTemplate - "
@@ -195,7 +197,10 @@ namespace AzToolsFramework
                     }
                 }
             }
-            newTemplate.MarkAsLoadedWithErrors(isLoadedWithErrors);
+
+            isLoadSuccessful &= SanitizeLoadedTemplate(newTemplate.GetPrefabDom());
+
+            newTemplate.MarkAsLoadedWithErrors(!isLoadSuccessful);
 
             // Un-mark the file as being in progress.
             progressedFilePathsSet.erase(originPath);
@@ -276,6 +281,63 @@ namespace AzToolsFramework
             return !nestedTemplateReference->get().IsLoadedWithErrors();
         }
 
+        bool PrefabLoader::SanitizeLoadedTemplate(PrefabDomReference loadedTemplateDom)
+        {
+            // Prefabs are stored to disk with default values stripped. However, while in memory, we need those default values to be
+            // present to make patches work consistently. To accomplish this, we'll instantiate the Dom, then serialize the instance
+            // back into a Dom with all of the default values preserved.
+            // Note that this is the default behavior in Prefab serialization, so we don't need to specify StoreInstanceFlags.
+
+            if (!loadedTemplateDom)
+            {
+                return false;
+            }
+
+            Instance loadedPrefabInstance;
+            if (!PrefabDomUtils::LoadInstanceFromPrefabDom(loadedPrefabInstance, loadedTemplateDom->get()))
+            {
+                return false;
+            }
+
+            PrefabDom storedPrefabDom(&loadedTemplateDom->get().GetAllocator());
+            if (!PrefabDomUtils::StoreInstanceInPrefabDom(loadedPrefabInstance, storedPrefabDom))
+            {
+                return false;
+            }
+
+            loadedTemplateDom->get().CopyFrom(storedPrefabDom, loadedTemplateDom->get().GetAllocator());
+            return true;
+        }
+
+        bool PrefabLoader::SanitizeSavingTemplate(PrefabDomReference savingTemplateDom)
+        {
+            // Prefabs are stored in memory with default values spelled out to make patches work consistently. However, when we store them
+            // to disk, we strip those default values to save on file size. To accomplish this, we'll instantiate the Dom, then serialize
+            // the instance back into a Dom with all of the default values stripped.
+
+            if (!savingTemplateDom)
+            {
+                return false;
+            }
+
+            Instance savingPrefabInstance;
+            if (!PrefabDomUtils::LoadInstanceFromPrefabDom(savingPrefabInstance, savingTemplateDom->get()))
+            {
+                return false;
+            }
+
+            PrefabDom storedPrefabDom(&savingTemplateDom->get().GetAllocator());
+            if (!PrefabDomUtils::StoreInstanceInPrefabDom(savingPrefabInstance, storedPrefabDom,
+                PrefabDomUtils::StoreInstanceFlags::StripDefaultValues))
+            {
+                return false;
+            }
+
+            savingTemplateDom->get().CopyFrom(storedPrefabDom, savingTemplateDom->get().GetAllocator());
+
+            return true;
+        }
+
         bool PrefabLoader::SaveTemplate(TemplateId templateId)
         {
             const auto& domAndFilepath = StoreTemplateIntoFileFormat(templateId);
@@ -295,6 +357,45 @@ namespace AzToolsFramework
                     domAndFilepath->second.c_str(),
                     outcome.GetError().c_str()
                 );
+                return false;
+            }
+            m_prefabSystemComponentInterface->SetTemplateDirtyFlag(templateId, false);
+            return true;
+        }
+
+        bool PrefabLoader::SaveTemplateToFile(TemplateId templateId, AZ::IO::PathView absolutePath)
+        {
+            AZ_Assert(absolutePath.IsAbsolute(), "SaveTemplateToFile requires an absolute path for saving the initial prefab file.");
+
+            const auto& domAndFilepath = StoreTemplateIntoFileFormat(templateId);
+            if (!domAndFilepath)
+            {
+                return false;
+            }
+
+            // Verify that the absolute path provided to this matches the relative path saved in the template.
+            // Otherwise, the saved prefab won't be able to be loaded.
+            auto relativePath = GenerateRelativePath(absolutePath);
+            if (relativePath != domAndFilepath->second)
+            {
+                AZ_Error(
+                    "Prefab", false,
+                    "PrefabLoader::SaveTemplateToFile - "
+                    "Failed to save template '%s' to location '%.*s'."
+                    "Error: Relative path '%.*s' for location didn't match template name.",
+                    domAndFilepath->second.c_str(), AZ_STRING_ARG(absolutePath.Native()), AZ_STRING_ARG(relativePath.Native()));
+                return false;
+            }
+
+            auto outcome = AzFramework::FileFunc::WriteJsonFile(domAndFilepath->first, absolutePath);
+            if (!outcome.IsSuccess())
+            {
+                AZ_Error(
+                    "Prefab", false,
+                    "PrefabLoader::SaveTemplateToFile - "
+                    "Failed to save template '%s' to location '%.*s'."
+                    "Error: %s",
+                    domAndFilepath->second.c_str(), AZ_STRING_ARG(absolutePath.Native()), outcome.GetError().c_str());
                 return false;
             }
             m_prefabSystemComponentInterface->SetTemplateDirtyFlag(templateId, false);
@@ -355,7 +456,7 @@ namespace AzToolsFramework
 
             // Make a copy of a our prefab DOM where nested instances become file references with patch data
             PrefabDom templateDomToSave;
-            if (!templateToSave.CopyTemplateIntoPrefabFileFormat(templateDomToSave))
+            if (!CopyTemplateIntoPrefabFileFormat(templateToSave, templateDomToSave))
             {
                 AZ_Error(
                     "Prefab", false,
@@ -368,6 +469,80 @@ namespace AzToolsFramework
             }
 
             return { { AZStd::move(templateDomToSave), templateToSave.GetFilePath() } };
+        }
+
+        bool PrefabLoader::CopyTemplateIntoPrefabFileFormat(TemplateReference templateRef, PrefabDom& output)
+        {
+            AZ_Assert(
+                templateRef.has_value(),
+                "CopyTemplateIntoPrefabFileFormat called on empty template reference."
+            );
+
+            PrefabDom& prefabDom = templateRef->get().GetPrefabDom();
+
+            // Start by making a copy of our dom
+            output.CopyFrom(prefabDom, prefabDom.GetAllocator());
+
+            SanitizeSavingTemplate(output);
+
+            for (const LinkId& linkId : templateRef->get().GetLinks())
+            {
+                AZStd::optional<AZStd::reference_wrapper<Link>> findLinkResult = m_prefabSystemComponentInterface->FindLink(linkId);
+
+                if (!findLinkResult.has_value())
+                {
+                    AZ_Error(
+                        "Prefab", false,
+                        "Link with id %llu could not be found while attempting to store "
+                        "Prefab Template with source path %s in Prefab File format. "
+                        "Unable to proceed.",
+                        linkId, templateRef->get().GetFilePath().c_str());
+
+                    return false;
+                }
+
+                if (!findLinkResult->get().IsValid())
+                {
+                    AZ_Error(
+                        "Prefab", false,
+                        "Link with id %llu and is invalid during attempt to store "
+                        "Prefab Template with source path %s in Prefab File format. "
+                        "Unable to Proceed.",
+                        linkId, templateRef->get().GetFilePath().c_str());
+
+                    return false;
+                }
+
+                Link& link = findLinkResult->get();
+
+                PrefabDomPath instancePath = link.GetInstancePath();
+                PrefabDom& linkDom = link.GetLinkDom();
+
+                // Get the instance value of the Template copy
+                // This currently stores a fully realized nested Template Dom
+                PrefabDomValue* instanceValue = instancePath.Get(output);
+
+                if (!instanceValue)
+                {
+                    AZ_Error(
+                        "Prefab", false,
+                        "Template::CopyTemplateIntoPrefabFileFormat: Unable to recover nested instance Dom value from link with id %llu "
+                        "while attempting to store a collapsed version of a Prefab Template with source path %s. Unable to proceed.",
+                        linkId, templateRef->get().GetFilePath().c_str());
+
+                    return false;
+                }
+
+                // Copy the contents of the Link to overwrite our Template Dom copies Instance
+                // The instance is now "collapsed" as it contains the file reference and patches from the link
+                instanceValue->CopyFrom(linkDom, prefabDom.GetAllocator());
+            }
+
+            // Remove Source parameter from the dom. It will be added on file load, and should not be stored to disk.
+            PrefabDomPath sourcePath = PrefabDomPath((AZStd::string("/") + PrefabDomUtils::SourceName).c_str());
+            sourcePath.Erase(output);
+
+            return true;
         }
 
         bool PrefabLoader::IsValidPrefabPath(AZ::IO::PathView path)
@@ -385,21 +560,100 @@ namespace AzToolsFramework
             AZ::IO::Path pathWithOSSeparator = AZ::IO::Path(path).MakePreferred();
             if (pathWithOSSeparator.IsAbsolute())
             {
+                // If an absolute path was passed in, just return it as-is.
                 return path;
             }
 
-            return AZ::IO::Path(m_projectPathWithOsSeparator).Append(pathWithOSSeparator);
+            // A relative path was passed in, so try to turn it back into an absolute path.
+
+            AZ::IO::Path fullPath;
+
+            bool pathFound = false;
+            AZ::Data::AssetInfo assetInfo;
+            AZStd::string rootFolder;
+            AZStd::string inputPath(path.Native());
+
+            // Given an input path that's expected to exist, try to look it up.
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                pathFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath,
+                inputPath.c_str(), assetInfo, rootFolder);
+
+            if (pathFound)
+            {
+                // The asset system provided us with a valid root folder and relative path, so return it.
+                fullPath = AZ::IO::Path(rootFolder) / assetInfo.m_relativePath;
+            }
+            else
+            {
+                // If for some reason the Asset system couldn't provide a relative path, provide some fallback logic.
+
+                // Check to see if the AssetProcessor is ready.  If it *is* and we didn't get a path, print an error then follow
+                // the fallback logic.  If it's *not* ready, we're probably either extremely early in a tool startup flow or inside
+                // a unit test, so just execute the fallback logic without an error.
+                [[maybe_unused]] bool assetProcessorReady = false;
+                AzFramework::AssetSystemRequestBus::BroadcastResult(
+                    assetProcessorReady, &AzFramework::AssetSystemRequestBus::Events::AssetProcessorIsReady);
+
+                AZ_Error(
+                    "Prefab", !assetProcessorReady, "Full source path for '%.*s' could not be determined. Using fallback logic.",
+                    AZ_STRING_ARG(path.Native()));
+
+                // If a relative path was passed in, make it relative to the project root.
+                fullPath = AZ::IO::Path(m_projectPathWithOsSeparator).Append(pathWithOSSeparator);
+            }
+
+            return fullPath;
         }
 
-        AZ::IO::Path PrefabLoader::GetRelativePathToProject(AZ::IO::PathView path)
+        AZ::IO::Path PrefabLoader::GenerateRelativePath(AZ::IO::PathView path)
         {
-            AZ::IO::Path pathWithOSSeparator = AZ::IO::Path(path.Native()).MakePreferred();
-            if (!pathWithOSSeparator.IsAbsolute())
+            bool pathFound = false;
+
+            AZStd::string relativePath;
+            AZStd::string rootFolder;
+            AZ::IO::Path finalPath;
+
+            // The asset system allows for paths to be relative to multiple root folders, using a priority system.
+            // This request will make the input path relative to the most appropriate, highest-priority root folder.
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                pathFound, &AzToolsFramework::AssetSystemRequestBus::Events::GenerateRelativeSourcePath, path.Native(),
+                relativePath, rootFolder);
+
+            if (pathFound && !relativePath.empty())
             {
-                return path;
+                // A relative path was generated successfully, so return it.
+                finalPath = relativePath;
+            }
+            else
+            {
+                // If for some reason the Asset system couldn't provide a relative path, provide some fallback logic.
+
+                // Check to see if the AssetProcessor is ready.  If it *is* and we didn't get a path, print an error then follow
+                // the fallback logic.  If it's *not* ready, we're probably either extremely early in a tool startup flow or inside
+                // a unit test, so just execute the fallback logic without an error.
+                [[maybe_unused]] bool assetProcessorReady = false;
+                AzFramework::AssetSystemRequestBus::BroadcastResult(
+                    assetProcessorReady, &AzFramework::AssetSystemRequestBus::Events::AssetProcessorIsReady);
+
+                AZ_Error("Prefab", !assetProcessorReady,
+                    "Relative source path for '%.*s' could not be determined. Using project path as relative root.",
+                    AZ_STRING_ARG(path.Native()));
+
+                AZ::IO::Path pathWithOSSeparator = AZ::IO::Path(path.Native()).MakePreferred();
+
+                if (pathWithOSSeparator.IsAbsolute())
+                {
+                    // If an absolute path was passed in, make it relative to the project path.
+                    finalPath = AZ::IO::Path(path.Native(), '/').MakePreferred().LexicallyRelative(m_projectPathWithSlashSeparator);
+                }
+                else
+                {
+                    // If a relative path was passed in, just return it.
+                    finalPath = path;
+                }
             }
 
-            return AZ::IO::Path(path.Native(), '/').MakePreferred().LexicallyRelative(m_projectPathWithSlashSeparator);
+            return finalPath;
         }
 
         AZ::IO::Path PrefabLoaderInterface::GeneratePath()

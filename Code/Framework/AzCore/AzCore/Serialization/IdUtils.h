@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <AzCore/Math/Uuid.h>
@@ -28,7 +24,13 @@ namespace AZ
 {
     namespace IdUtils
     {
-        template<typename IdType>
+        /**
+        * \param AllowDuplicates - If true allows the same id to be registered multiple times,
+            with the newer value overwriting the stored value. If false, duplicates are not allowed and
+            the first stored value is kept.The default is false.
+        */
+            
+        template<typename IdType, bool AllowDuplicates = false>
         struct Remapper
         {
             /**
@@ -138,14 +140,18 @@ namespace AZ
             * \param context - The serialize context for enumerating the @classPtr elements
             */
             template<typename T, typename MapType>
-            static void GenerateNewIdsAndFixRefs(T* object, MapType& newIdMap, AZ::SerializeContext* context = nullptr)
+            static void GenerateNewIdsAndFixRefs(
+                T* object, MapType& newIdMap, AZ::SerializeContext* context = nullptr)
             {
                 if (!context)
                 {
                     AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationRequests::GetSerializeContext);
                     if (!context)
                     {
-                        AZ_Error("Serialization", false, "No serialize context provided! Failed to get component application default serialize context! ComponentApp is not started or input serialize context should not be null!");
+                        AZ_Error(
+                            "Serialization", false,
+                            "No serialize context provided! Failed to get component application default serialize context! ComponentApp is "
+                            "not started or input serialize context should not be null!");
                         return;
                     }
                 }
@@ -156,8 +162,16 @@ namespace AZ
                     {
                         if (idGenerator)
                         {
-                            auto it = newIdMap.emplace(originalId, idGenerator());
-                            return it.first->second;
+                            if constexpr(AllowDuplicates)
+                            {
+                                auto it = newIdMap.insert_or_assign(originalId, idGenerator());
+                                return it.first->second;
+                            }
+                            else
+                            {
+                                auto it = newIdMap.emplace(originalId, idGenerator());
+                                return it.first->second;
+                            }
                         }
                         return originalId;
                     }

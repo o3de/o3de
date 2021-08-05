@@ -1,12 +1,8 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 """
@@ -65,24 +61,7 @@ class TestEditMenuOptions(EditorTestHelper):
             ("Modify", "Transform Mode", "Rotate"),
             ("Modify", "Transform Mode", "Scale"),
             ("Editor Settings", "Global Preferences"),
-            ("Editor Settings", "Graphics Settings"),
             ("Editor Settings", "Editor Settings Manager"),
-            ("Editor Settings", "Graphics Performance", "PC", "Very High"),
-            ("Editor Settings", "Graphics Performance", "PC", "High"),
-            ("Editor Settings", "Graphics Performance", "PC", "Medium"),
-            ("Editor Settings", "Graphics Performance", "PC", "Low"),
-            ("Editor Settings", "Graphics Performance", "OSX Metal", "Very High"),
-            ("Editor Settings", "Graphics Performance", "OSX Metal", "High"),
-            ("Editor Settings", "Graphics Performance", "OSX Metal", "Medium"),
-            ("Editor Settings", "Graphics Performance", "OSX Metal", "Low"),
-            ("Editor Settings", "Graphics Performance", "Android", "Very High"),
-            ("Editor Settings", "Graphics Performance", "Android", "High"),
-            ("Editor Settings", "Graphics Performance", "Android", "Medium"),
-            ("Editor Settings", "Graphics Performance", "Android", "Low"),
-            ("Editor Settings", "Graphics Performance", "iOS", "Very High"),
-            ("Editor Settings", "Graphics Performance", "iOS", "High"),
-            ("Editor Settings", "Graphics Performance", "iOS", "Medium"),
-            ("Editor Settings", "Graphics Performance", "iOS", "Low"),
             ("Editor Settings", "Keyboard Customization", "Customize Keyboard"),
             ("Editor Settings", "Keyboard Customization", "Export Keyboard Settings"),
             ("Editor Settings", "Keyboard Customization", "Import Keyboard Settings"),

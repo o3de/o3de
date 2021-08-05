@@ -14,11 +14,12 @@
 
         <Package InstallerVersion="301" Compressed="yes" InstallPrivileges="elevated" InstallScope="perMachine"/>
 
-        <!-- auto distribute the installable files across N cab files -->
-        <MediaTemplate EmbedCab="$(var.CPACK_EMBED_ARTIFACTS)"/>
+        <!-- auto distribute the install-able files across N cab files that are at most 350 MB in size -->
+        <MediaTemplate EmbedCab="$(var.CPACK_EMBED_ARTIFACTS)"
+            MaximumUncompressedMediaSize="350"
+            CompressionLevel="high"/>
 
-        <MajorUpgrade
-            Schedule="afterInstallInitialize"
+        <MajorUpgrade Schedule="afterInstallInitialize"
             AllowSameVersionUpgrades="yes"
             DowngradeErrorMessage="A later version of [ProductName] is already installed. Setup will now exit."/>
 
@@ -41,7 +42,23 @@
         <FeatureRef Id="ProductFeature">
             <ComponentRef Id="DesktopShortcuts"/>
             <ComponentRef Id="StartMenuShortcuts"/>
+
+            <!-- for removing cmake and python on uninstall -->
+            <ComponentRef Id="SanitizeInstallFolder"/>
         </FeatureRef>
+
+        <InstallExecuteSequence>
+            <!-- limit the actions to first time install and repairs -->
+            <Custom Action="ExtractCMake" Before="InstallFinalize">
+                NOT Installed Or REINSTALL
+            </Custom>
+            <Custom Action="MoveCMake" After="ExtractCMake">
+                NOT Installed Or REINSTALL
+            </Custom>
+            <Custom Action="ConfigurePython" After="MoveCMake">
+                NOT Installed Or REINSTALL
+            </Custom>
+        </InstallExecuteSequence>
 
         <UIRef Id="$(var.CPACK_WIX_UI_REF)" />
 

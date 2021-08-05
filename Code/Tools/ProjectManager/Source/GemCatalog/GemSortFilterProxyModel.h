@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -29,7 +25,16 @@ namespace O3DE::ProjectManager
         Q_OBJECT // AUTOMOC
 
     public:
+        enum GemStatus
+        {
+            NoFilter = -1,
+            Unselected,
+            Selected
+        };
+
         GemSortFilterProxyModel(GemModel* sourceModel, QObject* parent = nullptr);
+
+        static QString GetGemStatusString(GemStatus status);
 
         bool filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const override;
 
@@ -37,6 +42,9 @@ namespace O3DE::ProjectManager
         AzQtComponents::SelectionProxyModel* GetSelectionModel() const { return m_selectionProxyModel; }
 
         void SetSearchString(const QString& searchString) { m_searchString = searchString; InvalidateFilter(); }
+
+        GemStatus GetGemStatus() const { return m_gemStatusFilter; }
+        void SetGemStatus(GemStatus gemStatus) { m_gemStatusFilter = gemStatus; InvalidateFilter(); }
 
         GemInfo::GemOrigins GetGemOrigins() const { return m_gemOriginFilter; }
         void SetGemOrigins(const GemInfo::GemOrigins& gemOrigins) { m_gemOriginFilter = gemOrigins; InvalidateFilter(); }
@@ -51,6 +59,7 @@ namespace O3DE::ProjectManager
         void SetFeatures(const QSet<QString>& features) { m_featureFilter = features; InvalidateFilter(); }
 
         void InvalidateFilter();
+        void ResetFilters();
 
     signals:
         void OnInvalidated();
@@ -60,6 +69,7 @@ namespace O3DE::ProjectManager
         AzQtComponents::SelectionProxyModel* m_selectionProxyModel = nullptr;
 
         QString m_searchString;
+        GemStatus m_gemStatusFilter = GemStatus::NoFilter;
         GemInfo::GemOrigins m_gemOriginFilter = {};
         GemInfo::Platforms m_platformFilter = {};
         GemInfo::Types m_typeFilter = {};

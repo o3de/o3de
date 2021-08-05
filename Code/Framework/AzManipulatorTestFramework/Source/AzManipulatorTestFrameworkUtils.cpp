@@ -1,19 +1,14 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <AzCore/Component/TransformBus.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzManipulatorTestFramework/AzManipulatorTestFrameworkUtils.h>
-#include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
 
@@ -28,22 +23,23 @@ namespace AzManipulatorTestFramework
     using MouseEvent = AzToolsFramework::ViewportInteraction::MouseEvent;
     using MousePick = AzToolsFramework::ViewportInteraction::MousePick;
 
-    AZStd::shared_ptr<AzToolsFramework::LinearManipulator> CreateLinearManipulator(
+    // create a default sphere view for a manipulator for simple intersection
+    template<typename Manipulator>
+    void SetupManipulatorView(
+        AZStd::shared_ptr<Manipulator> manipulator,
         const AzToolsFramework::ManipulatorManagerId manipulatorManagerId,
         const AZ::Vector3& position,
         const float radius)
     {
-        auto manipulator = AzToolsFramework::LinearManipulator::MakeShared(AZ::Transform::CreateIdentity());
-        manipulator->SetLocalPosition(position);
-
         // unit sphere view
         auto sphereView = AzToolsFramework::CreateManipulatorViewSphere(
             AZ::Colors::Red, radius,
-            [](const MouseInteraction& /*mouseInteraction*/, const bool /*mouseOver*/,
-                const AZ::Color& defaultColor)
-        {
-            return defaultColor;
-        }, true);
+            []([[maybe_unused]] const MouseInteraction& mouseInteraction, [[maybe_unused]] const bool mouseOver,
+               const AZ::Color& defaultColor)
+            {
+                return defaultColor;
+            },
+            true);
 
         // unit sphere bound
         AzToolsFramework::Picking::BoundShapeSphere sphereBound;
@@ -62,6 +58,26 @@ namespace AzManipulatorTestFramework
         // this would occur internally when the manipulator is drawn but we must do manually here to ensure that the
         // bounds will always be valid upon instantiation
         view->RefreshBound(manipulatorManagerId, manipulator->GetManipulatorId(), sphereBound);
+    }
+
+    AZStd::shared_ptr<AzToolsFramework::LinearManipulator> CreateLinearManipulator(
+        const AzToolsFramework::ManipulatorManagerId manipulatorManagerId, const AZ::Vector3& position, const float radius)
+    {
+        auto manipulator = AzToolsFramework::LinearManipulator::MakeShared(AZ::Transform::CreateIdentity());
+        manipulator->SetLocalPosition(position);
+
+        SetupManipulatorView(manipulator, manipulatorManagerId, position, radius);
+
+        return manipulator;
+    }
+
+    AZStd::shared_ptr<AzToolsFramework::PlanarManipulator> CreatePlanarManipulator(
+        const AzToolsFramework::ManipulatorManagerId manipulatorManagerId, const AZ::Vector3& position, const float radius)
+    {
+        auto manipulator = AzToolsFramework::PlanarManipulator::MakeShared(AZ::Transform::CreateIdentity());
+        manipulator->SetLocalPosition(position);
+
+        SetupManipulatorView(manipulator, manipulatorManagerId, position, radius);
 
         return manipulator;
     }
@@ -104,8 +120,7 @@ namespace AzManipulatorTestFramework
         return buttons;
     }
 
-    MouseInteractionEvent CreateMouseInteractionEvent(
-        const MouseInteraction& mouseInteraction, MouseEvent event)
+    MouseInteractionEvent CreateMouseInteractionEvent(const MouseInteraction& mouseInteraction, MouseEvent event)
     {
         return MouseInteractionEvent(mouseInteraction, event);
     }
@@ -114,8 +129,7 @@ namespace AzManipulatorTestFramework
     {
         AzToolsFramework::EditorInteractionSystemViewportSelectionRequestBus::Event(
             AzToolsFramework::GetEntityContextId(),
-            &AzToolsFramework::ViewportInteraction::InternalMouseViewportRequests::InternalHandleAllMouseInteractions,
-            event);
+            &AzToolsFramework::ViewportInteraction::InternalMouseViewportRequests::InternalHandleAllMouseInteractions, event);
     }
 
     AzFramework::CameraState SetCameraStatePosition(const AZ::Vector3& position, AzFramework::CameraState& cameraState)
@@ -133,9 +147,7 @@ namespace AzManipulatorTestFramework
 
     AzFramework::ScreenPoint GetCameraStateViewportCenter(const AzFramework::CameraState& cameraState)
     {
-        return {
-            aznumeric_cast<int>(cameraState.m_viewportSize.GetX() / 2.f),
-            aznumeric_cast<int>(cameraState.m_viewportSize.GetY() / 2.f)
-        };
+        return { aznumeric_cast<int>(cameraState.m_viewportSize.GetX() / 2.f),
+                 aznumeric_cast<int>(cameraState.m_viewportSize.GetY() / 2.f) };
     }
-} // namespace UnitTest
+} // namespace AzManipulatorTestFramework

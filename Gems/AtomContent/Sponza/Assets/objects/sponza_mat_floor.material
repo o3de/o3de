@@ -43,7 +43,8 @@
             "algorithm": "POM",
             "factor": 0.012000000104308129,
             "pdo": true,
-            "textureMap": "Textures/floor_1k_height.png"
+            "textureMap": "Textures/floor_1k_height.png",
+            "useTexture": false
         },
         "roughness": {
             "textureMap": "Textures/floor_1k_roughness.png"

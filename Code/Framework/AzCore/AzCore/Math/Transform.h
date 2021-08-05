@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -17,27 +13,9 @@
 #include <AzCore/Math/Vector4.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/MathUtils.h>
-#include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ
 {
-    class TransformSerializer
-        : public SerializeContext::IDataSerializer
-    {
-    public:
-        // number of floats in the serialized representation, 4 for rotation, 3 for scale and 3 for translation
-        static constexpr int NumFloats = 10;
-
-        // number of floats in the old format, which stored a 3x4 matrix
-        static constexpr int NumFloatsVersion0 = 12;
-
-        size_t Save(const void* classPtr, IO::GenericStream& stream, bool isDataBigEndian) override;
-        size_t DataToText(IO::GenericStream& in, IO::GenericStream& out, bool isDataBigEndian) override;
-        size_t TextToData(const char* text, unsigned int textVersion, IO::GenericStream& stream, bool isDataBigEndian) override;
-        bool Load(void* classPtr, IO::GenericStream& stream, unsigned int version, bool isDataBigEndian) override;
-        bool CompareValueData(const void* lhs, const void* rhs) override;
-    };
-
     //! Limits for transform scale values.
     //! The scale should not be zero to avoid problems with inverting.
     //! @{
@@ -45,7 +23,7 @@ namespace AZ
     static constexpr float MaxTransformScale = 1e9f;
     //! @}
 
-    //! The basic transformation class, represented using a quaternion rotation, vector scale and vector translation.
+    //! The basic transformation class, represented using a quaternion rotation, float scale and vector translation.
     //! By design, cannot represent skew transformations.
     class Transform
     {
@@ -63,7 +41,7 @@ namespace AZ
         Transform() = default;
 
         //! Construct a transform from components.
-        Transform(const Vector3& translation, const Quaternion& rotation, const Vector3& scale);
+        Transform(const Vector3& translation, const Quaternion& rotation, float scale);
 
         //! Creates an identity transform.
         static Transform CreateIdentity();
@@ -82,15 +60,19 @@ namespace AZ
         static Transform CreateFromQuaternionAndTranslation(const class Quaternion& q, const Vector3& p);
 
         //! Constructs from a Matrix3x3, translation is set to zero.
+        //! Note that Transform only allows uniform scale, so if the matrix has different scale values along its axes,
+        //! the largest matrix scale value will be used to uniformly scale the Transform.
         static Transform CreateFromMatrix3x3(const class Matrix3x3& value);
 
-        //! Constructs from a Matrix3x3, translation is set to zero.
+        //! Constructs from a Matrix3x3 and translation Vector3.
+        //! Note that Transform only allows uniform scale, so if the matrix has different scale values along its axes,
+        //! the largest matrix scale value will be used to uniformly scale the Transform.
         static Transform CreateFromMatrix3x3AndTranslation(const class Matrix3x3& value, const Vector3& p);
 
+        //! Constructs from a Matrix3x4.
+        //! Note that Transform only allows uniform scale, so if the matrix has different scale values along its axes,
+        //! the largest matrix scale value will be used to uniformly scale the Transform.
         static Transform CreateFromMatrix3x4(const Matrix3x4& value);
-
-        //! Sets the transform to apply scale only, no rotation or translation.
-        static Transform CreateScale(const AZ::Vector3& scale);
 
         //! Sets the transform to apply (uniform) scale only, no rotation or translation.
         static Transform CreateUniformScale(const float scale);
@@ -122,18 +104,12 @@ namespace AZ
         const Quaternion& GetRotation() const;
         void SetRotation(const Quaternion& rotation);
 
-        Vector3 GetScale() const;
         float GetUniformScale() const;
-        void SetScale(const Vector3& v);
         void SetUniformScale(const float scale);
-
-        //! Sets the transform's scale to a unit value and returns the previous scale value.
-        Vector3 ExtractScale();
 
         //! Sets the transform's scale to a unit value and returns the previous scale value.
         float ExtractUniformScale();
 
-        void MultiplyByScale(const AZ::Vector3& scale);
         void MultiplyByUniformScale(float scale);
 
         Transform operator*(const Transform& rhs) const;
@@ -168,7 +144,7 @@ namespace AZ
     private:
 
         Quaternion m_rotation;
-        Vector3 m_scale;
+        float m_scale;
         Vector3 m_translation;
     };
 

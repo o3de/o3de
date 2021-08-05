@@ -175,7 +175,7 @@ void Handle{{ PropertyName }}(AzNetworking::IConnection* invokingConnection, {{ 
 //! {{ PropertyName }} Handler
 //! {{ Property.attrib['Description'] }}
 //! HandleOn {{ HandleOn }}
-virtual void Handle{{ PropertyName }}(AzNetworking::IConnection* invokingConnection, {{ ', '.join(paramDefines) }}) = 0;
+virtual void Handle{{ PropertyName }}([[maybe_unused]] AzNetworking::IConnection* invokingConnection, [[maybe_unused]] {{ ', [[maybe_unused]] '.join(paramDefines) }}) {}
 {% endif %}
 {% endmacro %}
 {#
@@ -323,10 +323,12 @@ namespace {{ Component.attrib['Namespace'] }}
 /// Place in your .cpp
 #include <{{ Component.attrib['OverrideInclude'] }}>
 
+#include <AzCore/Serialization/SerializeContext.h>
+
 namespace {{ Component.attrib['Namespace'] }}
 {
 {% if ComponentDerived %}
-    void {{ ComponentName }}::{{ ComponentName }}::Reflect(AZ::ReflectContext* context)
+    void {{ ComponentName }}::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
         if (serializeContext)

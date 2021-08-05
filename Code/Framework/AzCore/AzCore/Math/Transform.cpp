@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Quaternion.h>
@@ -17,9 +13,32 @@
 #include <AzCore/Math/Obb.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/MathScriptHelpers.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ
 {
+    namespace 
+    {
+        class TransformSerializer
+            : public SerializeContext::IDataSerializer
+        {
+        public:
+            // number of floats in the serialized representation, 4 for rotation, 1 for scale and 3 for translation
+            static constexpr int NumFloats = 8;
+
+            // number of floats in version 1, which used 4 for rotation, 3 for scale and 3 for translation
+            static constexpr int NumFloatsVersion1 = 10;
+
+            // number of floats in version 0, which stored a 3x4 matrix
+            static constexpr int NumFloatsVersion0 = 12;
+
+            size_t Save(const void* classPtr, IO::GenericStream& stream, bool isDataBigEndian) override;
+            size_t DataToText(IO::GenericStream& in, IO::GenericStream& out, bool isDataBigEndian) override;
+            size_t TextToData(const char* text, unsigned int textVersion, IO::GenericStream& stream, bool isDataBigEndian) override;
+            bool Load(void* classPtr, IO::GenericStream& stream, unsigned int version, bool isDataBigEndian) override;
+            bool CompareValueData(const void* lhs, const void* rhs) override;
+        };
+    }
     namespace Internal
     {
         void TransformDefaultConstructor(Transform* thisPtr)
@@ -130,8 +149,8 @@ namespace AZ
         const Transform* transform = reinterpret_cast<const Transform*>(classPtr);
         float data[NumFloats];
         transform->GetRotation().StoreToFloat4(data);
-        transform->GetScale().StoreToFloat3(&data[4]);
-        transform->GetTranslation().StoreToFloat3(&data[7]);
+        data[4] = transform->GetUniformScale();
+        transform->GetTranslation().StoreToFloat3(&data[5]);
 
         for (int i = 0; i < NumFloats; i++)
         {
@@ -159,8 +178,8 @@ namespace AZ
 
     size_t TransformSerializer::TextToData(const char* text, unsigned int textVersion, IO::GenericStream& stream, bool isDataBigEndian)
     {
-        const size_t dataBufferSize = AZStd::max(NumFloatsVersion0, NumFloats);
-        const size_t numElements = textVersion < 1 ? NumFloatsVersion0 : NumFloats;
+        const size_t dataBufferSize = AZStd::max(AZStd::max(NumFloatsVersion1, NumFloatsVersion0), NumFloats);
+        const size_t numElements = textVersion < 1 ? NumFloatsVersion0 : (textVersion == 1 ? NumFloatsVersion1 : NumFloats);
 
         size_t nextNumberIndex = 0;
         AZStd::array<float, dataBufferSize> data;
@@ -201,7 +220,34 @@ namespace AZ
             return true;
         }
 
-        // otherwise load as a separate rotation, scale and translation
+        // version 1 had a quaternion rotation, vector3 scale and vector3 translation
+        else if (version == 1)
+        {
+            float data[NumFloatsVersion1];
+            if (stream.GetLength() < sizeof(data))
+            {
+                return false;
+            }
+
+            stream.Read(sizeof(data), reinterpret_cast<void*>(data));
+
+            for (unsigned int i = 0; i < AZ_ARRAY_SIZE(data); ++i)
+            {
+                AZ_SERIALIZE_SWAP_ENDIAN(data[i], isDataBigEndian);
+            }
+
+            Quaternion rotation = Quaternion::CreateFromFloat4(data);
+            Vector3 vectorScale = Vector3::CreateFromFloat3(&data[4]);
+            Vector3 translation = Vector3::CreateFromFloat3(&data[7]);
+
+            float uniformScale = vectorScale.GetMaxElement();
+
+            *reinterpret_cast<Transform*>(classPtr) =
+                Transform::CreateFromQuaternionAndTranslation(rotation, translation) * Transform::CreateUniformScale(uniformScale);
+            return true;
+        }
+
+        // otherwise load as a quaternion rotation, float scale and vector3 translation
         float data[NumFloats];
         if (stream.GetLength() < sizeof(data))
         {
@@ -216,11 +262,11 @@ namespace AZ
         }
 
         Quaternion rotation = Quaternion::CreateFromFloat4(data);
-        Vector3 scale = Vector3::CreateFromFloat3(&data[4]);
-        Vector3 translation = Vector3::CreateFromFloat3(&data[7]);
+        float scale = data[4];
+        Vector3 translation = Vector3::CreateFromFloat3(&data[5]);
 
         *reinterpret_cast<Transform*>(classPtr) =
-            Transform::CreateFromQuaternionAndTranslation(rotation, translation) * Transform::CreateScale(scale);
+            Transform::CreateFromQuaternionAndTranslation(rotation, translation) * Transform::CreateUniformScale(scale);
         return true;
     }
 
@@ -237,7 +283,7 @@ namespace AZ
         if (serializeContext)
         {
             serializeContext->Class<Transform>()
-                ->Version(1)
+                ->Version(2)
                 ->Serializer<TransformSerializer>();
         }
 
@@ -250,7 +296,7 @@ namespace AZ
                 Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::All)->
                 Attribute(Script::Attributes::Storage, Script::Attributes::StorageType::Value)->
                 Attribute(Script::Attributes::GenericConstructorOverride, &Internal::TransformDefaultConstructor)->
-                Constructor<const Vector3&, const Quaternion&, const Vector3&>()->
+                Constructor<const Vector3&, const Quaternion&, float>()->
                 Method("GetBasis", &Transform::GetBasis)->
                 Method("GetBasisX", &Transform::GetBasisX)->
                 Method("GetBasisY", &Transform::GetBasisY)->
@@ -283,15 +329,10 @@ namespace AZ
                     Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::All)->
                 Method("GetRotation", &Transform::GetRotation)->
                 Method<void (Transform::*)(const Quaternion&)>("SetRotation", &Transform::SetRotation)->
-                Method("GetScale", &Transform::GetScale)->
                 Method("GetUniformScale", &Transform::GetUniformScale)->
-                Method("SetScale", &Transform::SetScale)->
                 Method("SetUniformScale", &Transform::SetUniformScale)->
-                Method("ExtractScale", &Transform::ExtractScale)->
-                    Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::All)->
                 Method("ExtractUniformScale", &Transform::ExtractUniformScale)->
                     Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::All)->
-                Method("MultiplyByScale", &Transform::MultiplyByScale)->
                 Method("MultiplyByUniformScale", &Transform::MultiplyByUniformScale)->
                 Method("GetInverse", &Transform::GetInverse)->
                 Method("Invert", &Transform::Invert)->
@@ -310,7 +351,6 @@ namespace AZ
                 Method("CreateFromQuaternionAndTranslation", &Transform::CreateFromQuaternionAndTranslation)->
                 Method("CreateFromMatrix3x3", &Transform::CreateFromMatrix3x3)->
                 Method("CreateFromMatrix3x3AndTranslation", &Transform::CreateFromMatrix3x3AndTranslation)->
-                Method("CreateScale", &Transform::CreateScale)->
                 Method("CreateUniformScale", &Transform::CreateUniformScale)->
                 Method("CreateTranslation", &Transform::CreateTranslation)->
                 Method("ConstructFromValuesNumeric", &Internal::ConstructTransformFromValues);
@@ -321,7 +361,7 @@ namespace AZ
     {
         Transform result;
         Matrix3x3 tmp = value;
-        result.m_scale = tmp.ExtractScale();
+        result.m_scale = tmp.ExtractScale().GetMaxElement();
         result.m_rotation = Quaternion::CreateFromMatrix3x3(tmp);
         result.m_translation = Vector3::CreateZero();
         return result;
@@ -331,7 +371,7 @@ namespace AZ
     {
         Transform result;
         Matrix3x3 tmp = value;
-        result.m_scale = tmp.ExtractScale();
+        result.m_scale = tmp.ExtractScale().GetMaxElement();
         result.m_rotation = Quaternion::CreateFromMatrix3x3(tmp);
         result.m_translation = p;
         return result;
@@ -341,7 +381,7 @@ namespace AZ
     {
         Transform result;
         Matrix3x4 tmp = value;
-        result.m_scale = tmp.ExtractScale();
+        result.m_scale = tmp.ExtractScale().GetMaxElement();
         result.m_rotation = Quaternion::CreateFromMatrix3x4(tmp);
         result.m_translation = value.GetTranslation();
         return result;

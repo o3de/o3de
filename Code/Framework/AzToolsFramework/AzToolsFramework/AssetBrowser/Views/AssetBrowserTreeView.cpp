@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <API/EditorAssetSystemAPI.h>
 
 #include <AzCore/Asset/AssetManagerBus.h>
@@ -53,6 +49,7 @@ namespace AzToolsFramework
             setSortingEnabled(true);
             setItemDelegate(m_delegate);
             header()->hide();
+
             setContextMenuPolicy(Qt::CustomContextMenu);
 
             setMouseTracking(true);
@@ -99,8 +96,9 @@ namespace AzToolsFramework
 
         AZStd::vector<AssetBrowserEntry*> AssetBrowserTreeView::GetSelectedAssets() const
         {
+            const QModelIndexList& selectedIndexes = selectionModel()->selectedRows();
             QModelIndexList sourceIndexes;
-            for (const auto& index : selectedIndexes())
+            for (const auto& index : selectedIndexes)
             {
                 sourceIndexes.push_back(m_assetBrowserSortFilterProxyModel->mapToSource(index));
             }
@@ -172,6 +170,7 @@ namespace AzToolsFramework
 
         void AssetBrowserTreeView::OnAssetBrowserComponentReady()
         {
+            hideColumn(aznumeric_cast<int>(AssetBrowserEntry::Column::Path));
             if (!m_name.isEmpty())
             {
                 auto crc = AZ::Crc32(m_name.toUtf8().data());
@@ -182,10 +181,11 @@ namespace AzToolsFramework
 
         void AssetBrowserTreeView::rowsAboutToBeRemoved(const QModelIndex& parent, int start, int end)
         {
-            // if selected entry is being removed, clear selection so not to select (and attempt to preview) other entries potentially marked for deletion
-            if (selectionModel() && selectionModel()->selectedIndexes().size() == 1)
+            // if selected entry is being removed, clear selection so not to select (and attempt to preview) other entries potentially
+            // marked for deletion
+            if (selectionModel() && selectedIndexes().size() == 1)
             {
-                QModelIndex selectedIndex = selectionModel()->selectedIndexes().first();
+                QModelIndex selectedIndex = selectedIndexes().first();
                 QModelIndex parentSelectedIndex = selectedIndex.parent();
                 if (parentSelectedIndex == parent && selectedIndex.row() >= start && selectedIndex.row() <= end)
                 {
@@ -193,6 +193,14 @@ namespace AzToolsFramework
                 }
             }
             QTreeView::rowsAboutToBeRemoved(parent, start, end);
+        }
+
+        // Item data for hidden columns normally isn't copied by Qt during drag-and-drop (see QTBUG-30242).
+        // However, for the AssetBrowser, the hidden columns should get copied. By overriding selectedIndexes() to
+        // include all selected indices, not just the visible ones, we can get the behavior we're looking for.
+        QModelIndexList AssetBrowserTreeView::selectedIndexes() const
+        {
+            return selectionModel()->selectedIndexes();
         }
 
         void AssetBrowserTreeView::SetThumbnailContext(const char* thumbnailContext) const
@@ -215,6 +223,21 @@ namespace AzToolsFramework
 
         void AssetBrowserTreeView::UpdateAfterFilter(bool hasFilter, bool selectFirstValidEntry)
         {
+            const QModelIndexList& selectedIndexes = selectionModel()->selectedRows();
+
+            // If we've cleared the filter but had something selected, ensure it stays selected and visible.
+            if (!hasFilter && !selectedIndexes.isEmpty())
+            {
+                QModelIndex curIndex = selectedIndexes[0];
+                m_expandToEntriesByDefault = true;
+                m_treeStateSaver->ApplySnapshot();
+
+                setCurrentIndex(curIndex);
+                scrollTo(curIndex);
+
+                return;
+            }
+
             // Flag our default expansion state so that we expand down to source entries after filtering
             m_expandToEntriesByDefault = hasFilter;
             // Then ask our state saver to apply its current snapshot again, falling back on asking us if entries should be expanded or not

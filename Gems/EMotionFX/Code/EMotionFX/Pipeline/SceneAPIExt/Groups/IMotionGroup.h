@@ -1,16 +1,12 @@
 #pragma once
 
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <SceneAPI/SceneCore/DataTypes/Groups/IGroup.h>
 #include <AzCore/RTTI/RTTI.h>
@@ -30,7 +26,7 @@ namespace EMotionFX
                 ~IMotionGroup() override = default;
 
                 // Ability to specify root bone can be useful if there are multiple skeletons 
-                // stored in an fbx file or if the user wants to override the root bone automatically
+                // stored in a scene file or if the user wants to override the root bone automatically
                 // selected by the code.
                 virtual const AZStd::string& GetSelectedRootBone() const = 0;
 

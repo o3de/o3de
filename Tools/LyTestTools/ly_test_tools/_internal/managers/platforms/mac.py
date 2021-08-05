@@ -1,12 +1,8 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 
 Inside this module are 2 classes used for Mac directory & workspace mappings:
 1. _MacResourceLocator(AbstractResourceLocator) derived class.
@@ -21,8 +17,8 @@ from ly_test_tools._internal.managers.abstract_resource_locator import AbstractR
 
 logger = logging.getLogger(__name__)
 
-CACHE_DIR = 'osx_gl'
-CONFIG_FILE = 'system_osx_osx_gl.cfg'
+CACHE_DIR = 'mac'
+CONFIG_FILE = 'system_osx_mac.cfg'
 
 
 class _MacResourceLocator(AbstractResourceLocator):
@@ -33,7 +29,7 @@ class _MacResourceLocator(AbstractResourceLocator):
     def platform_config_file(self):
         """
         Return the path to the platform config file.
-        ex. engine_root/dev/system_osx_osx_gl.cfg
+        ex. engine_root/dev/system_osx_mac.cfg
         :return: path to the platform config file
         """
         return os.path.join(self.engine_root(), CONFIG_FILE)

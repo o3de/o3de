@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -42,6 +38,8 @@ namespace EMotionFX
 }
 namespace AZ::RPI
 {
+    class AuxGeomDraw;
+    class AuxGeomFeatureProcessorInterface;
     class Model;
     class Buffer;
     class StreamingImage;
@@ -85,14 +83,14 @@ namespace AZ
                 EMotionFX::Integration::SkinningMethod skinningMethod);
             ~AtomActorInstance() override;
 
-            // AtomActorInstanceRequestBusTEMP::Handler interface implementation
             // RenderActorInstance overrides ...
             void OnTick(float timeDelta) override;
             void UpdateBounds() override;
-            void DebugDraw(const DebugOptions& debugOptions) override { AZ_UNUSED(debugOptions) };
+            void DebugDraw(const DebugOptions& debugOptions) override;
             void SetMaterials(const EMotionFX::Integration::ActorAsset::MaterialList& materialPerLOD) override { AZ_UNUSED(materialPerLOD); };
             void SetSkinningMethod(EMotionFX::Integration::SkinningMethod emfxSkinningMethod);
             SkinningMethod GetAtomSkinningMethod() const;
+            void SetIsVisible(bool isVisible) override;
 
             // BoundsRequestBus overrides ...
             AZ::Aabb GetWorldBounds() override;
@@ -122,6 +120,9 @@ namespace AZ
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // MaterialReceiverRequestBus::Handler overrides...
+            virtual MaterialAssignmentId FindMaterialAssignmentId(
+                const MaterialAssignmentLodIndex lod, const AZStd::string& label) const override;
+            RPI::ModelMaterialSlotMap GetModelMaterialSlots() const override;
             MaterialAssignmentMap GetMaterialAssignments() const override;
             AZStd::unordered_set<AZ::Name> GetModelUvNames() const override;
 
@@ -176,6 +177,13 @@ namespace AZ
             // and if there are blend shapes with wrinkle masks that should be applied to it
             void InitWrinkleMasks();
             void UpdateWrinkleMasks();
+
+            // Helper and debug geometry rendering
+            void RenderSkeleton(RPI::AuxGeomDraw* auxGeom);
+            void RenderEMFXDebugDraw(RPI::AuxGeomDraw* auxGeom);
+            RPI::AuxGeomFeatureProcessorInterface* m_auxGeomFeatureProcessor = nullptr;
+            AZStd::vector<AZ::Vector3> m_auxVertices;
+            AZStd::vector<AZ::Color> m_auxColors;
 
             AZStd::intrusive_ptr<AZ::Render::SkinnedMeshInputBuffers> m_skinnedMeshInputBuffers = nullptr;
             AZStd::intrusive_ptr<SkinnedMeshInstance> m_skinnedMeshInstance;

@@ -1,15 +1,11 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #pragma once
 
@@ -18,19 +14,24 @@
 
 #include <Cry_Vector2.h>
 #include <IXml.h>
+#include <CryCommon/IFont.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/smart_ptr/weak_ptr.h>
 #include <AzCore/std/parallel/shared_mutex.h>
+#include <AzCore/Asset/AssetCommon.h>
 #include <map>
 
 #include <AzFramework/Font/FontInterface.h>
 #include <AzFramework/Scene/SceneSystemInterface.h>
 
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawContext.h>
+#include <AtomBridge/PerViewportDynamicDrawInterface.h>
 
 namespace AZ
 {
     class FFont;
+
+    static constexpr char AtomFontDynamicDrawContextName[] = "AtomFont";
 
 
     //! AtomFont is the font system manager. 
@@ -40,6 +41,7 @@ namespace AZ
     class AtomFont
         : public ICryFont
         , public AzFramework::FontQueryInterface
+        , private Data::AssetBus::Handler
     {
         friend class FFont;
 
@@ -90,13 +92,6 @@ namespace AZ
         AzFramework::FontDrawInterface* GetFontDrawInterface(AzFramework::FontId fontId) const override;
         AzFramework::FontDrawInterface* GetDefaultFontDrawInterface() const override;
 
-        void SceneAboutToBeRemoved(AzFramework::Scene& scene);
-
-
-        // Atom DynamicDraw interface management
-        AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> GetOrCreateDynamicDrawForScene(AZ::RPI::Scene* scene);
-
-
     public:
         void UnregisterFont(const char* fontName);
 
@@ -107,8 +102,6 @@ namespace AZ
 
         using FontFamilyMap = AZStd::unordered_map<AZStd::string, AZStd::weak_ptr<FontFamily>>;
         using FontFamilyReverseLookupMap = AZStd::unordered_map<FontFamily*, FontFamilyMap::iterator>;
-
-        using SceneToDynamicDrawMap = AZStd::unordered_map<AZ::RPI::Scene*, AZ::RPI::Ptr<AZ::RPI::DynamicDrawContext>>;
 
     private:
         //! Convenience method for loading fonts
@@ -133,6 +126,9 @@ namespace AZ
         //! \param outputFullPath Full path to loaded font family, may need resolving with PathUtil::MakeGamePath.
         XmlNodeRef LoadFontFamilyXml(const char* fontFamilyName, string& outputDirectory, string& outputFullPath);
 
+        // Data::AssetBus::Handler overrides...
+        void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
+
     private:
         AzFramework::ISceneSystem::SceneEvent::Handler m_sceneEventHandler;
 
@@ -145,9 +141,6 @@ namespace AZ
 
         int r_persistFontFamilies = 1; //!< Persist fonts for application lifetime to prevent unnecessary work; enabled by default.
         AZStd::vector<FontFamilyPtr> m_persistedFontFamilies; //!< Stores persisted fonts (if "persist font families" is enabled)
-
-        SceneToDynamicDrawMap m_sceneToDynamicDrawMap;
-        AZStd::shared_mutex m_sceneToDynamicDrawMutex;
     };
 }
 #endif

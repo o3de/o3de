@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzTest/AzTest.h>
 #include <AzTest/Utils.h>
@@ -166,6 +162,7 @@ public:
     testing::NiceMock<AWSClientAuthUnitTest::AWSClientAuthSystemComponentMock> *m_awsClientAuthSystemsComponent;
     testing::NiceMock<AWSClientAuthUnitTest::AWSCoreSystemComponentMock> *m_awsCoreSystemsComponent;
     testing::NiceMock<AWSClientAuthUnitTest::AWSResourceMappingRequestBusMock> m_awsResourceMappingRequestBusMock;
+    testing::NiceMock<AWSClientAuthUnitTest::AWSCoreRequestBusMock> m_awsCoreRequestBusMock;
     AZ::Entity* m_entity = nullptr;
 };
 
@@ -181,6 +178,7 @@ TEST_F(AWSClientAuthSystemComponentTest, ActivateDeactivate_Success)
     EXPECT_CALL(*m_awsCoreSystemsComponent, Init()).Times(1).InSequence(s1);
     EXPECT_CALL(*m_awsClientAuthSystemsComponent, Init()).Times(1).InSequence(s1);
     EXPECT_CALL(*m_awsCoreSystemsComponent, Activate()).Times(1).InSequence(s1);
+    EXPECT_CALL(m_awsCoreRequestBusMock, GetDefaultConfig()).Times(1).InSequence(s1);
     EXPECT_CALL(m_awsResourceMappingRequestBusMock, GetDefaultRegion()).Times(1).InSequence(s1);
     EXPECT_CALL(*m_awsClientAuthSystemsComponent, Activate()).Times(1).InSequence(s1);
 

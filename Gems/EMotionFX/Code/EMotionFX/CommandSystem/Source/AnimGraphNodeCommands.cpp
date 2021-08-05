@@ -1,20 +1,17 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "AnimGraphNodeCommands.h"
 #include "AnimGraphConnectionCommands.h"
 #include "CommandManager.h"
 
 #include <EMotionFX/CommandSystem/Source/AnimGraphTriggerActionCommands.h>
+#include <EMotionFX/CommandSystem/Source/AnimGraphNodeGroupCommands.h>
 #include <EMotionFX/Source/ActorInstance.h>
 #include <EMotionFX/Source/ActorManager.h>
 #include <EMotionFX/Source/AnimGraph.h>
@@ -862,8 +859,16 @@ namespace CommandSystem
         // add it to the old node group if it was assigned to one before
         if (!mNodeGroupName.empty())
         {
-            commandString = AZStd::string::format("AnimGraphAdjustNodeGroup -animGraphID %i -name \"%s\" -nodeNames \"%s\" -nodeAction \"add\"", animGraph->GetID(), mNodeGroupName.c_str(), mName.c_str());
-            if (GetCommandManager()->ExecuteCommandInsideCommand(commandString.c_str(), outResult) == false)
+            auto* command = aznew CommandSystem::CommandAnimGraphAdjustNodeGroup(
+                GetCommandManager()->FindCommand(CommandSystem::CommandAnimGraphAdjustNodeGroup::s_commandName),
+                /*animGraphId = */ animGraph->GetID(),
+                /*name = */ mNodeGroupName,
+                /*visible = */ AZStd::nullopt,
+                /*newName = */ AZStd::nullopt,
+                /*nodeNames = */ {{mName}},
+                /*nodeAction = */ CommandSystem::CommandAnimGraphAdjustNodeGroup::NodeAction::Add
+            );
+            if (GetCommandManager()->ExecuteCommandInsideCommand(command, outResult) == false)
             {
                 if (outResult.size() > 0)
                 {
@@ -1367,11 +1372,16 @@ namespace CommandSystem
         EMotionFX::AnimGraphNodeGroup* nodeGroup = node->GetAnimGraph()->FindNodeGroupForNode(node);
         if (nodeGroup && !cutMode)
         {
-            commandString = AZStd::string::format("AnimGraphAdjustNodeGroup -animGraphID %d -name \"%s\" -nodeNames \"%s\" -nodeAction \"add\"",
-                targetAnimGraph->GetID(),
-                nodeGroup->GetName(),
-                nodeName.c_str());
-            commandGroup->AddCommandString(commandString);
+            auto* command = aznew CommandSystem::CommandAnimGraphAdjustNodeGroup(
+                GetCommandManager()->FindCommand(CommandSystem::CommandAnimGraphAdjustNodeGroup::s_commandName),
+                /*animGraphId = */ targetAnimGraph->GetID(),
+                /*name = */ nodeGroup->GetNameString(),
+                /*visible = */ AZStd::nullopt,
+                /*newName = */ AZStd::nullopt,
+                /*nodeNames = */ {{nodeName}},
+                /*nodeAction = */ CommandSystem::CommandAnimGraphAdjustNodeGroup::NodeAction::Add
+            );
+            commandGroup->AddCommand(command);
         }
 
         // Recurse through the child nodes.

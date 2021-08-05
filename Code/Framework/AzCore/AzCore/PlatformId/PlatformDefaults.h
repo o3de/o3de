@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -27,9 +23,9 @@ namespace AZ
     inline namespace PlatformDefaults
     {
         constexpr char PlatformPC[] = "pc";
-        constexpr char PlatformES3[] = "es3";
+        constexpr char PlatformAndroid[] = "android";
         constexpr char PlatformIOS[] = "ios";
-        constexpr char PlatformOSX[] = "osx_gl";
+        constexpr char PlatformMac[] = "mac";
         constexpr char PlatformProvo[] = "provo";
         constexpr char PlatformSalem[] = "salem";
         constexpr char PlatformJasper[] = "jasper";
@@ -54,9 +50,9 @@ namespace AZ
         AZ_ENUM_WITH_UNDERLYING_TYPE(PlatformId, int,
             (Invalid, -1),
             PC,
-            ES3,
+            ANDROID_ID,
             IOS,
-            OSX,
+            MAC_ID,
             PROVO,
             SALEM,
             JASPER,
@@ -73,9 +69,9 @@ namespace AZ
         {
             Platform_NONE = 0x00,
             Platform_PC = 1 << PlatformId::PC,
-            Platform_ES3 = 1 << PlatformId::ES3,
+            Platform_ANDROID = 1 << PlatformId::ANDROID_ID,
             Platform_IOS = 1 << PlatformId::IOS,
-            Platform_OSX = 1 << PlatformId::OSX,
+            Platform_MAC = 1 << PlatformId::MAC_ID,
             Platform_PROVO = 1 << PlatformId::PROVO,
             Platform_SALEM = 1 << PlatformId::SALEM,
             Platform_JASPER = 1 << PlatformId::JASPER,
@@ -87,7 +83,7 @@ namespace AZ
             // A special platform that will always correspond to all non-server platforms, even if new ones are added
             Platform_ALL_CLIENT = 1ULL << 31,
 
-            AllNamedPlatforms = Platform_PC | Platform_ES3 | Platform_IOS | Platform_OSX | Platform_PROVO | Platform_SALEM | Platform_JASPER | Platform_SERVER,
+            AllNamedPlatforms = Platform_PC | Platform_ANDROID | Platform_IOS | Platform_MAC | Platform_PROVO | Platform_SALEM | Platform_JASPER | Platform_SERVER,
         };
 
         AZ_DEFINE_ENUM_BITWISE_OPERATORS(PlatformFlags);

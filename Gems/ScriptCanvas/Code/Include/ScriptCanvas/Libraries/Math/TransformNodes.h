@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -26,12 +22,12 @@ namespace ScriptCanvas
         using namespace MathNodeUtilities;
         static const char* k_categoryName = "Math/Transform";
 
-        AZ_INLINE std::tuple<Vector3Type, TransformType> ExtractScale(TransformType source)
+        AZ_INLINE std::tuple<NumberType, TransformType> ExtractUniformScale(TransformType source)
         {
-            auto scale(source.ExtractScale());
-            return std::make_tuple( scale, source );
+            auto scale(source.ExtractUniformScale());
+            return std::make_tuple(scale, source);
         }
-        SCRIPT_CANVAS_GENERIC_FUNCTION_MULTI_RESULTS_NODE(ExtractScale, k_categoryName, "{8DFE5247-0950-4CD1-87E6-0CAAD42F1637}", "returns a vector which is the length of the scale components, and a transform with the scale extracted ", "Source", "Scale", "Extracted");
+        SCRIPT_CANVAS_GENERIC_FUNCTION_MULTI_RESULTS_NODE(ExtractUniformScale, k_categoryName, "{8DFE5247-0950-4CD1-87E6-0CAAD42F1637}", "returns the uniform scale as a float, and a transform with the scale extracted ", "Source", "Uniform Scale", "Extracted");
 
         AZ_INLINE TransformType FromMatrix3x3(Matrix3x3Type source)
         {
@@ -57,11 +53,11 @@ namespace ScriptCanvas
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(FromRotationAndTranslation, k_categoryName, "{99A4D55D-6EFB-4E24-8113-F5B46DE3A194}", "returns a transform from the rotation and the translation", "Rotation", "Translation");
 
-        AZ_INLINE TransformType FromScale(Vector3Type scale)
+        AZ_INLINE TransformType FromScale(NumberType scale)
         {
-            return TransformType::CreateScale(scale);
+            return TransformType::CreateUniformScale(scale);
         }
-        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(FromScale, k_categoryName, "{4B6454BC-015C-41BB-9C78-34ADBCF70187}", "returns a scale matrix and the translation set to zero", "Scale");
+        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(FromScale, k_categoryName, "{4B6454BC-015C-41BB-9C78-34ADBCF70187}", "returns a transform which applies the specified uniform Scale, but no rotation or translation", "Scale");
 
         AZ_INLINE TransformType FromTranslation(Vector3Type translation)
         {
@@ -119,7 +115,7 @@ namespace ScriptCanvas
             return source.IsFinite();
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(IsFinite, k_categoryName, "{B7D23934-0101-40B9-80E8-3D88C8580B25}", "returns true if every row of source is finite, else false", "Source");
-        
+
         AZ_INLINE BooleanType IsOrthogonal(const TransformType& source, NumberType tolerance)
         {
             return source.IsOrthogonal(aznumeric_cast<float>(tolerance));
@@ -144,13 +140,13 @@ namespace ScriptCanvas
             return source.TransformVector(multiplier);
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(Multiply3x3ByVector3, k_categoryName, "{4F2ABFC6-2E93-4A9D-8639-C7967DB318DB}", "returns Source's 3x3 upper matrix post multiplied by Multiplier", "Source", "Multiplier");
-        
-        AZ_INLINE TransformType MultiplyByScale(TransformType source, Vector3Type scale)
+
+        AZ_INLINE TransformType MultiplyByUniformScale(TransformType source, NumberType scale)
         {
-            source.MultiplyByScale(scale);
+            source.MultiplyByUniformScale(scale);
             return source;
         }
-        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(MultiplyByScale, k_categoryName, "{90472D62-65A8-40C1-AB08-FA66D793F689}", "returns Source multiplied by the scale matrix produced by Scale", "Source", "Scale");
+        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(MultiplyByUniformScale, k_categoryName, "{90472D62-65A8-40C1-AB08-FA66D793F689}", "returns Source multiplied uniformly by Scale", "Source", "Scale");
 
         AZ_INLINE TransformType MultiplyByTransform(const TransformType& a, const TransformType& b)
         {
@@ -175,7 +171,7 @@ namespace ScriptCanvas
             return source.GetOrthogonalized();
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(Orthogonalize, k_categoryName, "{2B4140CD-6E22-44D3-BDB5-309E69FE7CC2}", "returns an orthogonal matrix if the Source is almost orthogonal", "Source");
-        
+
         AZ_INLINE TransformType RotationXDegrees(NumberType degrees)
         {
             return TransformType::CreateRotationX(AZ::DegToRad(aznumeric_caster(degrees)));
@@ -194,18 +190,18 @@ namespace ScriptCanvas
         }
         SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(RotationZDegrees, k_categoryName, "{F848306A-C07C-4586-B52F-BEEE489045D2}", "returns a transform representing a rotation Degrees around the Z-Axis", "Degrees");
 
-        AZ_INLINE Vector3Type ToScale(const TransformType& source)
+        AZ_INLINE NumberType ToScale(const TransformType& source)
         {
-            return source.GetScale();
+            return source.GetUniformScale();
         }
-        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(ToScale, k_categoryName, "{063C58AD-F567-464D-A432-F298FE3953A6}", "returns the scale part of the Source, the length of the scale components", "Source");
-        
+        SCRIPT_CANVAS_GENERIC_FUNCTION_NODE(ToScale, k_categoryName, "{063C58AD-F567-464D-A432-F298FE3953A6}", "returns the uniform scale of the Source", "Source");
+
         using Registrar = RegistrarGeneric
-            < 
+            <
 #if ENABLE_EXTENDED_MATH_SUPPORT
-            ExtractScaleNode ,
+            ExtractUniformScaleNode,
 #endif
-              FromMatrix3x3AndTranslationNode
+            FromMatrix3x3AndTranslationNode
             , FromMatrix3x3Node
             , FromRotationAndTranslationNode
             , FromRotationNode
@@ -230,7 +226,7 @@ namespace ScriptCanvas
             , Multiply3x3ByVector3Node
 #endif
 
-            , MultiplyByScaleNode
+            , MultiplyByUniformScaleNode
             , MultiplyByTransformNode
             , MultiplyByVector3Node
             , MultiplyByVector4Node
@@ -250,8 +246,8 @@ namespace ScriptCanvas
             , TransposedMultiply3x3Node
             , ZeroNode
 #endif
-            >;
+            > ;
 
     }
-} 
+}
 

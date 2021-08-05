@@ -5,7 +5,7 @@
     "ClassData": {
         "PassTemplate": {
             "Name": "MSAAResolveCustomTemplate",
-            "PassClass": "FullScreenTriangle",
+            "PassClass": "MSAAResolveFullScreenPass",
             "Slots": [
                 {
                     "Name": "Input",
@@ -46,6 +46,13 @@
                         "Pass": "This",
                         "Attachment": "ResolvedOutput"
                     }
+                }
+            ],
+            "FallbackConnections": [
+                // used in non-MSAA pipelines when the resolve is disabled
+                {
+                    "Input" : "Input",
+                    "Output" : "Output"
                 }
             ],
             "PassData": {

@@ -1,17 +1,12 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
-#include "UiCanvasEditor_precompiled.h"
+
 #include "UiAnimViewTrack.h"
 #include "UiAnimViewAnimNode.h"
 #include "UiAnimViewSequence.h"
@@ -19,6 +14,8 @@
 #include "UiAnimViewNodeFactories.h"
 
 #include "UiEditorAnimationBus.h"
+
+#include <Util/EditorUtils.h>
 
 //////////////////////////////////////////////////////////////////////////
 void CUiAnimViewTrackBundle::AppendTrack(CUiAnimViewTrack* pTrack)
@@ -59,12 +56,12 @@ CUiAnimViewTrack::CUiAnimViewTrack(IUiAnimTrack* pTrack, CUiAnimViewAnimNode* pT
 {
     // Search for child tracks
     const unsigned int subTrackCount = m_pAnimTrack->GetSubTrackCount();
-    for (unsigned int subTrackIndex = 0; subTrackIndex < subTrackCount; ++subTrackIndex)
+    for (unsigned int subTrackI = 0; subTrackI < subTrackCount; ++subTrackI)
     {
-        IUiAnimTrack* pSubTrack = m_pAnimTrack->GetSubTrack(subTrackIndex);
+        IUiAnimTrack* pSubTrack = m_pAnimTrack->GetSubTrack(subTrackI);
 
         CUiAnimViewTrackFactory trackFactory;
-        CUiAnimViewTrack* pNewUiAVTrack = trackFactory.BuildTrack(pSubTrack, pTrackAnimNode, this, true, subTrackIndex);
+        CUiAnimViewTrack* pNewUiAVTrack = trackFactory.BuildTrack(pSubTrack, pTrackAnimNode, this, true, subTrackI);
         m_childNodes.push_back(std::unique_ptr<CUiAnimViewNode>(pNewUiAVTrack));
     }
 

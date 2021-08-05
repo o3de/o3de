@@ -1,16 +1,11 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
-#include "AzToolsFramework_precompiled.h"
 
 #include "PropertyAssetCtrl.hxx"
 
@@ -777,6 +772,23 @@ namespace AzToolsFramework
             selection.SetDefaultDirectory(defaultDirectory);
         }
 
+        if (m_hideProductFilesInAssetPicker)
+        {
+            FilterConstType displayFilter = selection.GetDisplayFilter();
+
+            EntryTypeFilter* productsFilter = new EntryTypeFilter();
+            productsFilter->SetEntryType(AssetBrowserEntry::AssetEntryType::Product);
+
+            InverseFilter* noProductsFilter = new InverseFilter();
+            noProductsFilter->SetFilter(FilterConstType(productsFilter));
+
+            CompositeFilter* compFilter = new CompositeFilter(CompositeFilter::LogicOperatorType::AND);
+            compFilter->AddFilter(FilterConstType(displayFilter));
+            compFilter->AddFilter(FilterConstType(noProductsFilter));
+
+            selection.SetDisplayFilter(FilterConstType(compFilter));
+        }
+
         AssetBrowserComponentRequestBus::Broadcast(&AssetBrowserComponentRequests::PickAssets, selection, parentWidget());
         if (selection.IsValid())
         {
@@ -936,11 +948,16 @@ namespace AzToolsFramework
             return;
         }
 
-        const AZ::Data::AssetId assetID = GetCurrentAssetID();
-        m_currentAssetHint = "";
-
-        if (!m_unnamedType)
+        const AZStd::string& folderPath = GetFolderSelection();
+        if (!folderPath.empty())
         {
+            m_currentAssetHint = folderPath;
+        }
+        else
+        {
+            const AZ::Data::AssetId assetID = GetCurrentAssetID();
+            m_currentAssetHint = "";
+
             AZ::Outcome<AssetSystem::JobInfoContainer> jobOutcome = AZ::Failure();
             AssetSystemJobRequestBus::BroadcastResult(jobOutcome, &AssetSystemJobRequestBus::Events::GetAssetJobsInfoByAssetID, assetID, false, false);
 
@@ -954,7 +971,7 @@ namespace AzToolsFramework
 
                 if (!jobs.empty())
                 {
-                    // The default behavior is show to the source filename.
+                    // The default behavior is to show the source filename.
                     assetPath = jobs[0].m_sourceFile;
 
                     AZStd::string errorLog;
@@ -1108,6 +1125,16 @@ namespace AzToolsFramework
         m_browseEdit->setAttachedButtonIcon(icon);
     }
 
+    void PropertyAssetCtrl::SetBrowseButtonEnabled(bool enabled)
+    {
+        m_browseEdit->setEnabled(enabled);
+    }
+
+    void PropertyAssetCtrl::SetBrowseButtonVisible(bool visible)
+    {
+        m_browseEdit->setVisible(visible);
+    }
+
     const QModelIndex PropertyAssetCtrl::GetSourceIndex(const QModelIndex& index)
     {
         if (!index.isValid())
@@ -1170,6 +1197,16 @@ namespace AzToolsFramework
     bool PropertyAssetCtrl::GetShowProductAssetName() const
     {
         return m_showProductAssetName;
+    }
+
+    void PropertyAssetCtrl::SetHideProductFilesInAssetPicker(bool hide)
+    {
+        m_hideProductFilesInAssetPicker = hide;
+    }
+
+    bool PropertyAssetCtrl::GetHideProductFilesInAssetPicker() const
+    {
+        return m_hideProductFilesInAssetPicker;
     }
 
     void PropertyAssetCtrl::SetShowThumbnail(bool enable)
@@ -1297,6 +1334,14 @@ namespace AzToolsFramework
                 GUI->SetShowProductAssetName(showProductAssetName);
             }
         }
+        else if(attrib == AZ::Edit::Attributes::HideProductFilesInAssetPicker)
+        {
+            bool hideProductFilesInAssetPicker = false;
+            if (attrValue->Read<bool>(hideProductFilesInAssetPicker))
+            {
+                GUI->SetHideProductFilesInAssetPicker(hideProductFilesInAssetPicker);
+            }
+        }
         else if (attrib == AZ::Edit::Attributes::ClearNotify)
         {
             PropertyAssetCtrl::ClearCallbackType* func = azdynamic_cast<PropertyAssetCtrl::ClearCallbackType*>(attrValue->GetAttribute());
@@ -1318,6 +1363,22 @@ namespace AzToolsFramework
             if (!iconPath.empty())
             {
                 GUI->SetBrowseButtonIcon(QIcon(iconPath.c_str()));
+            }
+        }
+        else if (attrib == AZ_CRC_CE("BrowseButtonEnabled"))
+        {
+            bool enabled = true;
+            if (attrValue->Read<bool>(enabled))
+            {
+                GUI->SetBrowseButtonEnabled(enabled);
+            }
+        }
+        else if (attrib == AZ_CRC_CE("BrowseButtonVisible"))
+        {
+            bool visible = true;
+            if (attrValue->Read<bool>(visible))
+            {
+                GUI->SetBrowseButtonVisible(visible);
             }
         }
         else if (attrib == AZ_CRC_CE("Thumbnail"))
@@ -1407,6 +1468,49 @@ namespace AzToolsFramework
                 GUI->SetBrowseButtonIcon(QIcon(iconPath.c_str()));
             }
         }
+        else if (attrib == AZ_CRC("EditCallback", 0xb74f2ee1))
+        {
+            PropertyAssetCtrl::EditCallbackType* func = azdynamic_cast<PropertyAssetCtrl::EditCallbackType*>(attrValue->GetAttribute());
+            if (func)
+            {
+                GUI->SetEditButtonVisible(true);
+                GUI->SetEditNotifyCallback(func);
+            }
+            else
+            {
+                GUI->SetEditNotifyCallback(nullptr);
+            }
+        }
+        else if (attrib == AZ_CRC("EditButton", 0x898c35dc))
+        {
+            GUI->SetEditButtonVisible(true);
+
+            AZStd::string iconPath;
+            attrValue->Read<AZStd::string>(iconPath);
+
+            if (!iconPath.empty())
+            {
+                QString path(iconPath.c_str());
+
+                if (!QFile::exists(path))
+                {
+                    AZ::IO::FixedMaxPathString engineRoot = AZ::Utils::GetEnginePath();
+                    QDir engineDir = !engineRoot.empty() ? QDir(QString(engineRoot.c_str())) : QDir::current();
+
+                    path = engineDir.absoluteFilePath(iconPath.c_str());
+                }
+
+                GUI->SetEditButtonIcon(QIcon(path));
+            }
+        }
+        else if (attrib == AZ_CRC("EditDescription", 0x9b52634a))
+        {
+            AZStd::string buttonTooltip;
+            if (attrValue->Read<AZStd::string>(buttonTooltip))
+            {
+                GUI->SetEditButtonTooltip(tr(buttonTooltip.c_str()));
+            }
+        }
     }
 
     void SimpleAssetPropertyHandlerDefault::WriteGUIValuesIntoProperty(size_t index, PropertyAssetCtrl* GUI, property_t& instance, InstanceDataNode* node)
@@ -1436,6 +1540,7 @@ namespace AzToolsFramework
         // Set the hint in case the asset is not able to be found by assetId
         GUI->SetCurrentAssetHint(instance.GetAssetPath());
         GUI->SetSelectedAssetID(assetId, instance.GetAssetType());
+        GUI->SetEditNotifyTarget(node->GetParent()->GetInstance(0));
 
         GUI->blockSignals(false);
         return false;

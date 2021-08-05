@@ -1,16 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-#include "UiCanvasEditor_precompiled.h"
-
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "EditorCommon.h"
 #include "ViewportPivot.h"
 
@@ -28,6 +22,11 @@ namespace ViewportHelpers
         }
 
         return isControlledByParent;
+    }
+
+    float GetDpiScaledSize(float size)
+    {
+        return size * ViewportIcon::GetDpiScaleFactor();
     }
 
     bool IsHorizontallyFit(const AZ::Entity* element)
@@ -332,11 +331,12 @@ namespace ViewportHelpers
 
             AZ::Vector2 pivotPos;
             EBUS_EVENT_ID_RESULT(pivotPos, element->GetId(), UiTransformBus, GetViewportSpacePivot);
-            AZ::Vector2 rotationStringPos(pivotPos.GetX(), pivotPos.GetY() - ((viewportPivot->GetSize().GetY() * 0.5f) + 4.0f));
+            float offset = (viewportPivot->GetSize().GetY() * 0.5f) + (GetDpiScaledSize(4.0f));
+            AZ::Vector2 rotationStringPos(pivotPos.GetX(), pivotPos.GetY() - offset);
 
             draw2d.SetTextAlignment(IDraw2d::HAlign::Center, IDraw2d::VAlign::Bottom);
             draw2d.SetTextRotation(0.0f);
-            draw2d.DrawText(rotationString.toUtf8().data(), rotationStringPos, 16.0f, 1.0f);
+            draw2d.DrawText(rotationString.toUtf8().data(), rotationStringPos, GetDpiScaledSize(16.0f), 1.0f);
         }
     }
 
@@ -350,6 +350,6 @@ namespace ViewportHelpers
 
         draw2d.SetTextAlignment(IDraw2d::HAlign::Left, IDraw2d::VAlign::Bottom);
         draw2d.SetTextRotation(0.0f);
-        draw2d.DrawText(textLabel.c_str(), textPos, 16.0f, 1.0f);
+        draw2d.DrawText(textLabel.c_str(), textPos, GetDpiScaledSize(16.0f), 1.0f);
     }
 }   // namespace ViewportHelpers

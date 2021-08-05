@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #ifndef EDITORFRAMEWORKAPPLICATION_H
 #define EDITORFRAMEWORKAPPLICATION_H
@@ -29,7 +25,7 @@ namespace LegacyFramework
 {
     struct ApplicationDesc
     {
-        HMODULE m_applicationModule;  // only necessary if you want to attach your application as a DLL plugin to another application, hosting it
+        void* m_applicationModule;  // only necessary if you want to attach your application as a DLL plugin to another application, hosting it
         bool m_enableGUI; // false if you want none of the QT or GUI functionality to exist.  You cannot use project manager if you do this.
         bool m_enableGridmate; // false if you want to not activate the network communications module.
         bool m_enablePerforce; // false if you want to not activate perforce SCM integration.  note that this will eventually become a plugin anyway
@@ -40,7 +36,7 @@ namespace LegacyFramework
         int m_argc;
         char** m_argv;
 
-        char m_applicationName[_MAX_PATH];
+        char m_applicationName[AZ_MAX_PATH_LEN];
 
         ApplicationDesc(const char* name = "Application", int argc = 0, char** argv = nullptr);
         ApplicationDesc(const ApplicationDesc& other);
@@ -61,6 +57,8 @@ namespace LegacyFramework
         virtual int Run(const ApplicationDesc& desc);
         Application();
 
+        void CreateReflectionManager() override;
+
     protected:
 
         // ------------------------------------------------------------------
@@ -68,7 +66,7 @@ namespace LegacyFramework
         virtual bool IsRunningInGUIMode() { return m_desc.m_enableGUI; }
         virtual bool RequiresGameProject() { return m_desc.m_enableProjectManager; }
         virtual bool ShouldRunAssetProcessor() { return m_desc.m_shouldRunAssetProcessor; }
-        virtual HMODULE GetMainModule();
+        virtual void* GetMainModule();
         virtual const char* GetApplicationName();
         virtual const char* GetApplicationModule();
         virtual const char* GetApplicationDirectory();
@@ -134,11 +132,11 @@ namespace LegacyFramework
         void CreateApplicationComponent();
         void SaveApplicationEntity();
 
-        char m_applicationModule[_MAX_PATH];
+        char m_applicationModule[AZ_MAX_PATH_LEN];
         int m_desiredExitCode;
         bool m_isPrimary;
         volatile bool m_abortRequested; // if you CTRL+C in a console app, this becomes true.  its up to you to check...
-        char m_applicationFilePath[_MAX_PATH];
+        char m_applicationFilePath[AZ_MAX_PATH_LEN];
         ApplicationDesc m_desc;
         AzFramework::CommandLine* m_ptrCommandLineParser;
     };

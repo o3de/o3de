@@ -1,0 +1,116 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "PipelineTemplate",
+            "PassClass": "ParentPass",
+            "PassRequests": [
+                {
+                    "Name": "OpaquePass",
+                    "TemplateName": "OpaquePassTemplate",
+                    "Connections": [
+                        {
+                            "LocalSlot": "DepthStencil",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "DepthStencil"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ColorInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "ColorInputOutput"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "TransparentPass",
+                    "TemplateName": "TransparentPassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "DepthStencil",
+                            "AttachmentRef": {
+                                "Pass": "OpaquePass",
+                                "Attachment": "DepthStencil"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ColorInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "OpaquePass",
+                                "Attachment": "Color"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "RasterPassData",
+                        "DrawListTag": "transparent",
+                        "DrawListSortType": "KeyThenReverseDepth",
+                        "PipelineViewTag": "MainCamera",
+                        "PassSrgAsset": {
+                            "FilePath": "shaderlib/atom/features/pbr/transparentpasssrg.azsli:PassSrg"
+                        }
+                    }
+                },
+                {
+                    "Name": "AuxGeomPass",
+                    "TemplateName": "AuxGeomPassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "DepthStencil",
+                            "AttachmentRef": {
+                                "Pass": "OpaquePass",
+                                "Attachment": "DepthStencil"
+                            }
+                        },
+                        {
+                            "LocalSlot": "ColorInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "TransparentPass",
+                                "Attachment": "ColorInputOutput"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "RasterPassData",
+                        "DrawListTag": "auxgeom",
+                        "PipelineViewTag": "MainCamera"
+                    }
+                },
+                {
+                    "Name": "2DPass",
+                    "TemplateName": "UIPassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "ColorInputOutput",
+                            "AttachmentRef": {
+                                "Pass": "TransparentPass",
+                                "Attachment": "ColorInputOutput"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "RasterPassData",
+                        "DrawListTag": "2dpass",
+                        "PipelineViewTag": "MainCamera"
+                    }
+                },
+                {
+                    "Name": "ImGuiPass",
+                    "TemplateName": "ImGuiPassTemplate",
+                    "PassData": {
+                        "$type": "ImGuiPassData",
+                        "IsDefaultImGui": true
+                    }
+                }
+            ]
+        }
+    }
+}

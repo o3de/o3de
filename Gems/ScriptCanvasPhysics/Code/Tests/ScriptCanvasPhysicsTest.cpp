@@ -1,16 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-
-#include "ScriptCanvasPhysics_precompiled.h"
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzTest/GemTestEnvironment.h>
 #include <gmock/gmock.h>
@@ -100,6 +94,9 @@ namespace ScriptCanvasPhysicsTests
         void DisableSimulationOfBody(
             [[maybe_unused]] AzPhysics::SceneHandle sceneHandle,
             [[maybe_unused]] AzPhysics::SimulatedBodyHandle bodyHandle) override {}
+        void RemoveJoint(
+            [[maybe_unused]]AzPhysics::SceneHandle sceneHandle,
+            [[maybe_unused]] AzPhysics::JointHandle jointHandle) override {}
         void SuppressCollisionEvents(
             [[maybe_unused]] AzPhysics::SceneHandle sceneHandle,
             [[maybe_unused]] const AzPhysics::SimulatedBodyHandle& bodyHandleA,
@@ -148,6 +145,10 @@ namespace ScriptCanvasPhysicsTests
         MOCK_METHOD2(AddSimulatedBodies, AzPhysics::SimulatedBodyHandleList(AzPhysics::SceneHandle sceneHandle, const AzPhysics::SimulatedBodyConfigurationList& simulatedBodyConfigs));
         MOCK_METHOD2(GetSimulatedBodyFromHandle, AzPhysics::SimulatedBody* (AzPhysics::SceneHandle sceneHandle, AzPhysics::SimulatedBodyHandle bodyHandle));
         MOCK_METHOD2(GetSimulatedBodiesFromHandle, AzPhysics::SimulatedBodyList(AzPhysics::SceneHandle sceneHandle, const AzPhysics::SimulatedBodyHandleList& bodyHandles));
+        MOCK_METHOD4(AddJoint, AzPhysics::JointHandle(AzPhysics::SceneHandle sceneHandle, const AzPhysics::JointConfiguration* jointConfig,
+            AzPhysics::SimulatedBodyHandle parentBody, AzPhysics::SimulatedBodyHandle childBody));
+        MOCK_METHOD2(
+            GetJointFromHandle, AzPhysics::Joint*(AzPhysics::SceneHandle sceneHandle, AzPhysics::JointHandle jointHandle));
         MOCK_CONST_METHOD1(GetGravity, AZ::Vector3(AzPhysics::SceneHandle sceneHandle));
         MOCK_METHOD2(RegisterSceneSimulationFinishHandler, void(AzPhysics::SceneHandle sceneHandle, AzPhysics::SceneEvents::OnSceneSimulationFinishHandler& handler));
         MOCK_CONST_METHOD2(GetLegacyBody, AzPhysics::SimulatedBody* (AzPhysics::SceneHandle sceneHandle, AzPhysics::SimulatedBodyHandle handle));
@@ -207,8 +208,8 @@ namespace ScriptCanvasPhysicsTests
     {
     public:
         MOCK_CONST_METHOD0(GetSurfaceType, AZ::Crc32());
-        MOCK_METHOD1(SetSurfaceType, void(AZ::Crc32));
         MOCK_CONST_METHOD0(GetSurfaceTypeName, const AZStd::string&());
+        MOCK_METHOD1(SetSurfaceTypeName, void(const AZStd::string&));
         MOCK_CONST_METHOD0(GetDynamicFriction, float());
         MOCK_METHOD1(SetDynamicFriction, void(float));
         MOCK_CONST_METHOD0(GetStaticFriction, float());
@@ -223,6 +224,8 @@ namespace ScriptCanvasPhysicsTests
         MOCK_METHOD0(GetNativePointer, void*());
         MOCK_CONST_METHOD0(GetDensity, float());
         MOCK_METHOD1(SetDensity, void(float));
+        MOCK_CONST_METHOD0(GetDebugColor, AZ::Color());
+        MOCK_METHOD1(SetDebugColor, void(const AZ::Color&));
     };
 
     class ScriptCanvasPhysicsTestEnvironment

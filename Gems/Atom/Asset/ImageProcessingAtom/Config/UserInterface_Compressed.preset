@@ -13,7 +13,7 @@
             "FileMasks": [ "_ui" ]
         },
         "PlatformsPresets": {
-            "es3": {
+            "android": {
                 "UUID": "{2828FBFE-BDF9-45A7-9370-F93822719CCF}",
                 "Name": "UserInterface_Compressed",
                 "SuppressEngineReduce": true,
@@ -25,7 +25,7 @@
                 "SuppressEngineReduce": true,
                 "PixelFormat": "ASTC_6x6"
             },
-            "osx_gl": {
+            "mac": {
                 "UUID": "{2828FBFE-BDF9-45A7-9370-F93822719CCF}",
                 "Name": "UserInterface_Compressed",
                 "SuppressEngineReduce": true,

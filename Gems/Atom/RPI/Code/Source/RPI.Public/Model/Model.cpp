@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RPI.Public/Model/Model.h>
 
@@ -44,7 +40,7 @@ namespace AZ
             return m_lods;
         }
 
-        Data::Instance<Model> Model::CreateInternal(ModelAsset& modelAsset)
+        Data::Instance<Model> Model::CreateInternal(const Data::Asset<ModelAsset>& modelAsset)
         {
             AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
             Data::Instance<Model> model = aznew Model();
@@ -58,17 +54,15 @@ namespace AZ
             return nullptr;
         }
 
-        RHI::ResultCode Model::Init(ModelAsset& modelAsset)
+        RHI::ResultCode Model::Init(const Data::Asset<ModelAsset>& modelAsset)
         {
             AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
 
-            m_aabb = modelAsset.GetAabb();
-
-            m_lods.resize(modelAsset.GetLodAssets().size());
+            m_lods.resize(modelAsset->GetLodAssets().size());
 
             for (size_t lodIndex = 0; lodIndex < m_lods.size(); ++lodIndex)
             {
-                const Data::Asset<ModelLodAsset>& lodAsset = modelAsset.GetLodAssets()[lodIndex];
+                const Data::Asset<ModelLodAsset>& lodAsset = modelAsset->GetLodAssets()[lodIndex];
 
                 if (!lodAsset)
                 {
@@ -76,7 +70,7 @@ namespace AZ
                     return RHI::ResultCode::Fail;
                 }
 
-                Data::Instance<ModelLod> lodInstance = ModelLod::FindOrCreate(lodAsset);
+                Data::Instance<ModelLod> lodInstance = ModelLod::FindOrCreate(lodAsset, modelAsset);
                 if (lodInstance == nullptr)
                 {
                     return RHI::ResultCode::Fail;
@@ -104,7 +98,7 @@ namespace AZ
                 m_lods[lodIndex] = AZStd::move(lodInstance);
             }
 
-            m_modelAsset = { &modelAsset, AZ::Data::AssetLoadBehavior::PreLoad };
+            m_modelAsset = modelAsset;
             m_isUploadPending = true;
             return RHI::ResultCode::Success;
         }
@@ -127,21 +121,24 @@ namespace AZ
             return m_isUploadPending;
         }
 
-        const AZ::Aabb& Model::GetAabb() const
-        {
-            return m_aabb;
-        }
-
         const Data::Asset<ModelAsset>& Model::GetModelAsset() const
         {
             return m_modelAsset;
         }
 
-        bool Model::LocalRayIntersection(const AZ::Vector3& rayStart, const AZ::Vector3& dir, float& distance, AZ::Vector3& normal) const
+        bool Model::LocalRayIntersection(const AZ::Vector3& rayStart, const AZ::Vector3& rayDir, float& distanceNormalized, AZ::Vector3& normal) const
         {
             AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
-            float firstHit;
-            const int result = Intersect::IntersectRayAABB2(rayStart, dir.GetReciprocal(), m_aabb, firstHit, distance);
+            
+            if (!GetModelAsset())
+            {
+                AZ_Assert(false, "Invalid Model - not created from a ModelAsset?");
+                return false;
+            }
+            
+            float start;
+            float end;
+            const int result = Intersect::IntersectRayAABB2(rayStart, rayDir.GetReciprocal(), GetModelAsset()->GetAabb(), start, end);
             if (Intersect::ISECT_RAY_AABB_NONE != result)
             {
                 if (ModelAsset* modelAssetPtr = m_modelAsset.Get())
@@ -150,7 +147,9 @@ namespace AZ
                     AZ::Debug::Timer timer;
                     timer.Stamp();
 #endif
-                    const bool hit = modelAssetPtr->LocalRayIntersectionAgainstModel(rayStart, dir, distance, normal);
+                    constexpr bool AllowBruteForce = false;
+                    const bool hit = modelAssetPtr->LocalRayIntersectionAgainstModel(
+                        rayStart, rayDir, AllowBruteForce, distanceNormalized, normal);
 #if defined(AZ_RPI_PROFILE_RAYCASTING_AGAINST_MODELS)
                     if (hit)
                     {
@@ -164,7 +163,13 @@ namespace AZ
             return false;
         }
 
-        bool Model::RayIntersection(const AZ::Transform& modelTransform, const AZ::Vector3& nonUniformScale, const AZ::Vector3& rayStart, const AZ::Vector3& dir, float& distanceFactor, AZ::Vector3& normal) const
+        bool Model::RayIntersection(
+            const AZ::Transform& modelTransform,
+            const AZ::Vector3& nonUniformScale,
+            const AZ::Vector3& rayStart,
+            const AZ::Vector3& rayDir,
+            float& distanceNormalized,
+            AZ::Vector3& normal) const
         {
             AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
             const AZ::Vector3 clampedScale = nonUniformScale.GetMax(AZ::Vector3(AZ::MinTransformScale));
@@ -172,12 +177,13 @@ namespace AZ
             const AZ::Transform inverseTM = modelTransform.GetInverse();
             const AZ::Vector3 raySrcLocal = inverseTM.TransformPoint(rayStart) / clampedScale;
 
-            // Instead of just rotating 'dir' we need it to be scaled too, so that 'distanceFactor' will be in the target units rather than object local units.
-            const AZ::Vector3 rayDest = rayStart + dir;
+            // Instead of just rotating 'rayDir' we need it to be scaled too, so that 'distanceNormalized' will be in the target units rather
+            // than object local units.
+            const AZ::Vector3 rayDest = rayStart + rayDir;
             const AZ::Vector3 rayDestLocal = inverseTM.TransformPoint(rayDest) / clampedScale;
             const AZ::Vector3 rayDirLocal = rayDestLocal - raySrcLocal;
 
-            bool result = LocalRayIntersection(raySrcLocal, rayDirLocal, distanceFactor, normal);
+            const bool result = LocalRayIntersection(raySrcLocal, rayDirLocal, distanceNormalized, normal);
             normal = (normal * clampedScale).GetNormalized();
             return result;
         }

@@ -1,12 +1,8 @@
 {#
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 #}
 
 {% import 'ScriptCanvas_Macros.jinja' as macros %}
@@ -21,6 +17,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #pragma once
+
+#include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 
 #include <ScriptCanvas/Core/Nodeable.h>
 #include <ScriptCanvas/Core/NodeableNode.h>
@@ -41,6 +42,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 {%      if Class.attrib['Namespace'] != "None" %}
 {%          set attribute_Namespace = Class.attrib['Namespace'] %}
 {%      endif %}
+{% endif %}
+
+{%- set attribute_Base = Class.attrib['Base']  %}
+{% if not Class.attrib['Base'] is defined %}
+{%    set attribute_Base = "ScriptCanvas::Nodeable" %}
 {% endif %}
 
 {% if attribute_Namespace is defined %}
@@ -66,6 +72,9 @@ namespace {{attribute_Namespace}}
 public: \
     AZ_RTTI({{className}}, "{{nodeableClassName|createHashGuid}}"{% if Class.attrib['Base'] is defined %}, {{ Class.attrib['Base'] }}{% endif %}); \
     static void Reflect(AZ::ReflectContext* reflection); \
+    static void ExtendReflectionSerialize([[maybe_unused]] AZ::SerializeContext::ClassBuilder* builder){% if Class.attrib['ExtendReflectionSerialize'] is defined %};{% else %}{}{% endif %} \
+    static void ExtendReflectionEdit([[maybe_unused]] AZ::EditContext::ClassBuilder* builder){% if Class.attrib['ExtendReflectionEdit'] is defined %};{% else %}{}{% endif %} \
+    static void ExtendReflectionBehavior([[maybe_unused]] AZ::BehaviorContext::ClassBuilder<{{className}}>* builder){% if Class.attrib['ExtendReflectionBehavior'] is defined %};{% else %}{}{% endif %} \
     static const char* GetDescription() { return "{{ macros.GetAttributeAsString(Class.attrib, 'Description') }}"; } \
     ScriptCanvas::NodePropertyInterface* GetPropertyInterface(AZ::Crc32 propertyId) override; \
     bool IsActive() const override { return false; } \
@@ -83,13 +92,33 @@ public: \
               AZ_COMPONENT({{nodeableNodeName}}, {% if Class.attrib['NodeableUuid'] is defined %}"{{Class.attrib['NodeableUuid']}}"{% else %}"{{nodeableNodeName|createHashGuid}}"{% endif %}, ScriptCanvas::Nodes::NodeableNode);
 
               static void Reflect(AZ::ReflectContext* context);
+
+              static void ExtendReflectionSerialize([[maybe_unused]] AZ::SerializeContext::ClassBuilder* builder){% if Class.attrib['ExtendReflectionSerialize'] is defined %};{% else %}{}{% endif %}
+
+              static void ExtendReflectionEdit([[maybe_unused]] AZ::EditContext::ClassBuilder* builder){% if Class.attrib['ExtendReflectionEdit'] is defined %};{% else %}{}{% endif %}
+
+              static void ExtendReflectionBehavior([[maybe_unused]] AZ::BehaviorContext::ClassBuilder<{{nodeableNodeName}}>* builder){% if Class.attrib['ExtendReflectionBehavior'] is defined %};{% else %}{}{% endif %}
+
               void ConfigureSlots() override;
+
+{% if Class.attrib['ExtendConfigureSlots'] is defined %}
+              void ExtendConfigureSlots([[maybe_unused]] SlotExecution::Ins& ins, [[maybe_unused]] SlotExecution::Outs& latents);
+
+{% else %}
+              /* no slot configuration extension, Use Class attribute 'ExtendConfigureSlots' to extend them */
+
+{% endif %}
               void ConfigureVisualExtensions() override;
+
               size_t GenerateFingerprint() const override;
-{%            if Class.attrib['EntryPoint'] is defined and Class.attrib['EntryPoint'] == "true" %}
+
+{% if Class.attrib['EntryPoint'] is defined and Class.attrib['EntryPoint'] == "true" %}
               bool IsEntryPoint() const override { return true; }
-{%            endif %}
+
+{% endif %}
               {{nodeableNodeName}}();
+
+              {{Class.attrib['NodeDeclarations']}}
           };
       }
 {% endif %}
@@ -99,7 +128,6 @@ public: \
 {% endif %}
 
 {{ macros.ReportErrors() }}
-
 
 {%  endfor %}
 {% endfor %}

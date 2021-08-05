@@ -12,7 +12,7 @@
             "PixelFormat": "BC1"
         },
         "PlatformsPresets": {
-            "es3": {
+            "android": {
                 "UUID": "{C456B8AB-C360-4822-BCDD-225252D0E697}",
                 "Name": "SF_Image_nonpower2",
                 "SourceColor": "Linear",
@@ -28,7 +28,7 @@
                 "SuppressEngineReduce": true,
                 "PixelFormat": "PVRTC4"
             },
-            "osx_gl": {
+            "mac": {
                 "UUID": "{C456B8AB-C360-4822-BCDD-225252D0E697}",
                 "Name": "SF_Image_nonpower2",
                 "SourceColor": "Linear",

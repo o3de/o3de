@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 /** @file
  * Header file for buses that dispatch and receive events related to positioning,
@@ -172,78 +168,10 @@ namespace AZ
 
         //! Rotation modifiers
         //! @{
-        //! @deprecated Use SetLocalRotation()
-        //! Sets the entity's rotation in the world.
-        //! The origin of the axes is the entity's position in world space.
-        //! @param eulerAnglesRadians A three-dimensional vector, containing Euler angles in radians, to rotate the entity by.
-        virtual void SetRotation([[maybe_unused]] const AZ::Vector3& eulerAnglesRadians) {}
-
-        //! @deprecated Use SetLocalRotation()
-        //! Sets the entity's rotation around the world's X axis.
-        //! The origin of the axis is the entity's position in world space.
-        //! @param eulerAngleRadians The X coordinate Euler angle in radians to use for the entity's rotation.
-        virtual void SetRotationX([[maybe_unused]] float eulerAngleRadian) {}
-
-        //! @deprecated Use SetLocalRotation()
-        //! Sets the entity's rotation around the world's Y axis.
-        //! The origin of the axis is the entity's position in world space.
-        //! @param eulerAngleRadians The Y coordinate Euler angle in radians to use for the entity's rotation.
-        virtual void SetRotationY([[maybe_unused]] float eulerAngleRadian) {}
-
-        //! @deprecated Use SetLocalRotation()
-        //! Sets the entity's rotation around the world's Z axis.
-        //! The origin of the axis is the entity's position in world space.
-        //! @param eulerAngleRadians The Z coordinate Euler angle in radians to use for the entity's rotation.
-        virtual void SetRotationZ([[maybe_unused]] float eulerAngleRadian) {}
-
-        //! @deprecated Use SetLocalRotationQuaternion()
         //! Sets the entity's rotation in the world in quaternion notation.
         //! The origin of the axes is the entity's position in world space.
         //! @param quaternion A quaternion that represents the rotation to use for the entity.
-        virtual void SetRotationQuaternion([[maybe_unused]] const AZ::Quaternion& quaternion) {}
-
-        //! @deprecated Use RotateAroundLocalX()
-        //! Rotates the entity around the world's X axis.
-        //! The origin of the axis is the entity's position in world space.
-        //! @param eulerAngleRadians The Euler angle in radians by which to rotate the entity around the X axis.
-        virtual void RotateByX([[maybe_unused]] float eulerAngleRadian) {}
-
-        //! @deprecated Use RotateAroundLocalY()
-        //! Rotates the entity around the world's Y axis.
-        //! The origin of the axis is the entity's position in world space.
-        //! @param eulerAngleRadians The Euler angle in radians by which to rotate the entity around the Y axis.
-        virtual void RotateByY([[maybe_unused]] float eulerAngleRadian) {}
-
-        //! @deprecated Use RotateAroundLocalZ()
-        //! Rotates the entity around the world's Z axis.
-        //! The origin of the axis is the entity's position in world space.
-        //! @param eulerAngleRadians The Euler angle in radians by which to rotate the entity around the Z axis.
-        virtual void RotateByZ([[maybe_unused]] float eulerAngleRadian) {}
-
-        //! @deprecated Use GetLocalRotation()
-        //! Gets the entity's rotation in the world in Euler angles rotation in radians.
-        //! @return A three-dimensional vector, containing Euler angles in radians, that represents the entity's rotation.
-        virtual AZ::Vector3 GetRotationEulerRadians() { return AZ::Vector3(FLT_MAX); }
-
-        //! @deprecated Use GetLocalRotationQuaternion()
-        //! Gets the entity's rotation in the world in quaternion format.
-        //! @return A quaternion that represents the entity's rotation in world space.
-        virtual AZ::Quaternion GetRotationQuaternion() { return AZ::Quaternion::CreateZero(); }
-
-        //! @deprecated Use GetLocalRotation()
-        //! Gets the entity's rotation around the world's X axis.
-        //! @return The Euler angle in radians by which the the entity is rotated around the X axis in world space.
-        virtual float GetRotationX() { return FLT_MAX; }
-
-        //! @deprecated Use GetLocalRotation()
-        //! Gets the entity's rotation around the world's Y axis.
-        //! @return The Euler angle in radians by which the the entity is rotated around the Y axis in world space.
-        virtual float GetRotationY() { return FLT_MAX; }
-
-        //! @deprecated Use GetLocalRotation()
-        //! Gets the entity's rotation around the world's Z axis.
-        //! @return The Euler angle in radians by which the the entity is rotated around the Z axis in world space.
-        virtual float GetRotationZ() { return FLT_MAX; }
+        virtual void SetWorldRotationQuaternion([[maybe_unused]] const AZ::Quaternion& quaternion) {}
 
         //! Get angles in radian for each principle axis around which the world transform is
         //! rotated in the order of z-axis and y-axis and then x-axis.
@@ -287,17 +215,10 @@ namespace AZ
 
         //! Scale modifiers
         //! @{
-        //! Set local scale of the transform.
-        //! @param scale The new scale to set.
-        virtual void SetLocalScale([[maybe_unused]] const AZ::Vector3& scale) {}
-
-        //! Get the scale value in local space.
+        //! @deprecated GetLocalScale is deprecated, and is left only to allow migration of legacy vector scale.
+        //! Get the legacy vector scale value in local space.
         //! @return The scale value in local space.
         virtual AZ::Vector3 GetLocalScale() { return AZ::Vector3(FLT_MAX); }
-
-        //! Get the scale value in world space.
-        //! @return The scale value in world space.
-        virtual AZ::Vector3 GetWorldScale() { return AZ::Vector3(FLT_MAX); }
 
         //! Set the uniform scale value in local space.
         virtual void SetLocalUniformScale([[maybe_unused]] float scale) {}

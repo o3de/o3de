@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #ifndef AZCORE_SERIALIZE_CONTEXT_H
 #define AZCORE_SERIALIZE_CONTEXT_H
 
@@ -101,6 +97,9 @@ namespace AZ
     class SerializeContext
         : public ReflectContext
     {
+        static const unsigned int VersionClassDeprecated = (unsigned int)-1;
+
+    public:
         /// @cond EXCLUDE_DOCS
         friend class EditContext;
         class ClassBuilder;
@@ -108,9 +107,6 @@ namespace AZ
         /// @endcond
         class EnumBuilder;
 
-        static const unsigned int VersionClassDeprecated = (unsigned int)-1;
-
-    public:
         class ClassData;
         struct EnumerateInstanceCallContext;
         struct ClassElement;
@@ -1131,6 +1127,7 @@ namespace AZ
          *      ->Version(3,&MyVersionConverter)
          *      ->Field("data",&MyStruct::m_data);
          */
+    public:
         class ClassBuilder
         {
             friend class SerializeContext;
@@ -1330,7 +1327,8 @@ namespace AZ
             AZStd::vector<AttributeSharedPair, AZStdFunctorAllocator>* m_currentAttributes = nullptr;
         };
 
-        EditContext*    m_editContext;  ///< Pointer to optional edit context.
+    private:
+        EditContext* m_editContext;  ///< Pointer to optional edit context.
         UuidToClassMap  m_uuidMap;      ///< Map for all class in this serialize context
         AZStd::unordered_multimap<AZ::Crc32, AZ::Uuid> m_classNameToUuid;  /// Map all class names to their uuid
         AZStd::unordered_multimap<Uuid, GenericClassInfo*>  m_uuidGenericMap;      ///< Uuid to ClassData map of reflected classes with GenericTypeInfo

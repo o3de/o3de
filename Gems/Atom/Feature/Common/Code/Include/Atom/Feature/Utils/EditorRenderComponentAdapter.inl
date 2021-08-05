@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/Feature/Utils/EditorRenderComponentAdapter.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
@@ -19,11 +15,12 @@ namespace AZ
     {
         template<typename TController, typename TRuntimeComponent, typename TConfiguration>
         template<int TVersion>
-        bool EditorRenderComponentAdapter<TController, TRuntimeComponent, TConfiguration>::ConvertToEditorRenderComponentAdapter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
+        bool EditorRenderComponentAdapter<TController, TRuntimeComponent, TConfiguration>::ConvertToEditorRenderComponentAdapter(
+            AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
         {
             if (classElement.GetVersion() < TVersion)
             {
-                // Get the and remove the EditorComponentAdapter base class data that was previpously serialized
+                // Get the and remove the EditorComponentAdapter base class data that was previously serialized
                 AzToolsFramework::Components::EditorComponentAdapter<TController, TRuntimeComponent, TConfiguration> oldBaseClassData;
 
                 if (!classElement.FindSubElementAndGetData(AZ_CRC("BaseClass1", 0xd4925735), oldBaseClassData))
@@ -41,8 +38,8 @@ namespace AZ
                 // Replace the old base class data with EditorRenderComponentAdapter
                 EditorRenderComponentAdapter<TController, TRuntimeComponent, TConfiguration> newBaseClassData;
 
-                AZ::SerializeContext::DataElementNode& newBaseClassElement = classElement.GetSubElement(
-                    classElement.AddElementWithData(context, "BaseClass1", newBaseClassData));
+                AZ::SerializeContext::DataElementNode& newBaseClassElement =
+                    classElement.GetSubElement(classElement.AddElementWithData(context, "BaseClass1", newBaseClassData));
 
                 // Overwrite EditorRenderComponentAdapter base class data with retrieved EditorComponentAdapter base class data
                 if (!newBaseClassElement.RemoveElementByName(AZ_CRC("BaseClass1", 0xd4925735)))
@@ -62,25 +59,24 @@ namespace AZ
         {
             BaseClass::Reflect(context);
 
-            if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+            if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
-                serializeContext->Class<EditorRenderComponentAdapter, BaseClass>()
-                    ->Version(0)
-                    ;
+                serializeContext->Class<EditorRenderComponentAdapter, BaseClass>()->Version(0);
 
                 if (AZ::EditContext* editContext = serializeContext->GetEditContext())
                 {
-                    editContext->Class<EditorRenderComponentAdapter>(
-                        "EditorRenderComponentAdapter", "")
+                    // clang-format off
+                    editContext->Class<EditorRenderComponentAdapter>("EditorRenderComponentAdapter", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                            ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ;
+                            ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
+                    // clang-format on
                 }
             }
         }
 
         template<typename TController, typename TRuntimeComponent, typename TConfiguration>
-        EditorRenderComponentAdapter<TController, TRuntimeComponent, TConfiguration>::EditorRenderComponentAdapter(const TConfiguration& config)
+        EditorRenderComponentAdapter<TController, TRuntimeComponent, TConfiguration>::EditorRenderComponentAdapter(
+            const TConfiguration& config)
             : BaseClass(config)
         {
         }
@@ -103,7 +99,8 @@ namespace AZ
         bool EditorRenderComponentAdapter<TController, TRuntimeComponent, TConfiguration>::IsVisible() const
         {
             bool visible = true;
-            AzToolsFramework::EditorEntityInfoRequestBus::EventResult(visible, this->GetEntityId(), &AzToolsFramework::EditorEntityInfoRequestBus::Events::IsVisible);
+            AzToolsFramework::EditorEntityInfoRequestBus::EventResult(
+                visible, this->GetEntityId(), &AzToolsFramework::EditorEntityInfoRequestBus::Events::IsVisible);
             return visible;
         }
 
@@ -114,15 +111,16 @@ namespace AZ
         }
 
         template<typename TController, typename TRuntimeComponent, typename TConfiguration>
-        void EditorRenderComponentAdapter<TController, TRuntimeComponent, TConfiguration>::OnEntityVisibilityChanged([[maybe_unused]] bool visibility)
+        void EditorRenderComponentAdapter<TController, TRuntimeComponent, TConfiguration>::OnEntityVisibilityChanged(
+            [[maybe_unused]] bool visibility)
         {
             this->m_controller.Deactivate();
 
             if (this->ShouldActivateController())
             {
-                this->m_controller.Activate(this->GetEntityId());
+                AzFramework::Components::ComponentActivateHelper<TController>::Activate(
+                    this->m_controller, AZ::EntityComponentIdPair(this->GetEntityId(), this->GetId()));
             }
         }
-
     } // namespace Render
 } // namespace AZ

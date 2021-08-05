@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -57,6 +53,12 @@ namespace ScriptCanvas
         constexpr const char* MissingVariableForEBusHandlerAddress = "missing variable for ebus handler address";
         constexpr const char* MissingVariableForEBusHandlerAddressConnected = "missing variable for ebus handler address";
         constexpr const char* MultipleExecutionOutConnections = "This node has multiple, unordered execution Out connections";
+        constexpr const char* MultipleFunctionCallFromSingleSlotMultipleVariadic = "Only one variadic call (the last one) is supported in the multi-call per single slot.";
+        constexpr const char* MultipleFunctionCallFromSingleSlotNoChildren = "Node missing from parent children.";
+        constexpr const char* MultipleFunctionCallFromSingleSlotNotEnoughInput = "Not enough input to support multi call input information.";
+        constexpr const char* MultipleFunctionCallFromSingleSlotNotEnoughInputForThis = "Node doesn't have enough input for a parsed this pointer.";
+        constexpr const char* MultipleFunctionCallFromSingleSlotReused = "Multiple function slot reused an input slot";
+        constexpr const char* MultipleFunctionCallFromSingleSlotUnused = "Multiple function slot left an input slot unused.";
         constexpr const char* MultipleSimulaneousInputValues = "Multiple values routed to the same single input with no way to discern which to take.";
         constexpr const char* MultipleStartNodes = "Multiple Start nodes in a single graph. Only one is allowed.";
         constexpr const char* NoChildrenAfterRoot = "No children after parsing function root";
@@ -73,6 +75,7 @@ namespace ScriptCanvas
         constexpr const char* NotEnoughBranchesForReturn = "Not enough branches for defined out return values.";
         constexpr const char* NotEnoughInputForArithmeticOperator = "Not enough input for arithmetic operator";
         constexpr const char* NullEntityInGraph = "Null entity pointer in graph";
+        constexpr const char* NullInputKnown = "The input is known to be null, and the node does not accept it";
         constexpr const char* ParseExecutionMultipleOutSyntaxSugarChildExecutionRemovedAndNotReplaced = "ParseExecutionMultipleOutSyntaxSugar: child execution node was removed, and not replaced.";
         constexpr const char* ParseExecutionMultipleOutSyntaxSugarMismatchOutSize = "ParseExecutionMultipleOutSyntaxSugar: mismatch in connect nodes vs source slots size";
         constexpr const char* ParseExecutionMultipleOutSyntaxSugarNonNullChildExecutionFound = "ParseExecutionMultipleOutSyntaxSugar: non null child execution node";

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "EditorHelpers.h"
 
@@ -16,20 +12,33 @@
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Viewport/CameraState.h>
 #include <AzFramework/Visibility/BoundsBus.h>
+#include <AzToolsFramework/API/EditorViewportIconDisplayInterface.h>
 #include <AzToolsFramework/ToolsComponents/EditorEntityIconComponentBus.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
-#include <AzToolsFramework/ViewportSelection/EditorVisibleEntityDataCache.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
+#include <AzToolsFramework/ViewportSelection/EditorVisibleEntityDataCache.h>
 
 AZ_CVAR(
-    bool, ed_visibility_showAggregateEntitySelectionBounds, false, nullptr, AZ::ConsoleFunctorFlags::Null,
+    bool,
+    ed_visibility_showAggregateEntitySelectionBounds,
+    false,
+    nullptr,
+    AZ::ConsoleFunctorFlags::Null,
     "Display the aggregate selection bounds for a given entity (the union of all component Aabbs)");
 AZ_CVAR(
-    bool, ed_visibility_showAggregateEntityTransformedLocalBounds, false, nullptr, AZ::ConsoleFunctorFlags::Null,
+    bool,
+    ed_visibility_showAggregateEntityTransformedLocalBounds,
+    false,
+    nullptr,
+    AZ::ConsoleFunctorFlags::Null,
     "Display the aggregate transformed local bounds for a given entity (the union of all local component Aabbs)");
 AZ_CVAR(
-    bool, ed_visibility_showAggregateEntityWorldBounds, false, nullptr, AZ::ConsoleFunctorFlags::Null,
+    bool,
+    ed_visibility_showAggregateEntityWorldBounds,
+    false,
+    nullptr,
+    AZ::ConsoleFunctorFlags::Null,
     "Display the aggregate world bounds for a given entity (the union of all world component Aabbs)");
 
 namespace AzToolsFramework
@@ -47,8 +56,7 @@ namespace AzToolsFramework
     static bool HelpersVisible()
     {
         bool helpersVisible = false;
-        EditorRequestBus::BroadcastResult(
-            helpersVisible, &EditorRequests::DisplayHelpersVisible);
+        EditorRequestBus::BroadcastResult(helpersVisible, &EditorRequests::DisplayHelpersVisible);
         return helpersVisible;
     }
 
@@ -58,25 +66,23 @@ namespace AzToolsFramework
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
-        return s_iconMinScale + (s_iconMaxScale - s_iconMinScale) *
+        return s_iconMinScale +
+            (s_iconMaxScale - s_iconMinScale) *
             (1.0f - AZ::GetClamp(AZ::GetMax(0.0f, sqrtf(distSq) - s_iconCloseDist) / s_iconFarDist, 0.0f, 1.0f));
     }
 
     static void DisplayComponents(
-        const AZ::EntityId entityId, const AzFramework::ViewportInfo& viewportInfo,
-        AzFramework::DebugDisplayRequests& debugDisplay)
+        const AZ::EntityId entityId, const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
         const AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(entityId);
         AzFramework::EntityDebugDisplayEventBus::Event(
-            entityId, &AzFramework::EntityDebugDisplayEvents::DisplayEntityViewport,
-            viewportInfo, debugDisplay);
+            entityId, &AzFramework::EntityDebugDisplayEvents::DisplayEntityViewport, viewportInfo, debugDisplay);
 
         if (ed_visibility_showAggregateEntitySelectionBounds)
         {
-            if (const AZ::Aabb aabb = AzToolsFramework::CalculateEditorEntitySelectionBounds(entityId, viewportInfo);
-                aabb.IsValid())
+            if (const AZ::Aabb aabb = AzToolsFramework::CalculateEditorEntitySelectionBounds(entityId, viewportInfo); aabb.IsValid())
             {
                 debugDisplay.SetColor(AZ::Colors::Orange);
                 debugDisplay.DrawWireBox(aabb.GetMin(), aabb.GetMax());
@@ -106,8 +112,7 @@ namespace AzToolsFramework
     }
 
     AZ::EntityId EditorHelpers::HandleMouseInteraction(
-        const AzFramework::CameraState& cameraState,
-        const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
+        const AzFramework::CameraState& cameraState, const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
 
@@ -126,8 +131,7 @@ namespace AzToolsFramework
         {
             const AZ::EntityId entityId = m_entityDataCache->GetVisibleEntityId(entityCacheIndex);
 
-            if (    m_entityDataCache->IsVisibleEntityLocked(entityCacheIndex)
-                || !m_entityDataCache->IsVisibleEntityVisible(entityCacheIndex))
+            if (m_entityDataCache->IsVisibleEntityLocked(entityCacheIndex) || !m_entityDataCache->IsVisibleEntityVisible(entityCacheIndex))
             {
                 continue;
             }
@@ -147,10 +151,8 @@ namespace AzToolsFramework
                     const auto iconRange = static_cast<float>(GetIconScale(distSqFromCamera) * s_iconSize * 0.5f);
                     const auto screenCoords = mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates;
 
-                    if (    screenCoords.m_x >= screenPosition.m_x - iconRange
-                        &&  screenCoords.m_x <= screenPosition.m_x + iconRange
-                        &&  screenCoords.m_y >= screenPosition.m_y - iconRange
-                        &&  screenCoords.m_y <= screenPosition.m_y + iconRange)
+                    if (screenCoords.m_x >= screenPosition.m_x - iconRange && screenCoords.m_x <= screenPosition.m_x + iconRange &&
+                        screenCoords.m_y >= screenPosition.m_y - iconRange && screenCoords.m_y <= screenPosition.m_y + iconRange)
                     {
                         entityIdUnderCursor = entityId;
                         break;
@@ -160,16 +162,13 @@ namespace AzToolsFramework
 
             using AzFramework::ViewportInfo;
             // check if components provide an aabb
-            if (const AZ::Aabb aabb = CalculateEditorEntitySelectionBounds(entityId, ViewportInfo{viewportId});
-                aabb.IsValid())
+            if (const AZ::Aabb aabb = CalculateEditorEntitySelectionBounds(entityId, ViewportInfo{ viewportId }); aabb.IsValid())
             {
                 // coarse grain check
                 if (AabbIntersectMouseRay(mouseInteraction.m_mouseInteraction, aabb))
                 {
                     // if success, pick against specific component
-                    if (PickEntity(
-                        entityId, mouseInteraction.m_mouseInteraction,
-                        closestDistance, viewportId))
+                    if (PickEntity(entityId, mouseInteraction.m_mouseInteraction, closestDistance, viewportId))
                     {
                         entityIdUnderCursor = entityId;
                     }
@@ -181,7 +180,8 @@ namespace AzToolsFramework
     }
 
     void EditorHelpers::DisplayHelpers(
-        const AzFramework::ViewportInfo& viewportInfo, const AzFramework::CameraState& cameraState,
+        const AzFramework::ViewportInfo& viewportInfo,
+        const AzFramework::CameraState& cameraState,
         AzFramework::DebugDisplayRequests& debugDisplay,
         const AZStd::function<bool(AZ::EntityId)>& showIconCheck)
     {
@@ -201,8 +201,8 @@ namespace AzToolsFramework
                 // notify components to display
                 DisplayComponents(entityId, viewportInfo, debugDisplay);
 
-                if (    m_entityDataCache->IsVisibleEntityIconHidden(entityCacheIndex)
-                    || (m_entityDataCache->IsVisibleEntitySelected(entityCacheIndex) && !showIconCheck(entityId)))
+                if (m_entityDataCache->IsVisibleEntityIconHidden(entityCacheIndex) ||
+                    (m_entityDataCache->IsVisibleEntitySelected(entityCacheIndex) && !showIconCheck(entityId)))
                 {
                     continue;
                 }
@@ -218,7 +218,8 @@ namespace AzToolsFramework
                 const float iconSize = s_iconSize * iconScale;
 
                 using ComponentEntityAccentType = Components::EditorSelectionAccentSystemComponent::ComponentEntityAccentType;
-                const AZ::Color iconHighlight = [this, entityCacheIndex]() {
+                const AZ::Color iconHighlight = [this, entityCacheIndex]()
+                {
                     if (m_entityDataCache->IsVisibleEntityLocked(entityCacheIndex))
                     {
                         return AZ::Color(AZ::u8(100), AZ::u8(100), AZ::u8(100), AZ::u8(255));
@@ -232,10 +233,9 @@ namespace AzToolsFramework
                     return AZ::Color(1.0f, 1.0f, 1.0f, 1.0f);
                 }();
 
-                debugDisplay.SetColor(iconHighlight);
-                // debugDisplay.DrawTextureLabel(
-                //     iconTextureId, entityPosition, iconSize, iconSize,
-                //     /*DisplayContext::ETextureIconFlags::TEXICON_ON_TOP=*/ 0x0008);
+                EditorViewportIconDisplay::Get()->DrawIcon({ viewportInfo.m_viewportId, iconTextureId, iconHighlight, entityPosition,
+                                                             EditorViewportIconDisplayInterface::CoordinateSpace::WorldSpace,
+                                                             AZ::Vector2{ iconSize, iconSize } });
             }
         }
     }

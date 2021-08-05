@@ -1,20 +1,15 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 // Description : AtomFont class.
 
 
-#include <AtomLyIntegration/AtomFont/AtomFont_precompiled.h>
 
 #if !defined(USE_NULLFONT_ALWAYS)
 
@@ -34,6 +29,7 @@
 
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 
 // Static member definitions
 const AZ::AtomFont::GlyphSize AZ::AtomFont::defaultGlyphSize = AZ::AtomFont::GlyphSize(ICryFont::defaultGlyphSizeX, ICryFont::defaultGlyphSizeY);
@@ -354,21 +350,18 @@ AZ::AtomFont::AtomFont(ISystem* system)
 #endif
     AZ::Interface<AzFramework::FontQueryInterface>::Register(this);
 
-    m_sceneEventHandler = AzFramework::ISceneSystem::SceneEvent::Handler(
-        [this](AzFramework::ISceneSystem::EventType eventType, const AZStd::shared_ptr<AzFramework::Scene>& scene)
-        {
-            if (eventType == AzFramework::ISceneSystem::EventType::ScenePendingRemoval)
-            {
-                SceneAboutToBeRemoved(*scene);
-            }
-        });
-    auto sceneSystem = AzFramework::SceneSystemInterface::Get();
-    AZ_Assert(sceneSystem, "Font created before the scene system is available.");
-    sceneSystem->ConnectToEvents(m_sceneEventHandler);
+    // Queue a load for the font per viewport dynamic draw context shader, and wait for it to load
+    static const char* shaderFilepath = "Shaders/SimpleTextured.azshader";
+    Data::Asset<RPI::ShaderAsset> shaderAsset = RPI::AssetUtils::GetAssetByProductPath<RPI::ShaderAsset>(shaderFilepath, RPI::AssetUtils::TraceLevel::Assert);
+    shaderAsset.QueueLoad();
+    Data::AssetBus::Handler::BusConnect(shaderAsset.GetId());
+
 }
 
 AZ::AtomFont::~AtomFont()
 {
+    Data::AssetBus::Handler::BusDisconnect();
+
     AZ::Interface<AzFramework::FontQueryInterface>::Unregister(this);
     m_defaultFontDrawInterface = nullptr;
 
@@ -861,51 +854,35 @@ XmlNodeRef AZ::AtomFont::LoadFontFamilyXml(const char* fontFamilyName, string& o
     return root;
 }
 
-void AZ::AtomFont::SceneAboutToBeRemoved(AzFramework::Scene& scene)
+void AZ::AtomFont::OnAssetReady(Data::Asset<Data::AssetData> asset)
 {
-    AZ::RPI::ScenePtr* rpiScene = scene.FindSubsystem<AZ::RPI::ScenePtr>();
-    if (rpiScene)
-    {
-        AZStd::lock_guard<AZStd::shared_mutex> lock(m_sceneToDynamicDrawMutex);
-        if (auto it = m_sceneToDynamicDrawMap.find(rpiScene->get()); it != m_sceneToDynamicDrawMap.end())
+    Data::Asset<RPI::ShaderAsset> shaderAsset = asset;
+
+    AZ::AtomBridge::PerViewportDynamicDraw::Get()->RegisterDynamicDrawContext(
+        AZ::Name(AZ::AtomFontDynamicDrawContextName),
+        [shaderAsset](RPI::Ptr<RPI::DynamicDrawContext> drawContext)
         {
-            m_sceneToDynamicDrawMap.erase(it);
-        }
-    }
+            AZ_Assert(shaderAsset->IsReady(), "Attempting to register the AtomFont"
+                " dynamic draw context before the shader asset is loaded. The shader should be loaded first"
+                " to avoid a blocking asset load and potential deadlock, since the DynamicDrawContext lambda"
+                " will be executed during scene processing and there may be multiple scenes executing in parallel.");
+
+            Data::Instance<RPI::Shader> shader = RPI::Shader::FindOrCreate(shaderAsset);
+            AZ::RPI::ShaderOptionList shaderOptions;
+            shaderOptions.push_back(AZ::RPI::ShaderOption(AZ::Name("o_useColorChannels"), AZ::Name("false")));
+            shaderOptions.push_back(AZ::RPI::ShaderOption(AZ::Name("o_clamp"), AZ::Name("true")));
+            drawContext->InitShaderWithVariant(shader, &shaderOptions);
+            drawContext->InitVertexFormat(
+                {
+                    {"POSITION", RHI::Format::R32G32B32_FLOAT},
+                    {"COLOR", RHI::Format::B8G8R8A8_UNORM},
+                    {"TEXCOORD0", RHI::Format::R32G32_FLOAT}
+                });
+            drawContext->EndInit();
+        });
+
+    Data::AssetBus::Handler::BusDisconnect();
 }
-
-AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> AZ::AtomFont::GetOrCreateDynamicDrawForScene(AZ::RPI::Scene* scene)
-{
-    static const char* shaderFilepath = "Shaders/SimpleTextured.azshader";
-
-    {
-        // shared lock while reading
-        AZStd::shared_lock<AZStd::shared_mutex> lock(m_sceneToDynamicDrawMutex);
-
-        if (auto it = m_sceneToDynamicDrawMap.find(scene); it != m_sceneToDynamicDrawMap.end())
-        {
-            return it->second;
-        }
-    }
-
-    // Create and initialize DynamicDrawContext for font draw
-    AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> dynamicDraw = RPI::DynamicDrawInterface::Get()->CreateDynamicDrawContext(scene);
-
-    Data::Instance<RPI::Shader> shader = AZ::RPI::LoadShader(shaderFilepath);
-    AZ::RPI::ShaderOptionList shaderOptions;
-    shaderOptions.push_back(AZ::RPI::ShaderOption(AZ::Name("o_useColorChannels"), AZ::Name("false")));
-    shaderOptions.push_back(AZ::RPI::ShaderOption(AZ::Name("o_clamp"), AZ::Name("true")));
-    dynamicDraw->InitShaderWithVariant(shader, &shaderOptions);
-    dynamicDraw->InitVertexFormat({{"POSITION", RHI::Format::R32G32B32_FLOAT}, {"COLOR", RHI::Format::B8G8R8A8_UNORM}, {"TEXCOORD0", RHI::Format::R32G32_FLOAT}});
-    dynamicDraw->EndInit();
-
-    // exclusive lock while writing
-    AZStd::lock_guard<AZStd::shared_mutex> lock(m_sceneToDynamicDrawMutex);
-    m_sceneToDynamicDrawMap.insert(AZStd::make_pair(scene, dynamicDraw));
-
-    return dynamicDraw;
-}
-
 
 #endif
 

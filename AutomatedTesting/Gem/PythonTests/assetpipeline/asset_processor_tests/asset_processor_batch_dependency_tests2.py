@@ -1,12 +1,8 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 
 General Asset Processor Batch Tests
 """
@@ -60,6 +56,15 @@ class TestsAssetProcessorBatch_DependenycyTests(object):
         Verify that Schemas can be loaded via Gems utilizing the fonts schema
 
         :returns: None
+
+        Test Steps:
+        1. Run Missing Dependency Scanner against %fonts%.xml when no fonts are present
+        2. Verify fonts are scanned
+        3. Verify that missing dependencies are found for fonts
+        4. Add fonts to game project
+        5. Run Missing Dependency Scanner against %fonts%.xml when fonts are present
+        6. Verify that same amount of fonts are scanned
+        7. Verify that there are no missing dependencies.
         """
         schema_name = "Font.xmlschema"
         asset_processor.create_temp_asset_root()

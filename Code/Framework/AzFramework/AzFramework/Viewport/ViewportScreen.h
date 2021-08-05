@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -42,7 +38,7 @@ namespace AzFramework
         const AZ::Vector3& worldPosition, const AZ::Matrix4x4& cameraView, const AZ::Matrix4x4& cameraProjection,
         const AZ::Vector2& viewportSize);
 
-    //! Unprojects a position in screen space to world space.
+    //! Unprojects a position in screen space pixel coordinates to world space.
     //! Note: The position returned will be on the near clip plane of the camera in world space.
     AZ::Vector3 ScreenToWorld(const ScreenPoint& screenPosition, const CameraState& cameraState);
 
@@ -51,6 +47,12 @@ namespace AzFramework
     AZ::Vector3 ScreenToWorld(
         const ScreenPoint& screenPosition, const AZ::Matrix4x4& inverseCameraView,
         const AZ::Matrix4x4& inverseCameraProjection, const AZ::Vector2& viewportSize);
+
+    //! Unprojects a position in screen space normalized device coordinates to world space.
+    //! Note: The position returned will be on the near clip plane of the camera in world space.
+    AZ::Vector3 ScreenNDCToWorld(
+        const AZ::Vector2& ndcPosition, const AZ::Matrix4x4& inverseCameraView,
+        const AZ::Matrix4x4& inverseCameraProjection);
 
     //! Returns the camera projection for the current camera state.
     AZ::Matrix4x4 CameraProjection(const CameraState& cameraState);

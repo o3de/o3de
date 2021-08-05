@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -37,10 +33,13 @@ namespace O3DE::ProjectManager
             const QVector<QString>& elementNames,
             const QVector<int>& elementCounts,
             bool showAllLessButton = true,
+            bool collapsed = false,
             int defaultShowCount = 4,
             QWidget* parent = nullptr);
 
         QButtonGroup* GetButtonGroup();
+
+        bool IsCollapsed();
 
     private:
         void UpdateCollapseState();
@@ -66,14 +65,18 @@ namespace O3DE::ProjectManager
         explicit GemFilterWidget(GemSortFilterProxyModel* filterProxyModel, QWidget* parent = nullptr);
         ~GemFilterWidget() = default;
 
+    public slots:
+        void ResetGemStatusFilter();
+
     private:
         void AddGemOriginFilter();
         void AddTypeFilter();
         void AddPlatformFilter();
         void AddFeatureFilter();
 
-        QVBoxLayout* m_mainLayout = nullptr;
+        QVBoxLayout* m_filterLayout = nullptr;
         GemModel* m_gemModel = nullptr;
         GemSortFilterProxyModel* m_filterProxyModel = nullptr;
+        FilterCategoryWidget* m_statusFilter = nullptr;
     };
 } // namespace O3DE::ProjectManager

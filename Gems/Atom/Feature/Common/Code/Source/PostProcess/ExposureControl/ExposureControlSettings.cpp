@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Math/MathUtils.h>
@@ -100,16 +96,9 @@ namespace AZ
 
         bool ExposureControlSettings::InitCommonBuffer()
         {
-            // generate a UUID for the buffer name to keep it unique
-            AZ::Uuid uuid = AZ::Uuid::CreateRandom();
-            AZStd::string uuidString;
-            uuid.ToString(uuidString);
-
-            AZStd::string bufferName = AZStd::string::format("%s_%s", ExposureControlBufferBaseName, uuidString.c_str());
-
             RPI::CommonBufferDescriptor desc;
             desc.m_poolType = RPI::CommonBufferPoolType::Constant;
-            desc.m_bufferName = bufferName;
+            desc.m_bufferName = ExposureControlBufferName;
             desc.m_byteCount = sizeof(ShaderParameters);
             desc.m_elementSize = sizeof(ShaderParameters);
 
@@ -117,7 +106,7 @@ namespace AZ
 
             if (!m_buffer)
             {
-                AZ_Assert(false, "Failed to create the RPI::Buffer[%s] which is used for the exposure control feature.", bufferName.c_str());
+                AZ_Assert(false, "Failed to create the RPI::Buffer[%s] which is used for the exposure control feature.", desc.m_bufferName.c_str());
                 return false;
             }
 

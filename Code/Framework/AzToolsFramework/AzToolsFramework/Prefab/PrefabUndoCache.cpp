@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -73,14 +69,16 @@ namespace AzToolsFramework
             }
 
             PrefabDom oldData;
-            Retrieve(entityId, oldData);
+            AZ::EntityId oldParentId;
+            Retrieve(entityId, oldData, oldParentId);
 
             UpdateCache(entityId);
 
             PrefabDom newData;
-            Retrieve(entityId, newData);
+            AZ::EntityId newParentId;
+            Retrieve(entityId, newData, newParentId);
 
-            if (newData != oldData)
+            if (newData != oldData || oldParentId != newParentId)
             {
                 // display a useful message
                 AZ::Entity* entity = nullptr;
@@ -106,7 +104,7 @@ namespace AzToolsFramework
             // Clear out newly generated data and
             // replace with original data to ensure debug mode has the same data as profile/release
             // in the event of the consistency check failing.
-            m_entitySavedStates[entityId] = AZStd::move(oldData);
+            m_entitySavedStates[entityId] = {AZStd::move(oldData), oldParentId};
 
 #endif // ENABLE_UNDOCACHE_CONSISTENCY_CHECKS
         }
@@ -133,17 +131,17 @@ namespace AzToolsFramework
 
             if (!instanceOptionalReference.has_value())
             {
-                AZ_Warning(
-                    "Undo", false,
-                    "PrefabUndoCache was told to update the cache for entity of id %p (%s), but that entity does not have an owning instance.",
-                    entityId, entity->GetName().c_str());
+                // This is not an error, we just don't handle this entity.
                 return;
             }
+
+            AZ::EntityId parentId;
+            AZ::TransformBus::EventResult(parentId, entityId, &AZ::TransformBus::Events::GetParentId);
 
             // Capture it
             PrefabDom entityDom;
             m_instanceToTemplateInterface->GenerateDomForEntity(entityDom, *entity);
-            m_entitySavedStates.emplace(AZStd::make_pair(entityId, AZStd::move(entityDom)));
+            m_entitySavedStates[entityId] = {AZStd::move(entityDom), parentId};
 
             AZLOG("Prefab Undo", "Correctly updated cache for entity of id %llu (%s)", static_cast<AZ::u64>(entityId), entity->GetName().c_str());
 
@@ -155,7 +153,7 @@ namespace AzToolsFramework
             m_entitySavedStates.erase(entityId);
         }
 
-        bool PrefabUndoCache::Retrieve(const AZ::EntityId& entityId, PrefabDom& outDom)
+        bool PrefabUndoCache::Retrieve(const AZ::EntityId& entityId, PrefabDom& outDom, AZ::EntityId& parentId)
         {
             auto it = m_entitySavedStates.find(entityId);
 
@@ -164,14 +162,15 @@ namespace AzToolsFramework
                 return false;
             }
 
-            outDom = AZStd::move(m_entitySavedStates[entityId]);
+            outDom = AZStd::move(m_entitySavedStates[entityId].dom);
+            parentId = m_entitySavedStates[entityId].parentId;
             m_entitySavedStates.erase(entityId);
             return true;
         }
 
-        void PrefabUndoCache::Store(const AZ::EntityId& entityId, PrefabDom&& dom)
+        void PrefabUndoCache::Store(const AZ::EntityId& entityId, PrefabDom&& dom, const AZ::EntityId& parentId)
         {
-            m_entitySavedStates.emplace(AZStd::make_pair(entityId, AZStd::move(dom)));
+            m_entitySavedStates[entityId] = {AZStd::move(dom), parentId};
         }
 
         void PrefabUndoCache::Clear()

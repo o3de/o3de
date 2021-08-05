@@ -1,17 +1,12 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
-#include <PhysX_precompiled.h>
-
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzCore/EBus/Results.h>
@@ -20,6 +15,7 @@
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/SimdMath.h>
+#include <AzCore/Math/ToString.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
@@ -40,9 +36,10 @@
 #include <Source/Shape.h>
 #include <Source/StaticRigidBodyComponent.h>
 #include <Source/RigidBodyStatic.h>
-#include <Source/Joint.h>
 #include <Source/Utils.h>
 #include <PhysX/PhysXLocks.h>
+#include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
+#include <PhysX/MathConversion.h>
 
 namespace PhysX
 {
@@ -607,48 +604,6 @@ namespace PhysX
             return true;
         }
 
-        void GetMaterialList(
-            AZStd::vector<physx::PxMaterial*>& pxMaterials, const AZStd::vector<int>& terrainSurfaceIdIndexMapping,
-            const Physics::TerrainMaterialSurfaceIdMap& terrainMaterialsToSurfaceIds)
-        {
-            pxMaterials.reserve(terrainSurfaceIdIndexMapping.size());
-
-            AZStd::shared_ptr<Material> defaultMaterial;
-            MaterialManagerRequestsBus::BroadcastResult(defaultMaterial, &MaterialManagerRequestsBus::Events::GetDefaultMaterial);
-
-            if (terrainSurfaceIdIndexMapping.empty())
-            {
-                pxMaterials.push_back(defaultMaterial->GetPxMaterial());
-                return;
-            }
-
-            AZStd::vector<physx::PxMaterial*> materials;
-
-            for (auto& surfaceId : terrainSurfaceIdIndexMapping)
-            {
-                const auto& userAssignedMaterials = terrainMaterialsToSurfaceIds;
-                const auto& matSelectionIterator = userAssignedMaterials.find(surfaceId);
-                if (matSelectionIterator != userAssignedMaterials.end())
-                {
-                    MaterialManagerRequestsBus::Broadcast(&MaterialManagerRequests::GetPxMaterials, matSelectionIterator->second, materials);
-
-                    if (!materials.empty())
-                    {
-                        pxMaterials.push_back(materials.front());
-                    }
-                    else
-                    {
-                        AZ_Error("PhysX", false, "Creating materials: array with materials can't be empty");
-                        pxMaterials.push_back(defaultMaterial->GetPxMaterial());
-                    }
-                }
-                else
-                {
-                    pxMaterials.push_back(defaultMaterial->GetPxMaterial());
-                }
-            }
-        }
-
         AZStd::string ReplaceAll(AZStd::string str, const AZStd::string& fromString, const AZStd::string& toString) {
             size_t positionBegin = 0;
             while ((positionBegin = str.find(fromString, positionBegin)) != AZStd::string::npos)
@@ -920,9 +875,9 @@ namespace PhysX
 
         AZ::Vector3 GetTransformScale(AZ::EntityId entityId)
         {
-            AZ::Vector3 worldScale = AZ::Vector3::CreateOne();
-            AZ::TransformBus::EventResult(worldScale, entityId, &AZ::TransformBus::Events::GetWorldScale);
-            return worldScale;
+            float worldUniformScale = 1.0f;
+            AZ::TransformBus::EventResult(worldUniformScale, entityId, &AZ::TransformBus::Events::GetWorldUniformScale);
+            return AZ::Vector3(worldUniformScale);
         }
 
         AZ::Vector3 GetUniformScale(AZ::EntityId entityId)
@@ -1436,8 +1391,12 @@ namespace PhysX
 
             ForceRegionBusBehaviorHandler::Reflect(context);
 
-            GenericJointConfiguration::Reflect(context);
-            GenericJointLimitsConfiguration::Reflect(context);
+            D6JointLimitConfiguration::Reflect(context);
+            JointGenericProperties::Reflect(context);
+            JointLimitProperties::Reflect(context);
+            FixedJointConfiguration::Reflect(context);
+            BallJointConfiguration::Reflect(context);
+            HingeJointConfiguration::Reflect(context);
         }
 
         void ForceRegionBusBehaviorHandler::Reflect(AZ::ReflectContext* context)
@@ -1506,6 +1465,14 @@ namespace PhysX
             rigidDynamic->setCMassLocalPose(physx::PxTransform(PxMathConvert(configuration.m_centerOfMassOffset)));
             rigidDynamic->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, configuration.m_kinematic);
             rigidDynamic->setMaxAngularVelocity(configuration.m_maxAngularVelocity);
+
+            // Set axis locks.
+            rigidDynamic->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_X, configuration.m_lockLinearX);
+            rigidDynamic->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Y, configuration.m_lockLinearY);
+            rigidDynamic->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_LINEAR_Z, configuration.m_lockLinearZ);
+            rigidDynamic->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_X, configuration.m_lockAngularX);
+            rigidDynamic->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Y, configuration.m_lockAngularY);
+            rigidDynamic->setRigidDynamicLockFlag(physx::PxRigidDynamicLockFlag::eLOCK_ANGULAR_Z, configuration.m_lockAngularZ);
 
             return rigidDynamic;
         }

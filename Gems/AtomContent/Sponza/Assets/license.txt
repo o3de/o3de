@@ -1,0 +1,8 @@
+The content in this gem "O3DE\Gems\AtomContent\Sponza" is ported 
+from the original source, and modified for the O3DE Engine and Atom Renderer.
+
+The original "Crytek Sponza" scene data can be downloaded from the
+"McGuire Computer Graphics Archive": https://casual-effects.com/data/
+
+The original content is under the "CC BY 3.0" License:
+https://creativecommons.org/licenses/by/3.0/

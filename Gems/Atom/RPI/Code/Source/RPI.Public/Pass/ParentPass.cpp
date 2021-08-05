@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AtomCore/Instance/InstanceDatabase.h>
 #include <AtomCore/std/containers/vector_set.h>
@@ -40,7 +36,7 @@ namespace AZ
         ParentPass::ParentPass(const PassDescriptor& descriptor)
             : Pass(descriptor)
         {
-            CreateChildPasses();
+            m_flags.m_createChildren = true;
         }
 
         ParentPass::~ParentPass()
@@ -59,7 +55,7 @@ namespace AZ
             child->m_parent = this;
             child->OnHierarchyChange();
 
-            QueueForBuildAttachments();
+            QueueForBuildAndInitialization();
 
             // Notify pipeline
             if (m_pipeline)
@@ -248,25 +244,18 @@ namespace AZ
 
         void ParentPass::CreateChildPasses()
         {
-            // Flag prevents the function from executing multiple times a frame. Can happen
-            // as pass system has a list of passes for which it needs to call this function.
-            if (m_flags.m_alreadyCreated)
+            // The already created flag prevents this function from executing multiple times a frame
+            if (!m_flags.m_createChildren || m_flags.m_alreadyCreatedChildren)
             {
                 return;
             }
-            m_flags.m_alreadyCreated = true;
+            m_flags.m_alreadyCreatedChildren = true;
+
             RemoveChildren();
             CreatePassesFromTemplate();
             CreateChildPassesInternal();
 
-            for (Ptr<Pass>& child : m_children)
-            {
-                ParentPass* asParent = child->AsParent();
-                if (asParent != nullptr)
-                {
-                    asParent->CreateChildPasses();
-                }
-            }
+            m_flags.m_createChildren = false;
         }
 
         void ParentPass::ResetInternal()
@@ -277,19 +266,29 @@ namespace AZ
             }
         }
 
-        void ParentPass::BuildAttachmentsInternal()
+        void ParentPass::BuildInternal()
         {
+            CreateChildPasses();
+
             for (const Ptr<Pass>& child : m_children)
             {
-                child->BuildAttachments();
+                child->Build();
             }
         }
 
-        void ParentPass::OnBuildAttachmentsFinishedInternal()
+        void ParentPass::OnInitializationFinishedInternal()
         {
             for (const Ptr<Pass>& child : m_children)
             {
-                child->OnBuildAttachmentsFinished();
+                child->OnInitializationFinished();
+            }
+        }
+
+        void ParentPass::InitializeInternal()
+        {
+            for (const Ptr<Pass>& child : m_children)
+            {
+                child->Initialize();
             }
         }
 

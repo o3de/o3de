@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Interface/Interface.h>
@@ -18,6 +14,7 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
+#include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/Instance/TemplateInstanceMapperInterface.h>
 
@@ -49,8 +46,7 @@ namespace AzToolsFramework
             m_alias = GenerateInstanceAlias();
             m_containerEntity = containerEntity ? AZStd::move(containerEntity)
                                                 : AZStd::make_unique<AZ::Entity>();
-            EntityAlias containerEntityAlias = GenerateEntityAlias();
-            RegisterEntity(m_containerEntity->GetId(), containerEntityAlias);
+            RegisterEntity(m_containerEntity->GetId(), PrefabDomUtils::ContainerEntityName);
         }
 
         Instance::~Instance()
@@ -86,16 +82,7 @@ namespace AzToolsFramework
                 return;
             }
 
-            // If this instance's templateId is valid, we should be able to unregister this instance from 
-            // Template to Instance mapping successfully.
-            if (m_templateId != InvalidTemplateId &&
-                !m_templateInstanceMapper->UnregisterInstance(*this))
-            {
-                AZ_Assert(false,
-                    "Prefab - Attempted to Unregister Instance from Template with Id '%u'.  "
-                    "Instance may never have been registered or was unregistered early.",
-                    m_templateId);
-            }
+            m_templateInstanceMapper->UnregisterInstance(*this);
 
             m_templateId = templateId;
 
@@ -187,13 +174,14 @@ namespace AzToolsFramework
             return removedEntity;
         }
 
-        void Instance::DetachNestedEntities(const AZStd::function<void(AZStd::unique_ptr<AZ::Entity>)>& callback)
+        void Instance::DetachAllEntitiesInHierarchy(const AZStd::function<void(AZStd::unique_ptr<AZ::Entity>)>& callback)
         {
+            callback(AZStd::move(DetachContainerEntity()));
             DetachEntities(callback);
 
             for (const auto& [instanceAlias, instance] : m_nestedInstances)
             {
-                instance->DetachNestedEntities(callback);
+                instance->DetachAllEntitiesInHierarchy(callback);
             }
         }
 
@@ -224,15 +212,7 @@ namespace AzToolsFramework
 
         void Instance::Reset()
         {
-            // Clean up Instance associations.
-            if (m_templateId != InvalidTemplateId && !m_templateInstanceMapper->UnregisterInstance(*this))
-            {
-                AZ_Assert(
-                    false,
-                    "Prefab - Attempted to unregister Instance from Template on file path '%s' with Id '%u'.  "
-                    "Instance may never have been registered or was unregistered early.",
-                    m_templateSourcePath.c_str(), m_templateId);
-            }
+            m_templateInstanceMapper->UnregisterInstance(*this);
 
             ClearEntities();
 
@@ -240,7 +220,6 @@ namespace AzToolsFramework
 
             if (m_containerEntity)
             {
-                m_instanceEntityMapper->UnregisterEntity(m_containerEntity->GetId());
                 m_containerEntity.reset(aznew AZ::Entity());
                 RegisterEntity(m_containerEntity->GetId(), GenerateEntityAlias());
             }
@@ -268,6 +247,11 @@ namespace AzToolsFramework
 
         void Instance::ClearEntities()
         {
+            if (m_containerEntity)
+            {
+                m_instanceEntityMapper->UnregisterEntity(m_containerEntity->GetId());
+            }
+
             for (const auto&[entityAlias, entity] : m_entities)
             {
                 if (entity)
@@ -284,9 +268,11 @@ namespace AzToolsFramework
                 }
             }
 
+            // Destroy the entities *before* clearing the lookup maps so that any lookups triggered during an entity's destructor
+            // are still valid.
+            m_entities.clear();
             m_instanceToTemplateEntityIdMap.clear();
             m_templateToInstanceEntityIdMap.clear();
-            m_entities.clear();
         }
 
         bool Instance::RegisterEntity(const AZ::EntityId& entityId, const EntityAlias& entityAlias)
@@ -311,11 +297,28 @@ namespace AzToolsFramework
         Instance& Instance::AddInstance(AZStd::unique_ptr<Instance> instance)
         {
             InstanceAlias newInstanceAlias = GenerateInstanceAlias();
+            return AddInstance(AZStd::move(instance), newInstanceAlias);
+        }
+
+        Instance& Instance::AddInstance(AZStd::unique_ptr<Instance> instance, InstanceAlias newInstanceAlias)
+        {
             AZ_Assert(instance.get(), "instance argument is nullptr");
-            AZ_Assert(m_nestedInstances.find(newInstanceAlias) == m_nestedInstances.end(), "InstanceAlias' unique id collision, this should never happen.");
+            AZ_Assert(
+                m_nestedInstances.find(newInstanceAlias) == m_nestedInstances.end(),
+                "InstanceAlias' unique id collision, this should never happen.");
             instance->m_parent = this;
             instance->m_alias = newInstanceAlias;
             return *(m_nestedInstances[newInstanceAlias] = std::move(instance));
+        }
+
+        void Instance::DetachNestedInstances(const AZStd::function<void(AZStd::unique_ptr<Instance>)>& callback)
+        {
+            for (auto&& [instanceAlias, instance] : m_nestedInstances)
+            {
+                instance->m_parent = nullptr;
+                callback(AZStd::move(instance));
+            }
+            m_nestedInstances.clear();
         }
 
         AZStd::unique_ptr<Instance> Instance::DetachNestedInstance(const InstanceAlias& instanceAlias)
@@ -365,17 +368,25 @@ namespace AzToolsFramework
             }
         }
 
-        void Instance::GetConstNestedEntities(const AZStd::function<bool(const AZ::Entity&)>& callback)
+        bool Instance::GetEntities_Impl(const AZStd::function<bool(AZStd::unique_ptr<AZ::Entity>&)>& callback)
         {
-            GetConstEntities(callback);
-
-            for (const auto& [instanceAlias, instance] : m_nestedInstances)
+            for (auto& [entityAlias, entity] : m_entities)
             {
-                instance->GetConstNestedEntities(callback);
+                if (!entity)
+                {
+                    continue;
+                }
+
+                if (!callback(entity))
+                {
+                    return false;
+                }
             }
+
+            return true;
         }
 
-        void Instance::GetConstEntities(const AZStd::function<bool(const AZ::Entity&)>& callback)
+        bool Instance::GetConstEntities_Impl(const AZStd::function<bool(const AZ::Entity&)>& callback) const
         {
             for (const auto& [entityAlias, entity] : m_entities)
             {
@@ -386,19 +397,83 @@ namespace AzToolsFramework
 
                 if (!callback(*entity))
                 {
-                    break;
+                    return false;
                 }
             }
+
+            return true;
         }
 
-        void Instance::GetNestedEntities(const AZStd::function<bool(AZStd::unique_ptr<AZ::Entity>&)>& callback)
+        bool Instance::GetAllEntitiesInHierarchy_Impl(const AZStd::function<bool(AZStd::unique_ptr<AZ::Entity>&)>& callback)
         {
-            GetEntities(callback);
+            if (HasContainerEntity())
+            {
+                if (!callback(m_containerEntity))
+                {
+                    return false;
+                }
+            }
+
+            if (!GetEntities_Impl(callback))
+            {
+                return false;
+            }
 
             for (auto& [instanceAlias, instance] : m_nestedInstances)
             {
-                instance->GetNestedEntities(callback);
+                if (!instance->GetAllEntitiesInHierarchy_Impl(callback))
+                {
+                    return false;
+                }
             }
+
+            return true;
+        }
+
+        bool Instance::GetAllEntitiesInHierarchyConst_Impl(const AZStd::function<bool(const AZ::Entity&)>& callback) const
+        {
+            if (HasContainerEntity())
+            {
+                if (!callback(*m_containerEntity))
+                {
+                    return false;
+                }
+            }
+
+            if (!GetConstEntities_Impl(callback))
+            {
+                return false;
+            }
+
+            for (const auto& [instanceAlias, instance] : m_nestedInstances)
+            {
+                if (!instance->GetAllEntitiesInHierarchyConst_Impl(callback))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        void Instance::GetEntities(const AZStd::function<bool(AZStd::unique_ptr<AZ::Entity>&)>& callback)
+        {
+            GetEntities_Impl(callback);
+        }
+
+        void Instance::GetConstEntities(const AZStd::function<bool(const AZ::Entity&)>& callback) const
+        {
+            GetConstEntities_Impl(callback);
+        }
+
+        void Instance::GetAllEntitiesInHierarchy(const AZStd::function<bool(AZStd::unique_ptr<AZ::Entity>&)>& callback)
+        {
+            GetAllEntitiesInHierarchy_Impl(callback);
+        }
+
+        void Instance::GetAllEntitiesInHierarchyConst(const AZStd::function<bool(const AZ::Entity&)>& callback) const
+        {
+            GetAllEntitiesInHierarchyConst_Impl(callback);
         }
 
         void Instance::GetNestedInstances(const AZStd::function<void(AZStd::unique_ptr<Instance>&)>& callback)
@@ -406,44 +481,6 @@ namespace AzToolsFramework
             for (auto& [instanceAlias, instance] : m_nestedInstances)
             {
                 callback(instance);
-            }
-        }
-
-        void Instance::GetEntities(const AZStd::function<bool(AZStd::unique_ptr<AZ::Entity>&)>& callback)
-        {
-            for (auto& [entityAlias, entity] : m_entities)
-            {
-                if (!callback(entity))
-                {
-                    break;
-                }
-            }
-        }
-
-        void Instance::GetEntities(EntityList& entities, bool includeNestedEntities)
-        {
-            // Non-recursive traversal of instances
-            AZStd::vector<Instance*> instancesToTraverse = { this };
-            while (!instancesToTraverse.empty())
-            {
-                Instance* currentInstance = instancesToTraverse.back();
-                instancesToTraverse.pop_back();
-                if (includeNestedEntities)
-                {
-                    instancesToTraverse.reserve(instancesToTraverse.size() + currentInstance->m_nestedInstances.size());
-                    for (const auto& instanceByAlias : currentInstance->m_nestedInstances)
-                    {
-                        instancesToTraverse.push_back(instanceByAlias.second.get());
-                    }
-                }
-
-                // Size increases by 1 for each instance because we have to count the container entity also.
-                entities.reserve(entities.size() + currentInstance->m_entities.size() + 1);
-                entities.push_back(m_containerEntity.get());
-                for (const auto& entityByAlias : currentInstance->m_entities)
-                {
-                    entities.push_back(entityByAlias.second.get());
-                }
             }
         }
 
@@ -613,6 +650,7 @@ namespace AzToolsFramework
 
         AZStd::unique_ptr<AZ::Entity> Instance::DetachContainerEntity()
         {
+            m_instanceEntityMapper->UnregisterEntity(m_containerEntity->GetId());
             return AZStd::move(m_containerEntity);
         }
     }

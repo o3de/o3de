@@ -5,7 +5,7 @@
                 "Platform pc": {
                     "tags": "tools,renderer"
                 },
-                "Platform osx_gl": {
+                "Platform mac": {
                     "tags": "tools,renderer"
                 },
                 "RC i_caf": {

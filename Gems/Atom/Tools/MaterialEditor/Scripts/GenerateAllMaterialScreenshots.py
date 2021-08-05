@@ -1,12 +1,8 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 import azlmbr.bus
@@ -118,11 +114,11 @@ def SetCameraPitch(pitch):
     azlmbr.render.ArcBallControllerRequestBus(azlmbr.bus.Broadcast, 'SetPitch', pitch)
 
 def IdleFrames(numFrames):
-    azlmbr.materialeditor.general.idle_wait_frames(numFrames)
+    azlmbr.atomtools.general.idle_wait_frames(numFrames)
 
 def CaptureScreenshot(screenshotOutputPath):
     print("Capturing screenshot to " + screenshotOutputPath + " ...")
-    return ScreenshotHelper(azlmbr.materialeditor.general.idle_wait_frames).capture_screenshot_blocking(screenshotOutputPath)
+    return ScreenshotHelper(azlmbr.atomtools.general.idle_wait_frames).capture_screenshot_blocking(screenshotOutputPath)
 
 def ResizeViewport(width, height):
     # This locks the size of the render target to the desired resolution

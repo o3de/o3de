@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "SplineSelectionManipulator.h"
 
@@ -18,8 +14,10 @@
 namespace AzToolsFramework
 {
     SplineSelectionManipulator::Action CalculateManipulationDataAction(
-        const AZ::Transform& worldFromLocal, const AZ::Vector3& rayOrigin,
-        const AZ::Vector3& rayDirection, const AZStd::weak_ptr<const AZ::Spline>& spline)
+        const AZ::Transform& worldFromLocal,
+        const AZ::Vector3& rayOrigin,
+        const AZ::Vector3& rayDirection,
+        const AZStd::weak_ptr<const AZ::Spline>& spline)
     {
         SplineSelectionManipulator::Action action;
         if (const AZStd::shared_ptr<const AZ::Spline> splinePtr = spline.lock())
@@ -65,9 +63,7 @@ namespace AzToolsFramework
         if (m_onLeftMouseDownCallback)
         {
             m_onLeftMouseDownCallback(CalculateManipulationDataAction(
-                TransformUniformScale(GetSpace()),
-                interaction.m_mousePick.m_rayOrigin,
-                interaction.m_mousePick.m_rayDirection, m_spline));
+                TransformUniformScale(GetSpace()), interaction.m_mousePick.m_rayOrigin, interaction.m_mousePick.m_rayDirection, m_spline));
         }
     }
 
@@ -76,9 +72,7 @@ namespace AzToolsFramework
         if (MouseOver() && m_onLeftMouseUpCallback)
         {
             m_onLeftMouseUpCallback(CalculateManipulationDataAction(
-                TransformUniformScale(GetSpace()),
-                interaction.m_mousePick.m_rayOrigin,
-                interaction.m_mousePick.m_rayDirection, m_spline));
+                TransformUniformScale(GetSpace()), interaction.m_mousePick.m_rayOrigin, interaction.m_mousePick.m_rayDirection, m_spline));
         }
     }
 
@@ -99,12 +93,9 @@ namespace AzToolsFramework
         if (mouseInteraction.m_keyboardModifiers.Ctrl() && !mouseInteraction.m_keyboardModifiers.Shift())
         {
             m_manipulatorView->Draw(
-                GetManipulatorManagerId(), managerState,
-                GetManipulatorId(), {
-                    TransformUniformScale(GetSpace()), GetNonUniformScale(),
-                    AZ::Vector3::CreateZero(), MouseOver()
-                },
-                debugDisplay, cameraState, mouseInteraction);
+                GetManipulatorManagerId(), managerState, GetManipulatorId(),
+                { TransformUniformScale(GetSpace()), GetNonUniformScale(), AZ::Vector3::CreateZero(), MouseOver() }, debugDisplay,
+                cameraState, mouseInteraction);
         }
     }
 
@@ -122,4 +113,4 @@ namespace AzToolsFramework
     {
         m_manipulatorView->Invalidate(GetManipulatorManagerId());
     }
-}
+} // namespace AzToolsFramework

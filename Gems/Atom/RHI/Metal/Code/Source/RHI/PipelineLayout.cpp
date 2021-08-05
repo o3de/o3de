@@ -1,15 +1,10 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Atom_RHI_Metal_precompiled.h"
 
 #include <Atom/RHI.Reflect/Metal/PipelineLayoutDescriptor.h>
 #include <Atom/RHI.Reflect/ShaderStages.h>
@@ -70,6 +65,7 @@ namespace AZ
             
             m_srgVisibilities.resize(RHI::Limits::Pipeline::ShaderResourceGroupCountMax);
             m_srgResourcesVisibility.resize(RHI::Limits::Pipeline::ShaderResourceGroupCountMax);
+            m_srgResourcesVisibilityHash.resize(RHI::Limits::Pipeline::ShaderResourceGroupCountMax);
             for (uint32_t srgLayoutIdx = 0; srgLayoutIdx < groupLayoutCount; ++srgLayoutIdx)
             {
                 const RHI::ShaderResourceGroupLayout& srgLayout = *descriptor.GetShaderResourceGroupLayout(srgLayoutIdx);
@@ -111,6 +107,7 @@ namespace AZ
 
                 m_srgVisibilities[srgIndex] = mask;
                 m_srgResourcesVisibility[srgIndex] = srgVis;
+                m_srgResourcesVisibilityHash[srgIndex] = srgVis.GetHash();
             }           
             
             // Cache the inline constant size and slot index
@@ -123,12 +120,12 @@ namespace AZ
         
         size_t PipelineLayout::GetSlotByIndex(size_t index) const
         {
-            return m_slotToIndexTable[index];
+            return m_indexToSlotTable[index];
         }
         
         size_t PipelineLayout::GetIndexBySlot(size_t slot) const
         {
-            return m_indexToSlotTable[slot];
+            return m_slotToIndexTable[slot];
         }
         
         const RHI::ShaderStageMask& PipelineLayout::GetSrgVisibility(uint32_t index) const
@@ -141,6 +138,11 @@ namespace AZ
             return m_srgResourcesVisibility[index];
         }
 
+        const AZ::HashValue64 PipelineLayout::GetSrgResourcesVisibilityHash(uint32_t index) const
+        {
+            return m_srgResourcesVisibilityHash[index];
+        }
+    
         uint32_t PipelineLayout::GetRootConstantsSize() const
         {
             return m_rootConstantsSize;

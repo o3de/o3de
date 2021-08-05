@@ -1,17 +1,14 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #pragma once
 #include <AzCore/Math/Transform.h>
+#include <AzCore/Memory/SystemAllocator.h>
 
 namespace AZ
 {
@@ -20,7 +17,7 @@ namespace AZ
 
 namespace AzToolsFramework
 {
-    /// Handles location for manipulators which have a global space but no local transformation.
+    //! Handles location for manipulators which have a global space but no local transformation.
     class ManipulatorSpace
     {
     public:
@@ -32,17 +29,16 @@ namespace AzToolsFramework
         const AZ::Vector3& GetNonUniformScale() const;
         void SetNonUniformScale(const AZ::Vector3& nonUniformScale);
 
-        /// Calculates a transform combining the space and local transform, taking non-uniform scale into account.
+        //! Calculates a transform combining the space and local transform, taking non-uniform scale into account.
         AZ::Transform ApplySpace(const AZ::Transform& localTransform) const;
 
     private:
-        AZ::Transform m_space = AZ::Transform::CreateIdentity(); ///< Space the manipulator is in.
-        AZ::Vector3 m_nonUniformScale = AZ::Vector3::CreateOne(); ///< Handles non-uniform scale for the space the manipulator is in.
+        AZ::Transform m_space = AZ::Transform::CreateIdentity(); //!< Space the manipulator is in.
+        AZ::Vector3 m_nonUniformScale = AZ::Vector3::CreateOne(); //!< Handles non-uniform scale for the space the manipulator is in.
     };
 
-    /// Handles location for manipulators which have a global space and a local position, but no local rotation.
-    class ManipulatorSpaceWithLocalPosition
-        : public ManipulatorSpace
+    //! Handles location for manipulators which have a global space and a local position, but no local rotation.
+    class ManipulatorSpaceWithLocalPosition : public ManipulatorSpace
     {
     public:
         AZ_TYPE_INFO(ManipulatorSpaceWithLocalPosition, "{47BE15AF-60A8-436B-8F3F-7DDFB97220E6}")
@@ -52,12 +48,11 @@ namespace AzToolsFramework
         void SetLocalPosition(const AZ::Vector3& localPosition);
 
     private:
-        AZ::Vector3 m_localPosition = AZ::Vector3::CreateZero(); ///< Position in local space.
+        AZ::Vector3 m_localPosition = AZ::Vector3::CreateZero(); //!< Position in local space.
     };
 
-    /// Handles location for manipulators which have a global space and a local transform (position and rotation).
-    class ManipulatorSpaceWithLocalTransform
-        : public ManipulatorSpace
+    //! Handles location for manipulators which have a global space and a local transform (position and rotation).
+    class ManipulatorSpaceWithLocalTransform : public ManipulatorSpace
     {
     public:
         AZ_TYPE_INFO(ManipulatorSpaceWithLocalTransform, "{6D100797-1DD8-45B0-A21C-8893B770C0BC}")
@@ -72,6 +67,6 @@ namespace AzToolsFramework
         void SetLocalOrientation(const AZ::Quaternion& localOrientation);
 
     private:
-        AZ::Transform m_localTransform = AZ::Transform::CreateIdentity(); ///< Local transform.
+        AZ::Transform m_localTransform = AZ::Transform::CreateIdentity(); //!< Local transform.
     };
 } // namespace AzToolsFramework

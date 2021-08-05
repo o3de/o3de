@@ -1,13 +1,10 @@
 --------------------------------------------------------------------------------------
 --
--- All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
--- its licensors.
+-- Copyright (c) Contributors to the Open 3D Engine Project.
+-- For complete copyright and license terms please see the LICENSE at the root of this distribution.
 --
--- For complete copyright and license terms please see the LICENSE at the root of this
--- distribution (the "License"). All use of this software is governed by the License,
--- or, if provided, by the license below or the license accompanying this file. Do not
--- remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
--- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- SPDX-License-Identifier: Apache-2.0 OR MIT
+--
 --
 --
 ----------------------------------------------------------------------------------------------------
@@ -35,6 +32,10 @@ function GetMaterialPropertyDependencies()
     }
 end
 
+function GetShaderOptionDependencies()
+    return {"o_parallax_feature_enabled"}
+end
+
 -- These values must align with LayerBlendSource in StandardMultilayerPBR_Common.azsli.
 LayerBlendSource_BlendMaskTexture = 0
 LayerBlendSource_BlendMaskVertexColors = 1
@@ -48,6 +49,39 @@ function BlendSourceUsesDisplacement(context)
                                              blendSource == LayerBlendSource_Displacement_With_BlendMaskTexture or 
                                              blendSource == LayerBlendSource_Displacement_With_BlendMaskVertexColors)
     return blendSourceIncludesDisplacement
+end
+
+function IsParallaxNeededForLayer(context, layerNumber)
+    local enableLayer = true
+    if(layerNumber > 1) then -- layer 1 is always enabled, it is the implicit base layer
+        enableLayer = context:GetMaterialPropertyValue_bool("blend.enableLayer" .. layerNumber)
+    end
+
+    if not enableLayer then
+        return false
+    end
+    
+    local parallaxGroupName = "layer" .. layerNumber .. "_parallax."
+
+    local factor = context:GetMaterialPropertyValue_float(parallaxGroupName .. "factor")
+    local offset = context:GetMaterialPropertyValue_float(parallaxGroupName .. "offset")
+    
+    if factor == 0.0 and offset == 0.0 then
+        return false
+    end
+
+    local hasTexture = nil ~= context:GetMaterialPropertyValue_Image(parallaxGroupName .. "textureMap")
+    local useTexture = context:GetMaterialPropertyValue_bool(parallaxGroupName .. "useTexture")
+    
+    if not hasTexture or not useTexture then
+        factorLayer = 0.0
+    end
+    
+    if factor == 0.0 and offset == 0.0 then
+        return false
+    end
+    
+    return true
 end
 
 -- Calculates the min and max displacement height values encompassing all enabled layers.
@@ -114,21 +148,32 @@ function Process(context)
     local heightMinMax = CalcOverallHeightRange(context)
     context:SetShaderConstant_float("m_displacementMin", heightMinMax[0])
     context:SetShaderConstant_float("m_displacementMax", heightMinMax[1])
+    
+    local parallaxFeatureEnabled = context:GetMaterialPropertyValue_bool("parallax.enable")
+    if parallaxFeatureEnabled then
+        if not IsParallaxNeededForLayer(context, 1) and
+           not IsParallaxNeededForLayer(context, 2) and
+           not IsParallaxNeededForLayer(context, 3) then
+            parallaxFeatureEnabled = false
+        end
+    end
+    
+    context:SetShaderOptionValue_bool("o_parallax_feature_enabled", parallaxFeatureEnabled)
 end
 
 function ProcessEditor(context)
-    local enable = context:GetMaterialPropertyValue_bool("parallax.enable")
+    local enableParallaxSettings = context:GetMaterialPropertyValue_bool("parallax.enable")
     
-    local visibility = MaterialPropertyVisibility_Enabled
-    if(not enable) then
-        visibility = MaterialPropertyVisibility_Hidden
+    local parallaxSettingVisibility = MaterialPropertyVisibility_Enabled
+    if(not enableParallaxSettings) then
+        parallaxSettingVisibility = MaterialPropertyVisibility_Hidden
     end
     
-    context:SetMaterialPropertyVisibility("parallax.parallaxUv", visibility)
-    context:SetMaterialPropertyVisibility("parallax.algorithm", visibility)
-    context:SetMaterialPropertyVisibility("parallax.quality", visibility)
-    context:SetMaterialPropertyVisibility("parallax.pdo", visibility)
-    context:SetMaterialPropertyVisibility("parallax.showClipping", visibility)
+    context:SetMaterialPropertyVisibility("parallax.parallaxUv", parallaxSettingVisibility)
+    context:SetMaterialPropertyVisibility("parallax.algorithm", parallaxSettingVisibility)
+    context:SetMaterialPropertyVisibility("parallax.quality", parallaxSettingVisibility)
+    context:SetMaterialPropertyVisibility("parallax.pdo", parallaxSettingVisibility)
+    context:SetMaterialPropertyVisibility("parallax.showClipping", parallaxSettingVisibility)
     
     if BlendSourceUsesDisplacement(context) then
         context:SetMaterialPropertyVisibility("blend.displacementBlendDistance", MaterialPropertyVisibility_Enabled)

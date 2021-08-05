@@ -1,17 +1,16 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
+
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 import boto3
-import pytest
 import logging
 
 logger = logging.getLogger(__name__)
+logging.getLogger('boto3').setLevel(logging.WARNING)
+logging.getLogger('botocore').setLevel(logging.WARNING)
+logging.getLogger('nose').setLevel(logging.WARNING)
 
 
 class AwsUtils:
@@ -41,6 +40,13 @@ class AwsUtils:
         """
         return self._assume_session.client(service)
 
+    def resource(self, service: str):
+        """
+        Get the resource for a specific AWS service from configured session
+        :return: Client for the AWS service.
+        """
+        return self._assume_session.resource(service)
+
     def assume_session(self):
         return self._assume_session
 
@@ -55,28 +61,3 @@ class AwsUtils:
         clears stored session
         """
         self._assume_session = None
-
-
-@pytest.fixture(scope='function')
-def aws_utils(
-        request: pytest.fixture,
-        assume_role_arn: str,
-        session_name: str,
-        region_name: str):
-    """
-    Fixture for setting up a Cdk
-    :param request: _pytest.fixtures.SubRequest class that handles getting
-        a pytest fixture from a pytest function/fixture.
-    :param assume_role_arn: Role used to fetch temporary aws credentials, configure service clients with obtained credentials.
-    :param session_name: Session name to set.
-    :param region_name: AWS account region to set for session.
-    :return AWSUtils class object.
-    """
-    aws_utils_obj = AwsUtils(assume_role_arn, session_name, region_name)
-
-    def teardown():
-        aws_utils_obj.destroy()
-
-    request.addfinalizer(teardown)
-
-    return aws_utils_obj

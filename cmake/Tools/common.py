@@ -1,12 +1,9 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 #
 
 import configparser
@@ -53,6 +50,7 @@ ERROR_CODE_GENERAL_ERROR = 1
 
 ENGINE_ROOT_CHECK_FILE = 'engine.json'
 HASH_CHUNK_SIZE = 200000
+
 
 
 class LmbrCmdError(Exception):
@@ -149,7 +147,7 @@ def get_bootstrap_values(bootstrap_dir, keys_to_extract):
         raise logging.error(f'Bootstrap.setreg file {bootstrap_file} does not exist.')
     
     result_map = {}
-    with bootstrap_file.open('r') as f:
+    with open(bootstrap_file, 'r') as f:
         try:
             json_data = json.load(f)
         except Exception as e:
@@ -157,9 +155,9 @@ def get_bootstrap_values(bootstrap_dir, keys_to_extract):
         else:
             for search_key in keys_to_extract:
                 try:
-                    search_result = json_data["Amazon"]["AzCore"]["Bootstrap"][f'"{search_key}"']
+                    search_result = json_data["Amazon"]["AzCore"]["Bootstrap"][search_key]
                 except KeyError as e:
-                    logging.error(f'Bootstrap.setreg cannot find Amazon:AzCore:Bootstrap:{search_result}: {str(e)}')
+                    logging.warning(f'Bootstrap.setreg cannot find /Amazon/AzCore/Bootstrap/{search_key}: {str(e)}')
                 else:
                     result_map[search_key] = search_result
     
@@ -244,6 +242,19 @@ def load_template_file(template_file_path, template_env):
         raise FileNotFoundError(f"Invalid file path. Cannot find template file located at {str(template_file_path)}")
 
 
+# Determine the possible file extensions for executable files based on the host platform
+PLATFORM_EXECUTABLE_EXTENSIONS = [''] # Files without extensions are always considered
+
+if platform.system() == 'Windows':
+    # Windows manages its executable extensions through the %PATHEXT% environment variable
+    path_extensions_str = os.environ.get('PATHEXT', default='.EXE;.COM;.BAT;.CMD')
+    PLATFORM_EXECUTABLE_EXTENSIONS.extend([pathext.lower() for pathext in path_extensions_str.split(';')])
+elif platform.system() == 'Linux':
+    PLATFORM_EXECUTABLE_EXTENSIONS = ['', '.out']
+else:
+    PLATFORM_EXECUTABLE_EXTENSIONS = ['']
+
+
 def verify_tool(override_tool_path, tool_name, tool_filename, argument_name, tool_version_argument, tool_version_regex, min_version, max_version):
     """
     Support method to validate a required system tool needed for the build either through an installed tool in the
@@ -260,6 +271,8 @@ def verify_tool(override_tool_path, tool_name, tool_filename, argument_name, too
     :return:    Tuple of the resolved tool version and the resolved override tool path if provided
     """
 
+    tool_source = tool_name
+
     try:
         # Use either the provided gradle override or the gradle in the path environment
         if override_tool_path:
@@ -270,12 +283,21 @@ def verify_tool(override_tool_path, tool_name, tool_filename, argument_name, too
             elif not isinstance(override_tool_path, pathlib.Path):
                 raise LmbrCmdError(f"Invalid {tool_name} path argument. '{override_tool_path}' must be a string or Path",
                                    ERROR_CODE_INVALID_PARAMETER)
-            check_tool_path = override_tool_path / tool_filename
 
-            if not check_tool_path.is_file():
-                check_tool_path = pathlib.Path(override_tool_path) / 'bin' / tool_filename
+            file_found = False
+            for executable_path_ext in PLATFORM_EXECUTABLE_EXTENSIONS:
+                check_tool_filename = f'{tool_filename}{executable_path_ext}'
 
-            if not check_tool_path.is_file():
+                check_tool_path = override_tool_path / check_tool_filename
+                if check_tool_path.is_file():
+                    file_found = True
+                    break
+                check_tool_path = override_tool_path / 'bin' / check_tool_filename
+                if check_tool_path.is_file():
+                    file_found = True
+                    break
+
+            if not file_found:
                 raise LmbrCmdError(f"Invalid {tool_name} path argument. '{override_tool_path}' is not a valid {tool_name} path",
                                    ERROR_CODE_INVALID_PARAMETER)
             resolved_override_tool_path = str(check_tool_path.resolve())
@@ -283,28 +305,38 @@ def verify_tool(override_tool_path, tool_name, tool_filename, argument_name, too
             tool_desc = f"{tool_name} path provided in the command line argument '{argument_name}={override_tool_path}' "
         else:
             resolved_override_tool_path = None
-            tool_source = tool_name
-            tool_desc = "installed gradle in the system path"
+            tool_desc = f"installed {tool_name} in the system path"
 
         # Extract the version and verify
         version_output = subprocess.check_output([tool_source, tool_version_argument],
-                                                 shell=True).decode(DEFAULT_TEXT_READ_ENCODING,
-                                                                    ENCODING_ERROR_HANDLINGS)
+                                                 shell=True,
+                                                 stderr=subprocess.PIPE).decode(DEFAULT_TEXT_READ_ENCODING,
+                                                                                ENCODING_ERROR_HANDLINGS)
         version_match = tool_version_regex.search(version_output)
         if not version_match:
             raise RuntimeError()
-        result_version = LooseVersion(str(version_match.group(1)).strip())
+
+        # Since we are doing a compare, strip out any non-numeric and non . character from the version otherwise we will get a TypeError on the LooseVersion comparison
+        result_version_str = re.sub(r"[^\.0-9]", "", str(version_match.group(1)).strip())
+        result_version = LooseVersion(result_version_str)
 
         if min_version and result_version < min_version:
-            raise LmbrCmdError(f"The {tool_desc} does not meet the minimum version of gradle required ({str(min_version)}).",
+            raise LmbrCmdError(f"The {tool_desc} does not meet the minimum version of {tool_name} required ({str(min_version)}).",
                                ERROR_CODE_ENVIRONMENT_ERROR)
         elif max_version and result_version > max_version:
-            raise LmbrCmdError(f"The {tool_desc} exceeds maximum version of gradle supported ({str(max_version)}).",
+            raise LmbrCmdError(f"The {tool_desc} exceeds maximum version of {tool_name} supported ({str(max_version)}).",
                                ERROR_CODE_ENVIRONMENT_ERROR)
 
         return result_version, resolved_override_tool_path
 
-    except (CalledProcessError, WindowsError, RuntimeError) as e:
+    except CalledProcessError as e:
+        error_msg = e.output.decode(DEFAULT_TEXT_READ_ENCODING,
+                                    ENCODING_ERROR_HANDLINGS)
+        raise LmbrCmdError(f"{tool_name} cannot be resolved or there was a problem determining its version number. "
+                           f"Either make sure its in the system path environment or a valid path is passed in "
+                           f"through the {argument_name} argument.\n{error_msg}",
+                           ERROR_CODE_ERROR_NOT_SUPPORTED)
+    except (WindowsError, RuntimeError) as e:
         logging.error(f"Call to '{tool_source}' resulted in error: {e}")
         raise LmbrCmdError(f"{tool_name} cannot be resolved or there was a problem determining its version number. "
                            f"Either make sure its in the system path environment or a valid path is passed in "

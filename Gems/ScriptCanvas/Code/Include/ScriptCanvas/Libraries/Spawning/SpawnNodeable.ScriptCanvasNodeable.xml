@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ScriptCanvas Include="Include/ScriptCanvas/Libraries/Spawning/SpawnNodeable.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Class Name="SpawnNodeable"
+         QualifiedName="Nodeables::Spawning::SpawnNodeable"
+         PreferredClassName="Spawn"
+         Base="ScriptCanvas::Nodeable"
+         Icon="Icons/ScriptCanvas/Placeholder.png"
+         Category="Spawning"
+         Version="0"
+         GeneratePropertyFriend="True"
+         Namespace="ScriptCanvas"
+         Description="Spawns a selected prefab, positioned using the provided transform inputs">
+
+    <Input Name="Request Spawn" OutputName="Spawn Requested">
+      <Parameter Name="Translation" Type="Data::Vector3Type" Description="Position to spawn"/>
+      <Parameter Name="Rotation" Type="Data::Vector3Type" Description="Rotation of spawn (in degrees)"/>
+      <Parameter Name="Scale" Type="Data::NumberType" DefaultValue="1" Description="Scale of spawn"/>
+    </Input>
+
+    <Output Name="On Spawn">
+      <Parameter Name="SpawnedEntitiesList" Type="AZStd::vector&lt;Data::EntityIDType&gt;" Description="List of spawned entities sorted by hierarchy with the root being first"/>
+    </Output>/>
+    
+    <Property Name ="m_spawnableAsset" Type="AZ::Data::Asset&lt;AzFramework::Spawnable&gt;" Serialize="true">
+      <PropertyData Name="Prefab Asset"
+                    Description="Prefab source asset to spawn."
+                    Serialize="true"
+                    UIHandler="AZ::Edit::UIHandlers::Default">
+        <EditAttribute Key="AZ::Edit::Attributes::ShowProductAssetFileName" Value="false"/>
+        <EditAttribute Key="AZ::Edit::Attributes::HideProductFilesInAssetPicker" Value="true"/>
+        <EditAttribute Key="AZ::Edit::Attributes::AssetPickerTitle" Value="&quot;a Prefab&quot;"/>
+        <EditAttribute Key="AZ::Edit::Attributes::ChangeNotify" Value="&amp;SpawnNodeable::OnSpawnAssetChanged"/>
+      </PropertyData>
+    </Property>
+    
+  </Class>
+</ScriptCanvas>

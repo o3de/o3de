@@ -1,22 +1,18 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
-#include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/Spline.h>
 #include <AzCore/Math/Transform.h>
+#include <AzCore/Math/Vector3.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
@@ -27,9 +23,7 @@ namespace AzToolsFramework
 {
     namespace Picking
     {
-        /**
-         * An interface concrete shape types can implement to create specific BoundShapeInterfaces.
-         */
+        //! An interface concrete shape types can implement to create specific BoundShapeInterfaces.
         class BoundRequestShapeBase
         {
         public:
@@ -114,11 +108,9 @@ namespace AzToolsFramework
             float m_radius;
         };
 
-        /**
-         * The quad shape consists of 4 points in 3D space. Please set them from \ref m_corner1 to \ref m_corner4
-         * in either clock-wise winding or counter clock-wise winding. In another word, \ref m_corner1 and
-         * \ref corner_2 cannot be diagonal corners.
-         */
+        //! The quad shape consists of 4 points in 3D space. Please set them from \ref m_corner1 to \ref m_corner4
+        //! in either clock-wise winding or counter clock-wise winding. In another word, \ref m_corner1 and
+        //! \ref corner_2 cannot be diagonal corners.
         class BoundShapeQuad : public BoundRequestShapeBase
         {
         public:
@@ -138,9 +130,7 @@ namespace AzToolsFramework
             AZ::Vector3 m_corner4;
         };
 
-        /**
-         * The line segment consists of two points in 3D space defining a line the user can interact with.
-         */
+        //! The line segment consists of two points in 3D space defining a line the user can interact with.
         class BoundShapeLineSegment : public BoundRequestShapeBase
         {
         public:
@@ -159,10 +149,8 @@ namespace AzToolsFramework
             float m_width;
         };
 
-        /**
-         * The torus shape is approximated by a cylinder whose radius is the sum of the torus's major radius
-         * and minor radius and height is twice the torus's minor radius.
-         */
+        //! The torus shape is approximated by a cylinder whose radius is the sum of the torus's major radius
+        //! and minor radius and height is twice the torus's minor radius.
         class BoundShapeTorus : public BoundRequestShapeBase
         {
         public:
@@ -182,10 +170,8 @@ namespace AzToolsFramework
             float m_minorRadius;
         };
 
-        /**
-         * The spline is specified by a number of vertices. A piecewise approximation of the curve
-         * is computed by using a number of linear steps (defined by the granularity of the curve).
-         */
+        //! The spline is specified by a number of vertices. A piecewise approximation of the curve
+        //! is computed by using a number of linear steps (defined by the granularity of the curve).
         class BoundShapeSpline : public BoundRequestShapeBase
         {
         public:
@@ -204,16 +190,14 @@ namespace AzToolsFramework
             float m_width;
         };
 
-        /**
-         * Ray query for intersection against bounds.
-         */
+        //! Ray query for intersection against bounds.
         struct RaySelectInfo
         {
-            AZ::Vector3 m_origin; ///< Start of ray.
-            AZ::Vector3 m_direction; ///< Direction of ray - make sure m_direction is unit length.
-            AZStd::vector<AZStd::pair<RegisteredBoundId, float>> m_boundIdsHit; ///< Store the id of the intersected bound
-                                                                                ///< and the parameter of the corresponding
-                                                                                ///< intersecting point.
+            AZ::Vector3 m_origin; //!< Start of ray.
+            AZ::Vector3 m_direction; //!< Direction of ray - make sure m_direction is unit length.
+            AZStd::vector<AZStd::pair<RegisteredBoundId, float>> m_boundIdsHit; //!< Store the id of the intersected bound
+                                                                                //!< and the parameter of the corresponding
+                                                                                //!< intersecting point.
         };
     } // namespace Picking
 } // namespace AzToolsFramework

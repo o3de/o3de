@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RPI.Public/DynamicDraw/DynamicBufferAllocator.h>
 #include <Atom/RPI.Public/DynamicDraw/DynamicBuffer.h>
@@ -57,32 +53,12 @@ namespace AZ
             return m_bufferAlloc->Allocate(size, alignment);
         }
 
-        RHI::Ptr<DynamicDrawContext> DynamicDrawSystem::CreateDynamicDrawContext(Scene* scene)
+        RHI::Ptr<DynamicDrawContext> DynamicDrawSystem::CreateDynamicDrawContext()
         {
-            if (!scene)
-            {
-                AZ_Error("RPI", false, "Failed to create a DynamicDrawContext: the input scene is invalid");
-                return nullptr;
-            }
             RHI::Ptr<DynamicDrawContext> drawContext = aznew DynamicDrawContext();
-            drawContext->m_scene = scene;
-
             AZStd::lock_guard<AZStd::mutex> lock(m_mutexDrawContext);
             m_dynamicDrawContexts.push_back(drawContext);
             return drawContext;
-        }
-
-        RHI::Ptr<DynamicDrawContext> DynamicDrawSystem::CreateDynamicDrawContext(RenderPipeline* pipeline)
-        {
-            if (!pipeline || !pipeline->GetScene())
-            {
-                AZ_Error("RPI", false, "Failed to create a DynamicDrawContext: the input RenderPipeline is invalid or wasn't added to a Scene");
-                return nullptr;
-            }
-
-            auto context = CreateDynamicDrawContext(pipeline->GetScene());
-            context->m_drawFilter = pipeline->GetDrawFilterMask();
-            return context;
         }
 
         // [GFX TODO][ATOM-13184] Add support of draw geometry with material for DynamicDrawSystemInterface
@@ -105,9 +81,10 @@ namespace AZ
                 {
                     if (drawContext->m_scene == scene)
                     {
+                        drawContext->FinalizeDrawList();
                         for (auto& view : views)
                         {
-                            drawContext->SubmitDrawData(view);
+                            drawContext->SubmitDrawList(view);
                         }
                     }
                 }
@@ -123,6 +100,25 @@ namespace AZ
                     }
                 }
             }
+        }
+
+        AZStd::vector<RHI::DrawListView> DynamicDrawSystem::GetDrawListsForPass(const RasterPass* pass)
+        {
+            AZStd::vector<RHI::DrawListView> result;
+            AZStd::lock_guard<AZStd::mutex> lock(m_mutexDrawContext);
+            for (RHI::Ptr<DynamicDrawContext> drawContext : m_dynamicDrawContexts)
+            {
+                if (drawContext->m_pass == pass)
+                {
+                    drawContext->FinalizeDrawList();
+                    auto drawListView = drawContext->GetDrawList();
+                    if (drawListView.size() > 0)
+                    {
+                        result.push_back(drawListView);
+                    }
+                }
+            }
+            return result;
         }
 
         void DynamicDrawSystem::FrameEnd()

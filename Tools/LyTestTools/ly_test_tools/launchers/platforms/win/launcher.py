@@ -1,12 +1,8 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 
 Windows compatible launcher
 """
@@ -42,7 +38,7 @@ class WinLauncher(Launcher):
         assert self.workspace.project is not None
         return os.path.join(self.workspace.paths.build_directory(), f"{self.workspace.project}.GameLauncher.exe")
 
-    def setup(self, backupFiles=True, launch_ap=True):
+    def setup(self, backupFiles=True, launch_ap=True, configure_settings=True):
         """
         Perform setup of this launcher, must be called before launching.
         Subclasses should call its parent's setup() before calling its own code, unless it changes configuration files
@@ -60,7 +56,8 @@ class WinLauncher(Launcher):
             launch_ap = True
 
         # Modify and re-configure
-        self.configure_settings()
+        if configure_settings:
+            self.configure_settings()
         super(WinLauncher, self).setup(backupFiles, launch_ap)
 
     def launch(self):
@@ -214,6 +211,8 @@ class WinEditor(WinLauncher):
     def __init__(self, build, args):
         super(WinEditor, self).__init__(build, args)
         self.args.append('--regset="/Amazon/Settings/EnableSourceControl=false"')
+        self.args.append('--regset="/Amazon/AWS/Preferences/AWSAttributionConsentShown=true"')
+        self.args.append('--regset="/Amazon/AWS/Preferences/AWSAttributionEnabled=false"')
 
     def binary_path(self):
         """

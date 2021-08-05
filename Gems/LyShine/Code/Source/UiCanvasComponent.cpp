@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-#include "LyShine_precompiled.h"
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "UiCanvasComponent.h"
 
 #include "UiElementComponent.h"
@@ -54,6 +49,8 @@
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Input/Devices/Touch/InputDeviceTouch.h>
 
+#include <Atom/RPI.Public/Image/ImageSystemInterface.h>
+#include <Atom/RPI.Public/Image/AttachmentImagePool.h>
 
 #include "Animation/UiAnimationSystem.h"
 
@@ -68,6 +65,8 @@
 #include <LyShine/Bus/UiMaskBus.h>
 #include <LyShine/Bus/UiFaderBus.h>
 #endif
+
+#include "LyShinePassDataBus.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! UiCanvasNotificationBus Behavior context handler class
@@ -256,14 +255,22 @@ namespace
 
     UiRenderer* GetUiRendererForGame()
     {
-        CLyShine* lyShine = static_cast<CLyShine*>(gEnv->pLyShine);
-        return lyShine ? lyShine->GetUiRenderer() : nullptr;
+        if (gEnv && gEnv->pLyShine)
+        {
+            CLyShine* lyShine = static_cast<CLyShine*>(gEnv->pLyShine);
+            return lyShine->GetUiRenderer();
+        }
+        return nullptr;
     }
 
     UiRenderer* GetUiRendererForEditor()
     {
-        CLyShine* lyShine = static_cast<CLyShine*>(gEnv->pLyShine);
-        return lyShine ? lyShine->GetUiRendererForEditor() : nullptr;
+        if (gEnv && gEnv->pLyShine)
+        {
+            CLyShine* lyShine = static_cast<CLyShine*>(gEnv->pLyShine);
+            return lyShine->GetUiRendererForEditor();
+        }
+        return nullptr;
     }
 
     bool IsValidInteractable(const AZ::EntityId& entityId)
@@ -593,174 +600,6 @@ bool UiCanvasComponent::SaveToXml(const string& assetIdPathname, const string& s
     }
 
     return result;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-UiCanvasInterface::ErrorCode UiCanvasComponent::CheckElementValidToSaveAsPrefab(AZ::Entity* entity)
-{
-    AZ_Assert(entity, "null entity ptr passed to SaveAsPrefab");
-
-    // Check that none of the EntityId's in this entity or its children reference entities that
-    // are not part of the prefab.
-    // First make a list of all entityIds that will be in the prefab
-    AZStd::vector<AZ::EntityId> entitiesInPrefab = GetEntityIdsOfElementAndDescendants(entity);
-
-    // Next check all entity refs in the element to see if any are externel
-    // We use ReplaceEntityRefs even though we don't want to change anything
-    bool foundRefOutsidePrefab = false;
-    AZ::SerializeContext* context = nullptr;
-    EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
-    AZ_Assert(context, "No serialization context found");
-    AZ::EntityUtils::ReplaceEntityRefs(entity, [&](const AZ::EntityId& key, bool /*isEntityId*/) -> AZ::EntityId
-        {
-            if (key.IsValid())
-            {
-                auto iter = AZStd::find(entitiesInPrefab.begin(), entitiesInPrefab.end(), key);
-                if (iter == entitiesInPrefab.end())
-                {
-                    foundRefOutsidePrefab = true;
-                }
-            }
-            return key; // always leave key unchanged
-        }, context);
-
-    if (foundRefOutsidePrefab)
-    {
-        return UiCanvasInterface::ErrorCode::PrefabContainsExternalEntityRefs;
-    }
-
-    return UiCanvasInterface::ErrorCode::NoError;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-bool UiCanvasComponent::SaveAsPrefab(const string& pathname, AZ::Entity* entity)
-{
-    AZ_Assert(entity, "null entity ptr passed to SaveAsPrefab");
-
-    AZ::SerializeContext* context = nullptr;
-    EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
-    AZ_Assert(context, "No serialization context found");
-
-    // To be sure that we do not save an invalid prefab, if this entity contains entity references
-    // outside of the prefab set them to invalid references
-    // First make a list of all entityIds that will be in the prefab
-    AZStd::vector<AZ::EntityId> entitiesInPrefab = GetEntityIdsOfElementAndDescendants(entity);
-
-    // Next make a serializable object containing all the entities to save (in order to check for invalid refs)
-    AZ::SliceComponent::InstantiatedContainer sourceObjects(false);
-    for (const AZ::EntityId& id : entitiesInPrefab)
-    {
-        AZ::Entity* sourceEntity = nullptr;
-        EBUS_EVENT_RESULT(sourceEntity, AZ::ComponentApplicationBus, FindEntity, id);
-        if (sourceEntity)
-        {
-            sourceObjects.m_entities.push_back(sourceEntity);
-        }
-    }
-
-    // clone all the objects in order to replace external references
-    AZ::SliceComponent::InstantiatedContainer* clonedObjects = context->CloneObject(&sourceObjects);
-    AZ::Entity* clonedRootEntity = clonedObjects->m_entities[0];
-
-    // use ReplaceEntityRefs to replace external references with invalid IDs
-    // Note that we are not generating new IDs so we do not need to fixup internal references
-    AZ::EntityUtils::ReplaceEntityRefs(clonedObjects, [&](const AZ::EntityId& key, bool /*isEntityId*/) -> AZ::EntityId
-        {
-            if (key.IsValid())
-            {
-                auto iter = AZStd::find(entitiesInPrefab.begin(), entitiesInPrefab.end(), key);
-                if (iter == entitiesInPrefab.end())
-                {
-                    return AZ::EntityId();
-                }
-            }
-            return key; // leave key unchanged
-        }, context);
-
-    // make a wrapper object around the prefab entity so that we have an opportunity to change what
-    // is in a prefab file in future.
-    UiSerialize::PrefabFileObject fileObject;
-    fileObject.m_rootEntityId = clonedRootEntity->GetId();
-
-    // add all of the entities that are not the root entity to a childEntities list
-    for (auto descendant : clonedObjects->m_entities)
-    {
-        fileObject.m_entities.push_back(descendant);
-    }
-
-    bool result = AZ::Utils::SaveObjectToFile(pathname.c_str(), AZ::ObjectStream::ST_XML, &fileObject);
-
-    // now delete the cloned entities we created, fixed up and saved
-    delete clonedObjects;
-
-    return result;
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-AZ::Entity* UiCanvasComponent::LoadFromPrefab(const string& pathname, bool makeUniqueName, AZ::Entity* optionalInsertionPoint)
-{
-    AZ::Entity* newEntity = nullptr;
-
-    // Currently LoadObjectFromFile will hang if the file cannot be parsed
-    // (LMBR-10078). So first check that it is in the right format
-    if (!IsValidAzSerializedFile(pathname))
-    {
-        return nullptr;
-    }
-
-    // The top level object in the file is a wrapper object called PrefabFileObject
-    // this is to give us more protection against changes to what we store in the file in future
-    // NOTE: this read doesn't support pak files but that is OK because prefab files are an
-    // editor only feature.
-    UiSerialize::PrefabFileObject* fileObject =
-        AZ::Utils::LoadObjectFromFile<UiSerialize::PrefabFileObject>(pathname.c_str());
-    AZ_Assert(fileObject, "Failed to load prefab");
-
-    if (fileObject)
-    {
-        // We want new IDs so generate them and fixup all references within the list of entities
-        {
-            AZ::SerializeContext* context = nullptr;
-            EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
-            AZ_Assert(context, "No serialization context found");
-
-            AZ::SliceComponent::EntityIdToEntityIdMap entityIdMap;
-            AZ::IdUtils::Remapper<AZ::EntityId>::GenerateNewIdsAndFixRefs(fileObject, entityIdMap, context);
-        }
-
-        // add all of the entities to this canvases EntityContext
-        m_entityContext->AddUiEntities(fileObject->m_entities);
-
-        EBUS_EVENT_RESULT(newEntity, AZ::ComponentApplicationBus, FindEntity, fileObject->m_rootEntityId);
-
-        delete fileObject;    // we do not keep the file wrapper object around
-
-        if (makeUniqueName)
-        {
-            AZ::EntityId parentEntityId;
-            if (optionalInsertionPoint)
-            {
-                parentEntityId = optionalInsertionPoint->GetId();
-            }
-            AZStd::string uniqueName = GetUniqueChildName(parentEntityId, newEntity->GetName(), nullptr);
-            newEntity->SetName(uniqueName);
-        }
-
-        UiElementComponent* elementComponent = newEntity->FindComponent<UiElementComponent>();
-        AZ_Assert(elementComponent, "No element component found on prefab entity");
-
-        AZ::Entity* parent = (optionalInsertionPoint) ? optionalInsertionPoint : GetRootElement();
-
-        // recursively visit all the elements and set their canvas and parent pointers
-        elementComponent->FixupPostLoad(newEntity, this, parent, true);
-
-        // add this new entity as a child of the parent (insertionPoint or root)
-        UiElementComponent* parentElementComponent = parent->FindComponent<UiElementComponent>();
-        AZ_Assert(parentElementComponent, "No element component found on parent entity");
-        parentElementComponent->AddChild(newEntity);
-    }
-
-    return newEntity;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2003,6 +1842,46 @@ void UiCanvasComponent::MarkRenderGraphDirty()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+AZ::RHI::AttachmentId UiCanvasComponent::UseRenderTarget(const AZ::Name& renderTargetName, AZ::RHI::Size size)
+{
+    // Create a render target that UI elements will render to
+    AZ::RHI::ImageDescriptor imageDesc;
+    imageDesc.m_bindFlags = AZ::RHI::ImageBindFlags::Color | AZ::RHI::ImageBindFlags::ShaderReadWrite;
+    imageDesc.m_size = size;
+    imageDesc.m_format = AZ::RHI::Format::R8G8B8A8_UNORM;
+
+    AZ::Data::Instance<AZ::RPI::AttachmentImagePool> pool = AZ::RPI::ImageSystemInterface::Get()->GetSystemAttachmentPool();
+    auto attachmentImage = AZ::RPI::AttachmentImage::Create(*pool.get(), imageDesc, renderTargetName);
+    if (!attachmentImage)
+    {
+        AZ_Warning("UI", false, "Failed to create render target");
+        return AZ::RHI::AttachmentId();
+    }
+
+    m_attachmentImageMap[attachmentImage->GetAttachmentId()] = attachmentImage;
+
+    // Notify LyShine render pass that it needs to rebuild
+    QueueRttPassRebuild();
+    
+    return attachmentImage->GetAttachmentId();
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void UiCanvasComponent::ReleaseRenderTarget(const AZ::RHI::AttachmentId& attachmentId)
+{
+    m_attachmentImageMap.erase(attachmentId);
+
+    // Notify LyShine render pass that it needs to rebuild
+    QueueRttPassRebuild();
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+AZ::Data::Instance<AZ::RPI::AttachmentImage> UiCanvasComponent::GetRenderTarget(const AZ::RHI::AttachmentId& attachmentId)
+{
+    return m_attachmentImageMap[attachmentId];
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasComponent::UpdateCanvas(float deltaTime, bool isInGame)
 {
     // Ignore update if we're not enabled
@@ -2036,6 +1915,8 @@ void UiCanvasComponent::RenderCanvas(bool isInGame, AZ::Vector2 viewportSize, Ui
     {
         return;
     }
+
+    m_renderInEditor = uiRenderer ? true : false;
 
     if (!uiRenderer)
     {
@@ -2122,6 +2003,12 @@ void UiCanvasComponent::ScheduleElementDestroy(AZ::EntityId entityId)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+void UiCanvasComponent::GetRenderTargets(LyShine::AttachmentImagesAndDependencies& attachmentImagesAndDependencies)
+{
+    m_renderGraph.GetRenderTargetsAndDependencies(attachmentImagesAndDependencies);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasComponent::DestroyScheduledElements()
 {
     for (auto entityId : m_elementsScheduledForDestroy)
@@ -2130,6 +2017,17 @@ void UiCanvasComponent::DestroyScheduledElements()
     }
 
     m_elementsScheduledForDestroy.clear();
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void UiCanvasComponent::QueueRttPassRebuild()
+{
+    UiRenderer* uiRenderer = m_renderInEditor ? GetUiRendererForEditor() : GetUiRendererForGame();
+    if (uiRenderer && uiRenderer->GetViewportContext()) // can be null in automated testing
+    {
+        AZ::RPI::SceneId sceneId = uiRenderer->GetViewportContext()->GetRenderScene()->GetId();
+        EBUS_EVENT_ID(sceneId, LyShinePassRequestBus, RebuildRttChildren);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2523,6 +2421,7 @@ void UiCanvasComponent::Activate()
     UiCanvasComponentImplementationBus::Handler::BusConnect(m_entity->GetId());
     UiEditorCanvasBus::Handler::BusConnect(m_entity->GetId());
     UiAnimationBus::Handler::BusConnect(m_entity->GetId());
+    LyShine::RenderToTextureRequestBus::Handler::BusConnect(m_entity->GetId());
 
     // Reconnect to buses that we connect to intermittently
     // This will only happen if we have been deactivated and reactivated at runtime
@@ -2555,6 +2454,7 @@ void UiCanvasComponent::Deactivate()
     UiCanvasComponentImplementationBus::Handler::BusDisconnect();
     UiEditorCanvasBus::Handler::BusDisconnect();
     UiAnimationBus::Handler::BusDisconnect();
+    LyShine::RenderToTextureRequestBus::Handler::BusDisconnect();
 
     // disconnect from any other buses we could be connected to
     if (m_hoverInteractable.IsValid() && AZ::EntityBus::Handler::BusIsConnectedId(m_hoverInteractable))
@@ -2572,6 +2472,12 @@ void UiCanvasComponent::Deactivate()
     {
         DestroyRenderTarget();
     }
+
+    // Destroy owned render targets
+    m_attachmentImageMap.clear();
+
+    //! Notify LyShine pass that it needs to rebuild
+    QueueRttPassRebuild();
 
     delete m_layoutManager;
     m_layoutManager = nullptr;
@@ -3700,6 +3606,7 @@ void UiCanvasComponent::CreateRenderTarget()
         return;
     }
 
+#ifdef LYSHINE_ATOM_TODO // [LYN-3359] Support RTT using Atom
     // Create a render target that this canvas will be rendered to.
     // The render target size is the canvas size.
     m_renderTargetHandle = gEnv->pRenderer->CreateRenderTarget(m_renderTargetName.c_str(),
@@ -3721,6 +3628,7 @@ void UiCanvasComponent::CreateRenderTarget()
 
         ISystem::CrySystemNotificationBus::Handler::BusConnect();
     }
+#endif
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -3739,7 +3647,7 @@ void UiCanvasComponent::DestroyRenderTarget()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasComponent::RenderCanvasToTexture()
 {
-#ifdef LYSHINE_ATOM_TODO
+#ifdef LYSHINE_ATOM_TODO // [LYN-3359] Support RTT using Atom
     if (m_renderTargetHandle <= 0)
     {
         return;

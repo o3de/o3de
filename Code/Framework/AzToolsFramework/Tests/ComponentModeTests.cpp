@@ -1,30 +1,27 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "ComponentModeTestDoubles.h"
 #include "ComponentModeTestFixture.h"
 
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/UnitTest/TestTypes.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Entity/EntityContext.h>
 #include <AzTest/AzTest.h>
-#include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
+#include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeCollection.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponent.h>
-#include <AzToolsFramework/ToolsComponents/EditorVisibilityComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorPendingCompositionBus.h>
+#include <AzToolsFramework/ToolsComponents/EditorVisibilityComponent.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <AzToolsFramework/UI/PropertyEditor/EntityPropertyEditor.hxx>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
@@ -32,7 +29,6 @@
 #include <AzToolsFramework/ViewportSelection/EditorDefaultSelection.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorVisibleEntityDataCache.h>
-#include <AzCore/UnitTest/TestTypes.h>
 #include <QApplication>
 
 namespace UnitTest
@@ -47,19 +43,16 @@ namespace UnitTest
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Given
         QWidget rootWidget;
-        ActionOverrideRequestBus::Event(
-            GetEntityContextId(), &ActionOverrideRequests::SetupActionOverrideHandler, &rootWidget);
+        ActionOverrideRequestBus::Event(GetEntityContextId(), &ActionOverrideRequests::SetupActionOverrideHandler, &rootWidget);
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // When
         ComponentModeSystemRequestBus::Broadcast(
-            &ComponentModeSystemRequests::BeginComponentMode,
-            AZStd::vector<EntityAndComponentModeBuilders>{});
+            &ComponentModeSystemRequests::BeginComponentMode, AZStd::vector<EntityAndComponentModeBuilders>{});
 
         bool inComponentMode = false;
-        ComponentModeSystemRequestBus::BroadcastResult(
-            inComponentMode, &ComponentModeSystemRequests::InComponentMode);
+        ComponentModeSystemRequestBus::BroadcastResult(inComponentMode, &ComponentModeSystemRequests::InComponentMode);
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -69,11 +62,9 @@ namespace UnitTest
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // When
-        ComponentModeSystemRequestBus::Broadcast(
-            &ComponentModeSystemRequests::EndComponentMode);
+        ComponentModeSystemRequestBus::Broadcast(&ComponentModeSystemRequests::EndComponentMode);
 
-        ComponentModeSystemRequestBus::BroadcastResult(
-            inComponentMode, &ComponentModeSystemRequests::InComponentMode);
+        ComponentModeSystemRequestBus::BroadcastResult(inComponentMode, &ComponentModeSystemRequests::InComponentMode);
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -81,8 +72,7 @@ namespace UnitTest
         EXPECT_FALSE(inComponentMode);
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        ActionOverrideRequestBus::Event(
-            GetEntityContextId(), &ActionOverrideRequests::TeardownActionOverrideHandler);
+        ActionOverrideRequestBus::Event(GetEntityContextId(), &ActionOverrideRequests::TeardownActionOverrideHandler);
     }
 
     TEST_F(ComponentModeTestFixture, TwoComponentsOnSingleEntityWithSameComponentModeBothBegin)
@@ -104,8 +94,7 @@ namespace UnitTest
         // mimic selecting the entity in the viewport (after selection the ComponentModeDelegate
         // connects to the ComponentModeDelegateRequestBus on the entity/component pair address)
         const AzToolsFramework::EntityIdList entityIds = { entityId };
-        ToolsApplicationRequestBus::Broadcast(
-            &ToolsApplicationRequests::SetSelectedEntities, entityIds);
+        ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, entityIds);
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -113,8 +102,7 @@ namespace UnitTest
         // move all selected components into ComponentMode
         // (mimic pressing the 'Edit' button to begin Component Mode)
         ComponentModeSystemRequestBus::Broadcast(
-            &ComponentModeSystemRequests::AddSelectedComponentModesOfType,
-            AZ::AzTypeInfo<PlaceholderEditorComponent>::Uuid());
+            &ComponentModeSystemRequests::AddSelectedComponentModesOfType, AZ::AzTypeInfo<PlaceholderEditorComponent>::Uuid());
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -152,8 +140,7 @@ namespace UnitTest
         // mimic selecting the entity in the viewport (after selection the ComponentModeDelegate
         // connects to the ComponentModeDelegateRequestBus on the entity/component pair address)
         const AzToolsFramework::EntityIdList entityIds = { entityId };
-        ToolsApplicationRequestBus::Broadcast(
-            &ToolsApplicationRequests::SetSelectedEntities, entityIds);
+        ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, entityIds);
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -161,8 +148,7 @@ namespace UnitTest
         // move all selected components into ComponentMode
         // (mimic pressing the 'Edit' button to begin Component Mode)
         ComponentModeSystemRequestBus::Broadcast(
-            &ComponentModeSystemRequests::AddSelectedComponentModesOfType,
-            AZ::AzTypeInfo<PlaceholderEditorComponent>::Uuid());
+            &ComponentModeSystemRequests::AddSelectedComponentModesOfType, AZ::AzTypeInfo<PlaceholderEditorComponent>::Uuid());
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -202,8 +188,7 @@ namespace UnitTest
         // mimic selecting the entity in the viewport (after selection the ComponentModeDelegate
         // connects to the ComponentModeDelegateRequestBus on the entity/component pair address)
         const AzToolsFramework::EntityIdList entityIds = { entityId };
-        ToolsApplicationRequestBus::Broadcast(
-            &ToolsApplicationRequests::SetSelectedEntities, entityIds);
+        ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, entityIds);
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -211,16 +196,13 @@ namespace UnitTest
         // move all selected components into ComponentMode
         // (mimic pressing the 'Edit' button to begin Component Mode)
         ComponentModeSystemRequestBus::Broadcast(
-            &ComponentModeSystemRequests::AddSelectedComponentModesOfType,
-            AZ::AzTypeInfo<PlaceholderEditorComponent>::Uuid());
+            &ComponentModeSystemRequests::AddSelectedComponentModesOfType, AZ::AzTypeInfo<PlaceholderEditorComponent>::Uuid());
 
         bool nextModeCycled = true;
-        ComponentModeSystemRequestBus::BroadcastResult(
-            nextModeCycled, &ComponentModeSystemRequests::SelectNextActiveComponentMode);
+        ComponentModeSystemRequestBus::BroadcastResult(nextModeCycled, &ComponentModeSystemRequests::SelectNextActiveComponentMode);
 
         bool previousModeCycled = true;
-        ComponentModeSystemRequestBus::BroadcastResult(
-            previousModeCycled, &ComponentModeSystemRequests::SelectPreviousActiveComponentMode);
+        ComponentModeSystemRequestBus::BroadcastResult(previousModeCycled, &ComponentModeSystemRequests::SelectPreviousActiveComponentMode);
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -250,8 +232,7 @@ namespace UnitTest
         // mimic selecting the entity in the viewport (after selection the ComponentModeDelegate
         // connects to the ComponentModeDelegateRequestBus on the entity/component pair address)
         const AzToolsFramework::EntityIdList entityIds = { entityId };
-        ToolsApplicationRequestBus::Broadcast(
-            &ToolsApplicationRequests::SetSelectedEntities, entityIds);
+        ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, entityIds);
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -259,15 +240,13 @@ namespace UnitTest
         // move all selected components into ComponentMode
         // (mimic pressing the 'Edit' button to begin Component Mode)
         ComponentModeSystemRequestBus::Broadcast(
-            &ComponentModeSystemRequests::AddSelectedComponentModesOfType,
-            AZ::AzTypeInfo<PlaceholderEditorComponent>::Uuid());
+            &ComponentModeSystemRequests::AddSelectedComponentModesOfType, AZ::AzTypeInfo<PlaceholderEditorComponent>::Uuid());
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Then
         bool multipleComponentModeTypes = true;
-        ComponentModeSystemRequestBus::BroadcastResult(
-            multipleComponentModeTypes, &ComponentModeSystemRequests::HasMultipleComponentTypes);
+        ComponentModeSystemRequestBus::BroadcastResult(multipleComponentModeTypes, &ComponentModeSystemRequests::HasMultipleComponentTypes);
 
         EXPECT_FALSE(multipleComponentModeTypes);
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -294,8 +273,7 @@ namespace UnitTest
         // mimic selecting the entity in the viewport (after selection the ComponentModeDelegate
         // connects to the ComponentModeDelegateRequestBus on the entity/component pair address)
         const AzToolsFramework::EntityIdList entityIds = { entityId };
-        ToolsApplicationRequestBus::Broadcast(
-            &ToolsApplicationRequests::SetSelectedEntities, entityIds);
+        ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, entityIds);
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -303,15 +281,13 @@ namespace UnitTest
         // move all selected components into ComponentMode
         // (mimic pressing the 'Edit' button to begin Component Mode)
         ComponentModeSystemRequestBus::Broadcast(
-            &ComponentModeSystemRequests::AddSelectedComponentModesOfType,
-            AZ::AzTypeInfo<AnotherPlaceholderEditorComponent>::Uuid());
+            &ComponentModeSystemRequests::AddSelectedComponentModesOfType, AZ::AzTypeInfo<AnotherPlaceholderEditorComponent>::Uuid());
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Then
         bool multipleComponentModeTypes = true;
-        ComponentModeSystemRequestBus::BroadcastResult(
-            multipleComponentModeTypes, &ComponentModeSystemRequests::HasMultipleComponentTypes);
+        ComponentModeSystemRequestBus::BroadcastResult(multipleComponentModeTypes, &ComponentModeSystemRequests::HasMultipleComponentTypes);
 
         EXPECT_FALSE(multipleComponentModeTypes);
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -341,8 +317,7 @@ namespace UnitTest
         // mimic selecting the entity in the viewport (after selection the ComponentModeDelegate
         // connects to the ComponentModeDelegateRequestBus on the entity/component pair address)
         const AzToolsFramework::EntityIdList entityIds = { entityId };
-        ToolsApplicationRequestBus::Broadcast(
-            &ToolsApplicationRequests::SetSelectedEntities, entityIds);
+        ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, entityIds);
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -350,15 +325,13 @@ namespace UnitTest
         // move all selected components into ComponentMode
         // (mimic pressing the 'Edit' button to begin Component Mode)
         ComponentModeSystemRequestBus::Broadcast(
-            &ComponentModeSystemRequests::AddSelectedComponentModesOfType,
-            AZ::AzTypeInfo<DependentPlaceholderEditorComponent>::Uuid());
+            &ComponentModeSystemRequests::AddSelectedComponentModesOfType, AZ::AzTypeInfo<DependentPlaceholderEditorComponent>::Uuid());
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Then
         bool multipleComponentModeTypes = false;
-        ComponentModeSystemRequestBus::BroadcastResult(
-            multipleComponentModeTypes, &ComponentModeSystemRequests::HasMultipleComponentTypes);
+        ComponentModeSystemRequestBus::BroadcastResult(multipleComponentModeTypes, &ComponentModeSystemRequests::HasMultipleComponentTypes);
 
         bool secondComponentModeInstantiated = false;
         ComponentModeSystemRequestBus::BroadcastResult(
@@ -366,8 +339,7 @@ namespace UnitTest
             AZ::EntityComponentIdPair(entityId, placeholder2->GetId()));
 
         AZ::Uuid activeComponentType = AZ::Uuid::CreateNull();
-        ComponentModeSystemRequestBus::BroadcastResult(
-            activeComponentType, &ComponentModeSystemRequests::ActiveComponentMode);
+        ComponentModeSystemRequestBus::BroadcastResult(activeComponentType, &ComponentModeSystemRequests::ActiveComponentMode);
 
         EXPECT_TRUE(multipleComponentModeTypes);
         EXPECT_TRUE(secondComponentModeInstantiated);
@@ -412,13 +384,11 @@ namespace UnitTest
         // Component Mode is will sent the notification to the correct address.
         ComponentModeActionSignalRequestBus::Event(
             AZ::EntityComponentIdPair(entityId, placeholder1->GetId()),
-            &ComponentModeActionSignalRequests::SetComponentModeActionNotificationBusToNotify,
-            checkerBusId);
+            &ComponentModeActionSignalRequests::SetComponentModeActionNotificationBusToNotify, checkerBusId);
 
         ComponentModeActionSignalRequestBus::Event(
             AZ::EntityComponentIdPair(entityId, placeholder2->GetId()),
-            &ComponentModeActionSignalRequests::SetComponentModeActionNotificationBusToNotify,
-            checkerBusId);
+            &ComponentModeActionSignalRequests::SetComponentModeActionNotificationBusToNotify, checkerBusId);
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -470,8 +440,7 @@ namespace UnitTest
         using MouseInteractionResult = AzToolsFramework::ViewportInteraction::MouseInteractionResult;
         MouseInteractionResult handled = MouseInteractionResult::None;
         EditorInteractionSystemViewportSelectionRequestBus::BroadcastResult(
-            handled, &EditorInteractionSystemViewportSelectionRequestBus::Events::InternalHandleAllMouseInteractions,
-            interactionEvent);
+            handled, &EditorInteractionSystemViewportSelectionRequestBus::Events::InternalHandleAllMouseInteractions, interactionEvent);
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -482,8 +451,7 @@ namespace UnitTest
     }
 
     // Test version of EntityPropertyEditor to detect/ensure certain functions were called
-    class TestEntityPropertyEditor
-        : public AzToolsFramework::EntityPropertyEditor
+    class TestEntityPropertyEditor : public AzToolsFramework::EntityPropertyEditor
     {
     public:
         void InvalidatePropertyDisplay(PropertyModificationRefreshLevel level) override;
@@ -496,8 +464,7 @@ namespace UnitTest
     }
 
     // Simple fixture to encapsulate a TestEntityPropertyEditor
-    class ComponentModePinnedSelectionFixture
-        : public ToolsApplicationFixture
+    class ComponentModePinnedSelectionFixture : public ToolsApplicationFixture
     {
     public:
         void SetUpEditorFixtureImpl() override
@@ -527,13 +494,16 @@ namespace UnitTest
         // Add placeholder component which implements component mode.
         entity->CreateComponent<PlaceHolderComponent>();
 
+        AZ_TEST_START_TRACE_SUPPRESSION;
         entity->Activate();
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // When
         // select entity
-        const auto selectedEntities = AzToolsFramework::EntityIdList { entityId };
+        const auto selectedEntities = AzToolsFramework::EntityIdList{ entityId };
         SelectEntities(selectedEntities);
 
         // pin entity
@@ -549,8 +519,7 @@ namespace UnitTest
         EXPECT_TRUE(m_testEntityPropertyEditor->IsLockedToSpecificEntities());
         EXPECT_TRUE(m_testEntityPropertyEditor->m_invalidatePropertyDisplayCalled);
 
-        bool couldBeginComponentMode =
-            AzToolsFramework::ComponentModeFramework::CouldBeginComponentModeWithEntity(entityId);
+        bool couldBeginComponentMode = AzToolsFramework::ComponentModeFramework::CouldBeginComponentModeWithEntity(entityId);
 
         EXPECT_FALSE(couldBeginComponentMode);
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -566,29 +535,26 @@ namespace UnitTest
         entity->Deactivate();
 
         AzToolsFramework::EntityCompositionRequestBus::Broadcast(
-            &AzToolsFramework::EntityCompositionRequestBus::Events::AddComponentsToEntities,
-            AzToolsFramework::EntityIdList{entityId},
+            &AzToolsFramework::EntityCompositionRequestBus::Events::AddComponentsToEntities, AzToolsFramework::EntityIdList{ entityId },
             AZ::ComponentTypeList{ AZ::AzTypeInfo<AnotherPlaceholderEditorComponent>::Uuid() });
 
         AzToolsFramework::EntityCompositionRequestBus::Broadcast(
-            &AzToolsFramework::EntityCompositionRequestBus::Events::AddComponentsToEntities,
-            AzToolsFramework::EntityIdList{entityId},
-            AZ::ComponentTypeList{AZ::AzTypeInfo<IncompatiblePlaceholderEditorComponent>::Uuid()});
+            &AzToolsFramework::EntityCompositionRequestBus::Events::AddComponentsToEntities, AzToolsFramework::EntityIdList{ entityId },
+            AZ::ComponentTypeList{ AZ::AzTypeInfo<IncompatiblePlaceholderEditorComponent>::Uuid() });
 
         entity->Activate();
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // When
-        SelectEntities(AzToolsFramework::EntityIdList{entityId});
+        SelectEntities(AzToolsFramework::EntityIdList{ entityId });
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Then
         AZ::Entity::ComponentArrayType pendingComponents;
         AzToolsFramework::EditorPendingCompositionRequestBus::Event(
-            entityId, &AzToolsFramework::EditorPendingCompositionRequestBus::Events::GetPendingComponents,
-            pendingComponents);
+            entityId, &AzToolsFramework::EditorPendingCompositionRequestBus::Events::GetPendingComponents, pendingComponents);
 
         // ensure we do have pending components
         EXPECT_EQ(pendingComponents.size(), 1);

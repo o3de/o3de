@@ -1,12 +1,9 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 #
 
 set(AUDIOSYSTEM_COMPILEDEFINITIONS
@@ -61,22 +58,8 @@ ly_add_target(
             Gem::AudioSystem.Static
 )
 
-################################################################################
-# Server
-################################################################################
-if (PAL_TRAIT_BUILD_SERVER_SUPPORTED)
-    # Stub gem for server. Audio system is client only
-    ly_add_target(
-        NAME AudioSystem.Server GEM_MODULE
-
-        NAMESPACE Gem
-        FILES_CMAKE
-            audiosystem_stub_files.cmake
-        BUILD_DEPENDENCIES
-            PRIVATE
-                AZ::AzCore
-    )
-endif ()
+# AudioSystem should use the above target on clients.
+ly_create_alias(NAME AudioSystem.Clients  NAMESPACE Gem TARGETS Gem::AudioSystem)
 
 ################################################################################
 # Tests
@@ -101,7 +84,8 @@ if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzFramework
                 Legacy::CryCommon
                 Gem::AudioSystem.Static
-                Gem::LmbrCentral
+        RUNTIME_DEPENDENCIES
+            Gem::LmbrCentral
     )
     ly_add_googletest(
         NAME Gem::AudioSystem.Tests
@@ -230,6 +214,10 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::AudioSystem.Editor.Static
     )
 
+    # use the above "Editor" target in tools and builders:
+    ly_create_alias(NAME AudioSystem.Tools    NAMESPACE Gem TARGETS Gem::AudioSystem.Editor)
+    ly_create_alias(NAME AudioSystem.Builders NAMESPACE Gem TARGETS Gem::AudioSystem.Editor)
+
     if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         ly_add_target(
             NAME AudioSystem.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
@@ -253,3 +241,6 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
         )
     endif()
 endif ()
+
+
+

@@ -69,10 +69,16 @@ proj.launch-config = {loc('../../SDK/Atom/Scripts/Python/DCC_Materials/maya_mate
                       loc('../../azpy/__init__.py'): ('custom',
         (u'',
          'launch-oobMrvXFf1SwtYBg')),
+                      loc('../../azpy/constants.py'): ('custom',
+        (u'',
+         'launch-GeaM41WYMGA1sEfm')),
                       loc('../../azpy/env_base.py'): ('project',
         (u'',
          'launch-GeaM41WYMGA1sEfm')),
                       loc('../../azpy/maya/callbacks/node_message_callback_handler.py'): ('c'\
         'ustom',
+        (u'',
+         'launch-GeaM41WYMGA1sEfm')),
+                      loc('../../config.py'): ('custom',
         (u'',
          'launch-GeaM41WYMGA1sEfm'))}

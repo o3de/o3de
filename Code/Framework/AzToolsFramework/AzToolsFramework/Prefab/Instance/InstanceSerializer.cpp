@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
@@ -124,7 +120,7 @@ namespace AzToolsFramework
                         "PrefabLoaderInterface could not be found. It is required to load Prefab Instances");
 
                     // Make sure we have a relative path
-                    instance->m_templateSourcePath = loaderInterface->GetRelativePathToProject(instance->m_templateSourcePath);
+                    instance->m_templateSourcePath = loaderInterface->GenerateRelativePath(instance->m_templateSourcePath);
 
                     TemplateId templateId = prefabSystemComponentInterface->GetTemplateIdFromFilePath(instance->GetTemplateSourcePath());
 
@@ -172,7 +168,6 @@ namespace AzToolsFramework
 
             if (instance->m_containerEntity)
             {
-                instance->m_instanceEntityMapper->UnregisterEntity(instance->m_containerEntity->GetId());
                 instance->m_containerEntity.reset();
             }
 
