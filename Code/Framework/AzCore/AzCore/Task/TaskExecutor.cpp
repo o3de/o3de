@@ -258,7 +258,8 @@ namespace AZ
                             }
                         }
 
-                        if (task->m_graph->Release() == (task->m_graph->m_parent ? 1 : 0))
+                        bool isRetained = task->m_graph->m_parent != nullptr;
+                        if (task->m_graph->Release() == (isRetained ? 1 : 0))
                         {
                             m_executor->ReleaseGraph();
                         }
