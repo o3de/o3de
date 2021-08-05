@@ -87,7 +87,7 @@ namespace AZ
                 {
                     releaseByModule = true;
                 }
-                if (!moduleRelease && !releaseByUseCount)
+                if (!releaseByModule && !releaseByUseCount)
                 {
                     return;
                 }
