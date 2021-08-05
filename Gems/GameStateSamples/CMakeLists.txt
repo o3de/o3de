@@ -7,3 +7,4 @@
 #
 
 add_subdirectory(Code)
+ly_create_alias(NAME GameStateSamples.Builders NAMESPACE Gem)
