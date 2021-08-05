@@ -109,7 +109,7 @@ namespace AZ
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<ModelAssetBuilderComponent, SceneAPI::SceneCore::ExportingComponent>()
-                    ->Version(29);  // (updated to separate material slot ID from default material asset)
+                    ->Version(30);  // (updated to separate material slot ID from default material asset)
             }
         }
 

@@ -902,7 +902,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
             second_input_arg = asset_lists_to_string(second_asset_list)  # --secondAssetList
             output_arg = asset_lists_to_string(output_file)  # --output
 
-            def generate_compare_command(platform_arg: str) -> object:
+            def generate_compare_command(platform_arg: str, project_name : str) -> object:
                 """Creates a string containing a full Compare command. This string can be executed as-is."""
                 cmd = [helper["bundler_batch"], "compare", f"--firstassetFile={first_input_arg}", f"--output={output_arg}"]
                 if platform_arg is not None:
@@ -918,6 +918,8 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
                     if comp_type == "4":
                         # Extra arguments for pattern comparison
                         cmd.extend([f"--filePatternType={pattern_type}", f"--filePattern={pattern}"])
+                if workspace.project:
+                    cmd.append(f'--project-path={project_name}')
                 return cmd
             # End generate_compare_command()
 
@@ -936,6 +938,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
             # End verify_asset_list_contents()
 
             def run_compare_command_and_verify(platform_arg: str, expect_pc_output: bool, expect_mac_output: bool) -> None:
+
                 # Expected asset list to equal result of comparison
                 expected_pc_asset_list = None
                 expected_mac_asset_list = None
@@ -957,7 +960,7 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
                     output_mac_asset_list = helper.platform_file_name(last_output_arg, platform)
 
                 # Build execution command
-                cmd = generate_compare_command(platform_arg)
+                cmd = generate_compare_command(platform_arg, workspace.project)
 
                 # Execute command
                 subprocess.check_call(cmd)
@@ -992,10 +995,12 @@ class TestsAssetBundlerBatch_WindowsAndMac(object):
                 f"--comparisonRulesFile={rule_file}",
                 f"--comparisonType={args[1]}",
                 r"--addComparison",
+                f"--project-path={workspace.project}",
             ]
             if args[1] == "4":
                 # If pattern comparison, append a few extra arguments
                 cmd.extend(["--filePatternType=0", "--filePattern=*.dat"])
+
             subprocess.check_call(cmd)
             assert os.path.exists(rule_file), f"Rule file {args[0]} was not created at location: {rule_file}"
 

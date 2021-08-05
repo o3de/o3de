@@ -1015,7 +1015,7 @@ namespace EMotionFX
         const uint32 numGroups = mNodeGroups.GetLength();
         for (uint32 i = 0; i < numGroups; ++i)
         {
-            mNodeGroups[i]->Destroy();
+            delete mNodeGroups[i];
         }
         mNodeGroups.Clear();
     }
@@ -2085,7 +2085,7 @@ namespace EMotionFX
     {
         if (delFromMem)
         {
-            mNodeGroups[index]->Destroy();
+            delete mNodeGroups[index];
         }
 
         mNodeGroups.Remove(index);
@@ -2097,7 +2097,7 @@ namespace EMotionFX
         mNodeGroups.RemoveByValue(group);
         if (delFromMem)
         {
-            group->Destroy();
+            delete group;
         }
     }
 

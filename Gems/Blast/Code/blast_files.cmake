@@ -26,8 +26,8 @@ set(FILES
     Source/Asset/BlastAsset.cpp
     Source/Asset/BlastAssetHandler.h
     Source/Asset/BlastAssetHandler.cpp
-    Source/Asset/BlastSliceAsset.h
-    Source/Asset/BlastSliceAsset.cpp
+    Source/Asset/BlastChunksAsset.h
+    Source/Asset/BlastChunksAsset.cpp
     Source/Components/BlastFamilyComponent.h
     Source/Components/BlastFamilyComponent.cpp
     Source/Components/BlastFamilyComponentNotificationBusHandler.h
