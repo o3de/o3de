@@ -380,12 +380,12 @@ void CGameExporter::ExportFileList(const QString& path, const QString& levelName
     //  that can later be used for map downloads
     AZStd::string newpath;
 
-    QString filename = levelName;
-    AZStd::string mapname = (filename + ".dds").toUtf8().data();
-    AZStd::string metaname = (filename + ".xml").toUtf8().data();
+    AZStd::string filename = levelName.toUtf8().data();
+    AZStd::string mapname = (filename + ".dds");
+    AZStd::string metaname = (filename + ".xml");
 
     XmlNodeRef rootNode = gEnv->pSystem->CreateXmlNode("download");
-    rootNode->setAttr("name", filename.toUtf8().data());
+    rootNode->setAttr("name", filename.c_str());
     rootNode->setAttr("type", "Map");
     XmlNodeRef indexNode = rootNode->newChild("index");
     if (indexNode)
