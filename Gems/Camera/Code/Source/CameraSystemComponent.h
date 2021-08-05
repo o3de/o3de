@@ -58,4 +58,4 @@ namespace Camera
         AZ::EntityId m_activeView;
         CameraProperties m_activeViewProperties;
     };
-}
+} // namespace Camera

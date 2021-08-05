@@ -26,7 +26,6 @@
 #include "LayoutWnd.h"
 #include "2DViewport.h"
 #include "TopRendererWnd.h"
-#include "RenderViewport.h"
 #include "EditorViewportWidget.h"
 #include "CryEditDoc.h"
 

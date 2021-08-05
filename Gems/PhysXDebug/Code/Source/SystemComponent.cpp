@@ -470,7 +470,7 @@ namespace PhysXDebug
 
     AZ::Vector3 GetViewCameraPosition()
     {
-        using namespace Camera;
+        using Camera::ActiveCameraRequestBus;
 
         AZ::Transform tm = AZ::Transform::CreateIdentity();
         ActiveCameraRequestBus::BroadcastResult(tm, &ActiveCameraRequestBus::Events::GetActiveCameraTransform);

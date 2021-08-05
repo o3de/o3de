@@ -8,8 +8,6 @@
 
 
 #pragma once
-// RenderViewport.h : header file
-//
 
 #if !defined(Q_MOC_RUN)
 #include <Cry_Camera.h>

@@ -16,7 +16,6 @@
 
 // Editor
 #include "TrackView/TrackViewDialog.h"
-#include "RenderViewport.h"
 #include "ViewManager.h"
 #include "Objects/SelectionGroup.h"
 #include "Include/IObjectManager.h"

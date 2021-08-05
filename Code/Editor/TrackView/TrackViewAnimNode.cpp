@@ -34,7 +34,6 @@
 #include "Clipboard.h"
 #include "CommentNodeAnimator.h"
 #include "DirectorNodeAnimator.h"
-#include "RenderViewport.h"
 #include "ViewManager.h"
 #include "Include/IObjectManager.h"
 #include "Objects/GizmoManager.h"

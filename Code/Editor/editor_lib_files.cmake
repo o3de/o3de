@@ -807,8 +807,6 @@ set(FILES
     ViewportManipulatorController.h
     LegacyViewportCameraController.cpp
     LegacyViewportCameraController.h
-    RenderViewport.cpp
-    RenderViewport.h
     TopRendererWnd.cpp
     TopRendererWnd.h
     ViewManager.cpp

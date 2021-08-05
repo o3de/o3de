@@ -84,6 +84,7 @@
 #include <Editor/Util/PathUtil.h>
 #include <IResourceSelectorHost.h>
 #include "CryEdit.h"
+#include "Undo/Undo.h"
 
 #include <QMenu>
 #include <QAction>

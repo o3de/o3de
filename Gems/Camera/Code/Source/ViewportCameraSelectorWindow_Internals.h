@@ -42,7 +42,7 @@ namespace Camera
             , public CameraNotificationBus::Handler
         {
         public:
-            CameraListModel(QWidget* myParent);
+            explicit CameraListModel(QWidget* myParent);
             ~CameraListModel();
 
             // QAbstractItemModel interface

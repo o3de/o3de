@@ -22,7 +22,6 @@
 #include "OBJExporter.h"
 #include "OCMExporter.h"
 #include "FBXExporterDialog.h"
-#include "RenderViewport.h"
 #include "TrackViewExportKeyTimeDlg.h"
 #include "AnimationContext.h"
 #include "TrackView/DirectorNodeAnimator.h"
