@@ -67,7 +67,7 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     void LoadObjects(XmlNodeRef& rootObjectsNode);
 
     //! Load one object from archive.
-    CBaseObject* LoadObject(const XmlNodeRef& objNode, CBaseObject* pPrevObject = NULL);
+    CBaseObject* LoadObject(const XmlNodeRef& objNode, CBaseObject* pPrevObject = nullptr);
 
     //////////////////////////////////////////////////////////////////////////
     int GetLoadedObjectsCount() { return m_loadedObjects.size(); }
