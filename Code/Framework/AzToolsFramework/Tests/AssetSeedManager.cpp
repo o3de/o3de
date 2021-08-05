@@ -24,6 +24,7 @@
 #include <AzCore/Utils/Utils.h>
 #include <AzTest/Utils.h>
 #include <Utils/Utils.h>
+
 namespace // anonymous
 {
     static const int s_totalAssets = 12;
