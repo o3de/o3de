@@ -635,7 +635,7 @@ namespace EMotionFX
         }
 
         // Expand the bounding volume by a tolerance area in case set.
-        if (m_boundsExpandBy > 0.0f)
+        if (!AZ::IsClose(m_boundsExpandBy, 0.0f))
         {
             const AZ::Vector3 center = m_aabb.GetCenter();
             const AZ::Vector3 halfExtents = m_aabb.GetExtents() * 0.5f;

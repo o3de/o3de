@@ -67,7 +67,7 @@ namespace EMotionFX
                                       "The method used to compute the Actor bounding box. NOTE: ordered by least expensive to compute to most expensive to compute.")
                             ->EnumAttribute(ActorInstance::BOUNDS_STATIC_BASED, "Static (Recommended)")
                             ->EnumAttribute(ActorInstance::BOUNDS_NODE_BASED, "Bone position-based")
-                            ->EnumAttribute(ActorInstance::BOUNDS_MESH_BASED, "Mesh vertex-based (Expensive)")
+                            ->EnumAttribute(ActorInstance::BOUNDS_MESH_BASED, "Mesh vertex-based (VERY EXPENSIVE)")
                             ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ActorComponent::BoundingBoxConfiguration::m_expandBy,
                             "Expand by",
@@ -75,7 +75,7 @@ namespace EMotionFX
                             "This can be used to add a tolerance area to the calculated bounding box to avoid clipping the character too early. "
                             "A static bounding box together with the expansion is the recommended way for maximum performance. (Default = 25%)")
                             ->Attribute(AZ::Edit::Attributes::Suffix, " %")
-                            ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                            ->Attribute(AZ::Edit::Attributes::Min, -100.0f + AZ::Constants::Tolerance)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &ActorComponent::BoundingBoxConfiguration::m_autoUpdateBounds,
                                       "Automatically update bounds?",
                                       "If true, bounds are automatically updated based on some frequency. Otherwise bounds are computed only at creation or when triggered manually")

@@ -16,7 +16,7 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/typetraits/integral_constant.h>
-#include <AzCore/Math/AABB.h>
+#include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Color.h>
 

@@ -240,8 +240,8 @@ namespace MCommon
     // render selection gizmo around the given AABB
     void RenderUtil::RenderSelection(const AZ::Aabb& box, const MCore::RGBAColor& color, bool directlyRender)
     {
-        const AZ::Vector3       min     = box.GetMin();
-        const AZ::Vector3       max     = box.GetMax();
+        const AZ::Vector3&      min     = box.GetMin();
+        const AZ::Vector3&      max     = box.GetMax();
         const float             radius  = AZ::Vector3(box.GetMax() - box.GetMin()).GetLength() * 0.5f;
         const float             scale   = radius * 0.1f;
         const AZ::Vector3       up      = AZ::Vector3(0.0f, 1.0f, 0.0f) * scale;
@@ -249,15 +249,17 @@ namespace MCommon
         const AZ::Vector3       front   = AZ::Vector3(0.0f, 0.0f, 1.0f) * scale;
 
         // generate our vertices
-        AZ::Vector3 p[8];
-        p[0].Set(min.GetX(), min.GetY(), min.GetZ());
-        p[1].Set(max.GetX(), min.GetY(), min.GetZ());
-        p[2].Set(max.GetX(), min.GetY(), max.GetZ());
-        p[3].Set(min.GetX(), min.GetY(), max.GetZ());
-        p[4].Set(min.GetX(), max.GetY(), min.GetZ());
-        p[5].Set(max.GetX(), max.GetY(), min.GetZ());
-        p[6].Set(max.GetX(), max.GetY(), max.GetZ());
-        p[7].Set(min.GetX(), max.GetY(), max.GetZ());
+        const AZStd::array p
+        {
+            AZ::Vector3{min.GetX(), min.GetY(), min.GetZ()},
+            AZ::Vector3{max.GetX(), min.GetY(), min.GetZ()},
+            AZ::Vector3{max.GetX(), min.GetY(), max.GetZ()},
+            AZ::Vector3{min.GetX(), min.GetY(), max.GetZ()},
+            AZ::Vector3{min.GetX(), max.GetY(), min.GetZ()},
+            AZ::Vector3{max.GetX(), max.GetY(), min.GetZ()},
+            AZ::Vector3{max.GetX(), max.GetY(), max.GetZ()},
+            AZ::Vector3{min.GetX(), max.GetY(), max.GetZ()},
+        };
 
         // render the box
         RenderLine(p[0], p[0] + up,    color);
