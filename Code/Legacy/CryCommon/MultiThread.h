@@ -35,14 +35,6 @@
 #if defined(AZ_RESTRICTED_PLATFORM)
     #define AZ_RESTRICTED_SECTION MULTITHREAD_H_SECTION_TRAITS
     #include AZ_RESTRICTED_FILE(MultiThread_h)
-#else
-#define MULTITHREAD_H_TRAIT_SLOCKFREESINGLELINKEDLISTENTRY_ATTRIBUTE_ALIGN_16 0
-#if defined(WIN64)
-#define MULTITHREAD_H_TRAIT_SLOCKFREESINGLELINKEDLISTENTRY_MSALIGN_16 1
-#endif
-#if defined(APPLE) || defined(LINUX)
-#define MULTITHREAD_H_TRAIT_USE_SALTED_LINKEDLISTHEADER 1
-#endif
 #endif
 
 void CrySpinLock(volatile int* pLock, int checkVal, int setVal);
@@ -223,77 +215,6 @@ ILINE void CryInterlockedAddSize(volatile size_t* pVal, ptrdiff_t iAdd)
 
 
 //////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////
-// CryInterlocked*SList Function, these are specialized C-A-S
-// functions for single-linked lists which prevent the A-B-A problem there
-// there are implemented in the platform specific CryThread_*.h files
-// TODO clean up the interlocked function the same was the CryThread_* header are
-
-//TODO somehow get their real size on WIN (without including windows.h...)
-//NOTE: The sizes are verifyed at compile-time in the implementation functions, but this is still ugly
-#if MULTITHREAD_H_TRAIT_SLOCKFREESINGLELINKEDLISTENTRY_MSALIGN_16
-_MS_ALIGN(16)
-#elif defined(WIN32)
-_MS_ALIGN(8)
-#endif
-struct SLockFreeSingleLinkedListEntry
-{
-    SLockFreeSingleLinkedListEntry* volatile pNext;
-}
-#if MULTITHREAD_H_TRAIT_SLOCKFREESINGLELINKEDLISTENTRY_ATTRIBUTE_ALIGN_16
-__attribute__ ((aligned(16)))
-#elif defined(LINUX32)
-_ALIGN(8)
-#elif defined(APPLE) || defined(LINUX64)
-_ALIGN(16)
-#endif
-;
-
-#if MULTITHREAD_H_TRAIT_SLOCKFREESINGLELINKEDLISTENTRY_MSALIGN_16
-_MS_ALIGN(16)
-#elif defined(WIN32)
-_MS_ALIGN(8)
-#endif
-struct SLockFreeSingleLinkedListHeader
-{
-    SLockFreeSingleLinkedListEntry* volatile pNext;
-#if defined(INTERLOCKED_COMPARE_EXCHANGE_128_NOT_SUPPORTED)
-    // arm64 processors do not provide a cmpxchg16b (or equivalent) instruction,
-    // so _InterlockedCompareExchange128 is not implemented on arm64 platforms,
-    // and we have to use a mutex to ensure thread safety.
-    AZStd::mutex mutex;
-#elif MULTITHREAD_H_TRAIT_USE_SALTED_LINKEDLISTHEADER
-    // If pointers 32bit, salt should be as well.  Otherwise we get 4 bytes of padding between pNext and salt and CAS operations fail
-#if defined(PLATFORM_64BIT)
-    volatile uint64 salt;
-#else
-    volatile uint32 salt;
-#endif
-#endif
-}
-#if MULTITHREAD_H_TRAIT_SLOCKFREESINGLELINKEDLISTENTRY_ATTRIBUTE_ALIGN_16
-__attribute__ ((aligned(16)))
-#elif defined(LINUX32)
-_ALIGN(8)
-#elif defined(APPLE) || defined(LINUX64)
-_ALIGN(16)
-#endif
-;
-
-
-// push a element atomically onto a single linked list
-void CryInterlockedPushEntrySList(SLockFreeSingleLinkedListHeader& list, SLockFreeSingleLinkedListEntry& element);
-
-// push a element atomically from a single linked list
-void* CryInterlockedPopEntrySList(SLockFreeSingleLinkedListHeader& list);
-
-// initialzied the lock-free single linked list
-void CryInitializeSListHead(SLockFreeSingleLinkedListHeader& list);
-
-// flush the whole list
-void* CryInterlockedFlushSList(SLockFreeSingleLinkedListHeader& list);
-
-
 ILINE void CryWriteLock(volatile int* rw)
 {
     CrySpinLock(rw, 0, WRITE_LOCK_VAL);
