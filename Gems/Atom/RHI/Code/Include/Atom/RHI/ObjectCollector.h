@@ -179,7 +179,6 @@ namespace AZ
             {
                 m_pendingGarbage.push_back({ AZStd::move(m_pendingObjects), m_currentIteration });
             }
-            m_mutex.unlock();
 
             if (m_pendingNotifies.size())
             {
@@ -200,25 +199,19 @@ namespace AZ
                     }
 
                     latestGarbage.m_notifies.insert(latestGarbage.m_notifies.end(), m_pendingNotifies.begin(), m_pendingNotifies.end());
-
-                    m_mutex.lock();
-                    m_pendingNotifies.clear();
-                    m_mutex.unlock();
-
                 }
                 else
                 {
                     // garbage queue is empty, notify now
-                    m_mutex.lock();
                     for (auto& notifyFunction : m_pendingNotifies)
                     {
                         notifyFunction();
                     }
-
-                    m_pendingNotifies.clear();
-                    m_mutex.unlock();
                 }
+
+                m_pendingNotifies.clear();
             }
+            m_mutex.unlock();
 
             size_t objectCount = 0;
             size_t i = 0;
