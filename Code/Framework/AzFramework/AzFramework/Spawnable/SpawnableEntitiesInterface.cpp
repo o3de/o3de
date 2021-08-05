@@ -227,8 +227,10 @@ namespace AzFramework
 
     EntitySpawnTicket::EntitySpawnTicket(EntitySpawnTicket&& rhs)
         : m_payload(rhs.m_payload)
+        , m_id(rhs.m_id)
     {
         rhs.m_payload = nullptr;
+        rhs.m_id = 0;
     }
 
     EntitySpawnTicket::EntitySpawnTicket(AZ::Data::Asset<Spawnable> spawnable)

@@ -269,7 +269,7 @@ namespace AzFramework
         int numEnvironmentVars = 0;
         if (processLaunchInfo.m_environmentVariables)
         {
-            const int numEnvironmentVars = processLaunchInfo.m_environmentVariables->size();
+            numEnvironmentVars = processLaunchInfo.m_environmentVariables->size();
             // Adding one more as exec expects the array to have a nullptr as the last element
             environmentVariables = new char*[numEnvironmentVars + 1];
             for (int i = 0; i < numEnvironmentVars; i++)

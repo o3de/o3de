@@ -9,6 +9,7 @@
 #include <AzQtComponents/Utilities/Conversions.h>
 #include <EMotionFX/CommandSystem/Source/AnimGraphConnectionCommands.h>
 #include <EMotionFX/CommandSystem/Source/AnimGraphNodeCommands.h>
+#include <EMotionFX/CommandSystem/Source/AnimGraphNodeGroupCommands.h>
 #include <EMotionFX/CommandSystem/Source/MotionSetCommands.h>
 #include <EMotionFX/Source/AnimGraphExitNode.h>
 #include <EMotionFX/Source/AnimGraphMotionNode.h>
@@ -1208,7 +1209,7 @@ namespace EMStudio
 
         MCore::CommandGroup commandGroup("Adjust anim graph node group");
 
-        AZStd::string nodeNames;
+        AZStd::vector<AZStd::string> nodeNames;
         for (const QModelIndex& selectedIndex : selectionList)
         {
             // Skip transitions and blend tree connections.
@@ -1221,12 +1222,19 @@ namespace EMStudio
             EMotionFX::AnimGraphNodeGroup* nodeGroup = animGraph->FindNodeGroupForNode(selectedNode);
             if (nodeGroup)
             {
-                const AZStd::string command = AZStd::string::format("AnimGraphAdjustNodeGroup -animGraphID %i -name \"%s\" -nodeNames \"%s\" -nodeAction \"remove\"", animGraph->GetID(), nodeGroup->GetName(), selectedNode->GetName());
-                commandGroup.AddCommandString(command);
+                auto* command = aznew CommandSystem::CommandAnimGraphAdjustNodeGroup(
+                    GetCommandManager()->FindCommand(CommandSystem::CommandAnimGraphAdjustNodeGroup::s_commandName),
+                    /*animGraphId = */ animGraph->GetID(),
+                    /*name = */ nodeGroup->GetNameString(),
+                    /*visible = */ AZStd::nullopt,
+                    /*newName = */ AZStd::nullopt,
+                    /*nodeNames = */ {{selectedNode->GetNameString()}},
+                    /*nodeAction = */ CommandSystem::CommandAnimGraphAdjustNodeGroup::NodeAction::Remove
+                );
+                commandGroup.AddCommand(command);
             }
 
-            nodeNames += selectedNode->GetName();
-            nodeNames += ";";
+            nodeNames.emplace_back(selectedNode->GetName());
         }
         if (!nodeNames.empty())
         {
@@ -1235,8 +1243,16 @@ namespace EMStudio
 
         if (newNodeGroup)
         {
-            const AZStd::string command = AZStd::string::format("AnimGraphAdjustNodeGroup -animGraphID %i -name \"%s\" -nodeNames \"%s\" -nodeAction \"add\"", animGraph->GetID(), newNodeGroup->GetName(), nodeNames.c_str());
-            commandGroup.AddCommandString(command);
+            auto* command = aznew CommandSystem::CommandAnimGraphAdjustNodeGroup(
+                GetCommandManager()->FindCommand(CommandSystem::CommandAnimGraphAdjustNodeGroup::s_commandName),
+                /*animGraphId = */ animGraph->GetID(),
+                /*name = */ newNodeGroup->GetNameString(),
+                /*visible = */ AZStd::nullopt,
+                /*newName = */ AZStd::nullopt,
+                /*nodeNames = */ nodeNames,
+                /*nodeAction = */ CommandSystem::CommandAnimGraphAdjustNodeGroup::NodeAction::Add
+            );
+            commandGroup.AddCommand(command);
         }
 
         AZStd::string outResult;

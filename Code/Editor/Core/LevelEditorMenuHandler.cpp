@@ -544,12 +544,12 @@ void LevelEditorMenuHandler::PopulateEditMenu(ActionManager::MenuWrapper& editMe
 
     auto snapMenu = modifyMenu.AddMenu(tr("Snap"));
 
-    snapMenu.AddAction(ID_SNAPANGLE);
+    snapMenu.AddAction(AzToolsFramework::SnapAngle);
 
     auto transformModeMenu = modifyMenu.AddMenu(tr("Transform Mode"));
-    transformModeMenu.AddAction(ID_EDITMODE_MOVE);
-    transformModeMenu.AddAction(ID_EDITMODE_ROTATE);
-    transformModeMenu.AddAction(ID_EDITMODE_SCALE);
+    transformModeMenu.AddAction(AzToolsFramework::EditModeMove);
+    transformModeMenu.AddAction(AzToolsFramework::EditModeRotate);
+    transformModeMenu.AddAction(AzToolsFramework::EditModeScale);
 
     editMenu.AddSeparator();
 
