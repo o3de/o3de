@@ -11,6 +11,7 @@
 #include <SceneAPI/SceneData/SceneDataConfiguration.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMaterialData.h>
 #include <AzCore/std/containers/unordered_map.h>
+#include <AzCore/std/string/fixed_string.h>
 
 namespace AZ
 {
@@ -96,10 +97,7 @@ namespace AZ
 
                 bool m_isNoDraw;
 
-                const static AZStd::fixed_string<8> s_DiffuseMapName;
-                const static AZStd::fixed_string<9> s_SpecularMapName;
-                const static AZStd::fixed_string<5> s_BumpMapName;
-                const static AZStd::fixed_string<1> s_emptyString;
+                const AZStd::string m_emptyString;
 
                 // A unique id which is used to identify a material in a fbx. 
                 // This is the same as the ID in the fbx file's FbxNode

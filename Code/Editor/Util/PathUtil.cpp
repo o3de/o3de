@@ -254,7 +254,7 @@ namespace Path
         }
         AZStd::string str(GetGameAssetsFolder());
         str += "Mods\\";
-        str += s_currentModName;
+        str += s_currentModName.c_str();
         return str;
     }
 

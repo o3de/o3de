@@ -16,6 +16,7 @@
 #include "CrySizer.h"
 #include "CryEndian.h"
 #include "TypeInfo_impl.h"
+#include <AzCore/std/string/fixed_string.h>
 
 // Traits
 #if defined(AZ_RESTRICTED_PLATFORM)
@@ -131,9 +132,9 @@ const CTypeInfo&PtrTypeInfo()
 // bool
 AZStd::string ToString(bool const& val)
 {
-    static AZStd::fixed_string sTrue = "true";
-    static AZStd::fixed_string sFalse = "false";
-    return val ? sTrue : sFalse;
+    static AZStd::fixed_string<5> sTrue = "true";
+    static AZStd::fixed_string<6> sFalse = "false";
+    return val ? sTrue.c_str() : sFalse.c_str();
 }
 
 bool FromString(bool& val, cstr s)

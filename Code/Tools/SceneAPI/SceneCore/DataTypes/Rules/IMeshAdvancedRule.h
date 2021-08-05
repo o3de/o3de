@@ -11,6 +11,7 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <SceneAPI/SceneCore/DataTypes/Rules/IRule.h>
+#include <AzCore/std/string/fixed_string.h>
 
 namespace AZ
 {
@@ -18,7 +19,7 @@ namespace AZ
     {
         namespace DataTypes
         {
-            const static AZStd::fixed_string s_advancedDisabledString = "Disabled";
+            static AZStd::string s_advancedDisabledString = "Disabled";
 
             class IMeshAdvancedRule
                 : public IRule
