@@ -35,7 +35,6 @@ namespace EMStudio
         mNodeTable                  = nullptr;
         mSelectNodesButton          = nullptr;
         mNodeGroup                  = nullptr;
-        mNodeAction                 = "";
 
         // init the widget
         Init();
@@ -254,11 +253,11 @@ namespace EMStudio
         QWidget* senderWidget = (QWidget*)sender();
         if (senderWidget == mAddNodesButton)
         {
-            mNodeAction = "add";
+            mNodeAction = CommandSystem::CommandAdjustNodeGroup::NodeAction::Add;
         }
         else
         {
-            mNodeAction = "select";
+            mNodeAction = CommandSystem::CommandAdjustNodeGroup::NodeAction::Replace;
         }
 
         // get the selected actorinstance
@@ -293,46 +292,37 @@ namespace EMStudio
     // remove nodes
     void NodeGroupWidget::RemoveNodesButtonPressed()
     {
-        // generate node list string
-        AZStd::string nodeList;
-        uint32 lowestSelectedRow = MCORE_INVALIDINDEX32;
-        const uint32 numTableRows = mNodeTable->rowCount();
-        for (uint32 i = 0; i < numTableRows; ++i)
-        {
-            // get the current table item
-            QTableWidgetItem* item = mNodeTable->item(i, 0);
-            if (item == nullptr)
-            {
-                continue;
-            }
-
-            // add the item to remove list, if it's selected
-            if (item->isSelected())
-            {
-                nodeList += AZStd::string::format("%s;", item->text().toUtf8().data());
-                if ((uint32)item->row() < lowestSelectedRow)
-                {
-                    lowestSelectedRow = (uint32)item->row();
-                }
-            }
-        }
-
-        // stop here if nothing selected
-        if (nodeList.empty())
+        if (mNodeTable->selectedItems().empty())
         {
             return;
         }
 
-        // call command for adjusting disable on default flag
+        // generate node list string
+        AZStd::vector<AZStd::string> nodeList;
+        int lowestSelectedRow = AZStd::numeric_limits<int>::max();
+        for (const QTableWidgetItem* item : mNodeTable->selectedItems())
+        {
+            nodeList.emplace_back(FromQtString(item->text()));
+            lowestSelectedRow = AZStd::min(lowestSelectedRow, item->row());
+        }
+
         AZStd::string outResult;
-        AZStd::string command = AZStd::string::format("AdjustNodeGroup -actorID %i -name \"%s\" -nodeAction \"remove\" -nodeNames \"%s\"", mActor->GetID(), mNodeGroup->GetName(), nodeList.c_str());
+        auto* command = aznew CommandSystem::CommandAdjustNodeGroup(
+            GetCommandManager()->FindCommand(CommandSystem::CommandAdjustNodeGroup::s_commandName),
+            /*actorId=*/ mActor->GetID(),
+            /*name=*/ mNodeGroup->GetName(),
+            /*newName=*/ AZStd::nullopt,
+            /*enabledOnDefault=*/ AZStd::nullopt,
+            /*nodeNames=*/ AZStd::move(nodeList),
+            /*nodeAction=*/ CommandSystem::CommandAdjustNodeGroup::NodeAction::Remove
+        );
         if (EMStudio::GetCommandManager()->ExecuteCommand(command, outResult) == false)
         {
             AZ_Error("EMotionFX", false, outResult.c_str());
         }
 
         // selected the next row
-        if (lowestSelectedRow > ((uint32)mNodeTable->rowCount() - 1))
+        if (lowestSelectedRow > (mNodeTable->rowCount() - 1))
         {
             mNodeTable->selectRow(lowestSelectedRow - 1);
         }
@@ -353,19 +343,23 @@ namespace EMStudio
         }
 
         // generate node list string
-        AZStd::string nodeList;
-        nodeList.reserve(16448);
-        const uint32 numSelectedNodes = selectionList.GetLength();
-        for (uint32 i = 0; i < numSelectedNodes; ++i)
+        AZStd::vector<AZStd::string> nodeList;
+        const uint32 selectionListSize = selectionList.GetLength();
+        for (uint32 i = 0; i < selectionListSize; ++i)
         {
-            nodeList += selectionList[i].GetNodeName();
-            nodeList += ";";
+            nodeList.emplace_back(selectionList[i].GetNodeName());
         }
-        AzFramework::StringFunc::Strip(nodeList, MCore::CharacterConstants::semiColon, true /* case sensitive */, false /* beginning */, true /* ending */);
 
-        // call command for adjusting disable on default flag
         AZStd::string outResult;
-        AZStd::string command = AZStd::string::format("AdjustNodeGroup -actorID %i -name \"%s\" -nodeAction \"%s\" -nodeNames \"%s\"", mActor->GetID(), mNodeGroup->GetName(), mNodeAction.c_str(), nodeList.c_str());
+        auto* command = aznew CommandSystem::CommandAdjustNodeGroup(
+            GetCommandManager()->FindCommand(CommandSystem::CommandAdjustNodeGroup::s_commandName),
+            /*actorId=*/ mActor->GetID(),
+            /*name=*/ mNodeGroup->GetName(),
+            /*newName=*/ AZStd::nullopt,
+            /*enabledOnDefault=*/ AZStd::nullopt,
+            /*nodeNames=*/ AZStd::move(nodeList),
+            /*nodeAction=*/ mNodeAction
+        );
         if (EMStudio::GetCommandManager()->ExecuteCommand(command, outResult) == false)
         {
             AZ_Error("EMotionFX", false, outResult.c_str());
