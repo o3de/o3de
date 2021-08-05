@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzToolsFramework/Asset/AssetSeedManager.h>
 #include <AzFramework/Asset/AssetRegistry.h>
 #include <AzCore/IO/FileIO.h>
