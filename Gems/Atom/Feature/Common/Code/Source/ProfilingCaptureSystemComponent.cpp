@@ -603,55 +603,49 @@ namespace AZ
 
         bool ProfilingCaptureSystemComponent::BeginContinuousCpuProfilingCapture()
         {
-            if (m_cpuDataSerializationInProgress.load())
-            {
-                AZ_TracePrintf(
-                    "ProfilingSystemCaptureComponent",
-                    "Cannot begin a continuous capture - another serialization is currently in progress\n");
-                return false;
-            }
             return AZ::RHI::CpuProfiler::Get()->BeginContinuousCapture();
         }
 
         bool ProfilingCaptureSystemComponent::EndContinuousCpuProfilingCapture(const AZStd::string& outputFilePath)
         {
-            if (m_cpuDataSerializationInProgress.load())
+            bool expected = false;
+            if (m_cpuDataSerializationInProgress.compare_exchange_strong(expected, true))
             {
-                AZ_TracePrintf(
-                    "ProfilingSystemCaptureComponent",
-                    "Cannot end a continuous capture - another serialization is currently in progress\n");
-                return false;
+                AZStd::ring_buffer<RHI::CpuProfiler::TimeRegionMap> captureResult;
+                const bool captureEnded = AZ::RHI::CpuProfiler::Get()->EndContinuousCapture(captureResult);
+                if (!captureEnded)
+                {
+                    AZ_TracePrintf("ProfilingCaptureSystemComponent", "Could not end the continuous capture, is one in progress?\n");
+                    m_cpuDataSerializationInProgress.store(false);
+                    return false;
+                }
+
+                // cpuProfilingData could be 1GB+ once saved, so use an IO thread to write it to disk.
+                auto threadIoFunction =
+                    [data = AZStd::move(captureResult), filePath = AZStd::string(outputFilePath), &flag = m_cpuDataSerializationInProgress]()
+                {
+                    SerializeCpuProfilingData(data, filePath, true);
+                    flag.store(false);
+                };
+                
+                // If the thread object already exists (ex. we have already serialized data), join. This will not block since
+                // m_cpuDataSerializationInProgress was false, meaning the IO thread has already completed execution.
+                // TODO Use a reusable thread implementation over repeated creation + destruction of threads [ATOM-16214]
+                if (m_cpuDataSerializationThread.joinable())
+                {
+                    m_cpuDataSerializationThread.join();
+                }
+
+                auto thread = AZStd::thread(threadIoFunction);
+                m_cpuDataSerializationThread = AZStd::move(thread);
+
+                return true;
             }
 
-            AZStd::ring_buffer<RHI::CpuProfiler::TimeRegionMap> captureResult;
-            const bool captureEnded = AZ::RHI::CpuProfiler::Get()->EndContinuousCapture(captureResult);
-            if (!captureEnded)
-            {
-                AZ_TracePrintf("ProfilingCaptureSystemComponent", "Could not end the continuous capture, is one in progress?\n");
-                return false;
-            }
-
-            // cpuProfilingData could be 1GB+ once saved, so use an IO thread to write it to disk.
-            m_cpuDataSerializationInProgress.store(true);
-            auto threadIoFunction =
-                [data = AZStd::move(captureResult), filePath = AZStd::string(outputFilePath), &flag = m_cpuDataSerializationInProgress]()
-            {
-                SerializeCpuProfilingData(data, filePath, true);
-                flag.store(false);
-            };
-            
-            // If the thread object already exists (ex. we have already serialized data), join. This will not block since
-            // m_cpuDataSerializationInProgress is false, meaning the IO thread has already completed execution.
-            // TODO Use a reusable thread implementation over repeated creation + destruction of threads [ATOM-16214]
-            if (m_cpuDataSerializationThread.joinable())
-            {
-                m_cpuDataSerializationThread.join();
-            }
-
-            auto thread = AZStd::thread(threadIoFunction);
-            m_cpuDataSerializationThread = AZStd::move(thread);
-
-            return true;
+            AZ_TracePrintf(
+                "ProfilingSystemCaptureComponent",
+                "Cannot end a continuous capture - another serialization is currently in progress\n");
+            return false;
         }
 
         bool ProfilingCaptureSystemComponent::CaptureBenchmarkMetadata(const AZStd::string& benchmarkName, const AZStd::string& outputFilePath)
