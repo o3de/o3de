@@ -274,9 +274,6 @@ float GaussianIntegral(float a, float c)
 
 float GaussianNormalized(float x, float expectedValue, float standardDeviation)
 {
-    float b = expectedValue;
-    float c = standardDeviation;
-    float a = 1.0f / (c * sqrt(TWO_PI));
-
-    return Gaussian(x, a, b, c);
+    float normalizedAmplitude = 1.0f / (standardDeviation * sqrt(TWO_PI));
+    return Gaussian(x, normalizedAmplitude, expectedValue, standardDeviation);
 }

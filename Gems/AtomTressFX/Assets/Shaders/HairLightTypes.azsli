@@ -45,13 +45,6 @@
 enum class HairLightingModel {GGX, Marschner, Kajiya};
 option HairLightingModel o_hairLightingModel = HairLightingModel::Marschner;
 
-option bool o_enableMarschner_R = true;
-option bool o_enableMarschner_TRT = true;
-option bool o_enableMarschner_TT = true;
- 
-option bool o_enableDiffuseLobe = true;
-option bool o_enableSpecularLobe = true;
-option bool o_enableTransmittanceLobe = true;
 //==============================================================================
 float3 GetSpecularLighting(Surface surface, LightingData lightingData, const float3 lightIntensity, const float3 dirToLight)
 {
@@ -62,7 +55,7 @@ float3 GetSpecularLighting(Surface surface, LightingData lightingData, const flo
     }
     else if(o_hairLightingModel == HairLightingModel::Marschner)
     {
-        specular = HairBSDF(surface, lightingData, dirToLight);
+        specular = HairMarschnerBSDF(surface, lightingData, dirToLight);
     }
 
     return specular * lightIntensity;
@@ -86,7 +79,7 @@ float3 GetHairBackLighting(Surface surface, LightingData lightingData, float3 li
 
         return result;
     }
-    else // if (o_hairLightingModel == HairLightingModel::Marschner)
+    else // if ((o_hairLightingModel == HairLightingModel::Marschner) || (o_hairLightingModel == HairLightingModel::Kajiya))
     {
         return float3(0.0f, 0.0f, 0.0f);
     }
@@ -166,8 +159,6 @@ void SetNormal(
 
 //==============================================================================
 #include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
-
-//#define _USE_SPLIT_NORMALS_
 //==============================================================================
 
 
@@ -414,6 +405,7 @@ void TestApplyDiskLight(ViewSrg::DiskLight light, Surface surface, inout Lightin
 
         // How much is back face shadowed, it's set to the reverse of litRatio to share the same default value with thickness, which should be 0 if no shadow map available
         float backShadowRatio = 0.0;
+        if (o_enableShadows)
         {
             litRatio = ProjectedShadow::GetVisibility(
                 light.m_shadowIndex,
@@ -513,8 +505,7 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
 
     SetNormal(surface.tangent, -lightingData.dirToCamera, surface, lightingData);
 
-//    if (o_enableShadows && shadowIndex <  SceneSrg::m_directionalLightCount)
-    if (shadowIndex <  SceneSrg::m_directionalLightCount)
+    if (o_enableShadows && shadowIndex <  SceneSrg::m_directionalLightCount)
     {
         litRatio = DirectionalLightShadow::GetVisibility(
             shadowIndex,
@@ -545,7 +536,7 @@ void ApplyDirectionalLights(Surface surface, inout LightingData lightingData)
 
         float currentLitRatio = 1.0f;
         float currentBackShadowRatio = 1.0f;
-//        if (o_enableShadows)
+        if (o_enableShadows)
         {
             currentLitRatio = (index == shadowIndex) ? litRatio : 1.0f;
 
@@ -616,19 +607,30 @@ void ApplyLighting(inout Surface surface, inout LightingData lightingData)
         DirectionalLightShadow::GetShadowCoords(shadowIndex, surface.position, lightingData.shadowCoords);
     }
 
-    //-------------------------
+
     // Light loops application.
     // If culling is used, the order of the calls must match the light types list order 
-    ApplyDecals(lightingData.tileIterator, surface);
+//    ApplyDecals(lightingData.tileIterator, surface);
 
-    ApplyDirectionalLights(surface, lightingData);
+    if (o_enableDirectionalLights)
+    {
+        ApplyDirectionalLights(surface, lightingData);
+    }
 
-    ApplyAllSimplePointLights(surface, lightingData);
-    ApplyAllSimpleSpotLights(surface, lightingData);
-    ApplyAllPointLights(surface, lightingData);
+    if (o_enablePunctualLights)
+    {
+        ApplyAllSimplePointLights(surface, lightingData);
+        ApplyAllSimpleSpotLights(surface, lightingData);
+    }
 
-    ApplyAllDiskLights(surface, lightingData);
+    if (o_enableAreaLights)
+    {
+        ApplyAllPointLights(surface, lightingData);
+        ApplyAllDiskLights(surface, lightingData);
+    }
 
-    ApplyIBL(surface, lightingData); 
-    //--------------------------
+    if (o_enableIBL)
+    {
+        ApplyIBL(surface, lightingData); 
+    }
 }
