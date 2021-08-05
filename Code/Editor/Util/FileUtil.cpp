@@ -279,7 +279,7 @@ void CFileUtil::EditTextureFile(const char* textureFile, [[maybe_unused]] bool b
     // Qt does.
     QString fullTexturePathFixedForWindows = QString(fullTexturePath.data()).replace('/', '\\');
     QByteArray fullTexturePathFixedForWindowsUtf8 = fullTexturePathFixedForWindows.toUtf8();
-    HINSTANCE hInst = ShellExecute(NULL, "open", textureEditorPath.data(), fullTexturePathFixedForWindowsUtf8.data(), NULL, SW_SHOWNORMAL);
+    HINSTANCE hInst = ShellExecute(nullptr, "open", textureEditorPath.data(), fullTexturePathFixedForWindowsUtf8.data(), nullptr, SW_SHOWNORMAL);
     failedToLaunch = ((DWORD_PTR)hInst <= 32);
 #elif defined(AZ_PLATFORM_MAC)
     failedToLaunch = QProcess::execute(QString("/usr/bin/open"), {"-a", gSettings.textureEditor, QString(fullTexturePath.data()) }) != 0;
@@ -332,7 +332,7 @@ bool CFileUtil::EditMayaFile(const char* filepath, const bool bExtractFromPak, c
             CryMessageBox("Can't open the file. You can specify a source editor in Sandbox Preferences or create an association in Windows.", "Cannot open file!", MB_OK | MB_ICONERROR);
         }
     }
-    return TRUE;
+    return true;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -348,10 +348,10 @@ bool CFileUtil::EditFile(const char* filePath, const bool bExtrackFromPak, const
     else if ((extension.compare(".bspace") == 0) || (extension.compare(".comb") == 0))
     {
         EditTextFile(filePath, 0, IFileUtil::FILE_TYPE_BSPACE);
-        return TRUE;
+        return true;
     }
 
-    return FALSE;
+    return false;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -374,7 +374,7 @@ bool CFileUtil::CalculateDccFilename(const QString& assetFilename, QString& dccF
 //////////////////////////////////////////////////////////////////////////
 bool CFileUtil::ExtractDccFilenameFromAssetDatabase(const QString& assetFilename, QString& dccFilename)
 {
-    IAssetItemDatabase* pCurrentDatabaseInterface = NULL;
+    IAssetItemDatabase* pCurrentDatabaseInterface = nullptr;
     std::vector<IClassDesc*> assetDatabasePlugins;
     IEditorClassFactory* pClassFactory = GetIEditor()->GetClassFactory();
     pClassFactory->GetClassesByCategory("Asset Item DB", assetDatabasePlugins);
@@ -592,7 +592,7 @@ inline bool ScanDirectoryFiles(const QString& root, const QString& path, const Q
 
     /*
     CFileFind finder;
-    BOOL bWorking = finder.FindFile( Path::Make(dir,fileSpec) );
+    bool bWorking = finder.FindFile( Path::Make(dir,fileSpec) );
     while (bWorking)
     {
         bWorking = finder.FindNextFile();
@@ -663,7 +663,7 @@ inline int ScanDirectoryRecursive(const QString& root, const QString& path, cons
     {
         /*
         CFileFind finder;
-        BOOL bWorking = finder.FindFile( Path::Make(dir,"*.*") );
+        bool bWorking = finder.FindFile( Path::Make(dir,"*.*") );
         while (bWorking)
         {
             bWorking = finder.FindNextFile();
@@ -847,12 +847,12 @@ void BlockAndWait(const bool& opComplete, QWidget* parent, const char* message)
             {
                 // note that 16ms below is not the amount of time to wait, its the maximum time that
                 // processEvents is allowed to keep processing them if they just keep being emitted.
-                // adding a maximum time here means that we get an opportunity to pump the TickBus 
+                // adding a maximum time here means that we get an opportunity to pump the TickBus
                 // periodically even during a flood of events.
                 QCoreApplication::processEvents(QEventLoop::ExcludeUserInputEvents, 16);
                 AZ::TickBus::ExecuteQueuedEvents();
             }
-            
+
             // if we are not the main thread then the above will be done by the main thread, and we can just wait for it to happen.
             // its fairly important we don't sleep for really long because this legacy code is often invoked in a blocking loop
             // for many items, and in the worst case, any time we spend sleeping here will be added to each item.
@@ -1206,10 +1206,10 @@ bool   CFileUtil::CreatePath(const QString& strPath)
     QString                                 strFilename;
     QString                                 strExtension;
     QString                                 strCurrentDirectoryPath;
-    QStringList        cstrDirectoryQueue;
+    QStringList                             cstrDirectoryQueue;
     size_t                                  nCurrentPathQueue(0);
     size_t                                  nTotalPathQueueElements(0);
-    BOOL                                        bnLastDirectoryWasCreated(FALSE);
+    bool                                    bnLastDirectoryWasCreated(false);
 
     if (PathExists(strPath))
     {
@@ -1361,7 +1361,7 @@ IFileUtil::ECopyTreeResult CFileUtil::CopyTree(const QString& strSourceDirectory
     nTotal = cFiles.size();
     for (nCurrent = 0; nCurrent < nTotal; ++nCurrent)
     {
-        BOOL        bnLastFileWasCopied(FALSE);
+        bool        bnLastFileWasCopied(false);
 
 
         if (eCopyResult == IFileUtil::ETREECOPYUSERCANCELED)
@@ -1447,7 +1447,7 @@ IFileUtil::ECopyTreeResult CFileUtil::CopyTree(const QString& strSourceDirectory
             return eCopyResult;
         }
 
-        BOOL        bnLastDirectoryWasCreated(FALSE);
+        bool        bnLastDirectoryWasCreated(false);
 
         QString sourceName = sourceDir.absoluteFilePath(cDirectories[nCurrent]);
         QString targetName = targetDir.absoluteFilePath(cDirectories[nCurrent]);
@@ -1529,7 +1529,7 @@ IFileUtil::ECopyTreeResult   CFileUtil::CopyFile(const QString& strSourceFile, c
     CUserOptions                            oFileOptions;
     IFileUtil::ECopyTreeResult                      eCopyResult(IFileUtil::ETREECOPYOK);
 
-    BOOL                                            bnLastFileWasCopied(FALSE);
+    bool                                        bnLastFileWasCopied(false);
     QString                                     name(strSourceFile);
     QString                                     strQueryFilename;
     QString                                     strFullStargetName;
@@ -1658,7 +1658,7 @@ IFileUtil::ECopyTreeResult   CFileUtil::CopyFile(const QString& strSourceFile, c
                 }
                 if (pfnProgress)
                 {
-                    pfnProgress(source.size(), totalRead, 0, 0, 0, 0, 0, 0, 0);
+                    pfnProgress(source.size(), totalRead, 0, 0, 0, 0, nullptr, nullptr, nullptr);
                 }
             }
             if (totalRead != source.size())
@@ -1742,7 +1742,7 @@ IFileUtil::ECopyTreeResult   CFileUtil::MoveTree(const QString& strSourceDirecto
             return eCopyResult;
         }
 
-        BOOL        bnLastFileWasCopied(FALSE);
+        bool    bnLastFileWasCopied(false);
         QString sourceName(sourceDir.absoluteFilePath(cFiles[nCurrent]));
         QString targetName(targetDir.absoluteFilePath(cFiles[nCurrent]));
 
@@ -1816,7 +1816,7 @@ IFileUtil::ECopyTreeResult   CFileUtil::MoveTree(const QString& strSourceDirecto
     nTotal = cDirectories.size();
     for (nCurrent = 0; nCurrent < nTotal; ++nCurrent)
     {
-        BOOL        bnLastDirectoryWasCreated(FALSE);
+        bool        bnLastDirectoryWasCreated(false);
 
         if (eCopyResult == IFileUtil::ETREECOPYUSERCANCELED)
         {
