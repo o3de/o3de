@@ -54,7 +54,6 @@ namespace O3DE::ProjectManager
         QTabWidget* tabWidget = new QTabWidget();
         tabWidget->setObjectName("projectSettingsTab");
         tabWidget->tabBar()->setObjectName("projectSettingsTabBar");
-        tabWidget->tabBar()->setFocusPolicy(Qt::NoFocus);
         tabWidget->addTab(m_updateSettingsScreen, tr("General"));
 
         QPushButton* gemsButton = new QPushButton(tr("Configure Gems"), this);

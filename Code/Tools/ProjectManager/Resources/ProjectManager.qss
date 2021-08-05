@@ -53,6 +53,11 @@ QTabBar::tab:pressed
 {
     color: #0e60eb;
 }
+QTabBar::focus {
+    outline: 0px;
+    outline: none;
+    outline-style: none;
+ }
 
 /************** General (Forms) **************/
 
