@@ -43,7 +43,7 @@ namespace AzToolsFramework
 
                         scratchBuffer.clear();
 
-                        return JSR::ResultCode(result.GetTask(), JSR::Outcomes::PartialSkip);
+                        return JSR::ResultCode(result.GetTask(), JSR::Outcomes::Skipped);
                     }
 
                     return result;
