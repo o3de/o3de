@@ -80,7 +80,7 @@ namespace AZ
         {
             bool releaseByModule = false;
             const bool releaseByUseCount = (--m_useCount == 0);
-            // We take over the lock, and release it before potentially destructin/freeing ourselves
+            // We take over the lock, and release it before potentially destroying/freeing ourselves
             {
                 AZStd::scoped_lock envLockHolder(AZStd::adopt_lock, m_mutex);
                 if (moduleRelease && !m_canTransferOwnership && m_moduleOwner == AZ::Environment::GetModuleId())
