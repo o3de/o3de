@@ -216,31 +216,30 @@ namespace UnitTest
         : public AllocatorsFixture
     {
     public:
-        AZStd::string GetTempFolder()
-        {
-            QTemporaryDir dir;
-            QDir tempPath(dir.path());
-            return tempPath.absolutePath().toUtf8().data();
-        }
-
         void SetUp() override
         {
+            m_application = new ToolsTestApplication("MessageTest");
+
             AZ::IO::FileIOBase::SetInstance(nullptr); // The API requires the old instance to be destroyed first
             AZ::IO::FileIOBase::SetInstance(new AZ::IO::LocalFileIO());
 
-            AZStd::string cacheFolder;
-            AzFramework::StringFunc::Path::Join(GetTempFolder().c_str(), "testplatform", cacheFolder);
-            AzFramework::StringFunc::Path::Join(cacheFolder.c_str(), "testproject", cacheFolder);
+            auto registry = AZ::SettingsRegistry::Get();
+            ASSERT_TRUE(registry != nullptr);
 
-            AZ::IO::FileIOBase::GetInstance()->SetAlias("@assets@", cacheFolder.c_str());
+            const AZStd::string cacheProjectRootFolder = m_tempDir.GetDirectory();
+            registry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_CacheProjectRootFolder, cacheProjectRootFolder);
+            AZ::IO::FileIOBase::GetInstance()->SetAlias("@assets@", cacheProjectRootFolder.c_str());
 
             m_platformAddressedAssetCatalogManager = AZStd::make_unique<AzToolsFramework::PlatformAddressedAssetCatalogManager>(AzFramework::PlatformId::Invalid);
         }
         void TearDown() override
         {
             m_platformAddressedAssetCatalogManager.reset();
+            delete m_application;
         }
+        ToolsTestApplication* m_application;
         AZStd::unique_ptr<AzToolsFramework::PlatformAddressedAssetCatalogManager> m_platformAddressedAssetCatalogManager;
+        UnitTest::ScopedTemporaryDirectory m_tempDir;
     };
 
     TEST_F(MessageTest, PlatformAddressedAssetCatalogManagerMessageTest_MessagesForwarded_CountsMatch)
@@ -251,7 +250,7 @@ namespace UnitTest
 
         AZ_TEST_START_TRACE_SUPPRESSION;
         auto* mockCatalog = new ::testing::NiceMock<PlatformAddressedAssetCatalogMessageTest>(AzFramework::PlatformId::ANDROID_ID);
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1); // Expected error not finding catalog
         AZStd::unique_ptr< ::testing::NiceMock<PlatformAddressedAssetCatalogMessageTest>> catalogHolder;
         catalogHolder.reset(mockCatalog);
 
