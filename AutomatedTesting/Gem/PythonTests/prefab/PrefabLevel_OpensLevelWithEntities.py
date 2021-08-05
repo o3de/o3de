@@ -1,12 +1,8 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 # fmt:off
@@ -41,7 +37,7 @@ def PrefabLevel_OpensLevelWithEntities():
     EXPECTED_EMPTY_ENTITY_POS = Vector3(10.00, 20.0, 30.0)
 
     helper.init_idle()
-    helper.open_level("prefab", "PrefabLevel_OpensLevelWithEntities")
+    helper.open_level("Prefab", "PrefabLevel_OpensLevelWithEntities")
 
     def find_entity(entity_name):
         searchFilter = entity.SearchFilter()
@@ -50,19 +46,20 @@ def PrefabLevel_OpensLevelWithEntities():
         if entityIds[0].IsValid():
             return entityIds[0]
         return None
-#Checks for an entity called "EmptyEntity"
+    
+    # Checks for an entity called "EmptyEntity"
     helper.wait_for_condition(lambda: find_entity("EmptyEntity").IsValid(), 5.0)
     empty_entity_id = find_entity("EmptyEntity")
     Report.result(Tests.find_empty_entity, empty_entity_id.IsValid())
 
-# Checks if the EmptyEntity is in the correct position and if it fails, it will provide the expected postion and the actual postion of the entity in the Editor log
+    # Checks if the EmptyEntity is in the correct position and if it fails, it will provide the expected postion and the actual postion of the entity in the Editor log
     empty_entity_pos = azlmbr.components.TransformBus(azlmbr.bus.Event, "GetWorldTranslation", empty_entity_id)
     is_at_position = empty_entity_pos.IsClose(EXPECTED_EMPTY_ENTITY_POS)
     Report.result(Tests.empty_entity_pos, is_at_position)
     if not is_at_position:
         Report.info(f'Expected position: {EXPECTED_EMPTY_ENTITY_POS.ToString()}, actual position: {empty_entity_pos.ToString()}')
 
-#Checks for an entity called "EntityWithPxCollider" and if it has the PhysX Collider component
+    # Checks for an entity called "EntityWithPxCollider" and if it has the PhysX Collider component
     pxentity = find_entity("EntityWithPxCollider")
     Report.result(Tests.find_pxentity, pxentity.IsValid())
 
@@ -73,4 +70,4 @@ def PrefabLevel_OpensLevelWithEntities():
 if __name__ == "__main__":
 
     from editor_python_test_tools.utils import Report
-    Report.start_test (PrefabLevel_OpensLevelWithEntities)
+    Report.start_test(PrefabLevel_OpensLevelWithEntities)

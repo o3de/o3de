@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #pragma once
@@ -133,6 +129,9 @@ namespace AZ
         // Get the split list of system component tags specified at startup
         const AZStd::vector<Crc32>& GetSystemComponentTags() { return m_systemComponentTags; }
 
+        // Whether the user wants to quit the Application on errors rather than proceeding in a likely bad state
+        bool m_quitRequested = false;
+
     protected:
         ////////////////////////////////////////////////////////////////////////
         // ModuleManagerRequestBus
@@ -148,7 +147,10 @@ namespace AZ
         //! @return shared ptr to an ModuleData structure if the module is loaded and managed by the ModuleManager
         AZStd::shared_ptr<ModuleDataImpl> GetLoadedModule(AZStd::string_view modulePath);
 
-        ////////////////////////////////////////////////////////////////////////
+
+        //! On dependency sort errors, display error message with details.
+        //! Additionally send the message to NativeUI (if available) and ask user what to do,
+        void HandleDependencySortError(const Entity::DependencySortOutcome& outcome);
 
         ////////////////////////////////////////////////////////////////////////
         // EntityBus

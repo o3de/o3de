@@ -1,15 +1,10 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "Atom_RHI_Metal_precompiled.h"
 #include <Atom/RHI/RHISystemInterface.h>
 #include <AzCore/Debug/EventTrace.h>
 #include <AzFramework/API/ApplicationAPI.h>
@@ -51,7 +46,7 @@ namespace AZ
         {
             {
                 ReleaseQueue::Descriptor releaseQueueDescriptor;
-                releaseQueueDescriptor.m_collectLatency = descriptor.m_frameCountMax - 1;
+                releaseQueueDescriptor.m_collectLatency = descriptor.m_frameCountMax;
                 m_releaseQueue.Init(releaseQueueDescriptor);
             }
              
@@ -80,6 +75,9 @@ namespace AZ
 
             m_nullDescriptorManager.Init(*this);
             
+            m_samplerCache = [[NSCache alloc]init];
+            [m_samplerCache setName:@"SamplerCache"];
+            
             return RHI::ResultCode::Success;
         }
     
@@ -100,6 +98,10 @@ namespace AZ
             m_argumentBufferAllocator.Shutdown();
             m_releaseQueue.Shutdown();
             m_pipelineLayoutCache.Shutdown();
+            
+            [m_samplerCache removeAllObjects];
+            [m_samplerCache release];
+            m_samplerCache = nil;
             
             for (AZ::u32 i = 0; i < CommandEncoderTypeCount; ++i)
             {
@@ -326,14 +328,28 @@ namespace AZ
             m_features.m_indirectDrawSupport = false;
             
             RHI::QueryTypeFlags counterSamplingFlags = RHI::QueryTypeFlags::None;
-            
-#if AZ_TRAIT_ATOM_METAL_COUNTER_SAMPLING
-            counterSamplingFlags |= (RHI::QueryTypeFlags::Timestamp | RHI::QueryTypeFlags::PipelineStatistics);
-            m_features.m_queryTypesMask[static_cast<uint32_t>(RHI::HardwareQueueClass::Copy)] = RHI::QueryTypeFlags::Timestamp;
+
+            bool supportsInterDrawTimestamps = true;
+#if defined(__IPHONE_14_0) || defined(__MAC_11_0) || defined(__TVOS_14_0)
+            if (@available(macOS 11.0, iOS 14, tvOS 14, *))
+            {
+                supportsInterDrawTimestamps = [m_metalDevice supportsCounterSampling:MTLCounterSamplingPointAtDrawBoundary];
+            }
+            else
 #endif
+            {
+                supportsInterDrawTimestamps = ![m_metalDevice.name containsString:@"Apple"]; // Apple GPU's don't support inter draw timestamps at the M1/A14 generation
+            }
+            
+            if (supportsInterDrawTimestamps)
+            {
+                counterSamplingFlags |= (RHI::QueryTypeFlags::Timestamp | RHI::QueryTypeFlags::PipelineStatistics);
+                m_features.m_queryTypesMask[static_cast<uint32_t>(RHI::HardwareQueueClass::Copy)] = RHI::QueryTypeFlags::Timestamp;
+            }
+
             m_features.m_queryTypesMask[static_cast<uint32_t>(RHI::HardwareQueueClass::Graphics)] = RHI::QueryTypeFlags::Occlusion | counterSamplingFlags;
             //Compute queue can do gfx work
-            m_features.m_queryTypesMask[static_cast<uint32_t>(RHI::HardwareQueueClass::Compute)] = RHI::QueryTypeFlags::Occlusion |counterSamplingFlags;            
+            m_features.m_queryTypesMask[static_cast<uint32_t>(RHI::HardwareQueueClass::Compute)] = RHI::QueryTypeFlags::Occlusion | counterSamplingFlags;            
             m_features.m_occlusionQueryPrecise = true;
             
             //Values taken from https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf

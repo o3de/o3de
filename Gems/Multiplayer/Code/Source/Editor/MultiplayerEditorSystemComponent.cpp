@@ -1,17 +1,14 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <Multiplayer/IMultiplayer.h>
 #include <Multiplayer/IMultiplayerTools.h>
+#include <Multiplayer/INetworkSpawnableLibrary.h>
 #include <Multiplayer/MultiplayerConstants.h>
 
 #include <MultiplayerSystemComponent.h>
@@ -117,6 +114,12 @@ namespace Multiplayer
             {
                 console->PerformCommand("disconnect");
             }
+
+            AZ::Interface<INetworkEntityManager>::Get()->ClearAllEntities();
+
+            // Rebuild the library to clear temporary in-memory spawnable assets
+            AZ::Interface<INetworkSpawnableLibrary>::Get()->BuildSpawnablesList();
+
             break;
         }
     }
@@ -144,13 +147,9 @@ namespace Multiplayer
         processLaunchInfo.m_showWindow = true;
         processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_NORMAL;
 
-        // Launch the Server and give it a few seconds to boot up
+        // Launch the Server
         AzFramework::ProcessWatcher* outProcess = AzFramework::ProcessWatcher::LaunchProcess(
             processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_NONE);
-        if (outProcess)
-        {
-            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(15000));
-        }
 
         return outProcess;
     }
@@ -191,6 +190,9 @@ namespace Multiplayer
                 m_serverProcess = LaunchEditorServer();
             }
 
+            // Spawnable library needs to be rebuilt since now we have newly registered in-memory spawnable assets
+            AZ::Interface<INetworkSpawnableLibrary>::Get()->BuildSpawnablesList();
+
             // Now that the server has launched, attempt to connect the NetworkInterface         
             INetworkInterface* editorNetworkInterface = AZ::Interface<INetworking>::Get()->RetrieveNetworkInterface(AZ::Name(MPEditorInterfaceName));
             AZ_Assert(editorNetworkInterface, "MP Editor Network Interface was unregistered before Editor could connect.");
@@ -211,10 +213,10 @@ namespace Multiplayer
             while (byteStream.GetCurPos() < byteStream.GetLength())
             {
                 MultiplayerEditorPackets::EditorServerInit packet;
-                AzNetworking::TcpPacketEncodingBuffer& outBuffer = packet.ModifyAssetData();
+                auto& outBuffer = packet.ModifyAssetData();
 
                 // Size the packet's buffer appropriately
-                size_t readSize = TcpPacketEncodingBuffer::GetCapacity();
+                size_t readSize = outBuffer.GetCapacity();
                 size_t byteStreamSize = byteStream.GetLength() - byteStream.GetCurPos();
                 if (byteStreamSize < readSize)
                 {
@@ -232,6 +234,9 @@ namespace Multiplayer
                 editorNetworkInterface->SendReliablePacket(m_editorConnId, packet);
             }
         }
+    }
 
+    void MultiplayerEditorSystemComponent::OnGameEntitiesReset()
+    {
     }
 }

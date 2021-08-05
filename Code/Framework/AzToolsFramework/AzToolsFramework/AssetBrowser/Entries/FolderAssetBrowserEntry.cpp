@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <AzCore/Serialization/Utils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
@@ -42,8 +38,9 @@ namespace AzToolsFramework
 
         void FolderAssetBrowserEntry::UpdateChildPaths(AssetBrowserEntry* child) const
         {
-            child->m_relativePath = m_relativePath + AZ_CORRECT_DATABASE_SEPARATOR + child->m_name;
-            child->m_fullPath = m_fullPath + AZ_CORRECT_DATABASE_SEPARATOR + child->m_name;
+            child->m_relativePath = m_relativePath / child->m_name;
+            child->m_displayPath = QString::fromUtf8(child->m_relativePath.c_str());
+            child->m_fullPath = m_fullPath / child->m_name;
             AssetBrowserEntry::UpdateChildPaths(child);
         }
 

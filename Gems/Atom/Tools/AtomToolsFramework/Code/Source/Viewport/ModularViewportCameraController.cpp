@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -26,9 +22,13 @@
 namespace AtomToolsFramework
 {
     AZ_CVAR(
-        AZ::Color, ed_cameraSystemOrbitPointColor, AZ::Color::CreateFromRgba(255, 255, 255, 255), nullptr, AZ::ConsoleFunctorFlags::Null,
+        AZ::Color,
+        ed_cameraSystemOrbitPointColor,
+        AZ::Color::CreateFromRgba(255, 255, 255, 255),
+        nullptr,
+        AZ::ConsoleFunctorFlags::Null,
         "");
-    AZ_CVAR(float, ed_cameraSystemOrbitPointSize, 0.5f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
+    AZ_CVAR(float, ed_cameraSystemOrbitPointSize, 0.1f, nullptr, AZ::ConsoleFunctorFlags::Null, "");
 
     // debug
     void DrawPreviewAxis(AzFramework::DebugDisplayRequests& display, const AZ::Transform& transform, const float axisLength)
@@ -63,6 +63,16 @@ namespace AtomToolsFramework
         m_cameraListBuilder = builder;
     }
 
+    void ModularViewportCameraController::SetCameraPropsBuilderCallback(const CameraPropsBuilder& builder)
+    {
+        m_cameraPropsBuilder = builder;
+    }
+
+    void ModularViewportCameraController::SetCameraPriorityBuilderCallback(const CameraPriorityBuilder& builder)
+    {
+        m_cameraControllerPriorityBuilder = builder;
+    }
+
     void ModularViewportCameraController::SetupCameras(AzFramework::Cameras& cameras)
     {
         if (m_cameraListBuilder)
@@ -71,17 +81,51 @@ namespace AtomToolsFramework
         }
     }
 
-    ModernViewportCameraControllerInstance::ModernViewportCameraControllerInstance(
+    void ModularViewportCameraController::SetupCameraProperties(AzFramework::CameraProps& cameraProps)
+    {
+        if (m_cameraPropsBuilder)
+        {
+            m_cameraPropsBuilder(cameraProps);
+        }
+    }
+
+    void ModularViewportCameraController::SetupCameraControllerPriority(CameraControllerPriorityFn& cameraPriorityFn)
+    {
+        if (m_cameraControllerPriorityBuilder)
+        {
+            m_cameraControllerPriorityBuilder(cameraPriorityFn);
+        }
+    }
+
+    // what priority should the camera system respond to
+    AzFramework::ViewportControllerPriority DefaultCameraControllerPriority(const AzFramework::CameraSystem& cameraSystem)
+    {
+        // ModernViewportCameraControllerInstance receives events at all priorities, when it is in 'exclusive' mode
+        // or it is actively handling events (essentially when the camera system is 'active' and responding to inputs)
+        // it should only respond to the highest priority
+        if (cameraSystem.m_cameras.Exclusive() || cameraSystem.HandlingEvents())
+        {
+            return AzFramework::ViewportControllerPriority::Highest;
+        }
+
+        // otherwise it should only respond to normal priority events
+        return AzFramework::ViewportControllerPriority::Normal;
+    }
+
+    ModularViewportCameraControllerInstance::ModularViewportCameraControllerInstance(
         const AzFramework::ViewportId viewportId, ModularViewportCameraController* controller)
         : MultiViewportControllerInstanceInterface<ModularViewportCameraController>(viewportId, controller)
     {
         controller->SetupCameras(m_cameraSystem.m_cameras);
+        controller->SetupCameraProperties(m_cameraProps);
+        controller->SetupCameraControllerPriority(m_priorityFn);
 
         if (auto viewportContext = RetrieveViewportContext(GetViewportId()))
         {
             auto handleCameraChange = [this, viewportContext](const AZ::Matrix4x4&)
             {
-                if (!m_updatingTransform)
+                // ignore these updates if the camera is being updated internally
+                if (!m_updatingTransformInternally)
                 {
                     UpdateCameraFromTransform(m_targetCamera, viewportContext->GetCameraTransform());
                     m_camera = m_targetCamera;
@@ -97,25 +141,15 @@ namespace AtomToolsFramework
         ModularViewportCameraControllerRequestBus::Handler::BusConnect(viewportId);
     }
 
-    ModernViewportCameraControllerInstance::~ModernViewportCameraControllerInstance()
+    ModularViewportCameraControllerInstance::~ModularViewportCameraControllerInstance()
     {
         ModularViewportCameraControllerRequestBus::Handler::BusDisconnect();
         AzFramework::ViewportDebugDisplayEventBus::Handler::BusDisconnect();
     }
 
-    // should the camera system respond to this particular event
-    static bool ShouldHandle(const AzFramework::ViewportControllerPriority priority, const bool exclusive)
+    bool ModularViewportCameraControllerInstance::HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event)
     {
-        // ModernViewportCameraControllerInstance receives events at all priorities, it should only respond
-        // to normal priority events if it is not in 'exclusive' mode and when in 'exclusive' mode it should
-        // only respond to the highest priority events
-        return !exclusive && priority == AzFramework::ViewportControllerPriority::Normal ||
-            exclusive && priority == AzFramework::ViewportControllerPriority::Highest;
-    }
-
-    bool ModernViewportCameraControllerInstance::HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event)
-    {
-        if (ShouldHandle(event.m_priority, m_cameraSystem.m_cameras.Exclusive()))
+        if (event.m_priority == m_priorityFn(m_cameraSystem))
         {
             return m_cameraSystem.HandleEvents(AzFramework::BuildInputEvent(event.m_inputChannel));
         }
@@ -123,7 +157,7 @@ namespace AtomToolsFramework
         return false;
     }
 
-    void ModernViewportCameraControllerInstance::UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event)
+    void ModularViewportCameraControllerInstance::UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event)
     {
         // only update for a single priority (normal is the default)
         if (event.m_priority != AzFramework::ViewportControllerPriority::Normal)
@@ -133,12 +167,12 @@ namespace AtomToolsFramework
 
         if (auto viewportContext = RetrieveViewportContext(GetViewportId()))
         {
-            m_updatingTransform = true;
+            m_updatingTransformInternally = true;
 
             if (m_cameraMode == CameraMode::Control)
             {
                 m_targetCamera = m_cameraSystem.StepCamera(m_targetCamera, event.m_deltaTime.count());
-                m_camera = AzFramework::SmoothCamera(m_camera, m_targetCamera, event.m_deltaTime.count());
+                m_camera = AzFramework::SmoothCamera(m_camera, m_targetCamera, m_cameraProps, event.m_deltaTime.count());
 
                 // if there has been an interpolation, only clear the look at point if it is no longer
                 // centered in the view (the camera has looked away from it)
@@ -161,10 +195,12 @@ namespace AtomToolsFramework
                     return t * t * t * (t * (t * 6.0f - 15.0f) + 10.0f);
                 };
 
-                const float transitionT = smootherStepFn(m_animationT);
+                const auto& [transformStart, transformEnd, animationTime] = m_cameraAnimation;
+
+                const float transitionTime = smootherStepFn(animationTime);
                 const AZ::Transform current = AZ::Transform::CreateFromQuaternionAndTranslation(
-                    m_transformStart.GetRotation().Slerp(m_transformEnd.GetRotation(), transitionT),
-                    m_transformStart.GetTranslation().Lerp(m_transformEnd.GetTranslation(), transitionT));
+                    transformStart.GetRotation().Slerp(transformEnd.GetRotation(), transitionTime),
+                    transformStart.GetTranslation().Lerp(transformEnd.GetTranslation(), transitionTime));
 
                 const AZ::Vector3 eulerAngles = AzFramework::EulerAngles(AZ::Matrix3x3::CreateFromTransform(current));
                 m_camera.m_pitch = eulerAngles.GetX();
@@ -172,21 +208,21 @@ namespace AtomToolsFramework
                 m_camera.m_lookAt = current.GetTranslation();
                 m_targetCamera = m_camera;
 
-                if (m_animationT >= 1.0f)
+                if (animationTime >= 1.0f)
                 {
                     m_cameraMode = CameraMode::Control;
                 }
 
-                m_animationT = AZ::GetClamp(m_animationT + event.m_deltaTime.count(), 0.0f, 1.0f);
+                m_cameraAnimation.m_time = AZ::GetClamp(animationTime + event.m_deltaTime.count(), 0.0f, 1.0f);
 
                 viewportContext->SetCameraTransform(current);
             }
 
-            m_updatingTransform = false;
+            m_updatingTransformInternally = false;
         }
     }
 
-    void ModernViewportCameraControllerInstance::DisplayViewport(
+    void ModularViewportCameraControllerInstance::DisplayViewport(
         [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
         if (const float alpha = AZStd::min(-m_camera.m_lookDist / 5.0f, 1.0f); alpha > AZ::Constants::FloatEpsilon)
@@ -197,16 +233,14 @@ namespace AtomToolsFramework
         }
     }
 
-    void ModernViewportCameraControllerInstance::InterpolateToTransform(const AZ::Transform& worldFromLocal, const float lookAtDistance)
+    void ModularViewportCameraControllerInstance::InterpolateToTransform(const AZ::Transform& worldFromLocal, const float lookAtDistance)
     {
-        m_animationT = 0.0f;
         m_cameraMode = CameraMode::Animation;
-        m_transformStart = m_camera.Transform();
-        m_transformEnd = worldFromLocal;
-        m_lookAtAfterInterpolation = m_transformEnd.GetTranslation() + m_transformEnd.GetBasisY() * lookAtDistance;
+        m_cameraAnimation = CameraAnimation{ m_camera.Transform(), worldFromLocal, 0.0f };
+        m_lookAtAfterInterpolation = worldFromLocal.GetTranslation() + worldFromLocal.GetBasisY() * lookAtDistance;
     }
 
-    AZStd::optional<AZ::Vector3> ModernViewportCameraControllerInstance::LookAtAfterInterpolation() const
+    AZStd::optional<AZ::Vector3> ModularViewportCameraControllerInstance::LookAtAfterInterpolation() const
     {
         return m_lookAtAfterInterpolation;
     }

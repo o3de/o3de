@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/RTTI/ReflectContext.h>
@@ -24,7 +20,7 @@ namespace NvCloth
     namespace Pipeline
     {
         // It's necessary for the rule to specify the system allocator, otherwise
-        // the editor crashes when deleting the cloth modifier from FBX Settings.
+        // the editor crashes when deleting the cloth modifier from Scene Settings.
         AZ_CLASS_ALLOCATOR_IMPL(ClothRule, AZ::SystemAllocator, 0)
 
         const char* const ClothRule::DefaultChooseNodeName = "Choose a node";
@@ -41,7 +37,15 @@ namespace NvCloth
             const AZ::SceneAPI::Containers::SceneGraph& graph,
             const size_t numVertices) const
         {
-            const auto meshNodeIndex = graph.Find(GetMeshNodeName());
+            const AZ::SceneAPI::Containers::SceneGraph::NodeIndex meshNodeIndex = [this, &graph]()
+            {
+                if (const auto index = graph.Find(GetMeshNodeName() + AZStd::string(AZ::SceneAPI::Utilities::OptimizedMeshSuffix)); index.IsValid())
+                {
+                    return index;
+                }
+                return graph.Find(GetMeshNodeName());
+            }();
+
             if (!meshNodeIndex.IsValid())
             {
                 return {};

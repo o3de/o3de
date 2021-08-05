@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-#include "AzToolsFramework_precompiled.h"
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "PropertyRowWidget.hxx"
 
 #include <AzQtComponents/Components/StyleManager.h>
@@ -17,6 +12,7 @@
 
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyCheckBoxCtrl.hxx>
 
 AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // 4244: conversion from 'int' to 'float', possible loss of data
                                                                     // 4251: class '...' needs to have dll-interface to be used by clients of class 'QInputEvent'
@@ -146,6 +142,11 @@ namespace AzToolsFramework
         m_treeDepth = 0;
 
         delete m_dropDownArrow;
+        if (m_toggleSwitch != nullptr)
+        {
+            m_handler->DestroyGUI(m_toggleSwitch);
+            m_toggleSwitch = nullptr;
+        }
 
         if (m_childWidget)
         {
@@ -390,6 +391,13 @@ namespace AzToolsFramework
         OnValuesUpdated();
 
         setUpdatesEnabled(true);
+    }
+
+    void PropertyRowWidget::InitializeToggleGroup(const char* groupName, PropertyRowWidget* pParent, int depth, InstanceDataNode* node, int labelWidth)
+    {
+        Initialize(groupName, pParent, depth, labelWidth);
+        ChangeSourceNode(node);
+        CreateGroupToggleSwitch();
     }
 
     void PropertyRowWidget::Initialize(const char* groupName, PropertyRowWidget* pParent, int depth, int labelWidth)
@@ -1107,6 +1115,19 @@ namespace AzToolsFramework
         }
     }
 
+    void PropertyRowWidget::CreateGroupToggleSwitch()
+    {
+        if (m_toggleSwitch == nullptr)
+        {
+            m_handlerName = AZ::Edit::UIHandlers::CheckBox;
+            PropertyTypeRegistrationMessages::Bus::BroadcastResult(m_handler, &PropertyTypeRegistrationMessages::Bus::Events::ResolvePropertyHandler, m_handlerName, azrtti_typeid<bool>());
+            m_toggleSwitch = m_handler->CreateGUI(this);
+            m_middleLayout->insertWidget(0, m_toggleSwitch, 1);
+            auto checkBoxCtrl = static_cast<AzToolsFramework::PropertyCheckBoxCtrl*>(m_toggleSwitch);
+            QObject::connect(checkBoxCtrl, &AzToolsFramework::PropertyCheckBoxCtrl::valueChanged, this, &PropertyRowWidget::OnClickedToggleButton);
+        }
+    }
+
     void PropertyRowWidget::SetIndentSize(int w)
     {
         m_indent->changeSize(w, 1, QSizePolicy::Fixed, QSizePolicy::Fixed);
@@ -1115,6 +1136,18 @@ namespace AzToolsFramework
         m_leftHandSideLayout->activate();
     }
 
+    void PropertyRowWidget::OnClickedToggleButton(bool checked)
+    {
+        if (m_expanded != checked)
+        {
+            DoExpandOrContract(!IsExpanded(), 0 != (QGuiApplication::keyboardModifiers() & Qt::ControlModifier));
+        }
+    }
+
+    void PropertyRowWidget::ChangeSourceNode(InstanceDataNode* node)
+    {
+        m_sourceNode = node;
+    }
 
     void PropertyRowWidget::SetExpanded(bool expanded)
     {

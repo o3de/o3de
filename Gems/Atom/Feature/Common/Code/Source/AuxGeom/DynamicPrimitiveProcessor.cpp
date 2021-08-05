@@ -1,23 +1,21 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "DynamicPrimitiveProcessor.h"
 #include "AuxGeomDrawProcessorShared.h"
 
-#include <Atom/RHI/Factory.h>
+#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/DrawPacketBuilder.h>
+#include <Atom/RHI/Factory.h>
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
 
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
+#include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
 #include <Atom/RPI.Public/RPIUtils.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
@@ -40,35 +38,16 @@ namespace AZ
             };
         }
 
-        bool DynamicPrimitiveProcessor::Initialize(AZ::RHI::Device& rhiDevice, const AZ::RPI::Scene* scene)
+        bool DynamicPrimitiveProcessor::Initialize(const AZ::RPI::Scene* scene)
         {
-            // Note: We use HeapMemoryLevel::Host here so that we can use OrphanBuffer in the update
-            RHI::BufferPoolDescriptor dynamicPoolDescriptor;
-            dynamicPoolDescriptor.m_heapMemoryLevel = RHI::HeapMemoryLevel::Host;
-            dynamicPoolDescriptor.m_bindFlags = RHI::BufferBindFlags::InputAssembly;
-            dynamicPoolDescriptor.m_largestPooledAllocationSizeInBytes = MaxUploadBufferSize;
-
-            m_hostPool = RHI::Factory::Get().CreateBufferPool();
-            m_hostPool->SetName(Name("AuxGeomDynamicPrimitiveBufferPool"));
-            RHI::ResultCode resultCode = m_hostPool->Init(rhiDevice, dynamicPoolDescriptor);
-
-            if (resultCode != RHI::ResultCode::Success)
-            {
-                AZ_Error("DynamicPrimitiveProcessor", false, "Failed to initialize AuxGeom dynamic primitive buffer pool");
-                return false;
-            }            
-
             for (int primitiveType = 0; primitiveType < PrimitiveType_Count; ++primitiveType)
             {
                 SetupInputStreamLayout(m_inputStreamLayout[primitiveType], PrimitiveTypeToTopology[primitiveType]);
-
                 m_streamBufferViewsValidatedForLayout[primitiveType] = false;
             }
 
-            if (!CreateBuffers())
-            {
-                return false;
-            }
+            // We have a single stream (position and color are interleaved in the vertex buffer)
+            m_primitiveBuffers.m_streamBufferViews.resize(1);
 
             m_scene = scene;
             InitShader();
@@ -78,13 +57,6 @@ namespace AZ
 
         void DynamicPrimitiveProcessor::Release()
         {
-            DestroyBuffers();
-
-            if (m_hostPool)
-            {
-                m_hostPool.reset();
-            }
-
             m_drawPackets.clear();
             m_processSrgs.clear();
             m_shaderData.m_defaultSRG = nullptr;
@@ -101,6 +73,7 @@ namespace AZ
 
         void DynamicPrimitiveProcessor::PrepareFrame()
         {
+            AZ_ATOM_PROFILE_FUNCTION("AuxGeom", "DynamicPrimitiveProcessor: PrepareFrame");
             m_drawPackets.clear();
             m_processSrgs.clear();
 
@@ -118,6 +91,7 @@ namespace AZ
 
         void DynamicPrimitiveProcessor::ProcessDynamicPrimitives(const AuxGeomBufferData* bufferData, const RPI::FeatureProcessor::RenderPacket& fpPacket)
         {
+            AZ_ATOM_PROFILE_FUNCTION("AuxGeom", "DynamicPrimitiveProcessor: ProcessDynamicPrimitives");
             RHI::DrawPacketBuilder drawPacketBuilder;
 
             const DynamicPrimitiveData& srcPrimitives = bufferData->m_primitiveData;
@@ -126,8 +100,13 @@ namespace AZ
             {
                 // Update the buffers for all dynamic primitives in this frame's data
                 // There is just one index buffer and one vertex buffer for all dynamic primitives
-                UpdateIndexBuffer(srcPrimitives.m_indexBuffer, m_primitiveBuffers);
-                UpdateVertexBuffer(srcPrimitives.m_vertexBuffer, m_primitiveBuffers);
+                if (!UpdateIndexBuffer(srcPrimitives.m_indexBuffer, m_primitiveBuffers)
+                    || !UpdateVertexBuffer(srcPrimitives.m_vertexBuffer, m_primitiveBuffers))
+                {
+                    // Skip adding render data if failed to update buffers
+                    // Note, the error would be already reported inside the Update* functions
+                    return;
+                }
 
                 // Validate the stream buffer views for all stream layout's if necessary
                 for (int primitiveType = 0; primitiveType < PrimitiveType_Count; ++primitiveType)
@@ -164,7 +143,7 @@ namespace AZ
                     Data::Instance<RPI::ShaderResourceGroup> srg;
                     if (useManualViewProjectionOverride || primitive.m_primitiveType == PrimitiveType_PointList)
                     {
-                        srg = RPI::ShaderResourceGroup::Create(m_shaderData.m_perDrawSrgAsset);
+                        srg = RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(), m_shaderData.m_perDrawSrgLayout->GetName());
                         if (!srg)
                         {
                             AZ_Warning("AuxGeom", false, "Failed to create a shader resource group for an AuxGeom draw, Ignoring the draw");
@@ -213,108 +192,34 @@ namespace AZ
             }
         }
 
-        bool DynamicPrimitiveProcessor::CreateBuffers()
-        {
-            if (!CreateBufferGroup(m_primitiveBuffers))
-            {
-                return false;
-            }
-            return true;
-        }
-
-        void DynamicPrimitiveProcessor::DestroyBuffers()
-        {
-            DestroyBufferGroup(m_primitiveBuffers);
-        }
-
-        bool DynamicPrimitiveProcessor::CreateBufferGroup(DynamicBufferGroup& group)
-        {
-            RHI::ResultCode result = RHI::ResultCode::Fail;
-
-            group.m_indexBuffer = RHI::Factory::Get().CreateBuffer();
-            group.m_vertexBuffer = RHI::Factory::Get().CreateBuffer();
-
-            group.m_indexBuffer->SetName(AZ::Name("AuxGeomIndexBuffer"));
-            group.m_vertexBuffer->SetName(AZ::Name("AuxGeomVertexBuffer"));
-
-            AZStd::vector<RHI::Ptr<RHI::Buffer>> buffers = { group.m_indexBuffer , group.m_vertexBuffer };
-
-            RHI::BufferInitRequest bufferRequest;
-            bufferRequest.m_descriptor = RHI::BufferDescriptor{ RHI::BufferBindFlags::InputAssembly, MaxUploadBufferSize };
-
-            for (const RHI::Ptr<RHI::Buffer>& buffer : buffers)
-            {
-                bufferRequest.m_buffer = buffer.get();
-
-                result = m_hostPool->InitBuffer(bufferRequest);
-
-                if (result != RHI::ResultCode::Success)
-                {
-                    AZ_Error("DynamicPrimitiveProcessor", false, "Failed to create GPU buffers for AuxGeom");
-                    return false;
-                }
-            }
-
-            // We have a single stream (position and color are interleaved in the vertex buffer)
-            group.m_streamBufferViews.resize(1);
-
-            return true;
-        }
-
-        void DynamicPrimitiveProcessor::DestroyBufferGroup(DynamicBufferGroup& group)
-        {
-            group.m_indexBuffer.reset();
-            group.m_vertexBuffer.reset();
-
-            group.m_streamBufferViews.clear();
-        }
-
-        void DynamicPrimitiveProcessor::UpdateBuffer(const uint8_t* source, size_t sourceSize, RHI::Ptr<RHI::Buffer> buffer)
-        {
-            // This should never happen because of tests in AuxGeomDrawQueue in the functions that increase the source size.
-            AZ_Assert(sourceSize <= MaxUploadBufferSize, "Max upload buffer size exceeded");
-
-            // We use OrphanBuffer currently. If we have issues we may need to add fences or use FrameCountMax buffers
-            // in a round-robin system.
-            RHI::ResultCode orphanResult = m_hostPool->OrphanBuffer(*buffer);
-            AZ_Assert(orphanResult == RHI::ResultCode::Success, "OrphanBuffer failed");
-
-            if (orphanResult == RHI::ResultCode::Success)
-            {
-                RHI::BufferMapResponse mapResponse;
-                m_hostPool->MapBuffer(RHI::BufferMapRequest(*buffer, 0, sourceSize), mapResponse);
-
-                auto* mappedData = reinterpret_cast<uint8_t*>(mapResponse.m_data);
-
-                if (mappedData)
-                {
-                    memcpy(mappedData, source, sourceSize);
-
-                    m_hostPool->UnmapBuffer(*buffer);
-                }
-            }
-        }
-
-        void DynamicPrimitiveProcessor::UpdateIndexBuffer(const IndexBuffer& source, DynamicBufferGroup& group)
+        bool DynamicPrimitiveProcessor::UpdateIndexBuffer(const IndexBuffer& source, DynamicBufferGroup& group)
         {
             const size_t sourceByteSize = source.size() * sizeof(AuxGeomIndex);
-            auto* sourceBytes = reinterpret_cast<const uint8_t*>(source.data());
-
-            UpdateBuffer(sourceBytes, sourceByteSize, group.m_indexBuffer);
-
-            group.m_indexBufferView = RHI::IndexBufferView(
-                *group.m_indexBuffer, 0, static_cast<uint32_t>(sourceByteSize), RHI::IndexFormat::Uint32);
+            
+            RHI::Ptr<RPI::DynamicBuffer> dynamicBuffer = RPI::DynamicDrawInterface::Get()->GetDynamicBuffer(sourceByteSize);
+            if (!dynamicBuffer)
+            {
+                AZ_WarningOnce("AuxGeom", false, "Failed to allocate dynamic buffer of size %d.", sourceByteSize);
+                return false;
+            }            
+            dynamicBuffer->Write(source.data(), sourceByteSize);
+            group.m_indexBufferView = dynamicBuffer->GetIndexBufferView(RHI::IndexFormat::Uint32);
+            return true;
         }
 
-        void DynamicPrimitiveProcessor::UpdateVertexBuffer(const VertexBuffer& source, DynamicBufferGroup& group)
+        bool DynamicPrimitiveProcessor::UpdateVertexBuffer(const VertexBuffer& source, DynamicBufferGroup& group)
         {
             const size_t sourceByteSize = source.size() * sizeof(AuxGeomDynamicVertex);
-            auto* sourceBytes = reinterpret_cast<const uint8_t*>(source.data());
 
-            UpdateBuffer(sourceBytes, sourceByteSize, group.m_vertexBuffer);
-
-            group.m_streamBufferViews[0] = RHI::StreamBufferView(
-                *group.m_vertexBuffer, 0, static_cast<uint32_t>(sourceByteSize), static_cast<uint32_t>(sizeof(AuxGeomDynamicVertex)));
+            RHI::Ptr<RPI::DynamicBuffer> dynamicBuffer = RPI::DynamicDrawInterface::Get()->GetDynamicBuffer(sourceByteSize);
+            if (!dynamicBuffer)
+            {
+                AZ_WarningOnce("AuxGeom", false, "Failed to allocate dynamic buffer of size %d.", sourceByteSize);
+                return false;
+            }            
+            dynamicBuffer->Write(source.data(), sourceByteSize);
+            group.m_streamBufferViews[0] = dynamicBuffer->GetStreamBufferView(sizeof(AuxGeomDynamicVertex));
+            return true;
         }
 
         void DynamicPrimitiveProcessor::ValidateStreamBufferViews(StreamBufferViewsForAllStreams& streamBufferViews, bool* isValidated, int primitiveType)
@@ -425,10 +330,10 @@ namespace AZ
             }
 
             // Get the per-object SRG and store the indices of the data we need to set per object
-            m_shaderData.m_perDrawSrgAsset = m_shader->FindShaderResourceGroupAsset(Name{ "PerDrawSrg" });
-            if (!m_shaderData.m_perDrawSrgAsset.GetId().IsValid())
+            m_shaderData.m_perDrawSrgLayout = m_shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Draw); 
+            if (!m_shaderData.m_perDrawSrgLayout)
             {
-                AZ_Error("DynamicPrimitiveProcessor", false, "Failed to get shader resource group asset");
+                AZ_Error("DynamicPrimitiveProcessor", false, "Failed to get shader resource group layout");
                 return;
             }
 
@@ -439,7 +344,7 @@ namespace AZ
             m_shaderData.m_drawListTag = m_shader->GetDrawListTag();
 
             // Create a default SRG for draws that don't use a manual view projection override
-            m_shaderData.m_defaultSRG = RPI::ShaderResourceGroup::Create(m_shaderData.m_perDrawSrgAsset);
+            m_shaderData.m_defaultSRG = RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(), m_shaderData.m_perDrawSrgLayout->GetName());
             AZ_Assert(m_shaderData.m_defaultSRG != nullptr, "Creating the default SRG unexpectedly failed");
             m_shaderData.m_defaultSRG->SetConstant(m_shaderData.m_pointSizeIndex, 10.0f);
             m_shaderData.m_defaultSRG->Compile();

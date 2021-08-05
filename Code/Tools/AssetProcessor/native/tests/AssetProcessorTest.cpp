@@ -1,19 +1,17 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "AssetProcessorTest.h"
 
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
+#include <AzCore/IO/FileIOEventBus.h>
+#include <AzCore/Utils/Utils.h>
 
 #include "BaseAssetProcessorTest.h"
 #include <native/utilities/BatchApplicationManager.h>
@@ -57,11 +55,13 @@ namespace AssetProcessor
     };
 
     class LegacyTestAdapter : public AssetProcessorTest,
-        public ::testing::WithParamInterface<std::string>
+        public ::testing::WithParamInterface<std::string>,
+        public AZ::IO::FileIOEventBus::Handler
     {
         void SetUp() override
         {
             AssetProcessorTest::SetUp();
+            AZ::IO::FileIOEventBus::Handler::BusConnect();
             
             static int numParams = 1;
             static char processName[] = {"AssetProcessorBatch"};
@@ -69,11 +69,19 @@ namespace AssetProcessor
             static char** paramStringArray = &namePtr;
 
             auto registry = AZ::SettingsRegistry::Get();
-            auto projectPathKey =
-                AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
+            auto bootstrapKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey);
+            auto projectPathKey = bootstrapKey + "/project_path";
             registry->Set(projectPathKey, "AutomatedTesting");
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
-            
+
+            // Forcing the branch token into settings registry before starting the application manager.
+            // This avoids writing the asset_processor.setreg file which can cause fileIO errors.
+            AZ::IO::FixedMaxPathString enginePath = AZ::Utils::GetEnginePath();
+            auto branchTokenKey = bootstrapKey + "/assetProcessor_branch_token";
+            AZStd::string token;
+            AzFramework::StringFunc::AssetPath::CalculateBranchToken(enginePath.c_str(), token);
+            registry->Set(branchTokenKey, token.c_str());
+
             m_application.reset(new UnitTestAppManager(&numParams, &paramStringArray));
             ASSERT_EQ(m_application->BeforeRun(), ApplicationManager::Status_Success);
             ASSERT_TRUE(m_application->PrepareForTests());
@@ -82,7 +90,16 @@ namespace AssetProcessor
         void TearDown() override
         {
             m_application.reset();
+            AZ::IO::FileIOEventBus::Handler::BusDisconnect();
             AssetProcessorTest::TearDown();
+        }
+
+        void OnError(
+            [[maybe_unused]] const AZ::IO::SystemFile* file,
+            [[maybe_unused]] const char* fileName,
+            [[maybe_unused]] int errorCode) override
+        {
+            AZ_Error("LegacyTestAdapter", false, "File error detected with %s with code %d", fileName, errorCode);
         }
 
         AZStd::unique_ptr<UnitTestAppManager> m_application;

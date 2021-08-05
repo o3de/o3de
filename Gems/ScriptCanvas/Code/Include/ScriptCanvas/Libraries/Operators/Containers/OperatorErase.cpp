@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "OperatorErase.h"
 
@@ -100,47 +96,6 @@ namespace ScriptCanvas
                 }
             }
 
-            void OperatorErase::InvokeOperator()
-            {
-                Slot* inputSlot = GetFirstInputSourceSlot();
-                Slot* outputSlot = GetFirstOutputSourceSlot();
-
-                if (inputSlot && outputSlot)
-                {
-                    SlotId sourceSlotId = inputSlot->GetId();
-                    const Datum* containerDatum = FindDatum(sourceSlotId);
-
-                    if (Datum::IsValidDatum(containerDatum))
-                    {
-                        const Datum* inputKeyDatum = FindDatum(*m_inputSlots.begin());
-                        AZ::Outcome<Datum, AZStd::string> valueOutcome = BehaviorContextMethodHelper::CallMethodOnDatum(*containerDatum, "Erase", *inputKeyDatum);
-
-                        if (valueOutcome.IsSuccess())
-                        {
-                            // Push the source container as an output to support chaining
-                            PushOutput(*containerDatum, (*outputSlot));
-
-                            auto outcomeInnerResult = valueOutcome.GetValue().GetAs< AZ::Outcome<void, void>>();
-                            if (outcomeInnerResult && !outcomeInnerResult->IsSuccess())
-                            {
-                                SignalOutput(GetSlotId("Element Not Found"));
-                                return;
-                            }
-                        }
-                    }
-                }
-
-                SignalOutput(GetSlotId("Out"));
-            }
-
-            void OperatorErase::OnInputSignal(const SlotId& slotId)
-            {
-                const SlotId inSlotId = OperatorBaseProperty::GetInSlotId(this);
-                if (slotId == inSlotId)
-                {
-                    InvokeOperator();
-                }
-            }
         }
     }
 }

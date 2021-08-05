@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates, or
-* a third party where indicated.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <AzCore/RTTI/RTTI.h>
@@ -16,6 +12,8 @@
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
+#include <AzFramework/Physics/Common/PhysicsJoint.h>
+#include <AzFramework/Physics/Configuration/JointConfiguration.h>
 #include <AzFramework/Physics/Configuration/SimulatedBodyConfiguration.h>
 
 namespace AzPhysics
@@ -102,6 +100,26 @@ namespace AzPhysics
         //! @param bodyHandle The handle of the simulated body to enable / disable.
         virtual void EnableSimulationOfBody(SceneHandle sceneHandle, SimulatedBodyHandle bodyHandle) = 0;
         virtual void DisableSimulationOfBody(SceneHandle sceneHandle, SimulatedBodyHandle bodyHandle) = 0;
+
+        //! Add a joint to the Scene.
+        //! @param sceneHandle A handle to the scene to add / remove the joint.
+        //! @param jointConfig The config of the joint.
+        //! @param parentBody The parent body of the joint.
+        //! @param childBody The child body of the joint
+        //! @return Returns a handle to the created joint. Will return AzPhyiscs::InvalidJointHandle if it fails.
+        virtual JointHandle AddJoint(SceneHandle sceneHandle, const JointConfiguration* jointConfig, 
+            SimulatedBodyHandle parentBody, SimulatedBodyHandle childBody) = 0;
+
+        //! Get the Raw pointer to the requested joint.
+        //! @param sceneHandle A handle to the scene to get the simulated bodies from.
+        //! @param jointHandle A handle to the joint to retrieve the raw pointer.
+        //! @return A raw pointer to the Joint body. If the either handle is invalid this will return null.
+        virtual Joint* GetJointFromHandle(SceneHandle sceneHandle, JointHandle jointHandle) = 0;
+
+        //! Remove a joint from the Scene.
+        //! @param sceneHandle A handle to the scene to add / remove the joint.
+        //! @param jointHandle A handle to the joint being removed.
+        virtual void RemoveJoint(SceneHandle sceneHandle, JointHandle jointHandle) = 0;
 
         //! Make a blocking query into the scene.
         //! @param sceneHandle A handle to the scene to make the scene query with.
@@ -298,6 +316,23 @@ namespace AzPhysics
         //! @param bodyHandle The handle of the simulated body to enable / disable.
         virtual void EnableSimulationOfBody(SimulatedBodyHandle bodyHandle) = 0;
         virtual void DisableSimulationOfBody(SimulatedBodyHandle bodyHandle) = 0;
+
+        //! Add a joint to the Scene.
+        //! @param jointConfig The config of the joint.
+        //! @param parentBody The parent body of the joint.
+        //! @param childBody The child body of the joint
+        //! @return Returns a handle to the created joint. Will return AzPhyiscs::InvalidJointHandle if it fails.
+        virtual JointHandle AddJoint(const JointConfiguration* jointConfig, 
+            SimulatedBodyHandle parentBody, SimulatedBodyHandle childBody) = 0;
+
+        //! Get the Raw pointer to the requested joint.
+        //! @param jointHandle A handle to the joint to retrieve the raw pointer.
+        //! @return A raw pointer to the Joint body. If the either handle is invalid this will return null.
+        virtual Joint* GetJointFromHandle(JointHandle jointHandle) = 0;
+
+        //! Remove a joint from the Scene.
+        //! @param jointHandle A handle to the joint being removed.
+        virtual void RemoveJoint(JointHandle jointHandle) = 0;
 
         //! Make a blocking query into the scene.
         //! @param request The request to make. Should be one of RayCastRequest || ShapeCastRequest || OverlapRequest

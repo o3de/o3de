@@ -1,16 +1,11 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
-#include "precompiled.h"
 
 #if defined (SCRIPTCANVAS_EDITOR)
 
@@ -40,7 +35,6 @@
 #include <Editor/Model/EntityMimeDataHandler.h>
 
 #include <Libraries/Libraries.h>
-#include <Editor/Nodes/EditorLibrary.h>
 
 #include <ScriptCanvas/Components/EditorGraph.h>
 #include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>
@@ -58,7 +52,6 @@
 #include <Editor/GraphCanvas/Components/NodeDescriptors/ScriptEventReceiverNodeDescriptorComponent.h>
 #include <Editor/GraphCanvas/Components/NodeDescriptors/ScriptEventSenderNodeDescriptorComponent.h>
 #include <Editor/GraphCanvas/Components/NodeDescriptors/EBusSenderNodeDescriptorComponent.h>
-#include <Editor/GraphCanvas/Components/NodeDescriptors/EntityRefNodeDescriptorComponent.h>
 #include <Editor/GraphCanvas/Components/NodeDescriptors/GetVariableNodeDescriptorComponent.h>
 #include <Editor/GraphCanvas/Components/NodeDescriptors/NodeDescriptorComponent.h>
 #include <Editor/GraphCanvas/Components/NodeDescriptors/NodelingDescriptorComponent.h>
@@ -113,7 +106,6 @@ namespace ScriptCanvas
             ScriptCanvasEditor::ScriptEventReceiverNodeDescriptorComponent::CreateDescriptor(),
             ScriptCanvasEditor::ScriptEventSenderNodeDescriptorComponent::CreateDescriptor(),
             ScriptCanvasEditor::EBusSenderNodeDescriptorComponent::CreateDescriptor(),
-            ScriptCanvasEditor::EntityRefNodeDescriptorComponent::CreateDescriptor(),
             ScriptCanvasEditor::VariableNodeDescriptorComponent::CreateDescriptor(),
             ScriptCanvasEditor::GetVariableNodeDescriptorComponent::CreateDescriptor(),
             ScriptCanvasEditor::SetVariableNodeDescriptorComponent::CreateDescriptor(),
@@ -122,10 +114,6 @@ namespace ScriptCanvas
             ScriptCanvasEditor::FunctionDefinitionNodeDescriptorComponent::CreateDescriptor(),
             ScriptCanvasEditor::NodelingDescriptorComponent::CreateDescriptor()
             });
-
-        auto libraryDescriptors = ScriptCanvasEditor::GetLibraryDescriptors();
-        m_descriptors.insert(m_descriptors.end(), libraryDescriptors.begin(), libraryDescriptors.end());
-        ScriptCanvasEditor::Library::Editor::InitNodeRegistry(GetNodeRegistry().Get());
     }
 
     AZ::ComponentTypeList ScriptCanvasModule::GetRequiredSystemComponents() const

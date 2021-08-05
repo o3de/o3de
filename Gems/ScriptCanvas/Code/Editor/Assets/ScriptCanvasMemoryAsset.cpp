@@ -1,16 +1,11 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
-#include "precompiled.h"
 
 #include "ScriptCanvasMemoryAsset.h"
 #include "ScriptCanvasUndoHelper.h"
@@ -85,11 +80,6 @@ namespace ScriptCanvasEditor
             AZ::Data::Asset<ScriptCanvasAsset> newAsset = Clone<ScriptCanvasAsset>();
             memoryAsset.m_inMemoryAsset = newAsset;
         }
-        else if (m_assetType == azrtti_typeid<ScriptCanvasEditor::ScriptCanvasFunctionAsset>())
-        {
-            AZ::Data::Asset<ScriptCanvasEditor::ScriptCanvasFunctionAsset> newAsset = Clone<ScriptCanvasEditor::ScriptCanvasFunctionAsset>();
-            memoryAsset.m_inMemoryAsset = newAsset;
-        }
         else
         {
             AZ_Assert(false, "Unsupported Script Canvas Asset Type");
@@ -111,10 +101,6 @@ namespace ScriptCanvasEditor
         if (assetType == azrtti_typeid<ScriptCanvasAsset>())
         {
             asset = assetHandler->CreateAsset(assetId, azrtti_typeid<ScriptCanvasAsset>());
-        }
-        else if (assetType == azrtti_typeid<ScriptCanvasEditor::ScriptCanvasFunctionAsset>())
-        {
-            asset = assetHandler->CreateAsset(assetId, azrtti_typeid<ScriptCanvasEditor::ScriptCanvasFunctionAsset>());
         }
 
         m_inMemoryAsset = AZ::Data::Asset<AssetType>(asset, AZ::Data::AssetLoadBehavior::PreLoad);
@@ -159,8 +145,6 @@ namespace ScriptCanvasEditor
         AZ::Data::AssetStreamInfo streamInfo;
         streamInfo.m_streamFlags = AZ::IO::OpenMode::ModeWrite;
         streamInfo.m_streamName = m_saveAsPath;
-
-        ScriptCanvasEditor::ScriptCanvasDataRequestBus::Event(GetScriptCanvasId(), &ScriptCanvasEditor::ScriptCanvasDataRequests::SetPrettyName, GetTabName().c_str());
 
         if (!streamInfo.IsValid())
         {
@@ -228,10 +212,6 @@ namespace ScriptCanvasEditor
         {
             m_inMemoryAsset = AZ::Data::AssetManager::Instance().GetAsset<ScriptCanvasAsset>(assetId, AZ::Data::AssetLoadBehavior::Default);
         }
-        else if (assetInfo.m_assetType == azrtti_typeid<ScriptCanvasEditor::ScriptCanvasFunctionAsset>())
-        {
-            m_inMemoryAsset = AZ::Data::AssetManager::Instance().GetAsset<ScriptCanvasEditor::ScriptCanvasFunctionAsset>(assetId, AZ::Data::AssetLoadBehavior::Default);
-        }
 
         if (m_inMemoryAsset)
         {
@@ -295,14 +275,7 @@ namespace ScriptCanvasEditor
             return;
         }
 
-        if (m_assetType == azrtti_typeid<ScriptCanvasEditor::ScriptCanvasFunctionAsset>())
-        {
-            editorGraph->MarkFunctionGraph();
-        }
-
         m_scriptCanvasId = editorGraph->GetScriptCanvasId();
-
-        ScriptCanvasEditor::ScriptCanvasDataRequestBus::Event(m_scriptCanvasId, &ScriptCanvasEditor::ScriptCanvasDataRequests::SetPrettyName, GetTabName().c_str());
 
         EditorGraphNotificationBus::Handler::BusDisconnect();
         EditorGraphNotificationBus::Handler::BusConnect(m_scriptCanvasId);
@@ -542,10 +515,6 @@ namespace ScriptCanvasEditor
         if (m_assetType == azrtti_typeid<ScriptCanvasAsset>())
         {
             return CloneAssetData<ScriptCanvasAsset>(newAssetId);
-        }
-        else if (m_assetType == azrtti_typeid<ScriptCanvasEditor::ScriptCanvasFunctionAsset>())
-        {
-            return CloneAssetData<ScriptCanvasEditor::ScriptCanvasFunctionAsset>(newAssetId);
         }
 
         AZ_Assert(false, "The provides asset type is not supported as a valid Script Canvas memory asset");

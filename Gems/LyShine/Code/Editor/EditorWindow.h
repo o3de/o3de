@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #if !defined(Q_MOC_RUN)
@@ -144,13 +140,11 @@ public: // member functions
 
     AssetTreeEntry* GetSliceLibraryTree();
 
-    //! WARNING: This is a VERY slow function.
-    void UpdatePrefabFiles();
-    IFileUtil::FileArray& GetPrefabFiles();
-    void AddPrefabFile(const QString& prefabFilename);
-
     //! Returns the current mode of the editor (Edit or Preview)
     UiEditorMode GetEditorMode() { return m_editorMode; }
+
+    //! Returns the UI canvas for the current mode (Edit or Preview)
+    AZ::EntityId GetCanvasForCurrentEditorMode();
 
     //! Toggle the editor mode between Edit and Preview
     void ToggleEditorMode();
@@ -330,8 +324,6 @@ private: // member functions
     QAction* CreateCloseAllOtherCanvasesAction(AZ::EntityId canvasEntityId, bool forContextMenu = false);
     QAction* CreateCloseAllCanvasesAction(bool forContextMenu = false);
 
-    void SortPrefabsList();
-
     void SaveModeSettings(UiEditorMode mode, bool syncSettings);
     void RestoreModeSettings(UiEditorMode mode);
 
@@ -395,8 +387,6 @@ private: // data
 
     //! This tree caches the folder view of all the slice assets under the slice library path
     AssetTreeEntry* m_sliceLibraryTree = nullptr;
-
-    IFileUtil::FileArray m_prefabFiles;
 
     //! Values for setting up undoable canvas/entity changes
     SerializeHelpers::SerializedEntryList m_preChangeState;

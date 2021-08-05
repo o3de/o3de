@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <DiffuseGlobalIllumination/DiffuseProbeGridComponentController.h>
 #include <DiffuseGlobalIllumination/DiffuseProbeGridComponentConstants.h>
@@ -174,9 +170,20 @@ namespace AZ
 
             m_featureProcessor->SetMode(m_handle, m_configuration.m_runtimeMode);
 
-            // set box shape component dimensions from the configuration
-            // this will invoke the OnShapeChanged() handler and set the outer extents on the feature processor
-            m_boxShapeInterface->SetBoxDimensions(m_configuration.m_extents);
+            // if this is a new DiffuseProbeGrid entity and the box shape has not been changed (i.e., it's still unit sized)
+            // then use the default extents, otherwise use the current box shape extents
+            AZ::Vector3 extents(0.0f);
+            AZ::Vector3 boxDimensions = m_boxShapeInterface->GetBoxDimensions();
+            if (m_configuration.m_entityId == EntityId::InvalidEntityId && boxDimensions == AZ::Vector3(1.0f))
+            {
+                extents = m_configuration.m_extents;
+            }
+            else
+            {
+                extents = boxDimensions;
+            }
+
+            m_boxShapeInterface->SetBoxDimensions(extents);
         }
 
         void DiffuseProbeGridComponentController::OnAssetReady(Data::Asset<Data::AssetData> asset)

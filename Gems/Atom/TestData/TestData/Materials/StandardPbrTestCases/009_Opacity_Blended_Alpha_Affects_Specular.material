@@ -1,0 +1,24 @@
+{
+    "description": "",
+    "materialType": "Materials/Types/StandardPBR.materialtype",
+    "parentMaterial": "",
+    "propertyLayoutVersion": 3,
+    "properties": {
+        "baseColor": {
+            "color": [
+                0.5906767249107361,
+                1.0,
+                0.11703670024871826,
+                1.0
+            ],
+            "textureMap": "Textures/Default/default_basecolor.tif"
+        },
+        "opacity": {
+            "alphaSource": "Split",
+            "factor": 0.75,
+            "mode": "Blended",
+            "textureMap": "TestData/Textures/checker8x8_gray_512.png",
+            "alphaAffectsSpecular": 1.0
+        }
+    }
+}

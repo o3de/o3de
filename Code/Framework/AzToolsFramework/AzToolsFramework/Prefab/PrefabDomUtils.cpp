@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetJsonSerializer.h>
@@ -52,7 +48,7 @@ namespace AzToolsFramework
                 return valueIterator->value;
             }
 
-            bool StoreInstanceInPrefabDom(const Instance& instance, PrefabDom& prefabDom)
+            bool StoreInstanceInPrefabDom(const Instance& instance, PrefabDom& prefabDom, StoreInstanceFlags flags)
             {
                 InstanceEntityIdMapper entityIdMapper;
                 entityIdMapper.SetStoringInstance(instance);
@@ -62,6 +58,11 @@ namespace AzToolsFramework
                 AZ::JsonSerializerSettings settings;
                 settings.m_metadata.Add(static_cast<AZ::JsonEntityIdSerializer::JsonEntityIdMapper*>(&entityIdMapper));
                 settings.m_metadata.Add(&entityIdMapper);
+
+                if ((flags & StoreInstanceFlags::StripDefaultValues) != StoreInstanceFlags::StripDefaultValues)
+                {
+                    settings.m_keepDefaults = true;
+                }
 
                 AZ::JsonSerializationResult::ResultCode result =
                     AZ::JsonSerialization::Store(prefabDom, prefabDom.GetAllocator(), instance, settings);
@@ -234,6 +235,26 @@ namespace AzToolsFramework
                 }
 
                 return findInstancesResult->get();
+            }
+
+            AZ::JsonSerializationResult::ResultCode ApplyPatches(
+                PrefabDomValue& prefabDomToApplyPatchesOn, PrefabDom::AllocatorType& allocator, const PrefabDomValue& patches)
+            {
+                auto issueReportingCallback = [](AZStd::string_view, AZ::JsonSerializationResult::ResultCode result,
+                                                 AZStd::string_view) -> AZ::JsonSerializationResult::ResultCode
+                {
+                    using namespace AZ::JsonSerializationResult;
+                    if (result.GetProcessing() == Processing::Halted)
+                    {
+                        return ResultCode(result.GetTask(), Outcomes::PartialSkip);
+                    }
+                    return result;
+                };
+
+                AZ::JsonApplyPatchSettings applyPatchSettings;
+                applyPatchSettings.m_reporting = AZStd::move(issueReportingCallback);
+                return AZ::JsonSerialization::ApplyPatch(
+                    prefabDomToApplyPatchesOn, allocator, patches, AZ::JsonMergeApproach::JsonPatch, applyPatchSettings);
             }
 
             void PrintPrefabDomValue(

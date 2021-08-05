@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
@@ -24,6 +20,11 @@ namespace AZ
 
         //! Connect to this EBus to get notifications whenever material objects reload.
         //! The bus address is the AssetId of the MaterialAsset or MaterialTypeAsset.
+        //!
+        //! Be careful when using the parameters provided by these functions. The bus ID is an AssetId, and it's possible for the system to have
+        //! both *old* versions and *new reloaded* versions of the asset in memory at the same time, and they will have the same AssetId. Therefore
+        //! your bus Handlers could receive Reinitialized messages from multiple sources. It may be necessary to check the memory addresses of these
+        //! parameters against local members before using this data.
         class MaterialReloadNotifications
             : public EBusTraits
         {

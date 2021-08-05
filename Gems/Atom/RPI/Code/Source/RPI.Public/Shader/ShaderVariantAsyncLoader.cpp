@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <Atom/RPI.Public/Shader/ShaderVariantAsyncLoader.h>
 #include <Atom/RPI.Public/Shader/Metrics/ShaderMetricsSystem.h>
 
@@ -38,7 +34,7 @@ namespace AZ
 
         void ShaderVariantAsyncLoader::ThreadServiceLoop()
         {
-            AZStd::unordered_set<ShaderVariantAsyncLoader::PairOfShaderAssetAndShaderVariantId> newShaderVariantPendingRequests;
+            AZStd::unordered_set<ShaderVariantAsyncLoader::TupleShaderAssetAndShaderVariantId> newShaderVariantPendingRequests;
             AZStd::unordered_set<Data::AssetId> shaderVariantTreePendingRequests;
             AZStd::unordered_set<Data::AssetId> shaderVariantPendingRequests;
             while (true)
@@ -70,8 +66,8 @@ namespace AZ
 
                     AZStd::for_each(
                         m_newShaderVariantPendingRequests.begin(), m_newShaderVariantPendingRequests.end(),
-                        [&](const ShaderVariantAsyncLoader::PairOfShaderAssetAndShaderVariantId& pair) {
-                            newShaderVariantPendingRequests.insert(pair);
+                        [&](const ShaderVariantAsyncLoader::TupleShaderAssetAndShaderVariantId& tuple) {
+                            newShaderVariantPendingRequests.insert(tuple);
                         });
                     m_newShaderVariantPendingRequests.clear();
 
@@ -91,36 +87,36 @@ namespace AZ
                 }
 
                 // Time to work hard.
-                auto pairItor = newShaderVariantPendingRequests.begin();
-                while (pairItor != newShaderVariantPendingRequests.end())
+                auto tupleItor = newShaderVariantPendingRequests.begin();
+                while (tupleItor != newShaderVariantPendingRequests.end())
                 {
-                    auto shaderVariantTreeAsset = GetShaderVariantTreeAsset(pairItor->m_shaderAsset.GetId());
+                    auto shaderVariantTreeAsset = GetShaderVariantTreeAsset(tupleItor->m_shaderAsset.GetId());
                     if (shaderVariantTreeAsset)
                     {
                         AZ_Assert(shaderVariantTreeAsset.IsReady(), "shaderVariantTreeAsset is not ready!");
                         // Get the stableId from the variant tree.
                         auto searchResult = shaderVariantTreeAsset->FindVariantStableId(
-                            pairItor->m_shaderAsset->GetShaderOptionGroupLayout(), pairItor->m_shaderVariantId);
+                            tupleItor->m_shaderAsset->GetShaderOptionGroupLayout(), tupleItor->m_shaderVariantId);
                         if (searchResult.IsRoot())
                         {
-                            pairItor = newShaderVariantPendingRequests.erase(pairItor);
+                            tupleItor = newShaderVariantPendingRequests.erase(tupleItor);
                             continue;
                         }
 
                         // Record the request for metrics.
-                        ShaderMetricsSystem::Get()->RequestShaderVariant(pairItor->m_shaderAsset.Get(), pairItor->m_shaderVariantId, searchResult);
+                        ShaderMetricsSystem::Get()->RequestShaderVariant(tupleItor->m_shaderAsset.Get(),  tupleItor->m_shaderVariantId, searchResult);
 
-                        uint32_t shaderVariantProductSubId =
-                            ShaderVariantAsset::MakeAssetProductSubId(RHI::Factory::Get().GetAPIUniqueIndex(), searchResult.GetStableId());
+                        uint32_t shaderVariantProductSubId = ShaderVariantAsset::MakeAssetProductSubId(
+                            RHI::Factory::Get().GetAPIUniqueIndex(), tupleItor->m_supervariantIndex.GetIndex(), searchResult.GetStableId());
                         Data::AssetId shaderVariantAssetId(shaderVariantTreeAsset.GetId().m_guid, shaderVariantProductSubId);
                         shaderVariantPendingRequests.insert(shaderVariantAssetId);
-                        pairItor = newShaderVariantPendingRequests.erase(pairItor);
+                        tupleItor = newShaderVariantPendingRequests.erase(tupleItor);
                         continue;
                     }
                     // If we are here the shaderVariantTreeAsset is not ready, but maybe it is already queued for loading,
                     // but we try to queue it anyways.
-                    QueueShaderVariantTreeForLoading(*pairItor, shaderVariantTreePendingRequests);
-                    pairItor++;
+                    QueueShaderVariantTreeForLoading(*tupleItor, shaderVariantTreePendingRequests);
+                    tupleItor++;
                 }
 
 
@@ -181,7 +177,7 @@ namespace AZ
         ///////////////////////////////////////////////////////////////////
         // IShaderVariantFinder overrides
         bool ShaderVariantAsyncLoader::QueueLoadShaderVariantAssetByVariantId(
-            Data::Asset<ShaderAsset> shaderAsset, const ShaderVariantId& shaderVariantId)
+            Data::Asset<ShaderAsset> shaderAsset, const ShaderVariantId& shaderVariantId, SupervariantIndex supervariantIndex)
         {
             if (m_isServiceShutdown.load())
             {
@@ -190,15 +186,15 @@ namespace AZ
 
             {
                 AZStd::unique_lock<decltype(m_mutex)> lock(m_mutex);
-                PairOfShaderAssetAndShaderVariantId pair = {shaderAsset, shaderVariantId};
-                m_newShaderVariantPendingRequests.push_back(pair);
+                TupleShaderAssetAndShaderVariantId tuple = {shaderAsset, shaderVariantId, supervariantIndex};
+                m_newShaderVariantPendingRequests.push_back(tuple);
             }
             m_workCondition.notify_one();
             return true;
         }
 
         bool ShaderVariantAsyncLoader::QueueLoadShaderVariantAsset(
-            const Data::AssetId& shaderVariantTreeAssetId, ShaderVariantStableId variantStableId)
+            const Data::AssetId& shaderVariantTreeAssetId, ShaderVariantStableId variantStableId, SupervariantIndex supervariantIndex)
         {
             if (m_isServiceShutdown.load())
             {
@@ -208,7 +204,7 @@ namespace AZ
             AZ_Assert(variantStableId != RootShaderVariantStableId, "Root Variants Are Found inside ShaderAssets");
 
             uint32_t shaderVariantProductSubId =
-                ShaderVariantAsset::MakeAssetProductSubId(RHI::Factory::Get().GetAPIUniqueIndex(), variantStableId);
+                ShaderVariantAsset::MakeAssetProductSubId(RHI::Factory::Get().GetAPIUniqueIndex(), supervariantIndex.GetIndex(), variantStableId);
             Data::AssetId shaderVariantAssetId(shaderVariantTreeAssetId.m_guid, shaderVariantProductSubId);
             {
                 AZStd::unique_lock<decltype(m_mutex)> lock(m_mutex);
@@ -234,7 +230,7 @@ namespace AZ
         }
 
         Data::Asset<ShaderVariantAsset> ShaderVariantAsyncLoader::GetShaderVariantAssetByVariantId(
-            Data::Asset<ShaderAsset> shaderAsset, const ShaderVariantId& shaderVariantId)
+            Data::Asset<ShaderAsset> shaderAsset, const ShaderVariantId& shaderVariantId, SupervariantIndex supervariantIndex)
         {
             Data::Asset<ShaderVariantTreeAsset> shaderVariantTreeAsset = GetShaderVariantTreeAsset(shaderAsset.GetId());
             if (!shaderVariantTreeAsset)
@@ -253,11 +249,11 @@ namespace AZ
             // Record the request for metrics.
             ShaderMetricsSystem::Get()->RequestShaderVariant(shaderAsset.Get(), shaderVariantId, searchResult);
 
-            return GetShaderVariantAsset(shaderVariantTreeAsset.GetId(), searchResult.GetStableId());
+            return GetShaderVariantAsset(shaderVariantTreeAsset.GetId(), searchResult.GetStableId(), supervariantIndex);
         }
 
         Data::Asset<ShaderVariantAsset> ShaderVariantAsyncLoader::GetShaderVariantAssetByStableId(
-            Data::Asset<ShaderAsset> shaderAsset, ShaderVariantStableId shaderVariantStableId)
+            Data::Asset<ShaderAsset> shaderAsset, ShaderVariantStableId shaderVariantStableId, SupervariantIndex supervariantIndex)
         {
             AZ_Assert(shaderVariantStableId != RootShaderVariantStableId, "Root Variants Are Found inside ShaderAssets");
 
@@ -267,7 +263,7 @@ namespace AZ
                 return {};
             }
 
-            return GetShaderVariantAsset(shaderVariantTreeAsset.GetId(), shaderVariantStableId);
+            return GetShaderVariantAsset(shaderVariantTreeAsset.GetId(), shaderVariantStableId, supervariantIndex);
         }
 
         Data::Asset<ShaderVariantTreeAsset> ShaderVariantAsyncLoader::GetShaderVariantTreeAsset(const Data::AssetId& shaderAssetId)
@@ -292,11 +288,13 @@ namespace AZ
             return {};
         }
 
-        Data::Asset<ShaderVariantAsset> ShaderVariantAsyncLoader::GetShaderVariantAsset(const Data::AssetId& shaderVariantTreeAssetId, ShaderVariantStableId variantStableId)
+        Data::Asset<ShaderVariantAsset> ShaderVariantAsyncLoader::GetShaderVariantAsset(
+            const Data::AssetId& shaderVariantTreeAssetId, ShaderVariantStableId variantStableId, SupervariantIndex supervariantIndex)
         {
             AZ_Assert(variantStableId != RootShaderVariantStableId, "Root Variants Are Found inside ShaderAssets");
 
-            uint32_t shaderVariantProductSubId = ShaderVariantAsset::MakeAssetProductSubId(RHI::Factory::Get().GetAPIUniqueIndex(), variantStableId);
+            uint32_t shaderVariantProductSubId =
+                ShaderVariantAsset::MakeAssetProductSubId(RHI::Factory::Get().GetAPIUniqueIndex(), supervariantIndex.GetIndex(), variantStableId);
             Data::AssetId shaderVariantAssetId(shaderVariantTreeAssetId.m_guid, shaderVariantProductSubId);
 
             AZStd::unique_lock<decltype(m_mutex)> lock(m_mutex);
@@ -323,9 +321,8 @@ namespace AZ
 
         void ShaderVariantAsyncLoader::Reset()
         {
-            // [GFX TODO ATOM-14544] Idealy we want to be able to reset the ShaderVariantAsyncLoader but this is causing some problems that need to be worked out first.
-            //Shutdown();
-            //Init();
+            Shutdown();
+            Init();
         }
 
         ///////////////////////////////////////////////////////////////////
@@ -502,11 +499,11 @@ namespace AZ
 
 
         void ShaderVariantAsyncLoader::QueueShaderVariantTreeForLoading(
-            const PairOfShaderAssetAndShaderVariantId& shaderAndVariantPair,
+            const TupleShaderAssetAndShaderVariantId& shaderAndVariantTuple,
             AZStd::unordered_set<Data::AssetId>& shaderVariantTreePendingRequests)
         {
-            auto shaderAssetId = shaderAndVariantPair.m_shaderAsset.GetId();
-            if (shaderVariantTreePendingRequests.count(shaderAndVariantPair.m_shaderAsset.GetId()))
+            auto shaderAssetId = shaderAndVariantTuple.m_shaderAsset.GetId();
+            if (shaderVariantTreePendingRequests.count(shaderAndVariantTuple.m_shaderAsset.GetId()))
             {
                 // Already queued.
                 return;

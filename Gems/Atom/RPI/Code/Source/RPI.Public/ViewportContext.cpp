@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
@@ -33,6 +29,10 @@ namespace AZ
                 m_viewportSize,
                 nativeWindow,
                 &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
+            AzFramework::WindowRequestBus::EventResult(
+                m_viewportDpiScaleFactor,
+                nativeWindow,
+                &AzFramework::WindowRequestBus::Events::GetDpiScaleFactor);
             AzFramework::WindowNotificationBus::Handler::BusConnect(nativeWindow);
             AzFramework::ViewportRequestBus::Handler::BusConnect(id);
 
@@ -153,9 +153,19 @@ namespace AZ
             return m_viewportSize;
         }
 
+        float ViewportContext::GetDpiScalingFactor() const
+        {
+            return m_viewportDpiScaleFactor;
+        }
+
         void ViewportContext::ConnectSizeChangedHandler(SizeChangedEvent::Handler& handler)
         {
             handler.Connect(m_sizeChangedEvent);
+        }
+
+        void ViewportContext::ConnectDpiScalingFactorChangedHandler(ScalarChangedEvent::Handler& handler)
+        {
+            handler.Connect(m_dpiScalingFactorChangedEvent);
         }
 
         void ViewportContext::ConnectViewMatrixChangedHandler(MatrixChangedEvent::Handler& handler)
@@ -293,6 +303,12 @@ namespace AZ
                 m_viewportSize.m_height = height;
                 m_sizeChangedEvent.Signal(m_viewportSize);
             }
+        }
+
+        void ViewportContext::OnDpiScaleFactorChanged(float dpiScaleFactor)
+        {
+            m_viewportDpiScaleFactor = dpiScaleFactor;
+            m_dpiScalingFactorChangedEvent.Signal(dpiScaleFactor);
         }
     } // namespace RPI
 } // namespace AZ

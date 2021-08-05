@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
@@ -248,6 +244,29 @@ namespace AZ
                 m_bakedDistanceImage.get() &&
                 m_bakedRelocationImage.get() &&
                 m_bakedClassificationImage.get();
+        }
+
+        void DiffuseProbeGrid::ResetCullingVisibility()
+        {
+            m_cullable.m_isVisible = false;
+        }
+
+        bool DiffuseProbeGrid::GetIsVisible() const
+        {
+            // we need to go through the DiffuseProbeGrid passes at least once in order to initialize
+            // the RenderObjectSrg, which means we need to be visible until the RenderObjectSrg is created
+            if (m_renderObjectSrg == nullptr)
+            {
+                return true;
+            }
+
+            // if a bake is in progress we need to make this DiffuseProbeGrid visible
+            if (!m_textureReadback.IsIdle())
+            {
+                return true;
+            }
+
+            return m_cullable.m_isVisible;
         }
 
         uint32_t DiffuseProbeGrid::GetTotalProbeCount() const
@@ -506,11 +525,11 @@ namespace AZ
             srg->SetConstant(constantIndex, m_probeRayRotationTransform);
         }
 
-        void DiffuseProbeGrid::UpdateRayTraceSrg(const Data::Asset<RPI::ShaderResourceGroupAsset>& srgAsset)
+        void DiffuseProbeGrid::UpdateRayTraceSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& layout)
         {
             if (!m_rayTraceSrg)
             {
-                m_rayTraceSrg = RPI::ShaderResourceGroup::Create(srgAsset);
+                m_rayTraceSrg = RPI::ShaderResourceGroup::Create(shader->GetAsset(), shader->GetSupervariantIndex(), layout->GetName());
                 AZ_Error("DiffuseProbeGrid", m_rayTraceSrg.get(), "Failed to create RayTrace shader resource group");
             }
 
@@ -551,11 +570,11 @@ namespace AZ
             SetGridConstants(m_rayTraceSrg);
         }
 
-        void DiffuseProbeGrid::UpdateBlendIrradianceSrg(const Data::Asset<RPI::ShaderResourceGroupAsset>& srgAsset)
+        void DiffuseProbeGrid::UpdateBlendIrradianceSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& layout)
         {
             if (!m_blendIrradianceSrg)
             {
-                m_blendIrradianceSrg = RPI::ShaderResourceGroup::Create(srgAsset);
+                m_blendIrradianceSrg = RPI::ShaderResourceGroup::Create(shader->GetAsset(), shader->GetSupervariantIndex(), layout->GetName());
                 AZ_Error("DiffuseProbeGrid", m_blendIrradianceSrg.get(), "Failed to create BlendIrradiance shader resource group");
             }
 
@@ -574,11 +593,11 @@ namespace AZ
             SetGridConstants(m_blendIrradianceSrg);
         }
 
-        void DiffuseProbeGrid::UpdateBlendDistanceSrg(const Data::Asset<RPI::ShaderResourceGroupAsset>& srgAsset)
+        void DiffuseProbeGrid::UpdateBlendDistanceSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& layout)
         {
             if (!m_blendDistanceSrg)
             {
-                m_blendDistanceSrg = RPI::ShaderResourceGroup::Create(srgAsset);
+                m_blendDistanceSrg = RPI::ShaderResourceGroup::Create(shader->GetAsset(), shader->GetSupervariantIndex(), layout->GetName());
                 AZ_Error("DiffuseProbeGrid", m_blendDistanceSrg.get(), "Failed to create BlendDistance shader resource group");
             }
 
@@ -597,14 +616,15 @@ namespace AZ
             SetGridConstants(m_blendDistanceSrg);
         }
 
-        void DiffuseProbeGrid::UpdateBorderUpdateSrgs(const Data::Asset<RPI::ShaderResourceGroupAsset>& rowSrgAsset,
-                                                      const Data::Asset<RPI::ShaderResourceGroupAsset>& columnSrgAsset)
+        void DiffuseProbeGrid::UpdateBorderUpdateSrgs(
+            const Data::Instance<RPI::Shader>& rowShader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& rowSrgLayout,
+            const Data::Instance<RPI::Shader>& columnShader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& columnSrgLayout)
         {
             // border update row irradiance
             {
                 if (!m_borderUpdateRowIrradianceSrg)
                 {
-                    m_borderUpdateRowIrradianceSrg = RPI::ShaderResourceGroup::Create(rowSrgAsset);
+                    m_borderUpdateRowIrradianceSrg = RPI::ShaderResourceGroup::Create(rowShader->GetAsset(), rowShader->GetSupervariantIndex(), rowSrgLayout->GetName());
                     AZ_Error("DiffuseProbeGrid", m_borderUpdateRowIrradianceSrg.get(), "Failed to create BorderUpdateRowIrradiance shader resource group");
                 }
 
@@ -623,7 +643,7 @@ namespace AZ
             {
                 if (!m_borderUpdateColumnIrradianceSrg)
                 {
-                    m_borderUpdateColumnIrradianceSrg = RPI::ShaderResourceGroup::Create(columnSrgAsset);
+                    m_borderUpdateColumnIrradianceSrg = RPI::ShaderResourceGroup::Create(columnShader->GetAsset(), columnShader->GetSupervariantIndex(), columnSrgLayout->GetName());
                     AZ_Error("DiffuseProbeGrid", m_borderUpdateColumnIrradianceSrg.get(), "Failed to create BorderUpdateColumnRowIrradiance shader resource group");
                 }
 
@@ -642,7 +662,7 @@ namespace AZ
             {
                 if (!m_borderUpdateRowDistanceSrg)
                 {
-                    m_borderUpdateRowDistanceSrg = RPI::ShaderResourceGroup::Create(rowSrgAsset);
+                    m_borderUpdateRowDistanceSrg = RPI::ShaderResourceGroup::Create(rowShader->GetAsset(), rowShader->GetSupervariantIndex(), rowSrgLayout->GetName());
                     AZ_Error("DiffuseProbeGrid", m_borderUpdateRowDistanceSrg.get(), "Failed to create BorderUpdateRowDistance shader resource group");
                 }
 
@@ -661,7 +681,7 @@ namespace AZ
             {
                 if (!m_borderUpdateColumnDistanceSrg)
                 {
-                    m_borderUpdateColumnDistanceSrg = RPI::ShaderResourceGroup::Create(columnSrgAsset);
+                    m_borderUpdateColumnDistanceSrg = RPI::ShaderResourceGroup::Create(columnShader->GetAsset(), columnShader->GetSupervariantIndex(), columnSrgLayout->GetName());
                     AZ_Error("DiffuseProbeGrid", m_borderUpdateColumnDistanceSrg.get(), "Failed to create BorderUpdateColumnRowDistance shader resource group");
                 }
 
@@ -677,11 +697,11 @@ namespace AZ
             }
         }
 
-        void DiffuseProbeGrid::UpdateRelocationSrg(const Data::Asset<RPI::ShaderResourceGroupAsset>& srgAsset)
+        void DiffuseProbeGrid::UpdateRelocationSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& layout)
         {
             if (!m_relocationSrg)
             {
-                m_relocationSrg = RPI::ShaderResourceGroup::Create(srgAsset);
+                m_relocationSrg = RPI::ShaderResourceGroup::Create(shader->GetAsset(), shader->GetSupervariantIndex(), layout->GetName());
                 AZ_Error("DiffuseProbeGrid", m_relocationSrg.get(), "Failed to create Relocation shader resource group");
             }
 
@@ -702,11 +722,11 @@ namespace AZ
             SetGridConstants(m_relocationSrg);
         }
 
-        void DiffuseProbeGrid::UpdateClassificationSrg(const Data::Asset<RPI::ShaderResourceGroupAsset>& srgAsset)
+        void DiffuseProbeGrid::UpdateClassificationSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& layout)
         {
             if (!m_classificationSrg)
             {
-                m_classificationSrg = RPI::ShaderResourceGroup::Create(srgAsset);
+                m_classificationSrg = RPI::ShaderResourceGroup::Create(shader->GetAsset(), shader->GetSupervariantIndex(), layout->GetName());
                 AZ_Error("DiffuseProbeGrid", m_classificationSrg.get(), "Failed to create Classification shader resource group");
             }
 
@@ -732,7 +752,7 @@ namespace AZ
 
             if (!m_renderObjectSrg)
             {
-                m_renderObjectSrg = RPI::ShaderResourceGroup::Create(m_renderData->m_srgAsset);
+                m_renderObjectSrg = RPI::ShaderResourceGroup::Create(m_renderData->m_shader->GetAsset(), m_renderData->m_shader->GetSupervariantIndex(), m_renderData->m_srgLayout->GetName());
                 AZ_Error("DiffuseProbeGrid", m_renderObjectSrg.get(), "Failed to create render shader resource group");
             }
 

@@ -1,16 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-
-#include <PhysX_precompiled.h>
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/algorithm.h>
@@ -97,6 +91,10 @@ namespace PhysX
                     nodeSelectionList.AddSelectedNode(graph.GetNodeName(nodeIndex).GetPath());
                 }
             }
+
+            // Update list of materials slots after the group's node selection list has been gathered
+            group->SetSceneGraph(&graph);
+            group->UpdateMaterialSlots();
         }
 
         AZ::SceneAPI::Events::ProcessingResult MeshBehavior::UpdateManifest(AZ::SceneAPI::Containers::Scene& scene, ManifestAction action,
@@ -129,6 +127,8 @@ namespace PhysX
             //      in the same way again. To guarantee the same uuid, generate a stable one instead.
             group->OverrideId(AZ::SceneAPI::DataTypes::Utilities::CreateStableUuid(scene, MeshGroup::TYPEINFO_Uuid()));
 
+            group->SetSceneGraph(&scene.GetGraph());
+
             EBUS_EVENT(AZ::SceneAPI::Events::ManifestMetaInfoBus, InitializeObject, scene, *group);
             scene.GetManifest().AddEntry(AZStd::move(group));
 
@@ -149,10 +149,15 @@ namespace PhysX
                 }
 
                 AZ::SceneAPI::Utilities::SceneGraphSelector::UpdateNodeSelection(scene.GetGraph(), group.GetSceneNodeSelectionList());
+
+                // Update list of materials slots after the group's node selection list has been updated
+                group.SetSceneGraph(&scene.GetGraph());
+                group.UpdateMaterialSlots();
+
                 updated = true;
             }
 
             return updated ? AZ::SceneAPI::Events::ProcessingResult::Success : AZ::SceneAPI::Events::ProcessingResult::Ignored;
         }
-    } // namespace SceneAPI
-} // namespace AZ
+    } // namespace Pipeline
+} // namespace PhysX

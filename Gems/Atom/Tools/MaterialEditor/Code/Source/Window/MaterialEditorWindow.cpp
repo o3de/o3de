@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RHI/Factory.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
@@ -68,7 +64,7 @@ namespace MaterialEditor
         auto mainWindowWrapper =
             new AzQtComponents::WindowDecorationWrapper(AzQtComponents::WindowDecorationWrapper::OptionAutoTitleBarButtons);
         mainWindowWrapper->setGuest(this);
-        mainWindowWrapper->enableSaveRestoreGeometry("amazon", "MaterialEditor", "mainWindowGeometry");
+        mainWindowWrapper->enableSaveRestoreGeometry("O3DE", "MaterialEditor", "mainWindowGeometry");
 
         // set the style sheet for RPE highlighting and other styling
         AzQtComponents::StyleManager::setStyleSheet(this, QStringLiteral(":/MaterialEditor.qss"));
@@ -78,13 +74,13 @@ namespace MaterialEditor
         AZ::Name apiName = AZ::RHI::Factory::Get().GetName();
         if (!apiName.IsEmpty())
         {
-            QString title = QString{ "Material Editor (%1)" }.arg(apiName.GetCStr());
+            QString title = QString{ "%1 (%2)" }.arg(QApplication::applicationName()).arg(apiName.GetCStr());
             setWindowTitle(title);
         }
         else
         {
             AZ_Assert(false, "Render API name not found");
-            setWindowTitle("Material Editor");
+            setWindowTitle(QApplication::applicationName());
         }
 
         m_advancedDockManager = new AzQtComponents::FancyDocking(this);

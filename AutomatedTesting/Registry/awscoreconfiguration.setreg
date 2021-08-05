@@ -4,7 +4,7 @@
         "AWSCore": 
         {
             "ProfileName": "AWSAutomationTest",
-            "ResourceMappingConfigFileName": "aws_resource_mappings.json"
+            "ResourceMappingConfigFileName": "default_aws_resource_mappings.json"
         }
     } 
 }

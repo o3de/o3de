@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIInitState
-*/
-#include "Atom_RHI_Metal_precompiled.h"
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
 #include <AzCore/Debug/EventTrace.h>
@@ -34,6 +30,7 @@ namespace AZ
         {
             AZ_UNUSED(device);
             m_hardwareQueueClass = hardwareQueueClass;
+            m_supportsInterDrawTimestamps = AZ::RHI::QueryTypeFlags::Timestamp == (device->GetFeatures().m_queryTypesMask[static_cast<uint32_t>(hardwareQueueClass)] & AZ::RHI::QueryTypeFlags::Timestamp);
         }
         
         void CommandListBase::Reset()
@@ -68,7 +65,10 @@ namespace AZ
                 [m_encoder endEncoding];
                 m_encoder = nil;
 #if AZ_TRAIT_ATOM_METAL_COUNTER_SAMPLING
-                m_timeStampQueue.clear();
+                if (m_supportsInterDrawTimestamps)
+                {
+                    m_timeStampQueue.clear();
+                }
 #endif
             }
         }
@@ -82,6 +82,7 @@ namespace AZ
                     id<MTLRenderCommandEncoder> renderEncoder = GetEncoder<id<MTLRenderCommandEncoder>>();
                     for (id<MTLHeap> residentHeap : *m_residentHeaps)
                     {
+                        //MTLRenderStageVertex is not added to this as it was causing an immediate gpu crash on ios (first buffer commit)
                         [renderEncoder useHeap : residentHeap
                                        stages  : MTLRenderStageFragment];
                     }
@@ -147,9 +148,12 @@ namespace AZ
             m_isEncoded = true;
             
 #if AZ_TRAIT_ATOM_METAL_COUNTER_SAMPLING
-            for(auto& timeStamp: m_timeStampQueue)
+            if (m_supportsInterDrawTimestamps)
             {
-                SampleCounters(timeStamp.m_counterSampleBuffer, timeStamp.m_timeStampIndex);
+                for(auto& timeStamp: m_timeStampQueue)
+                {
+                    SampleCounters(timeStamp.m_counterSampleBuffer, timeStamp.m_timeStampIndex);
+                }
             }
 #endif
         }
@@ -198,6 +202,11 @@ namespace AZ
 #if AZ_TRAIT_ATOM_METAL_COUNTER_SAMPLING
         void CommandListBase::SampleCounters(id<MTLCounterSampleBuffer> counterSampleBuffer, uint32_t sampleIndex)
         {
+            if (!m_supportsInterDrawTimestamps)
+            {
+                return;
+            }
+
             AZ_Assert(sampleIndex >= 0, "Invalid sample index");
             //useBarrier - Inserting a barrier ensures that encoded work is complete before the GPU samples the hardware counters.
             //If it is true there is a performance penalty but you will get consistent results
@@ -234,6 +243,11 @@ namespace AZ
     
         void CommandListBase::SamplePassCounters(id<MTLCounterSampleBuffer> counterSampleBuffer, uint32_t sampleIndex)
         {
+            if (!m_supportsInterDrawTimestamps)
+            {
+                return;
+            }
+
             if(m_encoder == nil)
             {
                 //Queue the query to be activated upon encoder creation. Applies to timestamp queries

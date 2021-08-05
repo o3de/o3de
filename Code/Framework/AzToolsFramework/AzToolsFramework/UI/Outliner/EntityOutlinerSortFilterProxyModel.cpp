@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "EntityOutlinerSortFilterProxyModel.hxx"
 
@@ -39,7 +35,24 @@ namespace AzToolsFramework
 
     bool EntityOutlinerSortFilterProxyModel::lessThan(const QModelIndex& leftIndex, const QModelIndex& rightIndex) const
     {
-        return sourceModel()->data(leftIndex).toString() < sourceModel()->data(rightIndex).toString();
+        if (leftIndex.isValid() && rightIndex.isValid())
+        {
+            QVariant leftData = sourceModel()->data(leftIndex);
+            QVariant rightData = sourceModel()->data(rightIndex);
+
+            // make sure to compare the correct data types for sorting the current column
+            AZ_Assert(leftData.type() == rightData.type(), "EntityOutlinerSortFilterProxyModel::lessThan types do not agree!");
+            if (static_cast<QMetaType::Type>(leftData.type()) == QMetaType::QString)
+            {
+                return leftData.toString() < rightData.toString();
+            }
+            else if (static_cast<QMetaType::Type>(leftData.type()) == QMetaType::ULongLong)
+            {
+                return leftData.toULongLong() < rightData.toULongLong();
+            }
+            AZ_Error("Editor", false, "Error! Unhandled type \"%s\" in EntityOutlinerSortFilterProxyModel::lessThan", leftData.typeName());
+        }
+        return false;
     }
 
     void EntityOutlinerSortFilterProxyModel::sort(int /*column*/, Qt::SortOrder /*order*/)

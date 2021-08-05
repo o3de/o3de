@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <Atom/RPI.Reflect/Material/MaterialTypeAssetCreator.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
@@ -57,33 +53,30 @@ namespace AZ
             return EndCommon(result);
         }
 
-        bool MaterialTypeAssetCreator::UpdateShaderResourceGroup(
-            Data::Asset<ShaderResourceGroupAsset>& srgAssetToUpdate,
-            const Data::Asset<ShaderAsset>& newShaderAsset,
-            uint32_t bindingSlot,
-            const char* srgDebugName)
+        bool MaterialTypeAssetCreator::UpdateShaderIndexForShaderResourceGroup(
+            uint32_t& srgShaderIndexToUpdate, const Data::Asset<ShaderAsset>& newShaderAsset, const uint32_t newShaderAssetIndex, const uint32_t bindingSlot, const char* srgDebugName)
         {
-            auto& newSrgAsset = newShaderAsset->FindShaderResourceGroupAsset(bindingSlot);
+            const auto& newSrgLayout = newShaderAsset->FindShaderResourceGroupLayout(bindingSlot);
 
-            if (srgAssetToUpdate.GetId().IsValid() &&
-                newSrgAsset.GetId().IsValid() &&
-                srgAssetToUpdate.GetId() != newSrgAsset.GetId())
+            if (!newSrgLayout)
             {
-                ReportError("All shaders in a material must use the same %s ShaderResourceGroup.", srgDebugName);
-                return false;
+                // It's ok if newShaderAsset doesn't have the SRG. Only some of the shaders may have an SRG of a given type.
+                return true;
             }
 
-            // It doesn't appear this case is actually possible right now, but checking anyway for completeness
-            if (newSrgAsset.GetId().IsValid() && !newSrgAsset.IsReady())
+            if (srgShaderIndexToUpdate != MaterialTypeAsset::InvalidShaderIndex)
             {
-                ReportError("The %s ShaderResourceGroup is not loaded.", srgDebugName);
-                return false;
+                const auto& currentShaderAsset = m_asset->m_shaderCollection[srgShaderIndexToUpdate].GetShaderAsset();
+                const auto& currentSrgLayout = currentShaderAsset->FindShaderResourceGroupLayout(bindingSlot);
+                if (currentSrgLayout->GetHash() != newSrgLayout->GetHash())
+                {
+                    ReportError("All shaders in a material must use the same %s ShaderResourceGroup.", srgDebugName);
+                    return false;
+                }
             }
-
-            // Only some of the shaders may have an SRG of a given type, so don't clear an SRG that was found in one of the other shaders.
-            if (newSrgAsset)
+            else
             {
-                srgAssetToUpdate = newSrgAsset;
+                srgShaderIndexToUpdate = newShaderAssetIndex;
             }
 
             return true;
@@ -93,10 +86,12 @@ namespace AZ
         {
             if (!m_materialShaderResourceGroupLayout)
             {
-                if (m_asset->m_materialSrgAsset)
+                if (m_asset->m_materialSrgShaderIndex != MaterialTypeAsset::InvalidShaderIndex)
                 {
-                    m_materialShaderResourceGroupLayout = m_asset->m_materialSrgAsset->GetLayout();
-
+                    // [GFX TODO] At the moment we are using the default supervariant.
+                    //            In the future it may be necessary to get the layout
+                    //            from a particular supervariant.
+                    m_materialShaderResourceGroupLayout = m_asset->GetMaterialSrgLayout().get();
                     if (!m_materialShaderResourceGroupLayout)
                     {
                         ReportError("Shader resource group has a null layout.");
@@ -115,9 +110,9 @@ namespace AZ
                     ReportError(AZStd::string::format("Failed to insert shader tag '%s'. Shader tag must be unique.", shaderTag.GetCStr()).c_str());
                 }
 
-                // [GFX TODO]: Stop using hard-coded material srg name once we have SRG semantics in place
-                UpdateShaderResourceGroup(m_asset->m_materialSrgAsset, shaderAsset, SrgBindingSlot::Material, "material");
-                UpdateShaderResourceGroup(m_asset->m_objectSrgAsset, shaderAsset, SrgBindingSlot::Object, "object");
+                uint32_t newShaderIndex = aznumeric_caster(m_asset->m_shaderCollection.m_shaderItems.size() - 1);
+                UpdateShaderIndexForShaderResourceGroup(m_asset->m_materialSrgShaderIndex, shaderAsset, newShaderIndex, SrgBindingSlot::Material, "material");
+                UpdateShaderIndexForShaderResourceGroup(m_asset->m_objectSrgShaderIndex, shaderAsset, newShaderIndex, SrgBindingSlot::Object, "object");
 
                 CacheMaterialSrgLayout();
             }

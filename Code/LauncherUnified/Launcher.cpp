@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Launcher.h>
 
@@ -46,20 +42,25 @@ extern "C" void CreateStaticModules(AZStd::vector<AZ::Module*>& modulesOut);
 #   define REMOTE_ASSET_PROCESSOR
 #endif
 
+void CVar_OnViewportPosition(const AZ::Vector2& value);
+
 namespace
 {
-    void OnViewportResize(const AZ::Vector2& value);
+    void CVar_OnViewportResize(const AZ::Vector2& value);
 
-    AZ_CVAR(AZ::Vector2, r_viewportSize, AZ::Vector2::CreateZero(), OnViewportResize, AZ::ConsoleFunctorFlags::DontReplicate,
+    AZ_CVAR(AZ::Vector2, r_viewportSize, AZ::Vector2::CreateZero(), CVar_OnViewportResize, AZ::ConsoleFunctorFlags::DontReplicate,
         "The default size for the launcher viewport, 0 0 means full screen");
 
-    void OnViewportResize(const AZ::Vector2& value)
+    void CVar_OnViewportResize(const AZ::Vector2& value)
     {
         AzFramework::NativeWindowHandle windowHandle = nullptr;
         AzFramework::WindowSystemRequestBus::BroadcastResult(windowHandle, &AzFramework::WindowSystemRequestBus::Events::GetDefaultWindowHandle);
         AzFramework::WindowSize newSize = AzFramework::WindowSize(aznumeric_cast<int32_t>(value.GetX()), aznumeric_cast<int32_t>(value.GetY()));
         AzFramework::WindowRequestBus::Broadcast(&AzFramework::WindowRequestBus::Events::ResizeClientArea, newSize);
     }
+    
+    AZ_CVAR(AZ::Vector2, r_viewportPos, AZ::Vector2::CreateZero(), CVar_OnViewportPosition, AZ::ConsoleFunctorFlags::DontReplicate,
+        "The default position for the launcher viewport, 0 0 means top left corner of your main desktop");
 
     void ExecuteConsoleCommandFile(AzFramework::Application& application)
     {
@@ -573,6 +574,14 @@ namespace O3DELauncher
             AZ_Assert(AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady(), "System allocator was not created or creation failed.");
             //Initialize the Debug trace instance to create necessary environment variables
             AZ::Debug::Trace::Instance().Init();
+
+            if (!IsDedicatedServer() && !systemInitParams.bToolMode && !systemInitParams.bTestMode)
+            {
+                if (auto nativeUI = AZ::Interface<AZ::NativeUI::NativeUIRequests>::Get(); nativeUI != nullptr)
+                {
+                    nativeUI->SetMode(AZ::NativeUI::Mode::ENABLED);
+                }
+            }
         }
 
         if (mainInfo.m_onPostAppStart)

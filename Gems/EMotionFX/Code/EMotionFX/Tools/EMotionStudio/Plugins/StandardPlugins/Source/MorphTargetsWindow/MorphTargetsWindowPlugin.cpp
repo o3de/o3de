@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "MorphTargetsWindowPlugin.h"
 #include <AzCore/Casting/numeric_cast.h>
@@ -17,25 +13,26 @@
 #include "../../../../EMStudioSDK/Source/EMStudioCore.h"
 #include <MCore/Source/LogManager.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
+#include <EMotionFX/Source/ActorManager.h>
 #include <EMotionFX/Source/MorphSetup.h>
 #include "../../../../EMStudioSDK/Source/EMStudioManager.h"
 
-
 namespace EMStudio
 {
-    // constructor
     MorphTargetsWindowPlugin::MorphTargetsWindowPlugin()
         : EMStudio::DockWidgetPlugin()
     {
-        mDialogStack                    = nullptr;
-        mCurrentActorInstance           = nullptr;
+        mDialogStack = nullptr;
+        mCurrentActorInstance = nullptr;
         mStaticTextWidget = nullptr;
+
+        EMotionFX::ActorInstanceNotificationBus::Handler::BusConnect();
     }
 
-
-    // destructor
     MorphTargetsWindowPlugin::~MorphTargetsWindowPlugin()
     {
+        EMotionFX::ActorInstanceNotificationBus::Handler::BusDisconnect();
+
         // unregister the command callbacks and get rid of the memory
         for (auto callback : m_callbacks)
         {
@@ -110,14 +107,16 @@ namespace EMStudio
         mMorphTargetGroups.clear();
     }
 
-
     // reinit the morph target dialog, e.g. if selection changes
     void MorphTargetsWindowPlugin::ReInit(bool forceReInit)
     {
-        // get the selected actorinstance
-        const CommandSystem::SelectionList& selection       = GetCommandManager()->GetCurrentSelection();
-        EMotionFX::ActorInstance*           actorInstance   = selection.GetSingleActorInstance();
+        const CommandSystem::SelectionList& selection = GetCommandManager()->GetCurrentSelection();
+        EMotionFX::ActorInstance* actorInstance = selection.GetSingleActorInstance();
+        ReInit(actorInstance, forceReInit);
+    }
 
+    void MorphTargetsWindowPlugin::ReInit(EMotionFX::ActorInstance* actorInstance, bool forceReInit)
+    {
         // show hint if no/multiple actor instances is/are selected
         if (actorInstance == nullptr)
         {
@@ -135,10 +134,7 @@ namespace EMStudio
             return;
         }
 
-        // get our selected actor instance and the corresponding actor
-        EMotionFX::Actor* actor = actorInstance->GetActor();
-
-        // only reinit the morph targets if actorinstance changed
+        // only reinit the morph targets if actor instance changed
         if (mCurrentActorInstance != actorInstance || forceReInit)
         {
             // set the current actor instance in any case
@@ -150,7 +146,7 @@ namespace EMStudio
             AZStd::vector<EMotionFX::MorphSetupInstance::MorphTarget*>   phonemeInstances;
             AZStd::vector<EMotionFX::MorphSetupInstance::MorphTarget*>   defaultMorphTargetInstances;
 
-            // get the morph target setup
+            EMotionFX::Actor* actor = actorInstance->GetActor();
             EMotionFX::MorphSetup* morphSetup = actor->GetMorphSetup(actorInstance->GetLODLevel());
             if (morphSetup == nullptr)
             {
@@ -278,6 +274,13 @@ namespace EMStudio
         }
     }
 
+    void MorphTargetsWindowPlugin::OnActorInstanceDestroyed(EMotionFX::ActorInstance* actorInstance)
+    {
+        if (mCurrentActorInstance == actorInstance)
+        {
+            ReInit(/*actorInstance=*/nullptr);
+        }
+    }
 
     //-----------------------------------------------------------------------------------------
     // Command callbacks

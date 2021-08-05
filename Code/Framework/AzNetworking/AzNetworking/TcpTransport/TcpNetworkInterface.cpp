@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzNetworking/TcpTransport/TcpNetworkInterface.h>
 #include <AzNetworking/TcpTransport/TcpSocketManager.h>
@@ -162,6 +158,12 @@ namespace AzNetworking
         return connection->WasPacketAcked(packetId);
     }
 
+    bool TcpNetworkInterface::StopListening()
+    {
+        m_port = 0;
+        return m_listenThread.StopListening(*this);
+    }
+
     bool TcpNetworkInterface::Disconnect(ConnectionId connectionId, DisconnectReason reason)
     {
         IConnection* connection = m_connectionSet.GetConnection(connectionId);
@@ -170,6 +172,16 @@ namespace AzNetworking
             return false;
         }
         return connection->Disconnect(reason, TerminationEndpoint::Local);
+    }
+
+    void TcpNetworkInterface::SetTimeoutEnabled(bool timeoutEnabled)
+    {
+        m_timeoutEnabled = timeoutEnabled;
+    }
+
+    bool TcpNetworkInterface::IsTimeoutEnabled() const
+    {
+        return m_timeoutEnabled;
     }
 
     void TcpNetworkInterface::QueueNewConnection(const PendingConnection& pendingConnection)
@@ -304,7 +316,7 @@ namespace AzNetworking
         {
             tcpConnection->SendReliablePacket(CorePackets::HeartbeatPacket());
         }
-        else if (net_TcpTimeoutConnections)
+        else if (net_TcpTimeoutConnections && m_networkInterface.IsTimeoutEnabled())
         {
             tcpConnection->Disconnect(DisconnectReason::Timeout, TerminationEndpoint::Local);
             return TimeoutResult::Delete;

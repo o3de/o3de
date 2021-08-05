@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RPI.Public/Model/ModelSystem.h>
 
@@ -28,6 +24,7 @@ namespace AZ
         {
             ModelLodAsset::Reflect(context);
             ModelAsset::Reflect(context);
+            ModelMaterialSlot::Reflect(context);
             MorphTargetMetaAsset::Reflect(context);
             SkinMetaAsset::Reflect(context);
         }
@@ -44,9 +41,9 @@ namespace AZ
         {
             //Create Lod Database
             AZ::Data::InstanceHandler<ModelLod> lodInstanceHandler;
-            lodInstanceHandler.m_createFunction = [](Data::AssetData* modelLodAsset)
+            lodInstanceHandler.m_createFunctionWithParam = [](Data::AssetData* modelLodAsset, const AZStd::any* modelAsset)
             {
-                return ModelLod::CreateInternal(*(azrtti_cast<ModelLodAsset*>(modelLodAsset)));
+                return ModelLod::CreateInternal(Data::Asset<ModelLodAsset>{modelLodAsset, AZ::Data::AssetLoadBehavior::PreLoad}, modelAsset);
             };
             Data::InstanceDatabase<ModelLod>::Create(azrtti_typeid<ModelLodAsset>(), lodInstanceHandler);
 
@@ -54,7 +51,7 @@ namespace AZ
             AZ::Data::InstanceHandler<Model> modelInstanceHandler;
             modelInstanceHandler.m_createFunction = [](Data::AssetData* modelAsset)
             {
-                return Model::CreateInternal(*(azrtti_cast<ModelAsset*>(modelAsset)));
+                return Model::CreateInternal(Data::Asset<ModelAsset>{modelAsset, AZ::Data::AssetLoadBehavior::PreLoad});
             };
             Data::InstanceDatabase<Model>::Create(azrtti_typeid<ModelAsset>(), modelInstanceHandler);
         }

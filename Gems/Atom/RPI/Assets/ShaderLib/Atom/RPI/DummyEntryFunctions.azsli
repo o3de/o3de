@@ -1,0 +1,51 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+// This file is included by .AZSL files that are used to define ShaderResourceGroups.
+// The idea is that .shader files require entry function definitions to compile.
+// This file provides dummy, yet valid, entry points for all kinds of shaders.
+
+///////////////////////////////////////////////////////////////////////////////
+// Dummy Structures
+///////////////////////////////////////////////////////////////////////////////
+struct VSInput
+{
+    float3 m_position : POSITION;
+};
+
+struct VSOutput
+{
+    float4 m_position : SV_Position;
+};
+
+struct PSOutput
+{
+    float4 m_color : SV_Target0;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// Entry Functions
+///////////////////////////////////////////////////////////////////////////////
+VSOutput MainVS(VSInput IN)
+{
+    VSOutput OUT;
+    OUT.m_position = float4(IN.m_position, 1.0);
+    return OUT;
+}
+
+PSOutput MainPS(VSOutput IN)
+{
+    PSOutput OUT;
+    OUT.m_color = IN.m_position;
+    return OUT;
+}
+
+[numthreads(8,8,1)]
+void MainCS(uint3 dispatch_id: SV_DispatchThreadID)
+{
+}

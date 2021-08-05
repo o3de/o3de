@@ -1,21 +1,19 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #if !defined(Q_MOC_RUN)
 #include "EditorCommon.h"
+#include "LyShinePassDataBus.h"
 
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AtomToolsFramework/Viewport/RenderViewportWidget.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
 
 #include <IFont.h>
 
@@ -31,6 +29,8 @@ class ViewportWidget
     : public AtomToolsFramework::RenderViewportWidget
     , private AzToolsFramework::EditorPickModeNotificationBus::Handler
     , private FontNotificationBus::Handler
+    , private LyShinePassDataRequestBus::Handler
+    , public AZ::RPI::ViewportContextNotificationBus::Handler
 {
     Q_OBJECT
 
@@ -142,15 +142,29 @@ private: // member functions
     void OnFontTextureUpdated(IFFont* font) override;
     // ~FontNotifications
 
+    // LyShinePassDataRequestBus
+    LyShine::AttachmentImagesAndDependencies GetRenderTargets() override;
+    // ~LyShinePassDataRequestBus
+
     // AZ::TickBus::Handler
     void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+    int GetTickOrder() override;
     // ~AZ::TickBus::Handler
 
+    // AZ::RPI::ViewportContextNotificationBus::Handler overrides...
+    void OnRenderTick() override;
+
+    //! Update UI canvases when in edit mode
+    void UpdateEditMode(float deltaTime);
+
     //! Render the viewport when in edit mode
-    void RenderEditMode(float deltaTime);
+    void RenderEditMode();
+
+    //! Update UI canvases when in preview mode
+    void UpdatePreviewMode(float deltaTime);
 
     //! Render the viewport when in preview mode
-    void RenderPreviewMode(float deltaTime);
+    void RenderPreviewMode();
 
     //! Fill the entire viewport area with a background color
     void RenderViewportBackground();

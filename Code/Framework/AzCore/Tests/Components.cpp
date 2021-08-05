@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "FileIOBaseTestTypes.h"
 
@@ -909,14 +905,14 @@ namespace UnitTest
         EXPECT_EQ(2, m_entity->GetComponents().size());
     }
 
-    TEST_F(ComponentDependency, ComponentWithoutDescriptor_FailsDueToMissingDescriptor)
+    TEST_F(ComponentDependency, ComponentWithoutDescriptor_FailsDueToUnregisteredDescriptor)
     {
         CreateComponents_ABCDE();
 
         // delete ComponentB's descriptor
         ComponentDescriptorBus::Event(azrtti_typeid<ComponentB>(), &ComponentDescriptorBus::Events::ReleaseDescriptor);
 
-        EXPECT_EQ(Entity::DependencySortResult::MissingDescriptor, m_entity->EvaluateDependencies());
+        EXPECT_EQ(Entity::DependencySortResult::DescriptorNotRegistered, m_entity->EvaluateDependencies());
     }
 
     TEST_F(ComponentDependency, StableSort_GetsSameResultsEveryTime)
@@ -1555,7 +1551,9 @@ namespace UnitTest
         }
     }
 
-    TEST_F(Components, EntityIdGeneration)
+    // Temporary disabled. This will be re-enabled in the short term upon completion of SPEC-7384 and
+    // fixed in the long term upon completion of SPEC-4849
+    TEST_F(Components, DISABLED_EntityIdGeneration)
     {
         // Generate 1 million ids across 100 threads, and ensure that none collide
         AZStd::concurrent_unordered_set<AZ::EntityId> entityIds;

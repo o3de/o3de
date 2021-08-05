@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -23,10 +19,6 @@
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/string/string.h>
-
-#if defined (FUNCTION_LEGACY_SUPPORT_ENABLED)
-#include "FunctionsLegacySupport.h"
-#endif
 
 namespace AZ
 {
@@ -113,7 +105,7 @@ namespace ScriptCanvas
         constexpr const char* k_InitializeExecutionOutByRequiredCountName = "InitializeExecutionOutByRequiredCount";
         constexpr const char* k_InterpretedConfigurationPerformance = "SCRIPT_CANVAS_GLOBAL_PERFORMANCE";
         constexpr const char* k_InterpretedConfigurationRelease = "SCRIPT_CANVAS_GLOBAL_RELEASE";
-        
+
         constexpr const char* k_NodeableCallInterpretedOut = "ExecutionOut";
         constexpr const char* k_NodeableUserBaseClassName = "Nodeable";
         constexpr const char* k_NodeableSetExecutionOutName = "SetExecutionOut";
@@ -125,7 +117,7 @@ namespace ScriptCanvas
 
         constexpr const char* k_OnGraphStartFunctionName = "OnGraphStart";
         constexpr const char* k_OverrideNodeableMetatableName = "OverrideNodeableMetatable";
-                
+
         constexpr const char* k_stringFormatLexicalScopeName = "string";
         constexpr const char* k_stringFormatName = "format";
 
@@ -144,7 +136,7 @@ namespace ScriptCanvas
         constexpr const char* k_DependentAssetsIndexArgName = "dependentAssetsIndex";
         constexpr const char* k_UnpackDependencyConstructionArgsFunctionName = "UnpackDependencyConstructionArgs";
         constexpr const char* k_UnpackDependencyConstructionArgsLeafFunctionName = "UnpackDependencyConstructionArgsLeaf";
-        
+
         enum class ExecutionCharacteristics : AZ::u32
         {
             Object,
@@ -152,7 +144,7 @@ namespace ScriptCanvas
         };
 
         // default to a pure, interpreted function
-        enum ExecutionStateSelection : AZ::u32
+        enum class ExecutionStateSelection : AZ::u32
         {
             InterpretedPure,
             InterpretedPureOnGraphStart,
@@ -177,7 +169,7 @@ namespace ScriptCanvas
             Count,
         };
 #undef REGISTER_ENUM
-    
+
         // create the Symbol strings
 #define REGISTER_ENUM(x) #x,
         static const char* g_SymbolNames[] =
@@ -252,7 +244,9 @@ namespace ScriptCanvas
 
         AZ_CVAR_EXTERNED(bool, g_disableParseOnGraphValidation);
         AZ_CVAR_EXTERNED(bool, g_printAbstractCodeModel);
+        AZ_CVAR_EXTERNED(bool, g_printAbstractCodeModelAtPrefabTime);
         AZ_CVAR_EXTERNED(bool, g_saveRawTranslationOuputToFile);
+        AZ_CVAR_EXTERNED(bool, g_saveRawTranslationOuputToFileAtPrefabTime);
 
         struct DependencyInfo
         {
@@ -263,7 +257,7 @@ namespace ScriptCanvas
 
         struct Request
         {
-            AZ::Data::AssetId assetId;
+            AZ::Data::AssetId scriptAssetId;
             const Graph* graph = nullptr;
             AZStd::string_view name;
             AZStd::string_view path;
@@ -310,8 +304,8 @@ namespace ScriptCanvas
         AZStd::string ToTypeSafeEBusResultName(const Data::Type& type);
         AZStd::string ToSafeName(const AZStd::string& name);
         NamespacePath ToNamespacePath(AZStd::string_view path, AZStd::string_view name);
-    } 
-} 
+    }
+}
 
 namespace AZStd
 {

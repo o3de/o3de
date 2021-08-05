@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -49,25 +45,17 @@ namespace AZ
                 SCENE_DATA_API TangentsRule();
                 SCENE_DATA_API ~TangentsRule() override = default;
 
-                SCENE_DATA_API AZ::SceneAPI::DataTypes::TangentSpace GetTangentSpace() const;
-                SCENE_DATA_API AZ::SceneAPI::DataTypes::BitangentMethod GetBitangentMethod() const;
-                SCENE_DATA_API AZ::u64 GetUVSetIndex() const;
-                SCENE_DATA_API bool GetNormalizeVectors() const;
-
-                SCENE_DATA_API static AZ::SceneAPI::DataTypes::IMeshVertexUVData* FindUVData(AZ::SceneAPI::Containers::SceneGraph& graph, const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex, AZ::u64 uvSet);
-                SCENE_DATA_API static AZ::SceneAPI::DataTypes::IMeshVertexTangentData* FindTangentData(AZ::SceneAPI::Containers::SceneGraph& graph, const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex, AZ::u64 setIndex, AZ::SceneAPI::DataTypes::TangentSpace tangentSpace);
-                SCENE_DATA_API static AZ::SceneAPI::DataTypes::IMeshVertexBitangentData* FindBitangentData(AZ::SceneAPI::Containers::SceneGraph& graph, const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex, AZ::u64 setIndex, AZ::SceneAPI::DataTypes::TangentSpace tangentSpace);
+                SCENE_DATA_API AZ::SceneAPI::DataTypes::TangentGenerationMethod GetGenerationMethod() const;
+                SCENE_DATA_API AZ::SceneAPI::DataTypes::MikkTSpaceMethod GetMikkTSpaceMethod() const;
 
                 static void Reflect(ReflectContext* context);
 
             protected:
-                AZ::Crc32 GetNormalizeVisibility() const;
-                AZ::Crc32 GetOrthogonalVisibility() const;
+                AZ::SceneAPI::DataTypes::TangentGenerationMethod m_generationMethod = AZ::SceneAPI::DataTypes::TangentGenerationMethod::MikkT; /**< Specifies how to handle tangents. Either generate them, or import them. */
 
-                AZ::SceneAPI::DataTypes::TangentSpace       m_tangentSpace;     /**< Specifies how to handle tangents. Either generate them, or import them. */
-                AZ::SceneAPI::DataTypes::BitangentMethod    m_bitangentMethod;  /**< Grab the bitangents from the generator/source or use an orthogonal basis by always calculating them? */
-                AZ::u64                                     m_uvSetIndex;       /**< Generate the tangents from this UV set. */
-                bool                                        m_normalize;        /**< Normalize the tangent and bitangents? */
+                // MikkT specific settings
+                AZ::Crc32 GetSpaceMethodVisibility() const;
+                AZ::SceneAPI::DataTypes::MikkTSpaceMethod m_tSpaceMethod = AZ::SceneAPI::DataTypes::MikkTSpaceMethod::TSpace;
             };
         } // SceneData
     } // SceneAPI

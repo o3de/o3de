@@ -13,33 +13,19 @@
                         [
                             {
                                 "$type": "AZ::IO::StorageDriveConfig",
-                                // The maximum number of file handles that the drive will cache.
                                 "MaxFileHandles": 1024
                             },
                             {
                                 "$type": "AZ::IO::WindowsStorageDriveConfig",
-                                // The maximum number of file handles that the drive will cache.
                                 "MaxFileHandles": 1024,
-                                // The maximum number of files to keep the meta data such as the size around for.
                                 "MaxMetaDataCache": 1024,
-                                // Number of requests the drive keeps after its queue is full.
-                                // Overcommitting allows for requests to be immediately available after a request completes without needing
-                                // any scheduling, but this also doesn't allow these requests to be rescheduled or updated.
                                 "Overcommit": 8,
-                                // Allows files to be shared. This can be needed if the file needs to be opened in multiple locations, such 
-                                // as the editor and the Asset Processor. Turning this feature on comes at a small performance cost.
                                 "EnableFileSharing": true,
-                                // Unbuffered reads bypass the OS file cache for faster file reads. This helps speed up initial file loads
-                                // and is best for applications that only read a file once such as the game. For applications that frequently
-                                // re-read files such as the editor it's better to turn this feature off.
                                 "EnableUnbufferedReads": false,
-                                // If true, only information that's explicitly requested or issues are reported. If false, status information
-                                // such as when drives are created and destroyed is reported as well.
                                 "MinimalReporting": false
                             },
                             {
                                 "$type": "AzFramework::RemoteStorageDriveConfig",
-                                // The maximum number of file handles that the drive will cache.
                                 "MaxFileHandles": 1024 
                             }
                         ]

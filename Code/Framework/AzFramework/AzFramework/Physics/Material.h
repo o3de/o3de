@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates, or
-* a third party where indicated.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <AzCore/Asset/AssetManager.h>
@@ -25,6 +21,8 @@ namespace AZ
 
 namespace Physics
 {
+    static constexpr AZStd::string_view DefaultPhysicsMaterialLabel = "<Default Physics Material>";
+
     /// Physics material
     /// =========================
     /// This is the interface to the wrapper around native material type (such as PxMaterial in PhysX gem)
@@ -97,9 +95,12 @@ namespace Physics
     class MaterialConfiguration
     {
     public:
-        AZ_TYPE_INFO(Physics::MaterialConfiguration, "{8807CAA1-AD08-4238-8FDB-2154ADD084A1}");
+        AZ_RTTI(Physics::MaterialConfiguration, "{8807CAA1-AD08-4238-8FDB-2154ADD084A1}");
 
         static void Reflect(AZ::ReflectContext* context);
+
+        MaterialConfiguration() = default;
+        virtual ~MaterialConfiguration() = default;
 
         const static AZ::Crc32 s_stringGroup; ///< Edit context data attribute. Identifies a string group instance. String values in the same group are unique.
         const static AZ::Crc32 s_forbiddenStringSet; ///<  Edit context data attribute. A set of strings that are not acceptable as values to the data element. Can be AZStd::unordered_set<AZStd::string>, AZStd::set<AZStd::string>, AZStd::vector<AZStd::string>
@@ -121,9 +122,26 @@ namespace Physics
         bool operator==(const MaterialConfiguration& other) const;
         bool operator!=(const MaterialConfiguration& other) const;
 
+    protected:
+        virtual bool IsNameReadOnly() const { return false; }
+
     private:
         static bool VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement);
         static AZ::Color GenerateDebugColor(const char* materialName);
+    };
+
+    class DefaultMaterialConfiguration
+        : public MaterialConfiguration
+    {
+    public:
+        AZ_RTTI(Physics::DefaultMaterialConfiguration, "{A1F64C5C-D413-4757-9D42-51DD0EBFC270}", Physics::MaterialConfiguration);
+
+        static void Reflect(AZ::ReflectContext* context);
+        
+        DefaultMaterialConfiguration();
+
+    protected:
+        bool IsNameReadOnly() const override { return true; }
     };
 
     namespace Attributes
@@ -237,7 +255,7 @@ namespace Physics
         AZ_TYPE_INFO(Physics::MaterialInfoReflectionWrapper, "{02AB8CBC-D35B-4E0F-89BA-A96D94DAD4F9}");
         static void Reflect(AZ::ReflectContext* context);
 
-        Physics::MaterialConfiguration m_defaultMaterialConfiguration;
+        Physics::DefaultMaterialConfiguration m_defaultMaterialConfiguration;
         AZ::Data::Asset<Physics::MaterialLibraryAsset> m_materialLibraryAsset =
             AZ::Data::AssetLoadBehavior::NoLoad;
     };
@@ -289,13 +307,17 @@ namespace Physics
         
         void SyncSelectionToMaterialLibrary();
         
-        static const AZ::Data::Asset<Physics::MaterialLibraryAsset>& GetMaterialLibrary();
-        static const AZ::Data::AssetId& GetMaterialLibraryId();
+        static AZ::Data::Asset<Physics::MaterialLibraryAsset> GetMaterialLibrary();
+        static AZ::Data::AssetId GetMaterialLibraryId();
 
         bool AreMaterialSlotsReadOnly() const;
 
         // EditorContext callbacks
         AZStd::string GetMaterialSlotLabel(int index);
+
+        // Only used for Edit Context as it requires to have an asset reflected.
+        // To get the material library use GetMaterialLibraryId()
+        AZ::Data::Asset<Physics::MaterialLibraryAsset> m_editContextMaterialLibrary{ AZ::Data::AssetLoadBehavior::NoLoad };
     };
 
     /// Editor Bus used to assign material to terrain surface id.

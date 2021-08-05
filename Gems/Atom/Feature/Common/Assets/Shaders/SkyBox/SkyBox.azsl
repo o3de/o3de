@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 // --- Static Options Available ---
 // SKYBOX_TWO_OUTPUTS - Skybox renders to two rendertargets instead of one (SkyBox_TwoOutputs.pass writes to specular and reflection targets)
@@ -151,6 +147,18 @@ PSOutput MainPS(VSOutput input)
                 float3 Z = SceneSrg::m_physicalSkyData.m_physicalSkyParameterZ.xyz;
                 float3 srgbColor = Z * HosekWilkie(cosGamma, gamma, cosTheta) * SceneSrg::m_physicalSkyData.m_physicalSkyAndSunIntensity.x;
                 color = TransformColor(srgbColor, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
+            }
+        } 
+
+        if (SceneSrg::m_fogEnable)
+        {
+            if (input.m_cubemapCoord.z >= 0.0 && input.m_cubemapCoord.z <= SceneSrg::m_fogTopHeight)
+            {
+                color = lerp(SceneSrg::m_fogColor.rgb, color, input.m_cubemapCoord.z > 0.0 ? input.m_cubemapCoord.z/SceneSrg::m_fogTopHeight : 0.0);
+            }
+            else if (input.m_cubemapCoord.z < 0.0 && input.m_cubemapCoord.z >= -SceneSrg::m_fogBottomHeight)
+            {
+                color = SceneSrg::m_fogColor.rgb;
             }
         }
     }

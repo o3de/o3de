@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RPI.Public/ColorManagement/TransformColor.h>
 #include <Atom/RPI.Public/Material/Material.h>
@@ -63,13 +59,13 @@ namespace AZ
             AZ_TRACE_METHOD();
 
             m_materialAsset = { &materialAsset, AZ::Data::AssetLoadBehavior::PreLoad };
-            
-            // Cache off pointers to some key data structures from the material type...
 
-            auto& srgAsset = m_materialAsset->GetMaterialSrgAsset();
-            if (srgAsset)
+            // Cache off pointers to some key data structures from the material type...
+            auto srgLayout = m_materialAsset->GetMaterialSrgLayout();
+            if (srgLayout)
             {
-                m_shaderResourceGroup = ShaderResourceGroup::Create(m_materialAsset->GetMaterialSrgAsset());
+                auto shaderAsset = m_materialAsset->GetMaterialTypeAsset()->GetShaderAssetForMaterialSrg();
+                m_shaderResourceGroup = ShaderResourceGroup::Create(shaderAsset, srgLayout->GetName());
 
                 if (m_shaderResourceGroup)
                 {
@@ -97,6 +93,7 @@ namespace AZ
             ShaderReloadNotificationBus::MultiHandler::BusDisconnect();
             for (auto& shaderItem : m_shaderCollection)
             {
+                ShaderReloadDebugTracker::Printf("(Material has ShaderAsset %p)", shaderItem.GetShaderAsset().Get());
                 ShaderReloadNotificationBus::MultiHandler::BusConnect(shaderItem.GetShaderAsset().GetId());
             }
 
@@ -163,11 +160,6 @@ namespace AZ
             Data::AssetBus::Handler::BusDisconnect();
         }
 
-        ShaderCollection& Material::GetShaderCollection()
-        {
-            return m_shaderCollection;
-        }
-
         const ShaderCollection& Material::GetShaderCollection() const
         {
             return m_shaderCollection;
@@ -226,7 +218,7 @@ namespace AZ
         // AssetBus overrides...
         void Material::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
         {
-            ShaderReloadDebugTracker::ScopedSection reloadSection("Material::OnAssetReloaded %s", asset.GetHint().c_str());
+            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->Material::OnAssetReloaded %s", this, asset.GetHint().c_str());
 
             Data::Asset<MaterialAsset> newMaterialAsset = { asset.GetAs<MaterialAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
 
@@ -241,15 +233,23 @@ namespace AZ
         // MaterialReloadNotificationBus overrides...
         void Material::OnMaterialAssetReinitialized(const Data::Asset<MaterialAsset>& materialAsset)
         {
-            ShaderReloadDebugTracker::ScopedSection reloadSection("Material::OnMaterialAssetReinitialized %s", materialAsset.GetHint().c_str());
-            OnAssetReloaded(materialAsset);
+            // It's important that we don't just pass materialAsset to Init() because when reloads occur,
+            // it's possible for old Asset objects to hang around and report reinitialization, so materialAsset
+            // might be stale data.
+
+            if (materialAsset.Get() == m_materialAsset.Get())
+            {
+                ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->Material::OnMaterialAssetReinitialized %s", this, materialAsset.GetHint().c_str());
+
+                OnAssetReloaded(m_materialAsset);
+            }
         }
 
         ///////////////////////////////////////////////////////////////////
         // ShaderReloadNotificationBus overrides...
         void Material::OnShaderReinitialized([[maybe_unused]] const Shader& shader)
         {
-            ShaderReloadDebugTracker::ScopedSection reloadSection("Material::OnShaderReinitialized %s", shader.GetAsset().GetHint().c_str());
+            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->Material::OnShaderReinitialized %s", this, shader.GetAsset().GetHint().c_str());
             // Note that it might not be strictly necessary to reinitialize the entire material, we might be able to get away with
             // just bumping the m_currentChangeId or some other minor updates. But it's pretty hard to know what exactly needs to be
             // updated to correctly handle the reload, so it's safer to just reinitialize the whole material.
@@ -258,18 +258,16 @@ namespace AZ
 
         void Material::OnShaderAssetReinitialized(const Data::Asset<ShaderAsset>& shaderAsset)
         {
-            // TODO: I think we should make Shader handle OnShaderAssetReinitialized and treat it just like the shader reloaded.
-
-            ShaderReloadDebugTracker::ScopedSection reloadSection("Material::OnShaderAssetReinitialized %s", shaderAsset.GetHint().c_str());
+            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->Material::OnShaderAssetReinitialized %s", this, shaderAsset.GetHint().c_str());
             // Note that it might not be strictly necessary to reinitialize the entire material, we might be able to get away with
             // just bumping the m_currentChangeId or some other minor updates. But it's pretty hard to know what exactly needs to be
             // updated to correctly handle the reload, so it's safer to just reinitialize the whole material.
             OnAssetReloaded(m_materialAsset);
         }
 
-        void Material::OnShaderVariantReinitialized(const Shader& shader, const ShaderVariantId& /*shaderVariantId*/, ShaderVariantStableId shaderVariantStableId)
+        void Material::OnShaderVariantReinitialized(const ShaderVariant& shaderVariant)
         {
-            ShaderReloadDebugTracker::ScopedSection reloadSection("Material::OnShaderVariantReinitialized %s variant %u", shader.GetAsset().GetHint().c_str(), shaderVariantStableId.GetIndex());
+            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->Material::OnShaderVariantReinitialized %s", this, shaderVariant.GetShaderVariantAsset().GetHint().c_str());
 
             // Note that it would be better to check the shaderVariantId to see if that variant is relevant to this particular material before reinitializing it.
             // There could be hundreds or even thousands of variants for a shader, but only one of those variants will be used by any given material. So we could

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <limits>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -34,11 +30,16 @@ namespace AZ
         case rapidjson::kArrayType:
             return LoadContainer(outputValue, outputValueTypeId, inputValue, context);
 
-        case rapidjson::kObjectType: // fall through
-        case rapidjson::kNullType: // fall through
-        case rapidjson::kStringType: // fall through
-        case rapidjson::kFalseType: // fall through
-        case rapidjson::kTrueType: // fall through
+        case rapidjson::kObjectType:
+            [[fallthrough]];
+        case rapidjson::kNullType:
+            [[fallthrough]];
+        case rapidjson::kStringType:
+            [[fallthrough]];
+        case rapidjson::kFalseType:
+            [[fallthrough]];
+        case rapidjson::kTrueType:
+            [[fallthrough]];
         case rapidjson::kNumberType:
             return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Unsupported,
                 "Unsupported type. Basic containers can only be read from an array.");
@@ -123,6 +124,10 @@ namespace AZ
         {
             if (retVal.HasDoneWork())
             {
+                // If at least one value was written, even if it has all defaults, then the array has
+                // a value written to it and is therefore not in a default state anymore.
+                retVal.Combine(JSR::ResultCode(JSR::Tasks::WriteValue, JSR::Outcomes::Success));
+
                 outputValue = AZStd::move(array);
                 return context.Report(retVal, "Content written to basic container.");
             }
@@ -165,6 +170,7 @@ namespace AZ
         ContinuationFlags flags = classElement->m_flags & SerializeContext::ClassElement::Flags::FLG_POINTER
             ? ContinuationFlags::ResolvePointer
             : ContinuationFlags::None;
+        flags |= ContinuationFlags::LoadAsNewInstance;
 
         const size_t capacity = container->IsFixedCapacity() ? container->Capacity(outputValue) : std::numeric_limits<size_t>::max();
 
@@ -243,6 +249,11 @@ namespace AZ
         }
 
         size_t addedCount = container->Size(outputValue) - containerSize;
+        if (addedCount > 0)
+        {
+            // Values were added which means the container is no longer in its default state of being empty.
+            retVal.Combine(JSR::ResultCode(JSR::Tasks::ReadField, JSR::Outcomes::Success));
+        }
         AZStd::string_view message =
             addedCount >= arraySize ? "Successfully read basic container.":
             addedCount == 0 ? "Unable to read data for basic container." :

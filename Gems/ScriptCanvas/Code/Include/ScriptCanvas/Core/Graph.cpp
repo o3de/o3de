@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <stdarg.h>
 #include <AzCore/Asset/AssetManager.h>
@@ -17,40 +13,32 @@
 #include <AzCore/Serialization/IdUtils.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
-
 #include <AzFramework/Entity/EntityContextBus.h>
-
-#include <ScriptCanvas/Asset/Functions/ScriptCanvasFunctionAsset.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
-
 #include <ScriptCanvas/Core/Connection.h>
 #include <ScriptCanvas/Core/Core.h>
 #include <ScriptCanvas/Core/Datum.h>
 #include <ScriptCanvas/Core/Graph.h>
 #include <ScriptCanvas/Core/Node.h>
-#include <ScriptCanvas/Core/PureData.h>
 #include <ScriptCanvas/Data/BehaviorContextObject.h>
-#include <ScriptCanvas/Grammar/AbstractCodeModel.h>
-
-#include <ScriptCanvas/Debugger/ValidationEvents/DataValidation/DataValidationIds.h>
+#include <ScriptCanvas/Data/PropertyTraits.h>
+#include <ScriptCanvas/Debugger/StatusBus.h>
 #include <ScriptCanvas/Debugger/ValidationEvents/DataValidation/DataValidationEvents.h>
-#include <ScriptCanvas/Debugger/ValidationEvents/ExecutionValidation/ExecutionValidationIds.h>
+#include <ScriptCanvas/Debugger/ValidationEvents/DataValidation/DataValidationIds.h>
 #include <ScriptCanvas/Debugger/ValidationEvents/ExecutionValidation/ExecutionValidationEvents.h>
-
-#include <ScriptCanvas/Libraries/Core/UnaryOperator.h>
+#include <ScriptCanvas/Debugger/ValidationEvents/ExecutionValidation/ExecutionValidationIds.h>
+#include <ScriptCanvas/Grammar/AbstractCodeModel.h>
 #include <ScriptCanvas/Libraries/Core/BinaryOperator.h>
 #include <ScriptCanvas/Libraries/Core/EBusEventHandler.h>
-#include <ScriptCanvas/Libraries/Core/ErrorHandler.h>
 #include <ScriptCanvas/Libraries/Core/FunctionDefinitionNode.h>
 #include <ScriptCanvas/Libraries/Core/Method.h>
-#include <ScriptCanvas/Libraries/Core/Start.h>
-#include <ScriptCanvas/Libraries/Core/SendScriptEvent.h>
 #include <ScriptCanvas/Libraries/Core/ReceiveScriptEvent.h>
 #include <ScriptCanvas/Libraries/Core/ScriptEventBase.h>
-
+#include <ScriptCanvas/Libraries/Core/SendScriptEvent.h>
+#include <ScriptCanvas/Libraries/Core/Start.h>
+#include <ScriptCanvas/Libraries/Core/UnaryOperator.h>
 #include <ScriptCanvas/Profiler/Driller.h>
 #include <ScriptCanvas/Translation/Translation.h>
-#include <ScriptCanvas/Debugger/StatusBus.h>
 #include <ScriptCanvas/Variable/VariableBus.h>
 #include <ScriptCanvas/Variable/VariableData.h>
 
@@ -63,6 +51,7 @@ namespace GraphCpp
         MergeScriptAssetDescriptions,
         VariablePanelSymantics,
         AddVersionData,
+        RemoveFunctionGraphMarker,
         // label your version above
         Current
     };
@@ -80,6 +69,11 @@ namespace ScriptCanvas
         if (componentElementNode.GetVersion() < 13)
         {
             componentElementNode.AddElementWithData(context, "m_assetType", azrtti_typeid<RuntimeAsset>());
+        }
+
+        if (componentElementNode.GetVersion() < GraphCpp::GraphVersion::RemoveFunctionGraphMarker)
+        {
+            componentElementNode.RemoveElementByName(AZ_CRC_CE("isFunctionGraph"));
         }
 
         return true;
@@ -112,18 +106,15 @@ namespace ScriptCanvas
         Nodes::ComparisonExpression::Reflect(context);
         Datum::Reflect(context);
         BehaviorContextObjectPtrReflect(context);
-
         GraphData::Reflect(context);
 
-        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
-        if (serializeContext)
+        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<Graph, AZ::Component>()
                 ->Version(GraphCpp::GraphVersion::Current, &GraphComponentVersionConverter)
                 ->Field("m_graphData", &Graph::m_graphData)
                 ->Field("executionMode", &Graph::m_executionMode)
                 ->Field("m_assetType", &Graph::m_assetType)
-                ->Field("isFunctionGraph", &Graph::m_isFunctionGraph)
                 ->Field("versionData", &Graph::m_versionData)
                 ;
         }
@@ -133,18 +124,13 @@ namespace ScriptCanvas
     {
         const auto& scriptCanvasId = GetScriptCanvasId();
         GraphRequestBus::Handler::BusConnect(scriptCanvasId);
-        RuntimeRequestBus::Handler::BusConnect(scriptCanvasId);
-
         ValidationRequestBus::Handler::BusConnect(scriptCanvasId);
 
         for (auto& nodeEntity : m_graphData.m_nodes)
         {
             if (nodeEntity)
             {
-                if (nodeEntity->GetState() == AZ::Entity::State::Constructed)
-                {
-                    nodeEntity->Init();
-                }
+                ScriptCanvas::ScopedAuxiliaryEntityHandler entityHandler(nodeEntity);
 
                 if (auto* node = AZ::EntityUtils::FindFirstDerivedComponent<Node>(nodeEntity))
                 {
@@ -156,33 +142,16 @@ namespace ScriptCanvas
         }
 
         m_graphData.BuildEndpointMap();
+
         for (auto& connectionEntity : m_graphData.m_connections)
         {
             if (connectionEntity)
             {
-                if (connectionEntity->GetState() == AZ::Entity::State::Constructed)
-                {
-                    connectionEntity->Init();
-                }
+                ScriptCanvas::ScopedAuxiliaryEntityHandler entityHandler(connectionEntity);
             }
         }
 
         StatusRequestBus::Handler::BusConnect(scriptCanvasId);
-    }
-
-    bool Graph::IsFunctionGraph() const
-    {
-        if (m_isFunctionGraph)
-        {
-            return true;    
-        }
-
-        return false;
-    }
-
-    void Graph::MarkFunctionGraph()
-    {
-        m_isFunctionGraph = true;
     }
 
     void Graph::MarkVersion()
@@ -423,7 +392,7 @@ namespace ScriptCanvas
     void Graph::ValidateVariables(ValidationResults& validationResults)
     {
         const VariableData* variableData = GetVariableData();
-        
+
         if (!variableData)
         {
             return;
@@ -445,7 +414,7 @@ namespace ScriptCanvas
                 {
                     errorDescription = AZStd::string::format("Variable %s has an invalid type %s.", GetVariableName(variableId).data(), variableType.GetAZType().ToString<AZStd::string>().c_str());
                 }
-            } 
+            }
             else if (variableType == Data::Type::Invalid())
             {
                 errorDescription = AZStd::string::format("Variable %s has an invalid type.", GetVariableName(variableId).data());
@@ -507,7 +476,7 @@ namespace ScriptCanvas
                     {
                         m_graphData.m_nodes.emplace(nodeEntity);
                         m_nodeMapping[nodeId] = node;
-                        
+
                         node->SetOwningScriptCanvasId(m_scriptCanvasId);
                         node->Configure();
                         GraphNotificationBus::Event(m_scriptCanvasId, &GraphNotifications::OnNodeAdded, nodeId);
@@ -528,16 +497,16 @@ namespace ScriptCanvas
             if (node)
             {
                 auto entry = m_graphData.m_nodes.find(node->GetEntity());
-            if (entry != m_graphData.m_nodes.end())
-            {
-                m_nodeMapping.erase(nodeId);
-                m_graphData.m_nodes.erase(entry);
-                GraphNotificationBus::Event(GetScriptCanvasId(), &GraphNotifications::OnNodeRemoved, nodeId);                
+                if (entry != m_graphData.m_nodes.end())
+                {
+                    m_nodeMapping.erase(nodeId);
+                    m_graphData.m_nodes.erase(entry);
+                    GraphNotificationBus::Event(GetScriptCanvasId(), &GraphNotifications::OnNodeRemoved, nodeId);
 
-                RemoveDependentAsset(nodeId);
-                return true;
+                    RemoveDependentAsset(nodeId);
+                    return true;
+                }
             }
-        }
         }
         return false;
     }
@@ -1041,17 +1010,17 @@ namespace ScriptCanvas
             }
         }
 
-//         for (auto connectionId : removableConnections)
-//         {
-//             DisconnectById(connectionId);
-//         }
+        //         for (auto connectionId : removableConnections)
+        //         {
+        //             DisconnectById(connectionId);
+        //         }
 
         if (!removableConnections.empty())
         {
             // RefreshConnectionValidity(warnOnRemoval);
         }
     }
-  
+
     void Graph::OnEntityActivated(const AZ::EntityId&)
     {
     }
@@ -1080,7 +1049,7 @@ namespace ScriptCanvas
                 AZ::Data::AssetManager::Instance().GetAsset<ScriptEvents::ScriptEventsAsset>(scriptEventNode->GetAssetId(), AZ::Data::AssetLoadBehavior::Default);
             }
         }
-        
+
         m_batchAddingData = false;
         GraphNotificationBus::Event(GetScriptCanvasId(), &GraphNotifications::OnBatchAddComplete);
 

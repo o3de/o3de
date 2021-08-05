@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <stdint.h>
@@ -214,12 +210,17 @@ namespace Gestures
     ////////////////////////////////////////////////////////////////////////////////////////////////
     inline uint32_t IRecognizer::GetGesturePointerIndex(const AzFramework::InputChannel& inputChannel)
     {
-        const auto& mouseButtonIt = AZStd::find(AzFramework::InputDeviceMouse::Button::All.cbegin(),
-                                                AzFramework::InputDeviceMouse::Button::All.cend(),
-                                                inputChannel.GetInputChannelId());
-        if (mouseButtonIt != AzFramework::InputDeviceMouse::Button::All.cend())
+        // Only recognize gestures for the default mouse input device. The Editor may register synthetic
+        // mouse input devices with the same mouse input channels, which can confuse gesture recognition.
+        if (inputChannel.GetInputDevice().GetInputDeviceId() == AzFramework::InputDeviceMouse::Id)
         {
-            return static_cast<uint32_t>(mouseButtonIt - AzFramework::InputDeviceMouse::Button::All.cbegin());
+            const auto& mouseButtonIt = AZStd::find(AzFramework::InputDeviceMouse::Button::All.cbegin(),
+                                                    AzFramework::InputDeviceMouse::Button::All.cend(),
+                                                    inputChannel.GetInputChannelId());
+            if (mouseButtonIt != AzFramework::InputDeviceMouse::Button::All.cend())
+            {
+                return static_cast<uint32_t>(mouseButtonIt - AzFramework::InputDeviceMouse::Button::All.cbegin());
+            }
         }
 
         const auto& touchIndexIt = AZStd::find(AzFramework::InputDeviceTouch::Touch::All.cbegin(),

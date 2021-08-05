@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -16,6 +12,7 @@
 #include <AzCore/std/algorithm.h>
 #include <AzFramework/Physics/Character.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
+#include <AzFramework/Physics/Common/PhysicsJoint.h>
 
 #include <EMotionFX/CommandSystem/Source/ColliderCommands.h>
 #include <EMotionFX/CommandSystem/Source/RagdollCommands.h>
@@ -44,10 +41,21 @@ namespace EMotionFX
 
             D6JointLimitConfiguration::Reflect(GetSerializeContext());
 
-            const AZ::TypeId& jointLimitTypeId = azrtti_typeid<D6JointLimitConfiguration>();
-            EXPECT_CALL(m_physicsSystem, GetSupportedJointTypes)
-                .WillRepeatedly(testing::Return(AZStd::vector<AZ::TypeId>{jointLimitTypeId}));
-            EXPECT_CALL(m_physicsSystem, ComputeInitialJointLimitConfiguration(jointLimitTypeId, _, _, _, _))
+            EXPECT_CALL(m_jointHelpers, GetSupportedJointTypeIds)
+                .WillRepeatedly(testing::Return(AZStd::vector<AZ::TypeId>{ azrtti_typeid<D6JointLimitConfiguration>() }));
+
+            EXPECT_CALL(m_jointHelpers, GetSupportedJointTypeId(_))
+                .WillRepeatedly(
+                    [](AzPhysics::JointType jointType) -> AZStd::optional<const AZ::TypeId>
+                    {
+                        if (jointType == AzPhysics::JointType::D6Joint)
+                        {
+                            return azrtti_typeid<D6JointLimitConfiguration>();
+                        }
+                        return AZStd::nullopt;
+                    });
+
+            EXPECT_CALL(m_jointHelpers, ComputeInitialJointLimitConfiguration(_, _, _, _, _))
                 .WillRepeatedly([]([[maybe_unused]] const AZ::TypeId& jointLimitTypeId,
                                    [[maybe_unused]] const AZ::Quaternion& parentWorldRotation,
                                    [[maybe_unused]] const AZ::Quaternion& childWorldRotation,
@@ -59,6 +67,7 @@ namespace EMotionFX
     private:
         Physics::MockPhysicsSystem m_physicsSystem;
         Physics::MockPhysicsInterface m_physicsInterface;
+        Physics::MockJointHelpersInterface m_jointHelpers;
     };
 
 #if AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS

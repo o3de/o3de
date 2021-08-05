@@ -1,12 +1,8 @@
 """
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 from aws_cdk import (
@@ -15,6 +11,7 @@ from aws_cdk import (
 )
 
 from . import aws_metrics_constants
+from .aws_utils import resource_name_sanitizer
 
 
 class BatchAnalytics:
@@ -41,7 +38,8 @@ class BatchAnalytics:
         self._athena_work_group = athena.CfnWorkGroup(
             self._stack,
             id='AthenaWorkGroup',
-            name=f'{self._stack.stack_name}-AthenaWorkGroup',
+            name=resource_name_sanitizer.sanitize_resource_name(
+                f'{self._stack.stack_name}-AthenaWorkGroup', 'athena_work_group'),
             recursive_delete_option=True,
             state='ENABLED',
             work_group_configuration=athena.CfnWorkGroup.WorkGroupConfigurationProperty(
@@ -69,7 +67,8 @@ class BatchAnalytics:
             athena.CfnNamedQuery(
                 self._stack,
                 id='NamedQuery-CreatePartitionedEventsJson',
-                name=f'{self._stack.stack_name}-NamedQuery-CreatePartitionedEventsJson',
+                name=resource_name_sanitizer.sanitize_resource_name(
+                    f'{self._stack.stack_name}-NamedQuery-CreatePartitionedEventsJson', 'athena_named_query'),
                 database=self._events_database_name,
                 query_string="CREATE TABLE events_json "
                              "WITH (format='JSON',partitioned_by=ARRAY['application_id']) "
@@ -82,7 +81,8 @@ class BatchAnalytics:
             athena.CfnNamedQuery(
                 self._stack,
                 id='NamedQuery-TotalEventsLastMonth',
-                name=f'{self._stack.stack_name}-NamedQuery-TotalEventsLastMonth',
+                name=resource_name_sanitizer.sanitize_resource_name(
+                    f'{self._stack.stack_name}-NamedQuery-TotalEventsLastMonth', 'athena_named_query'),
                 database=self._events_database_name,
                 query_string="WITH detail AS "
                              "(SELECT date_trunc('month', date(date_parse(CONCAT(year, '-', month, '-', day), '%Y-%m-%d'))) as event_month, * "
@@ -97,7 +97,8 @@ class BatchAnalytics:
             athena.CfnNamedQuery(
                 self._stack,
                 id='NamedQuery-NewUsersLastMonth',
-                name=f'{self._stack.stack_name}-NamedQuery-NewUsersLastMonth',
+                name=resource_name_sanitizer.sanitize_resource_name(
+                    f'{self._stack.stack_name}-NamedQuery-NewUsersLastMonth', 'athena_named_query'),
                 database=self._events_database_name,
                 query_string="WITH detail AS ("
                              "SELECT date_trunc('month', date(date_parse(CONCAT(year, '-', month, '-', day), '%Y-%m-%d'))) as event_month, * "

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -116,6 +112,27 @@ namespace AWSClientAuthUnitTest
             GetServiceUrlByRESTApiIdAndStage,
             AZStd::string(const AZStd::string& restApiIdKeyName, const AZStd::string& restApiStageKeyName));
         MOCK_METHOD1(ReloadConfigFile, void(bool isReloadingConfigFileName));
+    };
+
+    class AWSCoreRequestBusMock
+        : public AWSCore::AWSCoreRequestBus::Handler
+    {
+    public:
+        AWSCoreRequestBusMock()
+        {
+            AWSCore::AWSCoreRequestBus::Handler::BusConnect();
+
+            ON_CALL(*this, GetDefaultJobContext).WillByDefault(testing::Return(nullptr));
+            ON_CALL(*this, GetDefaultConfig).WillByDefault(testing::Return(nullptr));
+        }
+
+        ~AWSCoreRequestBusMock()
+        {
+            AWSCore::AWSCoreRequestBus::Handler::BusDisconnect();
+        }
+
+        MOCK_METHOD0(GetDefaultJobContext, AZ::JobContext*());
+        MOCK_METHOD0(GetDefaultConfig, AWSCore::AwsApiJobConfig*());
     };
 
     class HttpRequestorRequestBusMock
@@ -356,12 +373,12 @@ namespace AWSClientAuthUnitTest
 
         AuthenticationProviderMock()
         {
-            ON_CALL(*this, Initialize(testing::_)).WillByDefault(testing::Return(true));
+            ON_CALL(*this, Initialize()).WillByDefault(testing::Return(true));
         }
 
         virtual ~AuthenticationProviderMock() = default;
 
-        MOCK_METHOD1(Initialize, bool(AZStd::weak_ptr<AZ::SettingsRegistryInterface> settingsRegistry));
+        MOCK_METHOD0(Initialize, bool());
         MOCK_METHOD2(PasswordGrantSingleFactorSignInAsync, void(const AZStd::string& username, const AZStd::string& password));
         MOCK_METHOD2(PasswordGrantMultiFactorSignInAsync, void(const AZStd::string& username, const AZStd::string& password));
         MOCK_METHOD2(PasswordGrantMultiFactorConfirmSignInAsync, void(const AZStd::string& username, const AZStd::string& confirmationCode));
@@ -500,6 +517,8 @@ namespace AWSClientAuthUnitTest
             m_settingsRegistry->SetContext(m_serializeContext.get());
             m_settingsRegistry->SetContext(m_registrationContext.get());
 
+            AZ::SettingsRegistry::Register(m_settingsRegistry.get());
+
             AZ::ComponentApplicationBus::Handler::BusConnect();
             AZ::Interface<AZ::ComponentApplicationRequests>::Register(this);
 
@@ -559,6 +578,8 @@ namespace AWSClientAuthUnitTest
                 AZ::Interface<IAWSClientAuthRequests>::Unregister(this);
                 AWSClientAuth::AWSClientAuthRequestBus::Handler::BusDisconnect();
             }
+
+            AZ::SettingsRegistry::Unregister(m_settingsRegistry.get());
 
             m_testFolder.reset();
             m_settingsRegistry.reset();
@@ -665,8 +686,5 @@ namespace AWSClientAuthUnitTest
             m_testFolderCreated = true;
             return path;
         }
-
-    };
-
-    
+    };  
 }

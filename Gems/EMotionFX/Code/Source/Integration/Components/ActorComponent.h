@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -49,6 +45,26 @@ namespace EMotionFX
             AZ_COMPONENT(ActorComponent, "{BDC97E7F-A054-448B-A26F-EA2B5D78E377}");
             friend class EditorActorComponent;
 
+            struct BoundingBoxConfiguration
+            {
+                AZ_TYPE_INFO(BoundingBoxConfiguration, "{EBCFF975-00A5-4578-85C7-59909F52067C}");
+
+                BoundingBoxConfiguration() = default;
+
+                EMotionFX::ActorInstance::EBoundsType m_boundsType          = EMotionFX::ActorInstance::BOUNDS_STATIC_BASED;
+                bool                                  m_autoUpdateBounds    = true;
+                float                                 m_updateTimeFrequency = 0.f;
+                AZ::u32                               m_updateItemFrequency = 1;
+
+                // Set the bounding box configuration of the given actor instance to the parameters given by `this'. The actor instance must not be null (this is not checked).
+                void Set(ActorInstance* inst) const;
+
+                // Set the bounding box configuration, then update the bounds of the actor instance
+                void SetAndUpdate(ActorInstance* inst) const;
+
+                static void Reflect(AZ::ReflectContext* context);
+            };
+
             /**
             * Configuration struct for procedural configuration of Actor Components.
             */
@@ -71,6 +87,7 @@ namespace EMotionFX
                 // default, joints level update (beside the root joint) on
                 // actor are disabled when the actor is out of view. 
                 bool m_forceUpdateJointsOOV = false;
+                BoundingBoxConfiguration m_bboxConfig; ///< Configuration for bounding box type and updates
 
                 static void Reflect(AZ::ReflectContext* context);
             };

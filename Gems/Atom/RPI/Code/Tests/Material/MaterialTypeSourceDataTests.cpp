@@ -1,25 +1,21 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzTest/AzTest.h>
 #include <Common/RPITestFixture.h>
 #include <Common/JsonTestUtils.h>
+#include <Common/ShaderAssetTestUtils.h>
 #include <Material/MaterialAssetTestUtils.h>
 
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceDataRegistration.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
-#include <Atom/RPI.Reflect/Shader/ShaderResourceGroupAssetCreator.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Material/Material.h>
@@ -38,12 +34,11 @@ namespace UnitTest
     {
     protected:
 
-        Data::Asset<ShaderResourceGroupAsset> m_testMaterialSrgAsset;
+        RHI::Ptr<RHI::ShaderResourceGroupLayout> m_testMaterialSrgLayout;
         Data::Asset<ShaderAsset> m_testShaderAsset;
         Data::Asset<ShaderAsset> m_testShaderAsset2;
         Data::Asset<ImageAsset> m_testImageAsset;
         Data::Asset<ImageAsset> m_testImageAsset2; // For relative path testing.
-        static constexpr const char* TestMaterialSrgFilename        = "test.azsl";
         static constexpr const char* TestShaderFilename             = "test.shader";
         static constexpr const char* TestShaderFilename2            = "extra.shader";
         static constexpr const char* TestImageFilename              = "test.streamingimage";
@@ -270,26 +265,19 @@ namespace UnitTest
             AZ::RPI::MaterialFunctorSourceDataRegistration::Get()->RegisterMaterialFunctor("SetShaderOption", azrtti_typeid<SetShaderOptionFunctorSourceData>());
 
             const Name materialSrgId{"MaterialSrg"};
-
-            // We can use a random source file Uuid, but based on the current implementation we require the
-            // per-material asset sub-Id to be a hash of the SRG name.
-            Data::AssetId materialSrgAssetId{ Uuid::CreateRandom(), AssetUtils::CalcSrgProductSubId(materialSrgId) };
-
-            ShaderResourceGroupAssetCreator srgAssetCreator;
-            srgAssetCreator.Begin(materialSrgAssetId, materialSrgId);
-            srgAssetCreator.BeginAPI(RHI::Factory::Get().GetType());
-            srgAssetCreator.SetBindingSlot(SrgBindingSlot::Material);
-            srgAssetCreator.AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_color" }, 4, 16, 0 });
-            srgAssetCreator.AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_float" }, 20, 4, 0 });
-            srgAssetCreator.AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_int" }, 24, 4, 0 });
-            srgAssetCreator.AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_uint" }, 28, 4, 0 });
-            srgAssetCreator.AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_float2" }, 32, 8, 0 });
-            srgAssetCreator.AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_float3" }, 40, 12, 0 });
-            srgAssetCreator.AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_float4" }, 52, 16, 0 });
-            srgAssetCreator.AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_bool" }, 68, 1, 0 });
-            srgAssetCreator.AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_image" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1 });
-            EXPECT_TRUE(srgAssetCreator.EndAPI());
-            EXPECT_TRUE(srgAssetCreator.End(m_testMaterialSrgAsset));
+            m_testMaterialSrgLayout = RHI::ShaderResourceGroupLayout::Create();
+            m_testMaterialSrgLayout->SetName(materialSrgId);
+            m_testMaterialSrgLayout->SetBindingSlot(SrgBindingSlot::Material);
+            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_color" }, 4, 16, 0 });
+            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_float" }, 20, 4, 0 });
+            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_int" }, 24, 4, 0 });
+            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_uint" }, 28, 4, 0 });
+            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_float2" }, 32, 8, 0 });
+            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_float3" }, 40, 12, 0 });
+            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_float4" }, 52, 16, 0 });
+            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "m_bool" }, 68, 1, 0 });
+            m_testMaterialSrgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "m_image" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 1 });
+            EXPECT_TRUE(m_testMaterialSrgLayout->Finalize());
 
             AZStd::vector<RPI::ShaderOptionValuePair> optionValues;
             optionValues.push_back({Name("Low"),  RPI::ShaderOptionValue(0)});
@@ -303,17 +291,13 @@ namespace UnitTest
             shaderOptions->AddShaderOption(ShaderOptionDescriptor{Name{"o_bar"}, ShaderOptionType::Enumeration, 4, order++, optionValues, Name{"Low"}});
             shaderOptions->Finalize();
 
-            m_testShaderAsset = CreateTestShaderAsset(Uuid::CreateRandom(), m_testMaterialSrgAsset, shaderOptions);
+            m_testShaderAsset = CreateTestShaderAsset(Uuid::CreateRandom(), m_testMaterialSrgLayout, shaderOptions);
             m_testShaderAsset2 = CreateTestShaderAsset(Uuid::CreateRandom());
             
             // Since this test doesn't actually instantiate a Material, it won't need to instantiate this ImageAsset, so all we
             // need is an asset reference with a valid ID.
             m_testImageAsset = Data::Asset<ImageAsset>{ Data::AssetId{ Uuid::CreateRandom(), StreamingImageAsset::GetImageAssetSubId() }, azrtti_typeid<AZ::RPI::StreamingImageAsset>() };
             m_testImageAsset2 = Data::Asset<ImageAsset>{ Data::AssetId{ Uuid::CreateRandom(), StreamingImageAsset::GetImageAssetSubId() }, azrtti_typeid<StreamingImageAsset>() };
-
-            // Register the test assets with the AssetSystemStub so CreateMaterialTypeAsset() can use AssetUtils.
-            Data::AssetInfo testMaterialAssetInfo;
-            testMaterialAssetInfo.m_assetId = m_testMaterialSrgAsset.GetId();
 
             Data::AssetInfo testShaderAssetInfo;
             testShaderAssetInfo.m_assetId = m_testShaderAsset.GetId();
@@ -328,7 +312,6 @@ namespace UnitTest
             testImageAssetInfo2.m_assetId = m_testImageAsset2.GetId();
             testImageAssetInfo2.m_assetType = azrtti_typeid<StreamingImageAsset>();
 
-            m_assetSystemStub.RegisterSourceInfo(TestMaterialSrgFilename, testMaterialAssetInfo, "");
             m_assetSystemStub.RegisterSourceInfo(TestShaderFilename, testShaderAssetInfo, "");
             m_assetSystemStub.RegisterSourceInfo(TestShaderFilename2, testShaderAssetInfo2, "");
             m_assetSystemStub.RegisterSourceInfo(TestImageFilename, testImageAssetInfo, "");
@@ -340,7 +323,7 @@ namespace UnitTest
 
         void TearDown() override
         {
-            m_testMaterialSrgAsset.Reset();
+            m_testMaterialSrgLayout = nullptr;
             m_testShaderAsset.Reset();
             m_testShaderAsset2.Reset();
 
@@ -375,7 +358,7 @@ namespace UnitTest
 
         Data::Asset<MaterialTypeAsset> materialTypeAsset = materialTypeOutcome.GetValue();
 
-        EXPECT_EQ(m_testMaterialSrgAsset, materialTypeAsset->GetMaterialSrgAsset());
+        EXPECT_EQ(m_testMaterialSrgLayout, materialTypeAsset->GetMaterialSrgLayout());
     }
 
     TEST_F(MaterialTypeSourceDataTests, CreateMaterialTypeAsset_NoMaterialSrgAsset)
@@ -396,7 +379,7 @@ namespace UnitTest
 
         Data::Asset<MaterialTypeAsset> materialTypeAsset = materialTypeOutcome.GetValue();
 
-        EXPECT_FALSE(materialTypeAsset->GetMaterialSrgAsset().GetId().IsValid());
+        EXPECT_FALSE(materialTypeAsset->GetMaterialSrgLayout());
     }
 
     TEST_F(MaterialTypeSourceDataTests, CreateMaterialTypeAsset_WithMultipleShaders)
@@ -414,8 +397,8 @@ namespace UnitTest
         shaderOptions->AddShaderOption(ShaderOptionDescriptor{Name{"o_bar"}, ShaderOptionType::Enumeration, 2, order++, optionValues, Name{"Low"}});
         shaderOptions->Finalize();
 
-        Data::Asset<ShaderAsset> shaderAssetA = CreateTestShaderAsset(Uuid::CreateRandom(), m_testMaterialSrgAsset, shaderOptions);
-        Data::Asset<ShaderAsset> shaderAssetB = CreateTestShaderAsset(Uuid::CreateRandom(), m_testMaterialSrgAsset, shaderOptions);
+        Data::Asset<ShaderAsset> shaderAssetA = CreateTestShaderAsset(Uuid::CreateRandom(), m_testMaterialSrgLayout, shaderOptions);
+        Data::Asset<ShaderAsset> shaderAssetB = CreateTestShaderAsset(Uuid::CreateRandom(), m_testMaterialSrgLayout, shaderOptions);
         Data::Asset<ShaderAsset> shaderAssetC = CreateTestShaderAsset(Uuid::CreateRandom(), {}, shaderOptions);
 
         Data::AssetInfo shaderAssetAInfo;
@@ -454,7 +437,7 @@ namespace UnitTest
 
         // Check the results...
 
-        EXPECT_EQ(m_testMaterialSrgAsset, materialTypeAsset->GetMaterialSrgAsset());
+        EXPECT_EQ(m_testMaterialSrgLayout, materialTypeAsset->GetMaterialSrgLayout());
         EXPECT_EQ(3, materialTypeAsset->GetShaderCollection().size());
         EXPECT_EQ(shaderAssetA, materialTypeAsset->GetShaderCollection()[0].GetShaderAsset());
         EXPECT_EQ(shaderAssetB, materialTypeAsset->GetShaderCollection()[1].GetShaderAsset());
@@ -715,7 +698,7 @@ namespace UnitTest
         shaderAOptions->AddShaderOption(ShaderOptionDescriptor{ Name{"o_quality"}, ShaderOptionType::Enumeration, 0, order++, optionValues, Name{"Low"} });
         shaderAOptions->AddShaderOption(ShaderOptionDescriptor{ Name{"o_speed"}, ShaderOptionType::Enumeration, 2, order++, optionValues, Name{"Low"} });
         shaderAOptions->Finalize();
-        auto shaderA = CreateTestShaderAsset(Uuid::CreateRandom(), m_testMaterialSrgAsset, shaderAOptions);
+        auto shaderA = CreateTestShaderAsset(Uuid::CreateRandom(), m_testMaterialSrgLayout, shaderAOptions);
 
         Ptr<ShaderOptionGroupLayout> shaderBOptions = ShaderOptionGroupLayout::Create();
         order = 0;
@@ -723,14 +706,14 @@ namespace UnitTest
         shaderBOptions->AddShaderOption(ShaderOptionDescriptor{ Name{"o_quality"}, ShaderOptionType::Enumeration, 2, order++, optionValues, Name{"Low"} });
         shaderBOptions->AddShaderOption(ShaderOptionDescriptor{ Name{"o_speed"}, ShaderOptionType::Enumeration, 4, order++, optionValues, Name{"Low"} });
         shaderBOptions->Finalize();
-        auto shaderB = CreateTestShaderAsset(Uuid::CreateRandom(), m_testMaterialSrgAsset, shaderBOptions);
+        auto shaderB = CreateTestShaderAsset(Uuid::CreateRandom(), m_testMaterialSrgLayout, shaderBOptions);
 
         Ptr<ShaderOptionGroupLayout> shaderCOptions = ShaderOptionGroupLayout::Create();
         order = 0;
         shaderCOptions->AddShaderOption(ShaderOptionDescriptor{ Name{"o_accuracy"}, ShaderOptionType::Enumeration, 0, order++, optionValues, Name{"Low"} });
         shaderCOptions->AddShaderOption(ShaderOptionDescriptor{ Name{"o_efficiency"}, ShaderOptionType::Enumeration, 2, order++, optionValues, Name{"Low"} });
         shaderCOptions->Finalize();
-        auto shaderC = CreateTestShaderAsset(Uuid::CreateRandom(), m_testMaterialSrgAsset, shaderCOptions);
+        auto shaderC = CreateTestShaderAsset(Uuid::CreateRandom(), m_testMaterialSrgLayout, shaderCOptions);
 
         Data::AssetInfo testShaderAssetInfo;
         testShaderAssetInfo.m_assetId = shaderA.GetId();
@@ -841,7 +824,7 @@ namespace UnitTest
         EXPECT_TRUE(nullptr != shaderInputFunctor);
         EXPECT_EQ(propertyIndex, shaderInputFunctor->m_floatIndex);
 
-        const RHI::ShaderInputConstantIndex expectedVector3Index = materialTypeAsset->GetMaterialSrgAsset()->GetLayout()->FindShaderInputConstantIndex(Name{ "m_float3" });
+        const RHI::ShaderInputConstantIndex expectedVector3Index = materialTypeAsset->GetMaterialSrgLayout()->FindShaderInputConstantIndex(Name{ "m_float3" });
         EXPECT_EQ(expectedVector3Index, shaderInputFunctor->m_vector3Index);
     }
 

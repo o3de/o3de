@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <Atom/RHI/DrawPacketBuilder.h>
@@ -51,8 +47,9 @@ namespace AZ
             // render pipeline state
             RPI::Ptr<RPI::PipelineStateForDraw> m_pipelineState;
 
-            // render Srg asset
-            Data::Asset<RPI::ShaderResourceGroupAsset> m_srgAsset;
+            // For the render Srg
+            Data::Instance<RPI::Shader> m_shader;
+            RHI::Ptr<RHI::ShaderResourceGroupLayout> m_srgLayout;
 
             // render drawlist tag
             RHI::DrawListTag m_drawListTag;
@@ -107,6 +104,9 @@ namespace AZ
             void DecrementRemainingRelocationIterations() { m_remainingRelocationIterations = AZStd::max(0, m_remainingRelocationIterations - 1); }
             void ResetRemainingRelocationIterations() { m_remainingRelocationIterations = DefaultNumRelocationIterations; }
 
+            void ResetCullingVisibility();
+            bool GetIsVisible() const;
+
             // compute total number of probes in the grid
             uint32_t GetTotalProbeCount() const;
 
@@ -129,12 +129,13 @@ namespace AZ
             const Data::Instance<RPI::ShaderResourceGroup>& GetRenderObjectSrg() const { return m_renderObjectSrg; }
 
             // Srg updates
-            void UpdateRayTraceSrg(const Data::Asset<RPI::ShaderResourceGroupAsset>& srgAsset);
-            void UpdateBlendIrradianceSrg(const Data::Asset<RPI::ShaderResourceGroupAsset>& srgAsset);
-            void UpdateBlendDistanceSrg(const Data::Asset<RPI::ShaderResourceGroupAsset>& srgAsset);
-            void UpdateBorderUpdateSrgs(const Data::Asset<RPI::ShaderResourceGroupAsset>& rowSrgAsset, const Data::Asset<RPI::ShaderResourceGroupAsset>& columnSrgAsset);
-            void UpdateRelocationSrg(const Data::Asset<RPI::ShaderResourceGroupAsset>& srgAsset);
-            void UpdateClassificationSrg(const Data::Asset<RPI::ShaderResourceGroupAsset>& srgAsset);
+            void UpdateRayTraceSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout);
+            void UpdateBlendIrradianceSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout);
+            void UpdateBlendDistanceSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout);
+            void UpdateBorderUpdateSrgs(const Data::Instance<RPI::Shader>& rowShader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& rowSrgLayout,
+                                        const Data::Instance<RPI::Shader>& columnShader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& columnSrgLayout);
+            void UpdateRelocationSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout);
+            void UpdateClassificationSrg(const Data::Instance<RPI::Shader>& shader, const RHI::Ptr<RHI::ShaderResourceGroupLayout>& srgLayout);
             void UpdateRenderObjectSrg();
 
             // textures

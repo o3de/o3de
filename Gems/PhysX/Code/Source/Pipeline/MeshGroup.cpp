@@ -1,27 +1,26 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-
-#include <PhysX_precompiled.h>
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Physics/PhysicsSystem.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <SceneAPI/SceneCore/DataTypes/Rules/IRule.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IBoneData.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMeshData.h>
 #include <SceneAPI/SceneData/Rules/MaterialRule.h>
+#include <SceneAPI/SceneCore/Containers/SceneGraph.h>
 
 #include <Source/Pipeline/MeshGroup.h>
+#include <Source/Pipeline/MeshExporter.h>
+#include <Source/Material.h>
 
 #include <PxPhysicsAPI.h>
 
@@ -577,7 +576,21 @@ namespace PhysX
 
         MeshGroup::MeshGroup()
             : m_id(AZ::Uuid::CreateRandom())
+            , m_materialLibraryChangedHandler(
+                [this](const AZ::Data::AssetId& materialLibraryAssetId)
+                {
+                    OnMaterialLibraryChanged(materialLibraryAssetId);
+                })
         {
+            if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
+            {
+                physicsSystem->RegisterOnMaterialLibraryChangedEventHandler(m_materialLibraryChangedHandler);
+            }
+        }
+
+        MeshGroup::~MeshGroup()
+        {
+            m_materialLibraryChangedHandler.Disconnect();
         }
 
         void MeshGroup::Reflect(AZ::ReflectContext* context)
@@ -602,6 +615,8 @@ namespace PhysX
                     ->Field("PrimitiveAssetParams", &MeshGroup::m_primitiveAssetParams)
                     ->Field("DecomposeMeshes", &MeshGroup::m_decomposeMeshes)
                     ->Field("ConvexDecompositionParams", &MeshGroup::m_convexDecompositionParams)
+                    ->Field("MaterialSlots", &MeshGroup::m_materialSlots)
+                    ->Field("PhysicsMaterials", &MeshGroup::m_physicsMaterials)
                     ->Field("rules", &MeshGroup::m_rules);
 
                 if (
@@ -622,6 +637,7 @@ namespace PhysX
                             "<span>Select the meshes to be included in the mesh group.</span>")
                             ->Attribute("FilterName", "meshes")
                             ->Attribute("FilterType", AZ::SceneAPI::DataTypes::IMeshData::TYPEINFO_Uuid())
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &MeshGroup::OnNodeSelectionChanged)
 
                         ->DataElement(AZ::Edit::UIHandlers::ComboBox, &MeshGroup::m_exportMethod, "Export As",
                             "<span>The cooking method to be applied to this mesh group. For the asset to be usable as "
@@ -629,14 +645,14 @@ namespace PhysX
                             ->EnumAttribute(MeshExportMethod::TriMesh, "Triangle Mesh")
                             ->EnumAttribute(MeshExportMethod::Convex, "Convex")
                             ->EnumAttribute(MeshExportMethod::Primitive, "Primitive")
-                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &MeshGroup::OnExportMethodChanged)
 
                         ->DataElement(AZ_CRC("DecomposeMeshes", 0xe0e2ac1e), &MeshGroup::m_decomposeMeshes, "Decompose Meshes",
                             "<span>If enables, this option will apply the V-HACD algorithm to split each node "
                             "into approximately convex parts. Each part will individually be exported as a convex "
                             "collider using the parameters configured above.</span>")
                             ->Attribute(AZ::Edit::Attributes::Visibility, &MeshGroup::GetDecomposeMeshesVisibility)
-                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, &MeshGroup::OnDecomposeMeshesChanged)
 
                         ->DataElement(AZ_CRC("TriangleMeshAssetParams", 0x1a408def), &MeshGroup::m_triangleMeshAssetParams, "Triangle Mesh Asset Parameters",
                             "<span>Configure the parameters controlling the exported triangle mesh asset.</span>")
@@ -657,6 +673,14 @@ namespace PhysX
                             "<span>Configure the parameters controlling the approximate convex decomposition algorithm.</span>")
                             ->Attribute(AZ::Edit::Attributes::Visibility, &MeshGroup::GetDecomposeMeshes)
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &MeshGroup::m_physicsMaterials, "Physics Materials",
+                            "<span>Configure which physics materials to use for each element.</span>")
+                            ->Attribute(AZ::Edit::Attributes::IndexedChildNameLabelOverride, &MeshGroup::GetMaterialSlotLabel)
+                            ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                            ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
+                            ->ElementAttribute(AZ::Edit::UIHandlers::Handler, AZ::Edit::UIHandlers::ComboBox)
+                            ->ElementAttribute(AZ::Edit::Attributes::StringList, &MeshGroup::GetPhysicsMaterialNames)
 
                         ->DataElement(AZ::Edit::UIHandlers::Default, &MeshGroup::m_rules, "",
                             "Add or remove rules to fine-tune the export process.")
@@ -708,6 +732,37 @@ namespace PhysX
         bool MeshGroup::GetDecomposeMeshes() const
         {
             return (GetExportAsConvex() || GetExportAsPrimitive()) && m_decomposeMeshes;
+        }
+
+        const AZStd::vector<AZStd::string>& MeshGroup::GetPhysicsMaterials() const
+        {
+            return m_physicsMaterials;
+        }
+
+        const AZStd::vector<AZStd::string>& MeshGroup::GetMaterialSlots() const
+        {
+            return m_materialSlots;
+        }
+
+        void MeshGroup::SetSceneGraph(const AZ::SceneAPI::Containers::SceneGraph* graph)
+        {
+            m_graph = graph;
+        }
+
+        void MeshGroup::UpdateMaterialSlots()
+        {
+            if (!m_graph)
+            {
+                return;
+            }
+
+            AZStd::optional<Utils::AssetMaterialsData> assetMaterialData = Utils::GatherMaterialsFromMeshGroup(*this, *m_graph);
+            if (!assetMaterialData)
+            {
+                return;
+            }
+
+            Utils::UpdateAssetPhysicsMaterials(assetMaterialData->m_sourceSceneMaterialNames, m_materialSlots, m_physicsMaterials);
         }
 
         AZ::SceneAPI::Containers::RuleContainer& MeshGroup::GetRuleContainer()
@@ -770,9 +825,77 @@ namespace PhysX
             return m_convexDecompositionParams;
         }
 
+        AZ::u32 MeshGroup::OnNodeSelectionChanged()
+        {
+            UpdateMaterialSlots();
+            return AZ::Edit::PropertyRefreshLevels::EntireTree;
+        }
+
+        AZ::u32 MeshGroup::OnExportMethodChanged()
+        {
+            UpdateMaterialSlots();
+            return AZ::Edit::PropertyRefreshLevels::EntireTree;
+        }
+
+        AZ::u32 MeshGroup::OnDecomposeMeshesChanged()
+        {
+            UpdateMaterialSlots();
+            return AZ::Edit::PropertyRefreshLevels::EntireTree;
+        }
+
         bool MeshGroup::GetDecomposeMeshesVisibility() const
         {
             return GetExportAsConvex() || GetExportAsPrimitive();
+        }
+
+        AZStd::string MeshGroup::GetMaterialSlotLabel(int index) const
+        {
+            if (index < m_materialSlots.size())
+            {
+                // When limited to one material, clarify in the label the material
+                // will be used for the entire object.
+                if (index == 0 && (GetExportAsConvex() || GetExportAsPrimitive()))
+                {
+                    return m_materialSlots[index] + " (entire object)";
+                }
+                else
+                {
+                    return m_materialSlots[index];
+                }
+            }
+            else
+            {
+                return "<Unknown>";
+            }
+        }
+
+        AZStd::vector<AZStd::string> MeshGroup::GetPhysicsMaterialNames() const
+        {
+            if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
+            {
+                if (const auto* physicsConfiguration = physicsSystem->GetConfiguration())
+                {
+                    const auto& materials = physicsConfiguration->m_materialLibraryAsset->GetMaterialsData();
+
+                    AZStd::vector<AZStd::string> physicsMaterialNames;
+                    physicsMaterialNames.reserve(materials.size() + 1);
+
+                    physicsMaterialNames.emplace_back(Physics::DefaultPhysicsMaterialLabel);
+                    for (const auto& material : materials)
+                    {
+                        physicsMaterialNames.emplace_back(material.m_configuration.m_surfaceType);
+                    }
+
+                    return physicsMaterialNames;
+                }
+            }
+            return {Physics::DefaultPhysicsMaterialLabel};
+        }
+
+        void MeshGroup::OnMaterialLibraryChanged([[maybe_unused]] const AZ::Data::AssetId& materialLibraryAssetId)
+        {
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
+                AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
         }
 
         bool MeshGroup::VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)

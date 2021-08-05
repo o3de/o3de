@@ -1,12 +1,9 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 #
 
 
@@ -16,6 +13,7 @@ set_property(GLOBAL PROPERTY LAUNCHER_UNIFIED_BINARY_DIR ${CMAKE_CURRENT_BINARY_
 # When using an installed engine, this file will be included by the FindLauncherGenerator.cmake script
 get_property(LY_PROJECTS_TARGET_NAME GLOBAL PROPERTY LY_PROJECTS_TARGET_NAME)
 foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJECTS)
+    
     # Computes the realpath to the project
     # If the project_path is relative, it is evaluated relative to the ${LY_ROOT_FOLDER}
     # Otherwise the the absolute project_path is returned with symlinks resolved
@@ -25,7 +23,7 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
             message(FATAL_ERROR "The specified project path of ${project_real_path} does not contain a project.json file")
         else()
             # Add the project_name to global LY_PROJECTS_TARGET_NAME property
-            file(READ "${project_real_path}/project.json" project_json)
+            ly_file_read("${project_real_path}/project.json" project_json)
             string(JSON project_name ERROR_VARIABLE json_error GET ${project_json} "project_name")
             if(json_error)
                 message(FATAL_ERROR "There is an error reading the \"project_name\" key from the '${project_real_path}/project.json' file: ${json_error}")
@@ -35,6 +33,28 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
                 "to the LY_PROJECTS_TARGET_NAME global property. Other configuration errors might occur")
         endif()
     endif()
+
+    ################################################################################
+    # Assets
+    ################################################################################
+    if(PAL_TRAIT_BUILD_HOST_TOOLS)
+        add_custom_target(${project_name}.Assets
+            COMMENT "Processing ${project_name} assets..."
+            COMMAND "${CMAKE_COMMAND}" 
+                -DLY_LOCK_FILE=$<GENEX_EVAL:$<TARGET_FILE_DIR:AZ::AssetProcessorBatch>>/project_assets.lock
+                -P ${LY_ROOT_FOLDER}/cmake/CommandExecution.cmake
+                    EXEC_COMMAND $<GENEX_EVAL:$<TARGET_FILE:AZ::AssetProcessorBatch>>
+                        --zeroAnalysisMode 
+                        --project-path=${project_real_path} 
+                        --platforms=${LY_ASSET_DEPLOY_ASSET_TYPE}
+        )
+        set_target_properties(${project_name}.Assets
+            PROPERTIES 
+                EXCLUDE_FROM_ALL TRUE
+                FOLDER ${project_name}
+        )
+    endif()
+
     ################################################################################
     # Monolithic game
     ################################################################################
@@ -103,6 +123,12 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
             FOLDER ${project_name}
     )
 
+    # After ensuring that we correctly support DPI scaling, this should be switched to "PerMonitor"
+    set_property(TARGET ${project_name}.GameLauncher APPEND PROPERTY VS_DPI_AWARE "OFF")
+    if(LY_DEFAULT_PROJECT_PATH)
+        set_property(TARGET ${project_name}.GameLauncher APPEND PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "--project-path=\"${LY_DEFAULT_PROJECT_PATH}\"")
+    endif()
+
     ################################################################################
     # Server
     ################################################################################
@@ -143,6 +169,10 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
                 PROPERTIES 
                     FOLDER ${project_name}
             )
+
+            if(LY_DEFAULT_PROJECT_PATH)
+                set_property(TARGET ${project_name}.ServerLauncher APPEND PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "--project-path=\"${LY_DEFAULT_PROJECT_PATH}\"")
+            endif()
         endif()
 
     endif()
@@ -165,6 +195,16 @@ function(ly_delayed_generate_static_modules_inl)
             ly_get_gem_load_dependencies(all_game_gem_dependencies ${project_name}.GameLauncher)
 
             foreach(game_gem_dependency ${all_game_gem_dependencies})
+                # Sometimes, a gem's Client variant may be an interface library
+                # which dependes on multiple gem targets. The interface libraries
+                # should be skipped; the real dependencies of the interface will be processed
+                if(TARGET ${game_gem_dependency})
+                    get_target_property(target_type ${game_gem_dependency} TYPE)
+                    if(${target_type} STREQUAL "INTERFACE_LIBRARY")
+                        continue()
+                    endif()
+                endif()
+
                 # To match the convention on how gems targets vs gem modules are named,
                 # we remove the ".Static" from the suffix
                 # Replace "." with "_"
@@ -193,6 +233,14 @@ function(ly_delayed_generate_static_modules_inl)
                     list(APPEND all_server_gem_dependencies ${server_gem_load_dependencies} ${server_gem_dependency})
                 endforeach()
                 foreach(server_gem_dependency ${all_server_gem_dependencies})
+                    # Skip interface libraries
+                    if(TARGET ${server_gem_dependency})
+                        get_target_property(target_type ${server_gem_dependency} TYPE)
+                        if(${target_type} STREQUAL "INTERFACE_LIBRARY")
+                            continue()
+                        endif()
+                    endif()
+
                     # Replace "." with "_"
                     string(REPLACE "." "_" server_gem_dependency ${server_gem_dependency})
 

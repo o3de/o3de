@@ -1,12 +1,9 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 #
 
 # This file is temporarly a tweaked version of the o3de's root CMakeLists.txt
@@ -22,6 +19,8 @@ o3de_current_file_path(current_path)
 
 # Make sure we are matching LY_ENGINE_NAME_TO_USE with the current engine
 file(READ ${current_path}/../engine.json engine_json)
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${current_path}/../engine.json)
+
 string(JSON this_engine_name ERROR_VARIABLE json_error GET ${engine_json} engine_name)
 if(json_error)
     message(FATAL_ERROR "Unable to read key 'engine_name' from '${current_path}/../engine.json', error: ${json_error}")

@@ -77,7 +77,7 @@
 // UNDISCLOSED.
 //
 // -----------------------------------------------------------------------------
-// Modifications copyright Amazon.com, Inc. or its affiliates.
+// Modified from original
 //
 
 //

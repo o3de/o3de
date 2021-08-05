@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <RayTracing/RayTracingFeatureProcessor.h>
 #include <AzCore/Debug/EventTrace.h>
@@ -65,19 +61,22 @@ namespace AZ
             // create the TLAS object
             m_tlas = AZ::RHI::RayTracingTlas::CreateRHIRayTracingTlas();
 
-            // load the RayTracingSceneSrg asset
-            Data::Asset<RPI::ShaderResourceGroupAsset> rayTracingSceneSrgAsset =
-                RPI::AssetUtils::LoadAssetByProductPath<RPI::ShaderResourceGroupAsset>("shaderlib/atom/features/raytracing/raytracingscenesrg_raytracingscenesrg.azsrg", RPI::AssetUtils::TraceLevel::Error);
-            AZ_Assert(rayTracingSceneSrgAsset.IsReady(), "Failed to load RayTracingSceneSrg asset");
+            // load the RayTracingSrg asset asset
+            m_rayTracingSrgAsset = RPI::AssetUtils::LoadCriticalAsset<RPI::ShaderAsset>("shaderlib/atom/features/rayTracing/raytracingsrgs.azshader");
+            if (!m_rayTracingSrgAsset.IsReady())
+            {
+                AZ_Assert(false, "Failed to load RayTracingSrg asset");
+                return;
+            }
 
-            m_rayTracingSceneSrg = RPI::ShaderResourceGroup::Create(rayTracingSceneSrgAsset);
+            // create the RayTracingSceneSrg
+            m_rayTracingSceneSrg = RPI::ShaderResourceGroup::Create(m_rayTracingSrgAsset, Name("RayTracingSceneSrg"));
+            AZ_Assert(m_rayTracingSceneSrg, "Failed to create RayTracingSceneSrg");
 
-            // load the RayTracingMaterialSrg asset
-            Data::Asset<RPI::ShaderResourceGroupAsset> rayTracingMaterialSrgAsset =
-                RPI::AssetUtils::LoadAssetByProductPath<RPI::ShaderResourceGroupAsset>("shaderlib/atom/features/raytracing/raytracingmaterialsrg_raytracingmaterialsrg.azsrg", RPI::AssetUtils::TraceLevel::Error);
-            AZ_Assert(rayTracingMaterialSrgAsset.IsReady(), "Failed to load RayTracingMaterialSrg asset");
-
-            m_rayTracingMaterialSrg = RPI::ShaderResourceGroup::Create(rayTracingMaterialSrgAsset);
+            // create the RayTracingMaterialSrg
+            const AZ::Name rayTracingMaterialSrgName("RayTracingMaterialSrg");
+            m_rayTracingMaterialSrg = RPI::ShaderResourceGroup::Create(m_rayTracingSrgAsset, Name("RayTracingMaterialSrg"));
+            AZ_Assert(m_rayTracingMaterialSrg, "Failed to create RayTracingMaterialSrg");
         }
 
         void RayTracingFeatureProcessor::SetMesh(const ObjectId objectId, const SubMeshVector& subMeshes)
@@ -243,8 +242,16 @@ namespace AZ
                         meshInfo.m_indexOffset = subMesh.m_indexBufferView.GetByteOffset();
                         meshInfo.m_positionOffset = subMesh.m_positionVertexBufferView.GetByteOffset();
                         meshInfo.m_normalOffset = subMesh.m_normalVertexBufferView.GetByteOffset();
-                        meshInfo.m_tangentOffset = subMesh.m_tangentVertexBufferView.GetByteOffset();
-                        meshInfo.m_bitangentOffset = subMesh.m_bitangentVertexBufferView.GetByteOffset();
+
+                        if (RHI::CheckBitsAll(subMesh.m_bufferFlags, RayTracingSubMeshBufferFlags::Tangent))
+                        {
+                            meshInfo.m_tangentOffset = subMesh.m_tangentVertexBufferView.GetByteOffset();
+                        }
+
+                        if (RHI::CheckBitsAll(subMesh.m_bufferFlags, RayTracingSubMeshBufferFlags::Bitangent))
+                        {
+                            meshInfo.m_bitangentOffset = subMesh.m_bitangentVertexBufferView.GetByteOffset();
+                        }
 
                         if (RHI::CheckBitsAll(subMesh.m_bufferFlags, RayTracingSubMeshBufferFlags::UV))
                         {
@@ -257,8 +264,8 @@ namespace AZ
                         meshInfo.m_bufferStartIndex = bufferStartIndex;
 
                         // add the count of buffers present in this subMesh to the start index for the next subMesh
-                        // note that the Index, Position, Normal, Tangent, and Bitangent buffers are always counted since they are guaranteed
-                        static const uint32_t RayTracingSubMeshFixedStreamCount = 5;
+                        // note that the Index, Position, and Normal buffers are always counted since they are guaranteed
+                        static const uint32_t RayTracingSubMeshFixedStreamCount = 3;
                         bufferStartIndex += (RayTracingSubMeshFixedStreamCount + RHI::CountBitsSet(aznumeric_cast<uint32_t>(meshInfo.m_bufferFlags)));
 
                         meshInfos.emplace_back(meshInfo);
@@ -423,8 +430,16 @@ namespace AZ
                         meshBuffers.push_back(subMesh.m_indexShaderBufferView.get());
                         meshBuffers.push_back(subMesh.m_positionShaderBufferView.get());
                         meshBuffers.push_back(subMesh.m_normalShaderBufferView.get());
-                        meshBuffers.push_back(subMesh.m_tangentShaderBufferView.get());
-                        meshBuffers.push_back(subMesh.m_bitangentShaderBufferView.get());
+
+                        if (RHI::CheckBitsAll(subMesh.m_bufferFlags, RayTracingSubMeshBufferFlags::Tangent))
+                        {
+                            meshBuffers.push_back(subMesh.m_tangentShaderBufferView.get());
+                        }
+
+                        if (RHI::CheckBitsAll(subMesh.m_bufferFlags, RayTracingSubMeshBufferFlags::Bitangent))
+                        {
+                            meshBuffers.push_back(subMesh.m_bitangentShaderBufferView.get());
+                        }
 
                         if (RHI::CheckBitsAll(subMesh.m_bufferFlags, RayTracingSubMeshBufferFlags::UV))
                         {

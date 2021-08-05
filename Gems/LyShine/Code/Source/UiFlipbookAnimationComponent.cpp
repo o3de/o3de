@@ -1,16 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-#include "LyShine_precompiled.h"
-
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "UiFlipbookAnimationComponent.h"
 
 #include <AzCore/Serialization/EditContext.h>
@@ -18,6 +12,7 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 #include <LyShine/Bus/UiGameEntityContextBus.h>
 #include <LyShine/Bus/UiElementBus.h>
@@ -137,6 +132,29 @@ public:
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+static bool UiFlipbookAnimationComponentVersionConverter(AZ::SerializeContext& context,
+    AZ::SerializeContext::DataElementNode& classElement)
+{
+    // conversion from version 2:
+    // - Rename "frame delay" to "framerate"
+    // - Set "framerate unit" to seconds (default moving forward is FPS, but we use seconds for legacy compatibility)
+    if (classElement.GetVersion() <= 2)
+    {
+        if (!ConvertFrameDelayToFramerate(context, classElement))
+        {
+            return false;
+        }
+
+        if (!ConvertFramerateUnitToSeconds(context, classElement))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void UiFlipbookAnimationComponent::Reflect(AZ::ReflectContext* context)
 {
@@ -144,7 +162,7 @@ void UiFlipbookAnimationComponent::Reflect(AZ::ReflectContext* context)
     if (serializeContext)
     {
         serializeContext->Class<UiFlipbookAnimationComponent, AZ::Component>()
-            ->Version(3, &VersionConverter)
+            ->Version(3, &UiFlipbookAnimationComponentVersionConverter)
             ->Field("Start Frame", &UiFlipbookAnimationComponent::m_startFrame)
             ->Field("End Frame", &UiFlipbookAnimationComponent::m_endFrame)
             ->Field("Loop Start Frame", &UiFlipbookAnimationComponent::m_loopStartFrame)
@@ -166,7 +184,7 @@ void UiFlipbookAnimationComponent::Reflect(AZ::ReflectContext* context)
             editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute(AZ::Edit::Attributes::Category, "UI")
                 ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Flipbook.png")
-                ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Flipbook.png")
+                ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Flipbook.svg")
                 ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("UI"))
                 ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
             ;
@@ -272,29 +290,6 @@ void UiFlipbookAnimationComponent::Reflect(AZ::ReflectContext* context)
             ->Enum<(int)UiFlipbookAnimationInterface::FramerateUnits::SecondsPerFrame>("eUiFlipbookAnimationFramerateUnits_SecondsPerFrame")
             ;
     }
-}
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-bool UiFlipbookAnimationComponent::VersionConverter(AZ::SerializeContext& context,
-    AZ::SerializeContext::DataElementNode& classElement)
-{
-    // conversion from version 2:
-    // - Rename "frame delay" to "framerate"
-    // - Set "framerate unit" to seconds (default moving forward is FPS, but we use seconds for legacy compatibility)
-    if (classElement.GetVersion() <= 2)
-    {
-        if (!ConvertFrameDelayToFramerate(context, classElement))
-        {
-            return false;
-        }
-
-        if (!ConvertFramerateUnitToSeconds(context, classElement))
-        {
-            return false;
-        }
-    }
-
-    return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

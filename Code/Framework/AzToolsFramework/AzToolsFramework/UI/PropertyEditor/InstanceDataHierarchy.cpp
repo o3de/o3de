@@ -1,15 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-#include "AzToolsFramework_precompiled.h"
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "InstanceDataHierarchy.h"
 #include <AzCore/std/bind/bind.h>
 #include <AzCore/std/functional.h>
@@ -551,7 +546,7 @@ namespace AzToolsFramework
 
             for (auto& element : nodeEditData->m_elements)
             {
-                if (element.IsClassElement() && element.m_elementId == AZ::Edit::ClassElements::Group)
+                if (element.m_elementId == AZ::Edit::ClassElements::Group)
                 {
                     groupData = (element.m_description && element.m_description[0]) ? &element : nullptr;
                     continue;
@@ -1117,13 +1112,14 @@ namespace AzToolsFramework
             const AZ::Edit::ElementData* groupData = nullptr;
             for (const AZ::Edit::ElementData& elementData : parentEditData->m_elements)
             {
-                if (node->m_elementEditData == &elementData) // this element matches this node
+                // this element matches this node
+                if ((node->m_elementEditData == &elementData) && (elementData.m_elementId != AZ::Edit::ClassElements::Group))
                 {
                     // Record the last found group data
                     node->m_groupElementData = groupData;
                     break;
                 }
-                else if (elementData.IsClassElement() && elementData.m_elementId == AZ::Edit::ClassElements::Group)
+                else if (elementData.m_elementId == AZ::Edit::ClassElements::Group)
                 {
                     if (!elementData.m_description || !elementData.m_description[0])
                     { // close the group

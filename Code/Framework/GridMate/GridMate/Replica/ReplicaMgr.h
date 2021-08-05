@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #ifndef GM_REPLICAMGR_H
 #define GM_REPLICAMGR_H
 
@@ -463,7 +459,7 @@ namespace GridMate
             }
         };
         static bool                                 k_enableBackPressure;
-        AZStd::priority_queue<RateConnectionPair>   m_connByCongestionState;      ///< Connections priority queue sorted by congestion window
+        AZStd::vector<RateConnectionPair>   m_connByCongestionState;      ///< Connections priority queue sorted by congestion window
         /***
         * Updates connection's rate in priority and updates send limit
         *
@@ -483,7 +479,9 @@ namespace GridMate
             }
             AZ_Assert(carrier, "NULL carrier!");
 
-            m_connByCongestionState.emplace(RateConnectionPair(AZ::u32(1500), id)); //default to 1500Bps (ex 1 Ethernet frame/second minimum)
+            m_connByCongestionState.emplace_back(AZ::u32(1500), id); //default to 1500Bps (ex 1 Ethernet frame/second minimum)
+            // Restore the heap property after pushing back another element
+            AZStd::push_heap(m_connByCongestionState.begin(), m_connByCongestionState.end());
         }
         void OnDisconnect(Carrier* carrier, ConnectionID id, CarrierDisconnectReason reason) override
         {
@@ -494,17 +492,17 @@ namespace GridMate
             }
             AZ_Assert(carrier, "NULL carrier!");
 
-            auto connIt = AZStd::find(m_connByCongestionState.get_container().begin(), m_connByCongestionState.get_container().end(), id);
-            if (connIt != m_connByCongestionState.get_container().end())
+            auto connIt = AZStd::find(m_connByCongestionState.begin(), m_connByCongestionState.end(), id);
+            if (connIt != m_connByCongestionState.end())
             {
                 //Since we are using a weakly sorted heap, we need to re-generate when the top is removed
-                bool remake = (connIt == m_connByCongestionState.get_container().begin());
+                bool remake = (connIt == m_connByCongestionState.begin());
 
-                m_connByCongestionState.get_container().erase(connIt);
+                m_connByCongestionState.erase(connIt);
 
                 if (remake)
                 {
-                    AZStd::make_heap(m_connByCongestionState.get_container().begin(), m_connByCongestionState.get_container().end());
+                    AZStd::make_heap(m_connByCongestionState.begin(), m_connByCongestionState.end());
                 }
             }
         }

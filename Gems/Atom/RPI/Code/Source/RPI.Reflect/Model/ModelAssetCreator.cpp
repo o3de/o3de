@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RPI.Reflect/Model/ModelAssetCreator.h>
 #include <Atom/RPI.Reflect/Model/ModelLodAssetCreator.h>
@@ -31,6 +27,33 @@ namespace AZ
             if (ValidateIsReady())
             {
                 m_asset->m_name = name;
+            }
+        }
+        
+        void ModelAssetCreator::AddMaterialSlot(const ModelMaterialSlot& materialSlot)
+        {
+            if (ValidateIsReady())
+            {
+                auto iter = m_asset->m_materialSlots.find(materialSlot.m_stableId);
+
+                if (iter == m_asset->m_materialSlots.end())
+                {
+                    m_asset->m_materialSlots[materialSlot.m_stableId] = materialSlot;
+                }
+                else
+                {
+                    if (materialSlot.m_displayName != iter->second.m_displayName)
+                    {
+                        ReportWarning("Material slot %u was already added with a different name.", materialSlot.m_stableId);
+                    }
+
+                    if (materialSlot.m_defaultMaterialAsset != iter->second.m_defaultMaterialAsset)
+                    {
+                        ReportWarning("Material slot %u was already added with a different default MaterialAsset.", materialSlot.m_stableId);
+                    }
+
+                    iter->second = materialSlot;
+                }
             }
         }
 

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzTest/AzTest.h>
 #include <utilities/BatchApplicationManager.h>
@@ -28,7 +24,7 @@ namespace AssetProcessorMessagesTests
     using namespace AssetProcessor;
     using namespace AssetBuilderSDK;
 
-    static constexpr unsigned short AssetProcessorPort = static_cast<unsigned short>(888u);
+    static constexpr unsigned short AssetProcessorPort{65535u};
 
     class AssetProcessorMessages;
 
@@ -85,7 +81,6 @@ namespace AssetProcessorMessagesTests
     public:
         void SetUp() override
         {
-#if !AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
             AssetUtilities::ResetGameName();
 
             m_temporarySourceDir = QDir(m_temporaryDir.path());
@@ -166,12 +161,10 @@ namespace AssetProcessorMessagesTests
                 });
 
             
-#endif // !AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
         }
 
         void TearDown() override
         {
-#if !AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
             QEventLoop eventLoop;
 
             QObject::connect(m_batchApplicationManager->m_connectionManager, &ConnectionManager::ReadyToQuit, &eventLoop, &QEventLoop::quit);
@@ -182,7 +175,6 @@ namespace AssetProcessorMessagesTests
 
             m_assetSystemComponent->Deactivate();
             m_batchApplicationManager->Destroy();
-#endif // !AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
         }
 
         void RunNetworkRequest(AZStd::function<void()> func) const
@@ -207,6 +199,7 @@ namespace AssetProcessorMessagesTests
 
             thread.join();
         }
+        
     protected:
 
         MockAssetRequestHandler* m_assetRequestHandler{}; // Not owned, AP will delete this pointer
@@ -226,11 +219,7 @@ namespace AssetProcessorMessagesTests
         AZStd::unique_ptr<AzFramework::AssetSystem::BaseAssetProcessorMessage> m_response;
     };
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
-    TEST_F(AssetProcessorMessages, DISABLED_All)
-#else
     TEST_F(AssetProcessorMessages, All)
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
     {
         // Test that we can successfully send network messages and have them arrive for processing
         // For messages that have a response, it also verifies the response comes back
@@ -311,11 +300,7 @@ namespace AssetProcessorMessagesTests
             });
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
-    TEST_F(AssetProcessorMessages, DISABLED_GetUnresolvedProductReferences_Succeeds)
-#else
     TEST_F(AssetProcessorMessages, GetUnresolvedProductReferences_Succeeds)
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
     {
         using namespace AzToolsFramework::AssetDatabase;
 

@@ -1,15 +1,11 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 #pragma once
 
@@ -904,25 +900,38 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
 #if !defined(AUDIO_RELEASE)
     // Filter for drawing debug info to the screen
-    enum EAudioDebugDrawFilter : TATLEnumFlagsType
+    namespace DebugDraw
     {
-        eADDF_NONE                          = 0,
-        eADDF_DRAW_SPHERES                  = AUDIO_BIT(6),// a
-        eADDF_SHOW_OBJECT_LABEL             = AUDIO_BIT(7),// b
-        eADDF_SHOW_OBJECT_TRIGGERS          = AUDIO_BIT(8),// c
-        eADDF_SHOW_OBJECT_STATES            = AUDIO_BIT(9),// d
-        eADDF_SHOW_OBJECT_RTPCS             = AUDIO_BIT(10),// e
-        eADDF_SHOW_OBJECT_ENVIRONMENTS      = AUDIO_BIT(11),// f
-        eADDF_DRAW_OBSTRUCTION_RAYS         = AUDIO_BIT(12),// g
-        eADDF_SHOW_OBSTRUCTION_RAY_LABELS   = AUDIO_BIT(13),// h
-        eADDF_DRAW_LISTENER_SPHERE          = AUDIO_BIT(14),// i
+        enum Options : AZ::u32
+        {
+            None = 0,
+            DrawObjects = (1 << 0),
+            ObjectLabels = (1 << 1),
+            ObjectTriggers = (1 << 2),
+            ObjectStates = (1 << 3),
+            ObjectRtpcs = (1 << 4),
+            ObjectEnvironments = (1 << 5),
+            DrawRays = (1 << 6),
+            RayLabels = (1 << 7),
+            DrawListener = (1 << 8),
+            ActiveEvents = (1 << 9),
+            ActiveObjects = (1 << 10),
+            FileCacheInfo = (1 << 11),
+            MemoryInfo = (1 << 12),
+        };
+    }
 
-        eADDF_SHOW_ACTIVE_EVENTS            = AUDIO_BIT(27),// v
-        eADDF_SHOW_ACTIVE_OBJECTS           = AUDIO_BIT(28),// w
-        eADDF_SHOW_FILECACHE_MANAGER_INFO   = AUDIO_BIT(29),// x
-
-        eADDF_SHOW_IMPL_MEMORY_POOL_USAGE   = AUDIO_BIT(30),// y
-    };
+    namespace FileCacheManagerDebugDraw
+    {
+        enum Options : AZ::u8
+        {
+            All = 0,
+            Global = (1 << 0),
+            LevelSpecific = (1 << 1),
+            UseCounted = (1 << 2),
+            Loaded = (1 << 3),
+        };
+    }
 #endif // !AUDIO_RELEASE
 
 } // namespace Audio

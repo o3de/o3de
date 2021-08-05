@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <ImGui/ImGuiPass.h>
 
@@ -466,19 +462,14 @@ namespace AZ
 
             // Get shader resource group
             {
-                auto perObjectSrgAsset = m_shader->FindShaderResourceGroupAsset(Name{"ObjectSrg"});
-                if (!perObjectSrgAsset.GetId().IsValid())
+                auto perObjectSrgLayout = m_shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Object);
+                if (!perObjectSrgLayout)
                 {
-                    AZ_Error(PassName, false, "Failed to get shader resource group asset");
-                    return;
-                }
-                else if (!perObjectSrgAsset.IsReady())
-                {
-                    AZ_Error(PassName, false, "Shader resource group asset is not loaded");
+                    AZ_Error(PassName, false, "Failed to get shader resource group layout");
                     return;
                 }
 
-                m_resourceGroup = RPI::ShaderResourceGroup::Create(perObjectSrgAsset);
+                m_resourceGroup = RPI::ShaderResourceGroup::Create(m_shader->GetAsset(), m_shader->GetSupervariantIndex(), perObjectSrgLayout->GetName());
                 if (!m_resourceGroup)
                 {
                     AZ_Error(PassName, false, "Failed to create shader resource group");
@@ -519,13 +510,13 @@ namespace AZ
             io.Fonts->TexID = reinterpret_cast<ImTextureID>(m_fontAtlas.get());
         }
 
-        void ImGuiPass::OnBuildAttachmentsFinishedInternal()
+        void ImGuiPass::InitializeInternal()
         {
             // Set output format and finalize pipeline state
             m_pipelineState->SetOutputFromPass(this);
             m_pipelineState->Finalize();
 
-            Base::OnBuildAttachmentsFinishedInternal();
+            Base::InitializeInternal();
         }
 
         void ImGuiPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)

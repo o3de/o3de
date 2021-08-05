@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <native/resourcecompiler/RCQueueSortModel.h>
 #include "rcjoblistmodel.h"
 
@@ -201,10 +197,20 @@ namespace AssetProcessor
         {
             return priorityLeft > priorityRight;
         }
+
+        // Optionally stabilize queue order on the source name.
+        // This is used in automated tests, to allow tests to have a stable
+        // order that jobs with otherwise equal priority run, so tests process
+        // assets in the same order each time they are run.
+        if (m_sortQueueOnDBSourceName)
+        {
+            return leftJob->GetJobEntry().m_databaseSourceName < rightJob->GetJobEntry().m_databaseSourceName;
+        }
         
         // if we get all the way down here it means we're dealing with two assets which are not
         // in any compile groups, not a priority platform, not a priority type, priority platform, etc.
         // we can arrange these any way we want, but must pick at least a stable order.
+
         return leftJob->GetJobEntry().m_jobRunKey < rightJob->GetJobEntry().m_jobRunKey;
     }
 

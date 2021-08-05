@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Multiplayer/Components/NetworkTransformComponent.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -65,18 +61,21 @@ namespace Multiplayer
     {
         m_previousTransform.SetRotation(m_targetTransform.GetRotation());
         m_targetTransform.SetRotation(rotation);
+        UpdateTargetHostFrameId();
     }
 
     void NetworkTransformComponent::OnTranslationChangedEvent(const AZ::Vector3& translation)
     {
         m_previousTransform.SetTranslation(m_targetTransform.GetTranslation());
         m_targetTransform.SetTranslation(translation);
+        UpdateTargetHostFrameId();
     }
 
     void NetworkTransformComponent::OnScaleChangedEvent(float scale)
     {
         m_previousTransform.SetUniformScale(m_targetTransform.GetUniformScale());
         m_targetTransform.SetUniformScale(scale);
+        UpdateTargetHostFrameId();
     }
 
     void NetworkTransformComponent::OnResetCountChangedEvent()
@@ -87,15 +86,36 @@ namespace Multiplayer
         m_previousTransform = m_targetTransform;
     }
 
+    void NetworkTransformComponent::UpdateTargetHostFrameId()
+    {
+        HostFrameId currentHostFrameId = Multiplayer::GetNetworkTime()->GetHostFrameId();
+        if (currentHostFrameId > m_targetHostFrameId)
+        {
+            m_targetHostFrameId = currentHostFrameId;
+        }
+    }
+
     void NetworkTransformComponent::OnPreRender([[maybe_unused]] float deltaTime, float blendFactor)
     {
         if (!HasController())
         {
             AZ::Transform blendTransform;
-            blendTransform.SetRotation(m_previousTransform.GetRotation().Slerp(m_targetTransform.GetRotation(), blendFactor));
-            blendTransform.SetTranslation(m_previousTransform.GetTranslation().Lerp(m_targetTransform.GetTranslation(), blendFactor));
-            blendTransform.SetUniformScale(AZ::Lerp(m_previousTransform.GetUniformScale(), m_targetTransform.GetUniformScale(), blendFactor));
-            GetTransformComponent()->SetWorldTM(blendTransform);
+            if (Multiplayer::GetNetworkTime() && Multiplayer::GetNetworkTime()->GetHostFrameId() > m_targetHostFrameId)
+            {
+                m_previousTransform = m_targetTransform;
+                blendTransform = m_targetTransform;
+            }
+            else
+            {
+                blendTransform.SetRotation(m_previousTransform.GetRotation().Slerp(m_targetTransform.GetRotation(), blendFactor));
+                blendTransform.SetTranslation(m_previousTransform.GetTranslation().Lerp(m_targetTransform.GetTranslation(), blendFactor));
+                blendTransform.SetUniformScale(AZ::Lerp(m_previousTransform.GetUniformScale(), m_targetTransform.GetUniformScale(), blendFactor));
+            }
+
+            if (!GetTransformComponent()->GetWorldTM().IsClose(blendTransform))
+            {
+                GetTransformComponent()->SetWorldTM(blendTransform);
+            }
         }
     }
 

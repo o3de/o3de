@@ -1,16 +1,11 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
-#include "Vegetation_precompiled.h"
 #include "MeshBlockerComponent.h"
 
 #include <AzCore/Debug/Profiler.h>
@@ -135,15 +130,25 @@ namespace Vegetation
         }
     }
 
+    MeshBlockerComponent::MeshBlockerComponent()
+        : AreaComponentBase()
+        , m_nonUniformScaleChangedHandler([this]([[maybe_unused]] const AZ::Vector3& scale) { this->OnCompositionChanged(); })
+    {
+    }
+
     MeshBlockerComponent::MeshBlockerComponent(const MeshBlockerConfig& configuration)
         : AreaComponentBase(configuration)
         , m_configuration(configuration)
+        , m_nonUniformScaleChangedHandler([this]([[maybe_unused]] const AZ::Vector3& scale) { this->OnCompositionChanged(); })
     {
     }
 
     void MeshBlockerComponent::Activate()
     {
         AZ::Render::MeshComponentNotificationBus::Handler::BusConnect(GetEntityId());
+
+        AZ::NonUniformScaleRequestBus::Event(
+            GetEntityId(), &AZ::NonUniformScaleRequests::RegisterScaleChangedEvent, m_nonUniformScaleChangedHandler);
 
         UpdateMeshData();
         m_refresh = false;
@@ -159,6 +164,7 @@ namespace Vegetation
     {
         AreaComponentBase::Deactivate(); //must deactivate base first to ensure AreaRequestBus disconnect waits for other threads
 
+        m_nonUniformScaleChangedHandler.Disconnect();
         SurfaceData::SurfaceDataSystemNotificationBus::Handler::BusDisconnect();
 
         m_refresh = false;
@@ -266,9 +272,10 @@ namespace Vegetation
 
         AZ::Vector3 outPosition;
         AZ::Vector3 outNormal;
-        const AZ::Vector3 rayOrigin(point.m_position.GetX(), point.m_position.GetY(), m_meshBoundsForIntersection.GetMax().GetZ());
-        const AZ::Vector3 rayDirection = -AZ::Vector3::CreateAxisZ();
-        bool intersected = SurfaceData::GetMeshRayIntersection(*mesh, m_meshWorldTM, m_meshWorldTMInverse, rayOrigin, rayDirection, outPosition, outNormal) &&
+        const AZ::Vector3 rayStart(point.m_position.GetX(), point.m_position.GetY(), m_meshBoundsForIntersection.GetMax().GetZ());
+        const AZ::Vector3 rayEnd(point.m_position.GetX(), point.m_position.GetY(), m_meshBoundsForIntersection.GetMin().GetZ());
+        bool intersected = SurfaceData::GetMeshRayIntersection(
+            *mesh, m_meshWorldTM, m_meshWorldTMInverse, m_meshNonUniformScale, rayStart, rayEnd, outPosition, outNormal) &&
             m_meshBoundsForIntersection.Contains(outPosition);
         m_cachedRayHits[point.m_handle] = intersected;
         return intersected;
@@ -383,10 +390,10 @@ namespace Vegetation
                 m_meshBoundsForIntersection.GetMin().GetZ() + m_meshBoundsForIntersection.GetExtents().GetZ() * m_configuration.m_meshHeightPercentMax);
 
             AZ::Vector3 cornerMin = m_meshBoundsForIntersection.GetMin();
-            cornerMin.SetZ(heights.first);
+            cornerMin.SetZ(heights.first - s_rayAABBHeightPadding);
 
             AZ::Vector3 cornerMax = m_meshBoundsForIntersection.GetMax();
-            cornerMax.SetZ(heights.second);
+            cornerMax.SetZ(heights.second + s_rayAABBHeightPadding);
 
             m_meshBoundsForIntersection.Set(cornerMin, cornerMax);
         }
@@ -397,6 +404,9 @@ namespace Vegetation
         m_meshWorldTM = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(m_meshWorldTM, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
         m_meshWorldTMInverse = m_meshWorldTM.GetInverse();
+
+        m_meshNonUniformScale = AZ::Vector3::CreateOne();
+        AZ::NonUniformScaleRequestBus::EventResult(m_meshNonUniformScale, GetEntityId(), &AZ::NonUniformScaleRequests::GetScale);
 
         AreaComponentBase::OnCompositionChanged();
     }

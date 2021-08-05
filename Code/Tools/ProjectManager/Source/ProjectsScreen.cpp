@@ -1,21 +1,18 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
 #include <ProjectsScreen.h>
 
+#include <ProjectManagerDefs.h>
 #include <ProjectButtonWidget.h>
 #include <PythonBindingsInterface.h>
 #include <ProjectUtils.h>
-#include <ProjectBuilder.h>
+#include <ProjectBuilderController.h>
 #include <ScreensCtrl.h>
 
 #include <AzQtComponents/Components/FlowLayout.h>
@@ -35,7 +32,6 @@
 #include <QSpacerItem>
 #include <QListWidget>
 #include <QListWidgetItem>
-#include <QFileInfo>
 #include <QScrollArea>
 #include <QStackedWidget>
 #include <QFrame>
@@ -46,8 +42,7 @@
 #include <QTimer>
 #include <QQueue>
 #include <QDir>
-
-//#define DISPLAY_PROJECT_DEV_DATA true 
+#include <QGuiApplication>
 
 namespace O3DE::ProjectManager
 {
@@ -58,8 +53,6 @@ namespace O3DE::ProjectManager
         vLayout->setAlignment(Qt::AlignTop);
         vLayout->setContentsMargins(s_contentMargins, 0, s_contentMargins, 0);
         setLayout(vLayout);
-
-        m_background.load(":/Backgrounds/FirstTimeBackgroundImage.jpg");
 
         m_stack = new QStackedWidget(this);
 
@@ -85,22 +78,21 @@ namespace O3DE::ProjectManager
         QFrame* frame = new QFrame(this);
         frame->setObjectName("firstTimeContent");
         {
-            QVBoxLayout* layout = new QVBoxLayout(this);
+            QVBoxLayout* layout = new QVBoxLayout();
             layout->setContentsMargins(0, 0, 0, 0);
             layout->setAlignment(Qt::AlignTop);
             frame->setLayout(layout);
 
-            QLabel* titleLabel = new QLabel(tr("Ready. Set. Create."), this);
+            QLabel* titleLabel = new QLabel(tr("Ready? Set. Create!"), this);
             titleLabel->setObjectName("titleLabel");
             layout->addWidget(titleLabel);
 
             QLabel* introLabel = new QLabel(this);
             introLabel->setObjectName("introLabel");
-            introLabel->setText(tr("Welcome to O3DE! Start something new by creating a project. Not sure what to create? \nExplore what's "
-                                   "available by downloading our sample project."));
+            introLabel->setText(tr("Welcome to O3DE! Start something new by creating a project."));
             layout->addWidget(introLabel);
 
-            QHBoxLayout* buttonLayout = new QHBoxLayout(this);
+            QHBoxLayout* buttonLayout = new QHBoxLayout();
             buttonLayout->setAlignment(Qt::AlignLeft);
             buttonLayout->setSpacing(s_spacerSize);
 
@@ -124,6 +116,8 @@ namespace O3DE::ProjectManager
 
     QFrame* ProjectsScreen::CreateProjectsContent(QString buildProjectPath, ProjectButton** projectButton)
     {
+        RemoveInvalidProjects();
+
         QFrame* frame = new QFrame(this);
         frame->setObjectName("projectsContent");
         {
@@ -169,43 +163,50 @@ namespace O3DE::ProjectManager
                 projectsScrollArea->setWidget(scrollWidget);
                 projectsScrollArea->setWidgetResizable(true);
 
-#ifndef DISPLAY_PROJECT_DEV_DATA
-                // Iterate once to insert building project first
-                if (!buildProjectPath.isEmpty())
+                QVector<ProjectInfo> nonProcessingProjects;
+                buildProjectPath = QDir::fromNativeSeparators(buildProjectPath);
+                for (auto& project : projectsResult.GetValue())
                 {
-                    buildProjectPath = QDir::fromNativeSeparators(buildProjectPath);
-                    for (auto project : projectsResult.GetValue())
+                    if (projectButton && !*projectButton)
                     {
                         if (QDir::fromNativeSeparators(project.m_path) == buildProjectPath)
                         {
-                            ProjectButton* buildingProjectButton = CreateProjectButton(project, flowLayout, true);
-
-                            if (projectButton)
-                            {
-                                *projectButton = buildingProjectButton;
-                            }
-
-                            break;
+                            *projectButton = CreateProjectButton(project, flowLayout, true);
+                            continue;
                         }
                     }
+
+                    nonProcessingProjects.append(project);
                 }
 
-                for (auto project : projectsResult.GetValue())
-#else
-                ProjectInfo project = projectsResult.GetValue().at(0);
-                for (int i = 0; i < 15; i++)
-#endif
+                for (auto& project : nonProcessingProjects)
                 {
-                    // Add all other projects skipping building project
-                    // Safe if no building project because it is just an empty string
-                    if (project.m_path != buildProjectPath)
-                    {
-                        ProjectButton* projectButtonWidget = CreateProjectButton(project, flowLayout);
+                    ProjectButton* projectButtonWidget = CreateProjectButton(project, flowLayout);
 
-                        if (RequiresBuildProjectIterator(project.m_path) != m_requiresBuild.end())
+                    if (BuildQueueContainsProject(project.m_path))
+                    {
+                        projectButtonWidget->SetProjectButtonAction(tr("Cancel Queued Build"),
+                            [this, project]
+                            {
+                                UnqueueBuildProject(project);
+                                SuggestBuildProjectMsg(project, false);
+                            });
+                    }
+                    else if (RequiresBuildProjectIterator(project.m_path) != m_requiresBuild.end())
+                    {
+                        auto buildProjectIterator = RequiresBuildProjectIterator(project.m_path);
+                        if (buildProjectIterator != m_requiresBuild.end())
                         {
-                            projectButtonWidget->ShowBuildButton(true);
+                            if (buildProjectIterator->m_buildFailed)
+                            {
+                                projectButtonWidget->ShowBuildFailed(true, buildProjectIterator->m_logUrl);
+                            }
+                            else
+                            {
+                                projectButtonWidget->SetProjectBuildButtonAction();
+                            }
                         }
+                        
                     }
                 }
 
@@ -218,16 +219,7 @@ namespace O3DE::ProjectManager
 
     ProjectButton* ProjectsScreen::CreateProjectButton(ProjectInfo& project, QLayout* flowLayout, bool processing)
     {
-        ProjectButton* projectButton;
-
-        QString projectPreviewPath = project.m_path + m_projectPreviewImagePath;
-        QFileInfo doesPreviewExist(projectPreviewPath);
-        if (doesPreviewExist.exists() && doesPreviewExist.isFile())
-        {
-            project.m_imagePath = projectPreviewPath;
-        }
-
-        projectButton = new ProjectButton(project, this, processing);
+        ProjectButton* projectButton = new ProjectButton(project, this, processing);
 
         flowLayout->addWidget(projectButton);
 
@@ -253,12 +245,14 @@ namespace O3DE::ProjectManager
             m_projectsContent->deleteLater();
         }
 
+        m_background.load(":/Backgrounds/DefaultBackground.jpg");
+
         // Make sure to update builder with latest Project Button
         if (m_currentBuilder)
         {
-            ProjectButton* projectButtonPtr;
+            ProjectButton* projectButtonPtr = nullptr;
 
-            m_projectsContent = CreateProjectsContent(m_currentBuilder->GetProjectPath(), &projectButtonPtr);
+            m_projectsContent = CreateProjectsContent(m_currentBuilder->GetProjectInfo().m_path, &projectButtonPtr);
             m_currentBuilder->SetProjectButton(projectButtonPtr);
         }
         else
@@ -290,21 +284,30 @@ namespace O3DE::ProjectManager
         // we paint the background here because qss does not support background cover scaling
         QPainter painter(this);
 
-        auto winSize = size();
-        auto pixmapRatio = (float)m_background.width() / m_background.height();
-        auto windowRatio = (float)winSize.width() / winSize.height();
+        const QSize winSize = size();
+        const float pixmapRatio = (float)m_background.width() / m_background.height();
+        const float windowRatio = (float)winSize.width() / winSize.height();
 
+        QRect backgroundRect;
         if (pixmapRatio > windowRatio)
         {
-            auto newWidth = (int)(winSize.height() * pixmapRatio);
-            auto offset = (newWidth - winSize.width()) / -2;
-            painter.drawPixmap(offset, 0, newWidth, winSize.height(), m_background);
+            const int newWidth = (int)(winSize.height() * pixmapRatio);
+            const int offset = (newWidth - winSize.width()) / -2;
+            backgroundRect = QRect(offset, 0, newWidth, winSize.height());
         }
         else
         {
-            auto newHeight = (int)(winSize.width() / pixmapRatio);
-            painter.drawPixmap(0, 0, winSize.width(), newHeight, m_background);
+            const int newHeight = (int)(winSize.width() / pixmapRatio);
+            backgroundRect = QRect(0, 0, winSize.width(), newHeight);
         }
+
+        // Draw the background image.
+        painter.drawPixmap(backgroundRect, m_background);
+
+        // Draw a semi-transparent overlay to darken down the colors.
+        painter.setCompositionMode (QPainter::CompositionMode_DestinationIn);
+        const float overlayTransparency = 0.7f;
+        painter.fillRect(backgroundRect, QColor(0, 0, 0, static_cast<int>(255.0f * overlayTransparency)));
     }
 
     void ProjectsScreen::HandleNewProjectButton()
@@ -382,14 +385,17 @@ namespace O3DE::ProjectManager
             emit ChangeScreenRequest(ProjectManagerScreen::UpdateProject);
         }
     }
-    void ProjectsScreen::HandleCopyProject(const QString& projectPath)
+    void ProjectsScreen::HandleCopyProject(const ProjectInfo& projectInfo)
     {
-        if (!WarnIfInBuildQueue(projectPath))
+        if (!WarnIfInBuildQueue(projectInfo.m_path))
         {
+            ProjectInfo newProjectInfo(projectInfo);
+
             // Open file dialog and choose location for copied project then register copy with O3DE
-            if (ProjectUtils::CopyProjectDialog(projectPath, this))
+            if (ProjectUtils::CopyProjectDialog(projectInfo.m_path, newProjectInfo, this))
             {
                 ResetProjectsContent();
+                emit NotifyBuildProject(newProjectInfo);
                 emit ChangeScreenRequest(ProjectManagerScreen::Projects);
             }
         }
@@ -417,29 +423,34 @@ namespace O3DE::ProjectManager
 
             if (warningResult == QMessageBox::Yes)
             {
+                QGuiApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
                 // Remove project from O3DE and delete from disk
                 HandleRemoveProject(projectPath);
                 ProjectUtils::DeleteProjectFiles(projectPath);
+                QGuiApplication::restoreOverrideCursor();
             }
+        }
+    }
+
+    void ProjectsScreen::SuggestBuildProjectMsg(const ProjectInfo& projectInfo, bool showMessage)
+    {
+        if (RequiresBuildProjectIterator(projectInfo.m_path) == m_requiresBuild.end() || projectInfo.m_buildFailed)
+        {
+            m_requiresBuild.append(projectInfo);
+        }
+        ResetProjectsContent();
+
+        if (showMessage)
+        {
+            QMessageBox::information(this,
+                tr("Project Should be rebuilt."),
+                projectInfo.GetProjectDisplayName() + tr(" project likely needs to be rebuilt."));
         }
     }
 
     void ProjectsScreen::SuggestBuildProject(const ProjectInfo& projectInfo)
     {
-        if (projectInfo.m_needsBuild)
-        {
-            if (RequiresBuildProjectIterator(projectInfo.m_path) == m_requiresBuild.end())
-            {
-                m_requiresBuild.append(projectInfo);
-            }
-            ResetProjectsContent();
-        }
-        else
-        {
-            QMessageBox::information(this,
-                tr("Project Should be rebuilt."),
-                projectInfo.m_projectName + tr(" project likely needs to be rebuilt."));
-        }
+        SuggestBuildProjectMsg(projectInfo, true);
     }
 
     void ProjectsScreen::QueueBuildProject(const ProjectInfo& projectInfo)
@@ -455,18 +466,27 @@ namespace O3DE::ProjectManager
             if (m_buildQueue.empty() && !m_currentBuilder)
             {
                 StartProjectBuild(projectInfo);
+                // Projects Content is already reset in fuction
             }
             else
             {
                 m_buildQueue.append(projectInfo);
+                ResetProjectsContent();
             }
         }
+    }
+
+    void ProjectsScreen::UnqueueBuildProject(const ProjectInfo& projectInfo)
+    {
+        m_buildQueue.removeAll(projectInfo);
+        ResetProjectsContent();
     }
 
     void ProjectsScreen::NotifyCurrentScreen()
     {
         if (ShouldDisplayFirstTimeContent())
         {
+            m_background.load(":/Backgrounds/FtueBackground.jpg");
             m_stack->setCurrentWidget(m_firstTimeContent);
         }
         else
@@ -493,14 +513,19 @@ namespace O3DE::ProjectManager
         return displayFirstTimeContent;
     }
 
-    void ProjectsScreen::StartProjectBuild(const ProjectInfo& projectInfo)
+    bool ProjectsScreen::RemoveInvalidProjects()
     {
-        if (ProjectUtils::IsVS2019Installed())
+        return PythonBindingsInterface::Get()->RemoveInvalidProjects();
+    }
+
+    bool ProjectsScreen::StartProjectBuild(const ProjectInfo& projectInfo)
+    {
+        if (ProjectUtils::FindSupportedCompiler(this))
         {
             QMessageBox::StandardButton buildProject = QMessageBox::information(
                 this,
-                tr("Building \"%1\"").arg(projectInfo.m_projectName),
-                tr("Ready to build \"%1\"?").arg(projectInfo.m_projectName),
+                tr("Building \"%1\"").arg(projectInfo.GetProjectDisplayName()),
+                tr("Ready to build \"%1\"?").arg(projectInfo.GetProjectDisplayName()),
                 QMessageBox::No | QMessageBox::Yes);
 
             if (buildProject == QMessageBox::Yes)
@@ -508,30 +533,48 @@ namespace O3DE::ProjectManager
                 m_currentBuilder = new ProjectBuilderController(projectInfo, nullptr, this);
                 ResetProjectsContent();
                 connect(m_currentBuilder, &ProjectBuilderController::Done, this, &ProjectsScreen::ProjectBuildDone);
+                connect(m_currentBuilder, &ProjectBuilderController::NotifyBuildProject, this, &ProjectsScreen::SuggestBuildProject);
 
                 m_currentBuilder->Start();
             }
             else
             {
-                ProjectBuildDone();
+                SuggestBuildProjectMsg(projectInfo, false);
+                return false;
             }
+
+            return true;
         }
+
+        return false;
     }
 
-    void ProjectsScreen::ProjectBuildDone()
+    void ProjectsScreen::ProjectBuildDone(bool success)
     {
+        ProjectInfo currentBuilderProject;
+        if (!success)
+        {
+            currentBuilderProject = m_currentBuilder->GetProjectInfo();
+        }
+
         delete m_currentBuilder;
         m_currentBuilder = nullptr;
 
+        if (!success)
+        {
+            SuggestBuildProjectMsg(currentBuilderProject, false);
+        }
+
         if (!m_buildQueue.empty())
         {
-            StartProjectBuild(m_buildQueue.front());
+            while (!StartProjectBuild(m_buildQueue.front()) && m_buildQueue.size() > 1)
+            {
+                m_buildQueue.pop_front();
+            }
             m_buildQueue.pop_front();
         }
-        else
-        {
-            ResetProjectsContent();
-        }
+
+        ResetProjectsContent();
     }
 
     QList<ProjectInfo>::iterator ProjectsScreen::RequiresBuildProjectIterator(const QString& projectPath)

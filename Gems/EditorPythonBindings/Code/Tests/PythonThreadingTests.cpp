@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 #include <Source/PythonCommon.h>
@@ -221,4 +217,79 @@ namespace UnitTest
         e.Deactivate();
     }
 
+    TEST_F(PythonThreadingTest, PythonInterface_DebugTrace_CallsOnTick)
+    {
+        enum class LogTypes
+        {
+            Skip = 0,
+            OnPrewarning
+        };
+
+        m_testSink.m_evaluateMessage = [](const char* window, const char* message) -> int
+        {
+            if (AzFramework::StringFunc::Equal(window, "python"))
+            {
+                if (AzFramework::StringFunc::StartsWith(message, "OnPrewarning"))
+                {
+                    return aznumeric_cast<int>(LogTypes::OnPrewarning);
+                }
+            }
+            return aznumeric_cast<int>(LogTypes::Skip);
+        };
+
+        AZ::Entity e;
+        Activate(e);
+        SimulateEditorBecomingInitialized();
+
+        try
+        {
+            // prepare handler on this thread
+            pybind11::exec(R"(
+                import azlmbr.debug
+
+                def on_prewarning(args):
+                    print ('OnPrewarning: ' + args[0])
+
+                handler = azlmbr.debug.TraceMessageBusHandler()
+                handler.connect()
+                handler.add_callback('OnPreWarning', on_prewarning)
+                )");
+
+            const size_t numWarnings = 64;
+            auto doWarning = []()
+            {
+                AZ_Warning("PythonThreadingTest", false, "This is a warning message");
+            };
+
+            // start threads. In thread issue a warning.
+            AZStd::vector<AZStd::thread> threads;
+            threads.reserve(numWarnings);
+            for (size_t i = 0; i < numWarnings; ++i)
+            {
+                threads.emplace_back(doWarning);
+            }
+            for (AZStd::thread& thread : threads)
+            {
+                thread.join();
+            }
+
+            // No prewarning calls should have happened because all of them were queued
+            EXPECT_EQ(0, m_testSink.m_evaluationMap[aznumeric_cast<int>(LogTypes::OnPrewarning)]);
+
+            // Do one tick
+            const float timeOneFrameSeconds = 0.016f; //approx 60 fps
+            AZ::TickBus::Broadcast(&AZ::TickEvents::OnTick,
+                timeOneFrameSeconds,
+                AZ::ScriptTimePoint(AZStd::chrono::system_clock::now()));
+
+            // After one tick all the queued calls should have been processed
+            EXPECT_EQ(numWarnings, m_testSink.m_evaluationMap[aznumeric_cast<int>(LogTypes::OnPrewarning)]);
+        }
+        catch ([[maybe_unused]] const std::exception& e)
+        {
+            AZ_Error("UnitTest", false, "Failed during thread test with %s", e.what());
+        }
+
+        e.Deactivate();
+    }
 }

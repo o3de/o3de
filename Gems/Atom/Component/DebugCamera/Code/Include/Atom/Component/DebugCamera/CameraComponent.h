@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <AzCore/Component/Component.h>
@@ -96,12 +92,16 @@ namespace AZ
             float GetFarClipDistance() override;
             float GetFrustumWidth() override;
             float GetFrustumHeight() override;
+            bool IsOrthographic() override;
+            float GetOrthographicHalfWidth() override;
             void SetFovDegrees(float fov) override;
             void SetFovRadians(float fov) override;
             void SetNearClipDistance(float nearClipDistance) override;
             void SetFarClipDistance(float farClipDistance) override;
             void SetFrustumWidth(float width) override;
             void SetFrustumHeight(float height) override;
+            void SetOrthographic(bool orthographic) override;
+            void SetOrthographicHalfWidth(float halfWidth) override;
             void MakeActiveView() override;
 
             // RPI::WindowContextNotificationBus overrides...

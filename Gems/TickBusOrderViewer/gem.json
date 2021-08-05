@@ -1,16 +1,12 @@
 {
     "gem_name": "TickBusOrderViewer",
-    "GemFormatVersion": 4,
-    "Uuid": "937fc4d2b2a94291bdeea06261c501b3",
-    "Name": "TickBusOrderViewer",
-    "DisplayName": "Tick Bus Order Console Variable",
-    "Version": "1.0.0",
-    "Summary": "Provides the console variable, print_tickbus_handlers, which displays the order of all tick events to the console. If you specify an entityId, it will only display the tick events for that entity.",
-    "Tags": ["Console Variable", "CVAR"],
-    "IconPath": "preview.png",
-    "Modules": [
-        {
-            "Type": "GameModule"
-        }
-    ]
+    "display_name": "Tick Bus Order Viewer",
+    "license": "Apache-2.0 Or MIT",
+    "origin": "Open 3D Engine - o3de.org",
+    "type": "Tool",
+    "summary": "The Tick Bus Order Viewer Gem provides a console variable that displays the order of runtime tick events.",
+    "canonical_tags": ["Gem"],
+    "user_tags": ["Gameplay", "Simulation", "Utility"],
+    "icon_path": "preview.png",
+    "requirements": ""
 }

@@ -1,15 +1,11 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-#include <precompiled.h>
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 #include <GraphCanvas.h>
 
 #include <AzCore/Serialization/EditContext.h>
@@ -190,7 +186,6 @@ namespace GraphCanvas
 
     void GraphCanvasSystemComponent::Init()
     {
-        RegisterAssetHandler();
         m_translationDatabase.Init();
     }
 
@@ -233,6 +228,7 @@ namespace GraphCanvas
         GraphCanvasRequestBus::Handler::BusDisconnect();
         AZ::Data::AssetBus::MultiHandler::BusDisconnect();
 
+        m_translationAssetWorker.Deactivate();
         UnregisterAssetHandler();
     }
 
@@ -387,34 +383,6 @@ namespace GraphCanvas
             }
         };
         AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::EnumerateAssets, nullptr, collectAssetsCb, postEnumerateCb);
-    }
-
-    void GraphCanvasSystemComponent::RegisterAssetHandler()
-    {
-        AZ::Data::AssetType assetType(azrtti_typeid<TranslationAsset>());
-        if (AZ::Data::AssetManager::Instance().GetHandler(assetType))
-        {
-            return; // Asset Type already handled
-        }
-
-        auto* catalogBus = AZ::Data::AssetCatalogRequestBus::FindFirstHandler();
-        if (catalogBus)
-        {
-            // Register asset types the asset DB should query our catalog for.
-            catalogBus->AddAssetType(assetType);
-
-            // Build the catalog (scan).
-            catalogBus->AddExtension(".names");
-        }
-
-        m_assetHandler = AZStd::make_unique<TranslationAssetHandler>();
-        AZ::Data::AssetManager::Instance().RegisterHandler(m_assetHandler.get(), assetType);
-
-        // Use AssetCatalog service to register ScriptEvent asset type and extension
-        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequests::AddAssetType, assetType);
-        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequests::EnableCatalogForAsset, assetType);
-        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequests::AddExtension, TranslationAsset::GetFileFilter());
-
     }
 
     void GraphCanvasSystemComponent::UnregisterAssetHandler()

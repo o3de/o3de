@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <EMotionFX/Source/ActorManager.h>
 #include <EMotionFX/Source/ActorInstance.h>
@@ -68,6 +64,8 @@ namespace EMotionFX
                 &actorSettings,
                 "");
 
+            // Set the is owned by runtime flag before finalizing the actor, as that uses the flag already.
+            assetData->m_emfxActor->SetIsOwnedByRuntime(true);
             assetData->m_emfxActor->Finalize();
 
             // Clear out the EMFX raw asset data.
@@ -78,8 +76,6 @@ namespace EMotionFX
                 AZ_Error("EMotionFX", false, "Failed to initialize actor asset %s", asset.ToString<AZStd::string>().c_str());
                 return false;
             }
-
-            assetData->m_emfxActor->SetIsOwnedByRuntime(true);
 
             // Note: Render actor depends on the mesh asset, so we need to manually create it after mesh asset has been loaded.
             return static_cast<bool>(assetData->m_emfxActor);

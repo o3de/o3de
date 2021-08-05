@@ -1,20 +1,15 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-// Original file Copyright Crytek GMBH or its affiliates, used under license.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 
 // Description : Font class.
 
 
-#include <AtomLyIntegration/AtomFont/AtomFont_precompiled.h>
 
 #if !defined(USE_NULLFONT_ALWAYS)
 
@@ -1645,7 +1640,7 @@ AZ::FFont::DrawParameters AZ::FFont::ExtractDrawParameters(const AzFramework::Te
     internalParams.m_ctx.EnableFrame(false);
     internalParams.m_ctx.SetProportional(!params.m_monospace && params.m_scaleWithWindow);
     internalParams.m_ctx.SetSizeIn800x600(params.m_scaleWithWindow && params.m_virtual800x600ScreenSize);
-    internalParams.m_ctx.SetSize(AZVec2ToLYVec2(AZ::Vector2(params.m_textSizeFactor, params.m_textSizeFactor) * params.m_scale));
+    internalParams.m_ctx.SetSize(AZVec2ToLYVec2(AZ::Vector2(params.m_textSizeFactor, params.m_textSizeFactor) * params.m_scale * internalParams.m_viewportContext->GetDpiScalingFactor()));
     internalParams.m_ctx.SetLineSpacing(params.m_lineSpacing);
 
     if (params.m_hAlign != AzFramework::TextHorizontalAlignment::Left ||
@@ -1687,7 +1682,7 @@ AZ::FFont::DrawParameters AZ::FFont::ExtractDrawParameters(const AzFramework::Te
         {
             posY -= textSize.y;
         }
-        internalParams.m_size = AZ::Vector2{textSize.x, textSize.y};
+        internalParams.m_size = AZ::Vector2{textSize.x, textSize.y} * internalParams.m_viewportContext->GetDpiScalingFactor();
     }
     SetCommonContextFlags(internalParams.m_ctx, params);
     internalParams.m_ctx.m_drawTextFlags |= eDrawText_2D;
@@ -1736,6 +1731,14 @@ void AZ::FFont::DrawScreenAlignedText3d(
         currentView->GetWorldToViewMatrix(),
         currentView->GetViewToClipMatrix()
     );
+
+    // Text behind the camera shouldn't get rendered.  WorldToScreenNDC returns values in the range 0 - 1, so Z < 0.5 is behind the screen
+    // and >= 0.5 is in front of the screen.
+    if (positionNDC.GetZ() < 0.5f)
+    {
+        return;
+    }
+
     internalParams.m_ctx.m_sizeIn800x600 = false;
 
     DrawStringUInternal(

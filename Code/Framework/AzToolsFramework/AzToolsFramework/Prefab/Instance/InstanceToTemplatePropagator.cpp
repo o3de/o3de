@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
@@ -177,20 +173,23 @@ namespace AzToolsFramework
             PrefabDom& templateDomReference = m_prefabSystemComponentInterface->FindTemplateDom(templateId);
 
             //apply patch to template
-            AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::ApplyPatch(templateDomReference,
-                templateDomReference.GetAllocator(), providedPatch, AZ::JsonMergeApproach::JsonPatch);
+            AZ::JsonSerializationResult::ResultCode result =
+                PrefabDomUtils::ApplyPatches(templateDomReference, templateDomReference.GetAllocator(), providedPatch);
 
             //trigger propagation
-            if (result.GetOutcome() == AZ::JsonSerializationResult::Outcomes::Success)
+            if (result.GetProcessing() != AZ::JsonSerializationResult::Processing::Completed)
             {
-                m_prefabSystemComponentInterface->SetTemplateDirtyFlag(templateId, true);
-                m_prefabSystemComponentInterface->PropagateTemplateChanges(templateId, instanceToExclude);
-                return true;
+                AZ_Error("Prefab", false, "Patch was not successfully applied.");
+                return false; 
             }
             else
             {
-                AZ_Error("Prefab", false, "Patch was not successfully applied");
-                return false;
+                AZ_Error(
+                    "Prefab", result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::PartialSkip,
+                    "Some of the patches are not successfully applied.");
+                m_prefabSystemComponentInterface->SetTemplateDirtyFlag(templateId, true);
+                m_prefabSystemComponentInterface->PropagateTemplateChanges(templateId, instanceToExclude);
+                return true;
             }
         }
 

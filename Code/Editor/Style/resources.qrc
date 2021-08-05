@@ -1,0 +1,7 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file alias="Assets/Editor/Style/Editor.qss">Editor.qss</file>
+    <file alias="Assets/Editor/Style/EditorPreferencesDialog.qss">EditorPreferencesDialog.qss</file>
+    <file alias="Assets/Editor/Style/LayoutConfigDialog.qss">LayoutConfigDialog.qss</file>
+</qresource>
+</RCC>

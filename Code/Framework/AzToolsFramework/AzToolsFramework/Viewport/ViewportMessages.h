@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
- * its licensors.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -210,6 +206,19 @@ namespace AzToolsFramework
         //! Type to inherit to implement ViewportInteractionRequests.
         using ViewportInteractionRequestBus = AZ::EBus<ViewportInteractionRequests, ViewportEBusTraits>;
 
+        //! An interface to notify when changes to viewport settings have happened.
+        class ViewportSettingNotifications
+        {
+        public:
+            virtual void OnGridSnappingChanged([[maybe_unused]] bool enabled) {}
+            virtual void OnDrawHelpersChanged([[maybe_unused]] bool enabled) {}
+
+        protected:
+            ViewportSettingNotifications() = default;
+        };
+
+        using ViewportSettingsNotificationBus = AZ::EBus<ViewportSettingNotifications, ViewportEBusTraits>;
+
         //! Requests to freeze the Viewport Input
         //! Added to prevent a bug with the legacy CryEngine Viewport code that would
         //! keep doing raycast tests even when no level is loaded, causing a crash.
@@ -268,11 +277,6 @@ namespace AzToolsFramework
             virtual void EndCursorCapture() = 0;
             //! Gets the most recent recorded cursor position in the viewport in screen space coordinates.
             virtual AzFramework::ScreenPoint ViewportCursorScreenPosition() = 0;
-            //! Gets the cursor position recorded prior to the most recent cursor position.
-            //! Note: The cursor may be captured by the viewport, in which case this may not correspond to the last result
-            //! from ViewportCursorScreenPosition. This method will always return the correct position to generate a mouse
-            //! position delta.
-            virtual AZStd::optional<AzFramework::ScreenPoint> PreviousViewportCursorScreenPosition() = 0;
             //! Is mouse over viewport.
             virtual bool IsMouseOver() const = 0;
 

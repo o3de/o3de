@@ -1,16 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-
-#include <PhysX_precompiled.h>
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
@@ -41,6 +35,7 @@
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/XML/rapidxml.h>
 #include <AzCore/std/algorithm.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <GFxFramework/MaterialIO/Material.h>
 
 // A utility macro helping set/clear bits in a single line
@@ -68,17 +63,7 @@ namespace PhysX
             }
         } pxDefaultErrorCallback;
 
-        // A struct to store the asset-wide material names shared by multiple shapes
-        struct AssetMaterialsData
-        {
-            // Material names coming from FBX, these will be Mesh Surfaces in the Collider Component
-            AZStd::vector<AZStd::string> m_fbxMaterialNames;
-
-            // Look-up table for fbxMaterialNames
-            AZStd::unordered_map<AZStd::string, size_t> m_materialIndexByName;
-        };
-
-        // A struct to store the geometry data per FBX node
+        // A struct to store the geometry data per scene node
         struct NodeCollisionGeomExportData
         {
             AZStd::vector<Vec3> m_vertices;
@@ -153,16 +138,16 @@ namespace PhysX
             AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
             if (serializeContext)
             {
-                serializeContext->Class<MeshExporter, AZ::SceneAPI::SceneCore::ExportingComponent>()->Version(4);
+                serializeContext->Class<MeshExporter, AZ::SceneAPI::SceneCore::ExportingComponent>()->Version(5);
             }
         }
 
         namespace Utils
         {
-            // Utility function doing look-up in fbxMaterialNames and inserting the name if it's not found
+            // Utility function doing look-up in sourceSceneMaterialNames and inserting the name if it's not found
             AZ::u16 InsertMaterialIndexByName(const AZStd::string& materialName, AssetMaterialsData& materials)
             {
-                AZStd::vector<AZStd::string>& fbxMaterialNames = materials.m_fbxMaterialNames;
+                AZStd::vector<AZStd::string>& sourceSceneMaterialNames = materials.m_sourceSceneMaterialNames;
                 AZStd::unordered_map<AZStd::string, size_t>& materialIndexByName = materials.m_materialIndexByName;
 
                 // Check if we have this material in the list
@@ -174,108 +159,57 @@ namespace PhysX
                 }
 
                 // Add it to the list otherwise
-                fbxMaterialNames.push_back(materialName);
+                sourceSceneMaterialNames.push_back(materialName);
 
-                AZ::u16 newIndex = fbxMaterialNames.size() - 1;
+                AZ::u16 newIndex = sourceSceneMaterialNames.size() - 1;
                 materialIndexByName[materialName] = newIndex;
 
                 return newIndex;
             }
 
-            // Building a map between FBX material name and the corresponding Cry surface type that is set in the .mtl file.
-            void BuildMaterialToSurfaceTypeMap(const AZStd::string& materialFilename,
-                AZStd::unordered_map<AZStd::string, AZStd::string>& materialToSurfaceTypeMap)
+            bool UpdateAssetPhysicsMaterials(
+                const AZStd::vector<AZStd::string>& newMaterials,
+                AZStd::vector<AZStd::string>& materials,
+                AZStd::vector<AZStd::string>& physicsMaterials)
             {
-                AZ::IO::SystemFile mtlFile;
-                bool fileOpened = mtlFile.Open(materialFilename.c_str(), AZ::IO::SystemFile::SF_OPEN_READ_ONLY);
-                if (fileOpened && mtlFile.Length() != 0)
+                if (materials.size() != physicsMaterials.size())
                 {
-                    //Read material override file into a buffer
-                    AZStd::vector<char> buffer(mtlFile.Length());
-                    mtlFile.Read(mtlFile.Length(), buffer.data());
-                    mtlFile.Close();
-
-                    //Apparently in rapidxml if 'parse_no_data_nodes' isn't set it creates both value and data nodes
-                    //with the data nodes having precedence such that updating values doesn't work.
-                    AZ::rapidxml::xml_document<char>  document;
-                    document.parse<AZ::rapidxml::parse_no_data_nodes>(buffer.data());
-
-                    //Parse MTL file for materials and/or submaterials.
-                    AZ::rapidxml::xml_node<char>* rootMaterialNode = document.first_node(AZ::GFxFramework::MaterialExport::g_materialString);
-
-                    AZ::rapidxml::xml_node<char>* subMaterialNode = rootMaterialNode->first_node(AZ::GFxFramework::MaterialExport::g_subMaterialString);
-
-                    if (subMaterialNode)
-                    {
-                        for (AZ::rapidxml::xml_node<char>* materialNode = subMaterialNode->first_node(AZ::GFxFramework::MaterialExport::g_materialString);
-                            materialNode;
-                            materialNode = materialNode->next_sibling(AZ::GFxFramework::MaterialExport::g_materialString))
-                        {
-                            AZ::rapidxml::xml_attribute<char>* nameAttribute = materialNode->first_attribute(AZ::GFxFramework::MaterialExport::g_nameString);
-                            if (nameAttribute)
-                            {
-                                AZStd::string materialName = nameAttribute->value();
-                                AZStd::string surfaceTypeName = DefaultPhysicsMaterialNameFromPhysicsAsset;
-
-                                AZ::rapidxml::xml_attribute<char>* surfaceTypeNode = materialNode->first_attribute("SurfaceType");
-                                if (surfaceTypeNode && surfaceTypeNode->value_size() != 0)
-                                {
-                                    surfaceTypeName = surfaceTypeNode->value();
-                                }
-
-                                materialToSurfaceTypeMap[materialName] = surfaceTypeName;
-                            }
-                            else
-                            {
-                                AZ_TracePrintf(AZ::SceneAPI::Utilities::ErrorWindow, "A SubMaterial without Name found in the .mtl file: %s", materialFilename.c_str());
-                            }
-                        }
-                    }
-                    else
-                    {
-                        AZ_TracePrintf(AZ::SceneAPI::Utilities::ErrorWindow, "No SubMaterial node in the .mtl file: %s", materialFilename.c_str());
-                    }
-                }
-            }
-
-            void UpdateAssetMaterialsFromCrySurfaceTypes(const AZStd::vector<AZStd::string>& fbxMaterialNames,
-                const AZStd::unordered_map<AZStd::string, AZStd::string>& materialToSurfaceTypeMap,
-                MeshAssetData& assetData)
-            {
-                AZStd::vector<AZStd::string>& materialNames = assetData.m_materialNames;
-                AZ_Assert(materialNames.empty(),
-                    "UpdateAssetMaterialsFromCrySurfaceTypes: Mesh Asset Data should not have materials already assigned.");
-
-                materialNames.clear();
-                materialNames.reserve(fbxMaterialNames.size());
-
-                for (const AZStd::string& fbxMaterial : fbxMaterialNames)
-                {
-                    AZStd::string materialName;
-
-                    // Here we assign the actual engine surface type based on the material name
-                    auto materialToSurfaceIt = materialToSurfaceTypeMap.find(fbxMaterial);
-                    if (materialToSurfaceIt != materialToSurfaceTypeMap.end()
-                        && !materialToSurfaceIt->second.empty())
-                    {
-                        materialName = materialToSurfaceIt->second;
-
-                        // Remove the mat_ prefix since the material library generated from surface types doesn't have it.
-                        if (materialName.find("mat_") == 0)
-                        {
-                            materialName = materialName.substr(4);
-                        }
-                    }
-                    else
-                    {
-                        materialName = DefaultPhysicsMaterialNameFromPhysicsAsset;
-                    }
-
-                    materialNames.emplace_back(AZStd::move(materialName));
+                    AZ_TracePrintf(
+                        AZ::SceneAPI::Utilities::WarningWindow,
+                        "Materials and Physics Materials have different number of elements. %d materials and %d physics materials.",
+                        materials.size(), physicsMaterials.size());
+                    return false;
                 }
 
-                // Asset mesh surfaces match FBX materials. These are the names that users see in the Collider Component in the Editor.
-                assetData.m_surfaceNames = fbxMaterialNames;
+                AZStd::vector<AZStd::string> newPhysicsMaterials;
+                newPhysicsMaterials.reserve(newMaterials.size());
+
+                // In the new material list, the materials might have changed slots.
+                // Form the new list of physics materials by looking at the previous list
+                // and keeping the same physics materials association when found.
+                for (const auto& newMaterial : newMaterials)
+                {
+                    AZStd::string physicsMaterialName = Physics::DefaultPhysicsMaterialLabel;
+
+                    for (size_t slotId = 0; slotId < materials.size(); ++slotId)
+                    {
+                        if (AZ::StringFunc::Equal(materials[slotId], newMaterial, false/*bCaseSensitive*/))
+                        {
+                            if (!physicsMaterials[slotId].empty())
+                            {
+                                physicsMaterialName = physicsMaterials[slotId];
+                            }
+                            break;
+                        }
+                    }
+
+                    newPhysicsMaterials.emplace_back(AZStd::move(physicsMaterialName));
+                }
+
+                materials = newMaterials;
+                physicsMaterials = AZStd::move(newPhysicsMaterials);
+
+                return true;
             }
 
             bool ValidateCookedTriangleMesh(void* assetData, AZ::u32 assetDataSize)
@@ -319,6 +253,86 @@ namespace PhysX
                 }
 
                 return materialNames;
+            }
+
+            AZStd::optional<AssetMaterialsData> GatherMaterialsFromMeshGroup(
+                const MeshGroup& meshGroup,
+                const AZ::SceneAPI::Containers::SceneGraph& sceneGraph)
+            {
+                AssetMaterialsData assetMaterialData;
+
+                const auto& sceneNodeSelectionList = meshGroup.GetSceneNodeSelectionList();
+                size_t selectedNodeCount = sceneNodeSelectionList.GetSelectedNodeCount();
+
+                for (size_t index = 0; index < selectedNodeCount; index++)
+                {
+                    AZ::SceneAPI::Containers::SceneGraph::NodeIndex nodeIndex = sceneGraph.Find(sceneNodeSelectionList.GetSelectedNode(index));
+                    if (!nodeIndex.IsValid())
+                    {
+                        AZ_TracePrintf(
+                            AZ::SceneAPI::Utilities::WarningWindow,
+                            "Node '%s' was not found in the scene graph.",
+                            sceneNodeSelectionList.GetSelectedNode(index).c_str()
+                        );
+                        continue;
+                    }
+                    auto nodeMesh = azrtti_cast<const AZ::SceneAPI::DataTypes::IMeshData*>(*sceneGraph.ConvertToStorageIterator(nodeIndex));
+                    if (!nodeMesh)
+                    {
+                        continue;
+                    }
+
+                    AZStd::string_view nodeName = sceneGraph.GetNodeName(nodeIndex).GetName();
+
+                    const AZStd::vector<AZStd::string> localSourceSceneMaterialsList = GenerateLocalNodeMaterialMap(sceneGraph, nodeIndex);
+                    if (localSourceSceneMaterialsList.empty())
+                    {
+                        AZ_TracePrintf(
+                            AZ::SceneAPI::Utilities::WarningWindow,
+                            "Node '%.*s' does not have any material assigned to it. Material '%s' will be used.",
+                            AZ_STRING_ARG(nodeName), DefaultMaterialName
+                        );
+                    }
+
+                    const AZ::u32 faceCount = nodeMesh->GetFaceCount();
+
+                    assetMaterialData.m_nodesToPerFaceMaterialIndices.emplace(nodeName, AZStd::vector<AZ::u16>(faceCount));
+
+                    // Convex and primitive methods can only have 1 material
+                    const bool limitToOneMaterial = meshGroup.GetExportAsConvex() || meshGroup.GetExportAsPrimitive();
+
+                    for (AZ::u32 faceIndex = 0; faceIndex < faceCount; ++faceIndex)
+                    {
+                        AZStd::string materialName = DefaultMaterialName;
+                        if (!localSourceSceneMaterialsList.empty())
+                        {
+                            const int materialId = nodeMesh->GetFaceMaterialId(faceIndex);
+                            if (materialId >= localSourceSceneMaterialsList.size())
+                            {
+                                AZ_TracePrintf(AZ::SceneAPI::Utilities::ErrorWindow,
+                                    "materialId %d for face %d is out of bound for localSourceSceneMaterialsList (size %d).",
+                                    materialId, faceIndex, localSourceSceneMaterialsList.size());
+
+                                return AZStd::nullopt;
+                            }
+
+                            materialName = localSourceSceneMaterialsList[materialId];
+
+                            // Keep using the first material when it has to be limited to one.
+                            if (limitToOneMaterial &&
+                                assetMaterialData.m_sourceSceneMaterialNames.size() == 1 &&
+                                assetMaterialData.m_sourceSceneMaterialNames[0] != materialName)
+                            {
+                                materialName = assetMaterialData.m_sourceSceneMaterialNames[0];
+                            }
+                        }
+
+                        const AZ::u16 materialIndex = InsertMaterialIndexByName(materialName, assetMaterialData);
+                        assetMaterialData.m_nodesToPerFaceMaterialIndices[nodeName][faceIndex] = materialIndex;
+                    }
+                }
+
+                return assetMaterialData;
             }
         }
 
@@ -468,21 +482,11 @@ namespace PhysX
             return cookingSuccessful;
         }
 
-        // Utility function finding out the .mtl file for a given FBX (at the moment it's the same name as FBX but with .mtl extension)
-        static AZStd::string GetAssetMaterialFilename(const AZ::SceneAPI::Events::ExportEventContext& context)
-        {
-            const AZ::SceneAPI::Containers::Scene& scene = context.GetScene();
-
-            AZStd::string materialFilename = scene.GetSourceFilename();
-            AzFramework::StringFunc::Path::ReplaceExtension(materialFilename, ".mtl");
-            return materialFilename;
-        }
-
         // Processes the collected data and writes into a file
         static AZ::SceneAPI::Events::ProcessingResult WritePxMeshAsset(
             AZ::SceneAPI::Events::ExportEventContext& context,
             const AZStd::vector<NodeCollisionGeomExportData>& totalExportData,
-            const AssetMaterialsData &assetMaterialsData,
+            const Utils::AssetMaterialsData &assetMaterialsData,
             const MeshGroup& meshGroup)
         {
             SceneEvents::ProcessingResult result = SceneEvents::ProcessingResult::Ignored;
@@ -492,14 +496,18 @@ namespace PhysX
 
             MeshAssetData assetData;
 
-            const AZStd::string& materialFilename = GetAssetMaterialFilename(context);
-
-            // Read the information about surface type for each material from the .mtl file
-            AZStd::unordered_map<AZStd::string, AZStd::string> fbxMaterialToCrySurfaceTypeMap;
-            Utils::BuildMaterialToSurfaceTypeMap(materialFilename, fbxMaterialToCrySurfaceTypeMap);
-
             // Assign the materials into cooked data
-            Utils::UpdateAssetMaterialsFromCrySurfaceTypes(assetMaterialsData.m_fbxMaterialNames, fbxMaterialToCrySurfaceTypeMap, assetData);
+            assetData.m_materialNames = meshGroup.GetMaterialSlots();
+            assetData.m_physicsMaterialNames = meshGroup.GetPhysicsMaterials();
+
+            // Updating materials lists from new materials gathered from the source scene file 
+            // because this exporter runs when the source scene is being processed, which
+            // could have a different content from when the mesh group info was
+            // entered in Scene Settings Editor.
+            if (!Utils::UpdateAssetPhysicsMaterials(assetMaterialsData.m_sourceSceneMaterialNames, assetData.m_materialNames, assetData.m_physicsMaterialNames))
+            {
+                return SceneEvents::ProcessingResult::Failure;
+            }
 
             for (const NodeCollisionGeomExportData& subMesh : totalExportData)
             {
@@ -714,9 +722,15 @@ namespace PhysX
 
             for (const MeshGroup& pxMeshGroup : view)
             {
+                // Gather material data from asset for the mesh group
+                AZStd::optional<Utils::AssetMaterialsData> assetMaterialData = Utils::GatherMaterialsFromMeshGroup(pxMeshGroup, graph);
+                if (!assetMaterialData.has_value())
+                {
+                    return SceneEvents::ProcessingResult::Failure;
+                }
+
                 // Export data per node
                 AZStd::vector<NodeCollisionGeomExportData> totalExportData;
-                AssetMaterialsData assetMaterialData;
 
                 const AZStd::string& groupName = pxMeshGroup.GetName();
 
@@ -764,7 +778,6 @@ namespace PhysX
 
                     const AZ::SceneAPI::Containers::SceneGraph::Name& nodeName = graph.GetNodeName(nodeIndex);
 
-                    const AZStd::vector<AZStd::string> localFbxMaterialsList = Utils::GenerateLocalNodeMaterialMap(graph, nodeIndex);
                     const AZ::SceneAPI::DataTypes::MatrixType worldTransform = SceneUtil::BuildWorldTransform(graph, nodeIndex);
 
                     NodeCollisionGeomExportData nodeExportData;
@@ -783,53 +796,24 @@ namespace PhysX
                     }
 
                     nodeExportData.m_indices.resize(faceCount * 3);
-                    nodeExportData.m_perFaceMaterialIndices.resize(faceCount);
 
-                    if (localFbxMaterialsList.empty())
+                    nodeExportData.m_perFaceMaterialIndices = assetMaterialData->m_nodesToPerFaceMaterialIndices[nodeExportData.m_nodeName];
+                    if (nodeExportData.m_perFaceMaterialIndices.size() != faceCount)
                     {
                         AZ_TracePrintf(
                             AZ::SceneAPI::Utilities::WarningWindow,
-                            "Node '%s' does not have any material assigned to it. Material '%s' will be used.",
-                            nodeExportData.m_nodeName.c_str(), DefaultMaterialName
+                            "Node '%s' material information face count %d does not match the node's %d.",
+                            nodeExportData.m_nodeName.c_str(), nodeExportData.m_perFaceMaterialIndices.size(), faceCount
                         );
+                        return SceneEvents::ProcessingResult::Failure;
                     }
-
-                    // Convex and primitive methods can only have 1 material
-                    const bool limitToOneMaterial = pxMeshGroup.GetExportAsConvex() || pxMeshGroup.GetExportAsPrimitive();
 
                     for (AZ::u32 faceIndex = 0; faceIndex < faceCount; ++faceIndex)
                     {
-                        AZStd::string materialName = DefaultMaterialName;
-                        if (!localFbxMaterialsList.empty())
-                        {
-                            int materialId = nodeMesh->GetFaceMaterialId(faceIndex);
-                            if (materialId >= localFbxMaterialsList.size())
-                            {
-                                AZ_TracePrintf(AZ::SceneAPI::Utilities::ErrorWindow,
-                                    "materialId %d for face %d is out of bound for localFbxMaterialsList (size %d).",
-                                    materialId, faceIndex, localFbxMaterialsList.size());
-
-                                return SceneEvents::ProcessingResult::Failure;
-                            }
-
-                            materialName = localFbxMaterialsList[materialId];
-
-                            // Keep using the first material when it has to be limited to one.
-                            if (limitToOneMaterial &&
-                                assetMaterialData.m_fbxMaterialNames.size() == 1 &&
-                                assetMaterialData.m_fbxMaterialNames[0] != materialName)
-                            {
-                                materialName = assetMaterialData.m_fbxMaterialNames[0];
-                            }
-                        }
-
                         const AZ::SceneAPI::DataTypes::IMeshData::Face& face = nodeMesh->GetFaceInfo(faceIndex);
                         nodeExportData.m_indices[faceIndex * 3] = face.vertexIndex[0];
                         nodeExportData.m_indices[faceIndex * 3 + 1] = face.vertexIndex[1];
                         nodeExportData.m_indices[faceIndex * 3 + 2] = face.vertexIndex[2];
-
-                        AZ::u16 materialIndex = Utils::InsertMaterialIndexByName(materialName, assetMaterialData);
-                        nodeExportData.m_perFaceMaterialIndices[faceIndex] = materialIndex;
                     }
 
                     if (pxMeshGroup.GetDecomposeMeshes())
@@ -880,7 +864,7 @@ namespace PhysX
 
                 if (!totalExportData.empty())
                 {
-                    result += WritePxMeshAsset(context, totalExportData, assetMaterialData, pxMeshGroup);
+                    result += WritePxMeshAsset(context, totalExportData, *assetMaterialData, pxMeshGroup);
                 }
             }
 

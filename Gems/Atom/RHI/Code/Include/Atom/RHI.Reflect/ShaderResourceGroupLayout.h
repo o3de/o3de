@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #pragma once
 
 #include <Atom/RHI.Reflect/ConstantsLayout.h>
@@ -77,6 +73,14 @@ namespace AZ
 
             void SetName(const Name& name) {  m_name = name; }
             const Name& GetName() const { return m_name; }
+
+            //! This string will be used at runtime for both ShaderResourceGroup and ShaderResourceGroupPool to
+            //! create a unique InstanceId to avoid redundant copies in memory.
+            const AZStd::string& GetUniqueId() const { return m_uniqueId; }
+
+            //! The Set function as described above.
+            //! It is usually the Source azsl/azsli/srgi file where this SRG comes from.
+            void SetUniqueId(const AZStd::string& uniqueId) { m_uniqueId = uniqueId; }
 
             /**
              * Designates this SRG as ShaderVariantKey fallback by providing the generated
@@ -277,6 +281,9 @@ namespace AZ
             //! Name of the ShaderResourceGroup as specified in the original *.azsl/*.azsli file.
             Name m_name;
 
+            //! Usually the AZSL file of origin/definition.
+            AZStd::string m_uniqueId;
+
             AZStd::vector<ShaderInputStaticSamplerDescriptor> m_staticSamplers;
 
             AZStd::vector<ShaderInputBufferDescriptor> m_inputsForBuffers;
@@ -319,5 +326,8 @@ namespace AZ
             /// The computed hash value.
             HashValue64 m_hash = HashValue64{ 0 };
         };
+
+        // Suitable for functions that return a null const RHI::Ptr<RHI::ShaderResourceGroupLayout>&.
+        static const RHI::Ptr<RHI::ShaderResourceGroupLayout> NullSrgLayout;
     }
 }

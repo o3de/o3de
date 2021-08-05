@@ -1,17 +1,25 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-#include "LmbrCentral_precompiled.h"
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
 #include "LmbrCentralReflectionTest.h"
 #include "Shape/EditorPolygonPrismShapeComponent.h"
+#include "Shape/EditorSphereShapeComponent.h"
+#include <AZTestShared/Math/MathTestHelpers.h>
+#include <AzCore/Component/NonUniformScaleBus.h>
+#include <AzFramework/Viewport/ViewportScreen.h>
+#include <AzManipulatorTestFramework/AzManipulatorTestFramework.h>
+#include <AzManipulatorTestFramework/AzManipulatorTestFrameworkTestHelpers.h>
+#include <AzManipulatorTestFramework/ImmediateModeActionDispatcher.h>
+#include <AzManipulatorTestFramework/IndirectManipulatorViewportInteraction.h>
+#include <AzManipulatorTestFramework/ViewportInteraction.h>
+#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
+#include <AzToolsFramework/ToolsComponents/EditorNonUniformScaleComponent.h>
+#include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 
 namespace LmbrCentral
 {
@@ -42,11 +50,13 @@ namespace LmbrCentral
         </Class>
     </ObjectStream>)DELIMITER";
 
-    class LoadEditorPolygonPrismShapeComponentFromVersion1
-        : public LoadEditorComponentTest<EditorPolygonPrismShapeComponent>
+    class LoadEditorPolygonPrismShapeComponentFromVersion1 : public LoadEditorComponentTest<EditorPolygonPrismShapeComponent>
     {
     protected:
-        const char* GetSourceDataBuffer() const override { return kEditorPolygonPrismComponentVersion1; }
+        const char* GetSourceDataBuffer() const override
+        {
+            return kEditorPolygonPrismComponentVersion1;
+        }
     };
 
     TEST_F(LoadEditorPolygonPrismShapeComponentFromVersion1, Application_IsRunning)
@@ -68,7 +78,8 @@ namespace LmbrCentral
     TEST_F(LoadEditorPolygonPrismShapeComponentFromVersion1, Height_MatchesSourceData)
     {
         AZ::ConstPolygonPrismPtr polygonPrism;
-        PolygonPrismShapeComponentRequestBus::EventResult(polygonPrism, m_entity->GetId(), &PolygonPrismShapeComponentRequestBus::Events::GetPolygonPrism);
+        PolygonPrismShapeComponentRequestBus::EventResult(
+            polygonPrism, m_entity->GetId(), &PolygonPrismShapeComponentRequestBus::Events::GetPolygonPrism);
 
         EXPECT_FLOAT_EQ(polygonPrism->GetHeight(), 1.57f);
     }
@@ -76,16 +87,128 @@ namespace LmbrCentral
     TEST_F(LoadEditorPolygonPrismShapeComponentFromVersion1, Vertices_MatchesSourceData)
     {
         AZ::ConstPolygonPrismPtr polygonPrism;
-        PolygonPrismShapeComponentRequestBus::EventResult(polygonPrism, m_entity->GetId(), &PolygonPrismShapeComponentRequestBus::Events::GetPolygonPrism);
+        PolygonPrismShapeComponentRequestBus::EventResult(
+            polygonPrism, m_entity->GetId(), &PolygonPrismShapeComponentRequestBus::Events::GetPolygonPrism);
 
-        AZStd::vector<AZ::Vector2> sourceVertices = 
-        {
-            AZ::Vector2(-0.57f, -0.57f),
-            AZ::Vector2(0.57f, -0.57f),
-            AZ::Vector2(0.57f, 0.57f),
-            AZ::Vector2(-0.57f, 0.57f)
-        };
+        AZStd::vector<AZ::Vector2> sourceVertices = { AZ::Vector2(-0.57f, -0.57f), AZ::Vector2(0.57f, -0.57f), AZ::Vector2(0.57f, 0.57f),
+                                                      AZ::Vector2(-0.57f, 0.57f) };
         EXPECT_EQ(polygonPrism->m_vertexContainer.GetVertices(), sourceVertices);
     }
-}
 
+    class EditorPolygonPrismShapeComponentFixture : public UnitTest::ToolsApplicationFixture
+    {
+    public:
+        void SetUpEditorFixtureImpl() override;
+        void TearDownEditorFixtureImpl() override;
+
+        AZStd::unique_ptr<AZ::ComponentDescriptor> m_editorPolygonPrismShapeComponentDescriptor;
+        AZStd::unique_ptr<AZ::ComponentDescriptor> m_editorSphereShapeComponentDescriptor;
+
+        AZ::Entity* m_entity = nullptr;
+    };
+
+    void EditorPolygonPrismShapeComponentFixture::SetUpEditorFixtureImpl()
+    {
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+
+        // need to reflect EditorSphereShapeComponent in order for EditorBaseShapeComponent to be reflected
+        m_editorSphereShapeComponentDescriptor = AZStd::unique_ptr<AZ::ComponentDescriptor>(EditorSphereShapeComponent::CreateDescriptor());
+
+        m_editorPolygonPrismShapeComponentDescriptor =
+            AZStd::unique_ptr<AZ::ComponentDescriptor>(EditorPolygonPrismShapeComponent::CreateDescriptor());
+
+        ShapeComponentConfig::Reflect(serializeContext);
+        PolygonPrismShape::Reflect(serializeContext);
+        m_editorSphereShapeComponentDescriptor->Reflect(serializeContext);
+        m_editorPolygonPrismShapeComponentDescriptor->Reflect(serializeContext);
+
+        UnitTest::CreateDefaultEditorEntity("PolygonPrismShapeComponentEntity", &m_entity);
+        m_entity->Deactivate();
+        m_entity->CreateComponent(AzToolsFramework::Components::EditorNonUniformScaleComponent::RTTI_Type());
+        m_entity->CreateComponent(EditorPolygonPrismShapeComponentTypeId);
+        m_entity->Activate();
+    }
+
+    void EditorPolygonPrismShapeComponentFixture::TearDownEditorFixtureImpl()
+    {
+        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+            &AzToolsFramework::EditorEntityContextRequestBus::Events::DestroyEditorEntity, m_entity->GetId());
+        m_entity = nullptr;
+
+        m_editorPolygonPrismShapeComponentDescriptor.reset();
+        m_editorSphereShapeComponentDescriptor.reset();
+    }
+
+    using EditorPolygonPrismShapeComponentManipulatorFixture =
+        UnitTest::IndirectCallManipulatorViewportInteractionFixtureMixin<EditorPolygonPrismShapeComponentFixture>;
+
+    TEST_F(EditorPolygonPrismShapeComponentManipulatorFixture, PolygonPrismNonUniformScale_ManipulatorsScaleCorrectly)
+    {
+        // set the non-uniform scale and enter the polygon prism shape component's component mode
+        const AZ::Vector3 nonUniformScale(2.0f, 3.0f, 4.0f);
+        AZ::NonUniformScaleRequestBus::Event(m_entity->GetId(), &AZ::NonUniformScaleRequests::SetScale, nonUniformScale);
+
+        AzToolsFramework::SelectEntity(m_entity->GetId());
+
+        AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
+            &AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Events::AddSelectedComponentModesOfType,
+            EditorPolygonPrismShapeComponentTypeId);
+
+        // position the camera so it is looking down at the polygon prism
+        AzFramework::SetCameraTransform(
+            m_cameraState,
+            AZ::Transform::CreateFromQuaternionAndTranslation(
+                AZ::Quaternion::CreateRotationX(-AZ::Constants::HalfPi), AZ::Vector3(0.0f, 0.0f, 20.0f)));
+
+        // the first vertex of the polygon prism should be at (-2, -2, 0) in its local space
+        // because of the non-uniform scale, that should be (-4, -6, 0) in world space
+        const AZ::Vector3 worldStart(-4.0f, -6.0f, 0.0f);
+
+        // position in world space to drag the vertex to
+        const AZ::Vector3 worldEnd(-8.0f, -9.0f, 0.0f);
+
+        const auto screenStart = AzFramework::WorldToScreen(worldStart, m_cameraState);
+        const auto screenEnd = AzFramework::WorldToScreen(worldEnd, m_cameraState);
+
+        // small diagonal offset to ensure we interact with the planar manipulator and not one of the linear manipulators
+        const AzFramework::ScreenVector offset(5, -5);
+
+        m_actionDispatcher
+            ->CameraState(m_cameraState)
+            // move the mouse to the first vertex of the polygon prism
+            ->MousePosition(screenStart)
+            // click to activate the manipulator
+            ->MouseLButtonDown()
+            ->MouseLButtonUp()
+            // offset the mouse position slightly to ensure we get the planar manipulator and not one of the linear manipulators
+            ->MousePosition(screenStart + offset)
+            // drag to move the manipulator
+            ->MouseLButtonDown()
+            ->MousePosition(screenEnd + offset)
+            ->MouseLButtonUp();
+
+        AZ::PolygonPrismPtr polygonPrism = nullptr;
+        PolygonPrismShapeComponentRequestBus::EventResult(
+            polygonPrism, m_entity->GetId(), &PolygonPrismShapeComponentRequests::GetPolygonPrism);
+
+        AZ::Vector2 vertex;
+        polygonPrism->m_vertexContainer.GetVertex(0, vertex);
+
+        // dragging the vertex to (-8, -9, 0) in world space should move its local translation to (-4, -3, 0)
+        AZ::Vector2 expectedVertex(-4.0f, -3.0f);
+        EXPECT_THAT(vertex, UnitTest::IsCloseTolerance(expectedVertex, 1e-2f));
+
+        // now check the manipulator is still in the correct position relative to the vertex
+        // by starting a drag from the new vertex world position
+        m_actionDispatcher->CameraState(m_cameraState)
+            ->MousePosition(screenEnd + offset)
+            ->MouseLButtonDown()
+            ->MousePosition(screenStart + offset)
+            ->MouseLButtonUp();
+
+        polygonPrism->m_vertexContainer.GetVertex(0, vertex);
+        expectedVertex = AZ::Vector2(-2.0f, -2.0f);
+        EXPECT_THAT(vertex, UnitTest::IsCloseTolerance(expectedVertex, 1e-2f));
+    }
+} // namespace LmbrCentral

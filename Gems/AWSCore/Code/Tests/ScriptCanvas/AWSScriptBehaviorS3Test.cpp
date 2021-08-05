@@ -1,12 +1,8 @@
 /*
- * All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates, or
- * a third party where indicated.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
- * For complete copyright and license terms please see the LICENSE at the root of this
- * distribution (the "License"). All use of this software is governed by the License,
- * or, if provided, by the license below or the license accompanying this file. Do not
- * remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
 
@@ -127,11 +123,11 @@ TEST_F(AWSScriptBehaviorS3Test, GetObjectRaw_CallWithEmptyOutfileName_InvokeOnEr
     AWSScriptBehaviorS3::GetObjectRaw("dummyBucket", "dummyObject", "dummyRegion", "");
 }
 
-TEST_F(AWSScriptBehaviorS3Test, GetObjectRaw_CallWithOutfileNameMissFullPath_InvokeOnError)
+TEST_F(AWSScriptBehaviorS3Test, GetObjectRaw_CallWithOutfileFailedToResolve_InvokeOnError)
 {
     AWSScriptBehaviorS3NotificationBusHandlerMock s3HandlerMock;
     EXPECT_CALL(s3HandlerMock, OnGetObjectError(::testing::_)).Times(1);
-    AWSScriptBehaviorS3::GetObjectRaw("dummyBucket", "dummyObject", "dummyRegion", "dummyOut.txt");
+    AWSScriptBehaviorS3::GetObjectRaw("dummyBucket", "dummyObject", "dummyRegion", "@dummy@/dummyOut.txt");
 }
 
 TEST_F(AWSScriptBehaviorS3Test, GetObjectRaw_CallWithOutfileNameIsDirectory_InvokeOnError)

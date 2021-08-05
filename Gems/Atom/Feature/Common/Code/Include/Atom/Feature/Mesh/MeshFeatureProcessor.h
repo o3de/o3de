@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -72,9 +68,9 @@ namespace AZ
             void UpdateDrawPackets(bool forceUpdate = false);
             void BuildCullable();
             void UpdateCullBounds(const TransformServiceFeatureProcessor* transformService);
-            void SelectMotionVectorShader(Data::Instance<RPI::Material> material);
             void UpdateObjectSrg();
             bool MaterialRequiresForwardPassIblSpecular(Data::Instance<RPI::Material> material) const;
+            void SetVisible(bool isVisible);
 
             using DrawPacketList = AZStd::vector<RPI::MeshDrawPacket>;
 
@@ -82,11 +78,11 @@ namespace AZ
             RPI::Cullable m_cullable;
             MaterialAssignmentMap m_materialAssignments;
 
+            MeshHandleDescriptor m_descriptor;
             Data::Instance<RPI::Model> m_model;
 
             //! A reference to the original model asset in case it got cloned before creating the model instance.
             Data::Asset<RPI::ModelAsset> m_originalModelAsset;
-            MeshFeatureProcessorInterface::RequiresCloneCallback m_requiresCloningCallback;
 
             Data::Instance<RPI::ShaderResourceGroup> m_shaderResourceGroup;
             AZStd::unique_ptr<MeshLoader> m_meshLoader;
@@ -95,14 +91,13 @@ namespace AZ
 
             TransformServiceFeatureProcessorInterface::ObjectId m_objectId;
 
+            Aabb m_aabb = Aabb::CreateNull();
+
             bool m_cullBoundsNeedsUpdate = false;
             bool m_cullableNeedsRebuild = false;
             bool m_objectSrgNeedsUpdate = true;
             bool m_excludeFromReflectionCubeMaps = false;
-            bool m_skinnedMeshWithMotion = false;
-            bool m_rayTracingEnabled = true;
             bool m_visible = true;
-            bool m_useForwardPassIblSpecular = false;
             bool m_hasForwardPassIblSpecularMaterial = false;
         };
 
@@ -132,17 +127,11 @@ namespace AZ
             void OnEndPrepareRender() override;
 
             MeshHandle AcquireMesh(
-                const Data::Asset<RPI::ModelAsset>& modelAsset,
-                const MaterialAssignmentMap& materials = {},
-                bool skinnedMeshWithMotion = false,
-                bool rayTracingEnabled = true,
-                RequiresCloneCallback requiresCloneCallback = {}) override;
+                const MeshHandleDescriptor& descriptor,
+                const MaterialAssignmentMap& materials = {}) override;
             MeshHandle AcquireMesh(
-                const Data::Asset<RPI::ModelAsset> &modelAsset,
-                const Data::Instance<RPI::Material>& material,
-                bool skinnedMeshWithMotion = false,
-                bool rayTracingEnabled = true,
-                RequiresCloneCallback requiresCloneCallback = {}) override;
+                const MeshHandleDescriptor& descriptor,
+                const Data::Instance<RPI::Material>& material) override;
             bool ReleaseMesh(MeshHandle& meshHandle) override;
             MeshHandle CloneMesh(const MeshHandle& meshHandle) override;
 
@@ -159,6 +148,9 @@ namespace AZ
                 const AZ::Vector3& nonUniformScale = AZ::Vector3::CreateOne()) override;
             Transform GetTransform(const MeshHandle& meshHandle) override;
             Vector3 GetNonUniformScale(const MeshHandle& meshHandle) override;
+
+            void SetLocalAabb(const MeshHandle& meshHandle, const AZ::Aabb& localAabb) override;
+            AZ::Aabb GetLocalAabb(const MeshHandle& meshHandle) const override;
 
             void SetSortKey(const MeshHandle& meshHandle, RHI::DrawItemSortKey sortKey) override;
             RHI::DrawItemSortKey GetSortKey(const MeshHandle& meshHandle) override;

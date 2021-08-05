@@ -1,20 +1,19 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
+#include <Atom/RHI.Reflect/MemoryStatistics.h>
 #include <Atom/RPI.Public/GpuQuery/GpuQueryTypes.h>
 
+#include <AzCore/Name/Name.h>
 #include <AzCore/std/containers/array.h>
+#include <AzCore/std/containers/variant.h>
 #include <AzCore/std/string/string.h>
 
 namespace AZ
@@ -254,6 +253,44 @@ namespace AZ
 
         };
 
+        class ImGuiGpuMemoryView
+        {
+        public:
+            // Draw the overall GPU memory profiling window.
+            void DrawGpuMemoryWindow(bool& draw);
+
+        private:
+            // Draw the heap usage pie chart
+            void DrawPieChart(const AZ::RHI::MemoryStatistics::Heap& heap);
+
+            // Update the saved pointers in m_tableRows according to new data/filters
+            void UpdateTableRows();
+
+            void DrawTable();
+
+            // Sort the table according to the appropriate column.
+            void SortTable(ImGuiTableSortSpecs* sortSpecs);
+
+            struct TableRow
+            {
+                Name m_parentPoolName;
+                Name m_bufImgName;
+                size_t m_sizeInBytes = 0;
+                AZStd::string m_bindFlags;
+            };
+
+            // Table settings
+            bool m_includeBuffers = true;
+            bool m_includeImages = true;
+            bool m_includeTransientAttachments = true;
+
+            ImGuiTextFilter m_nameFilter;
+
+            AZStd::vector<TableRow> m_tableRows;
+            AZStd::vector<AZ::RHI::MemoryStatistics::Pool> m_savedPools;
+            AZStd::vector<AZ::RHI::MemoryStatistics::Heap> m_savedHeaps;
+        };
+
         class ImGuiGpuProfiler
         {
         public:
@@ -279,9 +316,11 @@ namespace AZ
 
             bool m_drawTimestampView = false;
             bool m_drawPipelineStatisticsView = false;
+            bool m_drawGpuMemoryView = false;
 
             ImGuiTimestampView m_timestampView;
             ImGuiPipelineStatisticsView m_pipelineStatisticsView;
+            ImGuiGpuMemoryView m_gpuMemoryView;
         };
     } //namespace Render
 } // namespace AZ

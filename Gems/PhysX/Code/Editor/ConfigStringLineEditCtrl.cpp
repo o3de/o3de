@@ -1,16 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-#include "PhysX_precompiled.h"
-
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include <AzFramework/Physics/Material.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyQTConstants.h>
 #include <AzQtComponents/Components/StyledLineEdit.h>
@@ -93,7 +87,7 @@ namespace PhysX
         }
     }
 
-    void ConfigStringLineEditCtrl::SetForbiddenStrings(const AZStd::unordered_set<AZStd::string>& forbiddenStrings)
+    void ConfigStringLineEditCtrl::SetForbiddenStrings(const UniqueStringContainer::StringSet& forbiddenStrings)
     {
         m_forbiddenStrings = forbiddenStrings;
     }
@@ -122,7 +116,7 @@ namespace PhysX
 
     void ConfigStringLineEditValidator::OnEditStart(AZ::Crc32 stringGroupId
         , const AZStd::string& stringToEdit
-        , const AZStd::unordered_set<AZStd::string>& forbiddenStrings
+        , const UniqueStringContainer::StringSet& forbiddenStrings
         , int stringMaxLength
         , bool removeEditedString)
     {
@@ -219,6 +213,14 @@ namespace PhysX
                 GUI->setMaxLen(maxLen);
             }
         }
+        else if (attrib == AZ::Edit::Attributes::ReadOnly)
+        {
+            bool isReadOnly = false;
+            if (attrValue->Read<AZ::Crc32>(isReadOnly))
+            {
+                GUI->setEnabled(!isReadOnly);
+            }
+        }
         else if (attrib == Physics::MaterialConfiguration::s_stringGroup)
         {
             AZ::Crc32 uniqueGroup;
@@ -229,23 +231,23 @@ namespace PhysX
         }
         else if (attrib == Physics::MaterialConfiguration::s_forbiddenStringSet)
         {
-            AZStd::unordered_set<AZStd::string> forbiddenStringsUnorderedSet;
+            UniqueStringContainer::StringSet forbiddenStringsUnorderedSet;
             AZStd::set<AZStd::string> forbiddenStringsSet;
             AZStd::vector<AZStd::string> forbiddenStringsVector;
 
-            if (attrValue->Read<AZStd::unordered_set<AZStd::string>>(forbiddenStringsUnorderedSet))
+            if (attrValue->Read<UniqueStringContainer::StringSet>(forbiddenStringsUnorderedSet))
             {
                 GUI->SetForbiddenStrings(forbiddenStringsUnorderedSet);
             }
             else if (attrValue->Read<AZStd::set<AZStd::string>>(forbiddenStringsSet))
             {
-                forbiddenStringsUnorderedSet = AZStd::unordered_set<AZStd::string>(forbiddenStringsSet.begin()
+                forbiddenStringsUnorderedSet = UniqueStringContainer::StringSet(forbiddenStringsSet.begin()
                     , forbiddenStringsSet.end());
                 GUI->SetForbiddenStrings(forbiddenStringsUnorderedSet);
             }
             else if (attrValue->Read<AZStd::vector<AZStd::string>>(forbiddenStringsVector))
             {
-                forbiddenStringsUnorderedSet = AZStd::unordered_set<AZStd::string>(forbiddenStringsVector.begin()
+                forbiddenStringsUnorderedSet = UniqueStringContainer::StringSet(forbiddenStringsVector.begin()
                     , forbiddenStringsVector.end());
                 GUI->SetForbiddenStrings(forbiddenStringsUnorderedSet);
             }

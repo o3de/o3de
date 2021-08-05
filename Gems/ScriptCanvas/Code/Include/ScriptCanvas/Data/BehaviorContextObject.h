@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
@@ -41,8 +37,7 @@ namespace ScriptCanvas
         static void Reflect(AZ::ReflectContext* reflection);
 
         static BehaviorContextObjectPtr Create(const AZ::BehaviorClass& behaviorClass, const void* value = nullptr);
-        static BehaviorContextObjectPtr CreateDeepCopy(const AZ::BehaviorClass& behaviorClass, const BehaviorContextObject* value = nullptr);
-
+        
         template<typename t_Value>
         AZ_INLINE static BehaviorContextObjectPtr Create(const t_Value& value, const AZ::BehaviorClass& behaviorClass);
 
@@ -121,6 +116,8 @@ namespace ScriptCanvas
 
         BehaviorContextObject& operator=(const BehaviorContextObject&) = delete;
 
+        BehaviorContextObject(const BehaviorContextObject&) = delete;
+
         // copy ctor
         AZ_FORCE_INLINE BehaviorContextObject(const void* source, const AnyTypeInfo& typeInfo, AZ::u32 flags);
 
@@ -138,13 +135,6 @@ namespace ScriptCanvas
         AZ_FORCE_INLINE void add_ref();
 
         void release();
-
-    public:
-        // no copying allowed, this is here to allow compile time compatibility with storage in of BehaviorContextObjectPtr AZStd::any, only
-        AZ_FORCE_INLINE BehaviorContextObject(const BehaviorContextObject&)
-        {
-            AZ_Assert(false, "no copying allowed, this is here to allow storage in of BehaviorContextObjectPtr AZStd::any, only");
-        }
     };
 
     AZ_FORCE_INLINE BehaviorContextObject::BehaviorContextObject(const void* value, const AnyTypeInfo& typeInfo, AZ::u32 flags)

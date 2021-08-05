@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Math/Quaternion.h>
@@ -45,6 +41,7 @@
 
 #include <MCore/Source/IDGenerator.h>
 #include <MCore/Source/Compare.h>
+#include <MCore/Source/LogManager.h>
 #include <MCore/Source/OBB.h>
 
 #include <Atom/RPI.Reflect/Model/MorphTargetDelta.h>
@@ -1018,7 +1015,7 @@ namespace EMotionFX
         const uint32 numGroups = mNodeGroups.GetLength();
         for (uint32 i = 0; i < numGroups; ++i)
         {
-            mNodeGroups[i]->Destroy();
+            delete mNodeGroups[i];
         }
         mNodeGroups.Clear();
     }
@@ -2088,7 +2085,7 @@ namespace EMotionFX
     {
         if (delFromMem)
         {
-            mNodeGroups[index]->Destroy();
+            delete mNodeGroups[index];
         }
 
         mNodeGroups.Remove(index);
@@ -2100,7 +2097,7 @@ namespace EMotionFX
         mNodeGroups.RemoveByValue(group);
         if (delFromMem)
         {
-            group->Destroy();
+            delete group;
         }
     }
 

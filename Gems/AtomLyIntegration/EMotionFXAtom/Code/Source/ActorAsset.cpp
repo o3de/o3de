@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <ActorAsset.h>
 #include <AtomActorInstance.h>
@@ -100,12 +96,11 @@ namespace AZ
                         skinnedSubMesh.m_vertexCount = aznumeric_cast<uint32_t>(subMeshVertexCount);
                         lodVertexCount += aznumeric_cast<uint32_t>(subMeshVertexCount);
 
-                        // The default material id used by a sub-mesh is the guid of the source .fbx plus the subId which is a unique material ID from the scene API
-                        AZ::u32 subId = modelMesh.GetMaterialAsset().GetId().m_subId;
-                        AZ::Data::AssetId materialId{ actorAssetId.m_guid, subId };
+                        skinnedSubMesh.m_materialSlot = actor->GetMeshAsset()->FindMaterialSlot(modelMesh.GetMaterialSlotId());
 
                         // Queue the material asset - the ModelLod seems to handle delayed material loads
-                        skinnedSubMesh.m_material = Data::AssetManager::Instance().GetAsset(materialId, azrtti_typeid<RPI::MaterialAsset>(), skinnedSubMesh.m_material.GetAutoLoadBehavior());
+                        skinnedSubMesh.m_materialSlot.m_defaultMaterialAsset.QueueLoad();
+
                         subMeshes.push_back(skinnedSubMesh);
                     }
                     else
@@ -311,7 +306,8 @@ namespace AZ
             Data::Asset<RPI::ModelAsset> modelAsset = actor->GetMeshAsset();
             if (!modelAsset.IsReady())
             {
-                AZ_Error("CreateSkinnedMeshInputFromActor", false, "Attempting to create skinned mesh input buffers for an actor that doesn't have a loaded model.");
+                AZ_Warning("CreateSkinnedMeshInputFromActor", false, "Check if the actor has a mesh added. Right click the source file in the asset browser, click edit settings, "
+                    "and navigate to the Meshes tab. Add a mesh if it's missing.");
                 return nullptr;
             }
 

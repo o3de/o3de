@@ -1,16 +1,12 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 #
 
 set(FILES
-    Source/PhysX_precompiled.h
     Source/SystemComponent.cpp
     Source/SystemComponent.h
     Include/PhysX/SystemComponentBus.h
@@ -75,8 +71,6 @@ set(FILES
     Source/Shape.cpp
     Source/Material.cpp
     Source/Material.h
-    Source/Joint.cpp
-    Source/Joint.h
     Source/ForceRegionForces.cpp
     Source/ForceRegionForces.h
     Source/ForceRegion.cpp
@@ -104,6 +98,7 @@ set(FILES
     Include/PhysX/Debug/PhysXDebugConfiguration.h
     Include/PhysX/Debug/PhysXDebugInterface.h
     Include/PhysX/Configuration/PhysXConfiguration.h
+    Include/PhysX/Joint/Configuration/PhysXJointConfiguration.h
     Source/Common/PhysXSceneQueryHelpers.h
     Source/Common/PhysXSceneQueryHelpers.cpp
     Source/Configuration/PhysXConfiguration.cpp
@@ -112,6 +107,11 @@ set(FILES
     Source/Debug/PhysXDebug.h
     Source/Debug/PhysXDebug.cpp
     Source/Debug/Configuration/PhysXDebugConfiguration.cpp
+    Source/Joint/PhysXJoint.h
+    Source/Joint/PhysXJoint.cpp
+    Source/Joint/PhysXJointUtils.h
+    Source/Joint/PhysXJointUtils.cpp
+    Source/Joint/Configuration/PhysXJointConfiguration.cpp
     Source/Scene/PhysXScene.h
     Source/Scene/PhysXScene.cpp
     Source/Scene/PhysXSceneInterface.h
@@ -128,6 +128,8 @@ set(FILES
     Source/System/PhysXCpuDispatcher.h
     Source/System/PhysXJob.cpp
     Source/System/PhysXJob.h
+    Source/System/PhysXJointInterface.h
+    Source/System/PhysXJointInterface.cpp
     Source/System/PhysXSdkCallbacks.h
     Source/System/PhysXSdkCallbacks.cpp
     Source/System/PhysXSystem.h

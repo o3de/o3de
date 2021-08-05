@@ -1,23 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-its licensors.
+Copyright (c) Contributors to the Open 3D Engine Project.
+For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
-For complete copyright and license terms please see the LICENSE at the root of this
-distribution (the "License"). All use of this software is governed by the License,
-or, if provided, by the license below or the license accompanying this file. Do not
-remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+SPDX-License-Identifier: Apache-2.0 OR MIT
 -->
 
 <Project>
     <PropertyGroup>
         <UseMultiToolTask>true</UseMultiToolTask>
         <EnforceProcessCountAcrossBuilds>true</EnforceProcessCountAcrossBuilds>
+        <!-- Add a mapping of configurations to those known by vcpkg to prevent warnings/messages during the build -->
+@VCPKG_CONFIGURATION_MAPPING@
+        <!-- Disable vcpkg to prevent include and linking paths from being added by the vcpkg integration -->
+        <VcpkgEnabled>false</VcpkgEnabled>
     </PropertyGroup>
     <ItemDefinitionGroup>
         <ClCompile>
-          <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+            <!-- We pass the external flags directly since CMake did not support it. Once the minimal version of CMake
+                 handles external headers in MSVC, we can remove that code and this
+            -->
+            <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
         </ClCompile>
     </ItemDefinitionGroup>
+    <!-- Continue scanning upwards to pick up all Directory.Build.props -->
+    <Import Condition="'@scan_above_directory_build_props@' != ''" Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
 </Project>

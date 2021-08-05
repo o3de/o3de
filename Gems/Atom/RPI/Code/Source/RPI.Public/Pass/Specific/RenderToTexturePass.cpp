@@ -1,18 +1,15 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RHI/FrameScheduler.h>
 #include <Atom/RHI.Reflect/Format.h>
 
+#include <Atom/RPI.Public/Pass/AttachmentReadback.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Atom/RPI.Public/Pass/Specific/RenderToTexturePass.h>
@@ -50,7 +47,7 @@ namespace AZ
         {
         }
         
-        void RenderToTexturePass::BuildAttachmentsInternal()
+        void RenderToTexturePass::BuildInternal()
         {
             m_outputAttachment = aznew PassAttachment();
             m_outputAttachment->m_name = "RenderTarget";
@@ -73,7 +70,7 @@ namespace AZ
 
             m_attachmentBindings.push_back(outputBinding);
             
-            Base::BuildAttachmentsInternal();
+            Base::BuildInternal();
         }
 
         void RenderToTexturePass::FrameBeginInternal(FramePrepareParams params)
@@ -82,17 +79,6 @@ namespace AZ
             params.m_viewportState = m_viewport;
 
             Base::FrameBeginInternal(params);
-
-            // for read back output
-            if (m_readback)
-            {
-                m_readback->FrameBegin(params);
-                if (m_readback->IsFinished())
-                {
-                    // Done reading. Remove the reference
-                    m_readback = nullptr;
-                }
-            }
         }
 
         void RenderToTexturePass::ResizeOutput(uint32_t width, uint32_t height)
@@ -100,7 +86,7 @@ namespace AZ
             m_passData.m_width = width;
             m_passData.m_height = height;
             OnUpdateOutputSize();
-            QueueForBuildAttachments();
+            QueueForBuildAndInitialization();
         }
 
         void RenderToTexturePass::OnUpdateOutputSize()
@@ -123,9 +109,10 @@ namespace AZ
         {
             if (m_outputAttachment)
             {
-                m_readback = readback;
+                m_readbackOption = PassAttachmentReadbackOption::Output;
+                m_attachmentReadback = readback;
                 AZStd::string readbackName = AZStd::string::format("%s_%s", m_outputAttachment->GetAttachmentId().GetCStr(), GetName().GetCStr());
-                m_readback->ReadPassAttachment(m_outputAttachment.get(), AZ::Name(readbackName));
+                m_attachmentReadback->ReadPassAttachment(m_outputAttachment.get(), AZ::Name(readbackName));
             }
         }
 

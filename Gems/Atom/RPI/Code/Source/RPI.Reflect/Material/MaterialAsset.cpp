@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
@@ -18,6 +14,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Component/TickBus.h>
 
 namespace AZ
 {
@@ -47,6 +44,7 @@ namespace AZ
         {
             MaterialReloadNotificationBus::Handler::BusDisconnect();
             Data::AssetBus::Handler::BusDisconnect();
+            AssetInitBus::Handler::BusDisconnect();
         }
 
         const Data::Asset<MaterialTypeAsset>& MaterialAsset::GetMaterialTypeAsset() const
@@ -64,14 +62,34 @@ namespace AZ
             return m_materialTypeAsset->GetMaterialFunctors();
         }
 
-        const AZ::Data::Asset<ShaderResourceGroupAsset>& MaterialAsset::GetMaterialSrgAsset() const
+        const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialAsset::GetMaterialSrgLayout(const SupervariantIndex& supervariantIndex) const
         {
-            return m_materialTypeAsset->GetMaterialSrgAsset();
+            return m_materialTypeAsset->GetMaterialSrgLayout(supervariantIndex);
         }
 
-        const AZ::Data::Asset<ShaderResourceGroupAsset>& MaterialAsset::GetObjectSrgAsset() const
+        const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialAsset::GetMaterialSrgLayout(const AZ::Name& supervariantName) const
         {
-            return m_materialTypeAsset->GetObjectSrgAsset();
+            return m_materialTypeAsset->GetMaterialSrgLayout(supervariantName);
+        }
+
+        const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialAsset::GetMaterialSrgLayout() const
+        {
+            return m_materialTypeAsset->GetMaterialSrgLayout();
+        }
+
+        const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialAsset::GetObjectSrgLayout(const SupervariantIndex& supervariantIndex) const
+        {
+            return m_materialTypeAsset->GetObjectSrgLayout(supervariantIndex);
+        }
+
+        const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialAsset::GetObjectSrgLayout(const AZ::Name& supervariantName) const
+        {
+            return m_materialTypeAsset->GetObjectSrgLayout(supervariantName);
+        }
+
+        const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialAsset::GetObjectSrgLayout() const
+        {
+            return m_materialTypeAsset->GetObjectSrgLayout();
         }
 
         const MaterialPropertiesLayout* MaterialAsset::GetMaterialPropertiesLayout() const
@@ -97,6 +115,8 @@ namespace AZ
         {
             if (!m_materialTypeAsset.Get())
             {
+                AssetInitBus::Handler::BusDisconnect();
+
                 // Any MaterialAsset with invalid MaterialTypeAsset is not a successfully-loaded asset.
                 return false;
             }
@@ -104,23 +124,30 @@ namespace AZ
             {
                 Data::AssetBus::Handler::BusConnect(m_materialTypeAsset.GetId());
                 MaterialReloadNotificationBus::Handler::BusConnect(m_materialTypeAsset.GetId());
+                
+                AssetInitBus::Handler::BusDisconnect();
 
                 return true;
             }
         }
 
-        void MaterialAsset::OnMaterialTypeAssetReinitialized(const Data::Asset<MaterialTypeAsset>&)
+        void MaterialAsset::OnMaterialTypeAssetReinitialized(const Data::Asset<MaterialTypeAsset>& materialTypeAsset)
         {
-            // MaterialAsset doesn't need to reinitialize any of its own data when MaterialTypeAsset reinitializes,
-            // because all it depends on is the MaterialTypeAsset reference, rather than the data inside it.
-            // Ultimately it's the Material that cares about these changes, so we just forward any signal we get.
-            MaterialReloadNotificationBus::Event(GetId(), &MaterialReloadNotifications::OnMaterialAssetReinitialized, Data::Asset<MaterialAsset>{this, AZ::Data::AssetLoadBehavior::PreLoad});
+            // When reloads occur, it's possible for old Asset objects to hang around and report reinitialization,
+            // so we can reduce unnecessary reinitialization in that case.
+            if (materialTypeAsset.Get() == m_materialTypeAsset.Get())
+            {
+                ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->MaterialAsset::OnMaterialTypeAssetReinitialized %s", this, materialTypeAsset.GetHint().c_str());
+
+                // MaterialAsset doesn't need to reinitialize any of its own data when MaterialTypeAsset reinitializes,
+                // because all it depends on is the MaterialTypeAsset reference, rather than the data inside it.
+                // Ultimately it's the Material that cares about these changes, so we just forward any signal we get.
+                MaterialReloadNotificationBus::Event(GetId(), &MaterialReloadNotifications::OnMaterialAssetReinitialized, Data::Asset<MaterialAsset>{this, AZ::Data::AssetLoadBehavior::PreLoad});
+            }
         }
-
-        void MaterialAsset::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
+        
+        void MaterialAsset::ReinitializeMaterialTypeAsset(Data::Asset<Data::AssetData> asset)
         {
-            ShaderReloadDebugTracker::ScopedSection reloadSection("MaterialAsset::OnAssetReloaded %s", asset.GetHint().c_str());
-
             Data::Asset<MaterialTypeAsset> newMaterialTypeAsset = { asset.GetAs<MaterialTypeAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
 
             if (newMaterialTypeAsset)
@@ -135,16 +162,31 @@ namespace AZ
             }
         }
 
+        void MaterialAsset::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
+        {
+            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->MaterialAsset::OnAssetReloaded %s", this, asset.GetHint().c_str());
+            ReinitializeMaterialTypeAsset(asset);
+        }
+
+        void MaterialAsset::OnAssetReady(Data::Asset<Data::AssetData> asset)
+        {
+            // Regarding why we listen to both OnAssetReloaded and OnAssetReady, see explanation in ShaderAsset::OnAssetReady.
+            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->MaterialAsset::OnAssetReady %s", this, asset.GetHint().c_str());
+            ReinitializeMaterialTypeAsset(asset);
+        }
+
         Data::AssetHandler::LoadResult MaterialAssetHandler::LoadAssetData(
             const AZ::Data::Asset<AZ::Data::AssetData>& asset,
             AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
             const AZ::Data::AssetFilterCB& assetLoadFilterCB)
         {
-            Data::AssetHandler::LoadResult baseResult = Base::LoadAssetData(asset, stream, assetLoadFilterCB);
-            bool postLoadResult = asset.GetAs<MaterialAsset>()->PostLoadInit();
-            return ((baseResult == Data::AssetHandler::LoadResult::LoadComplete) && postLoadResult) ?
-                Data::AssetHandler::LoadResult::LoadComplete :
-                Data::AssetHandler::LoadResult::Error;
+            if (Base::LoadAssetData(asset, stream, assetLoadFilterCB) == Data::AssetHandler::LoadResult::LoadComplete)
+            {
+                asset.GetAs<MaterialAsset>()->AssetInitBus::Handler::BusConnect();
+                return Data::AssetHandler::LoadResult::LoadComplete;
+            }
+
+            return Data::AssetHandler::LoadResult::Error;
         }
 
     } // namespace RPI

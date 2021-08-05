@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "AssetProcessorManagerTest.h"
 #include "native/AssetManager/PathDependencyManager.h"
@@ -30,11 +26,7 @@ public:
     friend class GTEST_TEST_CLASS_NAME_(MultiplatformPathDependencyTest, AssetProcessed_Impl_MultiplatformDependencies);
     friend class GTEST_TEST_CLASS_NAME_(MultiplatformPathDependencyTest, AssetProcessed_Impl_MultiplatformDependencies_DeferredResolution);
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
-    friend class GTEST_TEST_CLASS_NAME_(MultiplatformPathDependencyTest, DISABLED_AssetProcessed_Impl_MultiplatformDependencies_SourcePath);
-#else
     friend class GTEST_TEST_CLASS_NAME_(MultiplatformPathDependencyTest, AssetProcessed_Impl_MultiplatformDependencies_SourcePath);
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
 
     friend class GTEST_TEST_CLASS_NAME_(AssetProcessorManagerTest, DeleteFolder_SignalsDeleteOfContainedFiles);
 
@@ -70,19 +62,11 @@ public:
     friend class GTEST_TEST_CLASS_NAME_(AbsolutePathProductDependencyTest, UnresolvedProductPathDependency_AssetProcessedTwice_ValidatePathDependenciesMap);
     friend class GTEST_TEST_CLASS_NAME_(AbsolutePathProductDependencyTest, UnresolvedSourceFileTypeProductPathDependency_DependencyHasNoProductOutput_ValidatePathDependenciesMap);
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
-    friend class GTEST_TEST_CLASS_NAME_(ModtimeScanningTest, DISABLED_ModtimeSkipping_FileUnchanged_WithoutModtimeSkipping);
-#else
     friend class GTEST_TEST_CLASS_NAME_(ModtimeScanningTest, ModtimeSkipping_FileUnchanged_WithoutModtimeSkipping);
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
 
     friend class GTEST_TEST_CLASS_NAME_(ModtimeScanningTest, ModtimeSkipping_FileUnchanged);
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
-    friend class GTEST_TEST_CLASS_NAME_(ModtimeScanningTest, DISABLED_ModtimeSkipping_EnablePlatform_ShouldProcessFilesForPlatform);
-#else
     friend class GTEST_TEST_CLASS_NAME_(ModtimeScanningTest, ModtimeSkipping_EnablePlatform_ShouldProcessFilesForPlatform);
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
 
     friend class GTEST_TEST_CLASS_NAME_(ModtimeScanningTest, ModtimeSkipping_ModifyFile);
     friend class GTEST_TEST_CLASS_NAME_(ModtimeScanningTest, ModtimeSkipping_ModifyFile_AndThenRevert_ProcessesAgain);
@@ -92,6 +76,7 @@ public:
     friend class GTEST_TEST_CLASS_NAME_(ModtimeScanningTest, ModtimeSkipping_ModifyMetadataFile);
     friend class GTEST_TEST_CLASS_NAME_(ModtimeScanningTest, ModtimeSkipping_DeleteFile);
     friend class GTEST_TEST_CLASS_NAME_(DeleteTest, DeleteFolderSharedAcrossTwoScanFolders_CorrectFileAndFolderAreDeletedFromCache);
+    friend class GTEST_TEST_CLASS_NAME_(MetadataFileTest, MetadataFile_SourceFileExtensionDifferentCase);
 
     friend class AssetProcessorManagerTest;
     friend struct ModtimeScanningTest;
@@ -2362,11 +2347,7 @@ TEST_F(PathDependencyTest, ChangeDependencies_Existing_ResolveCorrectly)
     );
 }
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
-TEST_F(PathDependencyTest, DISABLED_MixedPathDependencies_Existing_ResolveCorrectly)
-#else
 TEST_F(PathDependencyTest, MixedPathDependencies_Existing_ResolveCorrectly)
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
 {
     using namespace AssetProcessor;
     using namespace AssetBuilderSDK;
@@ -2661,11 +2642,7 @@ TEST_F(MultiplatformPathDependencyTest, AssetProcessed_Impl_MultiplatformDepende
     ASSERT_NE(SearchDependencies(dependencyContainer, asset1.m_products[0]), SearchDependencies(dependencyContainer, asset1.m_products[1]));
 }
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
-TEST_F(MultiplatformPathDependencyTest, DISABLED_AssetProcessed_Impl_MultiplatformDependencies_SourcePath)
-#else
 TEST_F(MultiplatformPathDependencyTest, AssetProcessed_Impl_MultiplatformDependencies_SourcePath)
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
 {
     // One product will be pc, one will be console (order is non-deterministic)
     TestAsset asset1("testAsset1");
@@ -3894,7 +3871,7 @@ void ModtimeScanningTest::ProcessAssetJobs()
 
     for (const auto& processResult : m_data->m_processResults)
     {
-        auto file = QDir(processResult.m_destinationPath).absoluteFilePath(processResult.m_jobEntry.m_databaseSourceName + ".arc1");
+        auto file = QDir(processResult.m_destinationPath).absoluteFilePath(processResult.m_jobEntry.m_databaseSourceName.toLower() + ".arc1");
         m_data->m_productPaths.emplace(
             QDir(processResult.m_jobEntry.m_watchFolderPath)
                 .absoluteFilePath(processResult.m_jobEntry.m_databaseSourceName)
@@ -3943,11 +3920,11 @@ void ModtimeScanningTest::ExpectWork(int createJobs, int processJobs)
 {
     ASSERT_TRUE(BlockUntilIdle(5000));
 
-    ASSERT_EQ(m_data->m_mockBuilderInfoHandler.m_createJobsCount, createJobs);
-    ASSERT_EQ(m_data->m_processResults.size(), processJobs);
-    ASSERT_FALSE(m_data->m_processResults[0].m_autoFail);
-    ASSERT_FALSE(m_data->m_processResults[1].m_autoFail);
-    ASSERT_EQ(m_data->m_deletedSources.size(), 0);
+    EXPECT_EQ(m_data->m_mockBuilderInfoHandler.m_createJobsCount, createJobs);
+    EXPECT_EQ(m_data->m_processResults.size(), processJobs);
+    EXPECT_FALSE(m_data->m_processResults[0].m_autoFail);
+    EXPECT_FALSE(m_data->m_processResults[1].m_autoFail);
+    EXPECT_EQ(m_data->m_deletedSources.size(), 0);
 
     m_isIdling = false;
 }
@@ -3975,11 +3952,7 @@ void ModtimeScanningTest::SetFileContents(QString filePath, QString contents)
     file.close();
 }
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
-TEST_F(ModtimeScanningTest, DISABLED_ModtimeSkipping_FileUnchanged_WithoutModtimeSkipping)
-#else
 TEST_F(ModtimeScanningTest, ModtimeSkipping_FileUnchanged_WithoutModtimeSkipping)
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
 {
     using namespace AzToolsFramework::AssetSystem;
 
@@ -4008,11 +3981,7 @@ TEST_F(ModtimeScanningTest, ModtimeSkipping_FileUnchanged)
     ExpectNoWork();
 }
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
-TEST_F(ModtimeScanningTest, DISABLED_ModtimeSkipping_EnablePlatform_ShouldProcessFilesForPlatform)
-#else
 TEST_F(ModtimeScanningTest, ModtimeSkipping_EnablePlatform_ShouldProcessFilesForPlatform)
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
 {
     using namespace AzToolsFramework::AssetSystem;
 
@@ -4633,11 +4602,7 @@ TEST_F(AssetProcessorManagerTest, UpdateSourceFileDependenciesDatabase_WildcardM
     dependList.clear();
 }
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
-TEST_F(AssetProcessorManagerTest, DISABLED_RemoveSource_RemoveCacheFolderIfEmpty_Ok)
-#else
 TEST_F(AssetProcessorManagerTest, RemoveSource_RemoveCacheFolderIfEmpty_Ok)
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_PROCESSOR_TESTS
 {
     using namespace AssetProcessor;
     using namespace AssetBuilderSDK;
@@ -5276,4 +5241,60 @@ void DuplicateProcessTest::SetUp()
 
     m_sharedConnection = m_assetProcessorManager->m_stateData.get();
     ASSERT_TRUE(m_sharedConnection);
+}
+
+void MetadataFileTest::SetUp()
+{
+    AssetProcessorManagerTest::SetUp();
+    m_config->AddMetaDataType("foo", "txt");
+}
+
+TEST_F(MetadataFileTest, MetadataFile_SourceFileExtensionDifferentCase)
+{
+
+    using namespace AzToolsFramework::AssetSystem;
+    using namespace AssetProcessor;
+
+    QDir tempPath(m_tempDir.path());
+
+    QString relFileName("Dummy.TXT");
+    QString absPath(tempPath.absoluteFilePath("subfolder1/Dummy.TXT"));
+    QString watchFolder = tempPath.absoluteFilePath("subfolder1");
+    UnitTestUtils::CreateDummyFile(absPath, "dummy");
+
+    JobEntry entry;
+    entry.m_watchFolderPath = watchFolder;
+    entry.m_databaseSourceName = entry.m_pathRelativeToWatchFolder = relFileName;
+    entry.m_jobKey = "txt";
+    entry.m_platformInfo = { "pc", {"host", "renderer", "desktop"} };
+    entry.m_jobRunKey = 1;
+
+    QString productPath(m_normalizedCacheRootDir.absoluteFilePath("outputfile.TXT"));
+    UnitTestUtils::CreateDummyFile(productPath);
+
+    AssetBuilderSDK::ProcessJobResponse jobResponse;
+    jobResponse.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
+    jobResponse.m_outputProducts.push_back(AssetBuilderSDK::JobProduct(productPath.toUtf8().data()));
+
+    QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, entry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, jobResponse));
+
+    ASSERT_TRUE(BlockUntilIdle(5000));
+
+    // Creating a metadata file for the source assets
+    // APM should process the source asset if a metadafile is detected
+    // We are intentionally having a source file with a different file extension casing than the one specified in the metadata rule.
+    QString metadataFile(tempPath.absoluteFilePath("subfolder1/Dummy.foo"));
+    UnitTestUtils::CreateDummyFile(metadataFile, "dummy");
+
+    // Capture the job details as the APM inspects the file.
+    JobDetails jobDetails;
+    auto connection = QObject::connect(m_assetProcessorManager.get(), &AssetProcessorManager::AssetToProcess, [&jobDetails](JobDetails job)
+        {
+            jobDetails = job;
+        });
+
+    m_assetProcessorManager->AssessAddedFile(tempPath.absoluteFilePath(metadataFile));
+
+    ASSERT_TRUE(BlockUntilIdle(5000));
+    ASSERT_EQ(jobDetails.m_jobEntry.m_pathRelativeToWatchFolder, relFileName);
 }

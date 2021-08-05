@@ -1,16 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-
-#include "LyShine_precompiled.h"
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -55,6 +49,7 @@
 #include "UiDynamicLayoutComponent.h"
 #include "UiDynamicScrollBoxComponent.h"
 #include "UiNavigationSettings.h"
+#include "LyShinePass.h"
 
 namespace LyShine
 {
@@ -119,9 +114,11 @@ namespace LyShine
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
-    void LyShineSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
+    void LyShineSystemComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        (void)required;
+#if !defined(LYSHINE_BUILDER) && !defined(LYSHINE_TESTS)
+        required.push_back(AZ_CRC("RPISystem", 0xf2add773));
+#endif
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -140,7 +137,7 @@ namespace LyShine
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     LyShineSystemComponent::LyShineSystemComponent()
     {
-        m_cursorImagePathname.SetAssetPath("engineassets/textures/cursor_green.tif");
+        m_cursorImagePathname.SetAssetPath("Textures/Cursor_Default.tif");
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -153,7 +150,6 @@ namespace LyShine
     {
         LyShineAllocatorScope::ActivateAllocators();
 
-        LyShineRequestBus::Handler::BusConnect();
         UiSystemBus::Handler::BusConnect();
         UiSystemToolsBus::Handler::BusConnect();
         UiFrameworkBus::Handler::BusConnect();
@@ -193,6 +189,17 @@ namespace LyShine
         RegisterComponentTypeForMenuOrdering(UiDynamicScrollBoxComponent::RTTI_Type());
         RegisterComponentTypeForMenuOrdering(UiParticleEmitterComponent::RTTI_Type());
         RegisterComponentTypeForMenuOrdering(UiFlipbookAnimationComponent::RTTI_Type());
+
+#if !defined(LYSHINE_BUILDER) && !defined(LYSHINE_TESTS)
+        // Add LyShine pass
+        auto* passSystem = AZ::RPI::PassSystemInterface::Get();
+        AZ_Assert(passSystem, "Cannot get the pass system.");
+        passSystem->AddPassCreator(AZ::Name("LyShinePass"), &LyShine::LyShinePass::Create);
+
+        // Setup handler for load pass template mappings
+        m_loadTemplatesHandler = AZ::RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler([this]() { this->LoadPassTemplateMappings(); });
+        AZ::RPI::PassSystemInterface::Get()->ConnectEvent(m_loadTemplatesHandler);
+#endif
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -201,16 +208,9 @@ namespace LyShine
         UiSystemBus::Handler::BusDisconnect();
         UiSystemToolsBus::Handler::BusDisconnect();
         UiFrameworkBus::Handler::BusDisconnect();
-        LyShineRequestBus::Handler::BusDisconnect();
         CrySystemEventBus::Handler::BusDisconnect();
 
         LyShineAllocatorScope::DeactivateAllocators();
-    }
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-    void LyShineSystemComponent::InitializeSystem()
-    {
-        BroadcastCursorImagePathname();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -384,6 +384,8 @@ namespace LyShine
 #endif
         m_pLyShine = new CLyShine(gEnv->pSystem);
         gEnv->pLyShine = m_pLyShine;
+
+        BroadcastCursorImagePathname();
     }
 
     void LyShineSystemComponent::OnCrySystemShutdown([[maybe_unused]] ISystem& system)
@@ -398,4 +400,13 @@ namespace LyShine
     {
         UiCursorBus::Broadcast(&UiCursorInterface::SetUiCursor, m_cursorImagePathname.GetAssetPath().c_str());
     }
+
+#if !defined(LYSHINE_BUILDER) && !defined(LYSHINE_TESTS)
+    ////////////////////////////////////////////////////////////////////////////////////////////////////
+    void LyShineSystemComponent::LoadPassTemplateMappings()
+    {
+        const char* passTemplatesFile = "Passes/LyShinePassTemplates.azasset";
+        AZ::RPI::PassSystemInterface::Get()->LoadPassTemplateMappings(passTemplatesFile);
+    }
+#endif
 }

@@ -1,17 +1,14 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
+#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/string/string.h>
@@ -64,7 +61,7 @@ namespace AZ
         class CpuProfiler
         {
         public:
-            using ThreadTimeRegionMap = AZStd::unordered_map<AZStd::string, CachedTimeRegion>;
+            using ThreadTimeRegionMap = AZStd::unordered_map<AZStd::string, AZStd::vector<CachedTimeRegion>>;
             using TimeRegionMap = AZStd::unordered_map<AZStd::thread_id, ThreadTimeRegionMap>;
 
             AZ_RTTI(CpuProfiler, "{127C1D0B-BE05-4E18-A8F6-24F3EED2ECA6}");
@@ -82,11 +79,13 @@ namespace AZ
             //! Ends a time region
             virtual void EndTimeRegion() = 0;
 
-            //! Flush cached regions from all threads to the passed parameter
-            virtual void FlushTimeRegionMap(TimeRegionMap& timeRegionMap) = 0;
+            //! Get the last frame's TimeRegionMap
+            virtual const TimeRegionMap& GetTimeRegionMap() const = 0;
 
             //! Enable/Disable the CpuProfiler
             virtual void SetProfilerEnabled(bool enabled) = 0;
+
+            virtual bool IsProfilerEnabled() const = 0 ;
         };
 
     } // namespace RPI

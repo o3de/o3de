@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RHI/DrawListTagRegistry.h>
 #include <Atom/RHI/RHISystemInterface.h>
@@ -73,7 +69,7 @@ namespace AZ
         {
             m_sizes = sizes;
             m_updateChildren = true;
-            QueueForBuildAttachments();
+            QueueForBuildAndInitialization();
 
             m_atlas.Initialize();
             for (const auto& it : m_sizes)
@@ -156,7 +152,7 @@ namespace AZ
             return m_atlas;
         }
 
-        void ProjectedShadowmapsPass::BuildAttachmentsInternal()
+        void ProjectedShadowmapsPass::BuildInternal()
         {
             UpdateChildren();
 
@@ -177,7 +173,7 @@ namespace AZ
             imageDescriptor.m_size = RHI::Size(shadowmapWidth, shadowmapWidth, 1);
             imageDescriptor.m_arraySize = m_atlas.GetArraySliceCount();
 
-            Base::BuildAttachmentsInternal();
+            Base::BuildInternal();
         }
 
         void ProjectedShadowmapsPass::GetPipelineViewTags(RPI::SortedPipelineViewTags& outTags) const

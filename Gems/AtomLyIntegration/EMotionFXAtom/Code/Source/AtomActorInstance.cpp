@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <AtomActorInstance.h>
 #include <AtomActor.h>
@@ -27,6 +23,8 @@
 #include <EMotionFX/Source/Mesh.h>
 #include <EMotionFX/Source/Node.h>
 #include <MCore/Source/AzCoreConversions.h>
+
+#include <Atom/RHI/RHIUtils.h>
 
 #include <Atom/RPI.Public/AuxGeom/AuxGeomDraw.h>
 #include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
@@ -83,12 +81,20 @@ namespace AZ
         void AtomActorInstance::UpdateBounds()
         {
             // Update RenderActorInstance world bounding box
-            // The bounding box is moving with the actor instance. It is static in the way that it does not change shape.
+            // The bounding box is moving with the actor instance.
             // The entity and actor transforms are kept in sync already.
             m_worldAABB = AZ::Aabb::CreateFromMinMax(m_actorInstance->GetAABB().GetMin(), m_actorInstance->GetAABB().GetMax());
 
             // Update RenderActorInstance local bounding box
-            m_localAABB = AZ::Aabb::CreateFromMinMax(m_actorInstance->GetStaticBasedAABB().GetMin(), m_actorInstance->GetStaticBasedAABB().GetMax());
+            // NB: computing the local bbox from the world bbox makes the local bbox artifically larger than it should be
+            // instead EMFX should support getting the local bbox from the actor instance directly
+            m_localAABB = m_worldAABB.GetTransformedAabb(m_transformInterface->GetWorldTM().GetInverse());
+
+            // Update bbox on mesh instance if it exists
+            if (m_meshFeatureProcessor && m_meshHandle && m_meshHandle->IsValid() && m_skinnedMeshInstance)
+            {
+                m_meshFeatureProcessor->SetLocalAabb(*m_meshHandle, m_localAABB);
+            }
 
             AZ::Interface<AzFramework::IEntityBoundsUnion>::Get()->RefreshEntityLocalBoundsUnion(m_entityId);
         }
@@ -240,6 +246,18 @@ namespace AZ
             return SkinningMethod::LinearSkinning;
         }
 
+        void AtomActorInstance::SetIsVisible(bool isVisible)
+        {
+            if (IsVisible() != isVisible)
+            {
+                RenderActorInstance::SetIsVisible(isVisible);
+                if (m_meshFeatureProcessor && m_meshHandle)
+                {
+                    m_meshFeatureProcessor->SetVisible(*m_meshHandle, isVisible);
+                }
+            }
+        }
+
         AtomActor* AtomActorInstance::GetRenderActor() const
         {
             EMotionFX::Integration::ActorAsset* actorAsset = m_actorAsset.Get();
@@ -288,6 +306,30 @@ namespace AZ
 
             m_meshFeatureProcessor = nullptr;
             m_skinnedMeshFeatureProcessor = nullptr;
+        }
+        
+        RPI::ModelMaterialSlotMap AtomActorInstance::GetModelMaterialSlots() const
+        {
+            Data::Asset<const RPI::ModelAsset> modelAsset = GetModelAsset();
+            if (modelAsset.IsReady())
+            {
+                return modelAsset->GetMaterialSlots();
+            }
+            else
+            {
+                return {};
+            }
+        }
+
+        MaterialAssignmentId AtomActorInstance::FindMaterialAssignmentId(
+            const MaterialAssignmentLodIndex lod, const AZStd::string& label) const
+        {
+            if (m_skinnedMeshInstance && m_skinnedMeshInstance->m_model)
+            {
+                return FindMaterialAssignmentIdInModel(m_skinnedMeshInstance->m_model, lod, label);
+            }
+
+            return MaterialAssignmentId();
         }
 
         MaterialAssignmentMap AtomActorInstance::GetMaterialAssignments() const
@@ -456,13 +498,12 @@ namespace AZ
         void AtomActorInstance::Create()
         {
             Destroy();
-
             m_skinnedMeshInputBuffers = GetRenderActor()->FindOrCreateSkinnedMeshInputBuffers();
-            AZ_Error("AtomActorInstance", m_skinnedMeshInputBuffers, "Failed to get SkinnedMeshInputBuffers from Actor.");
+            AZ_Warning("AtomActorInstance", m_skinnedMeshInputBuffers, "Failed to create SkinnedMeshInputBuffers from Actor. It is likely that this actor doesn't have any meshes");
             if (m_skinnedMeshInputBuffers)
             {
                 m_boneTransforms = CreateBoneTransformBufferFromActorInstance(m_actorInstance, GetSkinningMethod());
-                AZ_Error("AtomActorInstance", m_boneTransforms, "Failed to create bone transform buffer.");
+                AZ_Error("AtomActorInstance", m_boneTransforms || AZ::RHI::IsNullRenderer(), "Failed to create bone transform buffer.");
 
                 // If the instance is created before the default materials on the model have finished loading, the mesh feature processor will ignore it.
                 // Wait for them all to be ready before creating the instance
@@ -473,16 +514,18 @@ namespace AZ
                     const AZStd::vector< SkinnedSubMeshProperties>& subMeshProperties = inputLod.GetSubMeshProperties();
                     for (const SkinnedSubMeshProperties& submesh : subMeshProperties)
                     {
-                        AZ_Error("AtomActorInstance", submesh.m_material, "Actor does not have a valid default material in lod %d", lodIndex);
-                        if (submesh.m_material)
+                        Data::Asset<RPI::MaterialAsset> materialAsset = submesh.m_materialSlot.m_defaultMaterialAsset;
+                        AZ_Error("AtomActorInstance", materialAsset, "Actor does not have a valid default material in lod %d", lodIndex);
+
+                        if (materialAsset)
                         {
-                            if (!submesh.m_material->IsReady())
+                            if (!materialAsset->IsReady())
                             {
                                 // Start listening for the material's OnAssetReady event.
                                 // AtomActorInstance::Create is called on the main thread, so there should be no need to synchronize with the OnAssetReady event handler
                                 // since those events will also come from the main thread
-                                m_waitForMaterialLoadIds.insert(submesh.m_material->GetId());
-                                Data::AssetBus::MultiHandler::BusConnect(submesh.m_material->GetId());
+                                m_waitForMaterialLoadIds.insert(materialAsset->GetId());
+                                Data::AssetBus::MultiHandler::BusConnect(materialAsset->GetId());
                             }
                         }
                     }
@@ -515,6 +558,20 @@ namespace AZ
                 m_skinnedMeshInstance.reset();
                 m_boneTransforms.reset();
             }
+        }
+
+        template<class X>
+        void swizzle_unique(AZStd::vector<X>& values, const AZStd::vector<size_t>& indices)
+        {
+            AZStd::vector<X> out;
+            out.reserve(indices.size());
+
+            for (size_t i : indices)
+            {
+                out.push_back(AZStd::move(values[i]));
+            }
+
+            values = AZStd::move(out);
         }
 
         void AtomActorInstance::OnUpdateSkinningMatrices()
@@ -575,6 +632,30 @@ namespace AZ
                                 }
                             }
                         }
+
+                        AZ_Assert(m_wrinkleMasks.size() == m_wrinkleMaskWeights.size(), "Must have equal # of masks and weights");
+
+                        // If there's too many masks, truncate
+                        if (m_wrinkleMasks.size() > s_maxActiveWrinkleMasks)
+                        {
+                            // Build a remapping of indices (because we want to sort two vectors)
+                            AZStd::vector<size_t> remapped;
+                            remapped.resize_no_construct(m_wrinkleMasks.size());
+                            std::iota(remapped.begin(), remapped.end(), 0);
+
+                            // Sort index remapping by weight (highest first)
+                            std::sort(remapped.begin(), remapped.end(), [&](size_t ia, size_t ib) {
+                                return m_wrinkleMaskWeights[ia] > m_wrinkleMaskWeights[ib];
+                            });
+
+                            // Truncate indices list
+                            remapped.resize(s_maxActiveWrinkleMasks);
+
+                            // Remap wrinkle masks list and weights list
+                            swizzle_unique(m_wrinkleMasks, remapped);
+                            swizzle_unique(m_wrinkleMaskWeights, remapped);
+                        }
+
                         m_skinnedMeshRenderProxy->SetMorphTargetWeights(lodIndex, m_morphTargetWeights);
 
                         // Until EMotionFX and Atom lods are synchronized [ATOM-13564] we don't know which EMotionFX lod to pull the weights from
@@ -625,9 +706,14 @@ namespace AZ
             AZ_Error("ActorComponentController", meshFeatureProcessor, "Unable to find a MeshFeatureProcessorInterface on the entityId.");
             if (meshFeatureProcessor)
             {
-                // Last boolean parameter indicates if motion vector is enabled
+                MeshHandleDescriptor meshDescriptor;
+                meshDescriptor.m_modelAsset = m_skinnedMeshInstance->m_model->GetModelAsset();
+
+                // [GFX TODO][ATOM-13067] Enable raytracing on skinned meshes
+                meshDescriptor.m_isRayTracingEnabled = false;
+
                 m_meshHandle = AZStd::make_shared<MeshFeatureProcessorInterface::MeshHandle>(
-                    m_meshFeatureProcessor->AcquireMesh(m_skinnedMeshInstance->m_model->GetModelAsset(), materials, /*skinnedMeshWithMotion=*/true));
+                    m_meshFeatureProcessor->AcquireMesh(meshDescriptor, materials));
             }
 
             // If render proxies already exist, they will be auto-freed

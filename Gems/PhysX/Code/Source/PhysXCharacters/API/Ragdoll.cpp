@@ -1,18 +1,14 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
-#include <PhysX_precompiled.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzCore/std/parallel/scoped_lock.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Physics/SystemBus.h>
@@ -20,6 +16,7 @@
 #include <PhysXCharacters/API/CharacterUtils.h>
 #include <PhysX/NativeTypeIdentifiers.h>
 #include <PhysX/PhysXLocks.h>
+#include <PhysX/MathConversion.h>
 #include <Scene/PhysXScene.h>
 
 namespace PhysX
@@ -40,6 +37,8 @@ namespace PhysX
     } // namespace Internal
 
     // PhysX::Ragdoll
+    /*static*/ AZStd::mutex Ragdoll::m_sceneEventMutex;
+
     void Ragdoll::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
@@ -114,7 +113,10 @@ namespace PhysX
 
     Ragdoll::~Ragdoll()
     {
-        m_sceneStartSimHandler.Disconnect();
+        {
+            AZStd::scoped_lock lock(m_sceneEventMutex);
+            m_sceneStartSimHandler.Disconnect();
+        }
 
         m_nodes.clear(); //the nodes destructor will remove the simulated body from the scene.
     }
@@ -212,7 +214,13 @@ namespace PhysX
             }
         }
 
-        sceneInterface->RegisterSceneSimulationStartHandler(m_sceneOwner, m_sceneStartSimHandler);
+        // the handler is also connected in EnableSimulationQueued(),
+        // which will call this function, so if called from that path dont connect here.
+        if (!m_sceneStartSimHandler.IsConnected()) 
+        {
+            AZStd::scoped_lock lock(m_sceneEventMutex);
+            sceneInterface->RegisterSceneSimulationStartHandler(m_sceneOwner, m_sceneStartSimHandler);
+        }
         sceneInterface->EnableSimulationOfBody(m_sceneOwner, m_bodyHandle);
     }
 
@@ -225,6 +233,7 @@ namespace PhysX
 
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
+            AZStd::scoped_lock lock(m_sceneEventMutex);
             sceneInterface->RegisterSceneSimulationStartHandler(m_sceneOwner, m_sceneStartSimHandler);
         }
 
@@ -244,7 +253,10 @@ namespace PhysX
             return;
         }
 
-        m_sceneStartSimHandler.Disconnect();
+        {
+            AZStd::scoped_lock lock(m_sceneEventMutex);
+            m_sceneStartSimHandler.Disconnect();
+        }
 
         physx::PxScene* pxScene = Internal::GetPxScene(m_sceneOwner);
         const size_t numNodes = m_nodes.size();
@@ -362,8 +374,8 @@ namespace PhysX
         else
         {
             actor->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, false);
-            const AZStd::shared_ptr<Physics::Joint>& joint = m_nodes[nodeIndex]->GetJoint();
-            if (joint)
+
+            if (AzPhysics::Joint* joint = m_nodes[nodeIndex]->GetJoint())
             {
                 if (physx::PxD6Joint* pxJoint = static_cast<physx::PxD6Joint*>(joint->GetNativePointer()))
                 {

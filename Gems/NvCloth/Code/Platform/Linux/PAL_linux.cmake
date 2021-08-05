@@ -1,14 +1,11 @@
 #
-# All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-# its licensors.
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
-# For complete copyright and license terms please see the LICENSE at the root of this
-# distribution (the "License"). All use of this software is governed by the License,
-# or, if provided, by the license below or the license accompanying this file. Do not
-# remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+#
 #
 
-ly_associate_package(PACKAGE_NAME NvCloth-1.1.6-rev1-multiplatform TARGETS NvCloth PACKAGE_HASH 05fc62634ca28644e7659a89e97f4520d791e6ddf4b66f010ac669e4e2ed4454)
+ly_associate_package(PACKAGE_NAME NvCloth-v1.1.6-4-gd243404-pr58-rev1-linux TARGETS NvCloth PACKAGE_HASH c2e469c909fb358105ffe854476e87d9c69626aa16bd0ca0bcd941522adadc6d)
 
 set(PAL_TRAIT_NVCLOTH_USE_STUB FALSE)

@@ -1,18 +1,15 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include <Atom/RHI/FrameScheduler.h>
 
 #include <Atom/RPI.Public/WindowContext.h>
+#include <Atom/RPI.Public/Pass/AttachmentReadback.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/Pass/Specific/SwapChainPass.h>
 #include <Atom/RHI/RHISystemInterface.h>
@@ -26,8 +23,6 @@ namespace AZ
             , m_windowContext(windowContext)
             , m_childTemplateName(childTemplateName)
         {
-            m_flags.m_alreadyCreated = false;
-
             PassSystemInterface* passSystem = PassSystemInterface::Get();
 
             // Create child pass
@@ -44,8 +39,6 @@ namespace AZ
 
             m_childPass = passSystem->CreatePassFromRequest(&childRequest);
             AZ_Assert(m_childPass, "SwapChain child pass is invalid: check your passs pipeline, run configuration and your AssetProcessor set project (project_path)");
-            
-            CreateChildPasses();
 
             AzFramework::WindowNotificationBus::Handler::BusConnect(m_windowContext->GetWindowHandle());
         }
@@ -112,7 +105,7 @@ namespace AZ
             AddChild(m_childPass);
         }
 
-        void SwapChainPass::BuildAttachmentsInternal()
+        void SwapChainPass::BuildInternal()
         {
             if (m_windowContext->GetSwapChain() == nullptr)
             {
@@ -124,7 +117,7 @@ namespace AZ
 
             SetupSwapChainAttachment();
 
-            ParentPass::BuildAttachmentsInternal();
+            ParentPass::BuildInternal();
         }
 
         void SwapChainPass::FrameBeginInternal(FramePrepareParams params)
@@ -143,27 +136,22 @@ namespace AZ
             attachmentDatabase.ImportSwapChain(m_windowContext->GetSwapChainAttachmentId(), m_windowContext->GetSwapChain());
 
             ParentPass::FrameBeginInternal(params);
-
-            // Read swap chain for one frame. The reference can be released afterwards
-            if (m_swapChainReadback)
-            {
-                m_swapChainReadback->FrameBegin(params);
-                m_swapChainReadback = nullptr;
-            }
         }
         
         void SwapChainPass::OnWindowResized([[maybe_unused]] uint32_t width, [[maybe_unused]] uint32_t height)
         {
-            QueueForBuildAttachments();
+            QueueForBuildAndInitialization();
         }
 
         void SwapChainPass::ReadbackSwapChain(AZStd::shared_ptr<AttachmentReadback> readback)
         {
             if (m_swapChainAttachment)
             {
-                m_swapChainReadback = readback;
+                m_readbackOption = PassAttachmentReadbackOption::Output;
+                m_attachmentReadback = readback;
+
                 AZStd::string readbackName = AZStd::string::format("%s_%s", m_swapChainAttachment->GetAttachmentId().GetCStr(), GetName().GetCStr());
-                m_swapChainReadback->ReadPassAttachment(m_swapChainAttachment.get(), AZ::Name(readbackName));
+                m_attachmentReadback->ReadPassAttachment(m_swapChainAttachment.get(), AZ::Name(readbackName));
             }
         }
 

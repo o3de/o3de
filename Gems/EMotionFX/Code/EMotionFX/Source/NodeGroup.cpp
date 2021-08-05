@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 // include the required headers
 #include "NodeGroup.h"
@@ -21,63 +17,16 @@ namespace EMotionFX
     AZ_CLASS_ALLOCATOR_IMPL(NodeGroup, NodeAllocator, 0)
 
 
-    // default constructor
-    NodeGroup::NodeGroup()
-        : BaseObject()
+    NodeGroup::NodeGroup(const AZStd::string& groupName, uint16 numNodes, bool enabledOnDefault)
+        : mName(groupName)
+        , mNodes(numNodes)
+        , mEnabledOnDefault(enabledOnDefault)
     {
-        SetIsEnabledOnDefault(true);
-    }
-
-
-    // extended constructor
-    NodeGroup::NodeGroup(const char* groupName, bool enabledOnDefault)
-        : BaseObject()
-    {
-        SetName(groupName);
-        SetIsEnabledOnDefault(enabledOnDefault);
-    }
-
-
-    // another extended constructor
-    NodeGroup::NodeGroup(const char* groupName, uint16 numNodes, bool enabledOnDefault)
-        : BaseObject()
-    {
-        SetName(groupName);
-        SetNumNodes(numNodes);
-        SetIsEnabledOnDefault(enabledOnDefault);
-    }
-
-
-    // destructor
-    NodeGroup::~NodeGroup()
-    {
-        mNodes.Clear();
-    }
-
-
-    // create
-    NodeGroup* NodeGroup::Create()
-    {
-        return aznew NodeGroup();
-    }
-
-
-    // create
-    NodeGroup* NodeGroup::Create(const char* groupName, bool enabledOnDefault)
-    {
-        return aznew NodeGroup(groupName, enabledOnDefault);
-    }
-
-
-    // create
-    NodeGroup* NodeGroup::Create(const char* groupName, uint16 numNodes, bool enabledOnDefault)
-    {
-        return aznew NodeGroup(groupName, numNodes, enabledOnDefault);
     }
 
 
     // set the name of the group
-    void NodeGroup::SetName(const char* groupName)
+    void NodeGroup::SetName(const AZStd::string& groupName)
     {
         mName = groupName;
     }

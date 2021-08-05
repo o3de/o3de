@@ -1,16 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
-#include "UiCanvasEditor_precompiled.h"
-
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 #include "EditorCommon.h"
 #include "CanvasHelpers.h"
 #include "AssetDropHelpers.h"
@@ -133,7 +127,6 @@ EditorWindow::EditorWindow(QWidget* parent, Qt::WindowFlags flags)
     , m_previewActionLogDockWidget(nullptr)
     , m_previewAnimationListDockWidget(nullptr)
     , m_editorMode(UiEditorMode::Edit)
-    , m_prefabFiles()
     , m_actionsEnabledWithSelection()
     , m_pasteAsSiblingAction(nullptr)
     , m_pasteAsChildAction(nullptr)
@@ -164,8 +157,6 @@ EditorWindow::EditorWindow(QWidget* parent, Qt::WindowFlags flags)
     // update menus when the selection changes
     connect(m_hierarchy, &HierarchyWidget::SetUserSelection, this, &EditorWindow::UpdateActionsEnabledState);
     m_clipboardConnection = connect(QApplication::clipboard(), &QClipboard::dataChanged, this, &EditorWindow::UpdateActionsEnabledState);
-
-    UpdatePrefabFiles();
 
     // Create the cursor to be used when picking an element in the hierarchy or viewport during object pick mode.
     // Uses the default hot spot which is the center of the image
@@ -1556,44 +1547,18 @@ AssetTreeEntry* EditorWindow::GetSliceLibraryTree()
     return m_sliceLibraryTree;
 }
 
-void EditorWindow::UpdatePrefabFiles()
+AZ::EntityId EditorWindow::GetCanvasForCurrentEditorMode()
 {
-    m_prefabFiles.clear();
-
-    // IMPORTANT: ScanDirectory() is VERY slow. It can easily take as much
-    // as a whole second to execute. That's why we want to cache its result
-    // up front and ONLY access the cached data.
-    GetIEditor()->GetFileUtil()->ScanDirectory("", "*." UICANVASEDITOR_PREFAB_EXTENSION, m_prefabFiles);
-    SortPrefabsList();
-}
-
-IFileUtil::FileArray& EditorWindow::GetPrefabFiles()
-{
-    return m_prefabFiles;
-}
-
-void EditorWindow::AddPrefabFile(const QString& prefabFilename)
-{
-    IFileUtil::FileDesc fd;
-    fd.filename = prefabFilename;
-    m_prefabFiles.push_back(fd);
-    SortPrefabsList();
-}
-
-void EditorWindow::SortPrefabsList()
-{
-    AZStd::sort<IFileUtil::FileArray::iterator>(m_prefabFiles.begin(), m_prefabFiles.end(),
-        [](const IFileUtil::FileDesc& fd1, const IFileUtil::FileDesc& fd2)
+    AZ::EntityId canvasEntityId;
+    if (GetEditorMode() == UiEditorMode::Edit)
     {
-        // Some of the files in the list are in different directories, so we
-        // explicitly sort by filename only.
-        AZStd::string fd1Filename;
-        AzFramework::StringFunc::Path::GetFileName(fd1.filename.toUtf8().data(), fd1Filename);
-
-        AZStd::string fd2Filename;
-        AzFramework::StringFunc::Path::GetFileName(fd2.filename.toUtf8().data(), fd2Filename);
-        return fd1Filename < fd2Filename;
-    });
+        canvasEntityId = GetCanvas();
+    }
+    else
+    {
+        canvasEntityId = GetPreviewModeCanvas();
+    }
+    return canvasEntityId;
 }
 
 void EditorWindow::ToggleEditorMode()
