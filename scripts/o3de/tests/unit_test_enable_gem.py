@@ -96,9 +96,9 @@ def init_enable_gem_data(request):
 class TestEnableGemCommand:
     @pytest.mark.parametrize("gem_path, project_path, gem_registered_with_project, gem_registered_with_engine,"
                              "expected_result", [
-        pytest.param(pathlib.PurePath('E:/TestGem'), pathlib.PurePath('E:/TestProject'), False, True, 0),
-        pytest.param(pathlib.PurePath('E:/TestGem'), pathlib.PurePath('E:/TestProject'), False, False, 0),
-        pytest.param(pathlib.PurePath('E:/TestGem'), pathlib.PurePath('E:/TestProject'), True, False, 0),
+        pytest.param(pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), False, True, 0),
+        pytest.param(pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), False, False, 0),
+        pytest.param(pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), True, False, 0),
         ]
     )
     def test_enable_gem_registers_gem_as_well(self, gem_path, project_path, gem_registered_with_project, gem_registered_with_engine,
@@ -154,4 +154,7 @@ class TestEnableGemCommand:
             assert result == expected_result
             # If the gem isn't registered with the engine or project already it should now be registered with the project
             if not gem_registered_with_engine and gem_registered_with_project:
-                assert gem_path.as_posix() in self.enable_gem.project_data.get('external_subdirectories', [])
+                # Prepend the project path to each external subdirectory
+                project_relative_subdirs = map(lambda subdir: (pathlib.Path(project_path) / subdir).as_posix(),
+                    self.enable_gem.project_data.get('external_subdirectories', []))
+                assert gem_path.as_posix() in project_relative_subdirs
