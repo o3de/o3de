@@ -67,7 +67,7 @@ namespace EMotionFX
         mMotionSamplingTimer    = 0.0f;
 
         mTrajectoryDelta.IdentityWithZeroScale();
-        mStaticAABB.Init();
+        m_staticAabb = AZ::Aabb::CreateNull();
 
         mAnimGraphInstance = nullptr;
 
@@ -137,15 +137,15 @@ namespace EMotionFX
         UpdateDependencies();
 
         // update the static based AABB dimensions
-        mStaticAABB = mActor->GetStaticAABB();
-        if (mStaticAABB.CheckIfIsValid() == false)
+        m_staticAabb = mActor->GetStaticAabb();
+        if (!m_staticAabb.IsValid())
         {
             UpdateMeshDeformers(0.0f, true); // TODO: not really thread safe because of shared meshes, although it probably will output correctly
-            UpdateStaticBasedAABBDimensions();
+            UpdateStaticBasedAabbDimensions();
         }
 
         // update the bounds
-        UpdateBounds(0, mBoundsUpdateType, 1);
+        UpdateBounds(/*lodLevel=*/0, mBoundsUpdateType);
 
         // register it
         GetActorManager().RegisterActorInstance(this);
@@ -254,12 +254,12 @@ namespace EMotionFX
             UpdateAttachments(); // update the attachment parent matrices
 
             // update the bounds when needed
-            if (GetBoundsUpdateEnabled() && mBoundsUpdateType != BOUNDS_MESH_BASED)
+            if (GetBoundsUpdateEnabled())
             {
                 mBoundsUpdatePassedTime += timePassedInSeconds;
                 if (mBoundsUpdatePassedTime >= mBoundsUpdateFrequency)
                 {
-                    UpdateBounds(mLODLevel, BOUNDS_NODE_BASED, mBoundsUpdateItemFreq);
+                    UpdateBounds(mLODLevel, mBoundsUpdateType, mBoundsUpdateItemFreq);
                     mBoundsUpdatePassedTime = 0.0f;
                 }
             }
@@ -354,7 +354,7 @@ namespace EMotionFX
         }
 
         // update the bounds when needed
-        if (GetBoundsUpdateEnabled() && mBoundsUpdateType != BOUNDS_MESH_BASED)
+        if (GetBoundsUpdateEnabled())
         {
             mBoundsUpdatePassedTime += timePassedInSeconds;
             if (mBoundsUpdatePassedTime >= mBoundsUpdateFrequency)
@@ -407,18 +407,6 @@ namespace EMotionFX
                 stack->Update(this, node, timePassedInSeconds, processDisabledDeformers);
             }
         }
-
-        // Update the bounds when we are set to use mesh based bounds.
-        if (GetBoundsUpdateEnabled() &&
-            GetBoundsUpdateType() == BOUNDS_MESH_BASED)
-        {
-            mBoundsUpdatePassedTime += timePassedInSeconds;
-            if (mBoundsUpdatePassedTime >= mBoundsUpdateFrequency)
-            {
-                UpdateBounds(mLODLevel, mBoundsUpdateType, mBoundsUpdateItemFreq);
-                mBoundsUpdatePassedTime = 0.0f;
-            }
-        }
     }
 
     // Update the mesh morph deformers, which updates the vertex positions on the CPU, so performing CPU morphing.
@@ -437,18 +425,6 @@ namespace EMotionFX
             if (stack)
             {
                 stack->UpdateByModifierType(this, node, timePassedInSeconds, MorphMeshDeformer::TYPE_ID, true, processDisabledDeformers);
-            }
-        }
-
-        // Update the bounds when we are set to use mesh based bounds.
-        if (GetBoundsUpdateEnabled() &&
-            GetBoundsUpdateType() == BOUNDS_MESH_BASED)
-        {
-            mBoundsUpdatePassedTime += timePassedInSeconds;
-            if (mBoundsUpdatePassedTime >= mBoundsUpdateFrequency)
-            {
-                UpdateBounds(mLODLevel, mBoundsUpdateType, mBoundsUpdateItemFreq);
-                mBoundsUpdatePassedTime = 0.0f;
             }
         }
     }
@@ -639,118 +615,40 @@ namespace EMotionFX
         {
             // calculate the static based AABB
             case BOUNDS_STATIC_BASED:
-                CalcStaticBasedAABB(&mAABB);
+                CalcStaticBasedAabb(&m_aabb);
                 break;
 
             // based on the world space positions of the nodes (least accurate, but fastest)
             case BOUNDS_NODE_BASED:
-                CalcNodeBasedAABB(&mAABB, itemFrequency);
-                break;
-
-            // based on the world space positions of the vertices of the collision meshes (faster and more accurate than mesh based)
-            case BOUNDS_COLLISIONMESH_BASED:
-                CalcCollisionMeshBasedAABB(geomLODLevel, &mAABB, itemFrequency);
+                CalcNodeBasedAabb(&m_aabb, itemFrequency);
                 break;
 
             // based on the world space positions of the vertices of the meshes (most accurate)
             case BOUNDS_MESH_BASED:
-                CalcMeshBasedAABB(geomLODLevel, &mAABB, itemFrequency);
-                break;
-
-            // based on the world space positions of the vertices of the meshes (most accurate)
-            case BOUNDS_NODEOBB_BASED:
-                CalcNodeOBBBasedAABB(&mAABB, itemFrequency);
-                break;
-
-            case BOUNDS_NODEOBBFAST_BASED:
-                CalcNodeOBBBasedAABBFast(&mAABB, itemFrequency);
+                UpdateMeshDeformers(0.0f);
+                CalcMeshBasedAabb(geomLODLevel, &m_aabb, itemFrequency);
                 break;
 
             // when we're dealing with an unspecified bounding volume update method
             default:
                 MCore::LogInfo("*** EMotionFX::ActorInstance::UpdateBounds() - Unknown boundsType specified! (%d) ***", (uint32)boundsType);
         }
-    }
 
-    // calculate the axis aligned bounding box that contains the object oriented boxes of all nodes
-    void ActorInstance::CalcNodeOBBBasedAABBFast(MCore::AABB* outResult, uint32 nodeFrequency)
-    {
-        // init the axis aligned bounding box
-        outResult->Init();
-
-        const Pose* pose = mTransformData->GetCurrentPose();
-        const Skeleton* skeleton = mActor->GetSkeleton();
-
-        // for all nodes, encapsulate the world space positions
-        uint16 nodeNr;
-        const uint32 numNodes = GetNumEnabledNodes();
-        for (uint32 i = 0; i < numNodes; i += nodeFrequency)
+        // Expand the bounding volume by a tolerance area in case set.
+        if (m_boundsExpandBy > 0.0f)
         {
-            nodeNr = GetEnabledNode(i);
-            Node* node = skeleton->GetNode(nodeNr);
-            if (node->GetIncludeInBoundsCalc())
-            {
-                const MCore::OBB& obb = mActor->GetNodeOBB(nodeNr);
-                if (obb.CheckIfIsValid() == false)
-                {
-                    continue;
-                }
-
-                // calculate the corner points of the node in local space
-                AZ::Vector3 minPoint, maxPoint;
-                obb.CalcMinMaxPoints(&minPoint, &maxPoint);
-
-                // encapsulate the results in the AABB box
-                const Transform worldTransform = pose->GetWorldSpaceTransform(nodeNr);
-                outResult->Encapsulate(worldTransform.TransformPoint(minPoint));
-                outResult->Encapsulate(worldTransform.TransformPoint(maxPoint));
-            }
-        }
-    }
-
-    // more accurate node obb based method that uses the 8 corner points of the obb
-    void ActorInstance::CalcNodeOBBBasedAABB(MCore::AABB* outResult, uint32 nodeFrequency)
-    {
-        // init the axis aligned bounding box
-        outResult->Init();
-
-        const Pose* pose = mTransformData->GetCurrentPose();
-        const Skeleton* skeleton = mActor->GetSkeleton();
-
-        // for all nodes, encapsulate the world space positions
-        AZ::Vector3 cornerPoints[8];
-        uint16 nodeNr;
-        const uint32 numNodes = GetNumEnabledNodes();
-        for (uint32 i = 0; i < numNodes; i += nodeFrequency)
-        {
-            nodeNr = GetEnabledNode(i);
-            Node* node = skeleton->GetNode(nodeNr);
-            if (node->GetIncludeInBoundsCalc())
-            {
-                const MCore::OBB& obb = mActor->GetNodeOBB(nodeNr);
-                if (obb.CheckIfIsValid() == false)
-                {
-                    continue;
-                }
-
-                // calculate the 8 corner points
-                obb.CalcCornerPoints(cornerPoints);
-
-                const Transform worldTransform = pose->GetWorldSpaceTransform(nodeNr);
-
-                // encapsulate all OBB world space corner points inside the AABB
-                for (uint32 p = 0; p < 8; ++p)
-                {
-                    outResult->Encapsulate(worldTransform.TransformPoint(cornerPoints[p]));
-                }
-            }
+            const AZ::Vector3 center = m_aabb.GetCenter();
+            const AZ::Vector3 halfExtents = m_aabb.GetExtents() * 0.5f;
+            const AZ::Vector3 scaledHalfExtents = halfExtents * (1.0f + m_boundsExpandBy);
+            m_aabb.SetMin(center - scaledHalfExtents);
+            m_aabb.SetMax(center + scaledHalfExtents);
         }
     }
 
     // calculate the axis aligned bounding box based on the world space positions of the nodes
-    void ActorInstance::CalcNodeBasedAABB(MCore::AABB* outResult, uint32 nodeFrequency)
+    void ActorInstance::CalcNodeBasedAabb(AZ::Aabb* outResult, uint32 nodeFrequency)
     {
-        outResult->Init();
+        *outResult = AZ::Aabb::CreateNull();
 
         const Pose* pose = mTransformData->GetCurrentPose();
         const Skeleton* skeleton = mActor->GetSkeleton();
@@ -763,16 +661,15 @@ namespace EMotionFX
             nodeNr = GetEnabledNode(i);
             if (skeleton->GetNode(nodeNr)->GetIncludeInBoundsCalc())
             {
-                outResult->Encapsulate(pose->GetWorldSpaceTransform(nodeNr).mPosition);
+                outResult->AddPoint(pose->GetWorldSpaceTransform(nodeNr).mPosition);
             }
         }
     }
 
     // calculate the AABB that contains all world space vertices of all meshes
-    void ActorInstance::CalcMeshBasedAABB(uint32 geomLODLevel, MCore::AABB* outResult, uint32 vertexFrequency)
+    void ActorInstance::CalcMeshBasedAabb(uint32 geomLODLevel, AZ::Aabb* outResult, uint32 vertexFrequency)
     {
-        // init the axis aligned bounding box
-        outResult->Init();
+        *outResult = AZ::Aabb::CreateNull();
 
         const Pose* pose = mTransformData->GetCurrentPose();
         const Skeleton* skeleton = mActor->GetSkeleton();
@@ -800,52 +697,9 @@ namespace EMotionFX
             const Transform worldTransform = pose->GetMeshNodeWorldSpaceTransform(geomLODLevel, nodeNr);
 
             // calculate and encapsulate the mesh bounds inside the total mesh box
-            MCore::AABB meshBox;
-            mesh->CalcAABB(&meshBox, worldTransform, vertexFrequency);
-            outResult->Encapsulate(meshBox);
-        }
-    }
-
-    void ActorInstance::CalcCollisionMeshBasedAABB(uint32 geomLODLevel, MCore::AABB* outResult, uint32 vertexFrequency)
-    {
-        // init the axis aligned bounding box
-        outResult->Init();
-
-        const Pose* pose = mTransformData->GetCurrentPose();
-        const Skeleton* skeleton = mActor->GetSkeleton();
-
-        // for all nodes, encapsulate the world space positions
-        uint16 nodeNr;
-        const uint32 numNodes = GetNumEnabledNodes();
-        for (uint32 i = 0; i < numNodes; ++i)
-        {
-            nodeNr = GetEnabledNode(i);
-            Node* node = skeleton->GetNode(nodeNr);
-
-            // skip nodes without collision meshes
-            Mesh* mesh = mActor->GetMesh(geomLODLevel, nodeNr);
-            if (mesh == nullptr)
-            {
-                continue;
-            }
-
-            if (mesh->GetIsCollisionMesh() == false)
-            {
-                continue;
-            }
-
-            // if this node should be excluded
-            if (node->GetIncludeInBoundsCalc() == false)
-            {
-                continue;
-            }
-
-            const Transform worldTransform = pose->GetMeshNodeWorldSpaceTransform(geomLODLevel, nodeNr);
-
-            // calculate and encapsulate the mesh bounds inside the total mesh box
-            MCore::AABB meshBox;
-            mesh->CalcAABB(&meshBox, worldTransform, vertexFrequency);
-            outResult->Encapsulate(meshBox);
+            AZ::Aabb meshBox;
+            mesh->CalcAabb(&meshBox, worldTransform, vertexFrequency);
+            outResult->AddAabb(meshBox);
         }
     }
 
@@ -1567,111 +1421,45 @@ namespace EMotionFX
     }
 
     // update the static based aabb dimensions
-    void ActorInstance::UpdateStaticBasedAABBDimensions()
+    void ActorInstance::UpdateStaticBasedAabbDimensions()
     {
-        // backup the transform
         Transform orgTransform = GetLocalSpaceTransform();
-        //-------------------------------------
-
-        // reset position and scale
         SetLocalSpacePosition(AZ::Vector3::CreateZero());
+        EMFX_SCALECODE(SetLocalSpaceScale(AZ::Vector3(1.0f, 1.0f, 1.0f));)
 
-        EMFX_SCALECODE(
-            SetLocalSpaceScale(AZ::Vector3(1.0f, 1.0f, 1.0f));)
+        UpdateTransformations(0.0f, true);
+        UpdateMeshDeformers(0.0f);
 
-        // rotate over x, y and z axis
-        AZ::Vector3 boxMin(FLT_MAX, FLT_MAX, FLT_MAX);
-        AZ::Vector3 boxMax(-FLT_MAX, -FLT_MAX, -FLT_MAX);
-        for (uint32 axis = 0; axis < 3; axis++)
+        // calculate the aabb of this
+        if (mActor->CheckIfHasMeshes(0))
         {
-            for (uint32 i = 0; i < 360; i += 45) // steps of 45 degrees
-            {
-                // rotate a given amount of degrees over the axis we are currently testing
-                AZ::Vector3 axisVector(0.0f, 0.0f, 0.0f);
-                axisVector.SetElement(axis, 1.0f);
-                const float angle = static_cast<float>(i);
-                SetLocalSpaceRotation(MCore::CreateFromAxisAndAngle(axisVector, MCore::Math::DegreesToRadians(angle)));
-
-                UpdateTransformations(0.0f, true);
-                UpdateMeshDeformers(0.0f);
-
-                // calculate the aabb of this
-                if (mActor->CheckIfHasMeshes(0))
-                {
-                    CalcMeshBasedAABB(0, &mStaticAABB);
-                }
-                else
-                {
-                    CalcNodeBasedAABB(&mStaticAABB);
-                }
-
-                // find the minimum and maximum
-                const AZ::Vector3& curMin = mStaticAABB.GetMin();
-                const AZ::Vector3& curMax = mStaticAABB.GetMax();
-                if (curMin.GetX() < boxMin.GetX())
-                {
-                    boxMin.SetX(curMin.GetX());
-                }
-                if (curMin.GetY() < boxMin.GetY())
-                {
-                    boxMin.SetY(curMin.GetY());
-                }
-                if (curMin.GetZ() < boxMin.GetZ())
-                {
-                    boxMin.SetZ(curMin.GetZ());
-                }
-                if (curMax.GetX() > boxMax.GetX())
-                {
-                    boxMax.SetX(curMax.GetX());
-                }
-                if (curMax.GetY() > boxMax.GetY())
-                {
-                    boxMax.SetY(curMax.GetY());
-                }
-                if (curMax.GetZ() > boxMax.GetZ())
-                {
-                    boxMax.SetZ(curMax.GetZ());
-                }
-            }
+            CalcMeshBasedAabb(0, &m_staticAabb);
+        }
+        else
+        {
+            CalcNodeBasedAabb(&m_staticAabb);
         }
 
-        mStaticAABB.SetMin(boxMin);
-        mStaticAABB.SetMax(boxMax);
-
-        /*
-                    // calculate the center point of the box
-                    const AZ::Vector3 center = mStaticAABB.CalcMiddle();
-
-                    // find the maximum of the width, height and depth
-                    const float maxDim = MCore::Max3<float>( mStaticAABB.CalcWidth(), mStaticAABB.CalcHeight(), mStaticAABB.CalcDepth() ) * 0.5f;
-
-                    // make width, height and depth the same as its maximum
-                    mStaticAABB.SetMin( center + AZ::Vector3(-maxDim, -maxDim, -maxDim) );
-                    mStaticAABB.SetMax( center + AZ::Vector3( maxDim,  maxDim,  maxDim) );
-        */
-        //-------------------------------------
-
-        // restore the transform
         mLocalTransform = orgTransform;
     }
 
     // calculate the moved static based aabb
-    void ActorInstance::CalcStaticBasedAABB(MCore::AABB* outResult)
+    void ActorInstance::CalcStaticBasedAabb(AZ::Aabb* outResult)
     {
         if (GetIsSkinAttachment())
         {
-            mSelfAttachment->GetAttachToActorInstance()->CalcStaticBasedAABB(outResult);
+            mSelfAttachment->GetAttachToActorInstance()->CalcStaticBasedAabb(outResult);
             return;
         }
 
-        *outResult = mStaticAABB;
+        *outResult = m_staticAabb;
         EMFX_SCALECODE(
-            outResult->SetMin(mStaticAABB.GetMin() * mWorldTransform.mScale);
-            outResult->SetMax(mStaticAABB.GetMax() * mWorldTransform.mScale);)
+            outResult->SetMin(m_staticAabb.GetMin() * mWorldTransform.mScale);
+            outResult->SetMax(m_staticAabb.GetMax() * mWorldTransform.mScale);)
         outResult->Translate(mWorldTransform.mPosition);
     }
 
-    // adjust the animgraph instance
+    // adjust the anim graph instance
     void ActorInstance::SetAnimGraphInstance(AnimGraphInstance* instance)
     {
         mAnimGraphInstance = instance;
@@ -1774,29 +1562,29 @@ namespace EMotionFX
         SetFlag(BOOL_BOUNDSUPDATEENABLED, enable);
     }
 
-    void ActorInstance::SetStaticBasedAABB(const MCore::AABB& aabb)
+    void ActorInstance::SetStaticBasedAabb(const AZ::Aabb& aabb)
     {
-        mStaticAABB = aabb;
+        m_staticAabb = aabb;
     }
 
-    void ActorInstance::GetStaticBasedAABB(MCore::AABB* outAABB)
+    void ActorInstance::GetStaticBasedAabb(AZ::Aabb* outAabb)
     {
-        *outAABB = mStaticAABB;
+        *outAabb = m_staticAabb;
     }
 
-    const MCore::AABB& ActorInstance::GetStaticBasedAABB() const
+    const AZ::Aabb& ActorInstance::GetStaticBasedAabb() const
     {
-        return mStaticAABB;
+        return m_staticAabb;
     }
 
-    const MCore::AABB& ActorInstance::GetAABB() const
+    const AZ::Aabb& ActorInstance::GetAabb() const
     {
-        return mAABB;
+        return m_aabb;
     }
 
-    void ActorInstance::SetAABB(const MCore::AABB& aabb)
+    void ActorInstance::SetAabb(const AZ::Aabb& aabb)
     {
-        mAABB = aabb;
+        m_aabb = aabb;
     }
 
     uint32 ActorInstance::GetNumAttachments() const
@@ -2018,23 +1806,20 @@ namespace EMotionFX
         mVisualizeScale = 0.0f;
         UpdateMeshDeformers(0.0f);
 
-        MCore::AABB box;
-        CalcCollisionMeshBasedAABB(0, &box);
-        if (box.CheckIfIsValid())
+        AZ::Aabb box = AZ::Aabb::CreateNull();
+
+        CalcNodeBasedAabb(&box);
+        if (box.IsValid())
         {
-            mVisualizeScale = MCore::Max<float>(mVisualizeScale, box.CalcRadius());
+            const float boxRadius = AZ::Vector3(box.GetMax() - box.GetMin()).GetLength() * 0.5f;
+            mVisualizeScale = MCore::Max<float>(mVisualizeScale, boxRadius);
         }
 
-        CalcNodeBasedAABB(&box);
-        if (box.CheckIfIsValid())
+        CalcMeshBasedAabb(0, &box);
+        if (box.IsValid())
         {
-            mVisualizeScale = MCore::Max<float>(mVisualizeScale, box.CalcRadius());
-        }
-
-        CalcMeshBasedAABB(0, &box);
-        if (box.CheckIfIsValid())
-        {
-            mVisualizeScale = MCore::Max<float>(mVisualizeScale, box.CalcRadius());
+            const float boxRadius = AZ::Vector3(box.GetMax() - box.GetMin()).GetLength() * 0.5f;
+            mVisualizeScale = MCore::Max<float>(mVisualizeScale, boxRadius);
         }
 
         mVisualizeScale *= 0.01f;
