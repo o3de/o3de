@@ -57,12 +57,12 @@ struct SSystemUserCallback
     : public ISystemUserCallback
 {
     SSystemUserCallback(IInitializeUIInfo* logo) : m_threadErrorHandler(this) { m_pLogo = logo; };
-    virtual void OnSystemConnect(ISystem* pSystem)
+    void OnSystemConnect(ISystem* pSystem) override
     {
         ModuleInitISystem(pSystem, "Editor");
     }
 
-    virtual bool OnError(const char* szErrorString)
+    bool OnError(const char* szErrorString) override
     {
         // since we show a message box, we have to use the GUI thread
         if (QThread::currentThread() != qApp->thread())
@@ -95,7 +95,7 @@ struct SSystemUserCallback
 
         int res = IDNO;
 
-        ICVar* pCVar = gEnv->pConsole ? gEnv->pConsole->GetCVar("sys_no_crash_dialog") : NULL;
+        ICVar* pCVar = gEnv->pConsole ? gEnv->pConsole->GetCVar("sys_no_crash_dialog") : nullptr;
 
         if (!pCVar || pCVar->GetIVal() == 0)
         {
@@ -116,7 +116,7 @@ struct SSystemUserCallback
         return true;
     }
 
-    virtual bool OnSaveDocument()
+    bool OnSaveDocument() override
     {
         bool success = false;
 
@@ -133,7 +133,7 @@ struct SSystemUserCallback
         return success;
     }
 
-    virtual bool OnBackupDocument()
+    bool OnBackupDocument() override
     {
         CCryEditDoc* level = GetIEditor() ? GetIEditor()->GetDocument() : nullptr;
         if (level)
@@ -144,7 +144,7 @@ struct SSystemUserCallback
         return false;
     }
 
-    virtual void OnProcessSwitch()
+    void OnProcessSwitch() override
     {
         if (GetIEditor()->IsInGameMode())
         {
@@ -152,7 +152,7 @@ struct SSystemUserCallback
         }
     }
 
-    virtual void OnInitProgress(const char* sProgressMsg)
+    void OnInitProgress(const char* sProgressMsg) override
     {
         if (m_pLogo)
         {
@@ -160,7 +160,7 @@ struct SSystemUserCallback
         }
     }
 
-    virtual int ShowMessage(const char* text, const char* caption, unsigned int uType)
+    int ShowMessage(const char* text, const char* caption, unsigned int uType) override
     {
         if (CCryEditApp::instance()->IsInAutotestMode())
         {
@@ -176,7 +176,7 @@ struct SSystemUserCallback
         return CryMessageBox(text, caption, uType);
     }
 
-    virtual void GetMemoryUsage(ICrySizer* pSizer)
+    void GetMemoryUsage(ICrySizer* pSizer) override
     {
         GetIEditor()->GetMemoryUsage(pSizer);
     }
@@ -215,7 +215,7 @@ public:
     {
         AzFramework::AssetSystemConnectionNotificationsBus::Handler::BusConnect();
     };
-    ~AssetProcessConnectionStatus()
+    ~AssetProcessConnectionStatus() override
     {
         AzFramework::AssetSystemConnectionNotificationsBus::Handler::BusDisconnect();
     }
@@ -247,18 +247,18 @@ private:
 
 AZ_PUSH_DISABLE_WARNING(4273, "-Wunknown-warning-option")
 CGameEngine::CGameEngine()
-    : m_gameDll(0)
+    : m_gameDll(nullptr)
     , m_bIgnoreUpdates(false)
     , m_ePendingGameMode(ePGM_NotPending)
     , m_modalWindowDismisser(nullptr)
 AZ_POP_DISABLE_WARNING
 {
-    m_pISystem = NULL;
+    m_pISystem = nullptr;
     m_bLevelLoaded = false;
     m_bInGameMode = false;
     m_bSimulationMode = false;
     m_bSyncPlayerPosition = true;
-    m_hSystemHandle = 0;
+    m_hSystemHandle = nullptr;
     m_bJustCreated = false;
     m_levelName = "Untitled";
     m_levelExtension = EditorUtils::LevelFile::GetDefaultFileExtension();
@@ -271,7 +271,7 @@ CGameEngine::~CGameEngine()
 {
 AZ_POP_DISABLE_WARNING
     GetIEditor()->UnregisterNotifyListener(this);
-    m_pISystem->GetIMovieSystem()->SetCallback(NULL);
+    m_pISystem->GetIMovieSystem()->SetCallback(nullptr);
 
     if (m_gameDll)
     {
@@ -279,7 +279,7 @@ AZ_POP_DISABLE_WARNING
     }
 
     delete m_pISystem;
-    m_pISystem = NULL;
+    m_pISystem = nullptr;
 
     if (m_hSystemHandle)
     {
@@ -875,7 +875,7 @@ void CGameEngine::OnEditorNotifyEvent(EEditorNotifyEvent event)
     {
     case eNotify_OnSplashScreenDestroyed:
     {
-        if (m_pSystemUserCallback != NULL)
+        if (m_pSystemUserCallback != nullptr)
         {
             m_pSystemUserCallback->OnSplashScreenDone();
         }
