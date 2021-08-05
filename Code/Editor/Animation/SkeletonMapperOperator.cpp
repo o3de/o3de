@@ -37,8 +37,8 @@ CMapperOperatorDesc::CMapperOperatorDesc(const char* name)
 CMapperOperator::CMapperOperator(const char* className, uint32 positionCount, uint32 orientationCount)
 {
     m_className = className;
-    m_position.resize(positionCount, NULL);
-    m_orientation.resize(orientationCount, NULL);
+    m_position.resize(positionCount, nullptr);
+    m_orientation.resize(orientationCount, nullptr);
 }
 
 CMapperOperator::~CMapperOperator()

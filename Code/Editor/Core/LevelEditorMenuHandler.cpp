@@ -80,12 +80,12 @@ namespace
             , m_trigger(trigger)
         {}
 
-        virtual ~EditorListener()
+        ~EditorListener() override
         {
             GetIEditor()->UnregisterNotifyListener(this);
         }
 
-        void OnEditorNotifyEvent(EEditorNotifyEvent event)
+        void OnEditorNotifyEvent(EEditorNotifyEvent event) override
         {
             m_trigger(event);
         }
