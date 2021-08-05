@@ -11,8 +11,6 @@
 #include <Atom/Document/ShaderManagementConsoleDocumentSystemRequestBus.h>
 #include <AtomToolsFramework/Application/AtomToolsApplication.h>
 
-#include <QTimer>
-
 namespace ShaderManagementConsole
 {
     class ShaderManagementConsoleApplication

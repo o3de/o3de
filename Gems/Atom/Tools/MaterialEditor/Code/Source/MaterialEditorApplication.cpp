@@ -41,14 +41,9 @@
 #include <MaterialEditor_Traits_Platform.h>
 #include <MaterialEditorApplication.h>
 
-AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
-#include <QMessageBox>
-#include <QObject>
-AZ_POP_DISABLE_WARNING
-
 namespace MaterialEditor
 {
-    //! This function returns the build system target name of "MaterialEditor
+    //! This function returns the build system target name of "MaterialEditor"
     AZStd::string MaterialEditorApplication::GetBuildTargetName() const
     {
 #if !defined(LY_CMAKE_TARGET)

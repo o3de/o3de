@@ -38,11 +38,6 @@
 #include <ShaderManagementConsole_Traits_Platform.h>
 #include <ShaderManagementConsoleApplication.h>
 
-AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
-#include <QMessageBox>
-#include <QObject>
-AZ_POP_DISABLE_WARNING
-
 namespace ShaderManagementConsole
 {
     //! This function returns the build system target name of "ShaderManagementConsole"

@@ -11,8 +11,6 @@
 #include <Atom/Document/MaterialDocumentSystemRequestBus.h>
 #include <AtomToolsFramework/Application/AtomToolsApplication.h>
 
-#include <QTimer>
-
 namespace MaterialEditor
 {
     class MaterialThumbnailRenderer;

@@ -33,7 +33,7 @@ namespace MaterialEditor
 
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->EBus<AtomToolsFramework::AtomToolsMainWindowFactoryRequestBus>("MaterialEditorWindowAtomToolsFramework::AtomToolsMainWindowFactoryRequestBus")
+            behaviorContext->EBus<AtomToolsFramework::AtomToolsMainWindowFactoryRequestBus>("MaterialEditorWindowAtomRequestBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Category, "Editor")
                 ->Attribute(AZ::Script::Attributes::Module, "materialeditor")
