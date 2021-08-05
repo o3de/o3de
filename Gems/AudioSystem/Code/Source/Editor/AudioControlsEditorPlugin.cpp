@@ -151,7 +151,10 @@ void CAudioControlsEditorPlugin::ExecuteTrigger(const AZStd::string_view sTrigge
         if (ms_nAudioTriggerID != INVALID_AUDIO_CONTROL_ID)
         {
             AZ::Transform activeCameraTm = AZ::Transform::CreateIdentity();
-            EBUS_EVENT_RESULT(activeCameraTm, Camera::ActiveCameraRequestBus, GetActiveCameraTransform);
+            Camera::ActiveCameraRequestBus::BroadcastResult(
+                activeCameraTm,
+                &Camera::ActiveCameraRequestBus::Events::GetActiveCameraTransform
+            );
             const AZ::Matrix3x4 cameraMatrix = AZ::Matrix3x4::CreateFromTransform(activeCameraTm);
 
             Audio::SAudioRequest request;

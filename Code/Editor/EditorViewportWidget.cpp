@@ -2513,7 +2513,7 @@ void EditorViewportWidget::SetViewAndMovementLockFromEntityPerspective(const AZ:
 
     if (entityId.IsValid())
     {
-        EBUS_EVENT_ID(entityId, Camera::CameraRequestBus, MakeActiveView);
+        Camera::CameraRequestBus::Event(entityId, &Camera::CameraRequestBus::Events::MakeActiveView);
     }
     else
     {

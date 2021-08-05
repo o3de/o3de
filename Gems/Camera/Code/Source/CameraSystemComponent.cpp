@@ -1,5 +1,6 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -19,7 +20,7 @@ namespace Camera
 {
     void CameraSystemComponent::Reflect(AZ::ReflectContext* context)
     {
-        if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<CameraSystemComponent, AZ::Component>()
                 ->Version(1)
@@ -36,9 +37,9 @@ namespace Camera
 
     void CameraSystemComponent::Deactivate()
     {
-        CameraSystemRequestBus::Handler::BusDisconnect();
-        ActiveCameraRequestBus::Handler::BusDisconnect();
         CameraNotificationBus::Handler::BusDisconnect();
+        ActiveCameraRequestBus::Handler::BusDisconnect();
+        CameraSystemRequestBus::Handler::BusDisconnect();
     }
 
     AZ::EntityId CameraSystemComponent::GetActiveCamera()
