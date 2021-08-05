@@ -17,12 +17,6 @@ namespace AWSCore
     AWSCoreResourceMappingToolAction::AWSCoreResourceMappingToolAction(const QString& text, QObject* parent)
         : QAction(text, parent)
         , m_isDebug(false)
-        , m_enginePythonEntryPath("")
-        , m_toolScriptPath("")
-        , m_toolQtBinDirectoryPath("")
-        , m_toolLogDirectoryPath("")
-        , m_toolConfigDirectoryPath("")
-        , m_toolReadMePath("")
     {
         InitAWSCoreResourceMappingToolAction();
     }
@@ -85,7 +79,7 @@ namespace AWSCore
             AZ_Error(AWSCoreResourceMappingToolActionName, false, "Invalid tool log file path: %s", toolLogFilePath.c_str());
             return "";
         }
-        return toolLogFilePath.c_str();
+        return toolLogFilePath.Native();
     }
 
     AZStd::string AWSCoreResourceMappingToolAction::GetToolReadMePath() const
@@ -95,6 +89,6 @@ namespace AWSCore
             AZ_Error(AWSCoreResourceMappingToolActionName, false, "Invalid tool readme path: %s", m_toolReadMePath.c_str());
             return "";
         }
-        return m_toolReadMePath.c_str();
+        return m_toolReadMePath.Native();
     }
 } // namespace AWSCore
