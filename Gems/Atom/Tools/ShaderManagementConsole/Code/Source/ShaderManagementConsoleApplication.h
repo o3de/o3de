@@ -29,7 +29,6 @@ namespace ShaderManagementConsole
         // AzFramework::Application
         void CreateStaticModules(AZStd::vector<AZ::Module*>& outModules) override;
         const char* GetCurrentConfigurationName() const override;
-        void Stop() override;
 
     private:
         void ProcessCommandLine(const AZ::CommandLine& commandLine);
