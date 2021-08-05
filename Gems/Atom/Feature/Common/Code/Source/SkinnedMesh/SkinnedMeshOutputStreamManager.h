@@ -46,6 +46,8 @@ namespace AZ
             // SystemTickBus
             void OnSystemTick() override;
 
+            void EnsureInit() const;
+            void EnsureInit();
             void GarbageCollect();
             void CalculateAlignment();
             void CreateBufferAsset();
@@ -58,6 +60,7 @@ namespace AZ
             size_t m_sizeInBytes = 0;
             bool m_memoryWasFreed = false;
             bool m_broadcastMemoryAvailableEvent = false;
+            bool m_needsInit = true;
         };
     } // namespace Render
 } // namespace AZ
