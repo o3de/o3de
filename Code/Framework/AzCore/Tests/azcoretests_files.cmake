@@ -40,7 +40,6 @@ set(FILES
     Interface.cpp
     IO/Path/PathTests.cpp
     IPC.cpp
-    JobGraphTests.cpp
     Jobs.cpp
     JSON.cpp
     FixedWidthIntegers.cpp
@@ -66,6 +65,7 @@ set(FILES
     StreamerTests.cpp
     StringFunc.cpp
     SystemFile.cpp
+    TaskTests.cpp
     TickBusTest.cpp
     TimeDataStatistics.cpp
     UUIDTests.cpp

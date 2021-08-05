@@ -6,26 +6,26 @@
  *
  */
 
-#include <AzCore/Jobs/JobGraph.h>
-#include <AzCore/Jobs/JobExecutor.h>
+#include <AzCore/Task/TaskGraph.h>
+#include <AzCore/Task/TaskExecutor.h>
 #include <AzCore/Memory/PoolAllocator.h>
 
 #include <AzCore/UnitTest/TestTypes.h>
 
 #include <random>
 
-using AZ::JobDescriptor;
-using AZ::JobGraph;
-using AZ::JobGraphEvent;
-using AZ::JobExecutor;
-using AZ::Internal::TypeErasedJob;
-using AZ::JobPriority;
+using AZ::TaskDescriptor;
+using AZ::TaskGraph;
+using AZ::TaskGraphEvent;
+using AZ::TaskExecutor;
+using AZ::Internal::Task;
+using AZ::TaskPriority;
 
-static JobDescriptor defaultJD{ "JobGraphTestJob", "JobGraphTests" };
+static TaskDescriptor defaultTD{ "TaskGraphTestTask", "TaskGraphTests" };
 
 namespace UnitTest
 {
-    class JobGraphTestFixture : public AllocatorsTestFixture
+    class TaskGraphTestFixture : public AllocatorsTestFixture
     {
     public:
         void SetUp() override
@@ -34,7 +34,7 @@ namespace UnitTest
             AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
             AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
 
-            m_executor = aznew JobExecutor(4);
+            m_executor = aznew TaskExecutor(4);
         }
 
         void TearDown() override
@@ -46,38 +46,38 @@ namespace UnitTest
         }
 
     protected:
-        JobExecutor* m_executor;
+        TaskExecutor* m_executor;
     };
 
-    TEST(JobGraphTests, TrivialJobLambda)
+    TEST(TaskGraphTests, TrivialTaskLambda)
     {
         int x = 0;
 
-        TypeErasedJob job(
-            defaultJD,
+        Task task(
+            defaultTD,
             [&x]()
             {
                 ++x;
             });
-        job.Invoke();
+        task.Invoke();
 
         EXPECT_EQ(1, x);
     }
 
-    TEST(JobGraphTests, TrivialJobLambdaMove)
+    TEST(TaskGraphTests, TrivialTaskLambdaMove)
     {
         int x = 0;
 
-        TypeErasedJob job(
-            defaultJD,
+        Task task(
+            defaultTD,
             [&x]()
             {
                 ++x;
             });
 
-        TypeErasedJob job2 = AZStd::move(job);
+        Task task2 = AZStd::move(task);
 
-        job2.Invoke();
+        task2.Invoke();
 
         EXPECT_EQ(1, x);
     }
@@ -110,78 +110,90 @@ namespace UnitTest
         int copyCount = 0;
     };
 
-    TEST(JobGraphTests, MoveOnlyJobLambda)
+    /*
+    TEST(TaskGraphTests, ThisShouldNotCompile)
+    {
+        auto lambda = []
+        {
+        };
+
+        Task task(defaultTD, lambda);
+        task.Invoke();
+    }
+    */
+
+    TEST(TaskGraphTests, MoveOnlyTaskLambda)
     {
         TrackMoves tm;
         int moveCount = 0;
 
-        TypeErasedJob job(
-            defaultJD,
+        Task task(
+            defaultTD,
             [tm = AZStd::move(tm), &moveCount]
             {
                 moveCount = tm.moveCount;
             });
-        job.Invoke();
+        task.Invoke();
 
         // Two moves are expected. Once into the capture body of the lambda, once to construct
-        // the type erased job
+        // the type erased task
         EXPECT_EQ(2, moveCount);
     }
 
-    TEST(JobGraphTests, MoveOnlyJobLambdaMove)
+    TEST(TaskGraphTests, MoveOnlyTaskLambdaMove)
     {
         TrackMoves tm;
         int moveCount = 0;
 
-        TypeErasedJob job(
-            defaultJD,
+        Task task(
+            defaultTD,
             [tm = AZStd::move(tm), &moveCount]
             {
                 moveCount = tm.moveCount;
             });
 
-        TypeErasedJob job2 = AZStd::move(job);
-        job2.Invoke();
+        Task task2 = AZStd::move(task);
+        task2.Invoke();
 
         EXPECT_EQ(3, moveCount);
     }
 
-    TEST(JobGraphTests, CopyOnlyJobLambda)
+    TEST(TaskGraphTests, CopyOnlyTaskLambda)
     {
         TrackCopies tc;
         int copyCount = 0;
 
-        TypeErasedJob job(
-            defaultJD,
+        Task task(
+            defaultTD,
             [tc, &copyCount]
             {
                 copyCount = tc.copyCount;
             });
-        job.Invoke();
+        task.Invoke();
 
         // Two copies are expected. Once into the capture body of the lambda, once to construct
-        // the type erased job
+        // the type erased task
         EXPECT_EQ(2, copyCount);
     }
 
-    TEST(JobGraphTests, CopyOnlyJobLambdaMove)
+    TEST(TaskGraphTests, CopyOnlyTaskLambdaMove)
     {
         TrackCopies tc;
         int copyCount = 0;
 
-        TypeErasedJob job(
-            defaultJD,
+        Task task(
+            defaultTD,
             [tc, &copyCount]
             {
                 copyCount = tc.copyCount;
             });
-        TypeErasedJob job2 = AZStd::move(job);
-        job2.Invoke();
+        Task task2 = AZStd::move(task);
+        task2.Invoke();
 
         EXPECT_EQ(3, copyCount);
     }
 
-    TEST(JobGraphTests, DestroyLambda)
+    TEST(TaskGraphTests, DestroyLambda)
     {
         // This test ensures that for a lambda with a destructor, the destructor is invoked
         // exactly once on a non-moved-from object.
@@ -209,12 +221,12 @@ namespace UnitTest
 
         {
             TrackDestroy td{ &x };
-            TypeErasedJob job(
-                defaultJD,
+            Task task(
+                defaultTD,
                 [td = AZStd::move(td)]
                 {
                 });
-            job.Invoke();
+            task.Invoke();
             // Destructor should not have run yet (except on moved-from instances)
             EXPECT_EQ(x, 0);
         }
@@ -223,25 +235,21 @@ namespace UnitTest
         EXPECT_EQ(x, 1);
     }
 
-    TEST_F(JobGraphTestFixture, SerialGraph)
+    TEST_F(TaskGraphTestFixture, VariadicInterface)
     {
         int x = 0;
 
-        JobGraph graph;
-        auto a = graph.AddJob(
-            defaultJD,
+        TaskGraph graph;
+        auto [a, b, c] = graph.AddTasks(
+            defaultTD,
             [&]
             {
                 x += 3;
-            });
-        auto b = graph.AddJob(
-            defaultJD,
+            },
             [&]
             {
                 x = 4 * x;
-            });
-        auto c = graph.AddJob(
-            defaultJD,
+            },
             [&]
             {
                 x -= 1;
@@ -250,35 +258,69 @@ namespace UnitTest
         a.Precedes(b);
         b.Precedes(c);
 
-        JobGraphEvent ev;
+        TaskGraphEvent ev;
         graph.SubmitOnExecutor(*m_executor, &ev);
         ev.Wait();
 
         EXPECT_EQ(11, x);
     }
 
-    TEST_F(JobGraphTestFixture, DetachedGraph)
+    TEST_F(TaskGraphTestFixture, SerialGraph)
     {
         int x = 0;
 
-        JobGraphEvent ev;
+        TaskGraph graph;
+        auto a = graph.AddTask(
+            defaultTD,
+            [&]
+            {
+                x += 3;
+            });
+        auto b = graph.AddTask(
+            defaultTD,
+            [&]
+            {
+                x = 4 * x;
+            });
+        auto c = graph.AddTask(
+            defaultTD,
+            [&]
+            {
+                x -= 1;
+            });
+
+        a.Precedes(b);
+        b.Precedes(c);
+
+        TaskGraphEvent ev;
+        graph.SubmitOnExecutor(*m_executor, &ev);
+        ev.Wait();
+
+        EXPECT_EQ(11, x);
+    }
+
+    TEST_F(TaskGraphTestFixture, DetachedGraph)
+    {
+        int x = 0;
+
+        TaskGraphEvent ev;
 
         {
-            JobGraph graph;
-            auto a = graph.AddJob(
-                defaultJD,
+            TaskGraph graph;
+            auto a = graph.AddTask(
+                defaultTD,
                 [&]
                 {
                     x += 3;
                 });
-            auto b = graph.AddJob(
-                defaultJD,
+            auto b = graph.AddTask(
+                defaultTD,
                 [&]
                 {
                     x = 4 * x;
                 });
-            auto c = graph.AddJob(
-                defaultJD,
+            auto c = graph.AddTask(
+                defaultTD,
                 [&]
                 {
                     x -= 1;
@@ -295,35 +337,35 @@ namespace UnitTest
         EXPECT_EQ(11, x);
     }
 
-    TEST_F(JobGraphTestFixture, ForkJoin)
+    TEST_F(TaskGraphTestFixture, ForkJoin)
     {
         AZStd::atomic<int> x = 0;
 
-        // Job a initializes x to 3
-        // Job b and c toggles the lowest two bits atomically
-        // Job d decrements x
+        // Task a initializes x to 3
+        // Task b and c toggles the lowest two bits atomically
+        // Task d decrements x
 
-        JobGraph graph;
-        auto a = graph.AddJob(
-            defaultJD,
+        TaskGraph graph;
+        auto a = graph.AddTask(
+            defaultTD,
             [&]
             {
                 x = 0b111;
             });
-        auto b = graph.AddJob(
-            defaultJD,
+        auto b = graph.AddTask(
+            defaultTD,
             [&]
             {
                 x ^= 1;
             });
-        auto c = graph.AddJob(
-            defaultJD,
+        auto c = graph.AddTask(
+            defaultTD,
             [&]
             {
                 x ^= 2;
             });
-        auto d = graph.AddJob(
-            defaultJD,
+        auto d = graph.AddTask(
+            defaultTD,
             [&]
             {
                 x -= 1;
@@ -336,65 +378,65 @@ namespace UnitTest
         //   d
 
         a.Precedes(b, c);
-        d.Succeeds(b, c);
+        d.Follows(b, c);
 
-        JobGraphEvent ev;
+        TaskGraphEvent ev;
         graph.SubmitOnExecutor(*m_executor, &ev);
         ev.Wait();
 
         EXPECT_EQ(3, x);
     }
 
-    TEST_F(JobGraphTestFixture, SpawnSubgraph)
+    TEST_F(TaskGraphTestFixture, SpawnSubgraph)
     {
         AZStd::atomic<int> x = 0;
 
-        JobGraph graph;
-        auto a = graph.AddJob(
-            defaultJD,
+        TaskGraph graph;
+        auto a = graph.AddTask(
+            defaultTD,
             [&]
             {
                 x = 0b111;
             });
-        auto b = graph.AddJob(
-            defaultJD,
+        auto b = graph.AddTask(
+            defaultTD,
             [&]
             {
                 x ^= 1;
             });
-        auto c = graph.AddJob(
-            defaultJD,
+        auto c = graph.AddTask(
+            defaultTD,
             [&]
             {
                 x ^= 2;
 
-                JobGraph subgraph;
-                auto e = subgraph.AddJob(
-                    defaultJD,
+                TaskGraph subgraph;
+                auto e = subgraph.AddTask(
+                    defaultTD,
                     [&]
                     {
                         x ^= 0b1000;
                     });
-                auto f = subgraph.AddJob(
-                    defaultJD,
+                auto f = subgraph.AddTask(
+                    defaultTD,
                     [&]
                     {
                         x ^= 0b10000;
                     });
-                auto g = subgraph.AddJob(
-                    defaultJD,
+                auto g = subgraph.AddTask(
+                    defaultTD,
                     [&]
                     {
                         x += 0b1000;
                     });
                 e.Precedes(g);
                 f.Precedes(g);
-                JobGraphEvent ev;
+                TaskGraphEvent ev;
                 subgraph.SubmitOnExecutor(*m_executor, &ev);
                 ev.Wait();
             });
-        auto d = graph.AddJob(
-            defaultJD,
+        auto d = graph.AddTask(
+            defaultTD,
             [&]
             {
                 x -= 1;
@@ -418,56 +460,56 @@ namespace UnitTest
         b.Precedes(d);
         c.Precedes(d);
 
-        JobGraphEvent ev;
+        TaskGraphEvent ev;
         graph.SubmitOnExecutor(*m_executor, &ev);
         ev.Wait();
 
         EXPECT_EQ(3 | 0b100000, x);
     }
 
-    TEST_F(JobGraphTestFixture, RetainedGraph)
+    TEST_F(TaskGraphTestFixture, RetainedGraph)
     {
         AZStd::atomic<int> x = 0;
 
-        JobGraph graph;
-        auto a = graph.AddJob(
-            defaultJD,
+        TaskGraph graph;
+        auto a = graph.AddTask(
+            defaultTD,
             [&]
             {
                 x = 0b111;
             });
-        auto b = graph.AddJob(
-            defaultJD,
+        auto b = graph.AddTask(
+            defaultTD,
             [&]
             {
                 x ^= 1;
             });
-        auto c = graph.AddJob(
-            defaultJD,
+        auto c = graph.AddTask(
+            defaultTD,
             [&]
             {
                 x ^= 2;
             });
-        auto d = graph.AddJob(
-            defaultJD,
+        auto d = graph.AddTask(
+            defaultTD,
             [&]
             {
                 x -= 1;
             });
-        auto e = graph.AddJob(
-            defaultJD,
+        auto e = graph.AddTask(
+            defaultTD,
             [&]
             {
                 x ^= 0b1000;
             });
-        auto f = graph.AddJob(
-            defaultJD,
+        auto f = graph.AddTask(
+            defaultTD,
             [&]
             {
                 x ^= 0b10000;
             });
-        auto g = graph.AddJob(
-            defaultJD,
+        auto g = graph.AddTask(
+            defaultTD,
             [&]
             {
                 x += 0b1000;
@@ -486,10 +528,10 @@ namespace UnitTest
         a.Precedes(b, c);
         b.Precedes(d);
         c.Precedes(e, f);
-        g.Succeeds(e, f);
+        g.Follows(e, f);
         g.Precedes(d);
 
-        JobGraphEvent ev;
+        TaskGraphEvent ev;
         graph.SubmitOnExecutor(*m_executor, &ev);
         ev.Wait();
 
@@ -501,18 +543,107 @@ namespace UnitTest
 
         EXPECT_EQ(3 | 0b100000, x);
     }
+
+    TEST_F(TaskGraphTestFixture, ExecutorDrainRetained)
+    {
+        bool drainDone = false;
+        AZStd::binary_semaphore taskStart;
+        AZStd::binary_semaphore threadLaunched;
+        AZStd::binary_semaphore threadFinished;
+
+        TaskGraph graph;
+        auto a = graph.AddTask(
+            defaultTD,
+            [&]
+            {
+                taskStart.acquire();
+            });
+
+        graph.SubmitOnExecutor(*m_executor);
+
+        AZStd::thread drainThread{ [this, &drainDone, &threadLaunched, &threadFinished]
+                                   {
+                                       threadLaunched.release();
+                                       m_executor->Drain();
+                                       drainDone = true;
+                                       threadFinished.release();
+                                   } };
+
+
+        // Wait until our drain thread has launched
+        threadLaunched.acquire();
+
+        // The task itself hasn't started, so the drain should still be blocking
+        EXPECT_EQ(false, drainDone);
+
+        // Allow the task to finish
+        taskStart.release();
+
+        // Wait for the drain thread to wrap up
+        threadFinished.acquire();
+
+        // We successfully drained the executor
+        EXPECT_EQ(true, drainDone);
+
+        drainThread.join();
+    }
+
+    TEST_F(TaskGraphTestFixture, ExecutorDrainDetached)
+    {
+        bool drainDone = false;
+        AZStd::binary_semaphore taskStart;
+        AZStd::binary_semaphore threadLaunched;
+        AZStd::binary_semaphore threadFinished;
+
+        TaskGraph graph;
+        auto a = graph.AddTask(
+            defaultTD,
+            [&]
+            {
+                taskStart.acquire();
+            });
+        graph.Detach();
+
+        graph.SubmitOnExecutor(*m_executor);
+
+        AZStd::thread drainThread{ [this, &drainDone, &threadLaunched, &threadFinished]
+                                   {
+                                       threadLaunched.release();
+                                       m_executor->Drain();
+                                       drainDone = true;
+                                       threadFinished.release();
+                                   } };
+
+
+        // Wait until our drain thread has launched
+        threadLaunched.acquire();
+
+        // The task itself hasn't started, so the drain should still be blocking
+        EXPECT_EQ(false, drainDone);
+
+        // Allow the task to finish
+        taskStart.release();
+
+        // Wait for the drain thread to wrap up
+        threadFinished.acquire();
+
+        // We successfully drained the executor
+        EXPECT_EQ(true, drainDone);
+
+        drainThread.join();
+    }
 } // namespace UnitTest
 
 #if defined(HAVE_BENCHMARK)
 namespace Benchmark
 {
-    class JobGraphBenchmarkFixture : public ::benchmark::Fixture
+    class TaskGraphBenchmarkFixture : public ::benchmark::Fixture
     {
     public:
         void SetUp(benchmark::State&) override
         {
-            executor = new JobExecutor;
-            graph = new JobGraph;
+            executor = new TaskExecutor;
+            graph = new TaskGraph;
         }
 
         void TearDown(benchmark::State&) override
@@ -521,38 +652,38 @@ namespace Benchmark
             delete executor;
         }
 
-        JobDescriptor descriptors[4] = { { "critical", "benchmark", JobPriority::CRITICAL },
-                                         { "high", "benchmark", JobPriority::HIGH },
-                                         { "medium", "benchmark", JobPriority::MEDIUM },
-                                         { "low", "benchmark", JobPriority::LOW } };
+        TaskDescriptor descriptors[4] = { { "critical", "benchmark", TaskPriority::CRITICAL },
+                                         { "high", "benchmark", TaskPriority::HIGH },
+                                         { "medium", "benchmark", TaskPriority::MEDIUM },
+                                         { "low", "benchmark", TaskPriority::LOW } };
 
-        JobGraph* graph;
-        JobExecutor* executor;
+        TaskGraph* graph;
+        TaskExecutor* executor;
     };
 
-    BENCHMARK_F(JobGraphBenchmarkFixture, QueueToDequeue)(benchmark::State& state)
+    BENCHMARK_F(TaskGraphBenchmarkFixture, QueueToDequeue)(benchmark::State& state)
     {
-        graph->AddJob(
+        graph->AddTask(
             descriptors[2],
             []
             {
             });
         for (auto _ : state)
         {
-            JobGraphEvent ev;
+            TaskGraphEvent ev;
             graph->SubmitOnExecutor(*executor, &ev);
             ev.Wait();
         }
     }
 
-    BENCHMARK_F(JobGraphBenchmarkFixture, OneAfterAnother)(benchmark::State& state)
+    BENCHMARK_F(TaskGraphBenchmarkFixture, OneAfterAnother)(benchmark::State& state)
     {
-        auto a = graph->AddJob(
+        auto a = graph->AddTask(
             descriptors[2],
             []
             {
             });
-        auto b = graph->AddJob(
+        auto b = graph->AddTask(
             descriptors[2],
             []
             {
@@ -561,15 +692,15 @@ namespace Benchmark
 
         for (auto _ : state)
         {
-            JobGraphEvent ev;
+            TaskGraphEvent ev;
             graph->SubmitOnExecutor(*executor, &ev);
             ev.Wait();
         }
     }
 
-    BENCHMARK_F(JobGraphBenchmarkFixture, FourToOneJoin)(benchmark::State& state)
+    BENCHMARK_F(TaskGraphBenchmarkFixture, FourToOneJoin)(benchmark::State& state)
     {
-        auto [a, b, c, d, e] = graph->AddJobs(
+        auto [a, b, c, d, e] = graph->AddTasks(
             descriptors[2],
             []
             {
@@ -587,11 +718,11 @@ namespace Benchmark
             {
             });
 
-        e.Succeeds(a, b, c, d);
+        e.Follows(a, b, c, d);
 
         for (auto _ : state)
         {
-            JobGraphEvent ev;
+            TaskGraphEvent ev;
             graph->SubmitOnExecutor(*executor, &ev);
             ev.Wait();
         }

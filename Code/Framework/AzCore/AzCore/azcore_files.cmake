@@ -221,8 +221,6 @@ set(FILES
     Jobs/Internal/JobManagerWorkStealing.cpp
     Jobs/Internal/JobManagerWorkStealing.h
     Jobs/Internal/JobNotify.h
-    Jobs/Internal/JobTypeEraser.cpp
-    Jobs/Internal/JobTypeEraser.h
     Jobs/Job.cpp
     Jobs/Job.h
     Jobs/JobCancelGroup.h
@@ -230,14 +228,8 @@ set(FILES
     Jobs/JobCompletionSpin.h
     Jobs/JobContext.cpp
     Jobs/JobContext.h
-    Jobs/JobDescriptor.h
     Jobs/JobEmpty.h
-    Jobs/JobExecutor.cpp
-    Jobs/JobExecutor.h
     Jobs/JobFunction.h
-    Jobs/JobGraph.cpp
-    Jobs/JobGraph.h
-    Jobs/JobGraph.inl
     Jobs/JobManager.cpp
     Jobs/JobManager.h
     Jobs/JobManagerBus.h
@@ -624,6 +616,16 @@ set(FILES
     Socket/AzSocket_fwd.h
     Socket/AzSocket.cpp
     Socket/AzSocket.h
+    Task/Internal/Task.cpp
+    Task/Internal/Task.inl
+    Task/Internal/Task.h
+    Task/Internal/TaskConfig.h
+    Task/TaskDescriptor.h
+    Task/TaskExecutor.cpp
+    Task/TaskExecutor.h
+    Task/TaskGraph.cpp
+    Task/TaskGraph.h
+    Task/TaskGraph.inl
     Threading/ThreadSafeDeque.h
     Threading/ThreadSafeDeque.inl
     Threading/ThreadSafeObject.h

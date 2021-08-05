@@ -6,8 +6,8 @@
  *
  */
 
-#include <AzCore/Jobs/JobExecutor.h>
-#include <AzCore/Jobs/JobGraph.h>
+#include <AzCore/Task/TaskExecutor.h>
+#include <AzCore/Task/TaskGraph.h>
 
 #include <AzCore/std/containers/queue.h>
 #include <AzCore/std/parallel/binary_semaphore.h>
@@ -17,46 +17,45 @@
 #include <AzCore/std/parallel/semaphore.h>
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/Module/Environment.h>
 
 #include <random>
 
 namespace AZ
 {
-    constexpr static size_t PRIORITY_COUNT = static_cast<size_t>(JobPriority::PRIORITY_COUNT);
-
     namespace Internal
     {
-        CompiledJobGraph::CompiledJobGraph(
-            AZStd::vector<TypeErasedJob>&& jobs,
+        CompiledTaskGraph::CompiledTaskGraph(
+            AZStd::vector<Task>&& tasks,
             AZStd::unordered_map<uint32_t, AZStd::vector<uint32_t>>& links,
             size_t linkCount,
-            JobGraph* parent)
+            TaskGraph* parent)
             : m_parent{ parent }
         {
-            m_jobs = AZStd::move(jobs);
+            m_tasks = AZStd::move(tasks);
             m_successors.resize(linkCount);
 
-            TypeErasedJob** cursor = m_successors.data();
+            Task** cursor = m_successors.data();
 
-            for (size_t i = 0; i != m_jobs.size(); ++i)
+            for (size_t i = 0; i != m_tasks.size(); ++i)
             {
-                TypeErasedJob& job = m_jobs[i];
-                job.m_graph = this;
-                job.m_successorOffset = cursor - m_successors.data();
-                cursor += job.m_outboundLinkCount;
+                Task& task = m_tasks[i];
+                task.m_graph = this;
+                task.m_successorOffset = cursor - m_successors.data();
+                cursor += task.m_outboundLinkCount;
 
-                AZ_Assert(job.m_outboundLinkCount == links[i].size(), "Job outbound link information mismatch");
+                AZ_Assert(task.m_outboundLinkCount == links[i].size(), "Task outbound link information mismatch");
 
-                for (uint32_t j = 0; j != job.m_outboundLinkCount; ++j)
+                for (uint32_t j = 0; j != task.m_outboundLinkCount; ++j)
                 {
-                    m_successors[static_cast<size_t>(job.m_successorOffset) + j] = &m_jobs[links[i][j]];
+                    m_successors[static_cast<size_t>(task.m_successorOffset) + j] = &m_tasks[links[i][j]];
                 }
             }
 
             // TODO: Check for dependency cycles
         }
 
-        uint32_t CompiledJobGraph::Release()
+        uint32_t CompiledTaskGraph::Release()
         {
             uint32_t remaining = --m_remaining;
 
@@ -94,35 +93,35 @@ namespace AZ
             AZStd::atomic<uint16_t> reserve;
         };
 
-        // The Job Queue is a lock free 4-priority queue. Its basic operation is as follows:
+        // The Task Queue is a lock free 4-priority queue. Its basic operation is as follows:
         // Each priority level is associated with a different queue, corresponding to the maximum size of a uint16_t.
         // Each queue is implemented as a ring buffer, and a 64 bit atomic maintains the following state per queue:
         // - offset to the "head" of the ring, from where we acquire elements
         // - offset to the "tail" of the ring, which tracks where new elements should be enqueued
         // - offset to a tail reservation index, which is used to reserve a slot to enqueue elements
-        class JobQueue final
+        class TaskQueue final
         {
         public:
-            // Preallocating upfront allows us to reserve slots to insert jobs without locks.
-            // Each thread allocated by the job manager consumes ~2 MB.
+            // Preallocating upfront allows us to reserve slots to insert tasks without locks.
+            // Each thread allocated by the task manager consumes ~2 MB.
             constexpr static uint16_t MaxQueueSize = 0xffff;
-            constexpr static uint8_t PriorityLevelCount = static_cast<uint8_t>(JobPriority::PRIORITY_COUNT);
+            constexpr static uint8_t PriorityLevelCount = static_cast<uint8_t>(TaskPriority::PRIORITY_COUNT);
 
-            JobQueue() = default;
-            JobQueue(const JobQueue&) = delete;
-            JobQueue& operator=(const JobQueue&) = delete;
+            TaskQueue() = default;
+            TaskQueue(const TaskQueue&) = delete;
+            TaskQueue& operator=(const TaskQueue&) = delete;
 
-            void Enqueue(TypeErasedJob* job);
-            TypeErasedJob* TryDequeue();
+            void Enqueue(Task* task);
+            Task* TryDequeue();
 
         private:
             QueueStatus m_status[PriorityLevelCount] = {};
-            TypeErasedJob* m_queues[PriorityLevelCount][MaxQueueSize] = {};
+            Task* m_queues[PriorityLevelCount][MaxQueueSize] = {};
         };
 
-        void JobQueue::Enqueue(TypeErasedJob* job)
+        void TaskQueue::Enqueue(Task* task)
         {
-            uint8_t priority = job->GetPriorityNumber();
+            uint8_t priority = task->GetPriorityNumber();
             QueueStatus& status = m_status[priority];
 
             AZStd::exponential_backoff backoff;
@@ -131,18 +130,18 @@ namespace AZ
                 uint16_t reserve = status.reserve.load();
                 uint16_t head = status.head.load();
 
-                // Enqueuing is done in two phases because we cannot atomically write the job to the slot we reserve
+                // Enqueuing is done in two phases because we cannot atomically write the task to the slot we reserve
                 // and simulataneously publish the fact that the slot is now available.
                 if (reserve != head - 1)
                 {
                     // Try to reserve a slot
                     if (status.reserve.compare_exchange_weak(reserve, reserve + 1))
                     {
-                        m_queues[priority][reserve] = job;
+                        m_queues[priority][reserve] = task;
 
                         uint16_t expectedReserve = reserve;
 
-                        // Increment the tail to advertise the new job
+                        // Increment the tail to advertise the new task
                         while (!status.tail.compare_exchange_weak(expectedReserve, reserve + 1))
                         {
                             expectedReserve = reserve;
@@ -160,7 +159,7 @@ namespace AZ
             }
         }
 
-        TypeErasedJob* JobQueue::TryDequeue()
+        Task* TaskQueue::TryDequeue()
         {
             for (size_t priority = 0; priority != PriorityLevelCount; ++priority)
             {
@@ -176,10 +175,10 @@ namespace AZ
                     }
                     else
                     {
-                        TypeErasedJob* job = m_queues[priority][status.head];
+                        Task* task = m_queues[priority][status.head];
                         if (status.head.compare_exchange_weak(head, head + 1))
                         {
-                            return job;
+                            return task;
                         }
                     }
                 }
@@ -188,14 +187,14 @@ namespace AZ
             return nullptr;
         }
 
-        class JobWorker
+        class TaskWorker
         {
         public:
-            void Spawn(::AZ::JobExecutor& executor, size_t id, AZStd::semaphore& initSemaphore, bool affinitize)
+            void Spawn(::AZ::TaskExecutor& executor, size_t id, AZStd::semaphore& initSemaphore, bool affinitize)
             {
                 m_executor = &executor;
 
-                AZStd::string threadName = AZStd::string::format("JobWorker %zu", id);
+                AZStd::string threadName = AZStd::string::format("TaskWorker %zu", id);
                 AZStd::thread_desc desc = {};
                 desc.m_name = threadName.c_str();
                 if (affinitize)
@@ -219,13 +218,13 @@ namespace AZ
                 m_thread.join();
             }
 
-            void Enqueue(TypeErasedJob* job)
+            void Enqueue(Task* task)
             {
-                m_queue.Enqueue(job);
+                m_queue.Enqueue(task);
 
                 if (!m_busy.exchange(true))
                 {
-                    // The worker was idle prior to enqueueing the job, release the semaphore
+                    // The worker was idle prior to enqueueing the task, release the semaphore
                     m_semaphore.release();
                 }
             }
@@ -245,24 +244,26 @@ namespace AZ
 
                     m_busy = true;
 
-                    TypeErasedJob* job = m_queue.TryDequeue();
-                    while (job)
+                    Task* task = m_queue.TryDequeue();
+                    while (task)
                     {
-                        job->Invoke();
-                        // Decrement counts for all job successors
-                        for (size_t j = 0; j != job->m_outboundLinkCount; ++j)
+                        task->Invoke();
+                        // Decrement counts for all task successors
+                        for (size_t j = 0; j != task->m_outboundLinkCount; ++j)
                         {
-                            TypeErasedJob* successor = job->m_graph->m_successors[job->m_successorOffset + j];
+                            Task* successor = task->m_graph->m_successors[task->m_successorOffset + j];
                             if (--successor->m_dependencyCount == 0)
                             {
                                 m_executor->Submit(*successor);
                             }
                         }
 
-                        job->m_graph->Release();
-                        --m_executor->m_remaining;
+                        if (task->m_graph->Release() == (task->m_graph->m_parent ? 1 : 0))
+                        {
+                            m_executor->ReleaseGraph();
+                        }
 
-                        job = m_queue.TryDequeue();
+                        task = m_queue.TryDequeue();
                     }
                 }
             }
@@ -272,24 +273,38 @@ namespace AZ
             AZStd::atomic<bool> m_busy;
             AZStd::binary_semaphore m_semaphore;
 
-            ::AZ::JobExecutor* m_executor;
-            JobQueue m_queue;
+            ::AZ::TaskExecutor* m_executor;
+            TaskQueue m_queue;
         };
     } // namespace Internal
 
-    JobExecutor& JobExecutor::Instance()
+    static EnvironmentVariable<TaskExecutor*> s_executor;
+    constexpr static const char* s_executorName = "GlobalTaskExecutor";
+    TaskExecutor& TaskExecutor::Instance()
     {
-        // TODO: Create the default executor as part of a component (as in JobManagerComponent)
-        static JobExecutor executor;
-        return executor;
+        if (!s_executor)
+        {
+            s_executor = AZ::Environment::FindVariable<TaskExecutor*>(s_executorName);
+        }
+
+        return **s_executor;
     }
 
-    JobExecutor::JobExecutor(uint32_t threadCount)
+    // TODO: Create the default executor as part of a component (as in TaskManagerComponent)
+    void TaskExecutor::SetInstance(TaskExecutor* executor)
+    {
+        AZ_Assert(!s_executor, "Attempting to set the global task executor more than once");
+
+        s_executor = AZ::Environment::CreateVariable<TaskExecutor*>("GlobalTaskExecutor");
+        s_executor.Set(executor);
+    }
+
+    TaskExecutor::TaskExecutor(uint32_t threadCount)
     {
         // TODO: Configure thread count + affinity based on configuration
         m_threadCount = threadCount == 0 ? AZStd::thread::hardware_concurrency() : threadCount;
 
-        m_workers = reinterpret_cast<Internal::JobWorker*>(azmalloc(m_threadCount * sizeof(Internal::JobWorker)));
+        m_workers = reinterpret_cast<Internal::TaskWorker*>(azmalloc(m_threadCount * sizeof(Internal::TaskWorker)));
 
         bool affinitize = m_threadCount == AZStd::thread::hardware_concurrency();
 
@@ -297,7 +312,7 @@ namespace AZ
 
         for (size_t i = 0; i != m_threadCount; ++i)
         {
-            new (m_workers + i) Internal::JobWorker{};
+            new (m_workers + i) Internal::TaskWorker{};
             m_workers[i].Spawn(*this, i, initSemaphore, affinitize);
         }
 
@@ -307,43 +322,56 @@ namespace AZ
         }
     }
 
-    JobExecutor::~JobExecutor()
+    TaskExecutor::~TaskExecutor()
     {
         for (size_t i = 0; i != m_threadCount; ++i)
         {
             m_workers[i].Join();
-            m_workers[i].~JobWorker();
+            m_workers[i].~TaskWorker();
         }
 
         azfree(m_workers);
     }
 
-    void JobExecutor::Submit(Internal::CompiledJobGraph& graph)
+    void TaskExecutor::Submit(Internal::CompiledTaskGraph& graph)
     {
-        // Submit all jobs that have no inbound edges
-        for (Internal::TypeErasedJob& job : graph.Jobs())
+        ++m_graphsRemaining;
+        // Submit all tasks that have no inbound edges
+        for (Internal::Task& task : graph.Tasks())
         {
-            if (job.IsRoot())
+            if (task.IsRoot())
             {
-                Submit(job);
+                Submit(task);
             }
         }
     }
 
-    void JobExecutor::Submit(Internal::TypeErasedJob& job)
+    void TaskExecutor::Submit(Internal::Task& task)
     {
         // TODO: Something more sophisticated is likely needed here.
         // First, we are completely ignoring affinity.
         // Second, some heuristics on core availability will help distribute work more effectively
-        ++m_remaining;
-        m_workers[++m_lastSubmission % m_threadCount].Enqueue(&job);
+        m_workers[++m_lastSubmission % m_threadCount].Enqueue(&task);
     }
 
-    void JobExecutor::Drain()
+    void TaskExecutor::Drain()
     {
-        while (m_remaining > 0)
+        m_isDraining = true;
+        if (m_graphsRemaining == 0)
         {
-            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds{ 100 });
+            return;
+        }
+        m_drainSemaphore.acquire();
+    }
+
+    void TaskExecutor::ReleaseGraph()
+    {
+        uint64_t graphsRemaining = --m_graphsRemaining;
+
+        if (graphsRemaining == 0 && m_isDraining)
+        {
+            m_drainSemaphore.release();
+            m_isDraining = false;
         }
     }
 } // namespace AZ
