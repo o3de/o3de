@@ -285,7 +285,7 @@ class TestImpact:
             print("Test impact analysis runtime returned successfully.")
             if self.__is_source_of_truth_branch:
                 print("Writing historical meta-data...")
-                self.__persistent_storage.update_historic_data(self.__dst_commit)
+                self.__persistent_storage.update_and_store_historic_data(self.__dst_commit)
             print("Exporting reports...")
             with open(report_file) as json_file:
                 report = json.load(json_file)

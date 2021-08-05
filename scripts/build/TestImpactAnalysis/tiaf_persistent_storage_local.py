@@ -10,19 +10,54 @@ import os
 import json
 from tiaf_persistent_storage import PersistentStorage
 
+# Implementation of local persistent storage
 class PersistentStorageLocal(PersistentStorage):
-    def __init__(self, config, suite):
-        super().__init__(config, suite)
-        self.__historic_workspace = config["workspace"]["historic"]["root"]
-        historic_data_file = config["workspace"]["historic"]["relative_paths"]["data"]
-        self.__historic_data_file = os.path.join(self.__historic_workspace, historic_data_file)
-        if os.path.isfile(self.__historic_data_file):
-            with open(self.__historic_data_file, "r") as historic_data_raw:
-                historic_data_json = historic_data_raw.read()
-                self._unpack_historic_data(historic_data_json)
+    def __init__(self, config: str, suite: str):
+        """
+        Initializes the persistent storage with any local historic data available.
 
-    def _update_historic_data(self, historic_data_json):
-        os.makedirs(self.__historic_workspace, exist_ok=True)
-        with open(self.__historic_data_file, "w") as historic_data_file:
-            historic_data_file.write(historic_data_json)
+        @param config: The runtime config file to obtain the data file paths from.
+        @param suite:  The test suite for which the historic data will be obtained for.
+        """
+
+        self._historic_data_file = None
+
+        super().__init__(config, suite)
+        try:
+            # Attempt to obtain the local persistent data location specified in the runtime config file
+            self._historic_workspace = config["workspace"]["historic"]["root"]
+            historic_data_file = config["workspace"]["historic"]["relative_paths"]["data"]
+            
+            # Attempt to unpack the local historic data file
+            self._historic_data_file = os.path.join(self._historic_workspace, historic_data_file)
+            if not os.path.isfile(self._historic_data_file):
+                print(f"The historic data file '{self._historic_data_file}' is not a valid file path.")
+                self._historic_data_file = None
+            else:
+                with open(self._historic_data_file, "r") as historic_data_raw:
+                    historic_data_json = historic_data_raw.read()
+                    self._unpack_historic_data(historic_data_json)
+
+        except KeyError as e:
+             print(f"The config does not contain the key {str(e)}.")
+        except EnvironmentError as e:
+            print(f"There was a problem the historic data file '{self._historic_data_file}': '{e}'.")
+
+    def _store_historic_data(self, historic_data_json: str):
+        """
+        Stores then historical data in historic workspace location specified in the runtime config file.
+
+        @param historic_data_json: The historic data (in JSON format) to be stored in persistent storage.
+        """
+
+        if self._historic_data_file is None:
+            print("Cannot store the historic data, the historic data file path is invalid")
+            return
+
+        try:
+            os.makedirs(self._historic_workspace, exist_ok=True)
+            with open(self._historic_data_file, "w") as historic_data_file:
+                historic_data_file.write(historic_data_json)
+        except EnvironmentError as e:
+            print(f"There was a problem the historic data file '{self._historic_data_file}': '{e}'.")
         
