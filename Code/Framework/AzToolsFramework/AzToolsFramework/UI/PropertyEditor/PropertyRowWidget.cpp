@@ -70,7 +70,7 @@ namespace AzToolsFramework
 
         m_leftAreaContainer = new QWidget(this);
         m_middleAreaContainer = new QWidget(this);
-        const int minimumControlWidth = 192;
+        const int minimumControlWidth = 142;
         m_middleAreaContainer->setMinimumWidth(minimumControlWidth);
         m_mainLayout->addWidget(m_leftAreaContainer, LabelColumnStretch, Qt::AlignLeft);
         m_mainLayout->addWidget(m_middleAreaContainer, ValueColumnStretch);
