@@ -61,33 +61,34 @@ namespace UnitTest
             // in the unit tests.
             AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
-            AZStd::string cacheFolder;
-            AzFramework::StringFunc::Path::Join(GetTempFolder().c_str(), "testplatform", cacheFolder);
-            AzFramework::StringFunc::Path::Join(cacheFolder.c_str(), "testproject", cacheFolder);
-           
-            AZ::IO::FileIOBase::GetInstance()->SetAlias("@assets@", cacheFolder.c_str());
+            const AZStd::string cacheProjectRootFolder = GetTempFolder().c_str();
+            registry->Set(AZ::SettingsRegistryMergeUtils::FilePathKey_CacheProjectRootFolder, cacheProjectRootFolder);
+            AZ::IO::FileIOBase::GetInstance()->SetAlias("@assets@", cacheProjectRootFolder.c_str());
 
             for (int platformNum = AzFramework::PlatformId::PC; platformNum < AzFramework::PlatformId::NumPlatformIds; ++platformNum)
             {
-                AZStd::string platformName{ AzFramework::PlatformHelper::GetPlatformName(static_cast<AzFramework::PlatformId>(platformNum)) };
+                const AZStd::string platformName{ AzFramework::PlatformHelper::GetPlatformName(static_cast<AzFramework::PlatformId>(platformNum)) };
                 if (!platformName.length())
                 {
                     // Do not test disabled platforms
                     continue;
                 }
+
                 AZStd::unique_ptr<AzFramework::AssetRegistry> assetRegistry = AZStd::make_unique<AzFramework::AssetRegistry>();
                 for (int idx = 0; idx < s_totalAssets; idx++)
                 {
                     m_assets[platformNum][idx] = AssetId(AZ::Uuid::CreateRandom(), 0);
                     AZ::Data::AssetInfo info;
-                    info.m_relativePath = AZStd::string::format("%s%sAsset%d_%s.txt", cacheFolder.c_str(), AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING, idx, platformName.c_str());
+                    info.m_relativePath = AZStd::string::format("%s%sAsset%d.txt", platformName.c_str(), AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING, idx);
                     info.m_assetId = m_assets[platformNum][idx];
                     assetRegistry->RegisterAsset(m_assets[platformNum][idx], info);
-                    m_assetsPath[platformNum][idx] = info.m_relativePath;
+                    m_assetsPath[platformNum][idx] = cacheProjectRootFolder + AZ_CORRECT_FILESYSTEM_SEPARATOR + info.m_relativePath;
                     AZ_TEST_START_TRACE_SUPPRESSION;
                     if (m_fileStreams[platformNum][idx].Open(m_assetsPath[platformNum][idx].c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeBinary | AZ::IO::OpenMode::ModeCreatePath))
                     {
-                        m_fileStreams[platformNum][idx].Write(info.m_relativePath.size(), info.m_relativePath.data());
+                        AZ::IO::SizeType bytesWritten = m_fileStreams[platformNum][idx].Write(info.m_relativePath.size(), info.m_relativePath.data());
+                        EXPECT_EQ(bytesWritten, info.m_relativePath.size());
+                        m_fileStreams[platformNum][idx].Close();
                         AZ_TEST_STOP_TRACE_SUPPRESSION(1); // writing to asset cache folder
                     }
                     else
@@ -125,17 +126,19 @@ namespace UnitTest
 
                 if (fileIO->Exists(catalogPath.c_str()))
                 {
-                    fileIO->Remove(catalogPath.c_str());
+                    AZ_TEST_START_TRACE_SUPPRESSION;
+                    AZ::IO::Result result = fileIO->Remove(catalogPath.c_str());
+                    EXPECT_EQ(result.GetResultCode(), AZ::IO::ResultCode::Success);
+                    AZ_TEST_STOP_TRACE_SUPPRESSION(1); // removing from asset cache folder
                 }
                 // Deleting all the temporary files
                 for (int idx = 0; idx < s_totalAssets; idx++)
                 {
-                    // we need to close the handle before we try to remove the file
-                    m_fileStreams[platformNum][idx].Close();
                     if (fileIO->Exists(m_assetsPath[platformNum][idx].c_str()))
                     {
                         AZ_TEST_START_TRACE_SUPPRESSION;
-                        fileIO->Remove(m_assetsPath[platformNum][idx].c_str());
+                        AZ::IO::Result result = fileIO->Remove(m_assetsPath[platformNum][idx].c_str());
+                        EXPECT_EQ(result.GetResultCode(), AZ::IO::ResultCode::Success);
                         AZ_TEST_STOP_TRACE_SUPPRESSION(1); // removing from asset cache folder
                     }
                 }
@@ -183,12 +186,14 @@ namespace UnitTest
 
     TEST_F(PlatformAddressedAssetCatalogManagerTest, PlatformAddressedAssetCatalogManager_CatalogExistsChecks_Success)
     {
-
         EXPECT_EQ(AzToolsFramework::PlatformAddressedAssetCatalog::CatalogExists(AzFramework::PlatformId::ANDROID_ID), true);
         AZStd::string androidCatalogPath = AzToolsFramework::PlatformAddressedAssetCatalog::GetCatalogRegistryPathForPlatform(AzFramework::PlatformId::ANDROID_ID);
         if (AZ::IO::FileIOBase::GetInstance()->Exists(androidCatalogPath.c_str()))
         {
-            AZ::IO::FileIOBase::GetInstance()->Remove(androidCatalogPath.c_str());
+            AZ_TEST_START_TRACE_SUPPRESSION;
+            AZ::IO::Result result = AZ::IO::FileIOBase::GetInstance()->Remove(androidCatalogPath.c_str());
+            EXPECT_EQ(result.GetResultCode(), AZ::IO::ResultCode::Success);
+            AZ_TEST_STOP_TRACE_SUPPRESSION(1); // removing from asset cache folder
         }
         EXPECT_EQ(AzToolsFramework::PlatformAddressedAssetCatalog::CatalogExists(AzFramework::PlatformId::ANDROID_ID), false);
     }

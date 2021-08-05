@@ -354,6 +354,12 @@ namespace UnitTest
 
         AZ::Entity* entity = GetEntityById(entityId);
 
+        if (!entity)
+        {
+            AZ_Assert(false, "Failed to create editor entity '%s'", name);
+            return AZ::EntityId();
+        }
+
         entity->Deactivate();
 
         // add required components for the Editor entity
