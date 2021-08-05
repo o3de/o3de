@@ -146,7 +146,7 @@ def create_basic_atom_level(level_name):
             bus.Broadcast, "AddComponentsOfType", ground_plane.id, [mesh_type_id]
         ).GetValue()[0]
     )
-    ground_plane_mesh_asset_path = os.path.join("Objects", "plane.azmodel")
+    ground_plane_mesh_asset_path = os.path.join("Models", "plane.azmodel")
     ground_plane_mesh_asset_value = asset.AssetCatalogRequestBus(
         bus.Broadcast, "GetAssetIdByPath", ground_plane_mesh_asset_path, math.Uuid(), False)
     ground_plane.get_set_test(1, "Controller|Configuration|Mesh Asset", ground_plane_mesh_asset_value)

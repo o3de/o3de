@@ -104,13 +104,12 @@ class TestAllComponentsIndepthTests(object):
             "SpotLight_4.ppm",
             "SpotLight_5.ppm",
             "SpotLight_6.ppm",
-            "SpotLight_7.ppm",
         ]
-        screenshot_images = []
+        test_screenshots = []
         for screenshot in screenshot_names:
             screenshot_path = os.path.join(workspace.paths.project(), DEFAULT_SUBFOLDER_PATH, screenshot)
-            screenshot_images.append(screenshot_path)
-        self.remove_artifacts(screenshot_images)
+            test_screenshots.append(screenshot_path)
+        file_system.delete(test_screenshots, True, True)
 
         golden_images = []
         for golden_image in screenshot_names:
@@ -137,7 +136,7 @@ class TestAllComponentsIndepthTests(object):
             null_renderer=False,
         )
 
-        for test_screenshot, golden_screenshot in zip(screenshot_images, golden_images):
+        for test_screenshot, golden_screenshot in zip(test_screenshots, golden_images):
             compare_screenshots(test_screenshot, golden_screenshot)
 
 
