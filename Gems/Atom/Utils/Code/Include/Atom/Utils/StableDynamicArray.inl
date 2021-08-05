@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/createdestroy.h>
 
 namespace AZ

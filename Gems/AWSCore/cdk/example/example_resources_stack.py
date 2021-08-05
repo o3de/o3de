@@ -8,13 +8,13 @@ import os
 
 from aws_cdk import (
     aws_lambda as lambda_,
+    aws_iam as iam,
     aws_s3 as s3,
     aws_s3_deployment as s3_deployment,
     aws_dynamodb as dynamo,
     core
 )
 
-from core_stack_properties import CoreStackProperties
 from .auth import AuthPolicy
 
 
@@ -25,8 +25,7 @@ class ExampleResources(core.Stack):
     * A python 'echo' lambda
     * A small dynamodb table with the a primary 'id': str key
     """
-    def __init__(self, scope: core.Construct, id_: str, project_name: str, feature_name: str,
-                 props_: CoreStackProperties, **kwargs) -> None:
+    def __init__(self, scope: core.Construct, id_: str, project_name: str, feature_name: str, **kwargs) -> None:
         super().__init__(scope, id_, **kwargs,
                          description=f'Contains resources for the AWSCore examples as part of the '
                                      f'{project_name} project')
@@ -42,17 +41,74 @@ class ExampleResources(core.Stack):
         self.__create_outputs()
 
         # Finally grant cross stack references
-        self.__grant_access(props=props_)
+        self.__grant_access()
 
-    def __grant_access(self, props: CoreStackProperties):
-        self._s3_bucket.grant_read(props.user_group)
-        self._s3_bucket.grant_read(props.admin_group)
+    def __grant_access(self):
+        user_group = iam.Group.from_group_arn(
+            self,
+            f'{self._project_name}-{self._feature_name}-ImportedUserGroup',
+            core.Fn.import_value(f'{self._project_name}:UserGroup')
+        )
+        admin_group = iam.Group.from_group_arn(
+            self,
+            f'{self._project_name}-{self._feature_name}-ImportedAdminGroup',
+            core.Fn.import_value(f'{self._project_name}:AdminGroup')
+        )
 
-        self._lambda.grant_invoke(props.user_group)
-        self._lambda.grant_invoke(props.admin_group)
+        # Provide the admin and user groups permissions to read the example S3 bucket.
+        # Cannot use the grant_read method defined by the Bucket structure since the method tries to add to
+        # the resource-based policy but the imported IAM groups (which are tokens from Fn.ImportValue) are
+        # not valid principals in S3 bucket policies.
+        # Check https://aws.amazon.com/premiumsupport/knowledge-center/s3-invalid-principal-in-policy-error/
+        user_group.add_to_principal_policy(
+            iam.PolicyStatement(
+                actions=[
+                    "s3:GetBucket*",
+                    "s3:GetObject*",
+                    "s3:List*"
+                ],
+                effect=iam.Effect.ALLOW,
+                resources=[self._s3_bucket.bucket_arn, f'{self._s3_bucket.bucket_arn}/*']
+            )
+        )
+        admin_group.add_to_principal_policy(
+            iam.PolicyStatement(
+                actions=[
+                    "s3:GetBucket*",
+                    "s3:GetObject*",
+                    "s3:List*"
+                ],
+                effect=iam.Effect.ALLOW,
+                resources=[self._s3_bucket.bucket_arn, f'{self._s3_bucket.bucket_arn}/*']
+            )
+        )
 
-        self._table.grant_read_data(props.user_group)
-        self._table.grant_read_data(props.admin_group)
+        # Provide the admin and user groups permissions to invoke the example Lambda function.
+        # Cannot use the grant_invoke method defined by the Function structure since the method tries to add to
+        # the resource-based policy but the imported IAM groups (which are tokens from Fn.ImportValue) are
+        # not valid principals in Lambda function policies.
+        user_group.add_to_principal_policy(
+            iam.PolicyStatement(
+                actions=[
+                    "lambda:InvokeFunction"
+                ],
+                effect=iam.Effect.ALLOW,
+                resources=[self._lambda.function_arn]
+            )
+        )
+        admin_group.add_to_principal_policy(
+            iam.PolicyStatement(
+                actions=[
+                    "lambda:InvokeFunction"
+                ],
+                effect=iam.Effect.ALLOW,
+                resources=[self._lambda.function_arn]
+            )
+        )
+
+        # Provide the admin and user groups permissions to read from the DynamoDB table.
+        self._table.grant_read_data(user_group)
+        self._table.grant_read_data(admin_group)
 
     def __create_s3_bucket(self) -> s3.Bucket:
         # Create a sample S3 bucket following S3 best practices
@@ -60,11 +116,21 @@ class ExampleResources(core.Stack):
         # 1. Block all public access to the bucket
         # 2. Use SSE-S3 encryption. Explore encryption at rest options via
         #    https://docs.aws.amazon.com/AmazonS3/latest/userguide/serv-side-encryption.html
+        # 3. Enable Amazon S3 server access logging
+        #    https://docs.aws.amazon.com/AmazonS3/latest/userguide/ServerLogs.html
+        server_access_logs_bucket = s3.Bucket.from_bucket_name(
+            self,
+            f'{self._project_name}-{self._feature_name}-ImportedAccessLogsBucket',
+            core.Fn.import_value(f"{self._project_name}:ServerAccessLogsBucket")
+        )
+
         example_bucket = s3.Bucket(
             self,
             f'{self._project_name}-{self._feature_name}-Example-S3bucket',
             block_public_access=s3.BlockPublicAccess.BLOCK_ALL,
-            encryption=s3.BucketEncryption.S3_MANAGED
+            encryption=s3.BucketEncryption.S3_MANAGED,
+            server_access_logs_bucket=server_access_logs_bucket,
+            server_access_logs_prefix=f'{self._project_name}-{self._feature_name}-{self.region}-AccessLogs'
         )
 
         s3_deployment.BucketDeployment(

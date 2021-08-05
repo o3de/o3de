@@ -7,5 +7,5 @@
  */
 #pragma once
 
-#define AZ_TRAIT_ATOM_SHADERBUILDER_AZSLC UNUSED_TRAIT
+#define AZ_TRAIT_ATOM_SHADERBUILDER_AZSLC "azslc"
 

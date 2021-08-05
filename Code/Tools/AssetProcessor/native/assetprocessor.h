@@ -244,6 +244,11 @@ namespace AssetProcessor
                 m_jobEntry.m_builderGuid == rhs.m_jobEntry.m_builderGuid);
         }
 
+        static bool DatabaseSourceLexCompare(const JobDetails& left, const JobDetails& right)
+        {
+            return left.m_jobEntry.m_databaseSourceName <= right.m_jobEntry.m_databaseSourceName;
+        }
+
         JobDetails() = default;
     };
  

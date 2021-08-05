@@ -152,7 +152,7 @@ namespace AzNetworking
 
     void UdpConnection::ProcessAcked(PacketId packetId, AZ::TimeMs currentTimeMs)
     {
-        GetMetrics().m_packetsAcked++;
+        GetMetrics().LogPacketAcked();
         m_reliableQueue.OnPacketAcked(m_networkInterface, *this, packetId);
 
         // Compute Rtt adjustments
@@ -172,8 +172,7 @@ namespace AzNetworking
             GetMetrics().m_connectionRtt.LogPacketSent(packetId, currentTimeMs);
         }
 
-        GetMetrics().m_packetsSent++;
-        GetMetrics().m_sendDatarate.LogPacket(packetSize, currentTimeMs);
+        GetMetrics().LogPacketSent(packetSize, currentTimeMs);
         m_lastSentPacketMs = currentTimeMs;
         m_unackedPacketCount = 0;
     }
@@ -193,7 +192,7 @@ namespace AzNetworking
             return PacketTimeoutResult::Acked;
 
         case PacketAckState::Nacked:
-            GetMetrics().m_packetsLost++;
+            GetMetrics().LogPacketLost();
             if (reliability == ReliabilityType::Reliable)
             {
                 m_reliableQueue.OnPacketLost(m_networkInterface, *this, packetId);
@@ -224,8 +223,7 @@ namespace AzNetworking
             return false;
         }
 
-        GetMetrics().m_packetsRecv++;
-        GetMetrics().m_recvDatarate.LogPacket(packetSize, currentTimeMs);
+        GetMetrics().LogPacketRecv(packetSize, currentTimeMs);
 
         if (header.GetIsReliable() && !m_reliableQueue.OnPacketReceived(header))
         {

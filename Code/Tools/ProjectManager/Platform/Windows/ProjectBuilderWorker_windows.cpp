@@ -118,7 +118,9 @@ namespace O3DE::ProjectManager
             }
         }
 
-        if (m_configProjectProcess->exitCode() != 0 || !containsGeneratingDone)
+        if (m_configProjectProcess->exitStatus() != QProcess::ExitStatus::NormalExit
+            || m_configProjectProcess->exitCode() != 0
+            || !containsGeneratingDone)
         {
             QString error = tr("Configuring project failed. See log for details.");
             QStringToAZTracePrint(error);
@@ -180,7 +182,8 @@ namespace O3DE::ProjectManager
             }
         }
 
-        if (m_configProjectProcess->exitCode() != 0)
+        if (m_configProjectProcess->exitStatus() != QProcess::ExitStatus::NormalExit
+            || m_configProjectProcess->exitCode() != 0)
         {
             QString error = tr("Building project failed. See log for details.");
             QStringToAZTracePrint(error);

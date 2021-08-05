@@ -42,5 +42,6 @@ ly_add_test(
     TEST_COMMAND ${LY_PYTHON_CMD} ${CMAKE_CURRENT_LIST_DIR}/ctest_driver_test.py
         -x ${CMAKE_CTEST_COMMAND} 
         --build-path ${CMAKE_BINARY_DIR}
+    TEST_LIBRARY pytest
 )
 

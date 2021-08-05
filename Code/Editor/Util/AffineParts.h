@@ -20,11 +20,11 @@ struct AffineParts
     Vec3 scale;         //!< Stretch factors.
     float fDet;         //!< Sign of determinant.
 
-    /** Decompose matrix to its affnie parts.
+    /** Decompose matrix to its affine parts.
     */
     void Decompose(const Matrix34& mat);
 
-    /** Decompose matrix to its affnie parts.
+    /** Decompose matrix to its affine parts.
             Assume there`s no stretch rotation.
     */
     void SpectralDecompose(const Matrix34& mat);

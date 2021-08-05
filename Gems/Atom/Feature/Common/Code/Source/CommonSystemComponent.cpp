@@ -284,7 +284,7 @@ namespace AZ
             passSystem->AddPassCreator(Name("ReflectionScreenSpaceCompositePass"), &Render::ReflectionScreenSpaceCompositePass::Create);
             passSystem->AddPassCreator(Name("ReflectionCopyFrameBufferPass"), &Render::ReflectionCopyFrameBufferPass::Create);
 
-            // Add RayTracing pas
+            // Add RayTracing pass
             passSystem->AddPassCreator(Name("RayTracingPass"), &Render::RayTracingPass::Create);
 
             // setup handler for load pass template mappings

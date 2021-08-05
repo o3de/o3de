@@ -116,7 +116,7 @@ void ApplyPointLight(ViewSrg::PointLight light, Surface surface, inout LightingD
         float sphereIntensityNormalization = GetIntensityAdjustedByRadiusAndRoughness(surface.roughnessA, light.m_bulbRadius, d2);
 
         // Specular contribution
-        lightingData.specularLighting += sphereIntensityNormalization * GetSpecularLighting(surface, lightingData, lightIntensity, normalize(posToLight));
+        lightingData.specularLighting += sphereIntensityNormalization * GetSpecularLighting(surface, lightingData, lightIntensity, normalize(posToLight)) * litRatio;
     }
 }
 
