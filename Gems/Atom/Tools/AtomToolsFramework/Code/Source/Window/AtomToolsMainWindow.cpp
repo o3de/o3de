@@ -25,6 +25,8 @@ namespace AtomToolsFramework
         m_statusBar->setObjectName("StatusBar");
         statusBar()->addPermanentWidget(m_statusBar, 1);
 
+        m_centralWidget = new QWidget(this);
+
         AtomToolsMainWindowRequestBus::Handler::BusConnect();
     }
 
@@ -109,11 +111,26 @@ namespace AtomToolsFramework
 
     void AtomToolsMainWindow::CreateTabBar()
     {
-        m_centralWidget = new QWidget(this);
         m_tabWidget = new AzQtComponents::TabWidget(m_centralWidget);
         m_tabWidget->setObjectName("TabWidget");
         m_tabWidget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
         m_tabWidget->setContentsMargins(0, 0, 0, 0);
+
+        // The tab bar should only be visible if it has active documents
+        m_tabWidget->setVisible(false);
+        m_tabWidget->setTabBarAutoHide(false);
+        m_tabWidget->setMovable(true);
+        m_tabWidget->setTabsClosable(true);
+        m_tabWidget->setUsesScrollButtons(true);
+
+        // Add context menu for right-clicking on tabs
+        m_tabWidget->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
+        connect(
+            m_tabWidget, &QWidget::customContextMenuRequested, this,
+            [this]()
+            {
+                OpenTabContextMenu();
+            });
     }
 
     void AtomToolsMainWindow::AddTabForDocumentId(const AZ::Uuid& documentId)

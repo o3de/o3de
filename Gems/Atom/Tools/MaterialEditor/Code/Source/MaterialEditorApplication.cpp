@@ -38,8 +38,8 @@
 #include <AzToolsFramework/UI/PropertyEditor/PropertyManagerComponent.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 
-#include <Source/MaterialEditorApplication.h>
 #include <MaterialEditor_Traits_Platform.h>
+#include <MaterialEditorApplication.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QMessageBox>

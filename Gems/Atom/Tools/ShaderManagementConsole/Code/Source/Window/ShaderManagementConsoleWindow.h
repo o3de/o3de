@@ -17,17 +17,10 @@
 #include <AtomToolsFramework/Window/AtomToolsMainWindow.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
-#include <AzQtComponents/Components/DockMainWindow.h>
-#include <AzQtComponents/Components/FancyDocking.h>
-#include <AzQtComponents/Components/StyledDockWidget.h>
-#include <AzQtComponents/Components/Widgets/TabWidget.h>
-
 #include <Window/ShaderManagementConsoleBrowserWidget.h>
 #include <Window/ToolBar/ShaderManagementConsoleToolBar.h>
 
-#include <QMenuBar>
 #include <QStandardItemModel>
-#include <QToolBar>
 AZ_POP_DISABLE_WARNING
 #endif
 

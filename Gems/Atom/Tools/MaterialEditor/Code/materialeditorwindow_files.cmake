@@ -39,9 +39,6 @@ set(FILES
     Source/Window/PerformanceMonitor/PerformanceMonitorWidget.cpp
     Source/Window/PerformanceMonitor/PerformanceMonitorWidget.h
     Source/Window/PerformanceMonitor/PerformanceMonitorWidget.ui
-    Source/Window/StatusBar/StatusBarWidget.cpp
-    Source/Window/StatusBar/StatusBarWidget.h
-    Source/Window/StatusBar/StatusBarWidget.ui
     Source/Window/ToolBar/MaterialEditorToolBar.h
     Source/Window/ToolBar/MaterialEditorToolBar.cpp
     Source/Window/ToolBar/ModelPresetComboBox.h

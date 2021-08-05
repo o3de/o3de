@@ -476,7 +476,7 @@ namespace AtomToolsFramework
         appType.m_maskValue = AZ::ApplicationTypeQuery::Masks::Game;
     }
 
-        void AtomToolsApplication::OnTraceMessage([[maybe_unused]] AZStd::string_view message)
+    void AtomToolsApplication::OnTraceMessage([[maybe_unused]] AZStd::string_view message)
     {
 #if defined(AZ_ENABLE_TRACING)
         AZStd::vector<AZStd::string> lines;
