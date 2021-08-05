@@ -1584,5 +1584,36 @@ namespace AzFramework
                     ->Field("CatalogSaved", &SaveAssetCatalogResponse::m_saved);
             }
         }
-} // namespace AssetSystem
+
+
+        //----------------------------------------------------------------------------
+
+        UpdateAssetPrioritySetRequest::UpdateAssetPrioritySetRequest(
+                  const AZ::OSString& name, UpdateOperation updateOperation, uint32_t priorityBoost)
+            :m_name(name) , m_updateOperation(updateOperation) , m_priorityBoost(priorityBoost) 
+        {
+            
+        }
+
+        void UpdateAssetPrioritySetRequest::Reflect(AZ::ReflectContext* context) 
+        {
+            auto serialize = azrtti_cast<AZ::SerializeContext*>(context);
+            if (serialize) 
+            {
+                serialize->Class<UpdateAssetPrioritySetRequest, BaseAssetProcessorMessage>() 
+                        ->Version(1)
+                        ->Field("Name", &UpdateAssetPrioritySetRequest::m_name) 
+                        ->Field("UpdateOperation", &UpdateAssetPrioritySetRequest::m_updateOperation) 
+                        ->Field("PriorityBoost", &UpdateAssetPrioritySetRequest::m_priorityBoost) 
+                        ->Field("AssetList", &UpdateAssetPrioritySetRequest::m_assetList);
+            }
+            
+        }
+
+        unsigned int UpdateAssetPrioritySetRequest::GetMessageType() const 
+        {
+            return UpdateAssetPrioritySetRequest::MessageType;
+            
+        }
+    } // namespace AssetSystem
 } // namespace AzFramework

@@ -68,7 +68,8 @@ namespace AssetProcessor
     //! This enum stores all the different job escalation values
     enum JobEscalation
     {
-        ProcessAssetRequestSyncEscalation = 200,
+        ProcessAssetRequestSyncEscalation = 300,
+        PriotitySetEscalation = 200, // Space by 100 to allow the user for an additional margin of priority control.
         ProcessAssetRequestStatusEscalation = 150,
         AssetJobRequestEscalation = 100,
         Default = 0

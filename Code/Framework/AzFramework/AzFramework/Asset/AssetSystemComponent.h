@@ -154,6 +154,12 @@ namespace AzFramework
             float GetAssetProcessorPingTimeMilliseconds() override;
 
             bool SaveCatalog() override;
+
+            bool AppendAssetToPrioritySet(const AZStd::string& prioritySetName, const AZ::Uuid& assetUuid, uint32_t priorityBoost) override;
+            bool AppendAssetsToPrioritySet(const AZStd::string& prioritySetName, const AZStd::vector<AZ::Uuid>& assetUuidList, uint32_t priorityBoost) override;
+            bool RemoveAssetFromPrioritySet(const AZStd::string& prioritySetName, const AZ::Uuid& assetUuid) override;
+            bool RemoveAssetsFromPrioritySet(const AZStd::string& prioritySetName, const AZStd::vector<AZ::Uuid>& assetUuidList) override;
+
             //////////////////////////////////////////////////////////////////////////
 
             AssetStatus SendAssetStatusRequest(const RequestAssetStatus& request);

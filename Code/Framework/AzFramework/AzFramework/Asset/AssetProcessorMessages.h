@@ -78,7 +78,7 @@ namespace AzFramework
 
             NegotiationMessage() = default;
             unsigned int GetMessageType() const override;
-            int m_apiVersion = 7; // Changing the value will cause negotiation to fail between incompatible versions
+            int m_apiVersion = 8; // Changing the value will cause negotiation to fail between incompatible versions
             AZ::OSString m_identifier;
             typedef AZStd::unordered_map<unsigned int, AZ::OSString> NegotiationInfoMap;
             NegotiationInfoMap m_negotiationInfoMap;
@@ -1254,6 +1254,34 @@ namespace AzFramework
             FolderList m_folderList;
         };
 
+        class UpdateAssetPrioritySetRequest
+            : public BaseAssetProcessorMessage
+        {
+        public:
+            enum class UpdateOperation : unsigned int
+            {
+                Append, //< Add to the existing priority set.
+                        //< Creates the priority set if it doesn't exist.
+                Remove, //< Removes the assets (and their dependencies) from the given priority set.
+                        //< If the input list is empty it will remove the priority set.
+                        //< If the priority set doesn't exist nothing happens.
+            };
+
+            AZ_CLASS_ALLOCATOR(UpdateAssetPrioritySetRequest, AZ::OSAllocator, 0);
+            AZ_RTTI(UpdateAssetPrioritySetRequest, "{9CB661E8-A3C6-4430-975F-6690B069E134}", BaseAssetProcessorMessage);
+            static void Reflect(AZ::ReflectContext* context);
+            static constexpr unsigned int MessageType = AZ::Crc32("AssetSystem::UpdateAssetWorkingSet");
+
+            UpdateAssetPrioritySetRequest() = default;
+            UpdateAssetPrioritySetRequest(const AZ::OSString& name, UpdateOperation updateOperation, uint32_t priorityBoost = 0);
+            unsigned int GetMessageType() const override;
+
+            AZ::OSString m_name; //< Name of the priority set
+            UpdateOperation m_updateOperation;
+            uint32_t m_priorityBoost; // A value from 0 to 99. The range is validated by the consumer of the message. Higher values get
+                                      // higher priority.
+            AZStd::vector<AZ::Uuid> m_assetList; //< The assets listed here will be added/removed to/from the priority set.
+        };
 
     } // namespace AssetSystem
 } // namespace AzFramework

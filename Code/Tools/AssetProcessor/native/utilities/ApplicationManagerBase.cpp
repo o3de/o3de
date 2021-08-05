@@ -356,6 +356,8 @@ void ApplicationManagerBase::InitRCController()
     QObject::connect(m_assetProcessorManager, &AssetProcessor::AssetProcessorManager::SourceDeleted, m_rcController, &AssetProcessor::RCController::RemoveJobsBySource);
     QObject::connect(m_assetProcessorManager, &AssetProcessor::AssetProcessorManager::JobComplete, m_rcController, &AssetProcessor::RCController::OnJobComplete);
     QObject::connect(m_assetProcessorManager, &AssetProcessor::AssetProcessorManager::AddedToCatalog, m_rcController, &AssetProcessor::RCController::OnAddedToCatalog);
+    QObject::connect(this, &ApplicationManagerBase::AppendAssetsToPrioritySetRequest, m_rcController, &AssetProcessor::RCController::OnAppendAssetsToPrioritySet);
+    QObject::connect(this, &ApplicationManagerBase::RemoveAssetsFromPrioritySetRequest, m_rcController, &AssetProcessor::RCController::OnRemoveAssetsFromPrioritySet);
 }
 
 void ApplicationManagerBase::DestroyRCController()
@@ -699,6 +701,22 @@ void ApplicationManagerBase::InitAssetRequestHandler(AssetProcessor::AssetReques
     QObject::connect(m_assetRequestHandler, &AssetRequestHandler::RequestCompileGroup, GetRCController(), &RCController::OnRequestCompileGroup);
     QObject::connect(m_assetRequestHandler, &AssetRequestHandler::RequestEscalateAssetBySearchTerm, GetRCController(), &RCController::OnEscalateJobsBySearchTerm);
     QObject::connect(m_assetRequestHandler, &AssetRequestHandler::RequestEscalateAssetByUuid, GetRCController(), &RCController::OnEscalateJobsBySourceUUID);
+
+    QObject::connect(
+        m_assetRequestHandler, &AssetRequestHandler::AppendAssetsToPrioritySetRequest, this,
+        [this](QString prioritySetName, AZStd::vector<AZ::Uuid> assetList, uint32_t priorityBoost)
+        {
+            Q_EMIT AppendAssetsToPrioritySetRequest(
+                GetAssetProcessorManager()->GetDatabaseConnection(), prioritySetName, assetList, priorityBoost);
+            
+        });
+    QObject::connect(
+        m_assetRequestHandler, &AssetRequestHandler::RemoveAssetsFromPrioritySetRequest, this,
+        [this](QString prioritySetName, AZStd::vector<AZ::Uuid> assetList)
+        {
+            Q_EMIT RemoveAssetsFromPrioritySetRequest(GetAssetProcessorManager()->GetDatabaseConnection(), prioritySetName, assetList);
+            
+        });
 
     QObject::connect(GetRCController(), &RCController::CompileGroupCreated, m_assetRequestHandler, &AssetRequestHandler::OnCompileGroupCreated);
     QObject::connect(GetRCController(), &RCController::CompileGroupFinished, m_assetRequestHandler, &AssetRequestHandler::OnCompileGroupFinished);

@@ -218,14 +218,19 @@ namespace AssetProcessor
 
         RCJob* rcJob = new RCJob(&m_RCJobListModel);
         rcJob->Init(details); // note - move operation.  From this point on you must use the job details to refer to it.
-        m_RCQueueSortModel.AddJobIdEntry(rcJob);
-        m_RCJobListModel.addNewJob(rcJob);
         QString platformName = rcJob->GetPlatformInfo().m_identifier.c_str();// we need to get the actual platform from the rcJob
         if (rcJob->IsCritical())
         {
             int criticalJobsCount = m_pendingCriticalJobsPerPlatform[platformName.toLower()] + 1;
             m_pendingCriticalJobsPerPlatform[platformName.toLower()] = criticalJobsCount;
         }
+        else if (const int priority = GetJobAssetPrioritySetEscalation(*rcJob))
+        {
+            rcJob->SetJobEscalation(priority);
+        }
+        m_RCQueueSortModel.AddJobIdEntry(rcJob);
+        m_RCJobListModel.addNewJob(rcJob);
+
         auto found = m_jobsCountPerPlatform.find(platformName);
         if (found != m_jobsCountPerPlatform.end())
         {
@@ -428,6 +433,126 @@ namespace AssetProcessor
         m_RCJobListModel.markAsCataloged(checkFile);
 
         DispatchJobs();
+    }
+
+    int RCController::GetJobAssetPrioritySetEscalation(const RCJob& rcJob)const 
+    {
+        if (rcJob.GetPlatformInfo().m_identifier != AzToolsFramework::AssetSystem::GetHostAssetPlatform()) 
+        {
+            return 0;
+            
+        }
+        auto workingSetIt = m_prioritySets.constBegin();
+        while (workingSetIt != m_prioritySets.constEnd()) 
+        {
+            const QMap<AZ::Uuid, PriorityRefCount>& fileSet = workingSetIt.value();
+            const auto findIt = fileSet.find(rcJob.GetInputFileUuid());
+            if (findIt != fileSet.end()) 
+            {
+                return aznumeric_cast<int>(findIt.value().m_priority) + findIt.value().m_refCount;
+                
+            }
+            ++workingSetIt;
+        }
+        return 0;
+        
+    }
+
+    void RCController::OnAppendAssetsToPrioritySet(
+            AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> databaseConnection,
+            QString prioritySetName,
+            AZStd::vector<AZ::Uuid> assetList,
+            uint32_t priorityBoost) 
+    {
+        if (assetList.empty()) 
+        {
+            return;
+            
+        }
+        AZStd::vector<AZ::Uuid> expandedAssetList = AssetUtilities::CollectAssetAndDependenciesRecursively(*databaseConnection, assetList);
+         // Create the priority set if it doesn't exist.
+         auto findIt = m_prioritySets.find(prioritySetName);
+        if (findIt == m_prioritySets.end()) 
+        {
+            m_prioritySets[prioritySetName] = QMap<AZ::Uuid, PriorityRefCount>();
+            findIt = m_prioritySets.find(prioritySetName);
+            
+        }
+        QMap<AZ::Uuid, PriorityRefCount>& fileSet = findIt.value();
+        for (const AZ::Uuid& assetUuid : expandedAssetList)
+        {
+            auto findUuidIt = fileSet.find(assetUuid);
+            if (findUuidIt != fileSet.end()) 
+            {
+                PriorityRefCount& priorityRefCount = findUuidIt.value();
+                const int newRefCount = priorityRefCount.m_refCount + 1;
+                 // The priority is also boosted with increasing ref count.
+                    priorityRefCount.m_priority = qMin(
+                    AssetProcessor::PriotitySetEscalation + priorityBoost + newRefCount - 1,
+                    aznumeric_cast<uint32_t>(AssetProcessor::ProcessAssetRequestSyncEscalation - 1));
+                priorityRefCount.m_refCount = newRefCount;
+                
+            }
+            else
+            {
+                PriorityRefCount priorityRefCount;
+                priorityRefCount.m_priority = qMin(
+                    AssetProcessor::PriotitySetEscalation + priorityBoost,
+                    aznumeric_cast<uint32_t>(AssetProcessor::ProcessAssetRequestSyncEscalation - 1));
+                priorityRefCount.m_refCount = 1;
+                fileSet[assetUuid] = priorityRefCount;
+            }
+        }
+    }
+     
+    void RCController::OnRemoveAssetsFromPrioritySet(
+            AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> databaseConnection,
+            QString prioritySetName,
+            AZStd::vector<AZ::Uuid> assetList) 
+    {
+        auto findIt = m_prioritySets.find(prioritySetName);
+        if (findIt == m_prioritySets.end()) 
+        {
+            return;
+        }
+        // If the assetList is empty we'll remove the whole priority set.
+        if (assetList.empty()) 
+        {
+            m_prioritySets.erase(findIt);
+            return;
+            
+        }
+        AZStd::vector<AZ::Uuid> expandedAssetList = AssetUtilities::CollectAssetAndDependenciesRecursively(*databaseConnection, assetList);
+        // Decrement ref count from each asset. If it reaches zero the asset is removed
+        // from the priority set.
+        QMap<AZ::Uuid, PriorityRefCount>& fileSet = findIt.value();
+        for (const AZ::Uuid& assetUuid : expandedAssetList)
+        {
+            auto findUuidIt = fileSet.find(assetUuid);
+            if (findUuidIt == fileSet.end())
+            {
+                continue;
+            }
+            PriorityRefCount& priorityRefCount = findUuidIt.value();
+            const int newRefCount = priorityRefCount.m_refCount - 1;
+            if (newRefCount < 1)
+            {
+                fileSet.erase(findUuidIt);
+            }
+            else
+            {
+                // The priority is decreased each time the ref count is decreased.
+                const uint32_t newPriority =
+                    qMax(priorityRefCount.m_priority - 1, aznumeric_cast<uint32_t>(AssetProcessor::PriotitySetEscalation));
+                priorityRefCount.m_priority = newPriority;
+                priorityRefCount.m_refCount = newRefCount;
+            }
+        }
+        // If the fileSet is empty, remove the priority set.
+        if (fileSet.isEmpty())
+        {
+            m_prioritySets.erase(findIt);
+        }
     }
 
 } // Namespace AssetProcessor

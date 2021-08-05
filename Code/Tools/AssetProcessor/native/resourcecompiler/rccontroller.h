@@ -107,8 +107,21 @@ namespace AssetProcessor
         void OnJobComplete(JobEntry completeEntry, AzToolsFramework::AssetSystem::JobStatus status);
         void OnAddedToCatalog(JobEntry jobEntry);
 
+        //! See AssetSystemRequestBus::AppendAssetsToPrioritySet for details.
+        void OnAppendAssetsToPrioritySet(
+            AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> databaseConnection, QString prioritySetName,
+            AZStd::vector<AZ::Uuid> assetList, uint32_t priorityBoost);
+        void OnRemoveAssetsFromPrioritySet(
+            AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> databaseConnection, QString prioritySetName,
+            AZStd::vector<AZ::Uuid> assetList);
+
     private:
         void FinishJob(AssetProcessor::RCJob* rcJob);
+
+        //! Returns 0 if the given job is NOT for the current host platform, or the asset is not present in any
+        //! of the priority sets.
+        //! Otherwise returns the priority escalation value.
+        int GetJobAssetPrioritySetEscalation(const RCJob& rcJob) const;
 
         unsigned int m_maxJobs;
 
@@ -119,6 +132,19 @@ namespace AssetProcessor
 
         QMap<QString, int> m_jobsCountPerPlatform;// This stores the count of jobs per platform in the RC Queue
         QMap<QString, int> m_pendingCriticalJobsPerPlatform;// This stores the count of pending critical jobs per platform in the RC Queue
+
+        struct PriorityRefCount
+        {
+            uint32_t m_priority; // A value from AssetProcessor::PriotitySetEscalation up to
+                                 // AssetProcessor::ProcessAssetRequestSyncEscalation - 1
+            int32_t m_refCount;
+        };
+        // The key is the name of the priority set, the value is another map, where:
+        //     Key is the Uuid of an asset
+        //     Value is a tuple with the priority and the ref count of how many times such asset has been requested to be appended to the
+        //     working set.
+        QMap<QString, QMap<AZ::Uuid, PriorityRefCount>> m_prioritySets; 
+
         AssetProcessor::RCJobListModel m_RCJobListModel;
         AssetProcessor::RCQueueSortModel m_RCQueueSortModel;
 

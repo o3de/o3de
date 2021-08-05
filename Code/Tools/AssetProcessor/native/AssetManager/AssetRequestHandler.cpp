@@ -297,6 +297,29 @@ void AssetRequestHandler::HandleRequestEscalateAsset(MessageData<RequestEscalate
     }
 }
 
+ void AssetRequestHandler::HandleUpdateAssetPrioritySetRequest(MessageData<UpdateAssetPrioritySetRequest> messageData)
+{
+     if (messageData.m_message->m_updateOperation == AzFramework::AssetSystem::UpdateAssetPrioritySetRequest::UpdateOperation::Append) 
+    {
+         Q_EMIT AppendAssetsToPrioritySetRequest(
+            QString::fromUtf8(messageData.m_message->m_name.c_str()), messageData.m_message->m_assetList,
+            messageData.m_message->m_priorityBoost);
+        
+    }
+    else if (messageData.m_message->m_updateOperation == AzFramework::AssetSystem::UpdateAssetPrioritySetRequest::UpdateOperation::Remove) 
+    {
+        Q_EMIT RemoveAssetsFromPrioritySetRequest(
+            QString::fromUtf8(messageData.m_message->m_name.c_str()), messageData.m_message->m_assetList);
+        
+    }
+    else 
+    {
+        AZ_Warning(AssetProcessor::DebugChannel, false, "Invalid UpdateAssetPrioritySetRequest operation\n");
+        
+    }
+    
+}
+
 bool AssetRequestHandler::InvokeHandler(MessageData<AzFramework::AssetSystem::BaseAssetProcessorMessage> messageData)
 {
     // This function checks to see whether the incoming message is either one of those request, which require decoding the type of message and then invoking the appropriate EBUS handler.
@@ -434,6 +457,7 @@ AssetRequestHandler::AssetRequestHandler()
     m_requestRouter.RegisterMessageHandler(&HandleAssetInfoRequest);
     m_requestRouter.RegisterMessageHandler(&HandleAssetDependencyInfoRequest);
     m_requestRouter.RegisterMessageHandler(ToFunction(&AssetRequestHandler::HandleRequestEscalateAsset));
+    m_requestRouter.RegisterMessageHandler(ToFunction(&AssetRequestHandler::HandleUpdateAssetPrioritySetRequest));
 }
 
 QString AssetRequestHandler::CreateFenceFile(unsigned int fenceId)

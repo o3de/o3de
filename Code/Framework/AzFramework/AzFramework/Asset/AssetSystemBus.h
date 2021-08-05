@@ -284,6 +284,46 @@ namespace AzFramework
             virtual float GetAssetProcessorPingTimeMilliseconds() = 0;
             //! Saves the catalog synchronously
             virtual bool SaveCatalog() = 0;
+
+            /** Request that a particular asset be permanently (aka sticky) escalated to the top of the build queue.
+             *  It also escalates the build priority of all its dependencies.
+             *  This is an async request - the return value only indicates whether it was sent, not whether it escalated or was found.
+             *  Note that the Uuid of an asset is the Uuid of its source file.  If you have an AssetId field, this is the m_uuid part
+             *  inside the AssetId, since that refers to the source file that produced the asset.
+             *  @prioritySetName - The name of the priority set to which the asset Uuid should be added to. If a priority set
+             *      with the given name doesn't exist, it will be created. The meaning of the name is up to the caller, it can
+             *      be an application name, etc.
+             *  @param assetUuid - the uuid to look up.
+             *  @param priorityBoost - A value from 0 to 99 that allows for further granular boosting of priority escalation.
+             *      Higher values get higher priority.
+             * Note that this request always flushes IO (on the AssetProcessor side), but you don't pay for it in the caller
+             * process since it is a fire-and-forget message.  This means it's the fastest possible way to reliably escalate an asset by UUID.
+             **/
+            virtual bool AppendAssetToPrioritySet(
+                const AZStd::string& prioritySetName, const AZ::Uuid& assetUuid, uint32_t priorityBoost) = 0;
+
+            /**
+             * Same as AppendAssetToPrioritySet() but works on a list of Uuid as a convenience.
+             **/
+            virtual bool AppendAssetsToPrioritySet(
+                const AZStd::string& prioritySetName, const AZStd::vector<AZ::Uuid>& assetUuidList, uint32_t priorityBoost) = 0;
+
+            /**
+             * The counter part of AppendAssetToPrioritySet(), meaning it removes (de-escalates) the asset Uuid from the
+             * priority set.
+             * @prioritySetName If a priority set with the given name doesn't exist this request will be a no-op.
+             * @assetUuid If Invalid, the whole priority set will be removed. If valid, only this asset and all of its dependencies
+             *    will be removed from the priority set.
+             **/
+            virtual bool RemoveAssetFromPrioritySet(const AZStd::string& prioritySetName, const AZ::Uuid& assetUuid) = 0;
+
+            /**
+             * Similar to RemoveAssetsFromPrioritySet but works on a list of assets.
+             * @assetUuidList If empty, the whole priority set will be removed.
+             **/
+            virtual bool RemoveAssetsFromPrioritySet(
+                const AZStd::string& prioritySetName, const AZStd::vector<AZ::Uuid>& assetUuidList) = 0;
+
         };
 
         //! AssetSystemNegotiationBusTraits

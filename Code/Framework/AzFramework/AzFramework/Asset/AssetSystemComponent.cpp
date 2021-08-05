@@ -225,8 +225,8 @@ namespace AzFramework
             FileCopyRequest::Reflect(context);
             FileRenameRequest::Reflect(context);
             FindFilesRequest::Reflect(context);
-
             FileTreeRequest::Reflect(context);
+            UpdateAssetPrioritySetRequest::Reflect(context);
 
             // Responses
             GetUnresolvedDependencyCountsResponse::Reflect(context);
@@ -865,5 +865,56 @@ namespace AzFramework
 
             return false;
         }
+
+        bool AssetSystemComponent::AppendAssetToPrioritySet(const AZStd::string& prioritySetName, const AZ::Uuid& assetUuid, uint32_t priorityBoost) 
+        {
+            if (assetUuid.IsNull()) 
+            {
+                return AppendAssetsToPrioritySet(prioritySetName, {}, priorityBoost);
+                
+            }
+            return AppendAssetsToPrioritySet(prioritySetName, { assetUuid }, priorityBoost);
+            
+        }
+
+        bool AssetSystemComponent::AppendAssetsToPrioritySet(const AZStd::string& prioritySetName, const AZStd::vector<AZ::Uuid>& assetList, uint32_t priorityBoost) 
+        {
+            if (!ConnectedWithAssetProcessor()) 
+            {
+                return false;
+                
+            }
+            UpdateAssetPrioritySetRequest request(prioritySetName, UpdateAssetPrioritySetRequest::UpdateOperation::Append, priorityBoost);
+            request.m_assetList = assetList;
+            SendRequest(request);
+            return true;
+            
+        }
+
+        bool AssetSystemComponent::RemoveAssetFromPrioritySet(const AZStd::string& prioritySetName, const AZ::Uuid& assetUuid) 
+        {
+            if (assetUuid.IsNull()) 
+            {
+                return RemoveAssetsFromPrioritySet(prioritySetName, {});
+                
+            }
+            return RemoveAssetsFromPrioritySet(prioritySetName, { assetUuid });
+            
+        }
+
+        bool AssetSystemComponent::RemoveAssetsFromPrioritySet(const AZStd::string& prioritySetName, const AZStd::vector<AZ::Uuid>& assetList) 
+        {
+            if (!ConnectedWithAssetProcessor()) 
+            {
+                return false;
+                
+            }
+            UpdateAssetPrioritySetRequest request(prioritySetName, UpdateAssetPrioritySetRequest::UpdateOperation::Remove);
+            request.m_assetList = assetList;
+            SendRequest(request);
+            return true;
+            
+        }
+
     } // namespace AssetSystem
 } // namespace AzFramework

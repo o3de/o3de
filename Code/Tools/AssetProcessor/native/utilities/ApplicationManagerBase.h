@@ -123,6 +123,15 @@ Q_SIGNALS:
     void OnBuildersRegistered();
     void AssetProcesserManagerIdleStateChange(bool isIdle);
     void FullIdle(bool isIdle);
+
+    //! See AssetSystemRequestBus::AppendAssetsToPrioritySet for details.
+    void AppendAssetsToPrioritySetRequest(
+        AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> databaseConnection, QString prioritySetName,
+        AZStd::vector<AZ::Uuid> assetList, uint32_t priorityBoost);
+    void RemoveAssetsFromPrioritySetRequest(
+        AZStd::shared_ptr<AssetProcessor::AssetDatabaseConnection> databaseConnection, QString prioritySetName,
+        AZStd::vector<AZ::Uuid> assetList);
+
 public Q_SLOTS:
     void OnAssetProcessorManagerIdleState(bool isIdle);
 

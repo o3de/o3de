@@ -209,6 +209,11 @@ Q_SIGNALS:
         void RequestEscalateAssetByUuid(QString platform, AZ::Uuid escalatedAssetUUID);
         void RequestEscalateAssetBySearchTerm(QString platform, QString escalatedSearchTerm);
 
+        //! See AssetSystemRequestBus::AppendAssetsToPrioritySet for details.
+        void AppendAssetsToPrioritySetRequest(QString prioritySetName, AZStd::vector<AZ::Uuid> assetList, uint32_t priorityBoost);
+        void RemoveAssetsFromPrioritySetRequest(QString prioritySetName, AZStd::vector<AZ::Uuid> assetList);
+
+
     public Q_SLOTS:
         //! ProcessGetAssetStatus - someone on the network wants to know about the status of an asset.
         //! isStatusRequest will be TRUE if its a status request.  If its false it means its a compile request
@@ -256,6 +261,8 @@ Q_SIGNALS:
         void SendAssetStatus(NetworkRequestID groupID, unsigned int type, AssetStatus status);
 
         void HandleRequestEscalateAsset(MessageData<AzFramework::AssetSystem::RequestEscalateAsset> messageData);
+
+        void HandleUpdateAssetPrioritySetRequest(MessageData<AzFramework::AssetSystem::UpdateAssetPrioritySetRequest> messageData);
 
         // we keep state about a request in this class:
         class AssetRequestLine
