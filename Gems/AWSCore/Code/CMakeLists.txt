@@ -166,3 +166,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         )
     endif()
 endif()
+
+install(DIRECTORY "Tools/ResourceMappingTool"
+    DESTINATION "Gems/AWSCore/Code/Tools"
+    PATTERN "__pycache__" EXCLUDE
+)

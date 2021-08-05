@@ -14,10 +14,11 @@ from utils import file_utils
 
 # arguments setup
 argument_parser: ArgumentParser = ArgumentParser()
-argument_parser.add_argument('--binaries_path', help='Path to QT Binaries necessary for PySide.')
-argument_parser.add_argument('--config_path', help='Path to resource mapping config directory.')
+argument_parser.add_argument('--binaries-path', help='Path to QT Binaries necessary for PySide.')
+argument_parser.add_argument('--config-path', help='Path to resource mapping config directory.')
 argument_parser.add_argument('--debug', action='store_true', help='Execute on debug mode to enable DEBUG logging level')
-argument_parser.add_argument('--log_path', help='Path to resource mapping tool logging directory.')
+argument_parser.add_argument('--log-path', help='Path to resource mapping tool logging directory '
+                                                '(if not provided, logging file will be located at tool directory)')
 argument_parser.add_argument('--profile', default='default', help='Named AWS profile to use for querying AWS resources')
 arguments: Namespace = argument_parser.parse_args()
 
@@ -37,7 +38,7 @@ logging.getLogger('botocore').setLevel(logging.CRITICAL)
 logging.getLogger('s3transfer').setLevel(logging.CRITICAL)
 logging.getLogger('urllib3').setLevel(logging.CRITICAL)
 logger = logging.getLogger(__name__)
-logger.info(f"Setting logging file at {logging_path}")
+logger.info(f"Using {logging_path} for logging.")
 
 if __name__ == "__main__":
     if arguments.binaries_path and not environment_utils.is_qt_linked():

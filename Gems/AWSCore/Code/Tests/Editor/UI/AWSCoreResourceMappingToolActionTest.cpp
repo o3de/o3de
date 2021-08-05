@@ -36,12 +36,10 @@ class AWSCoreResourceMappingToolActionTest
 
 TEST_F(AWSCoreResourceMappingToolActionTest, AWSCoreResourceMappingToolAction_NoEngineRootPath_ExpectErrorsAndResult)
 {
-    AZ_TEST_START_TRACE_SUPPRESSION;
     AWSCoreResourceMappingToolAction testAction("dummy title");
+    AZ_TEST_START_TRACE_SUPPRESSION;
     EXPECT_TRUE(testAction.GetToolLaunchCommand() == "");
-    AZ_TEST_STOP_TRACE_SUPPRESSION(4);
-    AZStd::string expectedLogPath = AZStd::string::format("/%s/resource_mapping_tool.log", AWSCoreResourceMappingToolAction::ResourceMappingToolLogDirectoryPath);
-    AzFramework::StringFunc::Path::Normalize(expectedLogPath);
-    EXPECT_TRUE(testAction.GetToolLogFilePath() == expectedLogPath);
+    EXPECT_TRUE(testAction.GetToolLogFilePath() == "");
     EXPECT_TRUE(testAction.GetToolReadMePath() == "");
+    AZ_TEST_STOP_TRACE_SUPPRESSION(3);
 }

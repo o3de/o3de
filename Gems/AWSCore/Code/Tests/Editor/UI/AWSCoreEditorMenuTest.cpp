@@ -44,9 +44,7 @@ class AWSCoreEditorMenuTest
 
 TEST_F(AWSCoreEditorMenuTest, AWSCoreEditorMenu_GetAllActions_GetExpectedNumberOfActions)
 {
-    AZ_TEST_START_TRACE_SUPPRESSION;
     AWSCoreEditorMenu testMenu("dummy title");
-    AZ_TEST_STOP_TRACE_SUPPRESSION(3); // expect the above have thrown an AZ_Error
 
     QList<QAction*> actualActions = testMenu.actions();
 #ifdef AWSCORE_EDITOR_RESOURCE_MAPPING_TOOL_ENABLED
@@ -58,9 +56,7 @@ TEST_F(AWSCoreEditorMenuTest, AWSCoreEditorMenu_GetAllActions_GetExpectedNumberO
 
 TEST_F(AWSCoreEditorMenuTest, AWSCoreEditorMenu_BroadcastFeatureGemsAreEnabled_CorrespondingActionsAreEnabled)
 {
-    AZ_TEST_START_TRACE_SUPPRESSION;
     AWSCoreEditorMenu testMenu("dummy title");
-    AZ_TEST_STOP_TRACE_SUPPRESSION(3); // expect the above have thrown an AZ_Error
 
     AWSCoreEditorRequestBus::Broadcast(&AWSCoreEditorRequests::SetAWSClientAuthEnabled);
     AWSCoreEditorRequestBus::Broadcast(&AWSCoreEditorRequests::SetAWSMetricsEnabled);
