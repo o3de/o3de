@@ -1,21 +1,17 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of
+ * this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Math/Vector3.h>
-#include <Terrain/TerrainProvider.h>
+#include <TerrainProvider.h>
 
 namespace LmbrCentral
 {
@@ -36,16 +32,14 @@ namespace Terrain
         static void Reflect(AZ::ReflectContext* context);
 
         AZ::Vector3 m_worldMin{ 0.0f, 0.0f, 0.0f };
-        AZ::Vector3 m_worldMax{ 4096.0f, 4096.0f, 2048.0f };
-        AZ::Vector3 m_regionBounds{ 2048.0f, 2048.0f, 2048.0f };
-        float m_heightmapCellSize = { 1.0f };
-        AZStd::string m_worldMaterialAssetName = { "Terrain/default_world.worldmat" };
+        AZ::Vector3 m_worldMax{ 1024.0f, 1024.0f, 1024.0f };
+        AZ::Vector2 m_heightQueryResolution{ 1.0f, 1.0f };
+        bool m_debugWireframeEnabled{true};
     };
 
 
     class TerrainWorldComponent
         : public AZ::Component
-        , private AZ::Data::AssetBus::MultiHandler
     {
     public:
         template<typename, typename>
@@ -67,17 +61,8 @@ namespace Terrain
         bool ReadInConfig(const AZ::ComponentConfig* baseConfig) override;
         bool WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const override;
 
-        //////////////////////////////////////////////////////////////////////////
-        // AZ::Data::AssetBus::Handler
-        void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
-        void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
-
     private:
-        void LoadAssets();
-        bool IsFullyLoaded() const;
-
         TerrainWorldConfig m_configuration;
         TerrainProvider* m_terrainProvider{ nullptr };
-        TerrainRenderNode* m_terrainRenderNode{ nullptr };
     };
 }

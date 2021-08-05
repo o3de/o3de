@@ -277,7 +277,7 @@ namespace Terrain
                     float y0 = minY + (y * sampleSpacing);
                     float y1 = y0 + sampleSpacing;
 
-                    auto getHeight = [worldBounds, heightData, width, minZ, maxZ](int x, int y)
+                    auto getHeight = [&](int x, int y)
                     {
                         float rawHeight = heightData[(y * width) + x];
                         return AZ::Lerp(minZ, maxZ, rawHeight);

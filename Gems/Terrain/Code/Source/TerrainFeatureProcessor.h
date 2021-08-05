@@ -82,7 +82,7 @@ namespace Terrain
         void ProcessSurfaces(const FeatureProcessor::RenderPacket& process);
 
         // System-level parameters
-        const bool m_enableWireframeCode{ false };
+        const bool m_enableWireframeCode{ true };
         const float m_gridSpacing{ 1.0f };
         const float m_gridMeters{ 32.0f };
 

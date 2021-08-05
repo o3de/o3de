@@ -5,22 +5,17 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <AzCore/Component/TickBus.h>
-#include <Terrain/TerrainBus.h>
 
 namespace Terrain
 {
     class TerrainSystemComponent
         : public AZ::Component
-        , protected TerrainRequestBus::Handler
-        , public AZ::TickBus::Handler
     {
     public:
-        AZ_COMPONENT(TerrainSystemComponent, "{8f56edc4-21c9-4a23-98b5-508cc1eb75d1}");
+        AZ_COMPONENT(TerrainSystemComponent, "{CD5A517E-3BD8-49AE-8F9B-33C6FC47EC67}");
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -31,21 +26,10 @@ namespace Terrain
 
     protected:
         ////////////////////////////////////////////////////////////////////////
-        // TerrainRequestBus interface implementation
-
-        ////////////////////////////////////////////////////////////////////////
-
-        ////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation
         void Init() override;
         void Activate() override;
         void Deactivate() override;
         ////////////////////////////////////////////////////////////////////////
-
-        ////////////////////////////////////////////////////////////////////////
-        // AZTickBus interface implementation
-        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
-        ////////////////////////////////////////////////////////////////////////
     };
-
-} // namespace Terrain
+}

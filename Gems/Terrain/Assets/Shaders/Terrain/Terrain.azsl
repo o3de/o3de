@@ -70,7 +70,7 @@ VertexOutput MainVS(in VertexInput input)
     output.Position = mul(ViewSrg::m_viewProjectionMatrix, float4(worldPosition, 1.0f));
 
     // Remove all vertices outside our bounds by turning them into NaN positions.
-    output.Position = output.Position / ((origUv.x >= 0.0f && origUv.x <= 1.0f && origUv.y >= 0.0f && origUv.y <= 1.0f) ? 1.0f : 0.0f);
+    output.Position = output.Position / ((origUv.x >= 0.0f && origUv.x < 1.0f && origUv.y >= 0.0f && origUv.y < 1.0f) ? 1.0f : 0.0f);
 
     output.UV = uv;
     return output;

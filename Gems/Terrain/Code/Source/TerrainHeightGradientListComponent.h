@@ -1,41 +1,29 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of
+ * this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
-#include <AzCore/Math/Vector3.h>
-
+#include <AzCore/Component/EntityBus.h>
+#include <AzCore/Component/TransformBus.h>
 #include <AzCore/Jobs/JobManagerBus.h>
 #include <AzCore/Jobs/JobFunction.h>
-
-#include "platform.h"
-#include "ISystem.h"
-#include "IRenderer.h"
-#include "I3DEngine.h"
-#include "ITerrain.h"
-#include "MathConversion.h"
-
-
-#include <Terrain/Bus/TerrainBus.h>
-#include <Terrain/Bus/WorldMaterialRequestsBus.h>
-#include <Terrain/Bus/TerrainProviderBus.h>
-#include <Terrain/Bus/TerrainRendererBus.h>
-
-#include <AzCore/Component/TransformBus.h>
-#include <LmbrCentral/Shape/ShapeComponentBus.h>
-#include <AzCore/Component/EntityBus.h>
+#include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Aabb.h>
+
+#include <LmbrCentral/Dependency/DependencyMonitor.h>
+#include <LmbrCentral/Dependency/DependencyNotificationBus.h>
+#include <LmbrCentral/Shape/ShapeComponentBus.h>
+
+#include <TerrainBus.h>
+#include <TerrainProviderBus.h>
+
 
 namespace LmbrCentral
 {
@@ -59,10 +47,8 @@ namespace Terrain
 
     class TerrainHeightGradientListComponent
         : public AZ::Component
-        , private AZ::TransformNotificationBus::Handler
-        , private LmbrCentral::ShapeComponentNotificationsBus::Handler
-        , private AZ::EntityBus::Handler
         , private Terrain::TerrainAreaHeightRequestBus::Handler
+        , private LmbrCentral::DependencyNotificationBus::Handler
     {
     public:
         template<typename, typename>
@@ -77,6 +63,9 @@ namespace Terrain
         TerrainHeightGradientListComponent() = default;
         ~TerrainHeightGradientListComponent() = default;
 
+        void GetHeight(const AZ::Vector3& inPosition, AZ::Vector3& outPosition, Sampler sampleFilter) override;
+        void GetNormal(const AZ::Vector3& inPosition, AZ::Vector3& outNormal, Sampler sampleFilter) override;
+
         //////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation
         void Activate() override;
@@ -84,21 +73,9 @@ namespace Terrain
         bool ReadInConfig(const AZ::ComponentConfig* baseConfig) override;
         bool WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const override;
 
-
         //////////////////////////////////////////////////////////////////////////
-        // AZ::TransformNotificationBus::Handler
-        void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
-
-        // ShapeComponentNotificationsBus
-        void OnShapeChanged(ShapeChangeReasons changeReason) override;
-
-        ////////////////////////////////////////////////////////////////////////
-        // EntityEvents
-        void OnEntityActivated(const AZ::EntityId& entityId) override;
-        void OnEntityDeactivated(const AZ::EntityId& entityId) override;
-
-        void GetHeight(const AZ::Vector3& inPosition, AZ::Vector3& outPosition, Sampler sampleFilter) override;
-        void GetNormal(const AZ::Vector3& inPosition, AZ::Vector3& outNormal, Sampler sampleFilter) override;
+        // LmbrCentral::DependencyNotificationBus
+        void OnCompositionChanged() override;
 
     private:
         TerrainHeightGradientListConfig m_configuration;
@@ -106,14 +83,14 @@ namespace Terrain
         ///////////////////////////////////////////
         void GetHeightSynchronous(float x, float y, float& height);
         void GetNormalSynchronous(float x, float y, AZ::Vector3& normal);
-        void RefreshHeightData(bool& refresh);
 
         void RefreshMinMaxHeights();
         float GetHeight(float x, float y);
 
         AZ::Vector2 m_cachedHeightRange;
-        float m_cachedHeightQueryResolution{ 1.0f };
+        AZ::Vector2 m_cachedHeightQueryResolution{ 1.0f, 1.0f };
         AZ::Aabb m_cachedShapeBounds;
-        bool m_refreshHeightData{ true };
+
+        LmbrCentral::DependencyMonitor m_dependencyMonitor;
     };
 }

@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of
+ * this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "TerrainHeightGradientListComponent.h"
 #include <AzCore/Asset/AssetManagerBus.h>
@@ -93,30 +89,29 @@ namespace Terrain
 
     void TerrainHeightGradientListComponent::Activate()
     {
-        //AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
-        LmbrCentral::ShapeComponentNotificationsBus::Handler::BusConnect(GetEntityId());
+        LmbrCentral::DependencyNotificationBus::Handler::BusConnect(GetEntityId());
         Terrain::TerrainAreaHeightRequestBus::Handler::BusConnect(GetEntityId());
 
-        if (!(m_configuration.m_gradientEntities.empty()) && (*(m_configuration.m_gradientEntities.begin()) != GetEntityId()))
+        m_dependencyMonitor.Reset();
+        m_dependencyMonitor.ConnectOwner(GetEntityId());
+
+        for (auto& entityId : m_configuration.m_gradientEntities)
         {
-            AZ::EntityBus::Handler::BusConnect(*(m_configuration.m_gradientEntities.begin()));
-            //AZ::TransformNotificationBus::Handler::BusConnect(*(m_configuration.m_gradientEntities.begin()));
-            //LmbrCentral::ShapeComponentNotificationsBus::Handler::BusConnect(m_configuration.m_gradientEntityId);
+            if (entityId != GetEntityId())
+            {
+                m_dependencyMonitor.ConnectDependency(entityId);
+            }
         }
 
-        m_refreshHeightData = true;
         RefreshMinMaxHeights();
-
         TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId());
     }
 
     void TerrainHeightGradientListComponent::Deactivate()
     {
+        m_dependencyMonitor.Reset();
         Terrain::TerrainAreaHeightRequestBus::Handler::BusDisconnect();
-
-        AZ::EntityBus::Handler::BusDisconnect();
-        //AZ::TransformNotificationBus::Handler::BusDisconnect();
-        LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
+        LmbrCentral::DependencyNotificationBus::Handler::BusDisconnect();
 
         TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId());
     }
@@ -141,18 +136,6 @@ namespace Terrain
         return false;
     }
 
-    void TerrainHeightGradientListComponent::RefreshHeightData(bool& refresh)
-    {
-        // TODO:  Find better way to refresh this.  The problem is that the world component might get activated after us.
-        AZ::Aabb worldBounds = AZ::Aabb::CreateNull();
-        TerrainProviderRequestBus::BroadcastResult(worldBounds, &TerrainProviderRequestBus::Events::GetWorldBounds);
-        m_cachedHeightRange = AZ::Vector2(worldBounds.GetMin().GetZ(), worldBounds.GetMax().GetZ());
-        TerrainDataRequestBus::BroadcastResult(m_cachedHeightQueryResolution, &TerrainDataRequestBus::Events::GetHeightmapCellSize);
-
-        refresh = refresh || m_refreshHeightData;
-        m_refreshHeightData = false;
-    }
-
     float TerrainHeightGradientListComponent::GetHeight(float x, float y)
     {
         for (auto& gradientId : m_configuration.m_gradientEntities)
@@ -171,27 +154,12 @@ namespace Terrain
             }
 
         }
-
-        /*
-        const AZ::Vector3 rayOrigin = AZ::Vector3((float)x, (float)y, m_cachedShapeBounds.GetMax().GetZ() + 1.0f);
-        const AZ::Vector3 rayDirection = -AZ::Vector3::CreateAxisZ();
-        AZ::VectorFloat intersectionDistance = 0.0f;
-        bool hitShape = false;
-        LmbrCentral::ShapeComponentRequestsBus::EventResult(hitShape, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::IntersectRay, rayOrigin, rayDirection, intersectionDistance);
-        if (hitShape)
-        {
-            AZ::Vector3 hitPosition = rayOrigin + intersectionDistance * rayDirection;
-            return AZ::GetClamp((float)(hitPosition.GetZ()), m_cachedHeightRange.GetX(), m_cachedHeightRange.GetY());
-        }
-
         return m_cachedHeightRange.GetX();
-        */
-        return 0.0f;
     }
 
-    void TerrainHeightGradientListComponent::GetHeight(const AZ::Vector3& inPosition, AZ::Vector3& outPosition, Sampler sampleFilter = Sampler::DEFAULT)
+    void TerrainHeightGradientListComponent::GetHeight(const AZ::Vector3& inPosition, AZ::Vector3& outPosition, [[maybe_unused]] Sampler sampleFilter = Sampler::DEFAULT)
     {
-        float height = outPosition.GetZ();
+        float height = m_cachedHeightRange.GetX();
 
         for (auto& gradientId : m_configuration.m_gradientEntities)
         {
@@ -205,8 +173,8 @@ namespace Terrain
 
                 GradientSignal::GradientRequestBus::EventResult(sample, gradientId, &GradientSignal::GradientRequestBus::Events::GetValue, params);
                 float scaledHeight = AZ::Lerp(aabb.GetMin().GetZ(), aabb.GetMax().GetZ(), sample);
-                //height = AZ::GetClamp(scaledHeight, m_cachedHeightRange.GetX(), m_cachedHeightRange.GetY());
-                height = scaledHeight;
+                height = AZ::GetClamp(scaledHeight, m_cachedHeightRange.GetX(), m_cachedHeightRange.GetY());
+                //height = scaledHeight;
                 break;
             }
 
@@ -215,7 +183,7 @@ namespace Terrain
         outPosition.SetZ(height);
     }
 
-    void TerrainHeightGradientListComponent::GetNormal(const AZ::Vector3& inPosition, AZ::Vector3& outNormal, Sampler sampleFilter = Sampler::DEFAULT)
+    void TerrainHeightGradientListComponent::GetNormal(const AZ::Vector3& inPosition, AZ::Vector3& outNormal, [[maybe_unused]] Sampler sampleFilter = Sampler::DEFAULT)
     {
         GetNormalSynchronous(inPosition.GetX(), inPosition.GetY(), outNormal);
     }
@@ -235,38 +203,20 @@ namespace Terrain
         if ((x >= m_cachedShapeBounds.GetMin().GetX()) && (x <= m_cachedShapeBounds.GetMax().GetX()) &&
             (y >= m_cachedShapeBounds.GetMin().GetY()) && (y <= m_cachedShapeBounds.GetMax().GetY()))
         {
-            float fRange = (m_cachedHeightQueryResolution / 2.0f) + 0.05f;
+            AZ::Vector2 fRange = (m_cachedHeightQueryResolution / 2.0f) + AZ::Vector2(0.05f);
 
-            AZ::Vector3 v1(x - fRange, y - fRange, GetHeight(x - fRange, y - fRange));
-            AZ::Vector3 v2(x - fRange, y + fRange, GetHeight(x - fRange, y + fRange));
-            AZ::Vector3 v3(x + fRange, y - fRange, GetHeight(x + fRange, y - fRange));
-            AZ::Vector3 v4(x + fRange, y + fRange, GetHeight(x + fRange, y + fRange));
+            AZ::Vector3 v1(x - fRange.GetX(), y - fRange.GetY(), GetHeight(x - fRange.GetX(), y - fRange.GetY()));
+            AZ::Vector3 v2(x - fRange.GetX(), y + fRange.GetY(), GetHeight(x - fRange.GetX(), y + fRange.GetY()));
+            AZ::Vector3 v3(x + fRange.GetX(), y - fRange.GetY(), GetHeight(x + fRange.GetX(), y - fRange.GetY()));
+            AZ::Vector3 v4(x + fRange.GetX(), y + fRange.GetY(), GetHeight(x + fRange.GetX(), y + fRange.GetY()));
             normal = (v3 - v2).Cross(v4 - v1).GetNormalized();
         }
     }
 
-    void TerrainHeightGradientListComponent::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
+    void TerrainHeightGradientListComponent::OnCompositionChanged()
     {
-        m_refreshHeightData = true;
         RefreshMinMaxHeights();
-    }
-
-    void TerrainHeightGradientListComponent::OnShapeChanged(ShapeChangeReasons changeReason)
-    {
-        m_refreshHeightData = true;
-        RefreshMinMaxHeights();
-    }
-
-    void TerrainHeightGradientListComponent::OnEntityActivated(const AZ::EntityId& entityId)
-    {
-        m_refreshHeightData = true;
-        RefreshMinMaxHeights();
-    }
-
-    void TerrainHeightGradientListComponent::OnEntityDeactivated(const AZ::EntityId& entityId)
-    {
-        m_refreshHeightData = true;
-        RefreshMinMaxHeights();
+        TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::RefreshArea, GetEntityId());
     }
 
     void TerrainHeightGradientListComponent::RefreshMinMaxHeights()
@@ -275,13 +225,13 @@ namespace Terrain
         LmbrCentral::ShapeComponentRequestsBus::EventResult(m_cachedShapeBounds, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
 
         m_cachedHeightRange = AZ::Vector2(m_cachedShapeBounds.GetMin().GetZ(), m_cachedShapeBounds.GetMax().GetZ());
-        m_cachedHeightQueryResolution = 1.0f;
+        m_cachedHeightQueryResolution = AZ::Vector2(1.0f);
 
         // Get the height range of the entire world
         AZ::Aabb worldBounds = AZ::Aabb::CreateNull();
-        TerrainProviderRequestBus::BroadcastResult(worldBounds, &TerrainProviderRequestBus::Events::GetWorldBounds);
+        TerrainDataRequestBus::BroadcastResult(worldBounds, &TerrainDataRequestBus::Events::GetTerrainAabb);
         m_cachedHeightRange = AZ::Vector2(worldBounds.GetMin().GetZ(), worldBounds.GetMax().GetZ());
-        TerrainDataRequestBus::BroadcastResult(m_cachedHeightQueryResolution, &TerrainDataRequestBus::Events::GetHeightmapCellSize);
+        TerrainDataRequestBus::BroadcastResult(m_cachedHeightQueryResolution, &TerrainDataRequestBus::Events::GetTerrainGridResolution);
     }
 
 }

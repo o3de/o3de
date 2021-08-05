@@ -1,14 +1,10 @@
 /*
-* All or portions of this file Copyright (c) Amazon.com, Inc. or its affiliates or
-* its licensors.
-*
-* For complete copyright and license terms please see the LICENSE at the root of this
-* distribution (the "License"). All use of this software is governed by the License,
-* or, if provided, by the license below or the license accompanying this file. Do not
-* remove or modify any license notices. This file is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*
-*/
+ * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of
+ * this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
 
 #include "TerrainWorldComponent.h"
 #include <AzCore/Asset/AssetManagerBus.h>
@@ -17,7 +13,6 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <TerrainRenderNode.h>
 
 namespace Terrain
 {
@@ -30,9 +25,8 @@ namespace Terrain
                 ->Version(1)
                 ->Field("WorldMin", &TerrainWorldConfig::m_worldMin)
                 ->Field("WorldMax", &TerrainWorldConfig::m_worldMax)
-                ->Field("RegionBounds", &TerrainWorldConfig::m_regionBounds)
-                ->Field("HeightmapCellSize", &TerrainWorldConfig::m_heightmapCellSize)
-                ->Field("WorldMaterial", &TerrainWorldConfig::m_worldMaterialAssetName)
+                ->Field("HeightQueryResolution", &TerrainWorldConfig::m_heightQueryResolution)
+                ->Field("DebugWireframe", &TerrainWorldConfig::m_debugWireframeEnabled)
             ;
 
             AZ::EditContext* edit = serialize->GetEditContext();
@@ -41,15 +35,14 @@ namespace Terrain
                 edit->Class<TerrainWorldConfig>(
                     "Terrain World Component", "Data required for the terrain system to run")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZStd::vector<AZ::Crc32>({ AZ_CRC("Level", 0x9aeacc13) }))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZStd::vector<AZ::Crc32>({ AZ_CRC("Level") }))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldConfig::m_worldMin, "World Min", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldConfig::m_worldMax, "World Max", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldConfig::m_regionBounds, "Region Bounds", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldConfig::m_heightmapCellSize, "Heightmap Cell Size", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldConfig::m_worldMaterialAssetName, "World Material", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldConfig::m_worldMin, "World Bounds (Min)", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldConfig::m_worldMax, "World Bounds (Max)", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldConfig::m_heightQueryResolution, "Height Query Resolution (m)", "")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldConfig::m_debugWireframeEnabled, "Enable Wireframe", "")
                 ;
             }
         }
@@ -57,15 +50,15 @@ namespace Terrain
 
     void TerrainWorldComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("TerrainService", 0x28ee7719));
+        services.push_back(AZ_CRC("TerrainService"));
     }
 
     void TerrainWorldComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("TerrainService", 0x28ee7719));
+        services.push_back(AZ_CRC("TerrainService"));
     }
 
-    void TerrainWorldComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
+    void TerrainWorldComponent::GetRequiredServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& services)
     {
     }
 
@@ -90,20 +83,17 @@ namespace Terrain
 
     void TerrainWorldComponent::Activate()
     {
-        m_terrainRenderNode = new TerrainRenderNode("Materials/Terrain/TerrainSystem.mtl");
         m_terrainProvider = new TerrainProvider();
 
         m_terrainProvider->SetWorldMin(m_configuration.m_worldMin);
         m_terrainProvider->SetWorldMax(m_configuration.m_worldMax);
-        m_terrainProvider->SetRegionBounds(m_configuration.m_regionBounds);
-        m_terrainProvider->SetHeightmapCellSize(m_configuration.m_heightmapCellSize);
-        m_terrainProvider->SetMaterialName(m_configuration.m_worldMaterialAssetName);
+        m_terrainProvider->SetHeightQueryResolution(m_configuration.m_heightQueryResolution);
+        m_terrainProvider->SetDebugWireframe(m_configuration.m_debugWireframeEnabled);
     }
 
     void TerrainWorldComponent::Deactivate()
     {
         delete m_terrainProvider;
-        delete m_terrainRenderNode;
     }
 
     bool TerrainWorldComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
@@ -124,24 +114,5 @@ namespace Terrain
             return true;
         }
         return false;
-    }
-
-    void TerrainWorldComponent::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
-    {
-    }
-
-    void TerrainWorldComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
-    {
-        OnAssetReady(asset);
-    }
-
-    void TerrainWorldComponent::LoadAssets()
-    {
-    }
-
-
-    bool TerrainWorldComponent::IsFullyLoaded() const
-    {
-        return true;
     }
 }

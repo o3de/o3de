@@ -22,16 +22,15 @@ namespace Terrain
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<TerrainSystemComponent, AZ::Component>()
-                ->Version(0)
-                ;
+                ->Version(0);
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
-                ec->Class<TerrainSystemComponent>("Terrain", "[Description of functionality provided by this System Component]")
+                ec->Class<TerrainSystemComponent>("Terrain", "The Terrain System Component enables Terrain.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ;
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                ;
             }
 
             Terrain::TerrainFeatureProcessor::Reflect(context);
@@ -65,22 +64,10 @@ namespace Terrain
     void TerrainSystemComponent::Activate()
     {
         AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessor<Terrain::TerrainFeatureProcessor>();
-
-        TerrainRequestBus::Handler::BusConnect();
-        AZ::TickBus::Handler::BusConnect();
     }
 
     void TerrainSystemComponent::Deactivate()
     {
-        AZ::TickBus::Handler::BusDisconnect();
-        TerrainRequestBus::Handler::BusDisconnect();
-
         AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<Terrain::TerrainFeatureProcessor>();
     }
-
-    void TerrainSystemComponent::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
-    {
-
-    }
-
-} // namespace Terrain
+}
