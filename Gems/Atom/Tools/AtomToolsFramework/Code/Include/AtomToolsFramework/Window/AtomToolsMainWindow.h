@@ -38,9 +38,9 @@ namespace AtomToolsFramework
         bool IsDockWidgetVisible(const AZStd::string& name) const override;
         AZStd::vector<AZStd::string> GetDockWidgetNames() const override;
 
-        virtual void SetupMenu();
+        virtual void CreateMenu();
 
-        virtual void SetupTabs();
+        virtual void CreateTabBar();
         virtual void AddTabForDocumentId(const AZ::Uuid& documentId);
         virtual void RemoveTabForDocumentId(const AZ::Uuid& documentId);
         virtual void UpdateTabForDocumentId(const AZ::Uuid& documentId);
@@ -57,7 +57,5 @@ namespace AtomToolsFramework
         QStatusBar* m_statusBar = nullptr;
 
         AZStd::unordered_map<AZStd::string, AzQtComponents::StyledDockWidget*> m_dockWidgets;
-
-        QMenu* m_menuFile = {};
     };
 } // namespace AtomToolsFramework

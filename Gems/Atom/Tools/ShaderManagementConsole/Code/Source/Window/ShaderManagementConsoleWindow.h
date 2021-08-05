@@ -63,9 +63,9 @@ namespace ShaderManagementConsole
         void OnDocumentUndoStateChanged(const AZ::Uuid& documentId) override;
         void OnDocumentSaved(const AZ::Uuid& documentId) override;
 
-        void SetupMenu() override;
+        void CreateMenu() override;
 
-        void SetupTabs() override;
+        void CreateTabBar() override;
         void AddTabForDocumentId(const AZ::Uuid& documentId) override;
         void UpdateTabForDocumentId(const AZ::Uuid& documentId) override;
 
@@ -81,6 +81,7 @@ namespace ShaderManagementConsole
 
         ShaderManagementConsoleToolBar* m_toolBar = nullptr;
 
+        QMenu* m_menuFile = {};
         QMenu* m_menuNew = {};
         QAction* m_actionOpen = {};
         QAction* m_actionOpenRecent = {};

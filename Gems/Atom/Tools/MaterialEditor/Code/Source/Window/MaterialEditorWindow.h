@@ -68,9 +68,9 @@ namespace MaterialEditor
         void OnDocumentUndoStateChanged(const AZ::Uuid& documentId) override;
         void OnDocumentSaved(const AZ::Uuid& documentId) override;
 
-        void SetupMenu() override;
+        void CreateMenu() override;
 
-        void SetupTabs() override;
+        void CreateTabBar() override;
         void AddTabForDocumentId(const AZ::Uuid& documentId) override;
         void UpdateTabForDocumentId(const AZ::Uuid& documentId) override;
         QString GetDocumentPath(const AZ::Uuid& documentId) const;
@@ -82,6 +82,7 @@ namespace MaterialEditor
         MaterialViewportWidget* m_materialViewport = nullptr;
         MaterialEditorToolBar* m_toolBar = nullptr;
 
+        QMenu* m_menuFile = {};
         QAction* m_actionNew = {};
         QAction* m_actionOpen = {};
         QAction* m_actionOpenRecent = {};

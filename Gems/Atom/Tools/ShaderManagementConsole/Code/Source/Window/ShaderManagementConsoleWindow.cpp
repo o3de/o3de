@@ -49,15 +49,15 @@ namespace ShaderManagementConsole
         m_toolBar->setObjectName("ToolBar");
         addToolBar(m_toolBar);
 
+        CreateMenu();
+        CreateTabBar();
+
         QVBoxLayout* vl = new QVBoxLayout(m_centralWidget);
         vl->setMargin(0);
         vl->setContentsMargins(0, 0, 0, 0);
         vl->addWidget(m_tabWidget);
         m_centralWidget->setLayout(vl);
         setCentralWidget(m_centralWidget);
-
-        SetupMenu();
-        SetupTabs();
 
         AddDockWidget("Asset Browser", new ShaderManagementConsoleBrowserWidget, Qt::BottomDockWidgetArea, Qt::Vertical);
         AddDockWidget("Python Terminal", new AzToolsFramework::CScriptTermDialog, Qt::BottomDockWidgetArea, Qt::Horizontal);
@@ -159,9 +159,12 @@ namespace ShaderManagementConsole
         UpdateTabForDocumentId(documentId);
     }
 
-    void ShaderManagementConsoleWindow::SetupMenu()
+    void ShaderManagementConsoleWindow::CreateMenu()
     {
-        Base::SetupMenu();
+        Base::CreateMenu();
+
+        // Generating the main menu manually because it's easier and we will have some dynamic or data driven entries
+        m_menuFile = m_menuBar->addMenu("&File");
 
         m_actionOpen = m_menuFile->addAction("&Open...", [this]() {
             const AZStd::vector<AZ::Data::AssetType> assetTypes = {
@@ -277,9 +280,22 @@ namespace ShaderManagementConsole
         });
     }
 
-    void ShaderManagementConsoleWindow::SetupTabs()
+    void ShaderManagementConsoleWindow::CreateTabBar()
     {
-        Base::SetupTabs();
+        Base::CreateTabBar();
+
+        // The tab bar should only be visible if it has active documents
+        m_tabWidget->setVisible(false);
+        m_tabWidget->setTabBarAutoHide(false);
+        m_tabWidget->setMovable(true);
+        m_tabWidget->setTabsClosable(true);
+        m_tabWidget->setUsesScrollButtons(true);
+
+        // Add context menu for right-clicking on tabs
+        m_tabWidget->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
+        connect(m_tabWidget, &QWidget::customContextMenuRequested, this, [this]() {
+            OpenTabContextMenu();
+        });
 
         // This signal will be triggered whenever a tab is added, removed, selected, clicked, dragged
         // When the last tab is removed tabIndex will be -1 and the document ID will be null

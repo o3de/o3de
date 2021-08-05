@@ -21,16 +21,6 @@ namespace AtomToolsFramework
         setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
         setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
 
-        m_menuBar = new QMenuBar(this);
-        m_menuBar->setObjectName("MenuBar");
-        setMenuBar(m_menuBar);
-
-        m_centralWidget = new QWidget(this);
-        m_tabWidget = new AzQtComponents::TabWidget(m_centralWidget);
-        m_tabWidget->setObjectName("TabWidget");
-        m_tabWidget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
-        m_tabWidget->setContentsMargins(0, 0, 0, 0);
-
         m_statusBar = new QStatusBar(this);
         m_statusBar->setObjectName("StatusBar");
         statusBar()->addPermanentWidget(m_statusBar, 1);
@@ -110,26 +100,20 @@ namespace AtomToolsFramework
         return names;
     }
 
-    void AtomToolsMainWindow::SetupMenu()
+    void AtomToolsMainWindow::CreateMenu()
     {
-        // Generating the main menu manually because it's easier and we will have some dynamic or data driven entries
-        m_menuFile = m_menuBar->addMenu("&File");
+        m_menuBar = new QMenuBar(this);
+        m_menuBar->setObjectName("MenuBar");
+        setMenuBar(m_menuBar);
     }
 
-    void AtomToolsMainWindow::SetupTabs()
+    void AtomToolsMainWindow::CreateTabBar()
     {
-        // The tab bar should only be visible if it has active documents
-        m_tabWidget->setVisible(false);
-        m_tabWidget->setTabBarAutoHide(false);
-        m_tabWidget->setMovable(true);
-        m_tabWidget->setTabsClosable(true);
-        m_tabWidget->setUsesScrollButtons(true);
-
-        // Add context menu for right-clicking on tabs
-        m_tabWidget->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
-        connect(m_tabWidget, &QWidget::customContextMenuRequested, this, [this]() {
-            OpenTabContextMenu();
-        });
+        m_centralWidget = new QWidget(this);
+        m_tabWidget = new AzQtComponents::TabWidget(m_centralWidget);
+        m_tabWidget->setObjectName("TabWidget");
+        m_tabWidget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
+        m_tabWidget->setContentsMargins(0, 0, 0, 0);
     }
 
     void AtomToolsMainWindow::AddTabForDocumentId(const AZ::Uuid& documentId)
