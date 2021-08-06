@@ -153,13 +153,8 @@ protected:
 
     void CheckForCameraSpeedUpdate();
 
-    void OnGridSnappingToggled();
-    void OnAngleSnappingToggled();
-
     void OnGridSpinBoxChanged(double value);
     void OnAngleSpinBoxChanged(double value);
-
-    void UpdateOverFlowMenuState();
 
     QMenu* m_fovMenu = nullptr;
     QMenu* m_aspectMenu = nullptr;

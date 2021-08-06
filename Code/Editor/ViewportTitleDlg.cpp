@@ -231,11 +231,6 @@ void CViewportTitleDlg::SetupOverflowMenu()
 
     overFlowMenu->addSeparator();
 
-    m_enableGridSnappingAction = new QAction("Enable Grid Snapping", overFlowMenu);
-    connect(m_enableGridSnappingAction, &QAction::triggered, this, &CViewportTitleDlg::OnGridSnappingToggled);
-    m_enableGridSnappingAction->setCheckable(true);
-    overFlowMenu->addAction(m_enableGridSnappingAction);
-
     m_gridSizeActionWidget = new QWidgetAction(overFlowMenu);
     m_gridSpinBox = new AzQtComponents::DoubleSpinBox();
     m_gridSpinBox->setValue(SandboxEditor::GridSnappingSize());
@@ -250,11 +245,6 @@ void CViewportTitleDlg::SetupOverflowMenu()
 
     overFlowMenu->addSeparator();
 
-    m_enableAngleSnappingAction = new QAction("Enable Angle Snapping", overFlowMenu);
-    connect(m_enableAngleSnappingAction, &QAction::triggered, this, &CViewportTitleDlg::OnAngleSnappingToggled);
-    m_enableAngleSnappingAction->setCheckable(true);
-    overFlowMenu->addAction(m_enableAngleSnappingAction);
-
     m_angleSizeActionWidget = new QWidgetAction(overFlowMenu);
     m_angleSpinBox = new AzQtComponents::DoubleSpinBox();
     m_angleSpinBox->setValue(SandboxEditor::AngleSnappingSize());
@@ -267,10 +257,6 @@ void CViewportTitleDlg::SetupOverflowMenu()
 
     m_angleSizeActionWidget->setDefaultWidget(m_angleSpinBox);
     overFlowMenu->addAction(m_angleSizeActionWidget);
-
-    m_ui->m_overflowBtn->setMenu(overFlowMenu);
-    m_ui->m_overflowBtn->setPopupMode(QToolButton::InstantPopup);
-    connect(overFlowMenu, &QMenu::aboutToShow, this, &CViewportTitleDlg::UpdateOverFlowMenuState);
 
     UpdateMuteActionText();
 }
@@ -950,18 +936,6 @@ void CViewportTitleDlg::CheckForCameraSpeedUpdate()
     }
 }
 
-void CViewportTitleDlg::OnGridSnappingToggled()
-{
-    m_gridSizeActionWidget->setEnabled(m_enableGridSnappingAction->isChecked());
-    MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapToGrid)->trigger();
-}
-
-void CViewportTitleDlg::OnAngleSnappingToggled()
-{
-    m_angleSizeActionWidget->setEnabled(m_enableAngleSnappingAction->isChecked());
-    MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapAngle)->trigger();
-}
-
 void CViewportTitleDlg::OnGridSpinBoxChanged(double value)
 {
     SandboxEditor::SetGridSnappingSize(value);
@@ -970,23 +944,6 @@ void CViewportTitleDlg::OnGridSpinBoxChanged(double value)
 void CViewportTitleDlg::OnAngleSpinBoxChanged(double value)
 {
     SandboxEditor::SetAngleSnappingSize(value);
-}
-
-void CViewportTitleDlg::UpdateOverFlowMenuState()
-{
-    bool gridSnappingActive = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapToGrid)->isChecked();
-    {
-        QSignalBlocker signalBlocker(m_enableGridSnappingAction);
-        m_enableGridSnappingAction->setChecked(gridSnappingActive);
-    }
-    m_gridSizeActionWidget->setEnabled(gridSnappingActive);
-
-    bool angleSnappingActive = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapAngle)->isChecked();
-    {
-        QSignalBlocker signalBlocker(m_enableAngleSnappingAction);
-        m_enableAngleSnappingAction->setChecked(angleSnappingActive);
-    }
-    m_angleSizeActionWidget->setEnabled(angleSnappingActive);
 }
 
 namespace
