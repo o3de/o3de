@@ -448,18 +448,17 @@ endfunction()
 function(ly_setup_runtime_dependencies)
 
     # Common functions used by the bellow code
-    install(CODE
+    if(DEFINED LY_CUSTOM_COPY_FUNCTION)
+        install(CODE
+${LY_CUSTOM_COPY_FUNCTION}
+        )
+    else()
+        install(CODE
 "function(ly_copy source_file target_directory)
-    if(\"\${source_file}\" MATCHES \"\\\\.[Ff]ramework[^\\\\.]\")
-
-        # fixup origin to copy the whole Framework folder
-        string(REGEX REPLACE \"(.*\\\\.[Ff]ramework).*\" \"\\\\1\" source_file \"\${source_file}\")
-        get_filename_component(target_filename \"\${source_file}\" NAME)
-
-    endif()
     file(COPY \"\${source_file}\" DESTINATION \"\${target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS})
 endfunction()"
-    )
+        )
+    endif()
 
     unset(runtime_commands)
     get_property(all_targets GLOBAL PROPERTY LY_ALL_TARGETS)

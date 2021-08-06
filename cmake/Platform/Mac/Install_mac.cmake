@@ -6,7 +6,10 @@
 #
 #
 
-#template for generating the project build_path setreg
+# This is used to generate a setreg file which will be placed inside the bundle
+# for targets that request it(eg. AssetProcessor/Editor). This is the relative path
+# to the bundle from the installed engine's root. This will be used to compute the
+# absolute path to bundle which may contain dependent dylibs(eg. Gems) used by a project.
 set(installed_binaries_path_template [[
 {
     "Amazon": {
@@ -74,9 +77,23 @@ function(ly_install_target_override)
     endif()
 endfunction()
 
-
+#! ly_install_add_install_path_setreg: Adds the install path setreg file as a dependency
 function(ly_install_add_install_path_setreg NAME)
     set_property(TARGET ${NAME} APPEND PROPERTY INTERFACE_LY_TARGET_FILES "${installed_binaries_setreg_path}\nRegistry")
 endfunction()
+
+#! LY_CUSTOM_COPY_FUNCTION: Defines a platform specific copy function
+set(LY_CUSTOM_COPY_FUNCTION
+"function(ly_copy source_file target_directory)
+    if(\"\${source_file}\" MATCHES \"\\\\.[Ff]ramework[^\\\\.]\")
+
+        # fixup origin to copy the whole Framework folder
+        string(REGEX REPLACE \"(.*\\\\.[Ff]ramework).*\" \"\\\\1\" source_file \"\${source_file}\")
+        get_filename_component(target_filename \"\${source_file}\" NAME)
+
+    endif()
+    file(COPY \"\${source_file}\" DESTINATION \"\${target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS})
+endfunction()"
+)
 
 include(cmake/Platform/Common/Install_common.cmake)
