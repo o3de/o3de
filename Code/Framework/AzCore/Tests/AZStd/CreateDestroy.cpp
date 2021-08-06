@@ -139,7 +139,9 @@ namespace UnitTest
     {
         struct RefWrapper
         {
-            int m_intRef{ 2 };
+            RefWrapper()
+            {}
+            int m_intValue{ 2 };
         };
         constexpr size_t ArraySize = 2;
         AZStd::aligned_storage_for_t<RefWrapper> testArray[ArraySize];
@@ -147,20 +149,20 @@ namespace UnitTest
         AZStd::uninitialized_default_construct(AZStd::begin(uninitializedAddress), AZStd::end(uninitializedAddress));
 
 
-        EXPECT_EQ(2, uninitializedAddress[0].m_intRef);
-        EXPECT_EQ(2, uninitializedAddress[1].m_intRef);
+        EXPECT_EQ(2, uninitializedAddress[0].m_intValue);
+        EXPECT_EQ(2, uninitializedAddress[1].m_intValue);
         // Reset uninitializedAddress to Debug pattern
         memset(uninitializedAddress, 0xCD, ArraySize * sizeof(RefWrapper));
         AZStd::uninitialized_default_construct_n(AZStd::data(uninitializedAddress), AZStd::size(uninitializedAddress));
-        EXPECT_EQ(2, uninitializedAddress[0].m_intRef);
-        EXPECT_EQ(2, uninitializedAddress[1].m_intRef);
+        EXPECT_EQ(2, uninitializedAddress[0].m_intValue);
+        EXPECT_EQ(2, uninitializedAddress[1].m_intValue);
     }
 
     TEST(CreateDestroy, UninitializedValueConstruct_IsAbleToConstructMultipleElements_Succeeds)
     {
         struct RefWrapper
         {
-            int m_intRef{ 2 };
+            int m_intValue;
         };
         constexpr size_t ArraySize = 2;
         AZStd::aligned_storage_for_t<RefWrapper> testArray[ArraySize];
@@ -168,12 +170,12 @@ namespace UnitTest
         AZStd::uninitialized_value_construct(AZStd::begin(uninitializedAddress), AZStd::end(uninitializedAddress));
 
 
-        EXPECT_EQ(2, uninitializedAddress[0].m_intRef);
-        EXPECT_EQ(2, uninitializedAddress[1].m_intRef);
+        EXPECT_EQ(0, uninitializedAddress[0].m_intValue);
+        EXPECT_EQ(0, uninitializedAddress[1].m_intValue);
         // Reset uninitializedAddress to Debug pattern
         memset(uninitializedAddress, 0xCD, ArraySize * sizeof(RefWrapper));
         AZStd::uninitialized_value_construct_n(AZStd::data(uninitializedAddress), AZStd::size(uninitializedAddress));
-        EXPECT_EQ(2, uninitializedAddress[0].m_intRef);
-        EXPECT_EQ(2, uninitializedAddress[1].m_intRef);
+        EXPECT_EQ(0, uninitializedAddress[0].m_intValue);
+        EXPECT_EQ(0, uninitializedAddress[1].m_intValue);
     }
 }
