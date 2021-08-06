@@ -43,8 +43,7 @@ namespace AWSCore
 
         if (urlSections.size() > ExpectedUrlSections)
         {
-            int i;
-            i = urlSections[ExpectedUrlSections - 1].find('.');
+            int i = static_cast<int>(urlSections[ExpectedUrlSections - 1].find('.'));
             if (i != -1)
             {
                 // Handle APIGateway URLs with custom domains:

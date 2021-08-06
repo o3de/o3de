@@ -139,7 +139,7 @@ namespace AZ
                 bool isValidAll = true;
                 for (size_t i = 0; i < imageViews.size(); ++i)
                 {
-                    const bool isValid = ValidateImageViewAccess<ShaderInputImageUnboundedArrayIndex, ShaderInputImageUnboundedArrayDescriptor>(inputIndex, imageViews[i], i);
+                    const bool isValid = ValidateImageViewAccess<ShaderInputImageUnboundedArrayIndex, ShaderInputImageUnboundedArrayDescriptor>(inputIndex, imageViews[i], static_cast<uint32_t>(i));
                     if (isValid)
                     {
                         m_imageViewsUnboundedArray.push_back(imageViews[i]);
@@ -185,7 +185,7 @@ namespace AZ
                 bool isValidAll = true;
                 for (size_t i = 0; i < bufferViews.size(); ++i)
                 {
-                    const bool isValid = ValidateBufferViewAccess<ShaderInputBufferUnboundedArrayIndex, ShaderInputBufferUnboundedArrayDescriptor>(inputIndex, bufferViews[i], i);
+                    const bool isValid = ValidateBufferViewAccess<ShaderInputBufferUnboundedArrayIndex, ShaderInputBufferUnboundedArrayDescriptor>(inputIndex, bufferViews[i], static_cast<uint32_t>(i));
                     if (isValid)
                     {
                         m_bufferViewsUnboundedArray.push_back(bufferViews[i]);

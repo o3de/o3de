@@ -114,7 +114,7 @@ void CCommentNode::Reflect(AZ::ReflectContext* context)
 //-----------------------------------------------------------------------------
 unsigned int CCommentNode::GetParamCount() const
 {
-    return s_nodeParameters.size();
+    return static_cast<unsigned int>(s_nodeParameters.size());
 }
 
 //-----------------------------------------------------------------------------
