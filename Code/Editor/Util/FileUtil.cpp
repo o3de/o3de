@@ -1900,74 +1900,23 @@ IFileUtil::ECopyTreeResult   CFileUtil::MoveTree(const QString& strSourceDirecto
     return eCopyResult;
 }
 
-QString CFileUtil::PopupQMenu(const QString& filename, const QString& fullGamePath, QWidget* parent)
+void CFileUtil::PopulateQMenu(QWidget* caller, QMenu* menu, AZStd::string_view fullGamePath)
 {
-    QStringList extraItemsFront;
-    return PopupQMenu(filename, fullGamePath, parent, nullptr, extraItemsFront);
+    PopulateQMenu(caller, menu, fullGamePath, nullptr);
 }
 
-QString CFileUtil::PopupQMenu(const QString& filename, const QString& fullGamePath, QWidget* parent, [[maybe_unused]] bool* pIsSelected, const QStringList& extraItemsFront)
+void CFileUtil::PopulateQMenu(QWidget* caller, QMenu* menu, AZStd::string_view fullGamePath, bool* isSelected)
 {
-    QStringList extraItemsBack;
-    return PopupQMenu(filename, fullGamePath, parent, nullptr, extraItemsFront, extraItemsBack);
-}
+    // Normalize the full path so we get consistent separators
+    AZStd::string fullFilePath(fullGamePath);
+    AzFramework::StringFunc::Path::Normalize(fullFilePath);
 
-QString CFileUtil::PopupQMenu(const QString& filename, const QString& fullGamePath, QWidget* parent, bool* pIsSelected, const QStringList& extraItemsFront, const QStringList& extraItemsBack)
-{
-    QMenu menu;
-
-    foreach(QString text, extraItemsFront)
-    {
-        if (!text.isEmpty())
-        {
-            menu.addAction(text);
-        }
-    }
-    if (extraItemsFront.count())
-    {
-        menu.addSeparator();
-    }
-
-    PopulateQMenu(parent, &menu, filename, fullGamePath, pIsSelected);
-    if (extraItemsBack.count())
-    {
-        menu.addSeparator();
-    }
-    foreach(QString text, extraItemsBack)
-    {
-        if (!text.isEmpty())
-        {
-            menu.addAction(text);
-        }
-    }
-
-    QAction* result = menu.exec(QCursor::pos());
-    return result ? result->text() : QString();
-}
-
-void CFileUtil::PopulateQMenu(QWidget* caller, QMenu* menu, const QString& filename, const QString& fullGamePath)
-{
-    PopulateQMenu(caller, menu, filename, fullGamePath, nullptr);
-}
-
-void CFileUtil::PopulateQMenu(QWidget* caller, QMenu* menu, const QString& filename, const QString& fullGamePath, bool* isSelected)
-{
-    QString fullPath;
+    QString fullPath(fullFilePath.c_str());
+    QFileInfo fileInfo(fullPath);
 
     if (isSelected)
     {
         *isSelected = false;
-    }
-
-    if (!filename.isEmpty())
-    {
-        QString path = Path::MakeGamePath(fullGamePath);
-        path = Path::AddSlash(path) + filename;
-        fullPath = Path::GamePathToFullPath(path);
-    }
-    else
-    {
-        fullPath = fullGamePath;
     }
 
     uint32 nFileAttr = CFileUtil::GetAttributes(fullPath.toUtf8().data());
@@ -2005,21 +1954,13 @@ void CFileUtil::PopulateQMenu(QWidget* caller, QMenu* menu, const QString& filen
 
     action = menu->addAction(QObject::tr("Copy Name To Clipboard"), [=]()
     {
-        if (filename.isEmpty())
-        {
-            QFileInfo fi(fullGamePath);
-            QString file = fi.completeBaseName();
-            QApplication::clipboard()->setText(file);
-        }
-        else
-        {
-            QApplication::clipboard()->setText(filename);
-        }
+        QString fileName = fileInfo.completeBaseName();
+        QApplication::clipboard()->setText(fileName);
     });
 
     action = menu->addAction(QObject::tr("Copy Path To Clipboard"), [fullPath]() { QApplication::clipboard()->setText(fullPath); });
 
-    if (!filename.isEmpty() && GetIEditor()->IsSourceControlAvailable() && nFileAttr != SCC_FILE_ATTRIBUTE_INVALID)
+    if (fileInfo.isFile() && GetIEditor()->IsSourceControlAvailable() && nFileAttr != SCC_FILE_ATTRIBUTE_INVALID)
     {
         bool isEnableSC = nFileAttr & SCC_FILE_ATTRIBUTE_MANAGED;
         bool isInPak = nFileAttr & SCC_FILE_ATTRIBUTE_INPAK;
