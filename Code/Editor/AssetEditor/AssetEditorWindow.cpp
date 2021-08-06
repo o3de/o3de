@@ -141,15 +141,7 @@ void AssetEditorWindow::OnAssetOpened(const AZ::Data::Asset<AZ::Data::AssetData>
 
 void AssetEditorWindow::closeEvent(QCloseEvent* event)
 {
-    if (m_ui->m_assetEditorWidget->WaitingToSave())
-    {
-        // Don't need to ask to save, as a save is already queued.
-        m_ui->m_assetEditorWidget->SetCloseAfterSave();
-        event->ignore();
-        return;
-    }
-
-    if (m_ui->m_assetEditorWidget->TrySave([this]() {  qobject_cast<QWidget*>(parent())->close(); }))
+    if (!m_ui->m_assetEditorWidget->SaveAllAndClose())
     {
         event->ignore();
     }

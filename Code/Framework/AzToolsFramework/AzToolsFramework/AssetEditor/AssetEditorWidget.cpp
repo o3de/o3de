@@ -7,46 +7,40 @@
  */
 
 #include "AssetEditorWidget.h"
+#include "AssetEditorTab.h"
 
-#include <API/ToolsApplicationAPI.h>
 #include <API/EditorAssetSystemAPI.h>
+#include <API/ToolsApplicationAPI.h>
 
 #include <AssetEditor/AssetEditorBus.h>
 #include <AssetEditor/AssetEditorHeader.h>
-AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'QLayoutItem::align': class 'QFlags<Qt::AlignmentFlag>' needs to have dll-interface to be used by clients of class 'QLayoutItem'
+AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'QLayoutItem::align': class 'QFlags<Qt::AlignmentFlag>' needs to have
+                                                          // dll-interface to be used by clients of class 'QLayoutItem'
 #include <AzToolsFramework/AssetEditor/ui_AssetEditorToolbar.h>
 AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/AssetEditor/ui_AssetEditorStatusBar.h>
 
 #include <AssetBrowser/AssetSelectionModel.h>
 
-#include <AzCore/Asset/AssetManager.h>
-#include <AzCore/Asset/AssetManagerBus.h>
-#include <AzCore/Asset/AssetTypeInfoBus.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
-#include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/SystemFile.h>
-#include <AzCore/Serialization/Utils.h>
-#include <AzCore/UserSettings/UserSettings.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
-#include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/UserSettings/UserSettings.h>
 #include <AzCore/std/sort.h>
 
-#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/GenericAssetHandler.h>
-#include <AzFramework/StringFunc/StringFunc.h>
 
 #include <SourceControl/SourceControlAPI.h>
 
-#include <UI/PropertyEditor/PropertyRowWidget.hxx>
-#include <UI/PropertyEditor/ReflectedPropertyEditor.hxx>
+#include <AzQtComponents/Components/Widgets/TabWidget.h>
 
-#include <QVBoxLayout>
-#include <QMessageBox>
 #include <QMenu>
 #include <QMenuBar>
-AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'QFileInfo::d_ptr': class 'QSharedDataPointer<QFileInfoPrivate>' needs to have dll-interface to be used by clients of class 'QFileInfo'
+#include <QMessageBox>
+#include <QVBoxLayout>
+AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'QFileInfo::d_ptr': class 'QSharedDataPointer<QFileInfoPrivate>' needs to have
+                                                          // dll-interface to be used by clients of class 'QFileInfo'
 #include <QFileDialog>
 AZ_POP_DISABLE_WARNING
 #include <QAction>
@@ -55,66 +49,6 @@ namespace AzToolsFramework
 {
     namespace AssetEditor
     {
-        using AssetCheckoutCallback = AZStd::function<void(bool, const AZStd::string&, const AZStd::string&)>;
-
-        void AssetCheckoutCommon(const AZ::Data::AssetId& id, AZ::Data::Asset<AZ::Data::AssetData> asset, AZ::SerializeContext* serializeContext, AssetCheckoutCallback assetCheckoutAndSaveCallback)
-        {
-            AZStd::string assetPath;
-            AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequests::GetAssetPathById, id);
-            if (assetPath.empty())
-            {
-                AZ_Assert(!assetPath.empty(), "A valid path needs to be resolved, if this failed, the provided asset path is not a valid asset.");
-                return;
-            }
-
-            AZStd::string assetFullPath;
-            AssetSystemRequestBus::Broadcast(&AssetSystem::AssetSystemRequest::GetFullSourcePathFromRelativeProductPath, assetPath, assetFullPath);
-
-            if (!assetFullPath.empty())
-            {
-                using SCCommandBus = SourceControlCommandBus;
-                SCCommandBus::Broadcast(&SCCommandBus::Events::RequestEdit, assetFullPath.c_str(), true,
-                    [id, asset, assetFullPath, serializeContext, assetCheckoutAndSaveCallback](bool /*success*/, const SourceControlFileInfo& info)
-                    {
-                        if (!info.IsReadOnly())
-                        {
-                            AZ::Outcome<bool, AZStd::string> outcome = AZ::Success(true);
-                            AzToolsFramework::AssetEditor::AssetEditorValidationRequestBus::EventResult(outcome, id, &AzToolsFramework::AssetEditor::AssetEditorValidationRequests::IsAssetDataValid, asset);
-                            if (!outcome.IsSuccess())
-                            {
-                                assetCheckoutAndSaveCallback(false, outcome.GetError(), assetFullPath);
-                            }
-                            else
-                            {
-                                AssetEditorValidationRequestBus::Event(id, &AssetEditorValidationRequests::PreAssetSave, asset);
-                                assetCheckoutAndSaveCallback(true, "", assetFullPath);
-                            }
-                        }
-                        else
-                        {
-                            AZStd::string error = AZStd::string::format("Could not check out asset file: %s.", assetFullPath.c_str());
-                            assetCheckoutAndSaveCallback(false, error, assetFullPath);
-                        }
-                    }
-                    );
-            }
-            else
-            {
-                AZStd::string error = AZStd::string::format("Could not resolve path name for asset {%s}.", id.ToString<AZStd::string>().c_str());
-                assetCheckoutAndSaveCallback(false, error, nullptr);
-            }
-        }
-
-        namespace Status
-        {
-            static QString assetCreated = QStringLiteral("Asset created!");
-            static QString assetSaved = QStringLiteral("Asset saved!");
-            static QString assetSaving = QStringLiteral("Asset saving!");
-            static QString assetLoaded = QStringLiteral("Asset loaded!");
-            static QString unableToSave = QStringLiteral("Failed to save asset due to validation error, check the log!");
-            static QString emptyString = QStringLiteral("");
-        }
-
         //////////////////////////////////
         // AssetEditorWidgetUserSettings
         //////////////////////////////////
@@ -127,8 +61,7 @@ namespace AzToolsFramework
                 serialize->Class<AssetEditorWidgetUserSettings>()
                     ->Version(0)
                     ->Field("m_showPreviewMessage", &AssetEditorWidgetUserSettings::m_lastSavePath)
-                    ->Field("m_snapDistance", &AssetEditorWidgetUserSettings::m_recentPaths)
-                    ;
+                    ->Field("m_snapDistance", &AssetEditorWidgetUserSettings::m_recentPaths);
             }
         }
 
@@ -168,32 +101,30 @@ namespace AzToolsFramework
         AssetEditorWidget::AssetEditorWidget(QWidget* parent)
             : QWidget(parent)
             , m_statusBar(new Ui::AssetEditorStatusBar())
-            , m_dirty(true)
         {
             AZ::ComponentApplicationBus::BroadcastResult(m_serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
             AZ_Assert(m_serializeContext, "Failed to retrieve serialize context.");
 
             setObjectName("AssetEditorWidget");
-            m_propertyEditor = new ReflectedPropertyEditor(this);
-            m_propertyEditor->setObjectName("AssetEditorWidgetPropertyEditor");
-            m_propertyEditor->Setup(m_serializeContext, this, true, 250);
-            m_propertyEditor->show();
 
             QVBoxLayout* mainLayout = new QVBoxLayout();
             mainLayout->setContentsMargins(0, 0, 0, 0);
             mainLayout->setSpacing(0);
 
-            m_header = new Ui::AssetEditorHeader(this);
-            mainLayout->addWidget(m_header);
-            m_header->show();
+            m_tabs = new AzQtComponents::TabWidget(this);
+            m_tabs->setObjectName("AssetEditorTabWidget");
+            AzQtComponents::TabWidget::applySecondaryStyle(m_tabs, false);
+            m_tabs->setContentsMargins(0, 0, 0, 0);
+            m_tabs->setTabsClosable(true);
+            mainLayout->addWidget(m_tabs);
 
-            m_propertyEditor->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-            mainLayout->addWidget(m_propertyEditor);
+            connect(m_tabs, &QTabWidget::tabCloseRequested, this, &AssetEditorWidget::onTabCloseButtonPressed);
+            connect(m_tabs, &AzQtComponents::TabWidget::currentChanged, this, &AssetEditorWidget::currentTabChanged);
 
             QWidget* statusBarWidget = new QWidget(this);
             statusBarWidget->setObjectName("AssetEditorStatusBar");
             m_statusBar->setupUi(statusBarWidget);
-            m_statusBar->textEdit->setText(Status::emptyString);
+            m_statusBar->textEdit->setText("");
             m_statusBar->textEdit->setTextInteractionFlags(Qt::TextSelectableByMouse);
 
             mainLayout->addWidget(statusBarWidget);
@@ -213,7 +144,12 @@ namespace AzToolsFramework
                 if (!assetTypeName.isEmpty())
                 {
                     QAction* newAssetAction = newAssetMenu->addAction(assetTypeName);
-                    connect(newAssetAction, &QAction::triggered, this, [assetType, this]() { CreateAssetImpl(assetType); });
+                    connect(
+                        newAssetAction, &QAction::triggered, this,
+                        [assetType, this]()
+                        {
+                            CreateAsset(assetType);
+                        });
                 }
             }
 
@@ -230,10 +166,14 @@ namespace AzToolsFramework
             m_saveAsAssetAction->setShortcut(QKeySequence::SaveAs);
             connect(m_saveAsAssetAction, &QAction::triggered, this, &AssetEditorWidget::SaveAssetAs);
 
-            // "Save" and "Save As..." actions are disabled by default,
-            // and they are activated when an asset is created/open
+            m_saveAllAssetsAction = fileMenu->addAction("Save All");
+            connect(m_saveAllAssetsAction, &QAction::triggered, this, &AssetEditorWidget::SaveAll);
+
+            // The Save actions are disabled by default.
+            // They are activated when an asset is created/opened.
             m_saveAssetAction->setEnabled(false);
             m_saveAsAssetAction->setEnabled(false);
+            m_saveAllAssetsAction->setEnabled(false);
 
             QMenu* viewMenu = mainMenu->addMenu(tr("&View"));
 
@@ -247,9 +187,8 @@ namespace AzToolsFramework
 
             setLayout(mainLayout);
 
-            AzFramework::AssetCatalogEventBus::Handler::BusConnect();
-
-            m_userSettings = AZ::UserSettings::CreateFind<AssetEditorWidgetUserSettings>(k_assetEditorWidgetSettings, AZ::UserSettings::CT_LOCAL);
+            m_userSettings =
+                AZ::UserSettings::CreateFind<AssetEditorWidgetUserSettings>(k_assetEditorWidgetSettings, AZ::UserSettings::CT_LOCAL);
 
             UpdateRecentFileListState();
 
@@ -261,257 +200,86 @@ namespace AzToolsFramework
             AZ::SystemTickBus::Handler::BusDisconnect();
         }
 
-        void AssetEditorWidget::CreateAsset(AZ::Data::AssetType assetType)
+        void AssetEditorWidget::SaveAll()
         {
-            auto typeIter = AZStd::find_if(m_genericAssetTypes.begin(), m_genericAssetTypes.end(), [assetType](const AZ::Data::AssetType& testType) { return assetType == testType; });
-
-            if (typeIter != m_genericAssetTypes.end())
+            for (int tabIndex = 0; tabIndex < m_tabs->count(); tabIndex++)
             {
-                CreateAssetImpl(assetType);
-            }
-            else
-            {
-                AZ_Assert(false, "The AssetEditorWidget only supports Generic Asset Types, make sure your type has a handler that implements GenericAssetHandler");
-            }
-        }
-
-        void AssetEditorWidget::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
-        {
-            m_dirty = false;
-
-            AZ::Data::AssetBus::MultiHandler::BusDisconnect(asset.GetId());
-
-            // Clone the asset
-            AZ::Data::AssetId newAssetId = AZ::Data::AssetId(AZ::Uuid::CreateRandom());
-            m_inMemoryAsset = AZ::Data::AssetManager::Instance().CreateAsset(newAssetId, asset.GetType(), m_inMemoryAsset.GetAutoLoadBehavior());
-            auto serializeContext = AZ::EntityUtils::GetApplicationSerializeContext();
-            serializeContext->CloneObjectInplace((*m_inMemoryAsset.GetData()), asset.GetData());
-
-            UpdatePropertyEditor(m_inMemoryAsset);
-
-            SetupHeader();
-
-            if (!m_sourceAssetId.IsValid())
-            {
-                SetStatusText(Status::assetCreated);
-            }
-            else
-            {
-                SetStatusText(Status::assetLoaded);
-            }
-
-            UpdateMenusOnAssetOpen();
-        }
-
-        void AssetEditorWidget::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
-        {
-            // Keep a reference to the reloaded asset data
-            OnAssetReady(asset);
-        }
-
-        void AssetEditorWidget::UpdatePropertyEditor(AZ::Data::Asset<AZ::Data::AssetData>& asset)
-        {
-            m_propertyEditor->ClearInstances();
-
-            AZ::Crc32 saveStateKey;
-            saveStateKey.Add(&asset.GetId(), sizeof(AZ::Data::AssetId));
-
-            m_propertyEditor->SetSavedStateKey(saveStateKey);
-            m_propertyEditor->AddInstance(asset.Get(), asset.GetType(), nullptr);
-
-            m_propertyEditor->InvalidateAll();
-            m_propertyEditor->setEnabled(true);
-
-        }
-
-        void AssetEditorWidget::OnAssetError(AZ::Data::Asset<AZ::Data::AssetData> asset)
-        {
-            m_dirty = false;
-            m_saveAssetAction->setEnabled(false);
-            m_propertyEditor->ClearInstances();
-
-            if (AZ::Data::AssetBus::MultiHandler::BusIsConnectedId(asset.GetId()))
-            {
-                AZ::Data::AssetBus::MultiHandler::BusDisconnect(asset.GetId());
-            }
-            QString errString = tr("Failed to load %1!").arg(asset.GetHint().c_str());
-            AZ_Error("Asset Editor", false, errString.toUtf8());
-            QMessageBox::warning(this, tr("Error!"), errString);
-        }
-
-        bool AssetEditorWidget::TrySave(const AZStd::function<void()>& savedCallback)
-        {
-            if (!m_sourceAssetId.IsValid() || !m_dirty)
-            {
-                return false;
-            }
-
-            const int result = QMessageBox::question(this,
-                    tr("Save Changes?"),
-                    tr("Changes have been made to the asset during this session. Would you like to save prior to closing?"),
-                    QMessageBox::Yes, QMessageBox::No, QMessageBox::Cancel);
-
-            if (result == QMessageBox::No)
-            {
-                return false;
-            }
-            if (result == QMessageBox::Yes)
-            {
-                if (savedCallback)
+                AssetEditorTab* tab = qobject_cast<AssetEditorTab*>(m_tabs->widget(tabIndex));
+                if (!tab->IsDirty())
                 {
-                    auto conn = AZStd::make_shared<QMetaObject::Connection>();
-                    *conn = connect(this, &AssetEditorWidget::OnAssetSavedSignal, this, [this, conn, savedCallback]()
-                            {
-                                disconnect(*conn);
-                                savedCallback();
-                            });
+                    continue;
                 }
-                SaveAsset();
+
+                tab->SaveAsset();
             }
-            return true;
         }
 
-        bool AssetEditorWidget::WaitingToSave() const
+        bool AssetEditorWidget::SaveAllAndClose()
         {
-            return m_waitingToSave;
-        }
-
-        void AssetEditorWidget::SetCloseAfterSave()
-        {
-            m_closeAfterSave = true;
-        }
-
-        bool AssetEditorWidget::SaveAsDialog(AZ::Data::Asset<AZ::Data::AssetData>& asset)
-        {
-            AZStd::vector<AZStd::string> assetTypeExtensions;
-            AZ::AssetTypeInfoBus::Event(asset.GetType(), &AZ::AssetTypeInfo::GetAssetTypeExtensions, assetTypeExtensions);
-            QString filter;
-            if (assetTypeExtensions.empty())
+            AssetEditorTab::SaveCompleteCallback saveCompleteCallback = [this]() -> void
             {
-                filter = tr("All Files (*.*)");
-            }
-            else
-            {
-                QString assetTypeName;
-                AZ::AssetTypeInfoBus::EventResult(assetTypeName, asset.GetType(), &AZ::AssetTypeInfo::GetAssetTypeDisplayName);
-                filter.append(assetTypeName);
-                filter.append(" (");
-                for (size_t i = 0, n = assetTypeExtensions.size(); i < n; ++i)
+                // Check that all tabs are clean.
+                for (int tabIndex = 0; tabIndex < m_tabs->count(); tabIndex++)
                 {
-                    const char* ext = assetTypeExtensions[i].c_str();
-                    if (ext[0] == '.')
+                    AssetEditorTab* tab = qobject_cast<AssetEditorTab*>(m_tabs->widget(tabIndex));
+                    if (tab->IsDirty() && !tab->UserRefusedSave())
                     {
-                        ++ext;
-                    }
-
-                    filter.append("*.");
-                    filter.append(ext);
-                    if (i < n - 1)
-                    {
-                        filter.append(", ");
+                        return;
                     }
                 }
-                filter.append(")");
+
+                // Close them.
+                for (int tabIndex = m_tabs->count() - 1; tabIndex >= 0; tabIndex--)
+                {
+                    AssetEditorTab* tab = qobject_cast<AssetEditorTab*>(m_tabs->widget(tabIndex));
+                    m_tabs->removeTab(tabIndex);
+                    delete tab;
+                }
+
+                CloseOnNextTick();
+            };
+
+            // Ensure the UserRefusedSave flag is reset so that if this gets called twice, dirty tabs aren't ignored.
+            for (int tabIndex = m_tabs->count() - 1; tabIndex >= 0; tabIndex--)
+            {
+                AssetEditorTab* tab = qobject_cast<AssetEditorTab*>(m_tabs->widget(tabIndex));
+                tab->ClearUserRefusedSaveFlag();
             }
 
-            const QString saveAs = QFileDialog::getSaveFileName(nullptr, tr("Save As..."), m_userSettings->m_lastSavePath.c_str(), filter);
-
-            return SaveImpl(asset, saveAs);
-        }
-
-        bool AssetEditorWidget::SaveAssetToPath(AZStd::string_view assetPath)
-        {
-            return SaveImpl(m_inMemoryAsset, assetPath.data());
-        }
-
-        bool AssetEditorWidget::SaveImpl(const AZ::Data::Asset<AZ::Data::AssetData>& asset, const QString& saveAsPath)
-        {
-            if (!saveAsPath.isEmpty())
+            if (!m_tabs->count())
             {
-                AZStd::string targetFilePath(saveAsPath.toUtf8().constData());
+                parentWidget()->parentWidget()->close();
+                return true;
+            }
 
-                m_propertyEditor->ForceQueuedInvalidation();
-
-                AZStd::vector<char> byteBuffer;
-                AZ::IO::ByteContainerStream<decltype(byteBuffer)> byteStream(&byteBuffer);
-
-                auto assetHandler = const_cast<AZ::Data::AssetHandler*>(AZ::Data::AssetManager::Instance().GetHandler(asset.GetType()));
-                if (assetHandler->SaveAssetData(asset, &byteStream))
+            for (int tabIndex = m_tabs->count() - 1; tabIndex >= 0; tabIndex--)
+            {
+                AssetEditorTab* tab = qobject_cast<AssetEditorTab*>(m_tabs->widget(tabIndex));
+                if (!tab)
                 {
-                    AZ::IO::FileIOStream fileStream(targetFilePath.c_str(), AZ::IO::OpenMode::ModeWrite);
-                    if (!fileStream.IsOpen())
-                    {
-                        AZ_Warning("Asset Editor Widget", false, "Could not open file for writing - invalid path (%s).", targetFilePath.c_str());
-                        return false;
-                    }
-
-                    AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::NormalizePathKeepCase, targetFilePath);
-                    m_expectedAddedAssetPath = targetFilePath;
-
-                    SourceControlCommandBus::Broadcast(&SourceControlCommandBus::Events::RequestEdit, targetFilePath.c_str(), true, [](bool, const SourceControlFileInfo&) {});
-
-                    fileStream.Write(byteBuffer.size(), byteBuffer.data());
-
-                    AZStd::string watchFolder;
-                    AZ::Data::AssetInfo assetInfo;
-                    bool sourceInfoFound{};
-                    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(sourceInfoFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, targetFilePath.c_str(), assetInfo, watchFolder);
-
-                    if (sourceInfoFound)
-                    {
-                        m_sourceAssetId = assetInfo.m_assetId;
-                    }
-
-                    AZStd::string fileName = targetFilePath;
-
-                    if (AzFramework::StringFunc::Path::Normalize(fileName))
-                    {
-                        AzFramework::StringFunc::Path::StripPath(fileName);
-                        m_currentAsset = fileName.c_str();
-
-                        m_userSettings->m_lastSavePath = targetFilePath;
-                        AZStd::size_t findIndex = m_userSettings->m_lastSavePath.find(fileName.c_str());
-
-                        if (findIndex != AZStd::string::npos)
-                        {
-                            m_userSettings->m_lastSavePath = m_userSettings->m_lastSavePath.substr(0, findIndex);
-                        }
-                    }
-
-                    m_dirty = false;
-
-                    AddRecentPath(targetFilePath);
-
-                    SetStatusText(Status::assetCreated);
-
-                    return true;
+                    continue;
                 }
-                else
+
+                if (!tab->IsDirty())
                 {
-                    SetStatusText(Status::unableToSave);
+                    continue;
+                }
+
+                if (!tab->TrySaveAsset(saveCompleteCallback))
+                {
+                    // Action has been canceled.
                     return false;
                 }
             }
 
-            return false;
+            return true;
         }
 
         void AssetEditorWidget::OpenAsset(const AZ::Data::Asset<AZ::Data::AssetData> asset)
         {
-            // If we're already editing this asset, don't do anything.
-            if (m_sourceAssetId == asset.GetId())
-            {
-                return;
-            }
-
-            // If an unsaved asset is open, ask.
-            if (TrySave([this]() { OpenAssetWithDialog(); }))
-            {
-                return;
-            }
-
             AZ::Data::AssetInfo typeInfo;
-            AZ::Data::AssetCatalogRequestBus::BroadcastResult(typeInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, asset.GetId());
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                typeInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, asset.GetId());
 
             // Check if there is an asset to open
             if (typeInfo.m_relativePath.empty())
@@ -521,42 +289,53 @@ namespace AzToolsFramework
 
             bool hasResult = false;
             AZStd::string fullPath;
-            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(hasResult, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetFullSourcePathFromRelativeProductPath, typeInfo.m_relativePath, fullPath);
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                hasResult, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetFullSourcePathFromRelativeProductPath,
+                typeInfo.m_relativePath, fullPath);
 
             AZStd::string fileName = typeInfo.m_relativePath;
 
             if (AzFramework::StringFunc::Path::Normalize(fileName))
             {
                 AzFramework::StringFunc::Path::StripPath(fileName);
-                m_currentAsset = fileName.c_str();
             }
 
             AddRecentPath(fullPath.c_str());
 
-            m_sourceAssetId = asset.GetId();
-
-            LoadAsset(asset.GetId(), asset.GetType());
+            AssetEditorTab* tab = FindTabForAsset(asset.GetId());
+            if (tab)
+            {
+                // This asset is already open, just switch to the correct tab.
+                m_tabs->setCurrentWidget(tab);
+            }
+            else
+            {
+                AssetEditorTab* newTab = MakeNewTab(fileName.c_str());
+                newTab->LoadAsset(asset.GetId(), asset.GetType(), fileName.c_str());
+            }
         }
 
         void AssetEditorWidget::OpenAssetWithDialog()
         {
-            // If an unsaved asset is open, ask.
-            if (TrySave([this]() { OpenAssetWithDialog(); }))
-            {
-                return;
-            }
-
             AssetSelectionModel selection = AssetSelectionModel::AssetTypesSelection(m_genericAssetTypes);
             EditorRequests::Bus::Broadcast(&EditorRequests::BrowseForAssets, selection);
             if (selection.IsValid())
             {
                 auto product = azrtti_cast<const ProductAssetBrowserEntry*>(selection.GetResult());
-                m_currentAsset = product->GetName().c_str();
+
+                AssetEditorTab* tab = FindTabForAsset(product->GetAssetId());
+                if (tab)
+                {
+                    // This asset is already open, just switch to the correct tab.
+                    m_tabs->setCurrentWidget(tab);
+                }
+                else
+                {
+                    AssetEditorTab* newTab = MakeNewTab(product->GetName().c_str());
+                    newTab->LoadAsset(product->GetAssetId(), product->GetAssetType(), product->GetName().c_str());
+                }
 
                 AddRecentPath(product->GetFullPath());
-
-                LoadAsset(product->GetAssetId(), product->GetAssetType());
-                m_sourceAssetId = product->GetAssetId();
             }
         }
 
@@ -565,7 +344,9 @@ namespace AzToolsFramework
             bool hasResult = false;
             AZ::Data::AssetInfo assetInfo;
             AZStd::string watchFolder;
-            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(hasResult, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath, assetPath.c_str(), assetInfo, watchFolder);
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                hasResult, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath, assetPath.c_str(), assetInfo,
+                watchFolder);
 
             if (hasResult)
             {
@@ -574,216 +355,193 @@ namespace AzToolsFramework
                 if (AzFramework::StringFunc::Path::Normalize(fileName))
                 {
                     AzFramework::StringFunc::Path::StripPath(fileName);
-                    m_currentAsset = fileName.c_str();
                 }
 
                 AZ::Data::AssetInfo typeInfo;
-                AZ::Data::AssetCatalogRequestBus::BroadcastResult(typeInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, assetInfo.m_assetId);
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                    typeInfo, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, assetInfo.m_assetId);
 
-                LoadAsset(assetInfo.m_assetId, typeInfo.m_assetType);
-
-                m_sourceAssetId = assetInfo.m_assetId;
-            }
-        }
-
-        void AssetEditorWidget::LoadAsset(AZ::Data::AssetId assetId, AZ::Data::AssetType assetType)
-        {
-            auto asset = AZ::Data::AssetManager::Instance().GetAsset(assetId, assetType, AZ::Data::AssetLoadBehavior::Default);
-
-            asset.BlockUntilLoadComplete();
-
-            if (asset.IsReady())
-            {
-                OnAssetReady(asset);
-            }
-            else
-            {
-                if (m_inMemoryAsset)
+                AssetEditorTab* tab = FindTabForAsset(assetInfo.m_assetId);
+                if (tab)
                 {
-                    AZ::Data::AssetBus::MultiHandler::BusDisconnect(m_inMemoryAsset.GetId());
+                    // This asset is already open, just switch to the correct tab.
+                    m_tabs->setCurrentWidget(tab);
                 }
-               
-                AZ::Data::AssetBus::MultiHandler::BusConnect(asset.GetId());
-
-                // Need to disable editing until OnAssetReady.
-                m_propertyEditor->setEnabled(false);
+                else
+                {
+                    AssetEditorTab* newTab = MakeNewTab(fileName.c_str());
+                    newTab->LoadAsset(assetInfo.m_assetId, typeInfo.m_assetType, fileName.c_str());
+                }
+                AddRecentPath(assetPath.c_str());
             }
         }
 
-        void AssetEditorWidget::GenerateSaveDataSnapshot()
+        bool AssetEditorWidget::SaveAssetToPath(AZStd::string_view assetPath)
         {
-            //Generate data now so that if there's a wait for the source control system, the data saved will be as it was when the save was called.
-            AZStd::vector<AZ::u8> newSaveData;
+            AssetEditorTab* tab = qobject_cast<AssetEditorTab*>(m_tabs->currentWidget());
+            tab->SaveAsset();
 
-            // Make a stream and save a snapshot of the asset to it.
-            AZ::IO::ByteContainerStream<AZStd::vector<AZ::u8> > dstByteStream(&newSaveData);
-
-            AssetEditorValidationRequestBus::Event(m_sourceAssetId, &AssetEditorValidationRequests::PreAssetSave, m_inMemoryAsset);
-
-            if (AZ::Utils::SaveObjectToStream(
-                    dstByteStream, AZ::DataStream::ST_XML, m_inMemoryAsset.Get(), m_inMemoryAsset.Get()->RTTI_GetType(),
-                    m_serializeContext))
-            {
-                AZStd::swap(newSaveData, m_saveData);
-            }
+            return tab->SaveAssetToPath(assetPath.data());
         }
 
         void AssetEditorWidget::SaveAsset()
         {
-            if (!m_sourceAssetId.IsValid())
+            if (!m_tabs->count())
             {
-                SaveAsDialog(m_inMemoryAsset);
+                return;
             }
-            else if (m_dirty)
-            {
-                SetStatusText(Status::assetSaving);
 
-                GenerateSaveDataSnapshot();
-
-                // Clear the dirty flag now so that attempting to close the window during a save doesn't ask the user to save again, 
-                // unless there are further changes.
-                m_dirty = false;
-                m_saveAssetAction->setEnabled(false);
-                m_saveAsAssetAction->setEnabled(false);
-
-                if (WaitingToSave())
-                {
-                    // Don't need to do the save, as we've just overwritten the data that the previously queued save will write out.
-                    return;
-                }
-                m_waitingToSave = true;
-                AssetCheckoutCommon(m_sourceAssetId, m_inMemoryAsset, m_serializeContext,
-                [this](bool checkoutSuccess, const AZStd::string& error, const AZStd::string& assetFullPath)
-                {
-                    AZStd::string saveError = error;
-                    bool saveSuccessful = false;
-
-                    if (checkoutSuccess)
-                    {
-                        saveError = AZStd::string::format("Could not write asset file: %s.", assetFullPath.c_str());
-                        if (!m_saveData.empty())
-                        {
-                            if (AZ::Utils::SaveStreamToFile(assetFullPath, m_saveData))
-                            {
-                                m_saveData.clear();
-                                saveSuccessful = true;
-                            }
-                        }
-                    }
-
-                    if (saveSuccessful)
-                    {
-                        Q_EMIT OnAssetSavedSignal();
-                        m_propertyEditor->QueueInvalidation(Refresh_AttributesAndValues);
-                        SetStatusText(Status::assetSaved);
-
-                        if (m_closeAfterSave)
-                        {
-                            m_closeAfterSave = false;
-                            parentWidget()->parentWidget()->close();
-                        }
-                    }
-                    else
-                    {
-                        // Don't want to dirty the asset here, since we are setting ourselves into a weird state since we were unable to save.
-                        m_dirty = true;
-                        m_saveAssetAction->setEnabled(false);
-                        m_saveAsAssetAction->setEnabled(false);
-
-                        SetStatusText(Status::unableToSave);
-                        Q_EMIT OnAssetSaveFailedSignal(saveError);
-                    }
-
-                    m_waitingToSave = false;
-                }
-                );
-            }
+            AssetEditorTab* tab = qobject_cast<AssetEditorTab*>(m_tabs->currentWidget());
+            tab->SaveAsset();
         }
 
         void AssetEditorWidget::SaveAssetAs()
         {
-            SaveAsDialog(m_inMemoryAsset);
+            if (!m_tabs->count())
+            {
+                return;
+            }
+
+            AssetEditorTab* tab = qobject_cast<AssetEditorTab*>(m_tabs->currentWidget());
+            tab->SaveAsDialog();
         }
 
-        void AssetEditorWidget::OnNewAsset()
+        void AssetEditorWidget::currentTabChanged(int /*newCurrentIndex*/)
         {
-            // This only works if we've already made a new asset or opened an asset of a given type
-            // We use that knowledge to create another asset of the same type.
-            if (!m_inMemoryAsset.GetType().IsNull())
+            UpdateSaveMenuActionsStatus();
+        }
+
+        void AssetEditorWidget::onTabCloseButtonPressed(int tabIndexToClose)
+        {
+            AssetEditorTab* tab = qobject_cast<AssetEditorTab*>(m_tabs->widget(tabIndexToClose));
+            if (!tab)
             {
-                CreateAssetImpl(m_inMemoryAsset.GetType());
+                return;
+            }
+
+            tab->ClearUserRefusedSaveFlag();
+
+            AssetEditorTab::SaveCompleteCallback saveCompleteCallback = [this, tabIndexToClose, tab]() -> void
+            {
+                if (!tab->IsDirty() || tab->UserRefusedSave())
+                {
+                    m_tabs->removeTab(tabIndexToClose);
+                }
+            };
+
+            if (tab->IsDirty())
+            {
+                tab->TrySaveAsset(saveCompleteCallback);
+                return;
+            }
+
+            m_tabs->removeTab(tabIndexToClose);
+            delete tab;
+        }
+
+        void AssetEditorWidget::CloseTab(AssetEditorTab* tab)
+        {
+            int index = m_tabs->indexOf(tab);
+            if (index >= 0)
+            {
+                m_tabs->removeTab(index);
+                delete tab;
             }
         }
 
-        void AssetEditorWidget::OnCatalogAssetAdded(const AZ::Data::AssetId& assetId)
+        void AssetEditorWidget::OnSystemTick()
         {
-            AZ::Data::AssetInfo assetInfo;
-            AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &AZ::Data::AssetCatalogRequests::GetAssetInfoById, assetId);
-            if (assetInfo.m_assetType == m_inMemoryAsset.GetType()
-                && strstr(m_expectedAddedAssetPath.c_str(), assetInfo.m_relativePath.c_str()) != 0)
+            parentWidget()->parentWidget()->close();
+            AZ::SystemTickBus::Handler::BusDisconnect();
+        }
+
+        void AssetEditorWidget::CloseOnNextTick()
+        {
+            // Close the window on the next tick so that the parent widgets finish processing any current event correctly.
+            AZ::SystemTickBus::Handler::BusConnect();
+        }
+
+        void AssetEditorWidget::CloseTabAndContainerIfEmpty(AssetEditorTab* tab)
+        {
+            CloseTab(tab);
+            if (!m_tabs->count())
             {
-                m_expectedAddedAssetPath.clear();
-                m_recentlyAddedAssetPath = assetInfo.m_relativePath;
-
-                LoadAsset(assetId, assetInfo.m_assetType);
-
-                m_sourceAssetId = assetId;
+                CloseOnNextTick();
             }
         }
 
-        void AssetEditorWidget::OnCatalogAssetRemoved(const AZ::Data::AssetId& /*assetId*/, const AZ::Data::AssetInfo& assetInfo)
+        bool AssetEditorWidget::IsValidAssetType(const AZ::Data::AssetType& assetType) const
         {
-            if (assetInfo.m_assetType == m_inMemoryAsset.GetType()
-                && assetInfo.m_relativePath.compare(m_recentlyAddedAssetPath) == 0)
+            auto typeIter = AZStd::find_if(
+                m_genericAssetTypes.begin(), m_genericAssetTypes.end(),
+                [assetType](const AZ::Data::AssetType& testType)
+                {
+                    return assetType == testType;
+                });
+
+            if (typeIter != m_genericAssetTypes.end())
             {
-                m_recentlyAddedAssetPath.clear();
-
-                // The file was removed due to errors, but the user needs to be 
-                // given a chance to fix the errors and try again.
-                m_sourceAssetId.SetInvalid();
-                m_currentAsset = "New Asset";
-                m_propertyEditor->setEnabled(true);
-
-                DirtyAsset();
+                return true;
             }
+            return false;
+        }
+
+        AssetEditorTab* AssetEditorWidget::MakeNewTab(const QString& name)
+        {
+            AssetEditorTab* newTab = new AssetEditorTab(m_tabs);
+            m_tabs->addTab(newTab, name);
+
+            connect(newTab, &AssetEditorTab::OnAssetSaveFailedSignal, this, &AssetEditorWidget::OnAssetSaveFailed);
+            connect(newTab, &AssetEditorTab::OnAssetOpenedSignal, this, &AssetEditorWidget::OnAssetOpened);
+
+            return newTab;
+        }
+
+        AssetEditorTab* AssetEditorWidget::FindTabForAsset(const AZ::Data::AssetId& assetId) const
+        {
+            for (int tabIndex = 0; tabIndex < m_tabs->count(); tabIndex++)
+            {
+                AssetEditorTab* tab = qobject_cast<AssetEditorTab*>(m_tabs->widget(tabIndex));
+                if (assetId == tab->GetAssetId())
+                    return tab;
+            }
+
+            return nullptr;
         }
 
         void AssetEditorWidget::PopulateGenericAssetTypes()
         {
-            auto enumerateCallback =
-                [this](const AZ::SerializeContext::ClassData* classData, const AZ::Uuid& /*typeId*/) -> bool
-                {
-                    AZ::Data::AssetType assetType = classData->m_typeId;
+            auto enumerateCallback = [this](const AZ::SerializeContext::ClassData* classData, const AZ::Uuid& /*typeId*/) -> bool
+            {
+                AZ::Data::AssetType assetType = classData->m_typeId;
 
-                    // make sure this is not base class                    
-                    if (assetType == AZ::AzTypeInfo<AZ::Data::AssetData>::Uuid()
-                        || AZ::FindAttribute(AZ::Edit::Attributes::EnableForAssetEditor, classData->m_attributes) == nullptr)
+                // make sure this is not base class
+                if (assetType == AZ::AzTypeInfo<AZ::Data::AssetData>::Uuid() ||
+                    AZ::FindAttribute(AZ::Edit::Attributes::EnableForAssetEditor, classData->m_attributes) == nullptr)
+                {
+                    return true;
+                }
+
+                // narrow down all reflected AssetTypeInfos to those that have a GenericAssetHandler
+                AZ::Data::AssetManager& manager = AZ::Data::AssetManager::Instance();
+                if (const AZ::Data::AssetHandler* assetHandler = manager.GetHandler(classData->m_typeId))
+                {
+                    if (!azrtti_istypeof<AzFramework::GenericAssetHandlerBase>(assetHandler))
                     {
+                        // its not the generic asset handler.
                         return true;
                     }
+                }
 
-                    // narrow down all reflected AssetTypeInfos to those that have a GenericAssetHandler
-                    AZ::Data::AssetManager& manager = AZ::Data::AssetManager::Instance();
-                    if (const AZ::Data::AssetHandler* assetHandler = manager.GetHandler(classData->m_typeId))
-                    {
-                        if (!azrtti_istypeof<AzFramework::GenericAssetHandlerBase>(assetHandler))
-                        {
-                            // its not the generic asset handler.
-                            return true;
-                        }
-                    }
+                m_genericAssetTypes.push_back(assetType);
+                return true;
+            };
 
-                    m_genericAssetTypes.push_back(assetType);
-                    return true;
-                };
+            m_serializeContext->EnumerateDerived(enumerateCallback, AZ::Uuid::CreateNull(), AZ::AzTypeInfo<AZ::Data::AssetData>::Uuid());
 
-            m_serializeContext->EnumerateDerived(
-                enumerateCallback,
-                AZ::Uuid::CreateNull(),
-                AZ::AzTypeInfo<AZ::Data::AssetData>::Uuid()
-                );
-
-            AZStd::sort(m_genericAssetTypes.begin(), m_genericAssetTypes.end(), [&](const AZ::Data::AssetType& lhsAssetType, const AZ::Data::AssetType& rhsAssetType)
+            AZStd::sort(
+                m_genericAssetTypes.begin(), m_genericAssetTypes.end(),
+                [&](const AZ::Data::AssetType& lhsAssetType, const AZ::Data::AssetType& rhsAssetType)
                 {
                     AZStd::string lhsAssetTypeName = "";
                     AZ::AssetTypeInfoBus::EventResult(lhsAssetTypeName, lhsAssetType, &AZ::AssetTypeInfo::GetAssetTypeDisplayName);
@@ -793,160 +551,62 @@ namespace AzToolsFramework
                 });
         }
 
-        void AssetEditorWidget::CreateAssetImpl(AZ::Data::AssetType assetType)
+        void AssetEditorWidget::CreateAsset(AZ::Data::AssetType assetType)
         {
-            // If an unsaved asset is open, ask.
-            if (TrySave([this, assetType]() { CreateAssetImpl(assetType); }))
-            {
-                return;
-            }
-
-            if (m_inMemoryAsset)
-            {
-                AZ::Data::AssetBus::MultiHandler::BusDisconnect(m_inMemoryAsset.GetId());
-                m_inMemoryAsset.Release();
-            }
-
-            m_sourceAssetId.SetInvalid();
-
-            AZ::Data::AssetId newAssetId = AZ::Data::AssetId(AZ::Uuid::CreateRandom());
-            m_inMemoryAsset = AZ::Data::AssetManager::Instance().CreateAsset(newAssetId, assetType, AZ::Data::AssetLoadBehavior::Default);
-
-            DirtyAsset();
-
-            m_propertyEditor->ClearInstances();
-            m_currentAsset = "New Asset";
-
-            UpdatePropertyEditor(m_inMemoryAsset);
-
-            ExpandAll();
-            SetStatusText(Status::assetCreated);
-            SetupHeader();
-        }
-
-        void AssetEditorWidget::AfterPropertyModified(InstanceDataNode* /*node*/)
-        {
-            DirtyAsset();
-        }
-
-        void AssetEditorWidget::RequestPropertyContextMenu(InstanceDataNode* node, const QPoint& point)
-        {
-            if (node && node->IsDifferentVersusComparison())
-            {
-                QMenu menu;
-                QAction* resetAction = menu.addAction(tr("Reset value"));
-                connect(resetAction, &QAction::triggered, this,
-                    [this, node]()
-                    {
-                        const InstanceDataNode* orig = node->GetComparisonNode();
-                        if (orig)
-                        {
-                            InstanceDataHierarchy::CopyInstanceData(orig, node, m_serializeContext);
-
-                            PropertyRowWidget* widget = m_propertyEditor->GetWidgetFromNode(node);
-                            if (widget)
-                            {
-                                widget->DoPropertyNotify();
-                            }
-
-                            m_propertyEditor->QueueInvalidation(Refresh_Values);
-                        }
-                    }
-                    );
-                menu.exec(point);
-            }
-        }
-
-        void AssetEditorWidget::BeforePropertyModified(InstanceDataNode* node)
-        {
-            AssetEditorValidationRequestBus::Event(m_inMemoryAsset.Get()->GetId(), &AssetEditorValidationRequests::BeforePropertyEdit, node, m_inMemoryAsset);
+            QString newAssetName = QString(tr("New Asset %1").arg(m_nextNewAssetIndex++));
+            AssetEditorTab* newTab = MakeNewTab(newAssetName);
+            newTab->CreateAsset(assetType, newAssetName);
         }
 
         void AssetEditorWidget::ExpandAll()
         {
-            m_propertyEditor->ExpandAll();
+            for (int tabIndex = 0; tabIndex < m_tabs->count(); tabIndex++)
+            {
+                AssetEditorTab* tab = qobject_cast<AssetEditorTab*>(m_tabs->widget(tabIndex));
+                tab->ExpandAll();
+            }
         }
 
         void AssetEditorWidget::CollapseAll()
         {
-            m_propertyEditor->CollapseAll();
+            for (int tabIndex = 0; tabIndex < m_tabs->count(); tabIndex++)
+            {
+                AssetEditorTab* tab = qobject_cast<AssetEditorTab*>(m_tabs->widget(tabIndex));
+                tab->CollapseAll();
+            }
         }
 
-        void AssetEditorWidget::DirtyAsset()
+        void AssetEditorWidget::SetCurrentTab(AssetEditorTab* tab)
         {
-            m_dirty = true;
-            m_saveAssetAction->setEnabled(true);
-            m_saveAsAssetAction->setEnabled(true);
-
-            SetStatusText(Status::emptyString);
+            m_tabs->setCurrentWidget(tab);
         }
 
-        void AssetEditorWidget::OnSystemTick()
+        void AssetEditorWidget::UpdateTabTitle(AssetEditorTab* tab)
         {
-            if (!m_queuedAssetStatus.isEmpty())
+            // Ensure the name is up to date and add a "*" if the asset is dirty.
+            QString assetName = tab->GetAssetName();
+            if (tab->IsDirty())
             {
-                ApplyStatusText();
+                assetName.append("*");
             }
+
+            int index = m_tabs->indexOf(tab);
+            m_tabs->setTabText(index, assetName);
         }
 
-        void AssetEditorWidget::ApplyStatusText()
+        void AssetEditorWidget::SetLastSavePath(const AZStd::string& savePath)
         {
-            QString statusString;
-
-            if (m_dirty)
-            {
-                statusString = QString("%1*");
-            }
-            else
-            {
-                statusString = QString("%1");
-            }
-
-            statusString = statusString.arg(m_currentAsset).arg(m_queuedAssetStatus);
-
-            if (!m_queuedAssetStatus.isEmpty())
-            {
-                statusString.append(" - ");
-                statusString.append(m_queuedAssetStatus);
-            }
-
-            m_statusBar->textEdit->setText(statusString);
-
-            m_queuedAssetStatus.clear();
-
-            AZ::SystemTickBus::Handler::BusDisconnect();
-
+            m_userSettings->m_lastSavePath = savePath;
         }
 
-        void AssetEditorWidget::SetupHeader()
-        {            
-            QString nameString = QString("%1").arg(m_currentAsset).arg(m_queuedAssetStatus);
-
-            m_header->setName(nameString);
-
-            AZStd::string assetPath;
-            AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetPath, &AZ::Data::AssetCatalogRequests::GetAssetPathById, m_sourceAssetId);
-
-            // Add the asset location to the right of the header. Location is relative to the Project directory.
-            QString pathAndAsset = assetPath.c_str();
-            int seperatorPos = pathAndAsset.lastIndexOf('/');
-            if (seperatorPos < 0)
-            {
-                m_header->setLocation("");
-            }
-            else
-            {
-                m_header->setLocation(pathAndAsset.left(seperatorPos));
-            }
-            
-            m_header->setIcon(QIcon(QStringLiteral(":/AssetEditor/default_document.svg")));
-            m_header->show();
+        const QString AssetEditorWidget::GetLastSavePath() const
+        {
+            return m_userSettings->m_lastSavePath.c_str();
         }
 
         void AssetEditorWidget::SetStatusText(const QString& assetStatus)
         {
-            m_queuedAssetStatus = assetStatus;
-            AZ::SystemTickBus::Handler::BusConnect();
+            m_statusBar->textEdit->setText(assetStatus);
         }
 
         void AssetEditorWidget::AddRecentPath(const AZStd::string& recentPath)
@@ -971,22 +631,66 @@ namespace AzToolsFramework
                 {
                     bool hasResult = false;
                     AZStd::string relativePath;
-                    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(hasResult, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetRelativeProductPathFromFullSourceOrProductPath, recentFile, relativePath);
+                    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                        hasResult, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetRelativeProductPathFromFullSourceOrProductPath,
+                        recentFile, relativePath);
 
                     if (hasResult)
                     {
                         QAction* action = m_recentFileMenu->addAction(relativePath.c_str());
-                        connect(action, &QAction::triggered, this, [recentFile, this]() { this->OpenAssetFromPath(recentFile); });
+                        connect(
+                            action, &QAction::triggered, this,
+                            [recentFile, this]()
+                            {
+                                this->OpenAssetFromPath(recentFile);
+                            });
                     }
                 }
             }
         }
 
-        void AssetEditorWidget::UpdateMenusOnAssetOpen()
+        void AssetEditorWidget::UpdateSaveMenuActionsStatus()
         {
-            // Activate "Save" and "Save As..." actions
-            m_saveAssetAction->setEnabled(true);
-            m_saveAsAssetAction->setEnabled(true);
+            if (!m_tabs->count())
+            {
+                m_saveAllAssetsAction->setEnabled(false);
+                m_saveAssetAction->setEnabled(false);
+                m_saveAsAssetAction->setEnabled(false);
+                return;
+            }
+
+            // Enable the save all option if any tabs are dirty.
+            bool haveDirtyTabs = false;
+
+            for (int tabIndex = 0; tabIndex < m_tabs->count(); tabIndex++)
+            {
+                AssetEditorTab* tab = qobject_cast<AssetEditorTab*>(m_tabs->widget(tabIndex));
+                if (tab->IsDirty())
+                {
+                    haveDirtyTabs = true;
+                    break;
+                }
+            }
+
+            m_saveAllAssetsAction->setEnabled(haveDirtyTabs);
+
+            // Enable the single save options depending on whether the current tab is dirty.
+            AssetEditorTab* tab = qobject_cast<AssetEditorTab*>(m_tabs->currentWidget());
+            if (tab)
+            {
+                m_saveAssetAction->setEnabled(tab->IsDirty());
+                m_saveAsAssetAction->setEnabled(tab->IsDirty());
+            }
+        }
+
+        void AssetEditorWidget::OnAssetSaveFailed(const AZStd::string& error)
+        {
+            Q_EMIT OnAssetSaveFailedSignal(error);
+        }
+
+        void AssetEditorWidget::OnAssetOpened(const AZ::Data::Asset<AZ::Data::AssetData>& asset)
+        {
+            Q_EMIT OnAssetOpenedSignal(asset);
         }
 
         void AssetEditorWidget::UpdateRecentFileListState()
@@ -1003,7 +707,6 @@ namespace AzToolsFramework
                 }
             }
         }
-
     } // namespace AssetEditor
 } // namespace AzToolsFramework
 

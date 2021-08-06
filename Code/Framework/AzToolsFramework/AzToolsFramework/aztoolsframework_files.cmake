@@ -15,6 +15,8 @@ set(FILES
     AssetEditor/AssetEditorHeader.cpp
     AssetEditor/AssetEditorHeader.h
     AssetEditor/AssetEditorUtils.h
+    AssetEditor/AssetEditorTab.cpp
+    AssetEditor/AssetEditorTab.h
     AssetEditor/Resources/AssetEditorResources.qrc
     UI/Logging/LogLine.h
     UI/Logging/LogLine.cpp
