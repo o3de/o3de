@@ -211,7 +211,7 @@ namespace AZ
                 for (uint32_t vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
                 {
                     const uint32_t originalVertex = sourceOriginalVertex[vertexIndex + vertexStart];
-                    const uint32_t influenceCount = AZStd::GetMin<uint32_t>(MaxSupportedSkinInfluences, sourceSkinningInfo->GetNumInfluences(originalVertex));
+                    const uint32_t influenceCount = AZStd::GetMin<uint32_t>(MaxSupportedSkinInfluences, static_cast<uint32_t>(sourceSkinningInfo->GetNumInfluences(originalVertex)));
                     uint32_t influenceIndex = 0;
                     float weightError = 1.0f;
 
@@ -378,7 +378,7 @@ namespace AZ
                 size_t skinnedMeshSubmeshIndex = 0;
                 for (size_t jointIndex = 0; jointIndex < numJoints; ++jointIndex)
                 {
-                    const EMotionFX::Mesh* mesh = actor->GetMesh(lodIndex, jointIndex);
+                    const EMotionFX::Mesh* mesh = actor->GetMesh(static_cast<uint32>(lodIndex), static_cast<uint32>(jointIndex));
                     if (!mesh || mesh->GetIsCollisionMesh())
                     {
                         continue;
@@ -404,7 +404,7 @@ namespace AZ
 
                     for (size_t subMeshIndex = 0; subMeshIndex < numSubMeshes; ++subMeshIndex)
                     {
-                        const EMotionFX::SubMesh* subMesh = mesh->GetSubMesh(subMeshIndex);
+                        const EMotionFX::SubMesh* subMesh = mesh->GetSubMesh(static_cast<uint32>(subMeshIndex));
                         const size_t vertexCount = subMesh->GetNumVertices();
 
                         // Skip empty sub-meshes and sub-meshes that would put the total vertex count beyond the supported range
@@ -508,7 +508,7 @@ namespace AZ
 
                 if (morphBufferAssetView)
                 {
-                    ProcessMorphsForLod(actor, morphBufferAssetView->GetBufferAsset(), lodIndex, fullFileName, skinnedMeshLod);
+                    ProcessMorphsForLod(actor, morphBufferAssetView->GetBufferAsset(), static_cast<uint32_t>(lodIndex), fullFileName, skinnedMeshLod);
                 }
 
                 // Set colors after morphs are set, so that we know whether or not they are dynamic (if they exist)
@@ -593,7 +593,7 @@ namespace AZ
             descriptor.m_bufferData = boneTransforms.data();
             descriptor.m_bufferName = AZStd::string::format("BoneTransformBuffer_%s", actorInstance->GetActor()->GetName());
             descriptor.m_byteCount = boneTransforms.size() * sizeof(float);
-            descriptor.m_elementSize = floatsPerBone * sizeof(float);
+            descriptor.m_elementSize = static_cast<uint32_t>(floatsPerBone * sizeof(float));
             descriptor.m_poolType = RPI::CommonBufferPoolType::ReadOnly;
             return RPI::BufferSystemInterface::Get()->CreateBufferFromCommonPool(descriptor);
         }

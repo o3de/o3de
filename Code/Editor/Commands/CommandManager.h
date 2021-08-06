@@ -38,7 +38,7 @@ public:
 
     void RegisterAutoCommands();
 
-    bool AddCommand(CCommand* pCommand, TPfnDeleter deleter = NULL);
+    bool AddCommand(CCommand* pCommand, TPfnDeleter deleter = nullptr);
     bool UnregisterCommand(const char* module, const char* name);
     bool RegisterUICommand(
         const char* module,

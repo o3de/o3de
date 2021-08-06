@@ -843,7 +843,7 @@ namespace Unicode
             {
                 const size_t offset = Append ? out.size() : 0;
                 length += offset;
-                out.resize(length); // resize() can't fail without exceptions, so assert instead.
+                out.resize(static_cast<int>(length)); // resize() can't fail without exceptions, so assert instead.
                 assert((out.size() == length) && "Buffer resize failed (out-of-memory?)");
                 const CharType* base = length ? out.data() : 0;
                 ptr = const_cast<CharType*>(base + offset);
