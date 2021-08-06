@@ -127,7 +127,6 @@ AZ_POP_DISABLE_WARNING
 
 #include "Util/AutoDirectoryRestoreFileDialog.h"
 #include "Util/EditorAutoLevelLoadTest.h"
-#include "Util/IndexedFiles.h"
 #include "AboutDialog.h"
 #include <AzToolsFramework/PythonTerminal/ScriptHelpDialog.h>
 
@@ -1715,18 +1714,6 @@ BOOL CCryEditApp::InitInstance()
 
     if (IsInRegularEditorMode())
     {
-        CIndexedFiles::Create();
-
-        if (gEnv->pConsole->GetCVar("ed_indexfiles")->GetIVal())
-        {
-            Log("Started game resource files indexing...");
-            CIndexedFiles::StartFileIndexing();
-        }
-        else
-        {
-            Log("Game resource files indexing is disabled.");
-        }
-
         // QuickAccessBar creation should be before m_pMainWnd->SetFocus(),
         // since it receives the focus at creation time. It brakes MainFrame key accelerators.
         m_pQuickAccessBar = new CQuickAccessBar;
@@ -2161,12 +2148,6 @@ int CCryEditApp::ExitInstance(int exitCode)
                 GetIEditor()->GetToolBoxManager()->ExecuteMacro(shutDownMacroIndex, true);
             }
         }
-    }
-
-    if (IsInRegularEditorMode())
-    {
-        CIndexedFiles::AbortFileIndexing();
-        CIndexedFiles::Destroy();
     }
 
     if (GetIEditor() && !GetIEditor()->IsInMatEditMode())

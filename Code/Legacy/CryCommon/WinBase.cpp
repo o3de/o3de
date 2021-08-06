@@ -1377,25 +1377,6 @@ DLL_EXPORT void*     CryInterlockedExchangePointer(void* volatile* dst, void* ex
     //return (void*)CryInterlockedCompareExchange((long volatile*)dst, (long)exchange, (long)comperand);
 }
 
-#if (defined(LINUX64) && !defined(ANDROID)) || defined(MAC) || defined(IOS_SIMULATOR)
-DLL_EXPORT unsigned char _InterlockedCompareExchange128(int64 volatile* dst, int64 exchangehigh, int64 exchangelow, int64* comperand)
-{
-    bool bEquals;
-    __asm__ __volatile__
-    (
-        "lock cmpxchg16b %1\n\t"
-        "setz %0"
-        : "=q" (bEquals), "+m" (*dst), "+d" (comperand[1]), "+a" (comperand[0])
-        : "c" (exchangehigh), "b" (exchangelow)
-        : "cc"
-    );
-    return (char)bEquals;
-}
-#elif defined(INTERLOCKED_COMPARE_EXCHANGE_128_NOT_SUPPORTED)
-    // arm64 processors do not provide a cmpxchg16b (or equivalent) instruction,
-    // so _InterlockedCompareExchange128 is not implemented on arm64 platforms.
-#endif
-
 threadID CryGetCurrentThreadId()
 {
     return GetCurrentThreadId();
