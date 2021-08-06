@@ -355,24 +355,8 @@ namespace AZ
         m_workers[++m_lastSubmission % m_threadCount].Enqueue(&task);
     }
 
-    void TaskExecutor::Drain()
-    {
-        m_isDraining = true;
-        if (m_graphsRemaining == 0)
-        {
-            return;
-        }
-        m_drainSemaphore.acquire();
-    }
-
     void TaskExecutor::ReleaseGraph()
     {
-        uint64_t graphsRemaining = --m_graphsRemaining;
-
-        if (graphsRemaining == 0 && m_isDraining)
-        {
-            m_drainSemaphore.release();
-            m_isDraining = false;
-        }
+        --m_graphsRemaining;
     }
 } // namespace AZ

@@ -76,9 +76,6 @@ namespace AZ
 
         void Submit(Internal::Task& task);
 
-        // Wait until tasks are cleared from the executor (note, does not prevent future tasks from being submitted)
-        // If this is used, it's expected to be used between frames to shutdown the engine
-        void Drain();
     private:
         friend class Internal::TaskWorker;
 
@@ -88,7 +85,5 @@ namespace AZ
         uint32_t m_threadCount = 0;
         AZStd::atomic<uint32_t> m_lastSubmission;
         AZStd::atomic<uint64_t> m_graphsRemaining;
-        AZStd::atomic<bool> m_isDraining;
-        AZStd::binary_semaphore m_drainSemaphore;
     };
 } // namespace AZ
