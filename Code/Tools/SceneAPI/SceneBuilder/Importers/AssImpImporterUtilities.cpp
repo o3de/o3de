@@ -105,7 +105,7 @@ namespace AZ
                         nodesWithNoMesh.emplace(currentNode->mName.C_Str());
                     }
 
-                    for (int childIndex = 0; childIndex < currentNode->mNumChildren; ++childIndex)
+                    for (unsigned int childIndex = 0; childIndex < currentNode->mNumChildren; ++childIndex)
                     {
                         queue.push(currentNode->mChildren[childIndex]);
                     }
@@ -176,7 +176,7 @@ namespace AZ
                     return true;
                 }
 
-                for (int childIndex = 0; childIndex < node->mNumChildren; ++childIndex)
+                for (unsigned int childIndex = 0; childIndex < node->mNumChildren; ++childIndex)
                 {
                     const aiNode* childNode = node->mChildren[childIndex];
                     if (RecursiveHasChildBone(childNode, boneByNameMap))
