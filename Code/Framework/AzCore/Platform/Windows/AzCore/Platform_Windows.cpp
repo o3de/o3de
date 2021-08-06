@@ -31,8 +31,8 @@ namespace AZ
                 // Query the machine guid generated at install time by windows, which is generated from
                 // hardware signatures. This guid is not enough, because images (AWS) may duplicate this,
                 // so include the hostname/username as well
-                TCHAR machineInfo[MAX_COMPUTERNAME_LENGTH + 1024] = { 0 };
-                ret = RegOpenKeyExA(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Cryptography", 0, KEY_QUERY_VALUE, &key);
+                wchar_t machineInfo[MAX_COMPUTERNAME_LENGTH + 1024] = { 0 };
+                ret = RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Cryptography", 0, KEY_QUERY_VALUE, &key);
                 if (ret == ERROR_SUCCESS)
                 {
                     DWORD dataType = REG_SZ;
@@ -45,17 +45,17 @@ namespace AZ
                     AZ_Error("System", false, "Failed to open HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Cryptography\\MachineGuid!")
                 }
 
-                TCHAR* hostname = machineInfo + wcslen(machineInfo);
+                wchar_t* hostname = machineInfo + wcslen(machineInfo);
                 // salt the guid time with ComputerName/UserName
                 DWORD  bufCharCount = DWORD(sizeof(machineInfo) - (hostname - machineInfo));
-                if (!::GetComputerName(hostname, &bufCharCount))
+                if (!::GetComputerNameW(hostname, &bufCharCount))
                 {
                     AZ_Error("System", false, "GetComputerName filed with code %d", GetLastError());
                 }
 
-                TCHAR* username = hostname + wcslen(hostname);
+                wchar_t* username = hostname + wcslen(hostname);
                 bufCharCount = DWORD(sizeof(machineInfo) - (username - machineInfo));
-                if( !GetUserName( username, &bufCharCount ) ) 
+                if(!GetUserNameW(username, &bufCharCount)) 
                 {
                     AZ_Error("System",false,"GetUserName filed with code %d",GetLastError());
                 }

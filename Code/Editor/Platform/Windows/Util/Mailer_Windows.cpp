@@ -28,7 +28,7 @@ bool CMailer::SendMail(const char* subject,
     GetCurrentDirectoryW(sizeof(dir), dir);
 
     // Load MAPI dll
-    HMODULE hMAPILib = LoadLibraryA("MAPI32.DLL");
+    HMODULE hMAPILib = LoadLibraryW(L"MAPI32.DLL");
     LPMAPISENDMAIL lpfnMAPISendMail = (LPMAPISENDMAIL) GetProcAddress(hMAPILib, "MAPISendMail");
 
     int numRecipients  = (int)_recipients.size();
