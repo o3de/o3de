@@ -155,9 +155,12 @@ namespace Multiplayer
             // Discard move input events, client may be speed hacking
             if (m_clientBankedTime < sv_MaxBankTimeWindowSec)
             {
+                // Client blends from previous frame to target so here we subtract blend factor to get to that state
+                const float blendFactor = AZStd::min(AZStd::max(0.f, input.GetHostBlendFactor()), 1.f);
+                const AZ::TimeMs blendMs = AZ::TimeMs(static_cast<float>(static_cast<AZ::TimeMs>(cl_InputRateMs)) * (1.f - blendFactor));
                 m_clientBankedTime = AZStd::min(m_clientBankedTime + clientInputRateSec, (double)sv_MaxBankTimeWindowSec); // clamp to boundary
                 {
-                    ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs(), invokingConnection->GetConnectionId());
+                    ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs() - blendMs, input.GetHostBlendFactor(), invokingConnection->GetConnectionId());
                     GetNetBindComponent()->ProcessInput(input, static_cast<float>(clientInputRateSec));
                 }
 
@@ -198,7 +201,7 @@ namespace Multiplayer
                 // Produce correction for client
                 AzNetworking::PacketEncodingBuffer correction;
                 correction.Resize(correction.GetCapacity());
-                AzNetworking::NetworkInputSerializer serializer(correction.GetBuffer(), correction.GetCapacity());
+                AzNetworking::NetworkInputSerializer serializer(correction.GetBuffer(), static_cast<uint32_t>(correction.GetCapacity()));
 
                 // only deserialize if we have data (for client/server profile/debug mismatches)
                 if (correction.GetSize() > 0)
@@ -218,7 +221,7 @@ namespace Multiplayer
                 {
                     // In debug, show which states caused the correction
                     // Write in client state
-                    AzNetworking::NetworkOutputSerializer clientStateSerializer(clientState.GetBuffer(), clientState.GetSize());
+                    AzNetworking::NetworkOutputSerializer clientStateSerializer(clientState.GetBuffer(), static_cast<uint32_t>(clientState.GetSize()));
                     GetNetBindComponent()->SerializeEntityCorrection(clientStateSerializer);
 
                     // Read out state values
@@ -226,7 +229,7 @@ namespace Multiplayer
                     GetNetBindComponent()->SerializeEntityCorrection(clientValues);
 
                     // Restore server state
-                    AzNetworking::NetworkOutputSerializer serverStateSerializer(correction.GetBuffer(), correction.GetSize());
+                    AzNetworking::NetworkOutputSerializer serverStateSerializer(correction.GetBuffer(), static_cast<uint32_t>(correction.GetSize()));
                     GetNetBindComponent()->SerializeEntityCorrection(serverStateSerializer);
 
                     // Read out state values
@@ -311,7 +314,7 @@ namespace Multiplayer
             ++ModifyLastInputId();
             input.SetClientInputId(GetLastInputId());
 
-            ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs(), invokingConnection->GetConnectionId());
+            ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs(), input.GetHostBlendFactor(), invokingConnection->GetConnectionId());
             GetNetBindComponent()->ProcessInput(input, clientInputRateSec);
 
             AZLOG
@@ -352,7 +355,7 @@ namespace Multiplayer
         m_lastCorrectionInputId = inputId;
 
         // Apply the correction
-        AzNetworking::TrackChangedSerializer<AzNetworking::NetworkOutputSerializer> serializer(correction.GetBuffer(), correction.GetSize());
+        AzNetworking::TrackChangedSerializer<AzNetworking::NetworkOutputSerializer> serializer(correction.GetBuffer(), static_cast<uint32_t>(correction.GetSize()));
         GetNetBindComponent()->SerializeEntityCorrection(serializer);
         m_correctionEvent.Signal();
 
@@ -364,7 +367,7 @@ namespace Multiplayer
             GetCorrectionDataString(GetNetBindComponent()).c_str()
         );
 
-        const uint32_t inputHistorySize = m_inputHistory.Size();
+        const uint32_t inputHistorySize = static_cast<uint32_t>(m_inputHistory.Size());
         const uint32_t historicalDelta = aznumeric_cast<uint32_t>(m_clientInputId - inputId); // Do not replay the move we just corrected, that was already processed by the server
 
         // If this correction is for a move outside our input history window, just start replaying from the oldest move we have available
@@ -391,7 +394,7 @@ namespace Multiplayer
         {
             // Reprocess the input for this frame
             NetworkInput& input = m_inputHistory[replayIndex];
-            ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs(), invokingConnection->GetConnectionId());
+            ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs(), input.GetHostBlendFactor(), invokingConnection->GetConnectionId());
             GetNetBindComponent()->ProcessInput(input, clientInputRateSec);
 
             AZLOG
@@ -499,6 +502,7 @@ namespace Multiplayer
             input.SetClientInputId(m_clientInputId);
             input.SetHostFrameId(networkTime->GetHostFrameId());
             input.SetHostTimeMs(multiplayer->GetCurrentHostTimeMs());
+            input.SetHostBlendFactor(multiplayer->GetCurrentBlendFactor());
 
             // Allow components to form the input for this frame
             GetNetBindComponent()->CreateInput(input, inputRate);
@@ -524,7 +528,7 @@ namespace Multiplayer
 #ifndef AZ_RELEASE_BUILD
             if (cl_EnableDesyncDebugging)
             {
-                AzNetworking::NetworkInputSerializer processInputResultSerializer(processInputResult.GetBuffer(), processInputResult.GetCapacity());
+                AzNetworking::NetworkInputSerializer processInputResultSerializer(processInputResult.GetBuffer(), static_cast<uint32_t>(processInputResult.GetCapacity()));
                 GetNetBindComponent()->SerializeEntityCorrection(processInputResultSerializer);
                 processInputResult.Resize(processInputResultSerializer.GetSize());
             }
@@ -573,7 +577,7 @@ namespace Multiplayer
 
             NetworkInput& input = m_lastInputReceived[0];
             {
-                ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs(), AzNetworking::InvalidConnectionId);
+                ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs(), DefaultBlendFactor, AzNetworking::InvalidConnectionId);
                 GetNetBindComponent()->ProcessInput(input, inputRate);
             }
 

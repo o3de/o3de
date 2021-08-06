@@ -25,26 +25,27 @@
 #include <AzToolsFramework/UI/UICore/QTreeViewStateSaver.hxx>
 #include <AzToolsFramework/UI/UICore/QWidgetSavedState.h>
 
-#include <Atom/RPI.Edit/Common/AssetUtils.h>
-#include <Atom/RPI.Public/RPISystemInterface.h>
 #include <AtomToolsFramework/Util/Util.h>
 
-#include <ShaderManagementConsoleApplication.h>
-#include <ShaderManagementConsole_Traits_Platform.h>
+#include <Atom/RPI.Edit/Common/AssetUtils.h>
+#include <Atom/RPI.Public/RPISystemInterface.h>
 
 #include <Atom/Document/ShaderManagementConsoleDocumentModule.h>
 #include <Atom/Document/ShaderManagementConsoleDocumentSystemRequestBus.h>
 #include <Atom/Window/ShaderManagementConsoleWindowModule.h>
 #include <Atom/Window/ShaderManagementConsoleWindowRequestBus.h>
 
+#include <ShaderManagementConsoleApplication.h>
+#include <ShaderManagementConsole_Traits_Platform.h>
+
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
-#include <QFileInfo>
 #include <QMessageBox>
 #include <QObject>
 AZ_POP_DISABLE_WARNING
 
 namespace ShaderManagementConsole
 {
+    //! This function returns the build system target name of "ShaderManagementConsole
     AZStd::string ShaderManagementConsoleApplication::GetBuildTargetName() const
     {
 #if !defined(LY_CMAKE_TARGET)
@@ -74,6 +75,11 @@ namespace ShaderManagementConsole
             *AZ::SettingsRegistry::Get(), GetBuildTargetName());
     }
 
+    ShaderManagementConsoleApplication::~ShaderManagementConsoleApplication()
+    {
+        ShaderManagementConsoleWindowNotificationBus::Handler::BusDisconnect();
+    }
+
     void ShaderManagementConsoleApplication::CreateStaticModules(AZStd::vector<AZ::Module*>& outModules)
     {
         Base::CreateStaticModules(outModules);
@@ -84,8 +90,6 @@ namespace ShaderManagementConsole
     void ShaderManagementConsoleApplication::OnShaderManagementConsoleWindowClosing()
     {
         ExitMainLoop();
-        ShaderManagementConsoleWindowNotificationBus::Handler::BusDisconnect();
-        AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusDisconnect();
     }
 
     void ShaderManagementConsoleApplication::Destroy()
@@ -104,27 +108,19 @@ namespace ShaderManagementConsole
         return AZStd::vector<AZStd::string>({ "passes/", "config/" });
     }
 
-    void ShaderManagementConsoleApplication::ProcessCommandLine()
+    void ShaderManagementConsoleApplication::ProcessCommandLine(const AZ::CommandLine& commandLine)
     {
-        // Process command line options for running one or more python scripts on startup
-        const AZStd::string runPythonScriptSwitchName = "runpython";
-        size_t runPythonScriptCount = m_commandLine.GetNumSwitchValues(runPythonScriptSwitchName);
-        for (size_t runPythonScriptIndex = 0; runPythonScriptIndex < runPythonScriptCount; ++runPythonScriptIndex)
-        {
-            const AZStd::string runPythonScriptPath = m_commandLine.GetSwitchValue(runPythonScriptSwitchName, runPythonScriptIndex);
-            AZStd::vector<AZStd::string_view> runPythonArgs;
-            AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(
-                &AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilenameWithArgs, runPythonScriptPath, runPythonArgs);
-        }
-
         // Process command line options for opening one or more documents on startup
-        size_t openDocumentCount = m_commandLine.GetNumMiscValues();
+        size_t openDocumentCount = commandLine.GetNumMiscValues();
         for (size_t openDocumentIndex = 0; openDocumentIndex < openDocumentCount; ++openDocumentIndex)
         {
-            const AZStd::string openDocumentPath = m_commandLine.GetMiscValue(openDocumentIndex);
-            ShaderManagementConsoleDocumentSystemRequestBus::Broadcast(
-                &ShaderManagementConsoleDocumentSystemRequestBus::Events::OpenDocument, openDocumentPath);
+            const AZStd::string openDocumentPath = commandLine.GetMiscValue(openDocumentIndex);
+
+            AZ_Printf(GetBuildTargetName().c_str(), "Opening document: %s", openDocumentPath.c_str());
+            ShaderManagementConsoleDocumentSystemRequestBus::Broadcast(&ShaderManagementConsoleDocumentSystemRequestBus::Events::OpenDocument, openDocumentPath);
         }
+
+        Base::ProcessCommandLine(commandLine);
     }
 
     void ShaderManagementConsoleApplication::StartInternal()
@@ -135,5 +131,13 @@ namespace ShaderManagementConsole
 
         ShaderManagementConsole::ShaderManagementConsoleWindowRequestBus::Broadcast(
             &ShaderManagementConsole::ShaderManagementConsoleWindowRequestBus::Handler::CreateShaderManagementConsoleWindow);
+    }
+
+    void ShaderManagementConsoleApplication::Stop()
+    {
+        ShaderManagementConsole::ShaderManagementConsoleWindowRequestBus::Broadcast(
+            &ShaderManagementConsole::ShaderManagementConsoleWindowRequestBus::Handler::DestroyShaderManagementConsoleWindow);
+
+        Base::Stop();
     }
 } // namespace ShaderManagementConsole

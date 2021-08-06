@@ -163,7 +163,7 @@ public:
 
     //////////////////////////////////////////////////////////////////////////
     //! Return number of event targets of Script.
-    int     GetEventTargetCount() const { return m_eventTargets.size(); };
+    int     GetEventTargetCount() const { return static_cast<int>(m_eventTargets.size()); };
     CEntityEventTarget& GetEventTarget(int index) { return m_eventTargets[index]; };
     //! Add new event target, returns index of created event target.
     //! Event targets are Always entities.
@@ -176,7 +176,7 @@ public:
     // Entity Links.
     //////////////////////////////////////////////////////////////////////////
     //! Return number of event targets of Script.
-    int     GetEntityLinkCount() const { return m_links.size(); };
+    int     GetEntityLinkCount() const { return static_cast<int>(m_links.size()); };
     CEntityLink& GetEntityLink(int index) { return m_links[index]; };
     virtual int AddEntityLink(const QString& name, GUID targetEntityId);
     virtual bool EntityLinkExists(const QString& name, GUID targetEntityId);

@@ -528,7 +528,7 @@ namespace Vegetation
     AZ::u32 SpawnerComponent::GetProductCount() const
     {
         AZStd::lock_guard<decltype(m_claimInstanceMappingMutex)> claimInstanceMappingMutexLock(m_claimInstanceMappingMutex);
-        return m_claimInstanceMapping.size();
+        return static_cast<AZ::u32>(m_claimInstanceMapping.size());
     }
 
     void SpawnerComponent::OnCompositionChanged()

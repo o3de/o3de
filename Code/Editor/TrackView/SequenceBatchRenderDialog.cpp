@@ -117,8 +117,7 @@ CSequenceBatchRenderDialog::CSequenceBatchRenderDialog(float fps, QWidget* pPare
 }
 
 CSequenceBatchRenderDialog::~CSequenceBatchRenderDialog()
-{
-}
+= default;
 
 void CSequenceBatchRenderDialog::reject()
 {
@@ -519,7 +518,7 @@ void CSequenceBatchRenderDialog::OnGo()
         InitializeContext();
 
         // Trigger the first item.
-        OnMovieEvent(IMovieListener::eMovieEvent_Stopped, NULL);
+        OnMovieEvent(IMovieListener::eMovieEvent_Stopped, nullptr);
     }
 }
 
@@ -728,7 +727,7 @@ bool CSequenceBatchRenderDialog::GetResolutionFromCustomResText(const char* cust
 bool CSequenceBatchRenderDialog::LoadOutputOptions(const QString& pathname)
 {
     XmlNodeRef batchRenderOptionsNode = XmlHelpers::LoadXmlFromFile(pathname.toStdString().c_str());
-    if (batchRenderOptionsNode == NULL)
+    if (batchRenderOptionsNode == nullptr)
     {
         return true;
     }
@@ -1391,7 +1390,7 @@ void CSequenceBatchRenderDialog::OnLoadBatch()
             Path::GetUserSandboxFolder(), loadPath))
     {
         XmlNodeRef batchRenderListNode = XmlHelpers::LoadXmlFromFile(loadPath.toStdString().c_str());
-        if (batchRenderListNode == NULL)
+        if (batchRenderListNode == nullptr)
         {
             return;
         }
@@ -1414,7 +1413,7 @@ void CSequenceBatchRenderDialog::OnLoadBatch()
             // sequence
             const QString seqName = itemNode->getAttr("sequence");
             item.pSequence = GetIEditor()->GetMovieSystem()->FindLegacySequenceByName(seqName.toUtf8().data());
-            if (item.pSequence == NULL)
+            if (item.pSequence == nullptr)
             {
                 QMessageBox::warning(this, tr("Sequence not found"), tr("A sequence of '%1' not found! This'll be skipped.").arg(seqName));
                 continue;
@@ -1431,7 +1430,7 @@ void CSequenceBatchRenderDialog::OnLoadBatch()
                     break;
                 }
             }
-            if (item.pDirectorNode == NULL)
+            if (item.pDirectorNode == nullptr)
             {
                 QMessageBox::warning(this, tr("Director node not found"), tr("A director node of '%1' not found in the sequence of '%2'! This'll be skipped.").arg(directorName).arg(seqName));
                 continue;
@@ -1544,7 +1543,7 @@ bool CSequenceBatchRenderDialog::SetUpNewRenderItem(SRenderItem& item)
             break;
         }
     }
-    if (item.pDirectorNode == NULL)
+    if (item.pDirectorNode == nullptr)
     {
         return false;
     }

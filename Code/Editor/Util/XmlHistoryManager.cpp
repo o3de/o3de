@@ -76,7 +76,7 @@ const XmlNodeRef& SXmlHistory::GetCurrentVersion(bool* bVersionExist, int* iVers
 bool SXmlHistory::IsModified() const
 {
     int currVersion;
-    GetCurrentVersion(NULL, &currVersion);
+    GetCurrentVersion(nullptr, &currVersion);
     return m_SavedVersion != currVersion;
 }
 
@@ -94,7 +94,7 @@ void SXmlHistory::FlagAsSaved()
     if (Exist())
     {
         int currVersion;
-        GetCurrentVersion(NULL, &currVersion);
+        GetCurrentVersion(nullptr, &currVersion);
         m_SavedVersion = currVersion;
     }
 }
@@ -167,7 +167,7 @@ SXmlHistory* SXmlHistoryGroup::GetHistory(int index) const
             --index;
         }
     }
-    return it != m_List.end() ? *it : NULL;
+    return it != m_List.end() ? *it : nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -199,7 +199,7 @@ SXmlHistory* SXmlHistoryGroup::GetHistoryByTypeId(uint32 typeId, int index /*= 0
             return pHistory;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -246,9 +246,9 @@ int SXmlHistoryGroup::GetHistoryIndex(const SXmlHistory* pHistory) const
 CXmlHistoryManager::CXmlHistoryManager()
     : m_CurrentVersion(0)
     , m_LatestVersion(0)
-    , m_pExclusiveListener(NULL)
+    , m_pExclusiveListener(nullptr)
     , m_RecordNextVersion(false)
-    , m_pExActiveGroup(NULL)
+    , m_pExActiveGroup(nullptr)
     , m_bIsActiveGroupEx(false)
 {
     m_pNullGroup = new SXmlHistoryGroup(this, (uint32) - 1);
@@ -376,7 +376,7 @@ void CXmlHistoryManager::PrepareForNextVersion()
 }
 
 /////////////////////////////////////////////////////////////////////////////
-void CXmlHistoryManager::RecordNextVersion(SXmlHistory* pHistory, XmlNodeRef newData, const char* undoDesc /*= NULL*/)
+void CXmlHistoryManager::RecordNextVersion(SXmlHistory* pHistory, XmlNodeRef newData, const char* undoDesc /*= nullptr*/)
 {
     assert(m_RecordNextVersion);
     RegisterUndoEventHandler(this, pHistory);
@@ -405,7 +405,7 @@ void CXmlHistoryManager::ClearHistory(bool flagAsSaved)
         it->ClearHistory(flagAsSaved);
     }
 
-    SetActiveGroup(NULL);
+    SetActiveGroup(nullptr);
 
     m_CurrentVersion = 0;
     m_LatestVersion = 0;
@@ -451,14 +451,14 @@ SXmlHistoryGroup* CXmlHistoryManager::CreateXmlGroup(uint32 typeId)
 }
 
 /////////////////////////////////////////////////////////////////////////////
-void CXmlHistoryManager::AddXmlGroup(const SXmlHistoryGroup* pGroup, const char* undoDesc /*= NULL*/)
+void CXmlHistoryManager::AddXmlGroup(const SXmlHistoryGroup* pGroup, const char* undoDesc /*= nullptr*/)
 {
     RecordUndoInternal(undoDesc ? undoDesc : "New XML Group added");
     m_HistoryInfoMap[ m_CurrentVersion ].ActiveGroups.push_back(pGroup);
     NotifyUndoEventListener(IXmlHistoryEventListener::eHET_HistoryGroupAdded, (void*)pGroup);
 }
 /////////////////////////////////////////////////////////////////////////////
-void CXmlHistoryManager::RemoveXmlGroup(const SXmlHistoryGroup* pGroup, const char* undoDesc /*= NULL*/)
+void CXmlHistoryManager::RemoveXmlGroup(const SXmlHistoryGroup* pGroup, const char* undoDesc /*= nullptr*/)
 {
     bool unload = m_HistoryInfoMap[ m_CurrentVersion ].CurrGroup == pGroup;
     RecordUndoInternal(undoDesc ? undoDesc : "XML Group deleted");
@@ -466,14 +466,14 @@ void CXmlHistoryManager::RemoveXmlGroup(const SXmlHistoryGroup* pGroup, const ch
     stl::find_and_erase(list, pGroup);
     if (unload)
     {
-        SetActiveGroupInt(NULL);
+        SetActiveGroupInt(nullptr);
     }
     m_HistoryInfoMap[ m_CurrentVersion ].CurrGroup = m_pNullGroup;
     NotifyUndoEventListener(IXmlHistoryEventListener::eHET_HistoryGroupRemoved, (void*)pGroup);
 }
 
 /////////////////////////////////////////////////////////////////////////////
-void CXmlHistoryManager::SetActiveGroup(const SXmlHistoryGroup* pGroup, const char* displayName /*= NULL*/, const TGroupIndexMap& groupIndex /*= TGroupIndexMap()*/, bool setExternal /*= false*/)
+void CXmlHistoryManager::SetActiveGroup(const SXmlHistoryGroup* pGroup, const char* displayName /*= nullptr*/, const TGroupIndexMap& groupIndex /*= TGroupIndexMap()*/, bool setExternal /*= false*/)
 {
     TGroupIndexMap userIndex;
     const SXmlHistoryGroup* pActiveGroup = GetActiveGroup(userIndex);
@@ -488,7 +488,7 @@ void CXmlHistoryManager::SetActiveGroup(const SXmlHistoryGroup* pGroup, const ch
     }
 }
 
-void CXmlHistoryManager::SetActiveGroupInt(const SXmlHistoryGroup* pGroup, const char* displayName /*= NULL*/, bool bRecordNullUndo /*= false*/, const TGroupIndexMap& groupIndex /*= TGroupIndexMap()*/)
+void CXmlHistoryManager::SetActiveGroupInt(const SXmlHistoryGroup* pGroup, const char* displayName /*= nullptr*/, bool bRecordNullUndo /*= false*/, const TGroupIndexMap& groupIndex /*= TGroupIndexMap()*/)
 {
     UnloadInt();
 
@@ -511,7 +511,7 @@ void CXmlHistoryManager::SetActiveGroupInt(const SXmlHistoryGroup* pGroup, const
                     userIndexCount[ (*history)->GetTypeId() ] = 0;
                 }
                 uint32 userindex = userIndexCount[ (*history)->GetTypeId() ];
-                IXmlUndoEventHandler* pEventHandler = NULL;
+                IXmlUndoEventHandler* pEventHandler = nullptr;
                 TGroupIndexMap::const_iterator indexIter = groupIndex.find((*history)->GetTypeId());
                 if (indexIter == groupIndex.end() || indexIter->second == userindex)
                 {
@@ -581,12 +581,12 @@ const SXmlHistoryGroup* CXmlHistoryManager::GetActiveGroup(TGroupIndexMap& currU
             if (it != m_HistoryInfoMap.end() && pGroup)
             {
                 currUserIndex = it->second.CurrUserIndex;
-                return pGroup == m_pNullGroup ? NULL : pGroup;
+                return pGroup == m_pNullGroup ? nullptr : pGroup;
             }
         }
         currVersion--;
     } while (currVersion >= 0);
-    return NULL;
+    return nullptr;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -796,7 +796,7 @@ SXmlHistory* CXmlHistoryManager::GetLatestHistory(SUndoEventHandlerData& eventHa
         }
         currVersion--;
     } while (currVersion >= 0);
-    return NULL;
+    return nullptr;
 }
 
 

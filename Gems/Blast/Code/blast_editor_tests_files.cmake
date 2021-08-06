@@ -7,6 +7,6 @@
 #
 
 set(FILES
-    # Tests/Editor/EditorBlastSliceAssetHandlerTest.cpp
+    # Disabled until SPEC-7904 is fixed Tests/Editor/EditorBlastChunksAssetHandlerTest.cpp
     Tests/Editor/EditorTestMain.cpp
 )

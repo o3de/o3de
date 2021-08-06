@@ -288,7 +288,7 @@ void CAnimPostFXNode::SerializeAnims(XmlNodeRef& xmlNode, bool bLoading, bool bL
 //-----------------------------------------------------------------------------
 unsigned int CAnimPostFXNode::GetParamCount() const
 {
-    return m_pDescription->m_nodeParams.size();
+    return static_cast<unsigned int>(m_pDescription->m_nodeParams.size());
 }
 
 //-----------------------------------------------------------------------------

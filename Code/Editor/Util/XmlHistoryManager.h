@@ -23,9 +23,9 @@ public:
 
     void AddToHistory(const XmlNodeRef& newXmlVersion);
 
-    const XmlNodeRef& Undo(bool* bVersionExist = NULL);
+    const XmlNodeRef& Undo(bool* bVersionExist = nullptr);
     const XmlNodeRef& Redo();
-    const XmlNodeRef& GetCurrentVersion(bool* bVersionExist = NULL, int* iVersionNumber = NULL) const;
+    const XmlNodeRef& GetCurrentVersion(bool* bVersionExist = nullptr, int* iVersionNumber = nullptr) const;
     bool IsModified() const;
     uint32 GetTypeId() const {return m_typeId; }
     void FlagAsDeleted();
@@ -93,7 +93,7 @@ public:
     void RestoreUndoEventHandler(IXmlUndoEventHandler* pEventHandler, uint32 typeId);
 
     void PrepareForNextVersion();
-    void RecordNextVersion(SXmlHistory* pHistory, XmlNodeRef newData, const char* undoDesc = NULL);
+    void RecordNextVersion(SXmlHistory* pHistory, XmlNodeRef newData, const char* undoDesc = nullptr);
     bool IsPreparedForNextVersion() const {return m_RecordNextVersion; }
 
     void RegisterEventListener(IXmlHistoryEventListener* pEventListener);
@@ -112,11 +112,11 @@ public:
 
     // Xml History Groups
     SXmlHistoryGroup* CreateXmlGroup(uint32 typeId);
-    void SetActiveGroup(const SXmlHistoryGroup* pGroup, const char* displayName = NULL, const TGroupIndexMap& groupIndex = TGroupIndexMap(), bool setExternal = false);
+    void SetActiveGroup(const SXmlHistoryGroup* pGroup, const char* displayName = nullptr, const TGroupIndexMap& groupIndex = TGroupIndexMap(), bool setExternal = false);
     const SXmlHistoryGroup* GetActiveGroup() const;
     const SXmlHistoryGroup* GetActiveGroup(TGroupIndexMap& currUserIndex /*out*/) const;
-    void AddXmlGroup(const SXmlHistoryGroup* pGroup, const char* undoDesc = NULL);
-    void RemoveXmlGroup(const SXmlHistoryGroup* pGroup, const char* undoDesc = NULL);
+    void AddXmlGroup(const SXmlHistoryGroup* pGroup, const char* undoDesc = nullptr);
+    void RemoveXmlGroup(const SXmlHistoryGroup* pGroup, const char* undoDesc = nullptr);
 
     void DeleteAll();
 
@@ -156,7 +156,7 @@ private:
     {
         SHistoryInfo()
             : IsNullUndo(false)
-            , CurrGroup(NULL)
+            , CurrGroup(nullptr)
             , HistoryInvalidated(false) {}
 
         const SXmlHistoryGroup* CurrGroup;
@@ -174,7 +174,7 @@ private:
     struct SUndoEventHandlerData
     {
         SUndoEventHandlerData()
-            : CurrentData(NULL) {}
+            : CurrentData(nullptr) {}
 
         SXmlHistory* CurrentData;
         THistoryVersionMap HistoryData;
@@ -203,9 +203,9 @@ private:
     void RecordNullUndo(const TEventHandlerList& eventHandler, const char* desc, bool isNull = true);
     void ReloadCurrentVersion(const SXmlHistoryGroup* pPrevGroup, int prevVersion);
     SXmlHistory* GetLatestHistory(SUndoEventHandlerData& eventHandlerData);
-    void NotifyUndoEventListener(IXmlHistoryEventListener::EHistoryEventType event, void* pData = NULL);
+    void NotifyUndoEventListener(IXmlHistoryEventListener::EHistoryEventType event, void* pData = nullptr);
 
-    void SetActiveGroupInt(const SXmlHistoryGroup* pGroup, const char* displayName = NULL, bool bRecordNullUndo = false, const TGroupIndexMap& groupIndex = TGroupIndexMap());
+    void SetActiveGroupInt(const SXmlHistoryGroup* pGroup, const char* displayName = nullptr, bool bRecordNullUndo = false, const TGroupIndexMap& groupIndex = TGroupIndexMap());
     void UnloadInt();
     void ClearRedo();
 

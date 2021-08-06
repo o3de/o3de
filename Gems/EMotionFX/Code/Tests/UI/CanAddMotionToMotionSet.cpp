@@ -56,7 +56,7 @@ namespace EMotionFX
         motionSetPlugin->SetSelectedSet(motionSet);
 
         // It should be empty at the moment.
-        int numMotions = motionSet->GetNumMotionEntries();
+        int numMotions = static_cast<int>(motionSet->GetNumMotionEntries());
         EXPECT_EQ(numMotions, 0);
 
         // Find the action to add a motion to the set and press it.
@@ -65,7 +65,7 @@ namespace EMotionFX
         QTest::mouseClick(addMotionButton, Qt::LeftButton);
 
         // There should now be a motion.
-        int numMotionsAfterCreate = motionSet->GetNumMotionEntries();
+        int numMotionsAfterCreate = static_cast<int>(motionSet->GetNumMotionEntries());
         ASSERT_EQ(numMotionsAfterCreate, 1);
 
         AZStd::unordered_map<AZStd::string, MotionSet::MotionEntry*> motions = motionSet->GetMotionEntries();

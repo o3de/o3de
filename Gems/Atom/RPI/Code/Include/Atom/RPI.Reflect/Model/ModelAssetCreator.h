@@ -29,6 +29,10 @@ namespace AZ
 
             //! Assigns a name to the model
             void SetName(AZStd::string_view name);
+            
+            //! Adds a new material slot to the asset.
+            //! If a slot with the same stable ID already exists, it will be replaced.
+            void AddMaterialSlot(const ModelMaterialSlot& materialSlot);
 
             //! Adds a Lod to the model.
             void AddLodAsset(Data::Asset<ModelLodAsset>&& lodAsset);

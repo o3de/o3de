@@ -61,12 +61,12 @@ public:
     // Confetti: Get the size of m_undoObjects
     virtual int GetCount() const
     {
-        return m_undoObjects.size();
+        return static_cast<int>(m_undoObjects.size());
     }
     virtual bool IsEmpty() const { return m_undoObjects.empty(); };
     virtual void Undo(bool bUndo)
     {
-        for (int i = m_undoObjects.size() - 1; i >= 0; i--)
+        for (int i = static_cast<int>(m_undoObjects.size() - 1); i >= 0; i--)
         {
             m_undoObjects[i]->Undo(bUndo);
         }
@@ -116,7 +116,7 @@ public:
                 continue;
             }
 
-            if (m_undoObjects[i]->GetObjectName() == NULL)
+            if (m_undoObjects[i]->GetObjectName() == nullptr)
             {
                 continue;
             }
@@ -209,7 +209,7 @@ public:
 
     bool IsHaveUndo() const;
     bool IsHaveRedo() const;
-    
+
     void SetMaxUndoStep(int steps);
     int GetMaxUndoStep() const;
 
