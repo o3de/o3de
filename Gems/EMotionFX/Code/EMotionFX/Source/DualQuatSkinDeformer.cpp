@@ -327,7 +327,7 @@ namespace EMotionFX
                 AZ::Outcome<size_t> boneIndexOutcome = FindLocalBoneIndex(influence->GetNodeNr());
                 if (boneIndexOutcome.IsSuccess())
                 {
-                    influence->SetBoneNr(boneIndexOutcome.GetValue());
+                    influence->SetBoneNr(static_cast<uint16>(boneIndexOutcome.GetValue()));
                 }
                 else
                 {

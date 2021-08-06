@@ -258,19 +258,19 @@ public:
         m_relCameraRotX = 0;
         m_relCameraRotZ = 0;
 
-        uint32 numSample6 = m_arrAnimatedCharacterPath.size();
+        uint32 numSample6 = static_cast<uint32>(m_arrAnimatedCharacterPath.size());
         for (uint32 i = 0; i < numSample6; i++)
         {
             m_arrAnimatedCharacterPath[i] = Vec3(ZERO);
         }
 
-        numSample6 = m_arrSmoothEntityPath.size();
+        numSample6 = static_cast<uint32>(m_arrSmoothEntityPath.size());
         for (uint32 i = 0; i < numSample6; i++)
         {
             m_arrSmoothEntityPath[i] = Vec3(ZERO);
         }
 
-        uint32 numSample7 = m_arrRunStrafeSmoothing.size();
+        uint32 numSample7 = static_cast<uint32>(m_arrRunStrafeSmoothing.size());
         for (uint32 i = 0; i < numSample7; i++)
         {
             m_arrRunStrafeSmoothing[i] = 0;

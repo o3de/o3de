@@ -434,7 +434,7 @@ namespace UiLayoutHelpers
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void CalculateElementSizes(const LayoutCellSizes& layoutCells, float availableSize, float spacing, AZStd::vector<float>& sizesOut)
     {
-        int numElements = layoutCells.size();
+        int numElements = static_cast<int>(layoutCells.size());
 
         availableSize -= (numElements - 1) * spacing;
 

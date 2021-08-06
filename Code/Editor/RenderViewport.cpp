@@ -2342,7 +2342,7 @@ bool CRenderViewport::AddCameraMenuItems(QMenu* menu)
     AZ::EBusAggregateResults<AZ::EntityId> getCameraResults;
     Camera::CameraBus::BroadcastResult(getCameraResults, &Camera::CameraRequests::GetCameras);
 
-    const int numCameras = getCameraResults.values.size();
+    const int numCameras = static_cast<int>(getCameraResults.values.size());
 
     // only enable if we're editing a sequence in Track View and have cameras in the level
     bool enableSequenceCameraMenu = (GetIEditor()->GetAnimation()->GetSequence() && numCameras);
@@ -2354,7 +2354,7 @@ bool CRenderViewport::AddCameraMenuItems(QMenu* menu)
     connect(action, &QAction::triggered, this, &CRenderViewport::SetSequenceCamera);
 
     QVector<QAction*> additionalCameras;
-    additionalCameras.reserve(getCameraResults.values.size());
+    additionalCameras.reserve(static_cast<int>(getCameraResults.values.size()));
 
     for (const AZ::EntityId& entityId : getCameraResults.values)
     {
@@ -2930,7 +2930,7 @@ void CRenderViewport::RenderSelectedRegion()
         // Draw volume
         dc.DepthWriteOff();
         dc.CullOff();
-        dc.pRenderAuxGeom->DrawTriangles(&verts[0], verts.size(), &inds[0], numInds, &colors[0]);
+        dc.pRenderAuxGeom->DrawTriangles(&verts[0], static_cast<uint32>(verts.size()), &inds[0], numInds, &colors[0]);
         dc.CullOn();
         dc.DepthWriteOn();
     }

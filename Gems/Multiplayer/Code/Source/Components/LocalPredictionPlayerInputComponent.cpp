@@ -201,7 +201,7 @@ namespace Multiplayer
                 // Produce correction for client
                 AzNetworking::PacketEncodingBuffer correction;
                 correction.Resize(correction.GetCapacity());
-                AzNetworking::NetworkInputSerializer serializer(correction.GetBuffer(), correction.GetCapacity());
+                AzNetworking::NetworkInputSerializer serializer(correction.GetBuffer(), static_cast<uint32_t>(correction.GetCapacity()));
 
                 // only deserialize if we have data (for client/server profile/debug mismatches)
                 if (correction.GetSize() > 0)
@@ -221,7 +221,7 @@ namespace Multiplayer
                 {
                     // In debug, show which states caused the correction
                     // Write in client state
-                    AzNetworking::NetworkOutputSerializer clientStateSerializer(clientState.GetBuffer(), clientState.GetSize());
+                    AzNetworking::NetworkOutputSerializer clientStateSerializer(clientState.GetBuffer(), static_cast<uint32_t>(clientState.GetSize()));
                     GetNetBindComponent()->SerializeEntityCorrection(clientStateSerializer);
 
                     // Read out state values
@@ -229,7 +229,7 @@ namespace Multiplayer
                     GetNetBindComponent()->SerializeEntityCorrection(clientValues);
 
                     // Restore server state
-                    AzNetworking::NetworkOutputSerializer serverStateSerializer(correction.GetBuffer(), correction.GetSize());
+                    AzNetworking::NetworkOutputSerializer serverStateSerializer(correction.GetBuffer(), static_cast<uint32_t>(correction.GetSize()));
                     GetNetBindComponent()->SerializeEntityCorrection(serverStateSerializer);
 
                     // Read out state values
@@ -355,7 +355,7 @@ namespace Multiplayer
         m_lastCorrectionInputId = inputId;
 
         // Apply the correction
-        AzNetworking::TrackChangedSerializer<AzNetworking::NetworkOutputSerializer> serializer(correction.GetBuffer(), correction.GetSize());
+        AzNetworking::TrackChangedSerializer<AzNetworking::NetworkOutputSerializer> serializer(correction.GetBuffer(), static_cast<uint32_t>(correction.GetSize()));
         GetNetBindComponent()->SerializeEntityCorrection(serializer);
         m_correctionEvent.Signal();
 
@@ -367,7 +367,7 @@ namespace Multiplayer
             GetCorrectionDataString(GetNetBindComponent()).c_str()
         );
 
-        const uint32_t inputHistorySize = m_inputHistory.Size();
+        const uint32_t inputHistorySize = static_cast<uint32_t>(m_inputHistory.Size());
         const uint32_t historicalDelta = aznumeric_cast<uint32_t>(m_clientInputId - inputId); // Do not replay the move we just corrected, that was already processed by the server
 
         // If this correction is for a move outside our input history window, just start replaying from the oldest move we have available
@@ -528,7 +528,7 @@ namespace Multiplayer
 #ifndef AZ_RELEASE_BUILD
             if (cl_EnableDesyncDebugging)
             {
-                AzNetworking::NetworkInputSerializer processInputResultSerializer(processInputResult.GetBuffer(), processInputResult.GetCapacity());
+                AzNetworking::NetworkInputSerializer processInputResultSerializer(processInputResult.GetBuffer(), static_cast<uint32_t>(processInputResult.GetCapacity()));
                 GetNetBindComponent()->SerializeEntityCorrection(processInputResultSerializer);
                 processInputResult.Resize(processInputResultSerializer.GetSize());
             }
