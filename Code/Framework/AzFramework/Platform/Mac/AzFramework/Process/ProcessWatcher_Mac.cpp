@@ -278,25 +278,29 @@ namespace AzFramework
         commandAndArgs[commandTokens.size()] = nullptr;
 
         char** environmentVariables = nullptr;
-        int numEnvironmentVars = 0;
+        
+        AZStd::vector<AZStd::string> allEnvs;
+        for (char **env = ::environ; *env; env++)
+        {
+            allEnvs.push_back(*env);
+        }
+
         if (processLaunchInfo.m_environmentVariables)
         {
-            const int numEnvironmentVars = processLaunchInfo.m_environmentVariables->size();
-            // Adding one more as exec expects the array to have a nullptr as the last element
-            environmentVariables = new char*[numEnvironmentVars + 1];
-            for (int i = 0; i < numEnvironmentVars; i++)
-            {
-                const AZStd::string& envVarString = processLaunchInfo.m_environmentVariables->at(i);
-                environmentVariables[i] = new char[envVarString.size() + 1];
-                environmentVariables[i][0] = '\0';
-                azstrcat(environmentVariables[i], envVarString.size(), envVarString.c_str());
-            }
-            environmentVariables[numEnvironmentVars] = NULL;
+            allEnvs.insert(allEnvs.end(), processLaunchInfo.m_environmentVariables->begin(), processLaunchInfo.m_environmentVariables->end());
         }
-        else
+
+        const int numEnvironmentVars = allEnvs.size();
+        // Adding one more as exec expects the array to have a nullptr as the last element
+        environmentVariables = new char*[numEnvironmentVars + 1];
+        for (int i = 0; i < numEnvironmentVars; i++)
         {
-            environmentVariables = ::environ;
+            const AZStd::string& envVarString = allEnvs.at(i);
+            environmentVariables[i] = new char[envVarString.size() + 1];
+            environmentVariables[i][0] = '\0';
+            azstrcat(environmentVariables[i], envVarString.size(), envVarString.c_str());
         }
+        environmentVariables[numEnvironmentVars] = NULL;
 
         pid_t child_pid = fork();
         if (IsIdChildProcess(child_pid))
@@ -311,7 +315,7 @@ namespace AzFramework
 
         if (processLaunchInfo.m_environmentVariables)
         {
-            for (int i = 0; i < numEnvironmentVars; i++)
+            for (int i = 0; i < processLaunchInfo.m_environmentVariables->size(); i++)
             {
                 delete [] environmentVariables[i];
             }
