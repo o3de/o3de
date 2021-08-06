@@ -65,6 +65,35 @@ namespace UnitTest
         }
     }
 
+    bool FocusInteractionWidget::event(QEvent* event)
+    {
+        using AzToolsFramework::EditorInteractionSystemViewportSelectionRequestBus;
+
+        auto eventType = event->type();
+
+        switch (eventType)
+        {
+        case QEvent::MouseButtonPress:
+            EditorInteractionSystemViewportSelectionRequestBus::Event(
+                AzToolsFramework::GetEntityContextId(), &EditorInteractionSystemViewportSelectionRequestBus::Events::SetDefaultHandler);
+            return true;
+        case QEvent::FocusIn:
+        case QEvent::FocusOut:
+            {
+                bool handled = false;
+                AzToolsFramework::ViewportInteraction::MouseInteraction mouseInteraction;
+                EditorInteractionSystemViewportSelectionRequestBus::EventResult(
+                    handled, AzToolsFramework::GetEntityContextId(),
+                    &EditorInteractionSystemViewportSelectionRequestBus::Events::InternalHandleMouseViewportInteraction,
+                    AzToolsFramework::ViewportInteraction::MouseInteractionEvent(
+                        mouseInteraction, AzToolsFramework::ViewportInteraction::MouseEvent::Down));
+                return handled;
+            }
+        }
+
+        return QWidget::event(event);
+    }
+
     void TestEditorActions::Connect()
     {
         using AzToolsFramework::GetEntityContextId;
