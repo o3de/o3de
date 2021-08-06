@@ -90,7 +90,7 @@ namespace AZ {
             {
             case CBA_EVENT:
                 evt = (PIMAGEHLP_CBA_EVENT)CallbackData;
-                _tprintf(_T("%s"), evt->desc);
+                printf("%s", evt->desc);
                 break;
 
             default:

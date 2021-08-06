@@ -251,6 +251,54 @@ namespace Utf8::Unchecked
 
         return result;
     }
+
+    static constexpr size_t utf8_codepoint_length(AZ::u32 cp)
+    {
+        if (cp < 0x80)
+        {
+            return 1;
+        }
+        else if (cp < 0x800)
+        {
+            return 2;
+        }
+        else if (cp < 0x10000)
+        {
+            return 3;
+        }
+        return 4;
+    }
+
+    template <typename u16bit_iterator>
+    size_t utf16ToUtf8BytesRequired(u16bit_iterator start, u16bit_iterator end)
+    {
+        size_t bytesRequired = 0;
+        while (start != end)
+        {
+            AZ::u32 cp = Utf8::Internal::mask16(*start++);
+            // Take care of surrogate pairs first
+            if (Utf8::Internal::is_lead_surrogate(cp))
+            {
+                AZ::u32 trail_surrogate = Utf8::Internal::mask16(*start++);
+                cp = (cp << 10) + trail_surrogate + Internal::SURROGATE_OFFSET;
+            }
+            bytesRequired += utf8_codepoint_length(cp);
+        }
+        return bytesRequired;
+    }
+
+    template <typename u32bit_iterator>
+    size_t utf32ToUtf8BytesRequired(u32bit_iterator start, u32bit_iterator end)
+    {
+        size_t bytesRequired = 0;
+        while (start != end)
+        {
+            bytesRequired += utf8_codepoint_length(*start++);
+        }
+        return bytesRequired;
+    }
+
+
 } // namespace Utf8::Unchecked
 
 

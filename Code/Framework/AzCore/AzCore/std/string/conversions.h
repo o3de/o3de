@@ -338,7 +338,7 @@ namespace AZStd
         if (srcLen > 0)
         {
             char* endStr = Internal::WCharTPlatformConverter<>::to_string(dest, destSize, str, str + srcLen);
-            if (*(endStr - 1) != '\0')
+            if (endStr < (dest + destSize) && *(endStr - 1) != '\0')
             {
                 *endStr = '\0'; // copy null terminator
             }
@@ -495,7 +495,7 @@ namespace AZStd
         if (srcLen > 0)
         {
             wchar_t* endWStr = Internal::WCharTPlatformConverter<>::to_wstring(dest, destSize, str, str + srcLen);
-            if (*(endWStr - 1) != '\0')
+            if (endWStr < (dest + destSize) && *(endWStr - 1) != '\0')
             {
                 *endWStr = '\0'; // copy null terminator
             }
