@@ -1900,12 +1900,12 @@ IFileUtil::ECopyTreeResult   CFileUtil::MoveTree(const QString& strSourceDirecto
     return eCopyResult;
 }
 
-void CFileUtil::PopulateQMenu(QWidget* caller, QMenu* menu, const AZStd::string& fullGamePath)
+void CFileUtil::PopulateQMenu(QWidget* caller, QMenu* menu, AZStd::string_view fullGamePath)
 {
     PopulateQMenu(caller, menu, fullGamePath, nullptr);
 }
 
-void CFileUtil::PopulateQMenu(QWidget* caller, QMenu* menu, const AZStd::string& fullGamePath, bool* isSelected)
+void CFileUtil::PopulateQMenu(QWidget* caller, QMenu* menu, AZStd::string_view fullGamePath, bool* isSelected)
 {
     // Normalize the full path so we get consistent separators
     AZStd::string fullFilePath(fullGamePath);

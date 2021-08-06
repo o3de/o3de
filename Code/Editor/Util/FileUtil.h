@@ -134,7 +134,7 @@ public:
     // THIS FUNCTION IS NOT DESIGNED FOR MULTI-THREADED USAGE
     static IFileUtil::ECopyTreeResult   MoveTree(const QString& strSourceDirectory, const QString& strTargetDirectory, bool boRecurse = true, bool boConfirmOverwrite = false);
 
-    static void PopulateQMenu(QWidget* caller, QMenu* menu, const AZStd::string& fullGamePath);
+    static void PopulateQMenu(QWidget* caller, QMenu* menu, AZStd::string_view fullGamePath);
 
     static void GatherAssetFilenamesFromLevel(std::set<QString>& rOutFilenames, bool bMakeLowerCase = false, bool bMakeUnixPath = false);
 
@@ -161,7 +161,7 @@ private:
     static bool s_multiFileDlgPref[IFileUtil::EFILE_TYPE_LAST];
 
     // Keep this variant of this method private! pIsSelected is captured in a lambda, and so requires menu use exec() and never use show()
-    static void PopulateQMenu(QWidget* caller, QMenu* menu, const AZStd::string& fullGamePath, bool* pIsSelected);
+    static void PopulateQMenu(QWidget* caller, QMenu* menu, AZStd::string_view fullGamePath, bool* pIsSelected);
 
     static bool ExtractDccFilenameFromAssetDatabase(const QString& assetFilename, QString& dccFilename);
     static bool ExtractDccFilenameUsingNamingConventions(const QString& assetFilename, QString& dccFilename);
