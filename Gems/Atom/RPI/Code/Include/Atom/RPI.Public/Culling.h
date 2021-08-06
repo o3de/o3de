@@ -70,8 +70,18 @@ namespace AZ
             };
             CullData m_cullData;
 
+            using LodType = uint8_t;
             using LodOverride = uint8_t;
             static constexpr uint8_t NoLodOverride = AZStd::numeric_limits<LodOverride>::max();
+            static constexpr uint8_t DefaultLodType = AZStd::numeric_limits<LodType>::max();
+
+            struct LodConfiguration
+            {
+                LodType m_lodType;
+                LodOverride m_lodOverride;
+                float m_minimumScreenCoverage;
+                float m_qualityDecayRate;
+            };
 
             struct LodData
             {
@@ -89,11 +99,11 @@ namespace AZ
                 float m_lodSelectionRadius = 1.0f;
 
                 // the minimum possibe area a sphere enclosing a mesh projected onto the screen should have before it is culled.
-                float m_minimumScreenCoverage = 1.0f / 1080.0f;  //For default, mesh should cover at least a screen pixel at 1080p to be drawn
+                static constexpr float DefaultMinimumScreenCoverage = 1.0f / 1080.0f;  //For default, mesh should cover at least a screen pixel at 1080p to be drawn
                 // The screen area decay between 0 and 1, i.e. closer to 1 -> lose quality immediately, closer to 0 -> never lose quality 
-                float m_qualityDecayRate = 0.5f;
+                static constexpr float DefaultQualityDecayRate = 0.5f;
 
-                LodOverride m_lodOverride = NoLodOverride;
+                LodConfiguration m_lodConfiguration = { DefaultLodType, NoLodOverride, DefaultMinimumScreenCoverage, DefaultQualityDecayRate };
             };
             LodData m_lodData;
 

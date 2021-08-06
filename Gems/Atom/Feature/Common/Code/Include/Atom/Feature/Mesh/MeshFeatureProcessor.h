@@ -63,12 +63,8 @@ namespace AZ
             void SetRayTracingData();
             void SetSortKey(RHI::DrawItemSortKey sortKey);
             RHI::DrawItemSortKey GetSortKey() const;
-            void SetLodOverride(RPI::Cullable::LodOverride lodOverride);
-            RPI::Cullable::LodOverride GetLodOverride() const;
-            void SetMinimumScreenCoverage(float minimumScreenCoverage);
-            float GetMinimumScreenCoverage() const;
-            void SetQualityDecayRate(float qualityDecayRate);
-            float GetQualityDecayRate() const;
+            void SetMeshLodConfiguration(RPI::Cullable::LodConfiguration meshLodConfig);
+            RPI::Cullable::LodConfiguration GetMeshLodConfiguration() const;
             void UpdateDrawPackets(bool forceUpdate = false);
             void BuildCullable();
             void UpdateCullBounds(const TransformServiceFeatureProcessor* transformService);
@@ -159,14 +155,8 @@ namespace AZ
             void SetSortKey(const MeshHandle& meshHandle, RHI::DrawItemSortKey sortKey) override;
             RHI::DrawItemSortKey GetSortKey(const MeshHandle& meshHandle) override;
 
-            void SetLodOverride(const MeshHandle& meshHandle, RPI::Cullable::LodOverride lodOverride) override;
-            RPI::Cullable::LodOverride GetLodOverride(const MeshHandle& meshHandle) override;
-
-            void SetMinimumScreenCoverage(const MeshHandle& meshHandle, float minimumScreenCoverage) override;
-            float GetMinimumScreenCoverage(const MeshHandle& meshHandle) override;
-
-            void SetQualityDecayRate(const MeshHandle& meshHandle, float qualityDecayRate) override;
-            float GetQualityDecayRate(const MeshHandle& meshHandle) override;
+            void SetMeshLodConfiguration(const MeshHandle& meshHandle, RPI::Cullable::LodConfiguration meshLodConfig);
+            RPI::Cullable::LodConfiguration GetMeshLodConfiguration(const MeshHandle& meshHandle) const;
 
             void SetExcludeFromReflectionCubeMaps(const MeshHandle& meshHandle, bool excludeFromReflectionCubeMaps) override;
             void SetRayTracingEnabled(const MeshHandle& meshHandle, bool rayTracingEnabled) override;

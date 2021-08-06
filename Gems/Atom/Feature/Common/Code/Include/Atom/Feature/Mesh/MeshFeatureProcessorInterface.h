@@ -94,18 +94,10 @@ namespace AZ
             virtual void SetSortKey(const MeshHandle& meshHandle, RHI::DrawItemSortKey sortKey) = 0;
             //! Gets the sort key for a given mesh handle.
             virtual RHI::DrawItemSortKey GetSortKey(const MeshHandle& meshHandle) = 0;
-            //! Sets an LOD override for a given mesh handle. This LOD will always be rendered instead being automatically determined.
-            virtual void SetLodOverride(const MeshHandle& meshHandle, RPI::Cullable::LodOverride lodOverride) = 0;
-            //! Gets the LOD override for a given mesh handle.
-            virtual RPI::Cullable::LodOverride GetLodOverride(const MeshHandle& meshHandle) = 0;
-            //! Sets the minimum screen percentage for a given mesh handle. This property is the minimum screen percentage the object can take up before culled.
-            virtual void SetMinimumScreenCoverage(const MeshHandle& meshHandle, float minimumScreenCoverage) = 0;
-            //! Gets the minimum screen percentage for a given mesh handle.
-            virtual float GetMinimumScreenCoverage(const MeshHandle& meshHandle) = 0;
-            //! Sets the quality decay rate. This property is the speed at which the quality of the mesh with degrade if you are linearly moving away.
-            virtual void SetQualityDecayRate(const MeshHandle& meshHandle, float qualityDecayRate) = 0;
-            //! Gets the quality decay rate.
-            virtual float GetQualityDecayRate(const MeshHandle& meshHandle) = 0;
+            //! Sets LOD mesh configurations to be used in the Mesh Feature Processor
+            virtual void SetMeshLodConfiguration(const MeshHandle& meshHandle, RPI::Cullable::LodConfiguration meshLodConfig) = 0;
+            //! Gets the LOD mesh configurations being used in the Mesh Feature Processor
+            virtual RPI::Cullable::LodConfiguration GetMeshLodConfiguration(const MeshHandle& meshHandle) const = 0;
             //! Sets the option to exclude this mesh from baked reflection probe cubemaps
             virtual void SetExcludeFromReflectionCubeMaps(const MeshHandle& meshHandle, bool excludeFromReflectionCubeMaps) = 0;
             //! Sets the option to exclude this mesh from raytracing

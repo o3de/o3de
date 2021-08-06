@@ -404,35 +404,53 @@ namespace AZ
         {
             return m_meshFeatureProcessor->GetSortKey(*m_meshHandle);
         }
+
+        void AtomActorInstance::SetLodType(RPI::Cullable::LodType lodType)
+        {
+            RPI::Cullable::LodConfiguration config = m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle);
+            config.m_lodType = lodType;
+            m_meshFeatureProcessor->SetMeshLodConfiguration(*m_meshHandle, config);
+        }
+
+        RPI::Cullable::LodType AtomActorInstance::GetLodType() const
+        {
+            return m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle).m_lodType;
+        }
         
         void AtomActorInstance::SetLodOverride(RPI::Cullable::LodOverride lodOverride)
         {
-            m_meshFeatureProcessor->SetLodOverride(*m_meshHandle, lodOverride);
+            RPI::Cullable::LodConfiguration config = m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle);
+            config.m_lodOverride = lodOverride;
+            m_meshFeatureProcessor->SetMeshLodConfiguration(*m_meshHandle, config);
         }
 
         RPI::Cullable::LodOverride AtomActorInstance::GetLodOverride() const
         {
-            return m_meshFeatureProcessor->GetLodOverride(*m_meshHandle);
+            return m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle).m_lodOverride;
         }
 
         void AtomActorInstance::SetMinimumScreenCoverage(float minimumScreenCoverage)
         {
-            m_meshFeatureProcessor->SetMinimumScreenCoverage(*m_meshHandle, minimumScreenCoverage);
+            RPI::Cullable::LodConfiguration config = m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle);
+            config.m_minimumScreenCoverage = minimumScreenCoverage;
+            m_meshFeatureProcessor->SetMeshLodConfiguration(*m_meshHandle, config);
         }
 
         float AtomActorInstance::GetMinimumScreenCoverage() const
         {
-            return m_meshFeatureProcessor->GetMinimumScreenCoverage(*m_meshHandle);
+            return m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle).m_minimumScreenCoverage;
         }
 
         void AtomActorInstance::SetQualityDecayRate(float qualityDecayRate)
         {
-            m_meshFeatureProcessor->SetQualityDecayRate(*m_meshHandle, qualityDecayRate);
+            RPI::Cullable::LodConfiguration config = m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle);
+            config.m_qualityDecayRate = qualityDecayRate;
+            m_meshFeatureProcessor->SetMeshLodConfiguration(*m_meshHandle, config);
         }
 
         float AtomActorInstance::GetQualityDecayRate() const
         {
-            return m_meshFeatureProcessor->GetQualityDecayRate(*m_meshHandle);
+            return m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle).m_qualityDecayRate;
         }
 
         void AtomActorInstance::SetVisibility(bool visible)

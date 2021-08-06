@@ -39,11 +39,12 @@ namespace AZ
                     ->Version(1)
                     ->Field("ModelAsset", &MeshComponentConfig::m_modelAsset)
                     ->Field("SortKey", &MeshComponentConfig::m_sortKey)
+                    ->Field("ExcludeFromReflectionCubeMaps", &MeshComponentConfig::m_excludeFromReflectionCubeMaps)
+                    ->Field("UseForwardPassIBLSpecular", &MeshComponentConfig::m_useForwardPassIblSpecular)
+                    ->Field("LodType", &MeshComponentConfig::m_lodType)
                     ->Field("LodOverride", &MeshComponentConfig::m_lodOverride)
                     ->Field("MinimumScreenCoverage", &MeshComponentConfig::m_minimumScreenCoverage)
-                    ->Field("QualityDecayRate", &MeshComponentConfig::m_qualityDecayRate)
-                    ->Field("ExcludeFromReflectionCubeMaps", &MeshComponentConfig::m_excludeFromReflectionCubeMaps)
-                    ->Field("UseForwardPassIBLSpecular", &MeshComponentConfig::m_useForwardPassIblSpecular);
+                    ->Field("QualityDecayRate", &MeshComponentConfig::m_qualityDecayRate);
             }
         }
 
@@ -85,6 +86,13 @@ namespace AZ
             return values;
         }
 
+        AZStd::vector<AZStd::pair<RPI::Cullable::LodType, AZStd::string>> MeshComponentConfig::GetLodTypeValues()
+        {
+            return {
+                {RPI::Cullable::DefaultLodType, "Default"}
+            };
+        }
+
         MeshComponentController::~MeshComponentController()
         {
             // Release memory, disconnect from buses in the right order and broadcast events so that other components are aware.
@@ -109,6 +117,11 @@ namespace AZ
                     ->Attribute(AZ::Script::Attributes::Category, "render")
                     ->Attribute(AZ::Script::Attributes::Module, "render");
 
+                behaviorContext->ConstantProperty("DefaultLodType", BehaviorConstant(RPI::Cullable::DefaultLodType))
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                    ->Attribute(AZ::Script::Attributes::Category, "render")
+                    ->Attribute(AZ::Script::Attributes::Module, "render");
+
                 behaviorContext->EBus<MeshComponentRequestBus>("RenderMeshComponentRequestBus")
                     ->Event("GetModelAssetId", &MeshComponentRequestBus::Events::GetModelAssetId)
                     ->Event("SetModelAssetId", &MeshComponentRequestBus::Events::SetModelAssetId)
@@ -116,6 +129,8 @@ namespace AZ
                     ->Event("SetModelAssetPath", &MeshComponentRequestBus::Events::SetModelAssetPath)
                     ->Event("SetSortKey", &MeshComponentRequestBus::Events::SetSortKey)
                     ->Event("GetSortKey", &MeshComponentRequestBus::Events::GetSortKey)
+                    ->Event("SetLodType", &MeshComponentRequestBus::Events::SetLodType)
+                    ->Event("GetLodType", &MeshComponentRequestBus::Events::GetLodType)
                     ->Event("SetLodOverride", &MeshComponentRequestBus::Events::SetLodOverride)
                     ->Event("GetLodOverride", &MeshComponentRequestBus::Events::GetLodOverride)
                     ->Event("SetMinimumScreenCoverage", &MeshComponentRequestBus::Events::SetMinimumScreenCoverage)
@@ -125,6 +140,7 @@ namespace AZ
                     ->VirtualProperty("ModelAssetId", "GetModelAssetId", "SetModelAssetId")
                     ->VirtualProperty("ModelAssetPath", "GetModelAssetPath", "SetModelAssetPath")
                     ->VirtualProperty("SortKey", "GetSortKey", "SetSortKey")
+                    ->VirtualProperty("LodType", "GetLodType", "SetLodType")
                     ->VirtualProperty("LodOverride", "GetLodOverride", "SetLodOverride")
                     ->VirtualProperty("MinimumScreenCoverage", "GetMinimumScreenCoverage", "SetMinimumScreenCoverage")
                     ->VirtualProperty("QualityDecayRate", "GetQualityDecayRate", "SetQualityDecayRate")
@@ -332,9 +348,7 @@ namespace AZ
 
                 m_meshFeatureProcessor->SetTransform(m_meshHandle, transform, m_cachedNonUniformScale);
                 m_meshFeatureProcessor->SetSortKey(m_meshHandle, m_configuration.m_sortKey);
-                m_meshFeatureProcessor->SetLodOverride(m_meshHandle, m_configuration.m_lodOverride);
-                m_meshFeatureProcessor->SetMinimumScreenCoverage(m_meshHandle, m_configuration.m_minimumScreenCoverage);
-                m_meshFeatureProcessor->SetQualityDecayRate(m_meshHandle, m_configuration.m_qualityDecayRate);
+                m_meshFeatureProcessor->SetMeshLodConfiguration(m_meshHandle, GetMeshLodConfiguration());
                 m_meshFeatureProcessor->SetExcludeFromReflectionCubeMaps(m_meshHandle, m_configuration.m_excludeFromReflectionCubeMaps);
                 m_meshFeatureProcessor->SetVisible(m_meshHandle, m_isVisible);
 
@@ -425,37 +439,66 @@ namespace AZ
             return m_meshFeatureProcessor->GetSortKey(m_meshHandle);
         }
 
+        RPI::Cullable::LodConfiguration MeshComponentController::GetMeshLodConfiguration() const
+        {
+            return {
+                m_configuration.m_lodType,
+                m_configuration.m_lodOverride,
+                m_configuration.m_minimumScreenCoverage,
+                m_configuration.m_qualityDecayRate
+            };
+        }
+        // -----------------------
+        void MeshComponentController::SetLodType(RPI::Cullable::LodType lodType)
+        {
+            RPI::Cullable::LodConfiguration lodConfig = GetMeshLodConfiguration();
+            lodConfig.m_lodType = lodType;
+            m_meshFeatureProcessor->SetMeshLodConfiguration(m_meshHandle, lodConfig);
+        }
+
+        RPI::Cullable::LodType MeshComponentController::GetLodType() const
+        {
+            RPI::Cullable::LodConfiguration lodConfig = m_meshFeatureProcessor->GetMeshLodConfiguration(m_meshHandle);
+            return lodConfig.m_lodType;
+        }
+
         void MeshComponentController::SetLodOverride(RPI::Cullable::LodOverride lodOverride)
         {
-            m_configuration.m_lodOverride = lodOverride; // Save for serialization
-            m_meshFeatureProcessor->SetLodOverride(m_meshHandle, lodOverride);
+            RPI::Cullable::LodConfiguration lodConfig = GetMeshLodConfiguration();
+            lodConfig.m_lodOverride = lodOverride;
+            m_meshFeatureProcessor->SetMeshLodConfiguration(m_meshHandle, lodConfig);
         }
 
         RPI::Cullable::LodOverride MeshComponentController::GetLodOverride() const
         {
-            return m_meshFeatureProcessor->GetSortKey(m_meshHandle);
+            RPI::Cullable::LodConfiguration lodConfig = m_meshFeatureProcessor->GetMeshLodConfiguration(m_meshHandle);
+            return lodConfig.m_lodOverride;
         }
 
         void MeshComponentController::SetMinimumScreenCoverage(float minimumScreenCoverage)
         {
-            m_configuration.m_minimumScreenCoverage = minimumScreenCoverage;
-            m_meshFeatureProcessor->SetMinimumScreenCoverage(m_meshHandle, minimumScreenCoverage);
+            RPI::Cullable::LodConfiguration lodConfig = GetMeshLodConfiguration();
+            lodConfig.m_minimumScreenCoverage = minimumScreenCoverage;
+            m_meshFeatureProcessor->SetMeshLodConfiguration(m_meshHandle, lodConfig);
         }
 
         float MeshComponentController::GetMinimumScreenCoverage() const
         {
-            return m_meshFeatureProcessor->GetMinimumScreenCoverage(m_meshHandle);
+            RPI::Cullable::LodConfiguration lodConfig = m_meshFeatureProcessor->GetMeshLodConfiguration(m_meshHandle);
+            return lodConfig.m_minimumScreenCoverage;
         }
 
         void MeshComponentController::SetQualityDecayRate(float qualityDecayRate)
         {
-            m_configuration.m_qualityDecayRate = qualityDecayRate;
-            m_meshFeatureProcessor->SetQualityDecayRate(m_meshHandle, qualityDecayRate);
+            RPI::Cullable::LodConfiguration lodConfig = GetMeshLodConfiguration();
+            lodConfig.m_qualityDecayRate = qualityDecayRate;
+            m_meshFeatureProcessor->SetMeshLodConfiguration(m_meshHandle, lodConfig);
         }
 
         float MeshComponentController::GetQualityDecayRate() const
         {
-            return m_meshFeatureProcessor->GetQualityDecayRate(m_meshHandle);
+            RPI::Cullable::LodConfiguration lodConfig = m_meshFeatureProcessor->GetMeshLodConfiguration(m_meshHandle);
+            return lodConfig.m_qualityDecayRate;
         }
 
         void MeshComponentController::SetVisibility(bool visible)

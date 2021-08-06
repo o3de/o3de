@@ -30,6 +30,9 @@ namespace AZ
 {
     namespace Render
     {
+
+
+
         //! A configuration structure for the MeshComponentController
         class MeshComponentConfig final
             : public AZ::ComponentConfig
@@ -42,14 +45,17 @@ namespace AZ
             // Editor helper functions
             bool IsAssetSet();
             AZStd::vector<AZStd::pair<RPI::Cullable::LodOverride, AZStd::string>> GetLodOverrideValues();
+            AZStd::vector<AZStd::pair<RPI::Cullable::LodType, AZStd::string>> GetLodTypeValues();
 
             Data::Asset<RPI::ModelAsset> m_modelAsset = { AZ::Data::AssetLoadBehavior::QueueLoad };
             RHI::DrawItemSortKey m_sortKey = 0;
-            RPI::Cullable::LodOverride m_lodOverride = RPI::Cullable::NoLodOverride;
-            float m_minimumScreenCoverage = 1.0f / 1080.0f;
-            float m_qualityDecayRate = 0.5f;
             bool m_excludeFromReflectionCubeMaps = false;
             bool m_useForwardPassIblSpecular = false;
+
+            RPI::Cullable::LodType m_lodType = RPI::Cullable::DefaultLodType;
+            RPI::Cullable::LodOverride m_lodOverride = RPI::Cullable::NoLodOverride;
+            float m_minimumScreenCoverage = RPI::Cullable::LodData::DefaultMinimumScreenCoverage;
+            float m_qualityDecayRate = RPI::Cullable::LodData::DefaultQualityDecayRate;
         };
 
         class MeshComponentController final
@@ -96,14 +102,17 @@ namespace AZ
             void SetSortKey(RHI::DrawItemSortKey sortKey) override;
             RHI::DrawItemSortKey GetSortKey() const override;
 
-            void SetLodOverride(RPI::Cullable::LodOverride lodOverride) override;
-            RPI::Cullable::LodOverride GetLodOverride() const override;
+            void SetLodType(RPI::Cullable::LodType lodType) override;
+            RPI::Cullable::LodType GetLodType() const override;
 
-            void SetMinimumScreenCoverage(float minimumScreenCoverage) override;
-            float GetMinimumScreenCoverage() const override;
+            virtual void SetLodOverride(RPI::Cullable::LodOverride lodOverride);
+            virtual RPI::Cullable::LodOverride GetLodOverride() const;
 
-            void SetQualityDecayRate(float qualityDecayRate) override;
-            float GetQualityDecayRate() const override;
+            virtual void SetMinimumScreenCoverage(float minimumScreenCoverage);
+            virtual float GetMinimumScreenCoverage() const;
+
+            virtual void SetQualityDecayRate(float qualityDecayRate);
+            virtual float GetQualityDecayRate() const;
 
             void SetVisibility(bool visible) override;
             bool GetVisibility() const override;
@@ -136,6 +145,8 @@ namespace AZ
             void RegisterModel();
             void UnregisterModel();
             void RefreshModelRegistration();
+
+            RPI::Cullable::LodConfiguration MeshComponentController::GetMeshLodConfiguration() const;
 
             void HandleNonUniformScaleChange(const AZ::Vector3& nonUniformScale);
 

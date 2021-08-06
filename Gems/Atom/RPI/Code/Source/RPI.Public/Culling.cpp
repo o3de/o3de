@@ -672,7 +672,7 @@ namespace AZ
                 }
             };
 
-            if (lodData.m_lodOverride == Cullable::NoLodOverride)
+            if (lodData.m_lodConfiguration.m_lodOverride == Cullable::NoLodOverride)
             {
                 for (const Cullable::LodData::Lod& lod : lodData.m_lods)
                 {
@@ -683,9 +683,9 @@ namespace AZ
                     }
                 }
             }
-            else if(lodData.m_lodOverride < lodData.m_lods.size())
+            else if(lodData.m_lodConfiguration.m_lodOverride < lodData.m_lods.size())
             {
-                addLodToDrawPacket(lodData.m_lods.at(lodData.m_lodOverride));
+                addLodToDrawPacket(lodData.m_lods.at(lodData.m_lodConfiguration.m_lodOverride));
             }
 
             return numVisibleDrawPackets;
