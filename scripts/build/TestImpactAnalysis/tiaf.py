@@ -11,8 +11,7 @@ import subprocess
 import re
 import uuid
 import logging
-from pathlib import Path
-from pathlib import PurePath
+import pathlib
 from git_utils import Repo
 from tiaf_persistent_storage_local import PersistentStorageLocal
 from tiaf_persistent_storage_s3 import PersistentStorageS3
@@ -48,7 +47,7 @@ class TestImpact:
                 # TIAF
                 self._use_test_impact_analysis = self._config["jenkins"]["use_test_impact_analysis"]
                 self._tiaf_bin = self._config["repo"]["tiaf_bin"]
-                if self._use_test_impact_analysis and not Path.is_file(self._tiaf_bin):
+                if self._use_test_impact_analysis and not pathlib.Path.is_file(self._tiaf_bin):
                     logger.warning(f"Could not find TIAF binary at location {self._tiaf_bin}, TIAF will be turned off.")
                     self._use_test_impact_analysis = False
 
@@ -79,7 +78,7 @@ class TestImpact:
                 logger.info(f"Source commit '{self._src_commit}' and destination commit '{self._dst_commit}' are not related.")
                 return
             self._commit_distance = self._repo.commit_distance(self._src_commit, self._dst_commit)
-            diff_path = PurePath(self._temp_workspace).joinpath(f"changelist.{instance_id}.diff")
+            diff_path = pathlib.PurePath(self._temp_workspace).joinpath(f"changelist.{instance_id}.diff")
             try:
                 self._repo.create_diff_file(self._src_commit, self._dst_commit, diff_path)
             except RuntimeError as e:
@@ -112,7 +111,7 @@ class TestImpact:
 
             # Serialize the change list to the JSON format the test impact analysis runtime expects
             change_list_json = json.dumps(self._change_list, indent = 4)
-            change_list_path = PurePath(self._temp_workspace).joinpath(f"changelist.{instance_id}.json")
+            change_list_path = pathlib.PurePath(self._temp_workspace).joinpath(f"changelist.{instance_id}.json")
             f = open(change_list_path, "w")
             f.write(change_list_json)
             f.close()
@@ -271,7 +270,7 @@ class TestImpact:
         logger.info(f"Test failure policy is set to '{test_failure_policy}'.")
 
         # Sequence report
-        report_file = PurePath(self._temp_workspace).joinpath(f"report.{instance_id}.json")
+        report_file = pathlib.PurePath(self._temp_workspace).joinpath(f"report.{instance_id}.json")
         args.append(f"--report={report_file}")
         logger.info(f"Sequence report file is set to '{report_file}'.")
 

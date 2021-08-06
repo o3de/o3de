@@ -6,8 +6,7 @@
 #
 #
 
-from pathlib import Path
-from pathlib import PurePath
+import pathlib
 import logging
 from tiaf_persistent_storage import PersistentStorage
 
@@ -33,8 +32,8 @@ class PersistentStorageLocal(PersistentStorage):
             historic_data_file = config["workspace"]["historic"]["relative_paths"]["data"]
             
             # Attempt to unpack the local historic data file
-            self._historic_data_file = PurePath(self._historic_workspace).joinpath(historic_data_file)
-            if not Path.is_file(self._historic_data_file):
+            self._historic_data_file = pathlib.PurePath(self._historic_workspace).joinpath(historic_data_file)
+            if not pathlib.Path.is_file(self._historic_data_file):
                 logger.error(f"The historic data file '{self._historic_data_file}' is not a valid file path.")
                 self._historic_data_file = None
             else:
@@ -59,7 +58,7 @@ class PersistentStorageLocal(PersistentStorage):
             return
 
         try:
-            Path.mkdir(self._historic_workspace, exist_ok=True)
+            pathlib.Path.mkdir(self._historic_workspace, exist_ok=True)
             with open(self._historic_data_file, "w") as historic_data_file:
                 historic_data_file.write(historic_data_json)
         except EnvironmentError as e:

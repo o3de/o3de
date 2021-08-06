@@ -8,8 +8,7 @@
 
 import subprocess
 import git
-from pathlib import Path
-from pathlib import PurePath
+import pathlib
 
 # Basic representation of a git repository
 class Repo:
@@ -33,15 +32,15 @@ class Repo:
 
         try:
             # Remove the existing file (if any) and create the 
-            if Path.is_file(output_path):
-                Path.unlink(output_path)
-            Path.mkdir(PurePath.parent(output_path), exist_ok=True)
+            if pathlib.Path.is_file(output_path):
+                pathlib.Path.unlink(output_path)
+            pathlib.Path.mkdir(pathlib.PurePath.parent(output_path), exist_ok=True)
         except EnvironmentError as e:
             raise RuntimeError(f"Could not create path for output file '{output_path}'")
 
         # git diff will only write to the output file if both commit hashes are valid
         subprocess.run(["git", "diff", "--name-status", f"--output={output_path}", src_commit_hash, dst_commit_hash])
-        if not Path.is_file(output_path):
+        if not pathlib.Path.is_file(output_path):
             raise RuntimeError(f"Source commit '{src_commit_hash}' and/or destination commit '{dst_commit_hash}' are invalid")
 
     def is_descendent(self, src_commit_hash: str, dst_commit_hash: str):
