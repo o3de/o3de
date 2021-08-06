@@ -25,6 +25,7 @@ import re
 import json
 import time
 import boto3
+import pathlib
 from optparse import OptionParser
 
 
@@ -97,8 +98,11 @@ def get_files_to_upload(base_dir, regex, search_subdirectories):
     return regex_files_to_upload
 
 
-def s3_upload_file(client, file, bucket, key_prefix=None, extra_args=None, max_retry=1):
-    key = file if key_prefix is None else f'{key_prefix}/{file}'
+def s3_upload_file(client, base_dir, file, bucket, key_prefix=None, extra_args=None, max_retry=1):
+    # replicate the local folder structure relative to search root in the bucket path
+    s3_file_path = pathlib.Path(file).relative_to(base_dir).as_posix()
+
+    key = s3_file_path if key_prefix is None else f'{key_prefix}/{s3_file_path}'
     error_message = None
 
     for x in range(max_retry):
@@ -140,7 +144,7 @@ if __name__ == "__main__":
     failure = []
     success = []
     for file in files_to_upload:
-        if not s3_upload_file(client, file, options.bucket, options.key_prefix, extra_args, 2):
+        if not s3_upload_file(client, options.base_dir, file, options.bucket, options.key_prefix, extra_args, 2):
             failure.append(file)
         else:
             success.append(file)
