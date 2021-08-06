@@ -50,3 +50,6 @@ ly_add_target(
 # Clients and Servers use the above module.  There is no editor or tools module required.
 ly_create_alias(NAME GameStateSamples.Clients  NAMESPACE Gem TARGETS GameStateSamples)
 ly_create_alias(NAME GameStateSamples.Servers  NAMESPACE Gem TARGETS GameStateSamples)
+if(PAL_TRAIT_BUILD_HOST_TOOLS)
+    ly_create_alias(NAME GameStateSamples.Builders NAMESPACE Gem)
+endif()
