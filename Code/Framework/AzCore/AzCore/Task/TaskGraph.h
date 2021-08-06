@@ -46,10 +46,10 @@ namespace AZ
         void PrecedesInternal(TaskToken& comesAfter);
 
         // Only the TaskGraph should be creating TaskToken
-        TaskToken(TaskGraph& parent, size_t index);
+        TaskToken(TaskGraph& parent, uint32_t index);
 
         TaskGraph& m_parent;
-        size_t m_index;
+        uint32_t m_index;
     };
 
     // A TaskGraphEvent may be used to block until a task graph has finished executing. Usage

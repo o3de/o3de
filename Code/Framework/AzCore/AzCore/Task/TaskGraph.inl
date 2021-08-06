@@ -10,7 +10,7 @@
 
 namespace AZ
 {
-    inline TaskToken::TaskToken(TaskGraph& parent, size_t index)
+    inline TaskToken::TaskToken(TaskGraph& parent, uint32_t index)
         : m_parent{ parent }
         , m_index{ index }
     {
@@ -50,7 +50,7 @@ namespace AZ
 
         m_tasks.emplace_back(desc, AZStd::forward<Lambda>(lambda));
 
-        return { *this, m_tasks.size() - 1 };
+        return { *this, aznumeric_cast<uint32_t>(m_tasks.size() - 1) };
     }
 
     template <typename... Lambdas>
