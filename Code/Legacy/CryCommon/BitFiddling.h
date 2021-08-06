@@ -36,7 +36,6 @@ ILINE uint32 countLeadingZeros32(uint32 x)
 {
     DWORD result = 32 ^ 31; // assumes result is unmodified if _BitScanReverse returns 0
     _BitScanReverse(&result, x);
-    PREFAST_SUPPRESS_WARNING(6102);
     result ^= 31; // needed because the index is from LSB (whereas all other implementations are from MSB)
     return result;
 }
@@ -72,16 +71,6 @@ inline bool IsPowerOfTwo(TInteger x)
 {
     return (x & (x - 1)) == 0;
 }
-
-// compile time version of IsPowerOfTwo, useful for STATIC_CHECK
-template <int nValue>
-struct IsPowerOfTwoCompileTime
-{
-    enum
-    {
-        IsPowerOfTwo = ((nValue & (nValue - 1)) == 0)
-    };
-};
 
 inline uint32 NextPower2(uint32 n)
 {

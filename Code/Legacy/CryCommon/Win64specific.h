@@ -19,7 +19,6 @@
 #define _CPU_SSE
 #define ILINE __forceinline
 
-#define DEBUG_BREAK CryDebugBreak()
 #define RC_EXECUTABLE "rc.exe"
 #define DEPRECATED __declspec(deprecated)
 #define TYPENAME(x) typeid(x).name()

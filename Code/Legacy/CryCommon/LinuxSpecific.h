@@ -42,23 +42,6 @@
 #include <vector>
 #include <string>
 
-#ifdef __FUNC__
-#undef __FUNC__
-#endif
-#if defined(__GNUC__) || defined(__clang__)
-#define __FUNC__ __func__
-#else
-#define __FUNC__                                             \
-    ({                                                       \
-         static char __f[sizeof(__PRETTY_FUNCTION__) + 1];   \
-         strcpy(__f, __PRETTY_FUNCTION__);                   \
-         char* __p = (char*)strchr(__f, '(');                \
-         *__p = 0;                                           \
-         while (*(__p) != ' ' && __p != (__f - 1)) {--__p; } \
-         (__p + 1);                                          \
-     })
-#endif
-
 typedef void*                               LPVOID;
 #define VOID                    void
 #define PVOID                               void*

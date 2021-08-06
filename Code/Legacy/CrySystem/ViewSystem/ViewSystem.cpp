@@ -26,7 +26,7 @@
         if (count > 0)                                                                                              \
         {                                                                                                           \
             const size_t memSize = count * sizeof(IViewSystemListener*);                                            \
-            PREFAST_SUPPRESS_WARNING(6255) IViewSystemListener * *pArray = (IViewSystemListener**) alloca(memSize); \
+            IViewSystemListener* *pArray = (IViewSystemListener**) alloca(memSize);                                 \
             memcpy(pArray, &*m_listeners.begin(), memSize);                                                         \
             while (count--)                                                                                         \
             {                                                                                                       \

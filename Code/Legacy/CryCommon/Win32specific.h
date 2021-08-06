@@ -23,7 +23,6 @@
 #define ILINE __forceinline
 #endif
 
-#define DEBUG_BREAK _asm { int 3 }
 #define RC_EXECUTABLE "rc.exe"
 #define DEPRECATED __declspec(deprecated)
 #define TYPENAME(x) typeid(x).name()

@@ -20,7 +20,6 @@
 #define _CPU_AMD64
 #define _CPU_SSE
 
-#define DEBUG_BREAK ::raise(SIGTRAP)
 #define RC_EXECUTABLE "rc"
 #define USE_CRT 1
 #define SIZEOF_PTR 8

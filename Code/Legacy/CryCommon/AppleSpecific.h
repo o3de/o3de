@@ -18,7 +18,6 @@
 #endif
 
 
-#define DEBUG_BREAK __builtin_trap()
 #define RC_EXECUTABLE "rc"
 
 //////////////////////////////////////////////////////////////////////////
@@ -51,12 +50,6 @@
 #ifndef __COUNTER__
 #define __COUNTER__ __LINE__
 #endif
-
-#ifdef __FUNC__
-#undef __FUNC__
-#endif
-
-#define __FUNC__ __func__
 
 typedef void*                               LPVOID;
 #define VOID                    void

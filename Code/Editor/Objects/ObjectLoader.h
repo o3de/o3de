@@ -15,6 +15,8 @@
 #include "Util/GuidUtil.h"
 #include "ErrorReport.h"
 
+#include <set>
+
 class CPakFile;
 class CErrorRecord;
 struct IObjectManager;

@@ -18,7 +18,6 @@
 #define _CPU_X86
 //#define _CPU_SSE
 
-#define DEBUG_BREAK raise(SIGTRAP)
 #define RC_EXECUTABLE "rc"
 #define USE_CRT 1
 #define SIZEOF_PTR 4

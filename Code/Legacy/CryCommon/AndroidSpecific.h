@@ -35,7 +35,6 @@
 // to what some structs/classes need.
 #define CRY_FORCE_MALLOC_NEW_ALIGN
 
-#define DEBUG_BREAK raise(SIGTRAP)
 #define RC_EXECUTABLE "rc"
 #define USE_CRT 1
 #define SIZEOF_PTR 4

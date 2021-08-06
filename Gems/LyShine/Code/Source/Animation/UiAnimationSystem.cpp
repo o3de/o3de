@@ -26,12 +26,12 @@
 //////////////////////////////////////////////////////////////////////////
 // Serialization for anim nodes & param types
 #define REGISTER_NODE_TYPE(name) assert(g_animNodeEnumToStringMap.find(eUiAnimNodeType_ ## name) == g_animNodeEnumToStringMap.end()); \
-    g_animNodeEnumToStringMap[eUiAnimNodeType_ ## name] = STRINGIFY(name);                                                            \
-    g_animNodeStringToEnumMap[string(STRINGIFY(name))] = eUiAnimNodeType_ ## name;
+    g_animNodeEnumToStringMap[eUiAnimNodeType_ ## name] = AZ_STRINGIZE(name);                                                            \
+    g_animNodeStringToEnumMap[string(AZ_STRINGIZE(name))] = eUiAnimNodeType_ ## name;
 
 #define REGISTER_PARAM_TYPE(name) assert(g_animParamEnumToStringMap.find(eUiAnimParamType_ ## name) == g_animParamEnumToStringMap.end()); \
-    g_animParamEnumToStringMap[eUiAnimParamType_ ## name] = STRINGIFY(name);                                                              \
-    g_animParamStringToEnumMap[string(STRINGIFY(name))] = eUiAnimParamType_ ## name;
+    g_animParamEnumToStringMap[eUiAnimParamType_ ## name] = AZ_STRINGIZE(name);                                                              \
+    g_animParamStringToEnumMap[string(AZ_STRINGIZE(name))] = eUiAnimParamType_ ## name;
 
 namespace
 {

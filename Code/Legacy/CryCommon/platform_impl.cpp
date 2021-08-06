@@ -205,36 +205,10 @@ void __stl_debug_message(const char* format_str, ...)
 #include "CryAssert_impl.h"
 
 //////////////////////////////////////////////////////////////////////////
-void CryDebugBreak()
-{
-#if defined(WIN32) && !defined(RELEASE)
-    if (IsDebuggerPresent())
-#endif
-    {
-        DebugBreak();
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CrySleep(unsigned int dwMilliseconds)
 {
     AZ_PROFILE_FUNCTION_IDLE(AZ::Debug::ProfileCategory::System);
     Sleep(dwMilliseconds);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CryLowLatencySleep(unsigned int dwMilliseconds)
-{
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::System);
-#if defined(AZ_RESTRICTED_PLATFORM)
-    #define AZ_RESTRICTED_SECTION PLATFORM_IMPL_H_SECTION_CRYLOWLATENCYSLEEP
-    #include AZ_RESTRICTED_FILE(platform_impl_h)
-#endif
-#if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
-#undef AZ_RESTRICTED_SECTION_IMPLEMENTED
-#else
-    CrySleep(dwMilliseconds);
-#endif
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -300,16 +274,6 @@ void InitRootDir(char szExeFileName[], uint nExeSize, char szExeRootName[], [[ma
             }
         }
     }
-}
-
-//////////////////////////////////////////////////////////////////////////
-short CryGetAsyncKeyState([[maybe_unused]] int vKey)
-{
-#ifdef WIN32
-    return GetAsyncKeyState(vKey);
-#else
-    return 0;
-#endif
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -415,23 +379,6 @@ bool  CryTryCriticalSection(void* cs)
 void  CryLeaveCriticalSection(void* cs)
 {
     LeaveCriticalSection((CRITICAL_SECTION*)cs);
-}
-
-//////////////////////////////////////////////////////////////////////////
-uint32 CryGetFileAttributes(const char* lpFileName)
-{
-    WIN32_FILE_ATTRIBUTE_DATA data;
-    BOOL res;
-#if defined(AZ_RESTRICTED_PLATFORM)
-    #define AZ_RESTRICTED_SECTION PLATFORM_IMPL_H_SECTION_CRYGETFILEATTRIBUTES
-    #include AZ_RESTRICTED_FILE(platform_impl_h)
-#endif
-#if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
-#undef AZ_RESTRICTED_SECTION_IMPLEMENTED
-#else
-    res = GetFileAttributesEx(lpFileName, GetFileExInfoStandard, &data);
-#endif
-    return res ? data.dwFileAttributes : -1;
 }
 
 //////////////////////////////////////////////////////////////////////////

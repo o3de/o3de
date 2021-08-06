@@ -14,6 +14,7 @@
 #include <AzCore/PlatformIncl.h>
 #include <CryCommon/platform.h>
 #include <CryCommon/Cry_Geo.h>
+#include <set>
 
 // forward declarations.
 class CEntityObject;

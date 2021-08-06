@@ -672,7 +672,7 @@ protected:
         m_Self = pSelf;
     }
 private:
-    static THREADLOCAL CrySimpleThreadSelf* m_Self;
+    static AZ_THREAD_LOCAL CrySimpleThreadSelf* m_Self;
 
 #else
 

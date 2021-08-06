@@ -252,7 +252,7 @@ static void CmdCrashTest(IConsoleCmdArgs* pArgs)
         case 1:
         {
             int* p = 0;
-            PREFAST_SUPPRESS_WARNING(6011) * p = 0xABCD;
+            *p = 0xABCD;
         }
         break;
         case 2:

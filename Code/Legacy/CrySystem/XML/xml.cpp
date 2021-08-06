@@ -1390,7 +1390,7 @@ protected:
     {
         ((XmlParserImp*)userData)->onEndElement(name);
     }
-    static void characterData(void* userData, const char* s, int len) PREFAST_SUPPRESS_WARNING(6262)
+    static void characterData(void* userData, const char* s, int len)
     {
         char str[32700];
         if (len > sizeof(str) - 1)

@@ -189,7 +189,7 @@ public:
     virtual ~CrySimpleThreadSelf();
 protected:
     void StartThread(unsigned (__stdcall * func)(void*), void* argList);
-    static THREADLOCAL CrySimpleThreadSelf* m_Self;
+    static AZ_THREAD_LOCAL CrySimpleThreadSelf* m_Self;
 private:
     CrySimpleThreadSelf(const CrySimpleThreadSelf&);
     CrySimpleThreadSelf& operator = (const CrySimpleThreadSelf&);
