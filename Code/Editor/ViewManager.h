@@ -93,7 +93,7 @@ public:
 
     //////////////////////////////////////////////////////////////////////////
     //! Get current layout window.
-    //! @return Pointer to the layout window, can be NULL.
+    //! @return Pointer to the layout window, can be nullptr.
     virtual CLayoutWnd* GetLayout() const;
 
     //! Cycle between different 2D viewports type on same view pane.

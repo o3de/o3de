@@ -211,7 +211,7 @@ public:
     int GetNumberOfUsageAndFirstTimeUsed(const char* eventName, float& timeFirstUsed) const;
 };
 
-CTVEventsDialog::CTVEventsDialog(QWidget* pParent /*=NULL*/)
+CTVEventsDialog::CTVEventsDialog(QWidget* pParent /*=nullptr*/)
     : QDialog(pParent)
     , m_ui(new Ui::TVEventsDialog)
 {

@@ -234,7 +234,7 @@ namespace EditorUtils
     AzWarningAbsorber::AzWarningAbsorber(const char* window)
         : m_window(window)
     AZ_POP_DISABLE_WARNING
-    { 
+    {
         BusConnect();
     }
 

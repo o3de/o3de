@@ -228,7 +228,7 @@ namespace Path
     {
         return (path.endsWith(QStringLiteral("\\")) || path.endsWith(QStringLiteral("/")));
     }
-    
+
     template<size_t size>
     inline bool EndsWithSlash(AZStd::fixed_string<size>* path)
     {
@@ -236,15 +236,15 @@ namespace Path
         {
             return false;
         }
-        
+
         if (
             ((*path)[path->size() - 1] != '\\') ||
-            ((*path)[path->size() - 1] != '/') 
+            ((*path)[path->size() - 1] != '/')
             )
         {
             return true;
         }
-        
+
         return false;
     }
 
@@ -336,9 +336,9 @@ namespace Path
     {
         char path_buffer[_MAX_PATH];
 #ifdef AZ_COMPILER_MSVC
-        _makepath_s(path_buffer, AZ_ARRAY_SIZE(path_buffer), NULL, dir.toUtf8().data(), filename.toUtf8().data(), ext.toUtf8().data());
+        _makepath_s(path_buffer, AZ_ARRAY_SIZE(path_buffer), nullptr, dir.toUtf8().data(), filename.toUtf8().data(), ext.toUtf8().data());
 #else
-        _makepath(path_buffer, NULL, dir.toUtf8().data(), filename.toUtf8().data(), ext.toUtf8().data());
+        _makepath(path_buffer, nullptr, dir.toUtf8().data(), filename.toUtf8().data(), ext.toUtf8().data());
 #endif
         return CaselessPaths(path_buffer);
     }

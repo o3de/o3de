@@ -101,7 +101,7 @@ public:
     }
 
 private:
-    typedef std::map<AZStd::string, const SStaticResourceSelectorEntry*, stl::less_stricmp<AZStd::string> > TTypeMap;
+    using TTypeMap = std::map<AZStd::string, const SStaticResourceSelectorEntry *, stl::less_stricmp<AZStd::string>>;
     TTypeMap m_typeMap;
 
     std::map<AZStd::string, AZStd::string> m_globallySelectedResources;

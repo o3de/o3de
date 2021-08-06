@@ -192,7 +192,7 @@ QtViewport::QtViewport(QWidget* parent)
     m_viewTM.SetIdentity();
     m_screenTM.SetIdentity();
 
-    m_pMouseOverObject = 0;
+    m_pMouseOverObject = nullptr;
 
     m_bAdvancedSelectMode = false;
 
@@ -398,7 +398,7 @@ void QtViewport::OnDeactivate()
 //////////////////////////////////////////////////////////////////////////
 void QtViewport::ResetContent()
 {
-    m_pMouseOverObject = 0;
+    m_pMouseOverObject = nullptr;
 
     // Need to clear visual object cache.
     // Right after loading new level, some code(e.g. OnMouseMove) access invalid

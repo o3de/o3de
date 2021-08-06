@@ -39,7 +39,7 @@ namespace Path
         // Directory named filenames containing ":" are invalid, so we can assume if there is a :
         // it will be the drive name.
         pchCurrentPosition = strchr(pchLastPosition, ':');
-        if (pchCurrentPosition == NULL)
+        if (pchCurrentPosition == nullptr)
         {
             rstrDriveLetter = "";
         }
@@ -51,7 +51,7 @@ namespace Path
 
         pchCurrentPosition = strrchr(pchLastPosition, '\\');
         pchAuxPosition = strrchr(pchLastPosition, '/');
-        if ((pchCurrentPosition == NULL) && (pchAuxPosition == NULL))
+        if ((pchCurrentPosition == nullptr) && (pchAuxPosition == nullptr))
         {
             rstrDirectory = "";
         }
@@ -67,7 +67,7 @@ namespace Path
         }
 
         pchCurrentPosition = strrchr(pchLastPosition, '.');
-        if (pchCurrentPosition == NULL)
+        if (pchCurrentPosition == nullptr)
         {
             rstrExtension = "";
             strFilename.assign(pchLastPosition);
@@ -111,7 +111,7 @@ namespace Path
         do
         {
             pchCurrentPosition = strpbrk(pchLastPosition, "\\/");
-            if (pchCurrentPosition == NULL)
+            if (pchCurrentPosition == nullptr)
             {
                 break;
             }

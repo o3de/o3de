@@ -104,34 +104,34 @@ bool CImageASC::Load(const QString& fileName, CFloatImage& image)
 
     // ncols = grid width
     validData = validData && (azstricmp(token, "ncols") == 0);
-    token = azstrtok(NULL, 0, seps, &nextToken);
+    token = azstrtok(nullptr, 0, seps, &nextToken);
     width = atoi(token);
 
     // nrows = grid height
-    token = azstrtok(NULL, 0, seps, &nextToken);
+    token = azstrtok(nullptr, 0, seps, &nextToken);
     validData = validData && (azstricmp(token, "nrows") == 0);
-    token = azstrtok(NULL, 0, seps, &nextToken);
+    token = azstrtok(nullptr, 0, seps, &nextToken);
     height = atoi(token);
 
     // xllcorner = leftmost coordinate.  (Skip, we don't care about it)
-    token = azstrtok(NULL, 0, seps, &nextToken);
+    token = azstrtok(nullptr, 0, seps, &nextToken);
     validData = validData && (azstricmp(token, "xllcorner") == 0);
-    token = azstrtok(NULL, 0, seps, &nextToken);
+    token = azstrtok(nullptr, 0, seps, &nextToken);
 
     // yllcorner = bottommost coordinate.  (Skip, we don't care about it)
-    token = azstrtok(NULL, 0, seps, &nextToken);
+    token = azstrtok(nullptr, 0, seps, &nextToken);
     validData = validData && (azstricmp(token, "yllcorner") == 0);
-    token = azstrtok(NULL, 0, seps, &nextToken);
+    token = azstrtok(nullptr, 0, seps, &nextToken);
 
     // cellsize = size of each grid cell.  (Skip, we don't care about it)
-    token = azstrtok(NULL, 0, seps, &nextToken);
+    token = azstrtok(nullptr, 0, seps, &nextToken);
     validData = validData && (azstricmp(token, "cellsize") == 0);
-    token = azstrtok(NULL, 0, seps, &nextToken);
+    token = azstrtok(nullptr, 0, seps, &nextToken);
 
     // nodata_value = the value used for missing data.  We'll replace these with 0 height.
-    token = azstrtok(NULL, 0, seps, &nextToken);
+    token = azstrtok(nullptr, 0, seps, &nextToken);
     validData = validData && (azstricmp(token, "nodata_value") == 0);
-    token = azstrtok(NULL, 0, seps, &nextToken);
+    token = azstrtok(nullptr, 0, seps, &nextToken);
     nodataValue = atof(token);
 
     if (!validData)
@@ -151,10 +151,10 @@ bool CImageASC::Load(const QString& fileName, CFloatImage& image)
     int i = 0;
     float pixelValue;
     float maxPixel = 0.0f;
-    while (token != NULL && i < size)
+    while (token != nullptr && i < size)
     {
-        token = azstrtok(NULL, 0, seps, &nextToken);
-        if (token != NULL)
+        token = azstrtok(nullptr, 0, seps, &nextToken);
+        if (token != nullptr)
         {
             // Negative heights aren't supported, clamp to 0.
             pixelValue = max(0.0, atof(token));

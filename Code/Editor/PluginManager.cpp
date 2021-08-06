@@ -18,8 +18,8 @@
 #include "Include/IPlugin.h"
 
 
-typedef IPlugin* (* TPfnCreatePluginInstance)(PLUGIN_INIT_PARAM* pInitParam);
-typedef void (* TPfnQueryPluginSettings)(SPluginSettings&);
+using TPfnCreatePluginInstance = IPlugin *(*)(PLUGIN_INIT_PARAM *pInitParam);
+using TPfnQueryPluginSettings = void (*)(SPluginSettings &);
 
 CPluginManager::CPluginManager()
 {
@@ -210,7 +210,7 @@ bool CPluginManager::LoadPlugins(const char* pPathWithMask)
             continue;
         }
 
-        IPlugin* pPlugin = NULL;
+        IPlugin* pPlugin = nullptr;
         PLUGIN_INIT_PARAM sInitParam =
         {
             GetIEditor(),
@@ -279,7 +279,7 @@ IPlugin* CPluginManager::GetPluginByGUID(const char* pGUID)
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 IPlugin* CPluginManager::GetPluginByUIID(uint8 iUserInterfaceID)
@@ -290,7 +290,7 @@ IPlugin* CPluginManager::GetPluginByUIID(uint8 iUserInterfaceID)
 
     if (it == m_uuidPluginMap.end())
     {
-        return NULL;
+        return nullptr;
     }
 
     return (*it).second;
@@ -302,7 +302,7 @@ IUIEvent* CPluginManager::GetEventByIDAndPluginID(uint8 aPluginID, uint8 aEventI
     // specified by its ID and the user interface ID of the plugin which
     // created the UI element
 
-    IPlugin* pPlugin = NULL;
+    IPlugin* pPlugin = nullptr;
     TEventHandlerIt eventIt;
     TPluginEventIt pluginIt;
 
@@ -310,21 +310,21 @@ IUIEvent* CPluginManager::GetEventByIDAndPluginID(uint8 aPluginID, uint8 aEventI
 
     if (!pPlugin)
     {
-        return NULL;
+        return nullptr;
     }
 
     pluginIt = m_pluginEventMap.find(pPlugin);
 
     if (pluginIt == m_pluginEventMap.end())
     {
-        return NULL;
+        return nullptr;
     }
 
     eventIt = (*pluginIt).second.find(aEventID);
 
     if (eventIt == (*pluginIt).second.end())
     {
-        return NULL;
+        return nullptr;
     }
 
     return (*eventIt).second;
