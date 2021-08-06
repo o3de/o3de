@@ -7,60 +7,137 @@
 #
 
 import argparse
-from tiaf import TestImpact
-
+import mars_utils
 import sys
-import os
-import datetime
-import json
-import socket
+import pathlib
+from tiaf import TestImpact
+import logging
+
+logger = logging.getLogger()
+logging.basicConfig()
 
 def parse_args():
-    def file_path(value):
-        if os.path.isfile(value):
+    def valid_file_path(value):
+        if pathlib.Path.is_file(value):
             return value
         else:
             raise FileNotFoundError(value)
 
-    def timout_type(value):
+    def valid_timout_type(value):
         value = int(value)
         if value <= 0:
             raise ValueError("Timer values must be positive integers")
         return value
 
-    def test_failure_policy(value):
+    def valid_test_failure_policy(value):
         if value == "continue" or value == "abort" or value == "ignore":
             return value
         else:
             raise ValueError("Test failure policy must be 'abort', 'continue' or 'ignore'")
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config', dest="config", type=file_path, help="Path to the test impact analysis framework configuration file", required=True)
-    parser.add_argument('--src-branch', dest="src_branch",  help="The branch that is being build", required=True)
-    parser.add_argument('--dst-branch', dest="dst_branch",  help="For PR builds, the destination branch to be merged to, otherwise empty")
-    parser.add_argument('--seeding-branches', dest="seeding_branches", type=lambda arg: arg.split(','), help="Comma separated branches that seeding will occur on", required=True)
-    parser.add_argument('--pipeline', dest="pipeline", help="Pipeline the test impact analysis framework is running on", required=True)
-    parser.add_argument('--seeding-pipelines', dest="seeding_pipelines", type=lambda arg: arg.split(','), help="Comma separated pipeline that seeding will occur on", required=True)
-    parser.add_argument('--dest-commit', dest="dst_commit", help="Commit to run test impact analysis on (ignored when seeding)", required=True)
-    parser.add_argument('--suite', dest="suite", help="Test suite to run", required=True)
-    parser.add_argument('--test-failure-policy', dest="test_failure_policy", type=test_failure_policy, help="Test failure policy for regular and test impact sequences (ignored when seeding)", required=True)
-    parser.add_argument('--safeMode', dest="safe_mode", action='store_true', help="Run impact analysis tests in safe mode (ignored when seeding)")
-    parser.add_argument('--testTimeout', dest="test_timeout", type=timout_type, help="Maximum run time (in seconds) of any test target before being terminated", required=False)
-    parser.add_argument('--globalTimeout', dest="global_timeout", type=timout_type, help="Maximum run time of the sequence before being terminated", required=False)
-    parser.set_defaults(test_timeout=None)
-    parser.set_defaults(global_timeout=None)
+
+    # Configuration file path
+    parser.add_argument(
+        '--config',
+        type=valid_file_path,
+        help="Path to the test impact analysis framework configuration file", 
+        required=True
+    )
+
+    # Source branch
+    parser.add_argument(
+        '--src-branch',
+        help="Branch that is being built",
+        required=True
+    )
+
+    # Destination branch
+    parser.add_argument(
+        '--dst-branch',
+        help="For PR builds, the destination branch to be merged to, otherwise empty", 
+        required=False
+    )
+
+    # Commit hash
+    parser.add_argument(
+        '--commit',
+        help="Commit that is being built",
+        required=True
+    )
+
+    # S3 bucket
+    parser.add_argument(
+        '--s3-bucket', 
+        help="Location of S3 bucket to use for persistent storage, otherwise local disk storage will be used", 
+        required=False
+    )
+
+    # MARS index prefix
+    parser.add_argument(
+        '--mars-index-prefix', 
+        help="Index prefix to use for MARS, otherwise no data will be tramsmitted to MARS", 
+        required=False
+    )
+
+    # Test suite
+    parser.add_argument(
+        '--suite', 
+        help="Test suite to run", 
+        required=True
+    )
+
+    # Test failure policy
+    parser.add_argument(
+        '--test-failure-policy', 
+        type=valid_test_failure_policy, 
+        help="Test failure policy for regular and test impact sequences (ignored when seeding)", 
+        required=True
+    )
+
+    # Safe mode
+    parser.add_argument(
+        '--safe-mode', 
+        action='store_true', 
+        help="Run impact analysis tests in safe mode (ignored when seeding)", 
+        required=False
+    )
+
+    # Test timeout
+    parser.add_argument(
+        '--test-timeout', 
+        type=valid_timout_type, 
+        help="Maximum run time (in seconds) of any test target before being terminated", 
+        required=False
+    )
+
+    # Global timeout
+    parser.add_argument(
+        '--global-timeout', 
+        type=valid_timout_type, 
+        help="Maximum run time of the sequence before being terminated", 
+        required=False
+    )
+
     args = parser.parse_args()
     
     return args
 
 if __name__ == "__main__":
+    
     try:
         args = parse_args()
-        tiaf = TestImpact(args.config, args.dst_commit, args.src_branch, args.dst_branch, args.pipeline, args.seeding_branches, args.seeding_pipelines)
-        return_code = tiaf.run(args.suite, args.test_failure_policy, args.safe_mode, args.test_timeout, args.global_timeout)
+        tiaf = TestImpact(args.config)
+        tiaf_result = tiaf.run(args.commit, args.src_branch, args.dst_branch, args.s3_bucket, args.suite, args.test_failure_policy, args.safe_mode, args.test_timeout, args.global_timeout)
+        
+        if args.mars_index_prefix is not None:
+            logger.info("Transmitting report to MARS...")
+            mars_utils.transmit_report_to_mars(args.mars_index_prefix, tiaf_result, sys.argv)
+
+        logger.info("Complete!")
         # Non-gating will be removed from this script and handled at the job level in SPEC-7413
-        #sys.exit(return_code)
+        #sys.exit(result.return_code)
         sys.exit(0)
     except Exception as e:
         # Non-gating will be removed from this script and handled at the job level in SPEC-7413
-        print(f"Exception caught by TIAF driver: {e}")
+        logger.error(f"Exception caught by TIAF driver: '{e}'.")
