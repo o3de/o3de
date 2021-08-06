@@ -30,6 +30,7 @@ from editor_python_test_tools.editor_test_helper import EditorTestHelper
 helper = EditorTestHelper(log_prefix="Atom_EditorTestHelper")
 
 LEVEL_NAME = "auto_test"
+LIGHT_TYPE_PROPERTY = 'Controller|Configuration|Light type'
 DEGREE_RADIAN_FACTOR = 0.0174533
 
 
@@ -108,7 +109,6 @@ def area_light_test():
         f"{area_light_entity_name}_test: Component added to the entity: "
         f"{hydra.has_components(area_light.id, [light_component])}")
     light_component_id_pair = atom_component_helper.attach_component_to_entity(area_light.id, light_component)
-    light_type_property = 'Controller|Configuration|Light type'
 
     # Select the "Capsule" light type option.
     capsule_light_type = atom_component_helper.LIGHT_TYPES['capsule']
@@ -116,7 +116,7 @@ def area_light_test():
         azlmbr.bus.Broadcast,
         'SetComponentProperty',
         light_component_id_pair,
-        light_type_property,
+        LIGHT_TYPE_PROPERTY,
         capsule_light_type
     )
 
@@ -143,7 +143,7 @@ def area_light_test():
         azlmbr.bus.Broadcast,
         'SetComponentProperty',
         light_component_id_pair,
-        light_type_property,
+        LIGHT_TYPE_PROPERTY,
         spot_disk_light_type
     )
     area_light_rotation = math.Vector3(DEGREE_RADIAN_FACTOR * 90.0, 0.0, 0.0)
@@ -157,7 +157,7 @@ def area_light_test():
         azlmbr.bus.Broadcast,
         'SetComponentProperty',
         light_component_id_pair,
-        light_type_property,
+        LIGHT_TYPE_PROPERTY,
         sphere_light_type
     )
     general.idle_wait(1.0)
@@ -210,13 +210,12 @@ def spot_light_test():
     rotation = math.Vector3(DEGREE_RADIAN_FACTOR * 300.0, 0.0, 0.0)
     azlmbr.components.TransformBus(azlmbr.bus.Event, "SetLocalRotation", spot_light.id, rotation)
     light_component_type = atom_component_helper.attach_component_to_entity(spot_light.id, "Light")
-    light_type_property_path = 'Controller|Configuration|Light type'
     spot_disk_light_type = atom_component_helper.LIGHT_TYPES['spot_disk']
     editor.EditorComponentAPIBus(
         azlmbr.bus.Broadcast,
         'SetComponentProperty',
         light_component_type,
-        light_type_property_path,
+        LIGHT_TYPE_PROPERTY,
         spot_disk_light_type
     )
 
