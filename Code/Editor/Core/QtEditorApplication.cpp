@@ -415,33 +415,37 @@ namespace Editor
         }
 
         // Ensure that the Windows WM_INPUT messages get passed through to the AzFramework input system.
-        // These events are now consumed both in and out of game mode.
-        if (msg->message == WM_INPUT)
+        // These events are only broadcast in game mode. In Editor mode, RenderViewportWidget creates synthetic
+        // keyboard and mouse events via Qt.
+        if (GetIEditor()->IsInGameMode())
         {
-            UINT rawInputSize;
-            const UINT rawInputHeaderSize = sizeof(RAWINPUTHEADER);
-            GetRawInputData((HRAWINPUT)msg->lParam, RID_INPUT, NULL, &rawInputSize, rawInputHeaderSize);
-
-            AZStd::array<BYTE, sizeof(RAWINPUT)> rawInputBytesArray;
-            LPBYTE rawInputBytes = rawInputBytesArray.data();
-
-            const UINT bytesCopied = GetRawInputData((HRAWINPUT)msg->lParam, RID_INPUT, rawInputBytes, &rawInputSize, rawInputHeaderSize);
-            CRY_ASSERT(bytesCopied == rawInputSize);
-
-            RAWINPUT* rawInput = (RAWINPUT*)rawInputBytes;
-            CRY_ASSERT(rawInput);
-
-            AzFramework::RawInputNotificationBusWindows::Broadcast(&AzFramework::RawInputNotificationsWindows::OnRawInputEvent, *rawInput);
-
-            return false;
-        }
-        else if (msg->message == WM_DEVICECHANGE)
-        {
-            if (msg->wParam == 0x0007) // DBT_DEVNODES_CHANGED
+            if (msg->message == WM_INPUT)
             {
-                AzFramework::RawInputNotificationBusWindows::Broadcast(&AzFramework::RawInputNotificationsWindows::OnRawInputDeviceChangeEvent);
+                UINT rawInputSize;
+                const UINT rawInputHeaderSize = sizeof(RAWINPUTHEADER);
+                GetRawInputData((HRAWINPUT)msg->lParam, RID_INPUT, nullptr, &rawInputSize, rawInputHeaderSize);
+
+                AZStd::array<BYTE, sizeof(RAWINPUT)> rawInputBytesArray;
+                LPBYTE rawInputBytes = rawInputBytesArray.data();
+
+                const UINT bytesCopied = GetRawInputData((HRAWINPUT)msg->lParam, RID_INPUT, rawInputBytes, &rawInputSize, rawInputHeaderSize);
+                CRY_ASSERT(bytesCopied == rawInputSize);
+
+                RAWINPUT* rawInput = (RAWINPUT*)rawInputBytes;
+                CRY_ASSERT(rawInput);
+
+                AzFramework::RawInputNotificationBusWindows::Broadcast(&AzFramework::RawInputNotificationsWindows::OnRawInputEvent, *rawInput);
+
+                return false;
             }
-            return true;
+            else if (msg->message == WM_DEVICECHANGE)
+            {
+                if (msg->wParam == 0x0007) // DBT_DEVNODES_CHANGED
+                {
+                    AzFramework::RawInputNotificationBusWindows::Broadcast(&AzFramework::RawInputNotificationsWindows::OnRawInputDeviceChangeEvent);
+                }
+                return true;
+            }
         }
 
         return false;

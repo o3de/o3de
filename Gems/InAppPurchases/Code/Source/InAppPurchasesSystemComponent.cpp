@@ -6,6 +6,8 @@
  *
  */
 
+#include <time.h>
+
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -327,7 +329,7 @@ namespace InAppPurchases
         {
             if (m_productInfoIndex < 0)
             {
-                m_productInfoIndex = productDetails->size() - 1;
+                m_productInfoIndex = static_cast<int>(productDetails->size() - 1);
             }
 
             if (productDetails->size() > 0)
@@ -373,7 +375,7 @@ namespace InAppPurchases
         {
             if (m_purchasedProductInfoIndex < 0)
             {
-                m_purchasedProductInfoIndex = purchasedProductDetails->size() - 1;
+                m_purchasedProductInfoIndex = static_cast<int>(purchasedProductDetails->size() - 1);
             }
 
             if (purchasedProductDetails->size() > 0)

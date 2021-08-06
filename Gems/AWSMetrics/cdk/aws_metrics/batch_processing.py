@@ -16,6 +16,7 @@ from aws_cdk import (
 import os
 
 from . import aws_metrics_constants
+from .aws_utils import resource_name_sanitizer
 
 
 class BatchProcessing:
@@ -42,7 +43,8 @@ class BatchProcessing:
         """
         Generate the events processing lambda to filter the invalid metrics events.
         """
-        events_processing_lambda_name = f'{self._stack.stack_name}-EventsProcessingLambda'
+        events_processing_lambda_name = resource_name_sanitizer.sanitize_resource_name(
+            f'{self._stack.stack_name}-EventsProcessingLambda', 'lambda_function')
         self._create_events_processing_lambda_role(events_processing_lambda_name)
 
         self._events_processing_lambda = lambda_.Function(
@@ -89,7 +91,8 @@ class BatchProcessing:
         self._events_processing_lambda_role = iam.Role(
             self._stack,
             id='EventsProcessingLambdaRole',
-            role_name=f'{self._stack.stack_name}-EventsProcessingLambdaRole',
+            role_name=resource_name_sanitizer.sanitize_resource_name(
+                f'{self._stack.stack_name}-EventsProcessingLambdaRole', 'iam_role'),
             assumed_by=iam.ServicePrincipal(
                 service='lambda.amazonaws.com'
             ),
@@ -107,8 +110,10 @@ class BatchProcessing:
 
         self._events_firehose_delivery_stream = kinesisfirehose.CfnDeliveryStream(
             self._stack,
-            id=f'{self._stack.stack_name}-EventsFirehoseDeliveryStream',
+            id=f'EventsFirehoseDeliveryStream',
             delivery_stream_type='KinesisStreamAsSource',
+            delivery_stream_name=resource_name_sanitizer.sanitize_resource_name(
+                f'{self._stack.stack_name}-EventsFirehoseDeliveryStream', 'firehose_delivery_stream'),
             kinesis_stream_source_configuration=kinesisfirehose.CfnDeliveryStream.KinesisStreamSourceConfigurationProperty(
                 kinesis_stream_arn=self._input_stream_arn,
                 role_arn=self._firehose_delivery_stream_role.role_arn
@@ -192,7 +197,8 @@ class BatchProcessing:
         self._firehose_delivery_stream_log_group = logs.LogGroup(
             self._stack,
             id='FirehoseLogGroup',
-            log_group_name=f'{self._stack.stack_name}-FirehoseLogGroup',
+            log_group_name=resource_name_sanitizer.sanitize_resource_name(
+                f'{self._stack.stack_name}-FirehoseLogGroup', 'cloudwatch_log_group'),
             removal_policy=core.RemovalPolicy.DESTROY,
             retention=logs.RetentionDays.ONE_MONTH
         )
@@ -299,7 +305,8 @@ class BatchProcessing:
         self._firehose_delivery_stream_role = iam.Role(
             self._stack,
             id='GameEventsFirehoseRole',
-            role_name=f'{self._stack.stack_name}-GameEventsFirehoseRole',
+            role_name=resource_name_sanitizer.sanitize_resource_name(
+                f'{self._stack.stack_name}-GameEventsFirehoseRole', 'iam_role'),
             assumed_by=iam.ServicePrincipal(
                 service='firehose.amazonaws.com'
             ),

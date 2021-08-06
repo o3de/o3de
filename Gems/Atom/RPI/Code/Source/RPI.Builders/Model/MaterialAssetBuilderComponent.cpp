@@ -91,7 +91,7 @@ namespace AZ
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<MaterialAssetBuilderComponent, SceneAPI::SceneCore::ExportingComponent>()
-                    ->Version(14);  // [ATOM-13410]
+                    ->Version(16);  // Optional material conversion
             }
         }
 

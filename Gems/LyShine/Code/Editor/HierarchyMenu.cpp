@@ -34,7 +34,7 @@ HierarchyMenu::HierarchyMenu(HierarchyWidget* hierarchy,
             New_EmptyElement(hierarchy, selectedItems, menu, (showMask & Show::kNew_EmptyElementAtRoot), optionalPos);
         }
 
-        if (showMask & Show::kNew_InstantiateSlice | Show::kNew_InstantiateSliceAtRoot)
+        if (showMask & (Show::kNew_InstantiateSlice | Show::kNew_InstantiateSliceAtRoot))
         {
             New_ElementFromSlice(hierarchy, selectedItems, menu, (showMask & Show::kNew_InstantiateSliceAtRoot), optionalPos);
         }

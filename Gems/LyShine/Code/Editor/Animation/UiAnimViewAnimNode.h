@@ -27,7 +27,7 @@ namespace AZ
 class CUiAnimViewAnimNodeBundle
 {
 public:
-    unsigned int GetCount() const { return m_animNodes.size(); }
+    unsigned int GetCount() const { return static_cast<unsigned int>(m_animNodes.size()); }
     CUiAnimViewAnimNode* GetNode(const unsigned int index) { return m_animNodes[index]; }
     const CUiAnimViewAnimNode* GetNode(const unsigned int index) const { return m_animNodes[index]; }
 

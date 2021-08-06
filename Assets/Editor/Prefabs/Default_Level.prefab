@@ -212,10 +212,10 @@
                         "Configuration": {
                             "ModelAsset": {
                                 "assetId": {
-                                    "guid": "{935F694A-8639-515B-8133-81CDC7948E5B}",
-                                    "subId": 277333723
+                                    "guid": "{0CD745C0-6AA8-569A-A68A-73A3270986C4}",
+                                    "subId": 277889906
                                 },
-                                "assetHint": "objects/groudplane/groundplane_521x521m.azmodel"
+                                "assetHint": "objects/groudplane/groundplane_512x512m.azmodel"
                             }
                         }
                     }

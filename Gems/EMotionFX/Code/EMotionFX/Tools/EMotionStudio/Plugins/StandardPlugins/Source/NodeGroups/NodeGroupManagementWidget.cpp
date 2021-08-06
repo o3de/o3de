@@ -112,8 +112,13 @@ namespace EMStudio
 
         // execute the command
         AZStd::string outResult;
-        AZStd::string command = AZStd::string::format("AdjustNodeGroup -actorID %i -name \"%s\" -newName \"%s\"", mActor->GetID(), mNodeGroupName.c_str(), convertedNewName.c_str());
-        if (GetCommandManager()->ExecuteCommand(command.c_str(), outResult) == false)
+        auto* command = aznew CommandSystem::CommandAdjustNodeGroup(
+            GetCommandManager()->FindCommand(CommandSystem::CommandAdjustNodeGroup::s_commandName),
+            /*actorId=*/ mActor->GetID(),
+            /*name=*/ mNodeGroupName,
+            /*newName=*/ convertedNewName
+        );
+        if (GetCommandManager()->ExecuteCommand(command, outResult) == false)
         {
             AZ_Error("EMotionFX", false, outResult.c_str());
         }
@@ -362,98 +367,6 @@ namespace EMStudio
             mSelectedRow = MCORE_INVALIDINDEX32;
         }
     }
-    /*void NodeGroupManagementWidget::UpdateNodeGroupWidget(QTableWidgetItem* current, QTableWidgetItem* previous)
-    {
-        MCORE_UNUSED(previous);
-
-        // return if no node group widget is set
-        if (mNodeGroupWidget == nullptr)
-            return;
-
-        // set the node group widget to the actual selection
-        mNodeGroupWidget->SetActor( mActor );
-
-        if (current)
-        {
-            // set the current row
-            mSelectedRow = current->row();
-
-            // set the node group
-            NodeGroup* nodeGroup = mActor->FindNodeGroupByName( FromQtString(mNodeGroupsTable->item(current->row(), 1)->text()).c_str() );
-            mNodeGroupWidget->SetNodeGroup( nodeGroup );
-        }
-        else
-        {
-            mNodeGroupWidget->SetNodeGroup( nullptr );
-            mSelectedRow = MCORE_INVALIDINDEX32;
-        }
-    }*/
-
-
-    // called whenever a cell is changed
-    /*void NodeGroupManagementWidget::NodeGroupNamesChanged(const QString& text)
-    {
-        // get the sender widget
-        QWidget* senderWidget = (QWidget*)sender();
-
-        // check for duplicates
-        const int duplicateFound = SearchTableForString( mNodeGroupsTable, text );
-
-        // mark edit field in red, if entry already exists
-        if (duplicateFound >= 0)
-            GetManager()->SetWidgetAsInvalidInput( senderWidget );
-        else
-            senderWidget->setStyleSheet("");
-    }*/
-
-
-    // starts editing
-    /*void NodeGroupManagementWidget::NodeGroupeNameDoubleClicked(QTableWidgetItem* item)
-    {
-        // add new line edit for the selected widget
-        QLineEdit* lineEdit = new QLineEdit( mNodeGroupsTable->item(item->row(), 0)->text() );
-        mNodeGroupsTable->setCellWidget( item->row(), 0, lineEdit );
-
-        // jump into the edit field
-        lineEdit->selectAll();
-        lineEdit->setFocus();
-        mNodeGroupsTable->setCurrentCell( item->row(), 0 );
-
-        // connect slots for edit finishing and text change
-        connect( lineEdit, SIGNAL(editingFinished()), this, SLOT(NodeGroupNameEditingFinished()) );
-        connect( lineEdit, SIGNAL(textChanged(QString)), this, SLOT(NodeGroupNamesChanged(QString)) );
-    }*/
-
-
-    // called when editing is finished
-    /*void NodeGroupManagementWidget::NodeGroupNameEditingFinished()
-    {
-        // get the current item
-        QTableWidgetItem* item = mNodeGroupsTable->currentItem();
-
-        // get the sender widget
-        QLineEdit* senderWidget = (QLineEdit*)sender();
-
-        // return if one of the widgets does not exist
-        if (item == nullptr || senderWidget == nullptr)
-            return;
-
-        // call commands for name change if name does not exist yet
-        if (senderWidget->styleSheet() == "")
-        {
-            // call command for adding a new node group
-            String outResult;
-            String command;
-            command.Format( "AdjustNodeGroup -actorID %i -name \"%s\" -newName \"%s\"", mActor->GetID(), FromQtString(item->text()).c_str(), FromQtString(senderWidget->text()).c_str() );
-            if (EMStudio::GetCommandManager()->ExecuteCommand( command.c_str(), outResult ) == false)
-                LogError( outResult.c_str() );
-        }
-        else
-        {
-            // delete the line edit
-            mNodeGroupsTable->setCellWidget(item->row(), item->column(), nullptr);
-        }
-    }*/
 
 
     // function to add a new node group with the specified name
@@ -562,16 +475,20 @@ namespace EMStudio
             if (rowChechbox == senderCheckbox)
             {
                 nodeGroupName = mNodeGroupsTable->item(i, 1)->text().toUtf8().data();
+                break;
             }
         }
 
         // execute the command
         AZStd::string outResult;
-        const AZStd::string command = AZStd::string::format("AdjustNodeGroup -actorID %i -name \"%s\" -enabledOnDefault \"%s\"", 
-            mActor->GetID(), 
-            nodeGroupName.c_str(), 
-            AZStd::to_string(checked).c_str());
-        if (EMStudio::GetCommandManager()->ExecuteCommand(command.c_str(), outResult) == false)
+        auto* command = aznew CommandSystem::CommandAdjustNodeGroup(
+            GetCommandManager()->FindCommand(CommandSystem::CommandAdjustNodeGroup::s_commandName),
+            /*actorId=*/ mActor->GetID(),
+            /*name=*/ nodeGroupName,
+            /*newName=*/ AZStd::nullopt,
+            /*enabledOnDefault=*/ checked
+        );
+        if (EMStudio::GetCommandManager()->ExecuteCommand(command, outResult) == false)
         {
             AZ_Error("EMotionFX", false, outResult.c_str());
         }

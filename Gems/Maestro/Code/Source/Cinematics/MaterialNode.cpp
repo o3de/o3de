@@ -174,7 +174,7 @@ void CAnimMaterialNode::UpdateDynamicParamsInternal()
 //////////////////////////////////////////////////////////////////////////
 unsigned int CAnimMaterialNode::GetParamCount() const
 {
-    return s_nodeParams.size() + m_dynamicShaderParamInfos.size();
+    return static_cast<unsigned int>(s_nodeParams.size() + m_dynamicShaderParamInfos.size());
 }
 
 //////////////////////////////////////////////////////////////////////////

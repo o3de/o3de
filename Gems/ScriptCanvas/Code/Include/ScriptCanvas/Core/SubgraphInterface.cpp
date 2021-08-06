@@ -803,12 +803,6 @@ namespace ScriptCanvas
             m_namespacePath = namespacePath;
         }
 
-        void SubgraphInterface::TakeNamespacePath(NamespacePath&& namespacePath)
-        {
-            m_namespacePath = AZStd::move(namespacePath);
-        }
-
-
         AZStd::string SubgraphInterface::ToExecutionString() const
         {
             AZStd::string result;

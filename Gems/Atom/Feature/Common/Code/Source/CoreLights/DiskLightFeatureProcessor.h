@@ -11,7 +11,7 @@
 #include <Atom/Feature/CoreLights/DiskLightFeatureProcessorInterface.h>
 #include <Atom/Feature/CoreLights/PhotometricValue.h>
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
-#include <CoreLights/IndexedDataVector.h>
+#include <Atom/Feature/Utils/IndexedDataVector.h>
 #include <Shadows/ProjectedShadowFeatureProcessor.h>
 
 namespace AZ
@@ -50,6 +50,7 @@ namespace AZ
             void SetConstrainToConeLight(LightHandle handle, bool useCone) override;
             void SetConeAngles(LightHandle handle, float innerDegrees, float outerDegrees) override;
             void SetShadowsEnabled(LightHandle handle, bool enabled) override;
+            void SetShadowBias(LightHandle handle, float bias) override;
             void SetShadowmapMaxResolution(LightHandle handle, ShadowmapSize shadowmapSize) override;
             void SetShadowFilterMethod(LightHandle handle, ShadowFilterMethod method) override;
             void SetSofteningBoundaryWidthAngle(LightHandle handle, float boundaryWidthRadians) override;
