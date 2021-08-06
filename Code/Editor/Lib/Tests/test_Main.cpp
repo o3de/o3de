@@ -17,7 +17,7 @@ class EditorLibTestEnvironment
     : public AZ::Test::ITestEnvironment
 {
 public:
-    ~EditorLibTestEnvironment() override {}
+    ~EditorLibTestEnvironment() override = default;
 
 protected:
     void SetupEnvironment() override

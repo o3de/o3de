@@ -165,8 +165,8 @@ namespace ProjectSettingsTool
             if (editContext)
             {
                 editContext->Class<AndroidSplashscreens>("Splashscreens", "All splashscreen overrides for Android.")
-                    ->DataElement(nullptr, &AndroidSplashscreens::m_landscapeSplashscreens)
-                    ->DataElement(nullptr, &AndroidSplashscreens::m_portraitSplashscreens)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &AndroidSplashscreens::m_landscapeSplashscreens)
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &AndroidSplashscreens::m_portraitSplashscreens)
                 ;
             }
         }
