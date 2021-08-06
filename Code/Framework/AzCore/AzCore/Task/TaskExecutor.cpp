@@ -37,7 +37,7 @@ namespace AZ
 
             Task** cursor = m_successors.data();
 
-            for (size_t i = 0; i != m_tasks.size(); ++i)
+            for (uint32_t i = 0; i != m_tasks.size(); ++i)
             {
                 Task& task = m_tasks[i];
                 task.m_graph = this;
