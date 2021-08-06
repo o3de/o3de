@@ -97,7 +97,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         PATH ${CMAKE_CURRENT_LIST_DIR}/asset_bundler_batch_tests.py
         EXCLUDE_TEST_RUN_TARGET_FROM_IDE
         TEST_SERIAL 
-        TIMEOUT 2400
         TEST_SUITE periodic
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
@@ -111,7 +110,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         PYTEST_MARKS "SUITE_sandbox" # run only sandbox tests in this file
         EXCLUDE_TEST_RUN_TARGET_FROM_IDE
         TEST_SERIAL 
-        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             AZ::AssetBundlerBatch
@@ -133,7 +131,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         PATH ${CMAKE_CURRENT_LIST_DIR}/missing_dependency_tests.py
         EXCLUDE_TEST_RUN_TARGET_FROM_IDE
         TEST_SERIAL 
-        TIMEOUT 1500
         TEST_SUITE periodic
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessorBatch
