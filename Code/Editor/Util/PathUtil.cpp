@@ -246,7 +246,7 @@ namespace Path
     AZStd::string GetEditingGameDataFolder()
     {
         // Define here the mod name
-        static AZStd::fixed_string<AZ::IO::MaxPathLength> s_currentModName;
+        static AZ::IO::FixedMaxPathString s_currentModName;
 
         if (s_currentModName.empty())
         {

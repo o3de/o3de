@@ -30,7 +30,7 @@ namespace AZ::IO
     struct INestedArchive;
     struct IArchive;
 
-    using PathString = AZStd::fixed_string<AZ::IO::MaxPathLength>;
+    using PathString = AZ::IO::FixedMaxPathString;
     using StackString = AZStd::fixed_string<512>;
 
     struct MemoryBlock;
