@@ -91,7 +91,7 @@ namespace
         void ViewportInfoStatusUpdated(int newIndex);
 
     private:
-        void OnViewportInfoDisplayStateChanged(AZ::AtomBridge::ViewportInfoDisplayState state)
+        void OnViewportInfoDisplayStateChanged(AZ::AtomBridge::ViewportInfoDisplayState state) override
         {
             emit ViewportInfoStatusUpdated(static_cast<int>(state));
         }

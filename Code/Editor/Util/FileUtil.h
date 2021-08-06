@@ -123,7 +123,7 @@ public:
 
     //////////////////////////////////////////////////////////////////////////
     // @param LPPROGRESS_ROUTINE pfnProgress - called by the system to notify of file copy progress
-    // @param LPBOOL pbCancel - when the contents of this BOOL are set to TRUE, the system cancels the copy operation
+    // @param LPBOOL pbCancel - when the contents of this BOOL are set to true, the system cancels the copy operation
     static IFileUtil::ECopyTreeResult   CopyFile(const QString& strSourceFile, const QString& strTargetFile, bool boConfirmOverwrite = false, ProgressRoutine pfnProgress = nullptr, bool* pbCancel = nullptr);
 
 

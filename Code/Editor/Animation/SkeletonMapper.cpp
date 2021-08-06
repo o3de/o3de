@@ -56,8 +56,8 @@ void CMapper::ClearLocations()
     uint32 count = uint32(m_nodes.size());
     for (uint32 i = 0; i < count; ++i)
     {
-        m_nodes[i].position = NULL;
-        m_nodes[i].orientation = NULL;
+        m_nodes[i].position = nullptr;
+        m_nodes[i].orientation = nullptr;
     }
 
     m_locations.clear();
@@ -141,7 +141,7 @@ void CMapper::Map(QuatT* pResult)
         }
 
         CHierarchy::SNode* pParent = pNode->parent < 0 ?
-            NULL : m_hierarchy.GetNode(pNode->parent);
+            nullptr : m_hierarchy.GetNode(pNode->parent);
         if (pParent)
         {
             pResult[i].t =
@@ -173,7 +173,7 @@ void CMapper::Map(QuatT* pResult)
         }
 
         CHierarchy::SNode* pParent = pNode->parent < 0 ?
-            NULL : m_hierarchy.GetNode(pNode->parent);
+            nullptr : m_hierarchy.GetNode(pNode->parent);
         if (!pParent)
         {
             pResult[i].q = absolutes[i];

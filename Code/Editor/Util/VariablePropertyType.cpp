@@ -71,28 +71,28 @@ namespace Prop
     Description::Description()
         : m_type(ePropertyInvalid)
         , m_numImages(-1)
-        , m_enumList(NULL)
+        , m_enumList(nullptr)
         , m_rangeMin(0)
         , m_rangeMax(100)
         , m_step(0)
         , m_bHardMin(false)
         , m_bHardMax(false)
         , m_valueMultiplier(1)
-        , m_pEnumDBItem(NULL)
+        , m_pEnumDBItem(nullptr)
     {
     }
 
     Description::Description(IVariable* pVar)
         : m_type(ePropertyInvalid)
         , m_numImages(-1)
-        , m_enumList(NULL)
+        , m_enumList(nullptr)
         , m_rangeMin(0)
         , m_rangeMax(100)
         , m_step(0)
         , m_bHardMin(false)
         , m_bHardMax(false)
         , m_valueMultiplier(1)
-        , m_pEnumDBItem(NULL)
+        , m_pEnumDBItem(nullptr)
     {
         if (!pVar)
         {
@@ -110,7 +110,7 @@ namespace Prop
         m_name = pVar->GetHumanName();
         m_enumList = pVar->GetEnumList();
 
-        if (m_enumList != NULL)
+        if (m_enumList != nullptr)
         {
             m_type = ePropertySelection;
         }
@@ -325,7 +325,7 @@ namespace Prop
         case ePropertyAudioPreloadRequest:
             return "AudioPreloadRequest";
         default:
-            return 0;
+            return nullptr;
         }
     }
 }
