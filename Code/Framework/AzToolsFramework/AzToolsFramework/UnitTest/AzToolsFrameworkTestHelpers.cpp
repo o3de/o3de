@@ -381,7 +381,19 @@ namespace UnitTest
         AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
             entityId, &AzToolsFramework::EditorEntityContextRequestBus::Events::CreateNewEditorEntity, name);
 
+        if (!entityId.IsValid())
+        {
+            AZ_Error("CreateDefaultEditorEntity", false, "Failed to create editor entity '%s'", name);
+            return AZ::EntityId();
+        }
+
         AZ::Entity* entity = GetEntityById(entityId);
+
+        if (!entity)
+        {
+            AZ_Error("CreateDefaultEditorEntity", false, "Invalid entity obtained from Id %s", entityId.ToString().c_str());
+            return AZ::EntityId();
+        }
 
         entity->Deactivate();
 

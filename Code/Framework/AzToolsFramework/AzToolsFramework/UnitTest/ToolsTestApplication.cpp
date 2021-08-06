@@ -11,7 +11,12 @@
 namespace UnitTest
 {
     ToolsTestApplication::ToolsTestApplication(AZStd::string applicationName)
-        : ToolsApplication()
+        :ToolsTestApplication(AZStd::move(applicationName), 0, nullptr)
+    {
+    }
+
+    ToolsTestApplication::ToolsTestApplication(AZStd::string applicationName, int argc, char** argv)
+        : AzToolsFramework::ToolsApplication(&argc, &argv)
         , m_applicationName(AZStd::move(applicationName))
     {
     }
