@@ -388,6 +388,7 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 
     //! Source Control Enabling.
     bool enableSourceControl;
+    bool clearConsoleOnGameModeStart;
 
     //! Text editor.
     QString textEditorForScript;

@@ -26,12 +26,13 @@ namespace ShaderManagementConsole
         using Base = AtomToolsFramework::AtomToolsApplication;
 
         ShaderManagementConsoleApplication(int* argc, char*** argv);
-        virtual ~ShaderManagementConsoleApplication() = default;
+        virtual ~ShaderManagementConsoleApplication();
 
         //////////////////////////////////////////////////////////////////////////
         // AzFramework::Application
         void CreateStaticModules(AZStd::vector<AZ::Module*>& outModules) override;
         const char* GetCurrentConfigurationName() const override;
+        void Stop() override;
 
     private:
         //////////////////////////////////////////////////////////////////////////
@@ -44,9 +45,9 @@ namespace ShaderManagementConsole
         void Destroy() override;
         //////////////////////////////////////////////////////////////////////////
 
-        void ProcessCommandLine();
+        void ProcessCommandLine(const AZ::CommandLine& commandLine) override;
         void StartInternal() override;
         AZStd::string GetBuildTargetName() const override;
         AZStd::vector<AZStd::string> GetCriticalAssetFilters() const override;
-    };
+     };
 } // namespace ShaderManagementConsole

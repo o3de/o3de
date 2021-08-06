@@ -163,7 +163,7 @@ CUiAnimAzEntityNode::~CUiAnimAzEntityNode()
 //////////////////////////////////////////////////////////////////////////
 unsigned int CUiAnimAzEntityNode::GetParamCount() const
 {
-    return CUiAnimAzEntityNode::GetParamCountStatic() + m_entityScriptPropertiesParamInfos.size();
+    return static_cast<unsigned int>(CUiAnimAzEntityNode::GetParamCountStatic() + m_entityScriptPropertiesParamInfos.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -190,7 +190,7 @@ CUiAnimParamType CUiAnimAzEntityNode::GetParamType(unsigned int nIndex) const
 //////////////////////////////////////////////////////////////////////////
 int CUiAnimAzEntityNode::GetParamCountStatic()
 {
-    return s_nodeParams.size();
+    return static_cast<int>(s_nodeParams.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -680,7 +680,7 @@ IUiAnimTrack* CUiAnimAzEntityNode::CreateTrackForAzField(const UiAnimParamData& 
         // this is a compound type, create a compound track
 
         // We only support compound tracks with 2, 3 or 4 subtracks
-        int numElements = classData->m_elements.size();
+        int numElements = static_cast<int>(classData->m_elements.size());
         if (numElements < 2 || numElements > 4)
         {
             return nullptr;

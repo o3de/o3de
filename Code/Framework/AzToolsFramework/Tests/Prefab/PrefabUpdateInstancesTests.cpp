@@ -309,6 +309,7 @@ namespace UnitTest
         // and use the updated enclosing Instance to update the PrefabDom of Template.
         AZStd::unique_ptr<Instance> detachedInstance = newEnclosingInstance->DetachNestedInstance(nestedInstanceAliases.front());
         ASSERT_TRUE(detachedInstance);
+        m_prefabSystemComponent->RemoveLink(detachedInstance->GetLinkId());
 
         PrefabDom updatedTemplateDom;
         ASSERT_TRUE(PrefabDomUtils::StoreInstanceInPrefabDom(*newEnclosingInstance, updatedTemplateDom));

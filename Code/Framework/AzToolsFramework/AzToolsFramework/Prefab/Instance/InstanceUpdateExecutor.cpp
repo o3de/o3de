@@ -97,7 +97,7 @@ namespace AzToolsFramework
                 m_updatingTemplateInstancesInQueue = true;
 
                 const int instanceCountToUpdateInBatch =
-                    m_instanceCountToUpdateInBatch == 0 ? m_instancesUpdateQueue.size() : m_instanceCountToUpdateInBatch;
+                    m_instanceCountToUpdateInBatch == 0 ? static_cast<int>(m_instancesUpdateQueue.size()) : m_instanceCountToUpdateInBatch;
                 TemplateId currentTemplateId = InvalidTemplateId;
                 TemplateReference currentTemplateReference = AZStd::nullopt;
 

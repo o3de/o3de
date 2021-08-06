@@ -211,7 +211,7 @@ namespace AZStd
             // 20.9.3.2, observer:
             constexpr rep count() const { return m_rep; }
             // 20.9.3.3, arithmetic:
-            constexpr duration operator+() const { *this; }
+            constexpr duration operator+() const { return *this; }
             constexpr duration operator-() const { return duration(-m_rep); }
             constexpr duration& operator++() { ++m_rep; return *this; }
             constexpr duration operator++(int) { return duration(m_rep++); }

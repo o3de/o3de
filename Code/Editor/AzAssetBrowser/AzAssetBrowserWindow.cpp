@@ -42,7 +42,7 @@ public:
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
     }
 
-    ~ListenerForShowAssetEditorEvent()
+    ~ListenerForShowAssetEditorEvent() override
     {
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
     }

@@ -406,7 +406,7 @@ namespace UnitTest
             float variableRadius = 0.0f;
             LmbrCentral::TubeShapeComponentRequestsBus::EventResult(
                 variableRadius, entity.GetId(), &LmbrCentral::TubeShapeComponentRequestsBus::Events::GetVariableRadius,
-                vertIndex);
+                static_cast<int>(vertIndex));
 
             EXPECT_THAT(totalRadius, FloatEq(radiis.first));
             EXPECT_THAT(variableRadius, FloatEq(radiis.second));
