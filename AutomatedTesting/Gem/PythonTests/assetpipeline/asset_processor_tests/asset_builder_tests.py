@@ -113,7 +113,7 @@ class TestsAssetBuilder_WindowsAndMac(object):
         if listening_port:
             corrupted_slice_command.append(f'-port={listening_port}')
         if workspace.project:
-            corrupted_slice_command.append(f'-gamename={workspace.project}')
+            corrupted_slice_command.append(f'--project-path={workspace.project}')
         corrupted_slice_output = utils.safe_subprocess(corrupted_slice_command)
 
         # Verify corrupted slice produced error

@@ -74,7 +74,7 @@ public:
         void flip() {* p ^= mask; }
     };
 
-    CBitArray() { m_base = NULL; m_bits = NULL; m_size = 0; m_numBits = 0; };
+    CBitArray() { m_base = nullptr; m_bits = nullptr; m_size = 0; m_numBits = 0; };
     CBitArray(int numBits)    { resize(numBits); };
     ~CBitArray()
     {

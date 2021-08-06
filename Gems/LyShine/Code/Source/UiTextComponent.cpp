@@ -4413,7 +4413,7 @@ void UiTextComponent::HandleWidthOnlyShrinkToFitWithWrapping(
     {
         // Consider the sizes of all overflowing lines when calculating the
         // scale to reduce the number of times we need to iterate.
-        int numOverflowingLines = drawBatchLinesOut.batchLines.size() - maxLinesElementCanHold;
+        int numOverflowingLines = static_cast<int>(drawBatchLinesOut.batchLines.size() - maxLinesElementCanHold);
         DrawBatchLineContainer::reverse_iterator riter;
         int overflowLineCount = 0;
         float overflowingLineSize = 0.0f;

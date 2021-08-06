@@ -193,7 +193,7 @@ namespace EMotionFX
         const size_t numLodLevels = m_meshLodData.m_lodLevels.size();
         MeshLODData& resultMeshLodData = result->m_meshLodData;
 
-        result->SetNumLODLevels(numLodLevels);
+        result->SetNumLODLevels(static_cast<uint32>(numLodLevels));
         for (size_t lodLevel = 0; lodLevel < numLodLevels; ++lodLevel)
         {
             const MCore::Array<NodeLODInfo>& nodeInfos = m_meshLodData.m_lodLevels[lodLevel].mNodeInfos;
@@ -320,10 +320,10 @@ namespace EMotionFX
         // get the number of nodes, iterate through them, create a new LOD level and copy over the meshes from the last LOD level
         for (size_t i = 0; i < numNodes; ++i)
         {
-            NodeLODInfo& newLODInfo = lodLevels[lodIndex].mNodeInfos[i];
+            NodeLODInfo& newLODInfo = lodLevels[lodIndex].mNodeInfos[static_cast<uint32>(i)];
             if (copyFromLastLODLevel && lodIndex > 0)
             {
-                const NodeLODInfo& prevLODInfo = lodLevels[lodIndex - 1].mNodeInfos[i];
+                const NodeLODInfo& prevLODInfo = lodLevels[lodIndex - 1].mNodeInfos[static_cast<uint32>(i)];
                 newLODInfo.mMesh        = (prevLODInfo.mMesh)        ? prevLODInfo.mMesh->Clone()                    : nullptr;
                 newLODInfo.mStack       = (prevLODInfo.mStack)       ? prevLODInfo.mStack->Clone(newLODInfo.mMesh)   : nullptr;
             }
@@ -335,8 +335,8 @@ namespace EMotionFX
         }
 
         // create a new material array for the new LOD level
-        mMaterials.Resize(lodLevels.size());
-        mMaterials[lodIndex].SetMemoryCategory(EMFX_MEMCATEGORY_ACTORS);
+        mMaterials.Resize(static_cast<uint32>(lodLevels.size()));
+        mMaterials[static_cast<uint32>(lodIndex)].SetMemoryCategory(EMFX_MEMCATEGORY_ACTORS);
 
         // create an empty morph setup for the new LOD level
         mMorphSetups.Add(nullptr);
@@ -344,7 +344,7 @@ namespace EMotionFX
         // copy data from the previous LOD level if wanted
         if (copyFromLastLODLevel && numLODs > 0)
         {
-            CopyLODLevel(this, lodIndex - 1, numLODs - 1, true);
+            CopyLODLevel(this, static_cast<uint32>(lodIndex - 1), static_cast<uint32>(numLODs - 1), true);
         }
     }
 
@@ -1015,7 +1015,7 @@ namespace EMotionFX
         const uint32 numGroups = mNodeGroups.GetLength();
         for (uint32 i = 0; i < numGroups; ++i)
         {
-            mNodeGroups[i]->Destroy();
+            delete mNodeGroups[i];
         }
         mNodeGroups.Clear();
     }
@@ -1210,7 +1210,7 @@ namespace EMotionFX
                 Node* node = mSkeleton->GetNode(n);
 
                 // check if this node has a mesh, if not we can skip it
-                Mesh* mesh = GetMesh(geomLod, n);
+                Mesh* mesh = GetMesh(static_cast<uint32>(geomLod), n);
                 if (mesh == nullptr)
                 {
                     continue;
@@ -1246,10 +1246,10 @@ namespace EMotionFX
                         {
                             // if the bone is disabled
                             SkinInfluence* influence = layer->GetInfluence(orgVertex, i);
-                            if (mSkeleton->GetNode(influence->GetNodeNr())->GetSkeletalLODStatus(geomLod) == false)
+                            if (mSkeleton->GetNode(influence->GetNodeNr())->GetSkeletalLODStatus(static_cast<uint32>(geomLod)) == false)
                             {
                                 // find the first parent bone that is enabled in this LOD
-                                const uint32 newNodeIndex = FindFirstActiveParentBone(geomLod, influence->GetNodeNr());
+                                const uint32 newNodeIndex = FindFirstActiveParentBone(static_cast<uint32>(geomLod), influence->GetNodeNr());
                                 if (newNodeIndex == MCORE_INVALIDINDEX32)
                                 {
                                     MCore::LogWarning("EMotionFX::Actor::MakeGeomLODsCompatibleWithSkeletalLODs() - Failed to find an enabled parent for node '%s' in skeletal LOD %d of actor '%s' (0x%x)", node->GetName(), geomLod, GetFileName(), this);
@@ -1274,10 +1274,10 @@ namespace EMotionFX
                 } // for all submeshes
 
                 // reinit the mesh deformer stacks
-                MeshDeformerStack* stack = GetMeshDeformerStack(geomLod, node->GetNodeIndex());
+                MeshDeformerStack* stack = GetMeshDeformerStack(static_cast<uint32>(geomLod), node->GetNodeIndex());
                 if (stack)
                 {
-                    stack->ReinitializeDeformers(this, node, geomLod);
+                    stack->ReinitializeDeformers(this, node, static_cast<uint32>(geomLod));
                 }
             } // for all nodes
         }
@@ -1520,7 +1520,7 @@ namespace EMotionFX
             {
                 // Optional, not all actors have morph targets.
                 const size_t numLODLevels = m_meshAsset->GetLodAssets().size();
-                mMorphSetups.Resize(numLODLevels);
+                mMorphSetups.Resize(static_cast<uint32>(numLODLevels));
                 for (AZ::u32 i = 0; i < numLODLevels; ++i)
                 {
                     mMorphSetups[i] = nullptr;
@@ -1589,7 +1589,7 @@ namespace EMotionFX
                     const uint32 orgVertex = orgVertices[startVertex + vertexIndex];
 
                     // for all skinning influences of the vertex
-                    const uint32 numInfluences = layer->GetNumInfluences(orgVertex);
+                    const uint32 numInfluences = static_cast<uint32>(layer->GetNumInfluences(orgVertex));
                     float maxWeight = 0.0f;
                     uint32 maxWeightNodeIndex = 0;
                     for (uint32 i = 0; i < numInfluences; ++i)
@@ -2085,7 +2085,7 @@ namespace EMotionFX
     {
         if (delFromMem)
         {
-            mNodeGroups[index]->Destroy();
+            delete mNodeGroups[index];
         }
 
         mNodeGroups.Remove(index);
@@ -2097,7 +2097,7 @@ namespace EMotionFX
         mNodeGroups.RemoveByValue(group);
         if (delFromMem)
         {
-            group->Destroy();
+            delete group;
         }
     }
 
@@ -2787,13 +2787,13 @@ namespace EMotionFX
         const size_t numLODLevels = lodAssets.size();
 
         lodLevels.clear();
-        SetNumLODLevels(numLODLevels, /*adjustMorphSetup=*/false);
+        SetNumLODLevels(static_cast<uint32>(numLODLevels), /*adjustMorphSetup=*/false);
         const uint32 numNodes = mSkeleton->GetNumNodes();
 
         // Remove all the materials and add them back based on the meshAsset. Eventually we will remove all the material from Actor and
         // GLActor.
         RemoveAllMaterials();
-        mMaterials.Resize(numLODLevels);
+        mMaterials.Resize(static_cast<uint32>(numLODLevels));
 
         for (size_t lodLevel = 0; lodLevel < numLODLevels; ++lodLevel)
         {
@@ -2846,19 +2846,19 @@ namespace EMotionFX
                     DualQuatSkinDeformer* skinDeformer = DualQuatSkinDeformer::Create(mesh);
                     jointInfo.mStack->AddDeformer(skinDeformer);
                     skinDeformer->ReserveLocalBones(numLocalJoints);
-                    skinDeformer->Reinitialize(this, meshJoint, lodLevel);
+                    skinDeformer->Reinitialize(this, meshJoint, static_cast<uint32>(lodLevel));
                 }
                 else
                 {
                     SoftSkinDeformer* skinDeformer = GetSoftSkinManager().CreateDeformer(mesh);
                     jointInfo.mStack->AddDeformer(skinDeformer);
                     skinDeformer->ReserveLocalBones(numLocalJoints); // pre-alloc data to prevent reallocs
-                    skinDeformer->Reinitialize(this, meshJoint, lodLevel);
+                    skinDeformer->Reinitialize(this, meshJoint, static_cast<uint32>(lodLevel));
                 }
             }
 
             // Add material for this mesh
-            AddMaterial(lodLevel, Material::Create(GetName()));
+            AddMaterial(static_cast<uint32>(lodLevel), Material::Create(GetName()));
         }
     }
 
@@ -2920,7 +2920,7 @@ namespace EMotionFX
             const AZ::Data::Asset<AZ::RPI::ModelLodAsset>& lodAsset = lodAssets[lodLevel];
             const AZStd::array_view<AZ::RPI::ModelLodAsset::Mesh>& sourceMeshes = lodAsset->GetMeshes();
 
-            MorphSetup* morphSetup = mMorphSetups[lodLevel];
+            MorphSetup* morphSetup = mMorphSetups[static_cast<uint32>(lodLevel)];
             if (!morphSetup)
             {
                 continue;
@@ -3030,7 +3030,7 @@ namespace EMotionFX
             }
 
             // Sync the deformer passes with the morph target deform datas.
-            morphTargetDeformer->Reinitialize(this, meshJoint, lodLevel);
+            morphTargetDeformer->Reinitialize(this, meshJoint, static_cast<uint32>(lodLevel));
         }
     }
 } // namespace EMotionFX

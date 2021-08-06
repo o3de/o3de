@@ -110,8 +110,8 @@ namespace Benchmark
 
     void BM_Prefab::SetUpMockValidatorForReadPrefab()
     {
-        int pathCount = m_paths.size();
-        for (int number = 0; number < pathCount; ++number)
+        const size_t pathCount = m_paths.size();
+        for (size_t number = 0; number < pathCount; ++number)
         {
             m_mockIOActionValidator->ReadPrefabDom(
                 m_paths[number], UnitTest::PrefabTestDomUtils::CreatePrefabDom());

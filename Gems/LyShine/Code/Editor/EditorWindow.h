@@ -143,6 +143,9 @@ public: // member functions
     //! Returns the current mode of the editor (Edit or Preview)
     UiEditorMode GetEditorMode() { return m_editorMode; }
 
+    //! Returns the UI canvas for the current mode (Edit or Preview)
+    AZ::EntityId GetCanvasForCurrentEditorMode();
+
     //! Toggle the editor mode between Edit and Preview
     void ToggleEditorMode();
 

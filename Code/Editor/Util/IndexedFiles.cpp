@@ -14,7 +14,7 @@
 #include "IndexedFiles.h"
 
 volatile TIntAtomic CIndexedFiles::s_bIndexingDone;
-CIndexedFiles* CIndexedFiles::s_pIndexedFiles = NULL;
+CIndexedFiles* CIndexedFiles::s_pIndexedFiles = nullptr;
 
 bool CIndexedFiles::m_startedFileIndexing = false;
 

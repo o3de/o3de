@@ -446,7 +446,7 @@ namespace AZ
 
                     // Positions start at the beginning of the allocation
                     instanceMetaData.m_accumulatedPositionDeltaOffsetInBytes = allocation->GetVirtualAddress().m_ptr;
-                    uint32_t deltaStreamSizeInBytes = vertexCount * MorphTargetConstants::s_unpackedMorphTargetDeltaSizeInBytes;
+                    uint32_t deltaStreamSizeInBytes = static_cast<uint32_t>(vertexCount * MorphTargetConstants::s_unpackedMorphTargetDeltaSizeInBytes);
 
                     // Followed by normals, tangents, and bitangents
                     instanceMetaData.m_accumulatedNormalDeltaOffsetInBytes = instanceMetaData.m_accumulatedPositionDeltaOffsetInBytes + deltaStreamSizeInBytes;
@@ -640,7 +640,8 @@ namespace AZ
                     Aabb localAabb = lod.m_subMeshProperties[i].m_aabb;
                     modelLodCreator.SetMeshAabb(AZStd::move(localAabb));
 
-                    modelLodCreator.SetMeshMaterialAsset(lod.m_subMeshProperties[i].m_material);
+                    modelCreator.AddMaterialSlot(lod.m_subMeshProperties[i].m_materialSlot);
+                    modelLodCreator.SetMeshMaterialSlot(lod.m_subMeshProperties[i].m_materialSlot.m_stableId);
 
                     modelLodCreator.EndMesh();
                 }
