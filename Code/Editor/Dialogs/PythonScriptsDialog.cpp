@@ -159,7 +159,7 @@ void CPythonScriptsDialog::OnExecute()
     QList<QStandardItem*> selectedItems = ui->treeView->GetSelectedItems();
     QStandardItem* selectedItem = selectedItems.empty() ? nullptr : selectedItems.first();
 
-    if (selectedItem == NULL)
+    if (selectedItem == nullptr)
     {
         return;
     }

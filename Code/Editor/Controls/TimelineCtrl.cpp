@@ -58,7 +58,7 @@ TimelineWidget::TimelineWidget(QWidget* parent /* = nullptr */)
 
     m_bIgnoreSetTime = false;
 
-    m_pKeyTimeSet = 0;
+    m_pKeyTimeSet = nullptr;
 
     m_markerStyle = MARKER_STYLE_SECONDS;
     m_fps = 30.0f;
