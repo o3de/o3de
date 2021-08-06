@@ -42,7 +42,7 @@ namespace AzToolsFramework
         ConnectWidgets();
     };
 
-    void PropertyStringLineEditCtrl::setValue(AZStd::string& value)
+    void PropertyStringLineEditCtrl::setValue(const AZStd::string& value)
     {
         QString text = m_pLineEdit->text();
         if (text.compare(value.data()) != 0)
@@ -62,6 +62,14 @@ namespace AzToolsFramework
     AZStd::string PropertyStringLineEditCtrl::value() const
     {
         return AZStd::string(m_pLineEdit->text().toUtf8().data());
+    }
+
+    void PropertyStringLineEditCtrl::setValueFromSystem(const AZStd::string& newValue)
+    {
+        if (!m_pLineEdit->hasFocus())
+        {
+            setValue(newValue);
+        }
     }
 
     QLineEdit* PropertyStringLineEditCtrl::GetLineEdit() const
@@ -153,7 +161,7 @@ namespace AzToolsFramework
         (int)index;
         (void)node;
         AZStd::string val = instance;
-        GUI->setValue(val);
+        GUI->setValueFromSystem(val);
         return false;
     }
 

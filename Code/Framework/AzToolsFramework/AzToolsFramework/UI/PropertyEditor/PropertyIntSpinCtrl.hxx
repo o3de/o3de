@@ -10,6 +10,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/UI/PropertyEditor/PropertyIntCtrlCommon.h>
+#include <AzToolsFramework/UI/PropertyEditor/TextBoxLikePropertyCtrl.hxx>
 #endif
 
 namespace AzQtComponents
@@ -21,6 +22,7 @@ namespace AzToolsFramework
 {   
     class PropertyIntSpinCtrl
         : public QWidget
+        , public DeferredTextboxLikeEdit<PropertyIntSpinCtrl, AZ::s64>
     {
         Q_OBJECT
     public:

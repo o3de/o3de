@@ -16,6 +16,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <QtWidgets/QWidget>
 #include "PropertyEditorAPI.h"
+#include <AzToolsFramework/UI/PropertyEditor/TextBoxLikePropertyCtrl.hxx>
 #endif
 
 namespace AzQtComponents
@@ -27,6 +28,7 @@ namespace AzToolsFramework
 {
     class PropertyDoubleSpinCtrl
         : public QWidget
+        , public DeferredTextboxLikeEdit<PropertyDoubleSpinCtrl, double>
     {
         Q_OBJECT
     public:

@@ -14,13 +14,29 @@
 #if !defined(Q_MOC_RUN)
 #include <AzToolsFramework/UI/PropertyEditor/PropertyIntCtrlCommon.h>
 #include <AzQtComponents/Components/Widgets/SliderCombo.h>
+#include <AzToolsFramework/UI/PropertyEditor/TextBoxLikePropertyCtrl.hxx>
 #endif
 
 namespace AzToolsFramework
 {
+    namespace Internal
+    {
+        struct PropertyIntSliderCtrl_DeferredTextboxLikeEdit_traits
+            : public DeferredTextboxLikeEdit_default_traits
+        {
+            template<class C>
+            static bool isUserEditing(const C* obj)
+            {
+                return obj->m_sliderCombo->spinbox()->hasFocus();
+            }
+        };
+    }
+
     class PropertyIntSliderCtrl
         : public QWidget
+        , public DeferredTextboxLikeEdit<PropertyIntSliderCtrl, AZ::s64, Internal::PropertyIntSliderCtrl_DeferredTextboxLikeEdit_traits>
     {
+        friend struct Internal::PropertyIntSliderCtrl_DeferredTextboxLikeEdit_traits;
         Q_OBJECT
     public:
         AZ_CLASS_ALLOCATOR(PropertyIntSliderCtrl, AZ::SystemAllocator, 0);

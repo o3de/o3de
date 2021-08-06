@@ -45,7 +45,7 @@ namespace AzToolsFramework
         setFocusPolicy(m_pSpinBox->focusPolicy());
 
         connect(m_pSpinBox, SIGNAL(valueChanged(double)), this, SLOT(onChildSpinboxValueChange(double)));
-        connect(m_pSpinBox, &QDoubleSpinBox::editingFinished, this, &PropertyDoubleSpinCtrl::editingFinished);
+        connect(m_pSpinBox, &QDoubleSpinBox::editingFinished, [this]() { onTextBoxLikeEditingFinished(); });
     }
 
     QWidget* PropertyDoubleSpinCtrl::GetFirstInTabOrder()
@@ -381,7 +381,7 @@ namespace AzToolsFramework
     {
         (int)index;
         (void)node;
-        GUI->setValue(instance * GUI->multiplier());
+        GUI->setValueFromSystem(instance * GUI->multiplier());
         return false;
     }
 
@@ -389,7 +389,7 @@ namespace AzToolsFramework
     {
         (int)index;
         (void)node;
-        GUI->setValue(instance * GUI->multiplier());
+        GUI->setValueFromSystem(instance * GUI->multiplier());
         return false;
     }
 

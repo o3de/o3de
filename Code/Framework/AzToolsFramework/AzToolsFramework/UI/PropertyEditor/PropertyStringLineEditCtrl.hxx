@@ -41,11 +41,13 @@ namespace AzToolsFramework
         QWidget* GetLastInTabOrder();
         void UpdateTabOrder();
 
+        void setValueFromSystem(const AZStd::string&);
+
     signals:
-        void valueChanged(AZStd::string& newValue);
+        void valueChanged(const AZStd::string& newValue);
 
     public slots:
-        virtual void setValue(AZStd::string& val);
+        virtual void setValue(const AZStd::string& val);
         void setMaxLen(int maxLen);
 
     protected slots:

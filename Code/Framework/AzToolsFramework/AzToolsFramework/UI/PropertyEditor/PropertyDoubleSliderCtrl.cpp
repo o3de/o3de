@@ -28,7 +28,7 @@ namespace AzToolsFramework
         setFocusProxy(m_sliderCombo);
 
         connect(m_sliderCombo, &AzQtComponents::SliderDoubleCombo::valueChanged, this, &PropertyDoubleSliderCtrl::onValueChange);
-        connect(m_sliderCombo, &AzQtComponents::SliderDoubleCombo::editingFinished, this, &PropertyDoubleSliderCtrl::editingFinished);
+        connect(m_sliderCombo, &AzQtComponents::SliderDoubleCombo::editingFinished, [this]() { onTextBoxLikeEditingFinished(); });
     }
 
     void PropertyDoubleSliderCtrl::onValueChange()
@@ -324,7 +324,7 @@ namespace AzToolsFramework
         (int)index;
         (void)node;
         GUI->blockSignals(true);
-        GUI->setValue(instance);
+        GUI->setValueFromSystem(instance);
         GUI->blockSignals(false);
         return false;
     }
@@ -334,7 +334,7 @@ namespace AzToolsFramework
         (int)index;
         (void)node;
         GUI->blockSignals(true);
-        GUI->setValue(instance);
+        GUI->setValueFromSystem(instance);
         GUI->blockSignals(false);
         return false;
     }

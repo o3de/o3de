@@ -27,7 +27,7 @@ namespace AzToolsFramework
         setFocusProxy(m_sliderCombo);
 
         connect(m_sliderCombo, &AzQtComponents::SliderCombo::valueChanged, this, &PropertyIntSliderCtrl::onValueChange);
-        connect(m_sliderCombo, &AzQtComponents::SliderCombo::editingFinished, this, &PropertyIntSliderCtrl::editingFinished);
+        connect(m_sliderCombo, &AzQtComponents::SliderCombo::editingFinished, [this]() { onTextBoxLikeEditingFinished(); });
     }
 
     PropertyIntSliderCtrl::~PropertyIntSliderCtrl()

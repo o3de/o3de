@@ -44,7 +44,7 @@ namespace AzToolsFramework
         m_pSpinBox->setFocusPolicy(Qt::StrongFocus);
 
         connect(m_pSpinBox, SIGNAL(valueChanged(int)), this, SLOT(onChildSpinboxValueChange(int)));
-        connect(m_pSpinBox, &QSpinBox::editingFinished, this, &PropertyIntSpinCtrl::editingFinished);
+        connect(m_pSpinBox, &QSpinBox::editingFinished, [this]() { onTextBoxLikeEditingFinished(); });
     };
 
     QWidget* PropertyIntSpinCtrl::GetFirstInTabOrder()
