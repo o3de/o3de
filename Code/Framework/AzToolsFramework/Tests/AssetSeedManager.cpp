@@ -63,7 +63,8 @@ namespace UnitTest
             ArgumentContainer argContainer{ {} };
 
             // Append Command Line override for the Project Cache Path
-            auto projectCachePathOverride = FixedValueString::format(R"(--project-cache-path="%s")", m_tempDir.GetDirectory());
+            AZ::IO::Path cacheProjectRootFolder{ m_tempDir.GetDirectory() };
+            auto projectCachePathOverride = FixedValueString::format(R"(--project-cache-path="%s")", cacheProjectRootFolder.c_str());
             auto projectPathOverride = FixedValueString{ R"(--project-path=AutomatedTesting)" };
             argContainer.push_back(projectCachePathOverride.data());
             argContainer.push_back(projectPathOverride.data());
@@ -72,6 +73,12 @@ namespace UnitTest
             m_assetRegistry = new AzFramework::AssetRegistry();
 
             m_application->Start(AzFramework::Application::Descriptor());
+
+            // By default @assets@ is setup to include the platform at the end. But this test is going to
+            // loop over platforms and it will be included as part of the relative path of the file.
+            // So the asset folder for these tests have to point to the cache project root folder, which
+            // doesn't include the platform.
+            AZ::IO::FileIOBase::GetInstance()->SetAlias("@assets@", cacheProjectRootFolder.c_str());
 
             for (int idx = 0; idx < s_totalAssets; idx++)
             {
@@ -100,7 +107,7 @@ namespace UnitTest
                         AZ::IO::SizeType bytesWritten = m_fileStreams[platformCount][idx].Write(m_assetsPath[idx].size(), m_assetsPath[idx].data());
                         EXPECT_EQ(bytesWritten, m_assetsPath[idx].size());
                         m_fileStreams[platformCount][idx].Close();
-                        AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT; // writing to asset cache folder
+                        AZ_TEST_STOP_TRACE_SUPPRESSION(1); // writing to asset cache folder
                     }
                     else
                     {
@@ -124,7 +131,7 @@ namespace UnitTest
 
             AZ_TEST_START_TRACE_SUPPRESSION;
             AZ::IO::FileIOStream dynamicSliceFileIOStream(TestDynamicSliceAssetPath, AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeText);
-            AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT; // writing to asset cache folder
+            AZ_TEST_STOP_TRACE_SUPPRESSION(1); // writing to asset cache folder
 
             AZ::Data::AssetInfo sliceAssetInfo;
             sliceAssetInfo.m_relativePath = TestSliceAssetPath;
@@ -138,7 +145,7 @@ namespace UnitTest
 
             AZ_TEST_START_TRACE_SUPPRESSION;
             AZ::IO::FileIOStream sliceFileIOStream(TestSliceAssetPath, AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeText);
-            AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT; // writing to asset cache folder
+            AZ_TEST_STOP_TRACE_SUPPRESSION(1); // writing to asset cache folder
 
             // asset0 -> asset1 -> asset2 -> asset4
             //                 --> asset3
@@ -747,11 +754,11 @@ namespace UnitTest
 
         }
 
-        AzToolsFramework::AssetSeedManager* m_assetSeedManager;
-        AzFramework::AssetRegistry* m_assetRegistry;
-        ToolsTestApplication* m_application;
-        AzToolsFramework::PlatformAddressedAssetCatalog* m_pcCatalog;
-        AzToolsFramework::PlatformAddressedAssetCatalog* m_androidCatalog;
+        AzToolsFramework::AssetSeedManager* m_assetSeedManager = nullptr;
+        AzFramework::AssetRegistry* m_assetRegistry = nullptr;
+        ToolsTestApplication* m_application = nullptr;
+        AzToolsFramework::PlatformAddressedAssetCatalog* m_pcCatalog = nullptr;
+        AzToolsFramework::PlatformAddressedAssetCatalog* m_androidCatalog = nullptr;
         AZ::IO::FileIOStream m_fileStreams[s_totalTestPlatforms][s_totalAssets];
         AzFramework::PlatformId m_testPlatforms[s_totalTestPlatforms];
         AZStd::string m_assetsPath[s_totalAssets];

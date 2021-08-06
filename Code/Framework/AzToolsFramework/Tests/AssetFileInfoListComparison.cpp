@@ -752,9 +752,9 @@ namespace UnitTest
 
         }
 
-        ToolsTestApplication* m_application;
+        ToolsTestApplication* m_application = nullptr;
         UnitTest::ScopedTemporaryDirectory m_tempDir;
-        AzToolsFramework::PlatformAddressedAssetCatalog* m_pcCatalog;
+        AzToolsFramework::PlatformAddressedAssetCatalog* m_pcCatalog = nullptr;
         AZ::IO::FileIOStream m_fileStreams[TotalAssets];
         AZ::Data::AssetId m_assets[TotalAssets];
         AZStd::string m_assetsPath[TotalAssets];

@@ -57,6 +57,11 @@ namespace UnitTest
             // in the unit tests.
             AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
+            // By default @assets@ is setup to include the platform at the end. But this test is going to
+            // loop over all platforms and it will be included as part of the relative path of the file.
+            // So the asset folder for these tests have to point to the cache project root folder, which
+            // doesn't include the platform.
+            AZ::IO::FileIOBase::GetInstance()->SetAlias("@assets@", cacheProjectRootFolder.c_str());
 
             for (int platformNum = AzFramework::PlatformId::PC; platformNum < AzFramework::PlatformId::NumPlatformIds; ++platformNum)
             {
@@ -82,7 +87,7 @@ namespace UnitTest
                         AZ::IO::SizeType bytesWritten = m_fileStreams[platformNum][idx].Write(info.m_relativePath.size(), info.m_relativePath.data());
                         EXPECT_EQ(bytesWritten, info.m_relativePath.size());
                         m_fileStreams[platformNum][idx].Close();
-                        AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT; // writing to asset cache folder
+                        AZ_TEST_STOP_TRACE_SUPPRESSION(1); // writing to asset cache folder
                     }
                     else
                     {
@@ -112,8 +117,8 @@ namespace UnitTest
         }
 
 
-        AzToolsFramework::PlatformAddressedAssetCatalogManager* m_PlatformAddressedAssetCatalogManager;
-        ToolsTestApplication* m_application;
+        AzToolsFramework::PlatformAddressedAssetCatalogManager* m_PlatformAddressedAssetCatalogManager = nullptr;
+        ToolsTestApplication* m_application = nullptr;
         UnitTest::ScopedTemporaryDirectory m_tempDir;
         AZ::IO::FileIOStream m_fileStreams[AzFramework::PlatformId::NumPlatformIds][s_totalAssets];
 
@@ -151,7 +156,7 @@ namespace UnitTest
             AZ_TEST_START_TRACE_SUPPRESSION;
             AZ::IO::Result result = AZ::IO::FileIOBase::GetInstance()->Remove(androidCatalogPath.c_str());
             EXPECT_EQ(result.GetResultCode(), AZ::IO::ResultCode::Success);
-            AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT; // removing from asset cache folder
+            AZ_TEST_STOP_TRACE_SUPPRESSION(1); // removing from asset cache folder
         }
         EXPECT_EQ(AzToolsFramework::PlatformAddressedAssetCatalog::CatalogExists(AzFramework::PlatformId::ANDROID_ID), false);
     }
@@ -204,7 +209,7 @@ namespace UnitTest
             m_platformAddressedAssetCatalogManager.reset();
             delete m_application;
         }
-        ToolsTestApplication* m_application;
+        ToolsTestApplication* m_application = nullptr;
         AZStd::unique_ptr<AzToolsFramework::PlatformAddressedAssetCatalogManager> m_platformAddressedAssetCatalogManager;
         UnitTest::ScopedTemporaryDirectory m_tempDir;
     };
