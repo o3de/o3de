@@ -27,7 +27,7 @@ void ReflectedPropertiesPanel::DeleteVars()
 {
     ClearVarBlock();
     m_updateCallbacks.clear();
-    m_varBlock = 0;
+    m_varBlock = nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////

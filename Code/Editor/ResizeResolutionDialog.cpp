@@ -89,7 +89,7 @@ int ResizeResolutionModel::SizeRow(uint32 dwSize) const
 // CResizeResolutionDialog dialog
 
 
-CResizeResolutionDialog::CResizeResolutionDialog(QWidget* pParent /*=NULL*/)
+CResizeResolutionDialog::CResizeResolutionDialog(QWidget* pParent /*=nullptr*/)
     : QDialog(pParent)
     , m_model(new ResizeResolutionModel(this))
     , ui(new Ui::CResizeResolutionDialog)

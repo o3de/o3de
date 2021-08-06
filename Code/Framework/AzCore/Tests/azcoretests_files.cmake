@@ -65,6 +65,7 @@ set(FILES
     StreamerTests.cpp
     StringFunc.cpp
     SystemFile.cpp
+    TaskTests.cpp
     TickBusTest.cpp
     TimeDataStatistics.cpp
     UUIDTests.cpp
