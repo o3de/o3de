@@ -27,7 +27,7 @@ public:
         : m_bAllOfSameType(true)
         , m_bHasRotationTrack(false) {}
 
-    unsigned int GetCount() const { return m_tracks.size(); }
+    unsigned int GetCount() const { return static_cast<unsigned int>(m_tracks.size()); }
     CTrackViewTrack* GetTrack(const unsigned int index) { return m_tracks[index]; }
     const CTrackViewTrack* GetTrack(const unsigned int index) const { return m_tracks[index]; }
 

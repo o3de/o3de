@@ -230,7 +230,7 @@ namespace AZ
     void DebugConsole::BrowseInputHistory(ImGuiInputTextCallbackData* data)
     {
         const int previousHistoryIndex = m_currentHistoryIndex;
-        const int maxHistoryIndex = m_textInputHistory.size() - 1;
+        const int maxHistoryIndex = static_cast<int>(m_textInputHistory.size() - 1);
         switch (data->EventKey)
         {
             // Browse backwards through the history.

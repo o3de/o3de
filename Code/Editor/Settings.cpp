@@ -1088,7 +1088,7 @@ void SEditorSettings::ConvertPath(const AZStd::string_view sourcePath, AZStd::st
 
 AzToolsFramework::EditorSettingsAPIRequests::SettingOutcome SEditorSettings::GetValue(const AZStd::string_view path)
 {
-    if (path.find("|") < 0)
+    if (path.find("|") == AZStd::string_view::npos)
     {
         return { AZStd::string("Invalid Path - could not find separator \"|\"") };
     }
@@ -1106,7 +1106,7 @@ AzToolsFramework::EditorSettingsAPIRequests::SettingOutcome SEditorSettings::Get
 
 AzToolsFramework::EditorSettingsAPIRequests::SettingOutcome SEditorSettings::SetValue(const AZStd::string_view path, const AZStd::any& value)
 {
-    if (path.find("|") < 0)
+    if (path.find("|") == AZStd::string_view::npos)
     {
         return { AZStd::string("Invalid Path - could not find separator \"|\"") };
     }
