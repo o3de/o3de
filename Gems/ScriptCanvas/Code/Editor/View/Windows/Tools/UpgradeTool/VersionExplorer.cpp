@@ -651,9 +651,9 @@ namespace ScriptCanvasEditor
             return;
         }
 
-        m_ui->tableWidget->insertRow(m_inspectedAssets);
+        m_ui->tableWidget->insertRow(static_cast<int>(m_inspectedAssets));
         QTableWidgetItem* rowName = new QTableWidgetItem(tr(asset.GetHint().c_str()));
-        m_ui->tableWidget->setItem(m_inspectedAssets, ColumnAsset, rowName);
+        m_ui->tableWidget->setItem(static_cast<int>(m_inspectedAssets), static_cast<int>(ColumnAsset), rowName);
 
         if (!graphComponent->GetVersion().IsLatest())
         {
@@ -675,9 +675,9 @@ namespace ScriptCanvasEditor
                 AZ::SystemTickBus::ExecuteQueuedEvents();
 
                 });
-            m_ui->tableWidget->setCellWidget(m_inspectedAssets, ColumnAction, rowGoToButton);
+            m_ui->tableWidget->setCellWidget(static_cast<int>(m_inspectedAssets), static_cast<int>(ColumnAction), rowGoToButton);
 
-            m_ui->tableWidget->setCellWidget(m_inspectedAssets, ColumnStatus, spinner);
+            m_ui->tableWidget->setCellWidget(static_cast<int>(m_inspectedAssets), static_cast<int>(ColumnStatus), spinner);
         }
 
         QToolButton* browseButton = new QToolButton(this);
@@ -705,7 +705,7 @@ namespace ScriptCanvasEditor
         connect(browseButton, &QPushButton::clicked, [absolutePath] {
             AzQtComponents::ShowFileOnDesktop(absolutePath);
             });
-        m_ui->tableWidget->setCellWidget(m_inspectedAssets, ColumnBrowse, browseButton);
+        m_ui->tableWidget->setCellWidget(static_cast<int>(m_inspectedAssets), static_cast<int>(ColumnBrowse), browseButton);
 
         ++m_inspectedAssets;
         ++m_currentAssetIndex;

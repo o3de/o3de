@@ -95,7 +95,6 @@ namespace O3DE::ProjectManager
         gemCreatorRect.moveTo(contentRect.left(), contentRect.top() + gemNameRect.height());
 
         painter->setFont(standardFont);
-        painter->setPen(m_linkColor);
         gemCreatorRect = painter->boundingRect(gemCreatorRect, Qt::TextSingleLine, gemCreator);
         painter->drawText(gemCreatorRect, Qt::TextSingleLine, gemCreator);
 

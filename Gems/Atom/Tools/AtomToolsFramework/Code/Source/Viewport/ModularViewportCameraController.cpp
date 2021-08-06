@@ -68,6 +68,11 @@ namespace AtomToolsFramework
         m_cameraPropsBuilder = builder;
     }
 
+    void ModularViewportCameraController::SetCameraPriorityBuilderCallback(const CameraPriorityBuilder& builder)
+    {
+        m_cameraControllerPriorityBuilder = builder;
+    }
+
     void ModularViewportCameraController::SetupCameras(AzFramework::Cameras& cameras)
     {
         if (m_cameraListBuilder)
@@ -76,7 +81,7 @@ namespace AtomToolsFramework
         }
     }
 
-    void ModularViewportCameraController::SetupCameraProperies(AzFramework::CameraProps& cameraProps)
+    void ModularViewportCameraController::SetupCameraProperties(AzFramework::CameraProps& cameraProps)
     {
         if (m_cameraPropsBuilder)
         {
@@ -84,12 +89,36 @@ namespace AtomToolsFramework
         }
     }
 
+    void ModularViewportCameraController::SetupCameraControllerPriority(CameraControllerPriorityFn& cameraPriorityFn)
+    {
+        if (m_cameraControllerPriorityBuilder)
+        {
+            m_cameraControllerPriorityBuilder(cameraPriorityFn);
+        }
+    }
+
+    // what priority should the camera system respond to
+    AzFramework::ViewportControllerPriority DefaultCameraControllerPriority(const AzFramework::CameraSystem& cameraSystem)
+    {
+        // ModernViewportCameraControllerInstance receives events at all priorities, when it is in 'exclusive' mode
+        // or it is actively handling events (essentially when the camera system is 'active' and responding to inputs)
+        // it should only respond to the highest priority
+        if (cameraSystem.m_cameras.Exclusive() || cameraSystem.HandlingEvents())
+        {
+            return AzFramework::ViewportControllerPriority::Highest;
+        }
+
+        // otherwise it should only respond to normal priority events
+        return AzFramework::ViewportControllerPriority::Normal;
+    }
+
     ModularViewportCameraControllerInstance::ModularViewportCameraControllerInstance(
         const AzFramework::ViewportId viewportId, ModularViewportCameraController* controller)
         : MultiViewportControllerInstanceInterface<ModularViewportCameraController>(viewportId, controller)
     {
         controller->SetupCameras(m_cameraSystem.m_cameras);
-        controller->SetupCameraProperies(m_cameraProps);
+        controller->SetupCameraProperties(m_cameraProps);
+        controller->SetupCameraControllerPriority(m_priorityFn);
 
         if (auto viewportContext = RetrieveViewportContext(GetViewportId()))
         {
@@ -118,24 +147,9 @@ namespace AtomToolsFramework
         AzFramework::ViewportDebugDisplayEventBus::Handler::BusDisconnect();
     }
 
-    // what priority should the camera system respond to
-    static AzFramework::ViewportControllerPriority GetPriority(const AzFramework::CameraSystem& cameraSystem)
-    {
-        // ModernViewportCameraControllerInstance receives events at all priorities, when it is in 'exclusive' mode
-        // or it is actively handling events (essentially when the camera system is 'active' and responding to inputs)
-        // it should only respond to the highest priority
-        if (cameraSystem.m_cameras.Exclusive() || cameraSystem.HandlingEvents())
-        {
-            return AzFramework::ViewportControllerPriority::Highest;
-        }
-
-        // otherwise it should only respond to normal priority events
-        return AzFramework::ViewportControllerPriority::Normal;
-    }
-
     bool ModularViewportCameraControllerInstance::HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event)
     {
-        if (event.m_priority == GetPriority(m_cameraSystem))
+        if (event.m_priority == m_priorityFn(m_cameraSystem))
         {
             return m_cameraSystem.HandleEvents(AzFramework::BuildInputEvent(event.m_inputChannel));
         }

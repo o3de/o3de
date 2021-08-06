@@ -317,7 +317,7 @@ namespace EMotionFX
             // now we have located the skinning information for this vertex, we can see if our bones array
             // already contains the bone it uses by traversing all influences for this vertex, and checking
             // if the bone of that influence already is in the array with used bones
-            const uint32 numInfluences = GetNumInfluences(i);
+            const uint32 numInfluences = static_cast<uint32>(GetNumInfluences(i));
             for (uint32 a = 0; a < numInfluences; ++a)
             {
                 EMotionFX::SkinInfluence* influence = GetInfluence(i, a);

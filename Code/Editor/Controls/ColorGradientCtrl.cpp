@@ -29,7 +29,7 @@ CColorGradientCtrl::CColorGradientCtrl(QWidget* parent)
     m_nHitKeyIndex = -1;
     m_nKeyDrawRadius = 3;
     m_bTracking = false;
-    m_pSpline = 0;
+    m_pSpline = nullptr;
     m_fMinTime = -1;
     m_fMaxTime = 1;
     m_fMinValue = -1;
@@ -474,7 +474,7 @@ void CColorGradientCtrl::SetActiveKey(int nIndex)
 }
 
 /////////////////////////////////////////////////////////////////////////////
-void CColorGradientCtrl::SetSpline(ISplineInterpolator* pSpline, BOOL bRedraw)
+void CColorGradientCtrl::SetSpline(ISplineInterpolator* pSpline, bool bRedraw)
 {
     if (pSpline != m_pSpline)
     {
@@ -501,7 +501,7 @@ ISplineInterpolator* CColorGradientCtrl::GetSpline()
 /////////////////////////////////////////////////////////////////////////////
 void CColorGradientCtrl::keyPressEvent(QKeyEvent* event)
 {
-    BOOL bProcessed = false;
+    bool bProcessed = false;
 
     if (m_nActiveKey != -1 && m_pSpline)
     {

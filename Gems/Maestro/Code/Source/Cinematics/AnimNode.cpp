@@ -74,7 +74,7 @@ void CAnimNode::Activate([[maybe_unused]] bool bActivate)
 //////////////////////////////////////////////////////////////////////////
 int CAnimNode::GetTrackCount() const
 {
-    return m_tracks.size();
+    return static_cast<int>(m_tracks.size());
 }
 
 const char* CAnimNode::GetParamName(const CAnimParamType& paramType) const

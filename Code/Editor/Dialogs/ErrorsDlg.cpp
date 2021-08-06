@@ -20,7 +20,7 @@ AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 
-CErrorsDlg::CErrorsDlg(QWidget* pParent /*=NULL*/)
+CErrorsDlg::CErrorsDlg(QWidget* pParent /*=nullptr*/)
     : QDialog(pParent)
     , ui(new Ui::CErrorsDlg)
 {
