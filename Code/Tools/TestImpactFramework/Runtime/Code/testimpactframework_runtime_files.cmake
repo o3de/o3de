@@ -132,7 +132,6 @@ set(FILES
     Source/TestImpactClientTestRun.cpp
     Source/TestImpactClientSequenceReport.cpp
     Source/TestImpactChangeListSerializer.cpp
-    Source/TestImpactChangeListSerializerInternal.h
     Source/TestImpactClientSequenceReportSerializer.cpp
     Source/TestImpactRepoPath.cpp
     Source/TestImpactUtils.cpp

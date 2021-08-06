@@ -404,6 +404,8 @@ namespace TestImpact
             "  options:\n"
             "    -config=<filename>                                          Path to the configuration file for the TIAF runtime (default: \n"
             "                                                                <tiaf binay build dir>.<tiaf binary build type>.json).\n"
+            "    -datafile=<filename>                                        Optional path to a test impact data file that will used instead of that\n"
+            "                                                                specified in the config file.\n"
             "    -changelist=<filename>                                      Path to the JSON of source file changes to perform test impact \n"
             "                                                                analysis on.\n"
             "    -report=<filename>                                          Path to where the sequence report file will be written (if this option \n"
