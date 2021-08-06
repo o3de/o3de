@@ -67,7 +67,7 @@ namespace Multiplayer
                     AZ::Name spawnableName = AZ::Interface<INetworkSpawnableLibrary>::Get()->GetSpawnableNameFromAssetId(spawnableAssetId);
                     PrefabEntityId prefabEntityId;
                     prefabEntityId.m_prefabName = spawnableName;
-                    prefabEntityId.m_entityOffset = netEntityIndex;
+                    prefabEntityId.m_entityOffset = static_cast<uint32_t>(netEntityIndex);
                     AZ::Interface<INetworkEntityManager>::Get()->SetupNetEntity(netEntity, prefabEntityId, NetEntityRole::Authority);
                 }
                 else

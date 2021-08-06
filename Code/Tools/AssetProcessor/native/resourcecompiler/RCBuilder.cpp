@@ -322,7 +322,7 @@ namespace AssetProcessor
         executableDirectory /= ASSETPROCESSOR_TRAIT_LEGACY_RC_RELATIVE_PATH;
         if (AZ::IO::SystemFile::Exists(executableDirectory.c_str()))
         {
-            rcAbsolutePathOut = QString::fromUtf8(executableDirectory.c_str(), executableDirectory.Native().size());
+            rcAbsolutePathOut = QString::fromUtf8(executableDirectory.c_str(), static_cast<int>(executableDirectory.Native().size()));
             return true;
         }
 
