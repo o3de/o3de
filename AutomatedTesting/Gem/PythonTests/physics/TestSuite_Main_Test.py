@@ -55,7 +55,6 @@ class EditorSingleTest_WithFileOverrides(EditorSingleTest):
 
 
 @pytest.mark.SUITE_main
-@pytest.mark.xfail
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomation(EditorTestSuite):
