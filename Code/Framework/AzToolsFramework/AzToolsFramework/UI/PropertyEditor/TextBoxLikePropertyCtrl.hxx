@@ -35,26 +35,38 @@ namespace AzToolsFramework
         }
     };
 
-    /*
-    A small helper for deferring `setValue' events while a user is editing a textbox-like property.
-    In these cases, any external `setValue' events shouldn't overwrite what the user enters.
-    */
+    //! A small helper for deferring `setValue' events while a user is editing a textbox-like property.
+    //! In these cases, any external `setValue' events shouldn't overwrite what the user enters.
     template<class Derived, class T, class Traits = DeferredTextboxLikeEdit_default_traits>
     class DeferredTextboxLikeEdit
     {
     public:
+        //! Set the value of the property, but if the user is editing the textbox-like widget,
+        //! don't overwrite their edits. Instead, save the given value for later use; when the
+        //! user complets editing, if they didn't actually change anything, then the latest
+        //! value passed to this method will be set on the textbox-like widget.
         void setValueFromSystem(const T&);
 
     protected:
+        //! When the textbox-like property editing finishes (typically from the user pressing enter
+        //! or the textbox-like widget losing focus), call this method to apply any deferred set-value
+        //! actions.
+        //! This method also signals the editing finished slot. All arguments passed to this method are
+        //! forwarded to that slot. To pass arguments here, you must override the traits to allow
+        //! `emitEditingFinished' to accept arguments.
         template<class... Args>
         void onTextBoxLikeEditingFinished(Args&&... args);
 
-        // Call to check if you should really set the new value
-        // This might record that value for later use
+        //! Call to check if you should really set the new value. This might record that value for later use.
+        //! Typically you should use `setValueFromSystem' instead of this method.
+        //! @param prevValue if the value were to be changed now, the previous value of the property.
+        //! @param newValue the value which
+        //! @return true iff you should now set the new value
         bool shouldReallySetValue(const T& prevValue, const T& newValue, bool isUserEditing);
 
-        // Call when the user is done editing the textbox-like property
-        // If this returns a value, you should set the property widget to have that value
+        //! Call when the user is done editing the textbox-like property.
+        //! If this returns a value, you should set the property widget to have that value.
+        //! Typically you should use `onTextBoxLikeEditingFinished' instead of this method.
         AZStd::optional<T> getDeferredValuedToSet(const T& value, bool isUserEditing);
         AZStd::optional<T> getDeferredValuedToSet();
 
