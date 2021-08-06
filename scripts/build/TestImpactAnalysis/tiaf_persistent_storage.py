@@ -7,8 +7,7 @@
 #
 
 import json
-from pathlib import Path
-from pathlib import PurePath
+import pathlib
 import logging
 from abc import ABC, abstractmethod
 
@@ -38,8 +37,8 @@ class PersistentStorage(ABC):
         except KeyError as e:
             raise SystemError(f"The config does not contain the key {str(e)}.")
 
-        self._unpacked_coverage_data_file = PurePath(self._active_workspace).joinpath(unpacked_coverage_data_file)
-        if not Path.is_file(self._unpacked_coverage_data_file):
+        self._unpacked_coverage_data_file = pathlib.PurePath(self._active_workspace).joinpath(unpacked_coverage_data_file)
+        if not pathlib.Path.is_file(self._unpacked_coverage_data_file):
             logging.error(f"The coverage data file '{self._unpacked_coverage_data_file}' is not a valid file path.")
             self._unpacked_coverage_data_file = None
         
@@ -61,7 +60,7 @@ class PersistentStorage(ABC):
 
             # Create the active workspace directory where the coverage data file will be placed and unpack the coverage data so 
             # it is accessible by the runtime
-            Path.mkdir(self._active_workspace, exist_ok=True)
+            pathlib.Path.mkdir(self._active_workspace, exist_ok=True)
             with open(self._unpacked_coverage_data_file, "w", newline='\n') as coverage_data:
                 coverage_data.write(historic_data["coverage_data"])
 
@@ -87,7 +86,7 @@ class PersistentStorage(ABC):
 
         try:
             # Attempt to read the existing coverage data
-            if Path.is_file(self._unpacked_coverage_data_file):
+            if pathlib.Path.is_file(self._unpacked_coverage_data_file):
                 with open(self._unpacked_coverage_data_file, "r") as coverage_data:
                     historic_data = {"last_commit_hash": last_commit_hash, "coverage_data": coverage_data.read()}
                     return json.dumps(historic_data)

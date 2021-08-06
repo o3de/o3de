@@ -9,8 +9,8 @@
 import argparse
 import mars_utils
 import sys
+import pathlib
 from tiaf import TestImpact
-from pathlib import Path
 import logging
 
 logger = logging.getLogger()
@@ -18,7 +18,7 @@ logging.basicConfig()
 
 def parse_args():
     def valid_file_path(value):
-        if Path.is_file(value):
+        if pathlib.Path.is_file(value):
             return value
         else:
             raise FileNotFoundError(value)
