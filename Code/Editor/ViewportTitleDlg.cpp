@@ -449,21 +449,21 @@ void CViewportTitleDlg::AddFOVMenus(QMenu* menu, std::function<void(float)> call
 
     if (!customPresets.empty())
     {
-        for (size_t i = 0; i < customPresets.size(); ++i)
+        for (const QString& customPreset : customPresets)
         {
-            if (customPresets[static_cast<int>(i)].isEmpty())
+            if (customPreset.isEmpty())
             {
                 break;
             }
 
             float fov = gSettings.viewports.fDefaultFov;
             bool ok;
-            float f = customPresets[static_cast<int>(i)].toDouble(&ok);
+            float f = customPreset.toDouble(&ok);
             if (ok)
             {
                 fov = std::max(1.0f, f);
                 fov = std::min(120.0f, f);
-                QAction* action = menu->addAction(customPresets[static_cast<int>(i)]);
+                QAction* action = menu->addAction(customPreset);
                 connect(action, &QAction::triggered, action, [fov, callback](){ callback(fov); });
             }
         }
@@ -535,15 +535,15 @@ void CViewportTitleDlg::AddAspectRatioMenus(QMenu* menu, std::function<void(int,
 
     menu->addSeparator();
 
-    for (size_t i = 0; i < customPresets.size(); ++i)
+    for (const QString& customPreset : customPresets)
     {
-        if (customPresets[static_cast<int>(i)].isEmpty())
+        if (customPreset.isEmpty())
         {
             break;
         }
 
         static QRegularExpression regex(QStringLiteral("^(\\d+):(\\d+)$"));
-        QRegularExpressionMatch matches = regex.match(customPresets[static_cast<int>(i)]);
+        QRegularExpressionMatch matches = regex.match(customPreset);
         if (matches.hasMatch())
         {
             bool ok;
@@ -551,7 +551,7 @@ void CViewportTitleDlg::AddAspectRatioMenus(QMenu* menu, std::function<void(int,
             Q_ASSERT(ok);
             unsigned int height = matches.captured(2).toInt(&ok);
             Q_ASSERT(ok);
-            QAction* action = menu->addAction(customPresets[static_cast<int>(i)]);
+            QAction* action = menu->addAction(customPreset);
             connect(action, &QAction::triggered, action, [width, height, callback]() {callback(width, height); });
         }
     }
@@ -666,15 +666,15 @@ void CViewportTitleDlg::AddResolutionMenus(QMenu* menu, std::function<void(int, 
 
     menu->addSeparator();
 
-    for (size_t i = 0; i < customPresets.size(); ++i)
+    for (const QString& customPreset : customPresets)
     {
-        if (customPresets[static_cast<int>(i)].isEmpty())
+        if (customPreset.isEmpty())
         {
             break;
         }
 
         static QRegularExpression regex(QStringLiteral("^(\\d+) x (\\d+)$"));
-        QRegularExpressionMatch matches = regex.match(customPresets[static_cast<int>(i)]);
+        QRegularExpressionMatch matches = regex.match(customPreset);
         if (matches.hasMatch())
         {
             bool ok;
@@ -682,7 +682,7 @@ void CViewportTitleDlg::AddResolutionMenus(QMenu* menu, std::function<void(int, 
             Q_ASSERT(ok);
             int height = matches.captured(2).toInt(&ok);
             Q_ASSERT(ok);
-            QAction* action = menu->addAction(customPresets[static_cast<int>(i)]);
+            QAction* action = menu->addAction(customPreset);
             connect(action, &QAction::triggered, action, [width, height, callback](){ callback(width, height); });
         }
     }
