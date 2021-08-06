@@ -30,6 +30,7 @@ from editor_python_test_tools.editor_test_helper import EditorTestHelper
 helper = EditorTestHelper(log_prefix="Atom_EditorTestHelper")
 
 LEVEL_NAME = "auto_test"
+LIGHT_COMPONENT = "Light"
 LIGHT_TYPE_PROPERTY = 'Controller|Configuration|Light type'
 DEGREE_RADIAN_FACTOR = 0.0174533
 
@@ -37,7 +38,28 @@ DEGREE_RADIAN_FACTOR = 0.0174533
 def run():
     """
     Sets up the tests by making sure the required level is created & setup correctly.
-    It then executes 2 test cases:
+    It then executes 2 test cases - see each associated test function's docstring for more info.
+
+    Finally prints the string "Light component tests completed" after completion
+
+    Tests will fail immediately if any of these log lines are found:
+    1. Trace::Assert
+    2. Trace::Error
+    3. Traceback (most recent call last):
+
+    :return: None
+    """
+    atom_component_helper.create_basic_atom_level(level_name=LEVEL_NAME)
+
+    # Run tests.
+    area_light_test()
+    spot_light_test()
+    general.log("Light component tests completed.")
+
+
+def area_light_test():
+    """
+    Basic test for the "Light" component attached to an "area_light" entity.
 
     Test Case - Light Component: Capsule, Spot (disk), and Point (sphere):
     1. Creates "area_light" entity w/ a Light component that has a Capsule Light type w/ the color set to 255, 0, 0
@@ -45,15 +67,81 @@ def run():
     3. Sets the Light component Intensity Mode to Lumens (default).
     4. Ensures the Light component Mode is Automatic (default).
     5. Sets the Intensity value of the Light component to 0.0
-    6. Enters game mode again, takes another  screenshot for comparison, then exits game mode.
+    6. Enters game mode again, takes another screenshot for comparison, then exits game mode.
     7. Updates the Intensity value of the Light component to 1000.0
-    8. Enters game mode again, takes another  screenshot for comparison, then exits game mode.
+    8. Enters game mode again, takes another screenshot for comparison, then exits game mode.
     9. Swaps the Capsule light type option to Spot (disk) light type on the Light component
     10. Updates "area_light" entity Transform rotate value to x: 90.0, y:0.0, z:0.0
-    11. Enters game mode again, takes another  screenshot for comparison, then exits game mode.
+    11. Enters game mode again, takes another screenshot for comparison, then exits game mode.
     12. Swaps the Spot (disk) light type for the Point (sphere) light type in the Light component.
-    13. Enters game mode again, takes another  screenshot for comparison, then exits game mode.
+    13. Enters game mode again, takes another screenshot for comparison, then exits game mode.
     14. Deletes the Light component from the "area_light" entity and verifies its successful.
+    """
+    # Create an "area_light" entity with "Light" component using Light type of "Capsule"
+    area_light_entity_name = "area_light"
+    area_light = hydra.Entity(area_light_entity_name)
+    area_light.create_entity(math.Vector3(-1.0, -2.0, 3.0), [LIGHT_COMPONENT])
+    general.log(
+        f"{area_light_entity_name}_test: Component added to the entity: "
+        f"{hydra.has_components(area_light.id, [LIGHT_COMPONENT])}")
+    light_component_id_pair = hydra.attach_component_to_entity(area_light.id, LIGHT_COMPONENT)
+
+    # Select the "Capsule" light type option.
+    azlmbr.editor.EditorComponentAPIBus(
+        azlmbr.bus.Broadcast,
+        'SetComponentProperty',
+        light_component_id_pair,
+        LIGHT_TYPE_PROPERTY,
+        atom_component_helper.LIGHT_TYPES['capsule']
+    )
+
+    # Update color and take screenshot in game mode
+    color = math.Color(255.0, 0.0, 0.0, 0.0)
+    area_light.get_set_test(0, "Controller|Configuration|Color", color)
+    general.idle_wait(1.0)
+    screenshot_utils.take_screenshot_game_mode("AreaLight_1", area_light_entity_name)
+
+    # Update intensity value to 0.0 and take screenshot in game mode
+    area_light.get_set_test(0, "Controller|Configuration|Attenuation Radius|Mode", 1)
+    area_light.get_set_test(0, "Controller|Configuration|Intensity", 0.0)
+    general.idle_wait(1.0)
+    screenshot_utils.take_screenshot_game_mode("AreaLight_2", area_light_entity_name)
+
+    # Update intensity value to 1000.0 and take screenshot in game mode
+    area_light.get_set_test(0, "Controller|Configuration|Intensity", 1000.0)
+    general.idle_wait(1.0)
+    screenshot_utils.take_screenshot_game_mode("AreaLight_3", area_light_entity_name)
+
+    # Swap the "Capsule" light type option to "Spot (disk)" light type
+    azlmbr.editor.EditorComponentAPIBus(
+        azlmbr.bus.Broadcast,
+        'SetComponentProperty',
+        light_component_id_pair,
+        LIGHT_TYPE_PROPERTY,
+        atom_component_helper.LIGHT_TYPES['spot_disk']
+    )
+    area_light_rotation = math.Vector3(DEGREE_RADIAN_FACTOR * 90.0, 0.0, 0.0)
+    azlmbr.components.TransformBus(azlmbr.bus.Event, "SetLocalRotation", area_light.id, area_light_rotation)
+    general.idle_wait(1.0)
+    screenshot_utils.take_screenshot_game_mode("AreaLight_4", area_light_entity_name)
+
+    # Swap the "Spot (disk)" light type to the "Point (sphere)" light type and take screenshot.
+    azlmbr.editor.EditorComponentAPIBus(
+        azlmbr.bus.Broadcast,
+        'SetComponentProperty',
+        light_component_id_pair,
+        LIGHT_TYPE_PROPERTY,
+        atom_component_helper.LIGHT_TYPES['sphere']
+    )
+    general.idle_wait(1.0)
+    screenshot_utils.take_screenshot_game_mode("AreaLight_5", area_light_entity_name)
+
+    editor.ToolsApplicationRequestBus(bus.Broadcast, "DeleteEntityById", area_light.id)
+
+
+def spot_light_test():
+    """
+    Basic test for the Light component attached to a "spot_light" entity.
 
     Test Case - Light Component: Spot (disk) with shadows & colors:
     1. Creates "spot_light" entity w/ a Light component attached to it.
@@ -77,101 +165,9 @@ def run():
         - ShadowmapSize: 256
     14. Modifies the world translate position of the "spot_light" entity to 0.7, -2.0, 1.9 (for casting shadows better)
     15. Enters game mode to take a screenshot for comparison, then exits game mode.
-
-    Finally prints the string "Light component tests completed" after completion
-
-    Tests will fail immediately if any of these log lines are found:
-    1. Trace::Assert
-    2. Trace::Error
-    3. Traceback (most recent call last):
-
-    :return: None
-    """
-    atom_component_helper.create_basic_atom_level(level_name=LEVEL_NAME)
-
-    # Run tests.
-    area_light_test()
-    spot_light_test()
-    general.log("Light component tests completed.")
-
-
-def area_light_test():
-    """
-    Basic test for the "Light" component attached to an "area_light" entity.
-    Example: Entity addition/deletion, & enters game mode w/ Light component attached using various light types.
-    """
-    # Create an "area_light" entity with "Light" component using Light type of "Capsule"
-    area_light_entity_name = "area_light"
-    light_component = "Light"
-    area_light = hydra.Entity(area_light_entity_name)
-    area_light.create_entity(math.Vector3(-1.0, -2.0, 3.0), [light_component])
-    general.log(
-        f"{area_light_entity_name}_test: Component added to the entity: "
-        f"{hydra.has_components(area_light.id, [light_component])}")
-    light_component_id_pair = atom_component_helper.attach_component_to_entity(area_light.id, light_component)
-
-    # Select the "Capsule" light type option.
-    capsule_light_type = atom_component_helper.LIGHT_TYPES['capsule']
-    azlmbr.editor.EditorComponentAPIBus(
-        azlmbr.bus.Broadcast,
-        'SetComponentProperty',
-        light_component_id_pair,
-        LIGHT_TYPE_PROPERTY,
-        capsule_light_type
-    )
-
-    # Update color and take screenshot in game mode
-    color = math.Color(255.0, 0.0, 0.0, 0.0)
-    area_light.get_set_test(0, "Controller|Configuration|Color", color)
-    general.idle_wait(1.0)
-    screenshot_utils.take_screenshot_game_mode("AreaLight_1", area_light_entity_name)
-
-    # Update intensity value to 0.0 and take screenshot in game mode
-    area_light.get_set_test(0, "Controller|Configuration|Attenuation Radius|Mode", 1)
-    area_light.get_set_test(0, "Controller|Configuration|Intensity", 0.0)
-    general.idle_wait(1.0)
-    screenshot_utils.take_screenshot_game_mode("AreaLight_2", area_light_entity_name)
-
-    # Update intensity value to 1000.0 and take screenshot in game mode
-    area_light.get_set_test(0, "Controller|Configuration|Intensity", 1000.0)
-    general.idle_wait(1.0)
-    screenshot_utils.take_screenshot_game_mode("AreaLight_3", area_light_entity_name)
-
-    # Swap the "Capsule" light type option to "Spot (disk)" light type
-    spot_disk_light_type = atom_component_helper.LIGHT_TYPES['spot_disk']
-    azlmbr.editor.EditorComponentAPIBus(
-        azlmbr.bus.Broadcast,
-        'SetComponentProperty',
-        light_component_id_pair,
-        LIGHT_TYPE_PROPERTY,
-        spot_disk_light_type
-    )
-    area_light_rotation = math.Vector3(DEGREE_RADIAN_FACTOR * 90.0, 0.0, 0.0)
-    azlmbr.components.TransformBus(azlmbr.bus.Event, "SetLocalRotation", area_light.id, area_light_rotation)
-    general.idle_wait(1.0)
-    screenshot_utils.take_screenshot_game_mode("AreaLight_4", area_light_entity_name)
-
-    # Swap the "Spot (disk)" light type to the "Point (sphere)" light type and take screenshot.
-    sphere_light_type = atom_component_helper.LIGHT_TYPES['sphere']
-    azlmbr.editor.EditorComponentAPIBus(
-        azlmbr.bus.Broadcast,
-        'SetComponentProperty',
-        light_component_id_pair,
-        LIGHT_TYPE_PROPERTY,
-        sphere_light_type
-    )
-    general.idle_wait(1.0)
-    screenshot_utils.take_screenshot_game_mode("AreaLight_5", area_light_entity_name)
-
-    editor.ToolsApplicationRequestBus(bus.Broadcast, "DeleteEntityById", area_light.id)
-
-
-def spot_light_test():
-    """
-    Basic test for the Light component attached to a "spot_light" entity.
-    Example: Entity addition/deletion & enters game mode w/ Light component attached using various light types.
     """
     # Disable "Directional Light" component for the "directional_light" entity
+    # "directional_light" entity is created by the create_basic_atom_level() function by default.
     directional_light_entity_id = hydra.find_entity_by_name("directional_light")
     directional_light = hydra.Entity(name='directional_light', id=directional_light_entity_id)
     directional_light_component_type = azlmbr.editor.EditorComponentAPIBus(
@@ -201,22 +197,20 @@ def spot_light_test():
 
     # Create a "spot_light" entity with "Light" component using Light Type of "Spot (disk)"
     spot_light_entity_name = "spot_light"
-    light_component = "Light"
-    spot_light = hydra.Entity(f"{spot_light_entity_name}")
-    spot_light.create_entity(math.Vector3(0.7, -2.0, 1.0), [light_component])
+    spot_light = hydra.Entity(spot_light_entity_name)
+    spot_light.create_entity(math.Vector3(0.7, -2.0, 1.0), [LIGHT_COMPONENT])
     general.log(
         f"{spot_light_entity_name}_test: Component added to the entity: "
-        f"{hydra.has_components(spot_light.id, [light_component])}")
+        f"{hydra.has_components(spot_light.id, [LIGHT_COMPONENT])}")
     rotation = math.Vector3(DEGREE_RADIAN_FACTOR * 300.0, 0.0, 0.0)
     azlmbr.components.TransformBus(azlmbr.bus.Event, "SetLocalRotation", spot_light.id, rotation)
-    light_component_type = atom_component_helper.attach_component_to_entity(spot_light.id, "Light")
-    spot_disk_light_type = atom_component_helper.LIGHT_TYPES['spot_disk']
+    light_component_type = hydra.attach_component_to_entity(spot_light.id, LIGHT_COMPONENT)
     editor.EditorComponentAPIBus(
         azlmbr.bus.Broadcast,
         'SetComponentProperty',
         light_component_type,
         LIGHT_TYPE_PROPERTY,
-        spot_disk_light_type
+        atom_component_helper.LIGHT_TYPES['spot_disk']
     )
 
     general.idle_wait(1.0)

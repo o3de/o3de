@@ -195,36 +195,3 @@ def create_basic_atom_level(level_name):
     azlmbr.components.TransformBus(azlmbr.bus.Event, "SetLocalRotation", camera_entity.id, rotation)
     camera_entity.get_set_test(0, "Controller|Configuration|Field of view", 60.0)
     camera.EditorCameraViewRequestBus(azlmbr.bus.Event, "ToggleCameraAsActiveView", camera_entity.id)
-
-
-def attach_component_to_entity(entity_id, component_name):
-    # type: (azlmbr.entity.EntityId, str) -> azlmbr.entity.EntityComponentIdPair
-    """
-    Adds the component if not added already.
-    :param entity_id: EntityId of the entity to attach the component to
-    :param component_name: name of the component
-    :return: If successful, returns the EntityComponentIdPair, otherwise returns None.
-    """
-    import azlmbr.bus as bus
-    import azlmbr.editor as editor
-    import azlmbr.legacy.general as general
-
-    type_ids_list = editor.EditorComponentAPIBus(
-        bus.Broadcast, 'FindComponentTypeIdsByEntityType', [component_name], 0)
-    general.log(f"Components found = {len(type_ids_list)}")
-    if len(type_ids_list) < 1:
-        general.log(f"ERROR: A component class with name {component_name} doesn't exist")
-        return None
-    elif len(type_ids_list) > 1:
-        general.log(f"ERROR: Found more than one component classes with same name: {component_name}")
-        return None
-    # Before adding the component let's check if it is already attached to the entity.
-    component_outcome = editor.EditorComponentAPIBus(bus.Broadcast, 'GetComponentOfType', entity_id, type_ids_list[0])
-    if component_outcome.IsSuccess():
-        return component_outcome.GetValue()  # In this case the value is not a list.
-    component_outcome = editor.EditorComponentAPIBus(bus.Broadcast, 'AddComponentsOfType', entity_id, type_ids_list)
-    if component_outcome.IsSuccess():
-        general.log(f"{component_name} Component added to entity.")
-        return component_outcome.GetValue()[0]
-    general.log(f"ERROR: Failed to add component [{component_name}] to entity")
-    return None
