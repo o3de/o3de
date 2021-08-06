@@ -60,10 +60,10 @@ namespace AZ
     }
 
 
-    AZ_MATH_INLINE Aabb Aabb::CreatePoints(const Vector3* pts, int numPts)
+    AZ_MATH_INLINE Aabb Aabb::CreatePoints(const Vector3* pts, size_t numPts)
     {
         Aabb aabb = Aabb::CreateFromPoint(pts[0]);
-        for (int i = 1; i < numPts; ++i)
+        for (size_t i = 1; i < numPts; ++i)
         {
             aabb.AddPoint(pts[i]);
         }

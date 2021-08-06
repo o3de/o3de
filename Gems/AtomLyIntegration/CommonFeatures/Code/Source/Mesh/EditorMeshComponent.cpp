@@ -213,7 +213,7 @@ namespace AZ
             {
                 EditorMeshStatsForLod stats;
                 const auto& meshes = lodAsset->GetMeshes();
-                stats.m_meshCount = meshes.size();
+                stats.m_meshCount = static_cast<AZ::u32>(meshes.size());
                 for (const auto& mesh : meshes)
                 {
                     stats.m_vertCount += mesh.GetVertexCount();

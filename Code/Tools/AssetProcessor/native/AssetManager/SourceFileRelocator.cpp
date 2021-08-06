@@ -88,7 +88,7 @@ Please note that only those seed files will get updated that are active for your
     {
         scanFolderInfo = nullptr;
         bool isRelative = AzFramework::StringFunc::Path::IsRelative(normalizedSource.c_str());
-        
+
         if (isRelative)
         {
             // Relative paths can match multiple files/folders, search each scan folder for a valid match
@@ -264,7 +264,7 @@ Please note that only those seed files will get updated that are active for your
                             metaDataFile.m_sourceFileIndex = sourceFileIndex.value();
                             metadataFiles.emplace_back(metaDataFile);
                             metaDataFileEntries.insert(metadaFileCorrectCase);
-                        }  
+                        }
                     }
                 }
             }
@@ -601,7 +601,7 @@ Please note that only those seed files will get updated that are active for your
                 AZ::StringFunc::Path::ReplaceFullName(newDestinationPath, fullFileName.c_str());
             }
 
-           
+
 
             if (!AzFramework::StringFunc::Path::IsRelative(newDestinationPath.c_str()))
             {
@@ -1025,14 +1025,14 @@ Please note that only those seed files will get updated that are active for your
         AZStd::binary_semaphore waitSignal;
         int errorCount = 0;
 
-        AzToolsFramework::SourceControlResponseCallbackBulk callback = AZStd::bind(&HandleSourceControlResult,
-            AZStd::ref (relocationContainer),
-            AZStd::ref(waitSignal),
-            AZStd::ref(errorCount),
-            static_cast<AzToolsFramework::SourceControlFlags>(SCF_OpenByUser), // If a file is moved from A -> B and then again from B -> A, the result is just an "edit", so we're just going to assume success if the file is checked out, regardless of state
-            true,
-            AZStd::placeholders::_1,
-            AZStd::placeholders::_2);
+        AzToolsFramework::SourceControlResponseCallbackBulk callback = [&](bool success, AZStd::vector<SourceControlFileInfo> info)
+            {
+                HandleSourceControlResult(
+                    relocationContainer, waitSignal, errorCount,
+                    SCF_OpenByUser, // If a file is moved from A -> B and then again from B -> A, the result is just an "edit", so we're just going
+                                         // to assume success if the file is checked out, regardless of state
+                    true, success, info);
+            };
 
 
         AzToolsFramework::SourceControlCommandBus::Broadcast(&AzToolsFramework::SourceControlCommandBus::Events::RequestRenameBulkExtended,
@@ -1049,7 +1049,7 @@ Please note that only those seed files will get updated that are active for your
         {
             if (relocationInfo.m_operationStatus == SourceFileRelocationStatus::Succeeded || relocationInfo.m_sourceFileIndex == AssetProcessor::SourceFileRelocationInvalidIndex)
             {
-                // we do not want to retry if the move operation already succeeded or if it is a source file 
+                // we do not want to retry if the move operation already succeeded or if it is a source file
                 continue;
             }
 
@@ -1108,7 +1108,7 @@ Please note that only those seed files will get updated that are active for your
         {
             if (entry.m_operationStatus == SourceFileRelocationStatus::Succeeded || entry.m_sourceFileIndex == AssetProcessor::SourceFileRelocationInvalidIndex)
             {
-                // we do not want to retry if the move operation already succeeded or if it is a source file 
+                // we do not want to retry if the move operation already succeeded or if it is a source file
                 continue;
             }
 
@@ -1224,7 +1224,7 @@ Please note that only those seed files will get updated that are active for your
         m_stateData->QuerySourceByProductID(productDependency.m_productPK, [this, &sourceName, &scanPath](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
         {
             sourceName = entry.m_sourceName;
-                        
+
             m_stateData->QueryScanFolderByScanFolderID(entry.m_scanFolderPK, [&scanPath](AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry& entry)
             {
                 scanPath = entry.m_scanFolder;
