@@ -897,7 +897,7 @@ void CSystem::InitLocalization()
     {
         AZ::CVarFixedString languageAudio;
         console->GetCvarValue("g_languageAudio", languageAudio);
-        if (languageAudio.size() == 0)
+        if (languageAudio.empty())
         {
             console->PerformCommand(AZStd::string::format("g_languageAudio %s", language.c_str()).c_str());
         }
