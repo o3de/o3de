@@ -109,10 +109,12 @@ class BenchmarkDataAggregator(object):
 
         # data structures aggregating statistics from timestamp logs
         gpu_frame_stats = RunningStatistics()
+        cpu_frame_stats = RunningStatistics()
         gpu_pass_stats = {}  # key: pass name, value: RunningStatistics
 
         # this allows us to add additional data if necessary, e.g. frame_test_timestamps.json
         is_timestamp_file = lambda file: file.name.startswith('frame') and file.name.endswith('_timestamps.json')
+        is_frame_time_file = lambda file: file.name.startswith('cpu_frame') and file.name.endswith('_time.json')
 
         # parse benchmark files
         for file in benchmark_dir.iterdir():
@@ -126,18 +128,27 @@ class BenchmarkDataAggregator(object):
                 frame_time = sum(self._update_pass(gpu_pass_stats, entry) for entry in entries)
                 gpu_frame_stats.update(frame_time)
 
+            if is_frame_time_file(file):
+                data = json.loads(file.read_text())
+                frame_time = data['ClassData']['frameTime']
+                cpu_frame_stats.update(frame_time)
+
         if gpu_frame_stats.getCount() < 1:
-            raise BenchmarkPathException(f'No frame timestamp logs were found in {benchmark_dir}')
+            raise BenchmarkPathException(f'No GPU frame timestamp logs were found in {benchmark_dir}')
 
-        return gpu_frame_stats, gpu_pass_stats
+        if cpu_frame_stats.getCount() < 1:
+            raise BenchmarkPathException(f'No CPU frame times were found in {benchmark_dir}')
 
-    def _generate_payloads(self, benchmark_metadata, gpu_frame_stats, gpu_pass_stats):
+        return gpu_frame_stats, gpu_pass_stats, cpu_frame_stats
+
+    def _generate_payloads(self, benchmark_metadata, gpu_frame_stats, gpu_pass_stats, cpu_frame_stats):
         '''
         Generates payloads to send to Filebeat based on aggregated stats and metadata.
 
         :param benchmark_metadata: Dict of benchmark metadata
-        :param gpu_frame_stats: Dict of aggregated frame statistics
-        :param gpu_pass_stats: Dict of aggregated pass statistics
+        :param gpu_frame_stats: RunningStatistics for GPU frame data
+        :param gpu_pass_stats: Dict of aggregated pass RunningStatistics
+        :param cpu_frame_stats: RunningStatistics for CPU frame data
         :return payloads: List of tuples, each with two indexes:
             [0]: Elasticsearch index suffix associated with the payload
             [1]: Payload dict to deliver to Filebeat
@@ -153,9 +164,18 @@ class BenchmarkDataAggregator(object):
                 'min': ns_to_ms(gpu_frame_stats.getMin())
             }
         }
+        cpu_frame_payload = {
+            'frameTime': {
+                'avg': cpu_frame_stats.getAvg(),
+                'max': cpu_frame_stats.getMax(),
+                'min': cpu_frame_stats.getMin()
+            }
+        }
         # add benchmark metadata to payload
         gpu_frame_payload.update(benchmark_metadata)
         payloads.append(('gpu.frame_data', gpu_frame_payload))
+        cpu_frame_payload.update(benchmark_metadata)
+        payloads.append(('cpu.frame_data', cpu_frame_payload))
 
         # calculate statistics for each pass
         for name, stat in gpu_pass_stats.items():
@@ -192,8 +212,8 @@ class BenchmarkDataAggregator(object):
                 'gitCommitAndBuildDate': f'{git_commit_hash} {build_date}',
                 'RHI': rhi
             }
-            gpu_frame_stats, gpu_pass_stats = self._process_benchmark(benchmark_dir, benchmark_metadata)
-            payloads = self._generate_payloads(benchmark_metadata, gpu_frame_stats, gpu_pass_stats)
+            gpu_frame_stats, gpu_pass_stats, cpu_frame_stats = self._process_benchmark(benchmark_dir, benchmark_metadata)
+            payloads = self._generate_payloads(benchmark_metadata, gpu_frame_stats, gpu_pass_stats, cpu_frame_stats)
 
             for index_suffix, payload in payloads:
                 self.filebeat_client.send_event(
