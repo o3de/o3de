@@ -31,6 +31,7 @@ namespace AZ
 
     SharedMemory_Common::CreateResult SharedMemory_Windows::Create(const char* name, unsigned int size, bool openIfCreated)
     {
+        azstrncpy(m_name, AZ_ARRAY_SIZE(m_name), name, strlen(name));
         AZStd::fixed_wstring<256> fullName;
         ComposeName(fullName, name, L"Mutex");
 
@@ -67,6 +68,7 @@ namespace AZ
 
     bool SharedMemory_Windows::Open(const char* name)
     {
+        azstrncpy(m_name, AZ_ARRAY_SIZE(m_name), name, strlen(name));
         AZStd::fixed_wstring<256> fullName;
         ComposeName(fullName, name, L"Mutex");
 

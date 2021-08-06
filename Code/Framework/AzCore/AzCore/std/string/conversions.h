@@ -338,9 +338,9 @@ namespace AZStd
         if (srcLen > 0)
         {
             char* endStr = Internal::WCharTPlatformConverter<>::to_string(dest, destSize, str, str + srcLen);
-            if (endStr < (dest + destSize) && *(endStr - 1) != '\0')
+            if (endStr < (dest + destSize))
             {
-                *endStr = '\0'; // copy null terminator
+                *endStr = '\0'; // null terminator
             }
         }
     }
@@ -495,9 +495,9 @@ namespace AZStd
         if (srcLen > 0)
         {
             wchar_t* endWStr = Internal::WCharTPlatformConverter<>::to_wstring(dest, destSize, str, str + srcLen);
-            if (endWStr < (dest + destSize) && *(endWStr - 1) != '\0')
+            if (endWStr < (dest + destSize))
             {
-                *endWStr = '\0'; // copy null terminator
+                *endWStr = '\0'; // null terminator
             }
         }
     }
