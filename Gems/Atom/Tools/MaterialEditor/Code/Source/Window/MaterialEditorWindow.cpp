@@ -7,39 +7,27 @@
  */
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RPI.Edit/Common/AssetUtils.h>
-#include <Atom/RPI.Edit/Common/JsonUtils.h>
-#include <Atom/RPI.Edit/Material/MaterialSourceData.h>
-#include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
-#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
+#include <AtomToolsFramework/Util/Util.h>
+#include <AtomToolsFramework/Window/AtomToolsMainWindowNotificationBus.h>
+#include <AzFramework/StringFunc/StringFunc.h>
+#include <AzQtComponents/Components/StyleManager.h>
+#include <AzQtComponents/Components/WindowDecorationWrapper.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
+#include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
 
 #include <Atom/Document/MaterialDocumentRequestBus.h>
 #include <Atom/Document/MaterialDocumentSystemRequestBus.h>
 #include <Atom/Window/MaterialEditorWindowSettings.h>
 
-#include <AtomToolsFramework/Util/Util.h>
-#include <AtomToolsFramework/Window/AtomToolsMainWindowNotificationBus.h>
-
-#include <AzFramework/Application/Application.h>
-#include <AzFramework/StringFunc/StringFunc.h>
-
-#include <AzQtComponents/Components/StyleManager.h>
-#include <AzQtComponents/Components/WindowDecorationWrapper.h>
-#include <AzQtComponents/Utilities/QtPluginPaths.h>
-
-#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-#include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
-#include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
-
 #include <Viewport/MaterialViewportWidget.h>
 #include <Window/CreateMaterialDialog/CreateMaterialDialog.h>
 #include <Window/HelpDialog/HelpDialog.h>
-#include <Window/SettingsDialog/SettingsDialog.h>
 #include <Window/MaterialBrowserWidget.h>
 #include <Window/MaterialEditorWindow.h>
 #include <Window/MaterialInspector/MaterialInspector.h>
 #include <Window/PerformanceMonitor/PerformanceMonitorWidget.h>
+#include <Window/SettingsDialog/SettingsDialog.h>
 #include <Window/ViewportSettingsInspector/ViewportSettingsInspector.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT

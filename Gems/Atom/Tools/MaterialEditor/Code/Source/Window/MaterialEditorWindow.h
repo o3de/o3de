@@ -19,11 +19,6 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnin
 AZ_POP_DISABLE_WARNING
 #endif
 
-namespace AzToolsFramework
-{
-    class CScriptTermDialog;
-}
-
 namespace MaterialEditor
 {
     /**
@@ -59,8 +54,8 @@ namespace MaterialEditor
         void OnDocumentSaved(const AZ::Uuid& documentId) override;
 
         void CreateMenu() override;
-
         void CreateTabBar() override;
+
         void AddTabForDocumentId(const AZ::Uuid& documentId) override;
         void UpdateTabForDocumentId(const AZ::Uuid& documentId) override;
         QString GetDocumentPath(const AZ::Uuid& documentId) const;

@@ -56,7 +56,7 @@ namespace MaterialEditor
 
     AZStd::vector<AZStd::string> MaterialEditorApplication::GetCriticalAssetFilters() const
     {
-        return AZStd::vector<AZStd::string>({ "passes/", "config/", "MaterialEditor" });
+        return AZStd::vector<AZStd::string>({ "passes/", "config/", "MaterialEditor/" });
     }
 
     void MaterialEditorApplication::ProcessCommandLine(const AZ::CommandLine& commandLine)

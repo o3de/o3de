@@ -6,34 +6,29 @@
  *
  */
  
-#include <Atom/Document/ShaderManagementConsoleDocumentRequestBus.h>
-#include <Atom/Document/ShaderManagementConsoleDocumentSystemRequestBus.h>
-
-#include <AtomToolsFramework/Util/Util.h>
-#include <AtomToolsFramework/Window/AtomToolsMainWindowNotificationBus.h>
-
 #include <AzCore/Name/Name.h>
-
 #include <AzFramework/StringFunc/StringFunc.h>
-#include <AzFramework/Application/Application.h>
-
-#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
 
-#include <Source/Window/ShaderManagementConsoleWindow.h>
+#include <AtomToolsFramework/Util/Util.h>
+#include <AtomToolsFramework/Window/AtomToolsMainWindowNotificationBus.h>
+
+#include <Atom/Document/ShaderManagementConsoleDocumentRequestBus.h>
+#include <Atom/Document/ShaderManagementConsoleDocumentSystemRequestBus.h>
+#include <Window/ShaderManagementConsoleWindow.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QCloseEvent>
-#include <QVariant>
 #include <QFileDialog>
-#include <QWindow>
-#include <QVBoxLayout>
-#include <QPushButton>
-#include <QTableView>
 #include <QHeaderView>
+#include <QPushButton>
 #include <QStandardItemModel>
+#include <QTableView>
+#include <QVBoxLayout>
+#include <QVariant>
+#include <QWindow>
 AZ_POP_DISABLE_WARNING
 
 namespace ShaderManagementConsole
@@ -482,4 +477,4 @@ namespace ShaderManagementConsole
     }
 } // namespace ShaderManagementConsole
 
-#include <Source/Window/moc_ShaderManagementConsoleWindow.cpp>
+#include <Window/moc_ShaderManagementConsoleWindow.cpp>
