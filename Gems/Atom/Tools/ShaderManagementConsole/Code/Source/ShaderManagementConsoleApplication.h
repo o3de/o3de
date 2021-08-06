@@ -32,5 +32,5 @@ namespace ShaderManagementConsole
         void ProcessCommandLine(const AZ::CommandLine& commandLine);
         AZStd::string GetBuildTargetName() const override;
         AZStd::vector<AZStd::string> GetCriticalAssetFilters() const override;
-     };
+    };
 } // namespace ShaderManagementConsole

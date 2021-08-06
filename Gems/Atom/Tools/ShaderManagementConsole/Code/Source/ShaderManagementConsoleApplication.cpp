@@ -8,35 +8,10 @@
 
 #include <Atom/Document/ShaderManagementConsoleDocumentModule.h>
 #include <Atom/Document/ShaderManagementConsoleDocumentSystemRequestBus.h>
-#include <Atom/RPI.Edit/Common/AssetUtils.h>
-#include <Atom/RPI.Public/RPISystemInterface.h>
 #include <Atom/Window/ShaderManagementConsoleWindowModule.h>
-
-#include <AtomToolsFramework/Util/Util.h>
-
-#include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <AzCore/Utils/Utils.h>
-
-#include <AzFramework/IO/LocalFileIO.h>
-#include <AzFramework/Network/AssetProcessorConnection.h>
-#include <AzFramework/StringFunc/StringFunc.h>
-
-#include <AzToolsFramework/API/EditorPythonConsoleBus.h>
-#include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
-#include <AzToolsFramework/Asset/AssetSystemComponent.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserComponent.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
-#include <AzToolsFramework/AzToolsFrameworkModule.h>
-#include <AzToolsFramework/SourceControl/PerforceComponent.h>
-#include <AzToolsFramework/SourceControl/SourceControlAPI.h>
-#include <AzToolsFramework/Thumbnails/ThumbnailerComponent.h>
-#include <AzToolsFramework/UI/PropertyEditor/PropertyManagerComponent.h>
-#include <AzToolsFramework/UI/UICore/QTreeViewStateSaver.hxx>
-#include <AzToolsFramework/UI/UICore/QWidgetSavedState.h>
-
-#include <ShaderManagementConsole_Traits_Platform.h>
 #include <ShaderManagementConsoleApplication.h>
+#include <ShaderManagementConsole_Traits_Platform.h>
 
 namespace ShaderManagementConsole
 {

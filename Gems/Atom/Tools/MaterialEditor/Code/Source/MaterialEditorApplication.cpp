@@ -6,40 +6,13 @@
  *
  */
 
-#include <Atom/RPI.Edit/Common/AssetUtils.h>
-#include <Atom/RPI.Public/RPISystemInterface.h>
-
 #include <Atom/Document/MaterialDocumentModule.h>
 #include <Atom/Document/MaterialDocumentSystemRequestBus.h>
 #include <Atom/Viewport/MaterialViewportModule.h>
-
 #include <Atom/Window/MaterialEditorWindowModule.h>
-
-#include <AtomToolsFramework/Util/Util.h>
-
-#include <AzCore/IO/Path/Path.h>
-#include <AzCore/Utils/Utils.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <AzFramework/StringFunc/StringFunc.h>
-#include <AzFramework/IO/LocalFileIO.h>
-#include <AzFramework/Network/AssetProcessorConnection.h>
-#include <AzFramework/Asset/AssetSystemComponent.h>
-
-#include <AzToolsFramework/AzToolsFrameworkModule.h>
-#include <AzToolsFramework/API/EditorPythonConsoleBus.h>
-#include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
-#include <AzToolsFramework/UI/UICore/QWidgetSavedState.h>
-#include <AzToolsFramework/UI/UICore/QTreeViewStateSaver.hxx>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
-#include <AzToolsFramework/SourceControl/PerforceComponent.h>
-#include <AzToolsFramework/Asset/AssetSystemComponent.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserComponent.h>
-#include <AzToolsFramework/Thumbnails/ThumbnailerComponent.h>
-#include <AzToolsFramework/UI/PropertyEditor/PropertyManagerComponent.h>
-#include <AzToolsFramework/SourceControl/SourceControlAPI.h>
-
-#include <MaterialEditor_Traits_Platform.h>
 #include <MaterialEditorApplication.h>
+#include <MaterialEditor_Traits_Platform.h>
 
 namespace MaterialEditor
 {

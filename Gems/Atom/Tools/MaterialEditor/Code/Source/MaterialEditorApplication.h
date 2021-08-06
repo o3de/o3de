@@ -34,5 +34,5 @@ namespace MaterialEditor
         void ProcessCommandLine(const AZ::CommandLine& commandLine) override;
         AZStd::string GetBuildTargetName() const override;
         AZStd::vector<AZStd::string> GetCriticalAssetFilters() const override;
-     };
+    };
 } // namespace MaterialEditor
