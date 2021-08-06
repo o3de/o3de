@@ -56,7 +56,7 @@ public:
         m_manager.AddListener(this);
     }
 
-    virtual ~UndoDropDownListModel()
+    ~UndoDropDownListModel() override
     {
         m_manager.RemoveListener(this);
     }
@@ -81,7 +81,7 @@ public:
         return m_stackNames[index.row()];
     }
 
-    void SignalNumUndoRedo(const unsigned int& numUndo, const unsigned int& numRedo)
+    void SignalNumUndoRedo(const unsigned int& numUndo, const unsigned int& numRedo) override
     {
         std::vector<QString> fresh;
         if (UndoRedoDirection::Undo == m_direction && m_stackNames.size() != numUndo)

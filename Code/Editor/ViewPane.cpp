@@ -159,8 +159,8 @@ CLayoutViewPane::CLayoutViewPane(QWidget* parent)
     , m_viewportTitleDlg(this)
     , m_expanderWatcher(new ViewportTitleExpanderWatcher(this, &m_viewportTitleDlg))
 {
-    m_viewport = 0;
-    m_active = 0;
+    m_viewport = nullptr;
+    m_active = false;
     m_nBorder = VIEW_BORDER;
 
     m_bFullscreen = false;
@@ -338,7 +338,7 @@ void CLayoutViewPane::DetachViewport()
 {
     DisconnectRenderViewportInteractionRequestBus();
     OnFOVChanged(gSettings.viewports.fDefaultFov);
-    m_viewport = 0;
+    m_viewport = nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -348,7 +348,7 @@ void CLayoutViewPane::ReleaseViewport()
     {
         DisconnectRenderViewportInteractionRequestBus();
         m_viewport->deleteLater();
-        m_viewport = 0;
+        m_viewport = nullptr;
     }
 }
 
