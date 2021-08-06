@@ -10,25 +10,10 @@ import os
 import json
 import subprocess
 import re
-import git_utils
 import uuid
 from git_utils import Repo
-from tiaf_persistent_storage import PersistentStorage
 from tiaf_persistent_storage_local import PersistentStorageLocal
 from tiaf_persistent_storage_s3 import PersistentStorageS3
-
-def is_child_path(parent_path: str, child_path: str):
-    """
-    Determines whether or not the specified child path is a child of the specified parent path.
-
-    @param parent_path: Parent path.
-    @param child_path:  Child path.
-    @return dst_branch: True if the specified child path is a child of the specified parent path, otherwise False.
-    """
-    
-    parent_path = os.path.abspath(parent_path)
-    child_path = os.path.abspath(child_path)
-    return os.path.commonpath([os.path.abspath(parent_path)]) == os.path.commonpath([os.path.abspath(parent_path), os.path.abspath(child_path)])
 
 class TestImpact:
     def __init__(self, config_file: str):
@@ -71,16 +56,6 @@ class TestImpact:
             print(f"The config does not contain the key {str(e)}.")
             return
 
-    def _check_for_restricted_files(self, file_path: str):
-        """
-        Restricts change lists from checking in test impact analysis files.
-
-        @param file_path: The path to the file to check.
-        """
-
-        if is_child_path(self._active_workspace, file_path) or is_child_path(self._historic_workspace, file_path) or is_child_path(self._temp_workspace, file_path):
-            raise PermissionError(f"Checking in test impact analysis framework files is illegal: '{file_path}''.")
-
     def _attempt_to_generate_change_list(self, last_commit_hash, instance_id: str):
         """
         Attempts to determine the change list bewteen now and the last tiaf run (if any).
@@ -114,15 +89,11 @@ class TestImpact:
                     match = re.split("^R[0-9]+\\s(\\S+)\\s(\\S+)", line)
                     if len(match) > 1:
                         # File rename
-                        self._check_for_restricted_files(match[1])
-                        self._check_for_restricted_files(match[2])
-
                         # Treat renames as a deletion and an addition
                         self._change_list["deletedFiles"].append(match[1])
                         self._change_list["createdFiles"].append(match[2])
                     else:
                         match = re.split("^[AMD]\\s(\\S+)", line)
-                        self._check_for_restricted_files(match[1])
                         if len(match) > 1:
                             if line[0] == 'A':
                                 # File addition

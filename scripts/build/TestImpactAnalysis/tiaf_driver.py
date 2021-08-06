@@ -13,38 +13,119 @@ import sys
 import os
 
 def parse_args():
-    def file_path(value):
+    def valid_file_path(value):
         if os.path.isfile(value):
             return value
         else:
             raise FileNotFoundError(value)
 
-    def timout_type(value):
+    def valid_timout_type(value):
         value = int(value)
         if value <= 0:
             raise ValueError("Timer values must be positive integers")
         return value
 
-    def test_failure_policy(value):
+    def valid_test_failure_policy(value):
         if value == "continue" or value == "abort" or value == "ignore":
             return value
         else:
             raise ValueError("Test failure policy must be 'abort', 'continue' or 'ignore'")
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--config', dest="config_file", type=file_path, help="Path to the test impact analysis framework configuration file", required=True)
-    parser.add_argument('--src-branch', dest="src_branch",  help="Branch that is being built", required=True)
-    parser.add_argument('--dst-branch', dest="dst_branch",  help="For PR builds, the destination branch to be merged to, otherwise empty")
-    parser.add_argument('--commit', dest="commit", help="Commit that is being built", required=True)
-    parser.add_argument('--s3-bucket', dest="s3_bucket", help="Location of S3 bucket to use for persistent storage, otherwise local disk storage will be used")
-    parser.add_argument('--mars-index-prefix', dest="mars_index_prefix", help="Index prefix to use for MARS, otherwise no data will be tramsmitted to MARS")
-    parser.add_argument('--suite', dest="suite", help="Test suite to run", required=True)
-    parser.add_argument('--test-failure-policy', dest="test_failure_policy", type=test_failure_policy, help="Test failure policy for regular and test impact sequences (ignored when seeding)", required=True)
-    parser.add_argument('--safe-mode', dest="safe_mode", action='store_true', help="Run impact analysis tests in safe mode (ignored when seeding)")
-    parser.add_argument('--test-timeout', dest="test_timeout", type=timout_type, help="Maximum run time (in seconds) of any test target before being terminated")
-    parser.add_argument('--global-timeout', dest="global_timeout", type=timout_type, help="Maximum run time of the sequence before being terminated")
-    parser.set_defaults(test_timeout=None)
-    parser.set_defaults(global_timeout=None)
+
+    # Configuration file path
+    parser.add_argument(
+        '--config',
+        dest="config_file",
+        type=valid_file_path,
+        help="Path to the test impact analysis framework configuration file", 
+        required=True
+    )
+
+    # Source branch
+    parser.add_argument(
+        '--src-branch',
+        dest="src_branch",
+        help="Branch that is being built",
+        required=True
+    )
+
+    # Destination branch
+    parser.add_argument(
+        '--dst-branch',
+        dest="dst_branch",
+        help="For PR builds, the destination branch to be merged to, otherwise empty", 
+        required=False
+    )
+
+    # Commit hash
+    parser.add_argument(
+        '--commit',
+        dest="commit",
+        help="Commit that is being built",
+        required=True
+    )
+
+    # S3 bucket
+    parser.add_argument(
+        '--s3-bucket', 
+        dest="s3_bucket", 
+        help="Location of S3 bucket to use for persistent storage, otherwise local disk storage will be used", 
+        required=False
+    )
+
+    # MARS index prefix
+    parser.add_argument(
+        '--mars-index-prefix', 
+        dest="mars_index_prefix", 
+        help="Index prefix to use for MARS, otherwise no data will be tramsmitted to MARS", 
+        required=False
+    )
+
+    # Test suite
+    parser.add_argument(
+        '--suite', 
+        dest="suite", 
+        help="Test suite to run", 
+        required=True
+    )
+
+    # Test failure policy
+    parser.add_argument(
+        '--test-failure-policy', 
+        dest="test_failure_policy", 
+        type=valid_test_failure_policy, 
+        help="Test failure policy for regular and test impact sequences (ignored when seeding)", 
+        required=True
+    )
+
+    # Safe mode
+    parser.add_argument(
+        '--safe-mode', 
+        dest="safe_mode", 
+        action='store_true', 
+        help="Run impact analysis tests in safe mode (ignored when seeding)", 
+        required=False
+    )
+
+    # Test timeout
+    parser.add_argument(
+        '--test-timeout', 
+        dest="test_timeout", 
+        type=valid_timout_type, 
+        help="Maximum run time (in seconds) of any test target before being terminated", 
+        required=False
+    )
+
+    # Global timeout
+    parser.add_argument(
+        '--global-timeout', 
+        dest="global_timeout", 
+        type=valid_timout_type, 
+        help="Maximum run time of the sequence before being terminated", 
+        required=False
+    )
+
     args = parser.parse_args()
     
     return args
@@ -64,9 +145,6 @@ if __name__ == "__main__":
         # Non-gating will be removed from this script and handled at the job level in SPEC-7413
         #sys.exit(result.return_code)
         sys.exit(0)
-    except PermissionError as e:
-        print(f"Restricted TIAF files checked into repo: '{e}'.")
-        #return -1
     except Exception as e:
         # Non-gating will be removed from this script and handled at the job level in SPEC-7413
         print(f"Exception caught by TIAF driver: '{e}''.")

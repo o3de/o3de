@@ -7,7 +7,6 @@
 #
 
 import os
-import json
 from tiaf_persistent_storage import PersistentStorage
 
 # Implementation of local persistent storage

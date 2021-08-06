@@ -49,7 +49,7 @@ class Repo:
 
         @param src_commit_hash: The hash for the source commit.
         @param dst_commit_hash: The hash for the destination commit.
-        @return True if the dst commit descends from the src commit, otherwise False.
+        @return:                True if the dst commit descends from the src commit, otherwise False.
         """
 
         if not src_commit_hash and not dst_commit_hash:
@@ -64,7 +64,7 @@ class Repo:
 
         @param src_commit_hash: The hash for the source commit.
         @param dst_commit_hash: The hash for the destination commit.
-        @return The distance between src_commit and dst_commit (if both are valid commits), otherwise None.
+        @return:                The distance between src_commit and dst_commit (if both are valid commits), otherwise None.
         """
 
         if not src_commit_hash and not dst_commit_hash:

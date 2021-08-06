@@ -31,7 +31,7 @@ namespace TestImpact
             writer.String(testRun.GetTargetName().c_str());
 
             // Command string
-            writer.Key("command_string");
+            writer.Key("command_args");
             writer.String(testRun.GetCommandString().c_str());
 
             // Start time

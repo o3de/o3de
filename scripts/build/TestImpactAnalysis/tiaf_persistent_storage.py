@@ -9,7 +9,6 @@
 import os
 import json
 from abc import ABC, abstractmethod
-import errno
 
 # Abstraction for the persistent storage required by TIAF to store and retrieve the branch coverage data and other meta-data
 class PersistentStorage(ABC):
@@ -74,7 +73,7 @@ class PersistentStorage(ABC):
         Packs the current historic data into a JSON file for serializing.
 
         @param last_commit_hash: The commit hash to associate the coverage data (and any other meta data) with.
-        @return: The packed historic data in JSON format.
+        @return:                 The packed historic data in JSON format.
         """
 
         if self._unpacked_coverage_data_file is None:
