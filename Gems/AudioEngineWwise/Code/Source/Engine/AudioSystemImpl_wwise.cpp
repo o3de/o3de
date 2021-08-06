@@ -2173,16 +2173,7 @@ namespace Audio
     {
         if (language)
         {
-            AZStd::string languageSubfolder;
-
-            if (azstricmp(language, "english") == 0)
-            {
-                languageSubfolder = "english(us)";
-            }
-            else
-            {
-                languageSubfolder = language;
-            }
+            AZStd::string languageSubfolder(language);
 
             languageSubfolder += "/";
 
