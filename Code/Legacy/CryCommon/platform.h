@@ -263,7 +263,6 @@ ILINE DestinationType alias_cast(SourceType pPtr)
 #define assert CRY_ASSERT
 #endif
 
-#include "CompileTimeAssert.h"
 //////////////////////////////////////////////////////////////////////////
 // Platform dependent functions that emulate Win32 API.
 // Mostly used only for debugging!

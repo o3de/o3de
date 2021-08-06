@@ -18,10 +18,6 @@
 #define _CPU_X86
 //#define _CPU_SSE
 
-#define RC_EXECUTABLE "rc"
-#define USE_CRT 1
-#define SIZEOF_PTR 4
-
 //////////////////////////////////////////////////////////////////////////
 // Standard includes.
 //////////////////////////////////////////////////////////////////////////
@@ -97,10 +93,6 @@ typedef unsigned char       byte;
 
 #define DEFINE_ALIGNED_DATA(type, name, alignment) \
     type __attribute__ ((aligned(alignment))) name;
-#define DEFINE_ALIGNED_DATA_STATIC(type, name, alignment) \
-    static type __attribute__ ((aligned(alignment))) name;
-#define DEFINE_ALIGNED_DATA_CONST(type, name, alignment) \
-    const type __attribute__ ((aligned(alignment))) name;
 
 #include "LinuxSpecific.h"
 

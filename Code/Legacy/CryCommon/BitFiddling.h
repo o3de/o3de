@@ -12,7 +12,6 @@
 
 #pragma once
 
-#include "CompileTimeAssert.h"
 #include <AzCore/Casting/numeric_cast.h>
 
 // Section dictionary
@@ -187,45 +186,6 @@ ILINE int32 Isel32(int32 v, int32 alt)
 {
     return ((static_cast<int32>(v) >> 31) & alt) | ((static_cast<int32>(~v) >> 31) & v);
 }
-
-template <uint32 ILOG>
-struct CompileTimeIntegerLog2
-{
-    static const uint32 result = 1 + CompileTimeIntegerLog2<(ILOG >> 1)>::result;
-};
-template <>
-struct CompileTimeIntegerLog2<1>
-{
-    static const uint32 result = 0;
-};
-template <>
-struct CompileTimeIntegerLog2<0>; // keep it undefined, we cannot represent "minus infinity" result
-
-COMPILE_TIME_ASSERT(CompileTimeIntegerLog2<1>::result == 0);
-COMPILE_TIME_ASSERT(CompileTimeIntegerLog2<2>::result == 1);
-COMPILE_TIME_ASSERT(CompileTimeIntegerLog2<3>::result == 1);
-COMPILE_TIME_ASSERT(CompileTimeIntegerLog2<4>::result == 2);
-COMPILE_TIME_ASSERT(CompileTimeIntegerLog2<5>::result == 2);
-COMPILE_TIME_ASSERT(CompileTimeIntegerLog2<255>::result == 7);
-COMPILE_TIME_ASSERT(CompileTimeIntegerLog2<256>::result == 8);
-COMPILE_TIME_ASSERT(CompileTimeIntegerLog2<257>::result == 8);
-
-template <uint32 ILOG>
-struct CompileTimeIntegerLog2_RoundUp
-{
-    static const uint32 result = CompileTimeIntegerLog2<ILOG>::result + ((ILOG & (ILOG - 1)) != 0);
-};
-template <>
-struct CompileTimeIntegerLog2_RoundUp<0>; // we can return 0, but let's keep it undefined (same as CompileTimeIntegerLog2<0>)
-
-COMPILE_TIME_ASSERT(CompileTimeIntegerLog2_RoundUp<1>::result == 0);
-COMPILE_TIME_ASSERT(CompileTimeIntegerLog2_RoundUp<2>::result == 1);
-COMPILE_TIME_ASSERT(CompileTimeIntegerLog2_RoundUp<3>::result == 2);
-COMPILE_TIME_ASSERT(CompileTimeIntegerLog2_RoundUp<4>::result == 2);
-COMPILE_TIME_ASSERT(CompileTimeIntegerLog2_RoundUp<5>::result == 3);
-COMPILE_TIME_ASSERT(CompileTimeIntegerLog2_RoundUp<255>::result == 8);
-COMPILE_TIME_ASSERT(CompileTimeIntegerLog2_RoundUp<256>::result == 8);
-COMPILE_TIME_ASSERT(CompileTimeIntegerLog2_RoundUp<257>::result == 9);
 
 // Character-to-bitfield mapping
 

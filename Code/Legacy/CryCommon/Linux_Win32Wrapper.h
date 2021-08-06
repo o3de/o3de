@@ -491,8 +491,6 @@ extern const int comparePathNames(const char* cpFirst, const char* cpSecond, uns
 extern void replaceDoublePathFilename(char* szFileName);//removes "\.\" to "\" and "/./" to "/"
 
 //////////////////////////////////////////////////////////////////////////
-extern char* _fullpath(char* absPath, const char* relPath, size_t maxLength);
-//////////////////////////////////////////////////////////////////////////
 extern void _makepath(char* path, const char* drive, const char* dir, const char* filename, const char* ext);
 
 template <size_t size>

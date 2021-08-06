@@ -266,7 +266,7 @@ namespace Unicode
         inline size_t LengthSafe(const InputStringType& source)
         {
             // SRequire a safe recovery method.
-            COMPILE_TIME_ASSERT(SIsSafeEncoding<Recovery>::value);
+            static_assert(SIsSafeEncoding<Recovery>::value);
 
             // Bind methods.
             const EBind bindMethod = SBindObject<InputStringType, false>::value;
@@ -379,7 +379,7 @@ namespace Unicode
         inline size_t ConvertSafe(OutputStringType& target, const InputStringType& source)
         {
             // SRequire a safe recovery method.
-            COMPILE_TIME_ASSERT(SIsSafeEncoding<Recovery>::value);
+            static_assert(SIsSafeEncoding<Recovery>::value);
 
             // Bind methods.
             const EBind inputBindMethod = SBindObject<InputStringType, false>::value;

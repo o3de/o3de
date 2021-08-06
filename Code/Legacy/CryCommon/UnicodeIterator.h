@@ -27,7 +27,7 @@ namespace Unicode
         template<typename BaseIterator, typename BoundsChecker, EEncoding Encoding>
         inline void MoveNext(BaseIterator& it, const BoundsChecker& checker, const integral_constant<EEncoding, Encoding>)
         {
-            COMPILE_TIME_ASSERT(
+            static_assert(
                 Encoding == eEncoding_ASCII ||
                 Encoding == eEncoding_UTF32 ||
                 Encoding == eEncoding_Latin1 ||
@@ -88,7 +88,7 @@ namespace Unicode
         template<typename BaseIterator, typename BoundsChecker, EEncoding Encoding>
         inline void MovePrev(BaseIterator& it, const BoundsChecker& checker, const integral_constant<EEncoding, Encoding>)
         {
-            COMPILE_TIME_ASSERT(
+            static_assert(
                 Encoding == eEncoding_ASCII ||
                 Encoding == eEncoding_UTF32 ||
                 Encoding == eEncoding_Latin1 ||

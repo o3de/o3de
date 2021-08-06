@@ -182,7 +182,6 @@ typedef int64 __int64;
 typedef uint64 __uint64;
 #endif
 
-#define THREADID_NULL -1
 typedef unsigned long int threadID;
 
 #define TRUE 1
@@ -213,27 +212,6 @@ typedef unsigned long int threadID;
 
 #define _wtof(str) wcstod(str, 0)
 
-/*static unsigned char toupper(unsigned char c)
-{
-  return c & ~0x40;
-}
-*/
-typedef union _LARGE_INTEGER
-{
-    struct
-    {
-        DWORD LowPart;
-        LONG HighPart;
-    };
-    struct
-    {
-        DWORD LowPart;
-        LONG HighPart;
-    } u;
-    long long QuadPart;
-} LARGE_INTEGER;
-
-
 // stdlib.h stuff
 #define _MAX_DRIVE  3   // max. length of drive component
 #define _MAX_DIR    256 // max. length of path component
@@ -257,21 +235,6 @@ typedef union _LARGE_INTEGER
 #define _O_SEQUENTIAL   0x0020  /* file access is primarily sequential */
 #define _O_RANDOM       0x0010  /* file access is primarily random */
 
-// curses.h stubs for PDcurses keys
-#define PADENTER    KEY_MAX + 1
-#define CTL_HOME    KEY_MAX + 2
-#define CTL_END     KEY_MAX + 3
-#define CTL_PGDN    KEY_MAX + 4
-#define CTL_PGUP    KEY_MAX + 5
-
-// stubs for virtual keys, isn't used on Linux
-#define VK_UP               0
-#define VK_DOWN         0
-#define VK_RIGHT        0
-#define VK_LEFT         0
-#define VK_CONTROL  0
-#define VK_SCROLL       0
-
 enum
 {
     IDOK        = 1,
@@ -284,17 +247,6 @@ enum
     IDTRYAGAIN  = 10,
     IDCONTINUE  = 11
 };
-
-#define ES_MULTILINE    0x0004L
-#define ES_AUTOVSCROLL  0x0040L
-#define ES_AUTOHSCROLL  0x0080L
-#define ES_WANTRETURN   0x1000L
-
-#define LB_ERR  (-1)
-
-#define LB_ADDSTRING    0x0180
-#define LB_GETCOUNT     0x018B
-#define LB_SETTOPINDEX  0x0197
 
 #define MB_OK                0x00000000L
 #define MB_OKCANCEL          0x00000001L
@@ -315,21 +267,15 @@ enum
 
 #define MB_APPLMODAL    0x00000000L
 
-#define MF_STRING   0x00000000L
-
 #define MK_LBUTTON  0x0001
 #define MK_RBUTTON  0x0002
 #define MK_SHIFT    0x0004
 #define MK_CONTROL  0x0008
 #define MK_MBUTTON  0x0010
 
-#define MK_ALT  ( 0x20 )
-
 #define SM_MOUSEPRESENT 0x00000000L
 
 #define SM_CMOUSEBUTTONS    43
-
-#define USER_TIMER_MINIMUM  0x0000000A
 
 #define VK_TAB      0x09
 #define VK_SHIFT    0x10
@@ -337,11 +283,6 @@ enum
 #define VK_ESCAPE   0x1B
 #define VK_SPACE    0x20
 #define VK_DELETE   0x2E
-
-#define VK_NUMPAD1  0x61
-#define VK_NUMPAD2  0x62
-#define VK_NUMPAD3  0x63
-#define VK_NUMPAD4  0x64
 
 #define VK_OEM_COMMA    0xBC   // ',' any country
 #define VK_OEM_PERIOD   0xBE   // '.' any country
@@ -529,35 +470,10 @@ inline int64 CryGetTicksPerSec()
 
 inline int _CrtCheckMemory() { return 1; };
 
-inline char* _fullpath(char* absPath, const char* relPath, size_t maxLength)
-{
-    char path[PATH_MAX];
-
-    if (realpath(relPath, path) == NULL)
-    {
-        return NULL;
-    }
-    const size_t len = std::min(strlen(path), maxLength - 1);
-    memcpy(absPath, path, len);
-    absPath[len] = 0;
-    return absPath;
-}
-
 typedef void* HGLRC;
 typedef void* HDC;
 typedef void* PROC;
 typedef void* PIXELFORMATDESCRIPTOR;
-
-#define SCOPED_ENABLE_FLOAT_EXCEPTIONS
-
-// Linux_Win32Wrapper.h now included directly by platform.h
-//#include "Linux_Win32Wrapper.h"
-
-#define closesocket close
-inline int WSAGetLastError()
-{
-    return errno;
-}
 
 template <typename T, size_t N>
 char (*RtlpNumberOf( T (&)[N] ))[N];

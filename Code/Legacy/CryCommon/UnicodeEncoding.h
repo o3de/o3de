@@ -17,7 +17,7 @@
 
 #pragma once
 #include "BaseTypes.h" // For uint8, uint16, uint32
-#include "CompileTimeAssert.h" // For COMPILE_TIME_ASSERT macro
+
 namespace Unicode
 {
     // Supported encoding/conversion types.
@@ -631,7 +631,7 @@ namespace Unicode
         struct SRecoveryFallbackHelper
         {
             // A compilation error here means RecoveryMethod value was unexpected here
-            COMPILE_TIME_ASSERT(
+            static_assert(
                 RecoveryMethod == eErrorRecovery_FallbackLatin1ThenDiscard ||
                 RecoveryMethod == eErrorRecovery_FallbackLatin1ThenReplace ||
                 RecoveryMethod == eErrorRecovery_FallbackWin1252ThenDiscard ||

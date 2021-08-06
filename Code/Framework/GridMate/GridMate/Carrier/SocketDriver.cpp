@@ -1528,7 +1528,7 @@ namespace GridMate
         if (0 != WSAIoctl( m_socket, SIO_GET_MULTIPLE_EXTENSION_FUNCTION_POINTER, &functionTableId,
             sizeof(GUID), (void**)&m_RIO_FN_TABLE,  sizeof(m_RIO_FN_TABLE), &dwBytes, 0, 0))
         {
-            AZ_Error("GridMate", false, "Could not initialize RIO: %u\n", ::WSAGetLastError());
+            AZ_Error("GridMate", false, "Could not initialize RIO: %u\n", GridMate::Platform::GetSocketError());
             return EC_SOCKET_CREATE;
         }
         else
@@ -1543,13 +1543,13 @@ namespace GridMate
 
             if ((m_events[WakeupOnSend] = WSACreateEvent()) == WSA_INVALID_EVENT)
             {
-                AZ_Error("GridMate", false, "Failed WSACreateEvent(): %u\n", ::WSAGetLastError());
+                AZ_Error("GridMate", false, "Failed WSACreateEvent(): %u\n", GridMate::Platform::GetSocketError());
                 return EC_SOCKET_CREATE;
             }
 
             if ((m_events[ReceiveEvent] = WSACreateEvent()) == WSA_INVALID_EVENT)
             {
-                AZ_Error("GridMate", false, "Failed WSACreateEvent(): %u\n", ::WSAGetLastError());
+                AZ_Error("GridMate", false, "Failed WSACreateEvent(): %u\n", GridMate::Platform::GetSocketError());
                 return EC_SOCKET_CREATE;
             }
             RIO_NOTIFICATION_COMPLETION typeRecv;
@@ -1559,13 +1559,13 @@ namespace GridMate
             m_RIORecvQueue = m_RIO_FN_TABLE.RIOCreateCompletionQueue(maxOutstandingReceive, &typeRecv);
             if (m_RIORecvQueue == RIO_INVALID_CQ)
             {
-                AZ_Error("GridMate", false, "Could not RIOCreateCompletionQueue: %u\n", ::WSAGetLastError());
+                AZ_Error("GridMate", false, "Could not RIOCreateCompletionQueue: %u\n", GridMate::Platform::GetSocketError());
                 return EC_SOCKET_CREATE;
             }
 
             if ((m_events[SendEvent] = WSACreateEvent()) == WSA_INVALID_EVENT)
             {
-                AZ_Error("GridMate", false, "Failed WSACreateEvent(): %u\n", ::WSAGetLastError());
+                AZ_Error("GridMate", false, "Failed WSACreateEvent(): %u\n", GridMate::Platform::GetSocketError());
                 return EC_SOCKET_CREATE;
             }
             RIO_NOTIFICATION_COMPLETION typeSend;
@@ -1575,7 +1575,7 @@ namespace GridMate
             m_RIOSendQueue = m_RIO_FN_TABLE.RIOCreateCompletionQueue(maxOutstandingSend, &typeSend);
             if (m_RIOSendQueue == RIO_INVALID_CQ)
             {
-                AZ_Error("GridMate", false, "Could not RIOCreateCompletionQueue: %u\n", ::WSAGetLastError());
+                AZ_Error("GridMate", false, "Could not RIOCreateCompletionQueue: %u\n", GridMate::Platform::GetSocketError());
                 return EC_SOCKET_CREATE;
             }
 
@@ -1583,7 +1583,7 @@ namespace GridMate
                 maxReceiveDataBuffers, maxOutstandingSend, maxSendDataBuffers, m_RIORecvQueue,  m_RIOSendQueue, pContext);
             if (m_requestQueue == RIO_INVALID_RQ)
             {
-                AZ_Error("GridMate", m_requestQueue != NULL, "Could not RIOCreateRequestQueue: %u\n", ::WSAGetLastError());
+                AZ_Error("GridMate", m_requestQueue != NULL, "Could not RIOCreateRequestQueue: %u\n", GridMate::Platform::GetSocketError());
                 return EC_SOCKET_CREATE;
             }
 
@@ -1596,24 +1596,24 @@ namespace GridMate
             //Setup Recv raw buffer and RIO record
             if (nullptr == (m_rawRecvBuffer = AllocRIOBuffer(bufferSize, m_RIORecvBufferCount, &recvAllocated)))
             {
-                AZ_Error("GridMate", false, "Could not allocate buffer: %u\n", ::WSAGetLastError());
+                AZ_Error("GridMate", false, "Could not allocate buffer: %u\n", GridMate::Platform::GetSocketError());
                 return EC_SOCKET_CREATE;
             }
             if (RIO_INVALID_BUFFERID == (recvBufferId = m_RIO_FN_TABLE.RIORegisterBuffer(m_rawRecvBuffer, bufferSize * m_RIORecvBufferCount)))
             {
-                AZ_Error("GridMate", false, "Could not register buffer: %u\n", ::WSAGetLastError());
+                AZ_Error("GridMate", false, "Could not register buffer: %u\n", GridMate::Platform::GetSocketError());
                 return EC_SOCKET_CREATE;
             }
 
             //Setup Recv address raw buffer and RIO record
             if (nullptr == (m_rawRecvAddressBuffer = AllocRIOBuffer(sizeof(SOCKADDR_INET), m_RIORecvBufferCount, &recvAddrsAllocated)))
             {
-                AZ_Error("GridMate", false, "Could not allocate buffer: %u\n", ::WSAGetLastError());
+                AZ_Error("GridMate", false, "Could not allocate buffer: %u\n", GridMate::Platform::GetSocketError());
                 return EC_SOCKET_CREATE;
             }
             if (RIO_INVALID_BUFFERID == (recvAddressBufferId = m_RIO_FN_TABLE.RIORegisterBuffer(m_rawRecvAddressBuffer, sizeof(SOCKADDR_INET) * m_RIORecvBufferCount)))
             {
-                AZ_Error("GridMate", false, "Could not register buffer: %u\n", ::WSAGetLastError());
+                AZ_Error("GridMate", false, "Could not register buffer: %u\n", GridMate::Platform::GetSocketError());
                 return EC_SOCKET_CREATE;
             }
 
@@ -1640,7 +1640,7 @@ namespace GridMate
                 //Start Receive Handler
                 if (false == m_RIO_FN_TABLE.RIOReceiveEx(m_requestQueue, &m_RIORecvBuffer[i], 1, NULL, &m_RIORecvAddressBuffer[i], NULL, NULL, 0, pBuffer))
                 {
-                    AZ_Error("GridMate", false, "Could not RIOReceive: %u\n", ::WSAGetLastError());
+                    AZ_Error("GridMate", false, "Could not RIOReceive: %u\n", GridMate::Platform::GetSocketError());
                     return EC_SOCKET_CREATE;
                 }
             }
@@ -1650,25 +1650,25 @@ namespace GridMate
             //setup send raw buffer and RIO record
             if (nullptr == (m_rawSendBuffer = AllocRIOBuffer(bufferSize, m_RIOSendBufferCount, &sendAllocated)))
             {
-                AZ_Error("GridMate", false, "Could not allocate buffer: %u", ::WSAGetLastError());
+                AZ_Error("GridMate", false, "Could not allocate buffer: %u", GridMate::Platform::GetSocketError());
                 return EC_SOCKET_CREATE;
             }
             if (RIO_INVALID_BUFFERID == (sendBufferId = m_RIO_FN_TABLE.RIORegisterBuffer(m_rawSendBuffer, m_RIOSendBufferCount * bufferSize)))
             {
-                AZ_Error("GridMate", false, "Could not register buffer: %u\n", ::WSAGetLastError());
+                AZ_Error("GridMate", false, "Could not register buffer: %u\n", GridMate::Platform::GetSocketError());
                 return EC_SOCKET_CREATE;
             }
 
             //setup send address raw buffer and RIO record
             if (nullptr == (m_rawSendAddressBuffer = AllocRIOBuffer(sizeof(SOCKADDR_INET), m_RIOSendBufferCount, &sendAddrsAllocated)))
             {
-                AZ_Error("GridMate", false, "Could not allocate send address buffer: %u\n", ::WSAGetLastError());
+                AZ_Error("GridMate", false, "Could not allocate send address buffer: %u\n", GridMate::Platform::GetSocketError());
                 return EC_SOCKET_CREATE;
             }
 
             if (RIO_INVALID_BUFFERID == (sendAddressBufferId = m_RIO_FN_TABLE.RIORegisterBuffer(m_rawSendAddressBuffer, m_RIOSendBufferCount * sizeof(SOCKADDR_INET))))
             {
-                AZ_Error("GridMate", false, "Could not register buffer: %u\n", ::WSAGetLastError());
+                AZ_Error("GridMate", false, "Could not register buffer: %u\n", GridMate::Platform::GetSocketError());
                 return EC_SOCKET_CREATE;
             }
 
@@ -1726,7 +1726,7 @@ namespace GridMate
                     if (!m_RIO_FN_TABLE.RIOSendEx(m_requestQueue, &m_RIOSendBuffer[m_workerNextSendBuffer],
                         bufferCount, NULL, &m_RIOSendAddressBuffer[m_workerNextSendBuffer], NULL, NULL, 0, 0))
                     {
-                        const DWORD lastError = ::WSAGetLastError();
+                        const DWORD lastError = GridMate::Platform::GetSocketError();
                         if (lastError == WSAENOBUFS)
                         {
                             continue;   //spin until free
@@ -1836,7 +1836,7 @@ namespace GridMate
             if (false == m_RIO_FN_TABLE.RIOReceiveEx(m_requestQueue, &m_RIORecvBuffer[m_RIONextRecvBuffer],
                 bufferCount, NULL, &m_RIORecvAddressBuffer[m_RIONextRecvBuffer], NULL, NULL, 0, 0))
             {
-                AZ_Error("GridMate", false, "Could not RIOReceive: %u\n", ::WSAGetLastError());
+                AZ_Error("GridMate", false, "Could not RIOReceive: %u\n", GridMate::Platform::GetSocketError());
             }
 
             if (recvd)
@@ -1867,7 +1867,7 @@ namespace GridMate
         {
             if (!WSAResetEvent(m_events[Index - WSA_WAIT_EVENT_0]))
             {
-                AZ_Assert(false, "WSAResetEvent failed with error = %d\n", ::WSAGetLastError());
+                AZ_Assert(false, "WSAResetEvent failed with error = %d\n", GridMate::Platform::GetSocketError());
             }
         };
 
@@ -1926,7 +1926,7 @@ namespace GridMate
         }
         else if (isFailed(Index))
         {
-            AZ_Assert(false, "WSAWaitForMultipleEvents failed with error = %d\n", ::WSAGetLastError());
+            AZ_Assert(false, "WSAWaitForMultipleEvents failed with error = %d\n", GridMate::Platform::GetSocketError());
             return false;
         }
         else
@@ -1945,7 +1945,7 @@ namespace GridMate
     {
         if (!SetEvent(m_events[WakeupOnSend])) //Wake thread
         {
-            AZ_Assert(false, "SetEvent failed with error = %d\n", ::WSAGetLastError());
+            AZ_Assert(false, "SetEvent failed with error = %d\n", GridMate::Platform::GetSocketError());
         }
     }
 

@@ -771,7 +771,7 @@ namespace NArray
 
             AP& allocator()
             {
-                COMPILE_TIME_ASSERT(sizeof(AP) == sizeof(A));
+                static_assert(sizeof(AP) == sizeof(A));
                 return *(AP*)this;
             }
             const AP& allocator() const

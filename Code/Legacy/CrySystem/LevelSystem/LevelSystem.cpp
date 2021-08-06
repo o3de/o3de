@@ -33,10 +33,6 @@
 
 #include <AzCore/Script/ScriptSystemBus.h>
 
-#ifdef WIN32
-#include <CryWindows.h>
-#endif
-
 namespace LegacyLevelSystem
 {
 static constexpr const char* ArchiveExtension = ".pak";

@@ -63,7 +63,6 @@ using DetachEnvironmentFunction = void(*)();
     #if !defined(WIN32_LEAN_AND_MEAN)
         #define WIN32_LEAN_AND_MEAN
     #endif
-    #include <CryWindows.h>
 
     HMODULE CryLoadLibrary(const char* libName);
     

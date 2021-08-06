@@ -211,7 +211,7 @@ namespace Unicode
                     >::type
                 >::type CharType;
             static const size_t FixedSize = extent<T>::value;
-            COMPILE_TIME_ASSERT(!is_array<T>::value || FixedSize > 0);
+            static_assert(!is_array<T>::value || FixedSize > 0);
             static const bool isConstArray = is_array<T>::value && is_const<typename remove_extent<T>::type>::value;
             static const bool isBufferArray = is_array<T>::value && !isConstArray;
             static const bool isPointer = is_pointer<T>::value;
@@ -393,7 +393,7 @@ namespace Unicode
                 sizeof(CharType) == 1 ? eEncoding_UTF8 :
                 sizeof(CharType) == 2 ? eEncoding_UTF16 :
                 eEncoding_UTF32;
-            COMPILE_TIME_ASSERT(value != eEncoding_UTF32 || sizeof(CharType) == 4);
+            static_assert(value != eEncoding_UTF32 || sizeof(CharType) == 4);
         };
 
         // SBindCharacter<T, Input>:
@@ -408,7 +408,7 @@ namespace Unicode
         template<typename T, bool Input>
         struct SBindCharacter<T, Input, false, false>
         {
-            COMPILE_TIME_ASSERT(is_arithmetic<T>::value);
+            static_assert(is_arithmetic<T>::value);
             typedef typename remove_cv<T>::type UnqualifiedType;
             typedef typename conditional<Input, const UnqualifiedType, UnqualifiedType>::type type;
         };
@@ -417,7 +417,7 @@ namespace Unicode
         {
             typedef typename conditional<Input, const uint16, uint16>::type type;
             typedef typename SDependentType<QChar, Input>::type ActuallyQChar; // Force two-phase name lookup on QChar.
-            COMPILE_TIME_ASSERT(sizeof(ActuallyQChar) == sizeof(type)); // In case Qt ever changes QChar.
+            static_assert(sizeof(ActuallyQChar) == sizeof(type)); // In case Qt ever changes QChar.
         };
 
         // SBindPointer<T, Input>:
@@ -425,7 +425,7 @@ namespace Unicode
         template<typename T, bool Input>
         struct SBindPointer
         {
-            COMPILE_TIME_ASSERT(is_pointer<T>::value || is_array<T>::value);
+            static_assert(is_pointer<T>::value || is_array<T>::value);
             typedef typename conditional<
                 is_pointer<T>::value,
                 typename remove_pointer<T>::type,
@@ -458,8 +458,8 @@ namespace Unicode
         {
             // Allow casts from pointer-to-integral to unrelated pointer-to-integral, provided they are of the same size.
             typedef typename remove_pointer<T>::type TargetChar;
-            COMPILE_TIME_ASSERT(is_integral<SourceChar>::value && is_integral<TargetChar>::value);
-            COMPILE_TIME_ASSERT(sizeof(SourceChar) == sizeof(TargetChar));
+            static_assert(is_integral<SourceChar>::value && is_integral<TargetChar>::value);
+            static_assert(sizeof(SourceChar) == sizeof(TargetChar));
             return reinterpret_cast<T>(ptr);
         }
         template<typename T, typename SourceChar>
@@ -467,8 +467,8 @@ namespace Unicode
         {
             // Allow casts from pointer-to-QChar to unrelated pointer-to-integral, provided they are of the same size.
             typedef typename remove_pointer<T>::type TargetChar;
-            COMPILE_TIME_ASSERT(is_integral<TargetChar>::value);
-            COMPILE_TIME_ASSERT(sizeof(SourceChar) == sizeof(TargetChar));
+            static_assert(is_integral<TargetChar>::value);
+            static_assert(sizeof(SourceChar) == sizeof(TargetChar));
             return reinterpret_cast<T>(ptr);
         }
         template<typename T, typename SourceChar>
@@ -612,7 +612,7 @@ namespace Unicode
         template<typename InputStringType, typename Sink>
         inline void Feed(const InputStringType& in, Sink& out, integral_constant<EBind, eBind_Literal>)
         {
-            COMPILE_TIME_ASSERT(is_array<InputStringType>::value && extent<InputStringType>::value > 0);
+            static_assert(is_array<InputStringType>::value && extent<InputStringType>::value > 0);
             typedef typename SBindPointer<InputStringType, true>::type PointerType;
             const size_t length = extent<InputStringType>::value - 1;
             PointerType ptr = SafeCast<PointerType>(in);
@@ -630,7 +630,7 @@ namespace Unicode
         template<typename InputStringType, typename Sink>
         inline void Feed(const InputStringType& in, Sink& out, integral_constant<EBind, eBind_Buffer>)
         {
-            COMPILE_TIME_ASSERT(is_array<InputStringType>::value && extent<InputStringType>::value > 0);
+            static_assert(is_array<InputStringType>::value && extent<InputStringType>::value > 0);
             typedef typename SBindPointer<InputStringType, true>::type PointerType;
             typedef typename SBindPointer<InputStringType, true>::BoundCharType CharType;
             const size_t length = extent<InputStringType>::value;
@@ -652,7 +652,7 @@ namespace Unicode
         template<typename InputStringType, typename Sink>
         inline void Feed(const InputStringType& in, Sink& out, integral_constant<EBind, eBind_NullTerminated>)
         {
-            COMPILE_TIME_ASSERT(is_pointer<InputStringType>::value);
+            static_assert(is_pointer<InputStringType>::value);
             typedef typename SBindPointer<InputStringType, true>::type PointerType;
             typedef typename SBindPointer<InputStringType, true>::BoundCharType CharType;
             PointerType ptr = SafeCast<PointerType>(in);
@@ -677,7 +677,7 @@ namespace Unicode
         template<typename InputCharType, typename Sink>
         inline void Feed(const InputCharType& in, Sink& out, integral_constant<EBind, eBind_CodePoint>)
         {
-            COMPILE_TIME_ASSERT(is_arithmetic<InputCharType>::value);
+            static_assert(is_arithmetic<InputCharType>::value);
             const uint32 item = static_cast<uint32>(in);
             out(item);
         }
@@ -711,7 +711,7 @@ namespace Unicode
         template<typename InputStringType>
         inline size_t EncodedLength(const InputStringType& in, integral_constant<EBind, eBind_Literal>)
         {
-            COMPILE_TIME_ASSERT(is_array<InputStringType>::value && extent<InputStringType>::value > 0);
+            static_assert(is_array<InputStringType>::value && extent<InputStringType>::value > 0);
             return extent<InputStringType>::value - 1;
         }
 
@@ -720,7 +720,7 @@ namespace Unicode
         template<typename InputStringType>
         inline size_t EncodedLength(const InputStringType& in, integral_constant<EBind, eBind_Buffer>)
         {
-            COMPILE_TIME_ASSERT(is_array<InputStringType>::value && extent<InputStringType>::value > 0);
+            static_assert(is_array<InputStringType>::value && extent<InputStringType>::value > 0);
             typedef typename remove_extent<InputStringType>::type CharType;
             return SCharacterTrait<CharType>::StrNLen(in, extent<InputStringType>::value);
         }
@@ -738,7 +738,7 @@ namespace Unicode
         template<typename InputStringType>
         inline size_t EncodedLength(const InputStringType& in, integral_constant<EBind, eBind_NullTerminated>)
         {
-            COMPILE_TIME_ASSERT(is_pointer<InputStringType>::value);
+            static_assert(is_pointer<InputStringType>::value);
             typedef typename remove_pointer<InputStringType>::type CharType;
             return in ? SCharacterTrait<CharType>::StrLen(in) : 0;
         }
@@ -748,7 +748,7 @@ namespace Unicode
         template<typename InputCharType>
         inline size_t EncodedLength([[maybe_unused]] const InputCharType& in, integral_constant<EBind, eBind_CodePoint>)
         {
-            COMPILE_TIME_ASSERT(is_arithmetic<InputCharType>::value);
+            static_assert(is_arithmetic<InputCharType>::value);
             return 1;
         }
 
@@ -775,7 +775,7 @@ namespace Unicode
         template<typename InputStringType>
         inline const void* EncodedPointer(const InputStringType& in, integral_constant<EBind, eBind_Literal>)
         {
-            COMPILE_TIME_ASSERT(is_array<InputStringType>::value && extent<InputStringType>::value > 0);
+            static_assert(is_array<InputStringType>::value && extent<InputStringType>::value > 0);
             return in; // We can just let the array type decay to a pointer.
         }
 
@@ -784,7 +784,7 @@ namespace Unicode
         template<typename InputStringType>
         inline const void* EncodedPointer(const InputStringType& in, integral_constant<EBind, eBind_Buffer>)
         {
-            COMPILE_TIME_ASSERT(is_array<InputStringType>::value && extent<InputStringType>::value > 0);
+            static_assert(is_array<InputStringType>::value && extent<InputStringType>::value > 0);
             return in; // We can just let the array type decay to a pointer.
         }
 
@@ -793,7 +793,7 @@ namespace Unicode
         template<typename InputStringType>
         inline const void* EncodedPointer(const InputStringType& in, integral_constant<EBind, eBind_NullTerminated>)
         {
-            COMPILE_TIME_ASSERT(is_pointer<InputStringType>::value);
+            static_assert(is_pointer<InputStringType>::value);
             return in; // Implied
         }
 
@@ -802,7 +802,7 @@ namespace Unicode
         template<typename InputCharType>
         inline const void* EncodedPointer(const InputCharType& in, integral_constant<EBind, eBind_CodePoint>)
         {
-            COMPILE_TIME_ASSERT(is_arithmetic<InputCharType>::value);
+            static_assert(is_arithmetic<InputCharType>::value);
             return &in; // Take the address of the parameter (which is kept on the stack of the caller).
         }
 
