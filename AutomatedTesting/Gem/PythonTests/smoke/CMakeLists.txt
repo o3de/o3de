@@ -11,7 +11,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     if (PAL_TRAIT_BUILD_SERIALIZECONTEXTTOOLS)
         list(APPEND additional_dependencies AZ::SerializeContextTools) # test_CLITool_SerializeContextTools depends on it
     endif()
-    list(APPEND additional_dependencies AZ::AssetBundlerBatch) # test_CLITool_AssetBundlerBatch_Works depends on it
 
     ly_add_pytest(
         NAME AutomatedTesting::SmokeTest
@@ -26,6 +25,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
             Legacy::Editor
             AutomatedTesting.GameLauncher
             AutomatedTesting.Assets
+            AZ::AzTestRunner
+            AZ::AssetBundlerBatch
             ${additional_dependencies}
         COMPONENT
             Smoke
