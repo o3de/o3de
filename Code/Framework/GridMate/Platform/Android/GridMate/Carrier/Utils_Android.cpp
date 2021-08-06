@@ -18,9 +18,9 @@
 
 namespace GridMate
 {
-    string Utils::GetMachineAddress(int familyType)
+    AZStd::string Utils::GetMachineAddress(int familyType)
     {
-        string machineName;
+        AZStd::string machineName;
         struct RTMRequest
         {
             nlmsghdr m_msghdr;

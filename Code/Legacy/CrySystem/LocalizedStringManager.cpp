@@ -2337,8 +2337,8 @@ void InternalFormatStringMessage(AZStd::string& outString, const AZStd::string& 
     static const char tokens2[3] = { token, token, '\0' };
 
     int maxArgUsed = 0;
-    int lastPos = 0;
-    int curPos = 0;
+    size_t lastPos = 0;
+    size_t curPos = 0;
     const int sourceLen = static_cast<int>(sString.length());
     while (true)
     {
