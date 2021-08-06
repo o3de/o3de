@@ -15,7 +15,6 @@
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <Viewport/MaterialViewportWidget.h>
-#include <Window/StatusBar/StatusBarWidget.h>
 #include <Window/ToolBar/MaterialEditorToolBar.h>
 AZ_POP_DISABLE_WARNING
 #endif
