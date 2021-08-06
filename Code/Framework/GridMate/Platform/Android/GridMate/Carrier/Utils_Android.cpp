@@ -67,7 +67,7 @@ namespace GridMate
 
                 char address[INET6_ADDRSTRLEN] = { 0 };
                 bool isLoopback = false;
-                string devname;
+                AZStd::string devname;
                 for (int rtattrlen = IFA_PAYLOAD(nlmp); RTA_OK(rtatp, rtattrlen); rtatp = RTA_NEXT(rtatp, rtattrlen))
                 {
                     if (rtatp->rta_type == IFA_ADDRESS)
