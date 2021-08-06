@@ -52,7 +52,7 @@ class CTrackViewDialog
 public:
     friend CMovieCallback;
 
-    CTrackViewDialog(QWidget* pParent = NULL);
+    CTrackViewDialog(QWidget* pParent = nullptr);
     ~CTrackViewDialog();
 
     static void RegisterViewClass();
@@ -183,7 +183,7 @@ private:
     void OnAddEntityNodeMenu();
 
     void OnEditorNotifyEvent(EEditorNotifyEvent event) override;
-    BOOL OnInitDialog();
+    bool OnInitDialog();
 
     void SaveLayouts();
     void SaveMiscSettings() const;

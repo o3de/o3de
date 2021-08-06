@@ -375,9 +375,6 @@ void CCryEditApp::RegisterActionHandlers()
     });
     ON_COMMAND(ID_MOVE_OBJECT, OnMoveObject)
     ON_COMMAND(ID_RENAME_OBJ, OnRenameObj)
-    ON_COMMAND(ID_EDITMODE_MOVE, OnEditmodeMove)
-    ON_COMMAND(ID_EDITMODE_ROTATE, OnEditmodeRotate)
-    ON_COMMAND(ID_EDITMODE_SCALE, OnEditmodeScale)
     ON_COMMAND(ID_UNDO, OnUndo)
     ON_COMMAND(ID_TOOLBAR_WIDGET_REDO, OnUndo)     // Can't use the same ID, because for the menu we can't have a QWidgetAction, while for the toolbar we want one
     ON_COMMAND(ID_IMPORT_ASSET, OnOpenAssetImporter)
@@ -2577,75 +2574,6 @@ void CCryEditApp::OnMoveObject()
 
 void CCryEditApp::OnRenameObj()
 {
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnEditmodeMove()
-{
-    using namespace AzToolsFramework;
-    EditorTransformComponentSelectionRequestBus::Event(
-        GetEntityContextId(),
-        &EditorTransformComponentSelectionRequests::SetTransformMode,
-        EditorTransformComponentSelectionRequests::Mode::Translation);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnEditmodeRotate()
-{
-    using namespace AzToolsFramework;
-    EditorTransformComponentSelectionRequestBus::Event(
-        GetEntityContextId(),
-        &EditorTransformComponentSelectionRequests::SetTransformMode,
-        EditorTransformComponentSelectionRequests::Mode::Rotation);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnEditmodeScale()
-{
-    using namespace AzToolsFramework;
-    EditorTransformComponentSelectionRequestBus::Event(
-        GetEntityContextId(),
-        &EditorTransformComponentSelectionRequests::SetTransformMode,
-        EditorTransformComponentSelectionRequests::Mode::Scale);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnUpdateEditmodeMove(QAction* action)
-{
-    Q_ASSERT(action->isCheckable());
-
-    AzToolsFramework::EditorTransformComponentSelectionRequests::Mode mode;
-    AzToolsFramework::EditorTransformComponentSelectionRequestBus::EventResult(
-        mode, AzToolsFramework::GetEntityContextId(),
-        &AzToolsFramework::EditorTransformComponentSelectionRequests::GetTransformMode);
-
-    action->setChecked(mode == AzToolsFramework::EditorTransformComponentSelectionRequests::Mode::Translation);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnUpdateEditmodeRotate(QAction* action)
-{
-    Q_ASSERT(action->isCheckable());
-
-    AzToolsFramework::EditorTransformComponentSelectionRequests::Mode mode;
-    AzToolsFramework::EditorTransformComponentSelectionRequestBus::EventResult(
-        mode, AzToolsFramework::GetEntityContextId(),
-        &AzToolsFramework::EditorTransformComponentSelectionRequests::GetTransformMode);
-
-    action->setChecked(mode == AzToolsFramework::EditorTransformComponentSelectionRequests::Mode::Rotation);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnUpdateEditmodeScale(QAction* action)
-{
-    Q_ASSERT(action->isCheckable());
-
-    AzToolsFramework::EditorTransformComponentSelectionRequests::Mode mode;
-    AzToolsFramework::EditorTransformComponentSelectionRequestBus::EventResult(
-        mode, AzToolsFramework::GetEntityContextId(),
-        &AzToolsFramework::EditorTransformComponentSelectionRequests::GetTransformMode);
-
-    action->setChecked(mode == AzToolsFramework::EditorTransformComponentSelectionRequests::Mode::Scale);
 }
 
 void CCryEditApp::OnViewSwitchToGame()

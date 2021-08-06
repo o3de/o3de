@@ -274,6 +274,7 @@ namespace UnitTest
         InstanceAlias aliasOfWheelInstanceToRetain = wheelInstanceAliasesUnderAxle.front();
         AZStd::unique_ptr<Instance> detachedInstance = axleInstance->DetachNestedInstance(wheelInstanceAliasesUnderAxle.back());
         ASSERT_TRUE(detachedInstance);
+        m_prefabSystemComponent->RemoveLink(detachedInstance->GetLinkId());
         PrefabDom updatedAxleInstanceDom;
         ASSERT_TRUE(PrefabDomUtils::StoreInstanceInPrefabDom(*axleInstance, updatedAxleInstanceDom));
         m_prefabSystemComponent->UpdatePrefabTemplate(axleTemplateId, updatedAxleInstanceDom);

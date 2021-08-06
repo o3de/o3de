@@ -11,7 +11,7 @@
 #define CRYINCLUDE_CRYCOMMON_CRYARRAY_H
 #pragma once
 
-#include "CryLegacyAllocator.h"
+#include <CryLegacyAllocator.h>
 
 //---------------------------------------------------------------------------
 // Convenient iteration macros
@@ -675,7 +675,7 @@ namespace NArray
 
                 I   capacity() const
                 {
-                    I aligned_bytes = Align(size() * sizeof(T), sizeof(I));
+                    I aligned_bytes = static_cast<I>(Align(size() * sizeof(T), sizeof(I)));
                     if (m_nSizeCap & nCAP_BIT)
                     {
                         // Capacity stored in word following data
@@ -693,7 +693,7 @@ namespace NArray
                     // Store size, and assert against overflow.
                     assert(s <= c);
                     m_nSizeCap = s;
-                    I aligned_bytes = Align(s * sizeof(T), sizeof(I));
+                    I aligned_bytes = static_cast<I>(Align(s * sizeof(T), sizeof(I)));
                     if (c * sizeof(T) >= aligned_bytes + sizeof(I))
                     {
                         // Has extra capacity, more than word-alignment

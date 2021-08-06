@@ -34,8 +34,6 @@ namespace AzToolsFramework::AssetUtils::Internal
             return {};
         }
 
-        const int pathLen = sourceFolder.length() + 1;
-
         AZ::IO::Path sourceWildcard{ sourceFolder };
 
 

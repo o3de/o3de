@@ -170,7 +170,7 @@ MCORE_INLINE void KeyTrackLinearDynamic<ReturnType, StorageType>::AddKey(float t
 template <class ReturnType, class StorageType>
 MCORE_INLINE uint32 KeyTrackLinearDynamic<ReturnType, StorageType>::FindKeyNumber(float curTime) const
 {
-    return KeyFrameFinder<ReturnType, StorageType>::FindKey(curTime, &mKeys.front(), mKeys.size());
+    return KeyFrameFinder<ReturnType, StorageType>::FindKey(curTime, &mKeys.front(), static_cast<uint32>(mKeys.size()));
 }
 
 
@@ -355,7 +355,7 @@ void KeyTrackLinearDynamic<ReturnType, StorageType>::AddKeySorted(float time, co
     {
         if (mKeys.capacity() == mKeys.size())
         {
-            const uint32 numToReserve = mKeys.size() / 4;
+            const uint32 numToReserve = static_cast<uint32>(mKeys.size() / 4);
             mKeys.reserve(mKeys.capacity() + numToReserve);
         }
     }
@@ -385,7 +385,7 @@ void KeyTrackLinearDynamic<ReturnType, StorageType>::AddKeySorted(float time, co
     }
 
     // quickly find the location to insert, and insert it
-    const uint32 place = KeyFrameFinder<ReturnType, StorageType>::FindKey(keyTime, &mKeys.front(), mKeys.size());
+    const uint32 place = KeyFrameFinder<ReturnType, StorageType>::FindKey(keyTime, &mKeys.front(), static_cast<uint32>(mKeys.size()));
     mKeys.insert(mKeys.begin() + place + 1, KeyFrame<ReturnType, StorageType>(time, value));
 }
 

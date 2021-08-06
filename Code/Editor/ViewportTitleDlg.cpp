@@ -91,7 +91,7 @@ namespace
         void ViewportInfoStatusUpdated(int newIndex);
 
     private:
-        void OnViewportInfoDisplayStateChanged(AZ::AtomBridge::ViewportInfoDisplayState state)
+        void OnViewportInfoDisplayStateChanged(AZ::AtomBridge::ViewportInfoDisplayState state) override
         {
             emit ViewportInfoStatusUpdated(static_cast<int>(state));
         }
@@ -953,13 +953,13 @@ void CViewportTitleDlg::CheckForCameraSpeedUpdate()
 void CViewportTitleDlg::OnGridSnappingToggled()
 {
     m_gridSizeActionWidget->setEnabled(m_enableGridSnappingAction->isChecked());
-    MainWindow::instance()->GetActionManager()->GetAction(ID_SNAP_TO_GRID)->trigger();
+    MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapToGrid)->trigger();
 }
 
 void CViewportTitleDlg::OnAngleSnappingToggled()
 {
     m_angleSizeActionWidget->setEnabled(m_enableAngleSnappingAction->isChecked());
-    MainWindow::instance()->GetActionManager()->GetAction(ID_SNAPANGLE)->trigger();
+    MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapAngle)->trigger();
 }
 
 void CViewportTitleDlg::OnGridSpinBoxChanged(double value)
@@ -974,14 +974,14 @@ void CViewportTitleDlg::OnAngleSpinBoxChanged(double value)
 
 void CViewportTitleDlg::UpdateOverFlowMenuState()
 {
-    bool gridSnappingActive = MainWindow::instance()->GetActionManager()->GetAction(ID_SNAP_TO_GRID)->isChecked();
+    bool gridSnappingActive = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapToGrid)->isChecked();
     {
         QSignalBlocker signalBlocker(m_enableGridSnappingAction);
         m_enableGridSnappingAction->setChecked(gridSnappingActive);
     }
     m_gridSizeActionWidget->setEnabled(gridSnappingActive);
 
-    bool angleSnappingActive = MainWindow::instance()->GetActionManager()->GetAction(ID_SNAPANGLE)->isChecked();
+    bool angleSnappingActive = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapAngle)->isChecked();
     {
         QSignalBlocker signalBlocker(m_enableAngleSnappingAction);
         m_enableAngleSnappingAction->setChecked(angleSnappingActive);

@@ -344,7 +344,7 @@ void CTVCustomizeTrackColorsDlg::Export(const QString& fullPath) const
 bool CTVCustomizeTrackColorsDlg::Import(const QString& fullPath)
 {
     XmlNodeRef customTrackColorsNode = XmlHelpers::LoadXmlFromFile(fullPath.toStdString().c_str());
-    if (customTrackColorsNode == NULL)
+    if (customTrackColorsNode == nullptr)
     {
         return false;
     }

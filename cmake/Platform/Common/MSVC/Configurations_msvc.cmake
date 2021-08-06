@@ -41,7 +41,6 @@ ly_append_configurations_options(
         /wd4018 # signed/unsigned mismatch
         /wd4244 # conversion, possible loss of data
         /wd4245 # conversion, signed/unsigned mismatch
-        /wd4267 # conversion, possible loss of data
         /wd4389 # comparison, signed/unsigned mismatch
 
         # Enabling warnings that are disabled by default from /W4

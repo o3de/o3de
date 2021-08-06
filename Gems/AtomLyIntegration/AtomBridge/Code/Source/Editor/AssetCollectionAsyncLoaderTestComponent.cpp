@@ -238,7 +238,7 @@ namespace AZ
 
         uint32_t AssetCollectionAsyncLoaderTestComponent::GetCountOfPendingAssets() const
         {
-            return m_pendingAssets.size();
+            return static_cast<uint32_t>(m_pendingAssets.size());
         }
 
         bool AssetCollectionAsyncLoaderTestComponent::ValidateAssetWasLoaded(const AZStd::string& assetPath) const

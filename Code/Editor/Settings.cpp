@@ -189,6 +189,7 @@ SEditorSettings::SEditorSettings()
 
     consoleBackgroundColorTheme = AzToolsFramework::ConsoleColorTheme::Dark;
     bShowTimeInConsole = false;
+    clearConsoleOnGameModeStart = false;
 
     enableSceneInspector = false;
 
@@ -243,7 +244,7 @@ SEditorSettings::SEditorSettings()
 
     gui.nToolbarIconSize = static_cast<int>(AzQtComponents::ToolBar::ToolBarIconSize::Default);
 
-    int lfHeight = 8;// -MulDiv(8, GetDeviceCaps(GetDC(NULL), LOGPIXELSY), 72);
+    int lfHeight = 8;// -MulDiv(8, GetDeviceCaps(GetDC(nullptr), LOGPIXELSY), 72);
     gui.nDefaultFontHieght = lfHeight;
     gui.hSystemFont = QFont("Ms Shell Dlg 2", lfHeight, QFont::Normal);
     gui.hSystemFontBold = QFont("Ms Shell Dlg 2", lfHeight, QFont::Bold);
@@ -527,10 +528,12 @@ void SEditorSettings::Save()
 
     SaveValue("Settings", "ConsoleBackgroundColorThemeV2", (int)consoleBackgroundColorTheme);
 
+    SaveValue("Settings", "ClearConsoleOnGameModeStart", clearConsoleOnGameModeStart);
+
     SaveValue("Settings", "ShowTimeInConsole", bShowTimeInConsole);
 
     SaveValue("Settings", "EnableSceneInspector", enableSceneInspector);
-    
+
     //////////////////////////////////////////////////////////////////////////
     // Viewport settings.
     //////////////////////////////////////////////////////////////////////////
@@ -623,7 +626,7 @@ void SEditorSettings::Save()
     SaveValue("Settings\\AssetBrowser", "AutoFilterFromViewportSelection", sAssetBrowserSettings.bAutoFilterFromViewportSelection);
     SaveValue("Settings\\AssetBrowser", "VisibleColumnNames", sAssetBrowserSettings.sVisibleColumnNames);
     SaveValue("Settings\\AssetBrowser", "ColumnNames", sAssetBrowserSettings.sColumnNames);
-      
+
     //////////////////////////////////////////////////////////////////////////
     // Deep Selection Settings
     //////////////////////////////////////////////////////////////////////////
@@ -702,7 +705,7 @@ void SEditorSettings::Load()
     QString     strPlaceholderString;
     // Load settings from registry.
     LoadValue("Settings", "UndoLevels", undoLevels);
-    LoadValue("Settings", "UndoSliceOverrideSaveValue", m_undoSliceOverrideSaveValue);  
+    LoadValue("Settings", "UndoSliceOverrideSaveValue", m_undoSliceOverrideSaveValue);
     LoadValue("Settings", "ShowWelcomeScreenAtStartup", bShowDashboardAtStartup);
     LoadValue("Settings", "ShowCircularDependencyError", m_showCircularDependencyError);
     LoadValue("Settings", "LoadLastLevelAtStartup", bAutoloadLastLevelAtStartup);
@@ -744,6 +747,8 @@ void SEditorSettings::Load()
     {
         consoleBackgroundColorTheme = AzToolsFramework::ConsoleColorTheme::Dark;
     }
+
+    LoadValue("Settings", "ClearConsoleOnGameModeStart", clearConsoleOnGameModeStart);
 
     LoadValue("Settings", "ShowTimeInConsole", bShowTimeInConsole);
 
@@ -1083,7 +1088,7 @@ void SEditorSettings::ConvertPath(const AZStd::string_view sourcePath, AZStd::st
 
 AzToolsFramework::EditorSettingsAPIRequests::SettingOutcome SEditorSettings::GetValue(const AZStd::string_view path)
 {
-    if (path.find("|") < 0)
+    if (path.find("|") == AZStd::string_view::npos)
     {
         return { AZStd::string("Invalid Path - could not find separator \"|\"") };
     }
@@ -1101,7 +1106,7 @@ AzToolsFramework::EditorSettingsAPIRequests::SettingOutcome SEditorSettings::Get
 
 AzToolsFramework::EditorSettingsAPIRequests::SettingOutcome SEditorSettings::SetValue(const AZStd::string_view path, const AZStd::any& value)
 {
-    if (path.find("|") < 0)
+    if (path.find("|") == AZStd::string_view::npos)
     {
         return { AZStd::string("Invalid Path - could not find separator \"|\"") };
     }

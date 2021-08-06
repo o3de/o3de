@@ -1240,6 +1240,13 @@ AZStd::shared_ptr<AtomToolsFramework::ModularViewportCameraController> CreateMod
     AzFramework::ViewportId viewportId)
 {
     auto controller = AZStd::make_shared<AtomToolsFramework::ModularViewportCameraController>();
+
+    controller->SetCameraPriorityBuilderCallback(
+        [](AtomToolsFramework::CameraControllerPriorityFn& cameraControllerPriorityFn)
+        {
+            cameraControllerPriorityFn = AtomToolsFramework::DefaultCameraControllerPriority;
+        });
+
     controller->SetCameraPropsBuilderCallback(
         [](AzFramework::CameraProps& cameraProps)
         {

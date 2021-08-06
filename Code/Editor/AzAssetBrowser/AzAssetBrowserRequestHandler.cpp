@@ -260,9 +260,7 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
         return;
     }
 
-    AZStd::string fullFileDirectory;
     AZStd::string fullFilePath;
-    AZStd::string fileName;
     AZStd::string extension;
 
     switch (entry->GetEntryType())
@@ -281,8 +279,6 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
     {
         AZ::Uuid sourceID = azrtti_cast<SourceAssetBrowserEntry*>(entry)->GetSourceUuid();
         fullFilePath = entry->GetFullPath();
-        fullFileDirectory = fullFilePath.substr(0, fullFilePath.find_last_of(AZ_CORRECT_DATABASE_SEPARATOR));
-        fileName = entry->GetName();
         AzFramework::StringFunc::Path::GetExtension(fullFilePath.c_str(), extension);
 
         // Add the "Open" menu item.
@@ -369,19 +365,19 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
         {
             if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
             {
-                CFileUtil::PopulateQMenu(caller, menu, fileName.c_str(), fullFileDirectory.c_str());
+                CFileUtil::PopulateQMenu(caller, menu, fullFilePath);
             }
             return;
         }
       
-        CFileUtil::PopulateQMenu(caller, menu, fileName.c_str(), fullFileDirectory.c_str());
+        CFileUtil::PopulateQMenu(caller, menu, fullFilePath);
     }
     break;
     case AssetBrowserEntry::AssetEntryType::Folder:
     {
-        fullFileDirectory = entry->GetFullPath();
-        // we are sending an empty filename to indicate that it is a folder and not a file
-        CFileUtil::PopulateQMenu(caller, menu, fileName.c_str(), fullFileDirectory.c_str());
+        fullFilePath = entry->GetFullPath();
+
+        CFileUtil::PopulateQMenu(caller, menu, fullFilePath);
     }
     break;
     default:

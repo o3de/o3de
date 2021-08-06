@@ -19,7 +19,7 @@ AZ_POP_DISABLE_WARNING
 
 
 
-CNewTerrainDialog::CNewTerrainDialog(QWidget* pParent /*=NULL*/)
+CNewTerrainDialog::CNewTerrainDialog(QWidget* pParent /*=nullptr*/)
     : QDialog(pParent)
     , m_terrainResolutionIndex(0)
     , m_terrainUnitsIndex(0)

@@ -247,7 +247,7 @@ namespace AzToolsFramework
                         if (highlightTextIndex >= 0)
                         {
                             const QString BACKGROUND_COLOR{ "#707070" };
-                            label.insert(highlightTextIndex + m_filterString.length(), "</span>");
+                            label.insert(highlightTextIndex + static_cast<int>(m_filterString.length()), "</span>");
                             label.insert(highlightTextIndex, "<span style=\"background-color: " + BACKGROUND_COLOR + "\">");
                         }
                     } while(highlightTextIndex > 0);
