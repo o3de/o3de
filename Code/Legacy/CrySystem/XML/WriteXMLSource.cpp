@@ -190,8 +190,9 @@ bool SaveArray(const IdTable& idTable, XmlNodeRef& definition, XmlNodeRef& data,
     }
 
     bool needIndex = false;
-    for (size_t i = 1; i <= numElems; i++)
+    for (size_t sizei = 1; sizei <= numElems; sizei++)
     {
+        const int i = static_cast<int>(sizei);
         if (!childSource->HaveElemAt(i))
         {
             needIndex = true;

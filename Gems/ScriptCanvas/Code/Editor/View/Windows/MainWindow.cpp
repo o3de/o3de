@@ -1384,7 +1384,7 @@ namespace ScriptCanvasEditor
         AZStd::string assetPath = scriptCanvasAsset.GetAbsolutePath();
         if (!assetPath.empty() && !m_loadingNewlySavedFile)
         {
-            int eraseCount = m_loadingWorkspaceAssets.erase(fileAssetId);
+            const size_t eraseCount = m_loadingWorkspaceAssets.erase(fileAssetId);
 
             if (eraseCount == 0)
             {
@@ -2529,7 +2529,7 @@ namespace ScriptCanvasEditor
         AZ::Data::AssetId fileAssetId = memoryAsset.GetFileAssetId();
         AZ::Data::AssetId memoryAssetId = memoryAsset.GetId();
 
-        int eraseCount = m_loadingAssets.erase(fileAssetId);
+        size_t eraseCount = m_loadingAssets.erase(fileAssetId);
 
         if (eraseCount > 0)
         {

@@ -47,7 +47,7 @@ namespace AZ
             }
 
             auto stackEntry = AZStd::make_shared<BlockCache>(
-                cacheSize, blockSize, aznumeric_caster(hardware.m_maxPhysicalSectorSize), false);
+                cacheSize, aznumeric_cast<AZ::u32>(blockSize), aznumeric_cast<AZ::u32>(hardware.m_maxPhysicalSectorSize), false);
             stackEntry->SetNext(AZStd::move(parent));
             return stackEntry;
         }

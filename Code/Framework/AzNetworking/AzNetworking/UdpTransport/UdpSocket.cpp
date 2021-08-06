@@ -241,7 +241,7 @@ namespace AzNetworking
 #ifdef ENABLE_LATENCY_DEBUG
     int32_t UdpSocket::SendInternalDeferred(const DeferredData& data) const
     {
-        return SendInternal(data.m_address, data.m_dataBuffer.GetBuffer(), data.m_dataBuffer.GetSize(), data.m_encrypt, *data.m_dtlsEndpoint);
+        return SendInternal(data.m_address, data.m_dataBuffer.GetBuffer(), static_cast<uint32_t>(data.m_dataBuffer.GetSize()), data.m_encrypt, *data.m_dtlsEndpoint);
     }
 #endif
 }

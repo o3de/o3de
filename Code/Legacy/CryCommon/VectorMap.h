@@ -408,8 +408,7 @@ typename VectorMap<K, V, T, A>::key_compare VectorMap<K, V, T, A>::key_comp() co
 template <typename K, typename V, typename T, typename A>
 typename VectorMap<K, V, T, A>::iterator VectorMap<K, V, T, A>::lower_bound(const key_type& key)
 {
-    int count = 0;
-    count = m_entries.size();
+    int count = static_cast<int>(m_entries.size());
     iterator first = m_entries.begin();
     iterator last = m_entries.end();
     for (; 0 < count; )
@@ -432,8 +431,7 @@ typename VectorMap<K, V, T, A>::iterator VectorMap<K, V, T, A>::lower_bound(cons
 template <typename K, typename V, typename T, typename A>
 typename VectorMap<K, V, T, A>::const_iterator VectorMap<K, V, T, A>::lower_bound(const key_type& key) const
 {
-    int count = 0;
-    count = m_entries.size();
+    int count = static_cast<int>(m_entries.size());
     const_iterator first = m_entries.begin();
     const_iterator last = m_entries.end();
     for (; 0 < count; )
