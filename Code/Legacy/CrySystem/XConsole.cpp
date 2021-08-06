@@ -84,35 +84,6 @@ inline int GetCharPrio(char x)
         return x;
     }
 }
-// case sensitive
-inline bool less_CVar(const AZStd::string& left, const AZStd::string& right)
-{
-    AZStd::string_view leftView(left);
-    AZStd::string_view rightView(right);
-    for (;; )
-    {
-        uint32 l = GetCharPrio(leftView.front()), r = GetCharPrio(rightView.front());
-
-        if (l < r)
-        {
-            return true;
-        }
-        if (l > r)
-        {
-            return false;
-        }
-
-        if (leftView.front() == 0 || rightView.front() == 0)
-        {
-            break;
-        }
-
-        leftView.remove_prefix(1);
-        rightView.remove_prefix(1);
-    }
-
-    return false;
-}
 
 void Command_SetWaitSeconds(IConsoleCmdArgs* pCmd)
 {
@@ -346,28 +317,6 @@ void CXConsole::Init(ISystem* pSystem)
     {
         con_restricted = 0;
     }
-
-    // test cases -----------------------------------------------
-    assert(GetCVar("con_debug") != 0);        // should be registered a few lines above
-    assert(GetCVar("Con_Debug") == GetCVar("con_debug"));     // different case
-
-    // editor
-    assert(strcmp(AutoComplete("con_"), "con_debug") == 0);
-    assert(strcmp(AutoComplete("CON_"), "con_debug") == 0);
-    assert(strcmp(AutoComplete("con_debug"), "con_display_last_messages") == 0);       // actually we should reconsider this behavior
-    assert(strcmp(AutoComplete("Con_Debug"), "con_display_last_messages") == 0);       // actually we should reconsider this behavior
-
-    // game
-    assert(strcmp(ProcessCompletion("con_"), "con_debug ") == 0);
-    ResetAutoCompletion();
-    assert(strcmp(ProcessCompletion("CON_"), "con_debug ") == 0);
-    ResetAutoCompletion();
-    assert(strcmp(ProcessCompletion("con_debug"), "con_debug ") == 0);
-    ResetAutoCompletion();
-    assert(strcmp(ProcessCompletion("Con_Debug"), "con_debug ") == 0);
-    ResetAutoCompletion();
-
-    // ----------------------------------------------------------
 
     m_nLoadingBackTexID = -1;
 
@@ -2424,7 +2373,7 @@ const char* CXConsole::ProcessCompletion(const char* szInputBuffer)
 
     if (!matches.empty())
     {
-        std::sort(matches.begin(), matches.end(), less_CVar);       // to sort commands with variables
+        std::sort(matches.begin(), matches.end());       // to sort commands with variables
     }
     if (showlist && !matches.empty())
     {
@@ -3181,7 +3130,7 @@ char* CXConsole::GetCheatVarAt(uint32 nOffset)
 
 
 //////////////////////////////////////////////////////////////////////////
-size_t CXConsole::GetSortedVars(const char** pszArray, size_t numItems, const char* szPrefix)
+size_t CXConsole::GetSortedVars(AZStd::vector<AZStd::string_view>& pszArray, const char* szPrefix)
 {
     size_t i = 0;
     size_t iPrefixLen = szPrefix ? strlen(szPrefix) : 0;
@@ -3191,7 +3140,7 @@ size_t CXConsole::GetSortedVars(const char** pszArray, size_t numItems, const ch
         ConsoleVariablesMap::const_iterator it, end = m_mapVariables.end();
         for (it = m_mapVariables.begin(); it != end; ++it)
         {
-            if (pszArray && i >= numItems)
+            if (i >= pszArray.size())
             {
                 break;
             }
@@ -3209,10 +3158,7 @@ size_t CXConsole::GetSortedVars(const char** pszArray, size_t numItems, const ch
                 continue;
             }
 
-            if (pszArray)
-            {
-                pszArray[i] = it->first;
-            }
+            pszArray[i] = it->first;
 
             i++;
         }
@@ -3223,7 +3169,7 @@ size_t CXConsole::GetSortedVars(const char** pszArray, size_t numItems, const ch
         ConsoleCommandsMap::iterator it, end = m_mapCommands.end();
         for (it = m_mapCommands.begin(); it != end; ++it)
         {
-            if (pszArray && i >= numItems)
+            if (i >= pszArray.size())
             {
                 break;
             }
@@ -3241,18 +3187,15 @@ size_t CXConsole::GetSortedVars(const char** pszArray, size_t numItems, const ch
                 continue;
             }
 
-            if (pszArray)
-            {
-                pszArray[i] = it->first.c_str();
-            }
+            pszArray[i] = it->first.c_str();
 
             i++;
         }
     }
 
-    if (i != 0 && pszArray)
+    if (i != 0)
     {
-        std::sort(pszArray, pszArray + i, less_CVar);
+        std::sort(pszArray.begin(), pszArray.end());
     }
 
     return i;
@@ -3261,22 +3204,22 @@ size_t CXConsole::GetSortedVars(const char** pszArray, size_t numItems, const ch
 //////////////////////////////////////////////////////////////////////////
 void CXConsole::FindVar(const char* substr)
 {
-    std::vector<const char*> cmds;
+    AZStd::vector<AZStd::string_view> cmds;
     cmds.resize(GetNumVars() + m_mapCommands.size());
-    size_t cmdCount = GetSortedVars(&cmds[0], cmds.size());
+    size_t cmdCount = GetSortedVars(cmds);
 
     for (size_t i = 0; i < cmdCount; i++)
     {
         if (AZ::StringFunc::Find(cmds[i], substr) != AZStd::string::npos)
         {
-            ICVar* pCvar = gEnv->pConsole->GetCVar(cmds[i]);
+            ICVar* pCvar = gEnv->pConsole->GetCVar(cmds[i].data());
             if (pCvar)
             {
                 DisplayVarValue(pCvar);
             }
             else
             {
-                ConsoleLogInputResponse("    $3%s $6(Command)", cmds[i]);
+                ConsoleLogInputResponse("    $3%.*s $6(Command)", aznumeric_cast<int>(cmds[i].size()), cmds[i].data());
             }
         }
     }
@@ -3287,22 +3230,22 @@ const char* CXConsole::AutoComplete(const char* substr)
 {
     // following code can be optimized
 
-    std::vector<const char*> cmds;
+    AZStd::vector<AZStd::string_view> cmds;
     cmds.resize(GetNumVars() + m_mapCommands.size());
-    size_t cmdCount = GetSortedVars(&cmds[0], cmds.size());
+    size_t cmdCount = GetSortedVars(cmds);
 
     size_t substrLen = strlen(substr);
 
     // If substring is empty return first command.
     if (substrLen == 0 && cmdCount > 0)
     {
-        return cmds[0];
+        return cmds[0].data();
     }
 
     // find next
     for (size_t i = 0; i < cmdCount; i++)
     {
-        const char* szCmd = cmds[i];
+        const char* szCmd = cmds[i].data();
         size_t cmdlen = strlen(szCmd);
         if (cmdlen >= substrLen && memcmp(szCmd, substr, substrLen) == 0)
         {
@@ -3311,18 +3254,18 @@ const char* CXConsole::AutoComplete(const char* substr)
                 i++;
                 if (i < cmdCount)
                 {
-                    return cmds[i];
+                    return cmds[i].data();
                 }
-                return cmds[i - 1];
+                return cmds[i - 1].data();
             }
-            return cmds[i];
+            return cmds[i].data();
         }
     }
 
     // then first matching case insensitive
     for (size_t i = 0; i < cmdCount; i++)
     {
-        const char* szCmd = cmds[i];
+        const char* szCmd = cmds[i].data();
 
         size_t cmdlen = strlen(szCmd);
         if (cmdlen >= substrLen && azstrnicmp(szCmd, substr, substrLen) == 0)
@@ -3332,11 +3275,11 @@ const char* CXConsole::AutoComplete(const char* substr)
                 i++;
                 if (i < cmdCount)
                 {
-                    return cmds[i];
+                    return cmds[i].data();
                 }
-                return cmds[i - 1];
+                return cmds[i - 1].data();
             }
-            return cmds[i];
+            return cmds[i].data();
         }
     }
 
@@ -3357,27 +3300,27 @@ void CXConsole::SetInputLine(const char* szLine)
 //////////////////////////////////////////////////////////////////////////
 const char* CXConsole::AutoCompletePrev(const char* substr)
 {
-    std::vector<const char*> cmds;
+    AZStd::vector<AZStd::string_view> cmds;
     cmds.resize(GetNumVars() + m_mapCommands.size());
-    size_t cmdCount = GetSortedVars(&cmds[0], cmds.size());
+    size_t cmdCount = GetSortedVars(cmds);
 
     // If substring is empty return last command.
     if (strlen(substr) == 0 && cmds.size() > 0)
     {
-        return cmds[cmdCount - 1];
+        return cmds[cmdCount - 1].data();
     }
 
     for (unsigned int i = 0; i < cmdCount; i++)
     {
-        if (azstricmp(substr, cmds[i]) == 0)
+        if (azstricmp(substr, cmds[i].data()) == 0)
         {
             if (i > 0)
             {
-                return cmds[i - 1];
+                return cmds[i - 1].data();
             }
             else
             {
-                return cmds[0];
+                return cmds[0].data();
             }
         }
     }

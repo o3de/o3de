@@ -181,7 +181,7 @@ public:
     virtual bool IsOpened();
     virtual int GetNumVars();
     virtual int GetNumVisibleVars();
-    virtual size_t GetSortedVars(const char** pszArray, size_t numItems, const char* szPrefix = 0);
+    virtual size_t GetSortedVars(AZStd::vector<AZStd::string_view>& pszArray, const char* szPrefix = 0);
     virtual int GetNumCheatVars();
     virtual void SetCheatVarHashRange(size_t firstVar, size_t lastVar);
     virtual void CalcCheatVarHash();

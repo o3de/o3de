@@ -607,7 +607,7 @@ void CSettingsManager::SerializeCVars(XmlNodeRef& node, bool bLoad)
     int nCurrentVariable(0);
     IConsole* piConsole(NULL);
     ICVar* piVariable(NULL);
-    std::vector<char*>  cszVariableNames;
+    AZStd::vector<AZStd::string_view>  cszVariableNames;
 
     char* szKey(NULL);
     char* szValue(NULL);
@@ -662,7 +662,7 @@ void CSettingsManager::SerializeCVars(XmlNodeRef& node, bool bLoad)
         nNumberOfVariables = piConsole->GetNumVisibleVars();
         cszVariableNames.resize(nNumberOfVariables, NULL);
 
-        if (piConsole->GetSortedVars((const char**)&cszVariableNames.front(), nNumberOfVariables, NULL) != nNumberOfVariables)
+        if (piConsole->GetSortedVars(cszVariableNames, NULL) != nNumberOfVariables)
         {
             assert(false);
             return;
@@ -670,12 +670,12 @@ void CSettingsManager::SerializeCVars(XmlNodeRef& node, bool bLoad)
 
         for (nCurrentVariable = 0; nCurrentVariable < cszVariableNames.size(); ++nCurrentVariable)
         {
-            if (_stricmp(cszVariableNames[nCurrentVariable], "_TestFormatMessage") == 0)
+            if (_stricmp(cszVariableNames[nCurrentVariable].data(), "_TestFormatMessage") == 0)
             {
                 continue;
             }
 
-            piVariable = piConsole->GetCVar(cszVariableNames[nCurrentVariable]);
+            piVariable = piConsole->GetCVar(cszVariableNames[nCurrentVariable].data());
             if (!piVariable)
             {
                 assert(false);
@@ -683,7 +683,7 @@ void CSettingsManager::SerializeCVars(XmlNodeRef& node, bool bLoad)
             }
 
             newCVarNode = XmlHelpers::CreateXmlNode(CVAR_NODE);
-            newCVarNode->setAttr(cszVariableNames[nCurrentVariable], piVariable->GetString());
+            newCVarNode->setAttr(cszVariableNames[nCurrentVariable].data(), piVariable->GetString());
             cvarsNode->addChild(newCVarNode);
         }
 

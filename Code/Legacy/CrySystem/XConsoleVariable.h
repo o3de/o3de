@@ -179,8 +179,11 @@ public:
     CXConsoleVariableString(CXConsole* pConsole, const char* sName, const char* szDefault, int nFlags, const char* help)
         : CXConsoleVariableBase(pConsole, sName, nFlags, help)
     {
-        m_sValue = szDefault;
-        m_sDefault = szDefault;
+        if (szDefault)
+        {
+            m_sValue = szDefault;
+            m_sDefault = szDefault;
+        }
     }
 
     // interface ICVar --------------------------------------------------------------------------------------
