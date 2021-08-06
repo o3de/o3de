@@ -86,14 +86,32 @@ namespace ShaderManagementConsole
         ShaderManagementConsoleDocumentRequestBus::EventResult(isOpen, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::IsOpen);
         bool isSavable = false;
         ShaderManagementConsoleDocumentRequestBus::EventResult(isSavable, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::IsSavable);
+        bool isModified = false;
+        ShaderManagementConsoleDocumentRequestBus::EventResult(isModified, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::IsModified);
         bool canUndo = false;
         ShaderManagementConsoleDocumentRequestBus::EventResult(canUndo, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::CanUndo);
         bool canRedo = false;
         ShaderManagementConsoleDocumentRequestBus::EventResult(canRedo, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::CanRedo);
+        AZStd::string absolutePath;
+        ShaderManagementConsoleDocumentRequestBus::EventResult(absolutePath, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::GetAbsolutePath);
+        AZStd::string filename;
+        AzFramework::StringFunc::Path::GetFullFileName(absolutePath.c_str(), filename);
 
         // Update UI to display the new document
-        AddTabForDocumentId(documentId);
-        UpdateTabForDocumentId(documentId);
+        if (!documentId.IsNull() && isOpen)
+        {
+            // Create a new tab for the document ID and assign it's label to the file name of the document.
+            AddTabForDocumentId(documentId, filename, absolutePath, [this, documentId]{
+                // The document tab contains a table view.
+                auto contentWidget = new QTableView(m_centralWidget);
+                contentWidget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+                contentWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+                contentWidget->setModel(CreateDocumentContent(documentId));
+                return contentWidget;
+            });
+        }
+
+        UpdateTabForDocumentId(documentId, filename, absolutePath, isModified);
 
         const bool hasTabs = m_tabWidget->count() > 0;
 
@@ -133,7 +151,13 @@ namespace ShaderManagementConsole
 
     void ShaderManagementConsoleWindow::OnDocumentModified(const AZ::Uuid& documentId)
     {
-        UpdateTabForDocumentId(documentId);
+        bool isModified = false;
+        ShaderManagementConsoleDocumentRequestBus::EventResult(isModified, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::IsModified);
+        AZStd::string absolutePath;
+        ShaderManagementConsoleDocumentRequestBus::EventResult(absolutePath, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::GetAbsolutePath);
+        AZStd::string filename;
+        AzFramework::StringFunc::Path::GetFullFileName(absolutePath.c_str(), filename);
+        UpdateTabForDocumentId(documentId, filename, absolutePath, isModified);
     }
 
     void ShaderManagementConsoleWindow::OnDocumentUndoStateChanged(const AZ::Uuid& documentId)
@@ -151,7 +175,13 @@ namespace ShaderManagementConsole
 
     void ShaderManagementConsoleWindow::OnDocumentSaved(const AZ::Uuid& documentId)
     {
-        UpdateTabForDocumentId(documentId);
+        bool isModified = false;
+        ShaderManagementConsoleDocumentRequestBus::EventResult(isModified, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::IsModified);
+        AZStd::string absolutePath;
+        ShaderManagementConsoleDocumentRequestBus::EventResult(absolutePath, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::GetAbsolutePath);
+        AZStd::string filename;
+        AzFramework::StringFunc::Path::GetFullFileName(absolutePath.c_str(), filename);
+        UpdateTabForDocumentId(documentId, filename, absolutePath, isModified);
     }
 
     void ShaderManagementConsoleWindow::CreateMenu()
@@ -291,86 +321,6 @@ namespace ShaderManagementConsole
         });
     }
 
-    void ShaderManagementConsoleWindow::AddTabForDocumentId(const AZ::Uuid& documentId)
-    {
-        bool isOpen = false;
-        ShaderManagementConsoleDocumentRequestBus::EventResult(isOpen, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::IsOpen);
-
-        if (documentId.IsNull() || !isOpen)
-        {
-            return;
-        }
-
-        AtomToolsMainWindow::AddTabForDocumentId(documentId);
-
-        // Blocking signals from the tab bar so the currentChanged signal is not sent while a document is already being opened.
-        // This prevents the OnDocumentOpened notification from being sent recursively.
-        const QSignalBlocker blocker(m_tabWidget);
-
-        // Create a new tab for the document ID and assign it's label to the file name of the document.
-        AZStd::string absolutePath;
-        ShaderManagementConsoleDocumentRequestBus::EventResult(absolutePath, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::GetAbsolutePath);
-
-        AZStd::string filename;
-        AzFramework::StringFunc::Path::GetFullFileName(absolutePath.c_str(), filename);
-
-        // The document tab contains a table view.
-        auto tableView = new QTableView(m_centralWidget);
-        tableView->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-        tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
-
-        auto model = new QStandardItemModel();
-        tableView->setModel(model);
-
-        const int tabIndex = m_tabWidget->addTab(tableView, filename.c_str());
-
-        // The user can manually reorder tabs which will invalidate any association by index.
-        // We need to store the document ID with the tab using the tab instead of a separate mapping.
-        m_tabWidget->tabBar()->setTabData(tabIndex, QVariant(documentId.ToString<QString>()));
-        m_tabWidget->setTabToolTip(tabIndex, absolutePath.c_str());
-        m_tabWidget->setCurrentIndex(tabIndex);
-        m_tabWidget->setVisible(true);
-        m_tabWidget->repaint();
-
-        CreateDocumentContent(documentId, model);
-    }
-
-    void ShaderManagementConsoleWindow::UpdateTabForDocumentId(const AZ::Uuid& documentId)
-    {
-        // Whenever a document is opened, saved, or modified we need to update the tab label
-        if (!documentId.IsNull())
-        {
-            // Because tab order and indexes can change from user interactions, we cannot store a map
-            // between a tab index and document ID.
-            // We must iterate over all of the tabs to find the one associated with this document.
-            for (int tabIndex = 0; tabIndex < m_tabWidget->count(); ++tabIndex)
-            {
-                if (documentId == GetDocumentIdFromTab(tabIndex))
-                {
-                    AZStd::string absolutePath;
-                    ShaderManagementConsoleDocumentRequestBus::EventResult(absolutePath, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::GetAbsolutePath);
-
-                    AZStd::string filename;
-                    AzFramework::StringFunc::Path::GetFullFileName(absolutePath.c_str(), filename);
-
-                    bool isModified = false;
-                    ShaderManagementConsoleDocumentRequestBus::EventResult(isModified, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::IsModified);
-
-                    // We use an asterisk appended to the file name to denote modified document
-                    if (isModified)
-                    {
-                        filename += " *";
-                    }
-
-                    m_tabWidget->setTabText(tabIndex, filename.c_str());
-                    m_tabWidget->setTabToolTip(tabIndex, absolutePath.c_str());
-                    m_tabWidget->repaint();
-                    break;
-                }
-            }
-        }
-    }
-
     void ShaderManagementConsoleWindow::OpenTabContextMenu()
     {
         const QTabBar* tabBar = m_tabWidget->tabBar();
@@ -427,7 +377,7 @@ namespace ShaderManagementConsole
         }
     }
 
-    void ShaderManagementConsoleWindow::CreateDocumentContent(const AZ::Uuid& documentId, QStandardItemModel* model)
+    QStandardItemModel* ShaderManagementConsoleWindow::CreateDocumentContent(const AZ::Uuid& documentId)
     {
         AZStd::unordered_set<AZStd::string> optionNames;
 
@@ -446,6 +396,7 @@ namespace ShaderManagementConsole
         size_t shaderVariantCount = 0;
         ShaderManagementConsoleDocumentRequestBus::EventResult(shaderVariantCount, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::GetShaderVariantCount);
 
+        auto model = new QStandardItemModel();
         model->setRowCount(static_cast<int>(shaderVariantCount));
         model->setColumnCount(static_cast<int>(optionNames.size()));
 
@@ -474,6 +425,8 @@ namespace ShaderManagementConsole
                 model->setItem(variantIndex, optionIndex, item);
             }
         }
+
+        return model;
     }
 } // namespace ShaderManagementConsole
 

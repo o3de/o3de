@@ -52,10 +52,6 @@ namespace ShaderManagementConsole
 
         void CreateMenu() override;
         void CreateTabBar() override;
-
-        void AddTabForDocumentId(const AZ::Uuid& documentId) override;
-        void UpdateTabForDocumentId(const AZ::Uuid& documentId) override;
-
         void OpenTabContextMenu() override;
 
         void SelectDocumentForTab(const int tabIndex);
@@ -64,7 +60,7 @@ namespace ShaderManagementConsole
 
         void closeEvent(QCloseEvent* closeEvent) override;
 
-        void CreateDocumentContent(const AZ::Uuid& documentId, QStandardItemModel* model);
+        QStandardItemModel* CreateDocumentContent(const AZ::Uuid& documentId);
 
         ShaderManagementConsoleToolBar* m_toolBar = nullptr;
 

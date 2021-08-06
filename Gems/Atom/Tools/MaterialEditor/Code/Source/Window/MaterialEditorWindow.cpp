@@ -183,14 +183,31 @@ namespace MaterialEditor
         MaterialDocumentRequestBus::EventResult(isOpen, documentId, &MaterialDocumentRequestBus::Events::IsOpen);
         bool isSavable = false;
         MaterialDocumentRequestBus::EventResult(isSavable, documentId, &MaterialDocumentRequestBus::Events::IsSavable);
+        bool isModified = false;
+        MaterialDocumentRequestBus::EventResult(isModified, documentId, &MaterialDocumentRequestBus::Events::IsModified);
         bool canUndo = false;
         MaterialDocumentRequestBus::EventResult(canUndo, documentId, &MaterialDocumentRequestBus::Events::CanUndo);
         bool canRedo = false;
         MaterialDocumentRequestBus::EventResult(canRedo, documentId, &MaterialDocumentRequestBus::Events::CanRedo);
+        AZStd::string absolutePath;
+        MaterialDocumentRequestBus::EventResult(absolutePath, documentId, &MaterialDocumentRequestBus::Events::GetAbsolutePath);
+        AZStd::string filename;
+        AzFramework::StringFunc::Path::GetFullFileName(absolutePath.c_str(), filename);
 
         // Update UI to display the new document
-        AddTabForDocumentId(documentId);
-        UpdateTabForDocumentId(documentId);
+        if (!documentId.IsNull() && isOpen)
+        {
+            // Create a new tab for the document ID and assign it's label to the file name of the document.
+            AddTabForDocumentId(documentId, filename, absolutePath, [this]{
+                // The tab widget requires a dummy page per tab
+                auto contentWidget = new QWidget(m_centralWidget);
+                contentWidget->setContentsMargins(0, 0, 0, 0);
+                contentWidget->setFixedSize(0, 0);
+                return contentWidget;
+            });
+        }
+
+        UpdateTabForDocumentId(documentId, filename, absolutePath, isModified);
 
         const bool hasTabs = m_tabWidget->count() > 0;
 
@@ -246,7 +263,13 @@ namespace MaterialEditor
 
     void MaterialEditorWindow::OnDocumentModified(const AZ::Uuid& documentId)
     {
-        UpdateTabForDocumentId(documentId);
+        bool isModified = false;
+        MaterialDocumentRequestBus::EventResult(isModified, documentId, &MaterialDocumentRequestBus::Events::IsModified);
+        AZStd::string absolutePath;
+        MaterialDocumentRequestBus::EventResult(absolutePath, documentId, &MaterialDocumentRequestBus::Events::GetAbsolutePath);
+        AZStd::string filename;
+        AzFramework::StringFunc::Path::GetFullFileName(absolutePath.c_str(), filename);
+        UpdateTabForDocumentId(documentId, filename, absolutePath, isModified);
     }
 
     void MaterialEditorWindow::OnDocumentUndoStateChanged(const AZ::Uuid& documentId)
@@ -264,7 +287,13 @@ namespace MaterialEditor
 
     void MaterialEditorWindow::OnDocumentSaved(const AZ::Uuid& documentId)
     {
-        UpdateTabForDocumentId(documentId);
+        bool isModified = false;
+        MaterialDocumentRequestBus::EventResult(isModified, documentId, &MaterialDocumentRequestBus::Events::IsModified);
+        AZStd::string absolutePath;
+        MaterialDocumentRequestBus::EventResult(absolutePath, documentId, &MaterialDocumentRequestBus::Events::GetAbsolutePath);
+        AZStd::string filename;
+        AzFramework::StringFunc::Path::GetFullFileName(absolutePath.c_str(), filename);
+        UpdateTabForDocumentId(documentId, filename, absolutePath, isModified);
 
         const QString documentPath = GetDocumentPath(documentId);
         const QString status = QString("Material closed: %1").arg(documentPath);
@@ -488,82 +517,6 @@ namespace MaterialEditor
             const AZ::Uuid documentId = GetDocumentIdFromTab(tabIndex);
             MaterialDocumentSystemRequestBus::Broadcast(&MaterialDocumentSystemRequestBus::Events::CloseDocument, documentId);
         });
-    }
-
-    void MaterialEditorWindow::AddTabForDocumentId(const AZ::Uuid& documentId)
-    {
-        bool isOpen = false;
-        MaterialDocumentRequestBus::EventResult(isOpen, documentId, &MaterialDocumentRequestBus::Events::IsOpen);
-
-        if (documentId.IsNull() || !isOpen)
-        {
-            return;
-        }
-
-        AtomToolsMainWindow::AddTabForDocumentId(documentId);
-
-        // Blocking signals from the tab bar so the currentChanged signal is not sent while a document is already being opened.
-        // This prevents the OnDocumentOpened notification from being sent recursively.
-        const QSignalBlocker blocker(m_tabWidget);
-
-        // Create a new tab for the document ID and assign it's label to the file name of the document.
-        AZStd::string absolutePath;
-        MaterialDocumentRequestBus::EventResult(absolutePath, documentId, &MaterialDocumentRequestBus::Events::GetAbsolutePath);
-
-        AZStd::string filename;
-        AzFramework::StringFunc::Path::GetFullFileName(absolutePath.c_str(), filename);
-
-        // The tab widget requires a dummy page per tab
-        QWidget* placeHolderWidget = new QWidget(m_centralWidget);
-        placeHolderWidget->setContentsMargins(0, 0, 0, 0);
-        placeHolderWidget->resize(0, 0);
-        placeHolderWidget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-
-        const int tabIndex = m_tabWidget->addTab(placeHolderWidget, filename.c_str());
-
-        // The user can manually reorder tabs which will invalidate any association by index.
-        // We need to store the document ID with the tab using the tab instead of a separate mapping.
-        m_tabWidget->tabBar()->setTabData(tabIndex, QVariant(documentId.ToString<QString>()));
-        m_tabWidget->setTabToolTip(tabIndex, absolutePath.c_str());
-        m_tabWidget->setCurrentIndex(tabIndex);
-        m_tabWidget->setVisible(true);
-        m_tabWidget->repaint();
-    }
-
-    void MaterialEditorWindow::UpdateTabForDocumentId(const AZ::Uuid& documentId)
-    {
-        // Whenever a document is opened, saved, or modified we need to update the tab label
-        if (!documentId.IsNull())
-        {
-            // Because tab order and indexes can change from user interactions, we cannot store a map
-            // between a tab index and document ID.
-            // We must iterate over all of the tabs to find the one associated with this document.
-            for (int tabIndex = 0; tabIndex < m_tabWidget->count(); ++tabIndex)
-            {
-                if (documentId == GetDocumentIdFromTab(tabIndex))
-                {
-                    AZStd::string absolutePath;
-                    MaterialDocumentRequestBus::EventResult(absolutePath, documentId, &MaterialDocumentRequestBus::Events::GetAbsolutePath);
-
-                    AZStd::string filename;
-                    AzFramework::StringFunc::Path::GetFullFileName(absolutePath.c_str(), filename);
-
-                    bool isModified = false;
-                    MaterialDocumentRequestBus::EventResult(isModified, documentId, &MaterialDocumentRequestBus::Events::IsModified);
-
-                    // We use an asterisk appended to the file name to denote modified document
-                    if (isModified)
-                    {
-                        filename += " *";
-                    }
-
-                    m_tabWidget->setTabText(tabIndex, filename.c_str());
-                    m_tabWidget->setTabToolTip(tabIndex, absolutePath.c_str());
-                    m_tabWidget->repaint();
-                    break;
-                }
-            }
-        }
     }
 
     QString MaterialEditorWindow::GetDocumentPath(const AZ::Uuid& documentId) const

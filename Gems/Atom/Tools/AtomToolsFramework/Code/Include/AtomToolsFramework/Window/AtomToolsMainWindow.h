@@ -39,11 +39,13 @@ namespace AtomToolsFramework
         AZStd::vector<AZStd::string> GetDockWidgetNames() const override;
 
         virtual void CreateMenu();
-
         virtual void CreateTabBar();
-        virtual void AddTabForDocumentId(const AZ::Uuid& documentId);
+
+        virtual void AddTabForDocumentId(
+            const AZ::Uuid& documentId, const AZStd::string& label, const AZStd::string& toolTip, AZStd::function<QWidget*()> widgetCreator);
         virtual void RemoveTabForDocumentId(const AZ::Uuid& documentId);
-        virtual void UpdateTabForDocumentId(const AZ::Uuid& documentId);
+        virtual void UpdateTabForDocumentId(
+            const AZ::Uuid& documentId, const AZStd::string& label, const AZStd::string& toolTip, bool isModified);
         virtual AZ::Uuid GetDocumentIdFromTab(const int tabIndex) const;
 
         virtual void OpenTabContextMenu();

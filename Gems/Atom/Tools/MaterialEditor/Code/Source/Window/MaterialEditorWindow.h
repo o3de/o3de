@@ -56,8 +56,6 @@ namespace MaterialEditor
         void CreateMenu() override;
         void CreateTabBar() override;
 
-        void AddTabForDocumentId(const AZ::Uuid& documentId) override;
-        void UpdateTabForDocumentId(const AZ::Uuid& documentId) override;
         QString GetDocumentPath(const AZ::Uuid& documentId) const;
 
         void OpenTabContextMenu() override;

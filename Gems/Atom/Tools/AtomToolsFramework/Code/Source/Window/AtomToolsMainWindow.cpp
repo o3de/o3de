@@ -133,7 +133,8 @@ namespace AtomToolsFramework
             });
     }
 
-    void AtomToolsMainWindow::AddTabForDocumentId(const AZ::Uuid& documentId)
+    void AtomToolsMainWindow::AddTabForDocumentId(
+        const AZ::Uuid& documentId, const AZStd::string& label, const AZStd::string& toolTip, AZStd::function<QWidget*()> widgetCreator)
     {
         // Blocking signals from the tab bar so the currentChanged signal is not sent while a document is already being opened.
         // This prevents the OnDocumentOpened notification from being sent recursively.
@@ -149,6 +150,16 @@ namespace AtomToolsFramework
                 return;
             }
         }
+
+        const int tabIndex = m_tabWidget->addTab(widgetCreator(), label.c_str());
+
+        // The user can manually reorder tabs which will invalidate any association by index.
+        // We need to store the document ID with the tab using the tab instead of a separate mapping.
+        m_tabWidget->tabBar()->setTabData(tabIndex, QVariant(documentId.ToString<QString>()));
+        m_tabWidget->setTabToolTip(tabIndex, toolTip.c_str());
+        m_tabWidget->setCurrentIndex(tabIndex);
+        m_tabWidget->setVisible(true);
+        m_tabWidget->repaint();
     }
 
     void AtomToolsMainWindow::RemoveTabForDocumentId(const AZ::Uuid& documentId)
@@ -167,12 +178,27 @@ namespace AtomToolsFramework
         }
     }
 
-    void AtomToolsMainWindow::UpdateTabForDocumentId(const AZ::Uuid& documentId)
+    void AtomToolsMainWindow::UpdateTabForDocumentId(
+        const AZ::Uuid& documentId, const AZStd::string& label, const AZStd::string& toolTip, bool isModified)
     {
         // Whenever a document is opened, saved, or modified we need to update the tab label
         if (!documentId.IsNull())
         {
-            return;
+            // Because tab order and indexes can change from user interactions, we cannot store a map
+            // between a tab index and document ID.
+            // We must iterate over all of the tabs to find the one associated with this document.
+            for (int tabIndex = 0; tabIndex < m_tabWidget->count(); ++tabIndex)
+            {
+                if (documentId == GetDocumentIdFromTab(tabIndex))
+                {
+                    // We use an asterisk appended to the file name to denote modified document
+                    const AZStd::string modifiedLabel = isModified ? label + " *" : label;
+                    m_tabWidget->setTabText(tabIndex, modifiedLabel.c_str());
+                    m_tabWidget->setTabToolTip(tabIndex, toolTip.c_str());
+                    m_tabWidget->repaint();
+                    break;
+                }
+            }
         }
     }
 
