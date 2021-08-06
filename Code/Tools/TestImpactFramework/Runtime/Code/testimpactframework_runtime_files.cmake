@@ -125,6 +125,5 @@ set(FILES
     Source/TestImpactClientTestRun.cpp
     Source/TestImpactClientSequenceReport.cpp
     Source/TestImpactChangeListSerializer.cpp
-    Source/TestImpactChangeListSerializerInternal.h
     Source/TestImpactRepoPath.cpp
 )
