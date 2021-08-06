@@ -9,6 +9,10 @@
 import datetime
 import json
 import socket
+import logging
+
+logger = logging.getLogger()
+logging.basicConfig()
 
 MARS_JOB_KEY = "job"
 SRC_COMMIT_KEY = "src_commit"
@@ -115,7 +119,7 @@ class FilebeatClient(object):
         self._send_data(data)
 
     def _open_socket(self):
-        print(f"Connecting to Filebeat on {self._filebeat_host}:{self._filebeat_port}")
+        logger.info(f"Connecting to Filebeat on {self._filebeat_host}:{self._filebeat_port}")
 
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._socket.settimeout(self._socket_timeout)
@@ -132,7 +136,7 @@ class FilebeatClient(object):
             try:
                 sent = self._socket.send(data[total_sent:])
             except BrokenPipeError:
-                print("Filebeat socket closed by peer")
+                logging.error("Filebeat socket closed by peer")
                 self._socket.close()
                 self._open_socket()
                 total_sent = 0
@@ -444,6 +448,6 @@ def transmit_report_to_mars(mars_index_prefix: str, tiaf_result: dict, driver_ar
             for mars_test_target in mars_test_targets:
                 filebeat.send_event(mars_test_target, f"{mars_index_prefix}.tiaf.test_target")
     except FilebeatExn as e:
-        print(e)
+        logger.error(e)
     except KeyError as e:
-        print(f"The report does not contain the key {str(e)}.")
+        logger.error(f"The report does not contain the key {str(e)}.")

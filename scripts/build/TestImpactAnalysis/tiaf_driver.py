@@ -7,14 +7,18 @@
 #
 
 import argparse
-from tiaf import TestImpact
 import mars_utils
 import sys
-import os
+from tiaf import TestImpact
+from pathlib import Path
+import logging
+
+logger = logging.getLogger()
+logging.basicConfig()
 
 def parse_args():
     def valid_file_path(value):
-        if os.path.isfile(value):
+        if Path.is_file(value):
             return value
         else:
             raise FileNotFoundError(value)
@@ -36,7 +40,6 @@ def parse_args():
     # Configuration file path
     parser.add_argument(
         '--config',
-        dest="config_file",
         type=valid_file_path,
         help="Path to the test impact analysis framework configuration file", 
         required=True
@@ -45,7 +48,6 @@ def parse_args():
     # Source branch
     parser.add_argument(
         '--src-branch',
-        dest="src_branch",
         help="Branch that is being built",
         required=True
     )
@@ -53,7 +55,6 @@ def parse_args():
     # Destination branch
     parser.add_argument(
         '--dst-branch',
-        dest="dst_branch",
         help="For PR builds, the destination branch to be merged to, otherwise empty", 
         required=False
     )
@@ -61,7 +62,6 @@ def parse_args():
     # Commit hash
     parser.add_argument(
         '--commit',
-        dest="commit",
         help="Commit that is being built",
         required=True
     )
@@ -69,7 +69,6 @@ def parse_args():
     # S3 bucket
     parser.add_argument(
         '--s3-bucket', 
-        dest="s3_bucket", 
         help="Location of S3 bucket to use for persistent storage, otherwise local disk storage will be used", 
         required=False
     )
@@ -77,7 +76,6 @@ def parse_args():
     # MARS index prefix
     parser.add_argument(
         '--mars-index-prefix', 
-        dest="mars_index_prefix", 
         help="Index prefix to use for MARS, otherwise no data will be tramsmitted to MARS", 
         required=False
     )
@@ -85,7 +83,6 @@ def parse_args():
     # Test suite
     parser.add_argument(
         '--suite', 
-        dest="suite", 
         help="Test suite to run", 
         required=True
     )
@@ -93,7 +90,6 @@ def parse_args():
     # Test failure policy
     parser.add_argument(
         '--test-failure-policy', 
-        dest="test_failure_policy", 
         type=valid_test_failure_policy, 
         help="Test failure policy for regular and test impact sequences (ignored when seeding)", 
         required=True
@@ -102,7 +98,6 @@ def parse_args():
     # Safe mode
     parser.add_argument(
         '--safe-mode', 
-        dest="safe_mode", 
         action='store_true', 
         help="Run impact analysis tests in safe mode (ignored when seeding)", 
         required=False
@@ -111,7 +106,6 @@ def parse_args():
     # Test timeout
     parser.add_argument(
         '--test-timeout', 
-        dest="test_timeout", 
         type=valid_timout_type, 
         help="Maximum run time (in seconds) of any test target before being terminated", 
         required=False
@@ -120,7 +114,6 @@ def parse_args():
     # Global timeout
     parser.add_argument(
         '--global-timeout', 
-        dest="global_timeout", 
         type=valid_timout_type, 
         help="Maximum run time of the sequence before being terminated", 
         required=False
@@ -134,17 +127,17 @@ if __name__ == "__main__":
     
     try:
         args = parse_args()
-        tiaf = TestImpact(args.config_file)
+        tiaf = TestImpact(args.config)
         tiaf_result = tiaf.run(args.commit, args.src_branch, args.dst_branch, args.s3_bucket, args.suite, args.test_failure_policy, args.safe_mode, args.test_timeout, args.global_timeout)
         
         if args.mars_index_prefix is not None:
-            print("Transmitting report to MARS...")
+            logger.info("Transmitting report to MARS...")
             mars_utils.transmit_report_to_mars(args.mars_index_prefix, tiaf_result, sys.argv)
 
-        print("Complete!")
+        logger.info("Complete!")
         # Non-gating will be removed from this script and handled at the job level in SPEC-7413
         #sys.exit(result.return_code)
         sys.exit(0)
     except Exception as e:
         # Non-gating will be removed from this script and handled at the job level in SPEC-7413
-        print(f"Exception caught by TIAF driver: '{e}''.")
+        logger.error(f"Exception caught by TIAF driver: '{e}'.")
