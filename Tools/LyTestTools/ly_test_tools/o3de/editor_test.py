@@ -246,14 +246,24 @@ class EditorTestSuite():
 
     ## Internal ##
     _TIMEOUT_CRASH_LOG = 20 # Maximum time (seconds) for waiting for a crash file, in secondss
-    _TEST_FAIL_RETCODE = 0xF # Return code for test failure 
-    _asset_processor = None
-    _results = {}
+    _TEST_FAIL_RETCODE = 0xF # Return code for test failure
 
     @pytest.fixture(scope="class")
-    def editor_test_results(self, request):
-        results = {}
-        return results
+    def editor_test_data(self, request):
+        class TestData():
+            def __init__(self):
+                self.results = {}
+                self.asset_processor = None
+
+        test_data = TestData()
+        yield test_data
+        if test_data.asset_processor:
+            test_data.asset_processor.stop(1)
+            test_data.asset_processor.teardown()
+            test_data.asset_processor = None
+            editor_utils.kill_all_ly_processes(include_asset_processor=True)
+        else:
+            editor_utils.kill_all_ly_processes(include_asset_processor=False)
 
     class Runner():
         def __init__(self, name, func, tests):
@@ -315,22 +325,22 @@ class EditorTestSuite():
                 name = test_spec.__name__
                 def make_test_func(name, test_spec):
                     @set_marks({"run_type" : "run_single"})
-                    def single_run(self, request, workspace, editor, editor_test_results, launcher_platform):
+                    def single_run(self, request, workspace, editor, editor_test_data, launcher_platform):
                         # only single tests are allowed to have setup/teardown, however we can have shared tests that
                         # were explicitly set as single, for example via cmdline argument override
                         is_single_test = issubclass(test_spec, EditorSingleTest)
                         if is_single_test:
                             # Setup step for wrap_run
-                            wrap = test_spec.wrap_run(self, request, workspace, editor, editor_test_results, launcher_platform)
+                            wrap = test_spec.wrap_run(self, request, workspace, editor, editor_test_data, launcher_platform)
                             assert isinstance(wrap, types.GeneratorType), "wrap_run must return a generator, did you forget 'yield'?"
                             next(wrap, None)
                             # Setup step                        
-                            test_spec.setup(self, request, workspace, editor, editor_test_results, launcher_platform)
+                            test_spec.setup(self, request, workspace, editor, editor_test_data, launcher_platform)
                         # Run
-                        self._run_single_test(request, workspace, editor, editor_test_results, test_spec)
+                        self._run_single_test(request, workspace, editor, editor_test_data, test_spec)
                         if is_single_test:
                             # Teardown
-                            test_spec.teardown(self, request, workspace, editor, editor_test_results, launcher_platform)
+                            test_spec.teardown(self, request, workspace, editor, editor_test_data, launcher_platform)
                             # Teardown step for wrap_run
                             next(wrap, None)
                     return single_run
@@ -347,8 +357,8 @@ class EditorTestSuite():
                 runner = EditorTestSuite.Runner(name, function, tests)
                 def make_func():
                     @set_marks({"runner" : runner, "run_type" : "run_shared"})
-                    def shared_run(self, request, workspace, editor, editor_test_results, launcher_platform):
-                        getattr(self, function.__name__)(request, workspace, editor, editor_test_results, runner.tests)
+                    def shared_run(self, request, workspace, editor, editor_test_data, launcher_platform):
+                        getattr(self, function.__name__)(request, workspace, editor, editor_test_data, runner.tests)
                     return shared_run
                 setattr(self.obj, name, make_func())
                 
@@ -356,11 +366,11 @@ class EditorTestSuite():
                 for test_spec in tests:
                     def make_func(test_spec):
                         @set_marks({"runner" : runner, "test_spec" : test_spec, "run_type" : "result"})
-                        def result(self, request, workspace, editor, editor_test_results, launcher_platform):
-                            # The runner must have filled the editor_test_results dict fixture for this test.
+                        def result(self, request, workspace, editor, editor_test_data, launcher_platform):
+                            # The runner must have filled the editor_test_data.results dict fixture for this test.
                             # Hitting this assert could mean if there was an error executing the runner
-                            assert test_spec.__name__ in editor_test_results, f"No run data for test: {test_spec.__name__}."
-                            cls._report_result(test_spec.__name__, editor_test_results[test_spec.__name__])
+                            assert test_spec.__name__ in editor_test_data.results, f"No run data for test: {test_spec.__name__}."
+                            cls._report_result(test_spec.__name__, editor_test_data.results[test_spec.__name__])
                         return result
                     
                     result_func = make_func(test_spec)
@@ -480,41 +490,29 @@ class EditorTestSuite():
             )
         ]
 
-    def setup_class(cls):
-        cls._asset_processor = None
-    
-    def teardown_class(cls):
-        if cls._asset_processor:
-            cls._asset_processor.stop(1)
-            cls._asset_processor.teardown()
-            cls._asset_processor = None
-            editor_utils.kill_all_ly_processes(include_asset_processor=True)
-        else:
-            editor_utils.kill_all_ly_processes(include_asset_processor=False)
-
     ### Utils ###
 
     # Prepares the asset processor for the test
-    def _prepare_asset_processor(self, workspace):
+    def _prepare_asset_processor(self, workspace, editor_test_data):
         try:
             # Start-up an asset processor if we are not running one
             # If another AP process exist, don't kill it, as we don't own it
-            if self._asset_processor is None:
+            if editor_test_data.asset_processor is None:
                 if not process_utils.process_exists("AssetProcessor", ignore_extensions=True):
-                    editor_utils.kill_all_ly_processes()
-                    self._asset_processor = AssetProcessor(workspace)
-                    self._asset_processor.start()
+                    editor_utils.kill_all_ly_processes(include_asset_processor=True)
+                    editor_test_data.asset_processor = AssetProcessor(workspace)
+                    editor_test_data.asset_processor.start()
                 else:
                     editor_utils.kill_all_ly_processes(include_asset_processor=False)
             else:
                 # Make sure the asset processor from before wasn't closed by accident
-                self._asset_processor.start()
+                editor_test_data.asset_processor.start()
         except Exception as ex:
-            self._asset_processor = None
+            editor_test_data.asset_processor = None
             raise ex
 
-    def _setup_editor_test(self, editor, workspace):
-        self._prepare_asset_processor(workspace)
+    def _setup_editor_test(self, editor, workspace, editor_test_data):
+        self._prepare_asset_processor(workspace, editor_test_data)
         editor_utils.kill_all_ly_processes(include_asset_processor=False)
         editor.configure_settings()
 
@@ -688,36 +686,33 @@ class EditorTestSuite():
         return results
     
     # Runs a single test with the given specs, used by the collector to register the test
-    def _run_single_test(self, request, workspace, editor, editor_test_results, test_spec : EditorTestBase):
-        self._setup_editor_test(editor, workspace)
+    def _run_single_test(self, request, workspace, editor, editor_test_data, test_spec : EditorTestBase):
+        self._setup_editor_test(editor, workspace, editor_test_data)
         extra_cmdline_args = []
         if hasattr(test_spec, "extra_cmdline_args"):
             extra_cmdline_args = test_spec.extra_cmdline_args
 
         results = self._exec_editor_test(request, workspace, editor, 1, "editor_test.log", test_spec, extra_cmdline_args)
-        if not hasattr(self.__class__, "_results"):
-            self.__class__._results = {}
-
-        editor_test_results.update(results)
+        editor_test_data.results.update(results)
         test_name, test_result = next(iter(results.items()))
         self._report_result(test_name, test_result)
 
     # Runs a batch of tests in one single editor with the given spec list
-    def _run_batched_tests(self, request, workspace, editor, editor_test_results, test_spec_list : List[EditorTestBase], extra_cmdline_args=[]):
+    def _run_batched_tests(self, request, workspace, editor, editor_test_data, test_spec_list : List[EditorTestBase], extra_cmdline_args=[]):
         if not test_spec_list:
             return
 
-        self._setup_editor_test(editor, workspace)
+        self._setup_editor_test(editor, workspace, editor_test_data)
         results = self._exec_editor_multitest(request, workspace, editor, 1, "editor_test.log", test_spec_list, extra_cmdline_args)
         assert results is not None
-        editor_test_results.update(results)
+        editor_test_data.results.update(results)
 
     # Runs multiple editors with one test on each editor
-    def _run_parallel_tests(self, request, workspace, editor, editor_test_results, test_spec_list : List[EditorTestBase], extra_cmdline_args=[]):
+    def _run_parallel_tests(self, request, workspace, editor, editor_test_data, test_spec_list : List[EditorTestBase], extra_cmdline_args=[]):
         if not test_spec_list:
             return
 
-        self._setup_editor_test(editor, workspace)
+        self._setup_editor_test(editor, workspace, editor_test_data)
         parallel_editors = self._get_number_parallel_editors(request)
         assert parallel_editors > 0, "Must have at least one editor"
         
@@ -747,14 +742,14 @@ class EditorTestSuite():
                 t.join()
 
             for result in results_per_thread:
-                editor_test_results.update(result)
+                editor_test_data.results.update(result)
 
     # Runs multiple editors with a batch of tests for each editor
-    def _run_parallel_batched_tests(self, request, workspace, editor, editor_test_results, test_spec_list : List[EditorTestBase], extra_cmdline_args=[]):
+    def _run_parallel_batched_tests(self, request, workspace, editor, editor_test_data, test_spec_list : List[EditorTestBase], extra_cmdline_args=[]):
         if not test_spec_list:
             return
 
-        self._setup_editor_test(editor, workspace)
+        self._setup_editor_test(editor, workspace, editor_test_data)
         total_threads = self._get_number_parallel_editors(request)
         assert total_threads > 0, "Must have at least one editor"
         threads = []
@@ -784,7 +779,7 @@ class EditorTestSuite():
             t.join()
 
         for result in results_per_thread:
-            editor_test_results.update(result)
+            editor_test_data.results.update(result)
 
     # Retrieves the number of parallel preference cmdline overrides
     def _get_number_parallel_editors(self, request):
