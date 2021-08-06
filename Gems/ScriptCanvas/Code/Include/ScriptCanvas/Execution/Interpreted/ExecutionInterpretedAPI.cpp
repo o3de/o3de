@@ -699,7 +699,7 @@ namespace ScriptCanvas
             ActivationData data(args.runtimeOverrides, storage);
             ActivationInputRange range = Execution::Context::CreateActivateInputRange(data, args.executionState->GetEntityId());
             PushActivationArgs(lua, range.inputs, range.totalCount);
-            return range.totalCount;
+            return static_cast<int>(range.totalCount);
         }
 
         int UnpackDependencyConstructionArgs(lua_State* lua)

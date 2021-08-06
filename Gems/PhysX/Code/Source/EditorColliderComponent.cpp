@@ -780,7 +780,7 @@ namespace PhysX
                 entityRigidbody->GetRigidBody()->IsKinematic() == false)
             {
                 AZStd::string assetPath = m_shapeConfiguration.m_physicsAsset.m_configuration.m_asset.GetHint().c_str();
-                const uint lastSlash = assetPath.rfind('/');
+                const uint lastSlash = static_cast<uint>(assetPath.rfind('/'));
                 if (lastSlash != AZStd::string::npos)
                 {
                     assetPath = assetPath.substr(lastSlash + 1);
@@ -831,7 +831,7 @@ namespace PhysX
 
                 if (shapeConfiguration)
                 {
-                    m_colliderDebugDraw.BuildMeshes(*shapeConfiguration, shapeIndex);
+                    m_colliderDebugDraw.BuildMeshes(*shapeConfiguration, static_cast<AZ::u32>(shapeIndex));
                 }
             }
         }
@@ -917,7 +917,7 @@ namespace PhysX
                 const AZ::Vector3 overallScale = Utils::GetTransformScale(GetEntityId()) * m_cachedNonUniformScale * assetScale;
 
                 m_colliderDebugDraw.DrawMesh(debugDisplay, *colliderConfiguration, *cookedMeshShapeConfiguration,
-                    overallScale, shapeIndex);
+                    overallScale, static_cast<AZ::u32>(shapeIndex));
                 break;
             }
             case Physics::ShapeType::Sphere:

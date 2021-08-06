@@ -62,14 +62,14 @@ public:
     }
 
 protected:
-    void highlightBlock(const QString &text)
+    void highlightBlock(const QString &text) override
     {
         auto pos = -1;
         QTextCharFormat myClassFormat;
         myClassFormat.setFontWeight(QFont::Bold);
         myClassFormat.setBackground(Qt::yellow);
 
-        while (1)
+        while (true)
         {
             pos = text.indexOf(m_searchTerm, pos+1, Qt::CaseInsensitive);
 
@@ -571,7 +571,7 @@ static CVarBlock* VarBlockFromConsoleVars()
     size_t cmdCount = console->GetSortedVars(&cmds[0], cmds.size());
 
     CVarBlock* vb = new CVarBlock;
-    IVariable* pVariable = 0;
+    IVariable* pVariable = nullptr;
     for (int i = 0; i < cmdCount; i++)
     {
         ICVar* pCVar = console->GetCVar(cmds[i]);

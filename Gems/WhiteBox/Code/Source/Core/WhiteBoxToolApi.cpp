@@ -1400,7 +1400,7 @@ namespace WhiteBox
         HalfedgeHandle EdgeHalfedgeHandle(
             const WhiteBoxMesh& whiteBox, const EdgeHandle edgeHandle, const EdgeHalfedge edgeHalfedge)
         {
-            return wb_heh(whiteBox.mesh.halfedge_handle(om_eh(edgeHandle), EdgeHalfedgeMapping(edgeHalfedge)));
+            return wb_heh(whiteBox.mesh.halfedge_handle(om_eh(edgeHandle), static_cast<unsigned int>(EdgeHalfedgeMapping(edgeHalfedge))));
         }
 
         HalfedgeHandles EdgeHalfedgeHandles(const WhiteBoxMesh& whiteBox, EdgeHandle edgeHandle)

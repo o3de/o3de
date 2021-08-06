@@ -296,7 +296,7 @@ IUiAnimSequence* UiAnimationSystem::GetSequence(int i) const
 //////////////////////////////////////////////////////////////////////////
 int UiAnimationSystem::GetNumSequences() const
 {
-    return m_sequences.size();
+    return static_cast<int>(m_sequences.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -315,7 +315,7 @@ IUiAnimSequence* UiAnimationSystem::GetPlayingSequence(int i) const
 //////////////////////////////////////////////////////////////////////////
 int UiAnimationSystem::GetNumPlayingSequences() const
 {
-    return m_playingSequences.size();
+    return static_cast<int>(m_playingSequences.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -327,7 +327,7 @@ void UiAnimationSystem::AddSequence(IUiAnimSequence* pSequence)
 //////////////////////////////////////////////////////////////////////////
 bool UiAnimationSystem::IsCutScenePlaying() const
 {
-    const uint numPlayingSequences = m_playingSequences.size();
+    const uint numPlayingSequences = static_cast<uint>(m_playingSequences.size());
     for (uint i = 0; i < numPlayingSequences; ++i)
     {
         const IUiAnimSequence* pAnimSequence = m_playingSequences[i].sequence.get();

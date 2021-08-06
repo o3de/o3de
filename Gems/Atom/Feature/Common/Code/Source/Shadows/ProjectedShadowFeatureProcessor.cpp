@@ -497,7 +497,7 @@ namespace AZ::Render
         const ShadowmapAtlas& atlas = m_projectedShadowmapsPasses.front()->GetShadowmapAtlas();
         const Data::Instance<RPI::Buffer> indexTableBuffer = atlas.CreateShadowmapIndexTableBuffer(indexTableBufferName);
 
-        m_filterParamBufferHandler.UpdateBuffer(m_shadowData.GetRawData<FilterParamIndex>(), m_shadowData.GetSize());
+        m_filterParamBufferHandler.UpdateBuffer(m_shadowData.GetRawData<FilterParamIndex>(), static_cast<uint32_t>(m_shadowData.GetSize()));
 
         // Set index table buffer and ESM parameter buffer to ESM pass.
         for (EsmShadowmapsPass* esmPass : m_esmShadowmapsPasses)
@@ -564,7 +564,7 @@ namespace AZ::Render
 
         if (m_deviceBufferNeedsUpdate)
         {
-            m_shadowBufferHandler.UpdateBuffer(m_shadowData.GetRawData<ShadowDataIndex>(), m_shadowData.GetSize());
+            m_shadowBufferHandler.UpdateBuffer(m_shadowData.GetRawData<ShadowDataIndex>(), static_cast<uint32_t>(m_shadowData.GetSize()));
             m_deviceBufferNeedsUpdate = false;
         }
     }
