@@ -6,9 +6,14 @@
 #
 #
 
-import os
 import json
+from pathlib import Path
+from pathlib import PurePath
+import logging
 from abc import ABC, abstractmethod
+
+logger = logging.getLogger()
+logging.basicConfig()
 
 # Abstraction for the persistent storage required by TIAF to store and retrieve the branch coverage data and other meta-data
 class PersistentStorage(ABC):
@@ -33,9 +38,9 @@ class PersistentStorage(ABC):
         except KeyError as e:
             raise SystemError(f"The config does not contain the key {str(e)}.")
 
-        self._unpacked_coverage_data_file = os.path.join(self._active_workspace, unpacked_coverage_data_file)
-        if not os.path.isfile(self._unpacked_coverage_data_file):
-            print(f"The coverage data file '{self._unpacked_coverage_data_file}' is not a valid file path.")
+        self._unpacked_coverage_data_file = PurePath(self._active_workspace).joinpath(unpacked_coverage_data_file)
+        if not Path.is_file(self._unpacked_coverage_data_file):
+            logging.error(f"The coverage data file '{self._unpacked_coverage_data_file}' is not a valid file path.")
             self._unpacked_coverage_data_file = None
         
     def _unpack_historic_data(self, historic_data_json: str):
@@ -47,7 +52,7 @@ class PersistentStorage(ABC):
         
         self._has_historic_data = False
         if self._unpacked_coverage_data_file is None:
-            print("Cannot unpack historic data, the unpacked coverage data file path is invalid")
+            logger.error("Cannot unpack historic data, the unpacked coverage data file path is invalid")
             return
 
         try:
@@ -56,17 +61,17 @@ class PersistentStorage(ABC):
 
             # Create the active workspace directory where the coverage data file will be placed and unpack the coverage data so 
             # it is accessible by the runtime
-            os.makedirs(self._active_workspace, exist_ok=True)
+            Path.mkdir(self._active_workspace, exist_ok=True)
             with open(self._unpacked_coverage_data_file, "w", newline='\n') as coverage_data:
                 coverage_data.write(historic_data["coverage_data"])
 
             self._has_historic_data = True
         except json.JSONDecodeError:
-            print("The historic data does not contain valid JSON.")
+            logger.error("The historic data does not contain valid JSON.")
         except KeyError as e:
-            print(f"The historic data does not contain the key {str(e)}.")
+            logger.error(f"The historic data does not contain the key {str(e)}.")
         except EnvironmentError as e:
-            print(f"There was a problem the coverage data file '{self._unpacked_coverage_data_file}': '{e}'.")
+            logger.error(f"There was a problem the coverage data file '{self._unpacked_coverage_data_file}': '{e}'.")
 
     def _pack_historic_data(self, last_commit_hash: str):
         """
@@ -77,21 +82,21 @@ class PersistentStorage(ABC):
         """
 
         if self._unpacked_coverage_data_file is None:
-            print("Cannot pack historic data, the unpacked coverage data file path is invalid")
+            logger.error("Cannot pack historic data, the unpacked coverage data file path is invalid")
             return
 
         try:
             # Attempt to read the existing coverage data
-            if os.path.isfile(self._unpacked_coverage_data_file):
+            if Path.is_file(self._unpacked_coverage_data_file):
                 with open(self._unpacked_coverage_data_file, "r") as coverage_data:
                     historic_data = {"last_commit_hash": last_commit_hash, "coverage_data": coverage_data.read()}
                     return json.dumps(historic_data)
             else:
-                print(f"No coverage data exists at location '{self._unpacked_coverage_data_file}'.")
+                logger.info(f"No coverage data exists at location '{self._unpacked_coverage_data_file}'.")
         except EnvironmentError as e:
-            print(f"There was a problem the coverage data file '{self._unpacked_coverage_data_file}': '{e}'.")
+            logger.error(f"There was a problem the coverage data file '{self._unpacked_coverage_data_file}': '{e}'.")
         except TypeError:
-            print("The historic data could not be serialized to valid JSON.")
+            logger.error("The historic data could not be serialized to valid JSON.")
         
         return None
 
@@ -115,7 +120,7 @@ class PersistentStorage(ABC):
         if historic_data_json is not None:
             self._store_historic_data(historic_data_json)
         else:
-            print("The historic data could not be successfully stored.")
+            logger.info("The historic data could not be successfully stored.")
 
     @property
     def has_historic_data(self):

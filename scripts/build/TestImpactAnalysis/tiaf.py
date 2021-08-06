@@ -6,14 +6,19 @@
 #
 #
 
-import os
 import json
 import subprocess
 import re
 import uuid
+import logging
+from pathlib import Path
+from pathlib import PurePath
 from git_utils import Repo
 from tiaf_persistent_storage_local import PersistentStorageLocal
 from tiaf_persistent_storage_s3 import PersistentStorageS3
+
+logger = logging.getLogger()
+logging.basicConfig()
 
 class TestImpact:
     def __init__(self, config_file: str):
@@ -33,7 +38,7 @@ class TestImpact:
         @param config_file: The runtime config file to obtain the runtime configuration data from.
         """
 
-        print(f"Attempting to parse configuration file '{config_file}'...")
+        logger.info(f"Attempting to parse configuration file '{config_file}'...")
         try:
             with open(config_file, "r") as config_data:
                 self._config = json.load(config_data)
@@ -43,17 +48,17 @@ class TestImpact:
                 # TIAF
                 self._use_test_impact_analysis = self._config["jenkins"]["use_test_impact_analysis"]
                 self._tiaf_bin = self._config["repo"]["tiaf_bin"]
-                if self._use_test_impact_analysis and not os.path.isfile(self._tiaf_bin):
-                    print(f"Could not find TIAF binary at location {self._tiaf_bin}, TIAF will be turned off.")
+                if self._use_test_impact_analysis and not Path.is_file(self._tiaf_bin):
+                    logger.warning(f"Could not find TIAF binary at location {self._tiaf_bin}, TIAF will be turned off.")
                     self._use_test_impact_analysis = False
 
                 # Workspaces
                 self._active_workspace = self._config["workspace"]["active"]["root"]
                 self._historic_workspace = self._config["workspace"]["historic"]["root"]
                 self._temp_workspace = self._config["workspace"]["temp"]["root"]
-                print("The configuration file was parsed successfully.")
+                logger.info("The configuration file was parsed successfully.")
         except KeyError as e:
-            print(f"The config does not contain the key {str(e)}.")
+            logger.error(f"The config does not contain the key {str(e)}.")
             return
 
     def _attempt_to_generate_change_list(self, last_commit_hash, instance_id: str):
@@ -71,18 +76,18 @@ class TestImpact:
         self._src_commit = last_commit_hash
         if self._src_commit is not None:
             if self._repo.is_descendent(self._src_commit, self._dst_commit) == False:
-                print(f"Source commit '{self._src_commit}' and destination commit '{self._dst_commit}' are not related.")
+                logger.info(f"Source commit '{self._src_commit}' and destination commit '{self._dst_commit}' are not related.")
                 return
             self._commit_distance = self._repo.commit_distance(self._src_commit, self._dst_commit)
-            diff_path = os.path.join(self._temp_workspace, f"changelist.{instance_id}.diff")
+            diff_path = PurePath(self._temp_workspace).joinpath(f"changelist.{instance_id}.diff")
             try:
                 self._repo.create_diff_file(self._src_commit, self._dst_commit, diff_path)
             except RuntimeError as e:
-                print(e)
+                logger.error(e)
                 return
                 
             # A diff was generated, attempt to parse the diff and construct the change list
-            print(f"Generated diff between commits '{self._src_commit}' and '{self._dst_commit}': '{diff_path}'.") 
+            logger.info(f"Generated diff between commits '{self._src_commit}' and '{self._dst_commit}': '{diff_path}'.") 
             with open(diff_path, "r") as diff_data:
                 lines = diff_data.readlines()
                 for line in lines:
@@ -107,18 +112,18 @@ class TestImpact:
 
             # Serialize the change list to the JSON format the test impact analysis runtime expects
             change_list_json = json.dumps(self._change_list, indent = 4)
-            change_list_path = os.path.join(self._temp_workspace, f"changelist.{instance_id}.json")
+            change_list_path = PurePath(self._temp_workspace).joinpath(f"changelist.{instance_id}.json")
             f = open(change_list_path, "w")
             f.write(change_list_json)
             f.close()
-            print(f"Change list constructed successfully: '{change_list_path}'.")
-            print(f"{len(self._change_list['createdFiles'])} created files, {len(self._change_list['updatedFiles'])} updated files and {len(self._change_list['deletedFiles'])} deleted files.")
+            logger.info(f"Change list constructed successfully: '{change_list_path}'.")
+            logger.info(f"{len(self._change_list['createdFiles'])} created files, {len(self._change_list['updatedFiles'])} updated files and {len(self._change_list['deletedFiles'])} deleted files.")
             
             # Note: an empty change list generated due to no changes between last and current commit is valid
             self._has_change_list = True
             self._change_list_path = change_list_path
         else:
-            print("No previous commit hash found, regular or seeded sequences only will be run.")
+            logger.error("No previous commit hash found, regular or seeded sequences only will be run.")
             self._has_change_list = False
             return
 
@@ -175,8 +180,8 @@ class TestImpact:
         # Branches
         self._src_branch = src_branch
         self._dst_branch = dst_branch
-        print(f"Src branch: '{self._src_branch}'.")
-        print(f"Dst branch: '{self._dst_branch}'.")
+        logger.info(f"Src branch: '{self._src_branch}'.")
+        logger.info(f"Dst branch: '{self._dst_branch}'.")
 
         # Source of truth (the branch from which the coverage data will be stored/retrieved from)
         if self._dst_branch is None or self._src_branch == self._dst_branch:
@@ -188,12 +193,12 @@ class TestImpact:
             self._is_source_of_truth_branch = False
             self._source_of_truth_branch = self._dst_branch
 
-        print(f"Source of truth branch: '{self._source_of_truth_branch}'.")
-        print(f"Is source of truth branch: '{self._is_source_of_truth_branch}'.")
+        logger.info(f"Source of truth branch: '{self._source_of_truth_branch}'.")
+        logger.info(f"Is source of truth branch: '{self._is_source_of_truth_branch}'.")
 
         # Commit
         self._dst_commit = commit
-        print(f"Commit: '{self._dst_commit}'.")
+        logger.info(f"Commit: '{self._dst_commit}'.")
         self._src_commit = None
         self._commit_distance = None
 
@@ -201,7 +206,7 @@ class TestImpact:
         instance_id = uuid.uuid4().hex
         
         if self._use_test_impact_analysis:
-            print("Test impact analysis is enabled.")
+            logger.info("Test impact analysis is enabled.")
             try:
                 # Persistent storage location
                 if s3_bucket is not None:
@@ -209,15 +214,15 @@ class TestImpact:
                 else:
                     persistent_storage = PersistentStorageLocal(self._config, suite)
             except SystemError as e:
-                print(f"The persistent storage encountered an irrecoverable error, test impact analysis will be disabled: '{e}'")
+                logger.warning(f"The persistent storage encountered an irrecoverable error, test impact analysis will be disabled: '{e}'")
                 persistent_storage = None
 
             if persistent_storage is not None:
                 if persistent_storage.has_historic_data:
-                    print("Historic data found.")
+                    logger.info("Historic data found.")
                     self._attempt_to_generate_change_list(persistent_storage.last_commit_hash, instance_id)
                 else:
-                    print("No historic data found.")
+                    logger.info("No historic data found.")
                     
                 # Sequence type
                 if self._has_change_list:
@@ -229,17 +234,17 @@ class TestImpact:
                         sequence_type = "tianowrite"
                         # Ignore integrity failures for non coverage updating branches as our confidence in the
                         args.append("--ipolicy=continue")
-                        print("Integration failure policy is set to 'continue'.")
+                        logger.info("Integration failure policy is set to 'continue'.")
                     # Safe mode
                     if safe_mode:
                         args.append("--safemode=on")
-                        print("Safe mode set to 'on'.")
+                        logger.info("Safe mode set to 'on'.")
                     else:
                         args.append("--safemode=off")
-                        print("Safe mode set to 'off'.")
+                        logger.info("Safe mode set to 'off'.")
                     # Change list
                     args.append(f"--changelist={self._change_list_path}")
-                    print(f"Change list is set to '{self._change_list_path}'.")
+                    logger.info(f"Change list is set to '{self._change_list_path}'.")
                 else:
                     if self._is_source_of_truth_branch:
                         # Use seed sequence (instrumented all tests) for coverage updating branches so we can generate the coverage bed for future sequences
@@ -251,7 +256,7 @@ class TestImpact:
                         sequence_type = "regular"
                         # Ignore integrity failures for non coverage updating branches as our confidence in the
                         args.append("--ipolicy=continue")
-                        print("Integration failure policy is set to 'continue'.")
+                        logger.info("Integration failure policy is set to 'continue'.")
             else:
                 # Use regular sequence (regular all tests) when the persistent storage fails to avoid wasting time generating seed data that will not be preserved
                 sequence_type = "regular"
@@ -259,43 +264,43 @@ class TestImpact:
             # Use regular sequence (regular all tests) when test impact analysis is disabled
             sequence_type = "regular"
         args.append(f"--sequence={sequence_type}")
-        print(f"Sequence type is set to '{sequence_type}'.")
+        logger.info(f"Sequence type is set to '{sequence_type}'.")
 
          # Test failure policy
         args.append(f"--fpolicy={test_failure_policy}")
-        print(f"Test failure policy is set to '{test_failure_policy}'.")
+        logger.info(f"Test failure policy is set to '{test_failure_policy}'.")
 
         # Sequence report
-        report_file = os.path.join(self._temp_workspace, f"report.{instance_id}.json")
+        report_file = PurePath(self._temp_workspace).joinpath(f"report.{instance_id}.json")
         args.append(f"--report={report_file}")
-        print(f"Sequence report file is set to '{report_file}'.")
+        logger.info(f"Sequence report file is set to '{report_file}'.")
 
         # Suite
         args.append(f"--suite={suite}")
-        print(f"Test suite is set to '{suite}'.")
+        logger.info(f"Test suite is set to '{suite}'.")
 
         # Timeouts
         if test_timeout != None:
             args.append(f"--ttimeout={test_timeout}")
-            print(f"Test target timeout is set to {test_timeout} seconds.")
+            logger.info(f"Test target timeout is set to {test_timeout} seconds.")
         if global_timeout != None:
             args.append(f"--gtimeout={global_timeout}")
-            print(f"Global sequence timeout is set to {test_timeout} seconds.")
+            logger.info(f"Global sequence timeout is set to {test_timeout} seconds.")
 
         # Run sequence
-        print("Args: ", end='')
-        print(*args)
+        logger.info("Args: ", end='')
+        logger.info(*args)
         runtime_result = subprocess.run([self._tiaf_bin] + args)
         report = None
 
         # If the sequence completed (with or without failures) we will update the historical meta-data
         if runtime_result.returncode == 0 or runtime_result.returncode == 7:
-            print("Test impact analysis runtime returned successfully.")
+            logger.info("Test impact analysis runtime returned successfully.")
             if self._is_source_of_truth_branch and persistent_storage is not None:
                 persistent_storage.update_and_store_historic_data(self._dst_commit)
             with open(report_file) as json_file:
                 report = json.load(json_file)
         else:
-            print(f"The test impact analysis runtime returned with error: '{runtime_result.returncode}'.")
+            logger.error(f"The test impact analysis runtime returned with error: '{runtime_result.returncode}'.")
     
         return self._generate_result(s3_bucket, suite, runtime_result.returncode, report, args)

@@ -8,10 +8,13 @@
 
 import boto3
 import botocore.exceptions
-
+import zlib
+import logging
 from io import BytesIO
 from tiaf_persistent_storage import PersistentStorage
-import zlib
+
+logger = logging.getLogger()
+logging.basicConfig()
 
 # Implementation of s3 bucket persistent storage
 class PersistentStorageS3(PersistentStorage):
@@ -37,17 +40,17 @@ class PersistentStorageS3(PersistentStorage):
             self._dir = f'{branch}/{config["meta"]["build_config"]}'
             self._historic_data_key = f'{self._dir}/{historic_data_file}'
             
-            print(f"Attempting to retrieve historic data for branch '{branch}' at location '{self._historic_data_key}' on bucket '{s3_bucket}'...")
+            logger.info(f"Attempting to retrieve historic data for branch '{branch}' at location '{self._historic_data_key}' on bucket '{s3_bucket}'...")
             self._s3 = boto3.resource("s3")
             self._bucket = self._s3.Bucket(s3_bucket)
 
             # There is only one historic_data.json.zip in the specified location
             for object in self._bucket.objects.filter(Prefix=self._historic_data_key):
-                print(f"Historic data found for branch '{branch}'.")
+                logger.info(f"Historic data found for branch '{branch}'.")
 
                 # Archive the existing object with the name of the existing last commit hash
                 archive_key = f"{self._dir}/archive/{self._last_commit_hash}.{object_extension}"
-                print(f"Archiving existing historic data to {archive_key}...")
+                logger.info(f"Archiving existing historic data to {archive_key}...")
                 self._bucket.copy({"Bucket": self._bucket.name, "Key": self._historic_data_key}, archive_key)
 
                 # Decode the historic data object into raw bytes
@@ -75,11 +78,10 @@ class PersistentStorageS3(PersistentStorage):
 
         try:
             data = BytesIO(zlib.compress(bytes(historic_data_json, "UTF-8")))
-            print(f"Uploading historic data to location '{self._historic_data_key}'...")
+            logger.info(f"Uploading historic data to location '{self._historic_data_key}'...")
             self._bucket.upload_fileobj(data, self._historic_data_key)
-            print("Upload complete.")
+            logger.info("Upload complete.")
         except botocore.exceptions.BotoCoreError as e:
-            print(f"There was a problem with the s3 bucket: {e}")
+            logger.error(f"There was a problem with the s3 bucket: {e}")
         except botocore.exceptions.ClientError as e:
-            print(f"There was a problem with the s3 client: {e}")
-        
+            logger.error(f"There was a problem with the s3 client: {e}")
