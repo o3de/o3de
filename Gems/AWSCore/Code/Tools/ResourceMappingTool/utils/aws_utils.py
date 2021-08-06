@@ -106,6 +106,8 @@ def list_s3_buckets(region: str = "") -> List[str]:
         try:
             bucket_name: str = bucket["Name"]
             location_response: Dict[str, any] = s3_client.get_bucket_location(Bucket=bucket_name)
+            # Buckets in Region us-east-1 have a LocationConstraint of null .
+            # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Client.get_bucket_location
             if ((location_response["LocationConstraint"] == region) or
                     (not location_response["LocationConstraint"] and region == "us-east-1")):
                 bucket_names.append(bucket_name)
