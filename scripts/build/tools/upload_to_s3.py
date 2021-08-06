@@ -99,8 +99,12 @@ def get_files_to_upload(base_dir, regex, search_subdirectories):
 
 
 def s3_upload_file(client, base_dir, file, bucket, key_prefix=None, extra_args=None, max_retry=1):
-    # replicate the local folder structure relative to search root in the bucket path
-    s3_file_path = pathlib.Path(file).relative_to(base_dir).as_posix()
+    try:
+        # replicate the local folder structure relative to search root in the bucket path
+        s3_file_path = pathlib.Path(file).relative_to(base_dir).as_posix()
+    except ValueError as err:
+        print(f'Unexpected file error: {err}')
+        return False
 
     key = s3_file_path if key_prefix is None else f'{key_prefix}/{s3_file_path}'
     error_message = None
