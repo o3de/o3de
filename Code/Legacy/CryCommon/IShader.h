@@ -1425,9 +1425,9 @@ struct STexSamplerFX
         SAFE_RELEASE(m_pITarget);
     }
 
-    int Size()
+    size_t Size()
     {
-        int nSize = sizeof(*this);
+        size_t nSize = sizeof(*this);
         nSize += m_szName.capacity();
         nSize += m_szTexture.capacity();
 #if SHADER_REFLECT_TEXTURE_SLOTS
@@ -1804,9 +1804,9 @@ struct SEfResTexture
         return m_Ext.m_pTexModifier;
     }
 
-    int Size() const
+    size_t Size() const
     {
-        int nSize = sizeof(SEfResTexture) - sizeof(STexSamplerRT) - sizeof(SEfResTextureExt);
+        size_t nSize = sizeof(SEfResTexture) - sizeof(STexSamplerRT) - sizeof(SEfResTextureExt);
         nSize += m_Name.size();
         nSize += m_Sampler.Size();
         nSize += m_Ext.Size();
@@ -1899,9 +1899,9 @@ struct SBaseShaderResources
 
     uint8                   m_VoxelCoverage;
 
-    int Size() const
+    size_t Size() const
     {
-        int nSize = sizeof(SBaseShaderResources) + m_ShaderParams.size() * sizeof(SShaderParam);
+        size_t nSize = sizeof(SBaseShaderResources) + m_ShaderParams.size() * sizeof(SShaderParam);
         return nSize;
     }
 
@@ -2031,9 +2031,9 @@ struct SInputShaderResources
     TexturesResourcesMap                m_TexturesResourcesMap;      // a map of all textures resources used by the shader by name
     SDeformInfo                         m_DeformInfo;
 
-    int Size() const
+    size_t Size() const
     {
-        int nSize = SBaseShaderResources::Size();// -sizeof(SEfResTexture) * m_TexturesResourcesMap.size();
+        size_t nSize = SBaseShaderResources::Size();// -sizeof(SEfResTexture) * m_TexturesResourcesMap.size();
         nSize += m_TexturePath.size();
         nSize += sizeof(SDeformInfo);
 

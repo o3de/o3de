@@ -49,6 +49,8 @@
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Input/Devices/Touch/InputDeviceTouch.h>
 
+#include <Atom/RPI.Public/Image/ImageSystemInterface.h>
+#include <Atom/RPI.Public/Image/AttachmentImagePool.h>
 
 #include "Animation/UiAnimationSystem.h"
 
@@ -63,6 +65,8 @@
 #include <LyShine/Bus/UiMaskBus.h>
 #include <LyShine/Bus/UiFaderBus.h>
 #endif
+
+#include "LyShinePassDataBus.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //! UiCanvasNotificationBus Behavior context handler class
@@ -251,14 +255,22 @@ namespace
 
     UiRenderer* GetUiRendererForGame()
     {
-        CLyShine* lyShine = static_cast<CLyShine*>(gEnv->pLyShine);
-        return lyShine ? lyShine->GetUiRenderer() : nullptr;
+        if (gEnv && gEnv->pLyShine)
+        {
+            CLyShine* lyShine = static_cast<CLyShine*>(gEnv->pLyShine);
+            return lyShine->GetUiRenderer();
+        }
+        return nullptr;
     }
 
     UiRenderer* GetUiRendererForEditor()
     {
-        CLyShine* lyShine = static_cast<CLyShine*>(gEnv->pLyShine);
-        return lyShine ? lyShine->GetUiRendererForEditor() : nullptr;
+        if (gEnv && gEnv->pLyShine)
+        {
+            CLyShine* lyShine = static_cast<CLyShine*>(gEnv->pLyShine);
+            return lyShine->GetUiRendererForEditor();
+        }
+        return nullptr;
     }
 
     bool IsValidInteractable(const AZ::EntityId& entityId)
@@ -705,7 +717,7 @@ AZStd::string UiCanvasComponent::GetUniqueChildName(AZ::EntityId parentEntityId,
 
     // Count trailing digits in base name
     int i;
-    for (i = baseName.length() - 1; i >= 0; i--)
+    for (i = static_cast<int>(baseName.length() - 1); i >= 0; i--)
     {
         if (!isdigit(baseName[i]))
         {
@@ -713,7 +725,7 @@ AZStd::string UiCanvasComponent::GetUniqueChildName(AZ::EntityId parentEntityId,
         }
     }
     int startDigitIndex = i + 1;
-    int numDigits = baseName.length() - startDigitIndex;
+    int numDigits = static_cast<int>(baseName.length() - startDigitIndex);
 
     int suffix = 1;
     if (numDigits > 0)
@@ -737,7 +749,7 @@ AZStd::string UiCanvasComponent::GetUniqueChildName(AZ::EntityId parentEntityId,
         AZStd::string suffixString = AZStd::string::format("%d", suffix);
 
         // Append leading zeros
-        int numLeadingZeros = (suffixString.length() < numDigits) ? numDigits - suffixString.length() : 0;
+        int numLeadingZeros = static_cast<int>((suffixString.length() < numDigits) ? numDigits - suffixString.length() : 0);
         for (int zeroes = 0; zeroes < numLeadingZeros; zeroes++)
         {
             proposedChildName.push_back('0');
@@ -1830,6 +1842,46 @@ void UiCanvasComponent::MarkRenderGraphDirty()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+AZ::RHI::AttachmentId UiCanvasComponent::UseRenderTarget(const AZ::Name& renderTargetName, AZ::RHI::Size size)
+{
+    // Create a render target that UI elements will render to
+    AZ::RHI::ImageDescriptor imageDesc;
+    imageDesc.m_bindFlags = AZ::RHI::ImageBindFlags::Color | AZ::RHI::ImageBindFlags::ShaderReadWrite;
+    imageDesc.m_size = size;
+    imageDesc.m_format = AZ::RHI::Format::R8G8B8A8_UNORM;
+
+    AZ::Data::Instance<AZ::RPI::AttachmentImagePool> pool = AZ::RPI::ImageSystemInterface::Get()->GetSystemAttachmentPool();
+    auto attachmentImage = AZ::RPI::AttachmentImage::Create(*pool.get(), imageDesc, renderTargetName);
+    if (!attachmentImage)
+    {
+        AZ_Warning("UI", false, "Failed to create render target");
+        return AZ::RHI::AttachmentId();
+    }
+
+    m_attachmentImageMap[attachmentImage->GetAttachmentId()] = attachmentImage;
+
+    // Notify LyShine render pass that it needs to rebuild
+    QueueRttPassRebuild();
+    
+    return attachmentImage->GetAttachmentId();
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void UiCanvasComponent::ReleaseRenderTarget(const AZ::RHI::AttachmentId& attachmentId)
+{
+    m_attachmentImageMap.erase(attachmentId);
+
+    // Notify LyShine render pass that it needs to rebuild
+    QueueRttPassRebuild();
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+AZ::Data::Instance<AZ::RPI::AttachmentImage> UiCanvasComponent::GetRenderTarget(const AZ::RHI::AttachmentId& attachmentId)
+{
+    return m_attachmentImageMap[attachmentId];
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasComponent::UpdateCanvas(float deltaTime, bool isInGame)
 {
     // Ignore update if we're not enabled
@@ -1863,6 +1915,8 @@ void UiCanvasComponent::RenderCanvas(bool isInGame, AZ::Vector2 viewportSize, Ui
     {
         return;
     }
+
+    m_renderInEditor = uiRenderer ? true : false;
 
     if (!uiRenderer)
     {
@@ -1949,6 +2003,12 @@ void UiCanvasComponent::ScheduleElementDestroy(AZ::EntityId entityId)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+void UiCanvasComponent::GetRenderTargets(LyShine::AttachmentImagesAndDependencies& attachmentImagesAndDependencies)
+{
+    m_renderGraph.GetRenderTargetsAndDependencies(attachmentImagesAndDependencies);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasComponent::DestroyScheduledElements()
 {
     for (auto entityId : m_elementsScheduledForDestroy)
@@ -1957,6 +2017,17 @@ void UiCanvasComponent::DestroyScheduledElements()
     }
 
     m_elementsScheduledForDestroy.clear();
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void UiCanvasComponent::QueueRttPassRebuild()
+{
+    UiRenderer* uiRenderer = m_renderInEditor ? GetUiRendererForEditor() : GetUiRendererForGame();
+    if (uiRenderer && uiRenderer->GetViewportContext()) // can be null in automated testing
+    {
+        AZ::RPI::SceneId sceneId = uiRenderer->GetViewportContext()->GetRenderScene()->GetId();
+        EBUS_EVENT_ID(sceneId, LyShinePassRequestBus, RebuildRttChildren);
+    }
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1978,7 +2049,7 @@ void UiCanvasComponent::GetDebugInfoNumElements(DebugInfoNumElements& info) cons
     info.m_numMaskElements = 0;
     info.m_numFaderElements = 0;
     info.m_numInteractableElements = 0;
-    info.m_numUpdateElements = UiCanvasUpdateNotificationBus::GetNumOfEventHandlers(GetEntityId());
+    info.m_numUpdateElements = static_cast<int>(UiCanvasUpdateNotificationBus::GetNumOfEventHandlers(GetEntityId()));
 
     DebugInfoCountChildren(m_rootElement, true, info);
 }
@@ -2350,6 +2421,7 @@ void UiCanvasComponent::Activate()
     UiCanvasComponentImplementationBus::Handler::BusConnect(m_entity->GetId());
     UiEditorCanvasBus::Handler::BusConnect(m_entity->GetId());
     UiAnimationBus::Handler::BusConnect(m_entity->GetId());
+    LyShine::RenderToTextureRequestBus::Handler::BusConnect(m_entity->GetId());
 
     // Reconnect to buses that we connect to intermittently
     // This will only happen if we have been deactivated and reactivated at runtime
@@ -2382,6 +2454,7 @@ void UiCanvasComponent::Deactivate()
     UiCanvasComponentImplementationBus::Handler::BusDisconnect();
     UiEditorCanvasBus::Handler::BusDisconnect();
     UiAnimationBus::Handler::BusDisconnect();
+    LyShine::RenderToTextureRequestBus::Handler::BusDisconnect();
 
     // disconnect from any other buses we could be connected to
     if (m_hoverInteractable.IsValid() && AZ::EntityBus::Handler::BusIsConnectedId(m_hoverInteractable))
@@ -2399,6 +2472,12 @@ void UiCanvasComponent::Deactivate()
     {
         DestroyRenderTarget();
     }
+
+    // Destroy owned render targets
+    m_attachmentImageMap.clear();
+
+    //! Notify LyShine pass that it needs to rebuild
+    QueueRttPassRebuild();
 
     delete m_layoutManager;
     m_layoutManager = nullptr;

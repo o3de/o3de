@@ -70,7 +70,7 @@ struct CConsoleCommandArgs
     CConsoleCommandArgs(AZStd::string& line, std::vector<AZStd::string>& args)
         : m_line(line)
         , m_args(args) {};
-    virtual int GetArgCount() const { return m_args.size(); };
+    virtual int GetArgCount() const { return static_cast<int>(m_args.size()); };
     // Get argument by index, nIndex must be in 0 <= nIndex < GetArgCount()
     virtual const char* GetArg(int nIndex) const
     {

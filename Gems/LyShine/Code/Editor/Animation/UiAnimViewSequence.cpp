@@ -1320,7 +1320,7 @@ void CUiAnimViewSequence::CloneSelectedKeys()
     std::vector<float> selectedKeyTimes;
     for (size_t k = 0; k < selectedKeys.GetKeyCount(); ++k)
     {
-        CUiAnimViewKeyHandle skey = selectedKeys.GetKey(k);
+        CUiAnimViewKeyHandle skey = selectedKeys.GetKey(static_cast<unsigned int>(k));
         if (pTrack != skey.GetTrack())
         {
             pTrack = skey.GetTrack();
@@ -1332,7 +1332,7 @@ void CUiAnimViewSequence::CloneSelectedKeys()
     // Now, do the actual cloning.
     for (size_t k = 0; k < selectedKeyTimes.size(); ++k)
     {
-        CUiAnimViewKeyHandle skey = selectedKeys.GetKey(k);
+        CUiAnimViewKeyHandle skey = selectedKeys.GetKey(static_cast<unsigned int>(k));
         skey = skey.GetTrack()->GetKeyByTime(selectedKeyTimes[k]);
 
         assert(skey.IsValid());

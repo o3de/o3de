@@ -208,12 +208,6 @@ public:
     void DeleteSelectedEntities(bool includeDescendants);
     void OnMoveObject();
     void OnRenameObj();
-    void OnEditmodeMove();
-    void OnEditmodeRotate();
-    void OnEditmodeScale();
-    void OnUpdateEditmodeMove(QAction* action);
-    void OnUpdateEditmodeRotate(QAction* action);
-    void OnUpdateEditmodeScale(QAction* action);
     void OnUndo();
     void OnOpenAssetImporter();
     void OnUpdateSelected(QAction* action);

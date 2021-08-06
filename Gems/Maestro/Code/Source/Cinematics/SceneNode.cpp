@@ -254,7 +254,7 @@ void CAnimSceneNode::CreateDefaultTracks()
 //////////////////////////////////////////////////////////////////////////
 unsigned int CAnimSceneNode::GetParamCount() const
 {
-    return s_nodeParams.size();
+    return static_cast<unsigned int>(s_nodeParams.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -661,7 +661,7 @@ void CAnimSceneNode::OnStop()
 //////////////////////////////////////////////////////////////////////////
 void CAnimSceneNode::ResetSounds()
 {
-    for (int i = m_SoundInfo.size(); --i >= 0; )
+    for (int i = static_cast<int>(m_SoundInfo.size()); --i >= 0; )
     {
         m_SoundInfo[i].Reset();
     }

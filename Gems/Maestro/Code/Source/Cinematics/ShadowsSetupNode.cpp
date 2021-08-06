@@ -81,7 +81,7 @@ void CShadowsSetupNode::OnReset()
 //-----------------------------------------------------------------------------
 unsigned int CShadowsSetupNode::GetParamCount() const
 {
-    return ShadowSetupNode::s_shadowSetupParams.size();
+    return static_cast<int>(ShadowSetupNode::s_shadowSetupParams.size());
 }
 
 //-----------------------------------------------------------------------------

@@ -11,6 +11,7 @@
 #include <LyShine/Bus/UiCanvasManagerBus.h>
 #include <LyShine/Bus/UiCanvasBus.h>
 #include <LyShine/UiEntityContext.h>
+#include "LyShinePassDataBus.h"
 #include <IFont.h>
 
 class UiCanvasComponent;
@@ -91,6 +92,9 @@ public: // member functions
     // These functions handle events for all canvases loaded in the game
     bool HandleInputEventForLoadedCanvases(const AzFramework::InputChannel& inputChannel);
     bool HandleTextEventForLoadedCanvases(const AZStd::string& textUTF8);
+
+    // Get the render targets used by all currently loaded UI Canvases
+    void GetRenderTargets(LyShine::AttachmentImagesAndDependencies& attachmentImagesAndDependencies);
 
 #ifndef _RELEASE
     void DebugDisplayCanvasData(int setting) const;

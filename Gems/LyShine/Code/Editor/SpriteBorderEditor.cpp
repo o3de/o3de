@@ -286,8 +286,8 @@ void SpriteBorderEditor::AddConfigureSection(QGridLayout* gridLayout, int& rowNu
 
     // Count the number of unique entries along each axis to determine number
     // of rows/cols contained within the spritesheet.
-    m_numRows = vSet.size() > 1 ? vSet.size() - 1 : 1;
-    m_numCols = uSet.size() > 1 ? uSet.size() - 1 : 1;
+    m_numRows = static_cast<uint>(vSet.size() > 1 ? vSet.size() - 1 : 1);
+    m_numCols = static_cast<uint>(uSet.size() > 1 ? uSet.size() - 1 : 1);
 
     // Text input fields displaying row/col information for auto-extracting 
     // spritesheet cells

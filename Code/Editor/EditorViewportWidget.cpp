@@ -472,6 +472,12 @@ void EditorViewportWidget::Update()
         m_Camera.SetZRange(cameraState.m_nearClip, cameraState.m_farClip);
     }
 
+    // Ensure the FOV matches our internally stored setting if we're using the Editor camera
+    if (!m_viewEntityId.IsValid() && !GetIEditor()->IsInGameMode())
+    {
+        SetFOV(GetFOV());
+    }
+
     // Reset the camera update flag now that we're finished updating our viewport context
     m_updateCameraPositionNextTick = false;
 
@@ -1234,6 +1240,13 @@ AZStd::shared_ptr<AtomToolsFramework::ModularViewportCameraController> CreateMod
     AzFramework::ViewportId viewportId)
 {
     auto controller = AZStd::make_shared<AtomToolsFramework::ModularViewportCameraController>();
+
+    controller->SetCameraPriorityBuilderCallback(
+        [](AtomToolsFramework::CameraControllerPriorityFn& cameraControllerPriorityFn)
+        {
+            cameraControllerPriorityFn = AtomToolsFramework::DefaultCameraControllerPriority;
+        });
+
     controller->SetCameraPropsBuilderCallback(
         [](AzFramework::CameraProps& cameraProps)
         {
@@ -2624,8 +2637,6 @@ void EditorViewportWidget::DestroyRenderContext()
 //////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::SetDefaultCamera()
 {
-    // Ensure the FOV matches our internally stored setting
-    SetFOV(GetFOV());
     if (IsDefaultCamera())
     {
         return;

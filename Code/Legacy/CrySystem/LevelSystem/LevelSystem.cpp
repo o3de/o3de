@@ -161,7 +161,7 @@ struct SLevelNameAutoComplete
     : public IConsoleArgumentAutoComplete
 {
     AZStd::vector<AZStd::string> levels;
-    virtual int GetCount() const { return levels.size(); };
+    virtual int GetCount() const { return static_cast<int>(levels.size()); };
     virtual const char* GetValue(int nIndex) const { return levels[nIndex].c_str(); };
 };
 // definition and declaration must be separated for devirtualization

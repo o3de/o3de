@@ -475,8 +475,6 @@ ILINE DestinationType alias_cast(SourceType pPtr)
     return conv_union.pDst;
 }
 
-#include "CryLegacyAllocator.h"
-
 //////////////////////////////////////////////////////////////////////////
 #ifndef DEPRECATED
 #define DEPRECATED

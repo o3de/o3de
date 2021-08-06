@@ -1283,7 +1283,7 @@ bool CXConsole::ProcessInput(const AzFramework::InputChannel& inputChannel)
     {
         if (isCtrlModifierActive)
         {
-            m_nScrollLine = m_dqConsoleBuffer.size() - 1;
+            m_nScrollLine = static_cast<int>(m_dqConsoleBuffer.size() - 1);
         }
         else
         {
@@ -1396,7 +1396,7 @@ bool CXConsole::GetLineNo(const int indwLineNo, char* outszBuffer, const int ind
 //////////////////////////////////////////////////////////////////////////
 int CXConsole::GetLineCount() const
 {
-    return m_dqConsoleBuffer.size();
+    return static_cast<int>(m_dqConsoleBuffer.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2614,7 +2614,7 @@ void CXConsole::RemoveOutputPrintSink(IOutputPrintSink* inpSink)
 {
     assert(inpSink);
 
-    int nCount = m_OutputSinks.size();
+    int nCount = static_cast<int>(m_OutputSinks.size());
 
     for (int i = 0; i < nCount; i++)
     {
@@ -2900,7 +2900,7 @@ bool CXConsole::IsHashCalculated()
 //////////////////////////////////////////////////////////////////////////
 int CXConsole::GetNumCheatVars()
 {
-    return m_randomCheckedVariables.size();
+    return static_cast<int>(m_randomCheckedVariables.size());
 }
 
 //////////////////////////////////////////////////////////////////////////

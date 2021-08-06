@@ -323,7 +323,7 @@ bool SRemoteServer::ReadBuffer(const char* buffer, int data)
         }
 
         // Advance to the next null terminated string in the buffer
-        const int currentSize = strnlen(curBuffer, bytesRemaining);
+        const int currentSize = static_cast<int>(strnlen(curBuffer, bytesRemaining));
         bytesRemaining -= currentSize + 1;
         curBuffer += currentSize + 1;
     }
@@ -466,7 +466,7 @@ void SRemoteClient::FillAutoCompleteList(AZStd::vector<AZStd::string>& list)
         AZStd::string item = "map ";
         const char* levelName = pLevel->GetName();
         int start = 0;
-        for (int k = 0, kend = strlen(levelName); k < kend; ++k)
+        for (int k = 0, kend = static_cast<int>(strlen(levelName)); k < kend; ++k)
         {
             if ((levelName[k] == '\\' || levelName[k] == '/') && k + 1 < kend)
             {

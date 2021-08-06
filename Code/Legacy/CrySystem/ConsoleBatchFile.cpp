@@ -112,7 +112,7 @@ bool CConsoleBatchFile::ExecuteConfigFile(const char* sFilename)
         CryLog("%s \"%s\" found in %s ...", szLog, PathUtil::GetFile(filenameLog.c_str()), PathUtil::GetPath(filenameLog).c_str());
     }
 
-    int nLen = file.GetLength();
+    size_t nLen = file.GetLength();
     char* sAllText = new char [nLen + 16];
     file.ReadRaw(sAllText, nLen);
     sAllText[nLen] = '\0';

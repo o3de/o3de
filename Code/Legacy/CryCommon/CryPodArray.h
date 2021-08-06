@@ -159,8 +159,8 @@ public:
         return numElements != m_elements.size();
     }
 
-    ILINE  int Count() const { return m_elements.size(); }
-    ILINE  unsigned int Size() const { return m_elements.size(); }
+    ILINE  size_t Count() const { return m_elements.size(); }
+    ILINE  size_t Size() const { return m_elements.size(); }
 
     ILINE  int IsEmpty() const { return m_elements.empty(); }
 

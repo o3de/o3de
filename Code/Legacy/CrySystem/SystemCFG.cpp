@@ -287,7 +287,7 @@ public:
             pos = 1;
             for (;; )
             {
-                pos = szValue.find_first_of("\\", pos);
+                pos = static_cast<int>(szValue.find_first_of("\\", pos));
 
                 if (pos == AZStd::string::npos)
                 {
@@ -302,7 +302,7 @@ public:
             pos = 1;
             for (;; )
             {
-                pos = szValue.find_first_of("\"", pos);
+                pos = static_cast<int>(szValue.find_first_of("\"", pos));
 
                 if (pos == AZStd::string::npos)
                 {
@@ -416,7 +416,7 @@ bool CSystemConfiguration::ParseSystemConfig()
 
     INDENT_LOG_DURING_SCOPE();
 
-    int nLen = file.GetLength();
+    int nLen = static_cast<int>(file.GetLength());
     if (nLen == 0)
     {
         CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_WARNING, "Couldn't get length for Config file %s", filename.c_str());

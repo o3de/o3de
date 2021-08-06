@@ -235,7 +235,7 @@ namespace AZ
             UpdateViewToClipMatrix();
         }
 
-        void CameraComponent::SetOrthographic(bool orthographic)
+        void CameraComponent::SetOrthographic([[maybe_unused]] bool orthographic)
         {
             AZ_Assert(!orthographic, "DebugCamera does not support orthographic projection");
         }

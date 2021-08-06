@@ -699,7 +699,7 @@ const AZ::u32 UiImageComponent::GetImageIndexCount()
 {
     if (m_sprite)
     {
-        return m_sprite->GetSpriteSheetCells().size();
+        return static_cast<AZ::u32>(m_sprite->GetSpriteSheetCells().size());
     }
 
     return 0;
@@ -2635,7 +2635,7 @@ LyShine::AZu32ComboBoxVec UiImageComponent::PopulateIndexStringList() const
     // There may not be a sprite loaded for this component
     if (m_sprite)
     {
-        const AZ::u32 numCells = m_sprite->GetSpriteSheetCells().size();
+        const AZ::u32 numCells = static_cast<AZ::u32>(m_sprite->GetSpriteSheetCells().size());
 
         if (numCells != 0)
         {

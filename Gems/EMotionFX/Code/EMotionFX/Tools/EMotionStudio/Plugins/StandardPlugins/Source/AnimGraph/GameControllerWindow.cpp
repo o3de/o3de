@@ -327,7 +327,7 @@ namespace EMStudio
         EMotionFX::AnimGraphGameControllerSettings& gameControllerSettings = animGraph->GetGameControllerSettings();
 
         // in case there is no preset yet create a default one
-        uint32 numPresets = gameControllerSettings.GetNumPresets();
+        uint32 numPresets = static_cast<uint32>(gameControllerSettings.GetNumPresets());
         if (numPresets == 0)
         {
             EMotionFX::AnimGraphGameControllerSettings::Preset* preset = aznew EMotionFX::AnimGraphGameControllerSettings::Preset("Default");
@@ -374,7 +374,7 @@ namespace EMStudio
             QLabel* label = new QLabel(labelString.c_str());
             label->setToolTip(parameter->GetDescription().c_str());
             label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-            mParameterGridLayout->addWidget(label, parameterIndex, 0);
+            mParameterGridLayout->addWidget(label, static_cast<int>(parameterIndex), 0);
 
             // add the axis combo box to the layout
             QComboBox* axesComboBox = new QComboBox();
@@ -434,7 +434,7 @@ namespace EMStudio
 
             // select the given axis in the combo box or select none if there is no assignment yet or the assigned axis wasn't found on the current game controller
             axesComboBox->setCurrentIndex(selectedComboItem);
-            mParameterGridLayout->addWidget(axesComboBox, parameterIndex, 1);
+            mParameterGridLayout->addWidget(axesComboBox, static_cast<int>(parameterIndex), 1);
 
             // add the mode combo box to the layout
             QComboBox* modeComboBox = new QComboBox();
@@ -447,7 +447,7 @@ namespace EMStudio
             modeComboBox->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
             connect(modeComboBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &GameControllerWindow::OnParameterModeComboBox);
             modeComboBox->setCurrentIndex(settingsInfo->m_mode);
-            mParameterGridLayout->addWidget(modeComboBox, parameterIndex, 2);
+            mParameterGridLayout->addWidget(modeComboBox, static_cast<int>(parameterIndex), 2);
 
             // add the invert checkbox to the layout
             QHBoxLayout* invertCheckBoxLayout = new QHBoxLayout();
@@ -460,7 +460,7 @@ namespace EMStudio
             connect(invertCheckbox, &QCheckBox::stateChanged, this, &GameControllerWindow::OnInvertCheckBoxChanged);
             invertCheckbox->setCheckState(settingsInfo->m_invert ? Qt::Checked : Qt::Unchecked);
             invertCheckBoxLayout->addWidget(invertCheckbox);
-            mParameterGridLayout->addLayout(invertCheckBoxLayout, parameterIndex, 3);
+            mParameterGridLayout->addLayout(invertCheckBoxLayout, static_cast<int>(parameterIndex), 3);
 
             // add the current value edit field to the layout
             QLineEdit* valueEdit = new QLineEdit();
@@ -469,7 +469,7 @@ namespace EMStudio
             valueEdit->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
             valueEdit->setMinimumWidth(70);
             valueEdit->setMaximumWidth(70);
-            mParameterGridLayout->addWidget(valueEdit, parameterIndex, 4);
+            mParameterGridLayout->addWidget(valueEdit, static_cast<int>(parameterIndex), 4);
 
             // create the parameter info and add it to the array
             ParameterInfo paramInfo;
@@ -1053,7 +1053,7 @@ namespace EMStudio
         // get the game controller settings from the current anim graph
         EMotionFX::AnimGraphGameControllerSettings& gameControllerSettings = mAnimGraph->GetGameControllerSettings();
 
-        uint32 presetNumber = gameControllerSettings.GetNumPresets();
+        uint32 presetNumber = static_cast<uint32>(gameControllerSettings.GetNumPresets());
         mString = AZStd::string::format("Preset %d", presetNumber);
         while (gameControllerSettings.FindPresetIndexByName(mString.c_str()) != MCORE_INVALIDINDEX32)
         {
@@ -1123,7 +1123,7 @@ namespace EMStudio
         // get the currently selected preset
         uint32 presetIndex = mPresetComboBox->currentIndex();
 
-        uint32 newValueIndex = gameControllerSettings.FindPresetIndexByName(newValue.c_str());
+        uint32 newValueIndex = static_cast<uint32>(gameControllerSettings.FindPresetIndexByName(newValue.c_str()));
         if (newValueIndex == MCORE_INVALIDINDEX32)
         {
             EMotionFX::AnimGraphGameControllerSettings::Preset* preset = gameControllerSettings.GetPreset(presetIndex);
@@ -1139,7 +1139,7 @@ namespace EMStudio
         EMotionFX::AnimGraphGameControllerSettings& gameControllerSettings = mAnimGraph->GetGameControllerSettings();
 
         // check if there already is a preset with the currently entered name
-        uint32 presetIndex = gameControllerSettings.FindPresetIndexByName(FromQtString(text).c_str());
+        uint32 presetIndex = static_cast<uint32>(gameControllerSettings.FindPresetIndexByName(FromQtString(text).c_str()));
         if (presetIndex != MCORE_INVALIDINDEX32 && presetIndex != gameControllerSettings.GetActivePresetIndex())
         {
             GetManager()->SetWidgetAsInvalidInput(mPresetNameLineEdit);
@@ -1362,7 +1362,7 @@ namespace EMStudio
             }
 
             // find the corresponding attribute
-            MCore::Attribute* attribute = animGraphInstance->GetParameterValue(parameterIndex);
+            MCore::Attribute* attribute = animGraphInstance->GetParameterValue(static_cast<uint32>(parameterIndex));
 
             if (attribute->GetType() == MCore::AttributeFloat::TYPE_ID)
             {

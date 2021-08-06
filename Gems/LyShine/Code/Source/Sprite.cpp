@@ -273,7 +273,7 @@ void CSprite::Serialize(TSerialize ser)
 
     if (hasSpriteSheetCells && ser.BeginOptionalGroup("SpriteSheet", true))
     {
-        const int numSpriteSheetCells = ser.IsReading() ? m_numSpriteSheetCellTags : GetSpriteSheetCells().size();
+        const int numSpriteSheetCells = static_cast<int>(ser.IsReading() ? m_numSpriteSheetCellTags : GetSpriteSheetCells().size());
         for (int i = 0; i < numSpriteSheetCells; ++i)
         {
             ser.BeginOptionalGroup("Cell", true);

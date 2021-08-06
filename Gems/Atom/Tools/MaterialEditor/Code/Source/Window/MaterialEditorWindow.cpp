@@ -144,7 +144,7 @@ namespace MaterialEditor
 
         if (!windowSettings->m_mainWindowState.empty())
         {
-            QByteArray windowState(windowSettings->m_mainWindowState.data(), windowSettings->m_mainWindowState.size());
+            QByteArray windowState(windowSettings->m_mainWindowState.data(), static_cast<int>(windowSettings->m_mainWindowState.size()));
             m_advancedDockManager->restoreState(windowState);
         }
 

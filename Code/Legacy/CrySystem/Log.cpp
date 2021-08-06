@@ -483,7 +483,7 @@ void CLog::LogV(const ELogType type, [[maybe_unused]]int flags, const char* szFo
         break;
     }
 
-    int bufferlen = sizeof(szBuffer) - prefixSize;
+    int bufferlen = static_cast<int>(sizeof(szBuffer) - prefixSize);
     if (bufferlen > 0)
     {
 #if defined(AZ_RESTRICTED_PLATFORM)

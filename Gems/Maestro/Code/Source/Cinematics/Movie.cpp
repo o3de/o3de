@@ -379,7 +379,7 @@ IAnimSequence* CMovieSystem::GetSequence(int i) const
 //////////////////////////////////////////////////////////////////////////
 int CMovieSystem::GetNumSequences() const
 {
-    return m_sequences.size();
+    return static_cast<int>(m_sequences.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -398,7 +398,7 @@ IAnimSequence* CMovieSystem::GetPlayingSequence(int i) const
 //////////////////////////////////////////////////////////////////////////
 int CMovieSystem::GetNumPlayingSequences() const
 {
-    return m_playingSequences.size();
+    return static_cast<int>(m_playingSequences.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -410,7 +410,7 @@ void CMovieSystem::AddSequence(IAnimSequence* sequence)
 //////////////////////////////////////////////////////////////////////////
 bool CMovieSystem::IsCutScenePlaying() const
 {
-    const uint numPlayingSequences = m_playingSequences.size();
+    const uint numPlayingSequences = static_cast<uint>(m_playingSequences.size());
     for (uint i = 0; i < numPlayingSequences; ++i)
     {
         const IAnimSequence* pAnimSequence = m_playingSequences[i].sequence.get();
