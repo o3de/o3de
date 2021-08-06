@@ -22,7 +22,7 @@ class BenchmarkDataAggregator(object):
     def __init__(self, workspace, logger, test_suite):
         self.build_dir = workspace.paths.build_directory()
         self.results_dir = Path(workspace.paths.project(), 'user/Scripts/PerformanceBenchmarks')
-        self.test_suite = test_suite if os.environ.get('CI') else 'local'
+        self.test_suite = test_suite if os.environ.get('BUILD_NUMBER') else 'local'
         self.filebeat_client = FilebeatClient(logger)
 
     def _update_pass(self, pass_stats, entry):
