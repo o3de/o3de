@@ -18,30 +18,76 @@ class BenchmarkPathException(Exception):
     """Custom Exception class for invalid benchmark file paths."""
     pass
 
+class RunningStatistics(object):
+    def __init__(self):
+        '''
+        Initializes a helper class for calculating running statstics.
+        '''
+        self.count = 0
+        self.total = 0
+        self.max = 0
+        self.min = float('inf')
+
+    def update(self, value):
+        '''
+        Updates the statistics with a new value.
+
+        :param value: The new value to update the statistics with.
+        '''
+        self.total += value
+        self.count += 1
+        self.max = max(value, self.max)
+        self.min = min(value, self.min)
+
+    def getAvg(self):
+        '''
+        Returns the average of the running values.
+        '''
+        return self.total / self.count
+
+    def getMax(self):
+        '''
+        Returns the maximum of the running values.
+        '''
+        return self.max
+
+    def getMin(self):
+        '''
+        Returns the minimum of the running values.
+        '''
+        return self.min
+
+    def getCount(self):
+        return self.count
+
 class BenchmarkDataAggregator(object):
     def __init__(self, workspace, logger, test_suite):
+        '''
+        Initializes an aggregator for benchmark data.
+
+        :param workspace: Workspace of the test suite the benchmark was run in
+        :param logger: Logger used by the test suite the benchmark was run in
+        :param test_suite: Name of the test suite the benchmark was run in
+        '''
         self.build_dir = workspace.paths.build_directory()
         self.results_dir = Path(workspace.paths.project(), 'user/Scripts/PerformanceBenchmarks')
         self.test_suite = test_suite if os.environ.get('CI') else 'local'
         self.filebeat_client = FilebeatClient(logger)
 
-    def _update_pass(self, pass_stats, entry):
+    def _update_pass(self, gpu_pass_stats, entry):
         '''
-        Modifies pass_stats dict keyed by pass name with the time recorded in a pass timestamp entry.
+        Modifies gpu_pass_stats dict keyed by pass name with the time recorded in a pass timestamp entry.
 
-        :param pass_stats: dict aggregating statistics from each pass (key: pass name, value: dict with stats)
+        :param gpu_pass_stats: dict aggregating statistics from each pass (key: pass name, value: dict with stats)
         :param entry: dict representing the timestamp entry of a pass
         :return: Time (in nanoseconds) recorded by this pass
         '''
         name = entry['passName']
         time_ns = entry['timestampResultInNanoseconds']
-        pass_entry = pass_stats.get(name, { 'totalTime': 0, 'maxTime': 0 })
-
-        pass_entry['maxTime'] = max(time_ns, pass_entry['maxTime'])
-        pass_entry['totalTime'] += time_ns
-        pass_stats[name] = pass_entry
+        pass_entry = gpu_pass_stats.get(name, RunningStatistics())
+        pass_entry.update(time_ns)
+        gpu_pass_stats[name] = pass_entry
         return time_ns
-
 
     def _process_benchmark(self, benchmark_dir, benchmark_metadata):
         '''
@@ -50,8 +96,8 @@ class BenchmarkDataAggregator(object):
         :param benchmark_dir: Path of directory containing the benchmark results
         :param benchmark_metadata: Dict with benchmark metadata mutated with additional info from metadata file
         :return: Tuple with two indexes:
-            [0]: Dict aggregating statistics from frame times (key: stat name)
-            [1]: Dict aggregating statistics from pass times (key: pass name, value: dict with stats)
+            [0]: RunningStatistics for GPU frame times
+            [1]: Dict aggregating statistics from GPU pass times (key: pass name, value: RunningStatistics)
         '''
         # Parse benchmark metadata
         metadata_file = benchmark_dir / 'benchmark_metadata.json'
@@ -62,39 +108,36 @@ class BenchmarkDataAggregator(object):
             raise BenchmarkPathException(f'Metadata file could not be found at {metadata_file}')
 
         # data structures aggregating statistics from timestamp logs
-        frame_stats = { 'count': 0, 'totalTime': 0, 'maxTime': 0, 'minTime': float('inf') }
-        pass_stats = {}  # key: pass name, value: dict with totalTime and maxTime keys
+        gpu_frame_stats = RunningStatistics()
+        gpu_pass_stats = {}  # key: pass name, value: RunningStatistics
 
         # this allows us to add additional data if necessary, e.g. frame_test_timestamps.json
         is_timestamp_file = lambda file: file.name.startswith('frame') and file.name.endswith('_timestamps.json')
 
         # parse benchmark files
         for file in benchmark_dir.iterdir():
-            if file.is_dir() or not is_timestamp_file(file):
+            if file.is_dir():
                 continue
 
-            data = json.loads(file.read_text())
-            entries = data['ClassData']['timestampEntries']
+            if is_timestamp_file(file):
+                data = json.loads(file.read_text())
+                entries = data['ClassData']['timestampEntries']
 
-            frame_time = sum(self._update_pass(pass_stats, entry) for entry in entries)
+                frame_time = sum(self._update_pass(gpu_pass_stats, entry) for entry in entries)
+                gpu_frame_stats.update(frame_time)
 
-            frame_stats['totalTime'] += frame_time
-            frame_stats['maxTime'] = max(frame_time, frame_stats['maxTime'])
-            frame_stats['minTime'] = min(frame_time, frame_stats['minTime'])
-            frame_stats['count'] += 1
-
-        if frame_stats['count'] < 1:
+        if gpu_frame_stats.getCount() < 1:
             raise BenchmarkPathException(f'No frame timestamp logs were found in {benchmark_dir}')
 
-        return frame_stats, pass_stats
+        return gpu_frame_stats, gpu_pass_stats
 
-    def _generate_payloads(self, benchmark_metadata, frame_stats, pass_stats):
+    def _generate_payloads(self, benchmark_metadata, gpu_frame_stats, gpu_pass_stats):
         '''
         Generates payloads to send to Filebeat based on aggregated stats and metadata.
 
         :param benchmark_metadata: Dict of benchmark metadata
-        :param frame_stats: Dict of aggregated frame statistics
-        :param pass_stats: Dict of aggregated pass statistics
+        :param gpu_frame_stats: Dict of aggregated frame statistics
+        :param gpu_pass_stats: Dict of aggregated pass statistics
         :return payloads: List of tuples, each with two indexes:
             [0]: Elasticsearch index suffix associated with the payload
             [1]: Payload dict to deliver to Filebeat
@@ -103,33 +146,29 @@ class BenchmarkDataAggregator(object):
         payloads = []
 
         # calculate statistics based on aggregated frame data
-        frame_time_avg = frame_stats['totalTime'] / frame_stats['count']
-        frame_payload = {
+        gpu_frame_payload = {
             'frameTime': {
-                'avg': ns_to_ms(frame_time_avg),
-                'max': ns_to_ms(frame_stats['maxTime']),
-                'min': ns_to_ms(frame_stats['minTime'])
+                'avg': ns_to_ms(gpu_frame_stats.getAvg()),
+                'max': ns_to_ms(gpu_frame_stats.getMax()),
+                'min': ns_to_ms(gpu_frame_stats.getMin())
             }
         }
         # add benchmark metadata to payload
-        frame_payload.update(benchmark_metadata)
-        payloads.append(('frame_data', frame_payload))
+        gpu_frame_payload.update(benchmark_metadata)
+        payloads.append(('gpu.frame_data', gpu_frame_payload))
 
         # calculate statistics for each pass
-        for name, stat in pass_stats.items():
-            avg_ms = ns_to_ms(stat['totalTime'] / frame_stats['count'])
-            max_ms = ns_to_ms(stat['maxTime'])
-
-            pass_payload = {
+        for name, stat in gpu_pass_stats.items():
+            gpu_pass_payload = {
                 'passName': name,
                 'passTime': {
-                    'avg': avg_ms,
-                    'max': max_ms
+                    'avg': ns_to_ms(stat.getAvg()),
+                    'max': ns_to_ms(stat.getMax())
                 }
             }
             # add benchmark metadata to payload
-            pass_payload.update(benchmark_metadata)
-            payloads.append(('pass_data', pass_payload))
+            gpu_pass_payload.update(benchmark_metadata)
+            payloads.append(('gpu.pass_data', gpu_pass_payload))
 
         return payloads
 
@@ -153,8 +192,8 @@ class BenchmarkDataAggregator(object):
                 'gitCommitAndBuildDate': f'{git_commit_hash} {build_date}',
                 'RHI': rhi
             }
-            frame_stats, pass_stats = self._process_benchmark(benchmark_dir, benchmark_metadata)
-            payloads = self._generate_payloads(benchmark_metadata, frame_stats, pass_stats)
+            gpu_frame_stats, gpu_pass_stats = self._process_benchmark(benchmark_dir, benchmark_metadata)
+            payloads = self._generate_payloads(benchmark_metadata, gpu_frame_stats, gpu_pass_stats)
 
             for index_suffix, payload in payloads:
                 self.filebeat_client.send_event(
