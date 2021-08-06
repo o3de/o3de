@@ -66,7 +66,7 @@ CAnimSequence::CAnimSequence()
 CAnimSequence::~CAnimSequence()
 {
     // clear reference to me from all my nodes
-    for (int i = m_nodes.size(); --i >= 0;)
+    for (int i = static_cast<int>(m_nodes.size()); --i >= 0;)
     {
         if (m_nodes[i])
         {
@@ -181,7 +181,7 @@ const IAnimSequence* CAnimSequence::GetParentSequence() const
 //////////////////////////////////////////////////////////////////////////
 int CAnimSequence::GetNodeCount() const
 {
-    return m_nodes.size();
+    return static_cast<int>(m_nodes.size());
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -102,7 +102,7 @@ namespace Camera
 
         int CameraListModel::rowCount([[maybe_unused]] const QModelIndex& parent) const
         {
-            return m_cameraItems.size();
+            return static_cast<int>(m_cameraItems.size());
         }
 
         QVariant CameraListModel::data(const QModelIndex& index, int role) const

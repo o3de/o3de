@@ -803,7 +803,7 @@ void SandboxIntegrationManager::SetupLayerContextMenu(QMenu* menu)
 
     menu->addSeparator();
 
-    const int selectedLayerCount = layersInSelection.size();
+    const int selectedLayerCount = static_cast<int>(layersInSelection.size());
     QString saveTitle = QObject::tr("Save layer");
     if(selectedLayerCount > 1)
     {

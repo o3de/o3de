@@ -92,7 +92,7 @@ void UiTextComponentOffsetsSelector::ParseBatchLine(const UiTextComponent::DrawB
         // on the same line or not.
         else if (!lastIndexFound)
         {
-            int substrLength = drawBatch.text.length() - firstIndexLineIndex;
+            int substrLength = static_cast<int>(drawBatch.text.length() - firstIndexLineIndex);
             AZStd::string curSubstring(drawBatch.text.substr(firstIndexLineIndex, substrLength));
             curLineWidth += drawBatch.font->GetTextSize(curSubstring.c_str(), false, m_fontContext).x;
             lineOffsetsStack.top()->right.SetX(AZStd::GetMax<float>(lineOffsetsStack.top()->right.GetX(), curLineWidth));

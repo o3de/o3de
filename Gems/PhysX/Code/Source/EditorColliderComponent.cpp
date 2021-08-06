@@ -188,7 +188,7 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXCollider.svg")
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/PhysXCollider.svg")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
-                    ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx-collider/")
+                    ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx/collider/")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorColliderComponent::m_configuration, "Collider Configuration", "Configuration of the collider")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
@@ -780,7 +780,7 @@ namespace PhysX
                 entityRigidbody->GetRigidBody()->IsKinematic() == false)
             {
                 AZStd::string assetPath = m_shapeConfiguration.m_physicsAsset.m_configuration.m_asset.GetHint().c_str();
-                const uint lastSlash = assetPath.rfind('/');
+                const uint lastSlash = static_cast<uint>(assetPath.rfind('/'));
                 if (lastSlash != AZStd::string::npos)
                 {
                     assetPath = assetPath.substr(lastSlash + 1);
@@ -831,7 +831,7 @@ namespace PhysX
 
                 if (shapeConfiguration)
                 {
-                    m_colliderDebugDraw.BuildMeshes(*shapeConfiguration, shapeIndex);
+                    m_colliderDebugDraw.BuildMeshes(*shapeConfiguration, static_cast<AZ::u32>(shapeIndex));
                 }
             }
         }
@@ -917,7 +917,7 @@ namespace PhysX
                 const AZ::Vector3 overallScale = Utils::GetTransformScale(GetEntityId()) * m_cachedNonUniformScale * assetScale;
 
                 m_colliderDebugDraw.DrawMesh(debugDisplay, *colliderConfiguration, *cookedMeshShapeConfiguration,
-                    overallScale, shapeIndex);
+                    overallScale, static_cast<AZ::u32>(shapeIndex));
                 break;
             }
             case Physics::ShapeType::Sphere:

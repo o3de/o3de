@@ -105,7 +105,7 @@ public:
     bool IsEmpty() const;
 
     //! Get number of contained error records.
-    int GetErrorCount() const { return m_errors.size(); };
+    int GetErrorCount() const { return static_cast<int>(m_errors.size()); };
     //! Get access to indexed error record.
     CErrorRecord& GetError(int i);
     //! Clear all error records.

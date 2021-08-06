@@ -198,7 +198,7 @@ void ReflectedPropertyControl::CreateItems(XmlNodeRef node)
 
 void ReflectedPropertyControl::CreateItems(XmlNodeRef node, CVarBlockPtr& outBlockPtr, IVariable::OnSetCallback* func, bool splitCamelCaseIntoWords)
 {
-    SelectItem(0);
+    SelectItem(nullptr);
 
     outBlockPtr = new CVarBlock;
     for (size_t i = 0, iGroupCount(node->getChildCount()); i < iGroupCount; ++i)
@@ -505,7 +505,7 @@ void ReflectedPropertyControl::RemoveAllItems()
 void ReflectedPropertyControl::ClearVarBlock()
 {
     RemoveAllItems();
-    m_pVarBlock = 0;
+    m_pVarBlock = nullptr;
 }
 
 void ReflectedPropertyControl::RecreateAllItems()
@@ -688,11 +688,11 @@ void ReflectedPropertyControl::OnItemChange(ReflectedPropertyItem *item, bool de
     // callback until after the current event queue is processed, so that we aren't changing other widgets
     // as a ton of them are still being created.
     Qt::ConnectionType connectionType = deferCallbacks ? Qt::QueuedConnection : Qt::DirectConnection;
-    if (m_updateVarFunc != 0 && m_bEnableCallback)
+    if (m_updateVarFunc && m_bEnableCallback)
     {
         QMetaObject::invokeMethod(this, "DoUpdateCallback", connectionType, Q_ARG(IVariable*, item->GetVariable()));
     }
-    if (m_updateObjectFunc != 0 && m_bEnableCallback)
+    if (m_updateObjectFunc && m_bEnableCallback)
     {
         // KDAB: This callback has same signature as DoUpdateCallback. I think the only reason there are 2 is because some
         // EntityObject registers callback and some derived objects want to register their own callback. the normal UpdateCallback
@@ -709,7 +709,7 @@ void ReflectedPropertyControl::DoUpdateCallback(IVariable *var)
     const bool variableStillExists = FindVariable(var);
     AZ_Assert(variableStillExists, "This variable and the item containing it were destroyed during a deferred callback. Change to non-deferred callback.");
 
-    if (m_updateVarFunc == 0 || !variableStillExists)
+    if (!m_updateVarFunc || !variableStillExists)
     {
         return;
     }
@@ -724,7 +724,7 @@ void ReflectedPropertyControl::DoUpdateObjectCallback(IVariable *var)
     const bool variableStillExists = FindVariable(var);
     AZ_Assert(variableStillExists, "This variable and the item containing it were destroyed during a deferred callback. Change to non-deferred callback.");
 
-    if (m_updateVarFunc == 0 || !variableStillExists)
+    if ( !m_updateVarFunc || !variableStillExists)
     {
         return;
     }
@@ -904,7 +904,7 @@ void ReflectedPropertyControl::SetUndoCallback(UndoCallback &callback)
 
 void ReflectedPropertyControl::ClearUndoCallback()
 {
-    m_undoFunc = 0;
+    m_undoFunc = nullptr;
 }
 
 bool ReflectedPropertyControl::FindVariable(IVariable *categoryItem) const

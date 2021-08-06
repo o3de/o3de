@@ -88,7 +88,7 @@ public:
     }
 
 public:
-    void Initialize(const QString& path, IFileUtil::ScanDirectoryUpdateCallBack updateCB = NULL);
+    void Initialize(const QString& path, IFileUtil::ScanDirectoryUpdateCallBack updateCB = nullptr);
 
     // Adds a new file to the database.
     void AddFile(const IFileUtil::FileDesc& path);

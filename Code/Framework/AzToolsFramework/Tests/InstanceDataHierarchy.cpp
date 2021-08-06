@@ -1285,7 +1285,7 @@ namespace UnitTest
             Crc32 uiHandler = 0;
             EXPECT_EQ(it->ReadAttribute(AZ::Edit::UIHandlers::Handler, uiHandler), true);
             EXPECT_EQ(uiHandler, AZ_CRC("TestHandler"));
-            EXPECT_EQ(it->GetElementMetadata()->m_name, "UIElement");
+            EXPECT_STREQ(it->GetElementMetadata()->m_name, "UIElement");
             EXPECT_EQ(it->GetElementMetadata()->m_nameCrc, AZ_CRC("UIElement"));
 
             uiHandler = 0;
@@ -1293,7 +1293,7 @@ namespace UnitTest
             ++it;
             EXPECT_EQ(it->ReadAttribute(AZ::Edit::UIHandlers::Handler, uiHandler), true);
             EXPECT_EQ(uiHandler, AZ_CRC("TestHandler2"));
-            EXPECT_EQ(it->GetElementMetadata()->m_name, "UIElement2");
+            EXPECT_STREQ(it->GetElementMetadata()->m_name, "UIElement2");
             EXPECT_EQ(it->GetElementMetadata()->m_nameCrc, AZ_CRC("UIElement2"));
         }
     };
@@ -1356,21 +1356,21 @@ namespace UnitTest
 
                 auto it = children.begin();
 
-                EXPECT_EQ(it->GetElementMetadata()->m_name, "aggregatedDataElement");
+                EXPECT_STREQ(it->GetElementMetadata()->m_name, "aggregatedDataElement");
                 ++it;
 
                 if (i == 0)
                 {
-                    EXPECT_EQ(it->GetElementMetadata()->m_name, "notAggregatedDataElement");
+                    EXPECT_STREQ(it->GetElementMetadata()->m_name, "notAggregatedDataElement");
                     ++it;
                 }
 
-                EXPECT_EQ(it->GetElementMetadata()->m_name, "aggregatedUIElement");
+                EXPECT_STREQ(it->GetElementMetadata()->m_name, "aggregatedUIElement");
                 ++it;
 
                 if (i == 0)
                 {
-                    EXPECT_EQ(it->GetElementMetadata()->m_name, "notAggregatedUIElement");
+                    EXPECT_STREQ(it->GetElementMetadata()->m_name, "notAggregatedUIElement");
                     ++it;
                 }
             }
@@ -1511,6 +1511,7 @@ namespace UnitTest
             {
                 EXPECT_EQ(strcmp(child.GetGroupElementMetadata()->m_description, "Group Toggle"), 0);
             }
+
             if ((childName.compare("SubDataNormal") == 0) || (childName.compare("SubDataToggle") == 0))
             {
                 for (auto subChild : child.GetChildren())
@@ -1552,7 +1553,7 @@ namespace UnitTest
             AZStd::string childName(child.GetElementMetadata()->m_name);
             if (childName.compare(paramName) == 0)
             {
-                EXPECT_EQ(child.GetParent()->GetClassMetadata()->m_name, "GroupTestComponent");
+                EXPECT_STREQ(child.GetParent()->GetClassMetadata()->m_name, "GroupTestComponent");
             }
             if ((childName.compare("SubDataNormal") == 0) || (childName.compare("SubDataToggle") == 0))
             {
@@ -1561,7 +1562,7 @@ namespace UnitTest
                     childName = subChild.GetElementMetadata()->m_name;
                     if (childName.compare(paramName) == 0)
                     {
-                        EXPECT_EQ(subChild.GetParent()->GetClassMetadata()->m_name, "SubData");
+                        EXPECT_STREQ(subChild.GetParent()->GetClassMetadata()->m_name, "SubData");
                     }
                 }
             }
