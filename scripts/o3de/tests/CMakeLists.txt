@@ -26,6 +26,13 @@ ly_add_pytest(
 )
 
 ly_add_pytest(
+    NAME o3de_enable_gem
+    PATH ${CMAKE_CURRENT_LIST_DIR}/unit_test_enable_gem.py
+    TEST_SUITE smoke
+    EXCLUDE_TEST_RUN_TARGET_FROM_IDE
+)
+
+ly_add_pytest(
     NAME o3de_global_project
     PATH ${CMAKE_CURRENT_LIST_DIR}/unit_test_global_project.py
     TEST_SUITE smoke

@@ -48,7 +48,7 @@ static inline int Vscprintf(const char* format, va_list argList)
     int retval;
     va_list argcopy;
     va_copy(argcopy, argList);
-    retval = azvsnprintf(NULL, 0, format, argcopy);
+    retval = azvsnprintf(nullptr, 0, format, argcopy);
     va_end(argcopy);
     return retval;
 #else
@@ -64,7 +64,7 @@ static inline int Vscprintf(const wchar_t* format, va_list argList)
     int retval;
     va_list argcopy;
     va_copy(argcopy, argList);
-    retval = azvsnwprintf(NULL, 0, format, argcopy);
+    retval = azvsnwprintf(nullptr, 0, format, argcopy);
     va_end(argcopy);
     return retval;
 #else
@@ -408,9 +408,9 @@ bool StringHelpers::MatchesWildcardsIgnoreCase(const wstring& str, const wstring
 template <class TS>
 static inline bool MatchesWildcardsIgnoreCaseExt_Tpl(const TS& str, const TS& wildcards, std::vector<TS>& wildcardMatches)
 {
-    const typename TS::value_type* savedStrBegin = 0;
-    const typename TS::value_type* savedStrEnd = 0;
-    const typename TS::value_type* savedWild = 0;
+    const typename TS::value_type* savedStrBegin = nullptr;
+    const typename TS::value_type* savedStrEnd = nullptr;
+    const typename TS::value_type* savedWild = nullptr;
     size_t savedWildCount = 0;
 
     const typename TS::value_type* pStr = str.c_str();
@@ -775,7 +775,7 @@ void StringHelpers::SplitByAnyOf(const wstring& str, const wstring& separators, 
 template <class TS>
 static inline TS FormatVA_Tpl(const typename TS::value_type* const format, va_list parg)
 {
-    if ((format == 0) || (format[0] == 0))
+    if ((format == nullptr) || (format[0] == 0))
     {
         return TS();
     }
@@ -935,8 +935,8 @@ static string ConvertUtf16ToMultibyte(const wchar_t* wstr, uint codePage, char b
             len,
             0,
             0,
-            ((badChar && codePage != CP_UTF8) ? &badChar : NULL),
-            NULL);
+            ((badChar && codePage != CP_UTF8) ? &badChar : nullptr),
+            nullptr);
     if (neededByteCount <= 0)
     {
         return string();
@@ -952,8 +952,8 @@ static string ConvertUtf16ToMultibyte(const wchar_t* wstr, uint codePage, char b
             len,
             &buffer[0], // output buffer
             neededByteCount - 1, // size of the output buffer in bytes
-            ((badChar && codePage != CP_UTF8) ? &badChar : NULL),
-            NULL);
+            ((badChar && codePage != CP_UTF8) ? &badChar : nullptr),
+            nullptr);
     if (byteCount != neededByteCount - 1)
     {
         return string();

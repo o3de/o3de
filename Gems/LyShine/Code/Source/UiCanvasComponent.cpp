@@ -717,7 +717,7 @@ AZStd::string UiCanvasComponent::GetUniqueChildName(AZ::EntityId parentEntityId,
 
     // Count trailing digits in base name
     int i;
-    for (i = baseName.length() - 1; i >= 0; i--)
+    for (i = static_cast<int>(baseName.length() - 1); i >= 0; i--)
     {
         if (!isdigit(baseName[i]))
         {
@@ -725,7 +725,7 @@ AZStd::string UiCanvasComponent::GetUniqueChildName(AZ::EntityId parentEntityId,
         }
     }
     int startDigitIndex = i + 1;
-    int numDigits = baseName.length() - startDigitIndex;
+    int numDigits = static_cast<int>(baseName.length() - startDigitIndex);
 
     int suffix = 1;
     if (numDigits > 0)
@@ -749,7 +749,7 @@ AZStd::string UiCanvasComponent::GetUniqueChildName(AZ::EntityId parentEntityId,
         AZStd::string suffixString = AZStd::string::format("%d", suffix);
 
         // Append leading zeros
-        int numLeadingZeros = (suffixString.length() < numDigits) ? numDigits - suffixString.length() : 0;
+        int numLeadingZeros = static_cast<int>((suffixString.length() < numDigits) ? numDigits - suffixString.length() : 0);
         for (int zeroes = 0; zeroes < numLeadingZeros; zeroes++)
         {
             proposedChildName.push_back('0');
@@ -2049,7 +2049,7 @@ void UiCanvasComponent::GetDebugInfoNumElements(DebugInfoNumElements& info) cons
     info.m_numMaskElements = 0;
     info.m_numFaderElements = 0;
     info.m_numInteractableElements = 0;
-    info.m_numUpdateElements = UiCanvasUpdateNotificationBus::GetNumOfEventHandlers(GetEntityId());
+    info.m_numUpdateElements = static_cast<int>(UiCanvasUpdateNotificationBus::GetNumOfEventHandlers(GetEntityId()));
 
     DebugInfoCountChildren(m_rootElement, true, info);
 }

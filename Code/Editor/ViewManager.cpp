@@ -52,7 +52,7 @@ CViewManager::CViewManager()
     m_updateRegion.min = Vec3(-100000, -100000, -100000);
     m_updateRegion.max = Vec3(100000, 100000, 100000);
 
-    m_pSelectedView = NULL;
+    m_pSelectedView = nullptr;
 
     m_nGameViewports = 0;
     m_bGameViewportsUpdated = false;
@@ -107,7 +107,7 @@ void CViewManager::UnregisterViewport(CViewport* pViewport)
 {
     if (m_pSelectedView == pViewport)
     {
-        m_pSelectedView = NULL;
+        m_pSelectedView = nullptr;
     }
     stl::find_and_erase(m_viewports, pViewport);
     m_bGameViewportsUpdated = false;
@@ -127,7 +127,7 @@ CViewport* CViewManager::GetViewport(EViewportType type) const
             return m_viewports[i];
         }
     }
-    return 0;
+    return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -140,7 +140,7 @@ CViewport* CViewManager::GetViewport(const QString& name) const
             return m_viewports[i];
         }
     }
-    return 0;
+    return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -224,7 +224,7 @@ void CViewManager::SelectViewport(CViewport* pViewport)
 {
     // Audio: Handle viewport change for listeners
 
-    if (m_pSelectedView != NULL && m_pSelectedView != pViewport)
+    if (m_pSelectedView != nullptr && m_pSelectedView != pViewport)
     {
         m_pSelectedView->SetSelected(false);
 
@@ -232,7 +232,7 @@ void CViewManager::SelectViewport(CViewport* pViewport)
 
     m_pSelectedView = pViewport;
 
-    if (m_pSelectedView != NULL)
+    if (m_pSelectedView != nullptr)
     {
         m_pSelectedView->SetSelected(true);
     }

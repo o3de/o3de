@@ -72,15 +72,8 @@ namespace AzToolsFramework
 
         if (m_rootInstance != nullptr)
         {
-            // Need to save off the template id to remove the template after the instance is deleted.
-            Prefab::TemplateId templateId = m_rootInstance->GetTemplateId();
             m_rootInstance.reset();
-            if (templateId != Prefab::InvalidTemplateId)
-            {
-                // Remove the template here so that if we're in a Deactivate/Activate cycle, it can recreate the template/rootInstance
-                // correctly
-                m_prefabSystemComponent->RemoveTemplate(templateId);
-            }
+            m_prefabSystemComponent->RemoveAllTemplates();
         }
     }
 
@@ -95,7 +88,7 @@ namespace AzToolsFramework
             if (templateId != Prefab::InvalidTemplateId)
             {
                 m_rootInstance->SetTemplateId(Prefab::InvalidTemplateId);
-                m_prefabSystemComponent->RemoveTemplate(templateId);
+                m_prefabSystemComponent->RemoveAllTemplates();
             }
             m_rootInstance->SetContainerEntityName("Level");
         }

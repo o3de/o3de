@@ -546,7 +546,7 @@ bool CAxisHelper::HitTestForRotationCircle(const Matrix34& worldTM, IDisplayView
     Vec3 vShortestHitPos;
     float shortestDist = 3e11f;
 
-    for (int i = 0, iCount(vList.size()); i < iCount; ++i)
+    for (int i = 0, iCount(static_cast<int>(vList.size())); i < iCount; ++i)
     {
         const Vec3& v0 = vList[i];
         const Vec3& v1 = vList[(i + 1) % iCount];

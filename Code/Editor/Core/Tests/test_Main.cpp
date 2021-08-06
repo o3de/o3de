@@ -26,7 +26,7 @@ class EditorCoreTestEnvironment
 public:
     AZ_TEST_CLASS_ALLOCATOR(EditorCoreTestEnvironment);
 
-    virtual ~EditorCoreTestEnvironment()
+    ~EditorCoreTestEnvironment() override
     {
     }
 

@@ -33,6 +33,7 @@
                     LogoFile="$(var.CPACK_WIX_PRODUCT_LOGO)"
                     ThemeFile="$(var.CPACK_BOOTSTRAP_THEME_FILE).xml"
                     LocalizationFile="$(var.CPACK_BOOTSTRAP_THEME_FILE).wxl"
+                    ShowFilesInUse="yes"
                     ShowVersion="yes" />
 
                 <PayloadGroupRef Id="Images"/>
@@ -44,6 +45,7 @@
                     LogoFile="$(var.CPACK_WIX_PRODUCT_LOGO)"
                     ThemeFile="$(var.CPACK_BOOTSTRAP_THEME_FILE).xml"
                     LocalizationFile="$(var.CPACK_BOOTSTRAP_THEME_FILE).wxl"
+                    ShowFilesInUse="yes"
                     ShowVersion="yes" />
 
                 <PayloadGroupRef Id="Images"/>

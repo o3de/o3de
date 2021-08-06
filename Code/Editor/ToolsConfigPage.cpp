@@ -109,7 +109,7 @@ private:
     QStringList m_iconFiles;
 };
 
-CIconListDialog::CIconListDialog(QWidget* pParent /* = NULL */)
+CIconListDialog::CIconListDialog(QWidget* pParent /* = nullptr */)
     : QDialog(pParent)
     , m_ui(new Ui::IconListDialog)
 {
@@ -498,7 +498,7 @@ CToolsConfigPage::CToolsConfigPage(QWidget* parent)
             QKeySequence shortcut(value);
             m_ui->m_macroShortcutKey->setKeySequence(shortcut);
         }
-        
+
         if (m_ui->m_macroShortcutKey->keySequence().count() >= 1)
         {
             m_ui->m_assignShortcut->setEnabled(true);
@@ -703,7 +703,7 @@ void CToolsConfigPage::OnAssignMacroShortcut()
 {
     auto pShortcutMgr = MainWindow::instance()->GetShortcutManager();
 
-    if (pShortcutMgr  == NULL)
+    if (pShortcutMgr  == nullptr)
     {
         return;
     }

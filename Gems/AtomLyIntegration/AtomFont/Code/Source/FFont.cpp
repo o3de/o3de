@@ -331,7 +331,7 @@ void AZ::FFont::DrawStringUInternal(
             m_vertexBuffer[vertexOffset + 3].color.dcolor = packedColor;
             m_vertexBuffer[vertexOffset + 3].st = tc3;
 
-            uint16_t startingIndex = vertexOffset - startingVertexCount;
+            uint16_t startingIndex = static_cast<uint16_t>(vertexOffset - startingVertexCount);
             m_indexBuffer[indexOffset + 0] = startingIndex + 0;
             m_indexBuffer[indexOffset + 1] = startingIndex + 1;
             m_indexBuffer[indexOffset + 2] = startingIndex + 2;
@@ -697,12 +697,12 @@ uint32_t AZ::FFont::WriteTextQuadsToBuffers(SVF_P2F_C4B_T2F_F4B* verts, uint16_t
                 vertexData[vertexOffset + 3].texIndex2 = 0;
                 vertexData[vertexOffset + 3].pad = 0;
 
-                indexData[indexOffset + 0] = vertexOffset + 0;
-                indexData[indexOffset + 1] = vertexOffset + 1;
-                indexData[indexOffset + 2] = vertexOffset + 2;
-                indexData[indexOffset + 3] = vertexOffset + 2;
-                indexData[indexOffset + 4] = vertexOffset + 3;
-                indexData[indexOffset + 5] = vertexOffset + 0;
+                indexData[indexOffset + 0] = static_cast<uint16_t>(vertexOffset + 0);
+                indexData[indexOffset + 1] = static_cast<uint16_t>(vertexOffset + 1);
+                indexData[indexOffset + 2] = static_cast<uint16_t>(vertexOffset + 2);
+                indexData[indexOffset + 3] = static_cast<uint16_t>(vertexOffset + 2);
+                indexData[indexOffset + 4] = static_cast<uint16_t>(vertexOffset + 3);
+                indexData[indexOffset + 5] = static_cast<uint16_t>(vertexOffset + 0);
 
                 vertexOffset += 4;
                 indexOffset += 6;
@@ -1331,7 +1331,7 @@ unsigned int AZ::FFont::GetEffectId(const char* effectName) const
         {
             if (!strcmp(m_effects[i].m_name.c_str(), effectName))
             {
-                return i;
+                return static_cast<unsigned int>(i);
             }
         }
     }
@@ -1341,7 +1341,7 @@ unsigned int AZ::FFont::GetEffectId(const char* effectName) const
 
 unsigned int AZ::FFont::GetNumEffects() const
 {
-    return m_effects.size();
+    return static_cast<unsigned int>(m_effects.size());
 }
 
 const char* AZ::FFont::GetEffectName(unsigned int effectId) const

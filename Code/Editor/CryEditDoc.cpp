@@ -110,21 +110,12 @@ namespace Internal
 // CCryEditDoc construction/destruction
 
 CCryEditDoc::CCryEditDoc()
-    : doc_validate_surface_types(0)
+    : doc_validate_surface_types(nullptr)
     , m_modifiedModuleFlags(eModifiedNothing)
-    // It assumes loaded levels have already been exported. Can be a big fat lie, though.
-    // The right way would require us to save to the level folder the export status of the
-    // level.
-    , m_boLevelExported(true)
-    , m_modified(false)
-    , m_envProbeHeight(200.0f)
-    , m_envProbeSliceRelativePath("EngineAssets/Slices/DefaultLevelSetup.slice")
 {
     ////////////////////////////////////////////////////////////////////////
     // Set member variables to initial values
     ////////////////////////////////////////////////////////////////////////
-    m_bLoadFailed = false;
-    m_waterColor = QColor(0, 0, 255);
 
     m_fogTemplate = GetIEditor()->FindTemplate("Fog");
     m_environmentTemplate = GetIEditor()->FindTemplate("Environment");
@@ -138,7 +129,6 @@ CCryEditDoc::CCryEditDoc()
         m_environmentTemplate = XmlHelpers::CreateXmlNode("Environment");
     }
 
-    m_bDocumentReady = false;
     GetIEditor()->SetDocument(this);
     CLogFile::WriteLine("Document created");
     RegisterConsoleVariables();
@@ -197,7 +187,7 @@ CCryEditDoc::DocumentEditingMode CCryEditDoc::GetEditMode() const
 
 QString CCryEditDoc::GetActivePathName() const
 {
-    return DocumentEditingMode() == CCryEditDoc::DocumentEditingMode::SliceEdit ? GetSlicePathName() : GetLevelPathName();
+    return GetEditMode() == CCryEditDoc::DocumentEditingMode::SliceEdit ? GetSlicePathName() : GetLevelPathName();
 }
 
 QString CCryEditDoc::GetTitle() const
@@ -262,9 +252,9 @@ void CCryEditDoc::DeleteContents()
     GetIEditor()->FlushUndo();
 
     // Notify listeners.
-    for (std::list<IDocListener*>::iterator it = m_listeners.begin(); it != m_listeners.end(); ++it)
+    for (IDocListener* listener : m_listeners)
     {
-        (*it)->OnCloseDocument();
+        listener->OnCloseDocument();
     }
 
     GetIEditor()->ResetViews();
@@ -460,7 +450,7 @@ void CCryEditDoc::Load(TDocMultiArchive& arrXmlAr, const QString& szFilename)
             //////////////////////////////////////////////////////////////////////////
             // Load water color.
             //////////////////////////////////////////////////////////////////////////
-                (*arrXmlAr[DMAS_GENERAL]).root->getAttr("WaterColor", m_waterColor);
+            (*arrXmlAr[DMAS_GENERAL]).root->getAttr("WaterColor", m_waterColor);
 
             //////////////////////////////////////////////////////////////////////////
             // Load View Settings
@@ -509,9 +499,9 @@ void CCryEditDoc::Load(TDocMultiArchive& arrXmlAr, const QString& szFilename)
             CAutoLogTime logtime("Post Load");
 
             // Notify listeners.
-            for (std::list<IDocListener*>::iterator it = m_listeners.begin(); it != m_listeners.end(); ++it)
+            for (IDocListener* listener : m_listeners)
             {
-                (*it)->OnLoadDocument();
+                listener->OnLoadDocument();
             }
         }
 
@@ -710,7 +700,8 @@ bool CCryEditDoc::SaveModified()
         return true;
     }
 
-    auto button = QMessageBox::question(AzToolsFramework::GetActiveWindow(), QString(), tr("Save changes to %1?").arg(GetTitle()), QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+    auto button = QMessageBox::question(AzToolsFramework::GetActiveWindow(), QString(), tr("Save changes to %1?").arg(GetTitle()),
+        QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
     switch (button)
     {
     case QMessageBox::Cancel:
@@ -935,8 +926,7 @@ bool CCryEditDoc::OnSaveDocument(const QString& lpszPathName)
         }
 
         TSaveDocContext context;
-        if (shouldSaveLevel &&
-            BeforeSaveDocument(lpszPathName, context))
+        if (shouldSaveLevel && BeforeSaveDocument(lpszPathName, context))
         {
             DoSaveDocument(lpszPathName, context);
             saveSuccess = AfterSaveDocument(lpszPathName, context);
@@ -974,7 +964,7 @@ bool CCryEditDoc::BeforeSaveDocument(const QString& lpszPathName, TSaveDocContex
     return TRUE;
 }
 
-bool CCryEditDoc::HasLayerNameConflicts()
+bool CCryEditDoc::HasLayerNameConflicts() const
 {
     AZStd::vector<AZ::Entity*> editorEntities;
     AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
@@ -1006,43 +996,42 @@ bool CCryEditDoc::HasLayerNameConflicts()
 bool CCryEditDoc::DoSaveDocument(const QString& filename, TSaveDocContext& context)
 {
     bool& bSaved = context.bSaved;
-    if (bSaved)
+    if (!bSaved)
     {
-        // Paranoia - we shouldn't get this far into the save routine without a level loaded (empty levelPath)
-        // If nothing is loaded, we don't need to save anything
-        if (filename.isEmpty())
-        {
-            bSaved = false;
-        }
-        else
-        {
-            // Save Tag Point locations to file if auto save of tag points disabled
-            if (!gSettings.bAutoSaveTagPoints)
-            {
-                CCryEditApp::instance()->SaveTagLocations();
-            }
-
-            QString normalizedPath = Path::ToUnixPath(filename);
-            if (IsSliceFile(normalizedPath))
-            {
-                bSaved = SaveSlice(normalizedPath);
-            }
-            else
-            {
-                bSaved = SaveLevel(normalizedPath);
-            }
-
-            // Changes filename for this document.
-            SetPathName(normalizedPath);
-        }
+        return false;
+    }
+    // Paranoia - we shouldn't get this far into the save routine without a level loaded (empty levelPath)
+    // If nothing is loaded, we don't need to save anything
+    if (filename.isEmpty())
+    {
+        bSaved = false;
+        return false;
     }
 
+    // Save Tag Point locations to file if auto save of tag points disabled
+    if (!gSettings.bAutoSaveTagPoints)
+    {
+        CCryEditApp::instance()->SaveTagLocations();
+    }
+
+    QString normalizedPath = Path::ToUnixPath(filename);
+    if (IsSliceFile(normalizedPath))
+    {
+        bSaved = SaveSlice(normalizedPath);
+    }
+    else
+    {
+        bSaved = SaveLevel(normalizedPath);
+    }
+
+    // Changes filename for this document.
+    SetPathName(normalizedPath);
     return bSaved;
 }
 
 bool CCryEditDoc::AfterSaveDocument([[maybe_unused]] const QString& lpszPathName, TSaveDocContext& context, bool bShowPrompt)
 {
-    bool& bSaved = context.bSaved;
+    bool bSaved = context.bSaved;
 
     GetIEditor()->Notify(eNotify_OnEndSceneSave);
 
@@ -1069,8 +1058,7 @@ bool CCryEditDoc::AfterSaveDocument([[maybe_unused]] const QString& lpszPathName
 static void GetUserSettingsFile(const QString& levelFolder, QString& userSettings)
 {
     const char* pUserName = GetISystem()->GetUserName();
-    QString fileName;
-    fileName = QStringLiteral("%1_usersettings.editor_xml").arg(pUserName);
+    QString fileName = QStringLiteral("%1_usersettings.editor_xml").arg(pUserName);
     userSettings = Path::Make(levelFolder, fileName);
 }
 
@@ -1184,9 +1172,9 @@ bool CCryEditDoc::SaveLevel(const QString& filename)
                 }
 
                 QString oldFilePath = QDir(oldLevelFolder).absoluteFilePath(sourceName);
-                QString newFilePath = QDir(newLevelFolder).absoluteFilePath(sourceName);
+                QString newFilePath = QDir(newLevelFolder).absoluteFilePath(destName);
                 CFileUtil::CopyFile(oldFilePath, newFilePath);
-            } while (findHandle = pIPak->FindNext(findHandle));
+            } while ((findHandle = pIPak->FindNext(findHandle)));
             pIPak->FindClose(findHandle);
         }
 
@@ -1508,7 +1496,7 @@ bool CCryEditDoc::LoadEntitiesFromLevel(const QString& levelPakFile)
             {
                 AZStd::vector<char> fileBuffer;
                 fileBuffer.resize(entitiesFile.GetLength());
-                if (fileBuffer.size() > 0)
+                if (!fileBuffer.empty())
                 {
                     if (fileBuffer.size() == entitiesFile.ReadRaw(fileBuffer.begin(), fileBuffer.size()))
                     {
@@ -1912,7 +1900,7 @@ void CCryEditDoc::UnregisterListener(IDocListener* listener)
     m_listeners.remove(listener);
 }
 
-void CCryEditDoc::LogLoadTime(int time)
+void CCryEditDoc::LogLoadTime(int time) const
 {
     QString appFilePath = QDir::toNativeSeparators(QCoreApplication::applicationFilePath());
     QString exePath = Path::GetPath(appFilePath);
@@ -1924,21 +1912,18 @@ void CCryEditDoc::LogLoadTime(int time)
     SetFileAttributes(filename.toUtf8().data(), FILE_ATTRIBUTE_ARCHIVE);
 #endif
 
-    FILE* file = nullptr;
-    azfopen(&file, filename.toUtf8().data(), "at");
-
-    if (file)
+    QFile file(filename);
+    if (!file.open(QFile::Append | QFile::Text))
     {
-        char version[50];
-        GetIEditor()->GetFileVersion().ToShortString(version, AZ_ARRAY_SIZE(version));
-
-        QString text;
-
-        time = time / 1000;
-        text = QStringLiteral("\n[%1] Level %2 loaded in %3 seconds").arg(version, level).arg(time);
-        fwrite(text.toUtf8().data(), text.toUtf8().length(), 1, file);
-        fclose(file);
+        return;
     }
+
+    char version[50];
+    GetIEditor()->GetFileVersion().ToShortString(version, AZ_ARRAY_SIZE(version));
+
+    time = time / 1000;
+    QString text = QStringLiteral("\n[%1] Level %2 loaded in %3 seconds").arg(version, level).arg(time);
+    file.write(text.toUtf8());
 }
 
 void CCryEditDoc::SetDocumentReady(bool bReady)
@@ -1946,7 +1931,7 @@ void CCryEditDoc::SetDocumentReady(bool bReady)
     m_bDocumentReady = bReady;
 }
 
-void CCryEditDoc::GetMemoryUsage(ICrySizer* pSizer)
+void CCryEditDoc::GetMemoryUsage(ICrySizer* pSizer) const
 {
     {
         SIZER_COMPONENT_NAME(pSizer, "UndoManager(estimate)");
@@ -2070,12 +2055,9 @@ void CCryEditDoc::InitEmptyLevel(int /*resolution*/, int /*unitSize*/, bool /*bU
     {
         // Notify listeners.
         std::list<IDocListener*> listeners = m_listeners;
-        std::list<IDocListener*>::iterator it, next;
-        for (it = listeners.begin(); it != listeners.end(); it = next)
+        for (IDocListener* listener : listeners)
         {
-            next = it;
-            next++;
-            (*it)->OnNewDocument();
+            listener->OnNewDocument();
         }
     }
 
@@ -2136,25 +2118,23 @@ void CCryEditDoc::OnEnvironmentPropertyChanged(IVariable* pVar)
     {
         return;
     }
+    QString childValue;
 
     if (pVar->GetDataType() == IVariable::DT_COLOR)
     {
         Vec3 value;
         pVar->Get(value);
-        QString buff;
         QColor gammaColor = ColorLinearToGamma(ColorF(value.x, value.y, value.z));
-        buff = QStringLiteral("%1,%2,%3").arg(gammaColor.red()).arg(gammaColor.green()).arg(gammaColor.blue());
-        childNode->setAttr("value", buff.toUtf8().data());
+        childValue = QStringLiteral("%1,%2,%3").arg(gammaColor.red()).arg(gammaColor.green()).arg(gammaColor.blue());
     }
     else
     {
-        QString value;
-        pVar->Get(value);
-        childNode->setAttr("value", value.toUtf8().data());
+        pVar->Get(childValue);
     }
+    childNode->setAttr("value", childValue.toUtf8().data());
 }
 
-QString CCryEditDoc::GetCryIndexPath(const LPCTSTR levelFilePath)
+QString CCryEditDoc::GetCryIndexPath(const LPCTSTR levelFilePath) const
 {
     QString levelPath = Path::GetPath(levelFilePath);
     QString levelName = Path::GetFileName(levelFilePath);
@@ -2185,8 +2165,7 @@ BOOL CCryEditDoc::LoadXmlArchiveArray(TDocMultiArchive& arrXmlAr, const QString&
         }
 
         CPakFile pakFile;
-        bool loadFromPakSuccess;
-        loadFromPakSuccess = xmlAr.LoadFromPak(levelPath, pakFile);
+        bool loadFromPakSuccess = xmlAr.LoadFromPak(levelPath, pakFile);
         pIPak->ClosePack(absoluteLevelPath.toUtf8().data());
         if (!loadFromPakSuccess)
         {

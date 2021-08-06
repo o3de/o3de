@@ -566,7 +566,7 @@ void CGameEngine::SwitchToInGame()
         streamer->QueueRequest(flush);
         wait.acquire();
     }
-    
+
     GetIEditor()->Notify(eNotify_OnBeginGameMode);
 
     m_pISystem->GetIMovieSystem()->EnablePhysicsEvents(true);

@@ -26,7 +26,7 @@ CCommentNodeAnimator::CCommentNodeAnimator(CTrackViewAnimNode* pCommentNode)
 
 CCommentNodeAnimator::~CCommentNodeAnimator()
 {
-    m_pCommentNode = 0;
+    m_pCommentNode = nullptr;
 }
 
 void CCommentNodeAnimator::Animate(CTrackViewAnimNode* pNode, const SAnimContext& ac)

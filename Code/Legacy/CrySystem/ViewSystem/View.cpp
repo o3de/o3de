@@ -103,7 +103,7 @@ void CView::SetViewShakeEx(const SShakeParams& params)
         return;
     }
 
-    int shakes(m_shakes.size());
+    int shakes = static_cast<int>(m_shakes.size());
     SShake* pSetShake(NULL);
 
     for (int i = 0; i < shakes; ++i)
@@ -180,7 +180,7 @@ void CView::ProcessShaking(float frameTime)
     m_viewParams.shakingRatio = 0;
     m_viewParams.groundOnly = false;
 
-    int shakes(m_shakes.size());
+    int shakes = static_cast<int>(m_shakes.size());
     for (int i = 0; i < shakes; ++i)
     {
         ProcessShake(&m_shakes[i], frameTime);
@@ -486,7 +486,7 @@ void CView::ProcessShakeNormal_DoShaking(SShake* pShake, float frameTime)
 //------------------------------------------------------------------------
 void CView::StopShake(int shakeID)
 {
-    uint32 num = m_shakes.size();
+    uint32 num = static_cast<int>(m_shakes.size());
     for (uint32 i = 0; i < num; ++i)
     {
         if (m_shakes[i].ID == shakeID && m_shakes[i].updating)

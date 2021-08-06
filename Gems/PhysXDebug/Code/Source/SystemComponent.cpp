@@ -570,7 +570,7 @@ namespace PhysXDebug
 
     static void physx_CullingBoxSize([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
-        const int argumentCount = arguments.size();
+        const size_t argumentCount = arguments.size();
         if (argumentCount == 1)
         {
             float newCullingBoxSize = (float)strtol(AZ::CVarFixedString(arguments[0]).c_str(), nullptr, 10);
@@ -588,7 +588,7 @@ namespace PhysXDebug
     {
         using namespace CryStringUtils;
 
-        const int argumentCount = arguments.size();
+        const size_t argumentCount = arguments.size();
 
         if (argumentCount == 1)
         {
