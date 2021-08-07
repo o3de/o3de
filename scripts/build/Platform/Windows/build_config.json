@@ -36,6 +36,28 @@
       "test_cpu_profile_vs2019"
     ]
   },
+  "periodic_test_profile_vs2019_pipe": {
+    "TAGS": [
+      "nightly-incremental",
+      "nightly-clean"
+    ],
+    "steps": [
+      "aws_integration_deployment",
+      "periodic_test_profile_vs2019"
+    ]
+  },
+  "aws_integration_deployment": {
+    "TAGS": [
+      "weekly-build-metrics"
+    ],
+    "COMMAND": "deploy_cdk_applications.cmd",
+    "PARAMETERS": {
+      "O3DE_AWS_PROJECT_NAME": "AWSAUTO",
+      "O3DE_AWS_DEPLOY_REGION": "us-west-2",
+      "ASSUME_ROLE_ARN": "arn:aws:iam::645075835648:role/o3de-automation-tests",
+      "COMMIT_ID": "HEAD"
+    }
+  },
   "scrubbing": {
     "TAGS": [],
     "COMMAND": "python_windows.cmd",
@@ -215,8 +237,6 @@
   },
   "periodic_test_profile_vs2019": {
     "TAGS": [
-      "nightly-incremental",
-      "nightly-clean",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_test_windows.cmd",
