@@ -1657,7 +1657,8 @@ def create_project(project_path: pathlib.Path,
                             d.write('# {END_LICENSE}\n')
 
 
-    # Register the project with the global o3de_manifest.json and set the project.json "engine" field to match the
+    # Register the project with the either o3de_manifest.json or engine.json
+    # and set the project.json "engine" field to match the
     # engine.json "engine_name" field
     return register.register(project_path=project_path)
 
@@ -2035,7 +2036,8 @@ def create_gem(gem_path: pathlib.Path,
                                 d.write('#\n')
                                 d.write('# SPDX-License-Identifier: Apache-2.0 OR MIT\n')
                                 d.write('# {END_LICENSE}\n')
-    return 0
+    # Register the gem with the either o3de_manifest.json, engine.json or project.json based on the gem path
+    return register.register(gem_path=gem_path)
 
 
 def _run_create_template(args: argparse) -> int:
