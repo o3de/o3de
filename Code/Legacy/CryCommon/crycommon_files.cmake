@@ -160,7 +160,6 @@ set(FILES
     CryAssert_Mac.h
     CryLibrary.cpp
     CryLibrary.h
-    CryThread_dummy.h
     CryThread_pthreads.h
     CryThread_windows.h
     CryThreadImpl_pthreads.h

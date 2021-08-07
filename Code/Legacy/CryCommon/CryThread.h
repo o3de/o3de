@@ -175,7 +175,6 @@ class CrySimpleThread;
 #undef AZ_RESTRICTED_SECTION_IMPLEMENTED
 #else
 // Put other platform specific includes here!
-#include <CryThread_dummy.h>
 #endif
 
 #if !defined _CRYTHREAD_CONDLOCK_GLITCH
