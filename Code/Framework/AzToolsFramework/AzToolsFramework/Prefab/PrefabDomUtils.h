@@ -67,7 +67,7 @@ namespace AzToolsFramework
             * @param flags controls behavior such as whether to store default values
             * @return bool on whether the operation succeeded
             */
-            bool StoreEntityInPrefabDom(const AZ::Entity& entity, Instance& owningInstance, PrefabDom& prefabDom,
+            bool StoreEntityInPrefabDomFormat(const AZ::Entity& entity, Instance& owningInstance, PrefabDom& prefabDom,
                 StoreFlags flags = StoreFlags::None);
 
             enum class LoadFlags : uint8_t

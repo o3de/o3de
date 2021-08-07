@@ -114,7 +114,7 @@ namespace AzToolsFramework
                 return true;
             }
 
-            bool StoreEntityInPrefabDom(const AZ::Entity& entity, Instance& owningInstance, PrefabDom& prefabDom, StoreFlags flags)
+            bool StoreEntityInPrefabDomFormat(const AZ::Entity& entity, Instance& owningInstance, PrefabDom& prefabDom, StoreFlags flags)
             {
                 InstanceEntityIdMapper entityIdMapper;
                 entityIdMapper.SetStoringInstance(owningInstance);

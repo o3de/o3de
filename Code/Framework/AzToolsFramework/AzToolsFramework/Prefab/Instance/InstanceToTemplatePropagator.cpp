@@ -54,7 +54,7 @@ namespace AzToolsFramework
                 return false;
             }
 
-            return PrefabDomUtils::StoreEntityInPrefabDom(entity, owningInstance->get(), generatedEntityDom);
+            return PrefabDomUtils::StoreEntityInPrefabDomFormat(entity, owningInstance->get(), generatedEntityDom);
         }
 
         bool InstanceToTemplatePropagator::GenerateDomForInstance(PrefabDom& generatedInstanceDom, const Prefab::Instance& instance)
@@ -173,8 +173,10 @@ namespace AzToolsFramework
             else
             {
                 AZ_Error(
-                    "Prefab", result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::PartialSkip,
-                    "Some of the patches are not successfully applied.");
+                    "Prefab",
+                    (result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::Skipped) &&
+                    (result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::PartialSkip),
+                    "Some of the patches were not successfully applied.");
                 m_prefabSystemComponentInterface->SetTemplateDirtyFlag(templateId, true);
                 m_prefabSystemComponentInterface->PropagateTemplateChanges(templateId, instanceToExclude);
                 return true;
