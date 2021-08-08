@@ -408,26 +408,26 @@ namespace AZ
 
         bool ConstantsData::ConstantIsEqual(const ConstantsData& other, ShaderInputConstantIndex inputIndex) const
         {
-            AZStd::array_view<uint8_t> myConstans = GetConstantRaw(inputIndex);
-            AZStd::array_view<uint8_t> otherConstans = other.GetConstantRaw(inputIndex);
+            AZStd::array_view<uint8_t> myConstant = GetConstantRaw(inputIndex);
+            AZStd::array_view<uint8_t> otherConstant = other.GetConstantRaw(inputIndex);
 
             // If they point to the same data, they are equal
-            if (myConstans == otherConstans)
+            if (myConstant == otherConstant)
             {
                 return true;
             }
 
             // If they point to data of different size, they are not equal
-            if (myConstans.size() != otherConstans.size())
+            if (myConstant.size() != otherConstant.size())
             {
                 return false;
             }
 
             // If they point to differing data of same size, compare the data
             // Note: due to small size of data this loop will be faster than a mem compare
-            for(uint32_t i = 0; i < myConstans.size(); ++i)
+            for(uint32_t i = 0; i < myConstant.size(); ++i)
             {
-                if (myConstans[i] != otherConstans[i])
+                if (myConstant[i] != otherConstant[i])
                 {
                     return false;
                 }

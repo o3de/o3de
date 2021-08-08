@@ -166,11 +166,14 @@ namespace AZ
             // clean up data
             m_drawListView = {};
             m_combinedDrawList.clear();
+            m_drawItemCount = 0;
 
             // draw list from view was sorted and if it's the only draw list then we can use it directly
             if (viewDrawList.size() > 0 && drawLists.size() == 0)
             {
                 m_drawListView = viewDrawList;
+                m_drawItemCount += viewDrawList.size();
+                PassSystemInterface::Get()->IncrementFrameDrawItemCount(m_drawItemCount);
                 return;
             }
 
@@ -178,7 +181,6 @@ namespace AZ
             drawLists.push_back(viewDrawList);
 
             // combine draw items from mutiple draw lists to one draw list and sort it.
-            m_drawItemCount = 0;
             for (auto drawList : drawLists)
             {
                 m_drawItemCount += drawList.size();

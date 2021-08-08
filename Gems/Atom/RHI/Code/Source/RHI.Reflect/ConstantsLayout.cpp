@@ -151,11 +151,11 @@ namespace AZ
         void ConstantsLayout::DebugPrintNames(AZStd::array_view<ShaderInputConstantIndex> constantList) const
         {
             AZStd::string output;
-            for (const ShaderInputConstantIndex& constandIdx : constantList)
+            for (const ShaderInputConstantIndex& constantIdx : constantList)
             {
-                if (constandIdx.GetIndex() < m_inputs.size())
+                if (constantIdx.GetIndex() < m_inputs.size())
                 {
-                    output += m_inputs[constandIdx.GetIndex()].m_name.GetCStr();
+                    output += m_inputs[constantIdx.GetIndex()].m_name.GetCStr();
                     output += " - ";
                 }
             }

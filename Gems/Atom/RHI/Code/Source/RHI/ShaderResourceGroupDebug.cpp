@@ -36,10 +36,10 @@ namespace AZ
             }
         }
 
-        void PrintConstantDataDiff(const DrawItem& drawItem, ConstantsData& referenceData, u32 srgBindingSlot, bool updateReferenceData)
+        void PrintConstantDataDiff(const DrawItem& drawItem, ConstantsData& referenceData, uint32_t srgBindingSlot, bool updateReferenceData)
         {
-            s32 srgIndex = -1;
-            for (u32 i = 0; i < drawItem.m_shaderResourceGroupCount; ++i)
+            int srgIndex = -1;
+            for (uint32_t i = 0; i < drawItem.m_shaderResourceGroupCount; ++i)
             {
                 if (drawItem.m_shaderResourceGroups[i]->GetBindingSlot() == srgBindingSlot)
                 {
