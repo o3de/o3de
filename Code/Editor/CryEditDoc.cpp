@@ -19,6 +19,7 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Utils/Utils.h>
+#include <MathConversion.h>
 
 // AzFramework
 #include <AzFramework/Archive/IArchive.h>
@@ -53,6 +54,7 @@
 #include "MainWindow.h"
 #include "LevelFileDialog.h"
 #include "StatObjBus.h"
+#include "Undo/Undo.h"
 
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>

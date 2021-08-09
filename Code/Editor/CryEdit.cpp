@@ -3644,24 +3644,12 @@ void CCryEditApp::OnToolsPreferences()
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnSwitchToDefaultCamera()
 {
-    CViewport* vp = GetIEditor()->GetViewManager()->GetSelectedViewport();
-    if (CRenderViewport* rvp = viewport_cast<CRenderViewport*>(vp))
-    {
-        rvp->SetDefaultCamera();
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnUpdateSwitchToDefaultCamera(QAction* action)
 {
     Q_ASSERT(action->isCheckable());
-    CViewport* pViewport = GetIEditor()->GetViewManager()->GetSelectedViewport();
-    if (CRenderViewport* rvp = viewport_cast<CRenderViewport*>(pViewport))
-    {
-        action->setEnabled(true);
-        action->setChecked(rvp->IsDefaultCamera());
-    }
-    else
     {
         action->setEnabled(false);
     }
@@ -3670,39 +3658,12 @@ void CCryEditApp::OnUpdateSwitchToDefaultCamera(QAction* action)
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnSwitchToSequenceCamera()
 {
-    CViewport* vp = GetIEditor()->GetViewManager()->GetSelectedViewport();
-    if (CRenderViewport* rvp = viewport_cast<CRenderViewport*>(vp))
-    {
-        rvp->SetSequenceCamera();
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnUpdateSwitchToSequenceCamera(QAction* action)
 {
     Q_ASSERT(action->isCheckable());
-
-    CViewport* pViewport = GetIEditor()->GetViewManager()->GetSelectedViewport();
-
-    if (CRenderViewport* rvp = viewport_cast<CRenderViewport*>(pViewport))
-    {
-        bool enableAction = false;
-
-        // only enable if we're editing a sequence in Track View and have cameras in the level
-        if (GetIEditor()->GetAnimation()->GetSequence())
-        {
-
-            AZ::EBusAggregateResults<AZ::EntityId> componentCameras;
-            Camera::CameraBus::BroadcastResult(componentCameras, &Camera::CameraRequests::GetCameras);
-
-            const int numCameras = componentCameras.values.size();
-            enableAction = (numCameras > 0);
-        }
-
-        action->setEnabled(enableAction);
-        action->setChecked(rvp->IsSequenceCamera());
-    }
-    else
     {
         action->setEnabled(false);
     }
@@ -3711,31 +3672,12 @@ void CCryEditApp::OnUpdateSwitchToSequenceCamera(QAction* action)
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnSwitchToSelectedcamera()
 {
-    CViewport* vp = GetIEditor()->GetViewManager()->GetSelectedViewport();
-    if (CRenderViewport* rvp = viewport_cast<CRenderViewport*>(vp))
-    {
-        rvp->SetSelectedCamera();
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnUpdateSwitchToSelectedCamera(QAction* action)
 {
     Q_ASSERT(action->isCheckable());
-    AzToolsFramework::EntityIdList selectedEntityList;
-    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(selectedEntityList, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
-    AZ::EBusAggregateResults<AZ::EntityId> cameras;
-    Camera::CameraBus::BroadcastResult(cameras, &Camera::CameraRequests::GetCameras);
-    bool isCameraComponentSelected = selectedEntityList.size() > 0 ? AZStd::find(cameras.values.begin(), cameras.values.end(), *selectedEntityList.begin()) != cameras.values.end() : false;
-
-    CViewport* pViewport = GetIEditor()->GetViewManager()->GetSelectedViewport();
-    CRenderViewport* rvp = viewport_cast<CRenderViewport*>(pViewport);
-    if (isCameraComponentSelected && rvp)
-    {
-        action->setEnabled(true);
-        action->setChecked(rvp->IsSelectedCamera());
-    }
-    else
     {
         action->setEnabled(false);
     }
@@ -3744,11 +3686,7 @@ void CCryEditApp::OnUpdateSwitchToSelectedCamera(QAction* action)
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnSwitchcameraNext()
 {
-    CViewport* vp = GetIEditor()->GetActiveView();
-    if (CRenderViewport* rvp = viewport_cast<CRenderViewport*>(vp))
-    {
-        rvp->CycleCamera();
-    }
+
 }
 
 //////////////////////////////////////////////////////////////////////////
