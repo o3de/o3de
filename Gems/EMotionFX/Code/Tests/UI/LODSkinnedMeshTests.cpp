@@ -46,18 +46,6 @@ namespace EMotionFX
 
     class LODSystemMock : public SystemMock
     {
-    public:
-        CCamera& GetViewCamera() override
-        {
-            return m_camera;
-        }
-        void SetViewCameraPosition(Vec3& vec)
-        {
-            m_camera.SetPosition(vec);
-        }
-
-        protected:
-            CCamera m_camera;
     };
 
     class LODSkinnedMeshColorFixture
@@ -207,7 +195,6 @@ namespace EMotionFX
         EXPECT_EQ(actorInstance->GetLODLevel(), 0);
 
         Vec3 newVec{ 0,30,0 };
-        m_data.m_system.SetViewCameraPosition(newVec);
 
         // Tick!
         AZ::TickBus::Broadcast(&AZ::TickBus::Events::OnTick, 0.0f, AZ::ScriptTimePoint{});
@@ -217,7 +204,6 @@ namespace EMotionFX
         EXPECT_EQ(actorInstance->GetLODLevel(), 3);
 
         newVec.y = 50;
-        m_data.m_system.SetViewCameraPosition(newVec);
 
         // Tick!
         AZ::TickBus::Broadcast(&AZ::TickBus::Events::OnTick, 0.0f, AZ::ScriptTimePoint{});

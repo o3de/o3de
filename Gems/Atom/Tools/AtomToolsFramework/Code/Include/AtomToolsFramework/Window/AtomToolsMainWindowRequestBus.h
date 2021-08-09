@@ -8,17 +8,19 @@
 
 #pragma once
 
+//! Disables "unreferenced formal parameter" warning
+#pragma warning(disable : 4100)
+
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 
 class QWidget;
 
-namespace MaterialEditor
+namespace AtomToolsFramework
 {
-    //! MaterialEditorWindowRequestBus provides 
-    class MaterialEditorWindowRequests
-        : public AZ::EBusTraits
+    //! AtomToolsMainWindowRequestBus provides
+    class AtomToolsMainWindowRequests : public AZ::EBusTraits
     {
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
@@ -49,16 +51,16 @@ namespace MaterialEditor
         //! Get a list of registered docked widget names
         virtual AZStd::vector<AZStd::string> GetDockWidgetNames() const = 0;
 
-        //! Resizes the Material Editor window to achieve a requested size for the viewport render target.
+        //! Resizes the main window to achieve a requested size for the viewport render target.
         //! (This indicates the size of the render target, not the desktop-scaled QT widget size).
-        virtual void ResizeViewportRenderTarget(uint32_t width, uint32_t height) = 0;
+        virtual void ResizeViewportRenderTarget(uint32_t width, uint32_t height) {};
 
         //! Forces the viewport's render target to use the given resolution, ignoring the size of the viewport widget.
-        virtual void LockViewportRenderTargetSize(uint32_t width, uint32_t height) = 0;
+        virtual void LockViewportRenderTargetSize(uint32_t width, uint32_t height) {};
 
         //! Releases the viewport's render target resolution lock, allowing it to match the viewport widget again.
-        virtual void UnlockViewportRenderTargetSize() = 0;
+        virtual void UnlockViewportRenderTargetSize() {};
     };
-    using MaterialEditorWindowRequestBus = AZ::EBus<MaterialEditorWindowRequests>;
+    using AtomToolsMainWindowRequestBus = AZ::EBus<AtomToolsMainWindowRequests>;
 
-} // namespace MaterialEditor
+} // namespace AtomToolsFramework

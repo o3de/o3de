@@ -655,7 +655,7 @@ XmlNodeRef CXmlNode::findChild(const char* tag) const
     if (m_pChilds)
     {
         XmlNodes& childs = *m_pChilds;
-        for (int i = 0, num = childs.size(); i < num; ++i)
+        for (int i = 0, num = static_cast<int>(childs.size()); i < num; ++i)
         {
             if (childs[i]->isTag(tag))
             {
@@ -690,7 +690,7 @@ void CXmlNode::deleteChild(const char* tag)
     if (m_pChilds)
     {
         XmlNodes& childs = *m_pChilds;
-        for (int i = 0, num = childs.size(); i < num; ++i)
+        for (int i = 0, num = static_cast<int>(childs.size()); i < num; ++i)
         {
             if (childs[i]->isTag(tag))
             {
@@ -913,7 +913,7 @@ XmlNodeRef CXmlNode::clone()
 
         node->m_pChilds = new XmlNodes;
         node->m_pChilds->reserve(childs.size());
-        for (int i = 0, num = childs.size(); i < num; ++i)
+        for (int i = 0, num = static_cast<int>(childs.size()); i < num; ++i)
         {
             node->addChild(childs[i]->clone());
         }
@@ -956,7 +956,7 @@ static void AddTabsToString(XmlString& xml, int level)
 //////////////////////////////////////////////////////////////////////////
 bool CXmlNode::IsValidXmlString(const char* str) const
 {
-    int len = strlen(str);
+    int len = static_cast<int>(strlen(str));
 
     {
         // Prevents invalid characters not from standard ASCII set to propagate to xml.
@@ -1432,7 +1432,7 @@ protected:
 void XmlParserImp::CleanStack()
 {
     m_nNodeStackTop = 0;
-    for (int i = 0, num = m_nodeStack.size(); i < num; i++)
+    for (int i = 0, num = static_cast<int>(m_nodeStack.size()); i < num; i++)
     {
         m_nodeStack[i].node = 0;
         m_nodeStack[i].childs.resize(0);

@@ -1063,11 +1063,10 @@ namespace CommandSystem
                 continue;
             }
 
-            MCore::AABB newAABB;
-            actorInstance->SetStaticBasedAABB(actor->GetStaticAABB());  // this is needed as the CalcStaticBasedAABB uses the current AABB as starting point
-            actorInstance->CalcStaticBasedAABB(&newAABB);
-            actorInstance->SetStaticBasedAABB(newAABB);
-            //actorInstance->UpdateVisualizeScale();
+            actorInstance->SetStaticBasedAabb(actor->GetStaticAabb());  // this is needed as the CalcStaticBasedAabb uses the current AABB as starting point
+            AZ::Aabb newAabb;
+            actorInstance->CalcStaticBasedAabb(&newAabb);
+            actorInstance->SetStaticBasedAabb(newAabb);
 
             const float factor = (float)MCore::Distance::GetConversionFactor(beforeUnitType, targetUnitType);
             actorInstance->SetVisualizeScale(actorInstance->GetVisualizeScale() * factor);

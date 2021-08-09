@@ -201,13 +201,13 @@ namespace AssetMemoryAnalyzer
                                     {
                                     case AllocationCategories::HEAP:
                                         ImGui::Text(FormatUtils::FormatCodePoint(*ap->m_codePoint));
-                                        heapSummary.m_allocationCount = ap->m_allocations.size();
+                                        heapSummary.m_allocationCount = static_cast<uint32_t>(ap->m_allocations.size());
                                         heapSummary.m_allocatedMemory = ap->m_totalAllocatedMemory;
                                         break;
 
                                     case AllocationCategories::VRAM:
                                         ImGui::Text("%s", ap->m_codePoint->m_file);
-                                        vramSummary.m_allocationCount = ap->m_allocations.size();
+                                        vramSummary.m_allocationCount = static_cast<uint32_t>(ap->m_allocations.size());
                                         vramSummary.m_allocatedMemory = ap->m_totalAllocatedMemory;
                                         break;
                                     }

@@ -20,7 +20,7 @@ namespace MultiplayerCompression
 
     size_t LZ4Compressor::GetMaxCompressedBufferSize(size_t uncompSize) const
     {
-        return LZ4_compressBound(uncompSize);
+        return LZ4_compressBound(static_cast<int>(uncompSize));
     }
 
     AzNetworking::CompressorError LZ4Compressor::Compress
@@ -46,7 +46,7 @@ namespace MultiplayerCompression
             return AzNetworking::CompressorError::Uninitialized;
         }
 
-        const int compWorstCaseSize = LZ4_compressBound(uncompSize);
+        const int compWorstCaseSize = LZ4_compressBound(static_cast<int>(uncompSize));
         if (compWorstCaseSize == 0)
         {
             AZ_Warning("Multiplayer Compressor", false, "Input size (%lu) passed to Compress() is greater than max allowed (%lu)", uncompSize, LZ4_MAX_INPUT_SIZE);
@@ -56,7 +56,7 @@ namespace MultiplayerCompression
         AZ_Warning("Multiplayer Compressor", compDataSize >= compWorstCaseSize, "Outbuffer size (%lu B) passed to Compress() is less than estimated worst case (%lu B)", compDataSize, compWorstCaseSize);
 
         // Note that this returns a non-negative int so we are narrowing into a size_t here
-        compSize = LZ4_compressHC(reinterpret_cast<const char*>(uncompData), reinterpret_cast<char*>(compData), uncompSize);
+        compSize = LZ4_compressHC(reinterpret_cast<const char*>(uncompData), reinterpret_cast<char*>(compData), static_cast<int>(uncompSize));
 
         if (compSize == 0)
         {
@@ -84,7 +84,7 @@ namespace MultiplayerCompression
             return AzNetworking::CompressorError::Uninitialized;
         }
 
-        const int uncompSize = LZ4_decompress_safe(reinterpret_cast<const char*>(compData), reinterpret_cast<char*>(uncompData), compDataSize, uncompDataSize);
+        const int uncompSize = LZ4_decompress_safe(reinterpret_cast<const char*>(compData), reinterpret_cast<char*>(uncompData), static_cast<int>(compDataSize), static_cast<int>(uncompDataSize));
         consumedSizeOut = compDataSize;
 
         if (uncompSize < 0)
