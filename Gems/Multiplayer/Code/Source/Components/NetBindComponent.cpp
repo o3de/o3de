@@ -408,6 +408,11 @@ namespace Multiplayer
         m_entityPreRenderEvent.Signal(deltaTime, blendFactor);
     }
 
+    void NetBindComponent::NotifyCorrection()
+    {
+        m_entityCorrectionEvent.Signal();
+    }
+
     void NetBindComponent::AddEntityStopEventHandler(EntityStopEvent::Handler& eventHandler)
     {
         eventHandler.Connect(m_entityStopEvent);
@@ -441,6 +446,11 @@ namespace Multiplayer
     void NetBindComponent::AddEntityPreRenderEventHandler(EntityPreRenderEvent::Handler& eventHandler)
     {
         eventHandler.Connect(m_entityPreRenderEvent);
+    }
+
+    void NetBindComponent::AddEntityCorrectionEventHandler(EntityCorrectionEvent::Handler& eventHandler)
+    {
+        eventHandler.Connect(m_entityCorrectionEvent);
     }
 
     bool NetBindComponent::SerializeEntityCorrection(AzNetworking::ISerializer& serializer)

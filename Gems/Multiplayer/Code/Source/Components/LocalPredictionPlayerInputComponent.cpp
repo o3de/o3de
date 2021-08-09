@@ -32,21 +32,6 @@ namespace Multiplayer
     AZ_CVAR(AZ::TimeMs, sv_MinCorrectionTimeMs, AZ::TimeMs{ 100 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Minimum time to wait between sending out corrections in order to avoid flooding corrections on high-latency connections");
     AZ_CVAR(AZ::TimeMs, sv_InputUpdateTimeMs, AZ::TimeMs{ 5 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Minimum time between component updates");
 
-    // Debug helper functions
-    AZStd::string GetInputString(NetworkInput& input)
-    {
-        AzNetworking::StringifySerializer serializer(',', false);
-        input.Serialize(serializer);
-        return serializer.GetString();
-    }
-
-    AZStd::string GetCorrectionDataString(NetBindComponent* netBindComponent)
-    {
-        AzNetworking::StringifySerializer serializer(',', false);
-        netBindComponent->SerializeEntityCorrection(serializer);
-        return serializer.GetString();
-    }
-
     void PrintCorrectionDifferences(const AzNetworking::StringifySerializer& client, const AzNetworking::StringifySerializer& server)
     {
         const auto& clientMap = client.GetValueMap();
@@ -289,14 +274,7 @@ namespace Multiplayer
             ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs(), input.GetHostBlendFactor(), invokingConnection->GetConnectionId());
             GetNetBindComponent()->ProcessInput(input, clientInputRateSec);
 
-            AZLOG
-            (
-                NET_Prediction,
-                "Migrated InputId=%d - i=[%s] o=[%s]",
-                aznumeric_cast<int32_t>(input.GetClientInputId()),
-                GetInputString(input).c_str(),
-                GetCorrectionDataString(GetNetBindComponent()).c_str()
-            );
+            AZLOG(NET_Prediction, "Migrated InputId=%d", aznumeric_cast<int32_t>(input.GetClientInputId()));
 
             // Don't bother checking for corrections here, the next regular input will trigger any corrections if necessary
             // Also don't bother with any cheat detection here, because the input array is limited in size and at most and can only be sent once
@@ -329,7 +307,7 @@ namespace Multiplayer
         // Apply the correction
         AzNetworking::TrackChangedSerializer<AzNetworking::NetworkOutputSerializer> serializer(correction.GetBuffer(), correction.GetSize());
         GetNetBindComponent()->SerializeEntityCorrection(serializer);
-        m_correctionEvent.Signal();
+        GetNetBindComponent()->NotifyCorrection();
 
 #ifndef AZ_RELEASE_BUILD
         if (cl_EnableDesyncDebugging)
@@ -350,14 +328,6 @@ namespace Multiplayer
         }
 #endif
 
-        AZLOG
-        (
-            NET_Prediction,
-            "Corrected InputId=%d - o=[%s]",
-            aznumeric_cast<int32_t>(m_lastCorrectionInputId),
-            GetCorrectionDataString(GetNetBindComponent()).c_str()
-        );
-
         const uint32_t inputHistorySize = m_inputHistory.Size();
         const uint32_t historicalDelta = aznumeric_cast<uint32_t>(m_clientInputId - inputId); // Do not replay the move we just corrected, that was already processed by the server
 
@@ -372,14 +342,7 @@ namespace Multiplayer
             ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs(), input.GetHostBlendFactor(), invokingConnection->GetConnectionId());
             GetNetBindComponent()->ReprocessInput(input, clientInputRateSec);
 
-            AZLOG
-            (
-                NET_Prediction,
-                "Replayed InputId=%d - i=[%s] o=[%s]",
-                aznumeric_cast<int32_t>(input.GetClientInputId()),
-                GetInputString(input).c_str(),
-                GetCorrectionDataString(GetNetBindComponent()).c_str()
-            );
+            AZLOG(NET_Prediction, "Replayed InputId=%d", aznumeric_cast<int32_t>(input.GetClientInputId()));
         }
     }
 
@@ -400,11 +363,6 @@ namespace Multiplayer
         // In this situation, use whatever the server frame id was when this component was migrated
         // This will match the closest state to what the client sees
         return (input.GetHostFrameId() == InvalidHostFrameId) ? m_serverMigrateFrameId : input.GetHostFrameId();
-    }
-
-    void LocalPredictionPlayerInputComponentController::CorrectionEventAddHandle(CorrectionEvent::Handler& handler)
-    {
-        handler.Connect(m_correctionEvent);
     }
 
     void LocalPredictionPlayerInputComponentController::OnMigrateStart(ClientInputId migratedInputId)
@@ -480,14 +438,7 @@ namespace Multiplayer
             // Process the input for this frame
             GetNetBindComponent()->ProcessInput(input, inputRate);
 
-            AZLOG
-            (
-                NET_Prediction,
-                "Processed InutId=%d - i=[%s] o=[%s]",
-                aznumeric_cast<int32_t>(m_clientInputId),
-                GetInputString(input).c_str(),
-                GetCorrectionDataString(GetNetBindComponent()).c_str()
-            );
+            AZLOG(NET_Prediction, "Processed InputId=%d", aznumeric_cast<int32_t>(m_clientInputId));
 
             // Generate a hash based on the current client predicted states
             AzNetworking::HashSerializer hashSerializer;
@@ -553,14 +504,7 @@ namespace Multiplayer
                 GetNetBindComponent()->ProcessInput(input, inputRate);
             }
 
-            AZLOG
-            (
-                NET_Prediction,
-                "Forced InputId=%d - i=[%s] o=[%s]",
-                aznumeric_cast<int32_t>(input.GetClientInputId()),
-                GetInputString(input).c_str(),
-                GetCorrectionDataString(GetNetBindComponent()).c_str()
-            );
+            AZLOG(NET_Prediction, "Forced InputId=%d", aznumeric_cast<int32_t>(input.GetClientInputId()));
         }
 
         // Decay our bank time window, in case the remote endpoint has suffered a more persistent shift in latency, this should cause the client to eventually recover

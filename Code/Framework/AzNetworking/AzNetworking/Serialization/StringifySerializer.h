@@ -22,10 +22,7 @@ namespace AzNetworking
 
         using ValueMap = AZStd::map<AZStd::string, AZStd::string>;
 
-        StringifySerializer(char delimeter = ' ', bool outputFieldNames = true, const AZStd::string& seperator = "=");
-
-        //! After serializing objects, get the serialized values as a single string.
-        const AZStd::string& GetString() const;
+        StringifySerializer() = default;
 
         //! After serializing objects, get the serialized values as a map of key/value pairs.
         const ValueMap& GetValueMap() const;
@@ -60,15 +57,8 @@ namespace AzNetworking
         template <typename T>
         bool ProcessData(const char* name, const T& value);
 
-    private:
-
-        char m_delimeter;
-        bool m_outputFieldNames = true;
-
         ValueMap m_valueMap;
-        AZStd::string m_string;
         AZStd::string m_prefix;
-        AZStd::string m_separator;
         AZStd::deque<AZStd::size_t> m_prefixSizeStack;
     };
 }

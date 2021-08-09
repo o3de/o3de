@@ -14,8 +14,6 @@
 
 namespace Multiplayer
 {
-    using CorrectionEvent = AZ::Event<>;
-
     class LocalPredictionPlayerInputComponent
         : public LocalPredictionPlayerInputComponentBase
     {
@@ -65,8 +63,6 @@ namespace Multiplayer
         ClientInputId GetLastInputId() const;
         HostFrameId GetInputFrameId(const NetworkInput& input) const;
 
-        void CorrectionEventAddHandle(CorrectionEvent::Handler& handler);
-
     private:
 
         void OnMigrateStart(ClientInputId migratedInputId);
@@ -86,7 +82,6 @@ namespace Multiplayer
         AZ::ScheduledEvent m_autonomousUpdateEvent; // Drives autonomous input collection
         AZ::ScheduledEvent m_updateBankedTimeEvent; // Drives authority bank time updates
 
-        CorrectionEvent m_correctionEvent;
         EntityMigrationStartEvent::Handler m_migrateStartHandler;
         EntityMigrationEndEvent::Handler m_migrateEndHandler;
 

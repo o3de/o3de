@@ -10,19 +10,6 @@
 
 namespace AzNetworking
 {
-    StringifySerializer::StringifySerializer(char delimeter, bool outputFieldNames, const AZStd::string& seperator)
-        : m_delimeter(delimeter)
-        , m_outputFieldNames(outputFieldNames)
-        , m_separator(seperator)
-    {
-        ;
-    }
-
-    const AZStd::string& StringifySerializer::GetString() const
-    {
-        return m_string;
-    }
-
     const StringifySerializer::ValueMap& StringifySerializer::GetValueMap() const
     {
         return m_valueMap;
@@ -138,21 +125,8 @@ namespace AzNetworking
     bool StringifySerializer::ProcessData(const char* name, const T& value)
     {
         const AZStd::string keyString = m_prefix + name;
-
-        if (!m_string.empty())
-        {
-            // Only add delimeters after we have processed at least one element
-            m_string += m_delimeter;
-        }
-
-        if (m_outputFieldNames)
-        {
-            m_string += keyString;
-        }
-
         AZ::CVarFixedString valueString = AZ::ConsoleTypeHelpers::ValueToString(value);
         m_valueMap[keyString] = valueString.c_str();
-
         return true;
     }
 }

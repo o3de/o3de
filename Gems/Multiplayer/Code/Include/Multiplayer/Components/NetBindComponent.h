@@ -36,6 +36,7 @@ namespace Multiplayer
     using EntityMigrationEndEvent = AZ::Event<>;
     using EntityServerMigrationEvent = AZ::Event<const ConstNetworkEntityHandle&, HostId, AzNetworking::ConnectionId>;
     using EntityPreRenderEvent = AZ::Event<float, float>;
+    using EntityCorrectionEvent = AZ::Event<>;
 
     //! @class NetBindComponent
     //! @brief Component that provides net-binding to a networked entity.
@@ -118,6 +119,7 @@ namespace Multiplayer
         void NotifyMigrationEnd();
         void NotifyServerMigration(HostId hostId, AzNetworking::ConnectionId connectionId);
         void NotifyPreRender(float deltaTime, float blendFactor);
+        void NotifyCorrection();
 
         void AddEntityStopEventHandler(EntityStopEvent::Handler& eventHandler);
         void AddEntityDirtiedEventHandler(EntityDirtiedEvent::Handler& eventHandler);
@@ -126,6 +128,7 @@ namespace Multiplayer
         void AddEntityMigrationEndEventHandler(EntityMigrationEndEvent::Handler& eventHandler);
         void AddEntityServerMigrationEventHandler(EntityServerMigrationEvent::Handler& eventHandler);
         void AddEntityPreRenderEventHandler(EntityPreRenderEvent::Handler& eventHandler);
+        void AddEntityCorrectionEventHandler(EntityCorrectionEvent::Handler& handler);
 
         bool SerializeEntityCorrection(AzNetworking::ISerializer& serializer);
 
@@ -175,6 +178,7 @@ namespace Multiplayer
         EntityMigrationEndEvent    m_entityMigrationEndEvent;
         EntityServerMigrationEvent m_entityServerMigrationEvent;
         EntityPreRenderEvent  m_entityPreRenderEvent;
+        EntityCorrectionEvent m_entityCorrectionEvent;
         AZ::Event<>           m_onRemove;
         RpcSendEvent::Handler m_handleLocalServerRpcMessageEventHandle;
         AZ::Event<>::Handler  m_handleMarkedDirty;
