@@ -37,28 +37,28 @@ namespace TestImpact
         static AZStd::string GetCommandLineUsageString();
 
         //! Returns true if a test impact data file path has been supplied, otherwise false.
-        bool HasDataFile() const;
+        bool HasDataFilePath() const;
 
         //! Returns true if a change list file path has been supplied, otherwise false.
-        bool HasChangeListFile() const;
+        bool HasChangeListFilePath() const;
 
         //! Returns true if a sequence report file path has been supplied, otherwise false.
-        bool HasSequenceReportFile() const;
+        bool HasSequenceReportFilePath() const;
 
         //! Returns true if the safe mode option has been enabled, otherwise false.
         bool HasSafeMode() const;
 
         //! Returns the path to the runtime configuration file.
-        const RepoPath& GetConfigurationFile() const;
+        const RepoPath& GetConfigurationFilePath() const;
 
         //! Returns the path to the data file (if any).
-        const AZStd::optional<RepoPath>& GetDataFile() const;
+        const AZStd::optional<RepoPath>& GetDataFilePath() const;
 
         //! Returns the path to the change list file (if any).
-        const AZStd::optional<RepoPath>& GetChangeListFile() const;
+        const AZStd::optional<RepoPath>& GetChangeListFilePath() const;
 
         //! Returns the path to the sequence report file (if any).
-        const AZStd::optional<RepoPath>& GetSequenceReportFile() const;
+        const AZStd::optional<RepoPath>& GetSequenceReportFilePath() const;
 
         //! Returns the test sequence type to run.
         TestSequenceType GetTestSequenceType() const;
