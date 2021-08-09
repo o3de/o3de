@@ -31,7 +31,7 @@ class Repo:
         """
 
         try:
-            # Remove the existing file (if any) and create the 
+            # Remove the existing file (if any) and create the parent directory
             output_path.unlink(missing_ok=True)
             output_path.parent.mkdir(exist_ok=True)
         except EnvironmentError as e:
