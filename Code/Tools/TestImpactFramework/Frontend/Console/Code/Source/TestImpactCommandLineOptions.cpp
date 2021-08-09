@@ -297,17 +297,17 @@ namespace TestImpact
         m_suiteFilter = ParseSuiteFilter(cmd);
     }
 
-    bool CommandLineOptions::HasDataFile() const
+    bool CommandLineOptions::HasDataFilePath() const
     {
         return m_dataFile.has_value();
     }
  
-    bool CommandLineOptions::HasChangeListFile() const
+    bool CommandLineOptions::HasChangeListFilePath() const
     {
         return m_changeListFile.has_value();
     }
 
-    bool CommandLineOptions::HasSequenceReportFile() const
+    bool CommandLineOptions::HasSequenceReportFilePath() const
     {
         return m_sequenceReportFile.has_value();
     }
@@ -317,22 +317,22 @@ namespace TestImpact
         return m_safeMode;
     }
 
-    const AZStd::optional<RepoPath>& CommandLineOptions::GetDataFile() const
+    const AZStd::optional<RepoPath>& CommandLineOptions::GetDataFilePath() const
     {
         return m_dataFile;
     }
 
-    const AZStd::optional<RepoPath>& CommandLineOptions::GetChangeListFile() const
+    const AZStd::optional<RepoPath>& CommandLineOptions::GetChangeListFilePath() const
     {
         return m_changeListFile;
     }
 
-    const AZStd::optional<RepoPath>& CommandLineOptions::GetSequenceReportFile() const
+    const AZStd::optional<RepoPath>& CommandLineOptions::GetSequenceReportFilePath() const
     {
         return m_sequenceReportFile;
     }
 
-    const RepoPath& CommandLineOptions::GetConfigurationFile() const
+    const RepoPath& CommandLineOptions::GetConfigurationFilePath() const
     {
         return m_configurationFile;
     }

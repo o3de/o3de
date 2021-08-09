@@ -56,11 +56,11 @@ namespace TestImpact
         template<typename SequenceReportType>
         ReturnCode ConsumeSequenceReportAndGetReturnCode(const SequenceReportType& sequenceReport, const CommandLineOptions& options)
         {
-            if (options.HasSequenceReportFile())
+            if (options.HasSequenceReportFilePath())
             {
-                std::cout << "Exporting sequence report '" << options.GetSequenceReportFile().value().c_str() << "'" << std::endl;
+                std::cout << "Exporting sequence report '" << options.GetSequenceReportFilePath().value().c_str() << "'" << std::endl;
                 const auto sequenceReportJson = SerializeSequenceReport(sequenceReport);
-                WriteFileContents<SequenceReportException>(sequenceReportJson, options.GetSequenceReportFile().value());
+                WriteFileContents<SequenceReportException>(sequenceReportJson, options.GetSequenceReportFilePath().value());
             }
 
             return GetReturnCodeForTestSequenceResult(sequenceReport.GetResult());
@@ -152,9 +152,9 @@ namespace TestImpact
                 AZStd::optional<ChangeList> changeList;
 
                 // If we have a change list, check to see whether or not the client has requested the printing of said change list
-                if (options.HasChangeListFile())
+                if (options.HasChangeListFilePath())
                 {
-                    changeList = DeserializeChangeList(ReadFileContents<CommandLineOptionsException>(*options.GetChangeListFile()));
+                    changeList = DeserializeChangeList(ReadFileContents<CommandLineOptionsException>(*options.GetChangeListFilePath()));
                 }
 
                 // As of now, there are no non-test operations but leave this door open for the future
@@ -166,8 +166,8 @@ namespace TestImpact
                 std::cout << "Constructing in-memory model of source tree and test coverage for test suite ";
                 std::cout << SuiteTypeAsString(options.GetSuiteFilter()).c_str() << ", this may take a moment...\n";
                 Runtime runtime(
-                    RuntimeConfigurationFactory(ReadFileContents<CommandLineOptionsException>(options.GetConfigurationFile())),
-                    options.GetDataFile(),
+                    RuntimeConfigurationFactory(ReadFileContents<CommandLineOptionsException>(options.GetConfigurationFilePath())),
+                    options.GetDataFilePath(),
                     options.GetSuiteFilter(),
                     options.GetExecutionFailurePolicy(),
                     options.GetFailedTestCoveragePolicy(),
