@@ -110,7 +110,7 @@ namespace TestImpact
         return result;
     }
 
-    //!
+    //! Utility structure for holding the pertinent data for test run reports.
     template<typename TestJob>
     struct TestRunData
     {
