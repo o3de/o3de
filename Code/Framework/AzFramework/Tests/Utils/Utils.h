@@ -18,6 +18,9 @@
 
 namespace UnitTest
 {
+    //! Deletes a folder hierarchy from the supplied path
+    void DeleteFolderRecursive(const AZ::IO::PathView& path);
+
     // Creates a randomly named folder inside the user's temporary directory.
     // The folder and all contents will be destroyed when the object goes out of scope
     struct ScopedTemporaryDirectory

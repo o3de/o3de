@@ -88,7 +88,7 @@ CTrackViewDopeSheetBase::CTrackViewDopeSheetBase(QWidget* parent)
     m_currentTime = 0.0f;
     m_storedTime = m_currentTime;
     m_rcSelect = QRect(0, 0, 0, 0);
-    m_rubberBand = 0;
+    m_rubberBand = nullptr;
     m_scrollBar = new QScrollBar(Qt::Horizontal, this);
     connect(m_scrollBar, &QScrollBar::valueChanged, this, &CTrackViewDopeSheetBase::OnHScroll);
     m_keyTimeOffset = 0;
@@ -113,7 +113,7 @@ CTrackViewDopeSheetBase::CTrackViewDopeSheetBase(QWidget* parent)
 
     m_bFastRedraw = false;
 
-    m_pLastTrackSelectedOnSpot = NULL;
+    m_pLastTrackSelectedOnSpot = nullptr;
 
     m_wndPropsOnSpot = nullptr;
 
@@ -544,7 +544,7 @@ void CTrackViewDopeSheetBase::OnLButtonUp(Qt::KeyboardModifiers modifiers, const
         SelectKeys(m_rcSelect, modifiers & Qt::ControlModifier);
         m_rcSelect = QRect();
         m_rubberBand->deleteLater();
-        m_rubberBand = 0;
+        m_rubberBand = nullptr;
     }
     else if (m_mouseMode == eTVMouseMode_SelectWithinTime)
     {
@@ -552,7 +552,7 @@ void CTrackViewDopeSheetBase::OnLButtonUp(Qt::KeyboardModifiers modifiers, const
         SelectAllKeysWithinTimeFrame(m_rcSelect, modifiers & Qt::ControlModifier);
         m_rcSelect = QRect();
         m_rubberBand->deleteLater();
-        m_rubberBand = 0;
+        m_rubberBand = nullptr;
     }
     else if (m_mouseMode == eTVMouseMode_DragTime)
     {
@@ -744,7 +744,7 @@ void CTrackViewDopeSheetBase::OnRButtonDown(Qt::KeyboardModifiers modifiers, con
             }
             else
             {
-                m_pLastTrackSelectedOnSpot = NULL;
+                m_pLastTrackSelectedOnSpot = nullptr;
             }
 
             ShowKeyPropertyCtrlOnSpot(p.x(), p.y(), selectedKeys.GetKeyCount() > 1, bKeyChangeInSameTrack);
@@ -783,7 +783,7 @@ void CTrackViewDopeSheetBase::OnRButtonUp([[maybe_unused]] Qt::KeyboardModifiers
 
     if (!m_bCursorWasInKey)
     {
-        const bool bHasCopiedKey = (GetKeysInClickboard() != NULL);
+        const bool bHasCopiedKey = (GetKeysInClickboard() != nullptr);
 
         if (bHasCopiedKey && m_bMouseMovedAfterRButtonDown == false)    // Once moved, it means the user wanted to scroll, so no paste pop-up.
         {
@@ -1230,24 +1230,24 @@ XmlNodeRef CTrackViewDopeSheetBase::GetKeysInClickboard()
     CClipboard clip(this);
     if (clip.IsEmpty())
     {
-        return NULL;
+        return nullptr;
     }
 
     if (clip.GetTitle() != "Track view keys")
     {
-        return NULL;
+        return nullptr;
     }
 
     XmlNodeRef copyNode = clip.Get();
-    if (copyNode == NULL || strcmp(copyNode->getTag(), "CopyKeysNode"))
+    if (copyNode == nullptr || strcmp(copyNode->getTag(), "CopyKeysNode"))
     {
-        return NULL;
+        return nullptr;
     }
 
     int nNumTracksToPaste = copyNode->getChildCount();
     if (nNumTracksToPaste == 0)
     {
-        return NULL;
+        return nullptr;
     }
 
     return copyNode;
@@ -1789,7 +1789,7 @@ float CTrackViewDopeSheetBase::FrameSnap(float time) const
 //////////////////////////////////////////////////////////////////////////
 void CTrackViewDopeSheetBase::ShowKeyPropertyCtrlOnSpot(int x, int y, [[maybe_unused]] bool bMultipleKeysSelected, bool bKeyChangeInSameTrack)
 {
-    if (m_keyPropertiesDlg == NULL)
+    if (m_keyPropertiesDlg == nullptr)
     {
         return;
     }

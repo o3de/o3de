@@ -1179,7 +1179,7 @@ void UiDynamicScrollBoxComponent::ResizeContentToFitElements()
         }
         else
         {
-            int numHeaders = m_sections.size();
+            int numHeaders = static_cast<int>(m_sections.size());
             int numItems = m_numElements - numHeaders;
             newSize = numHeaders * m_prototypeElementSize[ElementType::SectionHeader] + numItems * m_prototypeElementSize[ElementType::Item];
         }
@@ -1201,7 +1201,7 @@ void UiDynamicScrollBoxComponent::ResizeContentToFitElements()
             }
             else
             {
-                int numHeaders = m_sections.size();
+                int numHeaders = static_cast<int>(m_sections.size());
                 int numItems = m_numElements - numHeaders;
                 newSize = numHeaders * m_estimatedElementSize[ElementType::SectionHeader] + numItems * m_estimatedElementSize[ElementType::Item];
             }
@@ -1555,7 +1555,7 @@ float UiDynamicScrollBoxComponent::GetFixedSizeElementOffset(int index) const
         int numHeaders = 0;
         int numItems = 0;
 
-        int numSections = m_sections.size();
+        int numSections = static_cast<int>(m_sections.size());
         if (numSections > 0)
         {
             if (index > m_sections[numSections - 1].m_headerElementIndex)

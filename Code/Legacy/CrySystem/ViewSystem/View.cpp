@@ -55,79 +55,9 @@ void CView::Release()
 }
 
 //------------------------------------------------------------------------
-void CView::Update(float frameTime, bool isActive)
+void CView::Update([[maybe_unused]] float frameTime, [[maybe_unused]] bool isActive)
 {
-    //FIXME:some cameras may need to be updated always
-    if (!isActive)
-    {
-        return;
-    }
-
-    if (m_azEntity)
-    {
-        m_viewParams.SaveLast();
-
-        CCamera* pSysCam = &m_pSystem->GetViewCamera();
-
-        //process screen shaking
-        ProcessShaking(frameTime);
-
-        //FIXME:to let the updateView implementation use the correct shakeVector
-        m_viewParams.currentShakeShift = m_viewParams.rotation * m_viewParams.currentShakeShift;
-
-        m_viewParams.frameTime = frameTime;
-        //update view position/rotation
-        if (m_azEntity != nullptr)
-        {
-            auto entityTransform = m_azEntity->GetTransform();
-            if (entityTransform != nullptr)
-            {
-                AZ::Transform transform = entityTransform->GetWorldTM();
-                m_viewParams.position = AZVec3ToLYVec3(transform.GetTranslation());
-                m_viewParams.rotation = AZQuaternionToLYQuaternion(transform.GetRotation());
-            }
-        }
-
-        ApplyFrameAdditiveAngles(m_viewParams.rotation);
-
-        const float fNearZ = gEnv->pSystem->GetIViewSystem()->GetDefaultZNear();
-
-        //see if the view have to use a custom near clipping plane
-        const float nearPlane = (m_viewParams.nearplane >= CAMERA_MIN_NEAR) ? (m_viewParams.nearplane) : fNearZ;
-        const float farPlane = (m_viewParams.farplane > 0.f) ? m_viewParams.farplane : DEFAULT_FAR;
-        float fov = (m_viewParams.fov < 0.001f) ? DEFAULT_FOV : m_viewParams.fov;
-
-        m_camera.SetFrustum(pSysCam->GetViewSurfaceX(), pSysCam->GetViewSurfaceZ(), fov, nearPlane, farPlane, pSysCam->GetPixelAspectRatio());
-
-        //apply shake & set the view matrix
-        m_viewParams.rotation *= m_viewParams.currentShakeQuat;
-        m_viewParams.rotation.NormalizeSafe();
-        m_viewParams.position += m_viewParams.currentShakeShift;
-
-        // Blending between cameras needs to happen after Camera space rendering calculations have been applied
-        // so that the m_viewParams.position is in World Space again
-        m_viewParams.UpdateBlending(frameTime);
-
-        // [VR] specific
-        // Add HMD's pose tracking on top of current camera pose
-        // Each game-title can decide whether to keep this functionality here or (most likely)
-        // move it somewhere else.
-
-        Quat q = m_viewParams.rotation;
-        Vec3 pos = m_viewParams.position;
-        Vec3 p = Vec3(ZERO);
-
-        Matrix34 viewMtx(q);
-        viewMtx.SetTranslation(pos + p);
-        m_camera.SetMatrix(viewMtx);
-
-        m_camera.SetEntityRotation(m_viewParams.rotation);
-        m_camera.SetEntityPos(pos);
-    }
-    else
-    {
-        m_linkedTo = AZ::EntityId(0);
-    }
+    AZ_ErrorOnce("CryLegacy", false, "CryLegacy view system no longer available (CView::Update)");
 }
 
 //-----------------------------------------------------------------------
@@ -173,7 +103,7 @@ void CView::SetViewShakeEx(const SShakeParams& params)
         return;
     }
 
-    int shakes(m_shakes.size());
+    int shakes = static_cast<int>(m_shakes.size());
     SShake* pSetShake(NULL);
 
     for (int i = 0; i < shakes; ++i)
@@ -250,7 +180,7 @@ void CView::ProcessShaking(float frameTime)
     m_viewParams.shakingRatio = 0;
     m_viewParams.groundOnly = false;
 
-    int shakes(m_shakes.size());
+    int shakes = static_cast<int>(m_shakes.size());
     for (int i = 0; i < shakes; ++i)
     {
         ProcessShake(&m_shakes[i], frameTime);
@@ -556,7 +486,7 @@ void CView::ProcessShakeNormal_DoShaking(SShake* pShake, float frameTime)
 //------------------------------------------------------------------------
 void CView::StopShake(int shakeID)
 {
-    uint32 num = m_shakes.size();
+    uint32 num = static_cast<int>(m_shakes.size());
     for (uint32 i = 0; i < num; ++i)
     {
         if (m_shakes[i].ID == shakeID && m_shakes[i].updating)

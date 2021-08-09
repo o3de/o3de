@@ -6,10 +6,9 @@
  *
  */
 
-#ifndef __MCOMMON_RENDERUTIL_H
-#define __MCOMMON_RENDERUTIL_H
+#pragma once
 
-// include required headers
+#include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Vector2.h>
 #include <MCore/Source/AzCoreConversions.h>
 #include <MCore/Source/Vector.h>
@@ -111,7 +110,7 @@ namespace MCommon
          * Render tangents and bitangents of the mesh.
          * @param mesh A pointer to the mesh which will be rendered.
          * @param worldTM The world space transformation matrix of the node to which the given mesh belongs to.
-         * @param scale This parameter controls the length of the tangents and bitangentss. The default size of the tangents and bitangents is one unit.
+         * @param scale This parameter controls the length of the tangents and bitangents. The default size of the tangents and bitangents is one unit.
          * @param colorTangents The color of the tangents.
          * @param mirroredBitangentColor The color of the mirrored bitangents, so the ones that have a w value of -1.
          * @param colorBitangent The color of the face bitangents.
@@ -127,7 +126,7 @@ namespace MCommon
          * @param directlyRender Will call the RenderLines() function internally in case it is set to true. If false
          *                       you have to make sure to call RenderLines() manually at the end of your custom render frame function.
          */
-        void RenderAABB(const MCore::AABB& box, const MCore::RGBAColor& color, bool directlyRender = false);
+        void RenderAabb(const AZ::Aabb& box, const MCore::RGBAColor& color, bool directlyRender = false);
 
         /**
          * Render a selection gizmo around the given axis aligned bounding box.
@@ -136,7 +135,7 @@ namespace MCommon
          * @param directlyRender Will call the RenderLines() function internally in case it is set to true. If false
          *                       you have to make sure to call RenderLines() manually at the end of your custom render frame function.
          */
-        void RenderSelection(const MCore::AABB& box, const MCore::RGBAColor& color, bool directlyRender = false);
+        void RenderSelection(const AZ::Aabb& box, const MCore::RGBAColor& color, bool directlyRender = false);
 
         /**
          * The render settings used to enable the different AABB types of an actor instance.
@@ -152,11 +151,9 @@ namespace MCommon
 
             bool                mNodeBasedAABB;             /**< Enable in case you want to render the node based AABB (default=true). */
             bool                mMeshBasedAABB;             /**< Enable in case you want to render the mesh based AABB (default=true). */
-            bool                mCollisionMeshBasedAABB;    /**< Enable in case you want to render the collision mesh based AABB (default=true). */
             bool                mStaticBasedAABB;           /**< Enable in case you want to render the static based AABB (default=true). */
             MCore::RGBAColor    mNodeBasedColor;            /**< The color of the node based AABB. */
             MCore::RGBAColor    mMeshBasedColor;            /**< The color of the mesh based AABB. */
-            MCore::RGBAColor    mCollisionMeshBasedColor;   /**< The color of the collision mesh based AABB. */
             MCore::RGBAColor    mStaticBasedColor;          /**< The color of the static based AABB. */
         };
 
@@ -168,19 +165,7 @@ namespace MCommon
          * @param directlyRender Will call the RenderLines() function internally in case it is set to true. If false
          *                       you have to make sure to call RenderLines() manually at the end of your custom render frame function.
          */
-        void RenderAABBs(EMotionFX::ActorInstance* actorInstance, const AABBRenderSettings& renderSettings = AABBRenderSettings(), bool directlyRender = false);
-
-        /**
-         * Render OBB for all enabled nodes inside the actor instance.
-         * @param actorInstance A pointer to the actor instance which will be rendered.
-         * @param[in] visibleJointIndices List of visible joint indices. nullptr in case all joints should be rendered.
-         * @param[in] selectedJointIndices List of selected joint indices. nullptr in case selection should not be considered.
-         * @param[in] color The color of the OBBs.
-         * @param[in] selectedColor The color of the selected OBBs.
-         * @param[in] directlyRender Will call the RenderLines() function internally in case it is set to true. If false
-         *                           you have to make sure to call RenderLines() manually at the end of your custom render frame function.
-         */
-        void RenderOBBs(EMotionFX::ActorInstance* actorInstance, const AZStd::unordered_set<AZ::u32>* visibleJointIndices = nullptr, const AZStd::unordered_set<AZ::u32>* selectedJointIndices = nullptr, const MCore::RGBAColor& color = MCore::RGBAColor(1.0f, 1.0f, 0.0f, 1.0f), const MCore::RGBAColor& selectedColor = MCore::RGBAColor(1.0f, 0.647f, 0.0f), bool directlyRender = false);
+        void RenderAabbs(EMotionFX::ActorInstance* actorInstance, const AABBRenderSettings& renderSettings = AABBRenderSettings(), bool directlyRender = false);
 
         /**
          * Render a simple line based skeleton for all enabled nodes of the actor instance.
@@ -615,7 +600,7 @@ namespace MCommon
          * Calculate the aabb which includes all actor instances.
          * @return The aabb which includes all actor instances.
          */
-        MCore::AABB CalcSceneAABB();
+        AZ::Aabb CalcSceneAabb();
 
         struct TrajectoryPathParticle
         {
@@ -722,7 +707,7 @@ namespace MCommon
 
         /**
          * Change the shape of a given arrow head util mesh. This method can be used to adjust an already allocated arrow head util mesh.
-         * For example this can be usedful if you need to change the radius or the height of an arrow head.
+         * For example this can be useful if you need to change the radius or the height of an arrow head.
          * @param mesh A pointer to the arrow head util mesh. Note that this mesh has to be created using CreateArrowHead().
          * @param height The height of the arrow head from the base to the head.
          * @param radius The radius of the base of the arrow head.
@@ -735,7 +720,7 @@ namespace MCommon
          * @param radius The radius of the sphere.
          * @return A pointer to the newly created util sphere mesh.
          */
-        static UtilMesh* CreateSphere(float radius, uint32 numSegments = 8);
+        static UtilMesh* CreateSphere(float radius, uint32 numSegments = 5);
 
         /**
          * Create an util mesh we can use to render cubes.
@@ -831,6 +816,3 @@ namespace MCommon
         static uint32                   mNumMaxTriangleVertices;    /**< The maximum capacity of the triangle vertex buffer */
     };
 } // namespace MCommon
-
-
-#endif

@@ -12,7 +12,7 @@
 #include "FileEnum.h"
 
 CFileEnum::CFileEnum()
-    : m_hEnumFile(0)
+    : m_hEnumFile(nullptr)
 {
 }
 
@@ -21,7 +21,7 @@ CFileEnum::~CFileEnum()
     if (m_hEnumFile)
     {
         delete m_hEnumFile;
-        m_hEnumFile = 0;
+        m_hEnumFile = nullptr;
     }
 }
 
@@ -53,7 +53,7 @@ bool CFileEnum::StartEnumeration(const QString& szEnumPathAndPattern, QFileInfo*
     if (m_hEnumFile)
     {
         delete m_hEnumFile;
-        m_hEnumFile = 0;
+        m_hEnumFile = nullptr;
     }
 
     QStringList parts = szEnumPathAndPattern.split(QRegularExpression(R"([\\/])"));
@@ -66,7 +66,7 @@ bool CFileEnum::StartEnumeration(const QString& szEnumPathAndPattern, QFileInfo*
     {
         // No files found
         delete m_hEnumFile;
-        m_hEnumFile = 0;
+        m_hEnumFile = nullptr;
 
         return false;
     }
@@ -84,7 +84,7 @@ bool CFileEnum::GetNextFile(QFileInfo* pFile)
     {
         // No more files left
         delete m_hEnumFile;
-        m_hEnumFile = 0;
+        m_hEnumFile = nullptr;
 
         return false;
     }

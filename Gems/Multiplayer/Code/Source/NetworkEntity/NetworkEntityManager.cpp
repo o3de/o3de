@@ -75,7 +75,7 @@ namespace Multiplayer
 
     uint32_t NetworkEntityManager::GetEntityCount() const
     {
-        return m_networkEntityTracker.size();
+        return static_cast<uint32_t>(m_networkEntityTracker.size());
     }
 
     NetworkEntityHandle NetworkEntityManager::AddEntityToEntityMap(NetEntityId netEntityId, AZ::Entity* entity)

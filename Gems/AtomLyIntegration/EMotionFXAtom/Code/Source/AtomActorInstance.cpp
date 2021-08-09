@@ -83,10 +83,10 @@ namespace AZ
             // Update RenderActorInstance world bounding box
             // The bounding box is moving with the actor instance.
             // The entity and actor transforms are kept in sync already.
-            m_worldAABB = AZ::Aabb::CreateFromMinMax(m_actorInstance->GetAABB().GetMin(), m_actorInstance->GetAABB().GetMax());
+            m_worldAABB = m_actorInstance->GetAabb();
 
             // Update RenderActorInstance local bounding box
-            // NB: computing the local bbox from the world bbox makes the local bbox artifically larger than it should be
+            // NB: computing the local bbox from the world bbox makes the local bbox artificially larger than it should be
             // instead EMFX should support getting the local bbox from the actor instance directly
             m_localAABB = m_worldAABB.GetTransformedAabb(m_transformInterface->GetWorldTM().GetInverse());
 
@@ -107,9 +107,8 @@ namespace AZ
                 {
                     if (debugOptions.m_drawAABB)
                     {
-                        const MCore::AABB emfxAabb = m_actorInstance->GetAABB();
-                        const AZ::Aabb azAabb = AZ::Aabb::CreateFromMinMax(emfxAabb.GetMin(), emfxAabb.GetMax());
-                        auxGeom->DrawAabb(azAabb, AZ::Color(0.0f, 1.0f, 1.0f, 1.0f), RPI::AuxGeomDraw::DrawStyle::Line);
+                        const AZ::Aabb& aabb = m_actorInstance->GetAabb();
+                        auxGeom->DrawAabb(aabb, AZ::Color(0.0f, 1.0f, 1.0f, 1.0f), RPI::AuxGeomDraw::DrawStyle::Line);
                     }
 
                     if (debugOptions.m_drawSkeleton)
@@ -163,7 +162,7 @@ namespace AZ
             const AZ::Color skeletonColor(0.604f, 0.804f, 0.196f, 1.0f);
             RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
             lineArgs.m_verts = m_auxVertices.data();
-            lineArgs.m_vertCount = m_auxVertices.size();
+            lineArgs.m_vertCount = static_cast<uint32_t>(m_auxVertices.size());
             lineArgs.m_colors = &skeletonColor;
             lineArgs.m_colorCount = 1;
             lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
@@ -204,9 +203,9 @@ namespace AZ
 
             RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
             lineArgs.m_verts = m_auxVertices.data();
-            lineArgs.m_vertCount = m_auxVertices.size();
+            lineArgs.m_vertCount = static_cast<uint32_t>(m_auxVertices.size());
             lineArgs.m_colors = m_auxColors.data();
-            lineArgs.m_colorCount = m_auxColors.size();
+            lineArgs.m_colorCount = static_cast<uint32_t>(m_auxColors.size());
             lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
             auxGeom->DrawLines(lineArgs);
         }
@@ -812,7 +811,7 @@ namespace AZ
 
             for (size_t lodIndex = 0; lodIndex < m_skinnedMeshInputBuffers->GetLodCount(); ++lodIndex)
             {
-                EMotionFX::MorphSetup* morphSetup = actor->GetMorphSetup(lodIndex);
+                EMotionFX::MorphSetup* morphSetup = actor->GetMorphSetup(static_cast<uint32>(lodIndex));
                 if (morphSetup)
                 {
                     const AZStd::vector<AZ::RPI::MorphTargetMetaAsset::MorphTarget>& metaDatas = actor->GetMorphTargetMetaAsset()->GetMorphTargets();
@@ -862,7 +861,7 @@ namespace AZ
                             // Set the weights for any active masks
                             for (size_t i = 0; i < m_wrinkleMaskWeights.size(); ++i)
                             {
-                                wrinkleMaskObjectSrg->SetConstant(wrinkleMaskWeightsIndex, m_wrinkleMaskWeights[i], i);
+                                wrinkleMaskObjectSrg->SetConstant(wrinkleMaskWeightsIndex, m_wrinkleMaskWeights[i], static_cast<uint32_t>(i));
                             }
                             AZ_Error("AtomActorInstance", m_wrinkleMaskWeights.size() <= s_maxActiveWrinkleMasks, "The skinning shader supports no more than %d active morph targets with wrinkle masks.", s_maxActiveWrinkleMasks);
                         }

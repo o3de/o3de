@@ -1411,7 +1411,7 @@ protected:
 struct IVarEnumList
     : public CRefCountBase
 {
-    //! Get the name of specified value in enumeration, or NULL if out of range.
+    //! Get the name of specified value in enumeration, or empty string if out of range.
     virtual QString GetItemName(uint index) = 0;
 };
 typedef _smart_ptr<IVarEnumList> IVarEnumListPtr;
@@ -1498,7 +1498,7 @@ public:
     {
         if (index >= m_items.size())
         {
-            return NULL;
+            return QString();
         }
         return m_items[index].name;
     };
@@ -1869,9 +1869,9 @@ public:
     void Serialize(XmlNodeRef node, bool load);
     CVarBlock* GetVarBlock() const { return m_vars; };
 
-    void AddVariable(CVariableBase& var, const QString& varName, VarOnSetCallback* cb = NULL, unsigned char dataType = IVariable::DT_SIMPLE);
-    void AddVariable(CVariableBase& var, const QString& varName, const QString& varHumanName, VarOnSetCallback* cb = NULL, unsigned char dataType = IVariable::DT_SIMPLE);
-    void AddVariable(CVariableArray& table, CVariableBase& var, const QString& varName, const QString& varHumanName, VarOnSetCallback* cb = NULL, unsigned char dataType = IVariable::DT_SIMPLE);
+    void AddVariable(CVariableBase& var, const QString& varName, VarOnSetCallback* cb = nullptr, unsigned char dataType = IVariable::DT_SIMPLE);
+    void AddVariable(CVariableBase& var, const QString& varName, const QString& varHumanName, VarOnSetCallback* cb = nullptr, unsigned char dataType = IVariable::DT_SIMPLE);
+    void AddVariable(CVariableArray& table, CVariableBase& var, const QString& varName, const QString& varHumanName, VarOnSetCallback* cb = nullptr, unsigned char dataType = IVariable::DT_SIMPLE);
     void ReserveNumVariables(int numVars);
     void RemoveVariable(IVariable* var);
 

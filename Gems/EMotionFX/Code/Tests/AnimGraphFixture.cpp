@@ -45,7 +45,7 @@ namespace EMotionFX
             ConstructActor();
             ASSERT_TRUE(m_actor) << "Construct actor did not build a valid actor.";
             m_actor->ResizeTransformData();
-            m_actor->PostCreateInit(/*makeGeomLodsCompatibleWithSkeletalLODs=*/ false, /*generateOBBs=*/ false, /*convertUnitType=*/ false);
+            m_actor->PostCreateInit(/*makeGeomLodsCompatibleWithSkeletalLODs=*/ false, /*convertUnitType=*/ false);
         }
         {
             m_motionSet = aznew MotionSet("testMotionSet");

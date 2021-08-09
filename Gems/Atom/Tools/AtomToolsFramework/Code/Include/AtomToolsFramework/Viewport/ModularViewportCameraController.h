@@ -18,6 +18,14 @@ namespace AtomToolsFramework
 {
     class ModularViewportCameraControllerInstance;
 
+    //! A function object to represent returning a camera controller priority.
+    using CameraControllerPriorityFn =
+        AZStd::function<AzFramework::ViewportControllerPriority(const AzFramework::CameraSystem& cameraSystem)>;
+
+    //! The default behavior for what priority the camera controller should respond to events at.
+    //! @note This can change based on the state of the camera controller/system.
+    AzFramework::ViewportControllerPriority DefaultCameraControllerPriority(const AzFramework::CameraSystem& cameraSystem);
+
     //! Builder class to create and configure a ModularViewportCameraControllerInstance.
     class ModularViewportCameraController
         : public AzFramework::MultiViewportController<
@@ -25,23 +33,33 @@ namespace AtomToolsFramework
               AzFramework::ViewportControllerPriority::DispatchToAllPriorities>
     {
     public:
+        friend ModularViewportCameraControllerInstance;
+
         using CameraListBuilder = AZStd::function<void(AzFramework::Cameras&)>;
         using CameraPropsBuilder = AZStd::function<void(AzFramework::CameraProps&)>;
+        using CameraPriorityBuilder = AZStd::function<void(CameraControllerPriorityFn&)>;
 
-        //! Sets the camera list builder callback used to populate new ModularViewportCameraControllerInstances
+        //! Sets the camera list builder callback used to populate new ModularViewportCameraControllerInstances.
         void SetCameraListBuilderCallback(const CameraListBuilder& builder);
-        //! Sets the camera props builder callback used to populate new ModularViewportCameraControllerInstances
+        //! Sets the camera props builder callback used to populate new ModularViewportCameraControllerInstances.
         void SetCameraPropsBuilderCallback(const CameraPropsBuilder& builder);
-        //! Sets up a camera list based on this controller's CameraListBuilderCallback
-        void SetupCameras(AzFramework::Cameras& cameras);
-        //! Sets up properties shared across all cameras
-        void SetupCameraProperies(AzFramework::CameraProps& cameraProps);
+        //! Sets the camera controller priority builder callback used to populate new ModularViewportCameraControllerInstances.
+        void SetCameraPriorityBuilderCallback(const CameraPriorityBuilder& builder);
 
     private:
+        //! Sets up a camera list based on this controller's CameraListBuilderCallback.
+        void SetupCameras(AzFramework::Cameras& cameras);
+        //! Sets up properties shared across all cameras.
+        void SetupCameraProperties(AzFramework::CameraProps& cameraProps);
+        //! Sets up how the camera controller should decide at what priority level to respond to.
+        void SetupCameraControllerPriority(CameraControllerPriorityFn& cameraPriorityFn);
+
         //! Builder to generate a list of CameraInputs to run in the ModularViewportCameraControllerInstance.
         CameraListBuilder m_cameraListBuilder;
-        CameraPropsBuilder m_cameraPropsBuilder; //!< Builder to define custom camera properties to use for things such as rotate and
-                                                 //!< translate interpolation.
+        //! Builder to define custom camera properties to use for things such as rotate and translate interpolation.
+        CameraPropsBuilder m_cameraPropsBuilder;
+        //! Builder to define what priority level the camera controller should respond to events at.
+        CameraPriorityBuilder m_cameraControllerPriorityBuilder;
     };
 
     //! A customizable camera controller that can be configured to run a varying set of CameraInput instances.
@@ -87,6 +105,7 @@ namespace AtomToolsFramework
         AzFramework::Camera m_targetCamera; //!< The target (next) camera state that m_camera is catching up to.
         AzFramework::CameraSystem m_cameraSystem; //!< The camera system responsible for managing all CameraInputs.
         AzFramework::CameraProps m_cameraProps; //!< Camera properties to control rotate and translate smoothness.
+        CameraControllerPriorityFn m_priorityFn; //!< Controls at what priority the camera controller should respond to events.
 
         CameraAnimation m_cameraAnimation; //!< Camera animation state (used during CameraMode::Animation).
         CameraMode m_cameraMode = CameraMode::Control; //!< The current mode the camera is operating in.

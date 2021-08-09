@@ -10,6 +10,7 @@
 #include <IGem.h>
 
 #include "CameraComponent.h"
+#include "CameraSystemComponent.h"
 
 #if defined(CAMERA_EDITOR)
 #include "CameraEditorSystemComponent.h"
@@ -31,6 +32,7 @@ namespace Camera
         {
             m_descriptors.insert(m_descriptors.end(), {
                 Camera::CameraComponent::CreateDescriptor(),
+                Camera::CameraSystemComponent::CreateDescriptor(),
 
 #if defined(CAMERA_EDITOR)
                 CameraEditorSystemComponent::CreateDescriptor(),
@@ -55,6 +57,7 @@ namespace Camera
         AZ::ComponentTypeList GetRequiredSystemComponents() const override
         {
             return AZ::ComponentTypeList {
+                azrtti_typeid<Camera::CameraSystemComponent>(),
 #if defined(CAMERA_EDITOR)
                 azrtti_typeid<CameraEditorSystemComponent>(),
 #endif // CAMERA_EDITOR

@@ -473,7 +473,7 @@ void ReflectedVarUserAdapter::SyncReflectedVarToIVar(IVariable *pVariable)
 
     //extract the list of custom items from the IVariable user data
     IVariable::IGetCustomItems* pGetCustomItems = static_cast<IVariable::IGetCustomItems*> (pVariable->GetUserData().value<void *>());
-    if (pGetCustomItems != 0)
+    if (pGetCustomItems != nullptr)
     {
         std::vector<IVariable::IGetCustomItems::SItem> items;
         QString dlgTitle;

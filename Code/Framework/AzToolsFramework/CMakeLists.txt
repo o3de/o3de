@@ -50,6 +50,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
         NAME AzToolsFrameworkTestCommon STATIC
         NAMESPACE AZ
+        AUTOMOC
         FILES_CMAKE
             AzToolsFramework/aztoolsframeworktestcommon_files.cmake
         INCLUDE_DIRECTORIES
@@ -68,6 +69,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
         NAME AzToolsFramework.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE AZ
+        AUTOMOC
         FILES_CMAKE
             Tests/aztoolsframeworktests_files.cmake
         INCLUDE_DIRECTORIES

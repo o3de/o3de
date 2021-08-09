@@ -133,7 +133,7 @@ IClassDesc* CClassFactory::FindClass(const char* pClassName) const
 
     if (!pSubClassName)
     {
-        return NULL;
+        return nullptr;
     }
 
     QString name = QString(pClassName).left(pSubClassName - pClassName);
@@ -169,7 +169,7 @@ void CClassFactory::UnregisterClass(const char* pClassName)
 {
     IClassDesc* pClassDesc = FindClass(pClassName);
 
-    if (pClassDesc == NULL)
+    if (pClassDesc == nullptr)
     {
         return;
     }

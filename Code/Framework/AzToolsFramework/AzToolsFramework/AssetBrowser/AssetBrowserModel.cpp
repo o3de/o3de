@@ -134,7 +134,8 @@ namespace AzToolsFramework
             {
                 return 0;
             }
-            
+
+            //If the column of the parent is one of those we don't want any more rows as children
             if (parent.isValid())
             {
                 if ((parent.column() != aznumeric_cast<int>(AssetBrowserEntry::Column::DisplayName)) &&

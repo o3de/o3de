@@ -556,7 +556,7 @@ namespace NvCloth
 
             for (size_t index = 0; index < numVertices; ++index)
             {
-                const int renderVertexIndex = firstVertex + index;
+                const int renderVertexIndex = static_cast<int>(firstVertex + index);
 
                 const SimParticleFormat& renderParticle = renderParticles[renderVertexIndex];
                 destVerticesBuffer[index].Set(

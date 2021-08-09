@@ -9,7 +9,7 @@
 #ifndef __MCOMMON_TRANSLATEMANIPULATOR_H
 #define __MCOMMON_TRANSLATEMANIPULATOR_H
 
-// include the Core system
+#include <MCore/Source/AABB.h>
 #include <MCore/Source/Vector.h>
 #include <MCore/Source/Ray.h>
 #include "MCommonConfig.h"
