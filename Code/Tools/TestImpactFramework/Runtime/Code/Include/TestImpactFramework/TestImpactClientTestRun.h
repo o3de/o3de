@@ -168,5 +168,23 @@ namespace TestImpact
             size_t m_totalNumFailingTests = 0;
             size_t m_totalNumDisabledTests = 0;
         };
+
+        //! Representation of a test run that completed with no test failures.
+        class PassingTestRun 
+            : public CompletedTestRun
+        {
+        public:
+            using CompletedTestRun::CompletedTestRun;
+            PassingTestRun(TestRunBase&& testRun, AZStd::vector<Test>&& tests);
+        };
+
+        //! Representation of a test run that completed with one or more test failures.
+        class FailingTestRun 
+            : public CompletedTestRun
+        {
+        public:
+            using CompletedTestRun::CompletedTestRun;
+            FailingTestRun(TestRunBase&& testRun, AZStd::vector<Test>&& tests);
+        };
     } // namespace Client
 } // namespace TestImpact

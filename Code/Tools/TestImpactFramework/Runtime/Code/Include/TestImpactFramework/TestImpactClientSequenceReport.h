@@ -47,8 +47,8 @@ namespace TestImpact
                 TestSequenceResult result,
                 AZStd::chrono::high_resolution_clock::time_point startTime,
                 AZStd::chrono::milliseconds duration,
-                AZStd::vector<CompletedTestRun>&& passingTestRuns,
-                AZStd::vector<CompletedTestRun>&& failingTestRuns,
+                AZStd::vector<PassingTestRun>&& passingTestRuns,
+                AZStd::vector<FailingTestRun>&& failingTestRuns,
                 AZStd::vector<TestRunWithExecutionFailure>&& executionFailureTestRuns,
                 AZStd::vector<TimedOutTestRun>&& timedOutTestRuns,
                 AZStd::vector<UnexecutedTestRun>&& unexecutedTestRuns);
@@ -93,10 +93,10 @@ namespace TestImpact
             size_t GetTotalNumDisabledTests() const;
 
             //! Returns the set of test runs that executed successfully with no failing tests.
-            const AZStd::vector<CompletedTestRun>& GetPassingTestRuns() const;
+            const AZStd::vector<PassingTestRun>& GetPassingTestRuns() const;
 
             //! Returns the set of test runs that executed successfully but had one or more failing tests.
-            const AZStd::vector<CompletedTestRun>& GetFailingTestRuns() const;
+            const AZStd::vector<FailingTestRun>& GetFailingTestRuns() const;
 
             //! Returns the set of test runs that failed to execute.
             const AZStd::vector<TestRunWithExecutionFailure>& GetExecutionFailureTestRuns() const;
@@ -110,8 +110,8 @@ namespace TestImpact
             TestSequenceResult m_result = TestSequenceResult::Success;
             AZStd::chrono::high_resolution_clock::time_point m_startTime;
             AZStd::chrono::milliseconds m_duration = AZStd::chrono::milliseconds{ 0 };
-            AZStd::vector<CompletedTestRun> m_passingTestRuns;
-            AZStd::vector<CompletedTestRun> m_failingTestRuns;
+            AZStd::vector<PassingTestRun> m_passingTestRuns;
+            AZStd::vector<FailingTestRun> m_failingTestRuns;
             AZStd::vector<TestRunWithExecutionFailure> m_executionFailureTestRuns;
             AZStd::vector<TimedOutTestRun> m_timedOutTestRuns;
             AZStd::vector<UnexecutedTestRun> m_unexecutedTestRuns;
