@@ -199,13 +199,15 @@ namespace UnitTest
         // note: it is important to make sure the focus widget is parented to the dummy widget to have focus in/out events fire
         auto focusWidget = AZStd::make_unique<UnitTest::FocusInteractionWidget>(dummyWidget.get());
 
+        const auto previousFocusWidget = QApplication::focusWidget();
+
         // Given
-        // Setup viewport ui system
+        // setup viewport ui system
         AzToolsFramework::ViewportUi::ViewportUiManager viewportUiManager;
         viewportUiManager.ConnectViewportUiBus(AzToolsFramework::ViewportUi::DefaultViewportId);
         viewportUiManager.InitializeViewportUi(&m_editorActions.m_defaultWidget, focusWidget.get());
 
-        // Begin EditorPickEntitySelection
+        // begin EditorPickEntitySelection
         using AzToolsFramework::EditorInteractionSystemViewportSelectionRequestBus;
         EditorInteractionSystemViewportSelectionRequestBus::Event(
             AzToolsFramework::GetEntityContextId(), &EditorInteractionSystemViewportSelectionRequestBus::Events::SetHandler,
@@ -215,12 +217,13 @@ namespace UnitTest
             });
 
         // When
-        // A mouse event is sent to the focus widget (set to be the render overlay in the viewport ui system)
+        // a mouse event is sent to the focus widget (set to be the render overlay in the viewport ui system)
         QTest::mouseClick(focusWidget.get(), Qt::MouseButton::LeftButton);
 
         // Then
         // focus should not change
         EXPECT_FALSE(focusWidget->hasFocus());
+        EXPECT_EQ(previousFocusWidget, QApplication::focusWidget());
 
         // clean up
         viewportUiManager.DisconnectViewportUiBus();
