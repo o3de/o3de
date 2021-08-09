@@ -183,7 +183,7 @@ namespace TestImpact
             std::cout << "Updating and serializing the test impact analysis data, this may take a moment...\n";
         }
 
-        void TestRunCompleteCallback(const Client::TestRun& testRun, size_t numTestRunsCompleted, size_t totalNumTestRuns)
+        void TestRunCompleteCallback(const Client::TestRunBase& testRun, size_t numTestRunsCompleted, size_t totalNumTestRuns)
         {
             const auto progress =
                 AZStd::string::format("(%03u/%03u)", numTestRunsCompleted, totalNumTestRuns, testRun.GetTargetName().c_str());
