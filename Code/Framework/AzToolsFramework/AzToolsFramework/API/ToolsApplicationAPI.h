@@ -600,23 +600,11 @@ namespace AzToolsFramework
          * Open 3D Engine Internal use only.
          *
          * Run a specific redo command separate from the undo/redo system.
-         * In many cases before a modifcation on an entity takes place, it is first packaged into 
-         * undo/redo commands. Running the modification's redo command separete from the undo/redo 
+         * In many cases before a modification on an entity takes place, it is first packaged into 
+         * undo/redo commands. Running the modification's redo command separate from the undo/redo 
          * system simulates its execution, and avoids some code duplication.
          */
         virtual void RunRedoSeparately(UndoSystem::URSequencePoint* redoCommand) = 0;
-
-        /**
-         * Create a prefab out of the entities provided, at the path provided.
-         * Automatically detects descendants of entities, and discerns between entities and child instances.
-         */
-        virtual bool CreatePrefab(
-            const AZStd::vector<AZ::EntityId>& entityIds, const char* filePath, bool saveToDisk) = 0;
-
-        /**
-         * Instantiate a prefab from a prefab file.
-         */
-        virtual bool InstantiatePrefab(const char* filePath, AZ::EntityId parent, const AZ::Vector3& position) = 0;
     };
 
     using ToolsApplicationRequestBus = AZ::EBus<ToolsApplicationRequests>;

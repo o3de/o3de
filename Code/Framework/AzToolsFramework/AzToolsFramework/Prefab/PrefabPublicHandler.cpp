@@ -61,7 +61,7 @@ namespace AzToolsFramework
             m_prefabUndoCache.Destroy();
         }
 
-        PrefabOperationResult PrefabPublicHandler::CreatePrefab(const AZStd::vector<AZ::EntityId>& entityIds, AZ::IO::PathView filePath, bool saveToDisk)
+        PrefabOperationResult PrefabPublicHandler::CreatePrefabInMemory(const AZStd::vector<AZ::EntityId>& entityIds, AZ::IO::PathView filePath)
         {
             EntityList inputEntityList, topLevelEntities;
             AZ::EntityId commonRootEntityId;
@@ -71,11 +71,6 @@ namespace AzToolsFramework
             if (!findCommonRootOutcome.IsSuccess())
             {
                 return findCommonRootOutcome;
-            }
-
-            if (saveToDisk)
-            {
-                AZ_Assert(filePath.IsAbsolute(), "CreatePrefab requires an absolute path for saving the initial prefab file if saving to disk.");
             }
 
             InstanceOptionalReference instanceToCreate;
@@ -128,7 +123,7 @@ namespace AzToolsFramework
                     PrefabDom linkPatchesCopy;
                     linkPatchesCopy.CopyFrom(linkPatches->get(), linkPatchesCopy.GetAllocator());
                     nestedInstanceLinkPatchesMap.emplace(nestedInstance, AZStd::move(linkPatchesCopy));
-                    
+
                     RemoveLink(outInstance, commonRootEntityOwningInstance->get().GetTemplateId(), undoBatch.GetUndoBatch());
 
                     instancePtrs.emplace_back(AZStd::move(outInstance));
@@ -142,27 +137,18 @@ namespace AzToolsFramework
                 if (!prefabEditorEntityOwnershipInterface)
                 {
                     return AZ::Failure(AZStd::string("Could not create a new prefab out of the entities provided - internal error "
-                                                     "(PrefabEditorEntityOwnershipInterface unavailable)."));
+                        "(PrefabEditorEntityOwnershipInterface unavailable)."));
                 }
 
                 // Create the Prefab
-                if (saveToDisk)
-                {
-                    instanceToCreate = prefabEditorEntityOwnershipInterface->CreatePrefab(
-                        entities, AZStd::move(instancePtrs), m_prefabLoaderInterface->GenerateRelativePath(filePath),
-                        commonRootEntityOwningInstance);
-                }
-                else
-                {
-                    instanceToCreate = prefabEditorEntityOwnershipInterface->CreatePrefab(
-                        entities, AZStd::move(instancePtrs), filePath,
-                        commonRootEntityOwningInstance);
-                }
+                instanceToCreate = prefabEditorEntityOwnershipInterface->CreatePrefab(
+                    entities, AZStd::move(instancePtrs), m_prefabLoaderInterface->GenerateRelativePath(filePath),
+                    commonRootEntityOwningInstance);
 
                 if (!instanceToCreate)
                 {
                     return AZ::Failure(AZStd::string("Could not create a new prefab out of the entities provided - internal error "
-                                                     "(A null instance is returned)."));
+                        "(A null instance is returned)."));
                 }
 
                 AZ::EntityId containerEntityId = instanceToCreate->get().GetContainerEntityId();
@@ -230,7 +216,7 @@ namespace AzToolsFramework
                         linkUpdate.Redo();
                     }
                 });
-                
+
                 // Create a link between the templates of the newly created instance and the instance it's being parented under.
                 CreateLink(
                     instanceToCreate->get(), commonRootEntityOwningInstance->get().GetTemplateId(), undoBatch.GetUndoBatch(),
@@ -267,19 +253,34 @@ namespace AzToolsFramework
 
                 // Select Container Entity
                 {
-                    auto selectionUndo = aznew SelectionCommand({containerEntityId}, "Select Prefab Container Entity");
+                    auto selectionUndo = aznew SelectionCommand({ containerEntityId }, "Select Prefab Container Entity");
                     selectionUndo->SetParent(undoBatch.GetUndoBatch());
                     ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequestBus::Events::RunRedoSeparately, selectionUndo);
                 }
             }
 
-            // Save Template to file
-            if (saveToDisk)
+            return AZ::Success();
+        }
+
+        PrefabOperationResult PrefabPublicHandler::CreatePrefabInDisk(const AZStd::vector<AZ::EntityId>& entityIds, AZ::IO::PathView filePath)
+        {
+            AZ_Assert(filePath.IsAbsolute(), "CreatePrefabInDisk requires an absolute path for saving the initial prefab file if saving to disk.");
+            
+            auto result = CreatePrefabInMemory(entityIds, filePath);
+            if (result.IsSuccess())
             {
-                m_prefabLoaderInterface->SaveTemplateToFile(instanceToCreate->get().GetTemplateId(), filePath);
+                // Save Template to file
+                auto relativePath = m_prefabLoaderInterface->GenerateRelativePath(filePath);
+                Prefab::TemplateId templateId = m_prefabSystemComponentInterface->GetTemplateIdFromFilePath(relativePath);
+                if (!m_prefabLoaderInterface->SaveTemplateToFile(templateId, filePath))
+                {
+                    AZStd::string_view filePathString(filePath);
+                    return AZ::Failure(AZStd::string::format("Could not save the newly created prefab to file path %.*s - internal error ",
+                        aznumeric_cast<int>(filePathString.size()), filePathString.data()));
+                }
             }
             
-            return AZ::Success();
+            return result;
         }
 
         PrefabDom PrefabPublicHandler::ApplyContainerTransformAndGeneratePatch(AZ::EntityId containerEntityId, AZ::EntityId parentEntityId, const EntityList& childEntities)
@@ -316,7 +317,7 @@ namespace AzToolsFramework
             return AZStd::move(patch);
         }
 
-        PrefabOperationResult PrefabPublicHandler::InstantiatePrefab(
+        InstantiatePrefabResult PrefabPublicHandler::InstantiatePrefab(
             AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position)
         {
             auto prefabEditorEntityOwnershipInterface = AZ::Interface<PrefabEditorEntityOwnershipInterface>::Get();
@@ -362,6 +363,7 @@ namespace AzToolsFramework
                     relativePath.Native().c_str(), instanceToParentUnder->get().GetTemplateSourcePath().Native().c_str()));
             }
 
+            AZ::EntityId containerEntityId;
             {
                 // Initialize Undo Batch object
                 ScopedUndoBatch undoBatch("Instantiate Prefab");
@@ -382,7 +384,7 @@ namespace AzToolsFramework
                     instanceToParentUnder->get(), "Update prefab instance", instanceToParentUnderDomBeforeCreate, undoBatch.GetUndoBatch());
 
                 // Create Link with correct container patches
-                AZ::EntityId containerEntityId = instanceToCreate->get().GetContainerEntityId();
+                containerEntityId = instanceToCreate->get().GetContainerEntityId();
                 AZ::Entity* containerEntity = GetEntityById(containerEntityId);
                 AZ_Assert(containerEntity, "Invalid container entity detected in InstantiatePrefab.");
 
@@ -409,7 +411,7 @@ namespace AzToolsFramework
                     &AzToolsFramework::ToolsApplicationRequestBus::Events::ClearDirtyEntities);
             }
 
-            return AZ::Success();
+            return AZ::Success(containerEntityId);
         }
 
         PrefabOperationResult PrefabPublicHandler::FindCommonRootOwningInstance(
