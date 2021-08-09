@@ -24,7 +24,7 @@ namespace TestImpact
             return AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(timePoint.time_since_epoch()).count();
         }
 
-        void SerializeTestRunMembers(const Client::TestRun& testRun, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer)
+        void SerializeTestRunMembers(const Client::TestRunBase& testRun, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer)
         {
             // Name
             writer.Key("name");
@@ -51,7 +51,7 @@ namespace TestImpact
             writer.String(TestRunResultAsString(testRun.GetResult()).c_str());
         }
 
-        void SerializeTestRun(const Client::TestRun& testRun, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer)
+        void SerializeTestRun(const Client::TestRunBase& testRun, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer)
         {
             writer.StartObject();
 

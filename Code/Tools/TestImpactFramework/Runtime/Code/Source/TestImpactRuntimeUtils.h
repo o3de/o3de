@@ -85,9 +85,9 @@ namespace TestImpact
         AZStd::chrono::milliseconds duration,
         const AZStd::vector<TestJob>& testJobs)
     {
-        AZStd::vector<Client::CompletedTestRun> passingTests;
-        AZStd::vector<Client::CompletedTestRun> failingTests;
-        AZStd::vector<Client::TestRunWithExecutonFailure> executionFailureTests;
+        AZStd::vector<Client::PassingTestRun> passingTests;
+        AZStd::vector<Client::FailingTestRun> failingTests;
+        AZStd::vector<Client::TestRunWithExecutionFailure> executionFailureTests;
         AZStd::vector<Client::TimedOutTestRun> timedOutTests;
         AZStd::vector<Client::UnexecutedTestRun> unexecutedTests;
         
@@ -98,7 +98,7 @@ namespace TestImpact
                 AZStd::chrono::high_resolution_clock::time_point() +
                 AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(testJob.GetStartTime() - startTime);
 
-            Client::TestRun clientTestRun(
+            Client::TestRunBase clientTestRun(
                 testJob.GetTestTarget()->GetName(), testJob.GetCommandString(), relativeStartTime, testJob.GetDuration(),
                 testJob.GetTestResult());
 

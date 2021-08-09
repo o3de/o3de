@@ -81,7 +81,7 @@ namespace TestImpact
             {
                 if (m_testCompleteCallback.has_value())
                 {
-                    Client::TestRun testRun(
+                    Client::TestRunBase testRun(
                         testJob.GetTestTarget()->GetName(),
                         testJob.GetCommandString(),
                         testJob.GetStartTime(),
