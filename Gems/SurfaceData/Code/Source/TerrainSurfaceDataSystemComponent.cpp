@@ -6,18 +6,14 @@
  *
  */
 
-#include "TerrainSurfaceDataSystemComponent.h"
+#include <TerrainSurfaceDataSystemComponent.h>
 #include <AzCore/Debug/Profiler.h> 
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzFramework/Terrain/TerrainDataRequestBus.h>
-#include <MathConversion.h>
 #include <SurfaceData/SurfaceDataSystemRequestBus.h>
 #include <SurfaceData/SurfaceTag.h>
 #include <SurfaceData/Utility/SurfaceDataUtility.h>
-
-#include <ISystem.h>
 
 namespace SurfaceData
 {
@@ -99,9 +95,7 @@ namespace SurfaceData
     void TerrainSurfaceDataSystemComponent::Activate()
     {
         m_providerHandle = InvalidSurfaceDataRegistryHandle;
-        m_system = GetISystem();
-        CrySystemEventBus::Handler::BusConnect();
-        AZ::HeightmapUpdateNotificationBus::Handler::BusConnect();
+        AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
 
         UpdateTerrainData(AZ::Aabb::CreateNull());
     }
@@ -115,9 +109,7 @@ namespace SurfaceData
         }
 
         SurfaceDataProviderRequestBus::Handler::BusDisconnect();
-        AZ::HeightmapUpdateNotificationBus::Handler::BusDisconnect();
-        CrySystemEventBus::Handler::BusDisconnect();
-        m_system = nullptr;
+        AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusDisconnect();
 
         // Clear the cached terrain bounds data
         {
@@ -144,16 +136,6 @@ namespace SurfaceData
             return true;
         }
         return false;
-    }
-
-    void TerrainSurfaceDataSystemComponent::OnCrySystemInitialized(ISystem& system, [[maybe_unused]] const SSystemInitParams& systemInitParams)
-    {
-        m_system = &system;
-    }
-
-    void TerrainSurfaceDataSystemComponent::OnCrySystemShutdown([[maybe_unused]] ISystem& system)
-    {
-        m_system = nullptr;
     }
 
     void TerrainSurfaceDataSystemComponent::GetSurfacePoints(const AZ::Vector3& inPosition, SurfacePointList& surfacePointList) const
@@ -185,6 +167,7 @@ namespace SurfaceData
 
     AZ::Aabb TerrainSurfaceDataSystemComponent::GetSurfaceAabb() const
     {
+        //auto terrain = Terrain::TerrainProviderRequestBus::FindFirstHandler();
         auto terrain = AzFramework::Terrain::TerrainDataRequestBus::FindFirstHandler();
         return terrain ? terrain->GetTerrainAabb() : AZ::Aabb::CreateNull();
     }
@@ -255,8 +238,8 @@ namespace SurfaceData
 
     }
 
-    void TerrainSurfaceDataSystemComponent::HeightmapModified(const AZ::Aabb& bounds)
+    void TerrainSurfaceDataSystemComponent::OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, [[maybe_unused]] TerrainDataChangedMask dataChangedMask)
     {
-        UpdateTerrainData(bounds);
+        UpdateTerrainData(dirtyRegion);
     }
 }

@@ -229,9 +229,11 @@ namespace Terrain
 
         // Get the height range of the entire world
         AZ::Aabb worldBounds = AZ::Aabb::CreateNull();
-        TerrainDataRequestBus::BroadcastResult(worldBounds, &TerrainDataRequestBus::Events::GetTerrainAabb);
+        AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
+            worldBounds, &AzFramework::Terrain::TerrainDataRequestBus::Events::GetTerrainAabb);
         m_cachedHeightRange = AZ::Vector2(worldBounds.GetMin().GetZ(), worldBounds.GetMax().GetZ());
-        TerrainDataRequestBus::BroadcastResult(m_cachedHeightQueryResolution, &TerrainDataRequestBus::Events::GetTerrainGridResolution);
+        AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
+            m_cachedHeightQueryResolution, &AzFramework::Terrain::TerrainDataRequestBus::Events::GetTerrainGridResolution);
     }
 
 }

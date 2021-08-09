@@ -1,6 +1,5 @@
 
 set(FILES
-    Source/TerrainBus.h
     Source/TerrainFeatureProcessor.cpp
     Source/TerrainFeatureProcessor.h
     Source/TerrainHeightGradientListComponent.cpp

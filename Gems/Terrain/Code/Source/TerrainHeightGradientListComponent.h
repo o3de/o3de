@@ -21,7 +21,7 @@
 #include <LmbrCentral/Dependency/DependencyNotificationBus.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 
-#include <TerrainBus.h>
+#include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <TerrainProviderBus.h>
 
 

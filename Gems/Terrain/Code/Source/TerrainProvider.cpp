@@ -22,7 +22,7 @@ TerrainProvider::TerrainProvider()
     m_dirtyRegion = AZ::Aabb::CreateNull();
     m_worldBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.0f, 0.0f, 0.0f), AZ::Vector3(4096.0f, 4096.0f, 2048.0f));
 
-    Terrain::TerrainDataRequestBus::Handler::BusConnect();
+    AzFramework::Terrain::TerrainDataRequestBus::Handler::BusConnect();
 
     Terrain::TerrainSystemServiceRequestBus::Handler::BusConnect();
     AZ::TickBus::Handler::BusConnect();
@@ -37,7 +37,7 @@ TerrainProvider::~TerrainProvider()
 
     Terrain::TerrainSystemServiceRequestBus::Handler::BusDisconnect();
 
-    Terrain::TerrainDataRequestBus::Handler::BusDisconnect();
+    AzFramework::Terrain::TerrainDataRequestBus::Handler::BusDisconnect();
 }
 
 AZ::Aabb TerrainProvider::GetTerrainAabb() const
@@ -50,41 +50,122 @@ AZ::Vector2 TerrainProvider::GetTerrainGridResolution() const
     return m_heightQueryResolution;
 }
 
-float TerrainProvider::GetHeightSynchronous(float x, float y)
+float TerrainProvider::GetHeightSynchronous(float x, float y) const
 {
-    AZ::Vector3 inPosition((float)x, (float)y, 0.0f);
+    AZ::Vector3 inPosition((float)x, (float)y, m_worldBounds.GetMin().GetZ());
     AZ::Vector3 outPosition((float)x, (float)y, m_worldBounds.GetMin().GetZ());
 
     AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
 
     if (!m_registeredAreas.empty())
     {
-        for (auto& entry : m_registeredAreas)
+        for (auto& [areaId, areaBounds] : m_registeredAreas)
         {
-            AZ_Assert(m_registeredAreas.size() > 0, "???");
-            Terrain::TerrainAreaHeightRequestBus::Event(entry.first, &Terrain::TerrainAreaHeightRequestBus::Events::GetHeight, inPosition, outPosition, Terrain::TerrainAreaHeightRequestBus::Events::Sampler::DEFAULT);
+            inPosition.SetZ(areaBounds.GetMin().GetZ());
+            if (areaBounds.Contains(inPosition))
+            {
+                Terrain::TerrainAreaHeightRequestBus::Event(
+                    areaId, &Terrain::TerrainAreaHeightRequestBus::Events::GetHeight, inPosition, outPosition,
+                    Terrain::TerrainAreaHeightRequestBus::Events::Sampler::DEFAULT);
+            }
         }
     }
 
     return AZ::GetClamp(outPosition.GetZ(), m_worldBounds.GetMin().GetZ(), m_worldBounds.GetMax().GetZ());
 }
 
-AZ::Vector3 TerrainProvider::GetNormalSynchronous([[maybe_unused]] float x, [[maybe_unused]] float y)
+float TerrainProvider::GetHeight(AZ::Vector3 position, [[maybe_unused]] Sampler sampler, [[maybe_unused]] bool* terrainExistsPtr) const
+{
+    if (terrainExistsPtr)
+    {
+        *terrainExistsPtr = true;
+    }
+
+    return GetHeightSynchronous(position.GetX(), position.GetY());
+}
+
+float TerrainProvider::GetHeightFromFloats(
+    float x, float y, [[maybe_unused]] Sampler sampler, [[maybe_unused]] bool* terrainExistsPtr) const
+{
+    if (terrainExistsPtr)
+    {
+        *terrainExistsPtr = true;
+    }
+
+    return GetHeightSynchronous(x, y);
+}
+
+bool TerrainProvider::GetIsHoleFromFloats(
+    [[maybe_unused]] float x, [[maybe_unused]] float y, [[maybe_unused]] Sampler sampleFilter) const
+{
+    return false;
+}
+
+AZ::Vector3 TerrainProvider::GetNormalSynchronous([[maybe_unused]] float x, [[maybe_unused]] float y) const
 {
     return AZ::Vector3::CreateAxisZ();
 }
 
-void TerrainProvider::GetHeight(const AZ::Vector3& inPosition, [[maybe_unused]] Sampler sampleFilter, AZ::Vector3& outPosition)
+AZ::Vector3 TerrainProvider::GetNormal(
+    AZ::Vector3 position, [[maybe_unused]] Sampler sampleFilter, [[maybe_unused]] bool* terrainExistsPtr) const
 {
-    outPosition = AZ::Vector3(inPosition.GetX(), inPosition.GetY(), GetHeightSynchronous(inPosition.GetX(), inPosition.GetY()));
+    if (terrainExistsPtr)
+    {
+        *terrainExistsPtr = true;
+    }
+
+    return GetNormalSynchronous(position.GetX(), position.GetY());
 }
 
-void TerrainProvider::GetNormal(
-    [[maybe_unused]] const AZ::Vector3& inPosition, [[maybe_unused]] Sampler sampleFilter, [[maybe_unused]] AZ::Vector3& outNormal)
+AZ::Vector3 TerrainProvider::GetNormalFromFloats(
+    float x, float y, [[maybe_unused]] Sampler sampleFilter, [[maybe_unused]] bool* terrainExistsPtr) const
 {
-    // TODO: implement
+    if (terrainExistsPtr)
+    {
+        *terrainExistsPtr = true;
+    }
+
+    return GetNormalSynchronous(x, y);
 }
 
+
+AzFramework::SurfaceData::SurfaceTagWeight TerrainProvider::GetMaxSurfaceWeight(
+    [[maybe_unused]] AZ::Vector3 position, [[maybe_unused]] Sampler sampleFilter, [[maybe_unused]] bool* terrainExistsPtr) const
+{
+    if (terrainExistsPtr)
+    {
+        *terrainExistsPtr = true;
+    }
+
+    return AzFramework::SurfaceData::SurfaceTagWeight();
+}
+
+AzFramework::SurfaceData::SurfaceTagWeight TerrainProvider::GetMaxSurfaceWeightFromFloats(
+    [[maybe_unused]] float x,
+    [[maybe_unused]] float y,
+    [[maybe_unused]] Sampler sampleFilter,
+    [[maybe_unused]] bool* terrainExistsPtr) const
+{
+    if (terrainExistsPtr)
+    {
+        *terrainExistsPtr = true;
+    }
+
+    return AzFramework::SurfaceData::SurfaceTagWeight();
+}
+
+const char* TerrainProvider::GetMaxSurfaceName(
+    [[maybe_unused]] AZ::Vector3 position, [[maybe_unused]] Sampler sampleFilter, [[maybe_unused]] bool* terrainExistsPtr) const
+{
+    if (terrainExistsPtr)
+    {
+        *terrainExistsPtr = true;
+    }
+
+    return "";
+}
+
+/*
 void TerrainProvider::GetSurfaceWeights(
     [[maybe_unused]] const AZ::Vector3& inPosition,
     [[maybe_unused]] Sampler sampleFilter,
@@ -92,7 +173,6 @@ void TerrainProvider::GetSurfaceWeights(
 {
     // TODO: implement
 }
-
 
 void TerrainProvider::GetSurfacePoint(
     const AZ::Vector3& inPosition, [[maybe_unused]] Sampler sampleFilter, SurfaceData::SurfacePoint& outSurfacePoint)
@@ -106,6 +186,9 @@ void TerrainProvider::GetSurfacePoint(
     //outSurfacePoint.m_position = AZ::Vector3(sampleX, sampleY, GetHeightSynchronous(sampleX, sampleY));
     outSurfacePoint.m_normal = GetNormalSynchronous(sampleX, sampleY);
 }
+
+
+
 
 void TerrainProvider::ProcessHeightsFromRegion(const AZ::Aabb& inRegion, const AZ::Vector2 stepSize, Sampler sampleFilter, SurfacePointRegionFillCallback perPositionCallback, TerrainDataReadyCallback onComplete)
 {
@@ -167,7 +250,7 @@ void TerrainProvider::ProcessSurfacePointsFromRegion(const AZ::Aabb& inRegion, c
         onComplete();
     }
 }
-
+*/
 
 void TerrainProvider::RegisterArea(AZ::EntityId areaId)
 {
@@ -270,8 +353,12 @@ void TerrainProvider::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
             terrainFeatureProcessor->SetDebugDrawWireframe(entityId, m_debugWireframeEnabled);
         }
 
+        AzFramework::Terrain::TerrainDataNotificationBus::Broadcast(
+            &AzFramework::Terrain::TerrainDataNotificationBus::Events::OnTerrainDataChanged, m_dirtyRegion,
+            AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::HeightData);
 
         m_terrainHeightDirty = false;
         m_dirtyRegion = AZ::Aabb::CreateNull();
     }
+
 }

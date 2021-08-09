@@ -53,7 +53,6 @@ set(FILES
     HMDBus.h
     VRCommon.h
     StereoRendererBus.h
-    HeightmapUpdateNotificationBus.h
     INavigationSystem.h
     IMNM.h
     SFunctor.h

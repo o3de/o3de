@@ -102,11 +102,25 @@ namespace AzFramework
             static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
             //////////////////////////////////////////////////////////////////////////
 
-            virtual void OnTerrainDataCreateBegin() {};
-            virtual void OnTerrainDataCreateEnd() {};
+            enum class TerrainDataChangedMask
+            {
+                Settings = 0x01,
+                HeightData = 0x02,
+                ColorData = 0x04,
+                SurfaceData = 0x08
+            };
 
-            virtual void OnTerrainDataDestroyBegin() {};
-            virtual void OnTerrainDataDestroyEnd() {};
+
+            virtual void OnTerrainDataCreateBegin() {}
+            virtual void OnTerrainDataCreateEnd() {}
+
+            virtual void OnTerrainDataDestroyBegin() {}
+            virtual void OnTerrainDataDestroyEnd() {}
+
+            virtual void OnTerrainDataChanged(
+                [[maybe_unused]] const AZ::Aabb& dirtyRegion, [[maybe_unused]] TerrainDataChangedMask dataChangedMask)
+            {
+            }
         };
         using TerrainDataNotificationBus = AZ::EBus<TerrainDataNotifications>;
 
