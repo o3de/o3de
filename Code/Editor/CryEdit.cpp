@@ -892,7 +892,6 @@ CCrySingleDocTemplate::Confidence CCrySingleDocTemplate::MatchDocType(LPCTSTR lp
 namespace
 {
     CryMutex g_splashScreenStateLock;
-    CryConditionVariable g_splashScreenStateChange;
     enum ESplashScreenState
     {
         eSplashScreenState_Init, eSplashScreenState_Started, eSplashScreenState_Destroy
@@ -932,7 +931,6 @@ void CCryEditApp::ShowSplashScreen(CCryEditApp* app)
     g_splashScreenState = eSplashScreenState_Started;
 
     g_splashScreenStateLock.Unlock();
-    g_splashScreenStateChange.Notify();
 
     splashScreen->show();
     // Make sure the initial paint of the splash screen occurs so we dont get stuck with a blank window
