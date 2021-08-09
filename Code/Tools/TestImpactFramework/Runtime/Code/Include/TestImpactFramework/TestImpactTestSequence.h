@@ -41,6 +41,7 @@ namespace TestImpact
         Timeout //!< The global timeout for the sequence was exceeded.
     };
 
+    //! Base representation of runtime policies.
     struct PolicyStateBase
     {
         Policy::ExecutionFailure m_executionFailurePolicy = Policy::ExecutionFailure::Continue;
@@ -51,11 +52,13 @@ namespace TestImpact
         Policy::TargetOutputCapture m_targetOutputCapture = Policy::TargetOutputCapture::None;
     };
 
+    //! Representation of regular and seed sequence policies.
     struct SequencePolicyState
     {
         PolicyStateBase m_basePolicies;
     };
 
+    //! Representation of impact analysis sequence policies.
     struct ImpactAnalysisSequencePolicyState
     {
         PolicyStateBase m_basePolicies;
@@ -63,6 +66,7 @@ namespace TestImpact
         Policy::DynamicDependencyMap m_dynamicDependencyMap = Policy::DynamicDependencyMap::Update;
     };
 
+    //! Representation of safe impact analysis sequence policies.
     struct SafeImpactAnalysisSequencePolicyState
     {
         PolicyStateBase m_basePolicies;

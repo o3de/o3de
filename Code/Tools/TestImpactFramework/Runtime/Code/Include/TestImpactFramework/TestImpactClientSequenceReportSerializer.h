@@ -14,16 +14,15 @@
 
 namespace TestImpact
 {
-    //!
+    //! Serializes a regular sequence report to JSON format.
     AZStd::string SerializeSequenceReport(const Client::RegularSequenceReport& sequenceReport);
 
-    //!
+    //! Serializes a seed sequence report to JSON format.
     AZStd::string SerializeSequenceReport(const Client::SeedSequenceReport& sequenceReport);
 
-    //!
+    //! Serializes an impact analysis sequence report to JSON format.
     AZStd::string SerializeSequenceReport(const Client::ImpactAnalysisSequenceReport& sequenceReport);
 
-    //!
+    //! Serializes a safe impact analysis sequence report to JSON format.
     AZStd::string SerializeSequenceReport(const Client::SafeImpactAnalysisSequenceReport& sequenceReport);
-
 } // namespace TestImpact
