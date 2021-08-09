@@ -323,7 +323,7 @@ namespace
     //////////////////////////////////////////////////////////////////////////
     void GetPythonArgumentsVector(const char* pArguments, QStringList& inputArguments)
     {
-        if (pArguments == NULL)
+        if (pArguments == nullptr)
         {
             return;
         }

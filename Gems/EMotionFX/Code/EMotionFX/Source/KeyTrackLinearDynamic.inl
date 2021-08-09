@@ -6,27 +6,13 @@
  *
  */
 
-// default constructor
-template <class ReturnType, class StorageType>
-KeyTrackLinearDynamic<ReturnType, StorageType>::KeyTrackLinearDynamic()
-{
-}
-
-
 // extended constructor
 template <class ReturnType, class StorageType>
-KeyTrackLinearDynamic<ReturnType, StorageType>::KeyTrackLinearDynamic(uint32 nrKeys)
+KeyTrackLinearDynamic<ReturnType, StorageType>::KeyTrackLinearDynamic(size_t nrKeys)
 {
     SetNumKeys(nrKeys);
 }
 
-
-// destructor
-template <class ReturnType, class StorageType>
-KeyTrackLinearDynamic<ReturnType, StorageType>::~KeyTrackLinearDynamic()
-{
-    ClearKeys();
-}
 
 template <class ReturnType, class StorageType>
 void KeyTrackLinearDynamic<ReturnType, StorageType>::Reflect(AZ::ReflectContext* context)
@@ -67,17 +53,16 @@ void KeyTrackLinearDynamic<ReturnType, StorageType>::Init()
     // if it's not equal to zero, we have to correct it (and all other keys as well)
     if (minTime > 0.0f)
     {
-        const size_t numKeys = mKeys.size();
-        for (uint32 i = 0; i < numKeys; ++i)
+        for (KeyFrame<ReturnType, StorageType>& key : mKeys)
         {
-            mKeys[i].SetTime(mKeys[i].GetTime() - minTime);
+            key.SetTime(key.GetTime() - minTime);
         }
     }
 }
 
 
 template <class ReturnType, class StorageType>
-MCORE_INLINE KeyFrame<ReturnType, StorageType>* KeyTrackLinearDynamic<ReturnType, StorageType>::GetKey(uint32 nr)
+MCORE_INLINE KeyFrame<ReturnType, StorageType>* KeyTrackLinearDynamic<ReturnType, StorageType>::GetKey(size_t nr)
 {
     MCORE_ASSERT(nr < mKeys.size());
     return &mKeys[nr];
@@ -87,20 +72,20 @@ MCORE_INLINE KeyFrame<ReturnType, StorageType>* KeyTrackLinearDynamic<ReturnType
 template <class ReturnType, class StorageType>
 MCORE_INLINE KeyFrame<ReturnType, StorageType>* KeyTrackLinearDynamic<ReturnType, StorageType>::GetFirstKey()
 {
-    return (mKeys.size() > 0) ? &mKeys[0] : nullptr;
+    return !mKeys.empty() ? &mKeys[0] : nullptr;
 }
 
 
 template <class ReturnType, class StorageType>
 MCORE_INLINE KeyFrame<ReturnType, StorageType>* KeyTrackLinearDynamic<ReturnType, StorageType>::GetLastKey()
 {
-    return (mKeys.size() > 0) ? &mKeys.back() : nullptr;
+    return !mKeys.empty() ? &mKeys.back() : nullptr;
 }
 
 
 
 template <class ReturnType, class StorageType>
-MCORE_INLINE const KeyFrame<ReturnType, StorageType>* KeyTrackLinearDynamic<ReturnType, StorageType>::GetKey(uint32 nr) const
+MCORE_INLINE const KeyFrame<ReturnType, StorageType>* KeyTrackLinearDynamic<ReturnType, StorageType>::GetKey(size_t nr) const
 {
     MCORE_ASSERT(nr < mKeys.size());
     return &mKeys[nr];
@@ -110,14 +95,14 @@ MCORE_INLINE const KeyFrame<ReturnType, StorageType>* KeyTrackLinearDynamic<Retu
 template <class ReturnType, class StorageType>
 MCORE_INLINE const KeyFrame<ReturnType, StorageType>* KeyTrackLinearDynamic<ReturnType, StorageType>::GetFirstKey() const
 {
-    return (mKeys.size() > 0) ? &mKeys[0] : nullptr;
+    return !mKeys.empty() ? &mKeys[0] : nullptr;
 }
 
 
 template <class ReturnType, class StorageType>
 MCORE_INLINE const KeyFrame<ReturnType, StorageType>* KeyTrackLinearDynamic<ReturnType, StorageType>::GetLastKey() const
 {
-    return (mKeys.size() > 0) ? &mKeys.back() : nullptr;
+    return !mKeys.empty() ? &mKeys.back() : nullptr;
 }
 
 
@@ -138,9 +123,9 @@ MCORE_INLINE float KeyTrackLinearDynamic<ReturnType, StorageType>::GetLastTime()
 
 
 template <class ReturnType, class StorageType>
-MCORE_INLINE uint32 KeyTrackLinearDynamic<ReturnType, StorageType>::GetNumKeys() const
+MCORE_INLINE size_t KeyTrackLinearDynamic<ReturnType, StorageType>::GetNumKeys() const
 {
-    return static_cast<uint32>(mKeys.size());
+    return mKeys.size();
 }
 
 
@@ -148,7 +133,7 @@ template <class ReturnType, class StorageType>
 MCORE_INLINE void KeyTrackLinearDynamic<ReturnType, StorageType>::AddKey(float time, const ReturnType& value, bool smartPreAlloc)
 {
     #ifdef MCORE_DEBUG
-    if (mKeys.size() > 0)
+    if (!mKeys.empty())
     {
         MCORE_ASSERT(time >= mKeys.back().GetTime());
     }
@@ -168,7 +153,7 @@ MCORE_INLINE void KeyTrackLinearDynamic<ReturnType, StorageType>::AddKey(float t
 
 // find a key at a given time
 template <class ReturnType, class StorageType>
-MCORE_INLINE uint32 KeyTrackLinearDynamic<ReturnType, StorageType>::FindKeyNumber(float curTime) const
+MCORE_INLINE size_t KeyTrackLinearDynamic<ReturnType, StorageType>::FindKeyNumber(float curTime) const
 {
     return KeyFrameFinder<ReturnType, StorageType>::FindKey(curTime, &mKeys.front(), static_cast<uint32>(mKeys.size()));
 }
@@ -179,36 +164,36 @@ template <class ReturnType, class StorageType>
 MCORE_INLINE KeyFrame<ReturnType, StorageType>* KeyTrackLinearDynamic<ReturnType, StorageType>::FindKey(float curTime)  const
 {
     // find the key number
-    const uint32 keyNumber = KeyFrameFinder<ReturnType, StorageType>::FindKey(curTime, &mKeys.front(), mKeys.size());
+    const size_t keyNumber = KeyFrameFinder<ReturnType, StorageType>::FindKey(curTime, &mKeys.front(), mKeys.size());
 
     // if no key was found
-    return (keyNumber != MCORE_INVALIDINDEX32) ? &mKeys[keyNumber] : nullptr;
+    return (keyNumber != InvalidIndex) ? &mKeys[keyNumber] : nullptr;
 }
 
 
 // returns the interpolated value at a given time
 template <class ReturnType, class StorageType>
-ReturnType KeyTrackLinearDynamic<ReturnType, StorageType>::GetValueAtTime(float currentTime, uint32* cachedKey, uint8* outWasCacheHit, bool interpolate) const
+ReturnType KeyTrackLinearDynamic<ReturnType, StorageType>::GetValueAtTime(float currentTime, size_t* cachedKey, uint8* outWasCacheHit, bool interpolate) const
 {
     MCORE_ASSERT(currentTime >= 0.0);
-    MCORE_ASSERT(mKeys.size() > 0);
+    MCORE_ASSERT(!mKeys.empty());
 
     // make a local copy of the cached key value
-    uint32 localCachedKey = (cachedKey) ? *cachedKey : MCORE_INVALIDINDEX32;
+    size_t localCachedKey = (cachedKey) ? *cachedKey : InvalidIndex;
 
     // find the first key to start interpolating from (between this one and the next)
-    uint32 keyNumber = MCORE_INVALIDINDEX32;
+    size_t keyNumber = InvalidIndex;
 
     // prevent searching in the set of keyframes when a cached key is available
     // of course we need to check first if the cached key is actually still valid or not
-    if (localCachedKey == MCORE_INVALIDINDEX32) // no cached key has been set, so simply perform a search
+    if (localCachedKey == InvalidIndex) // no cached key has been set, so simply perform a search
     {
         if (outWasCacheHit)
         {
             *outWasCacheHit = 0;
         }
 
-        keyNumber = KeyFrameFinder<ReturnType, StorageType>::FindKey(currentTime, &mKeys.front(), static_cast<uint32>(mKeys.size()));
+        keyNumber = KeyFrameFinder<ReturnType, StorageType>::FindKey(currentTime, &mKeys.front(), mKeys.size());
 
         if (cachedKey)
         {
@@ -222,7 +207,7 @@ ReturnType KeyTrackLinearDynamic<ReturnType, StorageType>::GetValueAtTime(float 
         {
             if (mKeys.size() > 2)
             {
-                localCachedKey = static_cast<uint32>(mKeys.size()) - 3;
+                localCachedKey = mKeys.size() - 3;
             }
             else
             {
@@ -257,7 +242,7 @@ ReturnType KeyTrackLinearDynamic<ReturnType, StorageType>::GetValueAtTime(float 
                     *outWasCacheHit = 0;
                 }
 
-                keyNumber = KeyFrameFinder<ReturnType, StorageType>::FindKey(currentTime, &mKeys.front(), static_cast<uint32>(mKeys.size()));
+                keyNumber = KeyFrameFinder<ReturnType, StorageType>::FindKey(currentTime, &mKeys.front(), mKeys.size());
 
                 if (cachedKey)
                 {
@@ -268,7 +253,7 @@ ReturnType KeyTrackLinearDynamic<ReturnType, StorageType>::GetValueAtTime(float 
     }
 
     // if no key could be found
-    if (keyNumber == MCORE_INVALIDINDEX32)
+    if (keyNumber == InvalidIndex)
     {
         // if there are no keys at all, simply return an empty object
         if (mKeys.size() == 0)
@@ -301,7 +286,7 @@ ReturnType KeyTrackLinearDynamic<ReturnType, StorageType>::GetValueAtTime(float 
 
 // perform interpolation
 template <class ReturnType, class StorageType>
-MCORE_INLINE ReturnType KeyTrackLinearDynamic<ReturnType, StorageType>::Interpolate(uint32 startKey, float currentTime) const
+MCORE_INLINE ReturnType KeyTrackLinearDynamic<ReturnType, StorageType>::Interpolate(size_t startKey, float currentTime) const
 {
     // get the keys to interpolate between
     const KeyFrame<ReturnType, StorageType>& firstKey = mKeys[startKey];
@@ -317,7 +302,7 @@ MCORE_INLINE ReturnType KeyTrackLinearDynamic<ReturnType, StorageType>::Interpol
 
 
 template <>
-MCORE_INLINE AZ::Quaternion KeyTrackLinearDynamic<AZ::Quaternion, MCore::Compressed16BitQuaternion>::Interpolate(uint32 startKey, float currentTime) const
+MCORE_INLINE AZ::Quaternion KeyTrackLinearDynamic<AZ::Quaternion, MCore::Compressed16BitQuaternion>::Interpolate(size_t startKey, float currentTime) const
 {
     // get the keys to interpolate between
     const KeyFrame<AZ::Quaternion, MCore::Compressed16BitQuaternion>& firstKey = mKeys[startKey];
@@ -332,7 +317,7 @@ MCORE_INLINE AZ::Quaternion KeyTrackLinearDynamic<AZ::Quaternion, MCore::Compres
 
 
 template <>
-MCORE_INLINE AZ::Quaternion KeyTrackLinearDynamic<AZ::Quaternion, AZ::Quaternion>::Interpolate(uint32 startKey, float currentTime) const
+MCORE_INLINE AZ::Quaternion KeyTrackLinearDynamic<AZ::Quaternion, AZ::Quaternion>::Interpolate(size_t startKey, float currentTime) const
 {
     // get the keys to interpolate between
     const KeyFrame<AZ::Quaternion, AZ::Quaternion>& firstKey = mKeys[startKey];
@@ -355,7 +340,7 @@ void KeyTrackLinearDynamic<ReturnType, StorageType>::AddKeySorted(float time, co
     {
         if (mKeys.capacity() == mKeys.size())
         {
-            const uint32 numToReserve = static_cast<uint32>(mKeys.size() / 4);
+            const size_t numToReserve = mKeys.size() / 4;
             mKeys.reserve(mKeys.capacity() + numToReserve);
         }
     }
@@ -385,13 +370,13 @@ void KeyTrackLinearDynamic<ReturnType, StorageType>::AddKeySorted(float time, co
     }
 
     // quickly find the location to insert, and insert it
-    const uint32 place = KeyFrameFinder<ReturnType, StorageType>::FindKey(keyTime, &mKeys.front(), static_cast<uint32>(mKeys.size()));
+    const size_t place = KeyFrameFinder<ReturnType, StorageType>::FindKey(keyTime, &mKeys.front(), mKeys.size());
     mKeys.insert(mKeys.begin() + place + 1, KeyFrame<ReturnType, StorageType>(time, value));
 }
 
 
 template <class ReturnType, class StorageType>
-MCORE_INLINE void KeyTrackLinearDynamic<ReturnType, StorageType>::RemoveKey(uint32 keyNr)
+MCORE_INLINE void KeyTrackLinearDynamic<ReturnType, StorageType>::RemoveKey(size_t keyNr)
 {
     mKeys.erase(AZStd::next(mKeys.begin(), keyNr));
 }
@@ -418,7 +403,7 @@ void KeyTrackLinearDynamic<ReturnType, StorageType>::MakeLoopable(float fadeTime
 
 // optimize the keytrack
 template <class ReturnType, class StorageType>
-uint32 KeyTrackLinearDynamic<ReturnType, StorageType>::Optimize(float maxError)
+size_t KeyTrackLinearDynamic<ReturnType, StorageType>::Optimize(float maxError)
 {
     // if there aren't at least two keys, return, because we never remove the first and last key frames
     // and we'd need at least two keyframes to interpolate between
@@ -433,8 +418,8 @@ uint32 KeyTrackLinearDynamic<ReturnType, StorageType>::Optimize(float maxError)
     keyTrackCopy.Init();
 
     // while we want to continue optimizing
-    uint32 i = 1;
-    uint32 numRemoved = 0;  // the number of removed keys
+    size_t i = 1;
+    size_t numRemoved = 0;  // the number of removed keys
     do
     {
         // get the time of the current keyframe (starting from the second towards the last one)
@@ -473,7 +458,7 @@ uint32 KeyTrackLinearDynamic<ReturnType, StorageType>::Optimize(float maxError)
 
 // pre-alloc keys
 template <class ReturnType, class StorageType>
-void KeyTrackLinearDynamic<ReturnType, StorageType>::SetNumKeys(uint32 numKeys)
+void KeyTrackLinearDynamic<ReturnType, StorageType>::SetNumKeys(size_t numKeys)
 {
     // resize the array of keys
     mKeys.resize(numKeys);
@@ -482,7 +467,7 @@ void KeyTrackLinearDynamic<ReturnType, StorageType>::SetNumKeys(uint32 numKeys)
 
 // set a given key
 template <class ReturnType, class StorageType>
-MCORE_INLINE void KeyTrackLinearDynamic<ReturnType, StorageType>::SetKey(uint32 keyNr, float time, const ReturnType& value)
+MCORE_INLINE void KeyTrackLinearDynamic<ReturnType, StorageType>::SetKey(size_t keyNr, float time, const ReturnType& value)
 {
     // adjust the value and time of the key
     mKeys[keyNr].SetValue(value);
@@ -492,7 +477,7 @@ MCORE_INLINE void KeyTrackLinearDynamic<ReturnType, StorageType>::SetKey(uint32 
 
 // set a given key
 template <class ReturnType, class StorageType>
-MCORE_INLINE void KeyTrackLinearDynamic<ReturnType, StorageType>::SetStorageTypeKey(uint32 keyNr, float time, const StorageType& value)
+MCORE_INLINE void KeyTrackLinearDynamic<ReturnType, StorageType>::SetStorageTypeKey(size_t keyNr, float time, const StorageType& value)
 {
     // adjust the value and time of the key
     mKeys[keyNr].SetStorageTypeValue(value);
@@ -504,31 +489,17 @@ MCORE_INLINE void KeyTrackLinearDynamic<ReturnType, StorageType>::SetStorageType
 template <class ReturnType, class StorageType>
 MCORE_INLINE bool KeyTrackLinearDynamic<ReturnType, StorageType>::CheckIfIsAnimated(const ReturnType& initialPose, float maxError) const
 {
-    // empty keytracks are never animated
-    if (mKeys.size() == 0)
+    return !mKeys.empty() && AZStd::any_of(begin(mKeys), end(mKeys), [&initialPose, maxError](const auto& key)
     {
-        return false;
-    }
-
-    // get the number of keyframes and iterate through them
-    const uint32 numKeyFrames = GetNumKeys();
-    for (uint32 i = 0; i < numKeyFrames; ++i)
-    {
-        // if the sampled value is not within the given maximum distance/error of the initial pose, it means we have an animated track
-        if (MCore::Compare<ReturnType>::CheckIfIsClose(initialPose, GetKey(i)->GetValue(), maxError) == false)
-        {
-            return true;
-        }
-    }
-
-    return false;
+        return !MCore::Compare<ReturnType>::CheckIfIsClose(initialPose, key.GetValue(), maxError);
+    });
 }
 
 
 
 // reserve memory for keys
 template <class ReturnType, class StorageType>
-MCORE_INLINE void KeyTrackLinearDynamic<ReturnType, StorageType>::Reserve(uint32 numKeys)
+MCORE_INLINE void KeyTrackLinearDynamic<ReturnType, StorageType>::Reserve(size_t numKeys)
 {
     mKeys.reserve(numKeys);
 }
@@ -536,7 +507,7 @@ MCORE_INLINE void KeyTrackLinearDynamic<ReturnType, StorageType>::Reserve(uint32
 
 // calculate memory usage
 template <class ReturnType, class StorageType>
-uint32 KeyTrackLinearDynamic<ReturnType, StorageType>::CalcMemoryUsage(bool includeMembers) const
+size_t KeyTrackLinearDynamic<ReturnType, StorageType>::CalcMemoryUsage([[maybe_unused]] bool includeMembers) const
 {
     return 0;
 }

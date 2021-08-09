@@ -272,7 +272,7 @@ namespace EMotionFX
             // Post create actor
             actor->SetUnitType(MCore::Distance::UNITTYPE_METERS);
             actor->SetFileUnitType(MCore::Distance::UNITTYPE_METERS);
-            actor->PostCreateInit(/*makeGeomLodsCompatibleWithSkeletalLODs=*/false, /*generateOBBs=*/false, /*convertUnitType=*/false);
+            actor->PostCreateInit(/*makeGeomLodsCompatibleWithSkeletalLODs=*/false, /*convertUnitType=*/false);
 
             // Only enable joints that are used for skinning (and their parents).
             // On top of that, enable all joints marked as critical joints.

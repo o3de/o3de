@@ -54,8 +54,8 @@ namespace MCore
     void AttributeFactory::RegisterAttribute(Attribute* attribute)
     {
         // check first if the type hasn't already been registered
-        const uint32 attribIndex = FindAttributeIndexByType(attribute->GetType());
-        if (attribIndex != MCORE_INVALIDINDEX32)
+        const size_t attribIndex = FindAttributeIndexByType(attribute->GetType());
+        if (attribIndex != InvalidIndex)
         {
             MCore::LogWarning("MCore::AttributeFactory::RegisterAttribute() - There is already an attribute of the same type registered (typeID %d vs %d - typeString '%s' vs '%s')", attribute->GetType(), mRegistered[attribIndex]->GetType(), attribute->GetTypeString(), mRegistered[attribIndex]->GetTypeString());
             return;
@@ -68,8 +68,8 @@ namespace MCore
     void AttributeFactory::UnregisterAttribute(Attribute* attribute, bool delFromMem)
     {
         // check first if the type hasn't already been registered
-        const uint32 attribIndex = FindAttributeIndexByType(attribute->GetType());
-        if (attribIndex == MCORE_INVALIDINDEX32)
+        const size_t attribIndex = FindAttributeIndexByType(attribute->GetType());
+        if (attribIndex == InvalidIndex)
         {
             MCore::LogWarning("MCore::AttributeFactory::UnregisterAttribute() - No attribute with the given type found (typeID=%d - typeString='%s'", attribute->GetType(), attribute->GetTypeString());
             return;
@@ -84,26 +84,21 @@ namespace MCore
     }
 
 
-    uint32 AttributeFactory::FindAttributeIndexByType(uint32 typeID) const
+    size_t AttributeFactory::FindAttributeIndexByType(size_t typeID) const
     {
-        const size_t numAttributes = mRegistered.size();
-        for (size_t i = 0; i < numAttributes; ++i)
+        const auto foundAttribute = AZStd::find_if(begin(mRegistered), end(mRegistered), [typeID](const Attribute* registeredAttribute)
         {
-            if (mRegistered[i]->GetType() == typeID) // we found one with the same type
-            {
-                return static_cast<uint32>(i);
-            }
-        }
+            return registeredAttribute->GetType() == typeID;
+        });
 
-        // no attribute of this type found
-        return MCORE_INVALIDINDEX32;
+        return foundAttribute != end(mRegistered) ? AZStd::distance(begin(mRegistered), foundAttribute) : InvalidIndex;
     }
 
 
-    Attribute* AttributeFactory::CreateAttributeByType(uint32 typeID) const
+    Attribute* AttributeFactory::CreateAttributeByType(size_t typeID) const
     {
-        const uint32 attribIndex = FindAttributeIndexByType(typeID);
-        if (attribIndex == MCORE_INVALIDINDEX32)
+        const size_t attribIndex = FindAttributeIndexByType(typeID);
+        if (attribIndex == InvalidIndex)
         {
             return nullptr;
         }

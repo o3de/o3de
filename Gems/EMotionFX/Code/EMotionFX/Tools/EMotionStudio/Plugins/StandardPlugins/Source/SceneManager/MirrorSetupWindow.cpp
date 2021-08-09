@@ -329,7 +329,7 @@ namespace EMStudio
         MCORE_ASSERT(node);
 
         // remove the mapping for this node
-        PerformMapping(node->GetNodeIndex(), MCORE_INVALIDINDEX32);
+        PerformMapping(node->GetNodeIndex(), InvalidIndex);
     }
 
 
@@ -443,10 +443,7 @@ namespace EMStudio
             {
                 const size_t numNodes = aznumeric_caster(currentActor->GetNumNodes());
                 mMap.resize(numNodes);
-                for (uint32 i = 0; i < numNodes; ++i)
-                {
-                    mMap[i] = MCORE_INVALIDINDEX32;
-                }
+                AZStd::fill(mMap.begin(), mMap.end(), InvalidIndex);
             }
         }
 
@@ -490,11 +487,11 @@ namespace EMStudio
 
         // fill the left list widget
         QString currentName;
-        const uint32 numNodes = actor->GetNumNodes();
+        const size_t numNodes = actor->GetNumNodes();
 
         // count the number of rows
-        uint32 numRows = 0;
-        for (uint32 i = 0; i < numNodes; ++i)
+        int numRows = 0;
+        for (size_t i = 0; i < numNodes; ++i)
         {
             currentName = actor->GetSkeleton()->GetNode(i)->GetName();
             if (currentName.contains(filterString, Qt::CaseInsensitive) || filterString.isEmpty())
@@ -505,15 +502,15 @@ namespace EMStudio
         mCurrentList->setRowCount(numRows);
 
         // fill the rows
-        uint32 rowIndex = 0;
-        for (uint32 i = 0; i < numNodes; ++i)
+        int rowIndex = 0;
+        for (size_t i = 0; i < numNodes; ++i)
         {
             EMotionFX::Node* node = actor->GetSkeleton()->GetNode(i);
             currentName = node->GetName();
             if (currentName.contains(filterString, Qt::CaseInsensitive) || filterString.isEmpty())
             {
                 // mark if there is a mapping or not
-                const bool mapped = (mMap[node->GetNodeIndex()] != MCORE_INVALIDINDEX32);
+                const bool mapped = (mMap[node->GetNodeIndex()] != InvalidIndex);
                 QTableWidgetItem* mappedItem = new QTableWidgetItem();
                 mappedItem->setIcon(mapped ? *mMappedIcon : QIcon());
                 mCurrentList->setItem(rowIndex, 0, mappedItem);
@@ -524,8 +521,7 @@ namespace EMStudio
                 {
                     typeItem->setIcon(*mMeshIcon);
                 }
-                else
-                if (mCurrentBoneList.Contains(node->GetNodeIndex()))
+                else if (AZStd::find(begin(mCurrentBoneList), end(mCurrentBoneList), node->GetNodeIndex()) != end(mCurrentBoneList))
                 {
                     typeItem->setIcon(*mBoneIcon);
                 }
@@ -559,11 +555,11 @@ namespace EMStudio
 
         // fill the left list widget
         QString name;
-        const uint32 numNodes = actor->GetNumNodes();
+        const size_t numNodes = actor->GetNumNodes();
 
         // count the number of rows
-        uint32 numRows = 0;
-        for (uint32 i = 0; i < numNodes; ++i)
+        int numRows = 0;
+        for (size_t i = 0; i < numNodes; ++i)
         {
             name = actor->GetSkeleton()->GetNode(i)->GetName();
             if (name.contains(filterString, Qt::CaseInsensitive) || filterString.isEmpty())
@@ -574,8 +570,8 @@ namespace EMStudio
         mSourceList->setRowCount(numRows);
 
         // fill the rows
-        uint32 rowIndex = 0;
-        for (uint32 i = 0; i < numNodes; ++i)
+        int rowIndex = 0;
+        for (size_t i = 0; i < numNodes; ++i)
         {
             EMotionFX::Node* node = actor->GetSkeleton()->GetNode(i);
             name = node->GetName();
@@ -593,8 +589,7 @@ namespace EMStudio
                 {
                     typeItem->setIcon(*mMeshIcon);
                 }
-                else
-                if (AZStd::find(mSourceBoneList.begin(), mSourceBoneList.end(), node->GetNodeIndex()) != mSourceBoneList.end())
+                else if (AZStd::find(mSourceBoneList.begin(), mSourceBoneList.end(), node->GetNodeIndex()) != mSourceBoneList.end())
                 {
                     typeItem->setIcon(*mBoneIcon);
                 }
@@ -629,9 +624,9 @@ namespace EMStudio
         // fill the table
         QString currentName;
         QString sourceName;
-        const uint32 numNodes = currentActor->GetNumNodes();
+        const int numNodes = aznumeric_caster(currentActor->GetNumNodes());
         mMappingTable->setRowCount(numNodes);
-        for (uint32 i = 0; i < numNodes; ++i)
+        for (int i = 0; i < numNodes; ++i)
         {
             currentName = currentActor->GetSkeleton()->GetNode(i)->GetName();
 
@@ -639,7 +634,7 @@ namespace EMStudio
             mMappingTable->setItem(i, 0, currentTableItem);
             mMappingTable->setRowHeight(i, 21);
 
-            if (mMap[i] != MCORE_INVALIDINDEX32)
+            if (mMap[i] != InvalidIndex)
             {
                 sourceName = sourceActor->GetSkeleton()->GetNode(mMap[i])->GetName();
                 currentTableItem = new QTableWidgetItem(sourceName);
@@ -650,8 +645,6 @@ namespace EMStudio
                 mMappingTable->setItem(i, 1, new QTableWidgetItem());
             }
         }
-        //mMappingTable->resizeColumnsToContents();
-        //mMappingTable->setColumnWidth(0, mMappingTable->columnWidth(0) + 25);
     }
 
 
@@ -694,12 +687,12 @@ namespace EMStudio
 
 
     // perform the mapping
-    void MirrorSetupWindow::PerformMapping(uint32 currentNodeIndex, uint32 sourceNodeIndex)
+    void MirrorSetupWindow::PerformMapping(size_t currentNodeIndex, size_t sourceNodeIndex)
     {
         EMotionFX::Actor* currentActor = GetSelectedActor();
 
         // update the map
-        const uint32 oldSourceIndex = mMap[currentNodeIndex];
+        const size_t oldSourceIndex = mMap[currentNodeIndex];
         mMap[currentNodeIndex] = sourceNodeIndex;
 
         // update the current table
@@ -707,9 +700,7 @@ namespace EMStudio
         const QList<QTableWidgetItem*> currentListItems = mCurrentList->findItems(curName, Qt::MatchExactly);
         for (int32 i = 0; i < currentListItems.count(); ++i)
         {
-            const uint32 rowIndex = currentListItems[i]->row();
-            //if (rowIndex != mCurrentList->currentRow())
-            //  continue;
+            const int rowIndex = currentListItems[i]->row();
 
             QTableWidgetItem* mappedItem = mCurrentList->item(rowIndex, 0);
             if (!mappedItem)
@@ -718,7 +709,7 @@ namespace EMStudio
                 mCurrentList->setItem(rowIndex, 0, mappedItem);
             }
 
-            if (sourceNodeIndex == MCORE_INVALIDINDEX32)
+            if (sourceNodeIndex == InvalidIndex)
             {
                 mappedItem->setIcon(QIcon());
             }
@@ -729,16 +720,14 @@ namespace EMStudio
         }
 
         // update source table
-        if (sourceNodeIndex != MCORE_INVALIDINDEX32)
+        if (sourceNodeIndex != InvalidIndex)
         {
             const bool stillUsed = AZStd::find(mMap.begin(), mMap.end(), sourceNodeIndex) != mMap.end();
             const QString sourceName = currentActor->GetSkeleton()->GetNode(sourceNodeIndex)->GetName();
             const QList<QTableWidgetItem*> sourceListItems = mSourceList->findItems(sourceName, Qt::MatchExactly);
             for (int32 i = 0; i < sourceListItems.count(); ++i)
             {
-                const uint32 rowIndex = sourceListItems[i]->row();
-                //if (rowIndex != mSourceList->currentRow())
-                //  continue;
+                const int rowIndex = sourceListItems[i]->row();
 
                 QTableWidgetItem* mappedItem = mSourceList->item(rowIndex, 0);
                 if (!mappedItem)
@@ -759,16 +748,14 @@ namespace EMStudio
         }
         else // we're clearing it
         {
-            if (oldSourceIndex != MCORE_INVALIDINDEX32)
+            if (oldSourceIndex != InvalidIndex)
             {
                 const bool stillUsed = AZStd::find(mMap.begin(), mMap.end(), sourceNodeIndex) != mMap.end();
                 const QString sourceName = currentActor->GetSkeleton()->GetNode(oldSourceIndex)->GetName();
                 const QList<QTableWidgetItem*> sourceListItems = mSourceList->findItems(sourceName, Qt::MatchExactly);
                 for (int32 i = 0; i < sourceListItems.count(); ++i)
                 {
-                    const uint32 rowIndex = sourceListItems[i]->row();
-                    //if (rowIndex != mSourceList->currentRow())
-                    //  continue;
+                    const int rowIndex = sourceListItems[i]->row();
 
                     QTableWidgetItem* mappedItem = mSourceList->item(rowIndex, 0);
                     if (!mappedItem)
@@ -790,14 +777,14 @@ namespace EMStudio
         }
 
         // update the mapping table
-        QTableWidgetItem* item = mMappingTable->item(currentNodeIndex, 1);
-        if (!item && sourceNodeIndex != MCORE_INVALIDINDEX32)
+        QTableWidgetItem* item = mMappingTable->item(aznumeric_caster(currentNodeIndex), 1);
+        if (!item && sourceNodeIndex != InvalidIndex)
         {
             item = new QTableWidgetItem();
-            mMappingTable->setItem(currentNodeIndex, 1, item);
+            mMappingTable->setItem(aznumeric_caster(currentNodeIndex), 1, item);
         }
 
-        if (sourceNodeIndex == MCORE_INVALIDINDEX32)
+        if (sourceNodeIndex == InvalidIndex)
         {
             if (item)
             {
@@ -893,15 +880,12 @@ namespace EMStudio
         }
 
         // now update our mapping data
-        const uint32 numNodes = currentActor->GetNumNodes();
-        for (uint32 i = 0; i < numNodes; ++i)
-        {
-            mMap[i] = MCORE_INVALIDINDEX32;
-        }
+        const size_t numNodes = currentActor->GetNumNodes();
+        AZStd::fill(mMap.begin(), AZStd::next(mMap.begin(), numNodes), InvalidIndex);
 
         // now apply the map we loaded to the data we have here
-        const uint32 numEntries = nodeMap->GetNumEntries();
-        for (uint32 i = 0; i < numEntries; ++i)
+        const size_t numEntries = nodeMap->GetNumEntries();
+        for (size_t i = 0; i < numEntries; ++i)
         {
             // find the current node
             EMotionFX::Node* currentNode = currentActor->GetSkeleton()->FindNodeByName(nodeMap->GetFirstName(i));
@@ -963,12 +947,12 @@ namespace EMStudio
 
         // create an emfx node map object
         EMotionFX::NodeMap* map = EMotionFX::NodeMap::Create();
-        const uint32 numNodes = currentActor->GetNumNodes();
+        const size_t numNodes = currentActor->GetNumNodes();
         map->Reserve(numNodes);
-        for (uint32 i = 0; i < numNodes; ++i)
+        for (size_t i = 0; i < numNodes; ++i)
         {
             // skip unmapped entries
-            if (mMap[i] == MCORE_INVALIDINDEX32)
+            if (mMap[i] == InvalidIndex)
             {
                 continue;
             }
@@ -1033,16 +1017,11 @@ namespace EMStudio
             return true;
         }
 
-        const uint32 numNodes = currentActor->GetNumNodes();
-        for (uint32 i = 0; i < numNodes; ++i)
+        const size_t numNodes = currentActor->GetNumNodes();
+        return AZStd::all_of(mMap.begin(), AZStd::next(mMap.begin(), numNodes), [](const size_t nodeIndex)
         {
-            if (mMap[i] != MCORE_INVALIDINDEX32)
-            {
-                return false;
-            }
-        }
-
-        return true;
+            return nodeIndex != InvalidIndex;
+        });
     }
 
 
@@ -1081,20 +1060,13 @@ namespace EMStudio
             return;
         }
 
-        // show a warning that we will overwrite the table entries
-        //if (QMessageBox::warning(this, "Overwrite Mapping?", "Are you sure you want to possibly overwrite items in the mapping?\nAll or some existing mapping information might be lost.", QMessageBox::Cancel|QMessageBox::Yes) != QMessageBox::Yes)
-        //return;
-
-        //
-        //  currentActor->MatchNodeMotionSources( FromQtString(mLeftEdit->text()), FromQtString(mRightEdit->text()) );
-
         // update the table and map
         uint32 numGuessed = 0;
-        const uint32 numNodes = currentActor->GetNumNodes();
-        for (uint32 i = 0; i < numNodes; ++i)
+        const size_t numNodes = currentActor->GetNumNodes();
+        for (size_t i = 0; i < numNodes; ++i)
         {
             // skip already setup mappings
-            if (mMap[i] != MCORE_INVALIDINDEX32)
+            if (mMap[i] != InvalidIndex)
             {
                 continue;
             }
@@ -1110,28 +1082,6 @@ namespace EMStudio
         // update the actor
         UpdateActorMotionSources();
 
-        /*
-            // try a geometrical mapping
-            EMotionFX::Pose pose;
-            pose.InitFromLocalBindSpaceTransforms( currentActor );
-
-            // for all nodes in the current actor
-            uint32 numGuessed = 0;
-            const uint32 numNodes = currentActor->GetNumNodes();
-            for (uint32 i=0; i<numNodes; ++i)
-            {
-                // skip already setup mappings
-                if (mMap[i] != MCORE_INVALIDINDEX32)
-                    continue;
-
-                const uint16 matchIndex = currentActor->FindBestMirrorMatchForNode( static_cast<uint16>(i), pose );
-                if (matchIndex != MCORE_INVALIDINDEX16)
-                {
-                    mMap[i] = matchIndex;
-                    numGuessed++;
-                }
-            }
-        */
         Reinit(false);
 
         // show some results
@@ -1148,17 +1098,7 @@ namespace EMStudio
         {
             return;
         }
-        /*
-            const uint32 numNodes = currentActor->GetNumNodes();
-            for (uint32 i=0; i<numNodes; ++i)
-            {
-                uint16 motionSource = i;
 
-                // get the motion source from the map
-                if (mMap[i] != MCORE_INVALIDINDEX32)
-                    motionSource = static_cast<uint16>( mMap[i] );
-            }
-        */
         // apply the current map as command
         ApplyCurrentMapAsCommand();
     }
@@ -1172,8 +1112,8 @@ namespace EMStudio
             return;
         }
 
-        const uint32 numNodes = actor->GetNumNodes();
-        for (uint32 i = 0; i < numNodes; ++i)
+        const size_t numNodes = actor->GetNumNodes();
+        for (size_t i = 0; i < numNodes; ++i)
         {
             if (actor->GetHasMirrorInfo())
             {
@@ -1184,12 +1124,12 @@ namespace EMStudio
                 }
                 else
                 {
-                    mMap[i] = MCORE_INVALIDINDEX32;
+                    mMap[i] = InvalidIndex;
                 }
             }
             else
             {
-                mMap[i] = MCORE_INVALIDINDEX32;
+                mMap[i] = InvalidIndex;
             }
         }
     }
@@ -1207,10 +1147,10 @@ namespace EMStudio
 
         // apply mirror changes
         AZStd::string commandString = AZStd::string::format("AdjustActor -actorID %d -mirrorSetup \"", currentActor->GetID());
-        for (uint32 i = 0; i < currentActor->GetNumNodes(); ++i)
+        for (size_t i = 0; i < currentActor->GetNumNodes(); ++i)
         {
-            uint32 sourceNode = mMap[i];
-            if (sourceNode != MCORE_INVALIDINDEX32 && sourceNode != i)
+            size_t sourceNode = mMap[i];
+            if (sourceNode != InvalidIndex && sourceNode != i)
             {
                 commandString += currentActor->GetSkeleton()->GetNode(i)->GetName();
                 commandString += ",";

@@ -282,7 +282,7 @@ void EditorPreferencesDialog::CreatePages()
     {
         auto pUnknown = classes[i];
 
-        IPreferencesPageCreator* pPageCreator = 0;
+        IPreferencesPageCreator* pPageCreator = nullptr;
         if (FAILED(pUnknown->QueryInterface(&pPageCreator)))
         {
             continue;

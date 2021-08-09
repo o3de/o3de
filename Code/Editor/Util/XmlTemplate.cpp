@@ -89,7 +89,7 @@ void CXmlTemplate::SetValues(const XmlNodeRef& node, XmlNodeRef& toNode)
         }
         else
         {
-            assert(!"NULL returned from node->GetChild()");
+            assert(!"nullptr returned from node->GetChild()");
         }
     }
 }
@@ -125,7 +125,7 @@ bool CXmlTemplate::SetValues(const XmlNodeRef& node, XmlNodeRef& toNode, const X
         }
         else
         {
-            assert(!"NULL returned from node->GetChild()");
+            assert(!"nullptr returned from node->GetChild()");
         }
     }
     return false;
@@ -193,7 +193,7 @@ void CXmlTemplateRegistry::LoadTemplates(const QString& path)
         XmlNodeRef child;
         // Construct the full filepath of the current file
         XmlNodeRef node = XmlHelpers::LoadXmlFromFile((dir + files[k].filename).toUtf8().data());
-        if (node != 0 && node->isTag("Templates"))
+        if (node != nullptr && node->isTag("Templates"))
         {
             QString name;
             for (int i = 0; i < node->getChildCount(); i++)
@@ -220,5 +220,5 @@ XmlNodeRef CXmlTemplateRegistry::FindTemplate(const QString& name)
     {
         return node;
     }
-    return 0;
+    return nullptr;
 }

@@ -191,7 +191,7 @@ namespace EMotionFX
             }
 
             EXPECT_EQ(m_buffer->GetNumEvents(), expectedEvents.size()) << "Number of events is incorrect";
-            for (uint32 i = 0; i < AZStd::min(m_buffer->GetNumEvents(), static_cast<uint32>(expectedEvents.size())); ++i)
+            for (size_t i = 0; i < AZStd::min(m_buffer->GetNumEvents(), expectedEvents.size()); ++i)
             {
                 const EventInfo& gotEvent = m_buffer->GetEvent(i);
                 const EventInfo& expectedEvent = expectedEvents[i];

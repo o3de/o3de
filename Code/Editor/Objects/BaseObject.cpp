@@ -57,12 +57,12 @@ public:
     CUndoBaseObject(CBaseObject* pObj, const char* undoDescription);
 
 protected:
-    virtual int GetSize() { return sizeof(*this);   }
-    virtual QString GetDescription() { return m_undoDescription; };
-    virtual QString GetObjectName();
+    int GetSize() override { return sizeof(*this);   }
+    QString GetDescription() override { return m_undoDescription; };
+    QString GetObjectName() override;
 
-    virtual void Undo(bool bUndo);
-    virtual void Redo();
+    void Undo(bool bUndo) override;
+    void Redo() override;
 
 protected:
     QString m_undoDescription;
@@ -81,12 +81,12 @@ public:
     CUndoBaseObjectMinimal(CBaseObject* obj, const char* undoDescription, int flags);
 
 protected:
-    virtual int GetSize() { return sizeof(*this); }
-    virtual QString GetDescription() { return m_undoDescription; };
-    virtual QString GetObjectName();
+    int GetSize() override { return sizeof(*this); }
+    QString GetDescription() override { return m_undoDescription; };
+    QString GetObjectName() override;
 
-    virtual void Undo(bool bUndo);
-    virtual void Redo();
+    void Undo(bool bUndo) override;
+    void Redo() override;
 
 private:
     struct StateStruct
@@ -119,7 +119,7 @@ public:
         , m_bKeepPos(bKeepPos)
         , m_bAttach(bAttach) {}
 
-    virtual void Undo([[maybe_unused]] bool bUndo) override
+    void Undo([[maybe_unused]] bool bUndo) override
     {
         if (m_bAttach)
         {
@@ -131,7 +131,7 @@ public:
         }
     }
 
-    virtual void Redo() override
+    void Redo() override
     {
         if (m_bAttach)
         {
@@ -167,8 +167,8 @@ private:
         }
     }
 
-    virtual int GetSize() { return sizeof(CUndoAttachBaseObject); }
-    virtual QString GetDescription() { return "Attachment Changed"; }
+    int GetSize() override { return sizeof(CUndoAttachBaseObject); }
+    QString GetDescription() override { return "Attachment Changed"; }
 
     GUID m_attachedObjectGUID;
     GUID m_parentObjectGUID;
@@ -184,7 +184,7 @@ CUndoBaseObject::CUndoBaseObject(CBaseObject* obj, const char* undoDescription)
     m_undoDescription = undoDescription;
     m_guid = obj->GetId();
 
-    m_redo = 0;
+    m_redo = nullptr;
     m_undo = XmlHelpers::CreateXmlNode("Undo");
     CObjectArchive ar(GetIEditor()->GetObjectManager(), m_undo, false);
     ar.bUndo = true;
@@ -355,7 +355,7 @@ void CObjectCloneContext::AddClone(CBaseObject* pFromObject, CBaseObject* pToObj
 //////////////////////////////////////////////////////////////////////////
 CBaseObject* CObjectCloneContext::FindClone(CBaseObject* pFromObject)
 {
-    CBaseObject* pTarget = stl::find_in_map(m_objectsMap, pFromObject, (CBaseObject*) NULL);
+    CBaseObject* pTarget = stl::find_in_map(m_objectsMap, pFromObject, (CBaseObject*) nullptr);
     return pTarget;
 }
 
@@ -426,7 +426,7 @@ bool CBaseObject::Init([[maybe_unused]] IEditor* ie, CBaseObject* prev, [[maybe_
 {
     SetFlags(m_flags & (~OBJFLAG_DELETED));
 
-    if (prev != 0)
+    if (prev != nullptr)
     {
         SetUniqueName(prev->GetName());
         SetLocalTM(prev->GetPos(), prev->GetRotation(), prev->GetScale());
@@ -457,7 +457,7 @@ CBaseObject::~CBaseObject()
     for (Childs::iterator c = m_childs.begin(); c != m_childs.end(); c++)
     {
         CBaseObject* child = *c;
-        child->m_parent = 0;
+        child->m_parent = nullptr;
     }
     m_childs.clear();
 }
@@ -470,10 +470,10 @@ void CBaseObject::Done()
     // From children
     DetachAll();
 
-    SetLookAt(0);
+    SetLookAt(nullptr);
     if (m_lookatSource)
     {
-        m_lookatSource->SetLookAt(0);
+        m_lookatSource->SetLookAt(nullptr);
     }
     SetFlags(m_flags | OBJFLAG_DELETED);
 
@@ -1730,7 +1730,7 @@ bool CBaseObject::IntersectRayBounds(const Ray& ray)
 //////////////////////////////////////////////////////////////////////////
 namespace
 {
-    typedef std::pair<Vec2, Vec2> Edge2D;
+    using Edge2D = std::pair<Vec2, Vec2>;
 }
 bool IsIncludePointsInConvexHull(Edge2D* pEdgeArray0, int nEdgeArray0Size, Edge2D* pEdgeArray1, int nEdgeArray1Size)
 {
@@ -2065,7 +2065,7 @@ void CBaseObject::GetAllChildren(TBaseObjects& outAllChildren, CBaseObject* pObj
     for (int i = 0, iChildCount(pBaseObj->GetChildCount()); i < iChildCount; ++i)
     {
         CBaseObject* pChild = pBaseObj->GetChild(i);
-        if (pChild == NULL)
+        if (pChild == nullptr)
         {
             continue;
         }
@@ -2081,7 +2081,7 @@ void CBaseObject::GetAllChildren(DynArray< _smart_ptr<CBaseObject> >& outAllChil
     for (int i = 0, iChildCount(pBaseObj->GetChildCount()); i < iChildCount; ++i)
     {
         CBaseObject* pChild = pBaseObj->GetChild(i);
-        if (pChild == NULL)
+        if (pChild == nullptr)
         {
             continue;
         }
@@ -2097,7 +2097,7 @@ void CBaseObject::GetAllChildren(CSelectionGroup& outAllChildren, CBaseObject* p
     for (int i = 0, iChildCount(pBaseObj->GetChildCount()); i < iChildCount; ++i)
     {
         CBaseObject* pChild = pBaseObj->GetChild(i);
-        if (pChild == NULL)
+        if (pChild == nullptr)
         {
             continue;
         }
@@ -2109,7 +2109,7 @@ void CBaseObject::GetAllChildren(CSelectionGroup& outAllChildren, CBaseObject* p
 //////////////////////////////////////////////////////////////////////////
 void CBaseObject::CloneChildren(CBaseObject* pFromObject)
 {
-    if (pFromObject == NULL)
+    if (pFromObject == nullptr)
     {
         return;
     }
@@ -2119,7 +2119,7 @@ void CBaseObject::CloneChildren(CBaseObject* pFromObject)
         CBaseObject* pFromChildObject = pFromObject->GetChild(i);
 
         CBaseObject* pChildClone = GetObjectManager()->CloneObject(pFromChildObject);
-        if (pChildClone == NULL)
+        if (pChildClone == nullptr)
         {
             continue;
         }
@@ -2248,7 +2248,7 @@ void CBaseObject::DetachThis(bool bKeepPos)
 
             // Copy parent to temp var, erasing child from parent may delete this node if child referenced only from parent.
             CBaseObject* parent = m_parent;
-            m_parent = 0;
+            m_parent = nullptr;
             parent->RemoveChild(this);
 
             if (bKeepPos)
@@ -2389,7 +2389,7 @@ void CBaseObject::InvalidateTM([[maybe_unused]] int flags)
         // Invalidate matrices off all child objects.
         for (int i = 0; i < m_childs.size(); i++)
         {
-            if (m_childs[i] != 0 && m_childs[i]->m_bMatrixValid)
+            if (m_childs[i] != nullptr && m_childs[i]->m_bMatrixValid)
             {
                 m_childs[i]->InvalidateTM(eObjectUpdateFlags_ParentChanged);
             }
@@ -2538,7 +2538,7 @@ void CBaseObject::SetLookAt(CBaseObject* target)
 //////////////////////////////////////////////////////////////////////////
 bool CBaseObject::IsLookAtTarget() const
 {
-    return m_lookatSource != 0;
+    return m_lookatSource != nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2806,7 +2806,7 @@ bool CBaseObject::IntersectRayMesh(const Vec3& raySrc, const Vec3& rayDir, SRayH
     outHitInfo.bInFirstHit = false;
     outHitInfo.bUseCache = false;
 
-    return pStatObj->RayIntersection(outHitInfo, 0);
+    return pStatObj->RayIntersection(outHitInfo, nullptr);
 }
 
 //////////////////////////////////////////////////////////////////////////

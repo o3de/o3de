@@ -42,7 +42,7 @@ private:
         QString extension;
 
         SFileChangeCallback()
-            : pListener(NULL)
+            : pListener(nullptr)
         {}
 
         SFileChangeCallback(IFileChangeListener* pListener, const char* item, const char* extension)

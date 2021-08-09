@@ -393,7 +393,7 @@ namespace EMStudio
             {
                 // In this case is a BlendTreeConnection, we dont keep items in the model for it. We just
                 // need to mark the target node as changed
-                EMotionFX::BlendTreeConnection* connection = targetNode->FindConnection(commandCreateConnection->GetTargetPort());
+                EMotionFX::BlendTreeConnection* connection = targetNode->FindConnection(aznumeric_caster(commandCreateConnection->GetTargetPort()));
                 return m_animGraphModel.ConnectionAdded(targetNode, connection);
             }
             else

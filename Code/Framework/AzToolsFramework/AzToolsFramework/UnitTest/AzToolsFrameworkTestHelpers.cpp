@@ -65,6 +65,35 @@ namespace UnitTest
         }
     }
 
+    bool FocusInteractionWidget::event(QEvent* event)
+    {
+        using AzToolsFramework::EditorInteractionSystemViewportSelectionRequestBus;
+
+        auto eventType = event->type();
+
+        switch (eventType)
+        {
+        case QEvent::MouseButtonPress:
+            EditorInteractionSystemViewportSelectionRequestBus::Event(
+                AzToolsFramework::GetEntityContextId(), &EditorInteractionSystemViewportSelectionRequestBus::Events::SetDefaultHandler);
+            return true;
+        case QEvent::FocusIn:
+        case QEvent::FocusOut:
+            {
+                bool handled = false;
+                AzToolsFramework::ViewportInteraction::MouseInteraction mouseInteraction;
+                EditorInteractionSystemViewportSelectionRequestBus::EventResult(
+                    handled, AzToolsFramework::GetEntityContextId(),
+                    &EditorInteractionSystemViewportSelectionRequestBus::Events::InternalHandleMouseViewportInteraction,
+                    AzToolsFramework::ViewportInteraction::MouseInteractionEvent(
+                        mouseInteraction, AzToolsFramework::ViewportInteraction::MouseEvent::Down));
+                return handled;
+            }
+        }
+
+        return QWidget::event(event);
+    }
+
     void TestEditorActions::Connect()
     {
         using AzToolsFramework::GetEntityContextId;
@@ -352,7 +381,19 @@ namespace UnitTest
         AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
             entityId, &AzToolsFramework::EditorEntityContextRequestBus::Events::CreateNewEditorEntity, name);
 
+        if (!entityId.IsValid())
+        {
+            AZ_Error("CreateDefaultEditorEntity", false, "Failed to create editor entity '%s'", name);
+            return AZ::EntityId();
+        }
+
         AZ::Entity* entity = GetEntityById(entityId);
+
+        if (!entity)
+        {
+            AZ_Error("CreateDefaultEditorEntity", false, "Invalid entity obtained from Id %s", entityId.ToString().c_str());
+            return AZ::EntityId();
+        }
 
         entity->Deactivate();
 

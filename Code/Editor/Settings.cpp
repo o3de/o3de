@@ -26,6 +26,7 @@
 
 // AzFramework
 #include <AzFramework/API/ApplicationAPI.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
 // AzToolsFramework
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
@@ -244,7 +245,7 @@ SEditorSettings::SEditorSettings()
 
     gui.nToolbarIconSize = static_cast<int>(AzQtComponents::ToolBar::ToolBarIconSize::Default);
 
-    int lfHeight = 8;// -MulDiv(8, GetDeviceCaps(GetDC(NULL), LOGPIXELSY), 72);
+    int lfHeight = 8;// -MulDiv(8, GetDeviceCaps(GetDC(nullptr), LOGPIXELSY), 72);
     gui.nDefaultFontHieght = lfHeight;
     gui.hSystemFont = QFont("Ms Shell Dlg 2", lfHeight, QFont::Normal);
     gui.hSystemFontBold = QFont("Ms Shell Dlg 2", lfHeight, QFont::Bold);
@@ -500,6 +501,7 @@ void SEditorSettings::Save()
     SaveValue("Settings", "AutoBackupTime", autoBackupTime);
     SaveValue("Settings", "AutoBackupMaxCount", autoBackupMaxCount);
     SaveValue("Settings", "AutoRemindTime", autoRemindTime);
+    SaveValue("Settings", "MaxDisplayedItemsNumInSearch", maxNumberOfItemsShownInSearch);
     SaveValue("Settings", "CameraMoveSpeed", cameraMoveSpeed);
     SaveValue("Settings", "CameraRotateSpeed", cameraRotateSpeed);
     SaveValue("Settings", "StylusMode", stylusMode);
@@ -533,7 +535,7 @@ void SEditorSettings::Save()
     SaveValue("Settings", "ShowTimeInConsole", bShowTimeInConsole);
 
     SaveValue("Settings", "EnableSceneInspector", enableSceneInspector);
-    
+
     //////////////////////////////////////////////////////////////////////////
     // Viewport settings.
     //////////////////////////////////////////////////////////////////////////
@@ -626,7 +628,7 @@ void SEditorSettings::Save()
     SaveValue("Settings\\AssetBrowser", "AutoFilterFromViewportSelection", sAssetBrowserSettings.bAutoFilterFromViewportSelection);
     SaveValue("Settings\\AssetBrowser", "VisibleColumnNames", sAssetBrowserSettings.sVisibleColumnNames);
     SaveValue("Settings\\AssetBrowser", "ColumnNames", sAssetBrowserSettings.sColumnNames);
-      
+
     //////////////////////////////////////////////////////////////////////////
     // Deep Selection Settings
     //////////////////////////////////////////////////////////////////////////
@@ -705,7 +707,7 @@ void SEditorSettings::Load()
     QString     strPlaceholderString;
     // Load settings from registry.
     LoadValue("Settings", "UndoLevels", undoLevels);
-    LoadValue("Settings", "UndoSliceOverrideSaveValue", m_undoSliceOverrideSaveValue);  
+    LoadValue("Settings", "UndoSliceOverrideSaveValue", m_undoSliceOverrideSaveValue);
     LoadValue("Settings", "ShowWelcomeScreenAtStartup", bShowDashboardAtStartup);
     LoadValue("Settings", "ShowCircularDependencyError", m_showCircularDependencyError);
     LoadValue("Settings", "LoadLastLevelAtStartup", bAutoloadLastLevelAtStartup);
@@ -714,6 +716,7 @@ void SEditorSettings::Load()
     LoadValue("Settings", "AutoBackupTime", autoBackupTime);
     LoadValue("Settings", "AutoBackupMaxCount", autoBackupMaxCount);
     LoadValue("Settings", "AutoRemindTime", autoRemindTime);
+    LoadValue("Settings", "MaxDisplayedItemsNumInSearch", maxNumberOfItemsShownInSearch);
     LoadValue("Settings", "CameraMoveSpeed", cameraMoveSpeed);
     LoadValue("Settings", "CameraRotateSpeed", cameraRotateSpeed);
     LoadValue("Settings", "StylusMode", stylusMode);
@@ -1208,4 +1211,9 @@ bool SEditorSettings::GetSettingsRegistry_Bool(const char* key, bool& value)
 AzToolsFramework::ConsoleColorTheme SEditorSettings::GetConsoleColorTheme() const
 {
     return consoleBackgroundColorTheme;
+}
+
+int SEditorSettings::GetMaxNumberOfItemsShownInSearchView() const
+{
+    return SEditorSettings::maxNumberOfItemsShownInSearch;
 }

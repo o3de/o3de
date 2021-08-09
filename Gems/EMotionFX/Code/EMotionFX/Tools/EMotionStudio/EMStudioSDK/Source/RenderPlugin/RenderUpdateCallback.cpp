@@ -84,13 +84,13 @@ namespace EMStudio
                 const EMotionFX::Transform globalTM = transformData->GetCurrentPose()->GetWorldSpaceTransform(motionExtractionNode->GetNodeIndex()).ProjectedToGroundPlane();
 
                 bool distanceTraveledEnough = false;
-                if (trajectoryPath->mTraceParticles.GetIsEmpty())
+                if (trajectoryPath->mTraceParticles.empty())
                 {
                     distanceTraveledEnough = true;
                 }
                 else
                 {
-                    const uint32 numParticles = trajectoryPath->mTraceParticles.GetLength();
+                    const size_t numParticles = trajectoryPath->mTraceParticles.size();
                     const EMotionFX::Transform& oldGlobalTM = trajectoryPath->mTraceParticles[numParticles - 1].mWorldTM;
 
                     const AZ::Vector3& oldPos = oldGlobalTM.mPosition;
@@ -115,7 +115,7 @@ namespace EMStudio
                     // create the particle, fill its data and add it to the trajectory trace path
                     MCommon::RenderUtil::TrajectoryPathParticle trajectoryParticle;
                     trajectoryParticle.mWorldTM = globalTM;
-                    trajectoryPath->mTraceParticles.Add(trajectoryParticle);
+                    trajectoryPath->mTraceParticles.emplace_back(trajectoryParticle);
 
                     // reset the time passed as we just added a new particle
                     trajectoryPath->mTimePassed = 0.0f;
@@ -123,9 +123,9 @@ namespace EMStudio
             }
 
             // make sure we don't have too many items in our array
-            if (trajectoryPath->mTraceParticles.GetLength() > 50)
+            if (trajectoryPath->mTraceParticles.size() > 50)
             {
-                trajectoryPath->mTraceParticles.RemoveFirst();
+                trajectoryPath->mTraceParticles.erase(begin(trajectoryPath->mTraceParticles));
             }
         }
     }
@@ -160,8 +160,8 @@ namespace EMStudio
         RenderViewWidget*   widget          = mPlugin->GetActiveViewWidget();
         RenderOptions*      renderOptions   = mPlugin->GetRenderOptions();
 
-        const AZStd::unordered_set<AZ::u32>& visibleJointIndices = GetManager()->GetVisibleJointIndices();
-        const AZStd::unordered_set<AZ::u32>& selectedJointIndices = GetManager()->GetSelectedJointIndices();
+        const AZStd::unordered_set<size_t>& visibleJointIndices = GetManager()->GetVisibleJointIndices();
+        const AZStd::unordered_set<size_t>& selectedJointIndices = GetManager()->GetSelectedJointIndices();
 
         // render the AABBs
         if (widget->GetRenderFlag(RenderViewWidget::RENDER_AABB))
@@ -170,15 +170,10 @@ namespace EMStudio
             settings.mNodeBasedColor          = renderOptions->GetNodeAABBColor();
             settings.mStaticBasedColor        = renderOptions->GetStaticAABBColor();
             settings.mMeshBasedColor          = renderOptions->GetMeshAABBColor();
-            settings.mCollisionMeshBasedColor = renderOptions->GetCollisionMeshAABBColor();
 
-            renderUtil->RenderAABBs(actorInstance, settings);
+            renderUtil->RenderAabbs(actorInstance, settings);
         }
 
-        if (widget->GetRenderFlag(RenderViewWidget::RENDER_OBB))
-        {
-            renderUtil->RenderOBBs(actorInstance, &visibleJointIndices, &selectedJointIndices, renderOptions->GetOBBsColor(), renderOptions->GetSelectedObjectColor());
-        }
         if (widget->GetRenderFlag(RenderViewWidget::RENDER_LINESKELETON))
         {
             renderUtil->RenderSimpleSkeleton(actorInstance, &visibleJointIndices, &selectedJointIndices, renderOptions->GetLineSkeletonColor(), renderOptions->GetSelectedObjectColor());
@@ -221,9 +216,9 @@ namespace EMStudio
         {
             // iterate through all enabled nodes
             const EMotionFX::Pose* pose = actorInstance->GetTransformData()->GetCurrentPose();
-            const uint32 geomLODLevel   = actorInstance->GetLODLevel();
-            const uint32 numEnabled     = actorInstance->GetNumEnabledNodes();
-            for (uint32 i = 0; i < numEnabled; ++i)
+            const size_t geomLODLevel   = actorInstance->GetLODLevel();
+            const size_t numEnabled     = actorInstance->GetNumEnabledNodes();
+            for (size_t i = 0; i < numEnabled; ++i)
             {
                 EMotionFX::Node*    node            = emstudioActor->mActor->GetSkeleton()->GetNode(actorInstance->GetEnabledNode(i));
                 EMotionFX::Mesh*    mesh            = emstudioActor->mActor->GetMesh(geomLODLevel, node->GetNodeIndex());
@@ -260,8 +255,8 @@ namespace EMStudio
         // render the selection
         if (renderOptions->GetRenderSelectionBox() && EMotionFX::GetActorManager().GetNumActorInstances() != 1 && mPlugin->GetCurrentSelection()->CheckIfHasActorInstance(actorInstance))
         {
-            MCore::AABB aabb = actorInstance->GetAABB();
-            aabb.Widen(aabb.CalcRadius() * 0.005f);
+            AZ::Aabb aabb = actorInstance->GetAabb();
+            aabb.Expand(aabb.GetExtents() * 0.005f);
             renderUtil->RenderSelection(aabb, renderOptions->GetSelectionColor());
         }
 

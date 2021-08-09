@@ -171,7 +171,7 @@ namespace EMotionFX
         * @param numOrgVertices The number of original vertices in the mesh.
         * @result Vector of unique joint indices used by the skinning info layer.
         */
-        AZStd::set<AZ::u32> CalcLocalJointIndices(AZ::u32 numOrgVertices);
+        AZStd::set<uint16> CalcLocalJointIndices(AZ::u32 numOrgVertices);
 
         /**
          * Clone the vertex attribute layer.

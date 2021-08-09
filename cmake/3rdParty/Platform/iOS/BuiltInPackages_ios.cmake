@@ -7,7 +7,6 @@
 #
 
 # shared by other platforms:
-ly_associate_package(PACKAGE_NAME zlib-1.2.8-rev2-multiplatform      TARGETS zlib       PACKAGE_HASH e6f34b8ac16acf881e3d666ef9fd0c1aee94c3f69283fb6524d35d6f858eebbb)
 ly_associate_package(PACKAGE_NAME md5-2.0-multiplatform              TARGETS md5        PACKAGE_HASH 29e52ad22c78051551f78a40c2709594f0378762ae03b417adca3f4b700affdf)
 ly_associate_package(PACKAGE_NAME RapidJSON-1.1.0-multiplatform      TARGETS RapidJSON  PACKAGE_HASH 18b0aef4e6e849389916ff6de6682ab9c591ebe15af6ea6017014453c1119ea1)
 ly_associate_package(PACKAGE_NAME RapidXML-1.13-multiplatform        TARGETS RapidXML   PACKAGE_HASH 510b3c12f8872c54b34733e34f2f69dd21837feafa55bfefa445c98318d96ebf)
@@ -29,3 +28,4 @@ ly_associate_package(PACKAGE_NAME googletest-1.8.1-rev4-ios      TARGETS googlet
 ly_associate_package(PACKAGE_NAME googlebenchmark-1.5.0-rev2-ios TARGETS GoogleBenchmark PACKAGE_HASH c2ffaed2b658892b1bcf81dee4b44cd1cb09fc78d55584ef5cb8ab87f2d8d1ae)
 ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev2-ios   TARGETS libsamplerate   PACKAGE_HASH 7656b961697f490d4f9c35d2e61559f6fc38c32102e542a33c212cd618fc2119)
 ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1b-rev1-ios        TARGETS OpenSSL         PACKAGE_HASH cd0dfce3086a7172777c63dadbaf0ac3695b676119ecb6d0614b5fb1da03462f)
+ly_associate_package(PACKAGE_NAME zlib-1.2.11-rev1-ios           TARGETS zlib            PACKAGE_HASH 20bfccf3b98bd9a7d3506cf344ac48135035eb517752bf9bede1e821f163608d)

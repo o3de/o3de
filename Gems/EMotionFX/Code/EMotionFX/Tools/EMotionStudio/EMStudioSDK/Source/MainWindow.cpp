@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/std/sort.h>
 #include <EMotionStudio/EMStudioSDK/Source/DockWidgetPlugin.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <EMotionStudio/EMStudioSDK/Source/FileManager.h>
@@ -162,9 +163,9 @@ namespace EMStudio
         {}
         ~UndoMenuCallback() = default;
 
-        void OnRemoveCommand([[maybe_unused]] uint32 historyIndex) override          { m_mainWindow->UpdateUndoRedo(); }
-        void OnSetCurrentCommand([[maybe_unused]] uint32 index) override             { m_mainWindow->UpdateUndoRedo(); }
-        void OnAddCommandToHistory([[maybe_unused]] uint32 historyIndex, [[maybe_unused]] MCore::CommandGroup* group, [[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine) override { m_mainWindow->UpdateUndoRedo(); }
+        void OnRemoveCommand([[maybe_unused]] size_t historyIndex) override          { m_mainWindow->UpdateUndoRedo(); }
+        void OnSetCurrentCommand([[maybe_unused]] size_t index) override             { m_mainWindow->UpdateUndoRedo(); }
+        void OnAddCommandToHistory([[maybe_unused]] size_t historyIndex, [[maybe_unused]] MCore::CommandGroup* group, [[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine) override { m_mainWindow->UpdateUndoRedo(); }
 
         void OnPreExecuteCommand([[maybe_unused]] MCore::CommandGroup* group, [[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine) override {}
         void OnPostExecuteCommand([[maybe_unused]] MCore::CommandGroup* group, [[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine, [[maybe_unused]] bool wasSuccess, [[maybe_unused]] const AZStd::string& outResult) override {}
@@ -1036,8 +1037,8 @@ namespace EMStudio
         // enable the actor save selected menu only if one actor or actor instance is selected
         // it's needed to check here because if one actor is removed it's not selected anymore
         const CommandSystem::SelectionList& selectionList = GetCommandManager()->GetCurrentSelection();
-        const uint32 numSelectedActors = selectionList.GetNumSelectedActors();
-        const uint32 numSelectedActorInstances = selectionList.GetNumSelectedActorInstances();
+        const size_t numSelectedActors = selectionList.GetNumSelectedActors();
+        const size_t numSelectedActorInstances = selectionList.GetNumSelectedActorInstances();
         if ((numSelectedActors > 0) || (numSelectedActorInstances > 0))
         {
             EnableSaveSelectedActorsMenu();
@@ -1086,26 +1087,26 @@ namespace EMStudio
         PluginManager* pluginManager = GetPluginManager();
 
         // get the number of plugins
-        const uint32 numPlugins = pluginManager->GetNumPlugins();
+        const size_t numPlugins = pluginManager->GetNumPlugins();
 
         // add each plugin name in an array to sort them
-        MCore::Array<AZStd::string> sortedPlugins;
-        sortedPlugins.Reserve(numPlugins);
-        for (uint32 p = 0; p < numPlugins; ++p)
+        AZStd::vector<AZStd::string> sortedPlugins;
+        sortedPlugins.reserve(numPlugins);
+        for (size_t p = 0; p < numPlugins; ++p)
         {
             EMStudioPlugin* plugin = pluginManager->GetPlugin(p);
-            sortedPlugins.Add(plugin->GetName());
+            sortedPlugins.emplace_back(plugin->GetName());
         }
-        sortedPlugins.Sort();
+        AZStd::sort(begin(sortedPlugins), end(sortedPlugins));
 
         // clear the window menu
         mCreateWindowMenu->clear();
 
         // for all registered plugins, create a menu items
-        for (uint32 p = 0; p < numPlugins; ++p)
+        for (size_t p = 0; p < numPlugins; ++p)
         {
             // get the plugin
-            const uint32 pluginIndex = pluginManager->FindPluginByTypeString(sortedPlugins[p].c_str());
+            const size_t pluginIndex = pluginManager->FindPluginByTypeString(sortedPlugins[p].c_str());
             EMStudioPlugin* plugin = pluginManager->GetPlugin(pluginIndex);
 
             // don't add invisible plugins to the list
@@ -1221,8 +1222,8 @@ namespace EMStudio
             generalPropertyWidget->AddInstance(&mOptions, azrtti_typeid(mOptions));
 
             PluginManager* pluginManager = GetPluginManager();
-            const uint32 numPlugins = pluginManager->GetNumActivePlugins();
-            for (uint32 i = 0; i < numPlugins; ++i)
+            const size_t numPlugins = pluginManager->GetNumActivePlugins();
+            for (size_t i = 0; i < numPlugins; ++i)
             {
                 EMStudioPlugin* currentPlugin = pluginManager->GetActivePlugin(i);
                 PluginOptions* pluginOptions = currentPlugin->GetOptions();
@@ -1768,21 +1769,21 @@ namespace EMStudio
     {
         // get the current selection list
         const CommandSystem::SelectionList& selectionList             = GetCommandManager()->GetCurrentSelection();
-        const uint32                        numSelectedActors         = selectionList.GetNumSelectedActors();
-        const uint32                        numSelectedActorInstances = selectionList.GetNumSelectedActorInstances();
+        const size_t                        numSelectedActors         = selectionList.GetNumSelectedActors();
+        const size_t                        numSelectedActorInstances = selectionList.GetNumSelectedActorInstances();
 
         // create the saving actor array
         AZStd::vector<EMotionFX::Actor*> savingActors;
         savingActors.reserve(numSelectedActors + numSelectedActorInstances);
 
         // add all selected actors to the list
-        for (uint32 i = 0; i < numSelectedActors; ++i)
+        for (size_t i = 0; i < numSelectedActors; ++i)
         {
             savingActors.push_back(selectionList.GetActor(i));
         }
 
         // check all actors of all selected actor instances and put them in the list if they are not in yet
-        for (uint32 i = 0; i < numSelectedActorInstances; ++i)
+        for (size_t i = 0; i < numSelectedActorInstances; ++i)
         {
             EMotionFX::Actor* actor = selectionList.GetActorInstance(i)->GetActor();
 
@@ -1839,7 +1840,7 @@ namespace EMStudio
         dir.setSorting(QDir::Name);
 
         // add each layout
-        mLayoutNames.Clear();
+        mLayoutNames.clear();
         AZStd::string filename;
         const QFileInfoList list = dir.entryInfoList();
         const int listSize = list.size();
@@ -1856,20 +1857,19 @@ namespace EMStudio
             if (extension == "layout")
             {
                 AzFramework::StringFunc::Path::GetFileName(filename.c_str(), filename);
-                mLayoutNames.Add(filename);
+                mLayoutNames.emplace_back(filename);
             }
         }
 
         // add each menu
-        const uint32 numLayoutNames = mLayoutNames.GetLength();
-        for (uint32 i = 0; i < numLayoutNames; ++i)
+        for (const AZStd::string& layoutName : mLayoutNames)
         {
-            QAction* action = mLayoutsMenu->addAction(mLayoutNames[i].c_str());
+            QAction* action = mLayoutsMenu->addAction(layoutName.c_str());
             connect(action, &QAction::triggered, this, &MainWindow::OnLoadLayout);
         }
 
         // add the separator only if at least one layout
-        if (numLayoutNames > 0)
+        if (!mLayoutNames.empty())
         {
             mLayoutsMenu->addSeparator();
         }
@@ -1879,22 +1879,22 @@ namespace EMStudio
         connect(saveCurrentAction, &QAction::triggered, this, &MainWindow::OnLayoutSaveAs);
 
         // remove menu is needed only if at least one layout
-        if (numLayoutNames > 0)
+        if (!mLayoutNames.empty())
         {
             // add the remove menu
             QMenu* removeMenu = mLayoutsMenu->addMenu("Remove");
             removeMenu->setObjectName("RemoveMenu");
 
             // add each layout in the remove menu
-            for (uint32 i = 0; i < numLayoutNames; ++i)
+            for (const AZStd::string& layoutName : mLayoutNames)
             {
                 // User cannot remove the default layout. This layout is referenced in the qrc file, removing it will
                 // cause compiling issue too.
-                if (mLayoutNames[i] == "AnimGraph")
+                if (layoutName == "AnimGraph")
                 {
                     continue;
                 }
-                QAction* action = removeMenu->addAction(mLayoutNames[i].c_str());
+                QAction* action = removeMenu->addAction(layoutName.c_str());
                 connect(action, &QAction::triggered, this, &MainWindow::OnRemoveLayout);
             }
         }
@@ -1904,9 +1904,9 @@ namespace EMStudio
 
         // update the combo box
         mApplicationMode->clear();
-        for (uint32 i = 0; i < numLayoutNames; ++i)
+        for (const AZStd::string& layoutName : mLayoutNames)
         {
-            mApplicationMode->addItem(mLayoutNames[i].c_str());
+            mApplicationMode->addItem(layoutName.c_str());
         }
 
         // update the current selection of combo box
@@ -2054,7 +2054,7 @@ namespace EMStudio
             const bool result = GetCommandManager()->Undo(outResult);
 
             // log the results if there are any
-            if (outResult.size() > 0)
+            if (!outResult.empty())
             {
                 if (result == false)
                 {
@@ -2079,7 +2079,7 @@ namespace EMStudio
             const bool result = GetCommandManager()->Redo(outResult);
 
             // log the results if there are any
-            if (outResult.size() > 0)
+            if (!outResult.empty())
             {
                 if (result == false)
                 {
@@ -2278,8 +2278,8 @@ namespace EMStudio
 
                         // for all registered plugins, call the after load workspace callback
                         PluginManager* pluginManager = GetPluginManager();
-                        const uint32 numPlugins = pluginManager->GetNumActivePlugins();
-                        for (uint32 p = 0; p < numPlugins; ++p)
+                        const size_t numPlugins = pluginManager->GetNumActivePlugins();
+                        for (size_t p = 0; p < numPlugins; ++p)
                         {
                             EMStudioPlugin* plugin = pluginManager->GetActivePlugin(p);
                             plugin->OnAfterLoadProject();
@@ -2319,8 +2319,8 @@ namespace EMStudio
         MCore::CommandGroup commandGroup("Animgraph and motion set activation");
         AZStd::string commandString;
 
-        const uint32 numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
-        for (uint32 i = 0; i < numActorInstances; ++i)
+        const size_t numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
+        for (size_t i = 0; i < numActorInstances; ++i)
         {
             EMotionFX::ActorInstance* actorInstance = EMotionFX::GetActorManager().GetActorInstance(i);
             if (!actorInstance || actorFilename != actorInstance->GetActor()->GetFileName())
@@ -2464,8 +2464,8 @@ namespace EMStudio
 
             // for all registered plugins, call the after load actors callback
             PluginManager* pluginManager = GetPluginManager();
-            const uint32 numPlugins = pluginManager->GetNumActivePlugins();
-            for (uint32 p = 0; p < numPlugins; ++p)
+            const size_t numPlugins = pluginManager->GetNumActivePlugins();
+            for (size_t p = 0; p < numPlugins; ++p)
             {
                 EMStudioPlugin* plugin = pluginManager->GetActivePlugin(p);
                 plugin->OnAfterLoadActors();
@@ -2756,8 +2756,8 @@ namespace EMStudio
             }
             else if (dirtyObjects[i].mAnimGraph)
             {
-                const uint32 animGraphIndex = EMotionFX::GetAnimGraphManager().FindAnimGraphIndex(dirtyObjects[i].mAnimGraph);
-                command = AZStd::string::format("SaveAnimGraph -index %i -filename \"%s\" -updateFilename false -updateDirtyFlag false -sourceControl false", animGraphIndex, newFileFilename.c_str());
+                const size_t animGraphIndex = EMotionFX::GetAnimGraphManager().FindAnimGraphIndex(dirtyObjects[i].mAnimGraph);
+                command = AZStd::string::format("SaveAnimGraph -index %zu -filename \"%s\" -updateFilename false -updateDirtyFlag false -sourceControl false", animGraphIndex, newFileFilename.c_str());
                 commandGroup.AddCommandString(command);
             }
             else if (dirtyObjects[i].mWorkspace)
@@ -2802,8 +2802,8 @@ namespace EMStudio
         PluginManager* pluginManager = GetPluginManager();
 
         // get the number of active plugins, iterate through them and call the process frame method
-        const uint32 numPlugins = pluginManager->GetNumActivePlugins();
-        for (uint32 p = 0; p < numPlugins; ++p)
+        const size_t numPlugins = pluginManager->GetNumActivePlugins();
+        for (size_t p = 0; p < numPlugins; ++p)
         {
             EMStudioPlugin* plugin = pluginManager->GetActivePlugin(p);
             if (plugin->GetPluginType() == EMStudioPlugin::PLUGINTYPE_RENDERING)

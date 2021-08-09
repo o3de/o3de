@@ -39,7 +39,7 @@ AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 
 //////////////////////////////////////////////////////////////////////////
-CErrorReportDialog* CErrorReportDialog::m_instance = 0;
+CErrorReportDialog* CErrorReportDialog::m_instance = nullptr;
 
 // CErrorReportDialog dialog
 
@@ -88,12 +88,12 @@ CErrorReportDialog::CErrorReportDialog(QWidget* parent)
     m_instance = this;
     //CErrorReport *report,
     //m_pErrorReport = report;
-    m_pErrorReport = 0;
+    m_pErrorReport = nullptr;
 }
 
 CErrorReportDialog::~CErrorReportDialog()
 {
-    m_instance = 0;
+    m_instance = nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -141,7 +141,7 @@ void CErrorReportDialog::Clear()
 {
     if (m_instance)
     {
-        m_instance->SetReport(0);
+        m_instance->SetReport(nullptr);
         m_instance->UpdateErrors();
     }
 }
@@ -500,7 +500,7 @@ void CErrorReportDialog::OnReportItemDblClick(const QModelIndex& index)
 {
     bool bDone = false;
     const CErrorRecord* pError = index.data(Qt::UserRole).value<const CErrorRecord*>();
-    if (pError && pError->pObject != NULL)
+    if (pError && pError->pObject != nullptr)
     {
         CUndo undo("Select Object(s)");
         // Clear other selection.
@@ -563,7 +563,7 @@ void CErrorReportDialog::OnReportHyperlink(const QModelIndex& index)
 {
     const CErrorRecord* pError = index.data(Qt::UserRole).value<const CErrorRecord*>();
     bool bDone = false;
-    if (pError && pError->pObject != NULL)
+    if (pError && pError->pObject != nullptr)
     {
         CUndo undo("Select Object(s)");
         // Clear other selection.
@@ -593,8 +593,8 @@ void CErrorReportDialog::OnShowFieldChooser()
     CMainFrm* pMainFrm = (CMainFrame*)AfxGetMainWnd();
     if (pMainFrm)
     {
-        BOOL bShow = !pMainFrm->m_wndFieldChooser.IsVisible();
-        pMainFrm->ShowControlBar(&pMainFrm->m_wndFieldChooser, bShow, FALSE);
+        bool bShow = !pMainFrm->m_wndFieldChooser.IsVisible();
+        pMainFrm->ShowControlBar(&pMainFrm->m_wndFieldChooser, bShow, false);
     }
 }
 */

@@ -158,8 +158,8 @@ namespace EMotionFX
             AttachmentType                      m_attachmentType;           ///< Attachment type.
             AZ::EntityId                        m_attachmentTarget;         ///< Target entity to attach to, if any.
             AZStd::string                       m_attachmentJointName;      ///< Joint name on target to which to attach (if ActorAttachment).
-            AZ::u32                             m_attachmentJointIndex;
-            AZ::u32                             m_lodLevel;
+            size_t                              m_attachmentJointIndex;
+            size_t                              m_lodLevel;
             ActorComponent::BoundingBoxConfiguration m_bboxConfig;
             bool                                m_forceUpdateJointsOOV = false;
             // \todo attachmentTarget node nr

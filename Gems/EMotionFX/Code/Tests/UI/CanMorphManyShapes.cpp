@@ -68,7 +68,7 @@ namespace EMotionFX
 
             // Without this call, the bind pose does not know about newly added morph target (mMorphWeights.GetLength() == 0)
             m_actor->ResizeTransformData();
-            m_actor->PostCreateInit(/*makeGeomLodsCompatibleWithSkeletalLODs=*/false, /*generateOBBs=*/false, /*convertUnitType=*/false);
+            m_actor->PostCreateInit(/*makeGeomLodsCompatibleWithSkeletalLODs=*/false, /*convertUnitType=*/false);
 
             m_animGraph = AZStd::make_unique<AnimGraph>();
 
@@ -99,7 +99,7 @@ namespace EMotionFX
             // InitAfterLoading() is called
             morphTargetNode->AddConnection(
                 parameterNode,
-                parameterNode->FindOutputPortIndex("FloatParam"),
+                aznumeric_caster(parameterNode->FindOutputPortIndex("FloatParam")),
                 BlendTreeMorphTargetNode::PORTID_INPUT_WEIGHT
             );
             finalNode->AddConnection(
