@@ -140,12 +140,8 @@ namespace AzFramework
 
         if (!s_instanceCount)
         {
-            s_instanceCount = AZ::Environment::CreateVariable<int>("InputDeviceMouseInstanceCount", 0);
-        }
+            s_instanceCount = AZ::Environment::CreateVariable<int>("InputDeviceMouseInstanceCount", 1);
 
-        int instanceCount = s_instanceCount.Get();
-        if (instanceCount++ == 0)
-        {
             // Register for raw mouse input
             RAWINPUTDEVICE rawInputDevice;
             rawInputDevice.usUsagePage = RAW_INPUT_MOUSE_USAGE_PAGE;
@@ -156,7 +152,10 @@ namespace AzFramework
             AZ_Assert(result, "Failed to register raw input device: mouse");
             AZ_UNUSED(result);
         }
-        s_instanceCount.Set(instanceCount);
+        else
+        {
+            s_instanceCount.Set(s_instanceCount.Get() + 1);
+        }
 
         RawInputNotificationBusWindows::Handler::BusConnect();
     }
@@ -181,8 +180,13 @@ namespace AzFramework
             const BOOL result = RegisterRawInputDevices(&rawInputDevice, 1, sizeof(rawInputDevice));
             AZ_Assert(result, "Failed to deregister raw input device: mouse");
             AZ_UNUSED(result);
+
+            s_instanceCount.Reset();
         }
-        s_instanceCount.Set(instanceCount);
+        else
+        {
+            s_instanceCount.Set(instanceCount);
+        }
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
