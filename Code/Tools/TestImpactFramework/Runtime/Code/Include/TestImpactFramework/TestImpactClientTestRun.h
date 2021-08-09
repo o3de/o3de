@@ -72,12 +72,12 @@ namespace TestImpact
         };
 
         //! Representation of a test run that failed to execute.
-        class TestRunWithExecutonFailure
+        class TestRunWithExecutionFailure
             : public TestRunBase
         {
         public:
             using TestRunBase::TestRunBase;
-            TestRunWithExecutonFailure(TestRunBase&& testRun);
+            TestRunWithExecutionFailure(TestRunBase&& testRun);
         };
 
         //! Representation of a test run that was terminated in-flight due to timing out.

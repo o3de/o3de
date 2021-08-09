@@ -49,7 +49,7 @@ namespace TestImpact
                 AZStd::chrono::milliseconds duration,
                 AZStd::vector<CompletedTestRun>&& passingTestRuns,
                 AZStd::vector<CompletedTestRun>&& failingTestRuns,
-                AZStd::vector<TestRunWithExecutonFailure>&& executionFailureTestRuns,
+                AZStd::vector<TestRunWithExecutionFailure>&& executionFailureTestRuns,
                 AZStd::vector<TimedOutTestRun>&& timedOutTestRuns,
                 AZStd::vector<UnexecutedTestRun>&& unexecutedTestRuns);
 
@@ -99,7 +99,7 @@ namespace TestImpact
             const AZStd::vector<CompletedTestRun>& GetFailingTestRuns() const;
 
             //! Returns the set of test runs that failed to execute.
-            const AZStd::vector<TestRunWithExecutonFailure>& GetExecutionFailureTestRuns() const;
+            const AZStd::vector<TestRunWithExecutionFailure>& GetExecutionFailureTestRuns() const;
 
             //! Returns the set of test runs that executed successfully but were terminated prematurely due to timing out.
             const AZStd::vector<TimedOutTestRun>& GetTimedOutTestRuns() const;
@@ -112,7 +112,7 @@ namespace TestImpact
             AZStd::chrono::milliseconds m_duration = AZStd::chrono::milliseconds{ 0 };
             AZStd::vector<CompletedTestRun> m_passingTestRuns;
             AZStd::vector<CompletedTestRun> m_failingTestRuns;
-            AZStd::vector<TestRunWithExecutonFailure> m_executionFailureTestRuns;
+            AZStd::vector<TestRunWithExecutionFailure> m_executionFailureTestRuns;
             AZStd::vector<TimedOutTestRun> m_timedOutTestRuns;
             AZStd::vector<UnexecutedTestRun> m_unexecutedTestRuns;
             size_t m_totalNumPassingTests = 0;
@@ -227,7 +227,6 @@ namespace TestImpact
             {
                 return m_selectedTestRunReport.GetDuration();
             }
-                       
 
             //! Returns the total number of test runs across all test run reports.
             virtual size_t GetTotalNumTestRuns() const
