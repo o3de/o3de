@@ -1299,6 +1299,7 @@ def create_project(project_path: pathlib.Path,
                    keep_license_text: bool = False,
                    replace: list = None,
                    force: bool = False,
+                   no_register: bool = False,
                    system_component_class_id: str = None,
                    editor_system_component_class_id: str = None,
                    module_id: str = None) -> int:
@@ -1660,7 +1661,7 @@ def create_project(project_path: pathlib.Path,
     # Register the project with the either o3de_manifest.json or engine.json
     # and set the project.json "engine" field to match the
     # engine.json "engine_name" field
-    return register.register(project_path=project_path)
+    return register.register(project_path=project_path) if not no_register else 0
 
 
 def create_gem(gem_path: pathlib.Path,
@@ -1677,6 +1678,7 @@ def create_gem(gem_path: pathlib.Path,
                keep_license_text: bool = False,
                replace: list = None,
                force: bool = False,
+               no_register: bool = False,
                system_component_class_id: str = None,
                editor_system_component_class_id: str = None,
                module_id: str = None) -> int:
@@ -2037,7 +2039,7 @@ def create_gem(gem_path: pathlib.Path,
                                 d.write('# SPDX-License-Identifier: Apache-2.0 OR MIT\n')
                                 d.write('# {END_LICENSE}\n')
     # Register the gem with the either o3de_manifest.json, engine.json or project.json based on the gem path
-    return register.register(gem_path=gem_path)
+    return register.register(gem_path=gem_path) if not no_register else 0
 
 
 def _run_create_template(args: argparse) -> int:
@@ -2088,6 +2090,7 @@ def _run_create_project(args: argparse) -> int:
                           args.keep_license_text,
                           args.replace,
                           args.force,
+                          args.no_register,
                           args.system_component_class_id,
                           args.editor_system_component_class_id,
                           args.module_id)
@@ -2108,6 +2111,7 @@ def _run_create_gem(args: argparse) -> int:
                       args.keep_license_text,
                       args.replace,
                       args.force,
+                      args.no_register,
                       args.system_component_class_id,
                       args.editor_system_component_class_id,
                       args.module_id)
@@ -2372,6 +2376,9 @@ def add_args(subparsers) -> None:
                                                ' uuid Ex. {b60c92eb-3139-454b-a917-a9d3c5819594}')
     create_project_subparser.add_argument('-f', '--force', action='store_true', default=False,
                                       help='Copies over instantiated template directory even if it exist.')
+    create_project_subparser.add_argument('--no-register', action='store_true', default=False,
+                                      help='If the project template is instantiated successfully, it will not register the'
+                                           ' project with the global or engine manifest file.')
     create_project_subparser.set_defaults(func=_run_create_project)
 
     # creation of a gem from a template (like create from template but makes gem assumptions)
@@ -2465,6 +2472,9 @@ def add_args(subparsers) -> None:
                                            ' default is a random uuid Ex. {b60c92eb-3139-454b-a917-a9d3c5819594}')
     create_gem_subparser.add_argument('-f', '--force', action='store_true', default=False,
                         help='Copies over instantiated template directory even if it exist.')
+    create_gem_subparser.add_argument('--no-register', action='store_true', default=False,
+                                      help='If the gem template is instantiated successfully, it will not register the'
+                                           ' gem with the global, project or engine manifest file.')
     create_gem_subparser.set_defaults(func=_run_create_gem)
 
 
