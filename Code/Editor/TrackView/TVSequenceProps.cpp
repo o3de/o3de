@@ -51,7 +51,7 @@ CTVSequenceProps::~CTVSequenceProps()
 }
 
 // CTVSequenceProps message handlers
-BOOL CTVSequenceProps::OnInitDialog()
+bool CTVSequenceProps::OnInitDialog()
 {
     ui->NAME->setText(m_pSequence->GetName());
     int seqFlags = m_pSequence->GetFlags();
@@ -97,7 +97,7 @@ BOOL CTVSequenceProps::OnInitDialog()
         ui->ORT_ONCE->setChecked(true);
     }
 
-    return TRUE;  // return TRUE unless you set the focus to a control
+    return true;  // return true unless you set the focus to a control
     // EXCEPTION: OCX Property Pages should return FALSE
 }
 
@@ -259,7 +259,7 @@ void CTVSequenceProps::OnOK()
 
 void CTVSequenceProps::ToggleCutsceneOptions(bool bActivated)
 {
-    if (bActivated == FALSE)
+    if (bActivated == false)
     {
         ui->NOABORT->setChecked(false);
         ui->DISABLEPLAYER->setChecked(false);

@@ -119,8 +119,8 @@ namespace EMotionFX
         }
 
     protected:
-        AZ::u32 m_jack_rootIndex = MCORE_INVALIDINDEX32;
-        AZ::u32 m_jack_hipIndex = MCORE_INVALIDINDEX32;
+        size_t m_jack_rootIndex = InvalidIndex;
+        size_t m_jack_hipIndex = InvalidIndex;
         AnimGraphMotionNode* m_motionNode = nullptr;
         BlendTree* m_blendTree = nullptr;
         Motion* m_motion = nullptr;
@@ -243,7 +243,7 @@ namespace EMotionFX
 
         // The expected delta used is the distance of the jack walk forward motion will move in 1 complete duration
         const float expectedDelta = ExtractLastFramePos().GetY();
-        for (AZ::u32 paramIndex = 0; paramIndex < m_param.durationMultipliers.size(); paramIndex++)
+        for (size_t paramIndex = 0; paramIndex < m_param.durationMultipliers.size(); paramIndex++)
         {
             // Test motion extraction under different durations/time deltas
             const float motionDuration = 1.066f * m_param.durationMultipliers[paramIndex];
@@ -262,7 +262,7 @@ namespace EMotionFX
         const AZ::Quaternion actorRotation(0.0f, 0.0f, -1.0f, 1.0f);
         m_actorInstance->SetLocalSpaceRotation(actorRotation.GetNormalized());
         GetEMotionFX().Update(0.0f);
-        for (AZ::u32 paramIndex = 0; paramIndex < m_param.durationMultipliers.size(); paramIndex++)
+        for (size_t paramIndex = 0; paramIndex < m_param.durationMultipliers.size(); paramIndex++)
         {
             const float motionDuration = 1.066f * m_param.durationMultipliers[paramIndex];
             const float originalPositionX = m_actorInstance->GetWorldSpaceTransform().mPosition.GetX();
@@ -290,7 +290,7 @@ namespace EMotionFX
         const AZ::Quaternion diagonalRotation = m_reverse ? AZ::Quaternion(0.0f, 0.0f, 0.5f, 1.0f) : AZ::Quaternion(0.0f, 0.0f, -0.5f, 1.0f);
         m_actorInstance->SetLocalSpaceRotation(diagonalRotation.GetNormalized());
         GetEMotionFX().Update(0.0f);
-        for (AZ::u32 paramIndex = 0; paramIndex < m_param.durationMultipliers.size(); paramIndex++)
+        for (size_t paramIndex = 0; paramIndex < m_param.durationMultipliers.size(); paramIndex++)
         {
             const float originalPositionX = m_actorInstance->GetWorldSpaceTransform().mPosition.GetX();
             const float originalPositionY = m_actorInstance->GetWorldSpaceTransform().mPosition.GetY();

@@ -696,13 +696,13 @@ namespace EMotionFX
          * Get the event handler at the given index.
          * @result A pointer to the event handler at the given index.
          */
-        MotionInstanceEventHandler* GetEventHandler(AZ::u32 index) const;
+        MotionInstanceEventHandler* GetEventHandler(size_t index) const;
 
         /**
          * Get the number of event handlers.
          * @result The number of event handlers assigned to the motion instance.
          */
-        AZ::u32 GetNumEventHandlers() const;
+        size_t GetNumEventHandlers() const;
 
         //--------------------------------
 
@@ -821,7 +821,7 @@ namespace EMotionFX
 
         void CalcRelativeTransform(Node* rootNode, float curTime, float oldTime, Transform* outTransform) const;
         bool ExtractMotion(Transform& outTrajectoryDelta);
-        void CalcGlobalTransform(const MCore::Array<AZ::u32>& hierarchyPath, float timeValue, Transform* outTransform) const;
+        void CalcGlobalTransform(const AZStd::vector<size_t>& hierarchyPath, float timeValue, Transform* outTransform) const;
         void ResetTimes();
 
         AZ_DEPRECATED(void CalcNewTimeAfterUpdate(float timePassed, float* outNewTime) const, "MotionInstance::CalcNewTimeAfterUpdate has been deprecated, please use MotionInstance::CalcPlayStateAfterUpdate(timeDelta).m_currentTime instead.");

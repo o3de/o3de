@@ -39,7 +39,7 @@ namespace MCore
         static AttributeVector4* Create(float x, float y, float z, float w);
 
         MCORE_INLINE uint8* GetRawDataPointer()                     { return reinterpret_cast<uint8*>(&mValue); }
-        MCORE_INLINE uint32 GetRawDataSize() const                  { return sizeof(AZ::Vector4); }
+        MCORE_INLINE size_t GetRawDataSize() const                  { return sizeof(AZ::Vector4); }
 
         // adjust values
         MCORE_INLINE const AZ::Vector4& GetValue() const                { return mValue; }
@@ -63,8 +63,8 @@ namespace MCore
         }
         bool ConvertToString(AZStd::string& outString) const override      { AZStd::to_string(outString, mValue); return true; }
         //      void ConvertCoordinateSystem()                              { GetCoordinateSystem().ConvertVector4(&mValue); }
-        uint32 GetClassSize() const override                        { return sizeof(AttributeVector4); }
-        uint32 GetDefaultInterfaceType() const override             { return ATTRIBUTE_INTERFACETYPE_VECTOR4; }
+        size_t GetClassSize() const override                        { return sizeof(AttributeVector4); }
+        AZ::u32 GetDefaultInterfaceType() const override             { return ATTRIBUTE_INTERFACETYPE_VECTOR4; }
 
     private:
         AZ::Vector4     mValue;     /**< The Vector4 value. */

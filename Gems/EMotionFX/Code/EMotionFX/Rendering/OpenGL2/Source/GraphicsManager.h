@@ -62,7 +62,7 @@ namespace RenderGL
         bool GetIsPostProcessingEnabled() const                                                 { return mPostProcessing; }
         PostProcessShader* LoadPostProcessShader(AZ::IO::PathView filename);
         GLSLShader* LoadShader(AZ::IO::PathView vertexFileName, AZ::IO::PathView pixelFileName);
-        GLSLShader* LoadShader(AZ::IO::PathView vertexFileName, AZ::IO::PathView pixelFileName, MCore::Array<AZStd::string>& defines);
+        GLSLShader* LoadShader(AZ::IO::PathView vertexFileName, AZ::IO::PathView pixelFileName, AZStd::vector<AZStd::string>& defines);
 
         MCORE_INLINE void SetGBuffer(GBuffer* gBuffer)                                          { mGBuffer = gBuffer; }
         MCORE_INLINE GBuffer* GetGBuffer()                                                      { return mGBuffer; }

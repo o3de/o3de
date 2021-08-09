@@ -30,7 +30,7 @@ namespace EMotionFX
     }
 
 
-    AnimGraphNodeGroup::AnimGraphNodeGroup(const char* groupName, uint32 numNodes)
+    AnimGraphNodeGroup::AnimGraphNodeGroup(const char* groupName, size_t numNodes)
     {
         SetName(groupName);
         SetNumNodes(numNodes);
@@ -100,28 +100,28 @@ namespace EMotionFX
 
 
     // set the number of nodes
-    void AnimGraphNodeGroup::SetNumNodes(uint32 numNodes)
+    void AnimGraphNodeGroup::SetNumNodes(size_t numNodes)
     {
         mNodeIds.resize(numNodes);
     }
 
 
     // get the number of nodes
-    uint32 AnimGraphNodeGroup::GetNumNodes() const
+    size_t AnimGraphNodeGroup::GetNumNodes() const
     {
-        return static_cast<uint32>(mNodeIds.size());
+        return mNodeIds.size();
     }
 
 
     // set a given node to a given node number
-    void AnimGraphNodeGroup::SetNode(uint32 index, AnimGraphNodeId nodeId)
+    void AnimGraphNodeGroup::SetNode(size_t index, AnimGraphNodeId nodeId)
     {
         mNodeIds[index] = nodeId;
     }
 
 
     // get the node number of a given index
-    AnimGraphNodeId AnimGraphNodeGroup::GetNode(uint32 index) const
+    AnimGraphNodeId AnimGraphNodeGroup::GetNode(size_t index) const
     {
         return mNodeIds[index];
     }
@@ -147,7 +147,7 @@ namespace EMotionFX
 
 
     // remove a given array element from the list of nodes
-    void AnimGraphNodeGroup::RemoveNodeByGroupIndex(uint32 index)
+    void AnimGraphNodeGroup::RemoveNodeByGroupIndex(size_t index)
     {
         mNodeIds.erase(mNodeIds.begin() + index);
     }

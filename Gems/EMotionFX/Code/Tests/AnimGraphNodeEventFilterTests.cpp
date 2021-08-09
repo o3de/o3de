@@ -86,7 +86,7 @@ namespace EMotionFX
                 AnimGraphMotionNode* motionNode = aznew AnimGraphMotionNode();
                 motionNode->SetName(AZStd::string::format("MotionNode%zu", i).c_str());
                 m_blendTree->AddChildNode(motionNode);
-                m_blend2Node->AddConnection(motionNode, AnimGraphMotionNode::PORTID_OUTPUT_POSE, i);
+                m_blend2Node->AddConnection(motionNode, AnimGraphMotionNode::PORTID_OUTPUT_POSE, aznumeric_caster(i));
                 m_motionNodes.push_back(motionNode);
             }
 

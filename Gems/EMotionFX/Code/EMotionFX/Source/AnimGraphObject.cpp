@@ -89,7 +89,7 @@ namespace EMotionFX
 
 
     // save and return number of bytes written, when outputBuffer is nullptr only return num bytes it would write
-    uint32 AnimGraphObject::SaveUniqueData(AnimGraphInstance* animGraphInstance, uint8* outputBuffer) const
+    size_t AnimGraphObject::SaveUniqueData(AnimGraphInstance* animGraphInstance, uint8* outputBuffer) const
     {
         AnimGraphObjectData* data = animGraphInstance->FindOrCreateUniqueObjectData(this);
         if (data)
@@ -103,7 +103,7 @@ namespace EMotionFX
 
 
     // load and return number of bytes read, when dataBuffer is nullptr, 0 should be returned
-    uint32 AnimGraphObject::LoadUniqueData(AnimGraphInstance* animGraphInstance, const uint8* dataBuffer)
+    size_t AnimGraphObject::LoadUniqueData(AnimGraphInstance* animGraphInstance, const uint8* dataBuffer)
     {
         AnimGraphObjectData* data = animGraphInstance->FindOrCreateUniqueObjectData(this);
         if (data)
@@ -116,9 +116,9 @@ namespace EMotionFX
 
 
     // collect internal objects
-    void AnimGraphObject::RecursiveCollectObjects(MCore::Array<AnimGraphObject*>& outObjects) const
+    void AnimGraphObject::RecursiveCollectObjects(AZStd::vector<AnimGraphObject*>& outObjects) const
     {
-        outObjects.Add(const_cast<AnimGraphObject*>(this));
+        outObjects.emplace_back(const_cast<AnimGraphObject*>(this));
     }
 
     void AnimGraphObject::InvalidateUniqueDatas()
@@ -220,7 +220,7 @@ namespace EMotionFX
 
 
     // decrease internal attribute indices for index values higher than the specified parameter
-    void AnimGraphObject::DecreaseInternalAttributeIndices(uint32 decreaseEverythingHigherThan)
+    void AnimGraphObject::DecreaseInternalAttributeIndices(size_t decreaseEverythingHigherThan)
     {
         MCORE_UNUSED(decreaseEverythingHigherThan);
         // currently no implementation for the base object type, but this will come later

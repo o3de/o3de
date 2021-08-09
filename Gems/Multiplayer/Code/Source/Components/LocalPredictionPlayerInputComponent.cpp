@@ -221,7 +221,7 @@ namespace Multiplayer
                 // Produce correction for client
                 AzNetworking::PacketEncodingBuffer correction;
                 correction.Resize(correction.GetCapacity());
-                AzNetworking::NetworkInputSerializer serializer(correction.GetBuffer(), correction.GetCapacity());
+                AzNetworking::NetworkInputSerializer serializer(correction.GetBuffer(), static_cast<uint32_t>(correction.GetCapacity()));
 
                 // only deserialize if we have data (for client/server profile/debug mismatches)
                 if (correction.GetSize() > 0)
@@ -305,7 +305,7 @@ namespace Multiplayer
         m_lastCorrectionInputId = inputId;
 
         // Apply the correction
-        AzNetworking::TrackChangedSerializer<AzNetworking::NetworkOutputSerializer> serializer(correction.GetBuffer(), correction.GetSize());
+        AzNetworking::TrackChangedSerializer<AzNetworking::NetworkOutputSerializer> serializer(correction.GetBuffer(), static_cast<uint32_t>(correction.GetSize()));
         GetNetBindComponent()->SerializeEntityCorrection(serializer);
         GetNetBindComponent()->NotifyCorrection();
 
@@ -328,7 +328,7 @@ namespace Multiplayer
         }
 #endif
 
-        const uint32_t inputHistorySize = m_inputHistory.Size();
+        const uint32_t inputHistorySize = static_cast<uint32_t>(m_inputHistory.Size());
         const uint32_t historicalDelta = aznumeric_cast<uint32_t>(m_clientInputId - inputId); // Do not replay the move we just corrected, that was already processed by the server
 
         // If this correction is for a move outside our input history window, just start replaying from the oldest move we have available
@@ -443,6 +443,28 @@ namespace Multiplayer
             // Generate a hash based on the current client predicted states
             AzNetworking::HashSerializer hashSerializer;
             GetNetBindComponent()->SerializeEntityCorrection(hashSerializer);
+
+            // In debug, send the entire client output state to the server to make it easier to debug desync issues
+            AzNetworking::PacketEncodingBuffer processInputResult;
+#ifndef AZ_RELEASE_BUILD
+            if (cl_EnableDesyncDebugging)
+            {
+                AzNetworking::NetworkInputSerializer processInputResultSerializer(processInputResult.GetBuffer(), processInputResult.GetCapacity());
+                GetNetBindComponent()->SerializeEntityCorrection(processInputResultSerializer);
+                processInputResult.Resize(processInputResultSerializer.GetSize());
+            }
+#endif
+
+            // In debug, send the entire client output state to the server to make it easier to debug desync issues
+            AzNetworking::PacketEncodingBuffer processInputResult;
+#ifndef AZ_RELEASE_BUILD
+            if (cl_EnableDesyncDebugging)
+            {
+                AzNetworking::NetworkInputSerializer processInputResultSerializer(processInputResult.GetBuffer(), static_cast<uint32_t>(processInputResult.GetCapacity()));
+                GetNetBindComponent()->SerializeEntityCorrection(processInputResultSerializer);
+                processInputResult.Resize(processInputResultSerializer.GetSize());
+            }
+#endif
 
             // Save this input and discard move history outside our client rewind window
             m_inputHistory.PushBack(input);

@@ -54,7 +54,7 @@ namespace EMotionFX
             void Update() override;
 
         public:
-            AZStd::vector<uint32>   mMask;
+            AZStd::vector<size_t>   mMask;
             AnimGraphNode*          mSyncTrackNode;
         };
 

@@ -46,7 +46,7 @@
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
-#include <AzToolsFramework/Viewport/ViewportMessages.h>
+#include <AzToolsFramework/API/EditorCameraBus.h>
 
 // AtomToolsFramework
 #include <AtomToolsFramework/Viewport/RenderViewportWidget.h>
@@ -73,6 +73,7 @@
 #include "EditorPreferencesPageGeneral.h"
 #include "ViewportManipulatorController.h"
 #include "LegacyViewportCameraController.h"
+#include "EditorViewportSettings.h"
 
 #include "ViewPane.h"
 #include "CustomResolutionDlg.h"
@@ -91,6 +92,8 @@
 // Atom
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/ViewportContextManager.h>
+#include <Atom/RPI.Public/ViewProviderBus.h>
+
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Math/MatrixUtils.h>
 
@@ -163,6 +166,10 @@ namespace AZ::ViewportHelpers
         {
             m_renderViewport.OnStopPlayInEditor();
         }
+        void OnStartPlayInEditorBegin() override
+        {
+            m_renderViewport.OnStartPlayInEditorBegin();
+        }
 
     private:
         EditorViewportWidget& m_renderViewport;
@@ -175,16 +182,12 @@ namespace AZ::ViewportHelpers
 
 EditorViewportWidget::EditorViewportWidget(const QString& name, QWidget* parent)
     : QtViewport(parent)
-    , m_Camera(GetIEditor()->GetSystem()->GetViewCamera())
-    , m_camFOV(gSettings.viewports.fDefaultFov)
     , m_defaultViewName(name)
     , m_renderViewport(nullptr) //m_renderViewport is initialized later, in SetViewportId
 {
     // need this to be set in order to allow for language switching on Windows
     setAttribute(Qt::WA_InputMethodEnabled);
-    LockCameraMovement(true);
 
-    EditorViewportWidget::SetViewTM(m_Camera.GetMatrix());
     m_defaultViewTM.SetIdentity();
 
     if (GetIEditor()->GetViewManager()->GetSelectedViewport() == nullptr)
@@ -197,8 +200,6 @@ EditorViewportWidget::EditorViewportWidget(const QString& name, QWidget* parent)
     m_displayContext.pIconManager = GetIEditor()->GetIconManager();
     GetIEditor()->GetUndoManager()->AddListener(this);
 
-    m_PhysicalLocation.SetIdentity();
-
     // The renderer requires something, so don't allow us to shrink to absolutely nothing
     // This won't in fact stop the viewport from being shrunk, when it's the centralWidget for
     // the MainWindow, but it will stop the viewport from getting resize events
@@ -206,21 +207,13 @@ EditorViewportWidget::EditorViewportWidget(const QString& name, QWidget* parent)
     // to be the same thing.
     setMinimumSize(50, 50);
 
-    OnCreate();
-
     setMouseTracking(true);
 
     Camera::EditorCameraRequestBus::Handler::BusConnect();
+    Camera::CameraNotificationBus::Handler::BusConnect();
+
     m_editorEntityNotifications = AZStd::make_unique<AZ::ViewportHelpers::EditorEntityNotifications>(*this);
     AzFramework::AssetCatalogEventBus::Handler::BusConnect();
-
-    auto handleCameraChange = [this](const AZ::Matrix4x4&)
-    {
-        UpdateCameraFromViewportContext();
-    };
-
-    m_cameraViewMatrixChangeHandler = AZ::RPI::ViewportContext::MatrixChangedEvent::Handler(handleCameraChange);
-    m_cameraProjectionMatrixChangeHandler = AZ::RPI::ViewportContext::MatrixChangedEvent::Handler(handleCameraChange);
 
     m_manipulatorManager = GetIEditor()->GetViewManager()->GetManipulatorManager();
     if (!m_pPrimaryViewport)
@@ -240,28 +233,20 @@ EditorViewportWidget::~EditorViewportWidget()
     DisconnectViewportInteractionRequestBus();
     m_editorEntityNotifications.reset();
     Camera::EditorCameraRequestBus::Handler::BusDisconnect();
-    OnDestroy();
+    Camera::CameraNotificationBus::Handler::BusDisconnect();
     GetIEditor()->GetUndoManager()->RemoveListener(this);
     GetIEditor()->UnregisterNotifyListener(this);
 }
 
 //////////////////////////////////////////////////////////////////////////
-// EditorViewportWidget message handlers
-//////////////////////////////////////////////////////////////////////////
-int EditorViewportWidget::OnCreate()
-{
-    CreateRenderContext();
-
-    return 0;
-}
-
-//////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::resizeEvent(QResizeEvent* event)
 {
+    // Call base class resize event while not rendering
     PushDisableRendering();
     QtViewport::resizeEvent(event);
     PopDisableRendering();
 
+    // Emit Legacy system events about the viewport size change
     const QRect rcWindow = rect().translated(mapToGlobal(QPoint()));
 
     gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_MOVE, rcWindow.left(), rcWindow.top());
@@ -271,10 +256,12 @@ void EditorViewportWidget::resizeEvent(QResizeEvent* event)
 
     gEnv->pSystem->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_RESIZE, width(), height());
 
-    // We queue the window resize event because the render overlay may be hidden.
-    // If the render overlay is not visible, the native window that is backing it will
-    // also be hidden, and it will not resize until it becomes visible.
-    m_windowResizedEvent = true;
+    // In the case of the default viewport camera, we must re-set the FOV, which also updates the aspect ratio
+    // Component cameras hand this themselves
+    if (m_viewSourceType == ViewSourceType::None)
+    {
+        SetFOV(GetFOV());
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -383,15 +370,6 @@ AzToolsFramework::ViewportInteraction::MouseInteraction EditorViewportWidget::Bu
         BuildMousePick(WidgetToViewport(point)));
 }
 
-void EditorViewportWidget::InjectFakeMouseMove(int deltaX, int deltaY, Qt::MouseButtons buttons)
-{
-    // this is required, otherwise the user will see the context menu
-    OnMouseMove(Qt::NoModifier, buttons, QCursor::pos() + QPoint(deltaX, deltaY));
-    // we simply move the prev mouse position, so the change will be picked up
-    // by the next ProcessMouse call
-    m_prevMousePos -= QPoint(deltaX, deltaY);
-}
-
 //////////////////////////////////////////////////////////////////////////
 bool EditorViewportWidget::event(QEvent* event)
 {
@@ -403,19 +381,6 @@ bool EditorViewportWidget::event(QEvent* event)
         m_keyDown.clear();
         break;
 
-    case QEvent::ShortcutOverride:
-    {
-        // Ensure we exit game mode on escape, even if something else would eat our escape key event.
-        if (static_cast<QKeyEvent*>(event)->key() == Qt::Key_Escape && GetIEditor()->IsInGameMode())
-        {
-            GetIEditor()->SetInGameMode(false);
-            event->accept();
-            return true;
-        }
-        break;
-    }
-
-
     case QEvent::Shortcut:
         // a shortcut should immediately clear us, otherwise the release event never gets sent
         m_keyDown.clear();
@@ -423,12 +388,6 @@ bool EditorViewportWidget::event(QEvent* event)
     }
 
     return QtViewport::event(event);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::ResetContent()
-{
-    QtViewport::ResetContent();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -460,26 +419,6 @@ void EditorViewportWidget::Update()
     {
         return;
     }
-
-    if (m_updateCameraPositionNextTick)
-    {
-        auto cameraState = GetCameraState();
-        AZ::Matrix3x4 matrix;
-        matrix.SetBasisAndTranslation(cameraState.m_side, cameraState.m_forward, cameraState.m_up, cameraState.m_position);
-        auto m = AZMatrix3x4ToLYMatrix3x4(matrix);
-
-        SetViewTM(m);
-        m_Camera.SetZRange(cameraState.m_nearClip, cameraState.m_farClip);
-    }
-
-    // Ensure the FOV matches our internally stored setting if we're using the Editor camera
-    if (!m_viewEntityId.IsValid() && !GetIEditor()->IsInGameMode())
-    {
-        SetFOV(GetFOV());
-    }
-
-    // Reset the camera update flag now that we're finished updating our viewport context
-    m_updateCameraPositionNextTick = false;
 
     // Don't wait for changes to update the focused viewport.
     if (CheckRespondToInput())
@@ -558,24 +497,12 @@ void EditorViewportWidget::Update()
 
     PushDisableRendering();
 
-    m_viewTM = m_Camera.GetMatrix(); // synchronize.
-
     // Render
     {
         // TODO: Move out this logic to a controller and refactor to work with Atom
-
-        OnRender();
-
         ProcessRenderLisneters(m_displayContext);
 
         m_displayContext.Flush2D();
-
-        // m_renderer->SwitchToNativeResolutionBackbuffer();
-
-        // 3D engine stats
-
-        CCamera CurCamera = gEnv->pSystem->GetViewCamera();
-        gEnv->pSystem->SetViewCamera(m_Camera);
 
         // Post Render Callback
         {
@@ -586,8 +513,6 @@ void EditorViewportWidget::Update()
                 (*itr)->OnPostRender();
             }
         }
-
-        gEnv->pSystem->SetViewCamera(CurCamera);
     }
 
     {
@@ -609,35 +534,7 @@ void EditorViewportWidget::Update()
     m_bUpdateViewport = false;
 }
 
-//////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::SetViewEntity(const AZ::EntityId& viewEntityId, bool lockCameraMovement)
-{
-    // if they've picked the same camera, then that means they want to toggle
-    if (viewEntityId.IsValid() && viewEntityId != m_viewEntityId)
-    {
-        LockCameraMovement(lockCameraMovement);
-        m_viewEntityId = viewEntityId;
-        AZStd::string entityName;
-        AZ::ComponentApplicationBus::BroadcastResult(entityName, &AZ::ComponentApplicationRequests::GetEntityName, viewEntityId);
-        SetName(QString("Camera entity: %1").arg(entityName.c_str()));
-    }
-    else
-    {
-        SetDefaultCamera();
-    }
 
-    PostCameraSet();
-}
-
-//////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::ResetToViewSourceType(const ViewSourceType& viewSourceType)
-{
-    LockCameraMovement(true);
-    m_viewEntityId.SetInvalid();
-    m_cameraObjectId = GUID_NULL;
-    m_viewSourceType = viewSourceType;
-    SetViewTM(GetViewTM());
-}
 
 //////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::PostCameraSet()
@@ -647,10 +544,28 @@ void EditorViewportWidget::PostCameraSet()
         m_viewPane->OnFOVChanged(GetFOV());
     }
 
+    // CryLegacy notify
     GetIEditor()->Notify(eNotify_CameraChanged);
-    QScopedValueRollback<bool> rb(m_ignoreSetViewFromEntityPerspective, true);
+
+    // Special case in the editor; if the camera is the default editor camera,
+    // notify that the active view changed. In game mode, it is a hard error to not have
+    // any cameras on the view stack!
+    if (m_viewSourceType == ViewSourceType::None)
+    {
+        m_sendingOnActiveChanged = true;
+        Camera::CameraNotificationBus::Broadcast(
+            &Camera::CameraNotificationBus::Events::OnActiveViewChanged, AZ::EntityId());
+        m_sendingOnActiveChanged = false;
+    }
+
+    // Notify about editor camera change
     Camera::EditorCameraNotificationBus::Broadcast(
         &Camera::EditorCameraNotificationBus::Events::OnViewportViewEntityChanged, m_viewEntityId);
+
+    // The editor view entity ID has changed, and the editor camera component "Be This Camera" text needs to be updated
+    AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+        &AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
+        AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -658,16 +573,7 @@ CBaseObject* EditorViewportWidget::GetCameraObject() const
 {
     CBaseObject* pCameraObject = nullptr;
 
-    if (m_viewSourceType == ViewSourceType::SequenceCamera)
-    {
-        m_cameraObjectId = GetViewManager()->GetCameraObjectId();
-    }
-    if (m_cameraObjectId != GUID_NULL)
-    {
-        // Find camera object from id.
-        pCameraObject = GetIEditor()->GetObjectManager()->FindObject(m_cameraObjectId);
-    }
-    else if (m_viewSourceType == ViewSourceType::CameraComponent || m_viewSourceType == ViewSourceType::AZ_Entity)
+    if (m_viewSourceType == ViewSourceType::CameraComponent)
     {
         AzToolsFramework::ComponentEntityEditorRequestBus::EventResult(
             pCameraObject, m_viewEntityId, &AzToolsFramework::ComponentEntityEditorRequests::GetSandboxObject);
@@ -723,10 +629,6 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
         if (GetIEditor()->GetViewManager()->GetGameViewport() == this)
         {
             SetCurrentCursor(STD_CURSOR_DEFAULT);
-            m_bInRotateMode = false;
-            m_bInMoveMode = false;
-            m_bInOrbitMode = false;
-            m_bInZoomMode = false;
 
             if (m_inFullscreenPreview)
             {
@@ -738,7 +640,7 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
 
         if (m_renderViewport)
         {
-            m_renderViewport->SetInputProcessingEnabled(true);
+            m_renderViewport->GetControllerList()->SetEnabled(true);
         }
         break;
 
@@ -818,21 +720,6 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::OnRender()
-{
-    if (m_rcClient.isEmpty())
-    {
-        // Even in null rendering, update the view camera.
-        // This is necessary so that automated editor tests using the null renderer to test systems like dynamic vegetation
-        // are still able to manipulate the current logical camera position, even if nothing is rendered.
-        GetIEditor()->GetSystem()->SetViewCamera(m_Camera);
-        return;
-    }
-
-    FUNCTION_PROFILER(GetIEditor()->GetSystem(), PROFILE_EDITOR);
-}
-
 void EditorViewportWidget::OnBeginPrepareRender()
 {
     if (!m_debugDisplay)
@@ -853,82 +740,6 @@ void EditorViewportWidget::OnBeginPrepareRender()
     Update();
     m_isOnPaint = false;
 
-    float fNearZ = GetIEditor()->GetConsoleVar("cl_DefaultNearPlane");
-    float fFarZ = m_Camera.GetFarPlane();
-
-    CBaseObject* cameraObject = GetCameraObject();
-    if (cameraObject)
-    {
-        AZ::Matrix3x3 lookThroughEntityCorrection = AZ::Matrix3x3::CreateIdentity();
-        if (m_viewEntityId.IsValid())
-        {
-            Camera::CameraRequestBus::EventResult(fNearZ, m_viewEntityId, &Camera::CameraComponentRequests::GetNearClipDistance);
-            Camera::CameraRequestBus::EventResult(fFarZ, m_viewEntityId, &Camera::CameraComponentRequests::GetFarClipDistance);
-            LmbrCentral::EditorCameraCorrectionRequestBus::EventResult(
-                lookThroughEntityCorrection, m_viewEntityId, &LmbrCentral::EditorCameraCorrectionRequests::GetTransformCorrection);
-        }
-
-        m_viewTM = cameraObject->GetWorldTM() * AZMatrix3x3ToLYMatrix3x3(lookThroughEntityCorrection);
-        m_viewTM.OrthonormalizeFast();
-
-        m_Camera.SetMatrix(m_viewTM);
-
-        int w = m_rcClient.width();
-        int h = m_rcClient.height();
-
-        m_Camera.SetFrustum(w, h, GetFOV(), fNearZ, fFarZ);
-    }
-    else if (m_viewEntityId.IsValid())
-    {
-        Camera::CameraRequestBus::EventResult(fNearZ, m_viewEntityId, &Camera::CameraComponentRequests::GetNearClipDistance);
-        Camera::CameraRequestBus::EventResult(fFarZ, m_viewEntityId, &Camera::CameraComponentRequests::GetFarClipDistance);
-        int w = m_rcClient.width();
-        int h = m_rcClient.height();
-
-        m_Camera.SetFrustum(w, h, GetFOV(), fNearZ, fFarZ);
-    }
-    else
-    {
-        // Normal camera.
-        m_cameraObjectId = GUID_NULL;
-        int w = m_rcClient.width();
-        int h = m_rcClient.height();
-
-        // Don't bother doing an FOV calculation if we don't have a valid viewport
-        // This prevents frustum calculation bugs with a null viewport
-        if (w <= 1 || h <= 1)
-        {
-            return;
-        }
-
-        float fov = gSettings.viewports.fDefaultFov;
-
-        // match viewport fov to default / selected title menu fov
-        if (GetFOV() != fov)
-        {
-            if (m_viewPane)
-            {
-                m_viewPane->OnFOVChanged(fov);
-                SetFOV(fov);
-            }
-        }
-
-        // Just for editor: Aspect ratio fix when changing the viewport
-        if (!GetIEditor()->IsInGameMode())
-        {
-            float viewportAspectRatio = float( w ) / h;
-            float targetAspectRatio = GetAspectRatio();
-            if (targetAspectRatio > viewportAspectRatio)
-            {
-                // Correct for vertical FOV change.
-                float maxTargetHeight = float( w ) / targetAspectRatio;
-                fov = 2 * atanf((h * tan(fov / 2)) / maxTargetHeight);
-            }
-        }
-        m_Camera.SetFrustum(w, h, fov, fNearZ);
-    }
-
-    GetIEditor()->GetSystem()->SetViewCamera(m_Camera);
 
     if (GetIEditor()->IsInGameMode())
     {
@@ -1144,17 +955,6 @@ void EditorViewportWidget::OnMenuSelectCurrentCamera()
 
 AzFramework::CameraState EditorViewportWidget::GetCameraState()
 {
-    if (m_viewEntityId.IsValid())
-    {
-        bool cameraStateAcquired = false;
-        AzFramework::CameraState cameraState;
-        Camera::EditorCameraViewRequestBus::BroadcastResult(cameraStateAcquired,
-            &Camera::EditorCameraViewRequestBus::Events::GetCameraState, cameraState);
-        if (cameraStateAcquired)
-        {
-            return cameraState;
-        }
-    }
     return m_renderViewport->GetCameraState();
 }
 
@@ -1240,6 +1040,13 @@ AZStd::shared_ptr<AtomToolsFramework::ModularViewportCameraController> CreateMod
     AzFramework::ViewportId viewportId)
 {
     auto controller = AZStd::make_shared<AtomToolsFramework::ModularViewportCameraController>();
+
+    controller->SetCameraPriorityBuilderCallback(
+        [](AtomToolsFramework::CameraControllerPriorityFn& cameraControllerPriorityFn)
+        {
+            cameraControllerPriorityFn = AtomToolsFramework::DefaultCameraControllerPriority;
+        });
+
     controller->SetCameraPropsBuilderCallback(
         [](AzFramework::CameraProps& cameraProps)
         {
@@ -1460,12 +1267,10 @@ void EditorViewportWidget::SetViewportId(int id)
     }
     auto viewportContext = m_renderViewport->GetViewportContext();
     m_defaultViewportContextName = viewportContext->GetName();
+    m_defaultView = viewportContext->GetDefaultView();
     QBoxLayout* layout = new QBoxLayout(QBoxLayout::Direction::TopToBottom, this);
     layout->setContentsMargins(QMargins());
     layout->addWidget(m_renderViewport);
-
-    viewportContext->ConnectViewMatrixChangedHandler(m_cameraViewMatrixChangeHandler);
-    viewportContext->ConnectProjectionMatrixChangedHandler(m_cameraProjectionMatrixChangeHandler);
 
     m_renderViewport->GetControllerList()->Add(AZStd::make_shared<SandboxEditor::ViewportManipulatorController>());
 
@@ -1675,7 +1480,6 @@ bool EditorViewportWidget::AddCameraMenuItems(QMenu* menu)
         menu->addSeparator();
     }
 
-    AZ::ViewportHelpers::AddCheckbox(menu, "Lock Camera Movement", &m_bLockCameraMovement);
     menu->addSeparator();
 
     // Camera Sub menu
@@ -1688,17 +1492,6 @@ bool EditorViewportWidget::AddCameraMenuItems(QMenu* menu)
 
     AZ::EBusAggregateResults<AZ::EntityId> getCameraResults;
     Camera::CameraBus::BroadcastResult(getCameraResults, &Camera::CameraRequests::GetCameras);
-
-    const int numCameras = getCameraResults.values.size();
-
-    // only enable if we're editing a sequence in Track View and have cameras in the level
-    bool enableSequenceCameraMenu = (GetIEditor()->GetAnimation()->GetSequence() && numCameras);
-
-    action = customCameraMenu->addAction(tr("Sequence Camera"));
-    action->setCheckable(true);
-    action->setChecked(m_viewSourceType == ViewSourceType::SequenceCamera);
-    action->setEnabled(enableSequenceCameraMenu);
-    connect(action, &QAction::triggered, this, &EditorViewportWidget::SetSequenceCamera);
 
     QVector<QAction*> additionalCameras;
     additionalCameras.reserve(getCameraResults.values.size());
@@ -1733,28 +1526,6 @@ bool EditorViewportWidget::AddCameraMenuItems(QMenu* menu)
         customCameraMenu->addAction(cameraAction);
     }
 
-    action = customCameraMenu->addAction(tr("Look through entity"));
-    bool areAnyEntitiesSelected = false;
-    AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(areAnyEntitiesSelected, &AzToolsFramework::ToolsApplicationRequests::AreAnyEntitiesSelected);
-    action->setCheckable(areAnyEntitiesSelected || m_viewSourceType == ViewSourceType::AZ_Entity);
-    action->setEnabled(areAnyEntitiesSelected || m_viewSourceType == ViewSourceType::AZ_Entity);
-    action->setChecked(m_viewSourceType == ViewSourceType::AZ_Entity);
-    connect(action, &QAction::triggered, this, [this](bool isChecked)
-        {
-            if (isChecked)
-            {
-                AzToolsFramework::EntityIdList selectedEntityList;
-                AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(selectedEntityList, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
-                if (selectedEntityList.size())
-                {
-                    SetEntityAsCamera(*selectedEntityList.begin());
-                }
-            }
-            else
-            {
-                SetDefaultCamera();
-            }
-        });
     return true;
 }
 
@@ -1781,28 +1552,6 @@ void EditorViewportWidget::ResizeView(int width, int height)
         window->move(0, 0);
         window->resize(window->size() + deltaSize);
     }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::ToggleCameraObject()
-{
-    if (m_viewSourceType == ViewSourceType::SequenceCamera)
-    {
-        ResetToViewSourceType(ViewSourceType::LegacyCamera);
-    }
-    else
-    {
-        ResetToViewSourceType(ViewSourceType::SequenceCamera);
-    }
-    PostCameraSet();
-    GetIEditor()->GetAnimation()->ForceAnimation();
-}
-
-//////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::SetCamera(const CCamera& camera)
-{
-    m_Camera = camera;
-    SetViewTM(m_Camera.GetMatrix());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1858,64 +1607,64 @@ void EditorViewportWidget::keyPressEvent(QKeyEvent* event)
 #endif // defined(AZ_PLATFORM_WINDOWS)
 }
 
-void EditorViewportWidget::SetViewTM(const Matrix34& viewTM, bool bMoveOnly)
+void EditorViewportWidget::SetViewTM(const Matrix34& tm)
 {
-    Matrix34 camMatrix = viewTM;
-
-    // If no collision flag set do not check for terrain elevation.
-    if (GetType() == ET_ViewportCamera)
+    if (m_viewSourceType == ViewSourceType::None)
     {
-        if ((GetIEditor()->GetDisplaySettings()->GetSettings() & SETTINGS_NOCOLLISION) == 0)
-        {
-            Vec3 p = camMatrix.GetTranslation();
-            bool adjustCameraElevation = true;
-            auto terrain = AzFramework::Terrain::TerrainDataRequestBus::FindFirstHandler();
-            if (terrain)
-            {
-                AZ::Aabb terrainAabb(terrain->GetTerrainAabb());
-
-                // Adjust the AABB to include all Z values.  Since the goal here is to snap the camera to the terrain height if
-                // it's below the terrain, we only want to verify the camera is within the XY bounds of the terrain to adjust the elevation.
-                terrainAabb.SetMin(AZ::Vector3(terrainAabb.GetMin().GetX(), terrainAabb.GetMin().GetY(), -AZ::Constants::FloatMax));
-                terrainAabb.SetMax(AZ::Vector3(terrainAabb.GetMax().GetX(), terrainAabb.GetMax().GetY(), AZ::Constants::FloatMax));
-
-                if (!terrainAabb.Contains(LYVec3ToAZVec3(p)))
-                {
-                    adjustCameraElevation = false;
-                }
-                else if (terrain->GetIsHoleFromFloats(p.x, p.y))
-                {
-                    adjustCameraElevation = false;
-                }
-            }
-
-            if (adjustCameraElevation)
-            {
-                float z = GetIEditor()->GetTerrainElevation(p.x, p.y);
-                if (p.z < z + 0.25)
-                {
-                    p.z = z + 0.25;
-                    camMatrix.SetTranslation(p);
-                }
-            }
-        }
-
-        // Also force this position on game.
-        if (GetIEditor()->GetGameEngine())
-        {
-            GetIEditor()->GetGameEngine()->SetPlayerViewMatrix(viewTM);
-        }
+        m_defaultViewTM = tm;
     }
+    SetViewTM(tm, false);
+}
 
+void EditorViewportWidget::SetViewTM(const Matrix34& camMatrix, bool bMoveOnly)
+{
+    AZ_Warning("EditorViewportWidget", !bMoveOnly, "'Move Only' mode is deprecated");
     CBaseObject* cameraObject = GetCameraObject();
-    if (cameraObject)
+
+    // Check if the active view entity is the same as the entity having the current view
+    // Sometimes this isn't the case because the active view is in the process of changing
+    // If it isn't, then we're doing the wrong thing below: we end up copying data from one (seemingly random)
+    // camera to another (seemingly random) camera
+    enum class ShouldUpdateObject
     {
-        // Ignore camera movement if locked.
-        if (IsCameraMovementLocked() || (!GetIEditor()->GetAnimation()->IsRecordMode() && !IsCameraObjectMove()))
+        Yes, No, YesButViewsOutOfSync
+    };
+
+    const ShouldUpdateObject shouldUpdateObject = [&]() {
+        if (!cameraObject)
         {
-            return;
+            return ShouldUpdateObject::No;
         }
 
+        if (m_viewSourceType == ViewSourceType::CameraComponent)
+        {
+            if (!m_viewEntityId.IsValid())
+            {
+                // Should be impossible anyways
+                AZ_Assert(false, "Internal logic error - view entity Id and view source type out of sync. Please report this as a bug");
+                return ShouldUpdateObject::No; 
+            }
+
+            // Check that the current view is the same view as the view entity view
+            AZ::RPI::ViewPtr viewEntityView;
+            AZ::RPI::ViewProviderBus::EventResult(
+                viewEntityView, m_viewEntityId,
+                &AZ::RPI::ViewProviderBus::Events::GetView
+            );
+
+            return viewEntityView == GetCurrentAtomView() ? ShouldUpdateObject::Yes : ShouldUpdateObject::YesButViewsOutOfSync;
+        }
+        else
+        {
+            AZ_Assert(false, "Internal logic error - view source type is the default camera, but there is somehow a camera object. Please report this as a bug.");
+
+            // For non-component cameras, can't do any complicated view-based checks
+            return ShouldUpdateObject::No;
+        }
+    }();
+
+    if (shouldUpdateObject == ShouldUpdateObject::Yes)
+    {
         AZ::Matrix3x3 lookThroughEntityCorrection = AZ::Matrix3x3::CreateIdentity();
         if (m_viewEntityId.IsValid())
         {
@@ -1924,89 +1673,77 @@ void EditorViewportWidget::SetViewTM(const Matrix34& viewTM, bool bMoveOnly)
                 &LmbrCentral::EditorCameraCorrectionRequests::GetInverseTransformCorrection);
         }
 
-        if (m_pressedKeyState != KeyPressedState::PressedInPreviousFrame)
+        int flags = 0;
         {
-            AzToolsFramework::ScopedUndoBatch undo("Move Camera");
+            // It isn't clear what this logic is supposed to do (it's legacy code)...
+            // For now, instead of removing it, just assert if the m_pressedKeyState isn't as expected
+            // Do not touch unless you really know what you're doing!
+            AZ_Assert(m_pressedKeyState == KeyPressedState::AllUp, "Internal logic error - key pressed state got changed. Please report this as a bug");
+
+            AZStd::optional<CUndo> undo;
+            if (m_pressedKeyState != KeyPressedState::PressedInPreviousFrame)
+            {
+                flags = eObjectUpdateFlags_UserInput;
+                undo.emplace("Move Camera");
+            }
+
             if (bMoveOnly)
             {
-                // specify eObjectUpdateFlags_UserInput so that an undo command gets logged
-                cameraObject->SetWorldPos(camMatrix.GetTranslation(), eObjectUpdateFlags_UserInput);
+                cameraObject->SetWorldPos(camMatrix.GetTranslation(), flags);
             }
             else
             {
-                // specify eObjectUpdateFlags_UserInput so that an undo command gets logged
-                cameraObject->SetWorldTM(camMatrix * AZMatrix3x3ToLYMatrix3x3(lookThroughEntityCorrection), eObjectUpdateFlags_UserInput);
-            }
-        }
-        else
-        {
-            if (bMoveOnly)
-            {
-                // Do not specify eObjectUpdateFlags_UserInput, so that an undo command does not get logged; we covered it already when m_pressedKeyState was PressedThisFrame
-                cameraObject->SetWorldPos(camMatrix.GetTranslation());
-            }
-            else
-            {
-                // Do not specify eObjectUpdateFlags_UserInput, so that an undo command does not get logged; we covered it already when m_pressedKeyState was PressedThisFrame
-                cameraObject->SetWorldTM(camMatrix * AZMatrix3x3ToLYMatrix3x3(lookThroughEntityCorrection));
+                cameraObject->SetWorldTM(camMatrix * AZMatrix3x3ToLYMatrix3x3(lookThroughEntityCorrection), flags);
             }
         }
     }
-    else if (m_viewEntityId.IsValid())
+    else if (shouldUpdateObject == ShouldUpdateObject::YesButViewsOutOfSync)
     {
-        // Ignore camera movement if locked.
-        if (IsCameraMovementLocked() || (!GetIEditor()->GetAnimation()->IsRecordMode() && !IsCameraObjectMove()))
-        {
-            return;
-        }
-
-        if (m_pressedKeyState != KeyPressedState::PressedInPreviousFrame)
-        {
-            AzToolsFramework::ScopedUndoBatch undo("Move Camera");
-            if (bMoveOnly)
-            {
-                AZ::TransformBus::Event(
-                    m_viewEntityId, &AZ::TransformInterface::SetWorldTranslation,
-                    LYVec3ToAZVec3(camMatrix.GetTranslation()));
-            }
-            else
-            {
-                AZ::TransformBus::Event(
-                    m_viewEntityId, &AZ::TransformInterface::SetWorldTM,
-                    LYTransformToAZTransform(camMatrix));
-            }
-
-            AzToolsFramework::ToolsApplicationRequestBus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::AddDirtyEntity, m_viewEntityId);
-        }
-        else
-        {
-            if (bMoveOnly)
-            {
-                AZ::TransformBus::Event(
-                    m_viewEntityId, &AZ::TransformInterface::SetWorldTranslation,
-                    LYVec3ToAZVec3(camMatrix.GetTranslation()));
-            }
-            else
-            {
-                AZ::TransformBus::Event(
-                    m_viewEntityId, &AZ::TransformInterface::SetWorldTM,
-                    LYTransformToAZTransform(camMatrix));
-            }
-        }
-
-        AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
-            &AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh,
-            AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
+        // Technically this should not cause anything to go wrong, but may indicate some underlying bug by a caller
+        // of SetViewTm, for example, trying to set the view TM in the middle of a camera change.
+        // If this is an important case, it can potentially be supported by caching the requested view TM
+        // until the entity and view ptr become synchronized.
+        AZ_Error("EditorViewportWidget",
+            m_playInEditorState == PlayInEditorState::Editor,
+            "Viewport camera entity ID and view out of sync; request view transform will be ignored. "
+            "Please report this as a bug."
+        );
     }
 
     if (m_pressedKeyState == KeyPressedState::PressedThisFrame)
     {
         m_pressedKeyState = KeyPressedState::PressedInPreviousFrame;
     }
+}
 
-    QtViewport::SetViewTM(camMatrix);
+const Matrix34& EditorViewportWidget::GetViewTM() const
+{
+    // `m_viewTmStorage' is only required because we must return a reference
+    m_viewTmStorage = AZTransformToLYTransform(GetCurrentAtomView()->GetCameraTransform());
+    return m_viewTmStorage;
+};
 
-    m_Camera.SetMatrix(camMatrix);
+AZ::EntityId EditorViewportWidget::GetCurrentViewEntityId()
+{
+    // Sanity check that this camera entity ID is actually the camera entity which owns the current active render view
+    if (m_viewSourceType == ViewSourceType::CameraComponent)
+    {
+        // Check that the current view is the same view as the view entity view
+        AZ::RPI::ViewPtr viewEntityView;
+        AZ::RPI::ViewProviderBus::EventResult(
+            viewEntityView, m_viewEntityId,
+            &AZ::RPI::ViewProviderBus::Events::GetView
+        );
+
+        const bool isViewEntityCorrect = viewEntityView == GetCurrentAtomView();
+        AZ_Error("EditorViewportWidget", isViewEntityCorrect,
+            "GetCurrentViewEntityId called while the current view is being changed. "
+            "You may get inconsistent results if you make use of the returned entity ID. "
+            "This is an internal error, please report it as a bug."
+        );
+    }
+
+    return m_viewEntityId;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2412,14 +2149,10 @@ void EditorViewportWidget::ViewToWorldRay(const QPoint& vp, Vec3& raySrc, Vec3& 
 }
 
 //////////////////////////////////////////////////////////////////////////
-float EditorViewportWidget::GetScreenScaleFactor(const Vec3& worldPoint) const
+float EditorViewportWidget::GetScreenScaleFactor([[maybe_unused]] const Vec3& worldPoint) const
 {
-    float dist = m_Camera.GetPosition().GetDistance(worldPoint);
-    if (dist < m_Camera.GetNearPlane())
-    {
-        dist = m_Camera.GetNearPlane();
-    }
-    return dist;
+    AZ_Error("CryLegacy", false, "EditorViewportWidget::GetScreenScaleFactor not implemented");
+    return 1.f;
 }
 //////////////////////////////////////////////////////////////////////////
 float EditorViewportWidget::GetScreenScaleFactor(const CCamera& camera, const Vec3& object_position)
@@ -2427,12 +2160,6 @@ float EditorViewportWidget::GetScreenScaleFactor(const CCamera& camera, const Ve
     Vec3 camPos = camera.GetPosition();
     float dist = camPos.GetDistance(object_position);
     return dist;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::OnDestroy()
-{
-    DestroyRenderContext();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2454,16 +2181,16 @@ bool EditorViewportWidget::CheckRespondToInput() const
 //////////////////////////////////////////////////////////////////////////
 bool EditorViewportWidget::HitTest(const QPoint& point, HitContext& hitInfo)
 {
-    hitInfo.camera = &m_Camera;
+    hitInfo.camera = nullptr;
     hitInfo.pExcludedObject = GetCameraObject();
     return QtViewport::HitTest(point, hitInfo);
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool EditorViewportWidget::IsBoundsVisible(const AABB& box) const
+bool EditorViewportWidget::IsBoundsVisible(const AABB&) const
 {
-    // If at least part of bbox is visible then its visible.
-    return m_Camera.IsAABBVisible_F(AABB(box.min, box.max));
+    AZ_Assert(false, "Not supported");
+    return false;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2508,11 +2235,11 @@ void EditorViewportWidget::CenterOnAABB(const AABB& aabb)
     Matrix34 newTM = Matrix34(rotationMatrix, newPosition);
 
     // Set new orbit distance
-    m_orbitDistance = distanceToTarget;
-    m_orbitDistance = fabs(m_orbitDistance);
+    float orbitDistance = distanceToTarget;
+    orbitDistance = fabs(orbitDistance);
 
     SetViewTM(newTM);
-    SandboxEditor::OrbitCameraControlsBus::Event(GetViewportId(), &SandboxEditor::OrbitCameraControlsBus::Events::SetOrbitDistance, m_orbitDistance);
+    SandboxEditor::OrbitCameraControlsBus::Event(GetViewportId(), &SandboxEditor::OrbitCameraControlsBus::Events::SetOrbitDistance, orbitDistance);
 }
 
 void EditorViewportWidget::CenterOnSliceInstance()
@@ -2562,130 +2289,121 @@ void EditorViewportWidget::SetFOV(float fov)
 {
     if (m_viewEntityId.IsValid())
     {
-        Camera::CameraRequestBus::Event(m_viewEntityId, &Camera::CameraComponentRequests::SetFov, AZ::RadToDeg(fov));
+        Camera::CameraRequestBus::Event(m_viewEntityId, &Camera::CameraComponentRequests::SetFovRadians, fov);
     }
     else
     {
-        m_camFOV = fov;
-        // Set the active camera's FOV
-        {
-            AZ::Matrix4x4 clipMatrix;
-            AZ::MakePerspectiveFovMatrixRH(
-                clipMatrix,
-                GetFOV(),
-                aznumeric_cast<float>(width()) / aznumeric_cast<float>(height()),
-                m_Camera.GetNearPlane(),
-                m_Camera.GetFarPlane(),
-                true
-            );
-            m_renderViewport->GetViewportContext()->SetCameraProjectionMatrix(clipMatrix);
-        }
-    }
-
-    if (m_viewPane)
-    {
-        m_viewPane->OnFOVChanged(fov);
+        auto m = m_defaultView->GetViewToClipMatrix();
+        AZ::SetPerspectiveMatrixFOV(m, fov, aznumeric_cast<float>(width()) / aznumeric_cast<float>(height()));
+        m_defaultView->SetViewToClipMatrix(m);
     }
 }
 
 //////////////////////////////////////////////////////////////////////////
 float EditorViewportWidget::GetFOV() const
 {
-    if (m_viewSourceType == ViewSourceType::SequenceCamera)
-    {
-        CBaseObject* cameraObject = GetCameraObject();
-
-        AZ::EntityId cameraEntityId;
-        AzToolsFramework::ComponentEntityObjectRequestBus::EventResult(cameraEntityId, cameraObject, &AzToolsFramework::ComponentEntityObjectRequestBus::Events::GetAssociatedEntityId);
-        if (cameraEntityId.IsValid())
-        {
-            // component Camera
-            float fov = DEFAULT_FOV;
-            Camera::CameraRequestBus::EventResult(fov, cameraEntityId, &Camera::CameraComponentRequests::GetFov);
-            return AZ::DegToRad(fov);
-        }
-    }
-
     if (m_viewEntityId.IsValid())
     {
-        float fov = AZ::RadToDeg(m_camFOV);
-        Camera::CameraRequestBus::EventResult(fov, m_viewEntityId, &Camera::CameraComponentRequests::GetFov);
-        return AZ::DegToRad(fov);
+        float fov = 0.f;
+        Camera::CameraRequestBus::EventResult(fov, m_viewEntityId, &Camera::CameraComponentRequests::GetFovRadians);
+        return fov;
+    }
+    else
+    {
+        return AZ::GetPerspectiveMatrixFOV(m_defaultView->GetViewToClipMatrix());
+    }
+}
+
+void EditorViewportWidget::OnActiveViewChanged(const AZ::EntityId& viewEntityId)
+{
+    // Avoid re-entry
+    if (m_sendingOnActiveChanged)
+    {
+        return;
     }
 
-    return m_camFOV;
-}
+    // Ignore any changes in simulation mode
+    if (m_playInEditorState != PlayInEditorState::Editor)
+    {
+        return;
+    }
 
-//////////////////////////////////////////////////////////////////////////
-bool EditorViewportWidget::CreateRenderContext()
-{
-    return true;
-}
+    // if they've picked the same camera, then that means they want to toggle
+    if (viewEntityId.IsValid())
+    {
+        // Any such events for game entities should be filtered out by the check above
+        AZ_Error(
+            "EditorViewportWidget",
+            Camera::EditorCameraViewRequestBus::FindFirstHandler(viewEntityId) != nullptr,
+            "Internal logic error - active view changed to an entity which is not an editor camera. "
+            "Please report this as a bug."
+        );
 
-//////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::DestroyRenderContext()
-{
+        m_viewEntityId = viewEntityId;
+        m_viewSourceType = ViewSourceType::CameraComponent;
+        AZStd::string entityName;
+        AZ::ComponentApplicationBus::BroadcastResult(entityName, &AZ::ComponentApplicationRequests::GetEntityName, viewEntityId);
+        SetName(QString("Camera entity: %1").arg(entityName.c_str()));
+
+        PostCameraSet();
+    }
+    else
+    {
+        SetDefaultCamera();
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::SetDefaultCamera()
 {
-    if (IsDefaultCamera())
-    {
-        return;
-    }
-    ResetToViewSourceType(ViewSourceType::None);
-    GetViewManager()->SetCameraObjectId(m_cameraObjectId);
+    m_viewEntityId.SetInvalid();
+    m_viewSourceType = ViewSourceType::None;
+    GetViewManager()->SetCameraObjectId(GUID_NULL);
     SetName(m_defaultViewName);
     SetViewTM(m_defaultViewTM);
+
+    // Synchronize the configured editor viewport FOV to the default camera
+    if (m_viewPane)
+    {
+        const float fov = gSettings.viewports.fDefaultFov;
+        m_viewPane->OnFOVChanged(fov);
+        SetFOV(fov);
+    }
+
+    // Push the default view as the active view
+    auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+    if (atomViewportRequests)
+    {
+        const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
+        atomViewportRequests->PushView(contextName, m_defaultView);
+    }
+
     PostCameraSet();
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool EditorViewportWidget::IsDefaultCamera() const
+AZ::RPI::ViewPtr EditorViewportWidget::GetCurrentAtomView() const
 {
-    return m_viewSourceType == ViewSourceType::None;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::SetSequenceCamera()
-{
-    if (m_viewSourceType == ViewSourceType::SequenceCamera)
+    if (m_renderViewport && m_renderViewport->GetViewportContext())
     {
-        // Reset if we were checked before
-        SetDefaultCamera();
+        return m_renderViewport->GetViewportContext()->GetDefaultView();
     }
     else
     {
-        ResetToViewSourceType(ViewSourceType::SequenceCamera);
-
-        SetName(tr("Sequence Camera"));
-        SetViewTM(GetViewTM());
-
-        GetViewManager()->SetCameraObjectId(m_cameraObjectId);
-        PostCameraSet();
-
-        // ForceAnimation() so Track View will set the Camera params
-        // if a camera is animated in the sequences.
-        if (GetIEditor() && GetIEditor()->GetAnimation())
-        {
-            GetIEditor()->GetAnimation()->ForceAnimation();
-        }
+        return nullptr;
     }
 }
 
 //////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::SetComponentCamera(const AZ::EntityId& entityId)
 {
-    ResetToViewSourceType(ViewSourceType::CameraComponent);
-    SetViewEntity(entityId);
+    SetViewFromEntityPerspective(entityId);
 }
 
 //////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::SetEntityAsCamera(const AZ::EntityId& entityId, bool lockCameraMovement)
 {
-    ResetToViewSourceType(ViewSourceType::AZ_Entity);
-    SetViewEntity(entityId, lockCameraMovement);
+    SetViewAndMovementLockFromEntityPerspective(entityId, lockCameraMovement);
 }
 
 void EditorViewportWidget::SetFirstComponentCamera()
@@ -2733,7 +2451,7 @@ bool EditorViewportWidget::IsSelectedCamera() const
     AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
         selectedEntityList, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
 
-    if ((m_viewSourceType == ViewSourceType::CameraComponent  || m_viewSourceType == ViewSourceType::AZ_Entity)
+    if ((m_viewSourceType == ViewSourceType::CameraComponent)
         && !selectedEntityList.empty()
         && AZStd::find(selectedEntityList.begin(), selectedEntityList.end(), m_viewEntityId) != selectedEntityList.end())
     {
@@ -2755,17 +2473,6 @@ void EditorViewportWidget::CycleCamera()
         SetFirstComponentCamera();
         break;
     }
-    case EditorViewportWidget::ViewSourceType::SequenceCamera:
-    {
-        AZ_Error("EditorViewportWidget", false, "Legacy cameras no longer exist, unable to set sequence camera.");
-        break;
-    }
-    case EditorViewportWidget::ViewSourceType::LegacyCamera:
-    {
-        AZ_Warning("EditorViewportWidget", false, "Legacy cameras no longer exist, using first found component camera instead.");
-        SetFirstComponentCamera();
-        break;
-    }
     case EditorViewportWidget::ViewSourceType::CameraComponent:
     {
         AZ::EBusAggregateResults<AZ::EntityId> results;
@@ -2784,12 +2491,6 @@ void EditorViewportWidget::CycleCamera()
         SetDefaultCamera();
         break;
     }
-    case EditorViewportWidget::ViewSourceType::AZ_Entity:
-    {
-        // we may decide to have this iterate over just selected entities
-        SetDefaultCamera();
-        break;
-    }
     default:
     {
         SetDefaultCamera();
@@ -2803,11 +2504,28 @@ void EditorViewportWidget::SetViewFromEntityPerspective(const AZ::EntityId& enti
     SetViewAndMovementLockFromEntityPerspective(entityId, false);
 }
 
-void EditorViewportWidget::SetViewAndMovementLockFromEntityPerspective(const AZ::EntityId& entityId, bool lockCameraMovement)
+void EditorViewportWidget::SetViewAndMovementLockFromEntityPerspective(const AZ::EntityId& entityId, [[maybe_unused]] bool lockCameraMovement)
 {
-    if (!m_ignoreSetViewFromEntityPerspective)
+    // This is an editor event, so is only serviced during edit mode, not play game mode
+    // 
+    if (m_playInEditorState != PlayInEditorState::Editor)
     {
-        SetEntityAsCamera(entityId, lockCameraMovement);
+        AZ_Warning("EditorViewportWidget", false,
+            "Tried to change the editor camera during play game in editor; this is currently unsupported"
+        );
+        return;
+    }
+
+    AZ_Assert(lockCameraMovement == false, "SetViewAndMovementLockFromEntityPerspective with lockCameraMovement == true not supported");
+
+    if (entityId.IsValid())
+    {
+        Camera::CameraRequestBus::Event(entityId, &Camera::CameraRequestBus::Events::MakeActiveView);
+    }
+    else
+    {
+        // The default camera
+        SetDefaultCamera();
     }
 }
 
@@ -2822,7 +2540,7 @@ bool EditorViewportWidget::GetActiveCameraPosition(AZ::Vector3& cameraPos)
         else
         {
             // Use viewTM, which is synced with the camera and guaranteed to be up-to-date
-            cameraPos = LYVec3ToAZVec3(m_viewTM.GetTranslation());
+            cameraPos = LYVec3ToAZVec3(GetViewTM().GetTranslation());
         }
 
         return true;
@@ -2836,17 +2554,26 @@ bool EditorViewportWidget::GetActiveCameraState(AzFramework::CameraState& camera
     if (m_pPrimaryViewport == this)
     {
         cameraState = GetCameraState();
-
         return true;
     }
 
     return false;
 }
 
+void EditorViewportWidget::OnStartPlayInEditorBegin()
+{
+    m_playInEditorState = PlayInEditorState::Starting;
+}
+
 void EditorViewportWidget::OnStartPlayInEditor()
 {
+    m_playInEditorState = PlayInEditorState::Started;
+
     if (m_viewEntityId.IsValid())
     {
+        // Note that this is assuming that the Atom camera components will share the same view ptr
+        // in editor as in game mode
+
         m_viewEntityIdCachedForEditMode = m_viewEntityId;
         AZ::EntityId runtimeEntityId;
         AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
@@ -2859,20 +2586,14 @@ void EditorViewportWidget::OnStartPlayInEditor()
 
 void EditorViewportWidget::OnStopPlayInEditor()
 {
-    if (m_viewEntityIdCachedForEditMode.IsValid())
-    {
-        m_viewEntityId = m_viewEntityIdCachedForEditMode;
-        m_viewEntityIdCachedForEditMode.SetInvalid();
-    }
-}
+    m_playInEditorState = PlayInEditorState::Editor;
 
-//////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::OnCameraFOVVariableChanged([[maybe_unused]] IVariable* var)
-{
-    if (m_viewPane)
-    {
-        m_viewPane->OnFOVChanged(GetFOV());
-    }
+    // Note that:
+    // - this is assuming that the Atom camera components will share the same view ptr in editor as in game mode.
+    // - if `m_viewEntityIdCachedForEditMode' is invalid, the camera before game mode was the default editor camera
+    // - we MUST set the camera again when exiting game mode, because when rendering with trackview, the editor camera gets set somehow
+    SetViewFromEntityPerspective(m_viewEntityIdCachedForEditMode);
+    m_viewEntityIdCachedForEditMode.SetInvalid();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2903,11 +2624,6 @@ void EditorViewportWidget::ShowCursor()
 #endif
     qApp->restoreOverrideCursor();
     m_bCursorHidden = false;
-}
-
-bool EditorViewportWidget::IsKeyDown(Qt::Key key) const
-{
-    return m_keyDown.contains(key);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2948,6 +2664,17 @@ QSize EditorViewportWidget::WidgetToViewport(const QSize& size) const
 }
 
 //////////////////////////////////////////////////////////////////////////
+double EditorViewportWidget::WidgetToViewportFactor() const
+{
+#if defined(AZ_PLATFORM_WINDOWS)
+    // Needed for high DPI mode on windows
+    return devicePixelRatioF();
+#else
+    return 1.0;
+#endif
+}
+
+//////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::BeginUndoTransaction()
 {
     PushDisableRendering();
@@ -2958,12 +2685,6 @@ void EditorViewportWidget::EndUndoTransaction()
 {
     PopDisableRendering();
     Update();
-}
-
-void EditorViewportWidget::UpdateCurrentMousePos(const QPoint& newPosition)
-{
-    m_prevMousePos = m_mousePos;
-    m_mousePos = newPosition;
 }
 
 void* EditorViewportWidget::GetSystemCursorConstraintWindow() const
@@ -3041,7 +2762,8 @@ void EditorViewportWidget::RestoreViewportAfterGameMode()
     }
     else
     {
-        SetViewTM(m_gameTM);
+        AZ_Error("CryLegacy", false, "Not restoring the editor viewport camera is currently unsupported");
+        SetViewTM(preGameModeViewTM);
     }
 }
 
@@ -3058,12 +2780,6 @@ void EditorViewportWidget::UpdateScene()
             AZ::RPI::SceneNotificationBus::Handler::BusConnect(m_renderViewport->GetViewportContext()->GetRenderScene()->GetId());
         }
     }
-}
-
-void EditorViewportWidget::UpdateCameraFromViewportContext()
-{
-   // Queue a sync for the next tick, to ensure the latest version of the viewport context transform is used
-    m_updateCameraPositionNextTick = true;
 }
 
 void EditorViewportWidget::SetAsActiveViewport()

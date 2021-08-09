@@ -103,7 +103,7 @@ public:
     static const char* GetConfigGroupName();
 
     CLayoutViewPane* FindViewByClass(const QString& viewClassName);
-    void BindViewport(CLayoutViewPane* vp, const QString& viewClassName, QWidget* pViewport = NULL);
+    void BindViewport(CLayoutViewPane* vp, const QString& viewClassName, QWidget* pViewport = nullptr);
     QString ViewportTypeToClassName(EViewportType viewType);
 
     //! Switch 2D viewports.

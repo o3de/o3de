@@ -28,8 +28,6 @@ namespace RenderGL
         mSpecularMap    = GetGraphicsManager()->GetTextureCache()->GetWhiteTexture();
         mNormalMap      = GetGraphicsManager()->GetTextureCache()->GetDefaultNormalTexture();
 
-        mShaders.SetMemoryCategory(MEMCATEGORY_RENDERING);
-
         SetAttribute(LIGHTING,  true);
         SetAttribute(SKINNING,  false);
         SetAttribute(SHADOWS,   false);
@@ -185,8 +183,8 @@ namespace RenderGL
             EMotionFX::StandardMaterial* stdMaterial = static_cast<EMotionFX::StandardMaterial*>(material);
 
             // get the number of material layers and iterate through them
-            const uint32 numLayers = stdMaterial->GetNumLayers();
-            for (uint32 i = 0; i < numLayers; ++i)
+            const size_t numLayers = stdMaterial->GetNumLayers();
+            for (size_t i = 0; i < numLayers; ++i)
             {
                 EMotionFX::StandardMaterialLayer* layer = stdMaterial->GetLayer(i);
                 switch (layer->GetType())
@@ -234,11 +232,9 @@ namespace RenderGL
     //
     void StandardMaterial::SetAttribute(EAttribute attribute, bool enabled)
     {
-        const uint32 index = (uint32)attribute;
-
-        if (mAttributes[index] != enabled)
+        if (mAttributes[attribute] != enabled)
         {
-            mAttributes[index] = enabled;
+            mAttributes[attribute] = enabled;
             mAttributesUpdated = true;
         }
     }
@@ -266,15 +262,15 @@ namespace RenderGL
             const AZ::Matrix3x4* skinningMatrices = transformData->GetSkinningMatrices();
 
             // multiple each transform by its inverse bind pose
-            const uint32 numBones = primitive->mBoneNodeIndices.GetLength();
-            for (uint32 i = 0; i < numBones; ++i)
+            const size_t numBones = primitive->mBoneNodeIndices.size();
+            for (size_t i = 0; i < numBones; ++i)
             {
-                const uint32 nodeNr = primitive->mBoneNodeIndices[i];
+                const size_t nodeNr = primitive->mBoneNodeIndices[i];
                 const AZ::Matrix3x4& skinTransform = skinningMatrices[nodeNr];
                 mBoneMatrices[i] = AZ::Matrix4x4::CreateFromMatrix3x4(skinTransform);
             }
 
-            mActiveShader->SetUniform("matBones", mBoneMatrices, numBones);
+            mActiveShader->SetUniform("matBones", mBoneMatrices, aznumeric_caster(numBones));
         }
 
         const MCommon::Camera*    camera         = GetGraphicsManager()->GetCamera();
@@ -307,10 +303,9 @@ namespace RenderGL
         mActiveShader = nullptr;
 
         // get the number of shaders and iterate through them
-        const uint32 numShaders = mShaders.GetLength();
-        for (uint32 i = 0; i < numShaders; ++i)
+        for (GLSLShader* shader : mShaders)
         {
-            if (mShaders[i] == nullptr)
+            if (shader == nullptr)
             {
                 continue;
             }
@@ -321,7 +316,7 @@ namespace RenderGL
             {
                 if (mAttributes[n])
                 {
-                    if (mShaders[i]->CheckIfIsDefined(AttributeToString((EAttribute)n)) == false)
+                    if (shader->CheckIfIsDefined(AttributeToString((EAttribute)n)) == false)
                     {
                         match = false;
                         break;
@@ -329,7 +324,7 @@ namespace RenderGL
                 }
                 else
                 {
-                    if (mShaders[i]->CheckIfIsDefined(AttributeToString((EAttribute)n)))
+                    if (shader->CheckIfIsDefined(AttributeToString((EAttribute)n)))
                     {
                         match = false;
                         break;
@@ -340,7 +335,7 @@ namespace RenderGL
             // in case we have found a matching shader update the active shader
             if (match)
             {
-                mActiveShader = mShaders[i];
+                mActiveShader = shader;
                 break;
             }
         }
@@ -351,18 +346,18 @@ namespace RenderGL
             // if this function gets called at runtime something is wrong, go bug hunting!
 
             // construct an array of string attributes
-            MCore::Array<AZStd::string> defines;
+            AZStd::vector<AZStd::string> defines;
             for (uint32 n = 0; n < NUM_ATTRIBUTES; ++n)
             {
                 if (mAttributes[n])
                 {
-                    defines.Add(AttributeToString((EAttribute)n));
+                    defines.emplace_back(AttributeToString((EAttribute)n));
                 }
             }
 
             // compile shader and add it to the list of shaders
             mActiveShader = GetGraphicsManager()->LoadShader("StandardMaterial_VS.glsl", "StandardMaterial_PS.glsl", defines);
-            mShaders.Add(mActiveShader);
+            mShaders.emplace_back(mActiveShader);
         }
 
         mAttributesUpdated = false;

@@ -44,7 +44,12 @@ namespace
 {
     const int g_useActiveViewportResolution = -1;   // reserved value to indicate the use of the active viewport resolution
     int resolutions[][2] = {
-        { 1280, 720 }, { 1920, 1080 }, { 1998, 1080 }, { 2048, 858 }, { 2560, 1440 }, 
+        {1280, 720},
+        {1920, 1080},
+        {1998, 1080},
+        {2048, 858},
+        {2560, 1440},
+        {3840, 2160},
         { g_useActiveViewportResolution, g_useActiveViewportResolution }    // active viewport res must be the last element of the resolution array
     };
 
@@ -117,8 +122,7 @@ CSequenceBatchRenderDialog::CSequenceBatchRenderDialog(float fps, QWidget* pPare
 }
 
 CSequenceBatchRenderDialog::~CSequenceBatchRenderDialog()
-{
-}
+= default;
 
 void CSequenceBatchRenderDialog::reject()
 {
@@ -519,7 +523,7 @@ void CSequenceBatchRenderDialog::OnGo()
         InitializeContext();
 
         // Trigger the first item.
-        OnMovieEvent(IMovieListener::eMovieEvent_Stopped, NULL);
+        OnMovieEvent(IMovieListener::eMovieEvent_Stopped, nullptr);
     }
 }
 
@@ -728,7 +732,7 @@ bool CSequenceBatchRenderDialog::GetResolutionFromCustomResText(const char* cust
 bool CSequenceBatchRenderDialog::LoadOutputOptions(const QString& pathname)
 {
     XmlNodeRef batchRenderOptionsNode = XmlHelpers::LoadXmlFromFile(pathname.toStdString().c_str());
-    if (batchRenderOptionsNode == NULL)
+    if (batchRenderOptionsNode == nullptr)
     {
         return true;
     }
@@ -1067,6 +1071,10 @@ void CSequenceBatchRenderDialog::OnUpdateEnd(IAnimSequence* sequence)
 {
     GetIEditor()->GetMovieSystem()->DisableFixedStepForCapture();
 
+    // Important: End batch render mode BEFORE leaving Game Mode.
+    // Otherwise track view will set the active camera based on the directors in the current sequence while leaving game mode
+    GetIEditor()->GetMovieSystem()->EnableBatchRenderMode(false);
+
     GetIEditor()->GetMovieSystem()->RemoveMovieListener(sequence, this);
     GetIEditor()->SetInGameMode(false);
     GetIEditor()->GetGameEngine()->Update();        // Update is needed because SetInGameMode() queues game mode, Update() executes it.
@@ -1186,7 +1194,6 @@ void CSequenceBatchRenderDialog::OnUpdateFinalize()
 
         m_ui->m_pGoBtn->setText(tr("Start"));
         m_ui->m_pGoBtn->setIcon(QPixmap(":/Trackview/clapperboard_ready.png"));
-        GetIEditor()->GetMovieSystem()->EnableBatchRenderMode(false);
         m_renderContext.currentItemIndex = -1;
         m_ui->BATCH_RENDER_PRESS_ESC_TO_CANCEL->setText(m_ffmpegPluginStatusMsg);
 
@@ -1391,7 +1398,7 @@ void CSequenceBatchRenderDialog::OnLoadBatch()
             Path::GetUserSandboxFolder(), loadPath))
     {
         XmlNodeRef batchRenderListNode = XmlHelpers::LoadXmlFromFile(loadPath.toStdString().c_str());
-        if (batchRenderListNode == NULL)
+        if (batchRenderListNode == nullptr)
         {
             return;
         }
@@ -1414,7 +1421,7 @@ void CSequenceBatchRenderDialog::OnLoadBatch()
             // sequence
             const QString seqName = itemNode->getAttr("sequence");
             item.pSequence = GetIEditor()->GetMovieSystem()->FindLegacySequenceByName(seqName.toUtf8().data());
-            if (item.pSequence == NULL)
+            if (item.pSequence == nullptr)
             {
                 QMessageBox::warning(this, tr("Sequence not found"), tr("A sequence of '%1' not found! This'll be skipped.").arg(seqName));
                 continue;
@@ -1431,7 +1438,7 @@ void CSequenceBatchRenderDialog::OnLoadBatch()
                     break;
                 }
             }
-            if (item.pDirectorNode == NULL)
+            if (item.pDirectorNode == nullptr)
             {
                 QMessageBox::warning(this, tr("Director node not found"), tr("A director node of '%1' not found in the sequence of '%2'! This'll be skipped.").arg(directorName).arg(seqName));
                 continue;
@@ -1544,7 +1551,7 @@ bool CSequenceBatchRenderDialog::SetUpNewRenderItem(SRenderItem& item)
             break;
         }
     }
-    if (item.pDirectorNode == NULL)
+    if (item.pDirectorNode == nullptr)
     {
         return false;
     }

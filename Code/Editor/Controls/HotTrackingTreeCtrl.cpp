@@ -19,22 +19,22 @@ CHotTrackingTreeCtrl::CHotTrackingTreeCtrl(QWidget* parent)
     : QTreeWidget(parent)
 {
     setMouseTracking(true);
-    m_hHoverItem = NULL;
+    m_hHoverItem = nullptr;
 }
 
 void CHotTrackingTreeCtrl::mouseMoveEvent(QMouseEvent* event)
 {
     QTreeWidgetItem* hItem = itemAt(event->pos());
 
-    if (m_hHoverItem != NULL)
+    if (m_hHoverItem != nullptr)
     {
         QFont font = m_hHoverItem->font(0);
         font.setBold(false);
         m_hHoverItem->setFont(0, font);
-        m_hHoverItem = NULL;
+        m_hHoverItem = nullptr;
     }
 
-    if (hItem != NULL)
+    if (hItem != nullptr)
     {
         QFont font = hItem->font(0);
         font.setBold(true);

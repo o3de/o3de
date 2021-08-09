@@ -124,10 +124,10 @@ namespace CommandSystem
         // in case the source port got specified by name, overwrite the source port number
         if (!mSourcePortName.empty())
         {
-            mSourcePort = sourceNode->FindOutputPortIndex(mSourcePortName.c_str());
+            mSourcePort = sourceNode->FindOutputPortIndex(mSourcePortName);
 
             // in case we want to add this connection to a parameter node while the parameter name doesn't exist, still return true so that copy paste doesn't fail
-            if (azrtti_typeid(sourceNode) == azrtti_typeid<EMotionFX::BlendTreeParameterNode>() && mSourcePort == -1)
+            if (azrtti_typeid(sourceNode) == azrtti_typeid<EMotionFX::BlendTreeParameterNode>() && mSourcePort == InvalidIndex)
             {
                 m_connectionId.SetInvalid();
                 return true;
@@ -157,13 +157,13 @@ namespace CommandSystem
             }
 
             // verify port ranges
-            if (mSourcePort >= static_cast<int32>(sourceNode->GetOutputPorts().size()) || mSourcePort < 0)
+            if (mSourcePort >= sourceNode->GetOutputPorts().size())
             {
                 outResult = AZStd::string::format("The output port number is not valid for the given node. Node '%s' only has %zu output ports.", sourceNode->GetName(), sourceNode->GetOutputPorts().size());
                 return false;
             }
 
-            if (mTargetPort >= static_cast<int32>(targetNode->GetInputPorts().size()) || mTargetPort < 0)
+            if (mTargetPort >= targetNode->GetInputPorts().size())
             {
                 outResult = AZStd::string::format("The input port number is not valid for the given node. Node '%s' only has %zu input ports.", targetNode->GetName(), targetNode->GetInputPorts().size());
                 return false;
@@ -345,7 +345,7 @@ namespace CommandSystem
         }
 
         // delete the connection
-        const AZStd::string commandString = AZStd::string::format("AnimGraphRemoveConnection -animGraphID %i -targetNode \"%s\" -targetPort %d -sourceNode \"%s\" -sourcePort %d -id %s",
+        const AZStd::string commandString = AZStd::string::format("AnimGraphRemoveConnection -animGraphID %i -targetNode \"%s\" -targetPort %zu -sourceNode \"%s\" -sourcePort %zu -id %s",
             animGraph->GetID(),
             targetNode->GetName(),
             mTargetPort,
@@ -356,7 +356,7 @@ namespace CommandSystem
         // execute the command without putting it in the history
         if (!GetCommandManager()->ExecuteCommandInsideCommand(commandString, outResult))
         {
-            if (outResult.size() > 0)
+            if (!outResult.empty())
             {
                 MCore::LogError(outResult.c_str());
             }
@@ -414,8 +414,8 @@ namespace CommandSystem
     CommandAnimGraphRemoveConnection::CommandAnimGraphRemoveConnection(MCore::Command* orgCommand)
         : MCore::Command("AnimGraphRemoveConnection", orgCommand)
     {
-        mSourcePort     = MCORE_INVALIDINDEX32;
-        mTargetPort     = MCORE_INVALIDINDEX32;
+        mSourcePort     = InvalidIndex;
+        mTargetPort     = InvalidIndex;
         mTransitionType = AZ::TypeId::CreateNull();
         mStartOffsetX   = 0;
         mStartOffsetY   = 0;
@@ -603,7 +603,7 @@ namespace CommandSystem
             return false;
         }
 
-        AZStd::string commandString = AZStd::string::format("AnimGraphCreateConnection -animGraphID %i -sourceNode \"%s\" -targetNode \"%s\" -sourcePort %d -targetPort %d -startOffsetX %d -startOffsetY %d -endOffsetX %d -endOffsetY %d -id %s -transitionType \"%s\" -updateUniqueData %s",
+        AZStd::string commandString = AZStd::string::format("AnimGraphCreateConnection -animGraphID %i -sourceNode \"%s\" -targetNode \"%s\" -sourcePort %zu -targetPort %zu -startOffsetX %d -startOffsetY %d -endOffsetX %d -endOffsetY %d -id %s -transitionType \"%s\" -updateUniqueData %s",
                 animGraph->GetID(),
                 mSourceNodeName.c_str(),
                 mTargetNodeName.c_str(),
@@ -623,7 +623,7 @@ namespace CommandSystem
 
         if (!GetCommandManager()->ExecuteCommandInsideCommand(commandString, outResult))
         {
-            if (outResult.size() > 0)
+            if (!outResult.empty())
             {
                 MCore::LogError(outResult.c_str());
             }
@@ -634,8 +634,8 @@ namespace CommandSystem
         mTargetNodeId.SetInvalid();
         mSourceNodeId.SetInvalid();
         m_connectionId.SetInvalid();
-        mSourcePort     = MCORE_INVALIDINDEX32;
-        mTargetPort     = MCORE_INVALIDINDEX32;
+        mSourcePort     = InvalidIndex;
+        mTargetPort     = InvalidIndex;
         mStartOffsetX   = 0;
         mStartOffsetY   = 0;
         mEndOffsetX     = 0;
@@ -970,8 +970,8 @@ namespace CommandSystem
         // Delete the connections that start from the given node.
         if (parentNode)
         {
-            const uint32 numChildNodes = parentNode->GetNumChildNodes();
-            for (uint32 i = 0; i < numChildNodes; ++i)
+            const size_t numChildNodes = parentNode->GetNumChildNodes();
+            for (size_t i = 0; i < numChildNodes; ++i)
             {
                 EMotionFX::AnimGraphNode* childNode = parentNode->GetChildNode(i);
                 if (childNode == node)
@@ -979,8 +979,8 @@ namespace CommandSystem
                     continue;
                 }
 
-                const uint32 numChildConnections = childNode->GetNumConnections();
-                for (uint32 j = 0; j < numChildConnections; ++j)
+                const size_t numChildConnections = childNode->GetNumConnections();
+                for (size_t j = 0; j < numChildConnections; ++j)
                 {
                     EMotionFX::BlendTreeConnection* childConnection = childNode->GetConnection(j);
 
@@ -994,8 +994,8 @@ namespace CommandSystem
         }
 
         // Delete the connections that end in the given node.
-        const uint32 numConnections = node->GetNumConnections();
-        for (uint32 i = 0; i < numConnections; ++i)
+        const size_t numConnections = node->GetNumConnections();
+        for (size_t i = 0; i < numConnections; ++i)
         {
             EMotionFX::BlendTreeConnection* connection = node->GetConnection(i);
             DeleteConnection(commandGroup, node, connection, connectionList);
@@ -1004,8 +1004,8 @@ namespace CommandSystem
         // Recursively delete all connections.
         if (recursive)
         {
-            const uint32 numChildNodes = node->GetNumChildNodes();
-            for (uint32 i = 0; i < numChildNodes; ++i)
+            const size_t numChildNodes = node->GetNumChildNodes();
+            for (size_t i = 0; i < numChildNodes; ++i)
             {
                 EMotionFX::AnimGraphNode* childNode = node->GetChildNode(i);
                 DeleteNodeConnections(commandGroup, childNode, node, connectionList, recursive);
@@ -1194,8 +1194,8 @@ namespace CommandSystem
         // Recursively delete all transitions.
         if (recursive)
         {
-            const uint32 numChildNodes = state->GetNumChildNodes();
-            for (uint32 i = 0; i < numChildNodes; ++i)
+            const size_t numChildNodes = state->GetNumChildNodes();
+            for (size_t i = 0; i < numChildNodes; ++i)
             {
                 EMotionFX::AnimGraphNode* childNode = state->GetChildNode(i);
                 DeleteStateTransitions(commandGroup, childNode, state, transitionList, recursive);

@@ -35,14 +35,14 @@ namespace EMStudio
             RESIZEPOINT_END     = 1
         };
 
-        TimeTrackElement(const char* name, TimeTrack* timeTrack, uint32 elementNumber = MCORE_INVALIDINDEX32, QColor color = QColor(0, 0, 0));
+        TimeTrackElement(const char* name, TimeTrack* timeTrack, size_t elementNumber = InvalidIndex, QColor color = QColor(0, 0, 0));
         virtual ~TimeTrackElement();
 
         MCORE_INLINE double GetStartTime() const                            { return mStartTime; }
         MCORE_INLINE double GetEndTime() const                              { return mEndTime; }
         MCORE_INLINE bool GetIsSelected() const                             { return mIsSelected; }
         MCORE_INLINE TimeTrack* GetTrack()                                  { return mTrack; }
-        MCORE_INLINE uint32 GetElementNumber() const                        { return mElementNumber; }
+        MCORE_INLINE size_t GetElementNumber() const                        { return mElementNumber; }
         QColor GetColor() const                                             { return mColor; }
 
         void SetIsSelected(bool selected)                                   { mIsSelected = selected; }
@@ -51,7 +51,7 @@ namespace EMStudio
         void SetName(const char* name)                                      { mName = name; }
         void SetToolTip(const char* toolTip)                                { mToolTip = toolTip; }
         void SetTrack(TimeTrack* track)                                     { mTrack = track; }
-        void SetElementNumber(uint32 elementNumber)                         { mElementNumber = elementNumber; }
+        void SetElementNumber(size_t elementNumber)                         { mElementNumber = elementNumber; }
         void SetColor(QColor color)                                         { mColor = color; }
 
         const QString& GetName() const                                      { return mName; }
@@ -91,7 +91,7 @@ namespace EMStudio
         QString             mName;
         QString             mToolTip;
         QColor              mColor;
-        uint32              mElementNumber;
+        size_t              mElementNumber;
         QPoint              mTickPoints[6];
 
         bool                mVisible;

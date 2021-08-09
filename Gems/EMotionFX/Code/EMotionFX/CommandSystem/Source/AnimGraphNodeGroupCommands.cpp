@@ -71,9 +71,9 @@ namespace CommandSystem
     {
         AZStd::vector<EMotionFX::AnimGraphNodeId> result;
 
-        const uint32 numNodes = nodeGroup->GetNumNodes();
+        const size_t numNodes = nodeGroup->GetNumNodes();
         result.reserve(numNodes);
-        for (uint32 i = 0; i < numNodes; ++i)
+        for (size_t i = 0; i < numNodes; ++i)
         {
             result.push_back(nodeGroup->GetNode(i));
         }
@@ -91,8 +91,8 @@ namespace CommandSystem
         }
 
         // find the node group index
-        const uint32 groupIndex = animGraph->FindNodeGroupIndexByName(m_name.c_str());
-        if (groupIndex == MCORE_INVALIDINDEX32)
+        const size_t groupIndex = animGraph->FindNodeGroupIndexByName(m_name.c_str());
+        if (groupIndex == InvalidIndex)
         {
             outResult = AZStd::string::format("Node group \"%s\" can not be found.", m_name.c_str());
             return false;
@@ -149,8 +149,8 @@ namespace CommandSystem
                     }
 
                     // remove the node from all node groups
-                    const uint32 numNodeGroups = animGraph->GetNumNodeGroups();
-                    for (uint32 n = 0; n < numNodeGroups; ++n)
+                    const size_t numNodeGroups = animGraph->GetNumNodeGroups();
+                    for (size_t n = 0; n < numNodeGroups; ++n)
                     {
                         animGraph->GetNodeGroup(n)->RemoveNodeById(animGraphNode->GetId());
                     }
@@ -173,8 +173,8 @@ namespace CommandSystem
                     }
 
                     // remove the node from all node groups
-                    const uint32 numNodeGroups = animGraph->GetNumNodeGroups();
-                    for (uint32 n = 0; n < numNodeGroups; ++n)
+                    const size_t numNodeGroups = animGraph->GetNumNodeGroups();
+                    for (size_t n = 0; n < numNodeGroups; ++n)
                     {
                         animGraph->GetNodeGroup(n)->RemoveNodeById(animGraphNode->GetId());
                     }
@@ -404,10 +404,10 @@ namespace CommandSystem
         parameters.GetValue("name", this, groupName);
 
         // find the node group index and remove it
-        const uint32 groupIndex = animGraph->FindNodeGroupIndexByName(groupName.c_str());
-        if (groupIndex == MCORE_INVALIDINDEX32)
+        const size_t groupIndex = animGraph->FindNodeGroupIndexByName(groupName.c_str());
+        if (groupIndex == InvalidIndex)
         {
-            outResult = AZStd::string::format("Cannot add node group to anim graph. Node group index %u is invalid.", groupIndex);
+            outResult = AZStd::string::format("Cannot add node group to anim graph. Node group index %zu is invalid.", groupIndex);
             return false;
         }
 
@@ -487,7 +487,7 @@ namespace CommandSystem
     void ClearNodeGroups(EMotionFX::AnimGraph* animGraph, MCore::CommandGroup* commandGroup)
     {
         // get number of node groups
-        const uint32 numNodeGroups = animGraph->GetNumNodeGroups();
+        const size_t numNodeGroups = animGraph->GetNumNodeGroups();
         if (numNodeGroups == 0)
         {
             return;
@@ -498,7 +498,7 @@ namespace CommandSystem
 
         // get rid of all node groups
         AZStd::string commandString;
-        for (uint32 i = 0; i < numNodeGroups; ++i)
+        for (size_t i = 0; i < numNodeGroups; ++i)
         {
             // get pointer to the current actor instance
             EMotionFX::AnimGraphNodeGroup* nodeGroup = animGraph->GetNodeGroup(i);

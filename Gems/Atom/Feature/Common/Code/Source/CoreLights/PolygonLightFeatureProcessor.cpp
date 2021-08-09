@@ -145,7 +145,7 @@ namespace AZ::Render
                 // individual point as its own element instead of each array being its own element. Since all
                 // the arrays are stored in a contiguous vector, we can treat it as one giant array.
                 const LightPosition* firstPosition = m_polygonLightData.GetDataVector<1>().at(0).data();
-                m_lightPolygonPointBufferHandler.UpdateBuffer(firstPosition, m_polygonLightData.GetDataCount() * MaxPolygonPoints);
+                m_lightPolygonPointBufferHandler.UpdateBuffer(firstPosition, static_cast<uint32_t>(m_polygonLightData.GetDataCount() * MaxPolygonPoints));
             }
             m_deviceBufferNeedsUpdate = false;
         }

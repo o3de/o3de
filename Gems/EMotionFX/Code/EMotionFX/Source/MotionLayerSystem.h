@@ -95,7 +95,7 @@ namespace EMotionFX
          * @param source The layer to remove all layers below from. So this does not remove the source layer itself.
          * @result Returns the number of removed layers.
          */
-        uint32 RemoveLayersBelow(MotionInstance* source);
+        size_t RemoveLayersBelow(MotionInstance* source);
 
         /**
          * Update the motion tree.
@@ -118,11 +118,11 @@ namespace EMotionFX
 
         /**
          * Find the location where to insert a motion layer with a given priority level.
-         * When MCORE_INVALIDINDEX32 is returned, it needs to be inserted at the bottom of the motion tree.
+         * When InvalidIndex is returned, it needs to be inserted at the bottom of the motion tree.
          * @param priorityLevel The priority level of the motion instance you want to insert.
-         * @result The insert pos in the list of motion instances, or MCORE_INVALIDINDEX32 when the new layer has to be inserted at the bottom of the tree.
+         * @result The insert pos in the list of motion instances, or InvalidIndex when the new layer has to be inserted at the bottom of the tree.
          */
-        uint32 FindInsertPos(uint32 priorityLevel) const;
+        size_t FindInsertPos(size_t priorityLevel) const;
 
         /**
          * Remove all layer passes.
@@ -140,14 +140,14 @@ namespace EMotionFX
          * Get the number of layer passes currently added to this motion layer system.
          * @result The number of layer passes.
          */
-        uint32 GetNumLayerPasses() const;
+        size_t GetNumLayerPasses() const;
 
         /**
          * Remove a given layer pass by index.
          * @param nr The layer pass number to remove.
          * @param delFromMem When set to true, the layer passes will also be deleted from memory.
          */
-        void RemoveLayerPass(uint32 nr, bool delFromMem = true);
+        void RemoveLayerPass(size_t nr, bool delFromMem = true);
 
         /**
          * Remove a given layer pass by pointer.
@@ -161,7 +161,7 @@ namespace EMotionFX
          * @param insertPos The index position to insert the layer pass.
          * @param pass The layer pass to insert.
          */
-        void InsertLayerPass(uint32 insertPos, LayerPass* pass);
+        void InsertLayerPass(size_t insertPos, LayerPass* pass);
 
         /**
          * Deletes the motion based actor repositioning layer pass, which is always there on default.
@@ -175,11 +175,11 @@ namespace EMotionFX
          * @param index The layer pass number, which must be in range of [0..GetNumLayerPasses()-1].
          * @result A pointer to the layer pass object.
          */
-        LayerPass* GetLayerPass(uint32 index) const;
+        LayerPass* GetLayerPass(size_t index) const;
 
 
     private:
-        MCore::Array<LayerPass*>    mLayerPasses;           /**< The layer passes. */
+        AZStd::vector<LayerPass*>    mLayerPasses;           /**< The layer passes. */
         RepositioningLayerPass*     mRepositioningPass;     /**< The motion based actor repositioning layer pass. */
 
         /**

@@ -559,7 +559,7 @@ const char* GameController::GetElementEnumName(uint32 index)
 }
 
 
-uint32 GameController::FindElemendIDByName(const AZStd::string& elementEnumName)
+uint32 GameController::FindElementIDByName(const AZStd::string& elementEnumName)
 {
     if (elementEnumName == "Pos X")
     {

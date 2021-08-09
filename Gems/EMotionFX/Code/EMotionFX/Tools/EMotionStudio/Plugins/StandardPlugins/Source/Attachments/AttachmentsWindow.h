@@ -78,7 +78,7 @@ namespace EMStudio
         void OnDroppedAttachmentsActors();
         void OnDroppedDeformableActors();
         void OnVisibilityChanged(int visibility);
-        void OnAttachmentNodesSelected(MCore::Array<SelectionItem> selection);
+        void OnAttachmentNodesSelected(AZStd::vector<SelectionItem> selection);
         void OnCancelAttachmentNodeSelection();
         void OnEscapeButtonPressed();
         void OnUpdateButtonsEnabled();

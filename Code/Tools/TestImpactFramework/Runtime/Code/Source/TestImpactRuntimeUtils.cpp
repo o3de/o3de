@@ -24,13 +24,13 @@ namespace TestImpact
         return TestTargetMetaMapFactory(masterTestListData, suiteFilter);
     }
 
-    AZStd::vector<TestImpact::BuildTargetDescriptor> ReadBuildTargetDescriptorFiles(const BuildTargetDescriptorConfig& buildTargetDescriptorConfig)
+    AZStd::vector<BuildTargetDescriptor> ReadBuildTargetDescriptorFiles(const BuildTargetDescriptorConfig& buildTargetDescriptorConfig)
     {
-        AZStd::vector<TestImpact::BuildTargetDescriptor> buildTargetDescriptors;
+        AZStd::vector<BuildTargetDescriptor> buildTargetDescriptors;
         for (const auto& buildTargetDescriptorFile : std::filesystem::directory_iterator(buildTargetDescriptorConfig.m_mappingDirectory.c_str()))
         {
             const auto buildTargetDescriptorContents = ReadFileContents<RuntimeException>(buildTargetDescriptorFile.path().string().c_str());
-            auto buildTargetDescriptor = TestImpact::BuildTargetDescriptorFactory(
+            auto buildTargetDescriptor = BuildTargetDescriptorFactory(
                 buildTargetDescriptorContents,
                 buildTargetDescriptorConfig.m_staticInclusionFilters,
                 buildTargetDescriptorConfig.m_inputInclusionFilters,
@@ -41,7 +41,7 @@ namespace TestImpact
         return buildTargetDescriptors;
     }
 
-    AZStd::unique_ptr<TestImpact::DynamicDependencyMap> ConstructDynamicDependencyMap(
+    AZStd::unique_ptr<DynamicDependencyMap> ConstructDynamicDependencyMap(
         SuiteType suiteFilter,
         const BuildTargetDescriptorConfig& buildTargetDescriptorConfig,
         const TestTargetMetaConfig& testTargetMetaConfig)
@@ -50,7 +50,7 @@ namespace TestImpact
         auto buildTargetDescriptors = ReadBuildTargetDescriptorFiles(buildTargetDescriptorConfig);
         auto buildTargets = CompileTargetDescriptors(AZStd::move(buildTargetDescriptors), AZStd::move(testTargetmetaMap));
         auto&& [productionTargets, testTargets] = buildTargets;
-        return AZStd::make_unique<TestImpact::DynamicDependencyMap>(AZStd::move(productionTargets), AZStd::move(testTargets));
+        return AZStd::make_unique<DynamicDependencyMap>(AZStd::move(productionTargets), AZStd::move(testTargets));
     }
 
     AZStd::unordered_set<const TestTarget*> ConstructTestTargetExcludeList(
@@ -68,7 +68,7 @@ namespace TestImpact
         return testTargetExcludeList;
     }
 
-    AZStd::vector<AZStd::string> ExtractTestTargetNames(const AZStd::vector<const TestTarget*> testTargets)
+    AZStd::vector<AZStd::string> ExtractTestTargetNames(const AZStd::vector<const TestTarget*>& testTargets)
     {
         AZStd::vector<AZStd::string> testNames;
         AZStd::transform(testTargets.begin(), testTargets.end(), AZStd::back_inserter(testNames), [](const TestTarget* testTarget)

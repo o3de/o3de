@@ -200,7 +200,7 @@ namespace CommandSystem
         m_oldData.clear();
 
         // check if there is any actor instance selected and if not return false so that the command doesn't get called and doesn't get inside the action history
-        const uint32 numSelectedActorInstances = GetCommandManager()->GetCurrentSelection().GetNumSelectedActorInstances();
+        const size_t numSelectedActorInstances = GetCommandManager()->GetCurrentSelection().GetNumSelectedActorInstances();
 
         // verify if we actually have selected an actor instance
         if (numSelectedActorInstances == 0)
@@ -236,7 +236,7 @@ namespace CommandSystem
         CommandParametersToPlaybackInfo(this, parameters, &playbackInfo);
 
         // iterate through all actor instances and start playing all selected motions
-        for (uint32 i = 0; i < numSelectedActorInstances; ++i)
+        for (size_t i = 0; i < numSelectedActorInstances; ++i)
         {
             EMotionFX::ActorInstance* actorInstance = GetCommandManager()->GetCurrentSelection().GetActorInstance(i);
 
@@ -467,8 +467,8 @@ namespace CommandSystem
         MCORE_UNUSED(outResult);
 
         // iterate through the motion instances and modify them
-        const uint32 numSelectedMotionInstances = GetCommandManager()->GetCurrentSelection().GetNumSelectedMotionInstances();
-        for (uint32 i = 0; i < numSelectedMotionInstances; ++i)
+        const size_t numSelectedMotionInstances = GetCommandManager()->GetCurrentSelection().GetNumSelectedMotionInstances();
+        for (size_t i = 0; i < numSelectedMotionInstances; ++i)
         {
             // get the current selected motion instance and adjust it based on the parameters
             EMotionFX::MotionInstance* selectedMotionInstance = GetCommandManager()->GetCurrentSelection().GetMotionInstance(i);
@@ -618,7 +618,7 @@ namespace CommandSystem
         //mOldData.Clear();
 
         // get the number of selected actor instances
-        const uint32 numSelectedActorInstances = GetCommandManager()->GetCurrentSelection().GetNumSelectedActorInstances();
+        const size_t numSelectedActorInstances = GetCommandManager()->GetCurrentSelection().GetNumSelectedActorInstances();
 
         // check if there is any actor instance selected and if not return false so that the command doesn't get called and doesn't get inside the action history
         if (numSelectedActorInstances == 0)
@@ -645,7 +645,7 @@ namespace CommandSystem
         }
 
         // iterate through all actor instances and stop all selected motion instances
-        for (uint32 i = 0; i < numSelectedActorInstances; ++i)
+        for (size_t i = 0; i < numSelectedActorInstances; ++i)
         {
             // get the actor instance and the corresponding motion system
             EMotionFX::ActorInstance*   actorInstance   = GetCommandManager()->GetCurrentSelection().GetActorInstance(i);
@@ -665,8 +665,8 @@ namespace CommandSystem
             }
 
             // get the number of motion instances and iterate through them
-            const uint32 numMotionInstances = motionSystem->GetNumMotionInstances();
-            for (uint32 j = 0; j < numMotionInstances; ++j)
+            const size_t numMotionInstances = motionSystem->GetNumMotionInstances();
+            for (size_t j = 0; j < numMotionInstances; ++j)
             {
                 EMotionFX::MotionInstance* motionInstance = motionSystem->GetMotionInstance(j);
 
@@ -720,8 +720,8 @@ namespace CommandSystem
         //mOldData.Clear();
 
         // iterate through all actor instances and stop all selected motion instances
-        const uint32 numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
-        for (uint32 i = 0; i < numActorInstances; ++i)
+        const size_t numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
+        for (size_t i = 0; i < numActorInstances; ++i)
         {
             // get the actor instance and the corresponding motion system
             EMotionFX::ActorInstance*   actorInstance   = EMotionFX::GetActorManager().GetActorInstance(i);
@@ -741,8 +741,8 @@ namespace CommandSystem
             }
 
             // get the number of motion instances and iterate through them
-            const uint32 numMotionInstances = motionSystem->GetNumMotionInstances();
-            for (uint32 j = 0; j < numMotionInstances; ++j)
+            const size_t numMotionInstances = motionSystem->GetNumMotionInstances();
+            for (size_t j = 0; j < numMotionInstances; ++j)
             {
                 // get the motion instance and stop it
                 EMotionFX::MotionInstance* motionInstance = motionSystem->GetMotionInstance(j);
@@ -974,8 +974,8 @@ namespace CommandSystem
         }
 
         // make sure the motion is not part of any motion set
-        const uint32 numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
-        for (uint32 i = 0; i < numMotionSets; ++i)
+        const size_t numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
+        for (size_t i = 0; i < numMotionSets; ++i)
         {
             // get the current motion set and check if the motion we want to remove is used by it
             EMotionFX::MotionSet*               motionSet   = EMotionFX::GetMotionManager().GetMotionSet(i);
@@ -1185,13 +1185,12 @@ namespace CommandSystem
         const size_t numFileNames = filenames.size();
 
         const AZStd::string commandGroupName = AZStd::string::format("%s %zu motion%s", reload ? "Reload" : "Load", numFileNames, (numFileNames > 1) ? "s" : "");
-        MCore::CommandGroup commandGroup(commandGroupName, static_cast<uint32>(numFileNames * 2));
+        MCore::CommandGroup commandGroup(commandGroupName, numFileNames * 2);
 
         AZStd::string command;
         const EMotionFX::MotionManager& motionManager = EMotionFX::GetMotionManager();
-        for (size_t i = 0; i < numFileNames; ++i)
+        for (const AZStd::string& filename : filenames)
         {
-            const AZStd::string& filename = filenames[i];
             const EMotionFX::Motion* motion = motionManager.FindMotionByFileName(filename.c_str());
 
             if (reload && motion)
@@ -1234,11 +1233,11 @@ namespace CommandSystem
     void ClearMotions(MCore::CommandGroup* commandGroup, bool forceRemove)
     {
         // iterate through the motions and put them into some array
-        const uint32 numMotions = EMotionFX::GetMotionManager().GetNumMotions();
+        const size_t numMotions = EMotionFX::GetMotionManager().GetNumMotions();
         AZStd::vector<EMotionFX::Motion*> motionsToRemove;
         motionsToRemove.reserve(numMotions);
 
-        for (uint32 i = 0; i < numMotions; ++i)
+        for (size_t i = 0; i < numMotions; ++i)
         {
             EMotionFX::Motion* motion = EMotionFX::GetMotionManager().GetMotion(i);
 
@@ -1283,10 +1282,8 @@ namespace CommandSystem
 
         // Iterate through all motions and remove them.
         AZStd::string commandString;
-        for (uint32 i = 0; i < numMotions; ++i)
+        for (const EMotionFX::Motion* motion : motions)
         {
-            EMotionFX::Motion* motion = motions[i];
-
             if (motion->GetIsOwnedByRuntime())
             {
                 continue;
@@ -1294,10 +1291,10 @@ namespace CommandSystem
 
             // Is the motion part of a motion set?
             bool isUsed = false;
-            const uint32 numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
-            for (uint32 j = 0; j < numMotionSets; ++j)
+            const size_t numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
+            for (size_t i = 0; i < numMotionSets; ++i)
             {
-                EMotionFX::MotionSet*               motionSet   = EMotionFX::GetMotionManager().GetMotionSet(j);
+                EMotionFX::MotionSet*               motionSet   = EMotionFX::GetMotionManager().GetMotionSet(i);
                 EMotionFX::MotionSet::MotionEntry*  motionEntry = motionSet->FindMotionEntry(motion);
 
                 if (motionEntry)

@@ -47,7 +47,7 @@ namespace EMotionFX
         m_collisionObjects.reserve(3);
     }
 
-    void SpringSolver::CreateCollider(AZ::u32 skeletonJointIndex, const AzPhysics::ShapeColliderPair& shapePair)
+    void SpringSolver::CreateCollider(size_t skeletonJointIndex, const AzPhysics::ShapeColliderPair& shapePair)
     {
         const Physics::ShapeConfiguration* shapeConfig = shapePair.second.get();
         if (!shapeConfig)
@@ -77,7 +77,7 @@ namespace EMotionFX
             {
                 if (exclusionColliderTag == colliderTag)
                 {
-                    const AZ::u32 colliderIndex = aznumeric_caster<size_t>(m_collisionObjects.size() - 1);
+                    const size_t colliderIndex = m_collisionObjects.size() - 1;
                     particle.m_colliderExclusions.emplace_back(colliderIndex);
                     break;
                 }
@@ -105,7 +105,7 @@ namespace EMotionFX
                     if (shapePair.first->m_tag == colliderTag)
                     {
                         // Make sure we can find the joint in the skeleton.
-                        AZ::u32 skeletonJointIndex;
+                        size_t skeletonJointIndex;
                         if (!actor->GetSkeleton()->FindNodeAndIndexByName(nodeConfig.m_name, skeletonJointIndex))
                         {
                             AZ_Warning("EMotionFX", false, "Cannot find joint '%s' to attach the collider to. Skipping this collider inside simulation '%s'.", nodeConfig.m_name.c_str(), m_name.c_str());
@@ -176,7 +176,7 @@ namespace EMotionFX
         }
     }
 
-    void SpringSolver::CheckAndExcludeCollider(AZ::u32 colliderIndex, const SimulatedJoint* joint)
+    void SpringSolver::CheckAndExcludeCollider(size_t colliderIndex, const SimulatedJoint* joint)
     {
         const size_t particleIndex = FindParticle(joint->GetSkeletonJointIndex());
         AZ_Assert(particleIndex != InvalidIndex, "Expected particle to be found for this joint.");
@@ -208,7 +208,7 @@ namespace EMotionFX
                 const size_t numColliders = m_collisionObjects.size();
                 for (size_t colliderIndex = 0; colliderIndex < numColliders; ++colliderIndex)
                 {
-                    CheckAndExcludeCollider(static_cast<AZ::u32>(colliderIndex), joint);
+                    CheckAndExcludeCollider(colliderIndex, joint);
                 }
                 break;
             }
@@ -221,7 +221,7 @@ namespace EMotionFX
                 {
                     if (m_collisionObjects[colliderIndex].m_jointIndex == joint->GetSkeletonJointIndex())
                     {
-                        CheckAndExcludeCollider(static_cast<AZ::u32>(colliderIndex), joint);
+                        CheckAndExcludeCollider(colliderIndex, joint);
                     }
                 }
                 break;
@@ -235,13 +235,13 @@ namespace EMotionFX
                 {
                     if (joint->GetSkeletonJointIndex() == m_collisionObjects[colliderIndex].m_jointIndex)
                     {
-                        CheckAndExcludeCollider(static_cast<AZ::u32>(colliderIndex), joint);
+                        CheckAndExcludeCollider(colliderIndex, joint);
                     }
 
                     const SimulatedJoint* parentJoint = joint->FindParentSimulatedJoint();
                     if (parentJoint && parentJoint->GetSkeletonJointIndex() == m_collisionObjects[colliderIndex].m_jointIndex)
                     {
-                        CheckAndExcludeCollider(static_cast<AZ::u32>(colliderIndex), joint);
+                        CheckAndExcludeCollider(colliderIndex, joint);
                     }
 
                     const size_t numChildJoints = joint->CalculateNumChildSimulatedJoints();
@@ -250,7 +250,7 @@ namespace EMotionFX
                         const SimulatedJoint* childJoint = joint->FindChildSimulatedJoint(childIndex);
                         if (m_collisionObjects[colliderIndex].m_jointIndex == childJoint->GetSkeletonJointIndex())
                         {
-                            CheckAndExcludeCollider(static_cast<AZ::u32>(colliderIndex), joint);
+                            CheckAndExcludeCollider(colliderIndex, joint);
                         }
                     }
                 }
@@ -271,8 +271,8 @@ namespace EMotionFX
     SpringSolver::Particle* SpringSolver::AddJoint(const SimulatedJoint* joint)
     {
         AZ_Assert(joint, "Expected the joint be a valid pointer.");
-        const AZ::u32 jointIndex = joint->GetSkeletonJointIndex();
-        if (jointIndex == InvalidIndex32)
+        const size_t jointIndex = joint->GetSkeletonJointIndex();
+        if (jointIndex == InvalidIndex)
         {
             return nullptr;
         }
@@ -409,8 +409,8 @@ namespace EMotionFX
         // Initialize all rest lengths.
         for (Spring& spring : m_springs)
         {
-            const AZ::u32 jointIndexA = m_particles[spring.m_particleA].m_joint->GetSkeletonJointIndex();
-            const AZ::u32 jointIndexB = m_particles[spring.m_particleB].m_joint->GetSkeletonJointIndex();
+            const size_t jointIndexA = m_particles[spring.m_particleA].m_joint->GetSkeletonJointIndex();
+            const size_t jointIndexB = m_particles[spring.m_particleB].m_joint->GetSkeletonJointIndex();
             const Pose* bindPose = m_actorInstance->GetTransformData()->GetBindPose();
             const float restLength = (bindPose->GetModelSpaceTransform(jointIndexB).mPosition - bindPose->GetModelSpaceTransform(jointIndexA).mPosition).GetLength();
             if (restLength > AZ::Constants::FloatEpsilon)
@@ -526,7 +526,7 @@ namespace EMotionFX
         return m_gravity;
     }
 
-    size_t SpringSolver::FindParticle(AZ::u32 jointIndex) const
+    size_t SpringSolver::FindParticle(size_t jointIndex) const
     {
         const size_t numParticles = m_particles.size();
         for (size_t i = 0; i < numParticles; ++i)
@@ -564,14 +564,14 @@ namespace EMotionFX
         particle.m_joint = joint;
         particle.m_pos = m_actorInstance->GetTransformData()->GetBindPose()->GetModelSpaceTransform(joint->GetSkeletonJointIndex()).mPosition;
         particle.m_oldPos = particle.m_pos;
-        particle.m_parentParticleIndex = static_cast<AZ::u32>(m_parentParticle);
+        particle.m_parentParticleIndex = m_parentParticle;
         m_particles.emplace_back(particle);
         return m_particles.size() - 1;
     }
 
-    bool SpringSolver::AddSupportSpring(AZ::u32 nodeA, AZ::u32 nodeB, float restLength)
+    bool SpringSolver::AddSupportSpring(size_t nodeA, size_t nodeB, float restLength)
     {
-        if (nodeA == InvalidIndex32 || nodeB == InvalidIndex32)
+        if (nodeA == InvalidIndex || nodeB == InvalidIndex)
         {
             return false;
         }
@@ -608,7 +608,7 @@ namespace EMotionFX
         return AddSupportSpring(nodeA->GetNodeIndex(), nodeB->GetNodeIndex(), restLength);
     }
 
-    bool SpringSolver::RemoveJoint(AZ::u32 jointIndex)
+    bool SpringSolver::RemoveJoint(size_t jointIndex)
     {
         const size_t particleIndex = FindParticle(jointIndex);
         if (particleIndex == InvalidIndex)
@@ -646,7 +646,7 @@ namespace EMotionFX
         return RemoveJoint(node->GetNodeIndex());
     }
 
-    bool SpringSolver::RemoveSupportSpring(AZ::u32 jointIndexA, AZ::u32 jointIndexB)
+    bool SpringSolver::RemoveSupportSpring(size_t jointIndexA, size_t jointIndexB)
     {
         const size_t particleA = FindParticle(jointIndexA);
         if (particleA == InvalidIndex)
@@ -833,7 +833,7 @@ namespace EMotionFX
                 // Apply cone limit when needed.
                 if (particleB.m_joint->GetConeAngleLimit() < 180.0f - 0.001f)
                 {
-                    if (particleB.m_parentParticleIndex != InvalidIndex32)
+                    if (particleB.m_parentParticleIndex != InvalidIndex)
                     {
                         particleB.m_limitDir = particleB.m_pos - m_particles[particleB.m_parentParticleIndex].m_pos;
                     }
@@ -1008,7 +1008,7 @@ namespace EMotionFX
     {
         for (CollisionObject& colObject : m_collisionObjects)
         {
-            if (colObject.m_jointIndex != InvalidIndex32)
+            if (colObject.m_jointIndex != InvalidIndex)
             {
                 const Transform jointWorldTransform = pose.GetWorldSpaceTransform(colObject.m_jointIndex);
                 colObject.m_globalStart = jointWorldTransform.TransformPoint(colObject.m_start);
@@ -1028,7 +1028,7 @@ namespace EMotionFX
     {
         for (CollisionObject& colObject : m_collisionObjects)
         {
-            if (colObject.m_jointIndex != InvalidIndex32)
+            if (colObject.m_jointIndex != InvalidIndex)
             {
                 const Transform& jointTransform = pose.GetModelSpaceTransform(colObject.m_jointIndex);
                 colObject.m_globalStart = jointTransform.TransformPoint(colObject.m_start);
@@ -1072,7 +1072,7 @@ namespace EMotionFX
         for (size_t colliderIndex = 0; colliderIndex < numColliders; ++colliderIndex)
         {
             // Skip colliders in the exclusion list.
-            if (AZStd::find(particle.m_colliderExclusions.begin(), particle.m_colliderExclusions.end(), static_cast<AZ::u32>(colliderIndex)) != particle.m_colliderExclusions.end())
+            if (AZStd::find(particle.m_colliderExclusions.begin(), particle.m_colliderExclusions.end(), colliderIndex) != particle.m_colliderExclusions.end())
             {
                 continue;
             }

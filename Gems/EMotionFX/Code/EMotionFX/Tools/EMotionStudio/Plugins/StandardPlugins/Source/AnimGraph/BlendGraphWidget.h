@@ -43,7 +43,7 @@ namespace EMStudio
         BlendGraphWidget(AnimGraphPlugin* plugin, QWidget* parent);
 
         // overloaded
-        bool CheckIfIsCreateConnectionValid(uint32 portNr, GraphNode* portNode, NodePort* port, bool isInputPort) override;
+        bool CheckIfIsCreateConnectionValid(AZ::u16 portNr, GraphNode* portNode, NodePort* port, bool isInputPort) override;
         bool CheckIfIsValidTransition(GraphNode* sourceState, GraphNode* targetState) override;
         bool CheckIfIsValidTransitionSource(GraphNode* sourceState) override;
         bool CreateConnectionMustBeCurved() override;
@@ -60,7 +60,7 @@ namespace EMStudio
         void OnSetupVisualizeOptions(GraphNode* node) override;
         void ReplaceTransition(NodeConnection* connection, QPoint oldStartOffset, QPoint oldEndOffset, GraphNode* oldSourceNode, GraphNode* oldTargetNode, GraphNode* newSourceNode, GraphNode* newTargetNode) override;
 
-        void OnCreateConnection(uint32 sourcePortNr, GraphNode* sourceNode, bool sourceIsInputPort, uint32 targetPortNr, GraphNode* targetNode, bool targetIsInputPort, const QPoint& startOffset, const QPoint& endOffset) override;
+        void OnCreateConnection(AZ::u16 sourcePortNr, GraphNode* sourceNode, bool sourceIsInputPort, AZ::u16 targetPortNr, GraphNode* targetNode, bool targetIsInputPort, const QPoint& startOffset, const QPoint& endOffset) override;
 
         void DeleteSelectedItems(NodeGraph* nodeGraph);
 

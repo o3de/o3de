@@ -108,7 +108,7 @@ namespace EMotionFX
 
         // a node header
         // (not aligned)
-        struct Actor_Node
+        struct Actor_Node2
         {
             FileQuaternion  mLocalQuat; // the local rotation (before hierarchy)
             FileVector3     mLocalPos;  // the local translation (before hierarchy)
@@ -117,7 +117,6 @@ namespace EMotionFX
             uint32          mParentIndex;// parent node number, or 0xFFFFFFFF in case of a root node
             uint32          mNumChilds; // the number of child nodes
             uint8           mNodeFlags; // #1 bit boolean specifies whether we have to include this node in the bounds calculation or not
-            float           mOBB[16];
 
             // followed by:
             // string : node name (the unique name of the node)
@@ -200,14 +199,11 @@ namespace EMotionFX
             // uint16 [mNumNodes]
         };
 
-
         // (aligned)
-        struct Actor_Nodes
+        struct Actor_Nodes2
         {
             uint32          mNumNodes;
             uint32          mNumRootNodes;
-            FileVector3     mStaticBoxMin;
-            FileVector3     mStaticBoxMax;
             // followed by Actor_Node4[mNumNodes] or Actor_NODE5[mNumNodes] (for v2)
         };
 

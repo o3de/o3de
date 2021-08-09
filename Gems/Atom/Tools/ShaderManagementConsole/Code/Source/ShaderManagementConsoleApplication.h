@@ -9,16 +9,12 @@
 #pragma once
 
 #include <Atom/Document/ShaderManagementConsoleDocumentSystemRequestBus.h>
-#include <Atom/Window/ShaderManagementConsoleWindowNotificationBus.h>
 #include <AtomToolsFramework/Application/AtomToolsApplication.h>
-
-#include <QTimer>
 
 namespace ShaderManagementConsole
 {
     class ShaderManagementConsoleApplication
         : public AtomToolsFramework::AtomToolsApplication
-        , private ShaderManagementConsoleWindowNotificationBus::Handler
     {
     public:
         AZ_TYPE_INFO(ShaderManagementConsole::ShaderManagementConsoleApplication, "{A31B1AEB-4DA3-49CD-884A-CC998FF7546F}");
@@ -26,7 +22,6 @@ namespace ShaderManagementConsole
         using Base = AtomToolsFramework::AtomToolsApplication;
 
         ShaderManagementConsoleApplication(int* argc, char*** argv);
-        virtual ~ShaderManagementConsoleApplication() = default;
 
         //////////////////////////////////////////////////////////////////////////
         // AzFramework::Application
@@ -34,18 +29,7 @@ namespace ShaderManagementConsole
         const char* GetCurrentConfigurationName() const override;
 
     private:
-        //////////////////////////////////////////////////////////////////////////
-        // ShaderManagementConsoleWindowNotificationBus::Handler overrides...
-        void OnShaderManagementConsoleWindowClosing() override;
-        //////////////////////////////////////////////////////////////////////////
-
-        //////////////////////////////////////////////////////////////////////////
-        // AzFramework::Application overrides...
-        void Destroy() override;
-        //////////////////////////////////////////////////////////////////////////
-
-        void ProcessCommandLine();
-        void StartInternal() override;
+        void ProcessCommandLine(const AZ::CommandLine& commandLine);
         AZStd::string GetBuildTargetName() const override;
         AZStd::vector<AZStd::string> GetCriticalAssetFilters() const override;
     };

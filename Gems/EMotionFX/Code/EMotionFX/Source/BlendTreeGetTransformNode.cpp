@@ -36,7 +36,7 @@ namespace EMotionFX
         BlendTreeGetTransformNode* transformNode = azdynamic_cast<BlendTreeGetTransformNode*>(mObject);
         AZ_Assert(transformNode, "Unique data linked to incorrect node type.");
 
-        m_nodeIndex = InvalidIndex32;
+        m_nodeIndex = InvalidIndex;
         const AZStd::string& nodeName = transformNode->GetNodeName();
         const int actorInstanceParentDepth = transformNode->GetActorInstanceParentDepth();
         
@@ -106,7 +106,7 @@ namespace EMotionFX
 
         if (GetEMotionFX().GetIsInEditorMode())
         {
-            SetHasError(uniqueData, uniqueData->m_nodeIndex == MCORE_INVALIDINDEX32);
+            SetHasError(uniqueData, uniqueData->m_nodeIndex == InvalidIndex);
         }
 
         // make sure we have at least an input pose, otherwise output the bind pose
@@ -117,7 +117,7 @@ namespace EMotionFX
         }
 
         Pose* pose = nullptr;
-        if (uniqueData->m_nodeIndex != MCORE_INVALIDINDEX32)
+        if (uniqueData->m_nodeIndex != InvalidIndex)
         {
             if (m_actorNode.second == 0)
             {

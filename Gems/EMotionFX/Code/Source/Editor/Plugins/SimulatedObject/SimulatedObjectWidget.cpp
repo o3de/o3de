@@ -84,7 +84,7 @@ namespace EMotionFX
             }
             else
             {
-                AZStd::unordered_set<AZ::u32> selectedJointIndices;
+                AZStd::unordered_set<size_t> selectedJointIndices;
                 for (const QModelIndex& index : selectedIndices)
                 {
                     const SimulatedJoint* joint = index.data(SimulatedObjectModel::ROLE_JOINT_PTR).value<SimulatedJoint*>();
@@ -451,7 +451,7 @@ namespace EMotionFX
     {
         CommandAddSimulatedJoints* addSimulatedJointsCommand = static_cast<CommandAddSimulatedJoints*>(command);
         const size_t objectIndex = addSimulatedJointsCommand->GetObjectIndex();
-        const AZStd::vector<AZ::u32>& jointIndices = addSimulatedJointsCommand->GetJointIndices();
+        const AZStd::vector<size_t>& jointIndices = addSimulatedJointsCommand->GetJointIndices();
 
         SimulatedObjectWidget* simulatedObjectPlugin = static_cast<SimulatedObjectWidget*>(EMStudio::GetPluginManager()->FindActivePlugin(SimulatedObjectWidget::CLASS_ID));
         if (simulatedObjectPlugin)
@@ -491,13 +491,13 @@ namespace EMotionFX
         }
 
         const bool renderSimulatedJoints = activeViewWidget->GetRenderFlag(EMStudio::RenderViewWidget::RENDER_SIMULATEJOINTS);
-        const AZStd::unordered_set<AZ::u32>& selectedJointIndices = EMStudio::GetManager()->GetSelectedJointIndices();
+        const AZStd::unordered_set<size_t>& selectedJointIndices = EMStudio::GetManager()->GetSelectedJointIndices();
         if (renderSimulatedJoints && !selectedJointIndices.empty())
         {
             // Render the joint radius.
             const MCore::RGBAColor defaultColor = renderPlugin->GetRenderOptions()->GetSelectedSimulatedObjectColliderColor();
-            const AZ::u32 actorInstanceCount = GetActorManager().GetNumActorInstances();
-            for (AZ::u32 actorInstanceIndex = 0; actorInstanceIndex < actorInstanceCount; ++actorInstanceIndex)
+            const size_t actorInstanceCount = GetActorManager().GetNumActorInstances();
+            for (size_t actorInstanceIndex = 0; actorInstanceIndex < actorInstanceCount; ++actorInstanceIndex)
             {
                 ActorInstance* actorInstance = GetActorManager().GetActorInstance(actorInstanceIndex);
                 const Actor* actor = actorInstance->GetActor();
@@ -511,7 +511,7 @@ namespace EMotionFX
                     for (size_t simulatedJointIndex = 0; simulatedJointIndex < simulatedJointCount; ++simulatedJointIndex)
                     {
                         const SimulatedJoint* simulatedJoint = object->GetSimulatedJoint(simulatedJointIndex);
-                        const AZ::u32 skeletonJointIndex = simulatedJoint->GetSkeletonJointIndex();
+                        const size_t skeletonJointIndex = simulatedJoint->GetSkeletonJointIndex();
                         if (selectedJointIndices.find(skeletonJointIndex) != selectedJointIndices.end())
                         {
                             RenderJointRadius(simulatedJoint, actorInstance, AZ::Color(1.0f, 0.0f, 1.0f, 1.0f));
@@ -547,7 +547,7 @@ namespace EMotionFX
             return;
         }
 
-        AZ_Assert(joint->GetSkeletonJointIndex() != MCORE_INVALIDINDEX32, "Expected skeletal joint index to be valid.");
+        AZ_Assert(joint->GetSkeletonJointIndex() != InvalidIndex, "Expected skeletal joint index to be valid.");
         const EMotionFX::Transform jointTransform = actorInstance->GetTransformData()->GetCurrentPose()->GetWorldSpaceTransform(joint->GetSkeletonJointIndex());
 
         DebugDraw& debugDraw = GetDebugDraw();

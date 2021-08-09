@@ -940,7 +940,7 @@ namespace ImGui
             rootSliceComponent->GetEntityIds(entityIds);
 
             // Save off our count for use later.
-            m_totalEntitiesFound = entityIds.size();
+            m_totalEntitiesFound = static_cast<int>(entityIds.size());
 
             // Clear the entityId to InfoNodePtr Map.
             m_entityIdToInfoNodePtrMap.clear();

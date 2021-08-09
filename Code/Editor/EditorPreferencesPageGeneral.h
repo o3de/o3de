@@ -46,6 +46,7 @@ private:
         bool m_previewPanel;
         bool m_applyConfigSpec;
         bool m_enableSourceControl;
+        bool m_clearConsoleOnGameModeStart;
         AzToolsFramework::ConsoleColorTheme m_consoleBackgroundColorTheme;
         bool m_autoLoadLastLevel;
         bool m_bShowTimeInConsole;

@@ -149,13 +149,13 @@ bool CImageUtil::LoadPGM(const QString& fileName, CImageEx& image)
     char* nextToken = nullptr;
     token = azstrtok(str, 0, seps, &nextToken);
 
-    while (token != NULL && token[0] == '#')
+    while (token != nullptr && token[0] == '#')
     {
-        if (token != NULL && token[0] == '#')
+        if (token != nullptr && token[0] == '#')
         {
-            azstrtok(NULL, 0, "\n", &nextToken);
+            azstrtok(nullptr, 0, "\n", &nextToken);
         }
-        token = azstrtok(NULL, 0, seps, &nextToken);
+        token = azstrtok(nullptr, 0, seps, &nextToken);
     }
     if (azstricmp(token, "P2") != 0)
     {
@@ -167,32 +167,32 @@ bool CImageUtil::LoadPGM(const QString& fileName, CImageEx& image)
 
     do
     {
-        token = azstrtok(NULL, 0, seps, &nextToken);
-        if (token != NULL && token[0] == '#')
+        token = azstrtok(nullptr, 0, seps, &nextToken);
+        if (token != nullptr && token[0] == '#')
         {
-            azstrtok(NULL, 0, "\n", &nextToken);
+            azstrtok(nullptr, 0, "\n", &nextToken);
         }
-    } while (token != NULL && token[0] == '#');
+    } while (token != nullptr && token[0] == '#');
     width = atoi(token);
 
     do
     {
-        token = azstrtok(NULL, 0, seps, &nextToken);
-        if (token != NULL && token[0] == '#')
+        token = azstrtok(nullptr, 0, seps, &nextToken);
+        if (token != nullptr && token[0] == '#')
         {
-            azstrtok(NULL, 0, "\n", &nextToken);
+            azstrtok(nullptr, 0, "\n", &nextToken);
         }
-    } while (token != NULL && token[0] == '#');
+    } while (token != nullptr && token[0] == '#');
     height = atoi(token);
 
     do
     {
-        token = azstrtok(NULL, 0, seps, &nextToken);
-        if (token != NULL && token[0] == '#')
+        token = azstrtok(nullptr, 0, seps, &nextToken);
+        if (token != nullptr && token[0] == '#')
         {
-            azstrtok(NULL, 0, "\n", &nextToken);
+            azstrtok(nullptr, 0, "\n", &nextToken);
         }
-    } while (token != NULL && token[0] == '#');
+    } while (token != nullptr && token[0] == '#');
     numColors = atoi(token);
 
     image.Allocate(width, height);
@@ -200,12 +200,12 @@ bool CImageUtil::LoadPGM(const QString& fileName, CImageEx& image)
     uint32* p = image.GetData();
     int size = width * height;
     int i = 0;
-    while (token != NULL && i < size)
+    while (token != nullptr && i < size)
     {
         do
         {
-            token = azstrtok(NULL, 0, seps, &nextToken);
-        } while (token != NULL && token[0] == '#');
+            token = azstrtok(nullptr, 0, seps, &nextToken);
+        } while (token != nullptr && token[0] == '#');
         *p++ = atoi(token);
         i++;
     }
