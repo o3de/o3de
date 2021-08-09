@@ -51,6 +51,6 @@ namespace TestImpact
         void SafeImpactAnalysisTestSequenceCompleteCallback(const Client::SafeImpactAnalysisSequenceReport& sequenceReport);
 
         //! Handler for TestRunCompleteCallback event.
-        void TestRunCompleteCallback(const Client::TestRun& testRun, size_t numTestRunsCompleted, size_t totalNumTestRuns);
+        void TestRunCompleteCallback(const Client::TestRunBase& testRun, size_t numTestRunsCompleted, size_t totalNumTestRuns);
     } // namespace Console
 } // namespace TestImpact
