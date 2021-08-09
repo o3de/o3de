@@ -72,17 +72,17 @@ namespace EMStudio
         QMenu* nodeGroupMenu = new QMenu("Node Group", menu);
         bool isNodeInNoneGroup = true;
         QAction* noneNodeGroupAction = nodeGroupMenu->addAction("None");
-        noneNodeGroupAction->setData(0); // this index is there to know it's the real none action in case one node group is also called like that
+        noneNodeGroupAction->setData(qulonglong(0)); // this index is there to know it's the real none action in case one node group is also called like that
         connect(noneNodeGroupAction, &QAction::triggered, this, &BlendGraphWidget::OnNodeGroupSelected);
         noneNodeGroupAction->setCheckable(true);
 
-        const uint32 numNodeGroups = animGraph->GetNumNodeGroups();
-        for (uint32 i = 0; i < numNodeGroups; ++i)
+        const size_t numNodeGroups = animGraph->GetNumNodeGroups();
+        for (size_t i = 0; i < numNodeGroups; ++i)
         {
             EMotionFX::AnimGraphNodeGroup* nodeGroup = animGraph->GetNodeGroup(i);
 
             QAction* nodeGroupAction = nodeGroupMenu->addAction(nodeGroup->GetName());
-            nodeGroupAction->setData(i + 1); // index of the menu added, not used
+            nodeGroupAction->setData(qulonglong(i + 1)); // index of the menu added, not used
             connect(nodeGroupAction, &QAction::triggered, this, &BlendGraphWidget::OnNodeGroupSelected);
             nodeGroupAction->setCheckable(true);
 
@@ -144,7 +144,7 @@ namespace EMStudio
             else
             {
                 QMenu* previewMotionMenu = new QMenu("Preview Motions", menu);
-                for (uint32 i = 0; i < numMotions; ++i)
+                for (size_t i = 0; i < numMotions; ++i)
                 {
                     const char* motionId = motionNode->GetMotionId(i);
                     QAction* previewMotionAction = previewMotionMenu->addAction(motionId);

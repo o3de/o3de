@@ -107,7 +107,6 @@ namespace EMotionFX
     // constructor
     EMotionFXManager::EMotionFXManager()
     {
-        mThreadDatas.SetMemoryCategory(EMFX_MEMCATEGORY_EMOTIONFXMANAGER);
         // build the low version string
         AZStd::string lowVersionString;
         BuildLowVersionString(lowVersionString);
@@ -174,11 +173,11 @@ namespace EMotionFX
         mEventManager = nullptr;
         
         // delete the thread datas
-        for (uint32 i = 0; i < mThreadDatas.GetLength(); ++i)
+        for (uint32 i = 0; i < mThreadDatas.size(); ++i)
         {
             mThreadDatas[i]->Destroy();
         }
-        mThreadDatas.Clear();
+        mThreadDatas.clear();
     }
 
 
@@ -477,19 +476,19 @@ namespace EMotionFX
             numThreads = 1;
         }
 
-        if (mThreadDatas.GetLength() == numThreads)
+        if (mThreadDatas.size() == numThreads)
         {
             return;
         }
 
         // get rid of old data
-        for (uint32 i = 0; i < mThreadDatas.GetLength(); ++i)
+        for (uint32 i = 0; i < mThreadDatas.size(); ++i)
         {
             mThreadDatas[i]->Destroy();
         }
 
-        mThreadDatas.Clear(false); // force calling constructors again to reset everything
-        mThreadDatas.Resize(numThreads);
+        mThreadDatas.clear(); // force calling constructors again to reset everything
+        mThreadDatas.resize(numThreads);
 
         for (uint32 i = 0; i < numThreads; ++i)
         {

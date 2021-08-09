@@ -40,7 +40,7 @@ namespace MCore
         MCORE_INLINE void SetValue(int32 value)                     { mValue = value; }
 
         MCORE_INLINE uint8* GetRawDataPointer()                     { return reinterpret_cast<uint8*>(&mValue); }
-        MCORE_INLINE uint32 GetRawDataSize() const                  { return sizeof(int32); }
+        MCORE_INLINE size_t GetRawDataSize() const                  { return sizeof(int32); }
 
         // overloaded from the attribute base class
         Attribute* Clone() const override                           { return AttributeInt32::Create(mValue); }
@@ -51,8 +51,8 @@ namespace MCore
             return AzFramework::StringFunc::LooksLikeInt(valueString.c_str(), &mValue);
         }
         bool ConvertToString(AZStd::string& outString) const override      { outString = AZStd::string::format("%d", mValue); return true; }
-        uint32 GetClassSize() const override                        { return sizeof(AttributeInt32); }
-        uint32 GetDefaultInterfaceType() const override             { return ATTRIBUTE_INTERFACETYPE_INTSPINNER; }
+        size_t GetClassSize() const override                        { return sizeof(AttributeInt32); }
+        AZ::u32 GetDefaultInterfaceType() const override             { return ATTRIBUTE_INTERFACETYPE_INTSPINNER; }
 
     private:
         int32   mValue;     /**< The signed integer value. */

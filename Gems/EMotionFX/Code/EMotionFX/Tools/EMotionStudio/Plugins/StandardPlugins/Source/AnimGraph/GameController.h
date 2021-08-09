@@ -78,7 +78,7 @@ public:
     void SetDeadZone(float deadZone)                                            { mDeadZone = deadZone; }
     MCORE_INLINE float GetDeadZone() const                                      { return mDeadZone; }
     const char* GetElementEnumName(uint32 index);
-    uint32 FindElemendIDByName(const AZStd::string& elementEnumName);
+    uint32 FindElementIDByName(const AZStd::string& elementEnumName);
 
     MCORE_INLINE bool GetIsPresent(uint32 elementID) const                      { return mDeviceElements[elementID].mPresent; }
     MCORE_INLINE bool GetIsButtonPressed(uint8 buttonIndex) const

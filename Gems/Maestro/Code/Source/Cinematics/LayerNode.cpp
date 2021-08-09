@@ -138,7 +138,7 @@ void CLayerNode::Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTr
 //-----------------------------------------------------------------------------
 unsigned int CLayerNode::GetParamCount() const
 {
-    return s_nodeParams.size();
+    return static_cast<unsigned int>(s_nodeParams.size());
 }
 
 //-----------------------------------------------------------------------------

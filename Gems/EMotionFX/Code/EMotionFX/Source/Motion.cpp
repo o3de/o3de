@@ -30,7 +30,7 @@ namespace EMotionFX
     Motion::Motion(const char* name)
         : BaseObject()
     {
-        mID = MCore::GetIDGenerator().GenerateID();
+        mID = aznumeric_caster(MCore::GetIDGenerator().GenerateID());
         m_eventTable = AZStd::make_unique<MotionEventTable>();
         mUnitType = GetEMotionFX().GetUnitType();
         mFileUnitType = mUnitType;

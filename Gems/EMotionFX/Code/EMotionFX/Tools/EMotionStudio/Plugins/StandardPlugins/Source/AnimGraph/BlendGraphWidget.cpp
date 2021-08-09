@@ -9,6 +9,7 @@
 #include <AzQtComponents/Utilities/Conversions.h>
 #include <EMotionFX/CommandSystem/Source/AnimGraphConnectionCommands.h>
 #include <EMotionFX/CommandSystem/Source/AnimGraphNodeCommands.h>
+#include <EMotionFX/CommandSystem/Source/AnimGraphNodeGroupCommands.h>
 #include <EMotionFX/CommandSystem/Source/MotionSetCommands.h>
 #include <EMotionFX/Source/AnimGraphExitNode.h>
 #include <EMotionFX/Source/AnimGraphMotionNode.h>
@@ -809,7 +810,7 @@ namespace EMStudio
 
 
     // check if a connection is valid or not
-    bool BlendGraphWidget::CheckIfIsCreateConnectionValid(uint32 portNr, GraphNode* portNode, NodePort* port, bool isInputPort)
+    bool BlendGraphWidget::CheckIfIsCreateConnectionValid(AZ::u16 portNr, GraphNode* portNode, NodePort* port, bool isInputPort)
     {
         MCORE_UNUSED(port);
         MCORE_ASSERT(mActiveGraph);
@@ -844,8 +845,8 @@ namespace EMStudio
         MCORE_ASSERT(sourceNode->GetType() == BlendTreeVisualNode::TYPE_ID);
         BlendTreeVisualNode* targetBlendNode;
         BlendTreeVisualNode* sourceBlendNode;
-        uint32 sourcePortNr;
-        uint32 targetPortNr;
+        AZ::u16 sourcePortNr;
+        AZ::u16 targetPortNr;
 
         // make sure the input always comes from the source node
         if (isInputPort)
@@ -932,15 +933,15 @@ namespace EMStudio
 
 
     // create the connection
-    void BlendGraphWidget::OnCreateConnection(uint32 sourcePortNr, GraphNode* sourceNode, bool sourceIsInputPort, uint32 targetPortNr, GraphNode* targetNode, bool targetIsInputPort, const QPoint& startOffset, const QPoint& endOffset)
+    void BlendGraphWidget::OnCreateConnection(AZ::u16 sourcePortNr, GraphNode* sourceNode, bool sourceIsInputPort, AZ::u16 targetPortNr, GraphNode* targetNode, bool targetIsInputPort, const QPoint& startOffset, const QPoint& endOffset)
     {
         MCORE_UNUSED(targetIsInputPort);
         MCORE_ASSERT(mActiveGraph);
 
         GraphNode*  realSourceNode;
         GraphNode*  realTargetNode;
-        uint32      realInputPortNr;
-        uint32      realOutputPortNr;
+        AZ::u16      realInputPortNr;
+        AZ::u16      realOutputPortNr;
 
         if (sourceIsInputPort)
         {
@@ -1208,7 +1209,7 @@ namespace EMStudio
 
         MCore::CommandGroup commandGroup("Adjust anim graph node group");
 
-        AZStd::string nodeNames;
+        AZStd::vector<AZStd::string> nodeNames;
         for (const QModelIndex& selectedIndex : selectionList)
         {
             // Skip transitions and blend tree connections.
@@ -1221,12 +1222,19 @@ namespace EMStudio
             EMotionFX::AnimGraphNodeGroup* nodeGroup = animGraph->FindNodeGroupForNode(selectedNode);
             if (nodeGroup)
             {
-                const AZStd::string command = AZStd::string::format("AnimGraphAdjustNodeGroup -animGraphID %i -name \"%s\" -nodeNames \"%s\" -nodeAction \"remove\"", animGraph->GetID(), nodeGroup->GetName(), selectedNode->GetName());
-                commandGroup.AddCommandString(command);
+                auto* command = aznew CommandSystem::CommandAnimGraphAdjustNodeGroup(
+                    GetCommandManager()->FindCommand(CommandSystem::CommandAnimGraphAdjustNodeGroup::s_commandName),
+                    /*animGraphId = */ animGraph->GetID(),
+                    /*name = */ nodeGroup->GetNameString(),
+                    /*visible = */ AZStd::nullopt,
+                    /*newName = */ AZStd::nullopt,
+                    /*nodeNames = */ {{selectedNode->GetNameString()}},
+                    /*nodeAction = */ CommandSystem::CommandAnimGraphAdjustNodeGroup::NodeAction::Remove
+                );
+                commandGroup.AddCommand(command);
             }
 
-            nodeNames += selectedNode->GetName();
-            nodeNames += ";";
+            nodeNames.emplace_back(selectedNode->GetName());
         }
         if (!nodeNames.empty())
         {
@@ -1235,8 +1243,16 @@ namespace EMStudio
 
         if (newNodeGroup)
         {
-            const AZStd::string command = AZStd::string::format("AnimGraphAdjustNodeGroup -animGraphID %i -name \"%s\" -nodeNames \"%s\" -nodeAction \"add\"", animGraph->GetID(), newNodeGroup->GetName(), nodeNames.c_str());
-            commandGroup.AddCommandString(command);
+            auto* command = aznew CommandSystem::CommandAnimGraphAdjustNodeGroup(
+                GetCommandManager()->FindCommand(CommandSystem::CommandAnimGraphAdjustNodeGroup::s_commandName),
+                /*animGraphId = */ animGraph->GetID(),
+                /*name = */ newNodeGroup->GetNameString(),
+                /*visible = */ AZStd::nullopt,
+                /*newName = */ AZStd::nullopt,
+                /*nodeNames = */ nodeNames,
+                /*nodeAction = */ CommandSystem::CommandAnimGraphAdjustNodeGroup::NodeAction::Add
+            );
+            commandGroup.AddCommand(command);
         }
 
         AZStd::string outResult;
@@ -1341,8 +1357,8 @@ namespace EMStudio
                     }
 
                     // get the output and the input port numbers
-                    const uint32 outputPortNr   = connection->GetOutputPortNr();
-                    const uint32 inputPortNr    = connection->GetInputPortNr();
+                    const AZ::u16 outputPortNr   = connection->GetOutputPortNr();
+                    const AZ::u16 inputPortNr    = connection->GetInputPortNr();
 
                     // show connection or state transition tooltip
                     if (conditionFound == false)
@@ -1459,10 +1475,10 @@ namespace EMStudio
                     if (animGraphNode->GetCanHaveChildren())
                     {
                         // child nodes
-                        toolTipString += AZStd::string::format("<tr><td><b><nobr>Child Nodes:</nobr></b></td><td>%i</td></tr>", animGraphNode->GetNumChildNodes());
+                        toolTipString += AZStd::string::format("<tr><td><b><nobr>Child Nodes:</nobr></b></td><td>%zu</td></tr>", animGraphNode->GetNumChildNodes());
 
                         // recursive child nodes
-                        toolTipString += AZStd::string::format("<tr><td width=\"140\"><b><nobr>Recursive Child Nodes:</nobr></b></td><td>%i</td></tr>", animGraphNode->RecursiveCalcNumNodes());
+                        toolTipString += AZStd::string::format("<tr><td width=\"140\"><b><nobr>Recursive Child Nodes:</nobr></b></td><td>%zu</td></tr>", animGraphNode->RecursiveCalcNumNodes());
                     }
 
                     // states

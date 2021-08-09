@@ -58,27 +58,32 @@ namespace EMotionFX
         };
 
         //////////////////////////////////////////////////////////////////////////
-        void ActorComponent::BoundingBoxConfiguration::Set(ActorInstance* actor) const
+        void ActorComponent::BoundingBoxConfiguration::Set(ActorInstance* actorInstance) const
         {
+            actorInstance->SetExpandBoundsBy(m_expandBy * 0.01f); // Normalize percentage for internal use. (1% == 0.01f)
+
             if (m_autoUpdateBounds)
             {
-                actor->SetupAutoBoundsUpdate(m_updateTimeFrequency, m_boundsType, m_updateItemFrequency);
+                actorInstance->SetupAutoBoundsUpdate(m_updateTimeFrequency, m_boundsType, m_updateItemFrequency);
             }
             else
             {
-                actor->SetBoundsUpdateType(m_boundsType);
-                actor->SetBoundsUpdateEnabled(false);
+                actorInstance->SetBoundsUpdateType(m_boundsType);
+                actorInstance->SetBoundsUpdateEnabled(false);
             }
         }
 
-        void ActorComponent::BoundingBoxConfiguration::SetAndUpdate(ActorInstance* actor) const
+        void ActorComponent::BoundingBoxConfiguration::SetAndUpdate(ActorInstance* actorInstance) const
         {
-            Set(actor);
-            const AZ::u32 freq = actor->GetBoundsUpdateEnabled() ? actor->GetBoundsUpdateItemFrequency() : 1;
-            actor->UpdateBounds(0, actor->GetBoundsUpdateType(), freq);
+            Set(actorInstance);
+
+            const AZ::u32 updateFrequency = actorInstance->GetBoundsUpdateEnabled() ? actorInstance->GetBoundsUpdateItemFrequency() : 1;
+            const ActorInstance::EBoundsType boundUpdateType = actorInstance->GetBoundsUpdateType();
+
+            actorInstance->UpdateBounds(actorInstance->GetLODLevel(), boundUpdateType, updateFrequency);
         }
 
-        void ActorComponent::BoundingBoxConfiguration::Reflect(AZ::ReflectContext * context)
+        void ActorComponent::BoundingBoxConfiguration::Reflect(AZ::ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
@@ -105,8 +110,24 @@ namespace EMotionFX
                     ->Field("m_autoUpdateBounds", &BoundingBoxConfiguration::m_autoUpdateBounds)
                     ->Field("m_updateTimeFrequency", &BoundingBoxConfiguration::m_updateTimeFrequency)
                     ->Field("m_updateItemFrequency", &BoundingBoxConfiguration::m_updateItemFrequency)
+                    ->Field("expandBy", &BoundingBoxConfiguration::m_expandBy)
                     ;
             }
+        }
+
+        AZ::Crc32 ActorComponent::BoundingBoxConfiguration::GetVisibilityAutoUpdate() const
+        {
+            return m_boundsType != EMotionFX::ActorInstance::BOUNDS_STATIC_BASED ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
+        }
+
+        AZ::Crc32 ActorComponent::BoundingBoxConfiguration::GetVisibilityAutoUpdateSettings() const
+        {
+            if (m_boundsType == EMotionFX::ActorInstance::BOUNDS_STATIC_BASED || m_autoUpdateBounds == false)
+            {
+                return AZ::Edit::PropertyVisibility::Hide;
+            }
+
+            return AZ::Edit::PropertyVisibility::Show;
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -701,10 +722,10 @@ namespace EMotionFX
         {
             AZ_Assert(m_actorInstance, "The actor instance needs to be valid.");
 
-            const AZ::u32 index = static_cast<AZ::u32>(jointIndex);
-            const AZ::u32 numNodes = m_actorInstance->GetActor()->GetNumNodes();
+            const size_t index = jointIndex;
+            const size_t numNodes = m_actorInstance->GetActor()->GetNumNodes();
 
-            AZ_Error("EMotionFX", index < numNodes, "GetJointTransform: The joint index %d is out of bounds [0;%d]. Entity: %s",
+            AZ_Error("EMotionFX", index < numNodes, "GetJointTransform: The joint index %zu is out of bounds [0;%zu]. Entity: %s",
                 index, numNodes, GetEntity()->GetName().c_str());
 
             if (index >= numNodes)
@@ -741,10 +762,10 @@ namespace EMotionFX
         {
             AZ_Assert(m_actorInstance, "The actor instance needs to be valid.");
 
-            const AZ::u32 index = static_cast<AZ::u32>(jointIndex);
-            const AZ::u32 numNodes = m_actorInstance->GetActor()->GetNumNodes();
+            const size_t index = jointIndex;
+            const size_t numNodes = m_actorInstance->GetActor()->GetNumNodes();
 
-            AZ_Error("EMotionFX", index < numNodes, "GetJointTransformComponents: The joint index %d is out of bounds [0;%d]. Entity: %s",
+            AZ_Error("EMotionFX", index < numNodes, "GetJointTransformComponents: The joint index %zu is out of bounds [0;%zu]. Entity: %s",
                 index, numNodes, GetEntity()->GetName().c_str());
 
             if (index >= numNodes)
@@ -849,7 +870,7 @@ namespace EMotionFX
                 Node* node = jointName ? m_actorInstance->GetActor()->GetSkeleton()->FindNodeByName(jointName) : m_actorInstance->GetActor()->GetSkeleton()->GetNode(0);
                 if (node)
                 {
-                    const AZ::u32 jointIndex = node->GetNodeIndex();
+                    const size_t jointIndex = node->GetNodeIndex();
                     Attachment* attachment = AttachmentNode::Create(m_actorInstance.get(), jointIndex, targetActorInstance, true /* Managed externally, by this component. */);
                     m_actorInstance->AddAttachment(attachment);
                 }

@@ -123,7 +123,7 @@ public:
 
     virtual bool AreAllKeysOfSameType() const override { return m_bAllOfSameType; }
 
-    virtual unsigned int GetKeyCount() const override { return m_keys.size(); }
+    virtual unsigned int GetKeyCount() const override { return static_cast<unsigned int>(m_keys.size()); }
     virtual CTrackViewKeyHandle GetKey(unsigned int index) override { return m_keys[index]; }
 
     virtual void SelectKeys(const bool bSelected) override;
@@ -174,7 +174,7 @@ public:
     CTrackViewNode* GetParentNode() const { return m_pParentNode; }
 
     // Children
-    unsigned int GetChildCount() const { return m_childNodes.size(); }
+    unsigned int GetChildCount() const { return static_cast<unsigned int>(m_childNodes.size()); }
     CTrackViewNode* GetChild(unsigned int index) const { return m_childNodes[index].get(); }
 
     // Snap time value to prev/next key in sequence

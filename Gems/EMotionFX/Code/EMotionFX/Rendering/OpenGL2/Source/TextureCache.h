@@ -10,7 +10,7 @@
 #define __RENDERGL_TEXTURECACHE_H
 
 #include <AzCore/std/string/string.h>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include "RenderGLConfig.h"
 
 #include <AzCore/PlatformIncl.h>
@@ -72,7 +72,7 @@ namespace RenderGL
             Texture*        mTexture;
         };
 
-        MCore::Array<Entry>     mEntries;
+        AZStd::vector<Entry>     mEntries;
         Texture*                mWhiteTexture;
         Texture*                mDefaultNormalTexture;
     };

@@ -149,7 +149,7 @@ namespace EMStudio
         const float rangeMax = (float)mRangeMax->value();
 
         AZStd::string result;
-        AZStd::string command = AZStd::string::format("AdjustMorphTarget -actorInstanceID %i -lodLevel %i -name \"%s\" -rangeMin %f -rangeMax %f", mActorInstance->GetID(), mActorInstance->GetLODLevel(), mMorphTarget->GetNameString().c_str(), rangeMin, rangeMax);
+        AZStd::string command = AZStd::string::format("AdjustMorphTarget -actorInstanceID %i -lodLevel %zu -name \"%s\" -rangeMin %f -rangeMax %f", mActorInstance->GetID(), mActorInstance->GetLODLevel(), mMorphTarget->GetNameString().c_str(), rangeMin, rangeMax);
         if (EMStudio::GetCommandManager()->ExecuteCommand(command, result) == false)
         {
             AZ_Error("EMotionFX", false, result.c_str());

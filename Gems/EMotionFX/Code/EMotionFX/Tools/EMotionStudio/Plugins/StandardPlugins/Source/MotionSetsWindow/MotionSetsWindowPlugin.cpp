@@ -55,8 +55,8 @@ namespace EMStudio
 
         void GetDirtyFileNames(AZStd::vector<AZStd::string>* outFileNames, AZStd::vector<ObjectPointer>* outObjects) override
         {
-            const uint32 numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
-            for (uint32 i = 0; i < numMotionSets; ++i)
+            const size_t numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
+            for (size_t i = 0; i < numMotionSets; ++i)
             {
                 EMotionFX::MotionSet* motionSet = EMotionFX::GetMotionManager().GetMotionSet(i);
 
@@ -226,7 +226,7 @@ namespace EMStudio
 
     EMotionFX::MotionSet* MotionSetsWindowPlugin::GetSelectedSet() const
     {
-        if (EMotionFX::GetMotionManager().FindMotionSetIndex(mSelectedSet) == MCORE_INVALIDINDEX32)
+        if (EMotionFX::GetMotionManager().FindMotionSetIndex(mSelectedSet) == InvalidIndex)
         {
             return nullptr;
         }
@@ -238,7 +238,7 @@ namespace EMStudio
     void MotionSetsWindowPlugin::ReInit()
     {
         // Validate existence of selected motion set and reset selection in case selection is invalid.
-        if (EMotionFX::GetMotionManager().FindMotionSetIndex(mSelectedSet) == MCORE_INVALIDINDEX32)
+        if (EMotionFX::GetMotionManager().FindMotionSetIndex(mSelectedSet) == InvalidIndex)
         {
             mSelectedSet = nullptr;
         }
@@ -488,7 +488,7 @@ namespace EMStudio
 
         // If motion entry is still not found, look through all motion sets not owned by runtime.
         const EMotionFX::MotionManager& motionManager = EMotionFX::GetMotionManager();
-        for(AZ::u32 i = 0; i < motionManager.GetNumMotionSets(); ++i)
+        for(size_t i = 0; i < motionManager.GetNumMotionSets(); ++i)
         {
             motionSet = motionManager.GetMotionSet(i);
             if (motionSet->GetIsOwnedByRuntime())
@@ -680,9 +680,9 @@ namespace EMStudio
         // select the first motion set
         if (EMotionFX::GetMotionManager().GetNumMotionSets() > 0)
         {
-            const uint32 numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
+            const size_t numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
 
-            for (uint32 i = 0; i < numMotionSets; ++i)
+            for (size_t i = 0; i < numMotionSets; ++i)
             {
                 EMotionFX::MotionSet* motionSet2 = EMotionFX::GetMotionManager().GetMotionSet(0);
 

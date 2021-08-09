@@ -619,8 +619,8 @@ namespace EMotionFX
             }
 
             // Process the plugins.
-            const AZ::u32 numPlugins = pluginManager->GetNumActivePlugins();
-            for (AZ::u32 i = 0; i < numPlugins; ++i)
+            const size_t numPlugins = pluginManager->GetNumActivePlugins();
+            for (size_t i = 0; i < numPlugins; ++i)
             {
                 EMStudio::EMStudioPlugin* plugin = pluginManager->GetActivePlugin(i);
                 plugin->ProcessFrame(delta);
@@ -677,8 +677,8 @@ namespace EMotionFX
 
             const float timeDelta = delta;
             const ActorManager* actorManager = GetEMotionFX().GetActorManager();
-            const AZ::u32 numActorInstances = actorManager->GetNumActorInstances();
-            for (AZ::u32 i = 0; i < numActorInstances; ++i)
+            const size_t numActorInstances = actorManager->GetNumActorInstances();
+            for (size_t i = 0; i < numActorInstances; ++i)
             {
                 const ActorInstance* actorInstance = actorManager->GetActorInstance(i);
 

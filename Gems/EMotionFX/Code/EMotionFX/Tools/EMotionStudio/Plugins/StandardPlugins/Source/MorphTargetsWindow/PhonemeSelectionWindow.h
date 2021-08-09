@@ -117,7 +117,7 @@ namespace EMStudio
         MCORE_MEMORYOBJECTCATEGORY(PhonemeSelectionWindow, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_EMSTUDIOSDK)
 
     public:
-        PhonemeSelectionWindow(EMotionFX::Actor* actor, uint32 lodLevel, EMotionFX::MorphTarget* morphTarget, QWidget* parent = nullptr);
+        PhonemeSelectionWindow(EMotionFX::Actor* actor, size_t lodLevel, EMotionFX::MorphTarget* morphTarget, QWidget* parent = nullptr);
         virtual ~PhonemeSelectionWindow();
 
         void Init();
@@ -140,7 +140,7 @@ namespace EMStudio
         // the morph target
         EMotionFX::Actor*           mActor;
         EMotionFX::MorphTarget*     mMorphTarget;
-        uint32                      mLODLevel;
+        size_t                      mLODLevel;
         EMotionFX::MorphSetup*      mMorphSetup;
 
         // the dialogstacks

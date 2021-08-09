@@ -71,8 +71,8 @@ namespace CommandSystem
 
     void MetaData::GeneratePhonemeMetaData(EMotionFX::Actor* actor, AZStd::string& outMetaDataString)
     {
-        const AZ::u32 numLODLevels = actor->GetNumLODLevels();
-        for (AZ::u32 lodLevel = 0; lodLevel < numLODLevels; ++lodLevel)
+        const size_t numLODLevels = actor->GetNumLODLevels();
+        for (size_t lodLevel = 0; lodLevel < numLODLevels; ++lodLevel)
         {
             EMotionFX::MorphSetup* morphSetup = actor->GetMorphSetup(lodLevel);
             if (!morphSetup)
@@ -80,8 +80,8 @@ namespace CommandSystem
                 continue;
             }
 
-            const uint32 numMorphTargets = morphSetup->GetNumMorphTargets();
-            for (uint32 i = 0; i < numMorphTargets; ++i)
+            const size_t numMorphTargets = morphSetup->GetNumMorphTargets();
+            for (size_t i = 0; i < numMorphTargets; ++i)
             {
                 EMotionFX::MorphTarget* morphTarget = morphSetup->GetMorphTarget(i);
                 if (!morphTarget)
@@ -89,7 +89,7 @@ namespace CommandSystem
                     continue;
                 }
 
-                outMetaDataString += AZStd::string::format("AdjustMorphTarget -actorID $(ACTORID) -lodLevel %i -name \"%s\" -phonemeAction \"replace\" ", lodLevel, morphTarget->GetName());
+                outMetaDataString += AZStd::string::format("AdjustMorphTarget -actorID $(ACTORID) -lodLevel %zu -name \"%s\" -phonemeAction \"replace\" ", lodLevel, morphTarget->GetName());
                 outMetaDataString += AZStd::string::format("-phonemeSets \"%s\" ", morphTarget->GetPhonemeSetString(morphTarget->GetPhonemeSets()).c_str());
                 outMetaDataString += AZStd::string::format("-rangeMin %f -rangeMax %f\n", morphTarget->GetRangeMin(), morphTarget->GetRangeMax());
             }
@@ -101,8 +101,8 @@ namespace CommandSystem
     {
         AZStd::string attachmentNodeNameList;
 
-        const AZ::u32 numNodes = actor->GetNumNodes();
-        for (AZ::u32 i = 0; i < numNodes; ++i)
+        const size_t numNodes = actor->GetNumNodes();
+        for (size_t i = 0; i < numNodes; ++i)
         {
             EMotionFX::Node* node = actor->GetSkeleton()->GetNode(i);
             if (!node)
@@ -233,10 +233,9 @@ namespace CommandSystem
 
         // Construct a new command group and fill it with all meta data commands.
         MCore::CommandGroup commandGroup;
-        const size_t numTokens = tokens.size();
-        for (size_t i = 0; i < numTokens; ++i)
+        for (const AZStd::string& token : tokens)
         {
-            commandGroup.AddCommandString(tokens[i].c_str());
+            commandGroup.AddCommandString(token);
         }
 
         // Execute the command group and apply the meta data.

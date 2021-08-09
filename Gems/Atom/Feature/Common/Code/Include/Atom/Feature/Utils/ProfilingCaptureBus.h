@@ -22,6 +22,9 @@ namespace AZ
             //! Dump the Timestamp from passes to a json file.
             virtual bool CapturePassTimestamp(const AZStd::string& outputFilePath) = 0;
 
+            //! Dump the Cpu frame time statistics to a json file.
+            virtual bool CaptureCpuFrameTime(const AZStd::string& outputFilePath) = 0;
+
             //! Dump the PipelineStatistics from passes to a json file.
             virtual bool CapturePassPipelineStatistics(const AZStd::string& outputFilePath) = 0;
 
@@ -43,6 +46,11 @@ namespace AZ
             //! @param result Set to true if it's finished successfully
             //! @param info The output file path or error information which depends on the return.
             virtual void OnCaptureQueryTimestampFinished(bool result, const AZStd::string& info) = 0;
+
+            //! Notify when the current CpuFrameTimeStatistics capture is finished
+            //! @param result Set to true if it's finished successfully
+            //! @param info The output file path or error information which depends on the return.
+            virtual void OnCaptureCpuFrameTimeFinished(bool result, const AZStd::string& info) = 0;
 
             //! Notify when the current PipelineStatistics query capture is finished
             //! @param result Set to true if it's finished successfully

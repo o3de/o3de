@@ -36,7 +36,7 @@ namespace MCore
         static AttributeString* Create(const char* value = "");
 
         MCORE_INLINE uint8* GetRawDataPointer()                     { return reinterpret_cast<uint8*>(mValue.data()); }
-        MCORE_INLINE uint32 GetRawDataSize() const                  { return static_cast<uint32>(mValue.size()); }
+        MCORE_INLINE size_t GetRawDataSize() const                  { return mValue.size(); }
 
         // adjust values
         MCORE_INLINE const char* AsChar() const                     { return mValue.c_str(); }
@@ -57,7 +57,7 @@ namespace MCore
         }
         bool InitFromString(const AZStd::string& valueString) override     { mValue = valueString; return true; }
         bool ConvertToString(AZStd::string& outString) const override      { outString = mValue; return true; }
-        uint32 GetClassSize() const override                        { return sizeof(AttributeString); }
+        size_t GetClassSize() const override                        { return sizeof(AttributeString); }
         uint32 GetDefaultInterfaceType() const override             { return ATTRIBUTE_INTERFACETYPE_STRING; }
 
     private:

@@ -15,7 +15,7 @@
 
 namespace MCore
 {
-    CommandManager::CommandHistoryEntry::CommandHistoryEntry(CommandGroup* group, Command* command, const CommandLine& parameters, AZ::u32 historyItemNr)
+    CommandManager::CommandHistoryEntry::CommandHistoryEntry(CommandGroup* group, Command* command, const CommandLine& parameters, size_t historyItemNr)
     {
         mCommandGroup       = group;
         mExecutedCommand    = command;
@@ -28,15 +28,15 @@ namespace MCore
         // remark: the mCommand and mCommandGroup are automatically deleted after popping from the history
     }
 
-    AZStd::string CommandManager::CommandHistoryEntry::ToString(CommandGroup* group, Command* command, AZ::u32 historyItemNr)
+    AZStd::string CommandManager::CommandHistoryEntry::ToString(CommandGroup* group, Command* command, size_t historyItemNr)
     {
         if (group)
         {
-            return AZStd::string::format("%.3d - %s", historyItemNr, group->GetGroupName());
+            return AZStd::string::format("%.3zu - %s", historyItemNr, group->GetGroupName());
         }
         else if (command)
         {
-            return AZStd::string::format("%.3d - %s", historyItemNr, command->GetHistoryName());
+            return AZStd::string::format("%.3zu - %s", historyItemNr, command->GetHistoryName());
         }
 
         return "";
@@ -88,7 +88,7 @@ namespace MCore
         if (mCommandHistory.size() >= mMaxHistoryEntries)
         {
             PopCommandHistory();
-            mHistoryIndex = static_cast<int32>(mCommandHistory.size()) - 1;
+            mHistoryIndex = static_cast<ptrdiff_t>(mCommandHistory.size()) - 1;
         }
 
         if (!mCommandHistory.empty())
@@ -137,7 +137,7 @@ namespace MCore
             if (mCommandHistory.size() >= mMaxHistoryEntries)
             {
                 PopCommandHistory();
-                mHistoryIndex = static_cast<int32>(mCommandHistory.size()) - 1;
+                mHistoryIndex = static_cast<ptrdiff_t>(mCommandHistory.size()) - 1;
             }
 
             // remove unneeded commands
@@ -540,7 +540,7 @@ namespace MCore
                             break;
                         }
                     }
-                    if (static_cast<int32>(i) < relativeIndex)
+                    if (static_cast<ptrdiff_t>(i) < relativeIndex)
                     {
                         MCore::LogError("Execution of command '%s' failed, command trying to access results from %d commands back, but there are only %d", commandString.c_str(), relativeIndex, i - 1);
                         hadError = true;
@@ -689,11 +689,11 @@ namespace MCore
     void CommandManager::ExecuteUndoCallbacks(Command* command, const CommandLine& parameters, bool preUndo)
     {
         Command*    orgCommand  = command->GetOriginalCommand();
-        uint32      numFailed   = 0;
+        size_t      numFailed   = 0;
 
         // get the number of callbacks and iterate through them
-        const uint32 numCommandCallbacks = orgCommand->GetNumCallbacks();
-        for (uint32 i = 0; i < numCommandCallbacks; ++i)
+        const size_t numCommandCallbacks = orgCommand->GetNumCallbacks();
+        for (size_t i = 0; i < numCommandCallbacks; ++i)
         {
             // get the current callback
             Command::Callback* callback = orgCommand->GetCallback(i);
@@ -734,11 +734,11 @@ namespace MCore
     void CommandManager::ExecuteCommandCallbacks(Command* command, const CommandLine& parameters, bool preCommand)
     {
         Command*    orgCommand  = command->GetOriginalCommand();
-        uint32      numFailed   = 0;
+        size_t      numFailed   = 0;
 
         // get the number of callbacks and iterate through them
-        const uint32 numCommandCallbacks = orgCommand->GetNumCallbacks();
-        for (uint32 i = 0; i < numCommandCallbacks; ++i)
+        const size_t numCommandCallbacks = orgCommand->GetNumCallbacks();
+        for (size_t i = 0; i < numCommandCallbacks; ++i)
         {
             // get the current callback
             Command::Callback* callback = orgCommand->GetCallback(i);
@@ -799,8 +799,8 @@ namespace MCore
                 managerCallback->OnPreExecuteCommandGroup(group, true);
             }
 
-            const int32 numCommands = static_cast<int32>(group->GetNumCommands() - 1);
-            for (int32 g = numCommands; g >= 0; --g)
+            const ptrdiff_t numCommands = static_cast<ptrdiff_t>(group->GetNumCommands()) - 1;
+            for (ptrdiff_t g = numCommands; g >= 0; --g)
             {
                 Command* groupCommand = group->GetCommand(g);
                 if (groupCommand == nullptr)
@@ -1130,8 +1130,8 @@ namespace MCore
         // print the command history entries
         for (size_t i = 0; i < numHistoryEntries; ++i)
         {
-            AZStd::string text = AZStd::string::format("%.3zu: name='%s', num parameters=%u", i, mCommandHistory[i].mExecutedCommand->GetName(), mCommandHistory[i].mParameters.GetNumParameters());
-            if (i == (uint32)mHistoryIndex)
+            AZStd::string text = AZStd::string::format("%.3zu: name='%s', num parameters=%zu", i, mCommandHistory[i].mExecutedCommand->GetName(), mCommandHistory[i].mParameters.GetNumParameters());
+            if (i == mHistoryIndex)
             {
                 LogDetailedInfo("-> %s", text.c_str());
             }
@@ -1180,15 +1180,15 @@ namespace MCore
     }
 
     // set the max num history items
-    void CommandManager::SetMaxHistoryItems(uint32 maxItems)
+    void CommandManager::SetMaxHistoryItems(size_t maxItems)
     {
-        maxItems = AZStd::max(1u, maxItems);
+        maxItems = AZStd::max(size_t{1}, maxItems);
         mMaxHistoryEntries = maxItems;
 
         while (mCommandHistory.size() > mMaxHistoryEntries)
         {
             PopCommandHistory();
-            mHistoryIndex = static_cast<int32>(mCommandHistory.size()) - 1;
+            mHistoryIndex = static_cast<ptrdiff_t>(mCommandHistory.size()) - 1;
         }
     }
 
@@ -1197,7 +1197,7 @@ namespace MCore
         return mMaxHistoryEntries;
     }
 
-    int32 CommandManager::GetHistoryIndex() const
+    ptrdiff_t CommandManager::GetHistoryIndex() const
     {
         return mHistoryIndex;
     }
@@ -1229,7 +1229,7 @@ namespace MCore
         mHistoryIndex = -1;
     }
 
-    const CommandLine& CommandManager::GetHistoryCommandLine(uint32 historyIndex) const
+    const CommandLine& CommandManager::GetHistoryCommandLine(size_t historyIndex) const
     {
         return mCommandHistory[historyIndex].mParameters;
     }

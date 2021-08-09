@@ -74,12 +74,12 @@ void DisplayContext::DrawTri(const Vec3& p1, const Vec3& p2, const Vec3& p3)
 
 void DisplayContext::DrawTriangles(const AZStd::vector<Vec3>& vertices, const ColorB& color)
 {
-    pRenderAuxGeom->DrawTriangles(vertices.begin(), vertices.size(), color);
+    pRenderAuxGeom->DrawTriangles(vertices.begin(), static_cast<uint32>(vertices.size()), color);
 }
 
 void DisplayContext::DrawTrianglesIndexed(const AZStd::vector<Vec3>& vertices, const AZStd::vector<vtx_idx>& indices, const ColorB& color)
 {
-    pRenderAuxGeom->DrawTriangles(vertices.begin(), vertices.size(), indices.begin(), indices.size(), color);
+    pRenderAuxGeom->DrawTriangles(vertices.begin(), static_cast<uint32>(vertices.size()), indices.begin(), static_cast<uint32_t>(indices.size()), color);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -862,7 +862,7 @@ void DisplayContext::DrawLine(const Vec3& p1, const Vec3& p2, const QColor& rgb1
 //////////////////////////////////////////////////////////////////////////
 void DisplayContext::DrawLines(const AZStd::vector<Vec3>& points, const ColorF& color)
 {
-    pRenderAuxGeom->DrawLines(points.begin(), points.size(), color, m_thickness);
+    pRenderAuxGeom->DrawLines(points.begin(), static_cast<uint32>(points.size()), color, m_thickness);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1287,8 +1287,8 @@ void DisplayContext::Flush2D()
     uvs[3] = 0;
     uvt[3] = 0;
 
-    int nLabels = m_textureLabels.size();
-    for (int i = 0; i < nLabels; i++)
+    const size_t nLabels = m_textureLabels.size();
+    for (size_t i = 0; i < nLabels; i++)
     {
         STextureLabel& t = m_textureLabels[i];
         float w2 = t.w * 0.5f;

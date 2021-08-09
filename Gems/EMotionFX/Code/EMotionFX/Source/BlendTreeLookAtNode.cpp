@@ -40,7 +40,7 @@ namespace EMotionFX
         const ActorInstance* actorInstance = mAnimGraphInstance->GetActorInstance();
         const Actor* actor = actorInstance->GetActor();
 
-        mNodeIndex = InvalidIndex32;
+        mNodeIndex = InvalidIndex;
         SetHasError(true);
 
         const AZStd::string& targetJointName = lookAtNode->GetTargetNodeName();
@@ -177,7 +177,7 @@ namespace EMotionFX
         ActorInstance* actorInstance = animGraphInstance->GetActorInstance();
 
         // get a shortcut to the local transform object
-        const uint32 nodeIndex = uniqueData->mNodeIndex;
+        const size_t nodeIndex = uniqueData->mNodeIndex;
 
         Pose& outTransformPose = outputPose->GetPose();
         Transform globalTransform = outTransformPose.GetWorldSpaceTransform(nodeIndex);
@@ -203,10 +203,10 @@ namespace EMotionFX
         if (m_limitsEnabled)
         {
             // calculate the delta between the bind pose rotation and current target rotation and constraint that to our limits
-            const uint32 parentIndex = skeleton->GetNode(nodeIndex)->GetParentIndex();
+            const size_t parentIndex = skeleton->GetNode(nodeIndex)->GetParentIndex();
             AZ::Quaternion parentRotationGlobal;
             AZ::Quaternion bindRotationLocal;
-            if (parentIndex != MCORE_INVALIDINDEX32)
+            if (parentIndex != InvalidIndex)
             {
                 parentRotationGlobal = inputPose->GetPose().GetWorldSpaceTransform(parentIndex).mRotation;
                 bindRotationLocal = actorInstance->GetTransformData()->GetBindPose()->GetLocalSpaceTransform(parentIndex).mRotation;

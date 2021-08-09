@@ -62,7 +62,7 @@ namespace EMotionFX
             void Update() override;
 
         public:
-            AZStd::vector<AZ::u32> m_modifiedJointIndices;
+            AZStd::vector<size_t> m_modifiedJointIndices;
         };
 
         BlendTreeRagdollStrenghModifierNode();

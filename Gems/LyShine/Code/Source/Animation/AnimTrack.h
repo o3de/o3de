@@ -71,7 +71,7 @@ public:
     }
 
     //! Return number of keys in track.
-    virtual int GetNumKeys() const { return m_keys.size(); };
+    virtual int GetNumKeys() const { return static_cast<int>(m_keys.size()); };
 
     //! Return true if keys exists in this track
     virtual bool HasKeys() const { return !m_keys.empty(); }
@@ -517,7 +517,7 @@ inline int TUiAnimTrack<KeyType>::GetActiveKey(float time, KeyType* key)
         return -1;
     }
 
-    int nkeys = m_keys.size();
+    int nkeys = static_cast<int>(m_keys.size());
     if (nkeys == 0)
     {
         m_lastTime = time;

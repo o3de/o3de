@@ -25,8 +25,8 @@ namespace EMStudio
 {
     void SaveDirtyActorFilesCallback::GetDirtyFileNames(AZStd::vector<AZStd::string>* outFileNames, AZStd::vector<ObjectPointer>* outObjects)
     {
-        const uint32 numLeaderActors = EMotionFX::GetActorManager().GetNumActors();
-        for (uint32 i = 0; i < numLeaderActors; ++i)
+        const size_t numLeaderActors = EMotionFX::GetActorManager().GetNumActors();
+        for (size_t i = 0; i < numLeaderActors; ++i)
         {
             EMotionFX::Actor* actor = EMotionFX::GetActorManager().GetActor(i);
 
@@ -49,11 +49,9 @@ namespace EMStudio
     {
         MCORE_UNUSED(filenamesToSave);
 
-        const size_t numObjects = objects.size();
-        for (size_t i = 0; i < numObjects; ++i)
+        for (const ObjectPointer& objPointer : objects)
         {
             // get the current object pointer and skip directly if the type check fails
-            ObjectPointer objPointer = objects[i];
             if (objPointer.mActor == nullptr)
             {
                 continue;

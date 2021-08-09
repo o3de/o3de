@@ -38,7 +38,7 @@ namespace MCore
         static AttributeVector3* Create(float x, float y, float z);
 
         MCORE_INLINE uint8* GetRawDataPointer()                     { return reinterpret_cast<uint8*>(&mValue); }
-        MCORE_INLINE uint32 GetRawDataSize() const                  { return sizeof(AZ::Vector3); }
+        MCORE_INLINE size_t GetRawDataSize() const                  { return sizeof(AZ::Vector3); }
 
         // adjust values
         MCORE_INLINE const AZ::Vector3& GetValue() const     { return mValue; }
@@ -67,8 +67,8 @@ namespace MCore
             return true;
         }
         bool ConvertToString(AZStd::string& outString) const override      { AZStd::to_string(outString, mValue); return true; }
-        uint32 GetClassSize() const override                        { return sizeof(AttributeVector3); }
-        uint32 GetDefaultInterfaceType() const override             { return ATTRIBUTE_INTERFACETYPE_VECTOR3; }
+        size_t GetClassSize() const override                        { return sizeof(AttributeVector3); }
+        AZ::u32 GetDefaultInterfaceType() const override             { return ATTRIBUTE_INTERFACETYPE_VECTOR3; }
 
     private:
         AZ::Vector3  mValue;     /**< The Vector3 value. */

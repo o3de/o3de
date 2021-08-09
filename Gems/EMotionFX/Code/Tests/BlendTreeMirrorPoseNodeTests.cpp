@@ -111,12 +111,12 @@ namespace EMotionFX
     TEST_F(BlendTreeMirrorPoseNodeFixture, OutputsCorrectPose)
     {
         GetEMotionFX().Update(1.0f / 60.0f);
-        AZ::u32 l_upArmIndex;
-        AZ::u32 r_upArmIndex;
-        AZ::u32 l_loArmIndex;
-        AZ::u32 r_loArmIndex;
-        AZ::u32 l_handIndex;
-        AZ::u32 r_handIndex;
+        size_t l_upArmIndex;
+        size_t r_upArmIndex;
+        size_t l_loArmIndex;
+        size_t r_loArmIndex;
+        size_t l_handIndex;
+        size_t r_handIndex;
         m_jackSkeleton->FindNodeAndIndexByName("l_upArm", l_upArmIndex);
         m_jackSkeleton->FindNodeAndIndexByName("r_upArm", r_upArmIndex);
         m_jackSkeleton->FindNodeAndIndexByName("l_loArm", l_loArmIndex);

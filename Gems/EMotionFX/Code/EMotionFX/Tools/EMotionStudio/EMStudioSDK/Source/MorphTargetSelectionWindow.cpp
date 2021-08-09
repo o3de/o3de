@@ -90,8 +90,8 @@ namespace EMStudio
 
         mSelection = selection;
 
-        const uint32 numMorphTargets = morphSetup->GetNumMorphTargets();
-        for (uint32 i = 0; i < numMorphTargets; ++i)
+        const size_t numMorphTargets = morphSetup->GetNumMorphTargets();
+        for (size_t i = 0; i < numMorphTargets; ++i)
         {
             EMotionFX::MorphTarget* morphTarget = morphSetup->GetMorphTarget(i);
             const uint32 morphTargetID = morphTarget->GetID();

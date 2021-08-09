@@ -120,7 +120,7 @@ namespace EMotionFX
         AnimGraphObjectData* CreateUniqueData(AnimGraphInstance* animGraphInstance) override { return aznew UniqueData(this, animGraphInstance); }
         void InvalidateUniqueData(AnimGraphInstance* animGraphInstance) override;
 
-        void RecursiveCollectObjects(MCore::Array<AnimGraphObject*>& outObjects) const override;
+        void RecursiveCollectObjects(AZStd::vector<AnimGraphObject*>& outObjects) const override;
         void ExtractMotion(AnimGraphInstance* animGraphInstance, AnimGraphRefCountedData* sourceData, Transform* outTransform, Transform* outTransformMirrored) const;
 
         void OnStartTransition(AnimGraphInstance* animGraphInstance);

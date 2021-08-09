@@ -207,7 +207,7 @@ namespace AZ::Render
             createVertex(-0.5f, 0.5f,  0.f, 1.f)
         };
         AZStd::array<Indice, 6> indices = {0, 1, 2, 0, 2, 3};
-        dynamicDraw->DrawIndexed(&vertices, vertices.size(), &indices, indices.size(), RHI::IndexFormat::Uint16, drawSrg);
+        dynamicDraw->DrawIndexed(&vertices, static_cast<uint32_t>(vertices.size()), &indices, static_cast<uint32_t>(indices.size()), RHI::IndexFormat::Uint16, drawSrg);
     }
 
     QString AtomViewportDisplayIconsSystemComponent::FindAssetPath(const QString& path) const

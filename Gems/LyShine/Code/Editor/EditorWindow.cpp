@@ -1547,6 +1547,20 @@ AssetTreeEntry* EditorWindow::GetSliceLibraryTree()
     return m_sliceLibraryTree;
 }
 
+AZ::EntityId EditorWindow::GetCanvasForCurrentEditorMode()
+{
+    AZ::EntityId canvasEntityId;
+    if (GetEditorMode() == UiEditorMode::Edit)
+    {
+        canvasEntityId = GetCanvas();
+    }
+    else
+    {
+        canvasEntityId = GetPreviewModeCanvas();
+    }
+    return canvasEntityId;
+}
+
 void EditorWindow::ToggleEditorMode()
 {
     m_editorMode = (m_editorMode == UiEditorMode::Edit) ? UiEditorMode::Preview : UiEditorMode::Edit;

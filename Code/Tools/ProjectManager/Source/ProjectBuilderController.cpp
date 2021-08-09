@@ -104,7 +104,7 @@ namespace O3DE::ProjectManager
                 QMessageBox::critical(m_parent, tr("Project Failed to Build!"), result);
 
                 m_projectInfo.m_buildFailed = true;
-                m_projectInfo.m_logUrl = QUrl();
+                m_projectInfo.m_logUrl = QUrl("file:///" + m_worker->GetLogFilePath());
                 emit NotifyBuildProject(m_projectInfo);
             }
 

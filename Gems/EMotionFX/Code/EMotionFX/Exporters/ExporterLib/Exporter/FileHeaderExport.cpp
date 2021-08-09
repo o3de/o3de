@@ -38,9 +38,9 @@ namespace ExporterLib
 
 
     void SaveActorFileInfo(MCore::Stream* file,
-        uint32 numLODLevels,
-        uint32 motionExtractionNodeIndex,
-        uint32 retargetRootNodeIndex,
+        uint64 numLODLevels,
+        uint64 motionExtractionNodeIndex,
+        uint64 retargetRootNodeIndex,
         const char* sourceApp,
         const char* orgFileName,
         const char* actorName,
@@ -62,9 +62,9 @@ namespace ExporterLib
 
         EMotionFX::FileFormat::Actor_Info3 infoChunk;
         memset(&infoChunk, 0, sizeof(EMotionFX::FileFormat::Actor_Info3));
-        infoChunk.mNumLODs                      = numLODLevels;
-        infoChunk.mMotionExtractionNodeIndex    = motionExtractionNodeIndex;
-        infoChunk.mRetargetRootNodeIndex        = retargetRootNodeIndex;
+        infoChunk.mNumLODs                      = aznumeric_caster(numLODLevels);
+        infoChunk.mMotionExtractionNodeIndex    = aznumeric_caster(motionExtractionNodeIndex);
+        infoChunk.mRetargetRootNodeIndex        = aznumeric_caster(retargetRootNodeIndex);
         infoChunk.mExporterHighVersion          = static_cast<uint8>(EMotionFX::GetEMotionFX().GetHighVersion());
         infoChunk.mExporterLowVersion           = static_cast<uint8>(EMotionFX::GetEMotionFX().GetLowVersion());
         infoChunk.mUnitType                     = static_cast<uint8>(unitType);

@@ -43,47 +43,26 @@ namespace MCore
             Close();
         }
 
-        //String fileMode;
-        char fileMode[4];
-        uint32 numChars = 0;
-
-        if (mode == READ)
+        const char* fileMode = [mode]() -> const char*
         {
-            fileMode[0] = 'r';
-            numChars = 1;
-        }                                                                                   // open for reading, file must exist
-        if (mode == WRITE)
-        {
-            fileMode[0] = 'w';
-            numChars = 1;
-        }                                                                                   // open for writing, file will be overwritten if it already exists
-        if (mode == READWRITE)
-        {
-            fileMode[0] = 'r';
-            fileMode[1] = '+';
-            numChars = 2;
-        }                                                                                   // open for reading and writing, file must exist
-        if (mode == READWRITECREATE)
-        {
-            fileMode[0] = 'w';
-            fileMode[1] = '+';
-            numChars = 2;
-        }                                                                                   // open for reading and writing, file will be overwritten when already exists, or created when it doesn't
-        if (mode == APPEND)
-        {
-            fileMode[0] = 'a';
-            numChars = 1;
-        }                                                                                   // open for writing at the end of the file, file will be created when it doesn't exist
-        if (mode == READWRITEAPPEND)
-        {
-            fileMode[0] = 'a';
-            fileMode[1] = '+';
-            numChars = 2;
-        }                                                                                   // open for reading and appending (writing), file will be created if it doesn't exist
-
-        // construct the filemode string
-        fileMode[numChars++] = 'b'; // open in binary mode
-        fileMode[numChars++] = '\0';
+            switch(mode)
+            {
+            case READ: // open for reading, file must exist
+                return "rb";
+            case WRITE: // open for writing, file will be overwritten if it already exists
+                return "wb";
+            case READWRITE: // open for reading and writing, file must exist
+                return "r+b";
+            case READWRITECREATE: // open for reading and writing, file will be overwritten when already exists, or created when it doesn't
+                return "w+b";
+            case APPEND: // open for writing at the end of the file, file will be created when it doesn't exist
+                return "ab";
+            case READWRITEAPPEND: // open for reading and appending (writing), file will be created if it doesn't exist
+                return "a+b";
+            default:
+                return "";
+            }
+        }();
 
         // set the file mode we used
         mFileMode = mode;

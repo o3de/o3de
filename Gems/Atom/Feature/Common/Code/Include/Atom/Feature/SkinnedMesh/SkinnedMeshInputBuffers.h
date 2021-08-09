@@ -45,7 +45,7 @@ namespace AZ
             uint32_t m_vertexOffset = 0;
             uint32_t m_vertexCount = 0;
             Aabb m_aabb = Aabb::CreateNull();
-            Data::Asset<RPI::MaterialAsset> m_material;
+            AZ::RPI::ModelMaterialSlot m_materialSlot;
         };
 
         //! Buffer views for a specific sub-mesh that are not modified during skinning and thus are shared by all instances of the same skinned mesh

@@ -31,10 +31,10 @@ namespace MCore
         void RegisterStandardTypes();
 
         size_t GetNumRegisteredAttributes() const                  { return mRegistered.size(); }
-        Attribute* GetRegisteredAttribute(uint32 index) const      { return mRegistered[index]; }
+        Attribute* GetRegisteredAttribute(size_t index) const      { return mRegistered[index]; }
 
-        uint32 FindAttributeIndexByType(uint32 typeID) const;
-        Attribute* CreateAttributeByType(uint32 typeID) const;
+        size_t FindAttributeIndexByType(size_t typeID) const;
+        Attribute* CreateAttributeByType(size_t typeID) const;
 
     private:
         AZStd::vector<Attribute*> mRegistered;

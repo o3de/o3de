@@ -114,26 +114,26 @@ bool XMLBinary::CXMLBinaryWriter::WriteNode(IDataWriter* pFile, XmlNodeRef node,
     nTheoreticalPosition += sizeof(header);
     align(nTheoreticalPosition, nAlignment);
 
-    header.nNodeTablePosition = nTheoreticalPosition;
+    header.nNodeTablePosition = static_cast<uint32>(nTheoreticalPosition);
     header.nNodeCount = int(m_nodes.size());
     nTheoreticalPosition += header.nNodeCount * sizeof(Node);
     align(nTheoreticalPosition, nAlignment);
 
-    header.nChildTablePosition = nTheoreticalPosition;
+    header.nChildTablePosition = static_cast<uint32>(nTheoreticalPosition);
     header.nChildCount = int(m_childs.size());
     nTheoreticalPosition += header.nChildCount * sizeof(NodeIndex);
     align(nTheoreticalPosition, nAlignment);
 
-    header.nAttributeTablePosition = nTheoreticalPosition;
+    header.nAttributeTablePosition = static_cast<uint32>(nTheoreticalPosition);
     header.nAttributeCount = int(m_attributes.size());
     nTheoreticalPosition += header.nAttributeCount * sizeof(Attribute);
     align(nTheoreticalPosition, nAlignment);
 
-    header.nStringDataPosition = nTheoreticalPosition;
+    header.nStringDataPosition = static_cast<uint32>(nTheoreticalPosition);
     header.nStringDataSize = m_nStringDataSize;
     nTheoreticalPosition += header.nStringDataSize;
 
-    header.nXMLSize = nTheoreticalPosition;
+    header.nXMLSize = static_cast<uint32>(nTheoreticalPosition);
 
     // Swap endianness of the data structures
     if (bNeedSwapEndian)
@@ -328,7 +328,7 @@ int XMLBinary::CXMLBinaryWriter::AddString(const XmlString& sString)
         // We don't have such string yet, so we should add it to the tables.
         m_strings.push_back(sString);
         itStringEntry = m_stringMap.insert(StringMap::value_type(sString, m_nStringDataSize)).first;
-        m_nStringDataSize += sString.length() + 1;
+        m_nStringDataSize += static_cast<uint>(sString.length() + 1);
     }
 
     // Return offset of the string in the string data buffer.

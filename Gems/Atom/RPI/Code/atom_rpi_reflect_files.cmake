@@ -22,6 +22,7 @@ set(FILES
     Include/Atom/RPI.Reflect/Model/ModelKdTree.h
     Include/Atom/RPI.Reflect/Model/ModelLodAsset.h
     Include/Atom/RPI.Reflect/Model/ModelLodIndex.h
+    Include/Atom/RPI.Reflect/Model/ModelMaterialSlot.h
     Include/Atom/RPI.Reflect/Model/ModelAssetCreator.h
     Include/Atom/RPI.Reflect/Model/ModelLodAssetCreator.h
     Include/Atom/RPI.Reflect/Model/MorphTargetDelta.h
@@ -106,6 +107,7 @@ set(FILES
     Source/RPI.Reflect/Model/ModelLodAsset.cpp
     Source/RPI.Reflect/Model/ModelAssetCreator.cpp
     Source/RPI.Reflect/Model/ModelLodAssetCreator.cpp
+    Source/RPI.Reflect/Model/ModelMaterialSlot.cpp
     Source/RPI.Reflect/Model/MorphTargetDelta.cpp
     Source/RPI.Reflect/Model/MorphTargetMetaAsset.cpp
     Source/RPI.Reflect/Model/MorphTargetMetaAssetCreator.cpp

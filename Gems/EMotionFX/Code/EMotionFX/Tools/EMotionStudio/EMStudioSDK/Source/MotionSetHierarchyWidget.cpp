@@ -116,8 +116,8 @@ namespace EMStudio
         else
         {
             // add all root motion sets
-            const uint32 numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
-            for (uint32 i = 0; i < numMotionSets; ++i)
+            const size_t numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
+            for (size_t i = 0; i < numMotionSets; ++i)
             {
                 EMotionFX::MotionSet* motionSet = EMotionFX::GetMotionManager().GetMotionSet(i);
 
@@ -185,8 +185,8 @@ namespace EMStudio
         }
 
         // add all child sets
-        const uint32 numChildSets = motionSet->GetNumChildSets();
-        for (uint32 i = 0; i < numChildSets; ++i)
+        const size_t numChildSets = motionSet->GetNumChildSets();
+        for (size_t i = 0; i < numChildSets; ++i)
         {
             RecursiveAddMotionSet(motionSetItem, motionSet->GetChildSet(i), selectionList);
         }
@@ -303,21 +303,19 @@ namespace EMStudio
     {
         // Get the selected items in the tree widget.
         QList<QTreeWidgetItem*> selectedItems = mHierarchy->selectedItems();
-        const uint32 numSelectedItems = selectedItems.count();
 
         // Reset the selection.
         mSelected.clear();
-        mSelected.reserve(numSelectedItems);
+        mSelected.reserve(selectedItems.size());
 
         AZStd::string motionId;
-        for (uint32 i = 0; i < numSelectedItems; ++i)
+        for (const QTreeWidgetItem* item : selectedItems)
         {
-            QTreeWidgetItem* item = selectedItems[i];
-            motionId = item->text(0).toUtf8().data();
+             motionId = item->text(0).toUtf8().data();
 
             // Extract the motion set id.
             QString motionSetIdAsString = item->whatsThis(0);
-            const AZ::u32 motionSetId = AzFramework::StringFunc::ToInt(motionSetIdAsString.toUtf8().data());
+            const uint32 motionSetId = AzFramework::StringFunc::ToInt(motionSetIdAsString.toUtf8().data());
 
             // Find the motion set based on the id.
             EMotionFX::MotionSet* motionSet = EMotionFX::GetMotionManager().FindMotionSetByID(motionSetId);
