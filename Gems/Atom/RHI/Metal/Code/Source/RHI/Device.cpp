@@ -82,7 +82,7 @@ namespace AZ
             m_mainDisplayRefreshRate = Platform::GetMainDisplayRefreshRateInternal();
 
             // Assume 60hz if 0 is returned.
-            // This can happen on OSX. In future we can hopefully use maximumFramesPerSecond which woont have this issue
+            // This can happen on OSX. In future we can hopefully use maximumFramesPerSecond which wont have this issue
             if (m_mainDisplayRefreshRate < 0.1f)
             {
                 m_mainDisplayRefreshRate = 60.0f;
