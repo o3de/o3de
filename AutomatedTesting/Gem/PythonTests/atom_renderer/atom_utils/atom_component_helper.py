@@ -7,7 +7,6 @@ File to assist with common hydra component functions or constants used across va
 """
 import os
 
-import editor_python_test_tools.hydra_editor_utils as hydra
 from editor_python_test_tools.editor_test_helper import EditorTestHelper
 
 helper = EditorTestHelper(log_prefix="Atom_EditorTestHelper")
@@ -42,6 +41,8 @@ def create_basic_atom_level(level_name):
     import azlmbr.legacy.general as general
     import azlmbr.math as math
     import azlmbr.object
+
+    import editor_python_test_tools.hydra_editor_utils as hydra
 
     # Create a new level.
     new_level_name = level_name
