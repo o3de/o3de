@@ -3,25 +3,13 @@ Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
-File to assist with common hydra component functions or constants used across various Atom tests.
+File to assist with common hydra component functions used across various Atom tests.
 """
 import os
 
 from editor_python_test_tools.editor_test_helper import EditorTestHelper
 
 helper = EditorTestHelper(log_prefix="Atom_EditorTestHelper")
-
-# Light type options for the Light component.
-LIGHT_TYPES = {
-    'unknown': 0,
-    'sphere': 1,
-    'spot_disk': 2,
-    'capsule': 3,
-    'quad': 4,
-    'polygon': 5,
-    'simple_point': 6,
-    'simple_spot': 7,
-}
 
 
 def create_basic_atom_level(level_name):
