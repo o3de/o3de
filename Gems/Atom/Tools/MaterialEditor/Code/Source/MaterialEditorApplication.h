@@ -9,10 +9,7 @@
 #pragma once
 
 #include <Atom/Document/MaterialDocumentSystemRequestBus.h>
-#include <Atom/Window/MaterialEditorWindowNotificationBus.h>
 #include <AtomToolsFramework/Application/AtomToolsApplication.h>
-
-#include <QTimer>
 
 namespace MaterialEditor
 {
@@ -20,7 +17,6 @@ namespace MaterialEditor
 
     class MaterialEditorApplication
         : public AtomToolsFramework::AtomToolsApplication
-        , private MaterialEditorWindowNotificationBus::Handler
     {
     public:
         AZ_TYPE_INFO(MaterialEditor::MaterialEditorApplication, "{30F90CA5-1253-49B5-8143-19CEE37E22BB}");
@@ -28,28 +24,15 @@ namespace MaterialEditor
         using Base = AtomToolsFramework::AtomToolsApplication;
 
         MaterialEditorApplication(int* argc, char*** argv);
-        virtual ~MaterialEditorApplication();
 
         //////////////////////////////////////////////////////////////////////////
         // AzFramework::Application
         void CreateStaticModules(AZStd::vector<AZ::Module*>& outModules) override;
         const char* GetCurrentConfigurationName() const override;
-        void Stop() override;
 
     private:
-        //////////////////////////////////////////////////////////////////////////
-        // MaterialEditorWindowNotificationBus::Handler overrides...
-        void OnMaterialEditorWindowClosing() override;
-        //////////////////////////////////////////////////////////////////////////
-
-        //////////////////////////////////////////////////////////////////////////
-        // AzFramework::Application overrides...
-        void Destroy() override;
-        //////////////////////////////////////////////////////////////////////////
-
         void ProcessCommandLine(const AZ::CommandLine& commandLine) override;
-        void StartInternal() override;
         AZStd::string GetBuildTargetName() const override;
         AZStd::vector<AZStd::string> GetCriticalAssetFilters() const override;
-     };
+    };
 } // namespace MaterialEditor
