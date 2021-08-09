@@ -83,8 +83,7 @@ namespace Aftermath
     void OutputLastScopeExecutingOnGPU([[maybe_unused]] void* crashTracker)
     {
 #if defined(USE_NSIGHT_AFTERMATH)
-        AZStd::vector<GFSDK_Aftermath_ContextHandle> cntxtHandles =
-            static_cast<GpuCrashTracker*>(crashTracker)->GetContextHandles();
+        AZStd::vector<GFSDK_Aftermath_ContextHandle> cntxtHandles = static_cast<GpuCrashTracker*>(crashTracker)->GetContextHandles();
         GFSDK_Aftermath_ContextData* outContextData = new GFSDK_Aftermath_ContextData[cntxtHandles.size()];
         GFSDK_Aftermath_Result result = GFSDK_Aftermath_GetData(static_cast<uint32_t>(cntxtHandles.size()), cntxtHandles.data(), outContextData);
         AssertOnError(result);
