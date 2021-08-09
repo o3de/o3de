@@ -276,51 +276,33 @@ namespace AzFramework
             azstrcat(commandAndArgs[i], token.size(), token.c_str());
         }
         commandAndArgs[commandTokens.size()] = nullptr;
-
-        char** environmentVariables = nullptr;
         
-        AZStd::vector<AZStd::string> allEnvs;
+        constexpr int MaxEnvVariables = 128;
+        using EnvironmentVariableContainer = AZStd::fixed_vector<char*, MaxEnvVariables>;
+        EnvironmentVariableContainer environmentVariables;
         for (char **env = ::environ; *env; env++)
         {
-            allEnvs.push_back(*env);
+            environmentVariables.push_back(*env);
         }
-
         if (processLaunchInfo.m_environmentVariables)
         {
-            allEnvs.insert(allEnvs.end(), processLaunchInfo.m_environmentVariables->begin(), processLaunchInfo.m_environmentVariables->end());
+            for (AZStd::string& processLaunchEnv : *processLaunchInfo.m_environmentVariables)
+            {
+                environmentVariables.push_back(processLaunchEnv.data());
+            }
         }
-
-        const int numEnvironmentVars = allEnvs.size();
-        // Adding one more as exec expects the array to have a nullptr as the last element
-        environmentVariables = new char*[numEnvironmentVars + 1];
-        for (int i = 0; i < numEnvironmentVars; i++)
-        {
-            const AZStd::string& envVarString = allEnvs.at(i);
-            environmentVariables[i] = new char[envVarString.size() + 1];
-            environmentVariables[i][0] = '\0';
-            azstrcat(environmentVariables[i], envVarString.size(), envVarString.c_str());
-        }
-        environmentVariables[numEnvironmentVars] = NULL;
+        environmentVariables.push_back(nullptr);
 
         pid_t child_pid = fork();
         if (IsIdChildProcess(child_pid))
         {
-            ExecuteCommandAsChild(commandAndArgs, environmentVariables, processLaunchInfo, processData.m_startupInfo);
+            ExecuteCommandAsChild(commandAndArgs, environmentVariables.data(), processLaunchInfo, processData.m_startupInfo);
         }
 
         processData.m_childProcessId = child_pid;
 
         // Close these handles as they are only to be used by the child process
         processData.m_startupInfo.CloseAllHandles();
-
-        if (processLaunchInfo.m_environmentVariables)
-        {
-            for (int i = 0; i < processLaunchInfo.m_environmentVariables->size(); i++)
-            {
-                delete [] environmentVariables[i];
-            }
-            delete [] environmentVariables;
-        }
 
         for (int i = 0; i < commandTokens.size(); i++)
         {

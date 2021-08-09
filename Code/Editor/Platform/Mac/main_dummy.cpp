@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
         }
         
         if (AZ::IO::FixedMaxPath installedBinariesFolder;
-            settingsRegistry->Get(installedBinariesFolder.Native(), "/Amazon/AzCore/Runtime/FilePaths/InstalledBinariesFolder"))
+            settingsRegistry->Get(installedBinariesFolder.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_InstalledBinaryFolder))
         {
             if (AZ::IO::FixedMaxPath engineRootFolder;
                 settingsRegistry->Get(engineRootFolder.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder))
@@ -51,18 +51,17 @@ int main(int argc, char* argv[])
         envVars.push_back(dyldSearchPath);
     }
     
-    AZStd::string commandArgs = "";
+    AZStd::string commandArgs;
     for (int i = 1; i < argc; i++)
     {
         commandArgs.append(argv[i]);
         commandArgs.append(" ");
     }
     
-    AZ::IO::FixedMaxPathString execPath = AZ::Utils::GetExecutableDirectory();
     AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
-    AZStd::string processPath(execPath.c_str());
-    processPath +=  "/Editor";
-    processLaunchInfo.m_processExecutableString = processPath;
+    AZ::IO::Path processPath{ AZ::IO::PathView(AZ::Utils::GetExecutableDirectory()) };
+    processPath /= "Editor";
+    processLaunchInfo.m_processExecutableString = AZStd::move(processPath.Native());
     processLaunchInfo.m_commandlineParameters = commandArgs;
     processLaunchInfo.m_environmentVariables = &envVars;
     processLaunchInfo.m_showWindow = true;

@@ -82,8 +82,10 @@ function(ly_install_add_install_path_setreg NAME)
     set_property(TARGET ${NAME} APPEND PROPERTY INTERFACE_LY_TARGET_FILES "${installed_binaries_setreg_path}\nRegistry")
 endfunction()
 
-#! LY_CUSTOM_COPY_FUNCTION: Defines a platform specific copy function
-set(LY_CUSTOM_COPY_FUNCTION
+#! ly_install_code_function_override: Mac specific copy function to handle frameworks
+function(ly_install_code_function_override)
+
+    install(CODE
 "function(ly_copy source_file target_directory)
     if(\"\${source_file}\" MATCHES \"\\\\.[Ff]ramework[^\\\\.]\")
 
@@ -93,7 +95,8 @@ set(LY_CUSTOM_COPY_FUNCTION
 
     endif()
     file(COPY \"\${source_file}\" DESTINATION \"\${target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS})
-endfunction()"
-)
+endfunction()")
+
+endfunction()
 
 include(cmake/Platform/Common/Install_common.cmake)

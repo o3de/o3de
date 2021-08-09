@@ -448,10 +448,8 @@ endfunction()
 function(ly_setup_runtime_dependencies)
 
     # Common functions used by the bellow code
-    if(DEFINED LY_CUSTOM_COPY_FUNCTION)
-        install(CODE
-${LY_CUSTOM_COPY_FUNCTION}
-        )
+    if(COMMAND ly_install_code_function_override)
+        ly_install_code_function_override()
     else()
         install(CODE
 "function(ly_copy source_file target_directory)
