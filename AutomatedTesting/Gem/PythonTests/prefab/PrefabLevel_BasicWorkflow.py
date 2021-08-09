@@ -7,6 +7,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 # fmt:off
 class Tests():
+    level_created =      ("Level: Level created",                                      "Level: Failed to create level")
     create_new_entity =  ("Entity: 'CreateNewEntity' passed",                          "Entity: 'CreateNewEntity' failed")
     create_prefab =      ("Prefab: 'CreatePrefab' passed",                             "Prefab: 'CreatePrefab' failed")
     instantiate_prefab = ("Prefab: 'InstantiatePrefab' passed",                        "Prefab: 'InstantiatePrefab' failed")
@@ -26,7 +27,6 @@ def PrefabLevel_BasicWorkflow():
 
     from editor_python_test_tools.utils import Report
     from editor_python_test_tools.utils import TestHelper as helper
-
     import editor_python_test_tools.hydra_editor_utils as hydra
 
     import azlmbr.bus as bus
@@ -35,11 +35,15 @@ def PrefabLevel_BasicWorkflow():
     import azlmbr.editor as editor
     import azlmbr.prefab as prefab
     from azlmbr.math import Vector3
+    import azlmbr.legacy.general as general
 
     EXPECTED_NEW_PREFAB_POS = Vector3(10.00, 20.0, 30.0)
 
     helper.init_idle()
-    helper.open_level("Prefab", "PrefabLevel_BasicWorkflow")
+    test_level_name = "temp_level"
+    general.create_level_no_prompt(test_level_name, 128, 1, 128, False)
+    helper.wait_for_condition(lambda: general.get_current_level_name() == test_level_name, 2.0)
+    Report.result(Tests.level_created, general.get_current_level_name() == test_level_name)
 
 # Create a new Entity at the root level
     new_entity_id = editor.ToolsApplicationRequestBus(bus.Broadcast, 'CreateNewEntity', EntityId())
