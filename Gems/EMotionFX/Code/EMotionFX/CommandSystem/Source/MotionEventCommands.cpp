@@ -293,7 +293,7 @@ namespace CommandSystem
     CommandRemoveMotionEventTrack::CommandRemoveMotionEventTrack(MCore::Command* orgCommand)
         : MCore::Command("RemoveMotionEventTrack", orgCommand)
     {
-        mOldTrackIndex = InvalidIndex;
+        m_oldTrackIndex = InvalidIndex;
     }
 
 
@@ -332,8 +332,8 @@ namespace CommandSystem
         }
 
         // store information for undo
-        mOldTrackIndex  = eventTrackIndex.GetValue();
-        mOldEnabled     = eventTable->GetTrack(eventTrackIndex.GetValue())->GetIsEnabled();
+        m_oldTrackIndex  = eventTrackIndex.GetValue();
+        m_oldEnabled     = eventTable->GetTrack(eventTrackIndex.GetValue())->GetIsEnabled();
 
         // remove the motion event track
         eventTable->RemoveTrack(eventTrackIndex.GetValue());
@@ -353,7 +353,7 @@ namespace CommandSystem
         const int32 motionID = parameters.GetValueAsInt("motionID", this);
 
         AZStd::string command;
-        command = AZStd::string::format("CreateMotionEventTrack -motionID %i -eventTrackName \"%s\" -index %zu -enabled %s", motionID, eventTrackName.c_str(), mOldTrackIndex, mOldEnabled ? "true" : "false");
+        command = AZStd::string::format("CreateMotionEventTrack -motionID %i -eventTrackName \"%s\" -index %zu -enabled %s", motionID, eventTrackName.c_str(), m_oldTrackIndex, m_oldEnabled ? "true" : "false");
         return GetCommandManager()->ExecuteCommandInsideCommand(command.c_str(), outResult);
     }
 
@@ -586,9 +586,9 @@ namespace CommandSystem
         }
 
         // add the motion event and check if everything worked fine
-        mMotionEventNr = eventTrack->AddEvent(m_startTime, m_endTime, m_eventDatas.value_or(EMotionFX::EventDataSet()));
+        m_motionEventNr = eventTrack->AddEvent(m_startTime, m_endTime, m_eventDatas.value_or(EMotionFX::EventDataSet()));
 
-        if (mMotionEventNr == InvalidIndex)
+        if (m_motionEventNr == InvalidIndex)
         {
             outResult = AZStd::string::format("Cannot create motion event. The returned motion event index is not valid.");
             return false;
@@ -604,7 +604,7 @@ namespace CommandSystem
     {
         AZ_UNUSED(parameters);
 
-        const AZStd::string command = AZStd::string::format("RemoveMotionEvent -motionID %i -eventTrackName \"%s\" -eventNr %zu", m_motionID, m_eventTrackName.c_str(), mMotionEventNr);
+        const AZStd::string command = AZStd::string::format("RemoveMotionEvent -motionID %i -eventTrackName \"%s\" -eventNr %zu", m_motionID, m_eventTrackName.c_str(), m_motionEventNr);
         return GetCommandManager()->ExecuteCommandInsideCommand(command.c_str(), outResult);
     }
 
@@ -700,8 +700,8 @@ namespace CommandSystem
 
         // get the motion event and store the old values of the motion event for undo
         const EMotionFX::MotionEvent& motionEvent = eventTrack->GetEvent(eventNr);
-        mOldStartTime = motionEvent.GetStartTime();
-        mOldEndTime = motionEvent.GetEndTime();
+        m_oldStartTime = motionEvent.GetStartTime();
+        m_oldEndTime = motionEvent.GetEndTime();
         m_oldEventDatas = motionEvent.GetEventDatas();
 
         // remove the motion event
@@ -728,7 +728,7 @@ namespace CommandSystem
         }
 
         MCore::CommandGroup commandGroup;
-        CommandHelperAddMotionEvent(motion, eventTrackName.c_str(), mOldStartTime, mOldEndTime, m_oldEventDatas, &commandGroup);
+        CommandHelperAddMotionEvent(motion, eventTrackName.c_str(), m_oldStartTime, m_oldEndTime, m_oldEventDatas, &commandGroup);
         return GetCommandManager()->ExecuteCommandGroupInsideCommand(commandGroup, outResult);
     }
 

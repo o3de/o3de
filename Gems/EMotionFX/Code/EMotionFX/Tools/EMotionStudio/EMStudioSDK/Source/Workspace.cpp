@@ -38,7 +38,7 @@ namespace EMStudio
 {
     Workspace::Workspace()
     {
-        mDirtyFlag = false;
+        m_dirtyFlag = false;
     }
 
 
@@ -161,11 +161,11 @@ namespace EMStudio
                 }
 
                 const EMotionFX::Transform& transform = actorInstance->GetLocalSpaceTransform();
-                const AZ::Vector3&       pos     = transform.mPosition;
-                const AZ::Quaternion&    rot     = transform.mRotation;
+                const AZ::Vector3&       pos     = transform.m_position;
+                const AZ::Quaternion&    rot     = transform.m_rotation;
 
                 #ifndef EMFX_SCALE_DISABLED
-                    const AZ::Vector3& scale = transform.mScale;
+                    const AZ::Vector3& scale = transform.m_scale;
                 #else
                     const AZ::Vector3 scale = AZ::Vector3::CreateOne();
                 #endif
@@ -371,14 +371,14 @@ namespace EMStudio
             // update the workspace filename
             if (updateFileName)
             {
-                mFilename = filename;
+                m_filename = filename;
             }
 
             // update the workspace dirty flag
             if (updateDirtyFlag)
             {
                 GetCommandManager()->SetWorkspaceDirtyFlag(false);
-                mDirtyFlag = false;
+                m_dirtyFlag = false;
             }
 
             // save succeeded
@@ -404,7 +404,7 @@ namespace EMStudio
 
         QSettings settings(filename, QSettings::IniFormat, (QWidget*)GetManager()->GetMainWindow());
 
-        mFilename       = filename;
+        m_filename       = filename;
 
         AZStd::string commandsString = FromQtString(settings.value("startScript", "").toString());
 
@@ -435,23 +435,23 @@ namespace EMStudio
         }
 
         GetCommandManager()->SetWorkspaceDirtyFlag(false);
-        mDirtyFlag = false;
+        m_dirtyFlag = false;
         return true;
     }
 
 
     void Workspace::Reset()
     {
-        mFilename.clear();
+        m_filename.clear();
 
         GetCommandManager()->SetWorkspaceDirtyFlag(false);
-        mDirtyFlag = false;
+        m_dirtyFlag = false;
     }
 
 
     bool Workspace::GetDirtyFlag() const
     {
-        if (mDirtyFlag)
+        if (m_dirtyFlag)
         {
             return true;
         }
@@ -467,7 +467,7 @@ namespace EMStudio
 
     void Workspace::SetDirtyFlag(bool dirty)
     {
-        mDirtyFlag = dirty;
+        m_dirtyFlag = dirty;
         GetCommandManager()->SetWorkspaceDirtyFlag(dirty);
     }
 } // namespace EMStudio

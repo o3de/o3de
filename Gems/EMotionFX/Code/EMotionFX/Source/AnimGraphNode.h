@@ -56,55 +56,55 @@ namespace EMotionFX
             AZ_RTTI(AnimGraphNode::Port, "{F66CF090-468F-419A-9518-97988304FEB6}")
             AZ_CLASS_ALLOCATOR_DECL
 
-            BlendTreeConnection*    mConnection;            // the connection plugged in this port
-            uint32                  mCompatibleTypes[4];    // four possible compatible types
-            uint32                  mPortID;                // the unique port ID (unique inside the node input or output port lists)
-            uint32                  mNameID;                // the name of the port (using the StringIdPool)
-            size_t                  mAttributeIndex;        // the index into the animgraph instance global attributes array
+            BlendTreeConnection*    m_connection;            // the connection plugged in this port
+            uint32                  m_compatibleTypes[4];    // four possible compatible types
+            uint32                  m_portId;                // the unique port ID (unique inside the node input or output port lists)
+            uint32                  m_nameId;                // the name of the port (using the StringIdPool)
+            size_t                  m_attributeIndex;        // the index into the animgraph instance global attributes array
 
-            MCORE_INLINE const char* GetName() const                    { return MCore::GetStringIdPool().GetName(mNameID).c_str(); }
-            MCORE_INLINE const AZStd::string& GetNameString() const     { return MCore::GetStringIdPool().GetName(mNameID); }
+            MCORE_INLINE const char* GetName() const                    { return MCore::GetStringIdPool().GetName(m_nameId).c_str(); }
+            MCORE_INLINE const AZStd::string& GetNameString() const     { return MCore::GetStringIdPool().GetName(m_nameId); }
 
-            // copy settings from another port (always makes the mConnection and mValue nullptr though)
+            // copy settings from another port (always makes the m_connection and m_value nullptr though)
             void InitFrom(const Port& other)
             {
                 for (uint32 i = 0; i < 4; ++i)
                 {
-                    mCompatibleTypes[i] = other.mCompatibleTypes[i];
+                    m_compatibleTypes[i] = other.m_compatibleTypes[i];
                 }
 
-                mPortID         = other.mPortID;
-                mNameID         = other.mNameID;
-                mConnection     = nullptr;
-                mAttributeIndex = other.mAttributeIndex;
+                m_portId         = other.m_portId;
+                m_nameId         = other.m_nameId;
+                m_connection     = nullptr;
+                m_attributeIndex = other.m_attributeIndex;
             }
 
             void SetCompatibleTypes(const AZStd::vector<uint32>& compatibleTypes)
             {
                 for (uint32 i = 0; i < 4 && i < compatibleTypes.size(); ++i)
                 {
-                    mCompatibleTypes[i] = compatibleTypes[i];
+                    m_compatibleTypes[i] = compatibleTypes[i];
                 }
             }
 
             // get the attribute value
             MCORE_INLINE MCore::Attribute* GetAttribute(AnimGraphInstance* animGraphInstance) const
             {
-                return animGraphInstance->GetInternalAttribute(mAttributeIndex);
+                return animGraphInstance->GetInternalAttribute(m_attributeIndex);
             }
 
             // port connection compatibility check
             bool CheckIfIsCompatibleWith(const Port& otherPort) const
             {
                 // check the data types
-                for (uint32 compatibleType : mCompatibleTypes)
+                for (uint32 compatibleType : m_compatibleTypes)
                 {
                     // If there aren't any more compatibility types and we haven't found a compatible one so far, return false
                     if (compatibleType == 0)
                     {
                         return false;
                     }
-                    for (uint32 otherCompatibleTypeIndex : otherPort.mCompatibleTypes)
+                    for (uint32 otherCompatibleTypeIndex : otherPort.m_compatibleTypes)
                     {
                         if (otherCompatibleTypeIndex == compatibleType)
                         {
@@ -126,10 +126,10 @@ namespace EMotionFX
             // clear compatibility types
             void ClearCompatibleTypes()
             {
-                mCompatibleTypes[0] = 0;
-                mCompatibleTypes[1] = 0;
-                mCompatibleTypes[2] = 0;
-                mCompatibleTypes[3] = 0;
+                m_compatibleTypes[0] = 0;
+                m_compatibleTypes[1] = 0;
+                m_compatibleTypes[2] = 0;
+                m_compatibleTypes[3] = 0;
             }
 
             void Clear()
@@ -138,10 +138,10 @@ namespace EMotionFX
             }
 
             Port()
-                : mConnection(nullptr)
-                , mPortID(MCORE_INVALIDINDEX32)
-                , mNameID(MCORE_INVALIDINDEX32)
-                , mAttributeIndex(InvalidIndex)  { ClearCompatibleTypes(); }
+                : m_connection(nullptr)
+                , m_portId(MCORE_INVALIDINDEX32)
+                , m_nameId(MCORE_INVALIDINDEX32)
+                , m_attributeIndex(InvalidIndex)  { ClearCompatibleTypes(); }
             virtual ~Port() { }
         };
 
@@ -448,7 +448,7 @@ namespace EMotionFX
 
         MCORE_INLINE AnimGraphNode* GetInputNode(size_t portNr)
         {
-            const BlendTreeConnection* con = mInputPorts[portNr].mConnection;
+            const BlendTreeConnection* con = m_inputPorts[portNr].m_connection;
             if (con == nullptr)
             {
                 return nullptr;
@@ -458,7 +458,7 @@ namespace EMotionFX
 
         MCORE_INLINE MCore::Attribute* GetInputAttribute(AnimGraphInstance* animGraphInstance, size_t portNr) const
         {
-            const BlendTreeConnection* con = mInputPorts[portNr].mConnection;
+            const BlendTreeConnection* con = m_inputPorts[portNr].m_connection;
             if (con == nullptr)
             {
                 return nullptr;
@@ -648,114 +648,114 @@ namespace EMotionFX
             return static_cast<AttributePose*>(attrib);
         }
 
-        MCORE_INLINE MCore::Attribute*              GetOutputAttribute(AnimGraphInstance* animGraphInstance, size_t outputPortIndex) const                     { return mOutputPorts[outputPortIndex].GetAttribute(animGraphInstance); }
+        MCORE_INLINE MCore::Attribute*              GetOutputAttribute(AnimGraphInstance* animGraphInstance, size_t outputPortIndex) const                     { return m_outputPorts[outputPortIndex].GetAttribute(animGraphInstance); }
         MCORE_INLINE MCore::AttributeFloat*         GetOutputNumber(AnimGraphInstance* animGraphInstance, size_t outputPortIndex) const
         {
-            if (mOutputPorts[outputPortIndex].GetAttribute(animGraphInstance) == nullptr)
+            if (m_outputPorts[outputPortIndex].GetAttribute(animGraphInstance) == nullptr)
             {
                 return nullptr;
             }
-            MCORE_ASSERT(mOutputPorts[outputPortIndex].mCompatibleTypes[0] == MCore::AttributeFloat::TYPE_ID);
-            return static_cast<MCore::AttributeFloat*>(mOutputPorts[outputPortIndex].GetAttribute(animGraphInstance));
+            MCORE_ASSERT(m_outputPorts[outputPortIndex].m_compatibleTypes[0] == MCore::AttributeFloat::TYPE_ID);
+            return static_cast<MCore::AttributeFloat*>(m_outputPorts[outputPortIndex].GetAttribute(animGraphInstance));
         }
         MCORE_INLINE MCore::AttributeFloat*         GetOutputFloat(AnimGraphInstance* animGraphInstance, size_t outputPortIndex) const
         {
-            if (mOutputPorts[outputPortIndex].GetAttribute(animGraphInstance) == nullptr)
+            if (m_outputPorts[outputPortIndex].GetAttribute(animGraphInstance) == nullptr)
             {
                 return nullptr;
             }
-            MCORE_ASSERT(mOutputPorts[outputPortIndex].mCompatibleTypes[0] == MCore::AttributeFloat::TYPE_ID);
-            return static_cast<MCore::AttributeFloat*>(mOutputPorts[outputPortIndex].GetAttribute(animGraphInstance));
+            MCORE_ASSERT(m_outputPorts[outputPortIndex].m_compatibleTypes[0] == MCore::AttributeFloat::TYPE_ID);
+            return static_cast<MCore::AttributeFloat*>(m_outputPorts[outputPortIndex].GetAttribute(animGraphInstance));
         }
         MCORE_INLINE MCore::AttributeInt32*         GetOutputInt32(AnimGraphInstance* animGraphInstance, size_t outputPortIndex) const
         {
-            if (mOutputPorts[outputPortIndex].GetAttribute(animGraphInstance) == nullptr)
+            if (m_outputPorts[outputPortIndex].GetAttribute(animGraphInstance) == nullptr)
             {
                 return nullptr;
             }
-            MCORE_ASSERT(mOutputPorts[outputPortIndex].mCompatibleTypes[0] == MCore::AttributeInt32::TYPE_ID);
-            return static_cast<MCore::AttributeInt32*>(mOutputPorts[outputPortIndex].GetAttribute(animGraphInstance));
+            MCORE_ASSERT(m_outputPorts[outputPortIndex].m_compatibleTypes[0] == MCore::AttributeInt32::TYPE_ID);
+            return static_cast<MCore::AttributeInt32*>(m_outputPorts[outputPortIndex].GetAttribute(animGraphInstance));
         }
         MCORE_INLINE MCore::AttributeString*        GetOutputString(AnimGraphInstance* animGraphInstance, size_t outputPortIndex) const
         {
-            if (mOutputPorts[outputPortIndex].GetAttribute(animGraphInstance) == nullptr)
+            if (m_outputPorts[outputPortIndex].GetAttribute(animGraphInstance) == nullptr)
             {
                 return nullptr;
             }
-            MCORE_ASSERT(mOutputPorts[outputPortIndex].mCompatibleTypes[0] == MCore::AttributeString::TYPE_ID);
-            return static_cast<MCore::AttributeString*>(mOutputPorts[outputPortIndex].GetAttribute(animGraphInstance));
+            MCORE_ASSERT(m_outputPorts[outputPortIndex].m_compatibleTypes[0] == MCore::AttributeString::TYPE_ID);
+            return static_cast<MCore::AttributeString*>(m_outputPorts[outputPortIndex].GetAttribute(animGraphInstance));
         }
         MCORE_INLINE MCore::AttributeBool*          GetOutputBool(AnimGraphInstance* animGraphInstance, size_t outputPortIndex) const
         {
-            if (mOutputPorts[outputPortIndex].GetAttribute(animGraphInstance) == nullptr)
+            if (m_outputPorts[outputPortIndex].GetAttribute(animGraphInstance) == nullptr)
             {
                 return nullptr;
             }
-            MCORE_ASSERT(mOutputPorts[outputPortIndex].mCompatibleTypes[0] == MCore::AttributeBool::TYPE_ID);
-            return static_cast<MCore::AttributeBool*>(mOutputPorts[outputPortIndex].GetAttribute(animGraphInstance));
+            MCORE_ASSERT(m_outputPorts[outputPortIndex].m_compatibleTypes[0] == MCore::AttributeBool::TYPE_ID);
+            return static_cast<MCore::AttributeBool*>(m_outputPorts[outputPortIndex].GetAttribute(animGraphInstance));
         }
         MCORE_INLINE MCore::AttributeVector2*       GetOutputVector2(AnimGraphInstance* animGraphInstance, size_t outputPortIndex) const
         {
-            if (mOutputPorts[outputPortIndex].GetAttribute(animGraphInstance) == nullptr)
+            if (m_outputPorts[outputPortIndex].GetAttribute(animGraphInstance) == nullptr)
             {
                 return nullptr;
             }
-            MCORE_ASSERT(mOutputPorts[outputPortIndex].mCompatibleTypes[0] == MCore::AttributeVector2::TYPE_ID);
-            return static_cast<MCore::AttributeVector2*>(mOutputPorts[outputPortIndex].GetAttribute(animGraphInstance));
+            MCORE_ASSERT(m_outputPorts[outputPortIndex].m_compatibleTypes[0] == MCore::AttributeVector2::TYPE_ID);
+            return static_cast<MCore::AttributeVector2*>(m_outputPorts[outputPortIndex].GetAttribute(animGraphInstance));
         }
         MCORE_INLINE MCore::AttributeVector3*       GetOutputVector3(AnimGraphInstance* animGraphInstance, size_t outputPortIndex) const
         {
-            if (mOutputPorts[outputPortIndex].GetAttribute(animGraphInstance) == nullptr)
+            if (m_outputPorts[outputPortIndex].GetAttribute(animGraphInstance) == nullptr)
             {
                 return nullptr;
             }
-            MCORE_ASSERT(mOutputPorts[outputPortIndex].mCompatibleTypes[0] == MCore::AttributeVector3::TYPE_ID);
-            return static_cast<MCore::AttributeVector3*>(mOutputPorts[outputPortIndex].GetAttribute(animGraphInstance));
+            MCORE_ASSERT(m_outputPorts[outputPortIndex].m_compatibleTypes[0] == MCore::AttributeVector3::TYPE_ID);
+            return static_cast<MCore::AttributeVector3*>(m_outputPorts[outputPortIndex].GetAttribute(animGraphInstance));
         }
         MCORE_INLINE MCore::AttributeVector4*       GetOutputVector4(AnimGraphInstance* animGraphInstance, size_t outputPortIndex) const
         {
-            if (mOutputPorts[outputPortIndex].GetAttribute(animGraphInstance) == nullptr)
+            if (m_outputPorts[outputPortIndex].GetAttribute(animGraphInstance) == nullptr)
             {
                 return nullptr;
             }
-            MCORE_ASSERT(mOutputPorts[outputPortIndex].mCompatibleTypes[0] == MCore::AttributeVector4::TYPE_ID);
-            return static_cast<MCore::AttributeVector4*>(mOutputPorts[outputPortIndex].GetAttribute(animGraphInstance));
+            MCORE_ASSERT(m_outputPorts[outputPortIndex].m_compatibleTypes[0] == MCore::AttributeVector4::TYPE_ID);
+            return static_cast<MCore::AttributeVector4*>(m_outputPorts[outputPortIndex].GetAttribute(animGraphInstance));
         }
         MCORE_INLINE MCore::AttributeQuaternion*    GetOutputQuaternion(AnimGraphInstance* animGraphInstance, size_t outputPortIndex) const
         {
-            if (mOutputPorts[outputPortIndex].GetAttribute(animGraphInstance) == nullptr)
+            if (m_outputPorts[outputPortIndex].GetAttribute(animGraphInstance) == nullptr)
             {
                 return nullptr;
             }
-            MCORE_ASSERT(mOutputPorts[outputPortIndex].mCompatibleTypes[0] == MCore::AttributeQuaternion::TYPE_ID);
-            return static_cast<MCore::AttributeQuaternion*>(mOutputPorts[outputPortIndex].GetAttribute(animGraphInstance));
+            MCORE_ASSERT(m_outputPorts[outputPortIndex].m_compatibleTypes[0] == MCore::AttributeQuaternion::TYPE_ID);
+            return static_cast<MCore::AttributeQuaternion*>(m_outputPorts[outputPortIndex].GetAttribute(animGraphInstance));
         }
         MCORE_INLINE MCore::AttributeColor*         GetOutputColor(AnimGraphInstance* animGraphInstance, size_t outputPortIndex) const
         {
-            if (mOutputPorts[outputPortIndex].GetAttribute(animGraphInstance) == nullptr)
+            if (m_outputPorts[outputPortIndex].GetAttribute(animGraphInstance) == nullptr)
             {
                 return nullptr;
             }
-            MCORE_ASSERT(mOutputPorts[outputPortIndex].mCompatibleTypes[0] == MCore::AttributeColor::TYPE_ID);
-            return static_cast<MCore::AttributeColor*>(mOutputPorts[outputPortIndex].GetAttribute(animGraphInstance));
+            MCORE_ASSERT(m_outputPorts[outputPortIndex].m_compatibleTypes[0] == MCore::AttributeColor::TYPE_ID);
+            return static_cast<MCore::AttributeColor*>(m_outputPorts[outputPortIndex].GetAttribute(animGraphInstance));
         }
         MCORE_INLINE AttributePose*                 GetOutputPose(AnimGraphInstance* animGraphInstance, size_t outputPortIndex) const
         {
-            if (mOutputPorts[outputPortIndex].GetAttribute(animGraphInstance) == nullptr)
+            if (m_outputPorts[outputPortIndex].GetAttribute(animGraphInstance) == nullptr)
             {
                 return nullptr;
             }
-            MCORE_ASSERT(mOutputPorts[outputPortIndex].mCompatibleTypes[0] == AttributePose::TYPE_ID);
-            return static_cast<AttributePose*>(mOutputPorts[outputPortIndex].GetAttribute(animGraphInstance));
+            MCORE_ASSERT(m_outputPorts[outputPortIndex].m_compatibleTypes[0] == AttributePose::TYPE_ID);
+            return static_cast<AttributePose*>(m_outputPorts[outputPortIndex].GetAttribute(animGraphInstance));
         }
         MCORE_INLINE AttributeMotionInstance*       GetOutputMotionInstance(AnimGraphInstance* animGraphInstance, size_t outputPortIndex) const
         {
-            if (mOutputPorts[outputPortIndex].GetAttribute(animGraphInstance) == nullptr)
+            if (m_outputPorts[outputPortIndex].GetAttribute(animGraphInstance) == nullptr)
             {
                 return nullptr;
             }
-            MCORE_ASSERT(mOutputPorts[outputPortIndex].mCompatibleTypes[0] == AttributeMotionInstance::TYPE_ID);
-            return static_cast<AttributeMotionInstance*>(mOutputPorts[outputPortIndex].GetAttribute(animGraphInstance));
+            MCORE_ASSERT(m_outputPorts[outputPortIndex].m_compatibleTypes[0] == AttributeMotionInstance::TYPE_ID);
+            return static_cast<AttributeMotionInstance*>(m_outputPorts[outputPortIndex].GetAttribute(animGraphInstance));
         }
 
         void SetupInputPortAsNumber(const char* name, size_t inputPortNr, uint32 portID);
@@ -797,10 +797,10 @@ namespace EMotionFX
 
         virtual void RecursiveResetFlags(AnimGraphInstance* animGraphInstance, uint32 flagsToReset = 0xffffffff);
 
-        const AZStd::vector<AnimGraphNode::Port>& GetInputPorts() const { return mInputPorts; }
-        const AZStd::vector<AnimGraphNode::Port>& GetOutputPorts() const { return mOutputPorts; }
-        void SetInputPorts(const AZStd::vector<AnimGraphNode::Port>& inputPorts) { mInputPorts = inputPorts; }
-        void SetOutputPorts(const AZStd::vector<AnimGraphNode::Port>& outputPorts) { mOutputPorts = outputPorts; }
+        const AZStd::vector<AnimGraphNode::Port>& GetInputPorts() const { return m_inputPorts; }
+        const AZStd::vector<AnimGraphNode::Port>& GetOutputPorts() const { return m_outputPorts; }
+        void SetInputPorts(const AZStd::vector<AnimGraphNode::Port>& inputPorts) { m_inputPorts = inputPorts; }
+        void SetOutputPorts(const AZStd::vector<AnimGraphNode::Port>& outputPorts) { m_outputPorts = outputPorts; }
         void InitInputPorts(size_t numPorts);
         void InitOutputPorts(size_t numPorts);
         void SetInputPortName(size_t portIndex, const char* name);
@@ -810,19 +810,19 @@ namespace EMotionFX
         size_t AddOutputPort();
         size_t AddInputPort();
         virtual bool GetIsStateTransitionNode() const                               { return false; }
-        MCORE_INLINE MCore::Attribute* GetOutputValue(AnimGraphInstance* animGraphInstance, size_t portIndex) const            { return animGraphInstance->GetInternalAttribute(mOutputPorts[portIndex].mAttributeIndex); }
-        MCORE_INLINE Port& GetInputPort(size_t index)                               { return mInputPorts[index]; }
-        MCORE_INLINE Port& GetOutputPort(size_t index)                              { return mOutputPorts[index]; }
-        MCORE_INLINE const Port& GetInputPort(size_t index) const                   { return mInputPorts[index]; }
-        MCORE_INLINE const Port& GetOutputPort(size_t index) const                  { return mOutputPorts[index]; }
+        MCORE_INLINE MCore::Attribute* GetOutputValue(AnimGraphInstance* animGraphInstance, size_t portIndex) const            { return animGraphInstance->GetInternalAttribute(m_outputPorts[portIndex].m_attributeIndex); }
+        MCORE_INLINE Port& GetInputPort(size_t index)                               { return m_inputPorts[index]; }
+        MCORE_INLINE Port& GetOutputPort(size_t index)                              { return m_outputPorts[index]; }
+        MCORE_INLINE const Port& GetInputPort(size_t index) const                   { return m_inputPorts[index]; }
+        MCORE_INLINE const Port& GetOutputPort(size_t index) const                  { return m_outputPorts[index]; }
         void RelinkPortConnections();
 
-        MCORE_INLINE size_t GetNumConnections() const                               { return mConnections.size(); }
-        MCORE_INLINE BlendTreeConnection* GetConnection(size_t index) const         { return mConnections[index]; }
-        const AZStd::vector<BlendTreeConnection*>& GetConnections() const           { return mConnections; }
+        MCORE_INLINE size_t GetNumConnections() const                               { return m_connections.size(); }
+        MCORE_INLINE BlendTreeConnection* GetConnection(size_t index) const         { return m_connections[index]; }
+        const AZStd::vector<BlendTreeConnection*>& GetConnections() const           { return m_connections; }
 
-        AZ_FORCE_INLINE AnimGraphNode* GetParentNode() const                        { return mParentNode; }
-        AZ_FORCE_INLINE void SetParentNode(AnimGraphNode* node)                     { mParentNode = node; }
+        AZ_FORCE_INLINE AnimGraphNode* GetParentNode() const                        { return m_parentNode; }
+        AZ_FORCE_INLINE void SetParentNode(AnimGraphNode* node)                     { m_parentNode = node; }
 
         /**
          * Check if the given node is the parent or the parent of the parent etc. of the node.
@@ -880,9 +880,9 @@ namespace EMotionFX
 
         void CopyBaseNodeTo(AnimGraphNode* node) const;
 
-        MCORE_INLINE size_t GetNumChildNodes() const                        { return mChildNodes.size(); }
-        MCORE_INLINE AnimGraphNode* GetChildNode(size_t index) const       { return mChildNodes[index]; }
-        const AZStd::vector<AnimGraphNode*>& GetChildNodes() const         { return mChildNodes; }
+        MCORE_INLINE size_t GetNumChildNodes() const                        { return m_childNodes.size(); }
+        MCORE_INLINE AnimGraphNode* GetChildNode(size_t index) const       { return m_childNodes[index]; }
+        const AZStd::vector<AnimGraphNode*>& GetChildNodes() const         { return m_childNodes; }
 
         void SetNodeInfo(const AZStd::string& info);
         const AZStd::string& GetNodeInfo() const;
@@ -924,8 +924,8 @@ namespace EMotionFX
 
         bool GetCanVisualize(AnimGraphInstance* animGraphInstance) const;
 
-        MCORE_INLINE size_t GetNodeIndex() const                                            { return mNodeIndex; }
-        MCORE_INLINE void SetNodeIndex(size_t index)                                        { mNodeIndex = index; }
+        MCORE_INLINE size_t GetNodeIndex() const                                            { return m_nodeIndex; }
+        MCORE_INLINE void SetNodeIndex(size_t index)                                        { m_nodeIndex = index; }
 
         void ResetPoseRefCount(AnimGraphInstance* animGraphInstance);
         MCORE_INLINE void IncreasePoseRefCount(AnimGraphInstance* animGraphInstance)           { FindOrCreateUniqueNodeData(animGraphInstance)->IncreasePoseRefCount(); }
@@ -944,23 +944,23 @@ namespace EMotionFX
         static void Reflect(AZ::ReflectContext* context);
 
     protected:
-        size_t                                      mNodeIndex;
+        size_t                                      m_nodeIndex;
         AZ::u64                                     m_id;
-        AZStd::vector<BlendTreeConnection*>         mConnections;
-        AZStd::vector<Port>                         mInputPorts;
-        AZStd::vector<Port>                         mOutputPorts;
-        AZStd::vector<AnimGraphNode*>               mChildNodes;
+        AZStd::vector<BlendTreeConnection*>         m_connections;
+        AZStd::vector<Port>                         m_inputPorts;
+        AZStd::vector<Port>                         m_outputPorts;
+        AZStd::vector<AnimGraphNode*>               m_childNodes;
         TriggerActionSetup                          m_actionSetup;
-        AnimGraphNode*                              mParentNode;
-        void*                                       mCustomData;
-        AZ::Color                                   mVisualizeColor;
+        AnimGraphNode*                              m_parentNode;
+        void*                                       m_customData;
+        AZ::Color                                   m_visualizeColor;
         AZStd::string                               m_name;
-        AZStd::string                               mNodeInfo;
-        int32                                       mPosX;
-        int32                                       mPosY;
-        bool                                        mDisabled;
-        bool                                        mVisEnabled;
-        bool                                        mIsCollapsed;
+        AZStd::string                               m_nodeInfo;
+        int32                                       m_posX;
+        int32                                       m_posY;
+        bool                                        m_disabled;
+        bool                                        m_visEnabled;
+        bool                                        m_isCollapsed;
 
         virtual void Output(AnimGraphInstance* animGraphInstance);
         virtual void TopDownUpdate(AnimGraphInstance* animGraphInstance, float timePassedInSeconds);

@@ -151,10 +151,10 @@ namespace AZ
                     continue;
                 }
 
-                const AZ::Vector3 parentPos = pose->GetWorldSpaceTransform(parentIndex).mPosition;
+                const AZ::Vector3 parentPos = pose->GetWorldSpaceTransform(parentIndex).m_position;
                 m_auxVertices.emplace_back(parentPos);
 
-                const AZ::Vector3 bonePos = pose->GetWorldSpaceTransform(jointIndex).mPosition;
+                const AZ::Vector3 bonePos = pose->GetWorldSpaceTransform(jointIndex).m_position;
                 m_auxVertices.emplace_back(bonePos);
             }
 
@@ -615,7 +615,7 @@ namespace AZ
                             {
                                 // Morph targets that don't deform any vertices (e.g. joint-based morph targets) are not registered in the render proxy. Skip adding their weights.
                                 const EMotionFX::MorphTargetStandard::DeformData* deformData = morphTargetStandard->GetDeformData(deformDataIndex);
-                                if (deformData->mNumVerts > 0)
+                                if (deformData->m_numVerts > 0)
                                 {
                                     float weight = morphTargetSetupInstance->GetWeight();
                                     m_morphTargetWeights.push_back(weight);

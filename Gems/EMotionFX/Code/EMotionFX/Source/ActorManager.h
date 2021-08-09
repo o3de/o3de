@@ -124,14 +124,14 @@ namespace EMotionFX
          * Get the number of actor instances that currently are registered.
          * @result The number of registered actor instances.
          */
-        MCORE_INLINE size_t GetNumActorInstances() const                                { return mActorInstances.size(); }
+        MCORE_INLINE size_t GetNumActorInstances() const                                { return m_actorInstances.size(); }
 
         /**
          * Get a given registered actor instance.
          * @param nr The actor instance number, which must be in range of [0..GetNumActorInstances()-1].
          * @result A pointer to the actor instance.
          */
-        MCORE_INLINE ActorInstance* GetActorInstance(size_t nr) const                   { return mActorInstances[nr]; }
+        MCORE_INLINE ActorInstance* GetActorInstance(size_t nr) const                   { return m_actorInstances[nr]; }
 
         /**
          * Get the array of actor instances.
@@ -201,7 +201,7 @@ namespace EMotionFX
          * horse is the root attachment instance.
          * @result Returns the number of root actor instances.
          */
-        MCORE_INLINE size_t GetNumRootActorInstances() const                    { return mRootActorInstances.size(); }
+        MCORE_INLINE size_t GetNumRootActorInstances() const                    { return m_rootActorInstances.size(); }
 
         /**
          * Get a given root actor instance.
@@ -211,7 +211,7 @@ namespace EMotionFX
          * @param nr The root actor instance number, which must be in range of [0..GetNumRootActorInstances()-1].
          * @result A pointer to the actor instance that is a root.
          */
-        MCORE_INLINE ActorInstance* GetRootActorInstance(size_t nr) const       { return mRootActorInstances[nr]; }
+        MCORE_INLINE ActorInstance* GetRootActorInstance(size_t nr) const       { return m_rootActorInstances[nr]; }
 
         /**
          * Get the currently used actor update scheduler.
@@ -255,12 +255,12 @@ namespace EMotionFX
         void UnlockActors();
 
     private:
-        AZStd::vector<ActorInstance*>    mActorInstances;        /**< The registered actor instances. */
+        AZStd::vector<ActorInstance*>    m_actorInstances;        /**< The registered actor instances. */
         AZStd::vector<AZStd::shared_ptr<Actor>> m_actors;       /**< The registered actors. */
-        AZStd::vector<ActorInstance*>    mRootActorInstances;    /**< Root actor instances (roots of all attachment chains). */
-        ActorUpdateScheduler*           mScheduler;             /**< The update scheduler to use. */
-        MCore::MutexRecursive           mActorLock;             /**< The multithread lock for touching the actors array. */
-        MCore::MutexRecursive           mActorInstanceLock;     /**< The multithread lock for touching the actor instances array. */
+        AZStd::vector<ActorInstance*>    m_rootActorInstances;    /**< Root actor instances (roots of all attachment chains). */
+        ActorUpdateScheduler*           m_scheduler;             /**< The update scheduler to use. */
+        MCore::MutexRecursive           m_actorLock;             /**< The multithread lock for touching the actors array. */
+        MCore::MutexRecursive           m_actorInstanceLock;     /**< The multithread lock for touching the actor instances array. */
 
         /**
          * The constructor, which initializes using the multi processor scheduler.

@@ -58,9 +58,9 @@ namespace EMotionFX
         AnimGraph*                                  m_animGraph;
         QLabel*                                     m_filenameLabel;
         AzToolsFramework::ReflectedPropertyEditor*  m_propertyEditor;
-        static const int                            m_propertyLabelWidth;
+        static const int                            s_propertyLabelWidth;
         QComboBox*                                  m_motionSetComboBox;
-        static QString                              m_lastMotionSetText;
+        static QString                              s_lastMotionSetText;
         AZStd::vector<MCore::Command::Callback*>    m_commandCallbacks;
 
     };

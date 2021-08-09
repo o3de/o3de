@@ -44,15 +44,15 @@ namespace EMStudio
         void OnSetCurrentCommand(size_t index) override;
 
     private:
-        QListWidget* mList;
-        AZStd::string mTempString;
-        uint32 mIndex;
-        bool mIsRemoving;
+        QListWidget* m_list;
+        AZStd::string m_tempString;
+        uint32 m_index;
+        bool m_isRemoving;
 
-        bool mGroupExecuting;
-        MCore::CommandGroup* mExecutedGroup;
-        size_t mNumGroupCommands;
-        uint32 mCurrentCommandIndex;
+        bool m_groupExecuting;
+        MCore::CommandGroup* m_executedGroup;
+        size_t m_numGroupCommands;
+        uint32 m_currentCommandIndex;
         QBrush m_brush;
         QBrush m_darkenedBrush;
     };

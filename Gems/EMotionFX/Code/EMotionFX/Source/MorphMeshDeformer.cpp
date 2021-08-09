@@ -63,13 +63,13 @@ namespace EMotionFX
         MorphMeshDeformer* result = aznew MorphMeshDeformer(mesh);
 
         // copy the deform passes
-        result->mDeformPasses.resize(mDeformPasses.size());
-        for (size_t i = 0; i < mDeformPasses.size(); ++i)
+        result->m_deformPasses.resize(m_deformPasses.size());
+        for (size_t i = 0; i < m_deformPasses.size(); ++i)
         {
-            DeformPass& pass = result->mDeformPasses[i];
-            pass.mDeformDataNr = mDeformPasses[i].mDeformDataNr;
-            pass.mMorphTarget  = mDeformPasses[i].mMorphTarget;
-            pass.mLastNearZero = false;
+            DeformPass& pass = result->m_deformPasses[i];
+            pass.m_deformDataNr = m_deformPasses[i].m_deformDataNr;
+            pass.m_morphTarget  = m_deformPasses[i].m_morphTarget;
+            pass.m_lastNearZero = false;
         }
 
         // return the result
@@ -88,23 +88,23 @@ namespace EMotionFX
         const size_t lodLevel = actorInstance->GetLODLevel();
 
         // apply all deform passes
-        for (DeformPass& deformPass : mDeformPasses)
+        for (DeformPass& deformPass : m_deformPasses)
         {
             // find the morph target
-            MorphTargetStandard* morphTarget = (MorphTargetStandard*)actor->GetMorphSetup(lodLevel)->FindMorphTargetByID(deformPass.mMorphTarget->GetID());
+            MorphTargetStandard* morphTarget = (MorphTargetStandard*)actor->GetMorphSetup(lodLevel)->FindMorphTargetByID(deformPass.m_morphTarget->GetID());
             if (morphTarget == nullptr)
             {
                 continue;
             }
 
             // get the deform data and number of vertices to deform
-            MorphTargetStandard::DeformData* deformData = morphTarget->GetDeformData(deformPass.mDeformDataNr);
-            const uint32 numDeformVerts = deformData->mNumVerts;
+            MorphTargetStandard::DeformData* deformData = morphTarget->GetDeformData(deformPass.m_deformDataNr);
+            const uint32 numDeformVerts = deformData->m_numVerts;
 
             // this mesh deformer can't work on this mesh, because the deformdata number of vertices is bigger than the
             // number of vertices inside this mesh!
             // and that would make it crash, which isn't what we want
-            if (numDeformVerts > mMesh->GetNumVertices())
+            if (numDeformVerts > m_mesh->GetNumVertices())
             {
                 continue;
             }
@@ -120,7 +120,7 @@ namespace EMotionFX
             const bool nearZero = (MCore::Math::Abs(weight) < 0.0001f);
 
             // we are near zero, and the previous frame as well, so we can return
-            if (nearZero && deformPass.mLastNearZero)
+            if (nearZero && deformPass.m_lastNearZero)
             {
                 continue;
             }
@@ -128,36 +128,36 @@ namespace EMotionFX
             // update the flag
             if (nearZero)
             {
-                deformPass.mLastNearZero = true;
+                deformPass.m_lastNearZero = true;
             }
             else
             {
-                deformPass.mLastNearZero = false; // we moved away from zero influence
+                deformPass.m_lastNearZero = false; // we moved away from zero influence
             }
 
             // output data
-            AZ::Vector3* positions   = static_cast<AZ::Vector3*>(mMesh->FindVertexData(Mesh::ATTRIB_POSITIONS));
-            AZ::Vector3* normals     = static_cast<AZ::Vector3*>(mMesh->FindVertexData(Mesh::ATTRIB_NORMALS));
-            AZ::Vector4* tangents    = static_cast<AZ::Vector4*>(mMesh->FindVertexData(Mesh::ATTRIB_TANGENTS));
-            AZ::Vector3* bitangents  = static_cast<AZ::Vector3*>(mMesh->FindVertexData(Mesh::ATTRIB_BITANGENTS));
+            AZ::Vector3* positions   = static_cast<AZ::Vector3*>(m_mesh->FindVertexData(Mesh::ATTRIB_POSITIONS));
+            AZ::Vector3* normals     = static_cast<AZ::Vector3*>(m_mesh->FindVertexData(Mesh::ATTRIB_NORMALS));
+            AZ::Vector4* tangents    = static_cast<AZ::Vector4*>(m_mesh->FindVertexData(Mesh::ATTRIB_TANGENTS));
+            AZ::Vector3* bitangents  = static_cast<AZ::Vector3*>(m_mesh->FindVertexData(Mesh::ATTRIB_BITANGENTS));
 
             // input data
-            const MorphTargetStandard::DeformData::VertexDelta* deltas = deformData->mDeltas;
-            const float minValue = deformData->mMinValue;
-            const float maxValue = deformData->mMaxValue;
+            const MorphTargetStandard::DeformData::VertexDelta* deltas = deformData->m_deltas;
+            const float minValue = deformData->m_minValue;
+            const float maxValue = deformData->m_maxValue;
 
             if (tangents && bitangents)
             {
                 // process all vertices that we need to deform
                 for (uint32 v = 0; v < numDeformVerts; ++v)
                 {
-                    uint32 vtxNr = deltas[v].mVertexNr;
+                    uint32 vtxNr = deltas[v].m_vertexNr;
 
-                    positions [vtxNr] = positions[vtxNr] + deltas[v].mPosition.ToVector3(minValue, maxValue) * weight;
-                    normals   [vtxNr] = normals[vtxNr] + deltas[v].mNormal.ToVector3(-2.0f, 2.0f) * weight;
-                    bitangents[vtxNr] = bitangents[vtxNr] + deltas[v].mBitangent.ToVector3(-2.0f, 2.0f) * weight;
+                    positions [vtxNr] = positions[vtxNr] + deltas[v].m_position.ToVector3(minValue, maxValue) * weight;
+                    normals   [vtxNr] = normals[vtxNr] + deltas[v].m_normal.ToVector3(-2.0f, 2.0f) * weight;
+                    bitangents[vtxNr] = bitangents[vtxNr] + deltas[v].m_bitangent.ToVector3(-2.0f, 2.0f) * weight;
 
-                    const AZ::Vector3 tangentDirVector = deltas[v].mTangent.ToVector3(-2.0f, 2.0f);
+                    const AZ::Vector3 tangentDirVector = deltas[v].m_tangent.ToVector3(-2.0f, 2.0f);
                     tangents[vtxNr] += AZ::Vector4(tangentDirVector.GetX()*weight, tangentDirVector.GetY()*weight, tangentDirVector.GetZ()*weight, 0.0f);
                 }
             }
@@ -165,12 +165,12 @@ namespace EMotionFX
             {
                 for (uint32 v = 0; v < numDeformVerts; ++v)
                 {
-                    uint32 vtxNr = deltas[v].mVertexNr;
+                    uint32 vtxNr = deltas[v].m_vertexNr;
 
-                    positions[vtxNr] = positions[vtxNr] + deltas[v].mPosition.ToVector3(minValue, maxValue) * weight;
-                    normals  [vtxNr] = normals[vtxNr] + deltas[v].mNormal.ToVector3(-2.0f, 2.0f) * weight;
+                    positions[vtxNr] = positions[vtxNr] + deltas[v].m_position.ToVector3(minValue, maxValue) * weight;
+                    normals  [vtxNr] = normals[vtxNr] + deltas[v].m_normal.ToVector3(-2.0f, 2.0f) * weight;
 
-                    const AZ::Vector3 tangentDirVector = deltas[v].mTangent.ToVector3(-2.0f, 2.0f);
+                    const AZ::Vector3 tangentDirVector = deltas[v].m_tangent.ToVector3(-2.0f, 2.0f);
                     tangents[vtxNr] += AZ::Vector4(tangentDirVector.GetX()*weight, tangentDirVector.GetY()*weight, tangentDirVector.GetZ()*weight, 0.0f);
                 }
             }
@@ -179,10 +179,10 @@ namespace EMotionFX
                 // process all vertices that we need to deform
                 for (uint32 v = 0; v < numDeformVerts; ++v)
                 {
-                    uint32 vtxNr = deltas[v].mVertexNr;
+                    uint32 vtxNr = deltas[v].m_vertexNr;
 
-                    positions[vtxNr] = positions[vtxNr] + deltas[v].mPosition.ToVector3(minValue, maxValue) * weight;
-                    normals[vtxNr]   = normals[vtxNr] + deltas[v].mNormal.ToVector3(-2.0f, 2.0f) * weight;
+                    positions[vtxNr] = positions[vtxNr] + deltas[v].m_position.ToVector3(minValue, maxValue) * weight;
+                    normals[vtxNr]   = normals[vtxNr] + deltas[v].m_normal.ToVector3(-2.0f, 2.0f) * weight;
                 }
             }
         }
@@ -193,7 +193,7 @@ namespace EMotionFX
     void MorphMeshDeformer::Reinitialize(Actor* actor, Node* node, size_t lodLevel)
     {
         // clear the deform passes, but don't free the currently allocated/reserved memory
-        mDeformPasses.clear();
+        m_deformPasses.clear();
 
         // get the morph setup
         MorphSetup* morphSetup = actor->GetMorphSetup(lodLevel);
@@ -211,13 +211,13 @@ namespace EMotionFX
             {
                 // get the deform data and only add it to our deformer in case it belongs to our mesh
                 MorphTargetStandard::DeformData* deformData = morphTarget->GetDeformData(j);
-                if (deformData->mNodeIndex == node->GetNodeIndex())
+                if (deformData->m_nodeIndex == node->GetNodeIndex())
                 {
                     // add an empty deform pass and fill it afterwards
-                    mDeformPasses.emplace_back();
-                    const size_t deformPassIndex = mDeformPasses.size() - 1;
-                    mDeformPasses[deformPassIndex].mDeformDataNr = j;
-                    mDeformPasses[deformPassIndex].mMorphTarget  = morphTarget;
+                    m_deformPasses.emplace_back();
+                    const size_t deformPassIndex = m_deformPasses.size() - 1;
+                    m_deformPasses[deformPassIndex].m_deformDataNr = j;
+                    m_deformPasses[deformPassIndex].m_morphTarget  = morphTarget;
                 }
             }
         }
@@ -226,18 +226,18 @@ namespace EMotionFX
 
     void MorphMeshDeformer::AddDeformPass(const DeformPass& deformPass)
     {
-        mDeformPasses.emplace_back(deformPass);
+        m_deformPasses.emplace_back(deformPass);
     }
 
 
     size_t MorphMeshDeformer::GetNumDeformPasses() const
     {
-        return mDeformPasses.size();
+        return m_deformPasses.size();
     }
 
 
     void MorphMeshDeformer::ReserveDeformPasses(size_t numPasses)
     {
-        mDeformPasses.reserve(numPasses);
+        m_deformPasses.reserve(numPasses);
     }
 } // namespace EMotionFX

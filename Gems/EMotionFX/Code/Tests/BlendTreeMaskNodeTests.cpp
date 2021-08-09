@@ -72,7 +72,7 @@ namespace EMotionFX
             for (size_t i = 0; i < numJoints; ++i)
             {
                 Transform transform = outputPose.GetLocalSpaceTransform(i);
-                transform.mPosition = AZ::Vector3(m_identificationValue, m_identificationValue, m_identificationValue);
+                transform.m_position = AZ::Vector3(m_identificationValue, m_identificationValue, m_identificationValue);
                 outputPose.SetLocalSpaceTransform(i, transform);
             }
         }
@@ -230,7 +230,7 @@ namespace EMotionFX
             // The components of the position embed the origin.
             // If the compareValue equals m_basePosePosValue, it originates from the base pose input.
             // In case the joint is part of any of the masks and got overwriten by them, the compareValue represents the mask index.
-            const size_t compareValue = static_cast<size_t>(transform.mPosition.GetX());
+            const size_t compareValue = static_cast<size_t>(transform.m_position.GetX());
 
             AZ::Outcome<size_t> maskIndex = FindMaskIndexForJoint(jointIndex);
             if (maskIndex.IsSuccess())

@@ -153,7 +153,7 @@ namespace CommandSystem
             for (uint32 i = 0; i < actor->GetNumNodes(); ++i)
             {
                 const EMotionFX::Actor::NodeMirrorInfo& mirrorInfo = actor->GetNodeMirrorInfo(i);
-                uint16 sourceNode = mirrorInfo.mSourceNode;
+                uint16 sourceNode = mirrorInfo.m_sourceNode;
                 if (sourceNode != MCORE_INVALIDINDEX16 && sourceNode != static_cast<uint16>(i))
                 {
                     outMetaDataString += actor->GetSkeleton()->GetNode(i)->GetNameString();

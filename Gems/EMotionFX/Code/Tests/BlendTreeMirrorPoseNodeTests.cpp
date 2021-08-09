@@ -32,8 +32,8 @@ namespace EMotionFX
     public:
         void SetupMirrorNodes(const Node* leftNode, const Node* rightNode)
         {
-            m_actor->GetNodeMirrorInfo(leftNode->GetNodeIndex()).mSourceNode = static_cast<uint16>(rightNode->GetNodeIndex());
-            m_actor->GetNodeMirrorInfo(rightNode->GetNodeIndex()).mSourceNode = static_cast<uint16>(leftNode->GetNodeIndex());
+            m_actor->GetNodeMirrorInfo(leftNode->GetNodeIndex()).m_sourceNode = static_cast<uint16>(rightNode->GetNodeIndex());
+            m_actor->GetNodeMirrorInfo(rightNode->GetNodeIndex()).m_sourceNode = static_cast<uint16>(leftNode->GetNodeIndex());
         }
 
         void ConstructGraph() override
@@ -129,13 +129,13 @@ namespace EMotionFX
 
         // Remember the original position for comparison later
         Pose * jackPose = m_actorInstance->GetTransformData()->GetCurrentPose();
-        const AZ::Vector3 l_upArmOriginalPos = jackPose->GetModelSpaceTransform(l_upArmIndex).mPosition;
-        const AZ::Vector3 r_upArmOriginalPos = jackPose->GetModelSpaceTransform(r_upArmIndex).mPosition;
+        const AZ::Vector3 l_upArmOriginalPos = jackPose->GetModelSpaceTransform(l_upArmIndex).m_position;
+        const AZ::Vector3 r_upArmOriginalPos = jackPose->GetModelSpaceTransform(r_upArmIndex).m_position;
         GetEMotionFX().Update(1.0f / 60.0f);
 
         // Remember mirrored position
-        const AZ::Vector3 l_upArmMirroredPos = jackPose->GetModelSpaceTransform(l_upArmIndex).mPosition;
-        const AZ::Vector3 r_upArmMirroredPos = jackPose->GetModelSpaceTransform(r_upArmIndex).mPosition;
+        const AZ::Vector3 l_upArmMirroredPos = jackPose->GetModelSpaceTransform(l_upArmIndex).m_position;
+        const AZ::Vector3 r_upArmMirroredPos = jackPose->GetModelSpaceTransform(r_upArmIndex).m_position;
         
         // Expect poses to be at the same position because mirror pose node is off
         EXPECT_FALSE(m_mirrorPoseNode->GetIsMirroringEnabled(m_animGraphInstance));
@@ -144,19 +144,19 @@ namespace EMotionFX
 
         // Mirror Pose Node enabled
         m_floatConstantNode->SetValue(1.0f);
-        const AZ::Vector3 l_upArmPos = jackPose->GetModelSpaceTransform(l_upArmIndex).mPosition;
-        const AZ::Vector3 r_upArmPos = jackPose->GetModelSpaceTransform(r_upArmIndex).mPosition;
-        const AZ::Vector3 l_loArmPos = jackPose->GetModelSpaceTransform(l_loArmIndex).mPosition;
-        const AZ::Vector3 r_loArmPos = jackPose->GetModelSpaceTransform(r_loArmIndex).mPosition;
-        const AZ::Vector3 l_handPos = jackPose->GetModelSpaceTransform(l_handIndex).mPosition;
-        const AZ::Vector3 r_handPos = jackPose->GetModelSpaceTransform(r_handIndex).mPosition;
+        const AZ::Vector3 l_upArmPos = jackPose->GetModelSpaceTransform(l_upArmIndex).m_position;
+        const AZ::Vector3 r_upArmPos = jackPose->GetModelSpaceTransform(r_upArmIndex).m_position;
+        const AZ::Vector3 l_loArmPos = jackPose->GetModelSpaceTransform(l_loArmIndex).m_position;
+        const AZ::Vector3 r_loArmPos = jackPose->GetModelSpaceTransform(r_loArmIndex).m_position;
+        const AZ::Vector3 l_handPos = jackPose->GetModelSpaceTransform(l_handIndex).m_position;
+        const AZ::Vector3 r_handPos = jackPose->GetModelSpaceTransform(r_handIndex).m_position;
         GetEMotionFX().Update(1.0f / 60.0f);
-        const AZ::Vector3 mirroredl_upArmPos = jackPose->GetModelSpaceTransform(l_upArmIndex).mPosition;
-        const AZ::Vector3 mirroredr_upArmPos = jackPose->GetModelSpaceTransform(r_upArmIndex).mPosition;
-        const AZ::Vector3 mirroredl_loArmPos = jackPose->GetModelSpaceTransform(l_loArmIndex).mPosition;
-        const AZ::Vector3 mirroredr_loArmPos = jackPose->GetModelSpaceTransform(r_loArmIndex).mPosition;
-        const AZ::Vector3 mirroredl_handPos = jackPose->GetModelSpaceTransform(l_handIndex).mPosition;
-        const AZ::Vector3 mirroredr_handPos = jackPose->GetModelSpaceTransform(r_handIndex).mPosition;
+        const AZ::Vector3 mirroredl_upArmPos = jackPose->GetModelSpaceTransform(l_upArmIndex).m_position;
+        const AZ::Vector3 mirroredr_upArmPos = jackPose->GetModelSpaceTransform(r_upArmIndex).m_position;
+        const AZ::Vector3 mirroredl_loArmPos = jackPose->GetModelSpaceTransform(l_loArmIndex).m_position;
+        const AZ::Vector3 mirroredr_loArmPos = jackPose->GetModelSpaceTransform(r_loArmIndex).m_position;
+        const AZ::Vector3 mirroredl_handPos = jackPose->GetModelSpaceTransform(l_handIndex).m_position;
+        const AZ::Vector3 mirroredr_handPos = jackPose->GetModelSpaceTransform(r_handIndex).m_position;
 
         EXPECT_TRUE(m_mirrorPoseNode->GetIsMirroringEnabled(m_animGraphInstance));
 

@@ -126,8 +126,8 @@ namespace EMStudio
         using NodeGraphByModelIndex = AZStd::unordered_map<QPersistentModelIndex, AZStd::unique_ptr<NodeGraph>, QPersistentModelIndexHash>;
         NodeGraphByModelIndex m_nodeGraphByModelIndex;
 
-        QPoint                      mContextMenuEventMousePos;
-        bool                        mDoubleClickHappened;
-        MCore::CommandGroup         mMoveGroup;
+        QPoint                      m_contextMenuEventMousePos;
+        bool                        m_doubleClickHappened;
+        MCore::CommandGroup         m_moveGroup;
     };
 }   // namespace EMStudio

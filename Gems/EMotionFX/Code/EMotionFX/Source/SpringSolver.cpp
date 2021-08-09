@@ -412,7 +412,7 @@ namespace EMotionFX
             const size_t jointIndexA = m_particles[spring.m_particleA].m_joint->GetSkeletonJointIndex();
             const size_t jointIndexB = m_particles[spring.m_particleB].m_joint->GetSkeletonJointIndex();
             const Pose* bindPose = m_actorInstance->GetTransformData()->GetBindPose();
-            const float restLength = (bindPose->GetModelSpaceTransform(jointIndexB).mPosition - bindPose->GetModelSpaceTransform(jointIndexA).mPosition).GetLength();
+            const float restLength = (bindPose->GetModelSpaceTransform(jointIndexB).m_position - bindPose->GetModelSpaceTransform(jointIndexA).m_position).GetLength();
             if (restLength > AZ::Constants::FloatEpsilon)
             {
                 spring.m_restLength = restLength;
@@ -472,7 +472,7 @@ namespace EMotionFX
                 const float radius = particle.m_joint->GetCollisionRadius() * scaleFactor;
                 if (radius > 0.0f)
                 {
-                    const AZ::Quaternion& jointRotation = pose.GetWorldSpaceTransform(particle.m_joint->GetSkeletonJointIndex()).mRotation;
+                    const AZ::Quaternion& jointRotation = pose.GetWorldSpaceTransform(particle.m_joint->GetSkeletonJointIndex()).m_rotation;
                     drawData->DrawWireframeSphere(particle.m_pos, radius, AZ::Color(0.3f, 0.3f, 0.3f, 1.0f), jointRotation, 12, 12);
                 }
             }
@@ -485,7 +485,7 @@ namespace EMotionFX
             {
                 if (collider.GetType() == CollisionObject::CollisionType::Sphere)
                 {
-                    const AZ::Quaternion& jointRotation = pose.GetWorldSpaceTransform(collider.m_jointIndex).mRotation;
+                    const AZ::Quaternion& jointRotation = pose.GetWorldSpaceTransform(collider.m_jointIndex).m_rotation;
                     drawData->DrawWireframeSphere(collider.m_globalStart, collider.m_scaledRadius, color * 0.65f, jointRotation, 16, 16);
                 }
                 else if (collider.GetType() == CollisionObject::CollisionType::Capsule)
@@ -562,7 +562,7 @@ namespace EMotionFX
         AZ_Assert(joint->GetMass() > AZ::Constants::FloatEpsilon, "Expected mass to be larger than zero.");
         Particle particle;
         particle.m_joint = joint;
-        particle.m_pos = m_actorInstance->GetTransformData()->GetBindPose()->GetModelSpaceTransform(joint->GetSkeletonJointIndex()).mPosition;
+        particle.m_pos = m_actorInstance->GetTransformData()->GetBindPose()->GetModelSpaceTransform(joint->GetSkeletonJointIndex()).m_position;
         particle.m_oldPos = particle.m_pos;
         particle.m_parentParticleIndex = m_parentParticle;
         m_particles.emplace_back(particle);
@@ -586,8 +586,8 @@ namespace EMotionFX
         if (restLength < 0.0f)
         {
             const Pose* pose = m_actorInstance->GetTransformData()->GetCurrentPose();
-            const AZ::Vector3 posA = pose->GetWorldSpaceTransform(nodeA).mPosition;
-            const AZ::Vector3 posB = pose->GetWorldSpaceTransform(nodeB).mPosition;
+            const AZ::Vector3 posA = pose->GetWorldSpaceTransform(nodeA).m_position;
+            const AZ::Vector3 posB = pose->GetWorldSpaceTransform(nodeB).m_position;
             restLength = (posB - posA).GetLength();
         }
 
@@ -695,7 +695,7 @@ namespace EMotionFX
     float SpringSolver::GetScaleFactor() const
     {
         #ifndef EMFX_SCALE_DISABLED
-            float scaleFactor = m_actorInstance->GetWorldSpaceTransform().mScale.GetX();
+            float scaleFactor = m_actorInstance->GetWorldSpaceTransform().m_scale.GetX();
             if (AZ::IsClose(scaleFactor, 0.0f, AZ::Constants::FloatEpsilon))
             {
                 return AZ::Constants::FloatEpsilon;
@@ -725,7 +725,7 @@ namespace EMotionFX
                 if (stiffnessFactor > 0.0f)
                 {
                     const Transform jointWorldTransform = pose.GetWorldSpaceTransform(joint->GetSkeletonJointIndex());
-                    const AZ::Vector3 force = (jointWorldTransform.mPosition - particle.m_pos) + particle.m_externalForce;
+                    const AZ::Vector3 force = (jointWorldTransform.m_position - particle.m_pos) + particle.m_externalForce;
                     particle.m_force += force * stiffnessFactor;
                 }
 
@@ -816,17 +816,17 @@ namespace EMotionFX
                 }
                 else if (pinnedA && pinnedB)
                 {
-                    particleA.m_pos = worldTransformA.mPosition;
-                    particleB.m_pos = worldTransformB.mPosition;
+                    particleA.m_pos = worldTransformA.m_position;
+                    particleB.m_pos = worldTransformB.m_position;
                 }
                 else if (pinnedB)
                 {
-                    particleB.m_pos = worldTransformB.mPosition;
+                    particleB.m_pos = worldTransformB.m_position;
                     particleA.m_pos += delta * diff;
                 }
                 else // Only particleA is pinned.
                 {
-                    particleA.m_pos = worldTransformA.mPosition;
+                    particleA.m_pos = worldTransformA.m_position;
                     particleB.m_pos -= delta * diff;
                 }
 
@@ -839,7 +839,7 @@ namespace EMotionFX
                     }
                     else
                     {
-                        particleB.m_limitDir = worldTransformA.mPosition - worldTransformB.mPosition;
+                        particleB.m_limitDir = worldTransformA.m_position - worldTransformB.m_position;
                     }
                     PerformConeLimit(particleA, particleB, particleB.m_limitDir);
                 }
@@ -886,7 +886,7 @@ namespace EMotionFX
             const SimulatedJoint* joint = particle.m_joint;
             if (joint->IsPinned())
             {
-                particle.m_pos = pose.GetWorldSpaceTransform(joint->GetSkeletonJointIndex()).mPosition;
+                particle.m_pos = pose.GetWorldSpaceTransform(joint->GetSkeletonJointIndex()).m_position;
                 particle.m_oldPos = particle.m_pos;
                 particle.m_force = AZ::Vector3::CreateZero();
             }
@@ -954,15 +954,15 @@ namespace EMotionFX
             const Particle& particleB = m_particles[spring.m_particleB];
             Transform modelTransformB = pose.GetModelSpaceTransform(particleB.m_joint->GetSkeletonJointIndex());
             const Transform& modelTransformA = pose.GetModelSpaceTransform(particleA.m_joint->GetSkeletonJointIndex());
-            const AZ::Vector3 oldDir = (modelTransformA.mPosition - modelTransformB.mPosition).GetNormalizedSafe();
+            const AZ::Vector3 oldDir = (modelTransformA.m_position - modelTransformB.m_position).GetNormalizedSafe();
             const AZ::Vector3 newDir = m_actorInstance->GetWorldSpaceTransformInversed().TransformVector(particleA.m_pos - particleB.m_pos).GetNormalizedSafe();
 
-            modelTransformB.mRotation = AZ::Quaternion::CreateShortestArc(oldDir, newDir).GetNormalized() * modelTransformB.mRotation;
-            modelTransformB.mRotation.Normalize();
+            modelTransformB.m_rotation = AZ::Quaternion::CreateShortestArc(oldDir, newDir).GetNormalized() * modelTransformB.m_rotation;
+            modelTransformB.m_rotation.Normalize();
 
             if (spring.m_allowStretch)
             {
-                modelTransformB.mPosition = particleB.m_pos;
+                modelTransformB.m_position = particleB.m_pos;
             }
 
             pose.SetModelSpaceTransform(particleB.m_joint->GetSkeletonJointIndex(), modelTransformB);

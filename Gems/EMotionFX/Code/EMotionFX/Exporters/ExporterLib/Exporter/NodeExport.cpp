@@ -29,11 +29,11 @@ namespace ExporterLib
         const size_t                parentIndex         = node->GetParentIndex();
         const size_t                numChilds           = node->GetNumChildNodes();
         const EMotionFX::Transform& transform           = actor->GetBindPose()->GetLocalSpaceTransform(nodeIndex);
-        AZ::PackedVector3f          position            = AZ::PackedVector3f(transform.mPosition);
-        AZ::Quaternion              rotation            = transform.mRotation.GetNormalized();
+        AZ::PackedVector3f          position            = AZ::PackedVector3f(transform.m_position);
+        AZ::Quaternion              rotation            = transform.m_rotation.GetNormalized();
 
         #ifndef EMFX_SCALE_DISABLED
-            AZ::PackedVector3f scale = AZ::PackedVector3f(transform.mScale);
+            AZ::PackedVector3f scale = AZ::PackedVector3f(transform.m_scale);
         #else
             AZ::PackedVector3f scale(1.0f, 1.0f, 1.0f);
         #endif
@@ -42,12 +42,12 @@ namespace ExporterLib
         EMotionFX::FileFormat::Actor_Node2 nodeChunk;
         memset(&nodeChunk, 0, sizeof(EMotionFX::FileFormat::Actor_Node2));
 
-        CopyVector(nodeChunk.mLocalPos,    position);
-        CopyQuaternion(nodeChunk.mLocalQuat,   rotation);
-        CopyVector(nodeChunk.mLocalScale,  scale);
+        CopyVector(nodeChunk.m_localPos,    position);
+        CopyQuaternion(nodeChunk.m_localQuat,   rotation);
+        CopyVector(nodeChunk.m_localScale,  scale);
 
-        nodeChunk.mNumChilds        = aznumeric_caster(numChilds);
-        nodeChunk.mParentIndex      = aznumeric_caster(parentIndex);
+        nodeChunk.m_numChilds        = aznumeric_caster(numChilds);
+        nodeChunk.m_parentIndex      = aznumeric_caster(parentIndex);
 
         // calculate and copy over the skeletal LODs
         uint32 skeletalLODs = 0;
@@ -58,26 +58,26 @@ namespace ExporterLib
                 skeletalLODs |= (1 << l);
             }
         }
-        nodeChunk.mSkeletalLODs = skeletalLODs;
+        nodeChunk.m_skeletalLoDs = skeletalLODs;
 
         // will this node be involved in the bounding volume calculations?
         if (node->GetIncludeInBoundsCalc())
         {
-            nodeChunk.mNodeFlags |= EMotionFX::Node::ENodeFlags::FLAG_INCLUDEINBOUNDSCALC;// first bit
+            nodeChunk.m_nodeFlags |= EMotionFX::Node::ENodeFlags::FLAG_INCLUDEINBOUNDSCALC;// first bit
         }
         else
         {
-            nodeChunk.mNodeFlags  &= ~EMotionFX::Node::ENodeFlags::FLAG_INCLUDEINBOUNDSCALC;
+            nodeChunk.m_nodeFlags  &= ~EMotionFX::Node::ENodeFlags::FLAG_INCLUDEINBOUNDSCALC;
         }
 
         // Add an isCritical option in node flag so it won't be optimized out. 
         if (node->GetIsCritical())
         {
-            nodeChunk.mNodeFlags |= EMotionFX::Node::ENodeFlags::FLAG_CRITICAL; // third bit
+            nodeChunk.m_nodeFlags |= EMotionFX::Node::ENodeFlags::FLAG_CRITICAL; // third bit
         }
         else
         {
-            nodeChunk.mNodeFlags &= ~EMotionFX::Node::ENodeFlags::FLAG_CRITICAL;
+            nodeChunk.m_nodeFlags &= ~EMotionFX::Node::ENodeFlags::FLAG_CRITICAL;
         }
 
         // log the node chunk information
@@ -90,15 +90,15 @@ namespace ExporterLib
         {
             MCore::LogDetailedInfo("    + Parent: name='%s' index=%i", actor->GetSkeleton()->GetNode(parentIndex)->GetName(), parentIndex);
         }
-        MCore::LogDetailedInfo("    + NumChilds: %i", nodeChunk.mNumChilds);
-        MCore::LogDetailedInfo("    + Position: x=%f y=%f z=%f", nodeChunk.mLocalPos.mX, nodeChunk.mLocalPos.mY, nodeChunk.mLocalPos.mZ);
-        MCore::LogDetailedInfo("    + Rotation: x=%f y=%f z=%f w=%f", nodeChunk.mLocalQuat.mX, nodeChunk.mLocalQuat.mY, nodeChunk.mLocalQuat.mZ, nodeChunk.mLocalQuat.mW);
+        MCore::LogDetailedInfo("    + NumChilds: %i", nodeChunk.m_numChilds);
+        MCore::LogDetailedInfo("    + Position: x=%f y=%f z=%f", nodeChunk.m_localPos.m_x, nodeChunk.m_localPos.m_y, nodeChunk.m_localPos.m_z);
+        MCore::LogDetailedInfo("    + Rotation: x=%f y=%f z=%f w=%f", nodeChunk.m_localQuat.m_x, nodeChunk.m_localQuat.m_y, nodeChunk.m_localQuat.m_z, nodeChunk.m_localQuat.m_w);
         const AZ::Vector3 euler = MCore::AzQuaternionToEulerAngles(rotation);
         MCore::LogDetailedInfo("    + Rotation Euler: x=%f y=%f z=%f",
             float(euler.GetX()) * 180.0 / MCore::Math::pi,
             float(euler.GetY()) * 180.0 / MCore::Math::pi,
             float(euler.GetZ()) * 180.0 / MCore::Math::pi);
-        MCore::LogDetailedInfo("    + Scale: x=%f y=%f z=%f", nodeChunk.mLocalScale.mX, nodeChunk.mLocalScale.mY, nodeChunk.mLocalScale.mZ);
+        MCore::LogDetailedInfo("    + Scale: x=%f y=%f z=%f", nodeChunk.m_localScale.m_x, nodeChunk.m_localScale.m_y, nodeChunk.m_localScale.m_z);
         MCore::LogDetailedInfo("    + IncludeInBoundsCalc: %d", node->GetIncludeInBoundsCalc());
 
         // log skeletal lods
@@ -111,12 +111,12 @@ namespace ExporterLib
         MCore::LogDetailedInfo(lodString.c_str());
 
         // endian conversion
-        ConvertFileVector3(&nodeChunk.mLocalPos,           targetEndianType);
-        ConvertFileQuaternion(&nodeChunk.mLocalQuat,       targetEndianType);
-        ConvertFileVector3(&nodeChunk.mLocalScale,         targetEndianType);
-        ConvertUnsignedInt(&nodeChunk.mParentIndex,        targetEndianType);
-        ConvertUnsignedInt(&nodeChunk.mNumChilds,          targetEndianType);
-        ConvertUnsignedInt(&nodeChunk.mSkeletalLODs,       targetEndianType);
+        ConvertFileVector3(&nodeChunk.m_localPos,           targetEndianType);
+        ConvertFileQuaternion(&nodeChunk.m_localQuat,       targetEndianType);
+        ConvertFileVector3(&nodeChunk.m_localScale,         targetEndianType);
+        ConvertUnsignedInt(&nodeChunk.m_parentIndex,        targetEndianType);
+        ConvertUnsignedInt(&nodeChunk.m_numChilds,          targetEndianType);
+        ConvertUnsignedInt(&nodeChunk.m_skeletalLoDs,       targetEndianType);
 
         // write it
         file->Write(&nodeChunk, sizeof(EMotionFX::FileFormat::Actor_Node2));
@@ -136,14 +136,14 @@ namespace ExporterLib
 
         // chunk information
         EMotionFX::FileFormat::FileChunk chunkHeader;
-        chunkHeader.mChunkID = EMotionFX::FileFormat::ACTOR_CHUNK_NODES;
-        chunkHeader.mVersion = 2;
+        chunkHeader.m_chunkId = EMotionFX::FileFormat::ACTOR_CHUNK_NODES;
+        chunkHeader.m_version = 2;
 
         // get the nodes chunk size
-        chunkHeader.mSizeInBytes = aznumeric_caster(sizeof(EMotionFX::FileFormat::Actor_Nodes2) + numNodes * sizeof(EMotionFX::FileFormat::Actor_Node2));
+        chunkHeader.m_sizeInBytes = aznumeric_caster(sizeof(EMotionFX::FileFormat::Actor_Nodes2) + numNodes * sizeof(EMotionFX::FileFormat::Actor_Node2));
         for (size_t i = 0; i < numNodes; i++)
         {
-            chunkHeader.mSizeInBytes += GetStringChunkSize(actor->GetSkeleton()->GetNode(i)->GetName());
+            chunkHeader.m_sizeInBytes += GetStringChunkSize(actor->GetSkeleton()->GetNode(i)->GetName());
         }
 
         // endian conversion and write it
@@ -152,12 +152,12 @@ namespace ExporterLib
 
         // nodes chunk
         EMotionFX::FileFormat::Actor_Nodes2 nodesChunk;
-        nodesChunk.mNumNodes        = aznumeric_caster(numNodes);
-        nodesChunk.mNumRootNodes    = aznumeric_caster(actor->GetSkeleton()->GetNumRootNodes());
+        nodesChunk.m_numNodes        = aznumeric_caster(numNodes);
+        nodesChunk.m_numRootNodes    = aznumeric_caster(actor->GetSkeleton()->GetNumRootNodes());
 
         // endian conversion and write it
-        ConvertUnsignedInt(&nodesChunk.mNumNodes, targetEndianType);
-        ConvertUnsignedInt(&nodesChunk.mNumRootNodes, targetEndianType);
+        ConvertUnsignedInt(&nodesChunk.m_numNodes, targetEndianType);
+        ConvertUnsignedInt(&nodesChunk.m_numRootNodes, targetEndianType);
 
         file->Write(&nodesChunk, sizeof(EMotionFX::FileFormat::Actor_Nodes2));
 
@@ -182,12 +182,12 @@ namespace ExporterLib
         memset(&groupChunk, 0, sizeof(EMotionFX::FileFormat::Actor_NodeGroup));
 
         // set the data
-        groupChunk.mNumNodes            = static_cast<uint16>(numNodes);
-        groupChunk.mDisabledOnDefault   = nodeGroup->GetIsEnabledOnDefault() ? false : true;
+        groupChunk.m_numNodes            = static_cast<uint16>(numNodes);
+        groupChunk.m_disabledOnDefault   = nodeGroup->GetIsEnabledOnDefault() ? false : true;
 
         // logging
         MCore::LogDetailedInfo("- Group: name='%s'", nodeGroup->GetName());
-        MCore::LogDetailedInfo("    + DisabledOnDefault: %i", groupChunk.mDisabledOnDefault);
+        MCore::LogDetailedInfo("    + DisabledOnDefault: %i", groupChunk.m_disabledOnDefault);
         AZStd::string nodesString;
         for (size_t i = 0; i < numNodes; ++i)
         {
@@ -197,10 +197,10 @@ namespace ExporterLib
                 nodesString += ", ";
             }
         }
-        MCore::LogDetailedInfo("    + Nodes (%i): %s", groupChunk.mNumNodes, nodesString.c_str());
+        MCore::LogDetailedInfo("    + Nodes (%i): %s", groupChunk.m_numNodes, nodesString.c_str());
 
         // endian conversion
-        ConvertUnsignedShort(&groupChunk.mNumNodes, targetEndianType);
+        ConvertUnsignedShort(&groupChunk.m_numNodes, targetEndianType);
 
         // write it
         file->Write(&groupChunk, sizeof(EMotionFX::FileFormat::Actor_NodeGroup));
@@ -240,16 +240,16 @@ namespace ExporterLib
 
         // chunk information
         EMotionFX::FileFormat::FileChunk chunkHeader;
-        chunkHeader.mChunkID = EMotionFX::FileFormat::ACTOR_CHUNK_NODEGROUPS;
-        chunkHeader.mVersion = 1;
+        chunkHeader.m_chunkId = EMotionFX::FileFormat::ACTOR_CHUNK_NODEGROUPS;
+        chunkHeader.m_version = 1;
 
         // calculate the chunk size
-        chunkHeader.mSizeInBytes = sizeof(uint16);
+        chunkHeader.m_sizeInBytes = sizeof(uint16);
         for (const EMotionFX::NodeGroup* nodeGroup : nodeGroups)
         {
-            chunkHeader.mSizeInBytes += sizeof(EMotionFX::FileFormat::Actor_NodeGroup);
-            chunkHeader.mSizeInBytes += GetStringChunkSize(nodeGroup->GetNameString());
-            chunkHeader.mSizeInBytes += sizeof(uint16) * nodeGroup->GetNumNodes();
+            chunkHeader.m_sizeInBytes += sizeof(EMotionFX::FileFormat::Actor_NodeGroup);
+            chunkHeader.m_sizeInBytes += GetStringChunkSize(nodeGroup->GetNameString());
+            chunkHeader.m_sizeInBytes += sizeof(uint16) * nodeGroup->GetNumNodes();
         }
 
         // endian conversion
@@ -309,9 +309,9 @@ namespace ExporterLib
 
         // chunk information
         EMotionFX::FileFormat::FileChunk chunkHeader;
-        chunkHeader.mChunkID        = EMotionFX::FileFormat::ACTOR_CHUNK_NODEMOTIONSOURCES;
-        chunkHeader.mSizeInBytes    = aznumeric_caster(sizeof(EMotionFX::FileFormat::Actor_NodeMotionSources2) + (numNodes * sizeof(uint16)) + (numNodes * sizeof(uint8) * 2));
-        chunkHeader.mVersion        = 1;
+        chunkHeader.m_chunkId        = EMotionFX::FileFormat::ACTOR_CHUNK_NODEMOTIONSOURCES;
+        chunkHeader.m_sizeInBytes    = aznumeric_caster(sizeof(EMotionFX::FileFormat::Actor_NodeMotionSources2) + (numNodes * sizeof(uint16)) + (numNodes * sizeof(uint8) * 2));
+        chunkHeader.m_version        = 1;
 
         // endian conversion and write it
         ConvertFileChunk(&chunkHeader, targetEndianType);
@@ -320,10 +320,10 @@ namespace ExporterLib
 
         // the node motion sources chunk data
         EMotionFX::FileFormat::Actor_NodeMotionSources2 nodeMotionSourcesChunk;
-        nodeMotionSourcesChunk.mNumNodes = aznumeric_caster(numNodes);
+        nodeMotionSourcesChunk.m_numNodes = aznumeric_caster(numNodes);
 
         // convert endian and save to the file
-        ConvertUnsignedInt(&nodeMotionSourcesChunk.mNumNodes, targetEndianType);
+        ConvertUnsignedInt(&nodeMotionSourcesChunk.m_numNodes, targetEndianType);
         file->Write(&nodeMotionSourcesChunk, sizeof(EMotionFX::FileFormat::Actor_NodeMotionSources2));
 
 
@@ -336,7 +336,7 @@ namespace ExporterLib
         for (const EMotionFX::Actor::NodeMirrorInfo& nodeMirrorInfo : *nodeMirrorInfos)
         {
             // get the motion node source
-            uint16 nodeMotionSource = nodeMirrorInfo.mSourceNode;
+            uint16 nodeMotionSource = nodeMirrorInfo.m_sourceNode;
 
             // convert endian and save to the file
             ConvertUnsignedShort(&nodeMotionSource, targetEndianType);
@@ -346,14 +346,14 @@ namespace ExporterLib
         // write all axes
         for (const EMotionFX::Actor::NodeMirrorInfo& nodeMirrorInfo : *nodeMirrorInfos)
         {
-            uint8 axis = static_cast<uint8>(nodeMirrorInfo.mAxis);
+            uint8 axis = static_cast<uint8>(nodeMirrorInfo.m_axis);
             file->Write(&axis, sizeof(uint8));
         }
 
         // write all flags
         for (const EMotionFX::Actor::NodeMirrorInfo& nodeMirrorInfo : *nodeMirrorInfos)
         {
-            uint8 flags = static_cast<uint8>(nodeMirrorInfo.mFlags);
+            uint8 flags = static_cast<uint8>(nodeMirrorInfo.m_flags);
             file->Write(&flags, sizeof(uint8));
         }
     }
@@ -398,9 +398,9 @@ namespace ExporterLib
 
         // chunk information
         EMotionFX::FileFormat::FileChunk chunkHeader;
-        chunkHeader.mChunkID        = EMotionFX::FileFormat::ACTOR_CHUNK_ATTACHMENTNODES;
-        chunkHeader.mSizeInBytes    = aznumeric_caster(sizeof(EMotionFX::FileFormat::Actor_AttachmentNodes) + numAttachmentNodes * sizeof(uint16));
-        chunkHeader.mVersion        = 1;
+        chunkHeader.m_chunkId        = EMotionFX::FileFormat::ACTOR_CHUNK_ATTACHMENTNODES;
+        chunkHeader.m_sizeInBytes    = aznumeric_caster(sizeof(EMotionFX::FileFormat::Actor_AttachmentNodes) + numAttachmentNodes * sizeof(uint16));
+        chunkHeader.m_version        = 1;
 
         // endian conversion and write it
         ConvertFileChunk(&chunkHeader, targetEndianType);
@@ -409,10 +409,10 @@ namespace ExporterLib
 
         // the attachment nodes chunk data
         EMotionFX::FileFormat::Actor_AttachmentNodes attachmentNodesChunk;
-        attachmentNodesChunk.mNumNodes = aznumeric_caster(numAttachmentNodes);
+        attachmentNodesChunk.m_numNodes = aznumeric_caster(numAttachmentNodes);
 
         // convert endian and save to the file
-        ConvertUnsignedInt(&attachmentNodesChunk.mNumNodes, targetEndianType);
+        ConvertUnsignedInt(&attachmentNodesChunk.m_numNodes, targetEndianType);
         file->Write(&attachmentNodesChunk, sizeof(EMotionFX::FileFormat::Actor_AttachmentNodes));
 
         // log details

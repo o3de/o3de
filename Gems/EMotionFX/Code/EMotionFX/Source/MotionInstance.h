@@ -120,7 +120,7 @@ namespace EMotionFX
          * Get the blend in time.
          * This is the time passed to the SetWeight(...) method where when the target weight is bigger than the current.
          * So only blend ins are counted and not blending out towards for example a weight of 0.
-         * When you never call SetWeight(...) yourself, this means that this will contain the value specificied to PlayBackInfo::mBlendInTime
+         * When you never call SetWeight(...) yourself, this means that this will contain the value specificied to PlayBackInfo::m_blendInTime
          * at the time of MotionSystem::PlayMotion(...).
          * @result The blend-in time, in seconds.
          */
@@ -803,7 +803,7 @@ namespace EMotionFX
 
         /**
          * This event gets triggered once the given motion instance gets added to the motion queue.
-         * This happens when you set the PlayBackInfo::mPlayNow member to false. In that case the MotionSystem::PlayMotion() method (OnPlayMotion)
+         * This happens when you set the PlayBackInfo::m_playNow member to false. In that case the MotionSystem::PlayMotion() method (OnPlayMotion)
          * will not directly start playing the motion (OnStartMotionInstance), but will add it to the motion queue instead.
          * The motion queue will then start playing the motion instance once it should.
          * @param info The playback information used to play this motion instance.
@@ -885,17 +885,17 @@ namespace EMotionFX
         AZStd::vector<EventHandlerVector> m_eventHandlersByEventType; /**< The event handler to use to process events organized by EventTypes. */
         float               m_currentTime = 0.0f;           /**< The current playtime. */
         float               m_timeDiffToEnd = 0.0f;         /**< The time it takes until we reach the loop point in the motion. This also takes the playback direction into account (backward or forward play). */
-        float               m_freezeAtTime = -1.0f;         /**< Freeze at a given time offset in seconds. The current play time would continue running though, and a blend out would be triggered, unlike the mFreezeAtLastFrame. Set to negative value to disable. Default=-1.*/
+        float               m_freezeAtTime = -1.0f;         /**< Freeze at a given time offset in seconds. The current play time would continue running though, and a blend out would be triggered, unlike the m_freezeAtLastFrame. Set to negative value to disable. Default=-1.*/
         float               m_playSpeed = 1.0f;             /**< The playspeed (1.0=normal speed). */
         float               m_lastCurTime = 0.0f;           /**< The last current time, so the current time in the previous update. */
         float               m_totalPlayTime = 0.0f;         /**< The current total play time that this motion is already playing. */
-        float               m_maxPlayTime = 0.0f;           /**< The maximum play time of the motion. If the mTotalPlayTime is higher than this, the motion will be stopped, unless the max play time is zero or negative. */
+        float               m_maxPlayTime = 0.0f;           /**< The maximum play time of the motion. If the m_totalPlayTime is higher than this, the motion will be stopped, unless the max play time is zero or negative. */
         float               m_eventWeightThreshold = 0.0f;  /**< If the weight of the motion instance is below this value, the events won't get processed (default = 0.0f). */
         float               m_weight = 0.0f;                /**< The current weight value, in range of [0..1]. */
         float               m_weightDelta = 0.0f;           /**< The precalculated weight delta value, used during blending between weights. */
         float               m_targetWeight = 1.0f;          /**< The target weight of the layer, when activating the motion. */
         float               m_blendInTime = 0.0f;           /**< The blend in time. */
-        float               m_fadeTime = 0.3f;              /**< Fadeout speed, when playing the animation once. So when it is done playing once, it will fade out in 'mFadeTime' seconds. */
+        float               m_fadeTime = 0.3f;              /**< Fadeout speed, when playing the animation once. So when it is done playing once, it will fade out in 'm_fadeTime' seconds. */
         AZ::u32             m_curLoops = 0;                 /**< Number of loops it currently has made (so the number of times the motion played already). */
         AZ::u32             m_maxLoops = EMFX_LOOPFOREVER;  /**< The maximum number of loops, before it has to stop. */
         AZ::u32             m_lastLoops = 0;                /**< The current number of loops in the previous update. */

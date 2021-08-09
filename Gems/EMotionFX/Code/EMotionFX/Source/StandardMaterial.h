@@ -223,15 +223,15 @@ namespace EMotionFX
         float GetRotationRadians() const;
 
     private:
-        uint32          mFileNameID;        /**< The filename of the texture, without extension or path. */
-        uint32          mLayerTypeID;       /**< The layer type. See the enum for some possibilities. */
-        float           mAmount;            /**< The amount value, between 0 and 1. This can for example represent how intens the layer is. */
-        float           mUOffset;           /**< U offset (horizontal texture shift). */
-        float           mVOffset;           /**< V offset (vertical texture shift). */
-        float           mUTiling;           /**< Horizontal tiling factor. */
-        float           mVTiling;           /**< Vertical tiling factor. */
-        float           mRotationRadians;   /**< Texture rotation in radians. */
-        unsigned char   mBlendMode;         /**< The blend mode is used to control how successive layers of textures are combined together. */
+        uint32          m_fileNameId;        /**< The filename of the texture, without extension or path. */
+        uint32          m_layerTypeId;       /**< The layer type. See the enum for some possibilities. */
+        float           m_amount;            /**< The amount value, between 0 and 1. This can for example represent how intens the layer is. */
+        float           m_uOffset;           /**< U offset (horizontal texture shift). */
+        float           m_vOffset;           /**< V offset (vertical texture shift). */
+        float           m_uTiling;           /**< Horizontal tiling factor. */
+        float           m_vTiling;           /**< Vertical tiling factor. */
+        float           m_rotationRadians;   /**< Texture rotation in radians. */
+        unsigned char   m_blendMode;         /**< The blend mode is used to control how successive layers of textures are combined together. */
 
         /**
          * Default constructor.
@@ -471,17 +471,17 @@ namespace EMotionFX
 
 
     protected:
-        AZStd::vector< StandardMaterialLayer* > mLayers; /**< StandardMaterial layers. */
-        MCore::RGBAColor    mAmbient;           /**< Ambient color. */
-        MCore::RGBAColor    mDiffuse;           /**< Diffuse color. */
-        MCore::RGBAColor    mSpecular;          /**< Specular color. */
-        MCore::RGBAColor    mEmissive;          /**< Self illumination color. */
-        float               mShine;             /**< The shine value, from the phong component (the power). */
-        float               mShineStrength;     /**< Shine strength. */
-        float               mOpacity;           /**< The opacity amount [1.0=full opac, 0.0=full transparent]. */
-        float               mIOR;               /**< Index of refraction. */
-        bool                mDoubleSided;       /**< Double sided?. */
-        bool                mWireFrame;         /**< Render in wireframe?. */
+        AZStd::vector< StandardMaterialLayer* > m_layers; /**< StandardMaterial layers. */
+        MCore::RGBAColor    m_ambient;           /**< Ambient color. */
+        MCore::RGBAColor    m_diffuse;           /**< Diffuse color. */
+        MCore::RGBAColor    m_specular;          /**< Specular color. */
+        MCore::RGBAColor    m_emissive;          /**< Self illumination color. */
+        float               m_shine;             /**< The shine value, from the phong component (the power). */
+        float               m_shineStrength;     /**< Shine strength. */
+        float               m_opacity;           /**< The opacity amount [1.0=full opac, 0.0=full transparent]. */
+        float               m_ior;               /**< Index of refraction. */
+        bool                m_doubleSided;       /**< Double sided?. */
+        bool                m_wireFrame;         /**< Render in wireframe?. */
 
         /**
          * Constructor.

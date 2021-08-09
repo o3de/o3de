@@ -46,11 +46,11 @@ namespace EMStudio
     FileManager::FileManager(QWidget* parent)
         : QObject(parent)
     {
-        mLastActorFolder        = EMotionFX::GetEMotionFX().GetAssetSourceFolder().c_str();
-        mLastMotionSetFolder    = EMotionFX::GetEMotionFX().GetAssetSourceFolder().c_str();
-        mLastAnimGraphFolder    = EMotionFX::GetEMotionFX().GetAssetSourceFolder().c_str();
-        mLastWorkspaceFolder    = EMotionFX::GetEMotionFX().GetAssetSourceFolder().c_str();
-        mLastNodeMapFolder      = EMotionFX::GetEMotionFX().GetAssetSourceFolder().c_str();
+        m_lastActorFolder        = EMotionFX::GetEMotionFX().GetAssetSourceFolder().c_str();
+        m_lastMotionSetFolder    = EMotionFX::GetEMotionFX().GetAssetSourceFolder().c_str();
+        m_lastAnimGraphFolder    = EMotionFX::GetEMotionFX().GetAssetSourceFolder().c_str();
+        m_lastWorkspaceFolder    = EMotionFX::GetEMotionFX().GetAssetSourceFolder().c_str();
+        m_lastNodeMapFolder      = EMotionFX::GetEMotionFX().GetAssetSourceFolder().c_str();
 
         // Connect to the asset catalog bus for product asset changes.
         AzFramework::AssetCatalogEventBus::Handler::BusConnect();
@@ -416,14 +416,14 @@ namespace EMStudio
         QString selectedFilter;
         const AZStd::string filename = QFileDialog::getSaveFileName(parent,                                 // parent
                                                                     "Save",                                 // caption
-                                                                    GetLastUsedFolder(mLastActorFolder),    // directory
+                                                                    GetLastUsedFolder(m_lastActorFolder),    // directory
                                                                     "EMotion FX Actor Files (*.actor)",
                                                                     &selectedFilter,
                                                                     options).toUtf8().data();
 
         GetManager()->SetAvoidRendering(false);
 
-        UpdateLastUsedFolder(filename.c_str(), mLastActorFolder);
+        UpdateLastUsedFolder(filename.c_str(), m_lastActorFolder);
 
         return filename;
     }
@@ -456,12 +456,12 @@ namespace EMStudio
         QString selectedFilter;
         AZStd::string filename = QFileDialog::getOpenFileName(parent,                                                   // parent
                                                               "Open",                                                   // caption
-                                                              GetLastUsedFolder(mLastWorkspaceFolder),                  // directory
+                                                              GetLastUsedFolder(m_lastWorkspaceFolder),                  // directory
                                                               "EMotionFX Editor Workspace Files (*.emfxworkspace);;All Files (*)",
                                                               &selectedFilter,
                                                               options).toUtf8().data();
 
-        UpdateLastUsedFolder(filename.c_str(), mLastWorkspaceFolder);
+        UpdateLastUsedFolder(filename.c_str(), m_lastWorkspaceFolder);
         GetManager()->SetAvoidRendering(false);
         return filename;
     }
@@ -475,7 +475,7 @@ namespace EMStudio
         QString selectedFilter;
         AZStd::string filename = QFileDialog::getSaveFileName(parent,                                       // parent
                                                               "Save",                                       // caption
-                                                              GetLastUsedFolder(mLastWorkspaceFolder),      // directory
+                                                              GetLastUsedFolder(m_lastWorkspaceFolder),      // directory
                                                               "EMotionFX Editor Workspace Files (*.emfxworkspace)",
                                                               &selectedFilter,
                                                               options).toUtf8().data();
@@ -488,7 +488,7 @@ namespace EMStudio
             return AZStd::string();
         }
 
-        UpdateLastUsedFolder(filename.c_str(), mLastWorkspaceFolder);
+        UpdateLastUsedFolder(filename.c_str(), m_lastWorkspaceFolder);
         return filename;
     }
 
@@ -557,14 +557,14 @@ namespace EMStudio
         QString selectedFilter;
         AZStd::string filename = QFileDialog::getSaveFileName(parent,                                       // parent
                                                               "Save",                                       // caption
-                                                              GetLastUsedFolder(mLastMotionSetFolder),      // directory
+                                                              GetLastUsedFolder(m_lastMotionSetFolder),      // directory
                                                               "EMotion FX Motion Set Files (*.motionset)",
                                                               &selectedFilter,
                                                               options).toUtf8().data();
 
         GetManager()->SetAvoidRendering(false);
 
-        UpdateLastUsedFolder(filename.c_str(), mLastMotionSetFolder);
+        UpdateLastUsedFolder(filename.c_str(), m_lastMotionSetFolder);
 
         return filename;
     }
@@ -636,14 +636,14 @@ namespace EMStudio
         QString selectedFilter;
         AZStd::string filename = QFileDialog::getSaveFileName(parent,                                                   // parent
                                                               "Save",                                                   // caption
-                                                              GetLastUsedFolder(mLastAnimGraphFolder),                 // directory
+                                                              GetLastUsedFolder(m_lastAnimGraphFolder),                 // directory
                                                               "EMotion FX Anim Graph Files (*.animgraph);;All Files (*)",
                                                               &selectedFilter,
                                                               options).toUtf8().data();
 
         GetManager()->SetAvoidRendering(false);
 
-        UpdateLastUsedFolder(filename.c_str(), mLastAnimGraphFolder);
+        UpdateLastUsedFolder(filename.c_str(), m_lastAnimGraphFolder);
 
         return filename;
     }
@@ -658,14 +658,14 @@ namespace EMStudio
         QString selectedFilter;
         const AZStd::string filename = QFileDialog::getOpenFileName(parent,                                         // parent
                                                                     "Open",                                         // caption
-                                                                    GetLastUsedFolder(mLastNodeMapFolder),          // directory
+                                                                    GetLastUsedFolder(m_lastNodeMapFolder),          // directory
                                                                     "Node Map Files (*.nodeMap);;All Files (*)",
                                                                     &selectedFilter,
                                                                     options).toUtf8().data();
 
         GetManager()->SetAvoidRendering(false);
 
-        UpdateLastUsedFolder(filename.c_str(), mLastNodeMapFolder);
+        UpdateLastUsedFolder(filename.c_str(), m_lastNodeMapFolder);
         return filename;
     }
 
@@ -679,14 +679,14 @@ namespace EMStudio
         QString selectedFilter;
         const AZStd::string filename = QFileDialog::getSaveFileName(parent,                                         // parent
                                                                     "Save",                                         // caption
-                                                                    GetLastUsedFolder(mLastNodeMapFolder),          // directory
+                                                                    GetLastUsedFolder(m_lastNodeMapFolder),          // directory
                                                                     "Node Map Files (*.nodeMap);;All Files (*)",
                                                                     &selectedFilter,
                                                                     options).toUtf8().data();
 
         GetManager()->SetAvoidRendering(false);
 
-        UpdateLastUsedFolder(filename.c_str(), mLastNodeMapFolder);
+        UpdateLastUsedFolder(filename.c_str(), m_lastNodeMapFolder);
         return filename;
     }
 

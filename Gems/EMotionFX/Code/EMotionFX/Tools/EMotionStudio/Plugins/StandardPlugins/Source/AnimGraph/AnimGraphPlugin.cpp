@@ -130,7 +130,7 @@ namespace EMStudio
 
                     // add the link to the actual object
                     ObjectPointer objPointer;
-                    objPointer.mAnimGraph = animGraph;
+                    objPointer.m_animGraph = animGraph;
                     outObjects->push_back(objPointer);
                 }
             }
@@ -150,12 +150,12 @@ namespace EMStudio
             for (const SaveDirtyFilesCallback::ObjectPointer& objPointer : objects)
             {
                 // get the current object pointer and skip directly if the type check fails
-                if (objPointer.mAnimGraph == nullptr)
+                if (objPointer.m_animGraph == nullptr)
                 {
                     continue;
                 }
 
-                EMotionFX::AnimGraph* animGraph = objPointer.mAnimGraph;
+                EMotionFX::AnimGraph* animGraph = objPointer.m_animGraph;
                 if (animGraphPlugin->SaveDirtyAnimGraph(animGraph, commandGroup, false) == DirtyFileManager::CANCELED)
                 {
                     return DirtyFileManager::CANCELED;
@@ -177,33 +177,32 @@ namespace EMStudio
     // constructor
     AnimGraphPlugin::AnimGraphPlugin()
         : EMStudio::DockWidgetPlugin()
-        , mEventHandler(this)
+        , m_eventHandler(this)
     {
-        mGraphWidget                    = nullptr;
-        mNavigateWidget                 = nullptr;
-        mAttributeDock                  = nullptr;
-        mNodeGroupDock                  = nullptr;
-        mPaletteWidget                  = nullptr;
-        mNodePaletteDock                = nullptr;
-        mParameterDock                  = nullptr;
-        mParameterWindow                = nullptr;
-        mNodeGroupWindow                = nullptr;
-        mAttributesWindow               = nullptr;
-        mActiveAnimGraph                = nullptr;
+        m_graphWidget                    = nullptr;
+        m_navigateWidget                 = nullptr;
+        m_attributeDock                  = nullptr;
+        m_nodeGroupDock                  = nullptr;
+        m_paletteWidget                  = nullptr;
+        m_nodePaletteDock                = nullptr;
+        m_parameterDock                  = nullptr;
+        m_parameterWindow                = nullptr;
+        m_nodeGroupWindow                = nullptr;
+        m_attributesWindow               = nullptr;
+        m_activeAnimGraph                = nullptr;
         m_animGraphObjectFactory        = nullptr;
-        mGraphNodeFactory               = nullptr;
-        mViewWidget                     = nullptr;
-        mDirtyFilesCallback             = nullptr;
+        m_graphNodeFactory               = nullptr;
+        m_viewWidget                     = nullptr;
+        m_dirtyFilesCallback             = nullptr;
         m_navigationHistory             = nullptr;
 
-        mDisplayFlags                   = 0;
-        //  mShowProcessed                  = false;
-        mDisableRendering               = false;
-        mLastPlayTime                   = -1;
-        mTotalTime                      = FLT_MAX;
+        m_displayFlags                   = 0;
+        m_disableRendering               = false;
+        m_lastPlayTime                   = -1;
+        m_totalTime                      = FLT_MAX;
 #if AZ_TRAIT_EMOTIONFX_HAS_GAME_CONTROLLER
-        mGameControllerWindow           = nullptr;
-        mGameControllerDock             = nullptr;
+        m_gameControllerWindow           = nullptr;
+        m_gameControllerDock             = nullptr;
 #endif
         m_animGraphModel                = nullptr;
         m_actionManager                 = nullptr;
@@ -214,7 +213,7 @@ namespace EMStudio
     AnimGraphPlugin::~AnimGraphPlugin()
     {
         // destroy the event handler
-        EMotionFX::GetEventManager().RemoveEventHandler(&mEventHandler);
+        EMotionFX::GetEventManager().RemoveEventHandler(&m_eventHandler);
 
         // unregister the command callbacks and get rid of the memory
         for (MCore::Command::Callback* callback : m_commandCallbacks)
@@ -223,48 +222,48 @@ namespace EMStudio
         }
 
         // remove the dirty file manager callback
-        GetMainWindow()->GetDirtyFileManager()->RemoveCallback(mDirtyFilesCallback, false);
-        delete mDirtyFilesCallback;
+        GetMainWindow()->GetDirtyFileManager()->RemoveCallback(m_dirtyFilesCallback, false);
+        delete m_dirtyFilesCallback;
 
         delete m_animGraphObjectFactory;
 
         // delete the graph node factory
-        delete mGraphNodeFactory;
+        delete m_graphNodeFactory;
 
         // remove the attribute dock widget
-        if (mParameterDock)
+        if (m_parameterDock)
         {
-            EMStudio::GetMainWindow()->removeDockWidget(mParameterDock);
-            delete mParameterDock;
+            EMStudio::GetMainWindow()->removeDockWidget(m_parameterDock);
+            delete m_parameterDock;
         }
 
         // remove the attribute dock widget
-        if (mAttributeDock)
+        if (m_attributeDock)
         {
-            EMStudio::GetMainWindow()->removeDockWidget(mAttributeDock);
-            delete mAttributeDock;
+            EMStudio::GetMainWindow()->removeDockWidget(m_attributeDock);
+            delete m_attributeDock;
         }
 
         // remove the node group dock widget
-        if (mNodeGroupDock)
+        if (m_nodeGroupDock)
         {
-            EMStudio::GetMainWindow()->removeDockWidget(mNodeGroupDock);
-            delete mNodeGroupDock;
+            EMStudio::GetMainWindow()->removeDockWidget(m_nodeGroupDock);
+            delete m_nodeGroupDock;
         }
 
         // remove the blend node palette
-        if (mNodePaletteDock)
+        if (m_nodePaletteDock)
         {
-            EMStudio::GetMainWindow()->removeDockWidget(mNodePaletteDock);
-            delete mNodePaletteDock;
+            EMStudio::GetMainWindow()->removeDockWidget(m_nodePaletteDock);
+            delete m_nodePaletteDock;
         }
 
         // remove the game controller dock
     #if AZ_TRAIT_EMOTIONFX_HAS_GAME_CONTROLLER
-        if (mGameControllerDock)
+        if (m_gameControllerDock)
         {
-            EMStudio::GetMainWindow()->removeDockWidget(mGameControllerDock);
-            delete mGameControllerDock;
+            EMStudio::GetMainWindow()->removeDockWidget(m_gameControllerDock);
+            delete m_gameControllerDock;
         }
     #endif
         if (m_navigationHistory)
@@ -322,32 +321,32 @@ namespace EMStudio
         // During startup, plugins can be constructed more than once, so don't add connections for those items
         if (GetAttributeDock() != nullptr)
         {
-            mDockWindowActions[WINDOWS_PARAMETERWINDOW] = parent->addAction("Parameter Window");
-            mDockWindowActions[WINDOWS_PARAMETERWINDOW]->setCheckable(true);
-            mDockWindowActions[WINDOWS_ATTRIBUTEWINDOW] = parent->addAction("Attribute Window");
-            mDockWindowActions[WINDOWS_ATTRIBUTEWINDOW]->setCheckable(true);
-            mDockWindowActions[WINDOWS_NODEGROUPWINDOW] = parent->addAction("Node Group Window");
-            mDockWindowActions[WINDOWS_NODEGROUPWINDOW]->setCheckable(true);
-            mDockWindowActions[WINDOWS_PALETTEWINDOW] = parent->addAction("Palette Window");
-            mDockWindowActions[WINDOWS_PALETTEWINDOW]->setCheckable(true);
+            m_dockWindowActions[WINDOWS_PARAMETERWINDOW] = parent->addAction("Parameter Window");
+            m_dockWindowActions[WINDOWS_PARAMETERWINDOW]->setCheckable(true);
+            m_dockWindowActions[WINDOWS_ATTRIBUTEWINDOW] = parent->addAction("Attribute Window");
+            m_dockWindowActions[WINDOWS_ATTRIBUTEWINDOW]->setCheckable(true);
+            m_dockWindowActions[WINDOWS_NODEGROUPWINDOW] = parent->addAction("Node Group Window");
+            m_dockWindowActions[WINDOWS_NODEGROUPWINDOW]->setCheckable(true);
+            m_dockWindowActions[WINDOWS_PALETTEWINDOW] = parent->addAction("Palette Window");
+            m_dockWindowActions[WINDOWS_PALETTEWINDOW]->setCheckable(true);
 #if AZ_TRAIT_EMOTIONFX_HAS_GAME_CONTROLLER
-            mDockWindowActions[WINDOWS_GAMECONTROLLERWINDOW] = parent->addAction("Game Controller Window");
-            mDockWindowActions[WINDOWS_GAMECONTROLLERWINDOW]->setCheckable(true);
+            m_dockWindowActions[WINDOWS_GAMECONTROLLERWINDOW] = parent->addAction("Game Controller Window");
+            m_dockWindowActions[WINDOWS_GAMECONTROLLERWINDOW]->setCheckable(true);
 #endif
-            connect(mDockWindowActions[WINDOWS_PARAMETERWINDOW], &QAction::triggered, this, [this](bool checked) {
+            connect(m_dockWindowActions[WINDOWS_PARAMETERWINDOW], &QAction::triggered, this, [this](bool checked) {
                 UpdateWindowVisibility(WINDOWS_PARAMETERWINDOW, checked);
             });
-            connect(mDockWindowActions[WINDOWS_ATTRIBUTEWINDOW], &QAction::triggered, this, [this](bool checked) {
+            connect(m_dockWindowActions[WINDOWS_ATTRIBUTEWINDOW], &QAction::triggered, this, [this](bool checked) {
                 UpdateWindowVisibility(WINDOWS_ATTRIBUTEWINDOW, checked);
             });
-            connect(mDockWindowActions[WINDOWS_NODEGROUPWINDOW], &QAction::triggered, this, [this](bool checked) {
+            connect(m_dockWindowActions[WINDOWS_NODEGROUPWINDOW], &QAction::triggered, this, [this](bool checked) {
                 UpdateWindowVisibility(WINDOWS_NODEGROUPWINDOW, checked);
             });
-            connect(mDockWindowActions[WINDOWS_PALETTEWINDOW], &QAction::triggered, this, [this](bool checked) {
+            connect(m_dockWindowActions[WINDOWS_PALETTEWINDOW], &QAction::triggered, this, [this](bool checked) {
                 UpdateWindowVisibility(WINDOWS_PALETTEWINDOW, checked);
             });
 #if AZ_TRAIT_EMOTIONFX_HAS_GAME_CONTROLLER
-            connect(mDockWindowActions[WINDOWS_GAMECONTROLLERWINDOW], &QAction::triggered, this, [this](bool checked) {
+            connect(m_dockWindowActions[WINDOWS_GAMECONTROLLERWINDOW], &QAction::triggered, this, [this](bool checked) {
                 UpdateWindowVisibility(WINDOWS_GAMECONTROLLERWINDOW, checked);
             });
 #endif
@@ -427,17 +426,17 @@ namespace EMStudio
 
     void AnimGraphPlugin::SetOptionFlag(EDockWindowOptionFlag option, bool isEnabled)
     {
-        if (mDockWindowActions[option])
+        if (m_dockWindowActions[option])
         {
-            mDockWindowActions[option]->setChecked(isEnabled);
+            m_dockWindowActions[option]->setChecked(isEnabled);
         }
     }
 
     void AnimGraphPlugin::SetOptionEnabled(EDockWindowOptionFlag option, bool isEnabled)
     {
-        if (mDockWindowActions[option])
+        if (m_dockWindowActions[option])
         {
-            mDockWindowActions[option]->setEnabled(isEnabled);
+            m_dockWindowActions[option]->setEnabled(isEnabled);
         }
     }
 
@@ -474,18 +473,18 @@ namespace EMStudio
 
     void AnimGraphPlugin::RegisterPerFrameCallback(AnimGraphPerFrameCallback* callback)
     {
-        if (AZStd::find(mPerFrameCallbacks.begin(), mPerFrameCallbacks.end(), callback) == mPerFrameCallbacks.end())
+        if (AZStd::find(m_perFrameCallbacks.begin(), m_perFrameCallbacks.end(), callback) == m_perFrameCallbacks.end())
         {
-            mPerFrameCallbacks.push_back(callback);
+            m_perFrameCallbacks.push_back(callback);
         }
     }
 
     void AnimGraphPlugin::UnregisterPerFrameCallback(AnimGraphPerFrameCallback* callback)
     {
-        auto it = AZStd::find(mPerFrameCallbacks.begin(), mPerFrameCallbacks.end(), callback);
-        if (it != mPerFrameCallbacks.end())
+        auto it = AZStd::find(m_perFrameCallbacks.begin(), m_perFrameCallbacks.end(), callback);
+        if (it != m_perFrameCallbacks.end())
         {
-            mPerFrameCallbacks.erase(it);
+            m_perFrameCallbacks.erase(it);
         }
     }
 
@@ -537,106 +536,102 @@ namespace EMStudio
         m_animGraphObjectFactory = aznew EMotionFX::AnimGraphObjectFactory();
 
         // create the graph node factory
-        mGraphNodeFactory = new GraphNodeFactory();
+        m_graphNodeFactory = new GraphNodeFactory();
 
         // create the corresponding widget that holds the menu and the toolbar
-        mViewWidget = new BlendGraphViewWidget(this, mDock);
-        mDock->setWidget(mViewWidget);
-        //mDock->setWidget( mGraphWidget ); // old: without menu and toolbar
+        m_viewWidget = new BlendGraphViewWidget(this, m_dock);
+        m_dock->setWidget(m_viewWidget);
 
         // create the graph widget
-        mGraphWidget = new BlendGraphWidget(this, mViewWidget);
-        //mGraphWidget->resize(1000, 700);
-        //mGraphWidget->move(0,50);
-        //mGraphWidget->show();
+        m_graphWidget = new BlendGraphWidget(this, m_viewWidget);
 
         // get the main window
         QMainWindow* mainWindow = GetMainWindow();
 
         // create the attribute dock window
-        mAttributeDock = new AzQtComponents::StyledDockWidget("Attributes", mainWindow);
-        mainWindow->addDockWidget(Qt::RightDockWidgetArea, mAttributeDock);
+        m_attributeDock = new AzQtComponents::StyledDockWidget("Attributes", mainWindow);
+        mainWindow->addDockWidget(Qt::RightDockWidgetArea, m_attributeDock);
         QDockWidget::DockWidgetFeatures features = QDockWidget::NoDockWidgetFeatures;
         //features |= QDockWidget::DockWidgetClosable;
         features |= QDockWidget::DockWidgetFloatable;
         features |= QDockWidget::DockWidgetMovable;
-        mAttributeDock->setFeatures(features);
-        mAttributeDock->setObjectName("AnimGraphPlugin::mAttributeDock");
-        mAttributesWindow = new AttributesWindow(this);
-        mAttributeDock->setWidget(mAttributesWindow);
+        m_attributeDock->setFeatures(features);
+        m_attributeDock->setObjectName("AnimGraphPlugin::m_attributeDock");
+        m_attributesWindow = new AttributesWindow(this);
+        m_attributeDock->setWidget(m_attributesWindow);
 
         // create the node group dock window
-        mNodeGroupDock = new AzQtComponents::StyledDockWidget("Node Groups", mainWindow);
-        mainWindow->addDockWidget(Qt::RightDockWidgetArea, mNodeGroupDock);
+        m_nodeGroupDock = new AzQtComponents::StyledDockWidget("Node Groups", mainWindow);
+        mainWindow->addDockWidget(Qt::RightDockWidgetArea, m_nodeGroupDock);
         features = QDockWidget::NoDockWidgetFeatures;
         //features |= QDockWidget::DockWidgetClosable;
         features |= QDockWidget::DockWidgetFloatable;
         features |= QDockWidget::DockWidgetMovable;
-        mNodeGroupDock->setFeatures(features);
-        mNodeGroupDock->setObjectName("AnimGraphPlugin::mNodeGroupDock");
-        mNodeGroupWindow = new NodeGroupWindow(this);
-        mNodeGroupDock->setWidget(mNodeGroupWindow);
+        m_nodeGroupDock->setFeatures(features);
+        m_nodeGroupDock->setObjectName("AnimGraphPlugin::m_nodeGroupDock");
+        m_nodeGroupWindow = new NodeGroupWindow(this);
+        m_nodeGroupDock->setWidget(m_nodeGroupWindow);
 
         // create the node palette dock
-        mNodePaletteDock = new AzQtComponents::StyledDockWidget("Anim Graph Palette", mainWindow);
-        mainWindow->addDockWidget(Qt::RightDockWidgetArea, mNodePaletteDock);
+        m_nodePaletteDock = new AzQtComponents::StyledDockWidget("Anim Graph Palette", mainWindow);
+        mainWindow->addDockWidget(Qt::RightDockWidgetArea, m_nodePaletteDock);
         features = QDockWidget::NoDockWidgetFeatures;
         //features |= QDockWidget::DockWidgetClosable;
         features |= QDockWidget::DockWidgetFloatable;
         features |= QDockWidget::DockWidgetMovable;
-        mNodePaletteDock->setFeatures(features);
-        mNodePaletteDock->setObjectName("AnimGraphPlugin::mPaletteDock");
-        mPaletteWidget = new NodePaletteWidget(this);
-        mNodePaletteDock->setWidget(mPaletteWidget);
+        m_nodePaletteDock->setFeatures(features);
+        m_nodePaletteDock->setObjectName("AnimGraphPlugin::m_paletteDock");
+        m_paletteWidget = new NodePaletteWidget(this);
+        m_nodePaletteDock->setWidget(m_paletteWidget);
 
         // create the parameter dock
         QScrollArea* scrollArea = new QScrollArea();
-        mParameterDock = new AzQtComponents::StyledDockWidget("Parameters", mainWindow);
-        mainWindow->addDockWidget(Qt::RightDockWidgetArea, mParameterDock);
+        m_parameterDock = new AzQtComponents::StyledDockWidget("Parameters", mainWindow);
+        mainWindow->addDockWidget(Qt::RightDockWidgetArea, m_parameterDock);
         features = QDockWidget::NoDockWidgetFeatures;
         //features |= QDockWidget::DockWidgetClosable;
         features |= QDockWidget::DockWidgetFloatable;
         features |= QDockWidget::DockWidgetMovable;
-        mParameterDock->setFeatures(features);
-        mParameterDock->setObjectName("AnimGraphPlugin::mParameterDock");
-        mParameterWindow = new ParameterWindow(this);
-        mParameterDock->setWidget(scrollArea);
-        scrollArea->setWidget(mParameterWindow);
+        m_parameterDock->setFeatures(features);
+        m_parameterDock->setObjectName("AnimGraphPlugin::m_parameterDock");
+        m_parameterWindow = new ParameterWindow(this);
+        m_parameterDock->setWidget(scrollArea);
+        scrollArea->setWidget(m_parameterWindow);
         scrollArea->setWidgetResizable(true);
 
         // Create Navigation Widget (embedded into BlendGraphViewWidget)
-        mNavigateWidget = new NavigateWidget(this);
+        m_navigateWidget = new NavigateWidget(this);
 
         // init the display flags
-        mDisplayFlags = 0;
+        m_displayFlags = 0;
 
         // init the view widget
         // it must be init after navigate widget is created because actions are linked to it
-        mViewWidget->Init(mGraphWidget);
+        m_viewWidget->Init(m_graphWidget);
 
     #if AZ_TRAIT_EMOTIONFX_HAS_GAME_CONTROLLER
         // create the game controller dock
-        mGameControllerDock = new AzQtComponents::StyledDockWidget("Game Controller", mainWindow);
-        mainWindow->addDockWidget(Qt::RightDockWidgetArea, mGameControllerDock);
+        m_gameControllerDock = new AzQtComponents::StyledDockWidget("Game Controller", mainWindow);
+        mainWindow->addDockWidget(Qt::RightDockWidgetArea, m_gameControllerDock);
         features = QDockWidget::NoDockWidgetFeatures;
         //features |= QDockWidget::DockWidgetClosable;
         features |= QDockWidget::DockWidgetFloatable;
         features |= QDockWidget::DockWidgetMovable;
-        mGameControllerDock->setFeatures(features);
-        mGameControllerDock->setObjectName("AnimGraphPlugin::mGameControllerDock");
-        mGameControllerWindow = new GameControllerWindow(this);
-        mGameControllerDock->setWidget(mGameControllerWindow);
+        m_gameControllerDock->setFeatures(features);
+        m_gameControllerDock->setObjectName("AnimGraphPlugin::m_gameControllerDock");
+        m_gameControllerWindow = new GameControllerWindow(this);
+        m_gameControllerDock->setWidget(m_gameControllerWindow);
     #endif
 
         // load options
         LoadOptions();
 
         // initialize the dirty files callback
-        mDirtyFilesCallback = new SaveDirtyAnimGraphFilesCallback();
-        GetMainWindow()->GetDirtyFileManager()->AddCallback(mDirtyFilesCallback);
+        m_dirtyFilesCallback = new SaveDirtyAnimGraphFilesCallback();
+        GetMainWindow()->GetDirtyFileManager()->AddCallback(m_dirtyFilesCallback);
 
         // construct the event handler
-        EMotionFX::GetEventManager().AddEventHandler(&mEventHandler);
+        EMotionFX::GetEventManager().AddEventHandler(&m_eventHandler);
 
         // connect to the timeline recorder data
         TimeViewPlugin* timeViewPlugin = FindTimeViewPlugin();
@@ -645,7 +640,7 @@ namespace EMStudio
             connect(timeViewPlugin, &TimeViewPlugin::DoubleClickedRecorderNodeHistoryItem, this, &AnimGraphPlugin::OnDoubleClickedRecorderNodeHistoryItem);
             connect(timeViewPlugin, &TimeViewPlugin::ClickedRecorderNodeHistoryItem, this, &AnimGraphPlugin::OnClickedRecorderNodeHistoryItem);
             // detect changes in the recorder
-            connect(timeViewPlugin, &TimeViewPlugin::RecorderStateChanged, mParameterWindow, &ParameterWindow::OnRecorderStateChanged);
+            connect(timeViewPlugin, &TimeViewPlugin::RecorderStateChanged, m_parameterWindow, &ParameterWindow::OnRecorderStateChanged);
         }
 
         EMotionFX::AnimGraph* firstSelectedAnimGraph = CommandSystem::GetCommandManager()->GetCurrentSelection().GetFirstAnimGraph();
@@ -658,14 +653,14 @@ namespace EMStudio
     void AnimGraphPlugin::LoadOptions()
     {
         QSettings settings(AZStd::string(GetManager()->GetAppDataFolder() + "EMStudioRenderOptions.cfg").c_str(), QSettings::IniFormat, this);
-        mOptions = AnimGraphOptions::Load(&settings);
+        m_options = AnimGraphOptions::Load(&settings);
     }
 
     // save the options
     void AnimGraphPlugin::SaveOptions()
     {
         QSettings settings(AZStd::string(GetManager()->GetAppDataFolder() + "EMStudioRenderOptions.cfg").c_str(), QSettings::IniFormat, this);
-        mOptions.Save(&settings);
+        m_options.Save(&settings);
     }
 
 
@@ -673,9 +668,9 @@ namespace EMStudio
     void AnimGraphPlugin::OnAfterLoadLayout()
     {
         // fit graph on screen
-        if (mGraphWidget->GetActiveGraph())
+        if (m_graphWidget->GetActiveGraph())
         {
-            mGraphWidget->GetActiveGraph()->FitGraphOnScreen(mGraphWidget->geometry().width(), mGraphWidget->geometry().height(), mGraphWidget->GetMousePos(), false);
+            m_graphWidget->GetActiveGraph()->FitGraphOnScreen(m_graphWidget->geometry().width(), m_graphWidget->geometry().height(), m_graphWidget->GetMousePos(), false);
         }
 
         // connect to the timeline recorder data
@@ -700,13 +695,13 @@ namespace EMStudio
     void AnimGraphPlugin::InitForAnimGraph(EMotionFX::AnimGraph* setup)
     {
         AZ_UNUSED(setup);
-        mAttributesWindow->Unlock();
-        mAttributesWindow->Init(QModelIndex(), true); // Force update
-        mParameterWindow->Reinit();
-        mNodeGroupWindow->Init();
-        mViewWidget->UpdateAnimGraphOptions();
+        m_attributesWindow->Unlock();
+        m_attributesWindow->Init(QModelIndex(), true); // Force update
+        m_parameterWindow->Reinit();
+        m_nodeGroupWindow->Init();
+        m_viewWidget->UpdateAnimGraphOptions();
 #if AZ_TRAIT_EMOTIONFX_HAS_GAME_CONTROLLER
-        mGameControllerWindow->ReInit();
+        m_gameControllerWindow->ReInit();
 #endif
     }
 
@@ -715,13 +710,13 @@ namespace EMStudio
     AnimGraphEventHandler::AnimGraphEventHandler(AnimGraphPlugin* plugin)
         : EMotionFX::EventHandler()
     {
-        mPlugin = plugin;
+        m_plugin = plugin;
     }
 
 
     bool AnimGraphEventHandler::OnRayIntersectionTest(const AZ::Vector3& start, const AZ::Vector3& end, EMotionFX::IntersectionInfo* outIntersectInfo)
     {
-        outIntersectInfo->mIsValid = true;
+        outIntersectInfo->m_isValid = true;
 
         AZ::Vector3 pos;
         AZ::Vector3 normal;
@@ -745,7 +740,7 @@ namespace EMStudio
                 continue;
             }
 
-            if (actorInstance == outIntersectInfo->mIgnoreActorInstance)
+            if (actorInstance == outIntersectInfo->m_ignoreActorInstance)
             {
                 continue;
             }
@@ -757,11 +752,11 @@ namespace EMStudio
 
             if (first)
             {
-                outIntersectInfo->mPosition     = pos;
-                outIntersectInfo->mNormal       = normal;
-                outIntersectInfo->mUV           = uv;
-                outIntersectInfo->mBaryCentricU = baryU;
-                outIntersectInfo->mBaryCentricV = baryU;
+                outIntersectInfo->m_position     = pos;
+                outIntersectInfo->m_normal       = normal;
+                outIntersectInfo->m_uv           = uv;
+                outIntersectInfo->m_baryCentricU = baryU;
+                outIntersectInfo->m_baryCentricV = baryU;
                 closestDist = MCore::SafeLength(start - pos);
             }
             else
@@ -769,11 +764,11 @@ namespace EMStudio
                 float dist = MCore::SafeLength(start - pos);
                 if (dist < closestDist)
                 {
-                    outIntersectInfo->mPosition     = pos;
-                    outIntersectInfo->mNormal       = normal;
-                    outIntersectInfo->mUV           = uv;
-                    outIntersectInfo->mBaryCentricU = baryU;
-                    outIntersectInfo->mBaryCentricV = baryU;
+                    outIntersectInfo->m_position     = pos;
+                    outIntersectInfo->m_normal       = normal;
+                    outIntersectInfo->m_uv           = uv;
+                    outIntersectInfo->m_baryCentricU = baryU;
+                    outIntersectInfo->m_baryCentricV = baryU;
                     closestDist = MCore::SafeLength(start - pos);
                     closestDist = dist;
                 }
@@ -1008,24 +1003,24 @@ namespace EMStudio
 
     void AnimGraphEventHandler::OnDeleteAnimGraph(EMotionFX::AnimGraph* animGraph)
     {
-        if (mPlugin->GetActiveAnimGraph() == animGraph)
+        if (m_plugin->GetActiveAnimGraph() == animGraph)
         {
-            mPlugin->SetActiveAnimGraph(nullptr);
+            m_plugin->SetActiveAnimGraph(nullptr);
         }
     }
 
     void AnimGraphEventHandler::OnDeleteAnimGraphInstance(EMotionFX::AnimGraphInstance* animGraphInstance)
     {
-        mPlugin->GetAnimGraphModel().SetAnimGraphInstance(animGraphInstance->GetAnimGraph(), animGraphInstance, nullptr);
+        m_plugin->GetAnimGraphModel().SetAnimGraphInstance(animGraphInstance->GetAnimGraph(), animGraphInstance, nullptr);
     }
 
 
     // activate a given anim graph
     void AnimGraphPlugin::SetActiveAnimGraph(EMotionFX::AnimGraph* animGraph)
     {
-        if (mActiveAnimGraph != animGraph)
+        if (m_activeAnimGraph != animGraph)
         {
-            mActiveAnimGraph = animGraph;
+            m_activeAnimGraph = animGraph;
             InitForAnimGraph(animGraph);
 
             // Focus on the newly actived anim graph if it has already been added to the anim graph model.
@@ -1108,7 +1103,7 @@ namespace EMStudio
 
     void AnimGraphPlugin::SaveAnimGraphAs(EMotionFX::AnimGraph* animGraph, MCore::CommandGroup* commandGroup)
     {
-        const AZStd::string filename = GetMainWindow()->GetFileManager()->SaveAnimGraphFileDialog(mViewWidget);
+        const AZStd::string filename = GetMainWindow()->GetFileManager()->SaveAnimGraphFileDialog(m_viewWidget);
         if (filename.empty())
         {
             return;
@@ -1127,7 +1122,7 @@ namespace EMStudio
             (sourceAnimGraph || cacheAnimGraph) &&
             (sourceAnimGraph != focusedAnimGraph && cacheAnimGraph != focusedAnimGraph))
         {
-            QMessageBox::warning(mDock, "Cannot overwrite anim graph", "Anim graph is already opened and cannot be overwritten.", QMessageBox::Ok);
+            QMessageBox::warning(m_dock, "Cannot overwrite anim graph", "Anim graph is already opened and cannot be overwritten.", QMessageBox::Ok);
             return;
         }
 
@@ -1144,7 +1139,7 @@ namespace EMStudio
 
     void AnimGraphPlugin::OnFileOpen()
     {
-        AZStd::string filename = GetMainWindow()->GetFileManager()->LoadAnimGraphFileDialog(mViewWidget);
+        AZStd::string filename = GetMainWindow()->GetFileManager()->LoadAnimGraphFileDialog(m_viewWidget);
         GetMainWindow()->activateWindow();
         if (filename.empty())
         {
@@ -1269,39 +1264,39 @@ namespace EMStudio
     // timer event
     void AnimGraphPlugin::ProcessFrame(float timePassedInSeconds)
     {
-        if (GetManager()->GetAvoidRendering() || !mGraphWidget || mGraphWidget->visibleRegion().isEmpty())
+        if (GetManager()->GetAvoidRendering() || !m_graphWidget || m_graphWidget->visibleRegion().isEmpty())
         {
             return;
         }
 
-        mTotalTime += timePassedInSeconds;
+        m_totalTime += timePassedInSeconds;
 
-        for (AnimGraphPerFrameCallback* callback : mPerFrameCallbacks)
+        for (AnimGraphPerFrameCallback* callback : m_perFrameCallbacks)
         {
             callback->ProcessFrame(timePassedInSeconds);
         }
 
         bool redraw = false;
     #ifdef MCORE_DEBUG
-        if (mTotalTime > 1.0f / 30.0f)
+        if (m_totalTime > 1.0f / 30.0f)
     #else
-        if (mTotalTime > 1.0f / 60.0f)
+        if (m_totalTime > 1.0f / 60.0f)
     #endif
         {
             redraw = true;
-            mTotalTime = 0.0f;
+            m_totalTime = 0.0f;
         }
 
         if (EMotionFX::GetRecorder().GetIsInPlayMode())
         {
-            if (MCore::Compare<float>::CheckIfIsClose(EMotionFX::GetRecorder().GetCurrentPlayTime(), mLastPlayTime, 0.001f) == false)
+            if (MCore::Compare<float>::CheckIfIsClose(EMotionFX::GetRecorder().GetCurrentPlayTime(), m_lastPlayTime, 0.001f) == false)
             {
-                mParameterWindow->UpdateParameterValues();
-                mLastPlayTime = EMotionFX::GetRecorder().GetCurrentPlayTime();
+                m_parameterWindow->UpdateParameterValues();
+                m_lastPlayTime = EMotionFX::GetRecorder().GetCurrentPlayTime();
             }
         }
 
-        mGraphWidget->ProcessFrame(redraw);
+        m_graphWidget->ProcessFrame(redraw);
     }
 
 
@@ -1392,17 +1387,17 @@ namespace EMStudio
         MCORE_UNUSED(actorInstanceData);
 
         // try to locate the node based on its unique ID
-        EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().FindAnimGraphByID(historyItem->mAnimGraphID);
+        EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().FindAnimGraphByID(historyItem->m_animGraphId);
         if (animGraph == nullptr)
         {
-            QMessageBox::warning(mDock, "Cannot Find Anim Graph", "The anim graph used by this node cannot be located anymore, did you delete it?", QMessageBox::Ok);
+            QMessageBox::warning(m_dock, "Cannot Find Anim Graph", "The anim graph used by this node cannot be located anymore, did you delete it?", QMessageBox::Ok);
             return;
         }
 
-        EMotionFX::AnimGraphNode* foundNode = animGraph->RecursiveFindNodeById(historyItem->mNodeId);
+        EMotionFX::AnimGraphNode* foundNode = animGraph->RecursiveFindNodeById(historyItem->m_nodeId);
         if (foundNode == nullptr)
         {
-            QMessageBox::warning(mDock, "Cannot Find Node", "The anim graph node cannot be found. Did you perhaps delete the node or change animgraph?", QMessageBox::Ok);
+            QMessageBox::warning(m_dock, "Cannot Find Node", "The anim graph node cannot be found. Did you perhaps delete the node or change animgraph?", QMessageBox::Ok);
             return;
         }
 
@@ -1422,24 +1417,24 @@ namespace EMStudio
         MCORE_UNUSED(actorInstanceData);
 
         // try to locate the node based on its unique ID
-        EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().FindAnimGraphByID(historyItem->mAnimGraphID);
+        EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().FindAnimGraphByID(historyItem->m_animGraphId);
         if (animGraph == nullptr)
         {
-            QMessageBox::warning(mDock, "Cannot Find Anim Graph", "The anim graph used by this node cannot be located anymore, did you delete it?", QMessageBox::Ok);
+            QMessageBox::warning(m_dock, "Cannot Find Anim Graph", "The anim graph used by this node cannot be located anymore, did you delete it?", QMessageBox::Ok);
             return;
         }
 
-        EMotionFX::AnimGraphNode* foundNode = animGraph->RecursiveFindNodeById(historyItem->mNodeId);
+        EMotionFX::AnimGraphNode* foundNode = animGraph->RecursiveFindNodeById(historyItem->m_nodeId);
         if (foundNode == nullptr)
         {
-            QMessageBox::warning(mDock, "Cannot Find Node", "The anim graph node cannot be found. Did you perhaps delete the node or change animgraph?", QMessageBox::Ok);
+            QMessageBox::warning(m_dock, "Cannot Find Node", "The anim graph node cannot be found. Did you perhaps delete the node or change animgraph?", QMessageBox::Ok);
             return;
         }
 
         EMotionFX::AnimGraphNode* nodeToShow = foundNode->GetParentNode();
         if (nodeToShow)
         {
-            const QModelIndex foundNodeIndex = m_animGraphModel->FindModelIndex(nodeToShow, historyItem->mAnimGraphInstance);
+            const QModelIndex foundNodeIndex = m_animGraphModel->FindModelIndex(nodeToShow, historyItem->m_animGraphInstance);
             if (foundNodeIndex.isValid())
             {
                 m_animGraphModel->Focus(foundNodeIndex);

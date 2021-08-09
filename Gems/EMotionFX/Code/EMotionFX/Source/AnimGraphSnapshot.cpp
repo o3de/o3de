@@ -159,7 +159,7 @@ namespace EMotionFX
             if (AZStd::find(activeStates.begin(), activeStates.end(), node) == activeStates.end())
             {
                 stateMachine->EndAllActiveTransitions(&instance);
-                uniqueData->mCurrentState = node;
+                uniqueData->m_currentState = node;
             }
         }
     }
