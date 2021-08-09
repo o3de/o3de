@@ -12,9 +12,9 @@ import zlib
 import logging
 from io import BytesIO
 from tiaf_persistent_storage import PersistentStorage
+from tiaf_logger import get_logger
 
-logger = logging.getLogger()
-logging.basicConfig()
+logger = get_logger(__file__)
 
 # Implementation of s3 bucket persistent storage
 class PersistentStorageS3(PersistentStorage):

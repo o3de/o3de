@@ -11,14 +11,13 @@ import mars_utils
 import sys
 import pathlib
 from tiaf import TestImpact
-import logging
+from tiaf_logger import get_logger
 
-logger = logging.getLogger()
-logging.basicConfig()
+logger = get_logger(__file__)
 
 def parse_args():
     def valid_file_path(value):
-        if pathlib.Path.is_file(value):
+        if pathlib.Path(value).is_file():
             return value
         else:
             raise FileNotFoundError(value)
