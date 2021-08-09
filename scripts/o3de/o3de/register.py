@@ -397,7 +397,7 @@ def register_project_path(json_data: dict,
     # If an engine path has not been supplied auto detect if the project should be register with the engine.json
     # or the ~/.o3de/o3de_manifest.json
     if not engine_path:
-        engine_path = utils.find_ancestor_dir_containing_file(pathlib.Path('engine.json'), gem_path)
+        engine_path = utils.find_ancestor_dir_containing_file(pathlib.Path('engine.json'), project_path)
 
     result = register_o3de_object_path(json_data, project_path, 'projects', 'project.json',
                                      validation.valid_o3de_project_json, remove, engine_path, None)
