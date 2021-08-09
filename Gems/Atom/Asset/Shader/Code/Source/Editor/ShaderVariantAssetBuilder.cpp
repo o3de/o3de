@@ -321,7 +321,7 @@ namespace AZ
                     AssetBuilderSDK::JobDescriptor jobDescriptor;
 
                     jobDescriptor.m_priority = -5000;
-                    jobDescriptor.m_critical = false;
+                    jobDescriptor.m_critical = true;
                     jobDescriptor.m_jobKey = ShaderVariantAssetBuilderJobKey;
                     jobDescriptor.SetPlatformIdentifier(info.m_identifier.data());
                     
