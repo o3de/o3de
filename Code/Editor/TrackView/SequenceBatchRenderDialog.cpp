@@ -44,7 +44,12 @@ namespace
 {
     const int g_useActiveViewportResolution = -1;   // reserved value to indicate the use of the active viewport resolution
     int resolutions[][2] = {
-        { 1280, 720 }, { 1920, 1080 }, { 1998, 1080 }, { 2048, 858 }, { 2560, 1440 }, 
+        {1280, 720},
+        {1920, 1080},
+        {1998, 1080},
+        {2048, 858},
+        {2560, 1440},
+        {3840, 2160},
         { g_useActiveViewportResolution, g_useActiveViewportResolution }    // active viewport res must be the last element of the resolution array
     };
 
@@ -1066,6 +1071,10 @@ void CSequenceBatchRenderDialog::OnUpdateEnd(IAnimSequence* sequence)
 {
     GetIEditor()->GetMovieSystem()->DisableFixedStepForCapture();
 
+    // Important: End batch render mode BEFORE leaving Game Mode.
+    // Otherwise track view will set the active camera based on the directors in the current sequence while leaving game mode
+    GetIEditor()->GetMovieSystem()->EnableBatchRenderMode(false);
+
     GetIEditor()->GetMovieSystem()->RemoveMovieListener(sequence, this);
     GetIEditor()->SetInGameMode(false);
     GetIEditor()->GetGameEngine()->Update();        // Update is needed because SetInGameMode() queues game mode, Update() executes it.
@@ -1185,7 +1194,6 @@ void CSequenceBatchRenderDialog::OnUpdateFinalize()
 
         m_ui->m_pGoBtn->setText(tr("Start"));
         m_ui->m_pGoBtn->setIcon(QPixmap(":/Trackview/clapperboard_ready.png"));
-        GetIEditor()->GetMovieSystem()->EnableBatchRenderMode(false);
         m_renderContext.currentItemIndex = -1;
         m_ui->BATCH_RENDER_PRESS_ESC_TO_CANCEL->setText(m_ffmpegPluginStatusMsg);
 

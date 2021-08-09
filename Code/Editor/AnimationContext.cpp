@@ -16,7 +16,6 @@
 
 // Editor
 #include "TrackView/TrackViewDialog.h"
-#include "RenderViewport.h"
 #include "ViewManager.h"
 #include "Objects/SelectionGroup.h"
 #include "Include/IObjectManager.h"
@@ -60,15 +59,6 @@ protected:
             if (pEditorEntity)
             {
                 camObjId = pEditorEntity->GetId();
-            }
-
-            CViewport* pViewport = GetIEditor()->GetViewManager()->GetSelectedViewport();
-            if (CRenderViewport* rvp = viewport_cast<CRenderViewport*>(pViewport))
-            {
-                if (!rvp->IsSequenceCamera())
-                {
-                    return;
-                }
             }
         }
 
