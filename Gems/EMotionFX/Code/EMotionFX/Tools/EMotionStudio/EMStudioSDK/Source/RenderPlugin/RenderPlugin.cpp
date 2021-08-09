@@ -266,8 +266,7 @@ namespace EMStudio
             return;
         }
 
-        MCore::AABB aabb;
-        aabb.Init();
+        AZ::Aabb aabb = AZ::Aabb::CreateNull();
 
         const EMotionFX::Actor* actor = actorInstance->GetActor();
         const EMotionFX::Skeleton* skeleton = actor->GetSkeleton();
@@ -276,21 +275,20 @@ namespace EMStudio
         for (const EMotionFX::Node* joint : joints)
         {
             const AZ::Vector3 jointPosition = pose->GetWorldSpaceTransform(joint->GetNodeIndex()).mPosition;
-
-            aabb.Encapsulate(jointPosition);
+            aabb.AddPoint(jointPosition);
 
             const AZ::u32 childCount = joint->GetNumChildNodes();
             for (AZ::u32 i = 0; i < childCount; ++i)
             {
                 EMotionFX::Node* childJoint = skeleton->GetNode(joint->GetChildIndex(i));
                 const AZ::Vector3 childPosition = pose->GetWorldSpaceTransform(childJoint->GetNodeIndex()).mPosition;
-                aabb.Encapsulate(childPosition);
+                aabb.AddPoint(childPosition);
             }
         }
 
-        if (aabb.CheckIfIsValid())
+        if (aabb.IsValid())
         {
-            aabb.Widen(aabb.CalcRadius());
+            aabb.Expand(AZ::Vector3(aabb.GetExtents().GetLength() * 0.5f));
 
             bool isFollowModeActive = false;
             for (const RenderViewWidget* viewWidget : m_viewWidgets)
@@ -619,35 +617,30 @@ namespace EMStudio
         EMotionFX::ActorInstance* actorInstance = EMotionFX::ActorInstance::Create(mActor);
         actorInstance->UpdateMeshDeformers(0.0f, true);
 
-        MCore::AABB aabb;
-        actorInstance->CalcMeshBasedAABB(0, &aabb);
+        AZ::Aabb aabb;
+        actorInstance->CalcMeshBasedAabb(0, &aabb);
 
-        if (aabb.CheckIfIsValid() == false)
+        if (!aabb.IsValid())
         {
-            actorInstance->CalcNodeOBBBasedAABB(&aabb);
+            actorInstance->CalcNodeBasedAabb(&aabb);
         }
 
-        if (aabb.CheckIfIsValid() == false)
-        {
-            actorInstance->CalcNodeBasedAABB(&aabb);
-        }
-
-        mCharacterHeight = aabb.CalcHeight();
+        mCharacterHeight = aabb.GetExtents().GetZ();
         mOffsetFromTrajectoryNode = aabb.GetMin().GetY() + (mCharacterHeight * 0.5f);
 
         actorInstance->Destroy();
 
         // scale the normals down to 1% of the character size, that looks pretty nice on all models
-        mNormalsScaleMultiplier = aabb.CalcRadius() * 0.01f;
+        const float radius = AZ::Vector3(aabb.GetMax() - aabb.GetMin()).GetLength() * 0.5f;
+        mNormalsScaleMultiplier = radius * 0.01f;
     }
 
 
     // zoom to characters
     void RenderPlugin::ViewCloseup(bool selectedInstancesOnly, RenderWidget* renderWidget, float flightTime)
     {
-        const MCore::AABB sceneAABB = GetSceneAABB(selectedInstancesOnly);
-
-        if (sceneAABB.CheckIfIsValid())
+        const AZ::Aabb sceneAabb = GetSceneAabb(selectedInstancesOnly);
+        if (sceneAabb.IsValid())
         {
             // in case the given view widget parameter is nullptr apply it on all view widgets
             if (!renderWidget)
@@ -655,13 +648,13 @@ namespace EMStudio
                 for (RenderViewWidget* viewWidget : m_viewWidgets)
                 {
                     RenderWidget* current = viewWidget->GetRenderWidget();
-                    current->ViewCloseup(sceneAABB, flightTime);
+                    current->ViewCloseup(sceneAabb, flightTime);
                 }
             }
             // only apply it to the given view widget
             else
             {
-                renderWidget->ViewCloseup(sceneAABB, flightTime);
+                renderWidget->ViewCloseup(sceneAabb, flightTime);
             }
         }
     }
@@ -882,9 +875,9 @@ namespace EMStudio
 
 
     // get the AABB containing all actor instances in the scene
-    MCore::AABB RenderPlugin::GetSceneAABB(bool selectedInstancesOnly)
+    AZ::Aabb RenderPlugin::GetSceneAabb(bool selectedInstancesOnly)
     {
-        MCore::AABB finalAABB;
+        AZ::Aabb finalAabb = AZ::Aabb::CreateNull();
         CommandSystem::SelectionList& selection = GetCommandManager()->GetCurrentSelection();
 
         if (mUpdateCallback)
@@ -922,20 +915,28 @@ namespace EMStudio
             }
 
             // get the mesh based AABB
-            MCore::AABB aabb;
-            actorInstance->CalcMeshBasedAABB(0, &aabb);
+            AZ::Aabb aabb = AZ::Aabb::CreateNull();
+            actorInstance->CalcMeshBasedAabb(0, &aabb);
 
             // get the node based AABB
-            if (aabb.CheckIfIsValid() == false)
+            if (!aabb.IsValid())
             {
-                actorInstance->CalcNodeBasedAABB(&aabb);
+                actorInstance->CalcNodeBasedAabb(&aabb);
             }
 
             // make sure the actor instance is covered in our global bounding box
-            finalAABB.Encapsulate(aabb);
+            if (aabb.IsValid())
+            {
+                finalAabb.AddAabb(aabb);
+            }
         }
 
-        return finalAABB;
+        if (!finalAabb.IsValid())
+        {
+            finalAabb.Set(AZ::Vector3(-1.0f, -1.0f, 0.0f), AZ::Vector3(1.0f, 1.0f, 0.0f));
+        }
+
+        return finalAabb;
     }
 
 
@@ -1155,24 +1156,19 @@ namespace EMStudio
             settings.mNodeBasedColor          = renderOptions->GetNodeAABBColor();
             settings.mStaticBasedColor        = renderOptions->GetStaticAABBColor();
             settings.mMeshBasedColor          = renderOptions->GetMeshAABBColor();
-            settings.mCollisionMeshBasedColor = renderOptions->GetCollisionMeshAABBColor();
 
-            renderUtil->RenderAABBs(actorInstance, settings);
+            renderUtil->RenderAabbs(actorInstance, settings);
         }
 
-        if (widget->GetRenderFlag(RenderViewWidget::RENDER_OBB))
-        {
-            renderUtil->RenderOBBs(actorInstance, &visibleJointIndices, &selectedJointIndices, renderOptions->GetOBBsColor(), renderOptions->GetSelectedObjectColor());
-        }
         if (widget->GetRenderFlag(RenderViewWidget::RENDER_LINESKELETON))
         {
             const MCommon::Camera* camera = widget->GetRenderWidget()->GetCamera();
             const AZ::Vector3& cameraPos = camera->GetPosition();
 
-            MCore::AABB aabb;
-            actorInstance->CalcNodeBasedAABB(&aabb);
-            const AZ::Vector3 aabbMid = aabb.CalcMiddle();
-            const float aabbRadius = aabb.CalcRadius();
+            AZ::Aabb aabb;
+            actorInstance->CalcNodeBasedAabb(&aabb);
+            const AZ::Vector3 aabbMid = aabb.GetCenter();
+            const float aabbRadius = AZ::Vector3(aabb.GetMax() - aabb.GetMin()).GetLength() * 0.5f;
             const float camDistance = fabs((cameraPos - aabbMid).GetLength());
 
             // Avoid rendering too big joint spheres when zooming in onto a joint.
@@ -1185,7 +1181,7 @@ namespace EMStudio
             // Scale the joint spheres based on the character's extents, to avoid really large joint spheres
             // on small characters and too small spheres on large characters.
             static const float baseRadius = 0.005f;
-            const float jointSphereRadius = aabb.CalcRadius() * scaleMultiplier * baseRadius;
+            const float jointSphereRadius = aabbRadius * scaleMultiplier * baseRadius;
 
             renderUtil->RenderSimpleSkeleton(actorInstance, &visibleJointIndices, &selectedJointIndices,
                 renderOptions->GetLineSkeletonColor(), renderOptions->GetSelectedObjectColor(), jointSphereRadius);
@@ -1268,8 +1264,8 @@ namespace EMStudio
         // render the selection
         if (renderOptions->GetRenderSelectionBox() && EMotionFX::GetActorManager().GetNumActorInstances() != 1 && GetCurrentSelection()->CheckIfHasActorInstance(actorInstance))
         {
-            MCore::AABB aabb = actorInstance->GetAABB();
-            aabb.Widen(aabb.CalcRadius() * 0.005f);
+            AZ::Aabb aabb = actorInstance->GetAabb();
+            aabb.Expand(AZ::Vector3(0.005f));
             renderUtil->RenderSelection(aabb, renderOptions->GetSelectionColor());
         }
 

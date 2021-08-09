@@ -256,7 +256,6 @@ namespace EMotionFX
         virtual ~ChunkProcessor();
     };
 
-
     //-------------------------------------------------------------------------------------------------
 
     /**
@@ -287,7 +286,7 @@ namespace EMotionFX
     EMFX_CHUNKPROCESSOR(ChunkProcessorActorInfo3,                FileFormat::ACTOR_CHUNK_INFO,                 3)
     EMFX_CHUNKPROCESSOR(ChunkProcessorActorProgMorphTarget,      FileFormat::ACTOR_CHUNK_STDPROGMORPHTARGET,   1)
     EMFX_CHUNKPROCESSOR(ChunkProcessorActorNodeGroups,           FileFormat::ACTOR_CHUNK_NODEGROUPS,           1)
-    EMFX_CHUNKPROCESSOR(ChunkProcessorActorNodes,                FileFormat::ACTOR_CHUNK_NODES,                1)
+    EMFX_CHUNKPROCESSOR(ChunkProcessorActorNodes2,               FileFormat::ACTOR_CHUNK_NODES,                2)
     EMFX_CHUNKPROCESSOR(ChunkProcessorActorProgMorphTargets,     FileFormat::ACTOR_CHUNK_STDPMORPHTARGETS,     1)
     EMFX_CHUNKPROCESSOR(ChunkProcessorActorProgMorphTargets2,    FileFormat::ACTOR_CHUNK_STDPMORPHTARGETS,     2)
     EMFX_CHUNKPROCESSOR(ChunkProcessorActorNodeMotionSources,    FileFormat::ACTOR_CHUNK_NODEMOTIONSOURCES,    1)

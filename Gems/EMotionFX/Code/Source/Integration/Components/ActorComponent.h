@@ -45,24 +45,29 @@ namespace EMotionFX
             AZ_COMPONENT(ActorComponent, "{BDC97E7F-A054-448B-A26F-EA2B5D78E377}");
             friend class EditorActorComponent;
 
-            struct BoundingBoxConfiguration
+            class BoundingBoxConfiguration
             {
+            public:
                 AZ_TYPE_INFO(BoundingBoxConfiguration, "{EBCFF975-00A5-4578-85C7-59909F52067C}");
 
                 BoundingBoxConfiguration() = default;
 
-                EMotionFX::ActorInstance::EBoundsType m_boundsType          = EMotionFX::ActorInstance::BOUNDS_STATIC_BASED;
-                bool                                  m_autoUpdateBounds    = true;
-                float                                 m_updateTimeFrequency = 0.f;
-                AZ::u32                               m_updateItemFrequency = 1;
+                EMotionFX::ActorInstance::EBoundsType m_boundsType = EMotionFX::ActorInstance::BOUNDS_STATIC_BASED;
+                float m_expandBy = 25.0f; ///< Expand the bounding volume by the given percentage.
+                bool m_autoUpdateBounds    = true;
+                float m_updateTimeFrequency = 0.0f;
+                AZ::u32 m_updateItemFrequency = 1;
 
-                // Set the bounding box configuration of the given actor instance to the parameters given by `this'. The actor instance must not be null (this is not checked).
-                void Set(ActorInstance* inst) const;
+                // Set the bounding box configuration of the given actor instance to the parameters given by 'this'. The actor instance must not be null (this is not checked).
+                void Set(ActorInstance* actorInstance) const;
 
                 // Set the bounding box configuration, then update the bounds of the actor instance
-                void SetAndUpdate(ActorInstance* inst) const;
+                void SetAndUpdate(ActorInstance* actorInstance) const;
 
                 static void Reflect(AZ::ReflectContext* context);
+
+                AZ::Crc32 GetVisibilityAutoUpdate() const;
+                AZ::Crc32 GetVisibilityAutoUpdateSettings() const;
             };
 
             /**

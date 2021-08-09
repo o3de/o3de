@@ -52,7 +52,6 @@ namespace EMStudio
             RENDER_VERTEXNORMALS            = 6,
             RENDER_TANGENTS                 = 7,
             RENDER_AABB                     = 8,
-            RENDER_OBB                      = 9,
             RENDER_COLLISIONMESHES          = 10,
             RENDER_SKELETON                 = 11,
             RENDER_LINESKELETON             = 12,
