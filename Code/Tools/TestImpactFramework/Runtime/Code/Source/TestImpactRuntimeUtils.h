@@ -38,34 +38,44 @@ namespace TestImpact
     //! Extracts the name information from the specified test targets.
     AZStd::vector<AZStd::string> ExtractTestTargetNames(const AZStd::vector<const TestTarget*>& testTargets);
 
-    //! Generates a test run failure report from the specified test engine job information.
+    //! Generates the test suites from the specified test engine job information.
     //! @tparam TestJob The test engine job type.
     template<typename TestJob>
-    AZStd::vector<Client::TestCaseFailure> GenerateTestCaseFailures(const TestJob& testJob)
+    AZStd::vector<Client::Test> GenerateClientTests(const TestJob& testJob)
     {
-        AZStd::vector<Client::TestCaseFailure> testCaseFailures;
+        AZStd::vector<Client::Test> tests;
 
         if (testJob.GetTestRun().has_value())
         {
             for (const auto& testSuite : testJob.GetTestRun()->GetTestSuites())
             {
-                AZStd::vector<Client::TestFailure> testFailures;
                 for (const auto& testCase : testSuite.m_tests)
                 {
-                    if (testCase.m_result.value_or(TestRunResult::Passed) == TestRunResult::Failed)
+                    auto result = Client::TestResult::NotRun;
+                    if (testCase.m_result.has_value())
                     {
-                        testFailures.push_back(Client::TestFailure(testCase.m_name, "No error message retrieved"));
+                        if (testCase.m_result.value() == TestRunResult::Passed)
+                        {
+                            result = Client::TestResult::Passed;
+                        }
+                        else if (testCase.m_result.value() == TestRunResult::Failed)
+                        {
+                            result = Client::TestResult::Failed;
+                        }
+                        else
+                        {
+                            throw RuntimeException(AZStd::string::format(
+                                "Unexpected test run result: %u", aznumeric_cast<AZ::u32>(testCase.m_result.value())));
+                        }
                     }
-                }
-    
-                if (!testFailures.empty())
-                {
-                    testCaseFailures.push_back(Client::TestCaseFailure(testSuite.m_name, AZStd::move(testFailures)));
+
+                    const auto name = AZStd::string::format("%s.%s", testSuite.m_name.c_str(), testCase.m_name.c_str());
+                    tests.push_back(Client::Test(name, result));
                 }
             }
         }
 
-        return testCaseFailures;
+        return tests;
     }
 
     template<typename TestJob>
@@ -75,11 +85,11 @@ namespace TestImpact
         AZStd::chrono::milliseconds duration,
         const AZStd::vector<TestJob>& testJobs)
     {
-        AZStd::vector<Client::TestRun> passingTests;
-        AZStd::vector<Client::TestRunWithTestFailures> failingTests;
-        AZStd::vector<Client::TestRun> executionFailureTests;
-        AZStd::vector<Client::TestRun> timedOutTests;
-        AZStd::vector<Client::TestRun> unexecutedTests;
+        AZStd::vector<Client::CompletedTestRun> passingTests;
+        AZStd::vector<Client::CompletedTestRun> failingTests;
+        AZStd::vector<Client::TestRunWithExecutonFailure> executionFailureTests;
+        AZStd::vector<Client::TimedOutTestRun> timedOutTests;
+        AZStd::vector<Client::UnexecutedTestRun> unexecutedTests;
         
         for (const auto& testJob : testJobs)
         {
@@ -96,27 +106,27 @@ namespace TestImpact
             {
             case Client::TestRunResult::FailedToExecute:
             {
-                executionFailureTests.push_back(clientTestRun);
+                executionFailureTests.emplace_back(AZStd::move(clientTestRun));
                 break;
             }
             case Client::TestRunResult::NotRun:
             {
-                unexecutedTests.push_back(clientTestRun);
+                unexecutedTests.emplace_back(AZStd::move(clientTestRun));
                 break;
             }
             case Client::TestRunResult::Timeout:
             {
-                timedOutTests.push_back(clientTestRun);
+                timedOutTests.emplace_back(AZStd::move(clientTestRun));
                 break;
             }
             case Client::TestRunResult::AllTestsPass:
             {
-                passingTests.push_back(clientTestRun);
+                passingTests.emplace_back(AZStd::move(clientTestRun), GenerateClientTests(testJob));
                 break;
             }
             case Client::TestRunResult::TestFailures:
             {
-                failingTests.emplace_back(AZStd::move(clientTestRun), GenerateTestCaseFailures(testJob));
+                failingTests.emplace_back(AZStd::move(clientTestRun), GenerateClientTests(testJob));
                 break;
             }
             default:
