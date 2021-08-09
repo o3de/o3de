@@ -94,6 +94,7 @@ namespace Terrain
 
         m_dependencyMonitor.Reset();
         m_dependencyMonitor.ConnectOwner(GetEntityId());
+        m_dependencyMonitor.ConnectDependency(GetEntityId());
 
         for (auto& entityId : m_configuration.m_gradientEntities)
         {
@@ -138,49 +139,34 @@ namespace Terrain
 
     float TerrainHeightGradientListComponent::GetHeight(float x, float y)
     {
+        float maxSample = 0.0f;
+
+        GradientSignal::GradientSampleParams params(AZ::Vector3(x, y, 0.0f));
+
         for (auto& gradientId : m_configuration.m_gradientEntities)
         {
-            AZ::Aabb aabb = AZ::Aabb::CreateNull();
-            LmbrCentral::ShapeComponentRequestsBus::EventResult(aabb, gradientId, &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
-
-            if (aabb.Contains(AZ::Vector3(x, y, aabb.GetMin().GetZ())))
-            {
-                GradientSignal::GradientSampleParams params(AZ::Vector3(x, y, 0.0f));
-                float sample = 0.0f;
-
-                GradientSignal::GradientRequestBus::EventResult(sample, gradientId, &GradientSignal::GradientRequestBus::Events::GetValue, params);
-                float scaledHeight = AZ::Lerp(aabb.GetMin().GetZ(), aabb.GetMax().GetZ(), sample);
-                return AZ::GetClamp(scaledHeight, m_cachedHeightRange.GetX(), m_cachedHeightRange.GetY());
-            }
-
+            float sample = 0.0f;
+            GradientSignal::GradientRequestBus::EventResult(sample, gradientId, &GradientSignal::GradientRequestBus::Events::GetValue, params);
+            maxSample = AZ::GetMax(maxSample, sample);
         }
-        return m_cachedHeightRange.GetX();
+
+        return AZ::Lerp(m_cachedMinHeight, m_cachedMaxHeight, maxSample);
     }
 
     void TerrainHeightGradientListComponent::GetHeight(const AZ::Vector3& inPosition, AZ::Vector3& outPosition, [[maybe_unused]] Sampler sampleFilter = Sampler::DEFAULT)
     {
-        float height = m_cachedHeightRange.GetX();
+        float maxSample = 0.0f;
+
+        GradientSignal::GradientSampleParams params(AZ::Vector3(inPosition.GetX(), inPosition.GetY(), 0.0f));
 
         for (auto& gradientId : m_configuration.m_gradientEntities)
         {
-            AZ::Aabb aabb = AZ::Aabb::CreateNull();
-            LmbrCentral::ShapeComponentRequestsBus::EventResult(aabb, gradientId, &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
-            GradientSignal::GradientSampleParams params(AZ::Vector3(inPosition.GetX(), inPosition.GetY(), aabb.GetMin().GetZ()));
-
-            if (aabb.Contains(params.m_position))
-            {
-                float sample = 0.0f;
-
-                GradientSignal::GradientRequestBus::EventResult(sample, gradientId, &GradientSignal::GradientRequestBus::Events::GetValue, params);
-                float scaledHeight = AZ::Lerp(aabb.GetMin().GetZ(), aabb.GetMax().GetZ(), sample);
-                height = AZ::GetClamp(scaledHeight, m_cachedHeightRange.GetX(), m_cachedHeightRange.GetY());
-                //height = scaledHeight;
-                break;
-            }
-
+            float sample = 0.0f;
+            GradientSignal::GradientRequestBus::EventResult(sample, gradientId, &GradientSignal::GradientRequestBus::Events::GetValue, params);
+            maxSample = AZ::GetMax(maxSample, sample);
         }
 
-        outPosition.SetZ(height);
+        outPosition.SetZ(AZ::Lerp(m_cachedMinHeight, m_cachedMaxHeight, maxSample));
     }
 
     void TerrainHeightGradientListComponent::GetNormal(const AZ::Vector3& inPosition, AZ::Vector3& outNormal, [[maybe_unused]] Sampler sampleFilter = Sampler::DEFAULT)
@@ -224,16 +210,17 @@ namespace Terrain
         // Get the height range of our height provider based on the shape component.
         LmbrCentral::ShapeComponentRequestsBus::EventResult(m_cachedShapeBounds, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
 
-        m_cachedHeightRange = AZ::Vector2(m_cachedShapeBounds.GetMin().GetZ(), m_cachedShapeBounds.GetMax().GetZ());
-        m_cachedHeightQueryResolution = AZ::Vector2(1.0f);
-
         // Get the height range of the entire world
+        m_cachedHeightQueryResolution = AZ::Vector2(1.0f);
+        AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
+            m_cachedHeightQueryResolution, &AzFramework::Terrain::TerrainDataRequestBus::Events::GetTerrainGridResolution);
+
         AZ::Aabb worldBounds = AZ::Aabb::CreateNull();
         AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
             worldBounds, &AzFramework::Terrain::TerrainDataRequestBus::Events::GetTerrainAabb);
-        m_cachedHeightRange = AZ::Vector2(worldBounds.GetMin().GetZ(), worldBounds.GetMax().GetZ());
-        AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-            m_cachedHeightQueryResolution, &AzFramework::Terrain::TerrainDataRequestBus::Events::GetTerrainGridResolution);
+
+        m_cachedMinHeight = AZ::GetClamp(m_cachedShapeBounds.GetMin().GetZ(), worldBounds.GetMin().GetZ(), worldBounds.GetMax().GetZ());
+        m_cachedMaxHeight = AZ::GetClamp(m_cachedShapeBounds.GetMax().GetZ(), worldBounds.GetMin().GetZ(), worldBounds.GetMax().GetZ());
     }
 
 }

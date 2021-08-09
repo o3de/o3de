@@ -87,7 +87,8 @@ namespace Terrain
         void RefreshMinMaxHeights();
         float GetHeight(float x, float y);
 
-        AZ::Vector2 m_cachedHeightRange;
+        float m_cachedMinHeight{ 0.0f };
+        float m_cachedMaxHeight{ 0.0f };
         AZ::Vector2 m_cachedHeightQueryResolution{ 1.0f, 1.0f };
         AZ::Aabb m_cachedShapeBounds;
 
