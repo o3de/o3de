@@ -369,9 +369,9 @@ def register_external_subdirectory(json_data: dict,
     """
     # If a project path or engine path has not been supplied auto detect which manifest to register the input path with
     if not project_path and not engine_path:
-        project_path = utils.find_ancestor_dir_containing_file(pathlib.Path('project.json'), external_subdir_path)
+        project_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('project.json'), external_subdir_path)
         if not project_path:
-            engine_path = utils.find_ancestor_dir_containing_file(pathlib.Path('engine.json'), external_subdir_path)
+            engine_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('engine.json'), external_subdir_path)
     return register_o3de_object_path(json_data, external_subdir_path, 'external_subdirectories', '', None, remove,
                                      engine_path, project_path)
 
@@ -383,9 +383,9 @@ def register_gem_path(json_data: dict,
                       project_path:  pathlib.Path = None) -> int:
     # If a project path or engine path has not been supplied auto detect which manifest to register the input path with
     if not project_path and not engine_path:
-        project_path = utils.find_ancestor_dir_containing_file(pathlib.Path('project.json'), gem_path)
+        project_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('project.json'), gem_path)
         if not project_path:
-            engine_path = utils.find_ancestor_dir_containing_file(pathlib.Path('engine.json'), gem_path)
+            engine_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('engine.json'), gem_path)
     return register_o3de_object_path(json_data, gem_path, 'external_subdirectories', 'gem.json',
                                      validation.valid_o3de_gem_json, remove, engine_path, project_path)
 
@@ -397,7 +397,7 @@ def register_project_path(json_data: dict,
     # If an engine path has not been supplied auto detect if the project should be register with the engine.json
     # or the ~/.o3de/o3de_manifest.json
     if not engine_path:
-        engine_path = utils.find_ancestor_dir_containing_file(pathlib.Path('engine.json'), project_path)
+        engine_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('engine.json'), project_path)
 
     result = register_o3de_object_path(json_data, project_path, 'projects', 'project.json',
                                      validation.valid_o3de_project_json, remove, engine_path, None)
@@ -436,9 +436,9 @@ def register_template_path(json_data: dict,
                            engine_path: pathlib.Path = None) -> int:
     # If a project path or engine path has not been supplied auto detect which manifest to register the input path
     if not project_path and not engine_path:
-        project_path = utils.find_ancestor_dir_containing_file(pathlib.Path('project.json'), template_path)
+        project_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('project.json'), template_path)
         if not project_path:
-            engine_path = utils.find_ancestor_dir_containing_file('engine.json', template_path)
+            engine_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('engine.json'), template_path)
     return register_o3de_object_path(json_data, template_path, 'templates', 'template.json',
                                        validation.valid_o3de_template_json, remove, engine_path, None)
 
@@ -449,9 +449,9 @@ def register_restricted_path(json_data: dict,
                              engine_path: pathlib.Path = None) -> int:
     # If a project path or engine path has not been supplied auto detect which manifest to register the input path
     if not project_path and not engine_path:
-        project_path = utils.find_ancestor_dir_containing_file(pathlib.Path('project.json'), restricted_path)
+        project_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('project.json'), restricted_path)
         if not project_path:
-            engine_path = utils.find_ancestor_dir_containing_file('engine.json', restricted_path)
+            engine_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('engine.json'), restricted_path)
     return register_o3de_object_path(json_data, restricted_path, 'restricted', 'restricted.json',
                                      validation.valid_o3de_restricted_json, remove, engine_path, None)
 
