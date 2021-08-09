@@ -1626,9 +1626,6 @@ BOOL CCryEditApp::InitInstance()
     ReflectedVarInit::setupReflection(serializeContext);
     RegisterReflectedVarHandlers();
 
-
-    QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));
-
     CreateSplashScreen();
 
     // Register the application's document templates. Document templates
