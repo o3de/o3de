@@ -38,8 +38,11 @@ namespace TestImpact
             const Client::TestRunSelection& discardedTests,
             const AZStd::vector<AZStd::string>& draftedTests);
 
-        //! Handler for TestSequenceCompleteCallback event.
-        void TestSequenceCompleteCallback(const Client::SequenceReport& sequenceReport);
+        //! Handler for RegularTestSequenceCompleteCallback event.
+        void RegularTestSequenceCompleteCallback(const Client::RegularSequenceReport& sequenceReport);
+
+        //! Handler for SeedTestSequenceCompleteCallback event.
+        void SeedTestSequenceCompleteCallback(const Client::SeedSequenceReport& sequenceReport);
 
         //! Handler for ImpactAnalysisTestSequenceCompleteCallback event.
         void ImpactAnalysisTestSequenceCompleteCallback(const Client::ImpactAnalysisSequenceReport& sequenceReport);

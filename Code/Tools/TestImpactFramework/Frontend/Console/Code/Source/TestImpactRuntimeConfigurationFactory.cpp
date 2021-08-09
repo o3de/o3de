@@ -7,6 +7,7 @@
  */
 
 #include <TestImpactFramework/TestImpactConfigurationException.h>
+#include <TestImpactFramework/TestImpactUtils.h>
 
 #include <TestImpactRuntimeConfigurationFactory.h>
 
@@ -144,11 +145,11 @@ namespace TestImpact
     {
         AZStd::array<RepoPath, 3> sparTIAFiles;
         sparTIAFiles[static_cast<size_t>(SuiteType::Main)] =
-            GetAbsPathFromRelPath(root, sparTIAFile[GetSuiteTypeName(SuiteType::Main).c_str()].GetString());
+            GetAbsPathFromRelPath(root, sparTIAFile[SuiteTypeAsString(SuiteType::Main).c_str()].GetString());
         sparTIAFiles[static_cast<size_t>(SuiteType::Periodic)] =
-            GetAbsPathFromRelPath(root, sparTIAFile[GetSuiteTypeName(SuiteType::Periodic).c_str()].GetString());
+            GetAbsPathFromRelPath(root, sparTIAFile[SuiteTypeAsString(SuiteType::Periodic).c_str()].GetString());
         sparTIAFiles[static_cast<size_t>(SuiteType::Sandbox)] =
-            GetAbsPathFromRelPath(root, sparTIAFile[GetSuiteTypeName(SuiteType::Sandbox).c_str()].GetString());
+            GetAbsPathFromRelPath(root, sparTIAFile[SuiteTypeAsString(SuiteType::Sandbox).c_str()].GetString());
 
         return sparTIAFiles;
     }
