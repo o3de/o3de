@@ -32,7 +32,6 @@ namespace Terrain
                 ->Field("Layer", &TerrainLayerSpawnerConfig::m_layer)
                 ->Field("Priority", &TerrainLayerSpawnerConfig::m_priority)
                 ->Field("UseGroundPlane", &TerrainLayerSpawnerConfig::m_useGroundPlane)
-                ->Field("DefaultHeight", &TerrainLayerSpawnerConfig::m_defaultHeight)
             ;
 
             AZ::EditContext* edit = serialize->GetEditContext();
@@ -52,7 +51,6 @@ namespace Terrain
                     ->Attribute(AZ::Edit::Attributes::SoftMin, AreaConstants::s_priorityMin)
                     ->Attribute(AZ::Edit::Attributes::SoftMax, AreaConstants::s_prioritySoftMax)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainLayerSpawnerConfig::m_useGroundPlane, "Use Ground Plane", "Determines whether or not to provide a default ground plane")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainLayerSpawnerConfig::m_defaultHeight, "DefaultHeight", "Value to use as the default height of the ground plane")
                     ;
             }
         }

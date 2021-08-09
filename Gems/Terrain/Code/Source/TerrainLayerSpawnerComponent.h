@@ -51,7 +51,6 @@ namespace Terrain
         AZ::u32 m_layer = AreaConstants::s_foregroundLayer;
         AZ::u32 m_priority = AreaConstants::s_priorityMin;
         bool m_useGroundPlane = true;
-        float m_defaultHeight = 32.0f;
     };
 
 
