@@ -40,10 +40,11 @@ def PrefabLevel_BasicWorkflow():
     EXPECTED_NEW_PREFAB_POS = Vector3(10.00, 20.0, 30.0)
 
     helper.init_idle()
-    test_level_name = "temp_level"
-    general.create_level_no_prompt(test_level_name, 128, 1, 128, False)
+    test_level_name = "tmp_level"
+    create_level_result = general.create_level_no_prompt(test_level_name, 128, 1, 128, False)
+    Report.critical_result(Tests.level_created, create_level_result == 0)
     helper.wait_for_condition(lambda: general.get_current_level_name() == test_level_name, 2.0)
-    Report.result(Tests.level_created, general.get_current_level_name() == test_level_name)
+    general.close_pane("Error Report")
 
 # Create a new Entity at the root level
     new_entity_id = editor.ToolsApplicationRequestBus(bus.Broadcast, 'CreateNewEntity', EntityId())

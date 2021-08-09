@@ -16,6 +16,7 @@ from ly_test_tools import LAUNCHERS
 
 sys.path.append (os.path.dirname (os.path.abspath (__file__)) + '/../automatedtesting_shared')
 
+import ly_test_tools.environment.file_system as file_system
 from base import TestAutomationBase
 
 @pytest.mark.SUITE_main
@@ -30,7 +31,13 @@ class TestAutomation(TestAutomationBase):
         from . import PrefabLevel_OpensLevelWithEntities as test_module
         self._run_prefab_test(request, workspace, editor, test_module)
 
-    def test_PrefabLevel_BasicWorkflow(self, request, workspace, editor, launcher_platform):
+    @pytest.mark.parametrize("level", ["tmp_level"])
+    def test_PrefabLevel_BasicWorkflow(self, request, workspace, editor, launcher_platform, level):
+        def teardown():
+            file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
+        request.addfinalizer(teardown)
+        file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
+
         from . import PrefabLevel_BasicWorkflow as test_module
         self._run_prefab_test(request, workspace, editor, test_module)
 
