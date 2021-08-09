@@ -29,6 +29,33 @@ namespace AZ
                 m_asset->m_name = name;
             }
         }
+        
+        void ModelAssetCreator::AddMaterialSlot(const ModelMaterialSlot& materialSlot)
+        {
+            if (ValidateIsReady())
+            {
+                auto iter = m_asset->m_materialSlots.find(materialSlot.m_stableId);
+
+                if (iter == m_asset->m_materialSlots.end())
+                {
+                    m_asset->m_materialSlots[materialSlot.m_stableId] = materialSlot;
+                }
+                else
+                {
+                    if (materialSlot.m_displayName != iter->second.m_displayName)
+                    {
+                        ReportWarning("Material slot %u was already added with a different name.", materialSlot.m_stableId);
+                    }
+
+                    if (materialSlot.m_defaultMaterialAsset != iter->second.m_defaultMaterialAsset)
+                    {
+                        ReportWarning("Material slot %u was already added with a different default MaterialAsset.", materialSlot.m_stableId);
+                    }
+
+                    iter->second = materialSlot;
+                }
+            }
+        }
 
         void ModelAssetCreator::AddLodAsset(Data::Asset<ModelLodAsset>&& lodAsset)
         {

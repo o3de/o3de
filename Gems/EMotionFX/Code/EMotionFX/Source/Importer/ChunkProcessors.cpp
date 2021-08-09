@@ -355,12 +355,9 @@ namespace EMotionFX
         return mLoggingActive;
     }
 
-
     //=================================================================================================
 
-
-    // a chunk that contains all nodes in one chunk
-    bool ChunkProcessorActorNodes::Process(MCore::File* file, Importer::ImportParameters& importParams)
+    bool ChunkProcessorActorNodes2::Process(MCore::File* file, Importer::ImportParameters& importParams)
     {
         const MCore::Endian::EEndianType endianType = importParams.mEndianType;
         Actor* actor = importParams.mActor;
@@ -369,28 +366,12 @@ namespace EMotionFX
         MCORE_ASSERT(actor);
         Skeleton* skeleton = actor->GetSkeleton();
 
-        FileFormat::Actor_Nodes nodesHeader;
-        file->Read(&nodesHeader, sizeof(FileFormat::Actor_Nodes));
+        FileFormat::Actor_Nodes2 nodesHeader;
+        file->Read(&nodesHeader, sizeof(FileFormat::Actor_Nodes2));
 
         // convert endian
         MCore::Endian::ConvertUnsignedInt32(&nodesHeader.mNumNodes, endianType);
         MCore::Endian::ConvertUnsignedInt32(&nodesHeader.mNumRootNodes, endianType);
-        MCore::Endian::ConvertFloat(&nodesHeader.mStaticBoxMin.mX, endianType);
-        MCore::Endian::ConvertFloat(&nodesHeader.mStaticBoxMin.mY, endianType);
-        MCore::Endian::ConvertFloat(&nodesHeader.mStaticBoxMin.mZ, endianType);
-        MCore::Endian::ConvertFloat(&nodesHeader.mStaticBoxMax.mX, endianType);
-        MCore::Endian::ConvertFloat(&nodesHeader.mStaticBoxMax.mY, endianType);
-        MCore::Endian::ConvertFloat(&nodesHeader.mStaticBoxMax.mZ, endianType);
-
-        // convert endian and coord system of the static box
-        AZ::Vector3 boxMin(nodesHeader.mStaticBoxMin.mX, nodesHeader.mStaticBoxMin.mY, nodesHeader.mStaticBoxMin.mZ);
-        AZ::Vector3 boxMax(nodesHeader.mStaticBoxMax.mX, nodesHeader.mStaticBoxMax.mY, nodesHeader.mStaticBoxMax.mZ);
-
-        // build the box and set it
-        MCore::AABB staticBox;
-        staticBox.SetMin(boxMin);
-        staticBox.SetMax(boxMax);
-        actor->SetStaticAABB(staticBox);
 
         // pre-allocate space for the nodes
         actor->SetNumNodes(nodesHeader.mNumNodes);
@@ -410,8 +391,8 @@ namespace EMotionFX
         for (uint32 n = 0; n < nodesHeader.mNumNodes; ++n)
         {
             // read the node header
-            FileFormat::Actor_Node nodeChunk;
-            file->Read(&nodeChunk, sizeof(FileFormat::Actor_Node));
+            FileFormat::Actor_Node2 nodeChunk;
+            file->Read(&nodeChunk, sizeof(FileFormat::Actor_Node2));
 
             // read the node name
             const char* nodeName = SharedHelperData::ReadString(file, importParams.mSharedData, endianType);
@@ -420,7 +401,6 @@ namespace EMotionFX
             MCore::Endian::ConvertUnsignedInt32(&nodeChunk.mParentIndex, endianType);
             MCore::Endian::ConvertUnsignedInt32(&nodeChunk.mSkeletalLODs, endianType);
             MCore::Endian::ConvertUnsignedInt32(&nodeChunk.mNumChilds, endianType);
-            MCore::Endian::ConvertFloat(&nodeChunk.mOBB[0], endianType, 16);
 
             // show the name of the node, the parent and the number of children
             if (GetLogging())
@@ -452,11 +432,6 @@ namespace EMotionFX
             ConvertVector3(&pos, endianType);
             ConvertScale(&scale, endianType);
             ConvertQuaternion(&rot, endianType);
-
-            // make sure the input data is normalized
-            // TODO: this isn't really needed as we already normalized?
-            //rot.FastNormalize();
-            //scaleRot.FastNormalize();
 
             // set the local transform
             Transform bindTransform;
@@ -502,23 +477,6 @@ namespace EMotionFX
             {
                 skeleton->AddRootNode(nodeIndex);
             }
-
-            // OBB
-            AZ::Matrix4x4 obbMatrix4x4 = AZ::Matrix4x4::CreateFromRowMajorFloat16(nodeChunk.mOBB);
-
-            const AZ::Vector3 obbCenter = obbMatrix4x4.GetTranslation();
-            const AZ::Vector3 obbExtents = obbMatrix4x4.GetRowAsVector3(3);
-
-            // initialize the OBB
-            MCore::OBB obb;
-            obb.SetCenter(obbCenter);
-            obb.SetExtents(obbExtents);
-
-            // need to transpose to go from row major to column major
-            const AZ::Matrix3x3 obbMatrix3x3 = AZ::Matrix3x3::CreateFromMatrix4x4(obbMatrix4x4).GetTranspose();
-            const AZ::Transform obbTransform = AZ::Transform::CreateFromMatrix3x3AndTranslation(obbMatrix3x3, obbExtents);
-            obb.SetTransformation(obbTransform);
-            actor->SetNodeOBB(nodeIndex, obb);
 
             if (GetLogging())
             {
@@ -1469,7 +1427,7 @@ namespace EMotionFX
             }
 
             // create the new group inside the actor
-            NodeGroup* newGroup = NodeGroup::Create(groupName, fileGroup.mNumNodes, fileGroup.mDisabledOnDefault ? false : true);
+            NodeGroup* newGroup = aznew NodeGroup(groupName, fileGroup.mNumNodes, fileGroup.mDisabledOnDefault ? false : true);
 
             // read the node numbers
             uint16 nodeIndex;

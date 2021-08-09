@@ -50,6 +50,7 @@ namespace AzToolsFramework
 
         virtual void Initialize(PropertyRowWidget* pParent, InstanceDataNode* dataNode, int depth, int labelWidth = 200);
         virtual void Initialize(const char* groupName, PropertyRowWidget* pParent, int depth, int labelWidth = 200);
+        virtual void InitializeToggleGroup(const char* groupName, PropertyRowWidget* pParent, int depth, InstanceDataNode* node, int labelWidth = 200);
         virtual void Clear(); // for pooling
 
         // --- NOT A UNIQUE IDENTIFIER ---
@@ -143,11 +144,14 @@ namespace AzToolsFramework
         QVBoxLayout* GetLeftHandSideLayoutParent() { return m_leftHandSideLayoutParent; }
         QToolButton* GetIndicatorButton() { return m_indicatorButton; }
         QLabel* GetNameLabel() { return m_nameLabel; }
+        QWidget* GetToggle() { return m_toggleSwitch; }
+        const QWidget* GetToggle() const { return m_toggleSwitch; }
         void SetIndentSize(int w);
         void SetAsCustom(bool custom) { m_custom = custom; }
 
         bool CanChildrenBeReordered() const;
         bool CanBeReordered() const;
+
     protected:
         int CalculateLabelWidth() const;
 
@@ -176,6 +180,8 @@ namespace AzToolsFramework
         AzQtComponents::ElidingLabel* m_nameLabel;
         QLabel* m_defaultLabel; // if there is no handler, we use a m_defaultLabel label
         InstanceDataNode* m_sourceNode;
+
+        QWidget* m_toggleSwitch = nullptr;
 
         QString m_currentFilterString;
 
@@ -241,6 +247,8 @@ namespace AzToolsFramework
         void mouseDoubleClickEvent(QMouseEvent* event) override;
 
         void UpdateDropDownArrow();
+        void CreateGroupToggleSwitch();
+        void ChangeSourceNode(InstanceDataNode* node);
         void UpdateDefaultLabel(InstanceDataNode* node);
 
         void createContainerButtons();
@@ -259,6 +267,7 @@ namespace AzToolsFramework
     private slots:
         void OnClickedExpansionButton();
 
+        void OnClickedToggleButton(bool checked);
         void OnClickedAddElementButton();
         void OnClickedRemoveElementButton();
         void OnClickedClearContainerButton();

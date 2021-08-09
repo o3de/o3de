@@ -430,7 +430,7 @@ namespace Multiplayer
             updateMessage.SetPrefabEntityId(netBindComponent->GetPrefabEntityId());
         }
 
-        AzNetworking::NetworkInputSerializer inputSerializer(updateMessage.ModifyData().GetBuffer(), updateMessage.ModifyData().GetCapacity());
+        AzNetworking::NetworkInputSerializer inputSerializer(updateMessage.ModifyData().GetBuffer(), static_cast<uint32_t>(updateMessage.ModifyData().GetCapacity()));
         m_propertyPublisher->UpdateSerialization(inputSerializer);
         updateMessage.ModifyData().Resize(inputSerializer.GetSize());
 

@@ -380,7 +380,7 @@ AZ_POP_DISABLE_WARNING
     //////////////////////////////////////////////////////////////////////
 
 #if defined(AZ_PLATFORM_WINDOWS)
-    EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &DisplayConfig);
+    EnumDisplaySettings(nullptr, ENUM_CURRENT_SETTINGS, &DisplayConfig);
     GetPrivateProfileString("boot.description", "display.drv",
         "(Unknown graphics card)", szProfileBuffer, sizeof(szProfileBuffer),
         "system.ini");

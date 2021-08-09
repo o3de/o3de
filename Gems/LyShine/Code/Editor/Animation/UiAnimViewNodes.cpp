@@ -23,7 +23,6 @@
 
 #include "Objects/EntityObject.h"
 #include "ViewManager.h"
-#include "RenderViewport.h"
 #include "Export/ExportManager.h"
 #include <Editor/Util/fastlib.h>
 

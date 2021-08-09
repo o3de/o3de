@@ -266,7 +266,7 @@ namespace EMotionFX
             {
                 // Atom stores the skin indices as uint16, but the buffer itself is a buffer of uint32 with two id's per element
                 size_t influenceCount = elementCountInBytes / sizeof(AZ::u16);
-                maxSkinInfluences = influenceCount / modelVertexCount;
+                maxSkinInfluences = static_cast<AZ::u8>(influenceCount / modelVertexCount);
                 AZ_Assert(maxSkinInfluences > 0 && maxSkinInfluences < 100, "Expect max skin influences in a reasonable value range.");
                 AZ_Assert(influenceCount % modelVertexCount == 0, "Expect an equal number of influences for each vertex.");
                 AZ_Assert(bufferAssetViewDescriptor.m_elementSize == 4, "Expect skin joint indices to be stored in a raw 32-bit per element buffer"); 
@@ -279,7 +279,7 @@ namespace EMotionFX
             {
                 // Atom stores joint weights as float (range 0 - 1)
                 size_t influenceCount = elementCountInBytes / sizeof(float);
-                maxSkinInfluences = influenceCount / modelVertexCount;
+                maxSkinInfluences = static_cast<AZ::u8>(influenceCount / modelVertexCount);
                 AZ_Assert(maxSkinInfluences > 0 && maxSkinInfluences < 100, "Expect max skin influences in a reasonable value range.");
                 skinWeights = static_cast<const float*>(bufferData) + bufferAssetViewDescriptor.m_elementOffset;
             }
@@ -290,7 +290,7 @@ namespace EMotionFX
         AZ::u32* originalVertexDataRaw = static_cast<AZ::u32*>(originalVertexData->GetData());
         for (size_t i = 0; i < modelVertexCount; ++i)
         {
-            originalVertexDataRaw[i] = i;
+            originalVertexDataRaw[i] = static_cast<AZ::u32>(i);
         }
         mesh->AddVertexAttributeLayer(originalVertexData);
 
@@ -1372,20 +1372,17 @@ namespace EMotionFX
     }
 
 
-    void Mesh::CalcAABB(MCore::AABB* outBoundingBox, const Transform& transform, uint32 vertexFrequency)
+    void Mesh::CalcAabb(AZ::Aabb* outBoundingBox, const Transform& transform, uint32 vertexFrequency)
     {
         MCORE_ASSERT(vertexFrequency >= 1);
+        *outBoundingBox = AZ::Aabb::CreateNull();
 
-        // init the bounding box
-        outBoundingBox->Init();
-
-        // get the position data
         AZ::Vector3* positions = (AZ::Vector3*)FindVertexData(ATTRIB_POSITIONS);
 
         const uint32 numVerts = GetNumVertices();
         for (uint32 i = 0; i < numVerts; i += vertexFrequency)
         {
-            outBoundingBox->Encapsulate(transform.TransformPoint(positions[i]));
+            outBoundingBox->AddPoint(transform.TransformPoint(positions[i]));
         }
     }
 

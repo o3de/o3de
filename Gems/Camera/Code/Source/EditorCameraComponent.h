@@ -37,7 +37,6 @@ namespace Camera
         : public EditorCameraComponentBase
         , public EditorCameraViewRequestBus::Handler
         , private AzFramework::EntityDebugDisplayEventBus::Handler
-        , private EditorCameraNotificationBus::Handler
     {
     public:
         AZ_EDITOR_COMPONENT(EditorCameraComponent, EditorCameraComponentTypeId, AzToolsFramework::Components::EditorComponentBase);
@@ -55,9 +54,6 @@ namespace Camera
             const AzFramework::ViewportInfo& viewportInfo,
             AzFramework::DebugDisplayRequests& debugDisplay) override;
 
-        /// EditorCameraNotificationBus::Handler interface
-        void OnViewportViewEntityChanged(const AZ::EntityId& newViewId) override;
-
         /// EditorCameraViewRequestBus::Handler interface
         void ToggleCameraAsActiveView() override { OnPossessCameraButtonClicked(); }
         bool GetCameraState(AzFramework::CameraState& cameraState) override;
@@ -67,7 +63,6 @@ namespace Camera
         AZ::Crc32 OnPossessCameraButtonClicked();
         AZStd::string GetCameraViewButtonText() const;
 
-        bool m_isActiveEditorCamera = false;
         float m_frustumViewPercentLength = 1.f;
         AZ::Color m_frustumDrawColor = AzFramework::ViewportColors::HoverColor;
     };

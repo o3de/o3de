@@ -9,6 +9,7 @@
 #pragma once
 
 #include "EMotionFXConfig.h"
+#include <AzCore/Math/Aabb.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/string/string.h>
@@ -571,7 +572,7 @@ namespace EMotionFX
          * @param vertexFrequency This is the for loop increase counter value. A value of 1 means every vertex will be processed
          *                        while a value of 2 means every second vertex, etc. The value must be 1 or higher.
          */
-        void CalcAABB(MCore::AABB* outBoundingBox, const Transform& transform, uint32 vertexFrequency = 1);
+        void CalcAabb(AZ::Aabb* outBoundingBox, const Transform& transform, uint32 vertexFrequency = 1);
 
         /**
          * The mesh type used to indicate if a mesh is either static, like a cube or building, cpu deformed, if it needs to be processed on the CPU, or GPU deformed if it can be processed fully on the GPU.

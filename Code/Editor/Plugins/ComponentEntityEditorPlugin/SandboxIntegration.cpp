@@ -84,6 +84,7 @@
 #include <Editor/Util/PathUtil.h>
 #include <IResourceSelectorHost.h>
 #include "CryEdit.h"
+#include "Undo/Undo.h"
 
 #include <QMenu>
 #include <QAction>
@@ -803,7 +804,7 @@ void SandboxIntegrationManager::SetupLayerContextMenu(QMenu* menu)
 
     menu->addSeparator();
 
-    const int selectedLayerCount = layersInSelection.size();
+    const int selectedLayerCount = static_cast<int>(layersInSelection.size());
     QString saveTitle = QObject::tr("Save layer");
     if(selectedLayerCount > 1)
     {
@@ -1805,7 +1806,7 @@ void SandboxIntegrationManager::ContextMenu_PushEntitiesToSlice(AzToolsFramework
     (void)targetAncestorId;
     (void)affectEntireHierarchy;
 
-    AZ::SerializeContext* serializeContext = NULL;
+    AZ::SerializeContext* serializeContext = nullptr;
     EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
     AZ_Assert(serializeContext, "No serialize context");
 

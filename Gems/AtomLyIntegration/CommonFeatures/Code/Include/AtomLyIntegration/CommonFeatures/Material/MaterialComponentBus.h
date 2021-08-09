@@ -74,6 +74,10 @@ namespace AZ
             //! Get material assignment id matching lod and label substring
             virtual MaterialAssignmentId FindMaterialAssignmentId(
                 const MaterialAssignmentLodIndex lod, const AZStd::string& label) const = 0;
+                
+            //! Returns the list of all ModelMaterialSlot's for the model, across all LODs.
+            virtual RPI::ModelMaterialSlotMap GetModelMaterialSlots() const = 0;
+
             virtual MaterialAssignmentMap GetMaterialAssignments() const = 0;
             virtual AZStd::unordered_set<AZ::Name> GetModelUvNames() const = 0;
         };

@@ -113,7 +113,7 @@ public:
     virtual void AddPostRenderer(IPostRenderer* pPostRenderer) = 0;
     virtual bool RemovePostRenderer(IPostRenderer* pPostRenderer) = 0;
 
-    virtual BOOL DestroyWindow() { return FALSE; }
+    virtual bool DestroyWindow() { return false; }
 
     /** Get type of this viewport.
     */
@@ -165,11 +165,19 @@ public:
     //////////////////////////////////////////////////////////////////////////
     //! Set current view matrix,
     //! This is a matrix that transforms from world to view space.
-    virtual void SetViewTM(const Matrix34& tm) { m_viewTM = tm; };
+    virtual void SetViewTM([[maybe_unused]] const Matrix34& tm)
+    {
+        AZ_Error("CryLegacy", false, "QtViewport::SetViewTM not implemented");
+    }
 
     //! Get current view matrix.
     //! This is a matrix that transforms from world space to view space.
-    virtual const Matrix34& GetViewTM() const { return m_viewTM; };
+    virtual const Matrix34& GetViewTM() const
+    {
+        AZ_Error("CryLegacy", false, "QtViewport::GetViewTM not implemented");
+        static const Matrix34 m;
+        return m;
+    };
 
     //////////////////////////////////////////////////////////////////////////
     //! Get current screen matrix.
@@ -252,7 +260,7 @@ public:
     virtual void SetCursorString(const QString& str) = 0;
 
     virtual void SetFocus() = 0;
-    virtual void Invalidate(BOOL bErase = 1) = 0;
+    virtual void Invalidate(bool bErase = 1) = 0;
 
     // Is overridden by RenderViewport
     virtual void SetFOV([[maybe_unused]] float fov) {}
@@ -266,8 +274,8 @@ public:
     void SetViewPane(CLayoutViewPane* viewPane) { m_viewPane = viewPane; }
 
     //Child classes can override these to provide extra logic that wraps
-    //widget rendering. Needed by the RenderViewport to handle raycasts 
-    //from screen-space to world-space. 
+    //widget rendering. Needed by the RenderViewport to handle raycasts
+    //from screen-space to world-space.
     virtual void PreWidgetRendering() {}
     virtual void PostWidgetRendering() {}
 
@@ -277,8 +285,6 @@ protected:
     CLayoutViewPane* m_viewPane = nullptr;
     CViewManager* m_viewManager;
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
-    // Viewport matrix.
-    Matrix34 m_viewTM;
     // Screen Matrix
     Matrix34 m_screenTM;
     int m_nCurViewportID;
@@ -346,7 +352,7 @@ public:
     QString GetName() const;
 
     virtual void SetFocus() { setFocus(); }
-    virtual void Invalidate([[maybe_unused]] BOOL bErase = 1) { update(); }
+    virtual void Invalidate([[maybe_unused]] bool bErase = 1) { update(); }
 
     // Is overridden by RenderViewport
     virtual void SetFOV([[maybe_unused]] float fov) {}
