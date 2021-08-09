@@ -12,7 +12,7 @@
 #if !defined(Q_MOC_RUN)
 #include "../StandardPluginsConfig.h"
 #include <AzCore/std/containers/vector.h>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include <MCore/Source/StandardHeaders.h>
 #include <QWidget>
 #include <QDialog>
@@ -79,14 +79,14 @@ namespace EMStudio
         QIcon*                  mNodeIcon;
         QIcon*                  mMeshIcon;
         QIcon*                  mMappedIcon;
-        MCore::Array<uint32>    mCurrentBoneList;
-        AZStd::vector<uint32>   mSourceBoneList;
-        AZStd::vector<uint32>   mMap;
+        AZStd::vector<size_t>    mCurrentBoneList;
+        AZStd::vector<size_t>   mSourceBoneList;
+        AZStd::vector<size_t>   mMap;
 
         void FillCurrentListWidget(EMotionFX::Actor* actor, const QString& filterString);
         void FillSourceListWidget(EMotionFX::Actor* actor, const QString& filterString);
         void FillMappingTable(EMotionFX::Actor* currentActor, EMotionFX::Actor* sourceActor);
-        void PerformMapping(uint32 currentNodeIndex, uint32 sourceNodeIndex);
+        void PerformMapping(size_t currentNodeIndex, size_t sourceNodeIndex);
         void RemoveCurrentSelectedMapping();
         void keyPressEvent(QKeyEvent* event);
         void keyReleaseEvent(QKeyEvent* event);

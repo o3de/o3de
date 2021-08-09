@@ -28,8 +28,8 @@ namespace EMStudio
     LogWindowPlugin::~LogWindowPlugin()
     {
         // remove the callback from the log manager (automatically deletes from memory as well)
-        const uint32 index = MCore::GetLogManager().FindLogCallback(mLogCallback);
-        if (index != MCORE_INVALIDINDEX32)
+        const size_t index = MCore::GetLogManager().FindLogCallback(mLogCallback);
+        if (index != InvalidIndex)
         {
             MCore::GetLogManager().RemoveLogCallback(index);
         }

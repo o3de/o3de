@@ -141,7 +141,7 @@ namespace CommandSystem
         // add the actor instance to the selection
         if (select)
         {
-            GetCommandManager()->ExecuteCommandInsideCommand(AZStd::string::format("Select -actorInstanceID %i", newInstance->GetID()).c_str(), outResult);
+            GetCommandManager()->ExecuteCommandInsideCommand(AZStd::string::format("Select -actorInstanceID %u", newInstance->GetID()).c_str(), outResult);
 
             if (EMotionFX::GetActorManager().GetNumActorInstances() == 1 && GetCommandManager()->GetLockSelection() == false)
             {
@@ -492,7 +492,7 @@ namespace CommandSystem
         commandString = AZStd::string::format("CreateActorInstance -actorID %i -actorInstanceID %i", mOldActorID, actorInstanceID);
         commandGroup.AddCommandString(commandString.c_str());
 
-        commandString = AZStd::string::format("AdjustActorInstance -actorInstanceID %i -pos \"%s\" -rot \"%s\" -scale \"%s\" -lodLevel %d -isVisible \"%s\" -doRender \"%s\"",
+        commandString = AZStd::string::format("AdjustActorInstance -actorInstanceID %i -pos \"%s\" -rot \"%s\" -scale \"%s\" -lodLevel %zu -isVisible \"%s\" -doRender \"%s\"",
             actorInstanceID,
             AZStd::to_string(mOldPosition).c_str(),
             AZStd::to_string(mOldRotation).c_str(),
@@ -561,7 +561,7 @@ namespace CommandSystem
     {
         // get the selection and number of selected actor instances
         const SelectionList& selection = GetCommandManager()->GetCurrentSelection();
-        const uint32 numActorInstances = selection.GetNumSelectedActorInstances();
+        const size_t numActorInstances = selection.GetNumSelectedActorInstances();
 
         // create the command group
         MCore::CommandGroup commandGroup("Clone actor instances", numActorInstances);
@@ -570,7 +570,7 @@ namespace CommandSystem
         commandGroup.AddCommandString("Unselect -actorInstanceID SELECT_ALL -actorID SELECT_ALL");
 
         // iterate over the selected instances and clone them
-        for (uint32 i = 0; i < numActorInstances; ++i)
+        for (size_t i = 0; i < numActorInstances; ++i)
         {
             // get the current actor instance
             EMotionFX::ActorInstance* actorInstance = selection.GetActorInstance(i);
@@ -612,14 +612,14 @@ namespace CommandSystem
     {
         // get the selection and number of selected actor instances
         const SelectionList& selection = GetCommandManager()->GetCurrentSelection();
-        const uint32 numActorInstances = selection.GetNumSelectedActorInstances();
+        const size_t numActorInstances = selection.GetNumSelectedActorInstances();
 
         // create the command group
         MCore::CommandGroup commandGroup("Remove actor instances", numActorInstances);
         AZStd::string tempString;
 
         // iterate over the selected instances and clone them
-        for (uint32 i = 0; i < numActorInstances; ++i)
+        for (size_t i = 0; i < numActorInstances; ++i)
         {
             // get the current actor instance
             EMotionFX::ActorInstance* actorInstance = selection.GetActorInstance(i);
@@ -645,7 +645,7 @@ namespace CommandSystem
     {
         // get the selection and number of selected actor instances
         const SelectionList& selection = GetCommandManager()->GetCurrentSelection();
-        const uint32 numActorInstances = selection.GetNumSelectedActorInstances();
+        const size_t numActorInstances = selection.GetNumSelectedActorInstances();
 
         // create the command group
         AZStd::string outResult;
@@ -653,7 +653,7 @@ namespace CommandSystem
         MCore::CommandGroup commandGroup("Hide actor instances", numActorInstances * 2);
 
         // iterate over the selected instances
-        for (uint32 i = 0; i < numActorInstances; ++i)
+        for (size_t i = 0; i < numActorInstances; ++i)
         {
             // get the current actor instance
             EMotionFX::ActorInstance* actorInstance = selection.GetActorInstance(i);
@@ -685,7 +685,7 @@ namespace CommandSystem
     {
         // get the selection and number of selected actor instances
         const SelectionList& selection = GetCommandManager()->GetCurrentSelection();
-        const uint32 numActorInstances = selection.GetNumSelectedActorInstances();
+        const size_t numActorInstances = selection.GetNumSelectedActorInstances();
 
         // create the command group
         AZStd::string outResult;
@@ -693,7 +693,7 @@ namespace CommandSystem
         MCore::CommandGroup commandGroup("Unhide actor instances", numActorInstances * 2);
 
         // iterate over the selected instances
-        for (uint32 i = 0; i < numActorInstances; ++i)
+        for (size_t i = 0; i < numActorInstances; ++i)
         {
             // get the current actor instance
             EMotionFX::ActorInstance* actorInstance = selection.GetActorInstance(i);
@@ -722,7 +722,7 @@ namespace CommandSystem
     {
         // get the selection and number of selected actor instances
         SelectionList selection = GetCommandManager()->GetCurrentSelection();
-        const uint32 numActorInstances = selection.GetNumSelectedActorInstances();
+        const size_t numActorInstances = selection.GetNumSelectedActorInstances();
 
         // create the command group
         AZStd::string outResult;
@@ -730,7 +730,7 @@ namespace CommandSystem
         MCore::CommandGroup commandGroup("Unselect all actor instances", numActorInstances + 1);
 
         // iterate over the selected instances and clone them
-        for (uint32 i = 0; i < numActorInstances; ++i)
+        for (size_t i = 0; i < numActorInstances; ++i)
         {
             // get the current actor instance
             EMotionFX::ActorInstance* actorInstance = selection.GetActorInstance(i);

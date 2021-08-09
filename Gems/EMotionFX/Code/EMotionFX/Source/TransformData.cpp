@@ -72,7 +72,7 @@ namespace EMotionFX
         mPose.LinkToActorInstance(actorInstance);
 
         // release all memory if we want to resize to zero nodes
-        const uint32 numNodes = actorInstance->GetNumNodes();
+        const size_t numNodes = actorInstance->GetNumNodes();
         if (numNodes == 0)
         {
             Release();
@@ -93,7 +93,7 @@ namespace EMotionFX
         }
 
         // now initialize the data with the actor transforms
-        for (uint32 i = 0; i < numNodes; ++i)
+        for (size_t i = 0; i < numNodes; ++i)
         {
             mSkinningMatrices[i] = AZ::Matrix3x4::CreateIdentity();
         }
@@ -119,27 +119,27 @@ namespace EMotionFX
     EMFX_SCALECODE
     (
         // set the scaling value for the node and all child nodes
-        void TransformData::SetBindPoseLocalScaleInherit(uint32 nodeIndex, const AZ::Vector3& scale)
+        void TransformData::SetBindPoseLocalScaleInherit(size_t nodeIndex, const AZ::Vector3& scale)
         {
             const ActorInstance*  actorInstance   = mPose.GetActorInstance();
             const Actor*          actor           = actorInstance->GetActor();
 
             // get the node index and the number of children of the given node
             const Node* node        = actor->GetSkeleton()->GetNode(nodeIndex);
-            const uint32 numChilds  = node->GetNumChildNodes();
+            const size_t numChilds  = node->GetNumChildNodes();
 
             // set the new scale for the given node
             SetBindPoseLocalScale(nodeIndex, scale);
 
             // iterate through the children and set their scale recursively
-            for (uint32 i = 0; i < numChilds; ++i)
+            for (size_t i = 0; i < numChilds; ++i)
             {
                 SetBindPoseLocalScaleInherit(node->GetChildIndex(i), scale);
             }
         }
 
         // update the local space scale
-        void TransformData::SetBindPoseLocalScale(uint32 nodeIndex, const AZ::Vector3& scale)
+        void TransformData::SetBindPoseLocalScale(size_t nodeIndex, const AZ::Vector3& scale)
         {
             Transform newTransform = mBindPose->GetLocalSpaceTransform(nodeIndex);
             newTransform.mScale = scale;
@@ -148,7 +148,7 @@ namespace EMotionFX
     ) // EMFX_SCALECODE
 
     // set the number of morph weights
-    void TransformData::SetNumMorphWeights(uint32 numMorphWeights)
+    void TransformData::SetNumMorphWeights(size_t numMorphWeights)
     {
         mPose.ResizeNumMorphs(numMorphWeights);
     }

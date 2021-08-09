@@ -95,9 +95,11 @@ namespace EMotionFX
     void BlendTreeMorphTargetNode::UpdateMorphIndices(ActorInstance* actorInstance, UniqueData* uniqueData, bool forceUpdate)
     {
         // Check if our LOD level changed, if not, we don't need to refresh it.
-        const uint32 lodLevel = actorInstance->GetLODLevel();
+        const size_t lodLevel = actorInstance->GetLODLevel();
         if (!forceUpdate && uniqueData->m_lastLodLevel == lodLevel)
+        {
             return;
+        }
 
         // Convert the morph target name into an index for fast lookup.
         if (!m_morphTargetNames.empty())
@@ -111,7 +113,7 @@ namespace EMotionFX
         }
         else
         {
-            uniqueData->m_morphTargetIndex = MCORE_INVALIDINDEX32;
+            uniqueData->m_morphTargetIndex = InvalidIndex;
         }
 
         uniqueData->m_lastLodLevel = lodLevel;
@@ -133,7 +135,7 @@ namespace EMotionFX
             }
             else
             {
-                SetHasError(uniqueData, uniqueData->m_morphTargetIndex == MCORE_INVALIDINDEX32);
+                SetHasError(uniqueData, uniqueData->m_morphTargetIndex == InvalidIndex);
             }
         }
 
@@ -160,7 +162,7 @@ namespace EMotionFX
         }
 
         // Try to modify the morph target weight with the value we specified as input.
-        if (!mDisabled && uniqueData->m_morphTargetIndex != MCORE_INVALIDINDEX32)
+        if (!mDisabled && uniqueData->m_morphTargetIndex != InvalidIndex)
         {
             // If we have an input to the weight port, read that value use that value to overwrite the pose value with.
             if (mInputPorts[INPUTPORT_WEIGHT].mConnection)

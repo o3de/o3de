@@ -164,11 +164,11 @@ namespace EMotionFX
             Transform outputTransform;
 
             // for all enabled nodes
-            const uint32 numNodes = actorInstance->GetNumEnabledNodes();
-            for (uint32 i = 0; i < numNodes; ++i)
+            const size_t numNodes = actorInstance->GetNumEnabledNodes();
+            for (size_t i = 0; i < numNodes; ++i)
             {
                 // get the node index that we sample the motion data from
-                const uint32 nodeIndex = actorInstance->GetEnabledNode(i);
+                const uint16 nodeIndex = actorInstance->GetEnabledNode(i);
                 const Actor::NodeMirrorInfo& mirrorInfo = actor->GetNodeMirrorInfo(nodeIndex);
 
                 // build the mirror plane normal, based on the mirror axis for this node

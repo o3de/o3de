@@ -177,7 +177,7 @@ namespace EMStudio
 #endif // EMFX_EMSTUDIOLYEMBEDDED
 
         // Give a chance to every plugin to reflect data
-        const uint32 numPlugins = mPluginManager->GetNumPlugins();
+        const size_t numPlugins = mPluginManager->GetNumPlugins();
         if (numPlugins)
         {
             AZ::SerializeContext* serializeContext = nullptr;
@@ -188,7 +188,7 @@ namespace EMStudio
             }
             else
             {
-                for (uint32 i = 0; i < numPlugins; ++i)
+                for (size_t i = 0; i < numPlugins; ++i)
                 {
                     EMStudioPlugin* plugin = mPluginManager->GetPlugin(i);
                     plugin->Reflect(serializeContext);
@@ -320,12 +320,12 @@ namespace EMStudio
     }
 
 
-    void EMStudioManager::SetVisibleJointIndices(const AZStd::unordered_set<AZ::u32>& visibleJointIndices)
+    void EMStudioManager::SetVisibleJointIndices(const AZStd::unordered_set<size_t>& visibleJointIndices)
     {
         m_visibleJointIndices = visibleJointIndices;
     }
 
-    void EMStudioManager::SetSelectedJointIndices(const AZStd::unordered_set<AZ::u32>& selectedJointIndices)
+    void EMStudioManager::SetSelectedJointIndices(const AZStd::unordered_set<size_t>& selectedJointIndices)
     {
         m_selectedJointIndices = selectedJointIndices;
     }
@@ -432,7 +432,7 @@ namespace EMStudio
         }
 
         // add and return the manipulator
-        mTransformationManipulators.Add(manipulator);
+        mTransformationManipulators.emplace_back(manipulator);
         return manipulator;
     }
 
@@ -440,12 +440,15 @@ namespace EMStudio
     // remove the given gizmo from the array
     void EMStudioManager::RemoveTransformationManipulator(MCommon::TransformationManipulator* manipulator)
     {
-        mTransformationManipulators.RemoveByValue(manipulator);
+        if (const auto it = AZStd::find(begin(mTransformationManipulators), end(mTransformationManipulators), manipulator); it != end(mTransformationManipulators))
+        {
+            mTransformationManipulators.erase(it);
+        }
     }
 
 
     // returns the gizmo array
-    MCore::Array<MCommon::TransformationManipulator*>* EMStudioManager::GetTransformationManipulators()
+    AZStd::vector<MCommon::TransformationManipulator*>* EMStudioManager::GetTransformationManipulators()
     {
         return &mTransformationManipulators;
     }

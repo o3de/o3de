@@ -21,8 +21,8 @@ namespace EMStudio
         ManipulatorCallback::Update(value);
 
         // update the position, if actorinstance is still valid
-        uint32 actorInstanceID = EMotionFX::GetActorManager().FindActorInstanceIndex(mActorInstance);
-        if (actorInstanceID != MCORE_INVALIDINDEX32)
+        size_t actorInstanceID = EMotionFX::GetActorManager().FindActorInstanceIndex(mActorInstance);
+        if (actorInstanceID != InvalidIndex)
         {
             mActorInstance->SetLocalSpacePosition(value);
         }
@@ -31,8 +31,8 @@ namespace EMStudio
     void TranslateManipulatorCallback::UpdateOldValues()
     {
         // update the rotation, if actorinstance is still valid
-        uint32 actorInstanceID = EMotionFX::GetActorManager().FindActorInstanceIndex(mActorInstance);
-        if (actorInstanceID != MCORE_INVALIDINDEX32)
+        size_t actorInstanceID = EMotionFX::GetActorManager().FindActorInstanceIndex(mActorInstance);
+        if (actorInstanceID != InvalidIndex)
         {
             mOldValueVec = mActorInstance->GetLocalSpaceTransform().mPosition;
         }
@@ -66,8 +66,8 @@ namespace EMStudio
     void RotateManipulatorCallback::Update(const AZ::Quaternion& value)
     {
         // update the rotation, if actorinstance is still valid
-        uint32 actorInstanceID = EMotionFX::GetActorManager().FindActorInstanceIndex(mActorInstance);
-        if (actorInstanceID != MCORE_INVALIDINDEX32)
+        size_t actorInstanceID = EMotionFX::GetActorManager().FindActorInstanceIndex(mActorInstance);
+        if (actorInstanceID != InvalidIndex)
         {
             // temporarily update the actor instance
             mActorInstance->SetLocalSpaceRotation(value * mActorInstance->GetLocalSpaceTransform().mRotation.GetNormalized());
@@ -80,8 +80,8 @@ namespace EMStudio
     void RotateManipulatorCallback::UpdateOldValues()
     {
         // update the rotation, if actorinstance is still valid
-        uint32 actorInstanceID = EMotionFX::GetActorManager().FindActorInstanceIndex(mActorInstance);
-        if (actorInstanceID != MCORE_INVALIDINDEX32)
+        size_t actorInstanceID = EMotionFX::GetActorManager().FindActorInstanceIndex(mActorInstance);
+        if (actorInstanceID != InvalidIndex)
         {
             mOldValueQuat = mActorInstance->GetLocalSpaceTransform().mRotation;
         }
@@ -117,8 +117,8 @@ namespace EMStudio
 
     AZ::Vector3 ScaleManipulatorCallback::GetCurrValueVec()
     {
-        uint32 actorInstanceID = EMotionFX::GetActorManager().FindActorInstanceIndex(mActorInstance);
-        if (actorInstanceID != MCORE_INVALIDINDEX32)
+        size_t actorInstanceID = EMotionFX::GetActorManager().FindActorInstanceIndex(mActorInstance);
+        if (actorInstanceID != InvalidIndex)
         {
             #ifndef EMFX_SCALE_DISABLED
                 return mActorInstance->GetLocalSpaceTransform().mScale;
@@ -137,8 +137,8 @@ namespace EMStudio
         EMFX_SCALECODE
         (
             // update the position, if actorinstance is still valid
-            uint32 actorInstanceID = EMotionFX::GetActorManager().FindActorInstanceIndex(mActorInstance);
-            if (actorInstanceID != MCORE_INVALIDINDEX32)
+            size_t actorInstanceID = EMotionFX::GetActorManager().FindActorInstanceIndex(mActorInstance);
+            if (actorInstanceID != InvalidIndex)
             {
                 float minScale = 0.001f;
                 const AZ::Vector3 scale = AZ::Vector3(
@@ -159,8 +159,8 @@ namespace EMStudio
         EMFX_SCALECODE
         (
             // update the rotation, if actorinstance is still valid
-            uint32 actorInstanceID = EMotionFX::GetActorManager().FindActorInstanceIndex(mActorInstance);
-            if (actorInstanceID != MCORE_INVALIDINDEX32)
+            size_t actorInstanceID = EMotionFX::GetActorManager().FindActorInstanceIndex(mActorInstance);
+            if (actorInstanceID != InvalidIndex)
             {
                 mOldValueVec = mActorInstance->GetLocalSpaceTransform().mScale;
             }

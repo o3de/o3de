@@ -55,7 +55,7 @@ namespace CommandSystem
 
     private:
         AZStd::string m_eventTrackName;
-        AZStd::optional<uint32> m_eventTrackIndex;
+        AZStd::optional<size_t> m_eventTrackIndex;
         AZStd::optional<bool> m_isEnabled;
     };
 
@@ -215,13 +215,13 @@ namespace CommandSystem
     // Command helpers
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     void COMMANDSYSTEM_API CommandAddEventTrack();
-    void COMMANDSYSTEM_API CommandRemoveEventTrack(uint32 trackIndex);
-    void COMMANDSYSTEM_API CommandRemoveEventTrack(EMotionFX::Motion* motion, uint32 trackIndex);
-    void COMMANDSYSTEM_API CommandRenameEventTrack(uint32 trackIndex, const char* newName);
-    void COMMANDSYSTEM_API CommandEnableEventTrack(uint32 trackIndex, bool isEnabled);
+    void COMMANDSYSTEM_API CommandRemoveEventTrack(size_t trackIndex);
+    void COMMANDSYSTEM_API CommandRemoveEventTrack(EMotionFX::Motion* motion, size_t trackIndex);
+    void COMMANDSYSTEM_API CommandRenameEventTrack(size_t trackIndex, const char* newName);
+    void COMMANDSYSTEM_API CommandEnableEventTrack(size_t trackIndex, bool isEnabled);
     void COMMANDSYSTEM_API CommandHelperAddMotionEvent(const char* trackName, float startTime, float endTime, const EMotionFX::EventDataSet& eventDatas = EMotionFX::EventDataSet {}, MCore::CommandGroup* commandGroup = nullptr);
-    void COMMANDSYSTEM_API CommandHelperRemoveMotionEvent(const char* trackName, uint32 eventNr, MCore::CommandGroup* commandGroup = nullptr);
-    void COMMANDSYSTEM_API CommandHelperRemoveMotionEvent(uint32 motionID, const char* trackName, uint32 eventNr, MCore::CommandGroup* commandGroup = nullptr);
-    void COMMANDSYSTEM_API CommandHelperRemoveMotionEvents(const char* trackName, const MCore::Array<uint32>& eventNumbers, MCore::CommandGroup* commandGroup = nullptr);
-    void COMMANDSYSTEM_API CommandHelperMotionEventTrackChanged(uint32 eventNr, float startTime, float endTime, const char* oldTrackName, const char* newTrackName);
+    void COMMANDSYSTEM_API CommandHelperRemoveMotionEvent(const char* trackName, size_t eventNr, MCore::CommandGroup* commandGroup = nullptr);
+    void COMMANDSYSTEM_API CommandHelperRemoveMotionEvent(uint32 motionID, const char* trackName, size_t eventNr, MCore::CommandGroup* commandGroup = nullptr);
+    void COMMANDSYSTEM_API CommandHelperRemoveMotionEvents(const char* trackName, const AZStd::vector<size_t>& eventNumbers, MCore::CommandGroup* commandGroup = nullptr);
+    void COMMANDSYSTEM_API CommandHelperMotionEventTrackChanged(size_t eventNr, float startTime, float endTime, const char* oldTrackName, const char* newTrackName);
 } // namespace CommandSystem

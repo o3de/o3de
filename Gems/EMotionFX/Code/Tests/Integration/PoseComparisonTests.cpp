@@ -90,11 +90,11 @@ namespace EMotionFX
 
         bool MatchAndExplain(const KeyTrackLinearDynamic<T>& got, ::testing::MatchResultListener* result_listener) const override
         {
-            const uint32 gotSize = got.GetNumKeys();
-            const uint32 expectedSize = m_expected.GetNumKeys();
-            const uint32 commonSize = AZStd::min(gotSize, expectedSize);
+            const size_t gotSize = got.GetNumKeys();
+            const size_t expectedSize = m_expected.GetNumKeys();
+            const size_t commonSize = AZStd::min(gotSize, expectedSize);
 
-            for (uint32 i = 0; i != commonSize; ++i)
+            for (size_t i = 0; i != commonSize; ++i)
             {
                 const KeyFrame<T>* gotKey = got.GetKey(i);
                 const KeyFrame<T>* expectedKey = m_expected.GetKey(i);
@@ -104,9 +104,9 @@ namespace EMotionFX
                     *result_listener << "where the value pair at index #" << i << " don't match\n";
 
                     const uint32 numContextLines = 2;
-                    const uint32 beginContextLines = i > numContextLines ? i - numContextLines : 0;
-                    const uint32 endContextLines = i > commonSize - numContextLines - 1 ? commonSize : i + numContextLines + 1;
-                    for (uint32 contextIndex = beginContextLines; contextIndex < endContextLines; ++contextIndex)
+                    const size_t beginContextLines = i > numContextLines ? i - numContextLines : 0;
+                    const size_t endContextLines = i > commonSize - numContextLines - 1 ? commonSize : i + numContextLines + 1;
+                    for (size_t contextIndex = beginContextLines; contextIndex < endContextLines; ++contextIndex)
                     {
                         const bool contextLineMatches = ::testing::Matches(innerMatcher)(::testing::make_tuple(got.GetKey(contextIndex), m_expected.GetKey(contextIndex)));
                         if (!contextLineMatches)
@@ -222,7 +222,7 @@ namespace EMotionFX
         {
             const Recorder::TransformTracks& gotTrack = gotTracks[trackNum];
             const Recorder::TransformTracks& expectedTrack = expectedTracks[trackNum];
-            const char* nodeName = gotActorInstanceData.mActorInstance->GetActor()->GetSkeleton()->GetNode(static_cast<uint32>(trackNum))->GetName();
+            const char* nodeName = gotActorInstanceData.mActorInstance->GetActor()->GetSkeleton()->GetNode(trackNum)->GetName();
 
             EXPECT_THAT(gotTrack.mPositions, MatchesKeyTrack(expectedTrack.mPositions, nodeName));
             EXPECT_THAT(gotTrack.mRotations, MatchesKeyTrack(expectedTrack.mRotations, nodeName));
@@ -285,7 +285,7 @@ namespace EMotionFX
         {
             const Recorder::TransformTracks& gotTrack = gotTracks[trackNum];
             const Recorder::TransformTracks& expectedTrack = expectedTracks[trackNum];
-            const char* nodeName = gotActorInstanceData.mActorInstance->GetActor()->GetSkeleton()->GetNode(static_cast<uint32>(trackNum))->GetName();
+            const char* nodeName = gotActorInstanceData.mActorInstance->GetActor()->GetSkeleton()->GetNode(trackNum)->GetName();
 
             EXPECT_THAT(gotTrack.mPositions, MatchesKeyTrack(expectedTrack.mPositions, nodeName));
             EXPECT_THAT(gotTrack.mRotations, MatchesKeyTrack(expectedTrack.mRotations, nodeName));

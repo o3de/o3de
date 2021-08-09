@@ -49,7 +49,7 @@ namespace EMStudio
         connect(mOKButton, &QPushButton::clicked, this, &NodeSelectionWindow::accept);
         connect(mCancelButton, &QPushButton::clicked, this, &NodeSelectionWindow::reject);
         connect(this, &NodeSelectionWindow::accepted, this, &NodeSelectionWindow::OnAccept);
-        connect(mHierarchyWidget, static_cast<void (NodeHierarchyWidget::*)(MCore::Array<SelectionItem>)>(&NodeHierarchyWidget::OnDoubleClicked), this, &NodeSelectionWindow::OnDoubleClicked);
+        connect(mHierarchyWidget, static_cast<void (NodeHierarchyWidget::*)(AZStd::vector<SelectionItem>)>(&NodeHierarchyWidget::OnDoubleClicked), this, &NodeSelectionWindow::OnDoubleClicked);
 
         // connect the window activation signal to refresh if reactivated
         //connect( this, SIGNAL(visibilityChanged(bool)), this, SLOT(OnVisibilityChanged(bool)) );
@@ -63,7 +63,7 @@ namespace EMStudio
     }
 
 
-    void NodeSelectionWindow::OnDoubleClicked(MCore::Array<SelectionItem> selection)
+    void NodeSelectionWindow::OnDoubleClicked(AZStd::vector<SelectionItem> selection)
     {
         MCORE_UNUSED(selection);
         accept();

@@ -42,7 +42,7 @@ namespace MCore
         MCORE_INLINE void SetValue(const RGBAColor& value)          { mValue = value; }
 
         MCORE_INLINE uint8* GetRawDataPointer()                     { return reinterpret_cast<uint8*>(&mValue); }
-        MCORE_INLINE uint32 GetRawDataSize() const                  { return sizeof(RGBAColor); }
+        MCORE_INLINE size_t GetRawDataSize() const                  { return sizeof(RGBAColor); }
 
         // overloaded from the attribute base class
         Attribute* Clone() const override                           { return AttributeColor::Create(mValue); }
@@ -67,8 +67,8 @@ namespace MCore
             return true;
         }
         bool ConvertToString(AZStd::string& outString) const override      { AZStd::to_string(outString, AZ::Vector4(mValue.r, mValue.g, mValue.b, mValue.a)); return true; }
-        uint32 GetClassSize() const override                        { return sizeof(AttributeColor); }
-        uint32 GetDefaultInterfaceType() const override             { return ATTRIBUTE_INTERFACETYPE_COLOR; }
+        size_t GetClassSize() const override                        { return sizeof(AttributeColor); }
+        AZ::u32 GetDefaultInterfaceType() const override             { return ATTRIBUTE_INTERFACETYPE_COLOR; }
 
     private:
         RGBAColor   mValue;     /**< The color value. */

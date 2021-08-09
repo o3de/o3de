@@ -128,8 +128,8 @@ namespace EMotionFX
         MCore::LockGuardRecursive lock(mAnimGraphLock);
 
         // find the index of the anim graph and return false in case the pointer is not valid
-        const uint32 animGraphIndex = FindAnimGraphIndex(animGraph);
-        if (animGraphIndex == MCORE_INVALIDINDEX32)
+        const size_t animGraphIndex = FindAnimGraphIndex(animGraph);
+        if (animGraphIndex == InvalidIndex)
         {
             return false;
         }
@@ -156,8 +156,8 @@ namespace EMotionFX
             animGraphInstance->RemoveAllObjectData(true);
 
             // Remove all links to the anim graph instance that will get removed.
-            const uint32 numActorInstances = GetActorManager().GetNumActorInstances();
-            for (uint32 i = 0; i < numActorInstances; ++i)
+            const size_t numActorInstances = GetActorManager().GetNumActorInstances();
+            for (size_t i = 0; i < numActorInstances; ++i)
             {
                 ActorInstance* actorInstance = GetActorManager().GetActorInstance(i);
                 if (animGraphInstance == actorInstance->GetAnimGraphInstance())
@@ -182,8 +182,8 @@ namespace EMotionFX
         MCore::LockGuardRecursive lock(mAnimGraphInstanceLock);
 
         // find the index of the anim graph instance and return false in case the pointer is not valid
-        const uint32 instanceIndex = FindAnimGraphInstanceIndex(animGraphInstance);
-        if (instanceIndex == MCORE_INVALIDINDEX32)
+        const size_t instanceIndex = FindAnimGraphInstanceIndex(animGraphInstance);
+        if (instanceIndex == InvalidIndex)
         {
             return false;
         }
@@ -218,33 +218,33 @@ namespace EMotionFX
     }
 
 
-    uint32 AnimGraphManager::FindAnimGraphIndex(AnimGraph* animGraph) const
+    size_t AnimGraphManager::FindAnimGraphIndex(AnimGraph* animGraph) const
     {
         MCore::LockGuardRecursive lock(mAnimGraphLock);
 
         auto iterator = AZStd::find(mAnimGraphs.begin(), mAnimGraphs.end(), animGraph);
         if (iterator == mAnimGraphs.end())
         {
-            return MCORE_INVALIDINDEX32;
+            return InvalidIndex;
         }
 
         const size_t index = iterator - mAnimGraphs.begin();
-        return static_cast<uint32>(index);
+        return index;
     }
 
 
-    uint32 AnimGraphManager::FindAnimGraphInstanceIndex(AnimGraphInstance* animGraphInstance) const
+    size_t AnimGraphManager::FindAnimGraphInstanceIndex(AnimGraphInstance* animGraphInstance) const
     {
         MCore::LockGuardRecursive lock(mAnimGraphInstanceLock);
 
         auto iterator = AZStd::find(mAnimGraphInstances.begin(), mAnimGraphInstances.end(), animGraphInstance);
         if (iterator == mAnimGraphInstances.end())
         {
-            return MCORE_INVALIDINDEX32;
+            return InvalidIndex;
         }
 
         const size_t index = iterator - mAnimGraphInstances.begin();
-        return static_cast<uint32>(index);
+        return index;
     }
 
 

@@ -43,7 +43,7 @@ namespace EMStudio
         MCORE_MEMORYOBJECTCATEGORY(MotionSetManagementRemoveMotionsFailedWindow, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS);
 
     public:
-        MotionSetManagementRemoveMotionsFailedWindow(QWidget* parent, const MCore::Array<EMotionFX::Motion*>& motions);
+        MotionSetManagementRemoveMotionsFailedWindow(QWidget* parent, const AZStd::vector<EMotionFX::Motion*>& motions);
     };
 
 

@@ -6,6 +6,8 @@
  *
  */
 
+#include <AzCore/std/algorithm.h>
+#include <AzCore/std/numeric.h>
 #include <AzCore/Debug/Timer.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -151,7 +153,7 @@ namespace EMotionFX
         , m_autoUnregister(true)
         , m_dirtyFlag(false)
     {
-        m_id                 = MCore::GetIDGenerator().GenerateID();
+        m_id                 = aznumeric_caster(MCore::GetIDGenerator().GenerateID());
         m_callback           = aznew MotionSetCallback(this);
 
 #if defined(EMFX_DEVELOPMENT_BUILD)
@@ -320,18 +322,16 @@ namespace EMotionFX
         }
     }
 
-    void MotionSet::ReserveMotionEntries(uint32 numMotionEntries)
+    void MotionSet::ReserveMotionEntries(size_t numMotionEntries)
     {
         MCore::LockGuardRecursive lock(m_mutex);
 
-        // Not supported yet by the AZStd::unordered_map.
-        //m_motionEntries.reserve(numMotionEntries);
-        MCORE_UNUSED(numMotionEntries);
+        m_motionEntries.reserve(numMotionEntries);
     }
 
 
     // Find the motion entry for a given motion.
-    MotionSet::MotionEntry* MotionSet::FindMotionEntry(Motion* motion) const
+    MotionSet::MotionEntry* MotionSet::FindMotionEntry(const Motion* motion) const
     {
         MCore::LockGuardRecursive lock(m_mutex);
 
@@ -642,23 +642,10 @@ namespace EMotionFX
     {
         MCore::LockGuardRecursive lock(m_mutex);
 
-        // Is the given motion set dirty?
-        if (m_dirtyFlag)
+        return m_dirtyFlag || AZStd::any_of(begin(m_childSets), end(m_childSets), [](const MotionSet* childSet)
         {
-            return true;
-        }
-
-        // Is any of the child motion sets dirty?
-        for (MotionSet* childSet : m_childSets)
-        {
-            if (childSet->GetDirtyFlag())
-            {
-                return true;
-            }
-        }
-
-        // Neither the given set nor any of the child sets is dirty.
-        return false;
+            return childSet->GetDirtyFlag();
+        });
     }
 
 
@@ -735,38 +722,25 @@ namespace EMotionFX
     }
 
 
-    uint32 MotionSet::GetNumChildSets() const
+    size_t MotionSet::GetNumChildSets() const
     {
         MCore::LockGuardRecursive lock(m_mutex);
 
-        uint32 childSetSize = 0;
-        for (const MotionSet* motionSet : m_childSets)
+        return AZStd::accumulate(begin(m_childSets), end(m_childSets), size_t{0}, [](size_t total, const MotionSet* motionSet)
         {
-            if (!motionSet->GetIsOwnedByRuntime())
-            {
-                ++childSetSize;
-            }
-        }
-        return childSetSize;
+            return total + motionSet->GetIsOwnedByRuntime();
+        });
     }
 
 
-    MotionSet* MotionSet::GetChildSet(uint32 index) const
+    MotionSet* MotionSet::GetChildSet(size_t index) const
     {
         MCore::LockGuardRecursive lock(m_mutex);
-        uint32 currentIndex = 0;
-        for (MotionSet* motionSet : m_childSets)
+        const auto foundChildSet = AZStd::find_if(begin(m_childSets), end(m_childSets), [iter = index](const MotionSet* motionSet) mutable
         {
-            if (!motionSet->GetIsOwnedByRuntime())
-            {
-                if (currentIndex == index)
-                {
-                    return motionSet;
-                }
-                ++currentIndex;
-            }
-        }
-        return nullptr;
+            return !motionSet->GetIsOwnedByRuntime() && iter-- == 0;
+        });
+        return foundChildSet != end(m_childSets) ? *foundChildSet : nullptr;
     }
 
     void MotionSet::RecursiveGetMotionSets(AZStd::vector<const MotionSet*>& childMotionSets, bool isOwnedByRuntime) const
@@ -903,8 +877,8 @@ namespace EMotionFX
 
     void MotionSet::RecursiveRewireParentSets(MotionSet* motionSet)
     {
-        const AZ::u32 numChildSets = motionSet->GetNumChildSets();
-        for (AZ::u32 i = 0; i < numChildSets; ++i)
+        const size_t numChildSets = motionSet->GetNumChildSets();
+        for (size_t i = 0; i < numChildSets; ++i)
         {
             MotionSet* childSet = motionSet->GetChildSet(i);
             childSet->m_parentSet = motionSet;

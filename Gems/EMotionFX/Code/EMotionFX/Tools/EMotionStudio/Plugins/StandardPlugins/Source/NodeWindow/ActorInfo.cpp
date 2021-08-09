@@ -40,7 +40,7 @@ namespace EMStudio
         }
 
         // global mesh information
-        const uint32 lodLevel = actorInstance->GetLODLevel();
+        const size_t lodLevel = actorInstance->GetLODLevel();
         uint32 numPolygons;
         actor->CalcMeshTotals(lodLevel, &numPolygons, &m_totalVertices, &m_totalIndices);
     }

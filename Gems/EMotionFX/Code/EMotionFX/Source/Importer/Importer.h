@@ -9,7 +9,7 @@
 #pragma once
 
 #include "../EMotionFXConfig.h"
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include <MCore/Source/Endian.h>
 #include <EMotionFX/Source/BaseObject.h>
 #include <AzCore/Serialization/ObjectStream.h>
@@ -82,8 +82,8 @@ namespace EMotionFX
             bool mLoadSimulatedObjects = true;                     /**< Set to false if you wish to disable loading of simulated objects. */
             bool mOptimizeForServer = false;                       /**< Set to true if you witsh to optimize this actor to be used on server. */
             uint32 mThreadIndex = 0;
-            MCore::Array<uint32>    mChunkIDsToIgnore;      /**< Add chunk ID's to this array. Chunks with these ID's will not be processed. */
-            MCore::Array<uint32>    mLayerIDsToIgnore;      /**< Add vertex attribute layer ID's to ignore. */
+            AZStd::vector<uint32>    mChunkIDsToIgnore;      /**< Add chunk ID's to this array. Chunks with these ID's will not be processed. */
+            AZStd::vector<uint32>    mLayerIDsToIgnore;      /**< Add vertex attribute layer ID's to ignore. */
 
             /**
              * If the actor need to be optimized for server, will overwrite a few other actor settings.
@@ -105,7 +105,7 @@ namespace EMotionFX
             bool mForceLoading = false;       /**< Set to true in case you want to load the motion even if a motion with the given filename is already inside the motion manager. */
             bool mLoadMotionEvents = true;    /**< Set to false if you wish to disable loading of motion events. */
             bool mUnitTypeConvert = true;     /**< Set to false to disable automatic unit type conversion (between cm, meters, etc). On default this is enabled. */
-            MCore::Array<uint32> mChunkIDsToIgnore;  /**< Add the ID's of the chunks you wish to ignore. */
+            AZStd::vector<uint32> mChunkIDsToIgnore;  /**< Add the ID's of the chunks you wish to ignore. */
         };
 
         /**
@@ -133,7 +133,7 @@ namespace EMotionFX
             Motion*                             mMotion = nullptr;
             Importer::ActorSettings*            mActorSettings = nullptr;
             Importer::MotionSettings*           mMotionSettings = nullptr;
-            MCore::Array<SharedData*>*          mSharedData = nullptr;
+            AZStd::vector<SharedData*>*          mSharedData = nullptr;
             MCore::Endian::EEndianType          mEndianType = MCore::Endian::ENDIAN_LITTLE;
 
             NodeMap*                            mNodeMap = nullptr;
@@ -312,7 +312,7 @@ namespace EMotionFX
          * @param type The shared data ID to search for.
          * @return A pointer to the shared data object, or nullptr when no shared data of this type has been found.
          */
-        static SharedData* FindSharedData(MCore::Array<SharedData*>* sharedDataArray, uint32 type);
+        static SharedData* FindSharedData(AZStd::vector<SharedData*>* sharedDataArray, uint32 type);
 
         /**
          * Enable or disable logging.
@@ -355,7 +355,7 @@ namespace EMotionFX
 
 
     private:
-        MCore::Array<ChunkProcessor*>       mChunkProcessors;   /**< The registered chunk processors. */
+        AZStd::vector<ChunkProcessor*>       mChunkProcessors;   /**< The registered chunk processors. */
         bool                                mLoggingActive;     /**< Contains if the importer should perform logging or not or not. */
         bool                                mLogDetails;        /**< Contains if the importer should perform detail-logging or not. */
 
@@ -414,19 +414,19 @@ namespace EMotionFX
          * @param sharedData The array which holds the shared data objects.
          * @param data A pointer to your shared data object.
          */
-        static void AddSharedData(MCore::Array<SharedData*>& sharedData, SharedData* data);
+        static void AddSharedData(AZStd::vector<SharedData*>& sharedData, SharedData* data);
 
         /*
          * Precreate the standard shared data objects.
          * @param sharedData The shared data array to work on.
          */
-        static void PrepareSharedData(MCore::Array<SharedData*>& sharedData);
+        static void PrepareSharedData(AZStd::vector<SharedData*>& sharedData);
 
         /**
          * Reset all shared data objects.
          * Resetting these objects will clear/empty their internal data.
          */
-        static void ResetSharedData(MCore::Array<SharedData*>& sharedData);
+        static void ResetSharedData(AZStd::vector<SharedData*>& sharedData);
 
         /**
          * Find the chunk processor which has a given ID and version number.

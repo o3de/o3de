@@ -90,7 +90,6 @@ namespace EMotionFX
         Mesh* lodMesh = actor->GetMesh(0, 0);
         StandardMaterial* dummyMat = StandardMaterial::Create("Dummy Material");
         actor->AddMaterial(0, dummyMat); // owns the material
-        actor->SetNumLODLevels(numLODs);
 
         for (int i = 1; i < numLODs; ++i)
         {

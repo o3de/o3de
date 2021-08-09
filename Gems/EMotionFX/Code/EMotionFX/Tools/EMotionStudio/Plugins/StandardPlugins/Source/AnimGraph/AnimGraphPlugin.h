@@ -17,7 +17,7 @@
 #include "../../../../EMStudioSDK/Source/EMStudioManager.h"
 
 #include <MCore/Source/Random.h>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 
 #include <EMotionFX/Source/AnimGraph.h>
 #include <EMotionFX/Source/EventHandler.h>
@@ -76,7 +76,7 @@ namespace EMStudio
         AnimGraphEventHandler(AnimGraphPlugin* plugin);
 
         const AZStd::vector<EMotionFX::EventTypes> GetHandledEventTypes() const override { return { EMotionFX::EVENT_TYPE_ON_SET_VISUAL_MANIPULATOR_OFFSET, EMotionFX::EVENT_TYPE_ON_INPUT_PORTS_CHANGED, EMotionFX::EVENT_TYPE_ON_OUTPUT_PORTS_CHANGED, EMotionFX::EVENT_TYPE_ON_RAY_INTERSECTION_TEST, EMotionFX::EVENT_TYPE_ON_DELETE_ANIM_GRAPH, EMotionFX::EVENT_TYPE_ON_DELETE_ANIM_GRAPH_INSTANCE }; }
-        void OnSetVisualManipulatorOffset(EMotionFX::AnimGraphInstance* animGraphInstance, uint32 paramIndex, const AZ::Vector3& offset) override;
+        void OnSetVisualManipulatorOffset(EMotionFX::AnimGraphInstance* animGraphInstance, size_t paramIndex, const AZ::Vector3& offset) override;
         void OnInputPortsChanged(EMotionFX::AnimGraphNode* node, const AZStd::vector<AZStd::string>& newInputPorts, const AZStd::string& memberName, const AZStd::vector<AZStd::string>& memberValue) override;
         void OnOutputPortsChanged(EMotionFX::AnimGraphNode* node, const AZStd::vector<AZStd::string>& newOutputPorts, const AZStd::string& memberName, const AZStd::vector<AZStd::string>& memberValue) override;
         bool OnRayIntersectionTest(const AZ::Vector3& start, const AZ::Vector3& end, EMotionFX::IntersectionInfo* outIntersectInfo) override;
@@ -135,7 +135,7 @@ namespace EMStudio
         void SetActiveAnimGraph(EMotionFX::AnimGraph* animGraph);
         EMotionFX::AnimGraph* GetActiveAnimGraph()           { return mActiveAnimGraph; }
 
-        void SaveAnimGraph(const char* filename, uint32 animGraphIndex, MCore::CommandGroup* commandGroup = nullptr);
+        void SaveAnimGraph(const char* filename, size_t animGraphIndex, MCore::CommandGroup* commandGroup = nullptr);
         void SaveAnimGraph(EMotionFX::AnimGraph* animGraph, MCore::CommandGroup* commandGroup = nullptr);
         void SaveAnimGraphAs(EMotionFX::AnimGraph* animGraph, MCore::CommandGroup* commandGroup = nullptr);
         int SaveDirtyAnimGraph(EMotionFX::AnimGraph* animGraph, MCore::CommandGroup* commandGroup, bool askBeforeSaving, bool showCancelButton = true);

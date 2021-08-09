@@ -53,9 +53,9 @@ namespace EMStudio
             MCORE_MEMORYOBJECTCATEGORY(RenderPlugin::EMStudioRenderActor, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_EMSTUDIOSDK_RENDERPLUGINBASE);
 
             EMotionFX::Actor*                           mActor;
-            MCore::Array<uint32>                        mBoneList;
+            AZStd::vector<size_t>                        mBoneList;
             RenderGL::GLActor*                          mRenderActor;
-            MCore::Array<EMotionFX::ActorInstance*>     mActorInstances;
+            AZStd::vector<EMotionFX::ActorInstance*>     mActorInstances;
             float                                       mNormalsScaleMultiplier;
             float                                       mCharacterHeight;
             float                                       mOffsetFromTrajectoryNode;
@@ -106,9 +106,9 @@ namespace EMStudio
         PluginOptions* GetOptions() override { return &mRenderOptions; }
 
         // render actors
-        EMStudioRenderActor* FindEMStudioActor(EMotionFX::ActorInstance* actorInstance, bool doubleCheckInstance = true);
-        EMStudioRenderActor* FindEMStudioActor(EMotionFX::Actor* actor);
-        uint32 FindEMStudioActorIndex(EMStudioRenderActor* EMStudioRenderActor);
+        EMStudioRenderActor* FindEMStudioActor(const EMotionFX::ActorInstance* actorInstance, bool doubleCheckInstance = true) const;
+        EMStudioRenderActor* FindEMStudioActor(const EMotionFX::Actor* actor) const;
+        size_t FindEMStudioActorIndex(const EMStudioRenderActor* EMStudioRenderActor) const;
 
         void AddEMStudioActor(EMStudioRenderActor* emstudioActor);
         bool DestroyEMStudioActor(EMotionFX::Actor* actor);
@@ -203,7 +203,7 @@ namespace EMStudio
         RenderUpdateCallback*               mUpdateCallback;
 
         RenderOptions                       mRenderOptions;
-        MCore::Array<EMStudioRenderActor*>  mActors;
+        AZStd::vector<EMStudioRenderActor*>  mActors;
 
         // view widgets
         AZStd::vector<RenderViewWidget*>    m_viewWidgets;

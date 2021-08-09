@@ -89,8 +89,8 @@ namespace EMStudio
 
         if (AzFramework::StringFunc::Equal(extension.c_str(), "motion"))
         {
-            const AZ::u32 motionCount = EMotionFX::GetMotionManager().GetNumMotions();
-            for (AZ::u32 i = 0; i < motionCount; ++i)
+            const size_t motionCount = EMotionFX::GetMotionManager().GetNumMotions();
+            for (size_t i = 0; i < motionCount; ++i)
             {
                 EMotionFX::Motion* motion = EMotionFX::GetMotionManager().GetMotion(i);
                 if (motion->GetIsOwnedByRuntime())
@@ -107,8 +107,8 @@ namespace EMStudio
 
         if (AzFramework::StringFunc::Equal(extension.c_str(), "actor"))
         {
-            const AZ::u32 actorCount = EMotionFX::GetActorManager().GetNumActors();
-            for (AZ::u32 i = 0; i < actorCount; ++i)
+            const size_t actorCount = EMotionFX::GetActorManager().GetNumActors();
+            for (size_t i = 0; i < actorCount; ++i)
             {
                 EMotionFX::Actor* actor = EMotionFX::GetActorManager().GetActor(i);
                 if (actor->GetIsOwnedByRuntime())
@@ -202,8 +202,8 @@ namespace EMStudio
 
         if (AzFramework::StringFunc::Equal(extension.c_str(), "motionset"))
         {
-            const AZ::u32 motionSetCount = EMotionFX::GetMotionManager().GetNumMotionSets();
-            for (AZ::u32 i = 0; i < motionSetCount; ++i)
+            const size_t motionSetCount = EMotionFX::GetMotionManager().GetNumMotionSets();
+            for (size_t i = 0; i < motionSetCount; ++i)
             {
                 EMotionFX::MotionSet* motionSet = EMotionFX::GetMotionManager().GetMotionSet(i);
                 if (motionSet->GetIsOwnedByRuntime())
@@ -220,8 +220,8 @@ namespace EMStudio
 
         if (AzFramework::StringFunc::Equal(extension.c_str(), "animgraph"))
         {
-            const AZ::u32 animGraphCount = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
-            for (AZ::u32 i = 0; i < animGraphCount; ++i)
+            const size_t animGraphCount = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
+            for (size_t i = 0; i < animGraphCount; ++i)
             {
                 EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().GetAnimGraph(i);
                 if (animGraph->GetIsOwnedByRuntime())
@@ -570,7 +570,7 @@ namespace EMStudio
     }
 
 
-    void FileManager::SaveMotionSet(const char* filename, EMotionFX::MotionSet* motionSet, MCore::CommandGroup* commandGroup)
+    void FileManager::SaveMotionSet(const char* filename, const EMotionFX::MotionSet* motionSet, MCore::CommandGroup* commandGroup)
     {
         const AZStd::string command = AZStd::string::format("SaveMotionSet -motionSetID %i -filename \"%s\"", motionSet->GetID(), filename);
 
@@ -595,7 +595,7 @@ namespace EMStudio
     }
 
 
-    void FileManager::SaveMotionSet(QWidget* parent, EMotionFX::MotionSet* motionSet, MCore::CommandGroup* commandGroup)
+    void FileManager::SaveMotionSet(QWidget* parent, const EMotionFX::MotionSet* motionSet, MCore::CommandGroup* commandGroup)
     {
         AZStd::string filename = motionSet->GetFilename();
 

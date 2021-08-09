@@ -40,7 +40,7 @@ namespace MCore
         MCORE_INLINE void SetValue(float value)                     { mValue = value; }
 
         MCORE_INLINE uint8* GetRawDataPointer()                     { return reinterpret_cast<uint8*>(&mValue); }
-        MCORE_INLINE uint32 GetRawDataSize() const                  { return sizeof(float); }
+        MCORE_INLINE size_t GetRawDataSize() const                  { return sizeof(float); }
 
         // overloaded from the attribute base class
         Attribute* Clone() const override                           { return AttributeFloat::Create(mValue); }
@@ -51,8 +51,8 @@ namespace MCore
             return AzFramework::StringFunc::LooksLikeFloat(valueString.c_str(), &mValue);
         }
         bool ConvertToString(AZStd::string& outString) const override      { outString = AZStd::string::format("%.8f", mValue); return true; }
-        uint32 GetClassSize() const override                        { return sizeof(AttributeFloat); }
-        uint32 GetDefaultInterfaceType() const override             { return ATTRIBUTE_INTERFACETYPE_FLOATSPINNER; }
+        size_t GetClassSize() const override                        { return sizeof(AttributeFloat); }
+        AZ::u32 GetDefaultInterfaceType() const override             { return ATTRIBUTE_INTERFACETYPE_FLOATSPINNER; }
 
     private:
         float   mValue;     /**< The float value. */
