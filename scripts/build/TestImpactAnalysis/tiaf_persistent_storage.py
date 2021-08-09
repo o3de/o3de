@@ -6,13 +6,19 @@
 #
 #
 
+import sys
 import json
 import pathlib
 import logging
 from abc import ABC, abstractmethod
 
-logger = logging.getLogger()
-logging.basicConfig()
+logger = logging.getLogger(__file__)
+logger.setLevel(logging.INFO)
+handler = logging.StreamHandler(sys.stdout)
+handler.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 # Abstraction for the persistent storage required by TIAF to store and retrieve the branch coverage data and other meta-data
 class PersistentStorage(ABC):
@@ -27,20 +33,16 @@ class PersistentStorage(ABC):
         # Work on the assumption that there is no historic meta-data (a valid state to be in, should none exist)
         self._last_commit_hash = None
         self._has_historic_data = False
-        self._unpacked_coverage_data_file = None
 
         try:
             # The runtime expects the coverage data to be in the location specified in the config file (unless overridden with 
             # the --datafile command line argument, which the TIAF scripts do not do)
-            self._active_workspace = config["workspace"]["active"]["root"]
+            self._active_workspace = pathlib.Path(config["workspace"]["active"]["root"])
             unpacked_coverage_data_file = config["workspace"]["active"]["relative_paths"]["test_impact_data_files"][suite]
         except KeyError as e:
             raise SystemError(f"The config does not contain the key {str(e)}.")
 
-        self._unpacked_coverage_data_file = pathlib.PurePath(self._active_workspace).joinpath(unpacked_coverage_data_file)
-        if not pathlib.Path.is_file(self._unpacked_coverage_data_file):
-            logging.error(f"The coverage data file '{self._unpacked_coverage_data_file}' is not a valid file path.")
-            self._unpacked_coverage_data_file = None
+        self._unpacked_coverage_data_file = self._active_workspace.joinpath(unpacked_coverage_data_file)
         
     def _unpack_historic_data(self, historic_data_json: str):
         """
@@ -50,9 +52,6 @@ class PersistentStorage(ABC):
         """
         
         self._has_historic_data = False
-        if self._unpacked_coverage_data_file is None:
-            logger.error("Cannot unpack historic data, the unpacked coverage data file path is invalid")
-            return
 
         try:
             historic_data = json.loads(historic_data_json)
@@ -60,7 +59,7 @@ class PersistentStorage(ABC):
 
             # Create the active workspace directory where the coverage data file will be placed and unpack the coverage data so 
             # it is accessible by the runtime
-            pathlib.Path.mkdir(self._active_workspace, exist_ok=True)
+            self._active_workspace.mkdir(exist_ok=True)
             with open(self._unpacked_coverage_data_file, "w", newline='\n') as coverage_data:
                 coverage_data.write(historic_data["coverage_data"])
 
@@ -80,13 +79,9 @@ class PersistentStorage(ABC):
         @return:                 The packed historic data in JSON format.
         """
 
-        if self._unpacked_coverage_data_file is None:
-            logger.error("Cannot pack historic data, the unpacked coverage data file path is invalid")
-            return
-
         try:
             # Attempt to read the existing coverage data
-            if pathlib.Path.is_file(self._unpacked_coverage_data_file):
+            if self._unpacked_coverage_data_file.is_file():
                 with open(self._unpacked_coverage_data_file, "r") as coverage_data:
                     historic_data = {"last_commit_hash": last_commit_hash, "coverage_data": coverage_data.read()}
                     return json.dumps(historic_data)

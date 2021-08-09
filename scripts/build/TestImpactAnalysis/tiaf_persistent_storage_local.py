@@ -6,12 +6,18 @@
 #
 #
 
+import sys
 import pathlib
 import logging
 from tiaf_persistent_storage import PersistentStorage
 
-logger = logging.getLogger()
-logging.basicConfig()
+logger = logging.getLogger(__file__)
+logger.setLevel(logging.INFO)
+handler = logging.StreamHandler(sys.stdout)
+handler.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 # Implementation of local persistent storage
 class PersistentStorageLocal(PersistentStorage):
@@ -23,20 +29,15 @@ class PersistentStorageLocal(PersistentStorage):
         @param suite:  The test suite for which the historic data will be obtained for.
         """
 
-        self._historic_data_file = None
-
         super().__init__(config, suite)
         try:
             # Attempt to obtain the local persistent data location specified in the runtime config file
-            self._historic_workspace = config["workspace"]["historic"]["root"]
-            historic_data_file = config["workspace"]["historic"]["relative_paths"]["data"]
+            self._historic_workspace = pathlib.Path(config["workspace"]["historic"]["root"])
+            historic_data_file = pathlib.Path(config["workspace"]["historic"]["relative_paths"]["data"])
             
             # Attempt to unpack the local historic data file
-            self._historic_data_file = pathlib.PurePath(self._historic_workspace).joinpath(historic_data_file)
-            if not pathlib.Path.is_file(self._historic_data_file):
-                logger.error(f"The historic data file '{self._historic_data_file}' is not a valid file path.")
-                self._historic_data_file = None
-            else:
+            self._historic_data_file = self._historic_workspace.joinpath(historic_data_file)
+            if self._historic_data_file.is_file():
                 with open(self._historic_data_file, "r") as historic_data_raw:
                     historic_data_json = historic_data_raw.read()
                     self._unpack_historic_data(historic_data_json)
@@ -53,12 +54,8 @@ class PersistentStorageLocal(PersistentStorage):
         @param historic_data_json: The historic data (in JSON format) to be stored in persistent storage.
         """
 
-        if self._historic_data_file is None:
-            logger.error("Cannot store the historic data, the historic data file path is invalid")
-            return
-
         try:
-            pathlib.Path.mkdir(self._historic_workspace, exist_ok=True)
+            self._historic_workspace.mkdir(exist_ok=True)
             with open(self._historic_data_file, "w") as historic_data_file:
                 historic_data_file.write(historic_data_json)
         except EnvironmentError as e:

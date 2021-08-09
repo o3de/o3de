@@ -6,6 +6,7 @@
 #
 #
 
+import sys
 import json
 import subprocess
 import re
@@ -16,8 +17,13 @@ from git_utils import Repo
 from tiaf_persistent_storage_local import PersistentStorageLocal
 from tiaf_persistent_storage_s3 import PersistentStorageS3
 
-logger = logging.getLogger()
-logging.basicConfig()
+logger = logging.getLogger(__file__)
+logger.setLevel(logging.INFO)
+handler = logging.StreamHandler(sys.stdout)
+handler.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 class TestImpact:
     def __init__(self, config_file: str):
@@ -46,8 +52,8 @@ class TestImpact:
 
                 # TIAF
                 self._use_test_impact_analysis = self._config["jenkins"]["use_test_impact_analysis"]
-                self._tiaf_bin = self._config["repo"]["tiaf_bin"]
-                if self._use_test_impact_analysis and not pathlib.Path.is_file(self._tiaf_bin):
+                self._tiaf_bin = pathlib.Path(self._config["repo"]["tiaf_bin"])
+                if self._use_test_impact_analysis and not self._tiaf_bin.is_file():
                     logger.warning(f"Could not find TIAF binary at location {self._tiaf_bin}, TIAF will be turned off.")
                     self._use_test_impact_analysis = False
 
@@ -78,7 +84,7 @@ class TestImpact:
                 logger.info(f"Source commit '{self._src_commit}' and destination commit '{self._dst_commit}' are not related.")
                 return
             self._commit_distance = self._repo.commit_distance(self._src_commit, self._dst_commit)
-            diff_path = pathlib.PurePath(self._temp_workspace).joinpath(f"changelist.{instance_id}.diff")
+            diff_path = pathlib.Path(pathlib.PurePath(self._temp_workspace).joinpath(f"changelist.{instance_id}.diff"))
             try:
                 self._repo.create_diff_file(self._src_commit, self._dst_commit, diff_path)
             except RuntimeError as e:
@@ -287,8 +293,8 @@ class TestImpact:
             logger.info(f"Global sequence timeout is set to {test_timeout} seconds.")
 
         # Run sequence
-        logger.info("Args: ", end='')
-        logger.info(*args)
+        unpacked_args = " ".join(args)
+        logger.info(f"Args: {unpacked_args}")
         runtime_result = subprocess.run([self._tiaf_bin] + args)
         report = None
 

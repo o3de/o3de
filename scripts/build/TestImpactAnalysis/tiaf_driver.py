@@ -13,12 +13,17 @@ import pathlib
 from tiaf import TestImpact
 import logging
 
-logger = logging.getLogger()
-logging.basicConfig()
+logger = logging.getLogger(__file__)
+logger.setLevel(logging.INFO)
+handler = logging.StreamHandler(sys.stdout)
+handler.setLevel(logging.DEBUG)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 def parse_args():
     def valid_file_path(value):
-        if pathlib.Path.is_file(value):
+        if pathlib.Path(value).is_file():
             return value
         else:
             raise FileNotFoundError(value)
