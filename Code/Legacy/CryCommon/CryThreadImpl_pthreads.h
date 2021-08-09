@@ -14,13 +14,6 @@
 
 #include "CryThread_pthreads.h"
 
-#if PLATFORM_SUPPORTS_THREADLOCAL
-THREADLOCAL CrySimpleThreadSelf
-* CrySimpleThreadSelf::m_Self = NULL;
-#else
-TLS_DEFINE(CrySimpleThreadSelf*, g_CrySimpleThreadSelf)
-#endif
-
 
 //////////////////////////////////////////////////////////////////////////
 // CryEvent(Timed) implementation

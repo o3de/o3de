@@ -12,16 +12,6 @@
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/std/parallel/semaphore.h> // for CreateSemaphore
 
-struct SThreadNameDesc
-{
-    DWORD dwType;
-    LPCSTR szName;
-    DWORD dwThreadID;
-    DWORD dwFlags;
-};
-
-THREADLOCAL CrySimpleThreadSelf* CrySimpleThreadSelf::m_Self = NULL;
-
 //////////////////////////////////////////////////////////////////////////
 CryEvent::CryEvent()
 {
@@ -301,45 +291,4 @@ void CryFastSemaphore::Release()
     {
         m_Semaphore.Release();
     }
-}
-
-//////////////////////////////////////////////////////////////////////////
-CrySimpleThreadSelf::CrySimpleThreadSelf()
-    : m_thread(NULL)
-    , m_threadId(0)
-{
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CrySimpleThreadSelf::WaitForThread()
-{
-    assert(m_thread);
-    PREFAST_ASSUME(m_thread);
-    if (GetCurrentThreadId() != m_threadId)
-    {
-        WaitForSingleObject((HANDLE)m_thread, INFINITE);
-    }
-}
-
-CrySimpleThreadSelf::~CrySimpleThreadSelf()
-{
-    if (m_thread)
-    {
-        CloseHandle(m_thread);
-    }
-}
-
-void CrySimpleThreadSelf::StartThread(unsigned (__stdcall * func)(void*), void* argList)
-{
-#if defined(AZ_RESTRICTED_PLATFORM)
-    #include AZ_RESTRICTED_FILE(CryThreadImpl_windows_h)
-#endif
-#if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
-#undef AZ_RESTRICTED_SECTION_IMPLEMENTED
-#else
-    m_thread = (void*)_beginthreadex(NULL, 0, func, argList, CREATE_SUSPENDED, &m_threadId);
-#endif
-    assert(m_thread);
-    PREFAST_ASSUME(m_thread);
-    ResumeThread((HANDLE)m_thread);
 }
