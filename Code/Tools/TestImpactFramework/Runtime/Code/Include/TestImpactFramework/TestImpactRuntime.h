@@ -86,6 +86,7 @@ namespace TestImpact
     public:
         //! Constructs a runtime with the specified configuration and policies.
         //! @param config The configuration used for this runtime instance.
+        //! @param dataFile The optional data file to be used instead of that specified in the config file.
         //! @param suiteFilter The test suite for which the coverage data and test selection will draw from.
         //! @param executionFailurePolicy Determines how to handle test targets that fail to execute.
         //! @param executionFailureDraftingPolicy Determines how test targets that previously failed to execute are drafted into subsequent test sequences.
@@ -94,6 +95,7 @@ namespace TestImpact
         //! @param testShardingPolicy  Determines how to handle test targets that have opted in to test sharding.
         Runtime(
             RuntimeConfig&& config,
+            AZStd::optional<RepoPath> dataFile,
             SuiteType suiteFilter,
             Policy::ExecutionFailure executionFailurePolicy,
             Policy::FailedTestCoverage failedTestCoveragePolicy,
@@ -112,11 +114,11 @@ namespace TestImpact
         //! @param testSequenceCompleteCallback The client function to be called after the test sequence has completed.
         //! @param testRunCompleteCallback The client function to be called after an individual test run has completed.
         //! @returns The test run and sequence report for the selected test sequence.
-        Client::SequenceReport RegularTestSequence(
+        Client::RegularSequenceReport RegularTestSequence(
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
             AZStd::optional<TestSequenceStartCallback> testSequenceStartCallback,
-            AZStd::optional<TestSequenceCompleteCallback<Client::SequenceReport>> testSequenceCompleteCallback,
+            AZStd::optional<TestSequenceCompleteCallback<Client::RegularSequenceReport>> testSequenceCompleteCallback,
             AZStd::optional<TestRunCompleteCallback> testRunCompleteCallback);
 
         //! Runs a test sequence where tests are selected according to test impact analysis so long as they are not on the excluded list.
@@ -164,11 +166,11 @@ namespace TestImpact
         //! @param testSequenceCompleteCallback The client function to be called after the test sequence has completed.
         //! @param testRunCompleteCallback The client function to be called after an individual test run has completed.
         //! @returns The test run and sequence report for the selected test sequence.
-        Client::SequenceReport SeededTestSequence(
+        Client::SeedSequenceReport SeededTestSequence(
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
             AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
             AZStd::optional<TestSequenceStartCallback> testSequenceStartCallback,
-            AZStd::optional<TestSequenceCompleteCallback<Client::SequenceReport>> testSequenceCompleteCallback,
+            AZStd::optional<TestSequenceCompleteCallback<Client::SeedSequenceReport>> testSequenceCompleteCallback,
             AZStd::optional<TestRunCompleteCallback> testRunCompleteCallback);
 
         //! Returns true if the runtime has test impact analysis data (either preexisting or generated).
@@ -184,7 +186,7 @@ namespace TestImpact
         //! @param changeList The change list for which the covering tests and enumeration cache updates will be generated for.
         //! @param testPrioritizationPolicy The test prioritization strategy to use for the selected test targets.
         //! @returns The pair of selected test targets and discarded test targets.
-        AZStd::pair<AZStd::vector<const TestTarget*>, AZStd::vector<const TestTarget*>> SelectCoveringTestTargetsAndUpdateEnumerationCache(
+        AZStd::pair<AZStd::vector<const TestTarget*>, AZStd::vector<const TestTarget*>> SelectCoveringTestTargets(
             const ChangeList& changeList,
             Policy::TestPrioritization testPrioritizationPolicy);
 
@@ -203,6 +205,15 @@ namespace TestImpact
 
         //! Updates the dynamic dependency map and serializes the entire map to disk.
         void UpdateAndSerializeDynamicDependencyMap(const AZStd::vector<TestEngineInstrumentedRun>& jobs);
+
+        PolicyStateBase GeneratePolicyStateBase();
+
+        SequencePolicyState GenerateSequencePolicyState();
+
+        SafeImpactAnalysisSequencePolicyState GenerateSafeImpactAnalysisSequencePolicyState(Policy::TestPrioritization testPrioritizationPolicy);
+
+        ImpactAnalysisSequencePolicyState GenerateImpactAnalysisSequencePolicyState(
+            Policy::TestPrioritization testPrioritizationPolicy, Policy::DynamicDependencyMap dynamicDependencyMapPolicy);
 
         RuntimeConfig m_config;
         RepoPath m_sparTIAFile;

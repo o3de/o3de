@@ -9,76 +9,12 @@
 #pragma once
 
 #include <TestImpactFramework/TestImpactRuntimeException.h>
+#include <TestImpactFramework/TestImpactPolicy.h>
 
 #include <AzCore/std/containers/array.h>
 
 namespace TestImpact
 {
-    namespace Policy
-    {
-        //! Policy for handling of test targets that fail to execute (e.g. due to the binary not being found).
-        //! @note Test targets that fail to execute will be tagged such that their execution can be attempted at a later date. This is
-        //! important as otherwise it would be erroneously assumed that they cover no sources due to having no entries in the dynamic
-        //! dependency map.
-        enum class ExecutionFailure
-        {
-            Abort, //!< Abort the test sequence and report a failure.
-            Continue, //!< Continue the test sequence but treat the execution failures as test failures after the run.
-            Ignore //!< Continue the test sequence and ignore the execution failures.
-        };
-
-        //! Policy for handling the coverage data of failed tests targets (both test that failed to execute and tests that ran but failed).
-        enum class FailedTestCoverage
-        {
-            Discard, //!< Discard the coverage data produced by the failing tests, causing them to be drafted into future test runs.
-            Keep //!< Keep any existing coverage data and update the coverage data for failed test targetss that produce coverage.
-        };
-
-        //! Policy for prioritizing selected tests.
-        enum class TestPrioritization
-        {
-            None, //!< Do not attempt any test prioritization.
-            DependencyLocality //!< Prioritize test targets according to the locality of the production targets they cover in the build dependency graph.
-        };
-
-        //! Policy for handling test targets that report failing tests.
-        enum class TestFailure
-        {
-            Abort, //!< Abort the test sequence and report the test failure.
-            Continue //!< Continue the test sequence and report the test failures after the run.
-        };
-
-        //! Policy for handling integrity failures of the dynamic dependency map and the source to target mappings.
-        enum class IntegrityFailure
-        {
-            Abort, //!< Abort the test sequence and report the test failure.
-            Continue //!< Continue the test sequence and report the test failures after the run.
-        };
-
-        //! Policy for updating the dynamic dependency map with the coverage data of produced by test sequences.
-        enum class DynamicDependencyMap
-        {
-            Discard, //!< Discard the coverage data produced by test sequences.
-            Update //!< Update the dynamic dependency map with the coverage data produced by test sequences.
-        };
-
-        //! Policy for sharding test targets that have been marked for test sharding.
-        enum class TestSharding
-        {
-            Never, //!< Do not shard any test targets.
-            Always //!< Shard all test targets that have been marked for test sharding.
-        };
-
-        //! Standard output capture of test target runs. 
-        enum class TargetOutputCapture
-        {
-            None, //!< Do not capture any output.
-            StdOut, //!< Send captured output to standard output
-            File, //!< Write captured output to file.
-            StdOutAndFile //!< Send captured output to standard output and write to file.
-        };
-    }   
-
     //! Configuration for test targets that opt in to test sharding.
     enum class ShardConfiguration
     {
@@ -97,27 +33,39 @@ namespace TestImpact
         Sandbox
     };
 
-    //! User-friendly names for the test suite types.
-    inline AZStd::string GetSuiteTypeName(SuiteType suiteType)
-    {
-        switch (suiteType)
-        {
-        case SuiteType::Main:
-            return "main";
-        case SuiteType::Periodic:
-            return "periodic";
-        case SuiteType::Sandbox:
-            return "sandbox";
-        default:
-            throw(RuntimeException("Unexpected suite type"));
-        }
-    }
-
     //! Result of a test sequence that was run.
     enum class TestSequenceResult
     {
         Success, //!< All tests ran with no failures.
         Failure, //!< One or more tests failed and/or timed out and/or failed to launch and/or an integrity failure was encountered.
         Timeout //!< The global timeout for the sequence was exceeded.
+    };
+
+    struct PolicyStateBase
+    {
+        Policy::ExecutionFailure m_executionFailurePolicy = Policy::ExecutionFailure::Continue;
+        Policy::FailedTestCoverage m_failedTestCoveragePolicy = Policy::FailedTestCoverage::Keep;
+        Policy::TestFailure m_testFailurePolicy = Policy::TestFailure::Abort;
+        Policy::IntegrityFailure m_integrityFailurePolicy = Policy::IntegrityFailure::Abort;
+        Policy::TestSharding m_testShardingPolicy = Policy::TestSharding::Never;
+        Policy::TargetOutputCapture m_targetOutputCapture = Policy::TargetOutputCapture::None;
+    };
+
+    struct SequencePolicyState
+    {
+        PolicyStateBase m_basePolicies;
+    };
+
+    struct ImpactAnalysisSequencePolicyState
+    {
+        PolicyStateBase m_basePolicies;
+        Policy::TestPrioritization m_testPrioritizationPolicy = Policy::TestPrioritization::None;
+        Policy::DynamicDependencyMap m_dynamicDependencyMap = Policy::DynamicDependencyMap::Update;
+    };
+
+    struct SafeImpactAnalysisSequencePolicyState
+    {
+        PolicyStateBase m_basePolicies;
+        Policy::TestPrioritization m_testPrioritizationPolicy = Policy::TestPrioritization::None;
     };
 } // namespace TestImpact
