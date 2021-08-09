@@ -18,36 +18,6 @@
 #endif
 
 //////////////////////////////////////////////////////////////////////////
-// CryEvent represent a synchronization event
-//////////////////////////////////////////////////////////////////////////
-class CryEvent
-{
-public:
-    CryEvent();
-    ~CryEvent();
-
-    // Reset the event to the unsignalled state.
-    void Reset();
-    // Set the event to the signalled state.
-    void Set();
-    // Access a HANDLE to wait on.
-    void* GetHandle() const { return m_handle; };
-    // Wait indefinitely for the object to become signalled.
-    void Wait() const;
-    // Wait, with a time limit, for the object to become signalled.
-    bool Wait(const uint32 timeoutMillis) const;
-
-private:
-    CryEvent(const CryEvent&);
-    CryEvent& operator = (const CryEvent&);
-
-private:
-    void* m_handle;
-};
-
-typedef CryEvent CryEventTimed;
-
-//////////////////////////////////////////////////////////////////////////
 
 //////////////////////////////////////////////////////////////////////////
 // from winnt.h

@@ -619,38 +619,4 @@ struct SCryPthreadTLS
 {
 };
 
-
-//////////////////////////////////////////////////////////////////////////
-// CryEvent(Timed) represent a synchronization event
-//////////////////////////////////////////////////////////////////////////
-class CryEventTimed
-{
-public:
-    ILINE CryEventTimed(){m_flag = false; }
-    ILINE ~CryEventTimed(){}
-
-    // Reset the event to the unsignalled state.
-    void Reset();
-    // Set the event to the signalled state.
-    void Set();
-    // Access a HANDLE to wait on.
-    void* GetHandle() const { return NULL; };
-    // Wait indefinitely for the object to become signalled.
-    void Wait();
-    // Wait, with a time limit, for the object to become signalled.
-    bool Wait(const uint32 timeoutMillis);
-
-private:
-    // Lock for synchronization of notifications.
-    CryCriticalSection m_lockNotify;
-#if defined(LINUX) || defined(APPLE)
-    CryConditionVariableT< CryLockT<CRYLOCK_RECURSIVE> > m_cond;
-#else
-    CryConditionVariable m_cond;
-#endif
-    volatile bool m_flag;
-};
-
-typedef CryEventTimed CryEvent;
-
 #include "MemoryAccess.h"
