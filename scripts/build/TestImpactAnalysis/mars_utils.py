@@ -9,10 +9,9 @@
 import datetime
 import json
 import socket
-import logging
+from tiaf_logger import get_logger
 
-logger = logging.getLogger()
-logging.basicConfig()
+logger = get_logger(__file__)
 
 MARS_JOB_KEY = "job"
 SRC_COMMIT_KEY = "src_commit"
