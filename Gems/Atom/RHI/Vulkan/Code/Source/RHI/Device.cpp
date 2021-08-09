@@ -228,6 +228,10 @@ namespace AZ
             //Load device features now that we have loaded all extension info
             physicalDevice.LoadSupportedFeatures();
 
+            DEVMODE DisplayConfig;
+            EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &DisplayConfig);
+            m_mainDisplayRefreshRate = DisplayConfig.dmDisplayFrequency;
+
             InitFeaturesAndLimits(physicalDevice);
             return RHI::ResultCode::Success;
         }
@@ -834,6 +838,11 @@ namespace AZ
         void Device::DestroyBufferResource(VkBuffer vkBuffer) const
         {
             vkDestroyBuffer(GetNativeDevice(), vkBuffer, nullptr);
+        }
+
+        uint32_t Device::GetMainDisplayRefreshRate()
+        {
+            return m_mainDisplayRefreshRate;
         }
     }
 }

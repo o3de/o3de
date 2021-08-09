@@ -621,5 +621,10 @@ namespace AZ
         {
             return m_isAftermathInitialized;
         }
+
+        uint32_t Device::GetMainDisplayRefreshRate()
+        {
+            return m_mainDisplayRefreshRate;
+        }
     }
 }

@@ -465,4 +465,9 @@ namespace AtomToolsFramework
     {
         return aznumeric_cast<float>(devicePixelRatioF());
     }
+
+    uint32_t RenderViewportWidget::GetSyncInterval() const
+    {
+        return 1;
+    }
 } //namespace AtomToolsFramework

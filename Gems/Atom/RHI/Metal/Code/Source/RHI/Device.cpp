@@ -13,6 +13,7 @@
 #include <RHI/BufferPool.h>
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
+#include <RHI/Device_Platform.h>
 #include <RHI/Metal.h>
 
 //Symbols related to Obj-c categories are getting stripped out as part of the link step for monolithic builds
@@ -77,7 +78,16 @@ namespace AZ
             
             m_samplerCache = [[NSCache alloc]init];
             [m_samplerCache setName:@"SamplerCache"];
-            
+
+            m_mainDisplayRefreshRate = Platform::GetMainDisplayRefreshRateInternal();
+
+            // Assume 60hz if 0 is returned.
+            // This can happen on OSX. In future we can hopefully use maximumFramesPerSecond which woont have this issue
+            if (m_mainDisplayRefreshRate < 0.1f)
+            {
+                m_mainDisplayRefreshRate = 60.0f;
+            }
+
             return RHI::ResultCode::Success;
         }
     
@@ -421,6 +431,11 @@ namespace AZ
         AZStd::vector<RHI::Format> Device::GetValidSwapChainImageFormats(const RHI::WindowHandle& windowHandle) const
         {
             return AZStd::vector<RHI::Format>{RHI::Format::B8G8R8A8_UNORM};
+        }
+
+        float Device::GetMainDisplayRefreshRate()
+        {
+            return m_mainDisplayRefreshRate;
         }
     }
 }

@@ -162,6 +162,7 @@ namespace AZ
             void PreShutdown() override;
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements(const RHI::ImageDescriptor & descriptor) override;
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements(const RHI::BufferDescriptor & descriptor) override;
+            uint32_t GetMainDisplayRefreshRate() override;
             //////////////////////////////////////////////////////////////////////////
 
             RHI::ResultCode InitSubPlatform(RHI::PhysicalDevice& physicalDevice);
@@ -193,6 +194,7 @@ namespace AZ
             AZStd::mutex m_samplerCacheMutex;
 
             bool m_isAftermathInitialized = false;
+            uint32_t m_mainDisplayRefreshRate = 0;
         };
     }
 }

@@ -313,5 +313,10 @@ namespace AZ
                 }
             }
         }
+
+        uint32_t Device::GetMainDisplayRefreshRate()
+        {
+            return 0;
+        }
     }
 }

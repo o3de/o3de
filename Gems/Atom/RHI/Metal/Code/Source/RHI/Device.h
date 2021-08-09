@@ -169,6 +169,7 @@ namespace AZ
             void FillFormatsCapabilitiesInternal(FormatCapabilitiesList& formatsCapabilities) override;
             void PreShutdown() override;
             AZStd::vector<RHI::Format> GetValidSwapChainImageFormats(const RHI::WindowHandle& windowHandle) const override;
+            float GetMainDisplayRefreshRate() override;
             //////////////////////////////////////////////////////////////////////////
 
             void InitFeatures();            
@@ -196,6 +197,8 @@ namespace AZ
             
             NullDescriptorManager m_nullDescriptorManager;
             NSCache* m_samplerCache;
+
+            float m_mainDisplayRefreshRate = 0.0f;
         };
     }
 }

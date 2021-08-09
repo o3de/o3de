@@ -55,6 +55,7 @@ namespace AZ
             const RHI::TransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const override;
             ConstPtr<PlatformLimitsDescriptor> GetPlatformLimitsDescriptor() const override;
             void QueueRayTracingShaderTableForBuild(RayTracingShaderTable* rayTracingShaderTable) override;
+            uint32_t GetMainDisplayRefreshRate() override;
             //////////////////////////////////////////////////////////////////////////
 
         private:

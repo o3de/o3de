@@ -53,7 +53,6 @@ namespace AZ
             id<MTLDevice> m_mtlDevice = nil;
             NativeWindowType* m_nativeWindow = nullptr;
             AZStd::vector<id<CAMetalDrawable>> m_drawables;
-            float m_refreshRate = 0.0f;
         };
     }
 }

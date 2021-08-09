@@ -134,6 +134,7 @@ namespace AZ
             void PreShutdown() override;
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements(const RHI::ImageDescriptor& descriptor) override;
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements(const RHI::BufferDescriptor& descriptor) override;
+            uint32_t GetMainDisplayRefreshRate() override;
             //////////////////////////////////////////////////////////////////////////
 
             void InitFeaturesAndLimits(const PhysicalDevice& physicalDevice);
@@ -180,6 +181,7 @@ namespace AZ
             static const uint32_t MemoryRequirementsCacheSize = 100;
             RHI::ThreadLocalContext<AZStd::lru_cache<uint64_t, VkMemoryRequirements>> m_imageMemoryRequirementsCache;
             RHI::ThreadLocalContext<AZStd::lru_cache<uint64_t, VkMemoryRequirements>> m_bufferMemoryRequirementsCache;
+            uint32_t m_mainDisplayRefreshRate = 0;
 
             RHI::Ptr<NullDescriptorManager> m_nullDescriptorManager;
         };
