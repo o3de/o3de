@@ -42,18 +42,12 @@
 #include <MCore/Source/IDGenerator.h>
 #include <MCore/Source/Compare.h>
 #include <MCore/Source/LogManager.h>
-#include <MCore/Source/OBB.h>
 
 #include <Atom/RPI.Reflect/Model/MorphTargetDelta.h>
 
 namespace EMotionFX
 {
     AZ_CLASS_ALLOCATOR_IMPL(Actor, ActorAllocator, 0)
-
-    Actor::NodeInfo::NodeInfo()
-    {
-        mOBB.Init();
-    }
 
     Actor::LODLevel::LODLevel()
     {
@@ -97,6 +91,7 @@ namespace EMotionFX
         mID                         = MCore::GetIDGenerator().GenerateID();
         mUnitType                   = GetEMotionFX().GetUnitType();
         mFileUnitType               = mUnitType;
+        m_staticAabb                = AZ::Aabb::CreateNull();
 
         mUsedForVisualization       = false;
         mDirtyFlag                  = false;
@@ -148,7 +143,7 @@ namespace EMotionFX
         result->mMotionExtractionNode   = mMotionExtractionNode;
         result->mUnitType               = mUnitType;
         result->mFileUnitType           = mFileUnitType;
-        result->mStaticAABB             = mStaticAABB;
+        result->m_staticAabb            = m_staticAabb;
         result->mRetargetRootNode       = mRetargetRootNode;
         result->mInvBindPoseTransforms  = mInvBindPoseTransforms;
         result->m_optimizeSkeleton      = m_optimizeSkeleton;
@@ -187,7 +182,6 @@ namespace EMotionFX
         result->mSkeleton = mSkeleton->Clone();
 
         // clone lod data
-        result->mNodeInfos = mNodeInfos;
         const uint32 numNodes = mSkeleton->GetNumNodes();
 
         const size_t numLodLevels = m_meshLodData.m_lodLevels.size();
@@ -997,18 +991,6 @@ namespace EMotionFX
         }
     }
 
-    // update the bounding volumes
-    void Actor::UpdateNodeBindPoseOBBs(uint32 lodLevel)
-    {
-        // for all nodes
-        const uint32 numNodes = mSkeleton->GetNumNodes();
-        for (uint32 i = 0; i < numNodes; ++i)
-        {
-            CalcOBBFromBindPose(lodLevel, i);
-        }
-    }
-
-
     // remove all node groups
     void Actor::RemoveAllNodeGroups()
     {
@@ -1352,9 +1334,8 @@ namespace EMotionFX
         }
     }
 
-
     // post init
-    void Actor::PostCreateInit(bool makeGeomLodsCompatibleWithSkeletalLODs, bool generateOBBs, bool convertUnitType)
+    void Actor::PostCreateInit(bool makeGeomLodsCompatibleWithSkeletalLODs, bool convertUnitType)
     {
         if (mThreadIndex == MCORE_INVALIDINDEX32)
         {
@@ -1387,11 +1368,6 @@ namespace EMotionFX
         mSkeleton->GetBindPose()->ForceUpdateFullModelSpacePose();
         mSkeleton->GetBindPose()->ZeroMorphWeights();
 
-        if (generateOBBs)
-        {
-            UpdateNodeBindPoseOBBs(0);
-        }
-
         if (!GetHasMirrorInfo())
         {
             AllocateNodeMirrorInfos();
@@ -1404,10 +1380,6 @@ namespace EMotionFX
         }
 
         m_simulatedObjectSetup->InitAfterLoad(this);
-
-        // build the static axis aligned bounding box by creating an actor instance (needed to perform cpu skinning mesh deforms and mesh scaling etc)
-        // then copy it over to the actor
-        UpdateStaticAABB();
 
         // rescale all content if needed
         if (convertUnitType)
@@ -1526,6 +1498,10 @@ namespace EMotionFX
                     mMorphSetups[i] = nullptr;
                 }
             }
+
+            // build the static axis aligned bounding box by creating an actor instance (needed to perform cpu skinning mesh deforms and mesh scaling etc)
+            // then copy it over to the actor
+            UpdateStaticAabb();
         }
 
         m_isReady = true;
@@ -1534,16 +1510,13 @@ namespace EMotionFX
     }
 
     // update the static AABB (very heavy as it has to create an actor instance, update mesh deformers, calculate the mesh based bounds etc)
-    void Actor::UpdateStaticAABB()
+    void Actor::UpdateStaticAabb()
     {
-        if (!mStaticAABB.CheckIfIsValid())
-        {
-            ActorInstance* actorInstance = ActorInstance::Create(this, nullptr, mThreadIndex);
-            //actorInstance->UpdateMeshDeformers(0.0f);
-            //actorInstance->UpdateStaticBasedAABBDimensions();
-            actorInstance->GetStaticBasedAABB(&mStaticAABB);
-            actorInstance->Destroy();
-        }
+        ActorInstance* actorInstance = ActorInstance::Create(this, nullptr, mThreadIndex);
+        actorInstance->UpdateMeshDeformers(0.0f);
+        actorInstance->UpdateStaticBasedAabbDimensions();
+        actorInstance->GetStaticBasedAabb(&m_staticAabb);
+        actorInstance->Destroy();
     }
 
 
@@ -1885,7 +1858,6 @@ namespace EMotionFX
     void Actor::SetNumNodes(uint32 numNodes)
     {
         mSkeleton->SetNumNodes(numNodes);
-        mNodeInfos.resize(numNodes);
 
         AZStd::vector<LODLevel>& lodLevels = m_meshLodData.m_lodLevels;
         for (LODLevel& lodLevel : lodLevels)
@@ -1903,7 +1875,6 @@ namespace EMotionFX
         mSkeleton->GetBindPose()->LinkToActor(this, Pose::FLAG_LOCALTRANSFORMREADY, false);
 
         // initialize the LOD data
-        mNodeInfos.emplace_back();
         AZStd::vector<LODLevel>& lodLevels = m_meshLodData.m_lodLevels;
         for (LODLevel& lodLevel : lodLevels)
         {
@@ -1934,7 +1905,6 @@ namespace EMotionFX
     void Actor::RemoveNode(uint32 nr, bool delMem)
     {
         mSkeleton->RemoveNode(nr, delMem);
-        mNodeInfos.erase(mNodeInfos.begin() + nr);
 
         AZStd::vector<LODLevel>& lodLevels = m_meshLodData.m_lodLevels;
         for (LODLevel& lodLevel : lodLevels)
@@ -1946,7 +1916,6 @@ namespace EMotionFX
     void Actor::DeleteAllNodes()
     {
         mSkeleton->RemoveAllNodes();
-        mNodeInfos.clear();
 
         AZStd::vector<LODLevel>& lodLevels = m_meshLodData.m_lodLevels;
         for (LODLevel& lodLevel : lodLevels)
@@ -2206,14 +2175,14 @@ namespace EMotionFX
 #endif
     }
 
-    const MCore::AABB& Actor::GetStaticAABB() const
+    const AZ::Aabb& Actor::GetStaticAabb() const
     {
-        return mStaticAABB;
+        return m_staticAabb;
     }
 
-    void Actor::SetStaticAABB(const MCore::AABB& box)
+    void Actor::SetStaticAabb(const AZ::Aabb& aabb)
     {
-        mStaticAABB = box;
+        m_staticAabb = aabb;
     }
 
     //---------------------------------
@@ -2263,82 +2232,6 @@ namespace EMotionFX
         }
 
         return (stack->CheckIfHasDeformerOfType(SoftSkinDeformer::TYPE_ID) || stack->CheckIfHasDeformerOfType(DualQuatSkinDeformer::TYPE_ID));
-    }
-
-
-    // calculate the OBB for a given node
-    void Actor::CalcOBBFromBindPose(uint32 lodLevel, uint32 nodeIndex)
-    {
-        AZStd::vector<AZ::Vector3> points;
-
-        // if there is a mesh
-        Mesh* mesh = GetMesh(lodLevel, nodeIndex);
-        if (mesh)
-        {
-            // if the mesh is not skinned
-            if (mesh->FindSharedVertexAttributeLayer(SkinningInfoVertexAttributeLayer::TYPE_ID) == nullptr)
-            {
-                mesh->ExtractOriginalVertexPositions(points);
-            }
-        }
-        else // there is no mesh, so maybe this is a bone
-        {
-            const Transform& invBindPoseTransform = GetInverseBindPoseTransform(nodeIndex);
-
-            // for all nodes inside the actor where this node belongs to
-            const uint32 numNodes = mSkeleton->GetNumNodes();
-            for (uint32 n = 0; n < numNodes; ++n)
-            {
-                Mesh* loopMesh = GetMesh(lodLevel, n);
-                if (loopMesh == nullptr)
-                {
-                    continue;
-                }
-
-                // get the vertex positions in bind pose
-                const uint32 numVerts = loopMesh->GetNumVertices();
-                points.reserve(numVerts * 2);
-                AZ::Vector3* positions = (AZ::Vector3*)loopMesh->FindOriginalVertexData(Mesh::ATTRIB_POSITIONS);
-
-                SkinningInfoVertexAttributeLayer* skinLayer = (SkinningInfoVertexAttributeLayer*)loopMesh->FindSharedVertexAttributeLayer(SkinningInfoVertexAttributeLayer::TYPE_ID);
-                if (skinLayer)
-                {
-                    // iterate over all skinning influences and see if this node number is used
-                    // if so, add it to the list of points
-                    const uint32* orgVertices = (uint32*)loopMesh->FindVertexData(Mesh::ATTRIB_ORGVTXNUMBERS);
-                    for (uint32 v = 0; v < numVerts; ++v)
-                    {
-                        // get the original vertex number
-                        const uint32 orgVtx = orgVertices[v];
-
-                        // for all skinning influences for this vertex
-                        const size_t numInfluences = skinLayer->GetNumInfluences(orgVtx);
-                        for (size_t i = 0; i < numInfluences; ++i)
-                        {
-                            // get the node used by this influence
-                            const uint32 nodeNr = skinLayer->GetInfluence(orgVtx, i)->GetNodeNr();
-
-                            // if this is the same node as we are updating the bounds for, add the vertex position to the list
-                            if (nodeNr == nodeIndex)
-                            {
-                                const AZ::Vector3 tempPos(positions[v]);
-                                points.emplace_back(invBindPoseTransform.TransformPoint(tempPos));
-                            }
-                        } // for all influences
-                    } // for all vertices
-                } // if there is skinning info
-            } // for all nodes
-        }
-
-        // init from the set of points
-        if (!points.empty())
-        {
-            GetNodeOBB(nodeIndex).InitFromPoints(&points[0], static_cast<uint32>(points.size()));
-        }
-        else
-        {
-            GetNodeOBB(nodeIndex).Init();
-        }
     }
 
     // remove the mesh for a given node in a given LOD
@@ -2413,17 +2306,9 @@ namespace EMotionFX
             mInvBindPoseTransforms[i] = bindPose->GetModelSpaceTransform(i).Inversed();
         }
 
-        // update node obbs
-        for (uint32 i = 0; i < numNodes; ++i)
-        {
-            MCore::OBB& box = GetNodeOBB(i);
-            box.SetExtents(box.GetExtents() * scaleFactor);
-            box.SetCenter(box.GetCenter() * scaleFactor);
-        }
-
         // update static aabb
-        mStaticAABB.SetMin(mStaticAABB.GetMin() * scaleFactor);
-        mStaticAABB.SetMax(mStaticAABB.GetMax() * scaleFactor);
+        m_staticAabb.SetMin(m_staticAabb.GetMin() * scaleFactor);
+        m_staticAabb.SetMax(m_staticAabb.GetMax() * scaleFactor);
 
         // update mesh data for all LOD levels
         const uint32 numLODs = GetNumLODLevels();

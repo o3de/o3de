@@ -60,9 +60,6 @@ namespace EMotionFX
         {
             BOUNDS_NODE_BASED           = 0,    /**< Calculate the bounding volumes based on the world space node positions. */
             BOUNDS_MESH_BASED           = 1,    /**< Calculate the bounding volumes based on the world space vertex positions. */
-            BOUNDS_COLLISIONMESH_BASED  = 2,    /**< Calculate the bounding volumes based on the world space collision mesh vertex positions. */
-            BOUNDS_NODEOBB_BASED        = 3,    /**< Calculate the bounding volumes based on the oriented bounding boxes of the nodes. Uses all 8 corner points of the individual node OBB boxes. */
-            BOUNDS_NODEOBBFAST_BASED    = 4,    /**< Calculate the bounding volumes based on the oriented bounding boxes of the nodes. Uses the min and max point of the individual node OBB boxes. This is less accurate but faster. */
             BOUNDS_STATIC_BASED         = 5     /**< Calculate the bounding volumes based on an approximate box, based on the mesh bounds, and move this box along with the actor instance position. */
         };
 
@@ -349,6 +346,14 @@ namespace EMotionFX
         EBoundsType GetBoundsUpdateType() const;
 
         /**
+         * Get the normalized percentage that the calculated bounding box is expanded with.
+         * This can be used to add a tolerance area to the calculated bounding box to avoid clipping the character too early.
+         * A static bounding box together with the expansion is the recommended way for maximum performance.
+         * @result A value of 1.0 means that the calculated bounding box won't be expanded at all, while 2.0 means it is twice the size.
+         */
+        float GetExpandBoundsBy() const { return m_boundsExpandBy; }
+
+        /**
          * Get the bounding volume auto-update item frequency.
          * A value of 1 would mean every node or vertex will be taken into account in the bounds calculation.
          * A value of 2 would mean every second node or vertex would be taken into account. A value of 5 means every 5th node or vertex, etc.
@@ -376,10 +381,18 @@ namespace EMotionFX
         /**
          * Set the bounding volume auto-update type.
          * This can be either based on the node's world space positions, the mesh vertex world space positions, or the
-         * collision mesh vertex world space postitions.
+         * collision mesh vertex world space positions.
          * @param bType The bounding volume update type.
          */
         void SetBoundsUpdateType(EBoundsType bType);
+
+        /**
+         * Set the normalized percentage that the calculated bounding box should be expanded with.
+         * This can be used to add a tolerance area to the calculated bounding box to avoid clipping the character too early.
+         * A static bounding box together with the expansion is the recommended way for maximum performance.
+         * @param[in] expandBy A value of 1.0 means that the calculated bounding box won't be expanded at all, while 2.0 means it will be twice the size.
+         */
+        void SetExpandBoundsBy(float expandBy) { m_boundsExpandBy = expandBy; }
 
         /**
          * Set the bounding volume auto-update item frequency.
@@ -420,11 +433,11 @@ namespace EMotionFX
          * This function is generally only executed once, when creating the actor instance.
          * The CalcStaticBasedAABB function then simply translates this box along with the actor instance's position.
          */
-        void UpdateStaticBasedAABBDimensions();
+        void UpdateStaticBasedAabbDimensions();
 
-        void SetStaticBasedAABB(const MCore::AABB& aabb);
-        void GetStaticBasedAABB(MCore::AABB* outAABB);
-        const MCore::AABB& GetStaticBasedAABB() const;
+        void SetStaticBasedAabb(const AZ::Aabb& aabb);
+        void GetStaticBasedAabb(AZ::Aabb* outAabb);
+        const AZ::Aabb& GetStaticBasedAabb() const;
 
         /**
          * Calculate an axis aligned bounding box that can be used as static AABB. It is static in the way that the volume does not change. It can however be translated as it will move
@@ -434,7 +447,7 @@ namespace EMotionFX
          * If there are no meshes present, a widened node based box will be used instead as basis.
          * @param outResult The resulting bounding box, moved along with the actor instance's position.
          */
-        void CalcStaticBasedAABB(MCore::AABB* outResult);
+        void CalcStaticBasedAabb(AZ::Aabb* outResult);
 
         /**
          * Calculate the axis aligned bounding box based on the world space positions of the nodes.
@@ -442,7 +455,7 @@ namespace EMotionFX
          * @param nodeFrequency This will include every "nodeFrequency"-th node. So a value of 1 will include all nodes. A value of 2 would
          *                      process every second node, meaning that half of the nodes will be skipped. A value of 4 would process every 4th node, etc.
          */
-        void CalcNodeBasedAABB(MCore::AABB* outResult, uint32 nodeFrequency = 1);
+        void CalcNodeBasedAabb(AZ::Aabb* outResult, uint32 nodeFrequency = 1);
 
         /**
          * Calculate the axis aligned bounding box based on the world space vertex coordinates of the meshes.
@@ -452,43 +465,7 @@ namespace EMotionFX
          * @param vertexFrequency This includes every "vertexFrequency"-th vertex. So for example a value of 2 would skip every second vertex and
          *                        so will process half of the vertices. A value of 4 would process only each 4th vertex, etc.
          */
-        void CalcMeshBasedAABB(uint32 geomLODLevel, MCore::AABB* outResult, uint32 vertexFrequency = 1);
-
-        /**
-         * Calculate the axis aligned bounding box based on the world space vertex coordinates of the collision meshes.
-         * If the actor has no collision meshes, the created box will be invalid.
-         * @param geomLODLevel The geometry LOD level to calculate the box for.
-         * @param outResult The AABB where this method should store the resulting box in.
-         * @param vertexFrequency This includes every "vertexFrequency"-th vertex. So for example a value of 2 would skip every second vertex and
-         *                        so will process half of the vertices. A value of 4 would process only each 4th vertex, etc.
-         */
-        void CalcCollisionMeshBasedAABB(uint32 geomLODLevel, MCore::AABB* outResult, uint32 vertexFrequency = 1);
-
-        /**
-         * Calculate the axis aligned bounding box that contains the object oriented boxes of all nodes.
-         * The OBB (oriented bounding box) of each node is calculated by fitting an OBB to its mesh.
-         * The OBB of nodes that act as bones and have no meshes themselves are fit to the set of vertices that are influenced by the given bone.
-         * This method will give more accurate results than the CalcNodeBasedAABB method in trade for a bit lower performance.
-         * Also one big advantage of this method is that you can use these bounds for hit detection, without having artists setup collision meshes.
-         * @param outResult The AABB where this method should store the resulting box in.
-         * @param nodeFrequency This will include every "nodeFrequency"-th node. So a value of 1 will include all nodes. A value of 2 would
-         *                      process every second node, meaning that half of the nodes will be skipped. A value of 4 would process every 4th node, etc.
-         */
-        void CalcNodeOBBBasedAABB(MCore::AABB* outResult, uint32 nodeFrequency = 1);
-
-        /**
-         * Calculate the axis aligned bounding box that contains the object oriented boxes of all nodes.
-         * The OBB (oriented bounding box) of each node is calculated by fitting an OBB to its mesh.
-         * The OBB of nodes that act as bones and have no meshes themselves are fit to the set of vertices that are influenced by the given bone.
-         * This method will give more accurate results than the CalcNodeBasedAABB method in trade for a bit lower performance.
-         * Also one big advantage of this method is that you can use these bounds for hit detection, without having artists setup collision meshes.
-         * NOTE: this is a faster variant from the CalcNodeOBBBasedAABB method. The difference is that this method only transforms the min and max point of the box in local space.
-         * Therefore it is less accurate, but it might still be enough. The original CalcNodeOBBBasedAABB method calculates the 8 corner points of the node obb boxes.
-         * @param outResult The AABB where this method should store the resulting box in.
-         * @param nodeFrequency This will include every "nodeFrequency"-th node. So a value of 1 will include all nodes. A value of 2 would
-         *                      process every second node, meaning that half of the nodes will be skipped. A value of 4 would process every 4th node, etc.
-         */
-        void CalcNodeOBBBasedAABBFast(MCore::AABB* outResult, uint32 nodeFrequency = 1);
+        void CalcMeshBasedAabb(uint32 geomLODLevel, AZ::Aabb* outResult, uint32 vertexFrequency = 1);
 
         /**
          * Get the axis aligned bounding box.
@@ -496,14 +473,14 @@ namespace EMotionFX
          * That method is also called automatically when the bounds auto-update feature is enabled.
          * @result The axis aligned bounding box.
          */
-        const MCore::AABB& GetAABB() const;
+        const AZ::Aabb& GetAabb() const;
 
         /**
          * Set the axis aligned bounding box.
          * Please beware that this box will get automatically overwritten when automatic bounds update is enabled.
          * @param aabb The axis aligned bounding box to store.
          */
-        void SetAABB(const MCore::AABB& aabb);
+        void SetAabb(const AZ::Aabb& aabb);
 
         //-------------------------------------------------------------------------------------------
 
@@ -887,8 +864,8 @@ namespace EMotionFX
 
     private:
         TransformData*          mTransformData;         /**< The transformation data for this instance. */
-        MCore::AABB             mAABB;                  /**< The axis aligned bounding box. */
-        MCore::AABB             mStaticAABB;            /**< A static pre-calculated bounding box, which we can move along with the position of the actor instance, and use for visibility checks. */
+        AZ::Aabb                m_aabb;                  /**< The axis aligned bounding box. */
+        AZ::Aabb                m_staticAabb;           /**< A static pre-calculated bounding box, which we can move along with the position of the actor instance, and use for visibility checks. */
 
         Transform               mLocalTransform = Transform::CreateIdentity();
         Transform               mWorldTransform = Transform::CreateIdentity();
@@ -907,7 +884,7 @@ namespace EMotionFX
         MotionSystem*           mMotionSystem;          /**< The motion system, that handles all motion playback and blending etc. */
         AnimGraphInstance*      mAnimGraphInstance;     /**< A pointer to the anim graph instance, which can be nullptr when there is no anim graph instance. */
         AZStd::unique_ptr<RagdollInstance> m_ragdollInstance;
-        MCore::Mutex            mLock;                  /**< The multithread lock. */
+        MCore::Mutex            mLock;                  /**< The multi-thread lock. */
         void*                   mCustomData;            /**< A pointer to custom data for this actor. This could be a pointer to your engine or game object for example. */
         AZ::Entity*             m_entity;               /**< The entity to which the actor instance belongs to. */
         float                   mBoundsUpdateFrequency; /**< The bounds update frequency. Which is a time value in seconds. */
@@ -920,7 +897,8 @@ namespace EMotionFX
         uint32                  mBoundsUpdateItemFreq;  /**< The bounds update item counter step size. A value of 1 means every vertex/node, a value of 2 means every second vertex/node, etc. */
         uint32                  mID;                    /**< The unique identification number for the actor instance. */
         uint32                  mThreadIndex;           /**< The thread index. This specifies the thread number this actor instance is being processed in. */
-        EBoundsType             mBoundsUpdateType;      /**< The bounds update type (node based, mesh based or colliison mesh based). */
+        EBoundsType             mBoundsUpdateType;      /**< The bounds update type (node based, mesh based or collision mesh based). */
+        float m_boundsExpandBy = 0.25f; /**< Expand bounding box by normalized percentage. (Default: 25% greater than the calculated bounding box) */
         uint8                   mNumAttachmentRefs;     /**< Specifies how many actor instances use this actor instance as attachment. */
         uint8                   mBoolFlags;             /**< Boolean flags. */
 

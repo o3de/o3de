@@ -108,7 +108,6 @@ namespace EMStudio
             CreateViewOptionEntry(contextMenu, "Face Normals", RENDER_FACENORMALS);
             CreateViewOptionEntry(contextMenu, "Tangents", RENDER_TANGENTS);
             CreateViewOptionEntry(contextMenu, "Actor Bounding Boxes", RENDER_AABB);
-            CreateViewOptionEntry(contextMenu, "Joint OBBs", RENDER_OBB, false);
             CreateViewOptionEntry(contextMenu, "Collision Meshes", RENDER_COLLISIONMESHES, false);
             contextMenu->addSeparator();
             CreateViewOptionEntry(contextMenu, "Line Skeleton", RENDER_LINESKELETON);
@@ -233,7 +232,6 @@ namespace EMStudio
         SetRenderFlag(RENDER_TANGENTS, false);
 
         SetRenderFlag(RENDER_AABB, false);
-        SetRenderFlag(RENDER_OBB, false);
         SetRenderFlag(RENDER_COLLISIONMESHES, false);
         SetRenderFlag(RENDER_RAGDOLL_COLLIDERS, true);
         SetRenderFlag(RENDER_RAGDOLL_JOINTLIMITS, true);
@@ -410,7 +408,6 @@ namespace EMStudio
         }
 
         // Override some settings as we removed those from the menu.
-        SetRenderFlag(RENDER_OBB, false);
         SetRenderFlag(RENDER_COLLISIONMESHES, false);
         SetRenderFlag(RENDER_TEXTURING, false);
 

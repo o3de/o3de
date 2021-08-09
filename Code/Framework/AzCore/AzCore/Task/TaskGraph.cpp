@@ -64,8 +64,9 @@ namespace AZ
         }
 
         m_compiledTaskGraph->m_waitEvent = waitEvent;
-        m_compiledTaskGraph->m_remaining = m_compiledTaskGraph->m_tasks.size() + (m_retained ? 1 : 0);
-        for (size_t i = 0; i != m_compiledTaskGraph->m_tasks.size(); ++i)
+        uint32_t taskCount = aznumeric_cast<uint32_t>(m_compiledTaskGraph->m_tasks.size());
+        m_compiledTaskGraph->m_remaining = taskCount + (m_retained ? 1 : 0);
+        for (uint32_t i = 0; i != taskCount; ++i)
         {
             m_compiledTaskGraph->m_tasks[i].Init();
         }

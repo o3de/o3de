@@ -352,7 +352,7 @@ namespace EMotionFX
             }
 
             // post create init
-            actor->PostCreateInit(actorSettings.mMakeGeomLODsCompatibleWithSkeletalLODs, false, actorSettings.mUnitTypeConvert);
+            actor->PostCreateInit(actorSettings.mMakeGeomLODsCompatibleWithSkeletalLODs, actorSettings.mUnitTypeConvert);
         }
 
         // close the file and return a pointer to the actor we loaded
@@ -846,7 +846,7 @@ namespace EMotionFX
         RegisterChunkProcessor(aznew ChunkProcessorActorInfo3());
         RegisterChunkProcessor(aznew ChunkProcessorActorProgMorphTarget());
         RegisterChunkProcessor(aznew ChunkProcessorActorNodeGroups());
-        RegisterChunkProcessor(aznew ChunkProcessorActorNodes());
+        RegisterChunkProcessor(aznew ChunkProcessorActorNodes2());
         RegisterChunkProcessor(aznew ChunkProcessorActorProgMorphTargets());
         RegisterChunkProcessor(aznew ChunkProcessorActorProgMorphTargets2());
         RegisterChunkProcessor(aznew ChunkProcessorActorNodeMotionSources());
