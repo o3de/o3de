@@ -6,24 +6,17 @@
 #
 #
 
-import sys
 import json
 import subprocess
 import re
 import uuid
-import logging
 import pathlib
 from git_utils import Repo
 from tiaf_persistent_storage_local import PersistentStorageLocal
 from tiaf_persistent_storage_s3 import PersistentStorageS3
+from tiaf_logger import get_logger
 
-logger = logging.getLogger(__file__)
-logger.setLevel(logging.INFO)
-handler = logging.StreamHandler(sys.stdout)
-handler.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
+logger = get_logger(__file__)
 
 class TestImpact:
     def __init__(self, config_file: str):

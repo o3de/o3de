@@ -6,19 +6,12 @@
 #
 #
 
-import sys
 import json
 import pathlib
-import logging
 from abc import ABC, abstractmethod
+from tiaf_logger import get_logger
 
-logger = logging.getLogger(__file__)
-logger.setLevel(logging.INFO)
-handler = logging.StreamHandler(sys.stdout)
-handler.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
+logger = get_logger(__file__)
 
 # Abstraction for the persistent storage required by TIAF to store and retrieve the branch coverage data and other meta-data
 class PersistentStorage(ABC):

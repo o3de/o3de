@@ -6,18 +6,12 @@
 #
 #
 
-import sys
 import pathlib
 import logging
 from tiaf_persistent_storage import PersistentStorage
+from tiaf_logger import get_logger
 
-logger = logging.getLogger(__file__)
-logger.setLevel(logging.INFO)
-handler = logging.StreamHandler(sys.stdout)
-handler.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
+logger = get_logger(__file__)
 
 # Implementation of local persistent storage
 class PersistentStorageLocal(PersistentStorage):

@@ -6,21 +6,15 @@
 #
 #
 
-import sys
 import boto3
 import botocore.exceptions
 import zlib
 import logging
 from io import BytesIO
 from tiaf_persistent_storage import PersistentStorage
+from tiaf_logger import get_logger
 
-logger = logging.getLogger(__file__)
-logger.setLevel(logging.INFO)
-handler = logging.StreamHandler(sys.stdout)
-handler.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
+logger = get_logger(__file__)
 
 # Implementation of s3 bucket persistent storage
 class PersistentStorageS3(PersistentStorage):
