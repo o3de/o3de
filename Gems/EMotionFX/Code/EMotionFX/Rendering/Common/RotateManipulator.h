@@ -8,7 +8,7 @@
 
 #pragma once
 
-// include the Core system
+#include <MCore/Source/AABB.h>
 #include <MCore/Source/Vector.h>
 #include <MCore/Source/BoundingSphere.h>
 #include <MCore/Source/Ray.h>

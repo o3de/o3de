@@ -26,18 +26,15 @@
 #include "LayoutWnd.h"
 #include "2DViewport.h"
 #include "TopRendererWnd.h"
-#include "RenderViewport.h"
 #include "EditorViewportWidget.h"
 #include "CryEditDoc.h"
 
 #include <AzCore/Console/IConsole.h>
 
-AZ_CVAR(bool, ed_useAtomNativeViewport, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Use the new Atom-native Editor viewport (experimental, not yet stable");
-
 bool CViewManager::IsMultiViewportEnabled()
 {
     // Enable multi-viewport for legacy renderer, or if we're using the new fully Atom-native viewport
-    return ed_useAtomNativeViewport;
+    return true;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -74,14 +71,7 @@ CViewManager::CViewManager()
     RegisterQtViewPane<C2DViewport_YZ>(GetIEditor(), "Left", LyViewPane::CategoryViewport, viewportOptions);
 
     viewportOptions.viewportType = ET_ViewportCamera;
-    if (ed_useAtomNativeViewport)
-    {
-        RegisterQtViewPaneWithName<EditorViewportWidget>(GetIEditor(), "Perspective", LyViewPane::CategoryViewport, viewportOptions);
-    }
-    else
-    {
-        RegisterQtViewPaneWithName<CRenderViewport>(GetIEditor(), "Perspective", LyViewPane::CategoryViewport, viewportOptions);
-    }
+    RegisterQtViewPaneWithName<EditorViewportWidget>(GetIEditor(), "Perspective", LyViewPane::CategoryViewport, viewportOptions);
 
     viewportOptions.viewportType = ET_ViewportMap;
     RegisterQtViewPane<QTopRendererWnd>(GetIEditor(), "Map", LyViewPane::CategoryViewport, viewportOptions);
@@ -251,11 +241,6 @@ void CViewManager::SelectViewport(CViewport* pViewport)
 //////////////////////////////////////////////////////////////////////////
 CViewport* CViewManager::GetGameViewport() const
 {
-    if (CRenderViewport::GetPrimaryViewport())
-    {
-        return CRenderViewport::GetPrimaryViewport();
-    }
-
     return GetViewport(ET_ViewportCamera);;
 }
 

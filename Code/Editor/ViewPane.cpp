@@ -305,10 +305,6 @@ void CLayoutViewPane::AttachViewport(QWidget* pViewport)
         {
             vp->SetViewportId(GetId());
             vp->SetViewPane(this);
-            if (CRenderViewport* renderViewport = viewport_cast<CRenderViewport*>(vp))
-            {
-                renderViewport->ConnectViewportInteractionRequestBus();
-            }
             if (EditorViewportWidget* renderViewport = viewport_cast<EditorViewportWidget*>(vp))
             {
                 renderViewport->ConnectViewportInteractionRequestBus();
@@ -356,10 +352,6 @@ void CLayoutViewPane::DisconnectRenderViewportInteractionRequestBus()
 {
     if (QtViewport* vp = qobject_cast<QtViewport*>(m_viewport))
     {
-        if (CRenderViewport* renderViewport = viewport_cast<CRenderViewport*>(vp))
-        {
-            renderViewport->DisconnectViewportInteractionRequestBus();
-        }
         if (EditorViewportWidget* renderViewport = viewport_cast<EditorViewportWidget*>(vp))
         {
             renderViewport->DisconnectViewportInteractionRequestBus();
@@ -469,16 +461,6 @@ void CLayoutViewPane::SetAspectRatio(unsigned int x, unsigned int y)
 //////////////////////////////////////////////////////////////////////////
 void CLayoutViewPane::SetViewportFOV(float fov)
 {
-    if (CRenderViewport* pRenderViewport = qobject_cast<CRenderViewport*>(m_viewport))
-    {
-        pRenderViewport->SetFOV(DEG2RAD(fov));
-
-        // if viewport camera is active, make selected fov new default
-        if (pRenderViewport->GetViewManager()->GetCameraObjectId() == GUID_NULL)
-        {
-            gSettings.viewports.fDefaultFov = DEG2RAD(fov);
-        }
-    }
     if (EditorViewportWidget* pRenderViewport = qobject_cast<EditorViewportWidget*>(m_viewport))
     {
         pRenderViewport->SetFOV(DEG2RAD(fov));

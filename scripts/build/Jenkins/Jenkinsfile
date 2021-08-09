@@ -695,13 +695,19 @@ finally {
             )
         }
         node('controller') {
-            step([
-                $class: 'Mailer',
-                notifyEveryUnstableBuild: true,
-                recipients: emailextrecipients([
+            if("${currentBuild.currentResult}" == "SUCCESS") {
+                emailBody = "${BUILD_URL}\nSuccess!"
+            } else {
+                buildFailure = tm('${BUILD_FAILURE_ANALYZER}')
+                emailBody = "${BUILD_URL}\n${buildFailure}!"
+            }
+            emailext (
+                body: "${emailBody}",
+                subject: "${currentBuild.currentResult}: ${JOB_NAME} - Build # ${BUILD_NUMBER}",
+                recipientProviders: [
                     [$class: 'RequesterRecipientProvider']
-                ])
-            ])
+                ]
+            )
         }
     } catch(Exception e) {
     }
