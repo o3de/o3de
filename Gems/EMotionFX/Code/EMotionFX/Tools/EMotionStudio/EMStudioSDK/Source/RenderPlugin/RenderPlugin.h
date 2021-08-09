@@ -154,7 +154,7 @@ namespace EMStudio
         MCORE_INLINE CommandSystem::SelectionList* GetCurrentSelection() const      { return mCurrentSelection; }
         MCORE_INLINE MCommon::RenderUtil* GetRenderUtil() const                     { return mRenderUtil; }
 
-        MCore::AABB GetSceneAABB(bool selectedInstancesOnly);
+        AZ::Aabb GetSceneAabb(bool selectedInstancesOnly);
 
         MCommon::RenderUtil::TrajectoryTracePath* FindTracePath(EMotionFX::ActorInstance* actorInstance);
         void ResetSelectedTrajectoryPaths();

@@ -113,7 +113,7 @@ public:
     virtual void AddPostRenderer(IPostRenderer* pPostRenderer) = 0;
     virtual bool RemovePostRenderer(IPostRenderer* pPostRenderer) = 0;
 
-    virtual BOOL DestroyWindow() { return FALSE; }
+    virtual bool DestroyWindow() { return false; }
 
     /** Get type of this viewport.
     */
@@ -252,7 +252,7 @@ public:
     virtual void SetCursorString(const QString& str) = 0;
 
     virtual void SetFocus() = 0;
-    virtual void Invalidate(BOOL bErase = 1) = 0;
+    virtual void Invalidate(bool bErase = 1) = 0;
 
     // Is overridden by RenderViewport
     virtual void SetFOV([[maybe_unused]] float fov) {}
@@ -266,8 +266,8 @@ public:
     void SetViewPane(CLayoutViewPane* viewPane) { m_viewPane = viewPane; }
 
     //Child classes can override these to provide extra logic that wraps
-    //widget rendering. Needed by the RenderViewport to handle raycasts 
-    //from screen-space to world-space. 
+    //widget rendering. Needed by the RenderViewport to handle raycasts
+    //from screen-space to world-space.
     virtual void PreWidgetRendering() {}
     virtual void PostWidgetRendering() {}
 
@@ -346,7 +346,7 @@ public:
     QString GetName() const;
 
     virtual void SetFocus() { setFocus(); }
-    virtual void Invalidate([[maybe_unused]] BOOL bErase = 1) { update(); }
+    virtual void Invalidate([[maybe_unused]] bool bErase = 1) { update(); }
 
     // Is overridden by RenderViewport
     virtual void SetFOV([[maybe_unused]] float fov) {}

@@ -98,7 +98,6 @@ namespace EMotionFX
         result->mChildIndices       = mChildIndices;
         //result->mImportanceFactor = mImportanceFactor;
         result->mNodeFlags          = mNodeFlags;
-        result->mOBB                = mOBB;
         result->mSemanticNameID     = mSemanticNameID;
 
         // copy the node attributes

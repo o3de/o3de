@@ -8,5 +8,6 @@
     "canonical_tags": ["Gem"],
     "user_tags": ["Environment", "Design", "Tools"],
     "icon_path": "preview.png",
-    "requirements": ""
+    "requirements": "",
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/environment/landscape-canvas/"
 }
