@@ -7,7 +7,6 @@
 #
 
 # shared by other platforms:
-ly_associate_package(PACKAGE_NAME zlib-1.2.8-rev2-multiplatform      TARGETS zlib      PACKAGE_HASH e6f34b8ac16acf881e3d666ef9fd0c1aee94c3f69283fb6524d35d6f858eebbb)
 ly_associate_package(PACKAGE_NAME md5-2.0-multiplatform              TARGETS md5       PACKAGE_HASH 29e52ad22c78051551f78a40c2709594f0378762ae03b417adca3f4b700affdf)
 ly_associate_package(PACKAGE_NAME RapidJSON-1.1.0-multiplatform      TARGETS RapidJSON PACKAGE_HASH 18b0aef4e6e849389916ff6de6682ab9c591ebe15af6ea6017014453c1119ea1)
 ly_associate_package(PACKAGE_NAME RapidXML-1.13-multiplatform        TARGETS RapidXML  PACKAGE_HASH 510b3c12f8872c54b34733e34f2f69dd21837feafa55bfefa445c98318d96ebf)
@@ -28,3 +27,4 @@ ly_associate_package(PACKAGE_NAME googletest-1.8.1-rev4-android      TARGETS goo
 ly_associate_package(PACKAGE_NAME googlebenchmark-1.5.0-rev2-android TARGETS GoogleBenchmark PACKAGE_HASH 20b46e572211a69d7d94ddad1c89ec37bb958711d6ad4025368ac89ea83078fb)
 ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev2-android   TARGETS libsamplerate   PACKAGE_HASH bf13662afe65d02bcfa16258a4caa9b875534978227d6f9f36c9cfa92b3fb12b)
 ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1b-rev1-android        TARGETS OpenSSL         PACKAGE_HASH 4036d4019d722f0e1b7a1621bf60b5a17ca6a65c9c78fd8701cee1131eec8480)
+ly_associate_package(PACKAGE_NAME zlib-1.2.11-rev1-android           TARGETS zlib            PACKAGE_HASH 832b163cae0cccbe4fddc5988f5725fac56ef7dba5bfe95bf8c71281fba2e12c)
