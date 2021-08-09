@@ -72,7 +72,7 @@ TEST(AzQtComponents, FloatToString_Truncate2DecimalsWithLocale)
     const bool showThousandsSeparator = false;
     const int numDecimalPlaces = 2;
     QString testString = "0" + QString(testLocal.decimalPoint()) + "12";
-    EXPECT_EQ(AzQtComponents::toString(0.1234, numDecimalPlaces, testLocal, showThousandsSeparator), testString);
+    EXPECT_EQ(testString, AzQtComponents::toString(0.1234, numDecimalPlaces, testLocal, showThousandsSeparator));
 }
 
 TEST(AzQtComponents, FloatToString_AllZerosButOneWithLocale)
@@ -82,7 +82,7 @@ TEST(AzQtComponents, FloatToString_AllZerosButOneWithLocale)
     const bool showThousandsSeparator = false;
     const int numDecimalPlaces = 2;
     QString testString = "1" + QString(testLocal.decimalPoint()) + "0";
-    EXPECT_EQ(AzQtComponents::toString(1.0000, numDecimalPlaces, testLocal, showThousandsSeparator), testString);
+    EXPECT_EQ(testString, AzQtComponents::toString(1.0000, numDecimalPlaces, testLocal, showThousandsSeparator));
 }
 
 TEST(AzQtComponents, FloatToString_TruncateShowThousandsSeparatorTruncateNoRoundWithLocale)
@@ -92,7 +92,7 @@ TEST(AzQtComponents, FloatToString_TruncateShowThousandsSeparatorTruncateNoRound
     const bool showThousandsSeparator = true;
     const int numDecimalPlaces = 3;
     QString testString = "1" + QString(testLocal.groupSeparator()) + "000" + QString(testLocal.decimalPoint()) + "123";
-    EXPECT_EQ(AzQtComponents::toString(1000.1236, numDecimalPlaces, testLocal, showThousandsSeparator), testString);
+    EXPECT_EQ(testString, AzQtComponents::toString(1000.1236, numDecimalPlaces, testLocal, showThousandsSeparator));
 }
 
 TEST(AzQtComponents, FloatToString_TruncateShowThousandsSeparatorOnlyOneDecimalWithLocale)
@@ -102,5 +102,5 @@ TEST(AzQtComponents, FloatToString_TruncateShowThousandsSeparatorOnlyOneDecimalW
     const bool showThousandsSeparator = true;
     int numDecimalPlaces = 2;
     QString testString = "1" + QString(testLocal.groupSeparator()) + "000" + QString(testLocal.decimalPoint()) + "0";
-    EXPECT_EQ(AzQtComponents::toString(1000.000, numDecimalPlaces, testLocal, showThousandsSeparator), testString);
+    EXPECT_EQ(testString, AzQtComponents::toString(1000.000, numDecimalPlaces, testLocal, showThousandsSeparator));
 }
