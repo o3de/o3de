@@ -6,6 +6,8 @@
  *
  */
 
+#include <TestImpactFramework/TestImpactUtils.h>
+
 #include <TestImpactCommandLineOptions.h>
 #include <TestImpactCommandLineOptionsUtils.h>
 
@@ -19,8 +21,9 @@ namespace TestImpact
         {
             // Options
             ConfigKey,
+            DataFileKey,
             ChangeListKey,
-            OutputChangeListKey,
+            SequenceReportKey,
             SequenceKey,
             TestPrioritizationPolicyKey,
             ExecutionFailurePolicyKey,
@@ -55,8 +58,9 @@ namespace TestImpact
         {
             // Options
             "config",
+            "datafile",
             "changelist",
-            "ochangelist",
+            "report",
             "sequence",
             "ppolicy",
             "epolicy",
@@ -92,14 +96,19 @@ namespace TestImpact
             return ParsePathOption(OptionKeys[ConfigKey], cmd).value_or(LY_TEST_IMPACT_DEFAULT_CONFIG_FILE);
         }
 
+        AZStd::optional<RepoPath> ParseDataFile(const AZ::CommandLine& cmd)
+        {
+            return ParsePathOption(OptionKeys[DataFileKey], cmd);
+        }
+
         AZStd::optional<RepoPath> ParseChangeListFile(const AZ::CommandLine& cmd)
         {
             return ParsePathOption(OptionKeys[ChangeListKey], cmd);
         }
 
-        bool ParseOutputChangeList(const AZ::CommandLine& cmd)
+        AZStd::optional<RepoPath> ParseSequenceReportFile(const AZ::CommandLine& cmd)
         {
-            return ParseOnOffOption(OptionKeys[OutputChangeListKey], BinaryStateValue<bool>{ false, true }, cmd).value_or(false);
+            return ParsePathOption(OptionKeys[SequenceReportKey], cmd);
         }
 
         TestSequenceType ParseTestSequenceType(const AZ::CommandLine& cmd)
@@ -255,9 +264,9 @@ namespace TestImpact
         {
             const AZStd::vector<AZStd::pair<AZStd::string, SuiteType>> states =
             {
-                {GetSuiteTypeName(SuiteType::Main), SuiteType::Main},
-                {GetSuiteTypeName(SuiteType::Periodic), SuiteType::Periodic},
-                {GetSuiteTypeName(SuiteType::Sandbox), SuiteType::Sandbox}
+                { SuiteTypeAsString(SuiteType::Main), SuiteType::Main },
+                { SuiteTypeAsString(SuiteType::Periodic), SuiteType::Periodic },
+                { SuiteTypeAsString(SuiteType::Sandbox), SuiteType::Sandbox }
             };
 
             return ParseMultiStateOption(OptionKeys[SuiteFilterKey], states, cmd).value_or(SuiteType::Main);
@@ -270,8 +279,9 @@ namespace TestImpact
         cmd.Parse(argc, argv);
 
         m_configurationFile = ParseConfigurationFile(cmd);
+        m_dataFile = ParseDataFile(cmd);
         m_changeListFile = ParseChangeListFile(cmd);
-        m_outputChangeList = ParseOutputChangeList(cmd);
+        m_sequenceReportFile = ParseSequenceReportFile(cmd);
         m_testSequenceType = ParseTestSequenceType(cmd);
         m_testPrioritizationPolicy = ParseTestPrioritizationPolicy(cmd);
         m_executionFailurePolicy = ParseExecutionFailurePolicy(cmd);
@@ -286,10 +296,20 @@ namespace TestImpact
         m_safeMode = ParseSafeMode(cmd);
         m_suiteFilter = ParseSuiteFilter(cmd);
     }
+
+    bool CommandLineOptions::HasDataFile() const
+    {
+        return m_dataFile.has_value();
+    }
  
     bool CommandLineOptions::HasChangeListFile() const
     {
         return m_changeListFile.has_value();
+    }
+
+    bool CommandLineOptions::HasSequenceReportFile() const
+    {
+        return m_sequenceReportFile.has_value();
     }
 
     bool CommandLineOptions::HasSafeMode() const
@@ -297,14 +317,19 @@ namespace TestImpact
         return m_safeMode;
     }
 
+    const AZStd::optional<RepoPath>& CommandLineOptions::GetDataFile() const
+    {
+        return m_dataFile;
+    }
+
     const AZStd::optional<RepoPath>& CommandLineOptions::GetChangeListFile() const
     {
         return m_changeListFile;
     }
 
-    bool CommandLineOptions::HasOutputChangeList() const
+    const AZStd::optional<RepoPath>& CommandLineOptions::GetSequenceReportFile() const
     {
-        return m_outputChangeList;
+        return m_sequenceReportFile;
     }
 
     const RepoPath& CommandLineOptions::GetConfigurationFile() const
@@ -379,8 +404,12 @@ namespace TestImpact
             "  options:\n"
             "    -config=<filename>                                          Path to the configuration file for the TIAF runtime (default: \n"
             "                                                                <tiaf binay build dir>.<tiaf binary build type>.json).\n"
+            "    -datafile=<filename>                                        Optional path to a test impact data file that will used instead of that\n"
+            "                                                                specified in the config file.\n"
             "    -changelist=<filename>                                      Path to the JSON of source file changes to perform test impact \n"
             "                                                                analysis on.\n"
+            "    -report=<filename>                                          Path to where the sequence report file will be written (if this option \n"
+            "                                                                is not specified, no report will be written).\n"
             "    -gtimeout=<seconds>                                         Global timeout value to terminate the entire test sequence should it \n"
             "                                                                be exceeded.\n"
             "    -ttimeout=<seconds>                                         Timeout value to terminate individual test targets should it be \n"
@@ -443,7 +472,6 @@ namespace TestImpact
             "                                                                available, no prioritization will occur).\n"
             "    -maxconcurrency=<number>                                    The maximum number of concurrent test targets/shards to be in flight at \n"
             "                                                                any given moment.\n"
-            "    -ochangelist=<on,off>                                       Outputs the change list used for test selection.\n"
             "    -suite=<main, periodic, sandbox>                            The test suite to select from for this test sequence.";
 
         return help;
