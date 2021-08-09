@@ -379,6 +379,8 @@ class TestCreateTemplate:
                 "isTemplated": True,
                 "isOptional": False
             })
+        #Convert dict back to string
+        template_json_contents = json.dumps(template_json_dict, indent=4)
         self.instantiate_template_wrapper(tmpdir, engine_template.create_gem, 'TestGem', concrete_contents,
                                           templated_contents, keep_license_text, force, expect_failure,
-                                          template_json_contents, gem_name='TestGem')
+                                          template_json_contents, template_file_map, gem_name='TestGem')

@@ -213,7 +213,7 @@ class TestRegisterGem:
         def get_project_json_data(project_path: pathlib.Path = None):
             return json.loads(TEST_PROJECT_JSON_PAYLOAD)
 
-        def find_ancestor_file(target_file_name: pathlib.PurePath, start_path: pathlib.Path):
+        def find_ancestor_dir(target_file_name: pathlib.PurePath, start_path: pathlib.Path):
             try:
                 if target_file_name == pathlib.PurePath('project.json')\
                         and start_path.relative_to(TestRegisterGem.project_path):
@@ -233,7 +233,7 @@ class TestRegisterGem:
                 patch('o3de.manifest.get_engine_json_data', side_effect=get_engine_json_data) as _3,\
                 patch('o3de.manifest.get_project_json_data', side_effect=get_project_json_data) as _4,\
                 patch('o3de.manifest.get_gem_json_data', side_effect=TestRegisterGem.get_gem_json_data) as _5,\
-                patch('o3de.utils.find_ancestor_file', side_effect=find_ancestor_file) as _6,\
+                patch('o3de.utils.find_ancestor_dir_containing_file', side_effect=find_ancestor_dir) as _6,\
                 patch('pathlib.Path.is_dir', return_value=True) as _7,\
                 patch('o3de.validation.valid_o3de_gem_json', return_value=True) as _8:
             result = register.register(gem_path=gem_path)

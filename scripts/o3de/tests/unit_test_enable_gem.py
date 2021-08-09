@@ -94,7 +94,7 @@ class TestEnableGemCommand:
                 self.enable_gem.project_data = new_project_data
             return True
 
-        def get_project_json_data(json_data: pathlib.Path, project_path: pathlib.Path):
+        def get_project_json_data(project_path: pathlib.Path):
             return self.enable_gem.project_data
 
         def get_gem_json_data(gem_path: pathlib.Path, project_path: pathlib.Path):
