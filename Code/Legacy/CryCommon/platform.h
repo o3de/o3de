@@ -277,18 +277,6 @@
   #define PRINTF_EMPTY_FORMAT ""
 #endif
 
-#if defined(IOS)
-#define USE_PTHREAD_TLS
-#endif
-
-// Storage class modifier for thread local storage.
-// THEADLOCAL should NOT be defined to empty because that creates some
-// really hard to find issues.
-#if !defined(USE_PTHREAD_TLS)
-#   define THREADLOCAL AZ_TRAIT_COMPILER_THREAD_LOCAL
-#endif //!defined(USE_PTHREAD_TLS)
-
-
 
 //////////////////////////////////////////////////////////////////////////
 // define Read Write Barrier macro needed for lockless programming
@@ -733,48 +721,6 @@ enum ETriState
 // Fallback for Alignment macro of MSVC (must be before the class definition)
 #if !defined(_MS_ALIGN)
         #define _MS_ALIGN(num) AZ_PUSH_DISABLE_WARNING(4324, "-Wunknown-warning-option")
-#endif
-
-#if defined(WIN32) || defined(WIN64)
-extern "C" {
-__declspec(dllimport) unsigned long __stdcall TlsAlloc();
-__declspec(dllimport) void* __stdcall TlsGetValue(unsigned long dwTlsIndex);
-__declspec(dllimport) int __stdcall TlsSetValue(unsigned long dwTlsIndex, void* lpTlsValue);
-}
-
-    #define TLS_DECLARE(type, var) extern int var##idx;
-    #define TLS_DEFINE(type, var)              \
-    int var##idx;                              \
-    struct Init##var {                         \
-        Init##var() { var##idx = TlsAlloc(); } \
-    };                                         \
-    Init##var g_init##var;
-    #define TLS_DEFINE_DEFAULT_VALUE(type, var, value)                                \
-    int var##idx;                                                                     \
-    struct Init##var {                                                                \
-        Init##var() { var##idx = TlsAlloc(); TlsSetValue(var##idx, reinterpret_cast<void*>(value)); } \
-    };                                                                                \
-    Init##var g_init##var;
-    #define TLS_GET(type, var) (type)TlsGetValue(var##idx)
-    #define TLS_SET(var, val) TlsSetValue(var##idx, reinterpret_cast<void*>(val))
-#elif defined(USE_PTHREAD_TLS)
-    #define TLS_DECLARE(_TYPE, _VAR) extern SCryPthreadTLS<_TYPE> _VAR##TLSKey;
-    #define TLS_DEFINE(_TYPE, _VAR) SCryPthreadTLS<_TYPE> _VAR##TLSKey;
-    #define TLS_DEFINE_DEFAULT_VALUE(_TYPE, _VAR, _DEFAULT) SCryPthreadTLS<_TYPE> _VAR##TLSKey = _DEFAULT;
-    #define TLS_GET(_TYPE, _VAR) _VAR##TLSKey.Get()
-    #define TLS_SET(_VAR, _VALUE) _VAR##TLSKey.Set(_VALUE)
-#elif defined(THREADLOCAL)
-    #define TLS_DECLARE(type, var) extern THREADLOCAL type var;
-#if defined(LINUX) || defined(MAC)
-    #define TLS_DEFINE(type, var) THREADLOCAL type var = 0;
-#else
-    #define TLS_DEFINE(type, var) THREADLOCAL type var;
-#endif // defined(LINUX) || defined(MAC)
-    #define TLS_DEFINE_DEFAULT_VALUE(type, var, value) THREADLOCAL type var = value;
-    #define TLS_GET(type, var) (var)
-    #define TLS_SET(var, val) (var = (val))
-#else // defined(THREADLOCAL)
-    #error "There's no support for thread local storage"
 #endif
 
 #if defined(AZ_RESTRICTED_PLATFORM)
