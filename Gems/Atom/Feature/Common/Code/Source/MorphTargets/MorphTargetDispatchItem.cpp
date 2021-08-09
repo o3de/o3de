@@ -162,7 +162,7 @@ namespace AZ
                 m_rootConstantData.SetConstant(colorOffsetIndex, m_morphInstanceMetaData.m_accumulatedColorDeltaOffsetInBytes / 4);
             }
 
-            m_dispatchItem.m_rootConstantSize = m_rootConstantData.GetConstantData().size();
+            m_dispatchItem.m_rootConstantSize = static_cast<uint8_t>(m_rootConstantData.GetConstantData().size());
             m_dispatchItem.m_rootConstants = m_rootConstantData.GetConstantData().data();
         }
 

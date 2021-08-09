@@ -28,7 +28,7 @@ namespace MCore
     class AttributeSettings;
 
     // the attribute interface types
-    enum : uint32
+    enum : AZ::u32
     {
         ATTRIBUTE_INTERFACETYPE_FLOATSPINNER    = 0,        // MCore::AttributeFloat
         ATTRIBUTE_INTERFACETYPE_FLOATSLIDER     = 1,        // MCore::AttributeFloat
@@ -55,20 +55,20 @@ namespace MCore
 
         virtual Attribute* Clone() const = 0;
         virtual const char* GetTypeString() const = 0;
-        MCORE_INLINE uint32 GetType() const                                         { return mTypeID; }
+        MCORE_INLINE AZ::u32 GetType() const                                         { return mTypeID; }
         virtual bool InitFromString(const AZStd::string& valueString) = 0;
         virtual bool ConvertToString(AZStd::string& outString) const = 0;
         virtual bool InitFrom(const Attribute* other) = 0;
-        virtual uint32 GetClassSize() const = 0;
-        virtual uint32 GetDefaultInterfaceType() const = 0;
+        virtual size_t GetClassSize() const = 0;
+        virtual AZ::u32 GetDefaultInterfaceType() const = 0;
 
         Attribute& operator=(const Attribute& other);
 
         virtual void NetworkSerialize(EMotionFX::Network::AnimGraphSnapshotChunkSerializer&) {};
 
     protected:
-        uint32      mTypeID;    /**< The unique type ID of the attribute class. */
+        AZ::u32      mTypeID;    /**< The unique type ID of the attribute class. */
 
-        Attribute(uint32 typeID);
+        Attribute(AZ::u32 typeID);
     };
 } // namespace MCore

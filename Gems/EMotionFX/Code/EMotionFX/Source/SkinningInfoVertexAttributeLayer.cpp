@@ -308,20 +308,20 @@ namespace EMotionFX
         GetInfluence(attributeNr, 0)->SetWeight(1.0f);
     }
 
-    AZStd::set<AZ::u32> SkinningInfoVertexAttributeLayer::CalcLocalJointIndices(AZ::u32 numOrgVertices)
+    AZStd::set<uint16> SkinningInfoVertexAttributeLayer::CalcLocalJointIndices(AZ::u32 numOrgVertices)
     {
-        AZStd::set<AZ::u32> result;
+        AZStd::set<uint16> result;
 
         for (AZ::u32 i = 0; i < numOrgVertices; i++)
         {
             // now we have located the skinning information for this vertex, we can see if our bones array
             // already contains the bone it uses by traversing all influences for this vertex, and checking
             // if the bone of that influence already is in the array with used bones
-            const uint32 numInfluences = GetNumInfluences(i);
-            for (uint32 a = 0; a < numInfluences; ++a)
+            const size_t numInfluences = GetNumInfluences(i);
+            for (size_t a = 0; a < numInfluences; ++a)
             {
                 EMotionFX::SkinInfluence* influence = GetInfluence(i, a);
-                const AZ::u32 jointNr = influence->GetNodeNr();
+                const uint16 jointNr = influence->GetNodeNr();
 
                 result.emplace(jointNr);
             }

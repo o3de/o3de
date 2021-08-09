@@ -11,7 +11,7 @@
 // include the required headers
 #include "EMotionFXConfig.h"
 #include "BaseObject.h"
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include <MCore/Source/MultiThreadManager.h>
 
 
@@ -41,7 +41,7 @@ namespace EMotionFX
 
         static MotionInstancePool* Create();
 
-        void Init(uint32 numInitialInstances = 256, EPoolType poolType = POOLTYPE_DYNAMIC, uint32 subPoolSize = 512); // auto called on EMotion FX init
+        void Init(size_t numInitialInstances = 256, EPoolType poolType = POOLTYPE_DYNAMIC, size_t subPoolSize = 512); // auto called on EMotion FX init
 
         // with lock
         MotionInstance* RequestNew(Motion* motion, ActorInstance* actorInstance);
@@ -69,8 +69,8 @@ namespace EMotionFX
             ~SubPool();
 
             uint8*      mData;
-            uint32      mNumInstances;
-            uint32      mNumInUse;
+            size_t      mNumInstances;
+            size_t      mNumInUse;
         };
 
         struct EMFX_API MemLocation
@@ -88,11 +88,11 @@ namespace EMotionFX
             ~Pool();
 
             uint8*                      mData;
-            uint32                      mNumInstances;
-            uint32                      mNumUsedInstances;
-            uint32                      mSubPoolSize;
-            MCore::Array<MemLocation>   mFreeList;
-            MCore::Array<SubPool*>      mSubPools;
+            size_t                      mNumInstances;
+            size_t                      mNumUsedInstances;
+            size_t                      mSubPoolSize;
+            AZStd::vector<MemLocation>   mFreeList;
+            AZStd::vector<SubPool*>      mSubPools;
             EPoolType                   mPoolType;
         };
 

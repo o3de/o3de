@@ -67,21 +67,21 @@ namespace CommandSystem
             }
             else
             {
-                EMotionFX::Node* node = skeleton->FindNodeByName(motionExtractionNodeName.c_str());
+                EMotionFX::Node* node = skeleton->FindNodeByName(motionExtractionNodeName);
                 actor->SetMotionExtractionNode(node);
             }
 
             // Inform all animgraph nodes about this.
-            const uint32 numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
-            for (uint32 i = 0; i < numAnimGraphs; ++i)
+            const size_t numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
+            for (size_t i = 0; i < numAnimGraphs; ++i)
             {
                 EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().GetAnimGraph(i);
                 if (animGraph->GetIsOwnedByRuntime())
                 {
                     continue;
                 }
-                const uint32 numObjects = animGraph->GetNumObjects();
-                for (uint32 n = 0; n < numObjects; ++n)
+                const size_t numObjects = animGraph->GetNumObjects();
+                for (size_t n = 0; n < numObjects; ++n)
                 {
                     animGraph->GetObject(n)->OnActorMotionExtractionNodeChanged();
                 }
@@ -100,7 +100,7 @@ namespace CommandSystem
             }
             else
             {
-                EMotionFX::Node* node = skeleton->FindNodeByName(retargetRootNodeName.c_str());
+                EMotionFX::Node* node = skeleton->FindNodeByName(retargetRootNodeName);
                 actor->SetRetargetRootNode(node);
             }
         }
@@ -120,8 +120,8 @@ namespace CommandSystem
         {
             // Store old attachment nodes for undo.
             mOldAttachmentNodes = "";
-            const uint32 numNodes = actor->GetNumNodes();
-            for (uint32 i = 0; i < numNodes; ++i)
+            const size_t numNodes = actor->GetNumNodes();
+            for (size_t i = 0; i < numNodes; ++i)
             {
                 EMotionFX::Node* node = skeleton->GetNode(i);
                 if (!node)
@@ -150,9 +150,9 @@ namespace CommandSystem
             // Remove the given nodes from the attachment node list by unsetting the flag.
             if (AzFramework::StringFunc::Equal(nodeAction.c_str(), "remove"))
             {
-                for (size_t i = 0; i < numNodeNames; ++i)
+                for (const AZStd::string& nodeName : nodeNames)
                 {
-                    EMotionFX::Node* node = skeleton->FindNodeByName(nodeNames[i].c_str());
+                    EMotionFX::Node* node = skeleton->FindNodeByName(nodeName);
                     if (!node)
                     {
                         continue;
@@ -164,9 +164,9 @@ namespace CommandSystem
             // Add the given nodes to the attachment node list by setting attachment flag.
             else if (AzFramework::StringFunc::Equal(nodeAction.c_str(), "add"))
             {
-                for (size_t i = 0; i < numNodeNames; ++i)
+                for (const AZStd::string& nodeName : nodeNames)
                 {
-                    EMotionFX::Node* node = skeleton->FindNodeByName(nodeNames[i].c_str());
+                    EMotionFX::Node* node = skeleton->FindNodeByName(nodeName);
                     if (!node)
                     {
                         continue;
@@ -181,9 +181,9 @@ namespace CommandSystem
                 SetIsAttachmentNode(actor, false);
 
                 // Set attachment node flag based on selection list.
-                for (size_t i = 0; i < numNodeNames; ++i)
+                for (const AZStd::string& nodeName : nodeNames)
                 {
-                    EMotionFX::Node* node = skeleton->FindNodeByName(nodeNames[i].c_str());
+                    EMotionFX::Node* node = skeleton->FindNodeByName(nodeName);
                     if (!node)
                     {
                         continue;
@@ -199,8 +199,8 @@ namespace CommandSystem
         {
             // Store old nodes for undo.
             mOldExcludedFromBoundsNodes = "";
-            const uint32 numNodes = actor->GetNumNodes();
-            for (uint32 i = 0; i < numNodes; ++i)
+            const size_t numNodes = actor->GetNumNodes();
+            for (size_t i = 0; i < numNodes; ++i)
             {
                 EMotionFX::Node* node = skeleton->GetNode(i);
                 if (!node)
@@ -229,9 +229,9 @@ namespace CommandSystem
             // Remove the selected nodes from the bounding volume calculations.
             if (AzFramework::StringFunc::Equal(nodeAction.c_str(), "remove"))
             {
-                for (size_t i = 0; i < numNodeNames; ++i)
+                for (const AZStd::string& nodeName : nodeNames)
                 {
-                    EMotionFX::Node* node = skeleton->FindNodeByName(nodeNames[i].c_str());
+                    EMotionFX::Node* node = skeleton->FindNodeByName(nodeName);
                     if (!node)
                     {
                         continue;
@@ -243,9 +243,9 @@ namespace CommandSystem
             // Add the given nodes to the bounding volume calculations.
             if (AzFramework::StringFunc::Equal(nodeAction.c_str(), "add"))
             {
-                for (size_t i = 0; i < numNodeNames; ++i)
+                for (const AZStd::string& nodeName : nodeNames)
                 {
-                    EMotionFX::Node* node = skeleton->FindNodeByName(nodeNames[i].c_str());
+                    EMotionFX::Node* node = skeleton->FindNodeByName(nodeName);
                     if (!node)
                     {
                         continue;
@@ -260,9 +260,9 @@ namespace CommandSystem
                 SetIsExcludedFromBoundsNode(actor, false);
 
                 // Remove the nodes from bounding volume calculation based on the selection.
-                for (size_t i = 0; i < numNodeNames; ++i)
+                for (const AZStd::string& nodeName : nodeNames)
                 {
-                    EMotionFX::Node* node = skeleton->FindNodeByName(nodeNames[i].c_str());
+                    EMotionFX::Node* node = skeleton->FindNodeByName(nodeName);
                     if (!node)
                     {
                         continue;
@@ -294,19 +294,18 @@ namespace CommandSystem
                 AzFramework::StringFunc::Tokenize(mirrorSetupString.c_str(), pairs, ";", false, true);
 
                 // Parse the mirror setup string, which is like "nodeA,nodeB;nodeC,nodeD;".
-                const size_t numPairs = pairs.size();
-                for (size_t p = 0; p < numPairs; ++p)
+                for (const AZStd::string& pair : pairs)
                 {
                     // Split the pairs into the node names.
                     AZStd::vector<AZStd::string> pairValues;
-                    AzFramework::StringFunc::Tokenize(pairs[p].c_str(), pairValues, ",", false, true);
+                    AzFramework::StringFunc::Tokenize(pair.c_str(), pairValues, ",", false, true);
                     if (pairValues.size() != 2)
                     {
                         continue;
                     }
 
-                    EMotionFX::Node* nodeA = actor->GetSkeleton()->FindNodeByName(pairValues[0].c_str());
-                    EMotionFX::Node* nodeB = actor->GetSkeleton()->FindNodeByName(pairValues[1].c_str());
+                    EMotionFX::Node* nodeA = actor->GetSkeleton()->FindNodeByName(pairValues[0]);
+                    EMotionFX::Node* nodeB = actor->GetSkeleton()->FindNodeByName(pairValues[1]);
                     if (nodeA && nodeB)
                     {
                         actor->GetNodeMirrorInfo(nodeA->GetNodeIndex()).mSourceNode = static_cast<uint16>(nodeB->GetNodeIndex());
@@ -411,8 +410,8 @@ namespace CommandSystem
     // Static function to set all IsAttachmentNode flags of the actor to the given value.
     void CommandAdjustActor::SetIsAttachmentNode(EMotionFX::Actor* actor, bool isAttachmentNode)
     {
-        const uint32 numNodes = actor->GetNumNodes();
-        for (uint32 i = 0; i < numNodes; ++i)
+        const size_t numNodes = actor->GetNumNodes();
+        for (size_t i = 0; i < numNodes; ++i)
         {
             EMotionFX::Node* node = actor->GetSkeleton()->GetNode(i);
             if (!node)
@@ -428,8 +427,8 @@ namespace CommandSystem
     // Static function to set all IsAttachmentNode flags of the actor to the given value.
     void CommandAdjustActor::SetIsExcludedFromBoundsNode(EMotionFX::Actor* actor, bool excludedFromBounds)
     {
-        const uint32 numNodes = actor->GetNumNodes();
-        for (uint32 i = 0; i < numNodes; ++i)
+        const size_t numNodes = actor->GetNumNodes();
+        for (size_t i = 0; i < numNodes; ++i)
         {
             EMotionFX::Node* node = actor->GetSkeleton()->GetNode(i);
             if (!node)
@@ -476,12 +475,12 @@ namespace CommandSystem
             return false;
         }
 
-        const uint32 numNodes = actor->GetNumNodes();
+        const size_t numNodes = actor->GetNumNodes();
         EMotionFX::Skeleton* skeleton = actor->GetSkeleton();
 
         // Store the old nodes for the undo.
         mOldNodeList = "";
-        for (uint32 i = 0; i < numNodes; ++i)
+        for (size_t i = 0; i < numNodes; ++i)
         {
             EMotionFX::Mesh* mesh = actor->GetMesh(lod, i);
             if (mesh && mesh->GetIsCollisionMesh())
@@ -504,7 +503,7 @@ namespace CommandSystem
         AzFramework::StringFunc::Tokenize(nodeList.c_str(), nodeNames, ";", false, true);
 
         // Update the collision mesh flags.
-        for (uint32 i = 0; i < numNodes; ++i)
+        for (size_t i = 0; i < numNodes; ++i)
         {
             const EMotionFX::Node* node = skeleton->GetNode(i);
             EMotionFX::Mesh* mesh = actor->GetMesh(lod, i);
@@ -574,7 +573,7 @@ namespace CommandSystem
     {
         MCORE_UNUSED(parameters);
 
-        const uint32 numSelectedActorInstances = GetCommandManager()->GetCurrentSelection().GetNumSelectedActorInstances();
+        const size_t numSelectedActorInstances = GetCommandManager()->GetCurrentSelection().GetNumSelectedActorInstances();
         if (numSelectedActorInstances == 0)
         {
             outResult = "Cannot reset actor instances to bind pose. No actor instance selected.";
@@ -582,7 +581,7 @@ namespace CommandSystem
         }
 
         // Iterate through all selected actor instances and reset them to bind pose.
-        for (uint32 i = 0; i < numSelectedActorInstances; ++i)
+        for (size_t i = 0; i < numSelectedActorInstances; ++i)
         {
             EMotionFX::ActorInstance* actorInstance = GetCommandManager()->GetCurrentSelection().GetActorInstance(i);
 
@@ -792,8 +791,8 @@ namespace CommandSystem
         }
 
         // get number of actors and instances
-        const uint32 numActors          = EMotionFX::GetActorManager().GetNumActors();
-        const uint32 numActorInstances  = EMotionFX::GetActorManager().GetNumActorInstances();
+        const size_t numActors          = EMotionFX::GetActorManager().GetNumActors();
+        const size_t numActorInstances  = EMotionFX::GetActorManager().GetNumActorInstances();
 
         // create the command group
         MCore::CommandGroup internalCommandGroup("Clear scene");
@@ -811,7 +810,7 @@ namespace CommandSystem
         if (deleteActors || deleteActorInstances)
         {
             // get rid of all actor instances
-            for (uint32 i = 0; i < numActorInstances; ++i)
+            for (size_t i = 0; i < numActorInstances; ++i)
             {
                 // get pointer to the current actor instance
                 EMotionFX::ActorInstance* actorInstance = EMotionFX::GetActorManager().GetActorInstance(i);
@@ -847,7 +846,7 @@ namespace CommandSystem
         if (deleteActors)
         {
             // iterate through all available actors
-            for (uint32 i = 0; i < numActors; ++i)
+            for (size_t i = 0; i < numActors; ++i)
             {
                 // get the current actor
                 EMotionFX::Actor* actor = EMotionFX::GetActorManager().GetActor(i);
@@ -903,7 +902,7 @@ namespace CommandSystem
 
 
     // walk over the meshes and check which of them we want to set as collision mesh
-    void PrepareCollisionMeshesNodesString(EMotionFX::Actor* actor, uint32 lod, AZStd::string* outNodeNames)
+    void PrepareCollisionMeshesNodesString(EMotionFX::Actor* actor, size_t lod, AZStd::string* outNodeNames)
     {
         // reset the resulting string
         outNodeNames->clear();
@@ -922,8 +921,8 @@ namespace CommandSystem
         }
 
         // get the number of nodes and iterate through them
-        const uint32 numNodes = actor->GetNumNodes();
-        for (uint32 i = 0; i < numNodes; ++i)
+        const size_t numNodes = actor->GetNumNodes();
+        for (size_t i = 0; i < numNodes; ++i)
         {
             EMotionFX::Mesh* mesh = actor->GetMesh(lod, i);
             if (mesh && mesh->GetIsCollisionMesh())
@@ -951,8 +950,8 @@ namespace CommandSystem
         }
 
         // get the number of nodes and iterate through them
-        const uint32 numNodes = actor->GetNumNodes();
-        for (uint32 i = 0; i < numNodes; ++i)
+        const size_t numNodes = actor->GetNumNodes();
+        for (size_t i = 0; i < numNodes; ++i)
         {
             EMotionFX::Node* node = actor->GetSkeleton()->GetNode(i);
 
@@ -1054,8 +1053,8 @@ namespace CommandSystem
         }
 
         // update the static aabb's of all actor instances
-        const uint32 numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
-        for (uint32 i = 0; i < numActorInstances; ++i)
+        const size_t numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
+        for (size_t i = 0; i < numActorInstances; ++i)
         {
             EMotionFX::ActorInstance* actorInstance = EMotionFX::GetActorManager().GetActorInstance(i);
             if (actorInstance->GetActor() != actor)
@@ -1063,11 +1062,10 @@ namespace CommandSystem
                 continue;
             }
 
-            MCore::AABB newAABB;
-            actorInstance->SetStaticBasedAABB(actor->GetStaticAABB());  // this is needed as the CalcStaticBasedAABB uses the current AABB as starting point
-            actorInstance->CalcStaticBasedAABB(&newAABB);
-            actorInstance->SetStaticBasedAABB(newAABB);
-            //actorInstance->UpdateVisualizeScale();
+            actorInstance->SetStaticBasedAabb(actor->GetStaticAabb());  // this is needed as the CalcStaticBasedAabb uses the current AABB as starting point
+            AZ::Aabb newAabb;
+            actorInstance->CalcStaticBasedAabb(&newAabb);
+            actorInstance->SetStaticBasedAabb(newAabb);
 
             const float factor = (float)MCore::Distance::GetConversionFactor(beforeUnitType, targetUnitType);
             actorInstance->SetVisualizeScale(actorInstance->GetVisualizeScale() * factor);

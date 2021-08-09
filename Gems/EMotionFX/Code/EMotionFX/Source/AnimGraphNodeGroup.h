@@ -41,7 +41,7 @@ namespace EMotionFX
          * @param numNodes The number of nodes to create inside the group. This will have all uninitialized values for the node ids in the group, so be sure that you
          *                 set them all to some valid node index using the AnimGraphNodeGroup::SetNode(...) method. This constructor automatically calls the SetNumNodes(...) method.
          */
-        AnimGraphNodeGroup(const char* groupName, uint32 numNodes);
+        AnimGraphNodeGroup(const char* groupName, size_t numNodes);
 
         /**
          * The destructor.
@@ -96,13 +96,13 @@ namespace EMotionFX
          * This will resize the array of node ids. Don't forget to initialize the node values after increasing the number of nodes.
          * @param numNodes The number of nodes that are inside this group.
          */
-        void SetNumNodes(uint32 numNodes);
+        void SetNumNodes(size_t numNodes);
 
         /**
          * Get the number of nodes that remain inside this group.
          * @result The number of nodes inside this group.
          */
-        uint32 GetNumNodes() const;
+        size_t GetNumNodes() const;
 
         /**
          * Set the value of a given node.
@@ -110,14 +110,14 @@ namespace EMotionFX
          * @param nodeID The value for the given node. This is the node id where this group will belong to.
          *               To get access to the actual node object use AnimGraph::RecursiveFindNodeByID( nodeID ).
          */
-        void SetNode(uint32 index, AnimGraphNodeId nodeId);
+        void SetNode(size_t index, AnimGraphNodeId nodeId);
 
         /**
          * Get the node id for a given node inside the group.
          * @param index The node number inside this group, which must be in range of [0..GetNumNodes()-1].
          * @result The node id, which points inside the Actor object. Use AnimGraph::RecursiveFindNodeByID( nodeID ) to get access to the node information.
          */
-        AnimGraphNodeId GetNode(uint32 index) const;
+        AnimGraphNodeId GetNode(size_t index) const;
 
         /**
          * Check if the node with the given id is inside the node group.
@@ -149,7 +149,7 @@ namespace EMotionFX
          * @param index The node index in the group. So for example an index value of 5 will remove the sixth node from the group.
          *              The index value must be in range of [0..GetNumNodes() - 1].
          */
-        void RemoveNodeByGroupIndex(uint32 index);
+        void RemoveNodeByGroupIndex(size_t index);
 
         /**
          * Clear the node group. This removes all nodes.

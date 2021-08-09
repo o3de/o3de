@@ -126,8 +126,8 @@ namespace EMStudio
         {
             mActor = actor;
 
-            const uint32 numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
-            for (uint32 i = 0; i < numActorInstances; ++i)
+            const size_t numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
+            for (size_t i = 0; i < numActorInstances; ++i)
             {
                 EMotionFX::ActorInstance* currentInstance = EMotionFX::GetActorManager().GetActorInstance(i);
                 if (currentInstance->GetActor() == actor)
@@ -198,8 +198,8 @@ namespace EMStudio
         AZStd::vector<SelectionItem> jointsExcludedFromBounds;
         if (mActorInstance)
         {
-            const uint32 numNodes = mActor->GetNumNodes();
-            for (uint32 i = 0; i < numNodes; ++i)
+            const size_t numNodes = mActor->GetNumNodes();
+            for (size_t i = 0; i < numNodes; ++i)
             {
                 EMotionFX::Node* node = mActor->GetSkeleton()->GetNode(i);
                 if (!node->GetIncludeInBoundsCalc())
@@ -213,30 +213,6 @@ namespace EMStudio
         // actor name
         mNameEdit->setEnabled(true);
         mNameEdit->setText(mActor->GetName());
-    }
-
-    void ActorPropertiesWindow::GetNodeName(const MCore::Array<SelectionItem>& selection, AZStd::string* outNodeName, uint32* outActorID)
-    {
-        outNodeName->clear();
-        *outActorID = MCORE_INVALIDINDEX32;
-
-        if (selection.GetLength() != 1 || selection[0].GetNodeNameString().empty())
-        {
-            AZ_Warning("EMotionFX", false, "Cannot adjust motion extraction node. No valid node selected.");
-            return;
-        }
-
-        const uint32                actorInstanceID = selection[0].mActorInstanceID;
-        const char*                 nodeName        = selection[0].GetNodeName();
-        EMotionFX::ActorInstance*   actorInstance   = EMotionFX::GetActorManager().FindActorInstanceByID(actorInstanceID);
-        if (actorInstance == nullptr)
-        {
-            return;
-        }
-
-        EMotionFX::Actor* actor = actorInstance->GetActor();
-        *outActorID     = actor->GetID();
-        *outNodeName    = nodeName;
     }
 
     void ActorPropertiesWindow::GetNodeName(const AZStd::vector<SelectionItem>& joints, AZStd::string* outNodeName, uint32* outActorID)
@@ -419,10 +395,10 @@ namespace EMStudio
 
         EMotionFX::Actor* actor = actorInstance->GetActor();
         EMotionFX::Skeleton* skeleton = actor->GetSkeleton();
-        const uint32 numJoints = mActor->GetNumNodes();
+        const size_t numJoints = mActor->GetNumNodes();
 
         // Include all joints first.
-        for (uint32 i = 0; i < numJoints; ++i)
+        for (size_t i = 0; i < numJoints; ++i)
         {
             skeleton->GetNode(i)->SetIncludeInBoundsCalc(true);
         }

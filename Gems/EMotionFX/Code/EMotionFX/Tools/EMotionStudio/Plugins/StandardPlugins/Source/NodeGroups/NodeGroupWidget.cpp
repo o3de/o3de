@@ -9,6 +9,8 @@
 // inlude required headers
 #include "NodeGroupWidget.h"
 #include "../../../../EMStudioSDK/Source/EMStudioManager.h"
+#include <AzCore/std/iterator.h>
+#include <AzCore/std/limits.h>
 #include <EMotionFX/Source/NodeGroup.h>
 #include <MCore/Source/StringConversions.h>
 
@@ -127,11 +129,8 @@ namespace EMStudio
         connect(mAddNodesButton, &QPushButton::clicked, this, &NodeGroupWidget::SelectNodesButtonPressed);
         connect(mRemoveNodesButton, &QPushButton::clicked, this, &NodeGroupWidget::RemoveNodesButtonPressed);
         connect(mNodeTable, &QTableWidget::itemSelectionChanged, this, &NodeGroupWidget::OnItemSelectionChanged);
-        //connect( mEnabledOnDefaultCheckbox, SIGNAL(clicked()), this, SLOT(EnabledOnDefaultChanged()) );
-        //connect( mNodeGroupNameEdit, SIGNAL(editingFinished()), this, SLOT(NodeGroupNameEditingFinished()) );
-        //connect( mNodeGroupNameEdit, SIGNAL(textChanged(QString)), this, SLOT(NodeGroupNameEditChanged(QString)) );
-        connect(mNodeSelectionWindow->GetNodeHierarchyWidget(), static_cast<void (NodeHierarchyWidget::*)(MCore::Array<SelectionItem>)>(&NodeHierarchyWidget::OnSelectionDone), this, &NodeGroupWidget::NodeSelectionFinished);
-        connect(mNodeSelectionWindow->GetNodeHierarchyWidget(), static_cast<void (NodeHierarchyWidget::*)(MCore::Array<SelectionItem>)>(&NodeHierarchyWidget::OnDoubleClicked), this, &NodeGroupWidget::NodeSelectionFinished);
+        connect(mNodeSelectionWindow->GetNodeHierarchyWidget(), &NodeHierarchyWidget::OnSelectionDone, this, &NodeGroupWidget::NodeSelectionFinished);
+        connect(mNodeSelectionWindow->GetNodeHierarchyWidget(), &NodeHierarchyWidget::OnDoubleClicked, this, &NodeGroupWidget::NodeSelectionFinished);
     }
 
 
@@ -170,7 +169,7 @@ namespace EMStudio
         mNodeTable->setRowCount(mNodeGroup->GetNumNodes());
 
         // set header items for the table
-        AZStd::string headerText = AZStd::string::format("%s Nodes (%i / %i)", ((mNodeGroup->GetIsEnabledOnDefault()) ? "Enabled" : "Disabled"), mNodeGroup->GetNumNodes(), mActor->GetNumNodes());
+        AZStd::string headerText = AZStd::string::format("%s Nodes (%i / %zu)", ((mNodeGroup->GetIsEnabledOnDefault()) ? "Enabled" : "Disabled"), mNodeGroup->GetNumNodes(), mActor->GetNumNodes());
         QTableWidgetItem* nameHeaderItem = new QTableWidgetItem(headerText.c_str());
         nameHeaderItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignCenter);
         mNodeTable->setHorizontalHeaderItem(0, nameHeaderItem);
@@ -334,21 +333,21 @@ namespace EMStudio
 
 
     // add / select nodes
-    void NodeGroupWidget::NodeSelectionFinished(MCore::Array<SelectionItem> selectionList)
+    void NodeGroupWidget::NodeSelectionFinished(const AZStd::vector<SelectionItem>& selectionList)
     {
         // return if no nodes are selected
-        if (selectionList.GetLength() == 0)
+        if (selectionList.empty())
         {
             return;
         }
 
         // generate node list string
         AZStd::vector<AZStd::string> nodeList;
-        const uint32 selectionListSize = selectionList.GetLength();
-        for (uint32 i = 0; i < selectionListSize; ++i)
+        nodeList.reserve(selectionList.size());
+        AZStd::transform(begin(selectionList), end(selectionList), AZStd::back_inserter(nodeList), [](const auto& item)
         {
-            nodeList.emplace_back(selectionList[i].GetNodeName());
-        }
+            return item.GetNodeName();
+        });
 
         AZStd::string outResult;
         auto* command = aznew CommandSystem::CommandAdjustNodeGroup(

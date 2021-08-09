@@ -231,7 +231,7 @@ namespace Maestro
 
                 // check for paramType specialization attributes on the getter method of the virtual property. if found, reset
                 // to the eAnimParamType enum - this leaves the paramType name unchanged but changes the type.
-                for (int i = virtualProperty->m_getter->m_attributes.size(); --i >= 0;)
+                for (int i = static_cast<int>(virtualProperty->m_getter->m_attributes.size()); --i >= 0;)
                 {
                     if (virtualProperty->m_getter->m_attributes[i].first == AZ::Edit::Attributes::PropertyPosition)
                     {

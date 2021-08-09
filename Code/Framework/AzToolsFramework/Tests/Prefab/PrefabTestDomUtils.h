@@ -38,7 +38,7 @@ namespace UnitTest
             const EntityAlias& entityAlias)
         {
             return GetPrefabDomEntitiesPath()
-                .Append(entityAlias.c_str(), entityAlias.length());
+                .Append(entityAlias.c_str(), static_cast<rapidjson::SizeType>(entityAlias.length()));
         };
 
         inline PrefabDomPath GetPrefabDomEntityNamePath(
@@ -62,7 +62,7 @@ namespace UnitTest
         inline PrefabDomPath GetPrefabDomInstancePath(
             const InstanceAlias& instanceAlias)
         {
-            return GetPrefabDomInstancesPath().Append(instanceAlias.c_str(), instanceAlias.length());
+            return GetPrefabDomInstancesPath().Append(instanceAlias.c_str(), static_cast<rapidjson::SizeType>(instanceAlias.length()));
         };
 
         inline PrefabDomPath GetPrefabDomInstancePath(

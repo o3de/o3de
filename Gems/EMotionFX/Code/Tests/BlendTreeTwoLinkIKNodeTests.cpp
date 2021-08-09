@@ -147,7 +147,7 @@ namespace EMotionFX
 
         // Remeber specific joint's original position to compare with its new position later
         const Pose* jackPose = m_actorInstance->GetTransformData()->GetCurrentPose();
-        AZ::u32 testJointIndex;
+        size_t testJointIndex;
         m_jackSkeleton->FindNodeAndIndexByName(m_param.testJointName, testJointIndex);
         const AZ::Vector3& testJointPos = jackPose->GetModelSpaceTransform(testJointIndex).mPosition;
 
@@ -187,7 +187,7 @@ namespace EMotionFX
         ParamSetValue<MCore::AttributeFloat, float>("WeightParam", weight);
         
         const Pose* jackPose = m_actorInstance->GetTransformData()->GetCurrentPose();
-        AZ::u32 testJointIndex;
+        size_t testJointIndex;
         m_jackSkeleton->FindNodeAndIndexByName(m_param.testJointName, testJointIndex);
         const AZ::Vector3& testJointPos = jackPose->GetModelSpaceTransform(testJointIndex).mPosition;
 
@@ -202,7 +202,7 @@ namespace EMotionFX
             // Unique data only updates once unless reset mMustUpdate to true again
             BlendTreeTwoLinkIKNode::UniqueData* uniqueData = static_cast<BlendTreeTwoLinkIKNode::UniqueData*>(m_animGraphInstance->FindOrCreateUniqueNodeData(m_twoLinkIKNode));
             uniqueData->Invalidate();
-            AZ::u32 alignToNodeIndex;
+            size_t alignToNodeIndex;
             m_jackSkeleton->FindNodeAndIndexByName(nodeName, alignToNodeIndex);
             
             GetEMotionFX().Update(1.0f / 60.0f);
@@ -234,9 +234,9 @@ namespace EMotionFX
         ParamSetValue<MCore::AttributeFloat, float>("WeightParam", weight);
 
         const Pose* jackPose = m_actorInstance->GetTransformData()->GetCurrentPose();
-        AZ::u32 testJointIndex;
-        AZ::u32 linkedJoint0Index;
-        AZ::u32 linkedJoint1Index;
+        size_t testJointIndex;
+        size_t linkedJoint0Index;
+        size_t linkedJoint1Index;
         m_jackSkeleton->FindNodeAndIndexByName(m_param.testJointName, testJointIndex);
         m_jackSkeleton->FindNodeAndIndexByName(m_param.linkedJointNames[0], linkedJoint0Index);
         m_jackSkeleton->FindNodeAndIndexByName(m_param.linkedJointNames[1], linkedJoint1Index);
@@ -287,7 +287,7 @@ namespace EMotionFX
         ParamSetValue<MCore::AttributeVector3, AZ::Vector3>("GoalPosParam", AZ::Vector3(0.0f, 1.0f, 1.0f));
 
         const Pose* jackPose = m_actorInstance->GetTransformData()->GetCurrentPose();
-        AZ::u32 testJointIndex;
+        size_t testJointIndex;
         m_jackSkeleton->FindNodeAndIndexByName(m_param.testJointName, testJointIndex);
         const AZ::Quaternion testJointRotation = jackPose->GetModelSpaceTransform(testJointIndex).mRotation;
 
@@ -334,8 +334,8 @@ namespace EMotionFX
         GetEMotionFX().Update(1.0f / 60.0f);
         
         Pose* jackPose = m_actorInstance->GetTransformData()->GetCurrentPose();
-        AZ::u32 testBendJointIndex;
-        AZ::u32 testJointIndex;
+        size_t testBendJointIndex;
+        size_t testJointIndex;
         AZStd::string& bendLoArm = m_param.linkedJointNames[0];
         m_jackSkeleton->FindNodeAndIndexByName(bendLoArm, testBendJointIndex);
         m_jackSkeleton->FindNodeAndIndexByName(m_param.testJointName, testJointIndex);
@@ -395,8 +395,8 @@ namespace EMotionFX
         GetEMotionFX().Update(1.0f / 60.0f);
 
         const Pose* jackPose = m_actorInstance->GetTransformData()->GetCurrentPose();
-        AZ::u32 testJointIndex;
-        AZ::u32 testBendJointIndex;
+        size_t testJointIndex;
+        size_t testBendJointIndex;
         AZStd::string& bendLoArm = m_param.linkedJointNames[0];
         m_jackSkeleton->FindNodeAndIndexByName(m_param.testJointName, testJointIndex);
         m_jackSkeleton->FindNodeAndIndexByName(bendLoArm, testBendJointIndex);

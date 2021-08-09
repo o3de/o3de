@@ -10,7 +10,7 @@
 
 // include the required headers
 #include "EMotionFXConfig.h"
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include <MCore/Source/Distance.h>
 #include "ThreadData.h"
 #include "BaseObject.h"
@@ -268,13 +268,13 @@ namespace EMotionFX
          * @param threadIndex The thread index, which must be between [0..GetNumThreads()-1].
          * @return The unique thread data for this thread.
          */
-        MCORE_INLINE ThreadData* GetThreadData(uint32 threadIndex) const            { MCORE_ASSERT(threadIndex < mThreadDatas.GetLength()); return mThreadDatas[threadIndex]; }
+        MCORE_INLINE ThreadData* GetThreadData(uint32 threadIndex) const            { MCORE_ASSERT(threadIndex < mThreadDatas.size()); return mThreadDatas[threadIndex]; }
 
         /**
          * Get the number of threads that are internally created.
          * @return The number of threads that we have internally created.
          */
-        MCORE_INLINE uint32 GetNumThreads() const                                   { return mThreadDatas.GetLength(); }
+        MCORE_INLINE size_t GetNumThreads() const                                   { return mThreadDatas.size(); }
 
         /**
          * Shrink the memory pools, to reduce memory usage.
@@ -354,7 +354,7 @@ namespace EMotionFX
         Recorder*                   mRecorder;              /**< The recorder. */
         MotionInstancePool*         mMotionInstancePool;    /**< The motion instance pool. */        
         DebugDraw*                  mDebugDraw;             /**< The debug drawing system. */
-        MCore::Array<ThreadData*>   mThreadDatas;           /**< The per thread data. */
+        AZStd::vector<ThreadData*>   mThreadDatas;           /**< The per thread data. */
         MCore::Distance::EUnitType  mUnitType;              /**< The unit type, on default it is MCore::Distance::UNITTYPE_METERS. */
         float                       mGlobalSimulationSpeed; /**< The global simulation speed, default is 1.0. */
         bool                        m_isInEditorMode;       /**< True when the runtime requires to support an editor. Optimizations can be made if there is no need for editor support. */

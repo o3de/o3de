@@ -11,7 +11,7 @@
 
 #include "Shader.h"
 #include <AzCore/std/string/string.h>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 
 
 namespace RenderGL
@@ -42,7 +42,7 @@ namespace RenderGL
         };
 
         //
-        MCore::Array<Entry> mEntries;   // the shader cache entries
+        AZStd::vector<Entry> mEntries;   // the shader cache entries
     };
 }   // namespace RenderGL
 

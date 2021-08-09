@@ -39,12 +39,12 @@ namespace EMotionFX
         const Skeleton* skeleton = actor->GetSkeleton();
 
         // don't update the next time again
-        mNodeIndexA = InvalidIndex32;
-        mNodeIndexB = InvalidIndex32;
-        mNodeIndexC = InvalidIndex32;
-        mAlignNodeIndex = InvalidIndex32;
-        mBendDirNodeIndex = InvalidIndex32;
-        mEndEffectorNodeIndex = InvalidIndex32;
+        mNodeIndexA = InvalidIndex;
+        mNodeIndexB = InvalidIndex;
+        mNodeIndexC = InvalidIndex;
+        mAlignNodeIndex = InvalidIndex;
+        mBendDirNodeIndex = InvalidIndex;
+        mEndEffectorNodeIndex = InvalidIndex;
         SetHasError(true);
 
         // Find the end joint.
@@ -62,14 +62,14 @@ namespace EMotionFX
 
         // Get the second joint.
         mNodeIndexB = jointC->GetParentIndex();
-        if (mNodeIndexB == InvalidIndex32)
+        if (mNodeIndexB == InvalidIndex)
         {
             return;
         }
 
         // Get the third joint.
         mNodeIndexA = skeleton->GetNode(mNodeIndexB)->GetParentIndex();
-        if (mNodeIndexA == InvalidIndex32)
+        if (mNodeIndexA == InvalidIndex)
         {
             return;
         }
@@ -260,15 +260,15 @@ namespace EMotionFX
         }
 
         // get the node indices
-        const uint32 nodeIndexA = uniqueData->mNodeIndexA;
-        const uint32 nodeIndexB = uniqueData->mNodeIndexB;
-        const uint32 nodeIndexC = uniqueData->mNodeIndexC;
-        const uint32 bendDirIndex = uniqueData->mBendDirNodeIndex;
-        uint32 alignNodeIndex = uniqueData->mAlignNodeIndex;
-        uint32 endEffectorNodeIndex = uniqueData->mEndEffectorNodeIndex;
+        const size_t nodeIndexA = uniqueData->mNodeIndexA;
+        const size_t nodeIndexB = uniqueData->mNodeIndexB;
+        const size_t nodeIndexC = uniqueData->mNodeIndexC;
+        const size_t bendDirIndex = uniqueData->mBendDirNodeIndex;
+        size_t alignNodeIndex = uniqueData->mAlignNodeIndex;
+        size_t endEffectorNodeIndex = uniqueData->mEndEffectorNodeIndex;
 
         // use the end node as end effector node if no goal node has been specified
-        if (endEffectorNodeIndex == MCORE_INVALIDINDEX32)
+        if (endEffectorNodeIndex == InvalidIndex)
         {
             endEffectorNodeIndex = nodeIndexC;
         }
@@ -289,7 +289,7 @@ namespace EMotionFX
         EMotionFX::Transform alignNodeTransform;
 
         // adjust the gizmo offset value
-        if (alignNodeIndex != MCORE_INVALIDINDEX32)
+        if (alignNodeIndex != InvalidIndex)
         {
             // update the alignment actor instance
             alignInstance = animGraphInstance->FindActorInstanceFromParentDepth(m_alignToNode.second);
@@ -322,7 +322,7 @@ namespace EMotionFX
             }
             else
             {
-                alignNodeIndex = MCORE_INVALIDINDEX32; // we were not able to get the align instance, so set the align node index to the invalid index
+                alignNodeIndex = InvalidIndex; // we were not able to get the align instance, so set the align node index to the invalid index
             }
         }
         else if (GetEMotionFX().GetIsInEditorMode())
@@ -350,7 +350,7 @@ namespace EMotionFX
         AZ::Vector3 bendDir;
         if (m_extractBendDir)
         {
-            if (bendDirIndex != MCORE_INVALIDINDEX32)
+            if (bendDirIndex != InvalidIndex)
             {
                 bendDir = outTransformPose.GetWorldSpaceTransform(bendDirIndex).mPosition - globalTransformA.mPosition;
             }
@@ -386,7 +386,7 @@ namespace EMotionFX
             const MCore::AttributeQuaternion* inputGoalRot = GetInputQuaternion(animGraphInstance, INPUTPORT_GOALROT);
 
             // if we don't want to align the rotation and position to another given node
-            if (alignNodeIndex == MCORE_INVALIDINDEX32)
+            if (alignNodeIndex == InvalidIndex)
             {
                 AZ::Quaternion newRotation = AZ::Quaternion::CreateIdentity(); // identity quat
                 if (inputGoalRot)

@@ -139,13 +139,11 @@ namespace CommandSystem
         {
             EMotionFX::AttachmentNode* newAttachment = EMotionFX::AttachmentNode::Create(attachToActorInstance, node->GetNodeIndex(), attachment);
             attachToActorInstance->AddAttachment(newAttachment);
-            //attachToActorInstance->AddAttachment( node->GetNodeIndex(), attachment );
         }
         else
         {
             attachToActorInstance->RemoveAttachment(attachment, true);
         }
-        //      attachToActorInstance->RemoveAttachment( attachment, false );
 
         return true;
     }
@@ -300,10 +298,10 @@ namespace CommandSystem
     bool CommandAddDeformableAttachment::AddAttachment(MCore::Command* command, const MCore::CommandLine& parameters, AZStd::string& outResult, bool remove)
     {
         uint32 attachToActorID      = parameters.GetValueAsInt("attachToID", command);
-        uint32 attachToActorIndex   = parameters.GetValueAsInt("attachToIndex", command);
+        size_t attachToActorIndex   = parameters.GetValueAsInt("attachToIndex", command);
 
         // in case we only specified an attach to index, get the id from that
-        if (attachToActorIndex != MCORE_INVALIDINDEX32 && attachToActorID == MCORE_INVALIDINDEX32)
+        if (attachToActorIndex != InvalidIndex && attachToActorID == MCORE_INVALIDINDEX32)
         {
             if (EMotionFX::GetActorManager().GetNumActorInstances() <= attachToActorIndex)
             {
@@ -315,11 +313,11 @@ namespace CommandSystem
         }
 
         uint32 attachmentID     = parameters.GetValueAsInt("attachmentID", command);
-        uint32 attachmentIndex  = parameters.GetValueAsInt("attachmentIndex", command);
+        size_t attachmentIndex  = parameters.GetValueAsInt("attachmentIndex", command);
         if (attachmentID == MCORE_INVALIDINDEX32)
         {
             // in case we only specified an attachment index, get the id from that
-            if (attachmentIndex != MCORE_INVALIDINDEX32)
+            if (attachmentIndex != InvalidIndex)
             {
                 EMotionFX::ActorInstance* actorInstance = EMotionFX::GetActorManager().GetActorInstance(attachmentIndex);
                 attachmentID = actorInstance->GetID();

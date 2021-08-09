@@ -114,7 +114,7 @@ void CAnimScreenFaderNode::Animate(SAnimContext& ac)
 
     for (size_t nFaderTrackNo = 0; nFaderTrackNo < nScreenFaderTracksNumber; ++nFaderTrackNo)
     {
-        CScreenFaderTrack* pTrack = static_cast<CScreenFaderTrack*>(GetTrackForParameter(AnimParamType::ScreenFader, nFaderTrackNo));
+        CScreenFaderTrack* pTrack = static_cast<CScreenFaderTrack*>(GetTrackForParameter(AnimParamType::ScreenFader, static_cast<uint32>(nFaderTrackNo)));
 
         if (!pTrack)
         {
@@ -298,7 +298,7 @@ void CAnimScreenFaderNode::Reflect(AZ::ReflectContext* context)
 //-----------------------------------------------------------------------------
 unsigned int CAnimScreenFaderNode::GetParamCount() const
 {
-    return s_screenFaderNodeParams.size();
+    return static_cast<unsigned int>(s_screenFaderNodeParams.size());
 }
 
 //-----------------------------------------------------------------------------
@@ -350,7 +350,7 @@ bool CAnimScreenFaderNode::IsAnyTextureVisible() const
     size_t const paramCount = m_tracks.size();
     for (size_t paramIndex = 0; paramIndex < paramCount; ++paramIndex)
     {
-        CScreenFaderTrack* pTrack = static_cast<CScreenFaderTrack*>(GetTrackForParameter(AnimParamType::ScreenFader, paramIndex));
+        CScreenFaderTrack* pTrack = static_cast<CScreenFaderTrack*>(GetTrackForParameter(AnimParamType::ScreenFader, static_cast<uint32>(paramIndex)));
 
         if (!pTrack)
         {

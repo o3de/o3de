@@ -35,8 +35,8 @@ namespace CommandSystem
         int32                               mStartOffsetY;
         int32                               mEndOffsetX;
         int32                               mEndOffsetY;
-        int32                               mSourcePort;
-        int32                               mTargetPort;
+        size_t                              mSourcePort;
+        size_t                              mTargetPort;
         AZStd::string                       mSourcePortName;
         AZStd::string                       mTargetPortName;
         bool                                mOldDirtyFlag;
@@ -47,8 +47,8 @@ namespace CommandSystem
         EMotionFX::AnimGraphNodeId GetTargetNodeId() const      { return mTargetNodeId; }
         EMotionFX::AnimGraphNodeId GetSourceNodeId() const      { return mSourceNodeId; }
         AZ::TypeId GetTransitionType() const                    { return mTransitionType; }
-        int32 GetSourcePort() const                             { return mSourcePort; }
-        int32 GetTargetPort() const                             { return mTargetPort; }
+        size_t GetSourcePort() const                            { return mSourcePort; }
+        size_t GetTargetPort() const                            { return mTargetPort; }
         int32 GetStartOffsetX() const                           { return mStartOffsetX; }
         int32 GetStartOffsetY() const                           { return mStartOffsetY; }
         int32 GetEndOffsetX() const                             { return mEndOffsetX; }
@@ -69,8 +69,8 @@ namespace CommandSystem
         int32                               mStartOffsetY;
         int32                               mEndOffsetX;
         int32                               mEndOffsetY;
-        int32                               mSourcePort;
-        int32                               mTargetPort;
+        size_t                              mSourcePort;
+        size_t                              mTargetPort;
         bool                                mOldDirtyFlag;
         AZStd::string                       mOldContents;
 
@@ -78,8 +78,8 @@ namespace CommandSystem
         EMotionFX::AnimGraphNodeId GetTargetNodeID() const      { return mTargetNodeId; }
         EMotionFX::AnimGraphNodeId GetSourceNodeID() const      { return mSourceNodeId; }
         AZ::TypeId GetTransitionType() const                    { return mTransitionType; }
-        int32 GetSourcePort() const                             { return mSourcePort; }
-        int32 GetTargetPort() const                             { return mTargetPort; }
+        size_t GetSourcePort() const                            { return mSourcePort; }
+        size_t GetTargetPort() const                            { return mTargetPort; }
         int32 GetStartOffsetX() const                           { return mStartOffsetX; }
         int32 GetStartOffsetY() const                           { return mStartOffsetY; }
         int32 GetEndOffsetX() const                             { return mEndOffsetX; }

@@ -10,7 +10,7 @@
 
 // include required headers
 #include "EMotionFXConfig.h"
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 
 
 
@@ -34,22 +34,22 @@ namespace EMotionFX
         AnimGraphPosePool();
         ~AnimGraphPosePool();
 
-        void Resize(uint32 numPoses);
+        void Resize(size_t numPoses);
 
         AnimGraphPose* RequestPose(const ActorInstance* actorInstance);
         void FreePose(AnimGraphPose* pose);
 
         void FreeAllPoses();
 
-        MCORE_INLINE uint32 GetNumFreePoses() const             { return mFreePoses.GetLength(); }
-        MCORE_INLINE uint32 GetNumPoses() const                 { return mPoses.GetLength(); }
-        MCORE_INLINE uint32 GetNumUsedPoses() const             { return (mPoses.GetLength() - mFreePoses.GetLength()); }
-        MCORE_INLINE uint32 GetNumMaxUsedPoses() const          { return mMaxUsed; }
+        MCORE_INLINE size_t GetNumFreePoses() const             { return mFreePoses.size(); }
+        MCORE_INLINE size_t GetNumPoses() const                 { return mPoses.size(); }
+        MCORE_INLINE size_t GetNumUsedPoses() const             { return mPoses.size() - mFreePoses.size(); }
+        MCORE_INLINE size_t GetNumMaxUsedPoses() const          { return mMaxUsed; }
         MCORE_INLINE void ResetMaxUsedPoses()                   { mMaxUsed = 0; }
 
     private:
-        MCore::Array<AnimGraphPose*>   mPoses;
-        MCore::Array<AnimGraphPose*>   mFreePoses;
-        uint32                         mMaxUsed;
+        AZStd::vector<AnimGraphPose*>   mPoses;
+        AZStd::vector<AnimGraphPose*>   mFreePoses;
+        size_t                          mMaxUsed;
     };
 }   // namespace EMotionFX

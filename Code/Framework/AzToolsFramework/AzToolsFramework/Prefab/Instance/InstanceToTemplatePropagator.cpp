@@ -152,7 +152,7 @@ namespace AzToolsFramework
 
                 AZStd::string path = prefix + pathIter->value.GetString();
 
-                pathIter->value.SetString(path.c_str(), path.length(), providedPatch.GetAllocator());
+                pathIter->value.SetString(path.c_str(), static_cast<rapidjson::SizeType>(path.length()), providedPatch.GetAllocator());
             }
         }
 

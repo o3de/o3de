@@ -37,7 +37,7 @@ namespace EMStudio
             TYPE_ID = 0x00000001
         };
 
-        NodeConnection(NodeGraph* parentGraph, const QModelIndex& modelIndex, GraphNode* targetNode, uint32 portNr, GraphNode* sourceNode, uint32 sourceOutputPortNr);
+        NodeConnection(NodeGraph* parentGraph, const QModelIndex& modelIndex, GraphNode* targetNode, AZ::u16 portNr, GraphNode* sourceNode, AZ::u16 sourceOutputPortNr);
         virtual ~NodeConnection();
 
         const QModelIndex& GetModelIndex() const { return m_modelIndex; }
@@ -49,7 +49,7 @@ namespace EMStudio
         void UpdatePainterPath();
 
         virtual void Update(const QRect& visibleRect, const QPoint& mousePos);
-        virtual uint32 GetType()                            { return TYPE_ID; }
+        virtual uint32 GetType() const                      { return TYPE_ID; }
 
         QRect CalcRect() const;
         QRect CalcFinalRect() const;
@@ -62,8 +62,8 @@ namespace EMStudio
 
         MCORE_INLINE bool GetIsVisible()                            { return mIsVisible; }
 
-        MCORE_INLINE uint32 GetInputPortNr() const                  { return mPortNr; }
-        MCORE_INLINE uint32 GetOutputPortNr() const                 { return mSourcePortNr; }
+        MCORE_INLINE AZ::u16 GetInputPortNr() const                 { return mPortNr; }
+        MCORE_INLINE AZ::u16 GetOutputPortNr() const                { return mSourcePortNr; }
         MCORE_INLINE GraphNode* GetSourceNode()                     { return mSourceNode; }
         MCORE_INLINE GraphNode* GetTargetNode()                     { return mTargetNode; }
 
@@ -103,7 +103,7 @@ namespace EMStudio
         void SetSourceNode(GraphNode* node)                         { mSourceNode = node; }
         void SetTargetNode(GraphNode* node)                         { mTargetNode = node; }
 
-        void SetTargetPort(uint32 portIndex)                        { mPortNr = portIndex; }
+        void SetTargetPort(AZ::u16 portIndex)                       { mPortNr = portIndex; }
 
 
     protected:
@@ -115,8 +115,8 @@ namespace EMStudio
         GraphNode*          mSourceNode;        // source node from which the connection comes
         GraphNode*          mTargetNode;        // the target node
         QPainterPath        mPainterPath;
-        uint32              mPortNr;            // input port where this is connected to
-        uint32              mSourcePortNr;      // source output port number
+        AZ::u16             mPortNr;            // input port where this is connected to
+        AZ::u16             mSourcePortNr;      // source output port number
         bool                mIsVisible;         // is this connection visible?
         bool                mIsProcessed;       // is this connection processed?
         bool                mIsDisabled;

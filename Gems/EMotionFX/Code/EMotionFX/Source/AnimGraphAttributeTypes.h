@@ -68,8 +68,8 @@ namespace EMotionFX
         }
         bool InitFromString(const AZStd::string& valueString) override      { MCORE_UNUSED(valueString); return false; }    // unsupported
         bool ConvertToString(AZStd::string& outString) const override       { MCORE_UNUSED(outString); return false; }  // unsupported
-        uint32 GetClassSize() const override                                { return sizeof(AttributePose); }
-        uint32 GetDefaultInterfaceType() const override                     { return MCore::ATTRIBUTE_INTERFACETYPE_DEFAULT; }
+        size_t GetClassSize() const override                                { return sizeof(AttributePose); }
+        AZ::u32 GetDefaultInterfaceType() const override                     { return MCore::ATTRIBUTE_INTERFACETYPE_DEFAULT; }
 
     private:
         AnimGraphPose* mValue;
@@ -116,8 +116,8 @@ namespace EMotionFX
         }
         bool InitFromString(const AZStd::string& valueString) override      { MCORE_UNUSED(valueString); return false; }    // unsupported
         bool ConvertToString(AZStd::string& outString) const override       { MCORE_UNUSED(outString); return false; }  // unsupported
-        uint32 GetClassSize() const override                                { return sizeof(AttributeMotionInstance); }
-        uint32 GetDefaultInterfaceType() const override                     { return MCore::ATTRIBUTE_INTERFACETYPE_DEFAULT; }
+        size_t GetClassSize() const override                                { return sizeof(AttributeMotionInstance); }
+        AZ::u32 GetDefaultInterfaceType() const override                     { return MCore::ATTRIBUTE_INTERFACETYPE_DEFAULT; }
 
     private:
         MotionInstance* mValue;
@@ -132,7 +132,7 @@ namespace EMotionFX
     class AnimGraphPropertyUtils
     {
     public:
-        static void ReinitJointIndices(const Actor* actor, const AZStd::vector<AZStd::string>& jointNames, AZStd::vector<AZ::u32>& outJointIndices);
+        static void ReinitJointIndices(const Actor* actor, const AZStd::vector<AZStd::string>& jointNames, AZStd::vector<size_t>& outJointIndices);
     };
     
 } // namespace EMotionFX

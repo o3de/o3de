@@ -74,7 +74,7 @@ namespace EMotionFX
         QTest::mouseClick(createButton, Qt::LeftButton);
 
         // Check we only have the one Parameter
-        int numParameters = newGraph->GetNumParameters();
+        size_t numParameters = newGraph->GetNumParameters();
         EXPECT_EQ(numParameters, 1) << "Not just 1 parameter";
 
         const RangedValueParameter<float, FloatParameter>* parameter = reinterpret_cast<const RangedValueParameter<float, FloatParameter>* >(newGraph->FindValueParameter(0));

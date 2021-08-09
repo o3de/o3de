@@ -82,7 +82,7 @@ namespace EMotionFX
          * @param index The node number inside this group, which must be in range of [0..GetNumNodes()-1].
          * @result The node number, which points inside the Actor object. Use Actor::GetNode( returnValue ) to get access to the node information.
          */
-        uint16 GetNode(uint16 index);
+        uint16 GetNode(uint16 index) const;
 
         /**
          * Enable all nodes that remain inside this group, for a given actor instance.

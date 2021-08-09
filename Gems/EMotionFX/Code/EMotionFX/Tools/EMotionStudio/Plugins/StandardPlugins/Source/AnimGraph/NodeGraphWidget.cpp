@@ -406,7 +406,7 @@ namespace EMStudio
             // check if we are clicking on a port
             GraphNode*  portNode    = nullptr;
             NodePort*   port        = nullptr;
-            uint32      portNr      = MCORE_INVALIDINDEX32;
+            AZ::u16     portNr      = InvalidIndex16;
             bool        isInputPort = true;
             port = mActiveGraph->FindPort(globalPos.x(), globalPos.y(), &portNode, &portNr, &isInputPort);
 
@@ -767,8 +767,8 @@ namespace EMStudio
                             if (motionEntry && motionEntry->GetMotion())
                             {
                                 EMotionFX::Motion* motion = motionEntry->GetMotion();
-                                uint32 motionIndex = motionManager.FindMotionIndexByName(motion->GetName());
-                                commandString = AZStd::string::format("Select -motionIndex %d", motionIndex);
+                                size_t motionIndex = motionManager.FindMotionIndexByName(motion->GetName());
+                                commandString = AZStd::string::format("Select -motionIndex %zu", motionIndex);
                                 commandGroup.AddCommandString(commandString);
                             }
                         }
@@ -810,7 +810,7 @@ namespace EMStudio
                 // check if we are clicking on an input port
                 GraphNode*  portNode = nullptr;
                 NodePort*   port = nullptr;
-                uint32      portNr = MCORE_INVALIDINDEX32;
+                AZ::u16     portNr = InvalidIndex16;
                 bool        isInputPort = true;
                 port = mActiveGraph->FindPort(globalPos.x(), globalPos.y(), &portNode, &portNr, &isInputPort);
                 if (port)
@@ -824,18 +824,10 @@ namespace EMStudio
                     if (actionFilter.m_editConnections &&
                         isInputPort && connection && portNode->GetType() != StateGraphNode::TYPE_ID)
                     {
-                        //connection->SetColor();
-                        //MCore::LOG("%s(%i)->%s(%i)", connection->GetSourceNode()->GetName(), connection->GetOutputPortNr(), connection->GetTargetNode()->GetName(), connection->GetInputPortNr());
-                        //GraphNode*    createConNode   = connection->GetSourceNode();
-                        //uint32        createConPortNr = connection->GetOutputPortNr();
-                        //NodePort* createConPort   = createConNode->GetOutputPort( createConPortNr );
-                        //QPoint        createConOffset = QPoint(0,0);//globalPos - createConNode->GetRect().topLeft();
                         connection->SetIsDashed(true);
 
                         UpdateMouseCursor(mousePos, globalPos);
-                        //mActiveGraph->StartCreateConnection( createConPortNr, !isInputPort, createConNode, createConPort, createConOffset );
                         mActiveGraph->StartRelinkConnection(connection, portNr, portNode);
-                        //update();
                         return;
                     }
 
@@ -1054,7 +1046,7 @@ namespace EMStudio
                 {
                     if (mActiveGraph->GetIsCreateConnectionValid())
                     {
-                        uint32      targetPortNr;
+                        AZ::u16     targetPortNr;
                         bool        targetIsInputPort;
                         GraphNode*  targetNode;
 
@@ -1096,7 +1088,7 @@ namespace EMStudio
                 AZ_Assert(!mActiveGraph->IsInReferencedGraph(), "Expected to not be in a referenced graph");
 
                 // get the information from the current mouse position
-                uint32      newTargetPortNr;
+                AZ::u16     newTargetPortNr;
                 bool        newTargetIsInputPort;
                 GraphNode*  newTargetNode;
                 NodePort*   newTargetPort = mActiveGraph->FindPort(globalPos.x(), globalPos.y(), &newTargetNode, &newTargetPortNr, &newTargetIsInputPort);
@@ -1119,10 +1111,10 @@ namespace EMStudio
                     // get the information from the old connection which we want to relink
                     GraphNode*      sourceNode          = relinkedConnection->GetSourceNode();
                     AZStd::string   sourceNodeName      = sourceNode->GetName();
-                    uint32          sourcePortNr        = relinkedConnection->GetOutputPortNr();
+                    AZ::u16         sourcePortNr        = relinkedConnection->GetOutputPortNr();
                     GraphNode*      oldTargetNode       = relinkedConnection->GetTargetNode();
                     AZStd::string   oldTargetNodeName   = oldTargetNode->GetName();
-                    uint32          oldTargetPortNr     = relinkedConnection->GetInputPortNr();
+                    AZ::u16         oldTargetPortNr     = relinkedConnection->GetInputPortNr();
 
                     if (NodeGraph::CheckIfIsRelinkConnectionValid(relinkedConnection, newTargetNode, newTargetPortNr, newTargetIsInputPort))
                     {
@@ -1412,7 +1404,7 @@ namespace EMStudio
             }
 
             // check if we're hovering over a port
-            uint32      portNr;
+            AZ::u16     portNr;
             GraphNode*  portNode;
             bool        isInputPort;
             NodePort* nodePort = mActiveGraph->FindPort(globalMousePos.x(), globalMousePos.y(), &portNode, &portNr, &isInputPort);
@@ -1432,7 +1424,7 @@ namespace EMStudio
         else // not hovering a node, simply check for ports
         {
             // check if we're hovering over a port
-            uint32      portNr;
+            AZ::u16     portNr;
             GraphNode*  portNode;
             bool        isInputPort;
             NodePort* nodePort = mActiveGraph->FindPort(globalMousePos.x(), globalMousePos.y(), &portNode, &portNr, &isInputPort);
@@ -1551,21 +1543,18 @@ namespace EMStudio
 
 
     // return the number of selected nodes
-    uint32 NodeGraphWidget::CalcNumSelectedNodes() const
+    size_t NodeGraphWidget::CalcNumSelectedNodes() const
     {
         if (mActiveGraph)
         {
             return mActiveGraph->CalcNumSelectedNodes();
         }
-        else
-        {
-            return 0;
-        }
+        return 0;
     }
 
 
     // is the given connection valid
-    bool NodeGraphWidget::CheckIfIsCreateConnectionValid(uint32 portNr, GraphNode* portNode, NodePort* port, bool isInputPort)
+    bool NodeGraphWidget::CheckIfIsCreateConnectionValid(AZ::u16 portNr, GraphNode* portNode, NodePort* port, bool isInputPort)
     {
         MCORE_UNUSED(portNr);
         MCORE_UNUSED(port);
@@ -1608,7 +1597,7 @@ namespace EMStudio
         return true;
     }
 
-    void NodeGraphWidget::OnCreateConnection(uint32 sourcePortNr, GraphNode* sourceNode, bool sourceIsInputPort, uint32 targetPortNr, GraphNode* targetNode, bool targetIsInputPort, const QPoint& startOffset, const QPoint& endOffset)
+    void NodeGraphWidget::OnCreateConnection(AZ::u16 sourcePortNr, GraphNode* sourceNode, bool sourceIsInputPort, AZ::u16 targetPortNr, GraphNode* targetNode, bool targetIsInputPort, const QPoint& startOffset, const QPoint& endOffset)
     {
         AZ_UNUSED(sourcePortNr);
         AZ_UNUSED(sourceNode);

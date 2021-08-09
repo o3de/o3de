@@ -49,7 +49,7 @@ namespace EMotionFX
         }
         else
         {
-            mNodeIndex = InvalidIndex32;
+            mNodeIndex = InvalidIndex;
             SetHasError(true);
         }
     }

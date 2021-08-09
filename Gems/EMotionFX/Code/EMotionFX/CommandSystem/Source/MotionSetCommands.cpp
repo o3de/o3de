@@ -159,8 +159,8 @@ namespace CommandSystem
         AZStd::to_string(outResult, motionSet->GetID());
 
         // Recursively update attributes of all nodes.
-        const uint32 numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
-        for (uint32 i = 0; i < numAnimGraphs; ++i)
+        const size_t numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
+        for (size_t i = 0; i < numAnimGraphs; ++i)
         {
             EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().GetAnimGraph(i);
 
@@ -266,8 +266,8 @@ namespace CommandSystem
         EMotionFX::GetMotionManager().RemoveMotionSet(motionSet, true);
 
         // Recursively update attributes of all nodes.
-        const uint32 numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
-        for (uint32 i = 0; i < numAnimGraphs; ++i)
+        const size_t numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
+        for (size_t i = 0; i < numAnimGraphs; ++i)
         {
             EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().GetAnimGraph(i);
 
@@ -471,8 +471,8 @@ namespace CommandSystem
         motionSet->SetDirtyFlag(true);
 
         // Recursively update attributes of all nodes.
-        const uint32 numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
-        for (uint32 i = 0; i < numAnimGraphs; ++i)
+        const size_t numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
+        for (size_t i = 0; i < numAnimGraphs; ++i)
         {
             EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().GetAnimGraph(i);
 
@@ -554,18 +554,15 @@ namespace CommandSystem
         m_oldMotionFilenamesAndIds.clear();
 
         // Get the motion ids from the parameter.
-        const AZStd::string motionIdsString = parameters.GetValue("motionIds", this);
+        const AZStd::string& motionIdsString = parameters.GetValue("motionIds", this);
         AZStd::vector<AZStd::string> tokens;
         AzFramework::StringFunc::Tokenize(motionIdsString.c_str(), tokens, ";", false, true);
 
         // Iterate over all motion ids and remove the corresponding motion entries.
         AZStd::string failedToRemoveMotionIdsString;
-        const size_t tokenCount = tokens.size();
-        for (size_t i = 0; i < tokenCount; ++i)
+        for (const AZStd::string& motionId : tokens)
         {
-            const AZStd::string& motionId = tokens[i];
-
-            // Get the motion entry by id string.
+             // Get the motion entry by id string.
             EMotionFX::MotionSet::MotionEntry* motionEntry = motionSet->FindMotionEntryById(motionId);
             if (!motionEntry)
             {
@@ -594,8 +591,8 @@ namespace CommandSystem
         motionSet->SetDirtyFlag(true);
 
         // Recursively update attributes of all nodes.
-        const uint32 numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
-        for (uint32 i = 0; i < numAnimGraphs; ++i)
+        const size_t numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
+        for (size_t i = 0; i < numAnimGraphs; ++i)
         {
             EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().GetAnimGraph(i);
 
@@ -673,8 +670,8 @@ namespace CommandSystem
     void CommandMotionSetAdjustMotion::UpdateMotionNodes(const char* oldID, const char* newID)
     {
         // iterate through the anim graphs and update all motion nodes
-        const uint32 numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
-        for (uint32 i = 0; i < numAnimGraphs; ++i)
+        const size_t numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
+        for (size_t i = 0; i < numAnimGraphs; ++i)
         {
             // get the current anim graph
             EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().GetAnimGraph(i);
@@ -790,8 +787,8 @@ namespace CommandSystem
         }
 
         // Recursively update attributes of all nodes.
-        const uint32 numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
-        for (uint32 i = 0; i < numAnimGraphs; ++i)
+        const size_t numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
+        for (size_t i = 0; i < numAnimGraphs; ++i)
         {
             EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().GetAnimGraph(i);
 
@@ -1058,8 +1055,8 @@ namespace CommandSystem
         }
 
         // Iterate through the child motion sets and recursively remove them.
-        const uint32 numChildSets = motionSet->GetNumChildSets();
-        for (uint32 i = 0; i < numChildSets; ++i)
+        const size_t numChildSets = motionSet->GetNumChildSets();
+        for (size_t i = 0; i < numChildSets; ++i)
         {
             EMotionFX::MotionSet* childSet = motionSet->GetChildSet(i);
             RecursivelyRemoveMotionSets(childSet, commandGroup, toBeRemoved);
@@ -1077,9 +1074,9 @@ namespace CommandSystem
         MCore::CommandGroup internalCommandGroup("Clear motion sets");
 
         // Iterate through all root motion sets and remove them.
-        const uint32 numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
+        const size_t numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
         AZStd::set<AZ::u32> toBeRemoved;
-        for (uint32 i = 0; i < numMotionSets; ++i)
+        for (size_t i = 0; i < numMotionSets; ++i)
         {
             // Is the given motion set a root one? Only process root motion sets in the loop and remove all others recursively.
             EMotionFX::MotionSet* motionSet = EMotionFX::GetMotionManager().GetMotionSet(i);
@@ -1139,10 +1136,10 @@ namespace CommandSystem
         // Iterate over all filenames and load the motion sets.
         AZStd::string commandString;
         AZStd::set<AZ::u32> toBeRemoved;
-        for (size_t i = 0; i < numFilenames; ++i)
+        for (const AZStd::string& filename : filenames)
         {
             // In case we want to reload the same motion set remove the old version first.
-            EMotionFX::MotionSet* motionSet = EMotionFX::GetMotionManager().FindMotionSetByFileName(filenames[i].c_str());
+            EMotionFX::MotionSet* motionSet = EMotionFX::GetMotionManager().FindMotionSetByFileName(filename.c_str());
 
             if (reload && !clearUpfront && motionSet)
             {
@@ -1150,15 +1147,15 @@ namespace CommandSystem
             }
 
             // Construct the load motion set command and add it to the group.
-            commandString = AZStd::string::format("LoadMotionSet -filename \"%s\"", filenames[i].c_str());
+            commandString = AZStd::string::format("LoadMotionSet -filename \"%s\"", filename.c_str());
             commandGroup.AddCommandString(commandString);
 
             // iterate over each actor instance and re-active the motion set
             if (motionSet)
             {
-                int32 commandIndex = 1;
-                const uint32 numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
-                for (uint32 j = 0; j < numActorInstances; ++j)
+                size_t commandIndex = 1;
+                const size_t numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
+                for (size_t j = 0; j < numActorInstances; ++j)
                 {
                     EMotionFX::ActorInstance* actorInstance = EMotionFX::GetActorManager().GetActorInstance(j);
                     if (!actorInstance)
@@ -1174,7 +1171,7 @@ namespace CommandSystem
                     EMotionFX::MotionSet* currentActiveMotionSet = animGraphInstance->GetMotionSet();
                     if (currentActiveMotionSet == motionSet)
                     {
-                        commandString = AZStd::string::format("ActivateAnimGraph -actorInstanceID %d -animGraphID %d -motionSetID %%LASTRESULT%d%%",
+                        commandString = AZStd::string::format("ActivateAnimGraph -actorInstanceID %d -animGraphID %d -motionSetID %%LASTRESULT%zu%%",
                             actorInstance->GetID(),
                             animGraphInstance->GetAnimGraph()->GetID(),
                             commandIndex);
