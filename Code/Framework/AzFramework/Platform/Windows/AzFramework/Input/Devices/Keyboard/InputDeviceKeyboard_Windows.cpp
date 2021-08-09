@@ -8,6 +8,7 @@
 
 #include <../Common/WinAPI/AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard_WinAPI.h>
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
+#include <AzCore/Module/Environment.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace
@@ -29,7 +30,7 @@ namespace AzFramework
     {
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Count of the number instances of this class that have been created
-        static int s_instanceCount;
+        static AZ::EnvironmentVariable<int> s_instanceCount;
 
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
@@ -106,7 +107,7 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    int InputDeviceKeyboardWindows::s_instanceCount = 0;
+    AZ::EnvironmentVariable<int> InputDeviceKeyboardWindows::s_instanceCount = nullptr;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     InputDeviceKeyboardWindows::InputDeviceKeyboardWindows(InputDeviceKeyboard& inputDevice)
@@ -116,8 +117,10 @@ namespace AzFramework
         , m_hasFocus(false)
         , m_hasTextEntryStarted(false)
     {
-        if (s_instanceCount++ == 0)
+        if (!s_instanceCount)
         {
+            s_instanceCount = AZ::Environment::CreateVariable<int>("InputDeviceKeyboardInstanceCount", 1);
+
             // Register for raw keyboard input
             RAWINPUTDEVICE rawInputDevice;
             rawInputDevice.usUsagePage = RAW_INPUT_KEYBOARD_USAGE_PAGE;
@@ -128,6 +131,10 @@ namespace AzFramework
             AZ_Assert(result, "Failed to register raw input device: keyboard");
             AZ_UNUSED(result);
         }
+        else
+        {
+            s_instanceCount.Set(s_instanceCount.Get() + 1);
+        }
 
         RawInputNotificationBusWindows::Handler::BusConnect();
     }
@@ -137,7 +144,8 @@ namespace AzFramework
     {
         RawInputNotificationBusWindows::Handler::BusDisconnect();
 
-        if (--s_instanceCount == 0)
+        int instanceCount = s_instanceCount.Get();
+        if (--instanceCount == 0)
         {
             // Deregister from raw keyboard input
             RAWINPUTDEVICE rawInputDevice;
@@ -148,7 +156,13 @@ namespace AzFramework
             const BOOL result = RegisterRawInputDevices(&rawInputDevice, 1, sizeof(rawInputDevice));
             AZ_Assert(result, "Failed to deregister raw input device: keyboard");
             AZ_UNUSED(result);
+
+            s_instanceCount.Reset();
         }
+        else
+        {
+            s_instanceCount.Set(instanceCount);
+        }   
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
