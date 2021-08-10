@@ -132,11 +132,7 @@ namespace AZ
             AZStd::mutex m_threadRegisterMutex;
 
             // Storage for runtime GroupRegionNames
-            using DynamicRegionNameMap = AZStd::unordered_map<AZStd::string, TimeRegion::GroupRegionName>;
-             
-            // Use string_view over the const char* as a key because equivalent string literals throughout the source files might be duplicated
-            // (and therefore have different addresses) if string pooling is disabled.
-            AZStd::unordered_map<AZStd::string_view, DynamicRegionNameMap> m_dynamicGroupRegionNameMap;
+            AZStd::unordered_set<CachedTimeRegion::GroupRegionName, CachedTimeRegion::GroupRegionName::Hash> m_dynamicGroupRegionNameSet;
             AZStd::unordered_set<AZStd::string> m_dynamicRegionNameSet;
             AZStd::mutex m_dynamicNameMutex;
 

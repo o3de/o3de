@@ -30,6 +30,12 @@ namespace AZ
                 
                 const char* const m_groupName = nullptr;
                 const char* const m_regionName = nullptr;
+
+                struct Hash
+                {
+                    AZStd::size_t operator()(const GroupRegionName& name) const;
+                };
+                bool operator==(const GroupRegionName& other) const;
             };
 
             CachedTimeRegion() = default;
