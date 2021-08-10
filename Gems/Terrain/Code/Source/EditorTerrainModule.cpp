@@ -6,9 +6,9 @@
  */
 
 #include <EditorTerrainModule.h>
-#include <EditorTerrainHeightGradientListComponent.h>
-#include <EditorTerrainLayerSpawnerComponent.h>
-#include <EditorTerrainWorldComponent.h>
+#include <EditorComponents/EditorTerrainHeightGradientListComponent.h>
+#include <EditorComponents/EditorTerrainLayerSpawnerComponent.h>
+#include <EditorComponents/EditorTerrainWorldComponent.h>
 
 namespace Terrain
 {
