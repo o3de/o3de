@@ -7,6 +7,7 @@
  */
 
 #include <Components/TerrainLayerSpawnerComponent.h>
+
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Asset/AssetManager.h>
@@ -77,8 +78,6 @@ namespace Terrain
 
     void TerrainLayerSpawnerComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        //services.push_back(AZ_CRC("GradientService", 0x21c18d23));
-        //services.push_back(AZ_CRC("SurfaceDataProviderService", 0xfe9fb95e));
         services.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
     }
 
@@ -103,8 +102,6 @@ namespace Terrain
 
     void TerrainLayerSpawnerComponent::Activate()
     {
-        //Terrain::HeightmapProviderInternalRequestBus::Handler::BusConnect();
-
         AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusConnect(GetEntityId());
         TerrainAreaRequestBus::Handler::BusConnect(GetEntityId());
@@ -119,8 +116,6 @@ namespace Terrain
 
         AZ::TransformNotificationBus::Handler::BusDisconnect();
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
-
-        //Terrain::HeightmapProviderInternalRequestBus::Handler::BusDisconnect();
     }
 
     bool TerrainLayerSpawnerComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)

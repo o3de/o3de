@@ -49,12 +49,11 @@ namespace Terrain
 
     void TerrainSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC_CE("RPISystem"));
+        required.push_back(AZ_CRC("RPISystem"));
     }
 
-    void TerrainSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
+    void TerrainSystemComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
-        AZ_UNUSED(dependent);
     }
 
     void TerrainSystemComponent::Init()

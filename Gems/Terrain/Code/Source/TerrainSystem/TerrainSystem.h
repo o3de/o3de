@@ -91,9 +91,6 @@ public:
     void SetHeightQueryResolution(AZ::Vector2 queryResolution) { m_heightQueryResolution = queryResolution;  m_terrainVersionDirty = true; }
     void SetDebugWireframe(bool wireframeEnabled) { m_debugWireframeEnabled = wireframeEnabled; }
 
-    static constexpr float DefaultTerrainHeight = 32.0f;
-
-
     void RegisterArea(AZ::EntityId areaId) override;
     void UnregisterArea(AZ::EntityId areaId) override;
     void RefreshArea(AZ::EntityId areaId) override;
