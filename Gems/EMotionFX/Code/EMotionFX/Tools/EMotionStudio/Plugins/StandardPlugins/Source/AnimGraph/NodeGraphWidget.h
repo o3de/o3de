@@ -59,7 +59,7 @@ namespace EMStudio
         MCORE_INLINE void SetMousePos(const QPoint& pos)                { mMousePos = pos; }
         MCORE_INLINE void SetShowFPS(bool showFPS)                      { mShowFPS = showFPS; }
 
-        uint32 CalcNumSelectedNodes() const;
+        size_t CalcNumSelectedNodes() const;
 
         QPoint LocalToGlobal(const QPoint& inPoint) const;
         QPoint GlobalToLocal(const QPoint& inPoint) const;
@@ -69,7 +69,7 @@ namespace EMStudio
 
         virtual bool PreparePainting() { return true; }
 
-        virtual bool CheckIfIsCreateConnectionValid(uint32 portNr, GraphNode* portNode, NodePort* port, bool isInputPort);
+        virtual bool CheckIfIsCreateConnectionValid(AZ::u16 portNr, GraphNode* portNode, NodePort* port, bool isInputPort);
         virtual bool CheckIfIsValidTransition(GraphNode* sourceState, GraphNode* targetState);
         virtual bool CheckIfIsValidTransitionSource(GraphNode* sourceState);
         virtual bool CreateConnectionMustBeCurved() { return true; }
@@ -80,7 +80,7 @@ namespace EMStudio
         virtual void OnMoveStart()                                                      {}
         virtual void OnMoveNode(GraphNode* node, int32 x, int32 y)                      { MCORE_UNUSED(node); MCORE_UNUSED(x); MCORE_UNUSED(y); }
         virtual void OnMoveEnd()                                                        {}
-        virtual void OnCreateConnection(uint32 sourcePortNr, GraphNode* sourceNode, bool sourceIsInputPort, uint32 targetPortNr, GraphNode* targetNode, bool targetIsInputPort, const QPoint& startOffset, const QPoint& endOffset);
+        virtual void OnCreateConnection(AZ::u16 sourcePortNr, GraphNode* sourceNode, bool sourceIsInputPort, AZ::u16 targetPortNr, GraphNode* targetNode, bool targetIsInputPort, const QPoint& startOffset, const QPoint& endOffset);
         virtual void OnNodeCollapsed(GraphNode* node, bool isCollapsed)                 { MCORE_UNUSED(node); MCORE_UNUSED(isCollapsed); }
         virtual void OnShiftClickedNode(GraphNode* node)                                { MCORE_UNUSED(node); }
         virtual void OnVisualizeToggle(GraphNode* node, bool visualizeEnabled)          { MCORE_UNUSED(node); MCORE_UNUSED(visualizeEnabled); }

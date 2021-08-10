@@ -10,7 +10,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <MCore/Source/StandardHeaders.h>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 
 #include <AzCore/Math/Color.h>
 
@@ -91,7 +91,7 @@ namespace EMStudio
 
         void contextMenuEvent(QContextMenuEvent* event) override;
 
-        uint32 FindGroupIndexByWidget(QObject* widget) const;
+        int FindGroupIndexByWidget(QObject* widget) const;
         //bool ValidateName(EMotionFX::AnimGraphNodeGroup* nodeGroup, const char* newName) const;
 
         MCORE_DEFINECOMMANDCALLBACK(CommandAnimGraphAddNodeGroupCallback);
@@ -104,15 +104,8 @@ namespace EMStudio
 
         struct WidgetLookup
         {
-            MCORE_MEMORYOBJECTCATEGORY(NodeGroupWindow::WidgetLookup, EMFX_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS_ANIMGRAPH);
             QObject*    mWidget;
-            uint32      mGroupIndex;
-
-            WidgetLookup(QObject* widget, uint32 index)
-            {
-                mWidget     = widget;
-                mGroupIndex = index;
-            }
+            int         mGroupIndex;
         };
 
         AnimGraphPlugin*               mPlugin;
@@ -121,6 +114,6 @@ namespace EMStudio
         QAction*                        mAddAction;
         AzQtComponents::FilteredSearchWidget* m_searchWidget;
         AZStd::string                   m_searchWidgetText;
-        MCore::Array<WidgetLookup>      mWidgetTable;
+        AZStd::vector<WidgetLookup>      mWidgetTable;
     };
 } // namespace EMStudio

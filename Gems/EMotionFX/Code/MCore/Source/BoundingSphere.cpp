@@ -46,7 +46,7 @@ namespace MCore
     {
         float distance = 0.0f;
 
-        for (uint32 t = 0; t < 3; ++t)
+        for (int32_t t = 0; t < 3; ++t)
         {
             const AZ::Vector3& minVec = b.GetMin();
             if (mCenter.GetElement(t) < minVec.GetElement(t))
@@ -79,7 +79,7 @@ namespace MCore
     bool BoundingSphere::Contains(const AABB& b) const
     {
         float distance = 0.0f;
-        for (uint32 t = 0; t < 3; ++t)
+        for (int32_t t = 0; t < 3; ++t)
         {
             const AZ::Vector3& maxVec = b.GetMax();
             if (mCenter.GetElement(t) < maxVec.GetElement(t))

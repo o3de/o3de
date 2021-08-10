@@ -44,12 +44,12 @@ namespace ShaderManagementConsole
 
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->EBus<ShaderManagementConsoleWindowRequestBus>("ShaderManagementConsoleWindowRequestBus")
+            behaviorContext->EBus<AtomToolsFramework::AtomToolsMainWindowFactoryRequestBus>("ShaderManagementConsoleWindowRequestBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                 ->Attribute(AZ::Script::Attributes::Category, "Editor")
                 ->Attribute(AZ::Script::Attributes::Module, "shadermanagementconsole")
-                ->Event("CreateShaderManagementConsoleWindow", &ShaderManagementConsoleWindowRequestBus::Events::CreateShaderManagementConsoleWindow)
-                ->Event("DestroyShaderManagementConsoleWindow", &ShaderManagementConsoleWindowRequestBus::Events::DestroyShaderManagementConsoleWindow)
+                ->Event("CreateShaderManagementConsoleWindow", &AtomToolsFramework::AtomToolsMainWindowFactoryRequestBus::Events::CreateMainWindow)
+                ->Event("DestroyShaderManagementConsoleWindow", &AtomToolsFramework::AtomToolsMainWindowFactoryRequestBus::Events::DestroyMainWindow)
                 ;
 
             behaviorContext->EBus<ShaderManagementConsoleRequestBus>("ShaderManagementConsoleRequestBus")
@@ -87,7 +87,7 @@ namespace ShaderManagementConsole
     void ShaderManagementConsoleWindowComponent::Activate()
     {
         AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
-        ShaderManagementConsoleWindowRequestBus::Handler::BusConnect();
+        AtomToolsFramework::AtomToolsMainWindowFactoryRequestBus::Handler::BusConnect();
         ShaderManagementConsoleRequestBus::Handler::BusConnect();
         AzToolsFramework::SourceControlConnectionRequestBus::Broadcast(&AzToolsFramework::SourceControlConnectionRequests::EnableSourceControl, true);
     }
@@ -95,7 +95,7 @@ namespace ShaderManagementConsole
     void ShaderManagementConsoleWindowComponent::Deactivate()
     {
         ShaderManagementConsoleRequestBus::Handler::BusDisconnect();
-        ShaderManagementConsoleWindowRequestBus::Handler::BusDisconnect();
+        AtomToolsFramework::AtomToolsMainWindowFactoryRequestBus::Handler::BusDisconnect();
         AzToolsFramework::EditorWindowRequestBus::Handler::BusDisconnect();
 
         m_window.reset();
@@ -106,7 +106,7 @@ namespace ShaderManagementConsole
         return m_window.get();
     }
 
-    void ShaderManagementConsoleWindowComponent::CreateShaderManagementConsoleWindow()
+    void ShaderManagementConsoleWindowComponent::CreateMainWindow()
     {
         m_assetBrowserInteractions.reset(aznew ShaderManagementConsoleBrowserInteractions);
 
@@ -114,7 +114,7 @@ namespace ShaderManagementConsole
         m_window->show();
     }
 
-    void ShaderManagementConsoleWindowComponent::DestroyShaderManagementConsoleWindow()
+    void ShaderManagementConsoleWindowComponent::DestroyMainWindow()
     {
         m_window.reset();
     }

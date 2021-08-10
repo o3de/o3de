@@ -8,5 +8,6 @@
     "canonical_tags": ["Gem"],
     "user_tags": ["AWS", "Network", "SDK"],
     "icon_path": "preview.png",
-    "requirements": ""
+    "requirements": "",
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/aws/aws-client-auth/"
 }

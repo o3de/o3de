@@ -58,9 +58,9 @@ namespace WhiteBox
 
         for (size_t i = 0; i < vertCount; i++)
         {
-            const auto normal = tangentSpaceCalculation.GetNormal(i);
-            const auto tangent = tangentSpaceCalculation.GetTangent(i);
-            const auto bitangent = tangentSpaceCalculation.GetBitangent(i);
+            const auto normal = tangentSpaceCalculation.GetNormal(static_cast<AZ::u32>(i));
+            const auto tangent = tangentSpaceCalculation.GetTangent(static_cast<AZ::u32>(i));
+            const auto bitangent = tangentSpaceCalculation.GetBitangent(static_cast<AZ::u32>(i));
 
             m_aabb.AddPoint(positions[i]);
 
@@ -75,7 +75,7 @@ namespace WhiteBox
 
     const uint32_t WhiteBoxMeshAtomData::VertexCount() const
     {
-        return m_indices.size();
+        return static_cast<uint32_t>(m_indices.size());
     }
 
     const AZStd::vector<uint32_t>& WhiteBoxMeshAtomData::GetIndices() const

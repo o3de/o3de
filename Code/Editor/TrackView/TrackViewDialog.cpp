@@ -130,10 +130,10 @@ const GUID& CTrackViewDialog::GetClassID()
 
 
 //////////////////////////////////////////////////////////////////////////
-CTrackViewDialog* CTrackViewDialog::s_pTrackViewDialog = NULL;
+CTrackViewDialog* CTrackViewDialog::s_pTrackViewDialog = nullptr;
 
 //////////////////////////////////////////////////////////////////////////
-CTrackViewDialog::CTrackViewDialog(QWidget* pParent /*=NULL*/)
+CTrackViewDialog::CTrackViewDialog(QWidget* pParent /*=nullptr*/)
     : QMainWindow(pParent)
 {
     s_pTrackViewDialog = this;
@@ -152,7 +152,7 @@ CTrackViewDialog::CTrackViewDialog(QWidget* pParent /*=NULL*/)
     m_lazyInitDone = false;
     m_bEditLock = false;
 
-    m_pNodeForTracksToolBar = NULL;
+    m_pNodeForTracksToolBar = nullptr;
 
     m_currentToolBarParamTypeId = 0;
 
@@ -181,7 +181,7 @@ CTrackViewDialog::~CTrackViewDialog()
         m_findDlg->deleteLater();
         m_findDlg = nullptr;
     }
-    s_pTrackViewDialog = 0;
+    s_pTrackViewDialog = nullptr;
 
     const CTrackViewSequenceManager* pSequenceManager = GetIEditor()->GetSequenceManager();
     CTrackViewSequence* sequence = pSequenceManager->GetSequenceByEntityId(m_currentSequenceEntityId);
@@ -210,7 +210,7 @@ void CTrackViewDialog::OnAddEntityNodeMenu()
 }
 
 //////////////////////////////////////////////////////////////////////////
-BOOL CTrackViewDialog::OnInitDialog()
+bool CTrackViewDialog::OnInitDialog()
 {
     InitToolbar();
     InitMenu();
@@ -270,7 +270,7 @@ BOOL CTrackViewDialog::OnInitDialog()
     QString cursorPosText = QString("0.000(%1fps)").arg(FloatToIntRet(m_wndCurveEditor->GetFPS()));
     m_cursorPos->setText(cursorPosText);
 
-    return TRUE;  // return TRUE unless you set the focus to a control
+    return true;  // return true unless you set the focus to a control
     // EXCEPTION: OCX Property Pages should return FALSE
 }
 
@@ -621,7 +621,7 @@ void CTrackViewDialog::InitToolbar()
     {
         qaction2->setCheckable(true);
     }
-    
+
     m_actions[ID_TV_SNAP_NONE]->setChecked(true);
 
     m_tracksToolBar = addToolBar("Tracks Toolbar");
@@ -883,7 +883,7 @@ void CTrackViewDialog::Update()
     // The active camera node means two conditions:
     // 1. Sequence camera is currently active.
     // 2. The camera which owns this node has been set as the current camera by the director node.
-    bool bSequenceCamInUse = gEnv->pMovieSystem->GetCallback() == NULL ||
+    bool bSequenceCamInUse = gEnv->pMovieSystem->GetCallback() == nullptr ||
         gEnv->pMovieSystem->GetCallback()->IsSequenceCamUsed();
     AZ::EntityId camId = gEnv->pMovieSystem->GetCameraParams().cameraEntityId;
     if (camId.IsValid() && bSequenceCamInUse)
@@ -2049,7 +2049,7 @@ void CTrackViewDialog::ClearTracksToolBar()
     m_tracksToolBar->clear();
     m_tracksToolBar->addWidget(new QLabel("Tracks:"));
 
-    m_pNodeForTracksToolBar = NULL;
+    m_pNodeForTracksToolBar = nullptr;
     m_toolBarParamTypes.clear();
     m_currentToolBarParamTypeId = 0;
 }

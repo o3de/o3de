@@ -26,7 +26,7 @@ namespace EMotionFX
         , mPreSyncTime(0.0f)
         , mGlobalWeight(1.0f)
         , mLocalWeight(1.0f)
-        , mSyncIndex(MCORE_INVALIDINDEX32)
+        , mSyncIndex(InvalidIndex)
         , mPoseRefCount(0)
         , mRefDataRefCount(0)
         , mInheritFlags(0)
@@ -55,7 +55,7 @@ namespace EMotionFX
         mLocalWeight = 1.0f;
         mInheritFlags = 0;
         m_isMirrorMotion = false;
-        mSyncIndex = MCORE_INVALIDINDEX32;
+        mSyncIndex = InvalidIndex;
         mSyncTrack = nullptr;
     }
 

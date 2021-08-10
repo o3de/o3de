@@ -634,21 +634,21 @@ namespace AZ
                     AZStd::shared_ptr<SceneData::GraphData::BlendShapeAnimationData> morphAnimNode =
                         AZStd::make_shared<SceneData::GraphData::BlendShapeAnimationData>();
 
-                    const size_t numKeyFrames = GetNumKeyFrames(keys.size(), animation->mDuration, animation->mTicksPerSecond);
+                    const size_t numKeyFrames = GetNumKeyFrames(static_cast<AZ::u32>(keys.size()), animation->mDuration, animation->mTicksPerSecond);
                     morphAnimNode->ReserveKeyFrames(numKeyFrames);
                     morphAnimNode->SetTimeStepBetweenFrames(s_defaultTimeStepBetweenFrames);
 
                     aiAnimMesh* aiAnimMesh = mesh->mAnimMeshes[meshIdx];
                     AZStd::string_view nodeName(aiAnimMesh->mName.C_Str());
 
-                    const AZ::u32 maxKeys = keys.size();
+                    const AZ::u32 maxKeys = static_cast<AZ::u32>(keys.size());
                     AZ::u32 keyIdx = 0;
                     for (AZ::u32 frame = 0; frame < numKeyFrames; ++frame)
                     {
                         const double time = GetTimeForFrame(frame, animation->mTicksPerSecond);
 
                         float weight = 0;
-                        if (!SampleKeyFrame(weight, keys, keys.size(), time + keyOffset, keyIdx))
+                        if (!SampleKeyFrame(weight, keys, static_cast<AZ::u32>(keys.size()), time + keyOffset, keyIdx))
                         {
                             return Events::ProcessingResult::Failure;
                         }

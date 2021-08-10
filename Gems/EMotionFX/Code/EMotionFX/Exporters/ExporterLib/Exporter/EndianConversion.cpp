@@ -88,6 +88,11 @@ namespace ExporterLib
         MCore::Endian::ConvertUnsignedInt32(value, EXPLIB_PLATFORM_ENDIAN, targetEndianType);
     }
 
+    void ConvertUnsignedInt(uint64* value, MCore::Endian::EEndianType targetEndianType)
+    {
+        MCore::Endian::ConvertUnsignedInt64(value, EXPLIB_PLATFORM_ENDIAN, targetEndianType);
+    }
+
 
     void ConvertInt(int* value, MCore::Endian::EEndianType targetEndianType)
     {

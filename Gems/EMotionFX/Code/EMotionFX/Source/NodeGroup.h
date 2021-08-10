@@ -30,38 +30,19 @@ namespace EMotionFX
      * might contain incorrect or even uninitialized data.
      */
     class EMFX_API NodeGroup
-        : public BaseObject
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
-        /**
-         * The default creation method.
-         * This does not assign a name and there will be nodes inside this group on default.
-         * Also the default enabled state is set to true.
-         */
-        static NodeGroup* Create();
 
-        /**
-         * Extended creation.
-         * @param groupName The name of the group. Please keep in mind that it is not allowed to have two groups with the same name inside an Actor.
-         * @param enabledOnDefault Set to true (default) when the nodes inside this group should be enabled on default.
-         */
-        static NodeGroup* Create(const char* groupName, bool enabledOnDefault = true);
-
-        /**
-         * Another extended constructor.
-         * @param groupName The name of the group. Please keep in mind that it is not allowed to have two groups with the same name inside an Actor.
-         * @param numNodes The number of nodes to create inside the group. This will have all uninitialized values for the node indices in the group, so be sure that you
-         *                 set them all to some valid node index using the NodeGroup::SetNode(...) method. This method automatically calls the SetNumNodes(...) method.
-         * @param enabledOnDefault Set to true (default) when the nodes inside this group should be enabled on default.
-         */
-        static NodeGroup* Create(const char* groupName, uint16 numNodes, bool enabledOnDefault = true);
+        NodeGroup(const AZStd::string& groupName = {}, uint16 numNodes = 0, bool enabledOnDefault = true);
+        NodeGroup(const NodeGroup& aOther);
+        NodeGroup& operator=(const NodeGroup& aOther);
 
         /**
          * Set the name of the group. Please keep in mind that group names must be unique inside the Actor objects. So you should not have two or more groups with the same name.
          * @param groupName The name of the group.
          */
-        void SetName(const char* groupName);
+        void SetName(const AZStd::string& groupName);
 
         /**
          * Get the name of the group as null terminated character buffer.
@@ -101,7 +82,7 @@ namespace EMotionFX
          * @param index The node number inside this group, which must be in range of [0..GetNumNodes()-1].
          * @result The node number, which points inside the Actor object. Use Actor::GetNode( returnValue ) to get access to the node information.
          */
-        uint16 GetNode(uint16 index);
+        uint16 GetNode(uint16 index) const;
 
         /**
          * Enable all nodes that remain inside this group, for a given actor instance.
@@ -171,37 +152,6 @@ namespace EMotionFX
          & @result Returns true when all nodes inside this group will be in an enabled state when creating a new actor instance using this group. Otherwise false is returned.
          */
         void SetIsEnabledOnDefault(bool enabledOnDefault);
-
-        /**
-        * The default constructor.
-        * This does not assign a name and there will be nodes inside this group on default.
-        * Also the default enabled state is set to true.
-        */
-        NodeGroup();
-
-        /**
-        * Extended constructor.
-        * @param groupName The name of the group. Please keep in mind that it is not allowed to have two groups with the same name inside an Actor.
-        * @param enabledOnDefault Set to true (default) when the nodes inside this group should be enabled on default.
-        */
-        NodeGroup(const char* groupName, bool enabledOnDefault = true);
-
-        /**
-        * Another extended constructor.
-        * @param groupName The name of the group. Please keep in mind that it is not allowed to have two groups with the same name inside an Actor.
-        * @param numNodes The number of nodes to create inside the group. This will have all uninitialized values for the node indices in the group, so be sure that you
-        *                 set them all to some valid node index using the NodeGroup::SetNode(...) method. This method automatically calls the SetNumNodes(...) method.
-        * @param enabledOnDefault Set to true (default) when the nodes inside this group should be enabled on default.
-        */
-        NodeGroup(const char* groupName, uint16 numNodes, bool enabledOnDefault = true);
-
-        /**
-        * The destructor.
-        */
-        ~NodeGroup();
-
-        NodeGroup(const NodeGroup& aOther);
-        NodeGroup& operator=(const NodeGroup& aOther);
 
     private:
         AZStd::string               mName;              /**< The name of the group. */

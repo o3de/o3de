@@ -2716,7 +2716,7 @@ namespace
         float newWidth;
         EBUS_EVENT_ID_RESULT(newWidth, testElemId, UiLayoutCellDefaultBus, GetTargetWidth, LyShine::UiLayoutCellUnspecifiedSize);
 
-        const int testStringLength = testString.length();
+        const int testStringLength = static_cast<int>(testString.length());
         const int numGapsBetweenCharacters = testStringLength >= 1 ? testStringLength - 1 : 0;
         const float ems = characterSpacing * 0.001f;
         float expectedWidth = baseWidth + numGapsBetweenCharacters * ems * fontSize;

@@ -82,7 +82,7 @@ public:
     }
 
     //helps implement ReflectedPropertyControl::ReplaceVarBlock
-    void ReplaceVarBlock(CVarBlock *varBlock)
+    void ReplaceVarBlock(CVarBlock *varBlock) override
     {
         m_containerVar->Clear();
         UpdateCommon(m_item->GetVariable(), varBlock);
@@ -207,7 +207,7 @@ void ReflectedPropertyItem::SetVariable(IVariable *var)
         ReleaseVariable();
 
     m_pVariable = pInputVar;
-    assert(m_pVariable != NULL);
+    assert(m_pVariable != nullptr);
 
     m_pVariable->AddOnSetCallback(&m_onSetCallback);
     m_pVariable->AddOnSetEnumCallback(&m_onSetEnumCallback);
@@ -332,7 +332,7 @@ void ReflectedPropertyItem::RemoveAllChildren()
 {
     for (int i = 0; i < m_childs.size(); i++)
     {
-        m_childs[i]->m_parent = 0;
+        m_childs[i]->m_parent = nullptr;
     }
 
     m_childs.clear();
@@ -473,7 +473,7 @@ void ReflectedPropertyItem::ReleaseVariable()
         m_pVariable->RemoveOnSetCallback(&m_onSetCallback);
         m_pVariable->RemoveOnSetEnumCallback(&m_onSetEnumCallback);
     }
-    m_pVariable = 0;
+    m_pVariable = nullptr;
     delete m_reflectedVarAdapter;
     m_reflectedVarAdapter = nullptr;
 }

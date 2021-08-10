@@ -42,7 +42,7 @@ public:
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
     }
 
-    ~ListenerForShowAssetEditorEvent()
+    ~ListenerForShowAssetEditorEvent() override
     {
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
     }
@@ -82,6 +82,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
 
     m_ui->m_assetBrowserTableViewWidget->setVisible(false);
     m_ui->m_toggleDisplayViewBtn->setVisible(false);
+    m_ui->m_searchWidget->SetFilterInputInterval(AZStd::chrono::milliseconds(250));
     if (ed_useNewAssetBrowserTableView)
     {
         m_ui->m_toggleDisplayViewBtn->setVisible(true);

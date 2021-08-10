@@ -185,7 +185,7 @@ namespace MCore
          * @param commandName The unique identifier for the command.
          * @param originalCommand The original command, or nullptr when this is the original command.
          */
-        Command(const char* commandName, Command* originalCommand);
+        Command(AZStd::string commandName, Command* originalCommand);
 
         /**
          * Destructor.
@@ -279,26 +279,26 @@ namespace MCore
          * Get the number of registered/added command callbacks.
          * @result The number of command callbacks that have been added.
          */
-        uint32 GetNumCallbacks() const;
+        size_t GetNumCallbacks() const;
 
         /**
          * Calculate the number of registered pre-execute callbacks.
          * @result The number of registered pre-execute callbacks.
          */
-        uint32 CalcNumPreCommandCallbacks() const;
+        size_t CalcNumPreCommandCallbacks() const;
 
         /**
          * Calculate the number of registered post-execute callbacks.
          * @result The number of registered post-execute callbacks.
          */
-        uint32 CalcNumPostCommandCallbacks() const;
+        size_t CalcNumPostCommandCallbacks() const;
 
         /**
          * Get a given command callback.
          * @param index The callback number, which must be in range of [0..GetNumCallbacks()-1].
          * @result A pointer to the command callback object.
          */
-        MCORE_INLINE Command::Callback* GetCallback(uint32 index)               { return mCallbacks[index]; }
+        MCORE_INLINE Command::Callback* GetCallback(size_t index)               { return mCallbacks[index]; }
 
         /**
          * Add (register) a command callback.

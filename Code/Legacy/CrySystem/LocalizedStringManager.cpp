@@ -479,7 +479,7 @@ void CLocalizedStringsManager::ParseFirstLine(IXmlTableReader* pXmlTableReader, 
                 if (i == ELOCALIZED_COLUMN_SOUNDMOOD)
                 {
                     const char* pSoundMoodName = pFind + strlen(sLocalizedColumnNames[i]) + 1;
-                    int nSoundMoodNameLength = sCellContent.length() - strlen(sLocalizedColumnNames[i]) - 1;
+                    int nSoundMoodNameLength = static_cast<int>(sCellContent.length() - strlen(sLocalizedColumnNames[i]) - 1);
                     if (nSoundMoodNameLength > 0)
                     {
                         SoundMoodIndex[nCellIndex] = pSoundMoodName;
@@ -490,7 +490,7 @@ void CLocalizedStringsManager::ParseFirstLine(IXmlTableReader* pXmlTableReader, 
                 if (i == ELOCALIZED_COLUMN_EVENTPARAMETER)
                 {
                     const char* pParameterName = pFind + strlen(sLocalizedColumnNames[i]) + 1;
-                    int nParameterNameLength = sCellContent.length() - strlen(sLocalizedColumnNames[i]) - 1;
+                    int nParameterNameLength = static_cast<int>(sCellContent.length() - strlen(sLocalizedColumnNames[i]) - 1);
                     if (nParameterNameLength > 0)
                     {
                         EventParameterIndex[nCellIndex] = pParameterName;
@@ -622,7 +622,7 @@ bool CLocalizedStringsManager::InitLocalizationData(
 
         CRY_ASSERT(m_tagFileNames.size() < 255);
 
-        uint8 curNumTags = m_tagFileNames.size();
+        uint8 curNumTags = static_cast<uint8>(m_tagFileNames.size());
 
         m_tagFileNames[sType].filenames = vEntries;
         m_tagFileNames[sType].id                = curNumTags + 1;
@@ -757,7 +757,7 @@ bool CLocalizedStringsManager::ReleaseLocalizationDataByTag(
 
         bool bVecEntryErased = false;
         //Then remove the entries in the storage vector
-        const uint32 numEntries = m_pLanguage->m_vLocalizedStrings.size();
+        const int32 numEntries = static_cast<int32>(m_pLanguage->m_vLocalizedStrings.size());
         for (int32 i = numEntries - 1; i >= 0; i--)
         {
             SLocalizedStringEntry* entry = m_pLanguage->m_vLocalizedStrings[i];
@@ -1405,7 +1405,7 @@ bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, 
 
         // SoundMood Entries
         {
-            pEntry->SoundMoods.resize(SoundMoodValues.size());
+            pEntry->SoundMoods.resize(static_cast<int>(SoundMoodValues.size()));
             if (SoundMoodValues.size() > 0)
             {
                 std::map<int, float>::const_iterator itEnd = SoundMoodValues.end();
@@ -1421,7 +1421,7 @@ bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, 
 
         // EventParameter Entries
         {
-            pEntry->EventParameters.resize(EventParameterValues.size());
+            pEntry->EventParameters.resize(static_cast<int>(EventParameterValues.size()));
             if (EventParameterValues.size() > 0)
             {
                 std::map<int, float>::const_iterator itEnd = EventParameterValues.end();
@@ -2196,7 +2196,7 @@ int CLocalizedStringsManager::GetLocalizedStringCount()
     {
         return 0;
     }
-    return m_pLanguage->m_vLocalizedStrings.size();
+    return static_cast<int>(m_pLanguage->m_vLocalizedStrings.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2310,10 +2310,10 @@ void InternalFormatStringMessage(StringClass& outString, const StringClass& sStr
     int maxArgUsed = 0;
     int lastPos = 0;
     int curPos = 0;
-    const int sourceLen = sString.length();
+    const int sourceLen = static_cast<int>(sString.length());
     while (true)
     {
-        int foundPos = sString.find(token, curPos);
+        int foundPos = static_cast<int>(sString.find(token, curPos));
         if (foundPos != string::npos)
         {
             if (foundPos + 1 < sourceLen)

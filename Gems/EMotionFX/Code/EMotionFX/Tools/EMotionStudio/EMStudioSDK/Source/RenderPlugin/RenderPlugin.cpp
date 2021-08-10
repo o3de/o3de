@@ -27,8 +27,6 @@ namespace EMStudio
     RenderPlugin::RenderPlugin()
         : DockWidgetPlugin()
     {
-        mActors.SetMemoryCategory(MEMCATEGORY_EMSTUDIOSDK_RENDERPLUGINBASE);
-
         mIsVisible                      = true;
         mRenderUtil                     = nullptr;
         mUpdateCallback                 = nullptr;
@@ -130,15 +128,14 @@ namespace EMStudio
     void RenderPlugin::CleanEMStudioActors()
     {
         // get rid of the actors
-        const uint32 numActors = mActors.GetLength();
-        for (uint32 i = 0; i < numActors; ++i)
+        for (EMStudioRenderActor* actor : mActors)
         {
-            if (mActors[i])
+            if (actor)
             {
-                delete mActors[i];
+                delete actor;
             }
         }
-        mActors.Clear();
+        mActors.clear();
     }
 
 
@@ -154,12 +151,12 @@ namespace EMStudio
         }
 
         // get the index of the emstudio actor, we can be sure it is valid as else the emstudioActor pointer would be nullptr already
-        const uint32 index = FindEMStudioActorIndex(emstudioActor);
-        MCORE_ASSERT(index != MCORE_INVALIDINDEX32);
+        const size_t index = FindEMStudioActorIndex(emstudioActor);
+        MCORE_ASSERT(index != InvalidIndex);
 
         // get rid of the emstudio actor
         delete emstudioActor;
-        mActors.Remove(index);
+        mActors.erase(AZStd::next(begin(mActors), index));
         return true;
     }
 
@@ -168,8 +165,7 @@ namespace EMStudio
     MCommon::TransformationManipulator* RenderPlugin::GetActiveManipulator(MCommon::Camera* camera, int32 mousePosX, int32 mousePosY)
     {
         // get the current manipulator
-        MCore::Array<MCommon::TransformationManipulator*>* transformationManipulators = GetManager()->GetTransformationManipulators();
-        const uint32 numGizmos = transformationManipulators->GetLength();
+        AZStd::vector<MCommon::TransformationManipulator*>* transformationManipulators = GetManager()->GetTransformationManipulators();
 
         // init the active manipulator to nullptr
         MCommon::TransformationManipulator* activeManipulator = nullptr;
@@ -177,10 +173,9 @@ namespace EMStudio
         bool activeManipulatorFound = false;
 
         // iterate over all gizmos and search for the hit one that is closest to the camera
-        for (uint32 i = 0; i < numGizmos; ++i)
+        for (MCommon::TransformationManipulator* currentManipulator : *transformationManipulators)
         {
             // get the current manipulator and check if it exists
-            MCommon::TransformationManipulator* currentManipulator = transformationManipulators->GetItem(i);
             if (currentManipulator == nullptr || currentManipulator->GetIsVisible() == false)
             {
                 continue;
@@ -266,8 +261,7 @@ namespace EMStudio
             return;
         }
 
-        MCore::AABB aabb;
-        aabb.Init();
+        AZ::Aabb aabb = AZ::Aabb::CreateNull();
 
         const EMotionFX::Actor* actor = actorInstance->GetActor();
         const EMotionFX::Skeleton* skeleton = actor->GetSkeleton();
@@ -276,21 +270,20 @@ namespace EMStudio
         for (const EMotionFX::Node* joint : joints)
         {
             const AZ::Vector3 jointPosition = pose->GetWorldSpaceTransform(joint->GetNodeIndex()).mPosition;
+            aabb.AddPoint(jointPosition);
 
-            aabb.Encapsulate(jointPosition);
-
-            const AZ::u32 childCount = joint->GetNumChildNodes();
-            for (AZ::u32 i = 0; i < childCount; ++i)
+            const size_t childCount = joint->GetNumChildNodes();
+            for (size_t i = 0; i < childCount; ++i)
             {
                 EMotionFX::Node* childJoint = skeleton->GetNode(joint->GetChildIndex(i));
                 const AZ::Vector3 childPosition = pose->GetWorldSpaceTransform(childJoint->GetNodeIndex()).mPosition;
-                aabb.Encapsulate(childPosition);
+                aabb.AddPoint(childPosition);
             }
         }
 
-        if (aabb.CheckIfIsValid())
+        if (aabb.IsValid())
         {
-            aabb.Widen(aabb.CalcRadius());
+            aabb.Expand(AZ::Vector3(aabb.GetExtents().GetLength() * 0.5f));
 
             bool isFollowModeActive = false;
             for (const RenderViewWidget* viewWidget : m_viewWidgets)
@@ -318,80 +311,49 @@ namespace EMStudio
     }
 
     // try to locate the helper actor for a given instance
-    RenderPlugin::EMStudioRenderActor* RenderPlugin::FindEMStudioActor(EMotionFX::ActorInstance* actorInstance, bool doubleCheckInstance)
+    RenderPlugin::EMStudioRenderActor* RenderPlugin::FindEMStudioActor(const EMotionFX::ActorInstance* actorInstance, bool doubleCheckInstance) const
     {
-        // get the number of emstudio actors and iterate through them
-        const uint32 numEMStudioRenderActors = mActors.GetLength();
-        for (uint32 i = 0; i < numEMStudioRenderActors; ++i)
+        const auto foundActor = AZStd::find_if(begin(mActors), end(mActors), [actorInstance, doubleCheckInstance](const EMStudioRenderActor* renderActor)
         {
-            EMStudioRenderActor* EMStudioRenderActor = mActors[i];
-
             // is the parent actor of the instance the same as the one in the emstudio actor?
-            if (EMStudioRenderActor->mActor == actorInstance->GetActor())
+            if (renderActor->mActor == actorInstance->GetActor())
             {
                 // double check if the actor instance is in the actor instance array inside the emstudio actor
                 if (doubleCheckInstance)
                 {
                     // now double check if the actor instance really is in the array of instances of this emstudio actor
-                    const uint32 numActorInstances = EMStudioRenderActor->mActorInstances.GetLength();
-                    for (uint32 a = 0; a < numActorInstances; ++a)
-                    {
-                        if (EMStudioRenderActor->mActorInstances[a] == actorInstance)
-                        {
-                            return EMStudioRenderActor;
-                        }
-                    }
+                    const auto foundActorInstance = AZStd::find(begin(renderActor->mActorInstances), end(renderActor->mActorInstances), actorInstance);
+                    return foundActorInstance != end(renderActor->mActorInstances);
                 }
-                else
-                {
-                    return EMStudioRenderActor;
-                }
+                return true;
             }
-        }
-
-        return nullptr;
+            return false;
+        });
+        return foundActor != end(mActors) ? *foundActor : nullptr;
     }
 
 
     // try to locate the helper actor for a given one
-    RenderPlugin::EMStudioRenderActor* RenderPlugin::FindEMStudioActor(EMotionFX::Actor* actor)
+    RenderPlugin::EMStudioRenderActor* RenderPlugin::FindEMStudioActor(const EMotionFX::Actor* actor) const
     {
         if (!actor)
         {
             return nullptr;
         }
 
-        const uint32 numEMStudioRenderActors = mActors.GetLength();
-        for (uint32 i = 0; i < numEMStudioRenderActors; ++i)
+        const auto foundActor = AZStd::find_if(begin(mActors), end(mActors), [match = actor](const EMStudioRenderActor* actor)
         {
-            EMStudioRenderActor* EMStudioRenderActor = mActors[i];
-
-            if (EMStudioRenderActor->mActor == actor)
-            {
-                return EMStudioRenderActor;
-            }
-        }
-
-        return nullptr;
+            return actor->mActor == match;
+        });
+        return foundActor != end(mActors) ? *foundActor : nullptr;
     }
 
 
     // get the index of the given emstudio actor
-    uint32 RenderPlugin::FindEMStudioActorIndex(EMStudioRenderActor* EMStudioRenderActor)
+    size_t RenderPlugin::FindEMStudioActorIndex(const EMStudioRenderActor* EMStudioRenderActor) const
     {
-        // get the number of emstudio actors and iterate through them
-        const uint32 numEMStudioRenderActors = mActors.GetLength();
-        for (uint32 i = 0; i < numEMStudioRenderActors; ++i)
-        {
-            // compare the two emstudio actors and return the current index in case of success
-            if (EMStudioRenderActor == mActors[i])
-            {
-                return i;
-            }
-        }
-
-        // the emstudio actor has not been found
-        return MCORE_INVALIDINDEX32;
+        const auto foundActor = AZStd::find(begin(mActors), end(mActors), EMStudioRenderActor);
+        return foundActor != end(mActors) ? AZStd::distance(begin(mActors), foundActor) : InvalidIndex;
     }
 
 
@@ -409,7 +371,7 @@ namespace EMStudio
     void RenderPlugin::AddEMStudioActor(EMStudioRenderActor* emstudioActor)
     {
         // add the actor to the list and return success
-        mActors.Add(emstudioActor);
+        mActors.emplace_back(emstudioActor);
     }
 
 
@@ -421,8 +383,8 @@ namespace EMStudio
         }
 
         // 1. Create new emstudio actors
-        uint32 numActors = EMotionFX::GetActorManager().GetNumActors();
-        for (uint32 i = 0; i < numActors; ++i)
+        size_t numActors = EMotionFX::GetActorManager().GetNumActors();
+        for (size_t i = 0; i < numActors; ++i)
         {
             // get the current actor and the number of clones
             EMotionFX::Actor* actor = EMotionFX::GetActorManager().GetActor(i);
@@ -442,14 +404,13 @@ namespace EMStudio
             }
         }
 
-        // 2. Remove invalid, not ready or unused emstudio actors
-        for (uint32 i = 0; i < mActors.GetLength(); ++i)
+        for (size_t i = 0; i < mActors.size(); ++i)
         {
             EMStudioRenderActor* emstudioActor = mActors[i];
             EMotionFX::Actor* actor = emstudioActor->mActor;
 
             bool found = false;
-            for (uint32 j = 0; j < numActors; ++j)
+            for (size_t j = 0; j < numActors; ++j)
             {
                 EMotionFX::Actor* curActor = EMotionFX::GetActorManager().GetActor(j);
                 if (actor == curActor)
@@ -467,8 +428,8 @@ namespace EMStudio
         }
 
         // 3. Relink the actor instances with the emstudio actors
-        const uint32 numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
-        for (uint32 i = 0; i < numActorInstances; ++i)
+        const size_t numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
+        for (size_t i = 0; i < numActorInstances; ++i)
         {
             EMotionFX::ActorInstance*   actorInstance   = EMotionFX::GetActorManager().GetActorInstance(i);
             EMotionFX::Actor*           actor           = actorInstance->GetActor();
@@ -481,9 +442,8 @@ namespace EMStudio
 
             if (!emstudioActor)
             {
-                for (uint32 j = 0; j < mActors.GetLength(); ++j)
+                for (EMStudioRenderActor* currentEMStudioActor : mActors)
                 {
-                    EMStudioRenderActor* currentEMStudioActor = mActors[j];
                     if (actor == currentEMStudioActor->mActor)
                     {
                         emstudioActor = currentEMStudioActor;
@@ -498,24 +458,22 @@ namespace EMStudio
                 actorInstance->SetCustomData(emstudioActor->mRenderActor);
 
                 // add the actor instance to the emstudio actor instances in case it is not in yet
-                if (emstudioActor->mActorInstances.Find(actorInstance) == MCORE_INVALIDINDEX32)
+                if (AZStd::find(begin(emstudioActor->mActorInstances), end(emstudioActor->mActorInstances), actorInstance) == end(emstudioActor->mActorInstances))
                 {
-                    emstudioActor->mActorInstances.Add(actorInstance);
+                    emstudioActor->mActorInstances.emplace_back(actorInstance);
                 }
             }
         }
 
         // 4. Unlink invalid actor instances from the emstudio actors
-        for (uint32 i = 0; i < mActors.GetLength(); ++i)
+        for (EMStudioRenderActor* emstudioActor : mActors)
         {
-            EMStudioRenderActor* emstudioActor = mActors[i];
-
-            for (uint32 j = 0; j < emstudioActor->mActorInstances.GetLength();)
+            for (size_t j = 0; j < emstudioActor->mActorInstances.size();)
             {
                 EMotionFX::ActorInstance* emstudioActorInstance = emstudioActor->mActorInstances[j];
                 bool found = false;
 
-                for (uint32 k = 0; k < numActorInstances; ++k)
+                for (size_t k = 0; k < numActorInstances; ++k)
                 {
                     if (emstudioActorInstance == EMotionFX::GetActorManager().GetActorInstance(k))
                     {
@@ -526,7 +484,7 @@ namespace EMStudio
 
                 if (found == false)
                 {
-                    emstudioActor->mActorInstances.Remove(j);
+                    emstudioActor->mActorInstances.erase(AZStd::next(begin(emstudioActor->mActorInstances), j));
                 }
                 else
                 {
@@ -573,14 +531,11 @@ namespace EMStudio
     RenderPlugin::EMStudioRenderActor::~EMStudioRenderActor()
     {
         // get the number of actor instances and iterate through them
-        const uint32 numActorInstances = mActorInstances.GetLength();
-        for (uint32 i = 0; i < numActorInstances; ++i)
+        for (EMotionFX::ActorInstance* actorInstance : mActorInstances)
         {
-            EMotionFX::ActorInstance* actorInstance = mActorInstances[i];
-
             // only delete the actor instance in case it is still inside the actor manager
             // in case it is not present there anymore this means an undo command has already deleted it
-            if (EMotionFX::GetActorManager().FindActorInstanceIndex(actorInstance) != MCORE_INVALIDINDEX32)
+            if (EMotionFX::GetActorManager().FindActorInstanceIndex(actorInstance) != InvalidIndex)
             {
                 //actorInstance->Destroy();
             }
@@ -594,13 +549,9 @@ namespace EMStudio
 
         // only delete the actor in case it is still inside the actor manager
         // in case it is not present there anymore this means an undo command has already deleted it
-        if (EMotionFX::GetActorManager().FindActorIndex(mActor) != MCORE_INVALIDINDEX32)
+        if (EMotionFX::GetActorManager().FindActorIndex(mActor) == InvalidIndex)
         {
-            //mActor->Destroy();
-        }
-        // in case the actor is not valid anymore make sure to unselect it to avoid bad pointers
-        else
-        {
+            // in case the actor is not valid anymore make sure to unselect it to avoid bad pointers
             CommandSystem::SelectionList& selection = GetCommandManager()->GetCurrentSelection();
             selection.RemoveActor(mActor);
         }
@@ -619,35 +570,30 @@ namespace EMStudio
         EMotionFX::ActorInstance* actorInstance = EMotionFX::ActorInstance::Create(mActor);
         actorInstance->UpdateMeshDeformers(0.0f, true);
 
-        MCore::AABB aabb;
-        actorInstance->CalcMeshBasedAABB(0, &aabb);
+        AZ::Aabb aabb;
+        actorInstance->CalcMeshBasedAabb(0, &aabb);
 
-        if (aabb.CheckIfIsValid() == false)
+        if (!aabb.IsValid())
         {
-            actorInstance->CalcNodeOBBBasedAABB(&aabb);
+            actorInstance->CalcNodeBasedAabb(&aabb);
         }
 
-        if (aabb.CheckIfIsValid() == false)
-        {
-            actorInstance->CalcNodeBasedAABB(&aabb);
-        }
-
-        mCharacterHeight = aabb.CalcHeight();
+        mCharacterHeight = aabb.GetExtents().GetZ();
         mOffsetFromTrajectoryNode = aabb.GetMin().GetY() + (mCharacterHeight * 0.5f);
 
         actorInstance->Destroy();
 
         // scale the normals down to 1% of the character size, that looks pretty nice on all models
-        mNormalsScaleMultiplier = aabb.CalcRadius() * 0.01f;
+        const float radius = AZ::Vector3(aabb.GetMax() - aabb.GetMin()).GetLength() * 0.5f;
+        mNormalsScaleMultiplier = radius * 0.01f;
     }
 
 
     // zoom to characters
     void RenderPlugin::ViewCloseup(bool selectedInstancesOnly, RenderWidget* renderWidget, float flightTime)
     {
-        const MCore::AABB sceneAABB = GetSceneAABB(selectedInstancesOnly);
-
-        if (sceneAABB.CheckIfIsValid())
+        const AZ::Aabb sceneAabb = GetSceneAabb(selectedInstancesOnly);
+        if (sceneAabb.IsValid())
         {
             // in case the given view widget parameter is nullptr apply it on all view widgets
             if (!renderWidget)
@@ -655,13 +601,13 @@ namespace EMStudio
                 for (RenderViewWidget* viewWidget : m_viewWidgets)
                 {
                     RenderWidget* current = viewWidget->GetRenderWidget();
-                    current->ViewCloseup(sceneAABB, flightTime);
+                    current->ViewCloseup(sceneAabb, flightTime);
                 }
             }
             // only apply it to the given view widget
             else
             {
-                renderWidget->ViewCloseup(sceneAABB, flightTime);
+                renderWidget->ViewCloseup(sceneAabb, flightTime);
             }
         }
     }
@@ -822,8 +768,8 @@ namespace EMStudio
 
     void RenderPlugin::UpdateActorInstances(float timePassedInSeconds)
     {
-        const uint32 numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
-        for (uint32 i = 0; i < numActorInstances; ++i)
+        const size_t numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
+        for (size_t i = 0; i < numActorInstances; ++i)
         {
             EMotionFX::ActorInstance* actorInstance = EMotionFX::GetActorManager().GetActorInstance(i);
 
@@ -882,9 +828,9 @@ namespace EMStudio
 
 
     // get the AABB containing all actor instances in the scene
-    MCore::AABB RenderPlugin::GetSceneAABB(bool selectedInstancesOnly)
+    AZ::Aabb RenderPlugin::GetSceneAabb(bool selectedInstancesOnly)
     {
-        MCore::AABB finalAABB;
+        AZ::Aabb finalAabb = AZ::Aabb::CreateNull();
         CommandSystem::SelectionList& selection = GetCommandManager()->GetCurrentSelection();
 
         if (mUpdateCallback)
@@ -901,8 +847,8 @@ namespace EMStudio
         }
 
         // get the number of actor instances and iterate through them
-        const uint32 numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
-        for (uint32 i = 0; i < numActorInstances; ++i)
+        const size_t numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
+        for (size_t i = 0; i < numActorInstances; ++i)
         {
             // get the actor instance and update its transformations and meshes
             EMotionFX::ActorInstance* actorInstance = EMotionFX::GetActorManager().GetActorInstance(i);
@@ -922,20 +868,28 @@ namespace EMStudio
             }
 
             // get the mesh based AABB
-            MCore::AABB aabb;
-            actorInstance->CalcMeshBasedAABB(0, &aabb);
+            AZ::Aabb aabb = AZ::Aabb::CreateNull();
+            actorInstance->CalcMeshBasedAabb(0, &aabb);
 
             // get the node based AABB
-            if (aabb.CheckIfIsValid() == false)
+            if (!aabb.IsValid())
             {
-                actorInstance->CalcNodeBasedAABB(&aabb);
+                actorInstance->CalcNodeBasedAabb(&aabb);
             }
 
             // make sure the actor instance is covered in our global bounding box
-            finalAABB.Encapsulate(aabb);
+            if (aabb.IsValid())
+            {
+                finalAabb.AddAabb(aabb);
+            }
         }
 
-        return finalAABB;
+        if (!finalAabb.IsValid())
+        {
+            finalAabb.Set(AZ::Vector3(-1.0f, -1.0f, 0.0f), AZ::Vector3(1.0f, 1.0f, 0.0f));
+        }
+
+        return finalAabb;
     }
 
 
@@ -1037,7 +991,7 @@ namespace EMStudio
         MCommon::RenderUtil::TrajectoryTracePath* tracePath = new MCommon::RenderUtil::TrajectoryTracePath();
 
         tracePath->mActorInstance = actorInstance;
-        tracePath->mTraceParticles.Reserve(512);
+        tracePath->mTraceParticles.reserve(512);
 
         m_trajectoryTracePaths.emplace_back(tracePath);
         return tracePath;
@@ -1049,10 +1003,10 @@ namespace EMStudio
     {
         // get the current selection
         CommandSystem::SelectionList& selectionList = GetCommandManager()->GetCurrentSelection();
-        const uint32 numSelectedActorInstances = selectionList.GetNumSelectedActorInstances();
+        const size_t numSelectedActorInstances = selectionList.GetNumSelectedActorInstances();
 
         // iterate through the actor instances and reset their trajectory path
-        for (uint32 i = 0; i < numSelectedActorInstances; ++i)
+        for (size_t i = 0; i < numSelectedActorInstances; ++i)
         {
             // get the actor instance and find the corresponding trajectory path
             EMotionFX::ActorInstance*                   actorInstance   = selectionList.GetActorInstance(i);
@@ -1078,13 +1032,13 @@ namespace EMStudio
                 const EMotionFX::Transform& worldTM = actorInstance->GetWorldSpaceTransform();
 
                 bool distanceTraveledEnough = false;
-                if (trajectoryPath->mTraceParticles.GetIsEmpty())
+                if (trajectoryPath->mTraceParticles.empty())
                 {
                     distanceTraveledEnough = true;
                 }
                 else
                 {
-                    const uint32 numParticles = trajectoryPath->mTraceParticles.GetLength();
+                    const size_t numParticles = trajectoryPath->mTraceParticles.size();
                     const EMotionFX::Transform& oldWorldTM = trajectoryPath->mTraceParticles[numParticles - 1].mWorldTM;
 
                     const AZ::Vector3& oldPos = oldWorldTM.mPosition;
@@ -1108,7 +1062,7 @@ namespace EMStudio
                     // create the particle, fill its data and add it to the trajectory trace path
                     MCommon::RenderUtil::TrajectoryPathParticle trajectoryParticle;
                     trajectoryParticle.mWorldTM = worldTM;
-                    trajectoryPath->mTraceParticles.Add(trajectoryParticle);
+                    trajectoryPath->mTraceParticles.emplace_back(trajectoryParticle);
 
                     // reset the time passed as we just added a new particle
                     trajectoryPath->mTimePassed = 0.0f;
@@ -1116,9 +1070,9 @@ namespace EMStudio
             }
 
             // make sure we don't have too many items in our array
-            if (trajectoryPath->mTraceParticles.GetLength() > 50)
+            if (trajectoryPath->mTraceParticles.size() > 50)
             {
-                trajectoryPath->mTraceParticles.RemoveFirst();
+                trajectoryPath->mTraceParticles.erase(begin(trajectoryPath->mTraceParticles));
             }
         }
     }
@@ -1145,8 +1099,8 @@ namespace EMStudio
         RenderViewWidget*   widget          = GetActiveViewWidget();
         RenderOptions*      renderOptions   = GetRenderOptions();
 
-        const AZStd::unordered_set<AZ::u32>& visibleJointIndices = GetManager()->GetVisibleJointIndices();
-        const AZStd::unordered_set<AZ::u32>& selectedJointIndices = GetManager()->GetSelectedJointIndices();
+        const AZStd::unordered_set<size_t>& visibleJointIndices = GetManager()->GetVisibleJointIndices();
+        const AZStd::unordered_set<size_t>& selectedJointIndices = GetManager()->GetSelectedJointIndices();
 
         // render the AABBs
         if (widget->GetRenderFlag(RenderViewWidget::RENDER_AABB))
@@ -1155,24 +1109,19 @@ namespace EMStudio
             settings.mNodeBasedColor          = renderOptions->GetNodeAABBColor();
             settings.mStaticBasedColor        = renderOptions->GetStaticAABBColor();
             settings.mMeshBasedColor          = renderOptions->GetMeshAABBColor();
-            settings.mCollisionMeshBasedColor = renderOptions->GetCollisionMeshAABBColor();
 
-            renderUtil->RenderAABBs(actorInstance, settings);
+            renderUtil->RenderAabbs(actorInstance, settings);
         }
 
-        if (widget->GetRenderFlag(RenderViewWidget::RENDER_OBB))
-        {
-            renderUtil->RenderOBBs(actorInstance, &visibleJointIndices, &selectedJointIndices, renderOptions->GetOBBsColor(), renderOptions->GetSelectedObjectColor());
-        }
         if (widget->GetRenderFlag(RenderViewWidget::RENDER_LINESKELETON))
         {
             const MCommon::Camera* camera = widget->GetRenderWidget()->GetCamera();
             const AZ::Vector3& cameraPos = camera->GetPosition();
 
-            MCore::AABB aabb;
-            actorInstance->CalcNodeBasedAABB(&aabb);
-            const AZ::Vector3 aabbMid = aabb.CalcMiddle();
-            const float aabbRadius = aabb.CalcRadius();
+            AZ::Aabb aabb;
+            actorInstance->CalcNodeBasedAabb(&aabb);
+            const AZ::Vector3 aabbMid = aabb.GetCenter();
+            const float aabbRadius = AZ::Vector3(aabb.GetMax() - aabb.GetMin()).GetLength() * 0.5f;
             const float camDistance = fabs((cameraPos - aabbMid).GetLength());
 
             // Avoid rendering too big joint spheres when zooming in onto a joint.
@@ -1185,7 +1134,7 @@ namespace EMStudio
             // Scale the joint spheres based on the character's extents, to avoid really large joint spheres
             // on small characters and too small spheres on large characters.
             static const float baseRadius = 0.005f;
-            const float jointSphereRadius = aabb.CalcRadius() * scaleMultiplier * baseRadius;
+            const float jointSphereRadius = aabbRadius * scaleMultiplier * baseRadius;
 
             renderUtil->RenderSimpleSkeleton(actorInstance, &visibleJointIndices, &selectedJointIndices,
                 renderOptions->GetLineSkeletonColor(), renderOptions->GetSelectedObjectColor(), jointSphereRadius);
@@ -1228,12 +1177,12 @@ namespace EMStudio
             // iterate through all enabled nodes
             const EMotionFX::Pose* pose = actorInstance->GetTransformData()->GetCurrentPose();
 
-            const uint32 geomLODLevel   = actorInstance->GetLODLevel();
-            const uint32 numEnabled     = actorInstance->GetNumEnabledNodes();
-            for (uint32 i = 0; i < numEnabled; ++i)
+            const size_t geomLODLevel   = actorInstance->GetLODLevel();
+            const size_t numEnabled     = actorInstance->GetNumEnabledNodes();
+            for (size_t i = 0; i < numEnabled; ++i)
             {
                 EMotionFX::Node*    node      = emstudioActor->mActor->GetSkeleton()->GetNode(actorInstance->GetEnabledNode(i));
-                const AZ::u32       nodeIndex = node->GetNodeIndex();
+                const size_t        nodeIndex = node->GetNodeIndex();
                 EMotionFX::Mesh*    mesh      = emstudioActor->mActor->GetMesh(geomLODLevel, nodeIndex);
 
                 renderUtil->ResetCurrentMesh();
@@ -1268,8 +1217,8 @@ namespace EMStudio
         // render the selection
         if (renderOptions->GetRenderSelectionBox() && EMotionFX::GetActorManager().GetNumActorInstances() != 1 && GetCurrentSelection()->CheckIfHasActorInstance(actorInstance))
         {
-            MCore::AABB aabb = actorInstance->GetAABB();
-            aabb.Widen(aabb.CalcRadius() * 0.005f);
+            AZ::Aabb aabb = actorInstance->GetAabb();
+            aabb.Expand(AZ::Vector3(0.005f));
             renderUtil->RenderSelection(aabb, renderOptions->GetSelectionColor());
         }
 

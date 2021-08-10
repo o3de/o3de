@@ -53,7 +53,7 @@ namespace EMStudio
         void OnMotionExtractionFlagsUpdated();
 
         void OnSelectMotionExtractionNode();
-        void OnMotionExtractionNodeSelected(MCore::Array<SelectionItem> selection);
+        void OnMotionExtractionNodeSelected(AZStd::vector<SelectionItem> selection);
 
     private:
         // callbacks

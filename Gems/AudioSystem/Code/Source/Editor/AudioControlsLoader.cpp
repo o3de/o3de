@@ -475,7 +475,7 @@ namespace AudioControls
                     control->AddConnection(connection);
                 }
 
-                control->m_connectionNodes.push_back(SRawConnectionData(childNode, connection != nullptr));
+                control->m_connectionNodes.emplace_back(childNode, connection != nullptr);
 
                 childNode = childNode->next_sibling();
             }
@@ -517,7 +517,7 @@ namespace AudioControls
                     {
                         control->AddConnection(connection);
                     }
-                    control->m_connectionNodes.push_back(SRawConnectionData(connectionNode, connection != nullptr));
+                    control->m_connectionNodes.emplace_back(connectionNode, connection != nullptr);
                     connectionNode = connectionNode->next_sibling();
                 }
                 configGroupNode = configGroupNode->next_sibling();
@@ -534,7 +534,7 @@ namespace AudioControls
                 {
                     control->AddConnection(connection);
                 }
-                control->m_connectionNodes.push_back(SRawConnectionData(connectionNode, connection != nullptr));
+                control->m_connectionNodes.emplace_back(connectionNode, connection != nullptr);
                 connectionNode = connectionNode->next_sibling();
             }
         }
@@ -576,7 +576,7 @@ namespace AudioControls
 
         requestNode->append_node(valueNode);
 
-        childControl->m_connectionNodes.push_back(SRawConnectionData(requestNode, false));
+        childControl->m_connectionNodes.emplace_back(requestNode, false);
         return childControl;
     }
 

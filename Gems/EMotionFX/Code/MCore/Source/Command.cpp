@@ -8,6 +8,7 @@
 
 // include the required headers
 #include "Command.h"
+#include <AzCore/std/numeric.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
 
@@ -28,10 +29,10 @@ namespace MCore
 
 
     // constructor
-    Command::Command(const char* commandName, Command* originalCommand)
+    Command::Command(AZStd::string commandName, Command* originalCommand)
+        : mOrgCommand(originalCommand)
+        , mCommandName(AZStd::move(commandName))
     {
-        mCommandName = commandName;
-        mOrgCommand  = originalCommand;
     }
 
 
@@ -81,9 +82,9 @@ namespace MCore
     }
 
 
-    uint32 Command::GetNumCallbacks() const
+    size_t Command::GetNumCallbacks() const
     {
-        return static_cast<uint32>(mCallbacks.size());
+        return mCallbacks.size();
     }
 
 
@@ -123,37 +124,18 @@ namespace MCore
 
 
     // calculate the number of registered pre-execute callbacks
-    uint32 Command::CalcNumPreCommandCallbacks() const
+    size_t Command::CalcNumPreCommandCallbacks() const
     {
-        uint32 result = 0;
-
-        const size_t numCallbacks = mCallbacks.size();
-        for (size_t i = 0; i < numCallbacks; ++i)
+        return AZStd::accumulate(begin(mCallbacks), end(mCallbacks), size_t{0}, [](size_t total, const Callback* callback)
         {
-            if (mCallbacks[i]->GetExecutePreCommand())
-            {
-                result++;
-            }
-        }
-
-        return result;
+            return callback->GetExecutePreCommand() ? total + 1 : total;
+        });
     }
 
 
     // calculate the number of registered post-execute callbacks
-    uint32 Command::CalcNumPostCommandCallbacks() const
+    size_t Command::CalcNumPostCommandCallbacks() const
     {
-        uint32 result = 0;
-
-        const size_t numCallbacks = mCallbacks.size();
-        for (size_t i = 0; i < numCallbacks; ++i)
-        {
-            if (mCallbacks[i]->GetExecutePreCommand() == false)
-            {
-                result++;
-            }
-        }
-
-        return result;
+        return mCallbacks.size() - CalcNumPreCommandCallbacks();
     }
 } // namespace MCore

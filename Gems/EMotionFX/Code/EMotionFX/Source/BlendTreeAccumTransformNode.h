@@ -84,7 +84,7 @@ namespace EMotionFX
 
         public:
             Transform mAdditiveTransform = Transform::CreateIdentity();
-            uint32 mNodeIndex = InvalidIndex32;
+            size_t mNodeIndex = InvalidIndex;
             float mDeltaTime = 0.0f;
         };
 

@@ -76,13 +76,13 @@ namespace EMotionFX
     {
         auto data = AZStd::make_unique<MotionLinkData>();
         const Skeleton* skeleton = actor->GetSkeleton();
-        const AZ::u32 numJoints = skeleton->GetNumNodes();
-        AZStd::vector<AZ::u32>& jointLinks = data->GetJointDataLinks();
+        const size_t numJoints = skeleton->GetNumNodes();
+        AZStd::vector<size_t>& jointLinks = data->GetJointDataLinks();
         jointLinks.resize(numJoints);
-        for (AZ::u32 i = 0; i < numJoints; ++i)
+        for (size_t i = 0; i < numJoints; ++i)
         {
             const AZ::Outcome<size_t> findResult = FindJointIndexByNameId(skeleton->GetNode(i)->GetID());
-            jointLinks[i] = findResult.IsSuccess() ? static_cast<AZ::u32>(findResult.GetValue()) : InvalidIndex32;
+            jointLinks[i] = findResult.IsSuccess() ? findResult.GetValue() : InvalidIndex;
         }
         return AZStd::move(data);
     }
@@ -186,7 +186,7 @@ namespace EMotionFX
         return FindFloatIndexByNameId(MCore::GetStringIdPool().GenerateIdForString(name));
     }
 
-    AZ::Outcome<size_t> MotionData::FindJointIndexByNameId(AZ::u32 id) const
+    AZ::Outcome<size_t> MotionData::FindJointIndexByNameId(size_t id) const
     {
         return FindIndexIf(m_staticJointData, [id](const StaticJointData& item) { return item.m_nameId == id; });
     }
@@ -453,12 +453,12 @@ namespace EMotionFX
         m_sampleRate = 30.0f;
     }
 
-    void MotionData::BasicRetarget(const ActorInstance* actorInstance, const MotionLinkData* motionLinkData, AZ::u32 jointIndex, Transform& inOutTransform) const
+    void MotionData::BasicRetarget(const ActorInstance* actorInstance, const MotionLinkData* motionLinkData, size_t jointIndex, Transform& inOutTransform) const
     {
         AZ_Assert(motionLinkData, "Expecting valid motionLinkData pointer.");
 
         const Pose* bindPose = actorInstance->GetTransformData()->GetBindPose();
-        const AZStd::vector<AZ::u32>& jointLinks = motionLinkData->GetJointDataLinks();
+        const AZStd::vector<size_t>& jointLinks = motionLinkData->GetJointDataLinks();
 
         // Special case handling on translation of root nodes.
         // Scale the translation amount based on the height difference between the bind pose height of the
@@ -466,13 +466,13 @@ namespace EMotionFX
         // All other nodes get their translation data displaced based on the position difference between the
         // parent relative space positions in the actor instance's bind pose and the motion bind pose.
         const Actor* actor = actorInstance->GetActor();
-        const AZ::u32 retargetRootIndex = actor->GetRetargetRootNodeIndex();
+        const size_t retargetRootIndex = actor->GetRetargetRootNodeIndex();
         const Node* joint = actor->GetSkeleton()->GetNode(jointIndex);
         bool needsDisplacement = true;
-        if ((retargetRootIndex == jointIndex || joint->GetIsRootNode()) && retargetRootIndex != InvalidIndex32)
+        if ((retargetRootIndex == jointIndex || joint->GetIsRootNode()) && retargetRootIndex != InvalidIndex)
         {
-            const AZ::u32 retargetRootDataIndex = jointLinks[actor->GetRetargetRootNodeIndex()];
-            if (retargetRootDataIndex != InvalidIndex32)
+            const size_t retargetRootDataIndex = jointLinks[actor->GetRetargetRootNodeIndex()];
+            if (retargetRootDataIndex != InvalidIndex)
             {
                 const float subMotionHeight = m_staticJointData[retargetRootDataIndex].m_bindTransform.mPosition.GetZ();
                 if (AZ::GetAbs(subMotionHeight) >= AZ::Constants::FloatEpsilon)
@@ -484,8 +484,8 @@ namespace EMotionFX
             }
         }
 
-        const AZ::u16 jointDataIndex = jointLinks[jointIndex];
-        if (jointDataIndex != InvalidIndex16)
+        const size_t jointDataIndex = jointLinks[jointIndex];
+        if (jointDataIndex != InvalidIndex)
         {
             const Transform& bindPoseTransform = bindPose->GetLocalSpaceTransform(jointIndex);
             const Transform& motionBindPose = m_staticJointData[jointDataIndex].m_bindTransform;

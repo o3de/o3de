@@ -52,7 +52,7 @@ namespace EMStudio
         void keyReleaseEvent(QKeyEvent* event) override;
 
         void SetControlsEnabled();
-        uint32 GetIDFromTreeItem(QTreeWidgetItem* item);
+        uint32 GetIDFromTreeItem(const QTreeWidgetItem* item);
         void SetVisibilityFlags(bool isVisible);
 
     private:

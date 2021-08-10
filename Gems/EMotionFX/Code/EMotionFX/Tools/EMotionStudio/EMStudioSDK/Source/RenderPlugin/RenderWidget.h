@@ -6,11 +6,10 @@
  *
  */
 
-#ifndef __EMSTUDIO_RENDERWIDGET_H
-#define __EMSTUDIO_RENDERWIDGET_H
+#pragma once
 
-//
 #if !defined(Q_MOC_RUN)
+#include <AzCore/Math/Aabb.h>
 #include <MCore/Source/StandardHeaders.h>
 #include "../EMStudioConfig.h"
 #include <EMotionFX/Rendering/Common/Camera.h>
@@ -99,8 +98,8 @@ namespace EMStudio
         virtual void Update() = 0;
 
         // line rendering helper functions
-        MCORE_INLINE void AddTriangle(const AZ::Vector3& posA, const AZ::Vector3& posB, const AZ::Vector3& posC, const AZ::Vector3& normalA, const AZ::Vector3& normalB, const AZ::Vector3& normalC, uint32 color)        { mTriangles.Add(Triangle(posA, posB, posC, normalA, normalB, normalC, color)); }
-        MCORE_INLINE void ClearTriangles()                                                                  { mTriangles.Clear(false); }
+        MCORE_INLINE void AddTriangle(const AZ::Vector3& posA, const AZ::Vector3& posB, const AZ::Vector3& posC, const AZ::Vector3& normalA, const AZ::Vector3& normalB, const AZ::Vector3& normalC, uint32 color)        { mTriangles.emplace_back(Triangle(posA, posB, posC, normalA, normalB, normalC, color)); }
+        MCORE_INLINE void ClearTriangles()                                                                  { mTriangles.clear(); }
         void RenderTriangles();
 
         // helper rendering functions
@@ -117,7 +116,7 @@ namespace EMStudio
         MCORE_INLINE MCommon::Camera* GetCamera() const                                                     { return mCamera; }
         MCORE_INLINE CameraMode GetCameraMode() const                                                       { return mCameraMode; }
         MCORE_INLINE void SetSkipFollowCalcs(bool skipFollowCalcs)                                          { mSkipFollowCalcs = skipFollowCalcs; }
-        void ViewCloseup(const MCore::AABB& aabb, float flightTime, uint32 viewCloseupWaiting = 5);
+        void ViewCloseup(const AZ::Aabb& aabb, float flightTime, uint32 viewCloseupWaiting = 5);
         void ViewCloseup(bool selectedInstancesOnly, float flightTime, uint32 viewCloseupWaiting = 5);
         void SwitchCamera(CameraMode mode);
 
@@ -140,10 +139,10 @@ namespace EMStudio
 
         RenderPlugin*                           mPlugin;
         RenderViewWidget*                       mViewWidget;
-        MCore::Array<Triangle>                  mTriangles;
+        AZStd::vector<Triangle>                  mTriangles;
         EventHandler                            mEventHandler;
 
-        MCore::Array<EMotionFX::ActorInstance*> mSelectedActorInstances;
+        AZStd::vector<EMotionFX::ActorInstance*> mSelectedActorInstances;
 
         MCommon::TransformationManipulator*     mActiveTransformManip;
 
@@ -161,7 +160,7 @@ namespace EMStudio
 
         // used for closeup camera flights
         uint32                                  mViewCloseupWaiting;
-        MCore::AABB                             mViewCloseupAABB;
+        AZ::Aabb                                mViewCloseupAABB;
         float                                   mViewCloseupFlightTime;
 
         // manipulator helper data
@@ -175,6 +174,3 @@ namespace EMStudio
         int32                                   mPixelsMovedSinceRightClick;
     };
 } // namespace EMStudio
-
-
-#endif

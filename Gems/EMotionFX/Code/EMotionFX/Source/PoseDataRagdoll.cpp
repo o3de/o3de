@@ -158,7 +158,7 @@ namespace EMotionFX
                 // Blend node states. Both, the destination pose as well as the current pose hold used ragdoll pose datas.
                 for (size_t i = 0; i < nodeStateCount; ++i)
                 {
-                    const AZ::u32 jointIndex = ragdollInstance->GetJointIndex(i);
+                    const size_t jointIndex = ragdollInstance->GetJointIndex(i);
                     const Transform& localTransform = m_pose->GetLocalSpaceTransform(jointIndex);
                     const Transform& destLocalTransform = destPose->GetLocalSpaceTransform(jointIndex);
 

@@ -636,7 +636,7 @@ void CSelectionGroup::FinishChanges()
     for (int i = 0; i < iObjectSize; ++i)
     {
         CBaseObject* pObject = selectedObjects[i];
-        if (pObject == NULL)
+        if (pObject == nullptr)
         {
             continue;
         }

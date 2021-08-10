@@ -132,7 +132,7 @@ void CGotoTrack::SetKeyAtTime(float time, IKey* key)
         if (fabs(keyt - time) < MIN_TIME_PRECISION)
         {
             key->flags = m_keys[i].flags;               // Reserve the flag value.
-            SetKey(i, key);
+            SetKey(static_cast<int>(i), key);
             found = true;
             break;
         }

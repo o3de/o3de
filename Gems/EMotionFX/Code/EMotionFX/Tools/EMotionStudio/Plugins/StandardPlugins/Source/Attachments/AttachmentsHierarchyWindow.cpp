@@ -72,8 +72,8 @@ namespace EMStudio
         mHierarchy->clear();
 
         // get the number of actor instances and iterate through them
-        const uint32 numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
-        for (uint32 i = 0; i < numActorInstances; ++i)
+        const size_t numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
+        for (size_t i = 0; i < numActorInstances; ++i)
         {
             EMotionFX::ActorInstance*   actorInstance = EMotionFX::GetActorManager().GetActorInstance(i);
 
@@ -96,8 +96,8 @@ namespace EMStudio
                 mHierarchy->addTopLevelItem(item);
 
                 // get the number of attachments and iterate through them
-                const uint32 numAttachments = actorInstance->GetNumAttachments();
-                for (uint32 j = 0; j < numAttachments; ++j)
+                const size_t numAttachments = actorInstance->GetNumAttachments();
+                for (size_t j = 0; j < numAttachments; ++j)
                 {
                     EMotionFX::Attachment* attachment = actorInstance->GetAttachment(j);
                     MCORE_ASSERT(actorInstance == attachment->GetAttachToActorInstance());
@@ -124,8 +124,8 @@ namespace EMStudio
         parent->addChild(item);
 
         // get the number of attachments and iterate through them
-        const uint32 numAttachments = actorInstance->GetNumAttachments();
-        for (uint32 i = 0; i < numAttachments; ++i)
+        const size_t numAttachments = actorInstance->GetNumAttachments();
+        for (size_t i = 0; i < numAttachments; ++i)
         {
             EMotionFX::Attachment* attachment = actorInstance->GetAttachment(i);
             MCORE_ASSERT(actorInstance == attachment->GetAttachToActorInstance());

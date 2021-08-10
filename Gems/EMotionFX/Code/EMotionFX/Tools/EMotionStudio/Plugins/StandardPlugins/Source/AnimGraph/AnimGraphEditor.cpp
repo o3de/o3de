@@ -125,7 +125,7 @@ namespace EMotionFX
 
     EMotionFX::MotionSet* AnimGraphEditor::GetSelectedMotionSet()
     {
-        const AZ::Outcome<uint32> motionSetIndex = GetMotionSetIndex(m_motionSetComboBox->currentIndex());
+        const AZ::Outcome<size_t> motionSetIndex = GetMotionSetIndex(m_motionSetComboBox->currentIndex());
         if (motionSetIndex.IsSuccess())
         {
             return EMotionFX::GetMotionManager().GetMotionSet(motionSetIndex.GetValue());
@@ -149,8 +149,8 @@ namespace EMotionFX
         m_motionSetComboBox->clear();
 
         // add each motion set name
-        const uint32 numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
-        for (uint32 i = 0; i < numMotionSets; ++i)
+        const size_t numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
+        for (size_t i = 0; i < numMotionSets; ++i)
         {
             EMotionFX::MotionSet* motionSet = EMotionFX::GetMotionManager().GetMotionSet(i);
             if (motionSet->GetIsOwnedByRuntime())
@@ -163,7 +163,7 @@ namespace EMotionFX
 
         // get the current selection list and the number of actor instances selected
         const CommandSystem::SelectionList& selectionList = CommandSystem::GetCommandManager()->GetCurrentSelection();
-        const uint32 numActorInstances = selectionList.GetNumSelectedActorInstances();
+        const size_t numActorInstances = selectionList.GetNumSelectedActorInstances();
 
         // if actor instances are selected, set the used motion set
         if (numActorInstances > 0)
@@ -172,7 +172,7 @@ namespace EMotionFX
             // this is used to check if multiple motion sets are used
             AZStd::vector<EMotionFX::MotionSet*> usedMotionSets;
             AZStd::vector<EMotionFX::AnimGraphInstance*> usedAnimGraphs;
-            for (uint32 i = 0; i < numActorInstances; ++i)
+            for (size_t i = 0; i < numActorInstances; ++i)
             {
                 EMotionFX::ActorInstance* actorInstance = selectionList.GetActorInstance(i);
                 if (actorInstance->GetIsOwnedByRuntime())
@@ -301,7 +301,7 @@ namespace EMotionFX
     {
         // get the current selection list and the number of actor instances selected
         const CommandSystem::SelectionList& selectionList = CommandSystem::GetCommandManager()->GetCurrentSelection();
-        const uint32 numActorInstances = selectionList.GetNumSelectedActorInstances();
+        const size_t numActorInstances = selectionList.GetNumSelectedActorInstances();
 
         AnimGraphEditor::m_lastMotionSetText = m_motionSetComboBox->itemText(index);
         // if no one actor instance is selected, the combo box has no effect
@@ -310,7 +310,7 @@ namespace EMotionFX
             return;
         }
 
-        const AZ::Outcome<uint32> motionSetIndex = GetMotionSetIndex(index);
+        const AZ::Outcome<size_t> motionSetIndex = GetMotionSetIndex(index);
 
         EMotionFX::MotionSet* motionSet = nullptr;
         if (motionSetIndex.IsSuccess())
@@ -323,7 +323,7 @@ namespace EMotionFX
 
         // update the motion set on each actor instance if one anim graph is activated
         AZStd::string commandString;
-        for (uint32 i = 0; i < numActorInstances; ++i)
+        for (size_t i = 0; i < numActorInstances; ++i)
         {
             // get the actor instance from the selection list and the anim graph instance
             EMotionFX::ActorInstance* actorInstance = selectionList.GetActorInstance(i);
@@ -401,12 +401,12 @@ namespace EMotionFX
         }
     }
 
-    AZ::Outcome<uint32> AnimGraphEditor::GetMotionSetIndex(int comboBoxIndex) const
+    AZ::Outcome<size_t> AnimGraphEditor::GetMotionSetIndex(int comboBoxIndex) const
     {
-        const uint32 targetEditorMotionSetIndex = comboBoxIndex;
-        uint32 currentEditorMotionSet = 0;
-        const uint32 numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
-        for (uint32 i = 0; i < numMotionSets; ++i)
+        const size_t targetEditorMotionSetIndex = comboBoxIndex;
+        size_t currentEditorMotionSet = 0;
+        const size_t numMotionSets = EMotionFX::GetMotionManager().GetNumMotionSets();
+        for (size_t i = 0; i < numMotionSets; ++i)
         {
             const EMotionFX::MotionSet* motionSet = EMotionFX::GetMotionManager().GetMotionSet(i);
 
