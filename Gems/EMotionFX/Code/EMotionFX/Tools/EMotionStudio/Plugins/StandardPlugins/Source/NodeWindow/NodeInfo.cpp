@@ -31,11 +31,11 @@ namespace EMStudio
         m_name = node->GetNameString();
 
         // transform info
-        m_position = transformData->GetCurrentPose()->GetLocalSpaceTransform(nodeIndex).mPosition;
-        m_rotation = transformData->GetCurrentPose()->GetLocalSpaceTransform(nodeIndex).mRotation;
+        m_position = transformData->GetCurrentPose()->GetLocalSpaceTransform(nodeIndex).m_position;
+        m_rotation = transformData->GetCurrentPose()->GetLocalSpaceTransform(nodeIndex).m_rotation;
 
 #ifndef EMFX_SCALE_DISABLED
-        m_scale = transformData->GetCurrentPose()->GetLocalSpaceTransform(nodeIndex).mScale;
+        m_scale = transformData->GetCurrentPose()->GetLocalSpaceTransform(nodeIndex).m_scale;
 #else
         m_scale = AZ::Vector3::CreateOne();
 #endif
@@ -53,9 +53,9 @@ namespace EMStudio
         if (actor->GetHasMirrorInfo())
         {
             const EMotionFX::Actor::NodeMirrorInfo& nodeMirrorInfo = actor->GetNodeMirrorInfo(nodeIndex);
-            if (nodeMirrorInfo.mSourceNode != MCORE_INVALIDINDEX16 && nodeMirrorInfo.mSourceNode != nodeIndex)
+            if (nodeMirrorInfo.m_sourceNode != MCORE_INVALIDINDEX16 && nodeMirrorInfo.m_sourceNode != nodeIndex)
             {
-                m_mirrorNodeName = actor->GetSkeleton()->GetNode(nodeMirrorInfo.mSourceNode)->GetNameString();
+                m_mirrorNodeName = actor->GetSkeleton()->GetNode(nodeMirrorInfo.m_sourceNode)->GetNameString();
             }
         }
 

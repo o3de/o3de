@@ -19,7 +19,7 @@
 namespace CommandSystem
 {
     MCORE_DEFINECOMMAND_START(CommandSelect, "Select object", true)
-    SelectionList mData;
+    SelectionList m_data;
 public:
     static const char* s_SelectCmdName;
     static bool Select(MCore::Command* command, const MCore::CommandLine& parameters, AZStd::string& outResult, bool unselect);

@@ -120,7 +120,7 @@ namespace EMStudio
         : QDialog(parent)
     {
         // store the motion set
-        mMotionSet = motionSet;
+        m_motionSet = motionSet;
 
         // set the window title
         setWindowTitle("Enter new motion set name");
@@ -132,33 +132,27 @@ namespace EMStudio
         QVBoxLayout* layout = new QVBoxLayout();
 
         // add the line edit
-        mLineEdit = new QLineEdit();
-        connect(mLineEdit, &QLineEdit::textEdited, this, &MotionSetManagementRenameWindow::TextEdited);
-        layout->addWidget(mLineEdit);
+        m_lineEdit = new QLineEdit();
+        connect(m_lineEdit, &QLineEdit::textEdited, this, &MotionSetManagementRenameWindow::TextEdited);
+        layout->addWidget(m_lineEdit);
 
         // set the current name and select all
-        mLineEdit->setText(motionSet->GetName());
-        mLineEdit->selectAll();
-
-        // create add the error message
-        /*mErrorMsg = new QLabel("<font color='red'>Error: Duplicate name found</font>");
-        mErrorMsg->setAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-        mErrorMsg->setVisible(false);*/
+        m_lineEdit->setText(motionSet->GetName());
+        m_lineEdit->selectAll();
 
         // create the button layout
         QHBoxLayout* buttonLayout   = new QHBoxLayout();
-        mOKButton                   = new QPushButton("OK");
+        m_okButton                   = new QPushButton("OK");
         QPushButton* cancelButton   = new QPushButton("Cancel");
-        //buttonLayout->addWidget(mErrorMsg);
-        buttonLayout->addWidget(mOKButton);
+        buttonLayout->addWidget(m_okButton);
         buttonLayout->addWidget(cancelButton);
 
         // Allow pressing the enter key as alternative to pressing the ok button for faster workflow.
-        mOKButton->setAutoDefault(true);
-        mOKButton->setDefault(true);
+        m_okButton->setAutoDefault(true);
+        m_okButton->setDefault(true);
 
         // connect the buttons
-        connect(mOKButton, &QPushButton::clicked, this, &MotionSetManagementRenameWindow::Accepted);
+        connect(m_okButton, &QPushButton::clicked, this, &MotionSetManagementRenameWindow::Accepted);
         connect(cancelButton, &QPushButton::clicked, this, &MotionSetManagementRenameWindow::reject);
 
         // set the new layout
@@ -171,15 +165,13 @@ namespace EMStudio
     {
         if (text.isEmpty())
         {
-            //mErrorMsg->setVisible(false);
-            mOKButton->setEnabled(false);
-            GetManager()->SetWidgetAsInvalidInput(mLineEdit);
+            m_okButton->setEnabled(false);
+            GetManager()->SetWidgetAsInvalidInput(m_lineEdit);
         }
-        else if (text == mMotionSet->GetName())
+        else if (text == m_motionSet->GetName())
         {
-            //mErrorMsg->setVisible(false);
-            mOKButton->setEnabled(true);
-            mLineEdit->setStyleSheet("");
+            m_okButton->setEnabled(true);
+            m_lineEdit->setStyleSheet("");
         }
         else
         {
@@ -196,24 +188,22 @@ namespace EMStudio
 
                 if (text == motionSet->GetName())
                 {
-                    //mErrorMsg->setVisible(true);
-                    mOKButton->setEnabled(false);
-                    GetManager()->SetWidgetAsInvalidInput(mLineEdit);
+                    m_okButton->setEnabled(false);
+                    GetManager()->SetWidgetAsInvalidInput(m_lineEdit);
                     return;
                 }
             }
 
             // no duplicate name found
-            //mErrorMsg->setVisible(false);
-            mOKButton->setEnabled(true);
-            mLineEdit->setStyleSheet("");
+            m_okButton->setEnabled(true);
+            m_lineEdit->setStyleSheet("");
         }
     }
 
 
     void MotionSetManagementRenameWindow::Accepted()
     {
-        const AZStd::string commandString = AZStd::string::format("AdjustMotionSet -motionSetID %i -newName \"%s\"", mMotionSet->GetID(), mLineEdit->text().toUtf8().data());
+        const AZStd::string commandString = AZStd::string::format("AdjustMotionSet -motionSetID %i -newName \"%s\"", m_motionSet->GetID(), m_lineEdit->text().toUtf8().data());
 
         AZStd::string result;
         if (!EMStudio::GetCommandManager()->ExecuteCommand(commandString, result))
@@ -229,7 +219,7 @@ namespace EMStudio
     MotionSetManagementWindow::MotionSetManagementWindow(MotionSetsWindowPlugin* parentPlugin, QWidget* parent)
         : QWidget(parent)
     {
-        mPlugin = parentPlugin;
+        m_plugin = parentPlugin;
     }
 
 
@@ -248,31 +238,31 @@ namespace EMStudio
         layout->setMargin(0);
         layout->setSpacing(2);
 
-        mMotionSetsTree = new QTreeWidget();
+        m_motionSetsTree = new QTreeWidget();
 
         // set the table to row single selection
-        mMotionSetsTree->setSelectionBehavior(QAbstractItemView::SelectRows);
-        mMotionSetsTree->setSelectionMode(QAbstractItemView::ExtendedSelection);
+        m_motionSetsTree->setSelectionBehavior(QAbstractItemView::SelectRows);
+        m_motionSetsTree->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
         // set the minimum size and the resizing policy
-        mMotionSetsTree->setMinimumHeight(150);
-        mMotionSetsTree->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-        mMotionSetsTree->setColumnCount(1);
+        m_motionSetsTree->setMinimumHeight(150);
+        m_motionSetsTree->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+        m_motionSetsTree->setColumnCount(1);
 
-        mMotionSetsTree->setAlternatingRowColors(true);
-        mMotionSetsTree->setExpandsOnDoubleClick(true);
-        mMotionSetsTree->setAnimated(true);
-        mMotionSetsTree->setObjectName("EMFX.MotionSetManagementWindow.MotionSetsTree");
+        m_motionSetsTree->setAlternatingRowColors(true);
+        m_motionSetsTree->setExpandsOnDoubleClick(true);
+        m_motionSetsTree->setAnimated(true);
+        m_motionSetsTree->setObjectName("EMFX.MotionSetManagementWindow.MotionSetsTree");
 
-        connect(mMotionSetsTree, &QTreeWidget::itemSelectionChanged, this, &MotionSetManagementWindow::OnSelectionChanged);
+        connect(m_motionSetsTree, &QTreeWidget::itemSelectionChanged, this, &MotionSetManagementWindow::OnSelectionChanged);
 
         QStringList headerList;
         headerList.append("Name");
-        mMotionSetsTree->setHeaderLabels(headerList);
-        mMotionSetsTree->header()->setSortIndicator(0, Qt::AscendingOrder);
+        m_motionSetsTree->setHeaderLabels(headerList);
+        m_motionSetsTree->header()->setSortIndicator(0, Qt::AscendingOrder);
 
         // disable the move of section to have column order fixed
-        mMotionSetsTree->header()->setSectionsMovable(false);
+        m_motionSetsTree->header()->setSectionsMovable(false);
 
         QToolBar* toolBar = new QToolBar(this);
         toolBar->setObjectName("MotionSetManagementWindow.ToolBar");
@@ -311,7 +301,7 @@ namespace EMStudio
         toolBar->addWidget(m_searchWidget);
         
         layout->addWidget(toolBar);
-        layout->addWidget(mMotionSetsTree);
+        layout->addWidget(m_motionSetsTree);
 
         ReInit();
         UpdateInterface();
@@ -373,7 +363,7 @@ namespace EMStudio
     void MotionSetManagementWindow::ReInit()
     {
         // Get the selected items in the motion set tree widget..
-        const QList<QTreeWidgetItem*> selectedItems = mMotionSetsTree->selectedItems();
+        const QList<QTreeWidgetItem*> selectedItems = m_motionSetsTree->selectedItems();
         const int numSelectedItems = selectedItems.size();
 
         // Create and fill an array containing ids of all selected motion sets.
@@ -385,11 +375,11 @@ namespace EMStudio
         });
 
         // Set the sorting disabled to avoid index issues.
-        mMotionSetsTree->setSortingEnabled(false);
+        m_motionSetsTree->setSortingEnabled(false);
 
         // Clear all old items.
-        mMotionSetsTree->blockSignals(true);
-        mMotionSetsTree->clear();
+        m_motionSetsTree->blockSignals(true);
+        m_motionSetsTree->clear();
 
         // Iterate through root motion sets and fill in the table recursively.
         AZStd::string tempString;
@@ -409,7 +399,7 @@ namespace EMStudio
             }
 
             // add the top level item
-            QTreeWidgetItem* item = new QTreeWidgetItem(mMotionSetsTree);
+            QTreeWidgetItem* item = new QTreeWidgetItem(m_motionSetsTree);
             item->setText(0, motionSet->GetName());
             item->setData(0, Qt::UserRole, motionSet->GetID());
             item->setIcon(0, QIcon(QStringLiteral(":/EMotionFX/MotionSet.svg")));
@@ -418,7 +408,7 @@ namespace EMStudio
             AZStd::to_string(tempString, motionSet->GetID());
             item->setWhatsThis(0, tempString.c_str());
 
-            mMotionSetsTree->addTopLevelItem(item);
+            m_motionSetsTree->addTopLevelItem(item);
 
             // Should the motion set be selected?
             if (AZStd::find(selectedMotionSetIDs.begin(), selectedMotionSetIDs.end(), motionSet->GetID()) != selectedMotionSetIDs.end())
@@ -459,20 +449,20 @@ namespace EMStudio
         }
 
         // enable the tree signals
-        mMotionSetsTree->blockSignals(false);
+        m_motionSetsTree->blockSignals(false);
 
         // enable the sorting
-        mMotionSetsTree->setSortingEnabled(true);
+        m_motionSetsTree->setSortingEnabled(true);
     }
 
 
     void MotionSetManagementWindow::OnSelectionChanged()
     {
-        const QList<QTreeWidgetItem*> selectedItems = mMotionSetsTree->selectedItems();
+        const QList<QTreeWidgetItem*> selectedItems = m_motionSetsTree->selectedItems();
         const size_t numSelected = selectedItems.count();
         if (numSelected != 1)
         {
-            mPlugin->SetSelectedSet(nullptr);
+            m_plugin->SetSelectedSet(nullptr);
         }
         else
         {
@@ -481,7 +471,7 @@ namespace EMStudio
 
             if (selectedSet)
             {
-                mPlugin->SetSelectedSet(selectedSet);
+                m_plugin->SetSelectedSet(selectedSet);
             }
         }
     }
@@ -498,7 +488,7 @@ namespace EMStudio
         connect(addAction, &QAction::triggered, this, &MotionSetManagementWindow::OnCreateMotionSet);
 
         // get the selected items
-        const QList<QTreeWidgetItem*> selectedItems = mMotionSetsTree->selectedItems();
+        const QList<QTreeWidgetItem*> selectedItems = m_motionSetsTree->selectedItems();
         const int numSelectedItems = selectedItems.count();
 
         // add remove if at least one item selected
@@ -537,7 +527,7 @@ namespace EMStudio
 
     void MotionSetManagementWindow::OnCreateMotionSet()
     {
-        const QList<QTreeWidgetItem*> selectedItems = mMotionSetsTree->selectedItems();
+        const QList<QTreeWidgetItem*> selectedItems = m_motionSetsTree->selectedItems();
         const int numSelectedItems = selectedItems.count();
 
         // only add the motion set as child if at least one item selected
@@ -562,7 +552,7 @@ namespace EMStudio
             }
 
             // Select the new motion set
-            mMotionSetsTree->clearSelection();
+            m_motionSetsTree->clearSelection();
             const EMotionFX::MotionSet* motionSet = EMotionFX::GetMotionManager().FindMotionSetByName(uniqueMotionSetName.c_str());
             if (motionSet)
             {
@@ -611,7 +601,7 @@ namespace EMStudio
             }
 
             // Select the new motion sets.
-            mMotionSetsTree->clearSelection();
+            m_motionSetsTree->clearSelection();
             for (const AZStd::pair<AZStd::string, EMotionFX::MotionSet*>& nameAndParentMotionSet : parentMotionSetByName)
             {
                 EMotionFX::MotionSet* motionSet = nameAndParentMotionSet.second->RecursiveFindMotionSetByName(nameAndParentMotionSet.first);
@@ -624,8 +614,8 @@ namespace EMStudio
     void MotionSetManagementWindow::SelectItemsById(uint32 motionSetId)
     {
         bool selectionChanged = false;
-        disconnect(mMotionSetsTree, &QTreeWidget::itemSelectionChanged, this, &MotionSetManagementWindow::OnSelectionChanged);
-        QTreeWidgetItemIterator it(mMotionSetsTree);
+        disconnect(m_motionSetsTree, &QTreeWidget::itemSelectionChanged, this, &MotionSetManagementWindow::OnSelectionChanged);
+        QTreeWidgetItemIterator it(m_motionSetsTree);
         while (*it)
         {
             if ((*it)->data(0, Qt::UserRole).toUInt() == motionSetId)
@@ -639,7 +629,7 @@ namespace EMStudio
             }
             ++it;
         }
-        connect(mMotionSetsTree, &QTreeWidget::itemSelectionChanged, this, &MotionSetManagementWindow::OnSelectionChanged);
+        connect(m_motionSetsTree, &QTreeWidget::itemSelectionChanged, this, &MotionSetManagementWindow::OnSelectionChanged);
         if (selectionChanged)
         {
             OnSelectionChanged(); 
@@ -649,7 +639,7 @@ namespace EMStudio
     void MotionSetManagementWindow::GetSelectedMotionSets(AZStd::vector<EMotionFX::MotionSet*>& outSelectedMotionSets) const
     {
         // Get the selected items from the motion set tree widget.
-        const QList<QTreeWidgetItem*> selectedItems = mMotionSetsTree->selectedItems();
+        const QList<QTreeWidgetItem*> selectedItems = m_motionSetsTree->selectedItems();
 
         outSelectedMotionSets.resize(selectedItems.size());
 
@@ -721,7 +711,7 @@ namespace EMStudio
 
     void MotionSetManagementWindow::OnRemoveSelectedMotionSets()
     {
-        const QList<QTreeWidgetItem*> selectedItems = mMotionSetsTree->selectedItems();
+        const QList<QTreeWidgetItem*> selectedItems = m_motionSetsTree->selectedItems();
         if (selectedItems.empty())
         {
             return;
@@ -752,7 +742,7 @@ namespace EMStudio
             EMotionFX::MotionSet* motionSet = EMotionFX::GetMotionManager().FindMotionSetByID(motionSetID);
 
             // in case we modified the motion set ask if the user wants to save changes it before removing it
-            mPlugin->SaveDirtyMotionSet(motionSet, nullptr, true, false);
+            m_plugin->SaveDirtyMotionSet(motionSet, nullptr, true, false);
 
             // recursively increase motions reference count
             RecursiveIncreaseMotionsReferenceCount(motionSet);
@@ -785,14 +775,14 @@ namespace EMStudio
 
     void MotionSetManagementWindow::OnRenameSelectedMotionSet()
     {
-        MotionSetManagementRenameWindow motionSetManagementRenameWindow(this, mPlugin->GetSelectedSet());
+        MotionSetManagementRenameWindow motionSetManagementRenameWindow(this, m_plugin->GetSelectedSet());
         motionSetManagementRenameWindow.exec();
     }
 
     void MotionSetManagementWindow::OnClearMotionSets()
     {
         // show the save dirty files window before
-        if (mPlugin->OnSaveDirtyMotionSets() == DirtyFileManager::CANCELED)
+        if (m_plugin->OnSaveDirtyMotionSets() == DirtyFileManager::CANCELED)
         {
             return;
         }
@@ -880,7 +870,7 @@ namespace EMStudio
 
     void MotionSetManagementWindow::UpdateInterface()
     {
-        const QList<QTreeWidgetItem*> selectedItems = mMotionSetsTree->selectedItems();
+        const QList<QTreeWidgetItem*> selectedItems = m_motionSetsTree->selectedItems();
         const int numSelectedItems = selectedItems.count();
 
         // remove and save buttons are valid if at least one item is selected
@@ -915,14 +905,14 @@ namespace EMStudio
     {
         AZStd::string filename = GetMainWindow()->GetFileManager()->LoadMotionSetFileDialog(this);
         GetMainWindow()->activateWindow();
-        mPlugin->LoadMotionSet(filename);
+        m_plugin->LoadMotionSet(filename);
     }
 
 
     void MotionSetManagementWindow::OnSave()
     {
         // get the selected items and the number of selected items
-        const QList<QTreeWidgetItem*> selectedItems = mMotionSetsTree->selectedItems();
+        const QList<QTreeWidgetItem*> selectedItems = m_motionSetsTree->selectedItems();
         const int numSelectedItems = selectedItems.count();
 
         // at leat one item must be selected
@@ -996,7 +986,7 @@ namespace EMStudio
     void MotionSetManagementWindow::OnSaveAs()
     {
         // get the selected items and the number of selected items
-        const QList<QTreeWidgetItem*> selectedItems = mMotionSetsTree->selectedItems();
+        const QList<QTreeWidgetItem*> selectedItems = m_motionSetsTree->selectedItems();
         const int numSelectedItems = selectedItems.count();
 
         // filter to only keep the root motion sets from the selected items

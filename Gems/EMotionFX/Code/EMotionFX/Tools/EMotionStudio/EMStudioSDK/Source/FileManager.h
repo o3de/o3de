@@ -106,13 +106,13 @@ namespace EMStudio
 
     private:
         AZStd::vector<AZStd::string> m_savedSourceAssets;
-        QString mLastActorFolder;
-        QString mLastMotionSetFolder;
-        QString mLastAnimGraphFolder;
-        QString mLastWorkspaceFolder;
-        QString mLastNodeMapFolder;
+        QString m_lastActorFolder;
+        QString m_lastMotionSetFolder;
+        QString m_lastAnimGraphFolder;
+        QString m_lastWorkspaceFolder;
+        QString m_lastNodeMapFolder;
 
-        bool mSkipFileChangedCheck;
+        bool m_skipFileChangedCheck;
 
         void UpdateLastUsedFolder(const char* filename, QString& outLastFolder) const;
         QString GetLastUsedFolder(const QString& lastUsedFolder) const;

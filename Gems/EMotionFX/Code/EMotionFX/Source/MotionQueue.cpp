@@ -26,8 +26,8 @@ namespace EMotionFX
     {
         MCORE_ASSERT(actorInstance && motionSystem);
 
-        mActorInstance  = actorInstance;
-        mMotionSystem   = motionSystem;
+        m_actorInstance  = actorInstance;
+        m_motionSystem   = motionSystem;
     }
 
 
@@ -48,12 +48,12 @@ namespace EMotionFX
     // remove a given entry from the queue
     void MotionQueue::RemoveEntry(size_t nr)
     {
-        if (mMotionSystem->RemoveMotionInstance(mEntries[nr].mMotion) == false)
+        if (m_motionSystem->RemoveMotionInstance(m_entries[nr].m_motion) == false)
         {
-            GetMotionInstancePool().Free(mEntries[nr].mMotion);
+            GetMotionInstancePool().Free(m_entries[nr].m_motion);
         }
 
-        mEntries.erase(AZStd::next(begin(mEntries), nr));
+        m_entries.erase(AZStd::next(begin(m_entries), nr));
     }
 
 
@@ -70,7 +70,7 @@ namespace EMotionFX
         }
 
         // if there is only one entry in the queue, we can start playing it immediately
-        if (mMotionSystem->GetIsPlaying() == false)
+        if (m_motionSystem->GetIsPlaying() == false)
         {
             // get the entry from the queue to play next
             MotionQueue::QueueEntry queueEntry = GetFirstEntry();
@@ -79,7 +79,7 @@ namespace EMotionFX
             RemoveFirstEntry();
 
             // start the motion on the queue
-            mMotionSystem->StartMotion(queueEntry.mMotion, &queueEntry.mPlayInfo);
+            m_motionSystem->StartMotion(queueEntry.m_motion, &queueEntry.m_playInfo);
 
             // get out of this method, nothing more to do :)
             return;
@@ -109,7 +109,7 @@ namespace EMotionFX
         RemoveFirstEntry();
 
         // start the motion
-        mMotionSystem->StartMotion(queueEntry.mMotion, &queueEntry.mPlayInfo);
+        m_motionSystem->StartMotion(queueEntry.m_motion, &queueEntry.m_playInfo);
     }
 
 
@@ -117,7 +117,7 @@ namespace EMotionFX
     bool MotionQueue::ShouldPlayNextMotion()
     {
         // find the first non mixing motion
-        MotionInstance* motionInst = mMotionSystem->FindFirstNonMixingMotionInstance();
+        MotionInstance* motionInst = m_motionSystem->FindFirstNonMixingMotionInstance();
 
         // if there isn't a non mixing motion
         if (motionInst == nullptr)
@@ -126,7 +126,7 @@ namespace EMotionFX
         }
 
         // the total amount of blending time
-        const float timeToRemoveFromMaxTime = GetFirstEntry().mPlayInfo.mBlendInTime + motionInst->GetFadeTime();
+        const float timeToRemoveFromMaxTime = GetFirstEntry().m_playInfo.m_blendInTime + motionInst->GetFadeTime();
 
         // if the motion has ended or is stopping, then we should start the next motion
         if (motionInst->GetIsStopping() || motionInst->GetHasEnded())
@@ -167,7 +167,7 @@ namespace EMotionFX
 
     void MotionQueue::ClearAllEntries()
     {
-        while (mEntries.size())
+        while (m_entries.size())
         {
             RemoveEntry(0);
         }
@@ -176,31 +176,31 @@ namespace EMotionFX
 
     void MotionQueue::AddEntry(const MotionQueue::QueueEntry& motion)
     {
-        mEntries.emplace_back(motion);
+        m_entries.emplace_back(motion);
     }
 
 
     size_t MotionQueue::GetNumEntries() const
     {
-        return mEntries.size();
+        return m_entries.size();
     }
 
 
     MotionQueue::QueueEntry& MotionQueue::GetFirstEntry()
     {
-        MCORE_ASSERT(mEntries.size() > 0);
-        return mEntries[0];
+        MCORE_ASSERT(m_entries.size() > 0);
+        return m_entries[0];
     }
 
 
     void MotionQueue::RemoveFirstEntry()
     {
-        mEntries.erase(mEntries.begin());
+        m_entries.erase(m_entries.begin());
     }
 
 
     MotionQueue::QueueEntry& MotionQueue::GetEntry(size_t nr)
     {
-        return mEntries[nr];
+        return m_entries[nr];
     }
 } // namespace EMotionFX

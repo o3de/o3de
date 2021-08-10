@@ -24,7 +24,7 @@ namespace EMotionFX
         : MotionSystem(actorInstance)
     {
         // set the motion based actor repositioning layer pass
-        mRepositioningPass = RepositioningLayerPass::Create(this);
+        m_repositioningPass = RepositioningLayerPass::Create(this);
     }
 
 
@@ -34,7 +34,7 @@ namespace EMotionFX
         RemoveAllLayerPasses();
 
         // get rid of the repositioning layer pass
-        mRepositioningPass->Destroy();
+        m_repositioningPass->Destroy();
     }
 
 
@@ -49,7 +49,7 @@ namespace EMotionFX
     void MotionLayerSystem::RemoveAllLayerPasses(bool delFromMem)
     {
         // delete all layer passes
-        for (LayerPass* layerPass : mLayerPasses)
+        for (LayerPass* layerPass : m_layerPasses)
         {
             if (delFromMem)
             {
@@ -57,7 +57,7 @@ namespace EMotionFX
             }
         }
 
-        mLayerPasses.clear();
+        m_layerPasses.clear();
     }
 
 
@@ -65,23 +65,23 @@ namespace EMotionFX
     void MotionLayerSystem::StartMotion(MotionInstance* motion, PlayBackInfo* info)
     {
         // check if we have any motions playing already
-        const size_t numMotionInstances = mMotionInstances.size();
+        const size_t numMotionInstances = m_motionInstances.size();
         if (numMotionInstances > 0)
         {
             // find the right location in the motion instance array to insert this motion instance
             size_t insertPos = FindInsertPos(motion->GetPriorityLevel());
             if (insertPos != InvalidIndex)
             {
-                mMotionInstances.emplace(AZStd::next(begin(mMotionInstances), insertPos), motion);
+                m_motionInstances.emplace(AZStd::next(begin(m_motionInstances), insertPos), motion);
             }
             else
             {
-                mMotionInstances.emplace_back(motion);
+                m_motionInstances.emplace_back(motion);
             }
         }
         else // no motions are playing, so just add it
         {
-            mMotionInstances.emplace_back(motion);
+            m_motionInstances.emplace_back(motion);
         }
 
         // trigger an event
@@ -92,18 +92,18 @@ namespace EMotionFX
         motion->SetIsActive(true);
 
         // start the blend
-        motion->SetWeight(info->mTargetWeight, info->mBlendInTime);
+        motion->SetWeight(info->m_targetWeight, info->m_blendInTime);
     }
 
 
     // find the location where to insert a new motion with a given priority
     size_t MotionLayerSystem::FindInsertPos(size_t priorityLevel) const
     {
-        const auto* foundInsertPosition = AZStd::lower_bound(begin(mMotionInstances), end(mMotionInstances), priorityLevel, [](const MotionInstance* motionInstance, size_t level)
+        const auto* foundInsertPosition = AZStd::lower_bound(begin(m_motionInstances), end(m_motionInstances), priorityLevel, [](const MotionInstance* motionInstance, size_t level)
         {
             return motionInstance->GetPriorityLevel() < level;
         });
-        return foundInsertPosition != end(mMotionInstances) ? AZStd::distance(begin(mMotionInstances), foundInsertPosition) : InvalidIndex;
+        return foundInsertPosition != end(m_motionInstances) ? AZStd::distance(begin(m_motionInstances), foundInsertPosition) : InvalidIndex;
     }
 
 
@@ -117,22 +117,22 @@ namespace EMotionFX
         UpdateMotionTree();
 
         // update the motion queue
-        mMotionQueue->Update();
+        m_motionQueue->Update();
 
         // process all layer passes
-        for (LayerPass* layerPass : mLayerPasses)
+        for (LayerPass* layerPass : m_layerPasses)
         {
             layerPass->Process();
         }
 
         // process the repositioning as last
-        if (mRepositioningPass)
+        if (m_repositioningPass)
         {
-            mRepositioningPass->Process();
+            m_repositioningPass->Process();
         }
 
         // update the global transform now that we have an updated local transform of the actor instance itself (modified by motion extraction for example)
-        mActorInstance->UpdateWorldTransform();
+        m_actorInstance->UpdateWorldTransform();
 
         // if we need to update the node transforms because the character is visible
         if (updateNodes)
@@ -145,9 +145,9 @@ namespace EMotionFX
     // update the motion tree
     void MotionLayerSystem::UpdateMotionTree()
     {
-        for (size_t i = 0; i < mMotionInstances.size(); ++i)
+        for (size_t i = 0; i < m_motionInstances.size(); ++i)
         {
-            MotionInstance* source = mMotionInstances[i];
+            MotionInstance* source = m_motionInstances[i];
 
             // if we aren't stopping this motion yet
             if (!source->GetIsStopping())
@@ -227,10 +227,10 @@ namespace EMotionFX
                     if (source->GetCanOverwrite())
                     {
                         // remove all motions that got overwritten by the current one
-                        const size_t numToRemove = mMotionInstances.size() - (i + 1);
+                        const size_t numToRemove = m_motionInstances.size() - (i + 1);
                         for (size_t a = 0; a < numToRemove; ++a)
                         {
-                            RemoveMotionInstance(mMotionInstances[i + 1]);
+                            RemoveMotionInstance(m_motionInstances[i + 1]);
                         }
                     }
                 }
@@ -245,7 +245,7 @@ namespace EMotionFX
         size_t numRemoved = 0;
 
         // start from the bottom up
-        for (auto iter = rbegin(mMotionInstances); iter != rend(mMotionInstances); ++iter)
+        for (auto iter = rbegin(m_motionInstances); iter != rend(m_motionInstances); ++iter)
         {
             MotionInstance* curInstance = *iter;
 
@@ -267,11 +267,11 @@ namespace EMotionFX
     MotionInstance* MotionLayerSystem::FindFirstNonMixingMotionInstance() const
     {
         // if there aren't any motion instances, return nullptr
-        const auto foundMotionInstance = AZStd::find_if(begin(mMotionInstances), end(mMotionInstances), [](const MotionInstance* motionInstance)
+        const auto foundMotionInstance = AZStd::find_if(begin(m_motionInstances), end(m_motionInstances), [](const MotionInstance* motionInstance)
         {
             return !motionInstance->GetIsMixing();
         });
-        return foundMotionInstance != end(mMotionInstances) ? *foundMotionInstance : nullptr;
+        return foundMotionInstance != end(m_motionInstances) ? *foundMotionInstance : nullptr;
     }
 
 
@@ -279,25 +279,25 @@ namespace EMotionFX
     void MotionLayerSystem::UpdateNodes()
     {
         // get the two pose buffers we need
-        const uint32 threadIndex = mActorInstance->GetThreadIndex();
+        const uint32 threadIndex = m_actorInstance->GetThreadIndex();
         AnimGraphPosePool& posePool = GetEMotionFX().GetThreadData(threadIndex)->GetPosePool();
-        AnimGraphPose* tempAnimGraphPose = posePool.RequestPose(mActorInstance);
+        AnimGraphPose* tempAnimGraphPose = posePool.RequestPose(m_actorInstance);
 
-        const bool motionExtractionEnabled = mActorInstance->GetMotionExtractionEnabled();
+        const bool motionExtractionEnabled = m_actorInstance->GetMotionExtractionEnabled();
 
         Pose* tempActorPose = &tempAnimGraphPose->GetPose();
 
-        const size_t numMotionInstances = mMotionInstances.size();
+        const size_t numMotionInstances = m_motionInstances.size();
         if (numMotionInstances > 0)
         {
             if (numMotionInstances > 1)
             {
-                TransformData* transformData = mActorInstance->GetTransformData();
+                TransformData* transformData = m_actorInstance->GetTransformData();
                 Pose* finalPose = transformData->GetCurrentPose();
-                finalPose->InitFromBindPose(mActorInstance);
+                finalPose->InitFromBindPose(m_actorInstance);
 
                 // blend the layers
-                for (auto iter = rbegin(mMotionInstances); iter != rend(mMotionInstances); ++iter)
+                for (auto iter = rbegin(m_motionInstances); iter != rend(m_motionInstances); ++iter)
                 {
                     // skip inactive motion instances
                     MotionInstance* instance = *iter; // the motion to be blended
@@ -322,12 +322,12 @@ namespace EMotionFX
             else // there is just one motion playing
             {
                 // skip inactive motion instances
-                MotionInstance* instance = mMotionInstances[0]; // the motion to be blended
+                MotionInstance* instance = m_motionInstances[0]; // the motion to be blended
                 if (instance->GetIsActive() && instance->GetWeight() >= 0.9999f)
                 {
-                    TransformData* transformData = mActorInstance->GetTransformData();
+                    TransformData* transformData = m_actorInstance->GetTransformData();
                     Pose* finalPose = transformData->GetCurrentPose();
-                    finalPose->InitFromBindPose(mActorInstance);
+                    finalPose->InitFromBindPose(m_actorInstance);
 
                     instance->GetMotion()->Update(finalPose, finalPose, instance); // output the results of the single motion
 
@@ -340,15 +340,15 @@ namespace EMotionFX
                 else
                 if (instance->GetIsActive() && instance->GetWeight() < 0.0001f) // almost not active
                 {
-                    TransformData* transformData = mActorInstance->GetTransformData();
-                    transformData->GetCurrentPose()->InitFromBindPose(mActorInstance);
+                    TransformData* transformData = m_actorInstance->GetTransformData();
+                    transformData->GetCurrentPose()->InitFromBindPose(m_actorInstance);
                 }
                 else // semi active
                 {
-                    TransformData* transformData = mActorInstance->GetTransformData();
+                    TransformData* transformData = m_actorInstance->GetTransformData();
                     Pose* finalPose = transformData->GetCurrentPose();
 
-                    finalPose->InitFromBindPose(mActorInstance);
+                    finalPose->InitFromBindPose(m_actorInstance);
                     instance->GetMotion()->Update(finalPose, tempActorPose, instance); // output the results of the single motion
 
                     // compensate for motion extraction
@@ -365,8 +365,8 @@ namespace EMotionFX
         else // no motion playing
         {
             // update all node transforms
-            TransformData* transformData = mActorInstance->GetTransformData();
-            transformData->GetCurrentPose()->InitFromBindPose(mActorInstance);
+            TransformData* transformData = m_actorInstance->GetTransformData();
+            transformData->GetCurrentPose()->InitFromBindPose(m_actorInstance);
         }
 
         // free the poses back to the pool
@@ -377,14 +377,14 @@ namespace EMotionFX
     // add a new pass
     void MotionLayerSystem::AddLayerPass(LayerPass* newPass)
     {
-        mLayerPasses.emplace_back(newPass);
+        m_layerPasses.emplace_back(newPass);
     }
 
 
     // get the number of layer passes
     size_t MotionLayerSystem::GetNumLayerPasses() const
     {
-        return mLayerPasses.size();
+        return m_layerPasses.size();
     }
 
 
@@ -393,19 +393,19 @@ namespace EMotionFX
     {
         if (delFromMem)
         {
-            mLayerPasses[nr]->Destroy();
+            m_layerPasses[nr]->Destroy();
         }
 
-        mLayerPasses.erase(AZStd::next(begin(mLayerPasses), nr));
+        m_layerPasses.erase(AZStd::next(begin(m_layerPasses), nr));
     }
 
 
     // remove a given pass
     void MotionLayerSystem::RemoveLayerPass(LayerPass* pass, bool delFromMem)
     {
-        if (const auto it = AZStd::find(begin(mLayerPasses), end(mLayerPasses), pass); it != end(mLayerPasses))
+        if (const auto it = AZStd::find(begin(m_layerPasses), end(m_layerPasses), pass); it != end(m_layerPasses))
         {
-            mLayerPasses.erase(it);
+            m_layerPasses.erase(it);
         }
 
         if (delFromMem)
@@ -418,7 +418,7 @@ namespace EMotionFX
     // insert a layer pass at a given position
     void MotionLayerSystem::InsertLayerPass(size_t insertPos, LayerPass* pass)
     {
-        mLayerPasses.emplace(AZStd::next(begin(mLayerPasses), insertPos), pass);
+        m_layerPasses.emplace(AZStd::next(begin(m_layerPasses), insertPos), pass);
     }
 
 
@@ -439,17 +439,17 @@ namespace EMotionFX
     // remove the repositioning pass
     void MotionLayerSystem::RemoveRepositioningLayerPass()
     {
-        if (mRepositioningPass)
+        if (m_repositioningPass)
         {
-            mRepositioningPass->Destroy();
+            m_repositioningPass->Destroy();
         }
 
-        mRepositioningPass = nullptr;
+        m_repositioningPass = nullptr;
     }
 
 
     LayerPass* MotionLayerSystem::GetLayerPass(size_t index) const
     {
-        return mLayerPasses[index];
+        return m_layerPasses[index];
     }
 } // namespace EMotionFX

@@ -22,9 +22,9 @@ protected:
 
     void SetUp() override
     {
-        m_azNormalizedVector3_a = AZ::Vector3(s_x1, s_y1, s_z1);
-        m_azNormalizedVector3_a.Normalize();
-        m_azQuaternion_a = AZ::Quaternion::CreateFromAxisAngle(m_azNormalizedVector3_a, s_angle_a);
+        m_azNormalizedVector3A = AZ::Vector3(s_x1, s_y1, s_z1);
+        m_azNormalizedVector3A.Normalize();
+        m_azQuaternionA = AZ::Quaternion::CreateFromAxisAngle(m_azNormalizedVector3A, s_angle_a);
     }
 
     void TearDown() override
@@ -117,8 +117,8 @@ protected:
     static const float  s_y1;
     static const float  s_z1;
     static const float  s_angle_a;
-    AZ::Vector3         m_azNormalizedVector3_a;
-    AZ::Quaternion      m_azQuaternion_a;
+    AZ::Vector3         m_azNormalizedVector3A;
+    AZ::Quaternion      m_azQuaternionA;
 };
 
 const float EmotionFXMathLibTests::s_toleranceHigh = 0.00001f;

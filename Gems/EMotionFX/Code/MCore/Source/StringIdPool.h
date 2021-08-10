@@ -66,9 +66,9 @@ namespace MCore
 
     private:
 
-        AZStd::vector<AZStd::string*>                   mStrings;
-        AZStd::unordered_map<AZStd::string, AZ::u32>    mStringToIndex;         /**< The string to index table, where the index maps into mNames array and is directly the ID. */
-        Mutex                                           mMutex;                 /**< The multithread lock. */
+        AZStd::vector<AZStd::string*>                   m_strings;
+        AZStd::unordered_map<AZStd::string, AZ::u32>    m_stringToIndex;         /**< The string to index table, where the index maps into m_names array and is directly the ID. */
+        Mutex                                           m_mutex;                 /**< The multithread lock. */
 
         StringIdPool();
         ~StringIdPool();

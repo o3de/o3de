@@ -30,26 +30,26 @@ namespace AzQtComponents
 
 struct EMSTUDIO_API SelectionItem
 {
-    uint32          mActorInstanceID;
-    uint32          mNodeNameID;
-    uint32          mMorphTargetID;
+    uint32          m_actorInstanceId;
+    uint32          m_nodeNameId;
+    uint32          m_morphTargetId;
 
     SelectionItem()
     {
-        mActorInstanceID    = MCORE_INVALIDINDEX32;
-        mNodeNameID         = MCORE_INVALIDINDEX32;
-        mMorphTargetID      = MCORE_INVALIDINDEX32;
+        m_actorInstanceId    = MCORE_INVALIDINDEX32;
+        m_nodeNameId         = MCORE_INVALIDINDEX32;
+        m_morphTargetId      = MCORE_INVALIDINDEX32;
     }
 
     SelectionItem(const uint32 actorInstanceID, const char* nodeName, const uint32 morphTargetID = MCORE_INVALIDINDEX32)
-        : mActorInstanceID(actorInstanceID), mMorphTargetID(morphTargetID)
+        : m_actorInstanceId(actorInstanceID), m_morphTargetId(morphTargetID)
     {
         SetNodeName(nodeName);
     }
 
-    void SetNodeName(const char* nodeName)             { mNodeNameID = MCore::GetStringIdPool().GenerateIdForString(nodeName); }
-    const char* GetNodeName() const                    { return MCore::GetStringIdPool().GetName(mNodeNameID).c_str(); }
-    const AZStd::string& GetNodeNameString() const     { return MCore::GetStringIdPool().GetName(mNodeNameID); }
+    void SetNodeName(const char* nodeName)             { m_nodeNameId = MCore::GetStringIdPool().GenerateIdForString(nodeName); }
+    const char* GetNodeName() const                    { return MCore::GetStringIdPool().GetName(m_nodeNameId).c_str(); }
+    const AZStd::string& GetNodeNameString() const     { return MCore::GetStringIdPool().GetName(m_nodeNameId); }
 
     EMotionFX::Node* GetNode() const;
 };
@@ -70,7 +70,7 @@ namespace EMStudio
         void Update(uint32 actorInstanceID, CommandSystem::SelectionList* selectionList = nullptr);
         void Update(const AZStd::vector<uint32>& actorInstanceIDs, CommandSystem::SelectionList* selectionList = nullptr);
         void FireSelectionDoneSignal();
-        MCORE_INLINE QTreeWidget* GetTreeWidget()                                                               { return mHierarchy; }
+        MCORE_INLINE QTreeWidget* GetTreeWidget()                                                               { return m_hierarchy; }
         MCORE_INLINE AzQtComponents::FilteredSearchWidget* GetSearchWidget()                                    { return m_searchWidget; }
 
         // is node shown in the hierarchy widget?
@@ -126,18 +126,18 @@ namespace EMStudio
         void RecursiveRemoveUnselectedItems(QTreeWidgetItem* item);
 
         AZStd::vector<SelectionItem>        m_selectedNodes;
-        QTreeWidget*                        mHierarchy;
+        QTreeWidget*                        m_hierarchy;
         AzQtComponents::FilteredSearchWidget* m_searchWidget;
         AZStd::string                       m_searchWidgetText;
-        QIcon*                              mBoneIcon;
-        QIcon*                              mNodeIcon;
-        QIcon*                              mMeshIcon;
-        QIcon*                              mCharacterIcon;
-        AZStd::vector<size_t>                mBoneList;
-        AZStd::vector<uint32>                mActorInstanceIDs;
-        AZStd::string                       mItemName;
-        AZStd::string                       mActorInstanceIDString;
-        bool                                mUseSingleSelection;
-        FilterTypes                         mFilterState;
+        QIcon*                              m_boneIcon;
+        QIcon*                              m_nodeIcon;
+        QIcon*                              m_meshIcon;
+        QIcon*                              m_characterIcon;
+        AZStd::vector<size_t>                m_boneList;
+        AZStd::vector<uint32>                m_actorInstanceIDs;
+        AZStd::string                       m_itemName;
+        AZStd::string                       m_actorInstanceIdString;
+        bool                                m_useSingleSelection;
+        FilterTypes                         m_filterState;
     };
 } // namespace EMStudio

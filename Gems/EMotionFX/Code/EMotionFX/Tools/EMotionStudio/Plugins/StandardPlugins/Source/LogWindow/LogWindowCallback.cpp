@@ -27,7 +27,7 @@ namespace EMStudio
         qRegisterMetaType<MCore::LogCallback::ELogLevel>();
 
         // init the max second column width
-        mMaxSecondColumnWidth = 0;
+        m_maxSecondColumnWidth = 0;
 
         // init the table
         setColumnCount(2);
@@ -47,9 +47,9 @@ namespace EMStudio
 
         // set the filter
     #ifdef AZ_DEBUG_BUILD
-        mFilter = LOGLEVEL_FATAL | LOGLEVEL_ERROR | LOGLEVEL_WARNING | LOGLEVEL_INFO | LOGLEVEL_DETAILEDINFO | LOGLEVEL_DEBUG;
+        m_filter = LOGLEVEL_FATAL | LOGLEVEL_ERROR | LOGLEVEL_WARNING | LOGLEVEL_INFO | LOGLEVEL_DETAILEDINFO | LOGLEVEL_DEBUG;
     #else
-        mFilter = LOGLEVEL_FATAL | LOGLEVEL_ERROR | LOGLEVEL_WARNING | LOGLEVEL_INFO;
+        m_filter = LOGLEVEL_FATAL | LOGLEVEL_ERROR | LOGLEVEL_WARNING | LOGLEVEL_INFO;
     #endif
 
         connect(this, &LogWindowCallback::DoLog, this, &LogWindowCallback::LogImpl, Qt::QueuedConnection);
@@ -113,17 +113,17 @@ namespace EMStudio
         setItem(newRowIndex, 1, messageItem);
 
         // check the filter, if the filter is not enabled, it's not needed to test the find value
-        if ((mFilter & (int)logLevel) != 0)
+        if ((m_filter & (int)logLevel) != 0)
         {
             // check the find value, set the row not visible if the text is not found
-            if (messageItem->text().contains(mFind, Qt::CaseInsensitive))
+            if (messageItem->text().contains(m_find, Qt::CaseInsensitive))
             {
                 // set the row not hidden
                 setRowHidden(newRowIndex, false);
 
                 // custom resize of the column to be efficient
                 const int itemWidth = itemDelegate()->sizeHint(viewOptions(), indexFromItem(messageItem)).width();
-                mMaxSecondColumnWidth = qMax(mMaxSecondColumnWidth, itemWidth);
+                m_maxSecondColumnWidth = qMax(m_maxSecondColumnWidth, itemWidth);
                 SetColumnWidthToTakeWholeSpace();
             }
             else
@@ -145,10 +145,10 @@ namespace EMStudio
     void LogWindowCallback::SetFind(const QString& find)
     {
         // store the new find
-        mFind = find;
+        m_find = find;
 
         // init the max second column width
-        mMaxSecondColumnWidth = 0;
+        m_maxSecondColumnWidth = 0;
 
         // test each row with the new find
         const int numRows = rowCount();
@@ -159,17 +159,17 @@ namespace EMStudio
             const int logLevel = messageItem->data(Qt::UserRole).toInt();
 
             // check the filter, if the filter is not enabled, it's not needed to test the find value
-            if ((mFilter & logLevel) != 0)
+            if ((m_filter & logLevel) != 0)
             {
                 // check the find value, set the row not visible if the text is not found
-                if (messageItem->text().contains(mFind, Qt::CaseInsensitive))
+                if (messageItem->text().contains(m_find, Qt::CaseInsensitive))
                 {
                     // set the row not hidden
                     setRowHidden(i, false);
 
                     // update the new column width to keep the maximum
                     const int itemWidth = itemDelegate()->sizeHint(viewOptions(), indexFromItem(messageItem)).width();
-                    mMaxSecondColumnWidth = qMax(mMaxSecondColumnWidth, itemWidth);
+                    m_maxSecondColumnWidth = qMax(m_maxSecondColumnWidth, itemWidth);
                 }
                 else
                 {
@@ -191,10 +191,10 @@ namespace EMStudio
     void LogWindowCallback::SetFilter(uint32 filter)
     {
         // store the new filter
-        mFilter = filter;
+        m_filter = filter;
 
         // init the max second column width
-        mMaxSecondColumnWidth = 0;
+        m_maxSecondColumnWidth = 0;
 
         // test each row with the new find
         const int numRows = rowCount();
@@ -205,17 +205,17 @@ namespace EMStudio
             const int logLevel = messageItem->data(Qt::UserRole).toInt();
 
             // check the filter, if the filter is not enabled, it's not needed to test the find value
-            if ((mFilter & logLevel) != 0)
+            if ((m_filter & logLevel) != 0)
             {
                 // check the find value, set the row not visible if the text is not found
-                if (messageItem->text().contains(mFind, Qt::CaseInsensitive))
+                if (messageItem->text().contains(m_find, Qt::CaseInsensitive))
                 {
                     // set the row not hidden
                     setRowHidden(i, false);
 
                     // update the new column width to keep the maximum
                     const int itemWidth = itemDelegate()->sizeHint(viewOptions(), indexFromItem(messageItem)).width();
-                    mMaxSecondColumnWidth = qMax(mMaxSecondColumnWidth, itemWidth);
+                    m_maxSecondColumnWidth = qMax(m_maxSecondColumnWidth, itemWidth);
                 }
                 else
                 {
@@ -263,13 +263,13 @@ namespace EMStudio
     {
         const int firstColumnWidth = columnWidth(0);
         const int widthWihoutFirstColumnWidth = qMax(0, viewport()->width() - firstColumnWidth);
-        if (mMaxSecondColumnWidth < widthWihoutFirstColumnWidth)
+        if (m_maxSecondColumnWidth < widthWihoutFirstColumnWidth)
         {
             setColumnWidth(1, widthWihoutFirstColumnWidth);
         }
         else
         {
-            setColumnWidth(1, mMaxSecondColumnWidth);
+            setColumnWidth(1, m_maxSecondColumnWidth);
         }
     }
 
@@ -345,7 +345,7 @@ namespace EMStudio
     {
         setRowCount(0);
         setColumnWidth(1, 0);
-        mMaxSecondColumnWidth = 0;
+        m_maxSecondColumnWidth = 0;
     }
 
 

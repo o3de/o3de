@@ -38,7 +38,7 @@ namespace EMotionFX
         const size_t numBones = m_bones.size();
         for (size_t i = 0; i < numBones; ++i)
         {
-            if (m_bones[i].mNodeNr == nodeIndex)
+            if (m_bones[i].m_nodeNr == nodeIndex)
             {
                 return AZ::Success(i);
             }
@@ -79,14 +79,14 @@ namespace EMotionFX
     {
         const Actor* actor = actorInstance->GetActor();
         const Pose* pose = actorInstance->GetTransformData()->GetCurrentPose();
-        const uint32 numVertices = mMesh->GetNumVertices();
+        const uint32 numVertices = m_mesh->GetNumVertices();
 
         // pre-calculate the skinning matrices
         for (BoneInfo& boneInfo : m_bones)
         {
-            const size_t nodeIndex = boneInfo.mNodeNr;
+            const size_t nodeIndex = boneInfo.m_nodeNr;
             const Transform skinTransform = actor->GetInverseBindPoseTransform(nodeIndex) * pose->GetModelSpaceTransform(nodeIndex);
-            boneInfo.mDualQuat.FromRotationTranslation(skinTransform.mRotation, skinTransform.mPosition);
+            boneInfo.m_dualQuat.FromRotationTranslation(skinTransform.m_rotation, skinTransform.m_position);
         }
 
         AZ::JobCompletion jobCompletion;
@@ -102,7 +102,7 @@ namespace EMotionFX
             AZ::JobContext* jobContext = nullptr;
             AZ::Job* job = AZ::CreateJobFunction([this, startVertex, endVertex]()
                 {
-                    SkinRange(mMesh, startVertex, endVertex, m_bones);
+                    SkinRange(m_mesh, startVertex, endVertex, m_bones);
                 }, /*isAutoDelete=*/true, jobContext);
 
             job->SetDependent(&jobCompletion);
@@ -145,7 +145,7 @@ namespace EMotionFX
                 if (numInfluences > 0)
                 {
                     // get the pivot quat, used for the dot product check
-                    const MCore::DualQuaternion& pivotQuat = boneInfos[ layer->GetInfluence(orgVertex, 0)->GetBoneNr() ].mDualQuat;
+                    const MCore::DualQuaternion& pivotQuat = boneInfos[ layer->GetInfluence(orgVertex, 0)->GetBoneNr() ].m_dualQuat;
 
                     // our skinning dual quaternion
                     MCore::DualQuaternion skinQuat(AZ::Quaternion(0, 0, 0, 0), AZ::Quaternion(0, 0, 0, 0));
@@ -156,8 +156,8 @@ namespace EMotionFX
                         weight = influence->GetWeight();
 
                         // check if we need to invert the dual quat
-                        MCore::DualQuaternion influenceQuat = boneInfos[ influence->GetBoneNr() ].mDualQuat;
-                        if (influenceQuat.mReal.Dot(pivotQuat.mReal) < 0.0f)
+                        MCore::DualQuaternion influenceQuat = boneInfos[ influence->GetBoneNr() ].m_dualQuat;
+                        if (influenceQuat.m_real.Dot(pivotQuat.m_real) < 0.0f)
                         {
                             influenceQuat *= -1.0f;
                         }
@@ -202,7 +202,7 @@ namespace EMotionFX
                 if (numInfluences > 0)
                 {
                     // get the pivot quat, used for the dot product check
-                    const MCore::DualQuaternion& pivotQuat = boneInfos[ layer->GetInfluence(orgVertex, 0)->GetBoneNr() ].mDualQuat;
+                    const MCore::DualQuaternion& pivotQuat = boneInfos[ layer->GetInfluence(orgVertex, 0)->GetBoneNr() ].m_dualQuat;
 
                     // our skinning dual quaternion
                     MCore::DualQuaternion skinQuat(AZ::Quaternion(0, 0, 0, 0), AZ::Quaternion(0, 0, 0, 0));
@@ -213,8 +213,8 @@ namespace EMotionFX
                         weight = influence->GetWeight();
 
                         // check if we need to invert the dual quat
-                        MCore::DualQuaternion influenceQuat = boneInfos[ influence->GetBoneNr() ].mDualQuat;
-                        if (influenceQuat.mReal.Dot(pivotQuat.mReal) < 0.0f)
+                        MCore::DualQuaternion influenceQuat = boneInfos[ influence->GetBoneNr() ].m_dualQuat;
+                        if (influenceQuat.m_real.Dot(pivotQuat.m_real) < 0.0f)
                         {
                             influenceQuat *= -1.0f;
                         }
@@ -255,7 +255,7 @@ namespace EMotionFX
                 if (numInfluences > 0)
                 {
                     // get the pivot quat, used for the dot product check
-                    const MCore::DualQuaternion& pivotQuat = boneInfos[ layer->GetInfluence(orgVertex, 0)->GetBoneNr() ].mDualQuat;
+                    const MCore::DualQuaternion& pivotQuat = boneInfos[ layer->GetInfluence(orgVertex, 0)->GetBoneNr() ].m_dualQuat;
 
                     // our skinning dual quaternion
                     MCore::DualQuaternion skinQuat(AZ::Quaternion(0, 0, 0, 0), AZ::Quaternion(0, 0, 0, 0));
@@ -266,8 +266,8 @@ namespace EMotionFX
                         weight = influence->GetWeight();
 
                         // check if we need to invert the dual quat
-                        MCore::DualQuaternion influenceQuat = boneInfos[ influence->GetBoneNr() ].mDualQuat;
-                        if (influenceQuat.mReal.Dot(pivotQuat.mReal) < 0.0f)
+                        MCore::DualQuaternion influenceQuat = boneInfos[ influence->GetBoneNr() ].m_dualQuat;
+                        if (influenceQuat.m_real.Dot(pivotQuat.m_real) < 0.0f)
                         {
                             influenceQuat *= -1.0f;
                         }
@@ -304,16 +304,16 @@ namespace EMotionFX
         m_bones.clear();
 
         // if there is no mesh
-        if (mMesh == nullptr)
+        if (m_mesh == nullptr)
         {
             return;
         }
 
-        SkinningInfoVertexAttributeLayer* skinningLayer = (SkinningInfoVertexAttributeLayer*)mMesh->FindSharedVertexAttributeLayer(SkinningInfoVertexAttributeLayer::TYPE_ID);
+        SkinningInfoVertexAttributeLayer* skinningLayer = (SkinningInfoVertexAttributeLayer*)m_mesh->FindSharedVertexAttributeLayer(SkinningInfoVertexAttributeLayer::TYPE_ID);
         MCORE_ASSERT(skinningLayer);
 
         // find out what bones this mesh uses
-        const uint32 numOrgVerts = mMesh->GetNumOrgVertices();
+        const uint32 numOrgVerts = m_mesh->GetNumOrgVertices();
         for (uint32 i = 0; i < numOrgVerts; i++)
         {
             // now we have located the skinning information for this vertex, we can see if our bones array
@@ -333,8 +333,8 @@ namespace EMotionFX
                 {
                     // add the bone to the array of bones in this deformer
                     BoneInfo lastBone;
-                    lastBone.mNodeNr = influence->GetNodeNr();
-                    lastBone.mDualQuat.Identity();
+                    lastBone.m_nodeNr = influence->GetNodeNr();
+                    lastBone.m_dualQuat.Identity();
                     m_bones.emplace_back(lastBone);
                     influence->SetBoneNr(static_cast<AZ::u16>(m_bones.size() - 1));
                 }

@@ -51,10 +51,10 @@ namespace EMStudio
     // constructor
     BlendGraphWidget::BlendGraphWidget(AnimGraphPlugin* plugin, QWidget* parent)
         : NodeGraphWidget(plugin, nullptr, parent)
-        , mContextMenuEventMousePos(0, 0)
-        , mDoubleClickHappened(false)
+        , m_contextMenuEventMousePos(0, 0)
+        , m_doubleClickHappened(false)
     {
-        mMoveGroup.SetGroupName("Move anim graph nodes");
+        m_moveGroup.SetGroupName("Move anim graph nodes");
 
         setAutoFillBackground(false);
         setAttribute(Qt::WA_OpaquePaintEvent);
@@ -78,9 +78,9 @@ namespace EMStudio
             return;
         }
 
-        if (!mActiveGraph ||
-            !mPlugin->GetActionFilter().m_createNodes ||
-            mActiveGraph->IsInReferencedGraph())
+        if (!m_activeGraph ||
+            !m_plugin->GetActionFilter().m_createNodes ||
+            m_activeGraph->IsInReferencedGraph())
         {
             event->ignore();
             return;
@@ -440,7 +440,7 @@ namespace EMStudio
         QAction* action = qobject_cast<QAction*>(sender());
 
         // calculate the position
-        const QPoint offset = SnapLocalToGrid(LocalToGlobal(mContextMenuEventMousePos));
+        const QPoint offset = SnapLocalToGrid(LocalToGlobal(m_contextMenuEventMousePos));
 
         // build the name prefix and create the node
         const AZStd::string typeString = FromQtString(action->whatsThis());
@@ -523,7 +523,7 @@ namespace EMStudio
 
     void BlendGraphWidget::OnContextMenuEvent(QPoint mousePos, QPoint globalMousePos, const AnimGraphActionFilter& actionFilter)
     {
-        if (!mAllowContextMenu)
+        if (!m_allowContextMenu)
         {
             return;
         }
@@ -542,7 +542,7 @@ namespace EMStudio
             return;
         }
 
-        mContextMenuEventMousePos = mousePos;
+        m_contextMenuEventMousePos = mousePos;
         const AZStd::vector<EMotionFX::AnimGraphNode*> selectedAnimGraphNodes = nodeGraph->GetSelectedAnimGraphNodes();
 
         const AZStd::vector<NodeConnection*> selectedConnections = nodeGraph->GetSelectedNodeConnections();
@@ -597,7 +597,7 @@ namespace EMStudio
                     EMotionFX::AnimGraphStateTransition* transition = FindTransitionForConnection(selectedConnections[0]);
                     if (transition)
                     {
-                        mPlugin->GetAttributesWindow()->AddTransitionCopyPasteMenuEntries(&menu);
+                        m_plugin->GetAttributesWindow()->AddTransitionCopyPasteMenuEntries(&menu);
                     }
                 }
             }
@@ -608,7 +608,7 @@ namespace EMStudio
             }
 
             if (actionFilter.m_delete &&
-                !mActiveGraph->IsInReferencedGraph())
+                !m_activeGraph->IsInReferencedGraph())
             {
                 QAction* removeConnectionAction = menu.addAction(removeConnectionActionName);
                 connect(removeConnectionAction, &QAction::triggered, this, static_cast<void (BlendGraphWidget::*)()>(&BlendGraphWidget::DeleteSelectedItems));
@@ -618,22 +618,22 @@ namespace EMStudio
         }
         else
         {
-            OnContextMenuEvent(this, mousePos, globalMousePos, mPlugin, selectedAnimGraphNodes, true, false, actionFilter);
+            OnContextMenuEvent(this, mousePos, globalMousePos, m_plugin, selectedAnimGraphNodes, true, false, actionFilter);
         }
     }
 
 
     void BlendGraphWidget::mouseDoubleClickEvent(QMouseEvent* event)
     {
-        if (mActiveGraph == nullptr)
+        if (m_activeGraph == nullptr)
         {
             return;
         }
 
-        mDoubleClickHappened = true;
+        m_doubleClickHappened = true;
         NodeGraphWidget::mouseDoubleClickEvent(event);
 
-        GraphNode* node = mActiveGraph->FindNode(event->pos());
+        GraphNode* node = m_activeGraph->FindNode(event->pos());
         if (node)
         {
             const QModelIndex nodeModelIndex = node->GetModelIndex();
@@ -642,9 +642,9 @@ namespace EMStudio
             {
                 if (animGraphNode->GetHasVisualGraph())
                 {
-                    if (!node->GetIsInsideArrowRect(mMousePos))
+                    if (!node->GetIsInsideArrowRect(m_mousePos))
                     {
-                        mPlugin->GetAnimGraphModel().Focus(nodeModelIndex);
+                        m_plugin->GetAnimGraphModel().Focus(nodeModelIndex);
                     }
                 }
             }
@@ -656,7 +656,7 @@ namespace EMStudio
 
     void BlendGraphWidget::mousePressEvent(QMouseEvent* event)
     {
-        mDoubleClickHappened = false;
+        m_doubleClickHappened = false;
 
         NodeGraphWidget::mousePressEvent(event);
     }
@@ -666,25 +666,25 @@ namespace EMStudio
     {
         //MCore::LogError("mouse release");
 
-        if (mDoubleClickHappened == false)
+        if (m_doubleClickHappened == false)
         {
             if (event->button() == Qt::RightButton)
             {
-                OnContextMenuEvent(event->pos(), event->globalPos(), mPlugin->GetActionFilter());
+                OnContextMenuEvent(event->pos(), event->globalPos(), m_plugin->GetActionFilter());
                 //setCursor( Qt::ArrowCursor );
             }
         }
 
         NodeGraphWidget::mouseReleaseEvent(event);
         //setCursor( Qt::ArrowCursor );
-        mDoubleClickHappened = false;
+        m_doubleClickHappened = false;
     }
 
 
     // start moving
     void BlendGraphWidget::OnMoveStart()
     {
-        mMoveGroup.RemoveAllCommands();
+        m_moveGroup.RemoveAllCommands();
     }
 
 
@@ -701,7 +701,7 @@ namespace EMStudio
             y);
 
         // add it to the group
-        mMoveGroup.AddCommandString(moveString);
+        m_moveGroup.AddCommandString(moveString);
     }
 
 
@@ -711,7 +711,7 @@ namespace EMStudio
         AZStd::string resultString;
 
         // execute the command
-        if (GetCommandManager()->ExecuteCommandGroup(mMoveGroup, resultString) == false)
+        if (GetCommandManager()->ExecuteCommandGroup(m_moveGroup, resultString) == false)
         {
             if (resultString.size() > 0)
             {
@@ -813,9 +813,9 @@ namespace EMStudio
     bool BlendGraphWidget::CheckIfIsCreateConnectionValid(AZ::u16 portNr, GraphNode* portNode, NodePort* port, bool isInputPort)
     {
         MCORE_UNUSED(port);
-        MCORE_ASSERT(mActiveGraph);
+        MCORE_ASSERT(m_activeGraph);
 
-        GraphNode* sourceNode = mActiveGraph->GetCreateConnectionNode();
+        GraphNode* sourceNode = m_activeGraph->GetCreateConnectionNode();
         GraphNode* targetNode = portNode;
 
         // don't allow connection to itself
@@ -828,7 +828,7 @@ namespace EMStudio
         if (sourceNode->GetType() != StateGraphNode::TYPE_ID || targetNode->GetType() != StateGraphNode::TYPE_ID)
         {
             // dont allow to connect an input port to another input port or output port to another output port
-            if (isInputPort == mActiveGraph->GetCreateConnectionIsInputPort())
+            if (isInputPort == m_activeGraph->GetCreateConnectionIsInputPort())
             {
                 return false;
             }
@@ -853,7 +853,7 @@ namespace EMStudio
         {
             sourceBlendNode = static_cast<BlendTreeVisualNode*>(sourceNode);
             targetBlendNode = static_cast<BlendTreeVisualNode*>(targetNode);
-            sourcePortNr    = mActiveGraph->GetCreateConnectionPortNr();
+            sourcePortNr    = m_activeGraph->GetCreateConnectionPortNr();
             targetPortNr    = portNr;
         }
         else
@@ -861,7 +861,7 @@ namespace EMStudio
             sourceBlendNode = static_cast<BlendTreeVisualNode*>(targetNode);
             targetBlendNode = static_cast<BlendTreeVisualNode*>(sourceNode);
             sourcePortNr    = portNr;
-            targetPortNr    = mActiveGraph->GetCreateConnectionPortNr();
+            targetPortNr    = m_activeGraph->GetCreateConnectionPortNr();
         }
 
         EMotionFX::AnimGraphNode::Port& sourcePort = sourceBlendNode->GetEMFXNode()->GetOutputPort(sourcePortNr);
@@ -936,7 +936,7 @@ namespace EMStudio
     void BlendGraphWidget::OnCreateConnection(AZ::u16 sourcePortNr, GraphNode* sourceNode, bool sourceIsInputPort, AZ::u16 targetPortNr, GraphNode* targetNode, bool targetIsInputPort, const QPoint& startOffset, const QPoint& endOffset)
     {
         MCORE_UNUSED(targetIsInputPort);
-        MCORE_ASSERT(mActiveGraph);
+        MCORE_ASSERT(m_activeGraph);
 
         GraphNode*  realSourceNode;
         GraphNode*  realTargetNode;
@@ -964,7 +964,7 @@ namespace EMStudio
         AZStd::string command;
 
         // Check if there already is a connection plugged into the port where we want to put our new connection in.
-        NodeConnection* existingConnection = mActiveGraph->FindInputConnection(realTargetNode, realInputPortNr);
+        NodeConnection* existingConnection = m_activeGraph->FindInputConnection(realTargetNode, realInputPortNr);
 
         // Special case for state nodes.
         AZ::TypeId transitionType = AZ::TypeId::CreateNull();
@@ -1039,12 +1039,12 @@ namespace EMStudio
     // curved connection when creating a new one?
     bool BlendGraphWidget::CreateConnectionMustBeCurved()
     {
-        if (mActiveGraph == nullptr)
+        if (m_activeGraph == nullptr)
         {
             return true;
         }
 
-        if (mActiveGraph->GetCreateConnectionNode()->GetType() == StateGraphNode::TYPE_ID)
+        if (m_activeGraph->GetCreateConnectionNode()->GetType() == StateGraphNode::TYPE_ID)
         {
             return false;
         }
@@ -1056,12 +1056,12 @@ namespace EMStudio
     // show helper connection suggestion lines when creating a new connection?
     bool BlendGraphWidget::CreateConnectionShowsHelpers()
     {
-        if (mActiveGraph == nullptr)
+        if (m_activeGraph == nullptr)
         {
             return true;
         }
 
-        if (mActiveGraph->GetCreateConnectionNode()->GetType() == StateGraphNode::TYPE_ID)
+        if (m_activeGraph->GetCreateConnectionNode()->GetType() == StateGraphNode::TYPE_ID)
         {
             return false;
         }
@@ -1181,7 +1181,7 @@ namespace EMStudio
         QAction* action = qobject_cast<QAction*>(sender());
 
         // find the selected node
-        const QItemSelection selection = mPlugin->GetAnimGraphModel().GetSelectionModel().selection();
+        const QItemSelection selection = m_plugin->GetAnimGraphModel().GetSelectionModel().selection();
         const QModelIndexList selectionList = selection.indexes();
         if (selectionList.empty())
         {
@@ -1266,19 +1266,19 @@ namespace EMStudio
     bool BlendGraphWidget::PreparePainting()
     {
         // skip rendering in case rendering is disabled
-        if (mPlugin->GetDisableRendering())
+        if (m_plugin->GetDisableRendering())
         {
             return false;
         }
 
-        if (mActiveGraph)
+        if (m_activeGraph)
         {
             // enable or disable graph animation
-            mActiveGraph->SetUseAnimation(mPlugin->GetAnimGraphOptions().GetGraphAnimation());
+            m_activeGraph->SetUseAnimation(m_plugin->GetAnimGraphOptions().GetGraphAnimation());
         }
 
         // pass down the show fps options flag
-        NodeGraphWidget::SetShowFPS(mPlugin->GetAnimGraphOptions().GetShowFPS());
+        NodeGraphWidget::SetShowFPS(m_plugin->GetAnimGraphOptions().GetShowFPS());
 
         return true;
     }
@@ -1310,7 +1310,7 @@ namespace EMStudio
     void BlendGraphWidget::OnSetupVisualizeOptions(GraphNode* node)
     {
         BlendTreeVisualNode* blendNode = static_cast<BlendTreeVisualNode*>(node);
-        mPlugin->GetActionManager().ShowNodeColorPicker(blendNode->GetEMFXNode());
+        m_plugin->GetActionManager().ShowNodeColorPicker(blendNode->GetEMFXNode());
     }
 
 
@@ -1326,7 +1326,7 @@ namespace EMStudio
             boldFont.setBold(true);
             QFontMetrics boldFontMetrics(boldFont);
 
-            if (mActiveGraph)
+            if (m_activeGraph)
             {
                 AZStd::string toolTipString;
 
@@ -1335,7 +1335,7 @@ namespace EMStudio
                 QPoint tooltipPos   = helpEvent->globalPos();
 
                 // find the connection at the mouse position
-                NodeConnection* connection = mActiveGraph->FindConnection(globalPos);
+                NodeConnection* connection = m_activeGraph->FindConnection(globalPos);
                 if (connection)
                 {
                     bool conditionFound = false;
@@ -1455,7 +1455,7 @@ namespace EMStudio
                     }
                 }
 
-                GraphNode*                  node            = mActiveGraph->FindNode(localPos);
+                GraphNode*                  node            = m_activeGraph->FindNode(localPos);
                 EMotionFX::AnimGraphNode*  animGraphNode  = nullptr;
 
                 if (node)
@@ -1542,15 +1542,15 @@ namespace EMStudio
         const AZ::s32 newEndOffsetX = transition->GetVisualEndOffsetX();
         const AZ::s32 newEndOffsetY = transition->GetVisualEndOffsetY();
 
-        mActiveGraph->StopReplaceTransitionHead();
-        mActiveGraph->StopReplaceTransitionTail();
+        m_activeGraph->StopReplaceTransitionHead();
+        m_activeGraph->StopReplaceTransitionTail();
 
         // Reset the visual transition before calling the actual command so that undo captures the right previous values.
         stateConnection->SetSourceNode(oldSourceNode);
         stateConnection->SetTargetNode(oldTargetNode);
         transition->SetVisualOffsets(oldStartOffset.x(), oldStartOffset.y(), oldEndOffset.x(), oldEndOffset.y());
 
-        if (mActiveGraph->GetReplaceTransitionValid())
+        if (m_activeGraph->GetReplaceTransitionValid())
         {
             CommandSystem::AdjustTransition(transition,
                 /*isDisabled=*/AZStd::nullopt,
@@ -1706,8 +1706,8 @@ namespace EMStudio
             if (newFocusIndex != newFocusParent)
             {
                 // We are focusing on a node inside a blendtree/statemachine/referencenode
-                GraphNode* graphNode = mActiveGraph->FindGraphNode(newFocusIndex);
-                mActiveGraph->ZoomOnRect(graphNode->GetRect(), geometry().width(), geometry().height(), true);
+                GraphNode* graphNode = m_activeGraph->FindGraphNode(newFocusIndex);
+                m_activeGraph->ZoomOnRect(graphNode->GetRect(), geometry().width(), geometry().height(), true);
             }
         }
         else

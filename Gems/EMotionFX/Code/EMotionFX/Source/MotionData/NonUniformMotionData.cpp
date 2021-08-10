@@ -92,10 +92,10 @@ namespace EMotionFX
         if (jointDataIndex != InvalidIndex && !inPlace)
         {
             const JointData& jointData = m_jointData[jointDataIndex];
-            result.mPosition = (!jointData.m_positionTrack.m_times.empty()) ? CalculateInterpolatedValue<AZ::Vector3, AZ::Vector3>(jointData.m_positionTrack, settings.m_sampleTime) : m_staticJointData[jointDataIndex].m_staticTransform.mPosition;
-            result.mRotation = (!jointData.m_rotationTrack.m_times.empty()) ? CalculateInterpolatedValue<AZ::Quaternion, MCore::Compressed16BitQuaternion>(jointData.m_rotationTrack, settings.m_sampleTime) : m_staticJointData[jointDataIndex].m_staticTransform.mRotation;
+            result.m_position = (!jointData.m_positionTrack.m_times.empty()) ? CalculateInterpolatedValue<AZ::Vector3, AZ::Vector3>(jointData.m_positionTrack, settings.m_sampleTime) : m_staticJointData[jointDataIndex].m_staticTransform.m_position;
+            result.m_rotation = (!jointData.m_rotationTrack.m_times.empty()) ? CalculateInterpolatedValue<AZ::Quaternion, MCore::Compressed16BitQuaternion>(jointData.m_rotationTrack, settings.m_sampleTime) : m_staticJointData[jointDataIndex].m_staticTransform.m_rotation;
 #ifndef EMFX_SCALE_DISABLED
-            result.mScale = (!jointData.m_scaleTrack.m_times.empty()) ? CalculateInterpolatedValue<AZ::Vector3, AZ::Vector3>(jointData.m_scaleTrack, settings.m_sampleTime) : m_staticJointData[jointDataIndex].m_staticTransform.mScale;
+            result.m_scale = (!jointData.m_scaleTrack.m_times.empty()) ? CalculateInterpolatedValue<AZ::Vector3, AZ::Vector3>(jointData.m_scaleTrack, settings.m_sampleTime) : m_staticJointData[jointDataIndex].m_staticTransform.m_scale;
 #endif
         }
         else
@@ -123,9 +123,9 @@ namespace EMotionFX
             const Actor::NodeMirrorInfo& mirrorInfo = actor->GetNodeMirrorInfo(jointSkeletonIndex);
             Transform mirrored = bindPose->GetLocalSpaceTransform(jointSkeletonIndex);
             AZ::Vector3 mirrorAxis = AZ::Vector3::CreateZero();
-            mirrorAxis.SetElement(mirrorInfo.mAxis, 1.0f);
-            const AZ::u16 motionSource = actor->GetNodeMirrorInfo(jointSkeletonIndex).mSourceNode;
-            mirrored.ApplyDeltaMirrored(bindPose->GetLocalSpaceTransform(motionSource), result, mirrorAxis, mirrorInfo.mFlags);
+            mirrorAxis.SetElement(mirrorInfo.m_axis, 1.0f);
+            const AZ::u16 motionSource = actor->GetNodeMirrorInfo(jointSkeletonIndex).m_sourceNode;
+            mirrored.ApplyDeltaMirrored(bindPose->GetLocalSpaceTransform(motionSource), result, mirrorAxis, mirrorInfo.m_flags);
             result = mirrored;
         }
 
@@ -153,10 +153,10 @@ namespace EMotionFX
             if (jointDataIndex != InvalidIndex && !inPlace)
             {
                 const JointData& jointData = m_jointData[jointDataIndex];
-                result.mPosition = (!jointData.m_positionTrack.m_times.empty()) ? CalculateInterpolatedValue<AZ::Vector3>(jointData.m_positionTrack, settings.m_sampleTime) : m_staticJointData[jointDataIndex].m_staticTransform.mPosition;
-                result.mRotation = (!jointData.m_rotationTrack.m_times.empty()) ? CalculateInterpolatedValue<AZ::Quaternion>(jointData.m_rotationTrack, settings.m_sampleTime) : m_staticJointData[jointDataIndex].m_staticTransform.mRotation;
+                result.m_position = (!jointData.m_positionTrack.m_times.empty()) ? CalculateInterpolatedValue<AZ::Vector3>(jointData.m_positionTrack, settings.m_sampleTime) : m_staticJointData[jointDataIndex].m_staticTransform.m_position;
+                result.m_rotation = (!jointData.m_rotationTrack.m_times.empty()) ? CalculateInterpolatedValue<AZ::Quaternion>(jointData.m_rotationTrack, settings.m_sampleTime) : m_staticJointData[jointDataIndex].m_staticTransform.m_rotation;
 #ifndef EMFX_SCALE_DISABLED
-                result.mScale = (!jointData.m_scaleTrack.m_times.empty()) ? CalculateInterpolatedValue<AZ::Vector3>(jointData.m_scaleTrack, settings.m_sampleTime) : m_staticJointData[jointDataIndex].m_staticTransform.mScale;
+                result.m_scale = (!jointData.m_scaleTrack.m_times.empty()) ? CalculateInterpolatedValue<AZ::Vector3>(jointData.m_scaleTrack, settings.m_sampleTime) : m_staticJointData[jointDataIndex].m_staticTransform.m_scale;
 #endif
             }
             else
@@ -1018,11 +1018,11 @@ namespace EMotionFX
                 maxScaleError = 0.00001f;
             }
 
-            ReduceTrackSamples<AZ::Vector3>(jointData.m_positionTrack, m_staticJointData[i].m_staticTransform.mPosition, maxPosError);
-            ReduceTrackSamples<MCore::Compressed16BitQuaternion>(jointData.m_rotationTrack, m_staticJointData[i].m_staticTransform.mRotation, maxRotError);
+            ReduceTrackSamples<AZ::Vector3>(jointData.m_positionTrack, m_staticJointData[i].m_staticTransform.m_position, maxPosError);
+            ReduceTrackSamples<MCore::Compressed16BitQuaternion>(jointData.m_rotationTrack, m_staticJointData[i].m_staticTransform.m_rotation, maxRotError);
             EMFX_SCALECODE
             (
-                ReduceTrackSamples<AZ::Vector3>(jointData.m_scaleTrack, m_staticJointData[i].m_staticTransform.mScale, maxScaleError);
+                ReduceTrackSamples<AZ::Vector3>(jointData.m_scaleTrack, m_staticJointData[i].m_staticTransform.m_scale, maxScaleError);
             )
         }
 
@@ -1143,11 +1143,11 @@ namespace EMotionFX
             {
                 const float keyTime = s * sampleSpacing;
                 const Transform transform = motionData->SampleJointTransform(keyTime, i);
-                SetJointPositionSample(i, s, {keyTime, transform.mPosition});
-                SetJointRotationSample(i, s, {keyTime, transform.mRotation});
+                SetJointPositionSample(i, s, {keyTime, transform.m_position});
+                SetJointRotationSample(i, s, {keyTime, transform.m_rotation});
                 EMFX_SCALECODE
                 (
-                    SetJointScaleSample(i, s, {keyTime, transform.mScale});
+                    SetJointScaleSample(i, s, {keyTime, transform.m_scale});
                 )
             }
         }
@@ -1191,18 +1191,18 @@ namespace EMotionFX
 
     AZ::Vector3 NonUniformMotionData::SampleJointPosition(float sampleTime, size_t jointDataIndex) const
     {
-        return !m_jointData[jointDataIndex].m_positionTrack.m_times.empty() ? CalculateInterpolatedValue<AZ::Vector3, AZ::Vector3>(m_jointData[jointDataIndex].m_positionTrack, sampleTime) : m_staticJointData[jointDataIndex].m_staticTransform.mPosition;
+        return !m_jointData[jointDataIndex].m_positionTrack.m_times.empty() ? CalculateInterpolatedValue<AZ::Vector3, AZ::Vector3>(m_jointData[jointDataIndex].m_positionTrack, sampleTime) : m_staticJointData[jointDataIndex].m_staticTransform.m_position;
     }
 
     AZ::Quaternion NonUniformMotionData::SampleJointRotation(float sampleTime, size_t jointDataIndex) const
     {
-        return !m_jointData[jointDataIndex].m_rotationTrack.m_times.empty() ? CalculateInterpolatedValue<AZ::Quaternion, MCore::Compressed16BitQuaternion>(m_jointData[jointDataIndex].m_rotationTrack, sampleTime) : m_staticJointData[jointDataIndex].m_staticTransform.mRotation;
+        return !m_jointData[jointDataIndex].m_rotationTrack.m_times.empty() ? CalculateInterpolatedValue<AZ::Quaternion, MCore::Compressed16BitQuaternion>(m_jointData[jointDataIndex].m_rotationTrack, sampleTime) : m_staticJointData[jointDataIndex].m_staticTransform.m_rotation;
     }
 
 #ifndef EMFX_SCALE_DISABLED
     AZ::Vector3 NonUniformMotionData::SampleJointScale(float sampleTime, size_t jointDataIndex) const
     {
-        return !m_jointData[jointDataIndex].m_scaleTrack.m_times.empty() ? CalculateInterpolatedValue<AZ::Vector3, AZ::Vector3>(m_jointData[jointDataIndex].m_scaleTrack, sampleTime) : m_staticJointData[jointDataIndex].m_staticTransform.mScale;
+        return !m_jointData[jointDataIndex].m_scaleTrack.m_times.empty() ? CalculateInterpolatedValue<AZ::Vector3, AZ::Vector3>(m_jointData[jointDataIndex].m_scaleTrack, sampleTime) : m_staticJointData[jointDataIndex].m_staticTransform.m_scale;
     }
 #endif
 
@@ -1210,10 +1210,10 @@ namespace EMotionFX
     {
         return Transform
         (
-            !m_jointData[jointDataIndex].m_positionTrack.m_times.empty() ? CalculateInterpolatedValue<AZ::Vector3, AZ::Vector3>(m_jointData[jointDataIndex].m_positionTrack, sampleTime) : m_staticJointData[jointDataIndex].m_staticTransform.mPosition,
-            !m_jointData[jointDataIndex].m_rotationTrack.m_times.empty() ? CalculateInterpolatedValue<AZ::Quaternion, MCore::Compressed16BitQuaternion>(m_jointData[jointDataIndex].m_rotationTrack, sampleTime) : m_staticJointData[jointDataIndex].m_staticTransform.mRotation
+            !m_jointData[jointDataIndex].m_positionTrack.m_times.empty() ? CalculateInterpolatedValue<AZ::Vector3, AZ::Vector3>(m_jointData[jointDataIndex].m_positionTrack, sampleTime) : m_staticJointData[jointDataIndex].m_staticTransform.m_position,
+            !m_jointData[jointDataIndex].m_rotationTrack.m_times.empty() ? CalculateInterpolatedValue<AZ::Quaternion, MCore::Compressed16BitQuaternion>(m_jointData[jointDataIndex].m_rotationTrack, sampleTime) : m_staticJointData[jointDataIndex].m_staticTransform.m_rotation
 #ifndef EMFX_SCALE_DISABLED
-            ,!m_jointData[jointDataIndex].m_scaleTrack.m_times.empty() ? CalculateInterpolatedValue<AZ::Vector3, AZ::Vector3>(m_jointData[jointDataIndex].m_scaleTrack, sampleTime) : m_staticJointData[jointDataIndex].m_staticTransform.mScale
+            ,!m_jointData[jointDataIndex].m_scaleTrack.m_times.empty() ? CalculateInterpolatedValue<AZ::Vector3, AZ::Vector3>(m_jointData[jointDataIndex].m_scaleTrack, sampleTime) : m_staticJointData[jointDataIndex].m_staticTransform.m_scale
 #endif
         );
     }
@@ -1225,11 +1225,11 @@ namespace EMotionFX
         for (size_t i = 0; i < m_jointData.size(); ++i)
         {
             JointData& jointData = tempJointData[i];
-            ReduceTrackSamples<AZ::Vector3>(jointData.m_positionTrack, m_staticJointData[i].m_staticTransform.mPosition, 0.0001f);
-            ReduceTrackSamples<MCore::Compressed16BitQuaternion>(jointData.m_rotationTrack, m_staticJointData[i].m_staticTransform.mRotation, 0.0001f);
+            ReduceTrackSamples<AZ::Vector3>(jointData.m_positionTrack, m_staticJointData[i].m_staticTransform.m_position, 0.0001f);
+            ReduceTrackSamples<MCore::Compressed16BitQuaternion>(jointData.m_rotationTrack, m_staticJointData[i].m_staticTransform.m_rotation, 0.0001f);
             EMFX_SCALECODE
             (
-                ReduceTrackSamples<AZ::Vector3>(jointData.m_scaleTrack, m_staticJointData[i].m_staticTransform.mScale, 0.0001f);
+                ReduceTrackSamples<AZ::Vector3>(jointData.m_scaleTrack, m_staticJointData[i].m_staticTransform.m_scale, 0.0001f);
                 if (jointData.m_scaleTrack.m_times.empty())
                 {
                     ClearJointScaleSamples(i);
@@ -1376,15 +1376,15 @@ namespace EMotionFX
 
         if (saveSettings.m_logDetails)
         {
-            const AZ::Quaternion uncompressedPoseRot = MCore::Compressed16BitQuaternion(jointInfo.m_staticRot.mX, jointInfo.m_staticRot.mY, jointInfo.m_staticRot.mZ, jointInfo.m_staticRot.mW).ToQuaternion().GetNormalized();
-            const AZ::Quaternion uncompressedBindPoseRot = MCore::Compressed16BitQuaternion(jointInfo.m_bindPoseRot.mX, jointInfo.m_bindPoseRot.mY, jointInfo.m_bindPoseRot.mZ, jointInfo.m_bindPoseRot.mW).ToQuaternion().GetNormalized();
+            const AZ::Quaternion uncompressedPoseRot = MCore::Compressed16BitQuaternion(jointInfo.m_staticRot.m_x, jointInfo.m_staticRot.m_y, jointInfo.m_staticRot.m_z, jointInfo.m_staticRot.m_w).ToQuaternion().GetNormalized();
+            const AZ::Quaternion uncompressedBindPoseRot = MCore::Compressed16BitQuaternion(jointInfo.m_bindPoseRot.m_x, jointInfo.m_bindPoseRot.m_y, jointInfo.m_bindPoseRot.m_z, jointInfo.m_bindPoseRot.m_w).ToQuaternion().GetNormalized();
             MCore::LogDetailedInfo("- Motion Joint: %s", motionData->GetJointName(jointDataIndex).c_str());
-            MCore::LogDetailedInfo("   + Pose Translation: x=%f y=%f z=%f", jointInfo.m_staticPos.mX, jointInfo.m_staticPos.mY, jointInfo.m_staticPos.mZ);
+            MCore::LogDetailedInfo("   + Pose Translation: x=%f y=%f z=%f", jointInfo.m_staticPos.m_x, jointInfo.m_staticPos.m_y, jointInfo.m_staticPos.m_z);
             MCore::LogDetailedInfo("   + Pose Rotation:    x=%f y=%f z=%f w=%f", static_cast<float>(uncompressedPoseRot.GetX()), static_cast<float>(uncompressedPoseRot.GetY()), static_cast<float>(uncompressedPoseRot.GetZ()), static_cast<float>(uncompressedPoseRot.GetW()));
-            MCore::LogDetailedInfo("   + Pose Scale:       x=%f y=%f z=%f", jointInfo.m_staticScale.mX, jointInfo.m_staticScale.mY, jointInfo.m_staticScale.mZ);
-            MCore::LogDetailedInfo("   + Bind Pose Translation: x=%f y=%f z=%f", jointInfo.m_bindPosePos.mX, jointInfo.m_bindPosePos.mY, jointInfo.m_bindPosePos.mZ);
+            MCore::LogDetailedInfo("   + Pose Scale:       x=%f y=%f z=%f", jointInfo.m_staticScale.m_x, jointInfo.m_staticScale.m_y, jointInfo.m_staticScale.m_z);
+            MCore::LogDetailedInfo("   + Bind Pose Translation: x=%f y=%f z=%f", jointInfo.m_bindPosePos.m_x, jointInfo.m_bindPosePos.m_y, jointInfo.m_bindPosePos.m_z);
             MCore::LogDetailedInfo("   + Bind Pose Rotation:    x=%f y=%f z=%f w=%f", static_cast<float>(uncompressedBindPoseRot.GetX()), static_cast<float>(uncompressedBindPoseRot.GetY()), static_cast<float>(uncompressedBindPoseRot.GetZ()), static_cast<float>(uncompressedBindPoseRot.GetW()));
-            MCore::LogDetailedInfo("   + Bind Pose Scale:       x=%f y=%f z=%f", jointInfo.m_bindPoseScale.mX, jointInfo.m_bindPoseScale.mY, jointInfo.m_bindPoseScale.mZ);
+            MCore::LogDetailedInfo("   + Bind Pose Scale:       x=%f y=%f z=%f", jointInfo.m_bindPoseScale.m_x, jointInfo.m_bindPoseScale.m_y, jointInfo.m_bindPoseScale.m_z);
             MCore::LogDetailedInfo("   + Num Position Keys:     %d", jointInfo.m_numPosKeys);
             MCore::LogDetailedInfo("   + Num Rotation Keys:     %d", jointInfo.m_numRotKeys);
             MCore::LogDetailedInfo("   + Num Scale Keys:        %d", jointInfo.m_numScaleKeys);
@@ -1697,12 +1697,12 @@ namespace EMotionFX
                 return false;
             }
 
-            AZ::Vector3 staticPos(jointInfo.m_staticPos.mX, jointInfo.m_staticPos.mY, jointInfo.m_staticPos.mZ);
-            AZ::Vector3 staticScale(jointInfo.m_staticScale.mX, jointInfo.m_staticScale.mY, jointInfo.m_staticScale.mZ);
-            MCore::Compressed16BitQuaternion staticRot(jointInfo.m_staticRot.mX, jointInfo.m_staticRot.mY, jointInfo.m_staticRot.mZ, jointInfo.m_staticRot.mW);
-            AZ::Vector3 bindPosePos(jointInfo.m_bindPosePos.mX, jointInfo.m_bindPosePos.mY, jointInfo.m_bindPosePos.mZ);
-            AZ::Vector3 bindPoseScale(jointInfo.m_bindPoseScale.mX, jointInfo.m_bindPoseScale.mY, jointInfo.m_bindPoseScale.mZ);
-            MCore::Compressed16BitQuaternion bindPoseRot(jointInfo.m_bindPoseRot.mX, jointInfo.m_bindPoseRot.mY, jointInfo.m_bindPoseRot.mZ, jointInfo.m_bindPoseRot.mW);
+            AZ::Vector3 staticPos(jointInfo.m_staticPos.m_x, jointInfo.m_staticPos.m_y, jointInfo.m_staticPos.m_z);
+            AZ::Vector3 staticScale(jointInfo.m_staticScale.m_x, jointInfo.m_staticScale.m_y, jointInfo.m_staticScale.m_z);
+            MCore::Compressed16BitQuaternion staticRot(jointInfo.m_staticRot.m_x, jointInfo.m_staticRot.m_y, jointInfo.m_staticRot.m_z, jointInfo.m_staticRot.m_w);
+            AZ::Vector3 bindPosePos(jointInfo.m_bindPosePos.m_x, jointInfo.m_bindPosePos.m_y, jointInfo.m_bindPosePos.m_z);
+            AZ::Vector3 bindPoseScale(jointInfo.m_bindPoseScale.m_x, jointInfo.m_bindPoseScale.m_y, jointInfo.m_bindPoseScale.m_z);
+            MCore::Compressed16BitQuaternion bindPoseRot(jointInfo.m_bindPoseRot.m_x, jointInfo.m_bindPoseRot.m_y, jointInfo.m_bindPoseRot.m_z, jointInfo.m_bindPoseRot.m_w);
             MCore::Endian::ConvertVector3(&staticPos, sourceEndianType);
             MCore::Endian::Convert16BitQuaternion(&staticRot, sourceEndianType);
             MCore::Endian::ConvertVector3(&staticScale, sourceEndianType);
@@ -1747,8 +1747,8 @@ namespace EMotionFX
                         return false;
                     }
                     MCore::Endian::ConvertFloat(&keyInfo.m_time, sourceEndianType);
-                    MCore::Endian::ConvertFloat(&keyInfo.m_value.mX, sourceEndianType, /*numFloats=*/3);
-                    motionData->SetJointPositionSample(i, s, {keyInfo.m_time, AZ::Vector3(keyInfo.m_value.mX, keyInfo.m_value.mY, keyInfo.m_value.mZ)});
+                    MCore::Endian::ConvertFloat(&keyInfo.m_value.m_x, sourceEndianType, /*numFloats=*/3);
+                    motionData->SetJointPositionSample(i, s, {keyInfo.m_time, AZ::Vector3(keyInfo.m_value.m_x, keyInfo.m_value.m_y, keyInfo.m_value.m_z)});
                 }
             }
 
@@ -1764,7 +1764,7 @@ namespace EMotionFX
                         return false;
                     }
                     MCore::Endian::ConvertFloat(&keyInfo.m_time, sourceEndianType);
-                    MCore::Compressed16BitQuaternion compressedQuat(keyInfo.m_value.mX, keyInfo.m_value.mY, keyInfo.m_value.mZ, keyInfo.m_value.mW);
+                    MCore::Compressed16BitQuaternion compressedQuat(keyInfo.m_value.m_x, keyInfo.m_value.m_y, keyInfo.m_value.m_z, keyInfo.m_value.m_w);
                     MCore::Endian::Convert16BitQuaternion(&compressedQuat, sourceEndianType);
                     motionData->SetJointRotationSample(i, s, {keyInfo.m_time, compressedQuat.ToQuaternion().GetNormalized()});
                 }
@@ -1784,8 +1784,8 @@ namespace EMotionFX
                             return false;
                         }
                         MCore::Endian::ConvertFloat(&keyInfo.m_time, sourceEndianType);
-                        MCore::Endian::ConvertFloat(&keyInfo.m_value.mX, sourceEndianType, /*numFloats=*/3);
-                        motionData->SetJointScaleSample(i, s, {keyInfo.m_time, AZ::Vector3(keyInfo.m_value.mX, keyInfo.m_value.mY, keyInfo.m_value.mZ)});
+                        MCore::Endian::ConvertFloat(&keyInfo.m_value.m_x, sourceEndianType, /*numFloats=*/3);
+                        motionData->SetJointScaleSample(i, s, {keyInfo.m_time, AZ::Vector3(keyInfo.m_value.m_x, keyInfo.m_value.m_y, keyInfo.m_value.m_z)});
                     }
                 }
             )

@@ -35,7 +35,7 @@ namespace EMotionFX
     // add a morph target
     void MorphSetup::AddMorphTarget(MorphTarget* morphTarget)
     {
-        mMorphTargets.emplace_back(morphTarget);
+        m_morphTargets.emplace_back(morphTarget);
     }
 
 
@@ -44,20 +44,20 @@ namespace EMotionFX
     {
         if (delFromMem)
         {
-            mMorphTargets[nr]->Destroy();
+            m_morphTargets[nr]->Destroy();
         }
 
-        mMorphTargets.erase(AZStd::next(begin(mMorphTargets), nr));
+        m_morphTargets.erase(AZStd::next(begin(m_morphTargets), nr));
     }
 
 
     // remove a morph target
     void MorphSetup::RemoveMorphTarget(MorphTarget* morphTarget, bool delFromMem)
     {
-        const auto* foundMorphTarget = AZStd::find(begin(mMorphTargets), end(mMorphTargets), morphTarget);
-        if (foundMorphTarget != end(mMorphTargets))
+        const auto* foundMorphTarget = AZStd::find(begin(m_morphTargets), end(m_morphTargets), morphTarget);
+        if (foundMorphTarget != end(m_morphTargets))
         {
-            mMorphTargets.erase(foundMorphTarget);
+            m_morphTargets.erase(foundMorphTarget);
         }
 
         if (delFromMem)
@@ -70,76 +70,76 @@ namespace EMotionFX
     // remove all morph targets
     void MorphSetup::RemoveAllMorphTargets()
     {
-        for (MorphTarget*& morphTarget : mMorphTargets)
+        for (MorphTarget*& morphTarget : m_morphTargets)
         {
             morphTarget->Destroy();
         }
 
-        mMorphTargets.clear();
+        m_morphTargets.clear();
     }
 
 
     // get a morph target by ID
     MorphTarget* MorphSetup::FindMorphTargetByID(uint32 id) const
     {
-        const auto foundMorphTarget = AZStd::find_if(begin(mMorphTargets), end(mMorphTargets), [id](const MorphTarget* morphTarget)
+        const auto foundMorphTarget = AZStd::find_if(begin(m_morphTargets), end(m_morphTargets), [id](const MorphTarget* morphTarget)
         {
             return morphTarget->GetID() == id;
         });
-        return foundMorphTarget != end(mMorphTargets) ? *foundMorphTarget : nullptr;
+        return foundMorphTarget != end(m_morphTargets) ? *foundMorphTarget : nullptr;
     }
 
 
     // get a morph target number by ID
     size_t MorphSetup::FindMorphTargetNumberByID(uint32 id) const
     {
-        const auto foundMorphTarget = AZStd::find_if(begin(mMorphTargets), end(mMorphTargets), [id](const MorphTarget* morphTarget)
+        const auto foundMorphTarget = AZStd::find_if(begin(m_morphTargets), end(m_morphTargets), [id](const MorphTarget* morphTarget)
         {
             return morphTarget->GetID() == id;
         });
-        return foundMorphTarget != end(mMorphTargets) ? AZStd::distance(begin(mMorphTargets), foundMorphTarget) : InvalidIndex;
+        return foundMorphTarget != end(m_morphTargets) ? AZStd::distance(begin(m_morphTargets), foundMorphTarget) : InvalidIndex;
     }
 
 
     size_t MorphSetup::FindMorphTargetIndexByName(const char* name) const
     {
-        const auto foundMorphTarget = AZStd::find_if(begin(mMorphTargets), end(mMorphTargets), [name](const MorphTarget* morphTarget)
+        const auto foundMorphTarget = AZStd::find_if(begin(m_morphTargets), end(m_morphTargets), [name](const MorphTarget* morphTarget)
         {
             return morphTarget->GetNameString() == name;
         });
-        return foundMorphTarget != end(mMorphTargets) ? AZStd::distance(begin(mMorphTargets), foundMorphTarget) : InvalidIndex;
+        return foundMorphTarget != end(m_morphTargets) ? AZStd::distance(begin(m_morphTargets), foundMorphTarget) : InvalidIndex;
     }
 
 
     size_t MorphSetup::FindMorphTargetIndexByNameNoCase(const char* name) const
     {
-        const auto foundMorphTarget = AZStd::find_if(begin(mMorphTargets), end(mMorphTargets), [name](const MorphTarget* morphTarget)
+        const auto foundMorphTarget = AZStd::find_if(begin(m_morphTargets), end(m_morphTargets), [name](const MorphTarget* morphTarget)
         {
             return AzFramework::StringFunc::Equal(morphTarget->GetNameString().c_str(), name, false /* no case */);
         });
-        return foundMorphTarget != end(mMorphTargets) ? AZStd::distance(begin(mMorphTargets), foundMorphTarget) : InvalidIndex;
+        return foundMorphTarget != end(m_morphTargets) ? AZStd::distance(begin(m_morphTargets), foundMorphTarget) : InvalidIndex;
     }
 
 
     // find a morph target by name (case sensitive)
     MorphTarget* MorphSetup::FindMorphTargetByName(const char* name) const
     {
-        const auto foundMorphTarget = AZStd::find_if(begin(mMorphTargets), end(mMorphTargets), [name](const MorphTarget* morphTarget)
+        const auto foundMorphTarget = AZStd::find_if(begin(m_morphTargets), end(m_morphTargets), [name](const MorphTarget* morphTarget)
         {
             return morphTarget->GetNameString() == name;
         });
-        return foundMorphTarget != end(mMorphTargets) ?  *foundMorphTarget : nullptr;
+        return foundMorphTarget != end(m_morphTargets) ?  *foundMorphTarget : nullptr;
     }
 
 
     // find a morph target by name (not case sensitive)
     MorphTarget* MorphSetup::FindMorphTargetByNameNoCase(const char* name) const
     {
-        const auto foundMorphTarget = AZStd::find_if(begin(mMorphTargets), end(mMorphTargets), [name](const MorphTarget* morphTarget)
+        const auto foundMorphTarget = AZStd::find_if(begin(m_morphTargets), end(m_morphTargets), [name](const MorphTarget* morphTarget)
         {
             return AzFramework::StringFunc::Equal(morphTarget->GetNameString().c_str(), name, false /* no case */);
         });
-        return foundMorphTarget != end(mMorphTargets) ? *foundMorphTarget : nullptr;
+        return foundMorphTarget != end(m_morphTargets) ? *foundMorphTarget : nullptr;
     }
 
 
@@ -150,7 +150,7 @@ namespace EMotionFX
         MorphSetup* clone = MorphSetup::Create();
 
         // clone all morph targets
-        for (const MorphTarget* morphTarget : mMorphTargets)
+        for (const MorphTarget* morphTarget : m_morphTargets)
         {
             clone->AddMorphTarget(morphTarget->Clone());
         }
@@ -162,7 +162,7 @@ namespace EMotionFX
 
     void MorphSetup::ReserveMorphTargets(size_t numMorphTargets)
     {
-        mMorphTargets.reserve(numMorphTargets);
+        m_morphTargets.reserve(numMorphTargets);
     }
 
 
@@ -176,7 +176,7 @@ namespace EMotionFX
         }
 
         // scale the morph targets
-        for (MorphTarget* morphTarget : mMorphTargets)
+        for (MorphTarget* morphTarget : m_morphTargets)
         {
             morphTarget->Scale(scaleFactor);
         }

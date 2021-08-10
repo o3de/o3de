@@ -188,7 +188,7 @@ namespace CommandSystem
         outResult = name.c_str();
 
         // Save the current dirty flag and tell the anim graph that something got changed.
-        mOldDirtyFlag = animGraph->GetDirtyFlag();
+        m_oldDirtyFlag = animGraph->GetDirtyFlag();
         animGraph->SetDirtyFlag(true);
 
         return true;
@@ -219,7 +219,7 @@ namespace CommandSystem
         }
 
         // Set the dirty flag back to the old value.
-        animGraph->SetDirtyFlag(mOldDirtyFlag);
+        animGraph->SetDirtyFlag(m_oldDirtyFlag);
         return true;
     }
 
@@ -258,22 +258,22 @@ namespace CommandSystem
     bool CommandAnimGraphRemoveParameter::Execute(const MCore::CommandLine& parameters, AZStd::string& outResult)
     {
         // Get the parameter name.
-        parameters.GetValue("name", this, mName);
+        parameters.GetValue("name", this, m_name);
 
         // Find the anim graph by using the id from command parameter.
         const uint32 animGraphID = parameters.GetValueAsInt("animGraphID", this);
         EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().FindAnimGraphByID(animGraphID);
         if (!animGraph)
         {
-            outResult = AZStd::string::format("Cannot remove parameter '%s' from anim graph. Anim graph id '%i' is not valid.", mName.c_str(), animGraphID);
+            outResult = AZStd::string::format("Cannot remove parameter '%s' from anim graph. Anim graph id '%i' is not valid.", m_name.c_str(), animGraphID);
             return false;
         }
 
         // Check if there is a parameter with the given name.
-        const EMotionFX::Parameter* parameter = animGraph->FindParameterByName(mName);
+        const EMotionFX::Parameter* parameter = animGraph->FindParameterByName(m_name);
         if (!parameter)
         {
-            outResult = AZStd::string::format("Cannot remove parameter '%s' from anim graph. There is no parameter with the given name.", mName.c_str());
+            outResult = AZStd::string::format("Cannot remove parameter '%s' from anim graph. There is no parameter with the given name.", m_name.c_str());
             return false;
         }
         AZ_Assert(azrtti_typeid(parameter) != azrtti_typeid<EMotionFX::GroupParameter>(), "CommmandAnimGraphRemoveParameter called for a group parameter");
@@ -284,13 +284,13 @@ namespace CommandSystem
         AZ_Assert(parameterIndex.IsSuccess(), "Expected valid parameter index");
 
         // Store undo info before we remove it, so that we can recreate it later.
-        mType = azrtti_typeid(parameter);
-        mIndex = parameterIndex.GetValue();
-        mParent = parentGroup ? parentGroup->GetName() : "";
-        mContents = MCore::ReflectionSerializer::Serialize(parameter).GetValue();
+        m_type = azrtti_typeid(parameter);
+        m_index = parameterIndex.GetValue();
+        m_parent = parentGroup ? parentGroup->GetName() : "";
+        m_contents = MCore::ReflectionSerializer::Serialize(parameter).GetValue();
 
         AZ::Outcome<size_t> valueParameterIndex = AZ::Failure();
-        if (mType != azrtti_typeid<EMotionFX::GroupParameter>())
+        if (m_type != azrtti_typeid<EMotionFX::GroupParameter>())
         {
             valueParameterIndex = animGraph->FindValueParameterIndex(static_cast<const EMotionFX::ValueParameter*>(parameter));
         }
@@ -299,7 +299,7 @@ namespace CommandSystem
         if (animGraph->RemoveParameter(const_cast<EMotionFX::Parameter*>(parameter)))
         {
             // Remove the parameter from all corresponding anim graph instances if it is a value parameter
-            if (mType != azrtti_typeid<EMotionFX::GroupParameter>())
+            if (m_type != azrtti_typeid<EMotionFX::GroupParameter>())
             {
                 AZStd::vector<EMotionFX::AnimGraphObject*> affectedObjects;
                 animGraph->RecursiveCollectObjectsOfType(azrtti_typeid<EMotionFX::ObjectAffectedByParameterChanges>(), affectedObjects);
@@ -308,7 +308,7 @@ namespace CommandSystem
                 for (EMotionFX::AnimGraphObject* affectedObject : affectedObjects)
                 {
                     EMotionFX::ObjectAffectedByParameterChanges* parameterDriven = azdynamic_cast<EMotionFX::ObjectAffectedByParameterChanges*>(affectedObject);
-                    parameterDriven->ParameterRemoved(mName);
+                    parameterDriven->ParameterRemoved(m_name);
                 }
 
                 const size_t numInstances = animGraph->GetNumAnimGraphInstances();
@@ -320,7 +320,7 @@ namespace CommandSystem
                 }
 
                 // Save the current dirty flag and tell the anim graph that something got changed.
-                mOldDirtyFlag = animGraph->GetDirtyFlag();
+                m_oldDirtyFlag = animGraph->GetDirtyFlag();
                 animGraph->SetDirtyFlag(true);
             }
             return true;
@@ -336,7 +336,7 @@ namespace CommandSystem
         EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().FindAnimGraphByID(animGraphID);
         if (!animGraph)
         {
-            outResult = AZStd::string::format("Cannot undo remove parameter '%s' from anim graph. Anim graph id '%i' is not valid.", mName.c_str(), animGraphID);
+            outResult = AZStd::string::format("Cannot undo remove parameter '%s' from anim graph. Anim graph id '%i' is not valid.", m_name.c_str(), animGraphID);
             return false;
         }
 
@@ -347,11 +347,11 @@ namespace CommandSystem
 
         commandString = AZStd::string::format("AnimGraphCreateParameter -animGraphID %i -name \"%s\" -index %zu -type \"%s\" -contents {%s} -parent \"%s\" -updateUI %s",
                 animGraph->GetID(),
-                mName.c_str(),
-                mIndex,
-                mType.ToString<AZStd::string>().c_str(),
-                mContents.c_str(),
-                mParent.c_str(),
+                m_name.c_str(),
+                m_index,
+                m_type.ToString<AZStd::string>().c_str(),
+                m_contents.c_str(),
+                m_parent.c_str(),
                 updateUI.c_str());
 
         // The parameter will be restored to the right parent group because the index is absolute
@@ -364,7 +364,7 @@ namespace CommandSystem
         }
 
         // Set the dirty flag back to the old value.
-        animGraph->SetDirtyFlag(mOldDirtyFlag);
+        animGraph->SetDirtyFlag(m_oldDirtyFlag);
         return true;
     }
 
@@ -399,21 +399,21 @@ namespace CommandSystem
     bool CommandAnimGraphAdjustParameter::Execute(const MCore::CommandLine& parameters, AZStd::string& outResult)
     {
         // Get the parameter name.
-        parameters.GetValue("name", this, mOldName);
+        parameters.GetValue("name", this, m_oldName);
 
         // Find the anim graph by using the id from command parameter.
         const uint32 animGraphID = parameters.GetValueAsInt("animGraphID", this);
         EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().FindAnimGraphByID(animGraphID);
         if (!animGraph)
         {
-            outResult = AZStd::string::format("Cannot adjust parameter '%s'. Anim graph with id '%d' not found.", mOldName.c_str(), animGraphID);
+            outResult = AZStd::string::format("Cannot adjust parameter '%s'. Anim graph with id '%d' not found.", m_oldName.c_str(), animGraphID);
             return false;
         }
 
-        const EMotionFX::Parameter* parameter = animGraph->FindParameterByName(mOldName);
+        const EMotionFX::Parameter* parameter = animGraph->FindParameterByName(m_oldName);
         if (!parameter)
         {
-            outResult = AZStd::string::format("There is no parameter with the name '%s'.", mOldName.c_str());
+            outResult = AZStd::string::format("There is no parameter with the name '%s'.", m_oldName.c_str());
             return false;
         }
         AZ::Outcome<size_t> oldValueParameterIndex = AZ::Failure();
@@ -426,15 +426,15 @@ namespace CommandSystem
         const EMotionFX::GroupParameter* currentParent = animGraph->FindParentGroupParameter(parameter);
 
         // Store the undo info.
-        mOldType = azrtti_typeid(parameter);
-        mOldContents = MCore::ReflectionSerializer::Serialize(parameter).GetValue();
+        m_oldType = azrtti_typeid(parameter);
+        m_oldContents = MCore::ReflectionSerializer::Serialize(parameter).GetValue();
 
         // Get the new name and check if it is valid.
         AZStd::string newName;
         parameters.GetValue("newName", this, newName);
         if (!newName.empty())
         {
-            if (newName == mOldName)
+            if (newName == m_oldName)
             {
                 newName.clear();
             }
@@ -461,10 +461,10 @@ namespace CommandSystem
                 outResult = AZStd::string::format("The type is not a valid UUID type. Please use -help or use the command browser to see a list of valid options.");
                 return false;
             }
-            if (type != mOldType)
+            if (type != m_oldType)
             {
                 AZStd::unique_ptr<EMotionFX::Parameter> newParameter(EMotionFX::ParameterFactory::Create(type));
-                newParameter->SetName(newName.empty() ? mOldName : newName);
+                newParameter->SetName(newName.empty() ? m_oldName : newName);
                 newParameter->SetDescription(parameter->GetDescription());
 
                 const AZ::Outcome<size_t> paramIndexRelativeToParent = currentParent ? currentParent->FindRelativeParameterIndex(parameter) : animGraph->FindRelativeParameterIndex(parameter);
@@ -472,7 +472,7 @@ namespace CommandSystem
 
                 if (!animGraph->RemoveParameter(const_cast<EMotionFX::Parameter*>(parameter)))
                 {
-                    outResult = AZStd::string::format("Could not remove current parameter '%s' to change its type.", mOldName.c_str());
+                    outResult = AZStd::string::format("Could not remove current parameter '%s' to change its type.", m_oldName.c_str());
                     return false;
                 }
                 if (!animGraph->InsertParameter(paramIndexRelativeToParent.GetValue(), newParameter.get(), currentParent))
@@ -525,7 +525,7 @@ namespace CommandSystem
             {
                 EMotionFX::AnimGraphInstance* animGraphInstance = animGraph->GetAnimGraphInstance(i);
                 // reinit the modified parameters
-                if (mOldType != azrtti_typeid<EMotionFX::GroupParameter>())
+                if (m_oldType != azrtti_typeid<EMotionFX::GroupParameter>())
                 {
                     animGraphInstance->ReInitParameterValue(valueParameterIndex.GetValue());
                 }
@@ -547,7 +547,7 @@ namespace CommandSystem
                     for (EMotionFX::AnimGraphObject* affectedObject : affectedObjects)
                     {
                         EMotionFX::ObjectAffectedByParameterChanges* affectedObjectByParameterChanges = azdynamic_cast<EMotionFX::ObjectAffectedByParameterChanges*>(affectedObject);
-                        affectedObjectByParameterChanges->ParameterRenamed(mOldName, newName);
+                        affectedObjectByParameterChanges->ParameterRenamed(m_oldName, newName);
                     }
                 }
             }
@@ -561,16 +561,16 @@ namespace CommandSystem
                 for (EMotionFX::AnimGraphObject* affectedObject : affectedObjects)
                 {
                     EMotionFX::ObjectAffectedByParameterChanges* affectedObjectByParameterChanges = azdynamic_cast<EMotionFX::ObjectAffectedByParameterChanges*>(affectedObject);
-                    affectedObjectByParameterChanges->ParameterRemoved(mOldName);
+                    affectedObjectByParameterChanges->ParameterRemoved(m_oldName);
                     affectedObjectByParameterChanges->ParameterAdded(newName);
                 }
             }
 
             // Save the current dirty flag and tell the anim graph that something got changed.
-            mOldDirtyFlag = animGraph->GetDirtyFlag();
+            m_oldDirtyFlag = animGraph->GetDirtyFlag();
             animGraph->SetDirtyFlag(true);
         }
-        else if (mOldType != azrtti_typeid<EMotionFX::GroupParameter>())
+        else if (m_oldType != azrtti_typeid<EMotionFX::GroupParameter>())
         {
             AZ_Assert(oldValueParameterIndex.IsSuccess(), "Unable to find parameter index when changing parameter to a group");
 
@@ -582,11 +582,11 @@ namespace CommandSystem
             for (EMotionFX::AnimGraphObject* affectedObject : affectedObjects)
             {
                 EMotionFX::ObjectAffectedByParameterChanges* affectedObjectByParameterChanges = azdynamic_cast<EMotionFX::ObjectAffectedByParameterChanges*>(affectedObject);
-                affectedObjectByParameterChanges->ParameterRemoved(mOldName);
+                affectedObjectByParameterChanges->ParameterRemoved(m_oldName);
             }
 
             // Save the current dirty flag and tell the anim graph that something got changed.
-            mOldDirtyFlag = animGraph->GetDirtyFlag();
+            m_oldDirtyFlag = animGraph->GetDirtyFlag();
             animGraph->SetDirtyFlag(true);
         }
 
@@ -638,15 +638,15 @@ namespace CommandSystem
                 animGraph->GetID(),
                 newName.c_str(),
                 name.c_str(),
-                mOldType.ToString<AZStd::string>().c_str(),
-                mOldContents.c_str());
+                m_oldType.ToString<AZStd::string>().c_str(),
+                m_oldContents.c_str());
 
         if (!GetCommandManager()->ExecuteCommandInsideCommand(commandString, outResult))
         {
             AZ_Error("EMotionFX", false, outResult.c_str());
         }
 
-        animGraph->SetDirtyFlag(mOldDirtyFlag);
+        animGraph->SetDirtyFlag(m_oldDirtyFlag);
         return true;
     }
 
@@ -728,13 +728,13 @@ namespace CommandSystem
         const EMotionFX::GroupParameter* currentParent = animGraph->FindParentGroupParameter(parameter);
         if (currentParent)
         {
-            mOldParent = currentParent->GetName();
-            mOldIndex = currentParent->FindRelativeParameterIndex(parameter).GetValue();
+            m_oldParent = currentParent->GetName();
+            m_oldIndex = currentParent->FindRelativeParameterIndex(parameter).GetValue();
         }
         else
         {
-            mOldParent.clear(); // means the root
-            mOldIndex = animGraph->FindRelativeParameterIndex(parameter).GetValue();
+            m_oldParent.clear(); // means the root
+            m_oldIndex = animGraph->FindRelativeParameterIndex(parameter).GetValue();
         }
 
         EMotionFX::ValueParameterVector valueParametersBeforeChange = animGraph->RecursivelyGetValueParameters();
@@ -789,7 +789,7 @@ namespace CommandSystem
         }
 
         // Save the current dirty flag and tell the anim graph that something got changed.
-        mOldDirtyFlag = animGraph->GetDirtyFlag();
+        m_oldDirtyFlag = animGraph->GetDirtyFlag();
         animGraph->SetDirtyFlag(true);
 
         return true;
@@ -813,10 +813,10 @@ namespace CommandSystem
         AZStd::string commandString = AZStd::string::format("AnimGraphMoveParameter -animGraphID %i -name \"%s\" -index %zu",
                 animGraphID,
                 name.c_str(),
-                mOldIndex);
-        if (!mOldParent.empty())
+                m_oldIndex);
+        if (!m_oldParent.empty())
         {
-            commandString += AZStd::string::format(" -parent \"%s\"", mOldParent.c_str());
+            commandString += AZStd::string::format(" -parent \"%s\"", m_oldParent.c_str());
         }
 
         if (!GetCommandManager()->ExecuteCommandInsideCommand(commandString, outResult))
@@ -825,7 +825,7 @@ namespace CommandSystem
             return false;
         }
 
-        animGraph->SetDirtyFlag(mOldDirtyFlag);
+        animGraph->SetDirtyFlag(m_oldDirtyFlag);
         return true;
     }
 

@@ -18,9 +18,9 @@ namespace EMotionFX
 
 
     NodeGroup::NodeGroup(const AZStd::string& groupName, uint16 numNodes, bool enabledOnDefault)
-        : mName(groupName)
-        , mNodes(numNodes)
-        , mEnabledOnDefault(enabledOnDefault)
+        : m_name(groupName)
+        , m_nodes(numNodes)
+        , m_enabledOnDefault(enabledOnDefault)
     {
     }
 
@@ -28,59 +28,59 @@ namespace EMotionFX
     // set the name of the group
     void NodeGroup::SetName(const AZStd::string& groupName)
     {
-        mName = groupName;
+        m_name = groupName;
     }
 
 
     // get the name of the group as character buffer
     const char* NodeGroup::GetName() const
     {
-        return mName.c_str();
+        return m_name.c_str();
     }
 
 
     // get the name of the string as mcore string object
     const AZStd::string& NodeGroup::GetNameString() const
     {
-        return mName;
+        return m_name;
     }
 
 
     // set the number of nodes
     void NodeGroup::SetNumNodes(const uint16 numNodes)
     {
-        mNodes.Resize(numNodes);
+        m_nodes.Resize(numNodes);
     }
 
 
     // get the number of nodes
     uint16 NodeGroup::GetNumNodes() const
     {
-        return static_cast<uint16>(mNodes.GetLength());
+        return static_cast<uint16>(m_nodes.GetLength());
     }
 
 
     // set a given node to a given node number
     void NodeGroup::SetNode(uint16 index, uint16 nodeIndex)
     {
-        mNodes[index] = nodeIndex;
+        m_nodes[index] = nodeIndex;
     }
 
 
     // get the node number of a given index
     uint16 NodeGroup::GetNode(uint16 index) const
     {
-        return mNodes[index];
+        return m_nodes[index];
     }
 
 
     // enable all nodes in the group inside a given actor instance
     void NodeGroup::EnableNodes(ActorInstance* targetActorInstance)
     {
-        const uint16 numNodes = static_cast<uint16>(mNodes.GetLength());
+        const uint16 numNodes = static_cast<uint16>(m_nodes.GetLength());
         for (uint16 i = 0; i < numNodes; ++i)
         {
-            targetActorInstance->EnableNode(mNodes[i]);
+            targetActorInstance->EnableNode(m_nodes[i]);
         }
     }
 
@@ -88,10 +88,10 @@ namespace EMotionFX
     // disable all nodes in the group inside a given actor instance
     void NodeGroup::DisableNodes(ActorInstance* targetActorInstance)
     {
-        const uint16 numNodes = static_cast<uint16>(mNodes.GetLength());
+        const uint16 numNodes = static_cast<uint16>(m_nodes.GetLength());
         for (uint16 i = 0; i < numNodes; ++i)
         {
-            targetActorInstance->DisableNode(mNodes[i]);
+            targetActorInstance->DisableNode(m_nodes[i]);
         }
     }
 
@@ -99,42 +99,42 @@ namespace EMotionFX
     // add a given node to the group (performs a realloc internally)
     void NodeGroup::AddNode(uint16 nodeIndex)
     {
-        mNodes.Add(nodeIndex);
+        m_nodes.Add(nodeIndex);
     }
 
 
     // remove a given node by its node number
     void NodeGroup::RemoveNodeByNodeIndex(uint16 nodeIndex)
     {
-        mNodes.RemoveByValue(nodeIndex);
+        m_nodes.RemoveByValue(nodeIndex);
     }
 
 
     // remove a given array element from the list of nodes
     void NodeGroup::RemoveNodeByGroupIndex(uint16 index)
     {
-        mNodes.Remove(index);
+        m_nodes.Remove(index);
     }
 
 
     // get the node array directly
     MCore::SmallArray<uint16>& NodeGroup::GetNodeArray()
     {
-        return mNodes;
+        return m_nodes;
     }
 
 
     // is this group enabled on default?
     bool NodeGroup::GetIsEnabledOnDefault() const
     {
-        return mEnabledOnDefault;
+        return m_enabledOnDefault;
     }
 
 
     // set the default enabled state
     void NodeGroup::SetIsEnabledOnDefault(bool enabledOnDefault)
     {
-        mEnabledOnDefault = enabledOnDefault;
+        m_enabledOnDefault = enabledOnDefault;
     }
 
     NodeGroup::NodeGroup(const NodeGroup& aOther)
@@ -144,9 +144,9 @@ namespace EMotionFX
 
     NodeGroup& NodeGroup::operator=(const NodeGroup& aOther)
     {
-        mName = aOther.mName;
-        mNodes = aOther.mNodes;
-        mEnabledOnDefault = aOther.mEnabledOnDefault;
+        m_name = aOther.m_name;
+        m_nodes = aOther.m_nodes;
+        m_enabledOnDefault = aOther.m_enabledOnDefault;
         return *this;
     }
 
