@@ -1,7 +1,8 @@
 {
   "meta": {
     "platform": "${platform}",
-    "timestamp": "${timestamp}"
+    "timestamp": "${timestamp}",
+    "build_config": "${build_config}"
   },
   "jenkins": {
     "use_test_impact_analysis": ${use_tiaf}
@@ -32,8 +33,7 @@
     "historic": {
       "root": "${historic_dir}",
       "relative_paths": {
-        "last_run_hash_file": "last_run.hash",
-        "last_build_target_list_file": "LastRunBuildTargets.json"
+        "data": "historic_data.json"
       }
     }
   },

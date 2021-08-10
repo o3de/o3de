@@ -22,10 +22,10 @@ set(LY_TEST_IMPACT_CONSOLE_TARGET "TestImpact.Frontend.Console")
 set(LY_TEST_IMPACT_WORKING_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/TestImpactFramework")
 
 # Directory for artifacts generated at runtime
-set(LY_TEST_IMPACT_TEMP_DIR "${LY_TEST_IMPACT_WORKING_DIR}/Temp")
+set(LY_TEST_IMPACT_TEMP_DIR "${LY_TEST_IMPACT_WORKING_DIR}/$<CONFIG>/Temp")
 
 # Directory for files that persist between runtime runs
-set(LY_TEST_IMPACT_PERSISTENT_DIR "${LY_TEST_IMPACT_WORKING_DIR}/Persistent")
+set(LY_TEST_IMPACT_PERSISTENT_DIR "${LY_TEST_IMPACT_WORKING_DIR}/$<CONFIG>/Persistent")
 
 # Directory for static artifacts produced as part of the build system generation process
 set(LY_TEST_IMPACT_ARTIFACT_DIR "${LY_TEST_IMPACT_WORKING_DIR}/Artifact")
@@ -43,7 +43,7 @@ set(LY_TEST_IMPACT_TEST_TYPE_FILE "${LY_TEST_IMPACT_ARTIFACT_DIR}/TestType/All.t
 set(LY_TEST_IMPACT_GEM_TARGET_FILE "${LY_TEST_IMPACT_ARTIFACT_DIR}/BuildType/All.gems")
 
 # Path to the config file for each build configuration
-set(LY_TEST_IMPACT_CONFIG_FILE_PATH "${LY_TEST_IMPACT_PERSISTENT_DIR}/tiaf.$<CONFIG>.json")
+set(LY_TEST_IMPACT_CONFIG_FILE_PATH "${LY_TEST_IMPACT_PERSISTENT_DIR}/tiaf.json")
 
 # Preprocessor directive for the config file path
 set(LY_TEST_IMPACT_CONFIG_FILE_PATH_DEFINITION "LY_TEST_IMPACT_DEFAULT_CONFIG_FILE=\"${LY_TEST_IMPACT_CONFIG_FILE_PATH}\"")
@@ -378,6 +378,9 @@ function(ly_test_impact_write_config_file CONFIG_TEMPLATE_FILE BIN_DIR)
 
     # Timestamp this config file was generated at
     string(TIMESTAMP timestamp "%Y-%m-%d %H:%M:%S")
+
+    # Build configuration this config file is being generated for
+    set(build_config "$<CONFIG>")
 
     # Instrumentation binary
     if(NOT LY_TEST_IMPACT_INSTRUMENTATION_BIN)

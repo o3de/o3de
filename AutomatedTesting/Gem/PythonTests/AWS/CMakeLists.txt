@@ -12,6 +12,11 @@
 ################################################################################
 
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
+    # Only enable AWS automated tests on Windows
+    if(NOT "${PAL_PLATFORM_NAME}" STREQUAL "Windows")
+        return()
+    endif()
+
     # Enable after installing NodeJS and CDK on jenkins Windows AMI.
     ly_add_pytest(
         NAME AutomatedTesting::AWSTests

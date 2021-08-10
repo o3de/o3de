@@ -11,7 +11,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     if (PAL_TRAIT_BUILD_SERIALIZECONTEXTTOOLS)
         list(APPEND additional_dependencies AZ::SerializeContextTools) # test_CLITool_SerializeContextTools depends on it
     endif()
-    list(APPEND additional_dependencies AZ::AssetBundlerBatch) # test_CLITool_AssetBundlerBatch_Works depends on it
 
     ly_add_pytest(
         NAME AutomatedTesting::SmokeTest
@@ -25,25 +24,27 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
             Legacy::Editor
             AutomatedTesting.GameLauncher
             AutomatedTesting.Assets
-            ${aditional_dependencies}
+            AZ::AzTestRunner
+            AZ::AssetBundlerBatch
+            ${additional_dependencies}
         COMPONENT
             Smoke
     )
 
     ly_add_pytest(
-        NAME AutomatedTesting::SandboxTest
-        TEST_SUITE sandbox
+        NAME AutomatedTesting::LoadLevelGPU
+        TEST_SUITE smoke
         TEST_SERIAL
-        PATH ${CMAKE_CURRENT_LIST_DIR}
-        PYTEST_MARKS "SUITE_sandbox"
+        TEST_REQUIRES gpu
+        PATH ${CMAKE_CURRENT_LIST_DIR}/test_RemoteConsole_GPULoadLevel_Works.py
+        TIMEOUT 100
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             AZ::PythonBindingsExample
-            Legacy::Editor
             AutomatedTesting.GameLauncher
             AutomatedTesting.Assets
         COMPONENT
-            Sandbox
+            Smoke
     )
 
     ly_add_pytest(
@@ -72,4 +73,5 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
             AutomatedTesting.GameLauncher
             AutomatedTesting.Assets
     )
+
 endif()

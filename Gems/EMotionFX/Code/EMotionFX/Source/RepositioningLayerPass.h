@@ -11,7 +11,7 @@
 // include required headers
 #include "EMotionFXConfig.h"
 #include "LayerPass.h"
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 
 
 namespace EMotionFX
@@ -59,8 +59,8 @@ namespace EMotionFX
 
 
     private:
-        MCore::Array<uint32>    mHierarchyPath; /**< The path of node indices to the repositioning node. */
-        uint32                  mLastReposNode; /**< The last repositioning node index that was used. When this changes, the hierarchy path has to be updated. */
+        AZStd::vector<size_t>    m_hierarchyPath; /**< The path of node indices to the repositioning node. */
+        size_t                  m_lastReposNode; /**< The last repositioning node index that was used. When this changes, the hierarchy path has to be updated. */
 
         /**
          * The constructor.

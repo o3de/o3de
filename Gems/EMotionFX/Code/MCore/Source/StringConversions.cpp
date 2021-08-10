@@ -46,7 +46,7 @@ namespace MCore
         AzFramework::StringFunc::TrimWhiteSpace(nameWithoutLastDigits, false /* leading */, true /* trailing */);
 
         // generate the unique name
-        uint32 nameIndex = 0;
+        size_t nameIndex = 0;
         AZStd::string uniqueName = nameWithoutLastDigits + "0";
         while (validationFunction(uniqueName) == false)
         {

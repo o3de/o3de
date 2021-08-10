@@ -105,7 +105,7 @@ void CErrorReportTableModel::setErrorReport(CErrorReport* report)
     {
         m_errorRecords.clear();
     }
-    if (report != 0)
+    if (report != nullptr)
     {
         const int count = report->GetErrorCount();
         m_errorRecords.reserve(count);

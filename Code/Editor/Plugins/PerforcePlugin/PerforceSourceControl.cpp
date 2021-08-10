@@ -56,7 +56,7 @@ void CPerforceSourceControl::ShowSettings()
 
 void CPerforceSourceControl::SetSourceControlState(SourceControlState state)
 {
-    AUTO_LOCK(g_cPerforceValues);
+    CryAutoLock<CryCriticalSection> lock(g_cPerforceValues);
 
     switch (state)
     {
