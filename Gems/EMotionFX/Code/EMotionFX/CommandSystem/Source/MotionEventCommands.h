@@ -60,8 +60,8 @@ namespace CommandSystem
     };
 
     MCORE_DEFINECOMMAND_START(CommandRemoveMotionEventTrack, "Remove motion event track", true)
-    size_t          mOldTrackIndex;
-    bool            mOldEnabled;
+    size_t          m_oldTrackIndex;
+    bool            m_oldEnabled;
     MCORE_DEFINECOMMAND_END
 
     class DEFINECOMMAND_API CommandAdjustMotionEventTrack
@@ -151,12 +151,12 @@ namespace CommandSystem
         AZStd::optional<EMotionFX::EventDataSet> m_eventDatas;
         float m_startTime = 0.0f;
         float m_endTime = 0.0f;
-        size_t mMotionEventNr;
+        size_t m_motionEventNr;
     };
 
         MCORE_DEFINECOMMAND_START(CommandRemoveMotionEvent, "Remove motion event", true)
-    float           mOldStartTime;
-    float           mOldEndTime;
+    float           m_oldStartTime;
+    float           m_oldEndTime;
     EMotionFX::EventDataSet m_oldEventDatas;
     MCORE_DEFINECOMMAND_END
 

@@ -56,7 +56,7 @@ namespace AZ
                 const aiScene* scene = context.m_sourceScene.GetAssImpScene();
 
                 // This node has at least one mesh, verify that the color channel counts are the same for all meshes.
-                const int expectedColorChannels = scene->mMeshes[currentNode->mMeshes[0]]->GetNumColorChannels();
+                const unsigned int expectedColorChannels = scene->mMeshes[currentNode->mMeshes[0]]->GetNumColorChannels();
                 const bool allMeshesHaveSameNumberOfColorChannels =
                     AZStd::all_of(currentNode->mMeshes + 1, currentNode->mMeshes + currentNode->mNumMeshes, [scene, expectedColorChannels](const unsigned int meshIndex)
                         {
@@ -80,17 +80,16 @@ namespace AZ
                 const uint64_t vertexCount = GetVertexCountForAllMeshesOnNode(*currentNode, *scene);
 
                 Events::ProcessingResultCombiner combinedVertexColorResults;
-                for (int colorSetIndex = 0; colorSetIndex < expectedColorChannels; ++colorSetIndex)
+                for (unsigned int colorSetIndex = 0; colorSetIndex < expectedColorChannels; ++colorSetIndex)
                 {
-
                     AZStd::shared_ptr<SceneData::GraphData::MeshVertexColorData> vertexColors =
                         AZStd::make_shared<AZ::SceneData::GraphData::MeshVertexColorData>();
                     vertexColors->ReserveContainerSpace(vertexCount);
 
-                    for (int sdkMeshIndex = 0; sdkMeshIndex < currentNode->mNumMeshes; ++sdkMeshIndex)
+                    for (unsigned int sdkMeshIndex = 0; sdkMeshIndex < currentNode->mNumMeshes; ++sdkMeshIndex)
                     {
                         const aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[sdkMeshIndex]];
-                        for (int v = 0; v < mesh->mNumVertices; ++v)
+                        for (unsigned int v = 0; v < mesh->mNumVertices; ++v)
                         {
                             if (colorSetIndex < mesh->GetNumColorChannels())
                             {

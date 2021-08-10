@@ -48,14 +48,14 @@ namespace EMStudio
     public:
         HeaderTrackWidget(QWidget* parent, TimeViewPlugin* parentPlugin, TrackHeaderWidget* trackHeaderWidget, TimeTrack* timeTrack, size_t trackIndex);
 
-        QCheckBox*              mEnabledCheckbox;
-        QLabel*                 mNameLabel;
-        QLineEdit*              mNameEdit;
-        QPushButton*            mRemoveButton;
-        TimeTrack*              mTrack;
-        size_t                  mTrackIndex;
-        TrackHeaderWidget*      mHeaderTrackWidget;
-        TimeViewPlugin*         mPlugin;
+        QCheckBox*              m_enabledCheckbox;
+        QLabel*                 m_nameLabel;
+        QLineEdit*              m_nameEdit;
+        QPushButton*            m_removeButton;
+        TimeTrack*              m_track;
+        size_t                  m_trackIndex;
+        TrackHeaderWidget*      m_headerTrackWidget;
+        TimeViewPlugin*         m_plugin;
 
         bool ValidateName();
 
@@ -93,7 +93,7 @@ namespace EMStudio
         void ReInit();
         void UpdateDataContents();
 
-        QWidget* GetAddTrackWidget()                                                                        { return mAddTrackWidget; }
+        QWidget* GetAddTrackWidget()                                                                        { return m_addTrackWidget; }
 
     public slots:
         void OnAddTrackButtonClicked()                                                                      { CommandSystem::CommandAddEventTrack(); }
@@ -104,17 +104,17 @@ namespace EMStudio
         void OnComboBoxIndexChanged(int state);
 
     private:
-        TimeViewPlugin*                     mPlugin;
-        QVBoxLayout*                        mMainLayout;
-        QWidget*                            mTrackWidget;
-        QVBoxLayout*                        mTrackLayout;
-        QWidget*                            mAddTrackWidget;
-        QPushButton*                        mAddTrackButton;
-        MysticQt::DialogStack*              mStackWidget;
-        QComboBox*                          mGraphContentsComboBox;
-        QComboBox*                          mNodeContentsComboBox;
-        QCheckBox*                          mNodeNamesCheckBox;
-        QCheckBox*                          mMotionFilesCheckBox;
+        TimeViewPlugin*                     m_plugin;
+        QVBoxLayout*                        m_mainLayout;
+        QWidget*                            m_trackWidget;
+        QVBoxLayout*                        m_trackLayout;
+        QWidget*                            m_addTrackWidget;
+        QPushButton*                        m_addTrackButton;
+        MysticQt::DialogStack*              m_stackWidget;
+        QComboBox*                          m_graphContentsComboBox;
+        QComboBox*                          m_nodeContentsComboBox;
+        QCheckBox*                          m_nodeNamesCheckBox;
+        QCheckBox*                          m_motionFilesCheckBox;
 
         void keyPressEvent(QKeyEvent* event);
         void keyReleaseEvent(QKeyEvent* event);

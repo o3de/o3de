@@ -63,25 +63,25 @@ namespace EMStudio
 
 
     private:
-        SceneManagerPlugin*     mPlugin;
-        QTableWidget*           mSourceList;
-        QTableWidget*           mCurrentList;
-        QTableWidget*           mMappingTable;
-        QPushButton*            mButtonOpen;
-        QPushButton*            mButtonSave;
-        QPushButton*            mButtonClear;
-        QPushButton*            mButtonGuess;
-        QLineEdit*              mLeftEdit;
-        QLineEdit*              mRightEdit;
+        SceneManagerPlugin*     m_plugin;
+        QTableWidget*           m_sourceList;
+        QTableWidget*           m_currentList;
+        QTableWidget*           m_mappingTable;
+        QPushButton*            m_buttonOpen;
+        QPushButton*            m_buttonSave;
+        QPushButton*            m_buttonClear;
+        QPushButton*            m_buttonGuess;
+        QLineEdit*              m_leftEdit;
+        QLineEdit*              m_rightEdit;
         AzQtComponents::FilteredSearchWidget* m_searchWidgetCurrent;
         AzQtComponents::FilteredSearchWidget* m_searchWidgetSource;
-        QIcon*                  mBoneIcon;
-        QIcon*                  mNodeIcon;
-        QIcon*                  mMeshIcon;
-        QIcon*                  mMappedIcon;
-        AZStd::vector<size_t>    mCurrentBoneList;
-        AZStd::vector<size_t>   mSourceBoneList;
-        AZStd::vector<size_t>   mMap;
+        QIcon*                  m_boneIcon;
+        QIcon*                  m_nodeIcon;
+        QIcon*                  m_meshIcon;
+        QIcon*                  m_mappedIcon;
+        AZStd::vector<size_t>    m_currentBoneList;
+        AZStd::vector<size_t>   m_sourceBoneList;
+        AZStd::vector<size_t>   m_map;
 
         void FillCurrentListWidget(EMotionFX::Actor* actor, const QString& filterString);
         void FillSourceListWidget(EMotionFX::Actor* actor, const QString& filterString);

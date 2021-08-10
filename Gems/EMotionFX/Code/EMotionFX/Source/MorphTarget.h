@@ -77,7 +77,7 @@ namespace EMotionFX
          * name compares to simple integer compares.
          * @result The unique ID of the morph target.
          */
-        MCORE_INLINE uint32 GetID() const                                   { return mNameID; }
+        MCORE_INLINE uint32 GetID() const                                   { return m_nameId; }
 
         /**
          * Get the unique name of the morph target.
@@ -276,10 +276,10 @@ namespace EMotionFX
         virtual void Scale(float scaleFactor) = 0;
 
     protected:
-        uint32          mNameID;        /**< The unique ID of the morph target, calculated from the name. */
-        float           mRangeMin;      /**< The minimum range of the weight. */
-        float           mRangeMax;      /**< The maximum range of the weight. */
-        EPhonemeSet     mPhonemeSets;   /**< The phoneme sets in case this morph target is used as a phoneme. */
+        uint32          m_nameId;        /**< The unique ID of the morph target, calculated from the name. */
+        float           m_rangeMin;      /**< The minimum range of the weight. */
+        float           m_rangeMax;      /**< The maximum range of the weight. */
+        EPhonemeSet     m_phonemeSets;   /**< The phoneme sets in case this morph target is used as a phoneme. */
 
         /**
          * The constructor.

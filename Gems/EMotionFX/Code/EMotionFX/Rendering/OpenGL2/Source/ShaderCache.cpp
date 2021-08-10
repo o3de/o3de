@@ -15,7 +15,7 @@ namespace RenderGL
     // constructor
     ShaderCache::ShaderCache()
     {
-        mEntries.reserve(128);
+        m_entries.reserve(128);
     }
 
 
@@ -30,41 +30,41 @@ namespace RenderGL
     void ShaderCache::Release()
     {
         // delete all shaders
-        for (Entry& entry : mEntries)
+        for (Entry& entry : m_entries)
         {
-            entry.mName.clear();
-            delete entry.mShader;
+            entry.m_name.clear();
+            delete entry.m_shader;
         }
 
         // clear all entries
-        mEntries.clear();
+        m_entries.clear();
     }
 
 
     // add the shader to the cache (assume there are no duplicate names)
     void ShaderCache::AddShader(AZStd::string_view filename, Shader* shader)
     {
-        mEntries.emplace_back(Entry{filename, shader});
+        m_entries.emplace_back(Entry{filename, shader});
     }
 
 
     // try to locate a shader based on its name
     Shader* ShaderCache::FindShader(AZStd::string_view filename) const
     {
-        const auto foundShader = AZStd::find_if(begin(mEntries), end(mEntries), [filename](const Entry& entry)
+        const auto foundShader = AZStd::find_if(begin(m_entries), end(m_entries), [filename](const Entry& entry)
         {
-            return AzFramework::StringFunc::Equal(entry.mName, filename, false /* no case */);
+            return AzFramework::StringFunc::Equal(entry.m_name, filename, false /* no case */);
         });
-        return foundShader != end(mEntries) ? foundShader->mShader : nullptr;
+        return foundShader != end(m_entries) ? foundShader->m_shader : nullptr;
     }
 
 
     // check if we have a given shader in the cache
     bool ShaderCache::CheckIfHasShader(Shader* shader) const
     {
-        return AZStd::any_of(begin(mEntries), end(mEntries), [shader](const Entry& entry)
+        return AZStd::any_of(begin(m_entries), end(m_entries), [shader](const Entry& entry)
         {
-            return entry.mShader == shader;
+            return entry.m_shader == shader;
         });
     }
 }   // namespace RenderGL

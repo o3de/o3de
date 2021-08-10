@@ -13,7 +13,7 @@ namespace MCore
 {
     Attribute::Attribute(AZ::u32 typeID)
     {
-        mTypeID = typeID;
+        m_typeId = typeID;
     }
 
     Attribute::~Attribute()

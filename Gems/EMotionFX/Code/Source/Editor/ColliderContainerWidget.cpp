@@ -617,12 +617,12 @@ namespace EMotionFX
         const MCore::RGBAColor& colliderColor)
     {
         const size_t nodeIndex = node->GetNodeIndex();
-        MCommon::RenderUtil* renderUtil = renderInfo->mRenderUtil;
+        MCommon::RenderUtil* renderUtil = renderInfo->m_renderUtil;
 
         for (const auto& collider : colliders)
         {
             #ifndef EMFX_SCALE_DISABLED
-                const AZ::Vector3& worldScale = actorInstance->GetTransformData()->GetCurrentPose()->GetModelSpaceTransform(nodeIndex).mScale;
+                const AZ::Vector3& worldScale = actorInstance->GetTransformData()->GetCurrentPose()->GetModelSpaceTransform(nodeIndex).m_scale;
             #else
                 const AZ::Vector3 worldScale = AZ::Vector3::CreateOne();
             #endif
@@ -677,7 +677,7 @@ namespace EMotionFX
             return;
         }
 
-        MCommon::RenderUtil* renderUtil = renderInfo->mRenderUtil;
+        MCommon::RenderUtil* renderUtil = renderInfo->m_renderUtil;
         const bool oldLightingEnabled = renderUtil->GetLightingEnabled();
         renderUtil->EnableLighting(false);
 

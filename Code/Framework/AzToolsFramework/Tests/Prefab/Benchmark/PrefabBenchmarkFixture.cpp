@@ -85,7 +85,7 @@ namespace Benchmark
 
     void BM_Prefab::CreateEntities(const unsigned int entityCount, AZStd::vector<AZ::Entity*>& entities)
     {
-        for (int entityIndex = 0; entityIndex < entityCount; ++entityIndex)
+        for (unsigned int entityIndex = 0; entityIndex < entityCount; ++entityIndex)
         {
             AZStd::string entityName = "TestEntity";
             entityName = entityName + AZStd::to_string(entityIndex);
@@ -101,7 +101,7 @@ namespace Benchmark
     void BM_Prefab::CreateFakePaths(const unsigned int pathCount)
     {
         //setup fake paths
-        for (int number = 0; number < pathCount; ++number)
+        for (unsigned int number = 0; number < pathCount; ++number)
         {
             AZStd::string path = m_pathString;
             m_paths.push_back(path + AZStd::to_string(number) + "_" + AZStd::to_string(pathCount));

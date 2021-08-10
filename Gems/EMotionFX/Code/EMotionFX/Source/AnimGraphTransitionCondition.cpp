@@ -24,9 +24,9 @@ namespace EMotionFX
 
     AnimGraphTransitionCondition::~AnimGraphTransitionCondition()
     {
-        if (mAnimGraph)
+        if (m_animGraph)
         {
-            mAnimGraph->RemoveObject(this);
+            m_animGraph->RemoveObject(this);
         }
     }
 

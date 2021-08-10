@@ -369,9 +369,9 @@ namespace EMStudio
 
         toolBar->addAction(m_actions[NAVIGATION_FORWARD]);
 
-        mNavigationLink = new NavigationLinkWidget(m_parentPlugin, this);
-        mNavigationLink->setMinimumHeight(28);
-        toolBar->addWidget(mNavigationLink);
+        m_navigationLink = new NavigationLinkWidget(m_parentPlugin, this);
+        m_navigationLink->setMinimumHeight(28);
+        toolBar->addWidget(m_navigationLink);
 
         toolBar->addAction(m_actions[NAVIGATION_NAVPANETOGGLE]);
 

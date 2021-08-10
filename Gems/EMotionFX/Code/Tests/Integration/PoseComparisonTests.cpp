@@ -23,7 +23,7 @@ namespace EMotionFX
 {
     void PrintTo(const Recorder::ActorInstanceData& actorInstanceData, ::std::ostream* os)
     {
-        *os << actorInstanceData.mActorInstance->GetActor()->GetName();
+        *os << actorInstanceData.m_actorInstance->GetActor()->GetName();
     }
 
     template<class ReturnType, class StorageType = ReturnType>
@@ -42,8 +42,8 @@ namespace EMotionFX
 
     void PrintTo(const Recorder::TransformTracks& tracks, ::std::ostream* os)
     {
-        PrintTo(tracks.mPositions, os);
-        PrintTo(tracks.mRotations, os);
+        PrintTo(tracks.m_positions, os);
+        PrintTo(tracks.m_rotations, os);
     }
 
     AZ_PUSH_DISABLE_WARNING(4100, "-Wmissing-declarations") // 'result_listener': unreferenced formal parameter
@@ -178,15 +178,15 @@ namespace EMotionFX
 
     void INTEG_PoseComparisonFixture::LoadAssets()
     {
-        const AZStd::string actorPath = ResolvePath(GetParam().actorFile);
+        const AZStd::string actorPath = ResolvePath(GetParam().m_actorFile);
         m_actor = EMotionFX::GetImporter().LoadActor(actorPath);
         ASSERT_TRUE(m_actor) << "Failed to load actor";
 
-        const AZStd::string animGraphPath = ResolvePath(GetParam().animGraphFile);
+        const AZStd::string animGraphPath = ResolvePath(GetParam().m_animGraphFile);
         m_animGraph = EMotionFX::GetImporter().LoadAnimGraph(animGraphPath);
         ASSERT_TRUE(m_animGraph) << "Failed to load anim graph";
 
-        const AZStd::string motionSetPath = ResolvePath(GetParam().motionSetFile);
+        const AZStd::string motionSetPath = ResolvePath(GetParam().m_motionSetFile);
         m_motionSet = EMotionFX::GetImporter().LoadMotionSet(motionSetPath);
         ASSERT_TRUE(m_motionSet) << "Failed to load motion set";
         m_motionSet->Preload();
@@ -197,7 +197,7 @@ namespace EMotionFX
 
     TEST_P(INTEG_PoseComparisonFixture, Integ_TestPoses)
     {
-        const AZStd::string recordingPath = ResolvePath(GetParam().recordingFile);
+        const AZStd::string recordingPath = ResolvePath(GetParam().m_recordingFile);
         Recorder* recording = EMotionFX::Recorder::LoadFromFile(recordingPath.c_str());
         const EMotionFX::Recorder::ActorInstanceData& expectedActorInstanceData = recording->GetActorInstanceData(0);
 
@@ -222,10 +222,10 @@ namespace EMotionFX
         {
             const Recorder::TransformTracks& gotTrack = gotTracks[trackNum];
             const Recorder::TransformTracks& expectedTrack = expectedTracks[trackNum];
-            const char* nodeName = gotActorInstanceData.mActorInstance->GetActor()->GetSkeleton()->GetNode(trackNum)->GetName();
+            const char* nodeName = gotActorInstanceData.m_actorInstance->GetActor()->GetSkeleton()->GetNode(trackNum)->GetName();
 
-            EXPECT_THAT(gotTrack.mPositions, MatchesKeyTrack(expectedTrack.mPositions, nodeName));
-            EXPECT_THAT(gotTrack.mRotations, MatchesKeyTrack(expectedTrack.mRotations, nodeName));
+            EXPECT_THAT(gotTrack.m_positions, MatchesKeyTrack(expectedTrack.m_positions, nodeName));
+            EXPECT_THAT(gotTrack.m_rotations, MatchesKeyTrack(expectedTrack.m_rotations, nodeName));
         }
 
         recording->Destroy();
@@ -235,14 +235,14 @@ namespace EMotionFX
     {
         // Make one recording, 10 seconds at 60 fps
         Recorder::RecordSettings settings;
-        settings.mFPS                       = 1000000;
-        settings.mRecordTransforms          = true;
-        settings.mRecordAnimGraphStates     = false;
-        settings.mRecordNodeHistory         = false;
-        settings.mRecordScale               = false;
-        settings.mInitialAnimGraphAnimBytes = 4 * 1024 * 1024; // 4 mb
-        settings.mHistoryStatesOnly         = false;
-        settings.mRecordEvents              = false;
+        settings.m_fps                       = 1000000;
+        settings.m_recordTransforms          = true;
+        settings.m_recordAnimGraphStates     = false;
+        settings.m_recordNodeHistory         = false;
+        settings.m_recordScale               = false;
+        settings.m_initialAnimGraphAnimBytes = 4 * 1024 * 1024; // 4 mb
+        settings.m_historyStatesOnly         = false;
+        settings.m_recordEvents              = false;
 
         EMotionFX::GetRecorder().StartRecording(settings);
 
@@ -285,10 +285,10 @@ namespace EMotionFX
         {
             const Recorder::TransformTracks& gotTrack = gotTracks[trackNum];
             const Recorder::TransformTracks& expectedTrack = expectedTracks[trackNum];
-            const char* nodeName = gotActorInstanceData.mActorInstance->GetActor()->GetSkeleton()->GetNode(trackNum)->GetName();
+            const char* nodeName = gotActorInstanceData.m_actorInstance->GetActor()->GetSkeleton()->GetNode(trackNum)->GetName();
 
-            EXPECT_THAT(gotTrack.mPositions, MatchesKeyTrack(expectedTrack.mPositions, nodeName));
-            EXPECT_THAT(gotTrack.mRotations, MatchesKeyTrack(expectedTrack.mRotations, nodeName));
+            EXPECT_THAT(gotTrack.m_positions, MatchesKeyTrack(expectedTrack.m_positions, nodeName));
+            EXPECT_THAT(gotTrack.m_rotations, MatchesKeyTrack(expectedTrack.m_rotations, nodeName));
         }
 
         recording->Destroy();

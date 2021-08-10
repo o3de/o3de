@@ -40,7 +40,7 @@ namespace EMotionFX
 
         void Init();
 
-        MCORE_INLINE BlendSpaceManager* GetBlendSpaceManager() const { return mBlendSpaceManager; }
+        MCORE_INLINE BlendSpaceManager* GetBlendSpaceManager() const { return m_blendSpaceManager; }
 
         // anim graph helper functions
         void AddAnimGraph(AnimGraph* setup);
@@ -48,8 +48,8 @@ namespace EMotionFX
         bool RemoveAnimGraph(AnimGraph* animGraph, bool delFromMemory = true);
         void RemoveAllAnimGraphs(bool delFromMemory = true);
 
-        MCORE_INLINE size_t GetNumAnimGraphs() const                                { MCore::LockGuardRecursive lock(mAnimGraphLock); return mAnimGraphs.size(); }
-        MCORE_INLINE AnimGraph* GetAnimGraph(size_t index) const                    { MCore::LockGuardRecursive lock(mAnimGraphLock); return mAnimGraphs[index]; }
+        MCORE_INLINE size_t GetNumAnimGraphs() const                                { MCore::LockGuardRecursive lock(m_animGraphLock); return m_animGraphs.size(); }
+        MCORE_INLINE AnimGraph* GetAnimGraph(size_t index) const                    { MCore::LockGuardRecursive lock(m_animGraphLock); return m_animGraphs[index]; }
         AnimGraph* GetFirstAnimGraph() const;
 
         size_t FindAnimGraphIndex(AnimGraph* animGraph) const;
@@ -64,8 +64,8 @@ namespace EMotionFX
         void RemoveAllAnimGraphInstances(bool delFromMemory = true);
         void InvalidateInstanceUniqueDataUsingMotionSet(EMotionFX::MotionSet* motionSet);
 
-        size_t GetNumAnimGraphInstances() const                        { MCore::LockGuardRecursive lock(mAnimGraphInstanceLock); return mAnimGraphInstances.size(); }
-        AnimGraphInstance* GetAnimGraphInstance(size_t index) const    { MCore::LockGuardRecursive lock(mAnimGraphInstanceLock); return mAnimGraphInstances[index]; }
+        size_t GetNumAnimGraphInstances() const                        { MCore::LockGuardRecursive lock(m_animGraphInstanceLock); return m_animGraphInstances.size(); }
+        AnimGraphInstance* GetAnimGraphInstance(size_t index) const    { MCore::LockGuardRecursive lock(m_animGraphInstanceLock); return m_animGraphInstances[index]; }
 
         size_t FindAnimGraphInstanceIndex(AnimGraphInstance* animGraphInstance) const;
 
@@ -74,11 +74,11 @@ namespace EMotionFX
         void RecursiveCollectObjectsAffectedBy(AnimGraph* animGraph, AZStd::vector<EMotionFX::AnimGraphObject*>& affectedObjects);
 
     private:
-        AZStd::vector<AnimGraph*>           mAnimGraphs;
-        AZStd::vector<AnimGraphInstance*>   mAnimGraphInstances;
-        BlendSpaceManager*                  mBlendSpaceManager;
-        mutable MCore::MutexRecursive       mAnimGraphLock;
-        mutable MCore::MutexRecursive       mAnimGraphInstanceLock;
+        AZStd::vector<AnimGraph*>           m_animGraphs;
+        AZStd::vector<AnimGraphInstance*>   m_animGraphInstances;
+        BlendSpaceManager*                  m_blendSpaceManager;
+        mutable MCore::MutexRecursive       m_animGraphLock;
+        mutable MCore::MutexRecursive       m_animGraphInstanceLock;
 
         // constructor and destructor
         AnimGraphManager();

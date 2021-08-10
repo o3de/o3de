@@ -526,14 +526,14 @@ namespace EMotionFX
                 if (m_actorInstance)
                 {
                     const Transform localTransform = m_actorInstance->GetParentWorldSpaceTransform().Inversed() * Transform(world);
-                    m_actorInstance->SetLocalSpacePosition(localTransform.mPosition);
-                    m_actorInstance->SetLocalSpaceRotation(localTransform.mRotation);
+                    m_actorInstance->SetLocalSpacePosition(localTransform.m_position);
+                    m_actorInstance->SetLocalSpaceRotation(localTransform.m_rotation);
 
                     // Disable updating the scale to prevent feedback from adding up.
                     // We need to find a better way to handle this or to prevent this feedback loop.
                     EMFX_SCALECODE
                     (
-                        m_actorInstance->SetLocalSpaceScale(localTransform.mScale);
+                        m_actorInstance->SetLocalSpaceScale(localTransform.m_scale);
                     )
                 }
             }
@@ -663,8 +663,8 @@ namespace EMotionFX
                 if (emfxNode)
                 {
                     const Transform& nodeTransform = emfxPose->GetModelSpaceTransform(emfxNode->GetNodeIndex());
-                    physicsPose[nodeIndex].m_position = nodeTransform.mPosition;
-                    physicsPose[nodeIndex].m_orientation = nodeTransform.mRotation;
+                    physicsPose[nodeIndex].m_position = nodeTransform.m_position;
+                    physicsPose[nodeIndex].m_orientation = nodeTransform.m_rotation;
                 }
             }
 
@@ -780,11 +780,11 @@ namespace EMotionFX
             case Space::LocalSpace:
             {
                 const Transform& localTransform = currentPose->GetLocalSpaceTransform(index);
-                outPosition = localTransform.mPosition;
-                outRotation = localTransform.mRotation;
+                outPosition = localTransform.m_position;
+                outRotation = localTransform.m_rotation;
                 EMFX_SCALECODE
                 (
-                    outScale = localTransform.mScale;
+                    outScale = localTransform.m_scale;
                 )
                 return;
             }
@@ -792,11 +792,11 @@ namespace EMotionFX
             case Space::ModelSpace:
             {
                 const Transform& modelTransform = currentPose->GetModelSpaceTransform(index);
-                outPosition = modelTransform.mPosition;
-                outRotation = modelTransform.mRotation;
+                outPosition = modelTransform.m_position;
+                outRotation = modelTransform.m_rotation;
                 EMFX_SCALECODE
                 (
-                    outScale = modelTransform.mScale;
+                    outScale = modelTransform.m_scale;
                 )
                 return;
             }
@@ -804,11 +804,11 @@ namespace EMotionFX
             case Space::WorldSpace:
             {
                 const Transform worldTransform = currentPose->GetWorldSpaceTransform(index);
-                outPosition = worldTransform.mPosition;
-                outRotation = worldTransform.mRotation;
+                outPosition = worldTransform.m_position;
+                outRotation = worldTransform.m_rotation;
                 EMFX_SCALECODE
                 (
-                    outScale = worldTransform.mScale;
+                    outScale = worldTransform.m_scale;
                 )
                 return;
             }

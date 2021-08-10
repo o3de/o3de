@@ -67,7 +67,7 @@ namespace EMotionFX
             return;
         }
 
-        AnimGraphNode* node = mAnimGraph->RecursiveFindNodeById(m_motionNodeId);
+        AnimGraphNode* node = m_animGraph->RecursiveFindNodeById(m_motionNodeId);
         m_motionNode = azdynamic_cast<AnimGraphMotionNode*>(node);
     }
 
@@ -145,9 +145,9 @@ namespace EMotionFX
         }
 
         // Update the unique data.
-        if (uniqueData->mMotionInstance != motionInstance)
+        if (uniqueData->m_motionInstance != motionInstance)
         {
-            uniqueData->mMotionInstance = motionInstance;
+            uniqueData->m_motionInstance = motionInstance;
         }
 
         // Process the condition depending on the function used.
@@ -162,7 +162,7 @@ namespace EMotionFX
             for (size_t i = 0; i < numEvents; ++i)
             {
                 const EMotionFX::EventInfo& eventInfo = eventBuffer.GetEvent(i);
-                const EventDataSet& eventDatas = eventInfo.mEvent->GetEventDatas();
+                const EventDataSet& eventDatas = eventInfo.m_event->GetEventDatas();
 
                 size_t matches = 0;
                 for (const EventDataPtr& checkAgainstData : m_eventDatas)
@@ -314,7 +314,7 @@ namespace EMotionFX
     void AnimGraphMotionCondition::SetMotionNodeId(AnimGraphNodeId motionNodeId)
     {
         m_motionNodeId = motionNodeId;
-        if (mAnimGraph)
+        if (m_animGraph)
         {
             Reinit();
         }
@@ -403,7 +403,7 @@ namespace EMotionFX
     AnimGraphMotionCondition::UniqueData::UniqueData(AnimGraphObject* object, AnimGraphInstance* animGraphInstance, MotionInstance* motionInstance)
         : AnimGraphObjectData(object, animGraphInstance)
     {
-        mMotionInstance = motionInstance;
+        m_motionInstance = motionInstance;
     }
 
 

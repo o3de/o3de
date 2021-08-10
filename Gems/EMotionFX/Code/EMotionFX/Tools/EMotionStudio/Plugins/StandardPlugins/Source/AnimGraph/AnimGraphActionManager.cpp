@@ -206,8 +206,8 @@ namespace EMStudio
         // If found motion entry, add select and play motion command strings to command group.
         EMotionFX::Motion* motion = motionEntry->GetMotion();
         EMotionFX::PlayBackInfo* defaultPlayBackInfo = motion->GetDefaultPlayBackInfo();
-        defaultPlayBackInfo->mBlendInTime = 0.0f;
-        defaultPlayBackInfo->mBlendOutTime = 0.0f;
+        defaultPlayBackInfo->m_blendInTime = 0.0f;
+        defaultPlayBackInfo->m_blendOutTime = 0.0f;
         commandParameters = CommandSystem::CommandPlayMotion::PlayBackInfoToCommandParameters(defaultPlayBackInfo);
 
         const size_t motionIndex = EMotionFX::GetMotionManager().FindMotionIndexByName(motion->GetName());

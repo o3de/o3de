@@ -20,13 +20,13 @@ namespace EMStudio
     public:
         NativeEventFilter(MainWindow* mainWindow)
             : QAbstractNativeEventFilter(),
-            m_MainWindow(mainWindow)
+            m_mainWindow(mainWindow)
         {
         }
 
         virtual bool nativeEventFilter(const QByteArray& /*eventType*/, void* message, long* /*result*/) Q_DECL_OVERRIDE;
 
     private:
-        MainWindow* m_MainWindow;
+        MainWindow* m_mainWindow;
     };
 }

@@ -17,10 +17,10 @@ namespace EMotionFX
     // constructor
     AnimGraphRefCountedDataPool::AnimGraphRefCountedDataPool()
     {
-        mItems.reserve(32);
-        mFreeItems.reserve(32);
+        m_items.reserve(32);
+        m_freeItems.reserve(32);
         Resize(16);
-        mMaxUsed = 0;
+        m_maxUsed = 0;
     }
 
 
@@ -28,21 +28,21 @@ namespace EMotionFX
     AnimGraphRefCountedDataPool::~AnimGraphRefCountedDataPool()
     {
         // delete all items
-        for (AnimGraphRefCountedData*& item : mItems)
+        for (AnimGraphRefCountedData*& item : m_items)
         {
             delete item;
         }
-        mItems.clear();
+        m_items.clear();
 
         // clear the free array
-        mFreeItems.clear();
+        m_freeItems.clear();
     }
 
 
     // resize the number of items in the pool
     void AnimGraphRefCountedDataPool::Resize(size_t numItems)
     {
-        const size_t numOldItems = mItems.size();
+        const size_t numOldItems = m_items.size();
 
         // if we will remove Items
         if (numItems < numOldItems)
@@ -51,10 +51,10 @@ namespace EMotionFX
             const size_t numToRemove = numOldItems - numItems;
             for (size_t i = 0; i < numToRemove; ++i)
             {
-                AnimGraphRefCountedData* item = mItems.back();
-                MCORE_ASSERT(AZStd::find(begin(mFreeItems), end(mFreeItems), item) != end(mFreeItems)); // make sure the Item is not already in use
+                AnimGraphRefCountedData* item = m_items.back();
+                MCORE_ASSERT(AZStd::find(begin(m_freeItems), end(m_freeItems), item) != end(m_freeItems)); // make sure the Item is not already in use
                 delete item;
-                mItems.erase(mItems.end() - 1);
+                m_items.erase(m_items.end() - 1);
             }
         }
         else // we want to add new Items
@@ -63,8 +63,8 @@ namespace EMotionFX
             for (size_t i = 0; i < numToAdd; ++i)
             {
                 AnimGraphRefCountedData* newItem = new AnimGraphRefCountedData();
-                mItems.emplace_back(newItem);
-                mFreeItems.emplace_back(newItem);
+                m_items.emplace_back(newItem);
+                m_freeItems.emplace_back(newItem);
             }
         }
     }
@@ -74,18 +74,18 @@ namespace EMotionFX
     AnimGraphRefCountedData* AnimGraphRefCountedDataPool::RequestNew()
     {
         // if we have no free items left, allocate a new one
-        if (mFreeItems.empty())
+        if (m_freeItems.empty())
         {
             AnimGraphRefCountedData* newItem = new AnimGraphRefCountedData();
-            mItems.emplace_back(newItem);
-            mMaxUsed = AZStd::max(mMaxUsed, GetNumUsedItems());
+            m_items.emplace_back(newItem);
+            m_maxUsed = AZStd::max(m_maxUsed, GetNumUsedItems());
             return newItem;
         }
 
         // request the last free item
-        AnimGraphRefCountedData* item = mFreeItems[mFreeItems.size() - 1];
-        mFreeItems.pop_back(); // remove it from the list of free Items
-        mMaxUsed = AZStd::max(mMaxUsed, GetNumUsedItems());
+        AnimGraphRefCountedData* item = m_freeItems[m_freeItems.size() - 1];
+        m_freeItems.pop_back(); // remove it from the list of free Items
+        m_maxUsed = AZStd::max(m_maxUsed, GetNumUsedItems());
         return item;
     }
 
@@ -93,7 +93,7 @@ namespace EMotionFX
     // free the item again
     void AnimGraphRefCountedDataPool::Free(AnimGraphRefCountedData* item)
     {
-        MCORE_ASSERT(AZStd::find(begin(mItems), end(mItems), item) != end(mItems));
-        mFreeItems.emplace_back(item);
+        MCORE_ASSERT(AZStd::find(begin(m_items), end(m_items), item) != end(m_items));
+        m_freeItems.emplace_back(item);
     }
 }   // namespace EMotionFX

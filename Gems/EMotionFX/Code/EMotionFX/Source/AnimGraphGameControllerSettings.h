@@ -96,24 +96,24 @@ namespace EMotionFX
 
             /**
              * Check if the parameter with the given name is being controlled by the gamepad.
-             * This assumes that the mString member from the ButtonInfo contains the parameter name.
-             * @param[in] stringName The name to compare against the mString member of the button infos.
+             * This assumes that the m_string member from the ButtonInfo contains the parameter name.
+             * @param[in] stringName The name to compare against the m_string member of the button infos.
              * @result True in case a button info with the given string name doesn't have BUTTONMODE_NONE assigned, false in the other case.
              */
             bool CheckIfIsParameterButtonControlled(const char* stringName);
 
             /**
              * Check if any of the button infos that are linked to the given string name is enabled.
-             * This assumes that the mString member from the ButtonInfo contains the parameter name.
-             * @param[in] stringName The name to compare against the mString member of the button infos.
+             * This assumes that the m_string member from the ButtonInfo contains the parameter name.
+             * @param[in] stringName The name to compare against the m_string member of the button infos.
              * @result True in case any of the button infos with the given string name is enabled.
              */
             bool CheckIfIsButtonEnabled(const char* stringName);
 
             /**
              * Set all button infos that are linked to the given string name to the enabled flag.
-             * This assumes that the mString member from the ButtonInfo contains the parameter name.
-             * @param[in] stringName The name to compare against the mString member of the button infos.
+             * This assumes that the m_string member from the ButtonInfo contains the parameter name.
+             * @param[in] stringName The name to compare against the m_string member of the button infos.
              * @param[in] isEnabled True in case the button infos shall be enabled, false if they shall become disabled.
              */
             void SetButtonEnabled(const char* stringName, bool isEnabled);

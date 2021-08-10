@@ -39,8 +39,8 @@ namespace EMotionFX
     public:
         struct MapEntry
         {
-            uint32 mFirstNameID = InvalidIndex32;   /**< The first name ID, which is the primary key in the map. */
-            uint32 mSecondNameID = InvalidIndex32;  /**< The second name ID. */
+            uint32 m_firstNameId = InvalidIndex32;   /**< The first name ID, which is the primary key in the map. */
+            uint32 m_secondNameId = InvalidIndex32;  /**< The second name ID. */
         };
 
         static NodeMap* Create();
@@ -84,9 +84,9 @@ namespace EMotionFX
         bool Save(const char* fileName, MCore::Endian::EEndianType targetEndianType) const;
 
     private:
-        AZStd::vector<MapEntry>  mEntries;                   /**< The array of entries. */
-        AZStd::string           mFileName;                  /**< The filename. */
-        Actor*                  mSourceActor;               /**< The source actor. */
+        AZStd::vector<MapEntry>  m_entries;                   /**< The array of entries. */
+        AZStd::string           m_fileName;                  /**< The filename. */
+        Actor*                  m_sourceActor;               /**< The source actor. */
 
         // constructor and destructor
         NodeMap();

@@ -249,7 +249,7 @@ namespace EMotionFX
          * @param nr The submesh number, which must be in range of [0..GetNumSubMeshes()-1].
          * @param subMesh The submesh to use.
          */
-        MCORE_INLINE void SetSubMesh(size_t nr, SubMesh* subMesh)           { mSubMeshes[nr] = subMesh; }
+        MCORE_INLINE void SetSubMesh(size_t nr, SubMesh* subMesh)           { m_subMeshes[nr] = subMesh; }
 
         /**
          * Set the number of submeshes.
@@ -257,7 +257,7 @@ namespace EMotionFX
          * Do not forget to use SetSubMesh() to initialize all submeshes!
          * @param numSubMeshes The number of submeshes to use.
          */
-        MCORE_INLINE void SetNumSubMeshes(size_t numSubMeshes)              { mSubMeshes.resize(numSubMeshes); }
+        MCORE_INLINE void SetNumSubMeshes(size_t numSubMeshes)              { m_subMeshes.resize(numSubMeshes); }
 
         /**
          * Remove a given submesh from this mesh.
@@ -648,31 +648,31 @@ namespace EMotionFX
         void Scale(float scaleFactor);
 
 
-        MCORE_INLINE bool GetIsCollisionMesh() const            { return mIsCollisionMesh; }
-        void SetIsCollisionMesh(bool isCollisionMesh)           { mIsCollisionMesh = isCollisionMesh; }
+        MCORE_INLINE bool GetIsCollisionMesh() const            { return m_isCollisionMesh; }
+        void SetIsCollisionMesh(bool isCollisionMesh)           { m_isCollisionMesh = isCollisionMesh; }
 
     protected:
 
-        AZStd::vector<SubMesh*>  mSubMeshes;         /**< The collection of sub meshes. */
-        uint32*                 mIndices;           /**< The array of indices, which define the faces. */
-        uint8*                  mPolyVertexCounts;  /**< The number of vertices for each polygon, where the length of this array equals the number of polygons. */
-        uint32                  mNumPolygons;       /**< The number of polygons in this mesh. */
-        uint32                  mNumOrgVerts;       /**< The number of original vertices. */
-        uint32                  mNumVertices;       /**< Number of vertices. */
-        uint32                  mNumIndices;        /**< Number of indices. */
-        bool                    mIsCollisionMesh;   /**< Is this mesh a collision mesh? */
+        AZStd::vector<SubMesh*>  m_subMeshes;         /**< The collection of sub meshes. */
+        uint32*                 m_indices;           /**< The array of indices, which define the faces. */
+        uint8*                  m_polyVertexCounts;  /**< The number of vertices for each polygon, where the length of this array equals the number of polygons. */
+        uint32                  m_numPolygons;       /**< The number of polygons in this mesh. */
+        uint32                  m_numOrgVerts;       /**< The number of original vertices. */
+        uint32                  m_numVertices;       /**< Number of vertices. */
+        uint32                  m_numIndices;        /**< Number of indices. */
+        bool                    m_isCollisionMesh;   /**< Is this mesh a collision mesh? */
 
         /**
          * The array of shared vertex attribute layers.
          * The number of attributes in each shared layer will be equal to the value returned by Mesh::GetNumOrgVertices().
          */
-        AZStd::vector< VertexAttributeLayer* >   mSharedVertexAttributes;
+        AZStd::vector< VertexAttributeLayer* >   m_sharedVertexAttributes;
 
         /**
          * The array of non-shared vertex attribute layers.
          * The number of attributes in each shared layer will be equal to the value returned by Mesh::GetNumVertices().
          */
-        AZStd::vector< VertexAttributeLayer* >   mVertexAttributes;
+        AZStd::vector< VertexAttributeLayer* >   m_vertexAttributes;
 
         /**
          * Default constructor.
