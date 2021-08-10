@@ -382,6 +382,9 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     bool enableSourceControl;
     bool clearConsoleOnGameModeStart;
 
+    //! Whether to start game mode fullscreen by default.
+    bool gameModeEnterFullScreen;
+
     //! Text editor.
     QString textEditorForScript;
     QString textEditorForShaders;

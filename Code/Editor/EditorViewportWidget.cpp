@@ -3170,7 +3170,7 @@ bool EditorViewportWidget::ShouldPreviewFullscreen() const
     }
     else
     {
-        return false;
+        return gSettings.gameModeEnterFullScreen;
     }
 }
 

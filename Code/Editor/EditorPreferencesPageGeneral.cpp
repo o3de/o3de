@@ -33,6 +33,7 @@ void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
         ->Field("ApplyConfigSpec", &GeneralSettings::m_applyConfigSpec)
         ->Field("EnableSourceControl", &GeneralSettings::m_enableSourceControl)
         ->Field("ClearConsole", &GeneralSettings::m_clearConsoleOnGameModeStart)
+        ->Field("GameModeFullscreen", &GeneralSettings::m_gameModeEnterFullScreen)
         ->Field("ConsoleBackgroundColorTheme", &GeneralSettings::m_consoleBackgroundColorTheme)
         ->Field("AutoloadLastLevel", &GeneralSettings::m_autoLoadLastLevel)
         ->Field("ShowTimeInConsole", &GeneralSettings::m_bShowTimeInConsole)
@@ -80,6 +81,8 @@ void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &GeneralSettings::m_enableSourceControl, "Enable Source Control", "Enable Source Control")
             ->DataElement(
                 AZ::Edit::UIHandlers::CheckBox, &GeneralSettings::m_clearConsoleOnGameModeStart, "Clear Console at game startup", "Clear Console when game mode starts")
+            ->DataElement(
+                AZ::Edit::UIHandlers::CheckBox, &GeneralSettings::m_gameModeEnterFullScreen, "Enter Game Mode in Full Screen Mode", "Start Game Mode in fullscreen")
             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &GeneralSettings::m_consoleBackgroundColorTheme, "Console Background", "Console Background")
                 ->EnumAttribute(AzToolsFramework::ConsoleColorTheme::Light, "Light")
                 ->EnumAttribute(AzToolsFramework::ConsoleColorTheme::Dark, "Dark")
@@ -146,6 +149,7 @@ void CEditorPreferencesPage_General::OnApply()
     gSettings.bApplyConfigSpecInEditor = m_generalSettings.m_applyConfigSpec;
     gSettings.enableSourceControl = m_generalSettings.m_enableSourceControl;
     gSettings.clearConsoleOnGameModeStart = m_generalSettings.m_clearConsoleOnGameModeStart;
+    gSettings.gameModeEnterFullScreen = m_generalSettings.m_gameModeEnterFullScreen;
     gSettings.consoleBackgroundColorTheme = m_generalSettings.m_consoleBackgroundColorTheme;
     gSettings.bShowTimeInConsole = m_generalSettings.m_bShowTimeInConsole;
     gSettings.bShowDashboardAtStartup = m_messaging.m_showDashboard;
@@ -181,6 +185,7 @@ void CEditorPreferencesPage_General::InitializeSettings()
     m_generalSettings.m_applyConfigSpec = gSettings.bApplyConfigSpecInEditor;
     m_generalSettings.m_enableSourceControl = gSettings.enableSourceControl;
     m_generalSettings.m_clearConsoleOnGameModeStart = gSettings.clearConsoleOnGameModeStart;
+    m_generalSettings.m_gameModeEnterFullScreen = gSettings.gameModeEnterFullScreen;
     m_generalSettings.m_consoleBackgroundColorTheme = gSettings.consoleBackgroundColorTheme;
     m_generalSettings.m_bShowTimeInConsole = gSettings.bShowTimeInConsole;
     m_generalSettings.m_autoLoadLastLevel = gSettings.bAutoloadLastLevelAtStartup;

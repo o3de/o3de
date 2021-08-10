@@ -368,10 +368,8 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_EDIT_FETCH, OnEditFetch)
     ON_COMMAND(ID_FILE_EXPORTTOGAMENOSURFACETEXTURE, OnFileExportToGameNoSurfaceTexture)
     ON_COMMAND(ID_VIEW_SWITCHTOGAME, OnViewSwitchToGame)
-    MainWindow::instance()->GetActionManager()->RegisterActionHandler(ID_VIEW_SWITCHTOGAME_FULLSCREEN, [this]() {
-        ed_previewGameInFullscreen_once = true;
-        OnViewSwitchToGame();
-    });
+    ON_COMMAND(ID_VIEW_SWITCHTOGAME_WINDOWED, OnViewSwitchToGameWindowed)
+    ON_COMMAND(ID_VIEW_SWITCHTOGAME_FULLSCREEN, OnViewSwitchToGameFullScreen)
     ON_COMMAND(ID_MOVE_OBJECT, OnMoveObject)
     ON_COMMAND(ID_RENAME_OBJ, OnRenameObj)
     ON_COMMAND(ID_UNDO, OnUndo)
@@ -2573,6 +2571,20 @@ void CCryEditApp::OnViewSwitchToGame()
     bool inGame = !GetIEditor()->IsInGameMode();
     GetIEditor()->SetInGameMode(inGame);
 }
+
+void CCryEditApp::OnViewSwitchToGameWindowed()
+{
+    gSettings.gameModeEnterFullScreen = false;
+
+    OnViewSwitchToGame();
+}
+
+void CCryEditApp::OnViewSwitchToGameFullScreen()
+{
+    gSettings.gameModeEnterFullScreen = true;
+    OnViewSwitchToGame();
+}
+
 
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnExportSelectedObjects()

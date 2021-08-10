@@ -190,6 +190,7 @@ SEditorSettings::SEditorSettings()
     consoleBackgroundColorTheme = AzToolsFramework::ConsoleColorTheme::Dark;
     bShowTimeInConsole = false;
     clearConsoleOnGameModeStart = false;
+    gameModeEnterFullScreen = false;
 
     enableSceneInspector = false;
 
@@ -530,6 +531,8 @@ void SEditorSettings::Save()
 
     SaveValue("Settings", "ClearConsoleOnGameModeStart", clearConsoleOnGameModeStart);
 
+    SaveValue("Settings", "GameModeEnterFullscreen", gameModeEnterFullScreen);
+
     SaveValue("Settings", "ShowTimeInConsole", bShowTimeInConsole);
 
     SaveValue("Settings", "EnableSceneInspector", enableSceneInspector);
@@ -749,6 +752,8 @@ void SEditorSettings::Load()
     }
 
     LoadValue("Settings", "ClearConsoleOnGameModeStart", clearConsoleOnGameModeStart);
+
+    LoadValue("Settings", "GameModeEnterFullscreen", gameModeEnterFullScreen);
 
     LoadValue("Settings", "ShowTimeInConsole", bShowTimeInConsole);
 

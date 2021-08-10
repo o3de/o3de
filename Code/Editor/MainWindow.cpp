@@ -942,20 +942,22 @@ void MainWindow::InitActions()
         .Connect(&QAction::triggered, this, &MainWindow::OnRefreshAudioSystem);
 
     // Game actions
-    am->AddAction(ID_VIEW_SWITCHTOGAME, tr("Play &Game"))
+    am->AddAction(ID_VIEW_SWITCHTOGAME, tr("Play Game"))
         .SetIcon(QIcon(":/stylesheet/img/UI20/toolbar/Play.svg"))
+        .SetToolTip(tr("Play Game"))
+        .SetStatusTip(tr("Activate the game input mode"))
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdatePlayGame);
+    am->AddAction(ID_VIEW_SWITCHTOGAME_WINDOWED, tr("Play Game"))
         .SetShortcut(tr("Ctrl+G"))
         .SetToolTip(tr("Play Game (Ctrl+G)"))
         .SetStatusTip(tr("Activate the game input mode"))
-        .SetApplyHoverEffect()
         .SetCheckable(true)
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdatePlayGame);
-    am->AddAction(ID_VIEW_SWITCHTOGAME_FULLSCREEN, tr("Play &Game (Maximized)"))
+    am->AddAction(ID_VIEW_SWITCHTOGAME_FULLSCREEN, tr("Play Game (Maximized)"))
         .SetShortcut(tr("Ctrl+Shift+G"))
         .SetStatusTip(tr("Activate the game input mode (maximized)"))
-        .SetIcon(Style::icon("Play"))
-        .SetApplyHoverEffect()
-        .SetCheckable(true);
+        .SetCheckable(true)
+        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdatePlayGame);
     am->AddAction(ID_TOOLBAR_WIDGET_PLAYCONSOLE_LABEL, tr("Play Controls"))
         .SetText(tr("Play Controls"));
     am->AddAction(ID_SWITCH_PHYSICS, tr("Simulate"))
@@ -1269,7 +1271,9 @@ void MainWindow::OnGameModeChanged(bool inGameMode)
     // block signals on the switch to game actions before setting the checked state, as
     // setting the checked state triggers the action, which will re-enter this function
     // and result in an infinite loop
-    AZStd::vector<QAction*> actions = { m_actionManager->GetAction(ID_VIEW_SWITCHTOGAME), m_actionManager->GetAction(ID_VIEW_SWITCHTOGAME_FULLSCREEN) };
+    AZStd::vector<QAction*> actions = { m_actionManager->GetAction(ID_VIEW_SWITCHTOGAME_WINDOWED),
+                                        m_actionManager->GetAction(ID_VIEW_SWITCHTOGAME_FULLSCREEN),
+                                        m_actionManager->GetAction(ID_VIEW_SWITCHTOGAME)};
     for (auto action : actions)
     {
         action->blockSignals(true);

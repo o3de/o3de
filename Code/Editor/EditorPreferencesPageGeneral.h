@@ -47,6 +47,7 @@ private:
         bool m_applyConfigSpec;
         bool m_enableSourceControl;
         bool m_clearConsoleOnGameModeStart;
+        bool m_gameModeEnterFullScreen;
         AzToolsFramework::ConsoleColorTheme m_consoleBackgroundColorTheme;
         bool m_autoLoadLastLevel;
         bool m_bShowTimeInConsole;
