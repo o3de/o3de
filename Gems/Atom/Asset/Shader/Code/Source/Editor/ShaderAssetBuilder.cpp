@@ -84,7 +84,7 @@ namespace AZ
             }
 
             AZStd::string hayStack;
-            hayStack.resize(stream.GetLength());
+            hayStack.resize_no_construct(stream.GetLength());
             stream.Read(stream.GetLength(), hayStack.data());
 
             AZStd::vector<AZStd::string> listOfFilePaths;
@@ -180,24 +180,6 @@ namespace AZ
                     ShaderAssetBuilderName, false, "Shader program listed as the source entry does not exist: %s.", azslFullPath.c_str());
                 response.m_result = AssetBuilderSDK::CreateJobsResultCode::Failed;
                 return;
-            }
-
-            auto outcome = GetListOfIncludedFiles(azslFullPath);
-            if (!outcome.IsSuccess())
-            {
-                AZ_Error(ShaderAssetBuilderName, false, outcome.GetError().c_str());
-                response.m_result = AssetBuilderSDK::CreateJobsResultCode::Failed;
-                return;
-            }
-            const auto listOfRelativePaths = outcome.TakeValue();
-            for (auto includePath : listOfRelativePaths)
-            {
-                // m_sourceFileDependencyList does not support paths with "." or ".." for relative lookup.
-                AzFramework::StringFunc::Path::Normalize(includePath);
-
-                AssetBuilderSDK::SourceFileDependency includeFileDependency;
-                includeFileDependency.m_sourceFileDependencyPath = includePath;
-                response.m_sourceFileDependencyList.emplace_back(includeFileDependency);
             }
 
             {
