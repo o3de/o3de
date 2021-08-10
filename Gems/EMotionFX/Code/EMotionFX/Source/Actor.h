@@ -22,7 +22,7 @@
 
 // include MCore related files
 #include <MCore/Source/Vector.h>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include <MCore/Source/SmallArray.h>
 #include <MCore/Source/Distance.h>
 
@@ -68,8 +68,8 @@ namespace EMotionFX
          */
         struct EMFX_API Dependency
         {
-            Actor*      mActor;        /**< The actor where the instance is dependent on. */
-            AnimGraph*  mAnimGraph;    /**< The anim graph we depend on. */
+            Actor*      m_actor;        /**< The actor where the instance is dependent on. */
+            AnimGraph*  m_animGraph;    /**< The anim graph we depend on. */
         };
 
         //
@@ -90,9 +90,9 @@ namespace EMotionFX
         // per node mirror info
         struct EMFX_API NodeMirrorInfo
         {
-            uint16  mSourceNode;        // from which node to extract the motion
-            uint8   mAxis;              // X=0, Y=1, Z=2
-            uint8   mFlags;             // bitfield with MIRRORFLAG_ prefix
+            uint16  m_sourceNode;        // from which node to extract the motion
+            uint8   m_axis;              // X=0, Y=1, Z=2
+            uint8   m_flags;             // bitfield with MIRRORFLAG_ prefix
         };
 
         enum class LoadRequirement : bool
@@ -114,13 +114,13 @@ namespace EMotionFX
          * Get the unique identification number for the actor.
          * @return The unique identification number.
          */
-        MCORE_INLINE uint32 GetID() const                                       { return mID; }
+        MCORE_INLINE uint32 GetID() const                                       { return m_id; }
 
         /**
          * Set the unique identification number for the actor instance.
          * @param[in] id The unique identification number.
          */
-        MCORE_INLINE void SetID(uint32 id)                                      { mID = id; }
+        MCORE_INLINE void SetID(uint32 id)                                      { m_id = id; }
 
         /**
          * Add a node to this actor.
@@ -131,14 +131,14 @@ namespace EMotionFX
         /**
          * Add a node to this actor.
          */
-        Node* AddNode(uint32 nodeIndex, const char* name, uint32 parentIndex = MCORE_INVALIDINDEX32);
+        Node* AddNode(size_t nodeIndex, const char* name, size_t parentIndex = InvalidIndex);
 
         /**
          * Remove a given node.
          * @param nr The node to remove.
          * @param delMem If true the allocated memory of the node will be deleted.
          */
-        void RemoveNode(uint32 nr, bool delMem = true);
+        void RemoveNode(size_t nr, bool delMem = true);
 
         /**
          * Remove all nodes from memory.
@@ -188,7 +188,7 @@ namespace EMotionFX
          * @param endNodeIndex The node index to generate the path to.
          * @param outPath the array that will contain the path.
          */
-        void GenerateUpdatePathToRoot(uint32 endNodeIndex, MCore::Array<uint32>& outPath) const;
+        void GenerateUpdatePathToRoot(size_t endNodeIndex, AZStd::vector<size_t>& outPath) const;
 
         /**
          * Set the motion extraction node.
@@ -206,7 +206,7 @@ namespace EMotionFX
          * You can set the node to MCORE_INVALIDINDEX32 in case you want to disable motion extraction.
          * @param nodeIndex The motion extraction node, or MCORE_INVALIDINDEX32 to disable it.
          */
-        void SetMotionExtractionNodeIndex(uint32 nodeIndex);
+        void SetMotionExtractionNodeIndex(size_t nodeIndex);
 
         /**
          * Get the motion extraction node.
@@ -218,7 +218,7 @@ namespace EMotionFX
          * Get the motion extraction node index.
          * @result The motion extraction node index, or MCORE_INVALIDINDEX32 when it has not been set.
          */
-        MCORE_INLINE uint32 GetMotionExtractionNodeIndex() const                        { return mMotionExtractionNode; }
+        MCORE_INLINE size_t GetMotionExtractionNodeIndex() const                        { return m_motionExtractionNode; }
 
         //---------------------------------------------------------------------
 
@@ -227,14 +227,14 @@ namespace EMotionFX
          * @param lodLevel The LOD level to check for.
          * @result Returns true when this actor contains nodes that have meshes in the given LOD, otherwise false is returned.
          */
-        bool CheckIfHasMeshes(uint32 lodLevel) const;
+        bool CheckIfHasMeshes(size_t lodLevel) const;
 
         /**
          * Check if we have skinned meshes.
          * @param lodLevel The LOD level to check for.
          * @result Returns true when skinned meshes are present in the specified LOD level, otherwise false is returned.
          */
-        bool CheckIfHasSkinnedMeshes(AZ::u32 lodLevel) const;
+        bool CheckIfHasSkinnedMeshes(size_t lodLevel) const;
 
         /**
          * Extract a list with nodes that represent bones.
@@ -245,7 +245,7 @@ namespace EMotionFX
          * @param outBoneList The array of indices to nodes that will be filled with the nodes that are bones. When the outBoneList array
          *                    already contains items, the array will first be cleared, so all existing contents will be lost.
          */
-        void ExtractBoneList(uint32 lodLevel, MCore::Array<uint32>* outBoneList) const;
+        void ExtractBoneList(size_t lodLevel, AZStd::vector<size_t>* outBoneList) const;
 
         //------------------------------------------------
         void SetPhysicsSetup(const AZStd::shared_ptr<PhysicsSetup>& physicsSetup);
@@ -261,7 +261,7 @@ namespace EMotionFX
          * @param lodLevel The geometry LOD level to work on.
          * @param numMaterials The amount of materials to pre-allocate space for.
          */
-        void ReserveMaterials(uint32 lodLevel, uint32 numMaterials);
+        void ReserveMaterials(size_t lodLevel, size_t numMaterials);
 
         /**
          * Get a given material.
@@ -269,7 +269,7 @@ namespace EMotionFX
          * @param nr The material number to get.
          * @result A pointer to the material.
          */
-        Material* GetMaterial(uint32 lodLevel, uint32 nr) const;
+        Material* GetMaterial(size_t lodLevel, size_t nr) const;
 
         /**
          * Find the material number/index of the material with the specified name.
@@ -279,7 +279,7 @@ namespace EMotionFX
          * @result Returns the material number/index, which you can use to GetMaterial. When no material with the given name
          *         can be found, a value of MCORE_INVALIDINDEX32 is returned.
          */
-        uint32 FindMaterialIndexByName(uint32 lodLevel, const char* name) const;
+        size_t FindMaterialIndexByName(size_t lodLevel, const char* name) const;
 
         /**
          * Set a given material.
@@ -287,14 +287,14 @@ namespace EMotionFX
          * @param nr The material number to set.
          * @param mat The material to set at this index.
          */
-        void SetMaterial(uint32 lodLevel, uint32 nr, Material* mat);
+        void SetMaterial(size_t lodLevel, size_t nr, Material* mat);
 
         /**
          * Add a material to the back of the material list.
          * @param lodLevel The LOD level add the material to.
          * @param mat The material to add to the back of the list.
          */
-        void AddMaterial(uint32 lodLevel, Material* mat);
+        void AddMaterial(size_t lodLevel, Material* mat);
 
         /**
          * Remove the given material from the material list and reassign all material numbers of the sub meshes
@@ -306,14 +306,14 @@ namespace EMotionFX
          * @param lodLevel The LOD level add the material to.
          * @param index The material index of the material to remove.
          */
-        void RemoveMaterial(uint32 lodLevel, uint32 index);
+        void RemoveMaterial(size_t lodLevel, size_t index);
 
         /**
          * Get the number of materials.
          * @param lodLevel The LOD level to get the number of material from.
          * @result The number of materials this actor has/uses.
          */
-        uint32 GetNumMaterials(uint32 lodLevel) const;
+        size_t GetNumMaterials(size_t lodLevel) const;
 
         /**
          * Removes all materials from this actor.
@@ -329,7 +329,7 @@ namespace EMotionFX
          * @param index The material number to check.
          * @result Returns true when there are meshes using the material, otherwise false is returned.
          */
-        bool CheckIfIsMaterialUsed(uint32 lodLevel, uint32 index) const;
+        bool CheckIfIsMaterialUsed(size_t lodLevel, size_t index) const;
 
         //------------------------------------------------
 
@@ -348,26 +348,26 @@ namespace EMotionFX
          * @param[in] copySkeletalLODFlags Copy over the skeletal LOD flags in case of true, skip them in case of false.
          * @param[in] delLODActorFromMem When set to true, the method will automatically delete the given copyActor from memory.
          */
-        void CopyLODLevel(Actor* copyActor, uint32 copyLODLevel, uint32 replaceLODLevel, bool copySkeletalLODFlags);
+        void CopyLODLevel(Actor* copyActor, size_t copyLODLevel, size_t replaceLODLevel, bool copySkeletalLODFlags);
 
         /**
          * Insert LOD level at the given position.
          * This function will not copy any meshes, deformer, morph targets or materials but just insert an empty LOD level.
          * @param[in] insertAt The position to insert the new LOD level.
          */
-        void InsertLODLevel(uint32 insertAt);
+        void InsertLODLevel(size_t insertAt);
 
         /**
          * Set the number of LOD levels.
          * This will be called by the importer. Do not use manually.
          */
-        void SetNumLODLevels(uint32 numLODs, bool adjustMorphSetup = true);
+        void SetNumLODLevels(size_t numLODs, bool adjustMorphSetup = true);
 
         /**
          * Get the number of LOD levels inside this actor.
          * @result The number of LOD levels. This value is at least 1, since the full detail LOD is always there.
          */
-        uint32 GetNumLODLevels() const;
+        size_t GetNumLODLevels() const;
 
         //--------------------------------------------------------------------------
 
@@ -385,7 +385,7 @@ namespace EMotionFX
          * @param outNumVertices The integer to write the number of vertices in.
          * @param outNumIndices The integer to write the number of indices in.
          */
-        void CalcMeshTotals(uint32 lodLevel, uint32* outNumPolygons, uint32* outNumVertices, uint32* outNumIndices) const;
+        void CalcMeshTotals(size_t lodLevel, uint32* outNumPolygons, uint32* outNumVertices, uint32* outNumIndices) const;
 
         /**
          * Calculates the total number of vertices and indices of all STATIC node meshes for the given LOD.
@@ -394,7 +394,7 @@ namespace EMotionFX
          * @param outNumVertices The integer to write the number of vertices in.
          * @param outNumIndices The integer to write the number of indices in.
          */
-        void CalcStaticMeshTotals(uint32 lodLevel, uint32* outNumVertices, uint32* outNumIndices);
+        void CalcStaticMeshTotals(size_t lodLevel, uint32* outNumVertices, uint32* outNumIndices);
 
         /**
          * Calculates the total number of vertices and indices of all DEFORMABLE node meshes for the given LOD.
@@ -404,7 +404,7 @@ namespace EMotionFX
          * @param outNumVertices The integer to write the number of vertices in.
          * @param outNumIndices The integer to write the number of indices in.
          */
-        void CalcDeformableMeshTotals(uint32 lodLevel, uint32* outNumVertices, uint32* outNumIndices);
+        void CalcDeformableMeshTotals(size_t lodLevel, uint32* outNumVertices, uint32* outNumIndices);
 
         /**
          * Calculates the maximum number of bone influences.
@@ -412,7 +412,7 @@ namespace EMotionFX
          * @param lodLevel The LOD level, where 0 is the highest detail LOD level. This value must be in range of [0..GetNumLODLevels()-1].
          * @result The maximum number of influences. This will be 0 for non-softskinned objects.
          */
-        uint32 CalcMaxNumInfluences(uint32 lodLevel) const;
+        size_t CalcMaxNumInfluences(size_t lodLevel) const;
 
         /**
          * Calculates the maximum number of bone influences.
@@ -424,7 +424,7 @@ namespace EMotionFX
          * @param lodLevel The detail level to calculate the results for. A value of 0 is the highest detail.
          * @result The maximum number of vertex/bone influences. This will be 0 for rigid, non-skinned objects.
          */
-        uint32 CalcMaxNumInfluences(uint32 lodLevel, AZStd::vector<uint32>& outVertexCounts) const;
+        size_t CalcMaxNumInfluences(size_t lodLevel, AZStd::vector<size_t>& outVertexCounts) const;
 
         /**
          * Verify if the skinning will look correctly in the given geometry LOD for a given skeletal LOD level.
@@ -438,7 +438,7 @@ namespace EMotionFX
          *                         disabled nodes from the given skeletal LOD level.
          * @param geometryLODLevel The geometry LOD level to test the skeletal LOD against with.
          */
-        void VerifySkinning(MCore::Array<uint8>& conflictNodeFlags, uint32 skeletalLODLevel, uint32 geometryLODLevel);
+        void VerifySkinning(AZStd::vector<uint8>& conflictNodeFlags, size_t skeletalLODLevel, size_t geometryLODLevel);
 
         /**
          * Checks if the given material is used by a given mesh.
@@ -446,7 +446,7 @@ namespace EMotionFX
          * @param materialIndex The index of the material to check.
          * @return True if one of the submeshes of the given mesh uses the given material, false if not.
          */
-        bool CheckIfIsMaterialUsed(Mesh* mesh, uint32 materialIndex) const;
+        bool CheckIfIsMaterialUsed(Mesh* mesh, size_t materialIndex) const;
 
         //------------------
 
@@ -522,15 +522,15 @@ namespace EMotionFX
          * Get the number of dependencies.
          * @result The number of dependencies that this actor has on other actors.
          */
-        MCORE_INLINE uint32 GetNumDependencies() const                          { return mDependencies.GetLength(); }
+        MCORE_INLINE size_t GetNumDependencies() const                          { return m_dependencies.size(); }
 
         /**
          * Get a given dependency.
          * @param nr The dependency number, which must be in range of [0..GetNumDependencies()-1].
          * @result A pointer to the dependency.
          */
-        MCORE_INLINE Dependency* GetDependency(uint32 nr)                       { return &mDependencies[nr]; }
-        MCORE_INLINE const Dependency* GetDependency(uint32 nr) const           { return &mDependencies[nr]; }
+        MCORE_INLINE Dependency* GetDependency(size_t nr)                       { return &m_dependencies[nr]; }
+        MCORE_INLINE const Dependency* GetDependency(size_t nr) const           { return &m_dependencies[nr]; }
 
         /**
          * Recursively add dependencies that this actor has on other actors.
@@ -546,7 +546,7 @@ namespace EMotionFX
          * @result A smart pointer object to the morph setup. Use the MCore::Pointer<MorphSetup>::GetPointer() to get the actual pointer.
          *         That GetPointer() method will return nullptr when there is no morph setup for the given LOD level.
          */
-        MCORE_INLINE MorphSetup* GetMorphSetup(uint32 geomLODLevel) const       { return mMorphSetups[geomLODLevel]; }
+        MCORE_INLINE MorphSetup* GetMorphSetup(size_t geomLODLevel) const       { return m_morphSetups[geomLODLevel]; }
 
         /**
          * Remove all morph setups. Morph setups contain all morph targtets.
@@ -561,7 +561,7 @@ namespace EMotionFX
          * @param lodLevel The LOD level, which must be in range of [0..GetNumLODLevels()-1].
          * @param setup The  morph setup for this LOD.
          */
-        void SetMorphSetup(uint32 lodLevel, MorphSetup* setup);
+        void SetMorphSetup(size_t lodLevel, MorphSetup* setup);
 
         /**
          * Get the number of node groups inside this actor object.
@@ -649,16 +649,16 @@ namespace EMotionFX
          * @param nodeIndex The node index to get the info for.
          * @result A reference to the mirror info.
          */
-        MCORE_INLINE NodeMirrorInfo& GetNodeMirrorInfo(uint32 nodeIndex)                            { return mNodeMirrorInfos[nodeIndex]; }
+        MCORE_INLINE NodeMirrorInfo& GetNodeMirrorInfo(size_t nodeIndex)                            { return m_nodeMirrorInfos[nodeIndex]; }
 
         /**
          * Get the mirror info for a given node.
          * @param nodeIndex The node index to get the info for.
          * @result A reference to the mirror info.
          */
-        MCORE_INLINE const NodeMirrorInfo& GetNodeMirrorInfo(uint32 nodeIndex) const                { return mNodeMirrorInfos[nodeIndex]; }
+        MCORE_INLINE const NodeMirrorInfo& GetNodeMirrorInfo(size_t nodeIndex) const                { return m_nodeMirrorInfos[nodeIndex]; }
 
-        MCORE_INLINE bool GetHasMirrorInfo() const                                                  { return (mNodeMirrorInfos.GetLength() != 0); }
+        MCORE_INLINE bool GetHasMirrorInfo() const                                                  { return (m_nodeMirrorInfos.size() != 0); }
 
         //---------------------------------------------------------------
 
@@ -735,7 +735,7 @@ namespace EMotionFX
          * @param startNodeIndex The node to start looking at, for example the node index of the finger bone.
          * @result Returns the index of the first active node, when moving up the hierarchy towards the root node. Returns MCORE_INVALIDINDEX32 when not found.
          */
-        uint32 FindFirstActiveParentBone(uint32 skeletalLOD, uint32 startNodeIndex) const;
+        size_t FindFirstActiveParentBone(size_t skeletalLOD, size_t startNodeIndex) const;
 
         /**
          * Make the geometry LOD levels compatible with the skinning LOD levels.
@@ -749,21 +749,21 @@ namespace EMotionFX
         void PostCreateInit(bool makeGeomLodsCompatibleWithSkeletalLODs = true, bool convertUnitType = true);
 
         void AutoDetectMirrorAxes();
-        const MCore::Array<NodeMirrorInfo>& GetNodeMirrorInfos() const;
-        MCore::Array<NodeMirrorInfo>& GetNodeMirrorInfos();
-        void SetNodeMirrorInfos(const MCore::Array<NodeMirrorInfo>& mirrorInfos);
+        const AZStd::vector<NodeMirrorInfo>& GetNodeMirrorInfos() const;
+        AZStd::vector<NodeMirrorInfo>& GetNodeMirrorInfos();
+        void SetNodeMirrorInfos(const AZStd::vector<NodeMirrorInfo>& mirrorInfos);
         bool GetHasMirrorAxesDetected() const;
 
-        MCORE_INLINE const AZStd::vector<Transform>& GetInverseBindPoseTransforms() const                               { return mInvBindPoseTransforms; }
-        MCORE_INLINE Pose* GetBindPose()                                                                                { return mSkeleton->GetBindPose(); }
-        MCORE_INLINE const Pose* GetBindPose() const                                                                    { return mSkeleton->GetBindPose(); }
+        MCORE_INLINE const AZStd::vector<Transform>& GetInverseBindPoseTransforms() const                               { return m_invBindPoseTransforms; }
+        MCORE_INLINE Pose* GetBindPose()                                                                                { return m_skeleton->GetBindPose(); }
+        MCORE_INLINE const Pose* GetBindPose() const                                                                    { return m_skeleton->GetBindPose(); }
 
         /**
          * Get the inverse bind pose (in world space) transform of a given joint.
          * @param jointIndex The joint number, which must be in range of [0..GetNumNodes()-1].
          * @result The inverse of the bind pose transform.
          */
-        MCORE_INLINE const Transform& GetInverseBindPoseTransform(uint32 nodeIndex) const                         { return mInvBindPoseTransforms[nodeIndex]; }
+        MCORE_INLINE const Transform& GetInverseBindPoseTransform(size_t nodeIndex) const                         { return m_invBindPoseTransforms[nodeIndex]; }
 
         void ReleaseTransformData();
         void ResizeTransformData();
@@ -773,11 +773,11 @@ namespace EMotionFX
         void SetStaticAabb(const AZ::Aabb& aabb);
         void UpdateStaticAabb();    // VERY heavy operation, you shouldn't call this ever (internally creates an actor instance, updates mesh deformers, calcs a mesh based aabb, destroys the actor instance again)
 
-        void SetThreadIndex(uint32 index)                   { mThreadIndex = index; }
-        uint32 GetThreadIndex() const                       { return mThreadIndex; }
+        void SetThreadIndex(uint32 index)                   { m_threadIndex = index; }
+        uint32 GetThreadIndex() const                       { return m_threadIndex; }
 
-        Mesh* GetMesh(uint32 lodLevel, uint32 nodeIndex) const;
-        MeshDeformerStack* GetMeshDeformerStack(uint32 lodLevel, uint32 nodeIndex) const;
+        Mesh* GetMesh(size_t lodLevel, size_t nodeIndex) const;
+        MeshDeformerStack* GetMeshDeformerStack(size_t lodLevel, size_t nodeIndex) const;
 
         /** Finds the mesh points for which the specified node is the node with the highest influence.
          * This is a pretty expensive function which is only intended for use in the editor.
@@ -787,18 +787,18 @@ namespace EMotionFX
          */
         void FindMostInfluencedMeshPoints(const Node* node, AZStd::vector<AZ::Vector3>& outPoints) const;
 
-        MCORE_INLINE Skeleton* GetSkeleton() const          { return mSkeleton; }
-        MCORE_INLINE uint32 GetNumNodes() const             { return mSkeleton->GetNumNodes(); }
+        MCORE_INLINE Skeleton* GetSkeleton() const          { return m_skeleton; }
+        MCORE_INLINE size_t GetNumNodes() const             { return m_skeleton->GetNumNodes(); }
 
-        void SetMesh(uint32 lodLevel, uint32 nodeIndex, Mesh* mesh);
-        void SetMeshDeformerStack(uint32 lodLevel, uint32 nodeIndex, MeshDeformerStack* stack);
+        void SetMesh(size_t lodLevel, size_t nodeIndex, Mesh* mesh);
+        void SetMeshDeformerStack(size_t lodLevel, size_t nodeIndex, MeshDeformerStack* stack);
 
-        bool CheckIfHasMorphDeformer(uint32 lodLevel, uint32 nodeIndex) const;
-        bool CheckIfHasSkinningDeformer(uint32 lodLevel, uint32 nodeIndex) const;
+        bool CheckIfHasMorphDeformer(size_t lodLevel, size_t nodeIndex) const;
+        bool CheckIfHasSkinningDeformer(size_t lodLevel, size_t nodeIndex) const;
 
-        void RemoveNodeMeshForLOD(uint32 lodLevel, uint32 nodeIndex, bool destroyMesh = true);
+        void RemoveNodeMeshForLOD(size_t lodLevel, size_t nodeIndex, bool destroyMesh = true);
 
-        void SetNumNodes(uint32 numNodes);
+        void SetNumNodes(size_t numNodes);
 
         void SetUnitType(MCore::Distance::EUnitType unitType);
         MCore::Distance::EUnitType GetUnitType() const;
@@ -808,9 +808,9 @@ namespace EMotionFX
 
         EAxis FindBestMatchingMotionExtractionAxis() const;
 
-        MCORE_INLINE uint32 GetRetargetRootNodeIndex() const    { return mRetargetRootNode; }
-        MCORE_INLINE Node* GetRetargetRootNode() const          { return (mRetargetRootNode != MCORE_INVALIDINDEX32) ? mSkeleton->GetNode(mRetargetRootNode) : nullptr; }
-        void SetRetargetRootNodeIndex(uint32 nodeIndex);
+        MCORE_INLINE size_t GetRetargetRootNodeIndex() const    { return m_retargetRootNode; }
+        MCORE_INLINE Node* GetRetargetRootNode() const          { return (m_retargetRootNode != InvalidIndex) ? m_skeleton->GetNode(m_retargetRootNode) : nullptr; }
+        void SetRetargetRootNodeIndex(size_t nodeIndex);
         void SetRetargetRootNode(Node* node);
 
         void AutoSetupSkeletalLODsBasedOnSkinningData(const AZStd::vector<AZStd::string>& alwaysIncludeJoints);
@@ -846,7 +846,7 @@ namespace EMotionFX
         void Finalize(LoadRequirement loadReq = LoadRequirement::AllowAsyncLoad);
 
     private:
-        void InsertJointAndParents(AZ::u32 jointIndex, AZStd::unordered_set<AZ::u32>& includedJointIndices);
+        void InsertJointAndParents(size_t jointIndex, AZStd::unordered_set<size_t>& includedJointIndices);
 
         AZStd::unordered_map<AZ::u16, AZ::u16> ConstructSkinToSkeletonIndexMap(const AZ::Data::Asset<AZ::RPI::SkinMetaAsset>& skinMetaAsset);
         void ConstructMeshes();
@@ -857,19 +857,42 @@ namespace EMotionFX
         // data per node, per lod
         struct EMFX_API NodeLODInfo
         {
-            Mesh*                   mMesh;
-            MeshDeformerStack*      mStack;
+            Mesh*                   m_mesh;
+            MeshDeformerStack*      m_stack;
 
             NodeLODInfo();
+            NodeLODInfo(const NodeLODInfo&) = delete;
+            NodeLODInfo(NodeLODInfo&& rhs)
+            {
+                if (&rhs == this)
+                {
+                    return;
+                }
+                m_mesh = rhs.m_mesh;
+                m_stack = rhs.m_stack;
+                rhs.m_mesh = nullptr;
+                rhs.m_stack = nullptr;
+            }
+            NodeLODInfo& operator=(const NodeLODInfo&) = delete;
+            NodeLODInfo& operator=(NodeLODInfo&& rhs)
+            {
+                if (&rhs == this)
+                {
+                    return *this;
+                }
+                m_mesh = rhs.m_mesh;
+                m_stack = rhs.m_stack;
+                rhs.m_mesh = nullptr;
+                rhs.m_stack = nullptr;
+                return *this;
+            }
             ~NodeLODInfo();
         };
 
         // a lod level
         struct EMFX_API LODLevel
         {
-            MCore::Array<NodeLODInfo> mNodeInfos;
-
-            LODLevel();
+            AZStd::vector<NodeLODInfo> m_nodeInfos;
         };
 
         struct MeshLODData
@@ -895,31 +918,31 @@ namespace EMotionFX
 
         Node* FindMeshJoint(const AZ::Data::Asset<AZ::RPI::ModelLodAsset>& lodModelAsset) const;
 
-        Skeleton*                                       mSkeleton;                  /**< The skeleton, containing the nodes and bind pose. */
-        MCore::Array<Dependency>                        mDependencies;              /**< The dependencies on other actors (shared meshes and transforms). */
-        AZStd::string                                   mName;                      /**< The name of the actor. */
-        AZStd::string                                   mFileName;                  /**< The filename of the actor. */
-        MCore::Array<NodeMirrorInfo>                    mNodeMirrorInfos;           /**< The array of node mirror info. */
-        MCore::Array< MCore::Array< Material* > >       mMaterials;                 /**< A collection of materials (for each lod). */
-        MCore::Array< MorphSetup* >                     mMorphSetups;               /**< A morph setup for each geometry LOD. */
-        MCore::SmallArray<NodeGroup*>                   mNodeGroups;                /**< The set of node groups. */
+        Skeleton*                                       m_skeleton;                  /**< The skeleton, containing the nodes and bind pose. */
+        AZStd::vector<Dependency>                        m_dependencies;              /**< The dependencies on other actors (shared meshes and transforms). */
+        AZStd::string                                   m_name;                      /**< The name of the actor. */
+        AZStd::string                                   m_fileName;                  /**< The filename of the actor. */
+        AZStd::vector<NodeMirrorInfo>                    m_nodeMirrorInfos;           /**< The array of node mirror info. */
+        AZStd::vector< AZStd::vector< Material* > >       m_materials;                 /**< A collection of materials (for each lod). */
+        AZStd::vector< MorphSetup* >                     m_morphSetups;               /**< A morph setup for each geometry LOD. */
+        MCore::SmallArray<NodeGroup*>                   m_nodeGroups;                /**< The set of node groups. */
         AZStd::shared_ptr<PhysicsSetup>                 m_physicsSetup;             /**< Hit detection, ragdoll and cloth colliders, joint limits and rigid bodies. */
         AZStd::shared_ptr<SimulatedObjectSetup>         m_simulatedObjectSetup;     /**< Setup for simulated objects */
-        MCore::Distance::EUnitType                      mUnitType;                  /**< The unit type used on export. */
-        MCore::Distance::EUnitType                      mFileUnitType;              /**< The unit type used on export. */
-        AZStd::vector<Transform>                        mInvBindPoseTransforms;     /**< The inverse world space bind pose transforms. */
-        void*                                           mCustomData;                /**< Some custom data, for example a pointer to your own game character class which is linked to this actor. */
-        uint32                                          mMotionExtractionNode;      /**< The motion extraction node. This is the node from which to transfer a filtered part of the motion onto the actor instance. Can also be MCORE_INVALIDINDEX32 when motion extraction is disabled. */
-        uint32                                          mRetargetRootNode;          /**< The retarget root node, which controls the height displacement of the character. This is most likely the hip or pelvis node. */
-        uint32                                          mID;                        /**< The unique identification number for the actor. */
-        uint32                                          mThreadIndex;               /**< The thread number we are running on, which is a value starting at 0, up to the number of threads in the job system. */
+        MCore::Distance::EUnitType                      m_unitType;                  /**< The unit type used on export. */
+        MCore::Distance::EUnitType                      m_fileUnitType;              /**< The unit type used on export. */
+        AZStd::vector<Transform>                        m_invBindPoseTransforms;     /**< The inverse world space bind pose transforms. */
+        void*                                           m_customData;                /**< Some custom data, for example a pointer to your own game character class which is linked to this actor. */
+        size_t                                          m_motionExtractionNode;      /**< The motion extraction node. This is the node from which to transfer a filtered part of the motion onto the actor instance. Can also be MCORE_INVALIDINDEX32 when motion extraction is disabled. */
+        size_t                                          m_retargetRootNode;          /**< The retarget root node, which controls the height displacement of the character. This is most likely the hip or pelvis node. */
+        uint32                                          m_id;                        /**< The unique identification number for the actor. */
+        uint32                                          m_threadIndex;               /**< The thread number we are running on, which is a value starting at 0, up to the number of threads in the job system. */
         AZ::Aabb                                        m_staticAabb;               /**< The static AABB. */
-        bool                                            mDirtyFlag;                 /**< The dirty flag which indicates whether the user has made changes to the actor since the last file save operation. */
-        bool                                            mUsedForVisualization;      /**< Indicates if the actor is used for visualization specific things and is not used as a normal in-game actor. */
+        bool                                            m_dirtyFlag;                 /**< The dirty flag which indicates whether the user has made changes to the actor since the last file save operation. */
+        bool                                            m_usedForVisualization;      /**< Indicates if the actor is used for visualization specific things and is not used as a normal in-game actor. */
         bool                                            m_optimizeSkeleton;         /**< Indicates if we should perform/ */
         bool                                            m_isReady = false;          /**< If actor as well as its dependent files are fully loaded and initialized.*/
 #if defined(EMFX_DEVELOPMENT_BUILD)
-        bool                                            mIsOwnedByRuntime;          /**< Set if the actor is used/owned by the engine runtime. */
+        bool                                            m_isOwnedByRuntime;          /**< Set if the actor is used/owned by the engine runtime. */
 #endif // EMFX_DEVELOPMENT_BUILD
     };
 } // namespace EMotionFX
