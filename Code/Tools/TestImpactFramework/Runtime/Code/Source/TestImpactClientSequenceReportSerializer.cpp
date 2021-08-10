@@ -181,13 +181,13 @@ namespace TestImpact
         void SerializeCompletedTestRun(const Client::CompletedTestRun& testRun, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer)
         {
             writer.StartObject();
-            
+            {
                 SerializeTestRunMembers(testRun, writer);
 
-                 // Number of passing test cases
+                // Number of passing test cases
                 writer.Key(SequenceReportFields::Keys[SequenceReportFields::NumPassingTests]);
                 writer.Uint64(testRun.GetTotalNumPassingTests());
-            
+
                 // Number of failing test cases
                 writer.Key(SequenceReportFields::Keys[SequenceReportFields::NumFailingTests]);
                 writer.Uint64(testRun.GetTotalNumFailingTests());
@@ -199,25 +199,25 @@ namespace TestImpact
                 // Tests
                 writer.Key(SequenceReportFields::Keys[SequenceReportFields::Tests]);
                 writer.StartArray();
-            
+
                 for (const auto& test : testRun.GetTests())
                 {
                     // Test
                     writer.StartObject();
-            
-                        // Name
-                        writer.Key(SequenceReportFields::Keys[SequenceReportFields::Name]);
-                        writer.String(test.GetName().c_str());
-            
-                        // Result
-                        writer.Key(SequenceReportFields::Keys[SequenceReportFields::Result]);
-                        writer.String(ClientTestResultAsString(test.GetResult()).c_str());
-            
+
+                    // Name
+                    writer.Key(SequenceReportFields::Keys[SequenceReportFields::Name]);
+                    writer.String(test.GetName().c_str());
+
+                    // Result
+                    writer.Key(SequenceReportFields::Keys[SequenceReportFields::Result]);
+                    writer.String(ClientTestResultAsString(test.GetResult()).c_str());
+
                     writer.EndObject(); // Test
                 }
-            
+
                 writer.EndArray(); // Tests
-            
+            }
             writer.EndObject();
         }
 
@@ -225,7 +225,7 @@ namespace TestImpact
             const Client::TestRunReport& testRunReport, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer)
         {
             writer.StartObject();
-
+            {
                 // Result
                 writer.Key(SequenceReportFields::Keys[SequenceReportFields::Result]);
                 writer.String(TestSequenceResultAsString(testRunReport.GetResult()).c_str());
@@ -318,7 +318,7 @@ namespace TestImpact
                 // Number of disabled tests
                 writer.Key(SequenceReportFields::Keys[SequenceReportFields::TotalNumDisabledTests]);
                 writer.Uint64(testRunReport.GetTotalNumDisabledTests());
-
+            }
             writer.EndObject();
         }
 
@@ -326,7 +326,7 @@ namespace TestImpact
             const Client::TestRunSelection& testSelection, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer)
         {
             writer.StartObject();
-
+            {
                 // Total number of test runs
                 writer.Key(SequenceReportFields::Keys[SequenceReportFields::TotalNumTestRuns]);
                 writer.Uint64(testSelection.GetTotalNumTests());
@@ -356,7 +356,7 @@ namespace TestImpact
                     writer.String(testRun.c_str());
                 }
                 writer.EndArray(); // Excluded test runs
-
+            }
             writer.EndObject();
         }
 
@@ -440,7 +440,9 @@ namespace TestImpact
             // Policies
             writer.Key(SequenceReportFields::Keys[SequenceReportFields::Policy]);
             writer.StartObject();
+            {
                 SerializePolicyStateMembers(sequenceReport.GetPolicyState(), writer);
+            }
             writer.EndObject(); // Policies
 
             // Suite
@@ -535,7 +537,9 @@ namespace TestImpact
         rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(stringBuffer);
 
         writer.StartObject();
-        SerializeSequenceReportBaseMembers(sequenceReport, writer);
+        {
+            SerializeSequenceReportBaseMembers(sequenceReport, writer);
+        }
         writer.EndObject();
 
         return stringBuffer.GetString();
@@ -559,6 +563,7 @@ namespace TestImpact
         rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(stringBuffer);
 
         writer.StartObject();
+        {
             SerializeDraftingSequenceReportMembers(sequenceReport, writer);
 
             // Discarded test runs
@@ -569,7 +574,7 @@ namespace TestImpact
                 writer.String(testRun.c_str());
             }
             writer.EndArray(); // Discarded test runs
-
+        }
         writer.EndObject();
 
         return stringBuffer.GetString();
@@ -581,6 +586,7 @@ namespace TestImpact
         rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(stringBuffer);
 
         writer.StartObject();
+        {
             SerializeDraftingSequenceReportMembers(sequenceReport, writer);
 
             // Discarded test runs
@@ -590,7 +596,7 @@ namespace TestImpact
             // Discarded test run report
             writer.Key(SequenceReportFields::Keys[SequenceReportFields::DiscardedTestRunReport]);
             SerializeTestRunReport(sequenceReport.GetDiscardedTestRunReport(), writer);
-
+        }
         writer.EndObject();
 
         return stringBuffer.GetString();

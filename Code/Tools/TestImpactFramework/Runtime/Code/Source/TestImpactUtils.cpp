@@ -16,19 +16,24 @@ namespace TestImpact
     //! Delete the files that match the pattern from the specified directory.
     //! @param path The path to the directory to pattern match the files for deletion.
     //! @param pattern The pattern to match files for deletion.
-    void DeleteFiles(const RepoPath& path, const AZStd::string& pattern)
+    size_t DeleteFiles(const RepoPath& path, const AZStd::string& pattern)
     {
+        size_t numFilesDeleted = 0;
+
         AZ::IO::SystemFile::FindFiles(
             AZStd::string::format("%s/%s", path.c_str(), pattern.c_str()).c_str(),
-            [&path](const char* file, bool isFile)
+            [&path, &numFilesDeleted](const char* file, bool isFile)
             {
                 if (isFile)
                 {
                     AZ::IO::SystemFile::Delete(AZStd::string::format("%s/%s", path.c_str(), file).c_str());
+                    numFilesDeleted++;
                 }
 
                 return true;
             });
+
+        return numFilesDeleted;
     }
 
     //! Deletes the specified file.
@@ -59,16 +64,12 @@ namespace TestImpact
         {
         case Client::SequenceReportType::RegularSequence:
             return "regular";
-
         case Client::SequenceReportType::SeedSequence:
             return "seed";
-
         case Client::SequenceReportType::ImpactAnalysisSequence:
             return "impact_analysis";
-
         case Client::SequenceReportType::SafeImpactAnalysisSequence:
             return "safe_impact_analysis";
-
         default:
             throw(Exception(AZStd::string::format("Unexpected sequence report type: %u", aznumeric_cast<AZ::u32>(type))));
         }
@@ -80,13 +81,10 @@ namespace TestImpact
         {
         case TestSequenceResult::Failure:
             return "failure";
-
         case TestSequenceResult::Success:
             return "success";
-
         case TestSequenceResult::Timeout:
             return "timeout";
-
         default:
             throw(Exception(AZStd::string::format("Unexpected test sequence result: %u", aznumeric_cast<AZ::u32>(result))));
         }
@@ -98,19 +96,14 @@ namespace TestImpact
         {
         case Client::TestRunResult::AllTestsPass:
             return "all_tests_pass";
-
         case Client::TestRunResult::FailedToExecute:
             return "failed_to_execute";
-
         case Client::TestRunResult::NotRun:
             return "not_run";
-
         case Client::TestRunResult::TestFailures:
             return "test_failures";
-
         case Client::TestRunResult::Timeout:
             return "timeout";
-
         default:
             throw(Exception(AZStd::string::format("Unexpected test run result: %u", aznumeric_cast<AZ::u32>(result))));
         }
@@ -122,13 +115,10 @@ namespace TestImpact
         {
         case Policy::ExecutionFailure::Abort:
             return "abort";
-
         case Policy::ExecutionFailure::Continue:
             return "continue";
-
         case Policy::ExecutionFailure::Ignore:
             return "ignore";
-
         default:
             throw(Exception(
                 AZStd::string::format("Unexpected execution failure policy: %u", aznumeric_cast<AZ::u32>(executionFailurePolicy))));
@@ -141,10 +131,8 @@ namespace TestImpact
         {
         case Policy::FailedTestCoverage::Discard:
             return "discard";
-
         case Policy::FailedTestCoverage::Keep:
             return "keep";
-
         default:
             throw(Exception(
                 AZStd::string::format("Unexpected failed test coverage policy: %u", aznumeric_cast<AZ::u32>(failedTestCoveragePolicy))));
@@ -157,10 +145,8 @@ namespace TestImpact
         {
         case Policy::TestPrioritization::DependencyLocality:
             return "dependency_locality";
-
         case Policy::TestPrioritization::None:
             return "none";
-
         default:
             throw(Exception(
                 AZStd::string::format("Unexpected test prioritization policy: %u", aznumeric_cast<AZ::u32>(testPrioritizationPolicy))));
@@ -173,10 +159,8 @@ namespace TestImpact
         {
         case Policy::TestFailure::Abort:
             return "abort";
-
         case Policy::TestFailure::Continue:
             return "continue";
-
         default:
             throw(
                 Exception(AZStd::string::format("Unexpected test failure policy: %u", aznumeric_cast<AZ::u32>(testFailurePolicy))));
@@ -189,10 +173,8 @@ namespace TestImpact
         {
         case Policy::IntegrityFailure::Abort:
             return "abort";
-
         case Policy::IntegrityFailure::Continue:
             return "continue";
-
         default:
             throw(Exception(
                 AZStd::string::format("Unexpected integration failure policy: %u", aznumeric_cast<AZ::u32>(integrityFailurePolicy))));
@@ -205,10 +187,8 @@ namespace TestImpact
         {
         case Policy::DynamicDependencyMap::Discard:
             return "discard";
-
         case Policy::DynamicDependencyMap::Update:
             return "update";
-
         default:
             throw(Exception(AZStd::string::format(
                 "Unexpected dynamic dependency map policy: %u", aznumeric_cast<AZ::u32>(dynamicDependencyMapPolicy))));
@@ -221,10 +201,8 @@ namespace TestImpact
         {
         case Policy::TestSharding::Always:
             return "always";
-
         case Policy::TestSharding::Never:
             return "never";
-
         default:
             throw(Exception(
                 AZStd::string::format("Unexpected test sharding policy: %u", aznumeric_cast<AZ::u32>(testShardingPolicy))));
@@ -237,16 +215,12 @@ namespace TestImpact
         {
         case Policy::TargetOutputCapture::File:
             return "file";
-
         case Policy::TargetOutputCapture::None:
             return "none";
-
         case Policy::TargetOutputCapture::StdOut:
             return "stdout";
-
         case Policy::TargetOutputCapture::StdOutAndFile:
             return "stdout_file";
-
         default:
             throw(Exception(
                 AZStd::string::format("Unexpected target output capture policy: %u", aznumeric_cast<AZ::u32>(targetOutputCapturePolicy))));
@@ -259,13 +233,10 @@ namespace TestImpact
         {
         case Client::TestResult::Failed:
             return "failed";
-
         case Client::TestResult::NotRun:
             return "not_run";
-
         case Client::TestResult::Passed:
             return "passed";
-
         default:
             throw(Exception(AZStd::string::format("Unexpected client test case result: %u", aznumeric_cast<AZ::u32>(result))));
         }
