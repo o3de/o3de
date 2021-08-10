@@ -36,7 +36,12 @@ namespace AZ
         public:
             AZ_TYPE_INFO(ShaderAssetBuilder, "{C94DA151-82BC-4475-86FA-E6C92A0BD6F8}");
 
-            static constexpr const char* ShaderAssetBuilderJobKey = "Shader Asset";
+            // Common extensions that a .azsl file may #include.
+            static constexpr char azslExtension[] = "azsl"; // Yes, some azsl files include other azsl files.
+            static constexpr char azsliExtension[] = "azsli"; // This is the most commonly included file type.
+            static constexpr char srgiExtension[] = "srgi";
+
+            static constexpr char ShaderAssetBuilderJobKey[] = "Shader Asset";
 
             ShaderAssetBuilder() = default;
             ~ShaderAssetBuilder() = default;

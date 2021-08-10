@@ -14,7 +14,7 @@ The preprocessor that works on behalf of the Shader Compiler defines the followi
 2.1. Folders specified in \<DevFolder>/AssetProcessorPlatformConfig.ini  
 2.2. The Asset/ subdirectory within each Gem enabled for the Game Project. (Recursive). Examples:  
 2.2.1. \<DevFolder>/Gems/Atom/Asset/  
-2.2.2. \<DevFolder>/Gems/Camera/Asset/
+2.2.2. \<DevFolder>/Gems/Camera/Asset/  
 2.3. The root folder of each Gem enabled for the Game Project. (Non Recursive). Examples:  
 2.2.1. \<DevFolder>/Gems/Atom/  
 2.2.2. \<DevFolder>/Gems/Camera/

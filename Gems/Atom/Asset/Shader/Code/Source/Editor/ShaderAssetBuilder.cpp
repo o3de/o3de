@@ -59,12 +59,98 @@ namespace AZ
         static constexpr char ShaderAssetBuilderName[] = "ShaderAssetBuilder";
         static constexpr uint32_t ShaderAssetBuildTimestampParam = 0;
 
+        static AZ::Outcome<AZStd::vector<AZStd::string>, AZStd::string> GetListOfIncludedFiles(AZStd::string_view sourceFilePath)
+        {
+            AZ::IO::FileIOStream stream(sourceFilePath.data(), AZ::IO::OpenMode::ModeRead);
+            if (!stream.IsOpen())
+            {
+                return AZ::Failure(AZStd::string::format("\"%s\" source file could not be opened.", sourceFilePath.data()));
+            }
+
+            if (!stream.CanRead())
+            {
+                return AZ::Failure(AZStd::string::format("\"%s\" source file could not be read.", sourceFilePath.data()));
+            }
+
+            // Cache the path of the folder where @sourceFilePath.
+            AZStd::string sourceFileFolderPath;
+            {
+                AZStd::string drive;
+                AzFramework::StringFunc::Path::Split(sourceFilePath.data(), &drive, &sourceFileFolderPath);
+                if (!drive.empty())
+                {
+                    AzFramework::StringFunc::Path::Join(drive.c_str(), sourceFileFolderPath.c_str(), sourceFileFolderPath);
+                }
+            }
+
+            AZStd::string hayStack;
+            hayStack.resize(stream.GetLength());
+            stream.Read(stream.GetLength(), hayStack.data());
+
+            AZStd::vector<AZStd::string> listOfFilePaths;
+            static const AZStd::regex includeRegex(R"(#include\s+[<|"]([\w|/|\\|\.]+)[>|"])", AZStd::regex::ECMAScript);
+            AZStd::smatch match;
+            AZStd::string::const_iterator searchStart(hayStack.cbegin());
+            while (AZStd::regex_search(searchStart, hayStack.cend(), match, includeRegex))
+            {
+                if (match.size() > 1)
+                {
+                    AZStd::string relativeFilePath(match[1].str().c_str());
+                    AzFramework::StringFunc::Path::Normalize(relativeFilePath);
+                    // For each included file We need to report the following dependencies:
+
+                    // The 1st is just the relative path as is.
+                    listOfFilePaths.push_back(relativeFilePath);
+
+                    // The 2nd is the same relative path with "ShaderLib/" prepended.
+                    AZStd::string shaderLibPath;
+                    AzFramework::StringFunc::Path::Join("ShaderLib", relativeFilePath.c_str(), shaderLibPath);
+                    listOfFilePaths.push_back(shaderLibPath);
+
+                    // Finally, We assume the included file is relative to the directory where @sourceFilePath is located.
+                    {
+                        AZStd::string fullFilePath;
+                        AzFramework::StringFunc::Path::Join(sourceFileFolderPath.c_str(), relativeFilePath.c_str(), fullFilePath);
+                        listOfFilePaths.push_back(fullFilePath);
+                    }
+
+                }
+                searchStart = match.suffix().first;
+            }
+            return AZ::Success(AZStd::move(listOfFilePaths));
+        }
+
         void ShaderAssetBuilder::CreateJobs(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response) const
         {
             AZStd::string fullPath;
-            AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), fullPath, true);
+            const char* relativeSourcePath = request.m_sourceFile.data();
+            AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), relativeSourcePath, fullPath, true);
 
             AZ_TracePrintf(ShaderAssetBuilderName, "CreateJobs for Shader \"%s\"\n", fullPath.data());
+
+            // If the extension is NOT .shader simply declare source dependency
+            if (!AzFramework::StringFunc::Path::IsExtension(relativeSourcePath, RPI::ShaderSourceData::Extension))
+            {
+                auto outcome = GetListOfIncludedFiles(fullPath);
+                if (!outcome.IsSuccess())
+                {
+                    AZ_Error(ShaderAssetBuilderName, false, outcome.GetError().c_str());
+                    response.m_result = AssetBuilderSDK::CreateJobsResultCode::Failed;
+                    return;
+                }
+                const auto listOfRelativePaths = outcome.TakeValue();
+                for (auto includePath : listOfRelativePaths)
+                {
+                    // m_sourceFileDependencyList does not support paths with "." or ".." for relative lookup.
+                    AzFramework::StringFunc::Path::Normalize(includePath);
+
+                    AssetBuilderSDK::SourceFileDependency includeFileDependency;
+                    includeFileDependency.m_sourceFileDependencyPath = includePath;
+                    response.m_sourceFileDependencyList.emplace_back(includeFileDependency);
+                }
+                response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
+                return;
+            }
 
             // Used to synchronize versions of the ShaderAsset and ShaderVariantTreeAsset, especially during hot-reload.
             // Note it's probably important for this to be set once outside the platform loop so every platform's ShaderAsset
@@ -96,22 +182,17 @@ namespace AZ
                 return;
             }
 
-
-            GlobalBuildOptions buildOptions = ReadBuildOptions(ShaderAssetBuilderName);
-
-            // [GFX TODO] [ATOM-14966] In principle, based on macro definitions, included files can change per supervariant.
-            //                         So, the list of source asset dependencies must be collected by running MCPP on each supervariant.
-            //                         For now, we will run MCPP only once because CreateJobs() should be as light as possible.
-            // 
-            // Regardless of the PlatformInfo and enabled ShaderPlatformInterfaces, the azsl file will be preprocessed
-            // with the sole purpose of extracting all included files. For each included file a SourceDependency will be declared.
-            PreprocessorData output;
-            buildOptions.m_compilerArguments.Merge(shaderSourceData.m_compiler);
-            PreprocessFile(azslFullPath, output, buildOptions.m_preprocessorSettings, true, true);
-            for (auto includePath : output.includedPaths)
+            auto outcome = GetListOfIncludedFiles(azslFullPath);
+            if (!outcome.IsSuccess())
             {
-                // m_sourceFileDependencyList does not support paths with "." or ".." for relative lookup, but the preprocessor
-                // may produce path strings like "C:/a/b/c/../../d/file.azsli" so we have to normalize
+                AZ_Error(ShaderAssetBuilderName, false, outcome.GetError().c_str());
+                response.m_result = AssetBuilderSDK::CreateJobsResultCode::Failed;
+                return;
+            }
+            const auto listOfRelativePaths = outcome.TakeValue();
+            for (auto includePath : listOfRelativePaths)
+            {
+                // m_sourceFileDependencyList does not support paths with "." or ".." for relative lookup.
                 AzFramework::StringFunc::Path::Normalize(includePath);
 
                 AssetBuilderSDK::SourceFileDependency includeFileDependency;
