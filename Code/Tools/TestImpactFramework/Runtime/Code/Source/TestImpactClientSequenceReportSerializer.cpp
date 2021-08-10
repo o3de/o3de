@@ -135,7 +135,7 @@ namespace TestImpact
                 DiscardedTestRuns,
                 DiscardedTestRunReport
             };
-        } // namespace
+        } // namespace SequenceReportFields
 
         AZ::u64 TimePointInMsAsInt64(AZStd::chrono::high_resolution_clock::time_point timePoint)
         {
@@ -172,9 +172,9 @@ namespace TestImpact
         void SerializeTestRun(const Client::TestRunBase& testRun, rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer)
         {
             writer.StartObject();
-
+            {
                 SerializeTestRunMembers(testRun, writer);
-
+            }
             writer.EndObject();
         }
 
@@ -529,7 +529,7 @@ namespace TestImpact
             writer.Key(SequenceReportFields::Keys[SequenceReportFields::DraftedTestRunReport]);
             SerializeTestRunReport(sequenceReport.GetDraftedTestRunReport(), writer);
         }
-    }
+    } // namespace
 
     AZStd::string SerializeSequenceReport(const Client::RegularSequenceReport& sequenceReport)
     {
@@ -551,7 +551,9 @@ namespace TestImpact
         rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(stringBuffer);
 
         writer.StartObject();
+        {
             SerializeSequenceReportBaseMembers(sequenceReport, writer);
+        }
         writer.EndObject();
 
         return stringBuffer.GetString();

@@ -89,7 +89,7 @@ namespace TestImpact
             return m_result;
         }
 
-        AZStd::tuple<size_t, size_t, size_t> CalculateNumPassingAndFailingTestCases(const AZStd::vector<Test>& tests)
+        AZStd::tuple<size_t, size_t, size_t> CalculateTestCaseMetrics(const AZStd::vector<Test>& tests)
         {
             size_t totalNumPassingTests = 0;
             size_t totalNumFailingTests = 0;
@@ -124,14 +124,14 @@ namespace TestImpact
             : TestRunBase(name, commandString, startTime, duration, result)
             , m_tests(AZStd::move(tests))
         {
-            AZStd::tie(m_totalNumPassingTests, m_totalNumFailingTests, m_totalNumDisabledTests) = CalculateNumPassingAndFailingTestCases(m_tests);
+            AZStd::tie(m_totalNumPassingTests, m_totalNumFailingTests, m_totalNumDisabledTests) = CalculateTestCaseMetrics(m_tests);
         }
 
         CompletedTestRun::CompletedTestRun(TestRunBase&& testRun, AZStd::vector<Test>&& tests)
             : TestRunBase(AZStd::move(testRun))
             , m_tests(AZStd::move(tests))
         {
-            AZStd::tie(m_totalNumPassingTests, m_totalNumFailingTests, m_totalNumDisabledTests) = CalculateNumPassingAndFailingTestCases(m_tests);
+            AZStd::tie(m_totalNumPassingTests, m_totalNumFailingTests, m_totalNumDisabledTests) = CalculateTestCaseMetrics(m_tests);
         }
 
         size_t CompletedTestRun::GetTotalNumTests() const

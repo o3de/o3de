@@ -774,7 +774,7 @@ namespace TestImpact
         const size_t totalNumTestRuns = includedSelectedTestTargets.size() + draftedTestTargets.size() + includedDiscardedTestTargets.size();
         TestRunCompleteCallbackHandler testRunCompleteHandler(totalNumTestRuns, testCompleteCallback);
         
-		// Functor for running instrumented test targets
+        // Functor for running instrumented test targets
         const auto instrumentedTestRun =
             [this, &testTargetTimeout, &sequenceTimeout, &testRunCompleteHandler](const AZStd::vector<const TestTarget*>& testsTargets)
         {
