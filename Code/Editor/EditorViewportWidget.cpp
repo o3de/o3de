@@ -1474,10 +1474,8 @@ void EditorViewportWidget::SetViewportId(int id)
 
     m_renderViewport->GetControllerList()->Add(AZStd::make_shared<SandboxEditor::ViewportManipulatorController>());
 
-    
     m_renderViewport->GetControllerList()->Add(CreateModularViewportCameraController(AzFramework::ViewportId(id)));
     
-
     m_renderViewport->SetViewportSettings(&g_EditorViewportSettings);
 
     UpdateScene();
