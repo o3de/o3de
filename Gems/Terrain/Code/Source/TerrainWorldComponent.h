@@ -11,7 +11,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Math/Vector3.h>
-#include <TerrainProvider.h>
+#include <TerrainSystem.h>
 
 namespace LmbrCentral
 {

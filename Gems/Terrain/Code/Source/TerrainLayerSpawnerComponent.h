@@ -16,7 +16,7 @@
 #include <AzCore/Jobs/JobFunction.h>
 
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
-#include <TerrainProviderBus.h>
+#include <TerrainSystemBus.h>
 
 #include <AzCore/Component/TransformBus.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>

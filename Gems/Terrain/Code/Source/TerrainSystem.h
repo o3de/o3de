@@ -21,7 +21,7 @@
 #include <AzCore/Jobs/JobFunction.h>
 
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
-#include <TerrainProviderBus.h>
+#include <TerrainSystemBus.h>
 
 class TerrainProvider
     : public AzFramework::Terrain::TerrainDataRequestBus::Handler

@@ -18,7 +18,7 @@
 
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <SurfaceData/SurfaceDataProviderRequestBus.h>
-#include <TerrainProviderBus.h>
+#include <TerrainSystemBus.h>
 
 namespace Terrain
 {
