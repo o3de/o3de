@@ -52,10 +52,13 @@ class PersistentStorageS3(PersistentStorage):
                 archive_key = f"{self._dir}/archive/{self._last_commit_hash}.{object_extension}"
                 logger.info(f"Archiving existing historic data to {archive_key}...")
                 self._bucket.copy({"Bucket": self._bucket.name, "Key": self._historic_data_key}, archive_key)
+                logger.info(f"Archiving complete.")
 
                 # Decode the historic data object into raw bytes
+                logger.info(f"Attempting to decode historic data object...")
                 response = object.get()
                 file_stream = response['Body']
+                logger.info(f"Decoding complete.")
 
                 # Decompress and unpack the zipped historic data JSON
                 historic_data_json = zlib.decompress(file_stream.read()).decode('UTF-8')
