@@ -6,15 +6,16 @@
  *
  */
 
-#include <EditorTerrainHeightGradientListComponent.h>
+
+#include <EditorComponents/EditorTerrainLayerSpawnerComponent.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 
 namespace Terrain
 {
-    void EditorTerrainHeightGradientListComponent::Reflect(AZ::ReflectContext* context)
+    void EditorTerrainLayerSpawnerComponent::Reflect(AZ::ReflectContext* context)
     {
-        BaseClassType::ReflectSubClass<EditorTerrainHeightGradientListComponent, BaseClassType>(context, 1,
+        BaseClassType::ReflectSubClass<EditorTerrainLayerSpawnerComponent, BaseClassType>(context, 1,
             &LmbrCentral::EditorWrappedComponentBaseVersionConverter<typename BaseClassType::WrappedComponentType,
             typename BaseClassType::WrappedConfigType, 1>
         );

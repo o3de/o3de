@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include <TerrainLayerSpawnerComponent.h>
+#include <Components/TerrainLayerSpawnerComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <LmbrCentral/Component/EditorWrappedComponentBase.h>
 

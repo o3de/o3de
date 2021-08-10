@@ -10,10 +10,10 @@
 #include <AzCore/Module/Module.h>
 
 #include <TerrainModule.h>
-#include <TerrainSystemComponent.h>
-#include <TerrainWorldComponent.h>
-#include <TerrainHeightGradientListComponent.h>
-#include <TerrainLayerSpawnerComponent.h>
+#include <Components/TerrainSystemComponent.h>
+#include <Components/TerrainWorldComponent.h>
+#include <Components/TerrainHeightGradientListComponent.h>
+#include <Components/TerrainLayerSpawnerComponent.h>
 
 namespace Terrain
 {

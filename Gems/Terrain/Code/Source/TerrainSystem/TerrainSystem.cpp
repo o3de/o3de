@@ -6,14 +6,14 @@
  *
  */
 
-#include <TerrainSystem.h>
+#include <TerrainSystem/TerrainSystem.h>
 #include <AzCore/std/parallel/shared_mutex.h>
 #include <SurfaceData/SurfaceDataTypes.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/FeatureProcessorFactory.h>
-#include <TerrainFeatureProcessor.h>
+#include <TerrainRenderer/TerrainFeatureProcessor.h>
 
 using namespace Terrain;
 

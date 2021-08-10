@@ -1,15 +1,15 @@
 
 set(FILES
+    Source/EditorComponents/EditorTerrainHeightGradientListComponent.cpp
+    Source/EditorComponents/EditorTerrainHeightGradientListComponent.h
+    Source/EditorComponents/EditorTerrainLayerSpawnerComponent.cpp
+    Source/EditorComponents/EditorTerrainLayerSpawnerComponent.h
+    Source/EditorComponents/EditorTerrainWorldComponent.cpp
+    Source/EditorComponents/EditorTerrainWorldComponent.h
+    Source/EditorComponents/TerrainEditorSystemComponent.cpp
+    Source/EditorComponents/TerrainEditorSystemComponent.h
     Source/TerrainEditorModule.cpp
     Source/TerrainEditorModule.h
-    Source/TerrainEditorSystemComponent.cpp
-    Source/TerrainEditorSystemComponent.h
     Source/TerrainModule.cpp
     Source/TerrainModule.h
-    Source/EditorTerrainHeightGradientListComponent.cpp
-    Source/EditorTerrainHeightGradientListComponent.h
-    Source/EditorTerrainLayerSpawnerComponent.cpp
-    Source/EditorTerrainLayerSpawnerComponent.h
-    Source/EditorTerrainWorldComponent.cpp
-    Source/EditorTerrainWorldComponent.h
 )

@@ -22,7 +22,7 @@
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
-#include <TerrainSystemBus.h>
+#include <TerrainSystem/TerrainSystemBus.h>
 
 
 namespace LmbrCentral

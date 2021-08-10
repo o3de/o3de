@@ -6,7 +6,7 @@
  *
  */
 
-#include "TerrainLayerSpawnerComponent.h"
+#include <Components/TerrainLayerSpawnerComponent.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Asset/AssetManager.h>
@@ -18,7 +18,7 @@
 
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <SurfaceData/SurfaceDataProviderRequestBus.h>
-#include <TerrainSystemBus.h>
+#include <TerrainSystem/TerrainSystemBus.h>
 
 namespace Terrain
 {

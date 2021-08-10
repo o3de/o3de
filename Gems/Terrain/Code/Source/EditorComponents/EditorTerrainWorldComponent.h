@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include <TerrainWorldComponent.h>
+#include <Components/TerrainWorldComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <LmbrCentral/Component/EditorWrappedComponentBase.h>
 

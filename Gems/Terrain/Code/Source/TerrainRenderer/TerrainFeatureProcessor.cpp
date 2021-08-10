@@ -6,7 +6,7 @@
  *
  */
 
-#include "TerrainFeatureProcessor.h"
+#include <TerrainRenderer/TerrainFeatureProcessor.h>
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>

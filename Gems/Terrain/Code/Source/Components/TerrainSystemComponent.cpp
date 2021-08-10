@@ -6,14 +6,14 @@
  *
  */
 
-#include <TerrainSystemComponent.h>
+#include <Components/TerrainSystemComponent.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
 
 #include <Atom/RPI.Public/FeatureProcessorFactory.h>
-#include <TerrainFeatureProcessor.h>
+#include <TerrainRenderer/TerrainFeatureProcessor.h>
 
 namespace Terrain
 {

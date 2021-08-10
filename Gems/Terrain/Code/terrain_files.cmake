@@ -1,16 +1,16 @@
 
 set(FILES
-    Source/TerrainFeatureProcessor.cpp
-    Source/TerrainFeatureProcessor.h
-    Source/TerrainHeightGradientListComponent.cpp
-    Source/TerrainHeightGradientListComponent.h
-    Source/TerrainLayerSpawnerComponent.cpp
-    Source/TerrainLayerSpawnerComponent.h
-    Source/TerrainSystem.cpp
-    Source/TerrainSystem.h
-    Source/TerrainSystemBus.h
-    Source/TerrainSystemComponent.cpp
-    Source/TerrainSystemComponent.h
-    Source/TerrainWorldComponent.cpp
-    Source/TerrainWorldComponent.h
+    Source/TerrainRenderer/TerrainFeatureProcessor.cpp
+    Source/TerrainRenderer/TerrainFeatureProcessor.h
+    Source/Components/TerrainHeightGradientListComponent.cpp
+    Source/Components/TerrainHeightGradientListComponent.h
+    Source/Components/TerrainLayerSpawnerComponent.cpp
+    Source/Components/TerrainLayerSpawnerComponent.h
+    Source/TerrainSystem/TerrainSystem.cpp
+    Source/TerrainSystem/TerrainSystem.h
+    Source/TerrainSystem/TerrainSystemBus.h
+    Source/Components/TerrainSystemComponent.cpp
+    Source/Components/TerrainSystemComponent.h
+    Source/Components/TerrainWorldComponent.cpp
+    Source/Components/TerrainWorldComponent.h
 )

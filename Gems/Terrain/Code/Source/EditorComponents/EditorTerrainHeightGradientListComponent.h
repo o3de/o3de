@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include <TerrainHeightGradientListComponent.h>
+#include <Components/TerrainHeightGradientListComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <LmbrCentral/Component/EditorWrappedComponentBase.h>
 

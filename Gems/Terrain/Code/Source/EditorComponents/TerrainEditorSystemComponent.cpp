@@ -7,7 +7,7 @@
  */
 
 #include <AzCore/Serialization/SerializeContext.h>
-#include <TerrainEditorSystemComponent.h>
+#include <EditorComponents/TerrainEditorSystemComponent.h>
 
 namespace Terrain
 {
