@@ -69,11 +69,11 @@ void CEditorPreferencesPage_Files::Reflect(AZ::SerializeContext& serialize)
             ->DataElement(AZ::Edit::UIHandlers::LineEdit, &Files::m_saveLocation, "Slice Save location", "Specify the default location to save new slices");
 
         editContext->Class<ExternalEditors>("External Editors", "External Editors")
-            ->DataElement(AZ::Edit::UIHandlers::LineEdit, &ExternalEditors::m_scripts, "Scripts Editor", "Scripts Text Editor")
-            ->DataElement(AZ::Edit::UIHandlers::LineEdit, &ExternalEditors::m_shaders, "Shaders Editor", "Shaders Text Editor")
-            ->DataElement(AZ::Edit::UIHandlers::LineEdit, &ExternalEditors::m_BSpaces, "BSpace Editor", "Bspace Text Editor")
-            ->DataElement(AZ::Edit::UIHandlers::LineEdit, &ExternalEditors::m_textures, "Texture Editor", "Texture Editor")
-            ->DataElement(AZ::Edit::UIHandlers::LineEdit, &ExternalEditors::m_animations, "Animation Editor", "Animation Editor");
+            ->DataElement(AZ::Edit::UIHandlers::ExeSelectBrowseEdit, &ExternalEditors::m_scripts, "Scripts Editor", "Scripts Text Editor")
+            ->DataElement(AZ::Edit::UIHandlers::ExeSelectBrowseEdit, &ExternalEditors::m_shaders, "Shaders Editor", "Shaders Text Editor")
+            ->DataElement(AZ::Edit::UIHandlers::ExeSelectBrowseEdit, &ExternalEditors::m_BSpaces, "BSpace Editor", "Bspace Text Editor")
+            ->DataElement(AZ::Edit::UIHandlers::ExeSelectBrowseEdit, &ExternalEditors::m_textures, "Texture Editor", "Texture Editor")
+            ->DataElement(AZ::Edit::UIHandlers::ExeSelectBrowseEdit, &ExternalEditors::m_animations, "Animation Editor", "Animation Editor");
 
         editContext->Class<AutoBackup>("Auto Backup", "Auto Backup")
             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &AutoBackup::m_enabled, "Enable", "Enable Auto Backup")

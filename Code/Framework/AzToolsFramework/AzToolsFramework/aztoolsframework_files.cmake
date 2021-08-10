@@ -358,6 +358,8 @@ set(FILES
     UI/PropertyEditor/EntityIdQLineEdit.cpp
     UI/PropertyEditor/EntityPropertyEditor.hxx
     UI/PropertyEditor/EntityPropertyEditor.cpp
+    UI/PropertyEditor/ExeSelectPropertyHandler.cpp
+    UI/PropertyEditor/ExeSelectPropertyHandler.h
     UI/PropertyEditor/GenericComboBoxCtrl.h
     UI/PropertyEditor/GenericComboBoxCtrl.cpp
     UI/PropertyEditor/GenericComboBoxCtrl.inl

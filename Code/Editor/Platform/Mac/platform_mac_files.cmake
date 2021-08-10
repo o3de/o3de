@@ -14,4 +14,5 @@ set(FILES
     ../../MainWindow_mac.mm
     ../../RenderViewport_mac.mm
     ../Common/Unimplemented/Util/Mailer_Unimplemented.cpp
+    ../../Util/Platform/Mac/FileUtil_Mac.cpp
 )

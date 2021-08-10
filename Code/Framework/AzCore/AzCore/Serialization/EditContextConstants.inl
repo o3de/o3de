@@ -246,6 +246,7 @@ namespace AZ
             const static AZ::Crc32 Vector2 = AZ_CRC("Vector2", 0xe6775839);
             const static AZ::Crc32 Vector3 = AZ_CRC("Vector3", 0x917068af);
             const static AZ::Crc32 Vector4 = AZ_CRC("Vector4", 0x0f14fd0c);
+            const static AZ::Crc32 ExeSelectBrowseEdit = AZ_CRC("ExeSelectBrowseEdit", 0xa2feae94);
 
             // Maintained in the UIHandlers namespace for backwards compatibility; moved to the Attributes namespace now
             const static AZ::Crc32 Handler = Attributes::Handler;
