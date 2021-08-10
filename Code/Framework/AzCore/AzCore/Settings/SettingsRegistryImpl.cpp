@@ -229,6 +229,53 @@ namespace AZ
         m_notifiers.DisconnectAllHandlers();
     }
 
+    auto SettingsRegistryImpl::RegisterPreMergeEvent(const PreMergeEventCallback& callback) -> PreMergeEventHandler
+    {
+        PreMergeEventHandler preMergeHandler{ callback };
+        {
+            AZStd::scoped_lock lock(m_settingMutex);
+            preMergeHandler.Connect(m_preMergeEvent);
+        }
+        return preMergeHandler;
+    }
+
+    auto SettingsRegistryImpl::RegisterPreMergeEvent(PreMergeEventCallback&& callback) -> PreMergeEventHandler
+    {
+        PreMergeEventHandler preMergeHandler{ AZStd::move(callback) };
+        {
+            AZStd::scoped_lock lock(m_settingMutex);
+            preMergeHandler.Connect(m_preMergeEvent);
+        }
+        return preMergeHandler;
+    }
+
+    auto SettingsRegistryImpl::RegisterPostMergeEvent(const PostMergeEventCallback& callback) -> PostMergeEventHandler
+    {
+        PostMergeEventHandler postMergeHandler{ callback };
+        {
+            AZStd::scoped_lock lock(m_settingMutex);
+            postMergeHandler.Connect(m_postMergeEvent);
+        }
+        return postMergeHandler;
+    }
+
+    auto SettingsRegistryImpl::RegisterPostMergeEvent(PostMergeEventCallback&& callback) -> PostMergeEventHandler
+    {
+        PostMergeEventHandler postMergeHandler{ AZStd::move(callback) };
+        {
+            AZStd::scoped_lock lock(m_settingMutex);
+            postMergeHandler.Connect(m_postMergeEvent);
+        }
+        return postMergeHandler;
+    }
+
+    void SettingsRegistryImpl::ClearMergeEvents()
+    {
+        AZStd::scoped_lock lock(m_settingMutex);
+        m_preMergeEvent.DisconnectAllHandlers();
+        m_postMergeEvent.DisconnectAllHandlers();
+    }
+
     SettingsRegistryInterface::Type SettingsRegistryImpl::GetType(AZStd::string_view path) const
     {
         if (path.empty())
@@ -1114,6 +1161,8 @@ namespace AZ
             AZ_Assert(false, "Provided format for merging settings into the Setting Registry is unsupported.");
             return false;
         }
+
+        ScopedMergeEvent(m_preMergeEvent, m_postMergeEvent, path, rootKey);
 
         JsonSerializationResult::ResultCode mergeResult(JsonSerializationResult::Tasks::Merge);
         if (rootKey.empty())

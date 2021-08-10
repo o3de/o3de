@@ -48,6 +48,12 @@ namespace AZ
         [[nodiscard]] NotifyEventHandler RegisterNotifier(NotifyCallback&& callback) override;
         void ClearNotifiers();
 
+        [[nodiscard]] PreMergeEventHandler RegisterPreMergeEvent(const PreMergeEventCallback& callback) override;
+        [[nodiscard]] PreMergeEventHandler RegisterPreMergeEvent(PreMergeEventCallback&& callback) override;
+        [[nodiscard]] PostMergeEventHandler RegisterPostMergeEvent(const PostMergeEventCallback& callback) override;
+        [[nodiscard]] PostMergeEventHandler RegisterPostMergeEvent(PostMergeEventCallback&& callback) override;
+        void ClearMergeEvents();
+
         bool Get(bool& result, AZStd::string_view path) const override;
         bool Get(s64& result, AZStd::string_view path) const override;
         bool Get(u64& result, AZStd::string_view path) const override;
@@ -103,6 +109,9 @@ namespace AZ
         
         mutable AZStd::recursive_mutex m_settingMutex;
         NotifyEvent m_notifiers;
+        PreMergeEvent m_preMergeEvent;
+        PostMergeEvent m_postMergeEvent;
+
         rapidjson::Document m_settings;
         JsonSerializerSettings m_serializationSettings;
         JsonDeserializerSettings m_deserializationSettings;
