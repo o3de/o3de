@@ -129,7 +129,7 @@ if __name__ == "__main__":
         tiaf = TestImpact(args.config)
         tiaf_result = tiaf.run(args.commit, args.src_branch, args.dst_branch, args.s3_bucket, args.suite, args.test_failure_policy, args.safe_mode, args.test_timeout, args.global_timeout)
         
-        if args.mars_index_prefix is not None:
+        if args.mars_index_prefix:
             logger.info("Transmitting report to MARS...")
             mars_utils.transmit_report_to_mars(args.mars_index_prefix, tiaf_result, sys.argv)
 

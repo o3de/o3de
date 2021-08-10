@@ -104,7 +104,7 @@ class PersistentStorage(ABC):
         """
 
         historic_data_json = self._pack_historic_data(last_commit_hash)
-        if historic_data_json is not None:
+        if historic_data_json:
             self._store_historic_data(historic_data_json)
         else:
             logger.info("The historic data could not be successfully stored.")

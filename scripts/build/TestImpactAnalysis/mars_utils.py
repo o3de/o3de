@@ -100,7 +100,7 @@ class FilebeatClient(object):
         self._open_socket()
 
     def send_event(self, payload, index, timestamp=None, pipeline="filebeat"):
-        if timestamp is None:
+        if not timestamp:
             timestamp = datetime.datetime.utcnow().timestamp()
 
         event = {
@@ -437,7 +437,7 @@ def transmit_report_to_mars(mars_index_prefix: str, tiaf_result: dict, driver_ar
         mars_job = generate_mars_job(tiaf_result, driver_args)
         filebeat.send_event(mars_job, f"{mars_index_prefix}.tiaf.job")
 
-        if tiaf_result[REPORT_KEY] is not None:
+        if tiaf_result[REPORT_KEY]:
             # Generate and transmit the MARS sequence document
             mars_sequence = generate_mars_sequence(tiaf_result[REPORT_KEY], mars_job, tiaf_result[CHANGE_LIST_KEY], t0_timestamp)
             filebeat.send_event(mars_sequence, f"{mars_index_prefix}.tiaf.sequence")

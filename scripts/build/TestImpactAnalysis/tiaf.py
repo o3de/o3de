@@ -49,6 +49,8 @@ class TestImpact:
                 if self._use_test_impact_analysis and not self._tiaf_bin.is_file():
                     logger.warning(f"Could not find TIAF binary at location {self._tiaf_bin}, TIAF will be turned off.")
                     self._use_test_impact_analysis = False
+                else:
+                    logger.info(f"Runtime binary found at location {self._tiaf_bin}")
 
                 # Workspaces
                 self._active_workspace = self._config["workspace"]["active"]["root"]
@@ -72,7 +74,7 @@ class TestImpact:
 
         # Check whether or not a previous commit hash exists (no hash is not a failure)
         self._src_commit = last_commit_hash
-        if self._src_commit is not None:
+        if self._src_commit:
             if self._repo.is_descendent(self._src_commit, self._dst_commit) == False:
                 logger.info(f"Source commit '{self._src_commit}' and destination commit '{self._dst_commit}' are not related.")
                 return
@@ -182,7 +184,7 @@ class TestImpact:
         logger.info(f"Dst branch: '{self._dst_branch}'.")
 
         # Source of truth (the branch from which the coverage data will be stored/retrieved from)
-        if self._dst_branch is None or self._src_branch == self._dst_branch:
+        if not self._dst_branch or self._src_branch == self._dst_branch:
             # Branch builds are their own source of truth and will update the coverage data for the source of truth after any instrumented sequences complete
             self._is_source_of_truth_branch = True
             self._source_of_truth_branch = self._src_branch
@@ -207,7 +209,7 @@ class TestImpact:
             logger.info("Test impact analysis is enabled.")
             try:
                 # Persistent storage location
-                if s3_bucket is not None:
+                if s3_bucket:
                     persistent_storage = PersistentStorageS3(self._config, suite, s3_bucket, self._source_of_truth_branch)
                 else:
                     persistent_storage = PersistentStorageLocal(self._config, suite)
@@ -215,7 +217,7 @@ class TestImpact:
                 logger.warning(f"The persistent storage encountered an irrecoverable error, test impact analysis will be disabled: '{e}'")
                 persistent_storage = None
 
-            if persistent_storage is not None:
+            if persistent_storage:
                 if persistent_storage.has_historic_data:
                     logger.info("Historic data found.")
                     self._attempt_to_generate_change_list(persistent_storage.last_commit_hash, instance_id)
@@ -278,10 +280,10 @@ class TestImpact:
         logger.info(f"Test suite is set to '{suite}'.")
 
         # Timeouts
-        if test_timeout != None:
+        if test_timeout is not None:
             args.append(f"--ttimeout={test_timeout}")
             logger.info(f"Test target timeout is set to {test_timeout} seconds.")
-        if global_timeout != None:
+        if global_timeout is not None:
             args.append(f"--gtimeout={global_timeout}")
             logger.info(f"Global sequence timeout is set to {test_timeout} seconds.")
 
