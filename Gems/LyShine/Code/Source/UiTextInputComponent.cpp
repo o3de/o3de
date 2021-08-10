@@ -1186,7 +1186,7 @@ void UiTextInputComponent::UpdateDisplayedTextFunction()
                 // work for cases tested but may not in general.
                 wchar_t wcharString[2] = { static_cast<wchar_t>(this->GetReplacementCharacter()), 0 };
                 AZStd::string replacementCharString;
-                AZStd::to_string(replacementCharString, wcharString, 1);
+                AZStd::to_string(replacementCharString, { wcharString, 1 });
 
                 int numReplacementChars = LyShine::GetUtf8StringLength(originalText);
 

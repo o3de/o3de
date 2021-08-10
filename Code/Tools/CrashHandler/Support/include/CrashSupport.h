@@ -41,7 +41,7 @@ namespace CrashHandler
         std::string returnPath;
         GetExecutablePath(returnPath);
         wchar_t currentFileNameW[CRASH_HANDLER_MAX_PATH_LEN] = { 0 };
-        AZStd::to_wstring(currentFileNameW, CRASH_HANDLER_MAX_PATH_LEN, returnPath.c_str(), returnPath.size());
+        AZStd::to_wstring(currentFileNameW, CRASH_HANDLER_MAX_PATH_LEN, { returnPath.c_str(), returnPath.size() });
         returnPathW = currentFileNameW;
     }
 

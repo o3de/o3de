@@ -1236,7 +1236,7 @@ void AZ::FFont::WrapText(AZStd::string& result, float maxWidth, const char* str,
         // get char width and sum it to the line width
         // Note: This is not unicode compatible, since char-width depends on surrounding context (ie, combining diacritics etc)
         char codepoint[5];
-        AZStd::to_string(codepoint, 5, (wchar_t*)&ch, 1);
+        AZStd::to_string(codepoint, 5, { (wchar_t*)&ch, 1 });
         curCharWidth = GetTextSize(codepoint, true, ctx).x;
 
         // keep track of spaces

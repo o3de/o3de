@@ -2861,7 +2861,7 @@ void CXConsole::Paste()
             {
                 // Convert UCS code-point into UTF-8 string
                 AZStd::fixed_string<5> utf8_buf = {0};
-                AZStd::to_string(utf8_buf.data(), 5, &cp, 1);
+                AZStd::to_string(utf8_buf.data(), 5, { &cp, 1 });
                 AddInputUTF8(utf8_buf.c_str());
             }
         }

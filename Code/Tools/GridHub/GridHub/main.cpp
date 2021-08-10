@@ -408,7 +408,7 @@ GridHubApplication::Create(const Descriptor& descriptor, const StartupParameters
         if (AZ::Utils::GetExecutablePath(originalExeFileName, AZ_ARRAY_SIZE(originalExeFileName)).m_pathStored == AZ::Utils::ExecutablePathResult::Success)
         {
             wchar_t originalExeFileNameW[MAX_PATH];
-            AZStd::to_wstring(originalExeFileNameW, MAX_PATH, originalExeFileName, MAX_PATH);
+            AZStd::to_wstring(originalExeFileNameW, MAX_PATH, originalExeFileName);
             PathRemoveFileSpec(originalExeFileNameW);
             PathAppend(originalExeFileNameW, GRIDHUB_IMAGE_NAME);
 
@@ -489,7 +489,7 @@ void CopyAndRun(bool failSilently)
     if (AZ::Utils::GetExecutablePath(myFileName, MAX_PATH).m_pathStored == AZ::Utils::ExecutablePathResult::Success)
     {
         wchar_t myFileNameW[MAX_PATH] = { 0 };
-        AZStd::to_wstring(myFileNameW, MAX_PATH, myFileName, MAX_PATH);
+        AZStd::to_wstring(myFileNameW, MAX_PATH, myFileName);
         wchar_t sourceProcPath[MAX_PATH] = { 0 };
         wchar_t targetProcPath[MAX_PATH] = { 0 };
         wchar_t procDrive[MAX_PATH] = { 0 };
@@ -567,7 +567,7 @@ void RelaunchImage()
     if (AZ::Utils::GetExecutablePath(myFileName, MAX_PATH).m_pathStored == AZ::Utils::ExecutablePathResult::Success)
     {
         wchar_t myFileNameW[MAX_PATH] = { 0 };
-        AZStd::to_wstring(myFileNameW, MAX_PATH, myFileName, MAX_PATH);
+        AZStd::to_wstring(myFileNameW, MAX_PATH, myFileName);
         wchar_t targetProcPath[MAX_PATH] = { 0 };
         wchar_t procDrive[MAX_PATH] = { 0 };
         wchar_t procDir[MAX_PATH] = { 0 };

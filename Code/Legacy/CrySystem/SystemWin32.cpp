@@ -126,7 +126,7 @@ const char* CSystem::GetUserName()
     DWORD dwSize = iNameBufferSize;
     wchar_t nameW[iNameBufferSize];
     ::GetUserNameW(nameW, &dwSize);
-    AZStd::to_string(szNameBuffer, iNameBufferSize, nameW, dwSize);
+    AZStd::to_string(szNameBuffer, iNameBufferSize, { nameW, dwSize });
     return szNameBuffer;
 #else
 #if defined(LINUX)

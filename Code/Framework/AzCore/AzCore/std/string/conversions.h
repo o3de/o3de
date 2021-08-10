@@ -32,79 +32,79 @@ namespace AZStd
         {
             static_assert(Size == size_t{ 2 } || Size == size_t{ 4 }, "only wchar_t types of size 2 or 4 can be converted to utf8");
 
-            template<class Allocator1>
-            static inline void to_string(AZStd::basic_string<string::value_type, string::traits_type, Allocator1>& dest, const wchar_t* first, const wchar_t* last)
+            template<class Allocator>
+            static inline void to_string(AZStd::basic_string<string::value_type, string::traits_type, Allocator>& dest, AZStd::wstring_view src)
             {
                 if constexpr (Size == 2)
                 {
-                    Utf8::Unchecked::utf16to8(first, last, AZStd::back_inserter(dest), dest.max_size());
+                    Utf8::Unchecked::utf16to8(src.begin(), src.end(), AZStd::back_inserter(dest), dest.max_size());
                 }
                 else if constexpr (Size == 4)
                 {
-                    Utf8::Unchecked::utf32to8(first, last, AZStd::back_inserter(dest), dest.max_size());
+                    Utf8::Unchecked::utf32to8(src.begin(), src.end(), AZStd::back_inserter(dest), dest.max_size());
                 }
             }
 
             template<size_t MaxElementCount>
-            static inline void to_string(AZStd::basic_fixed_string<string::value_type, MaxElementCount, string::traits_type>& dest, const wchar_t* first, const wchar_t* last)
+            static inline void to_string(AZStd::basic_fixed_string<string::value_type, MaxElementCount, string::traits_type>& dest, AZStd::wstring_view src)
             {
                 if constexpr (Size == 2)
                 {
-                    Utf8::Unchecked::utf16to8(first, last, AZStd::back_inserter(dest), dest.max_size());
+                    Utf8::Unchecked::utf16to8(src.begin(), src.end(), AZStd::back_inserter(dest), dest.max_size());
                 }
                 else if constexpr (Size == 4)
                 {
-                    Utf8::Unchecked::utf32to8(first, last, AZStd::back_inserter(dest), dest.max_size());
+                    Utf8::Unchecked::utf32to8(src.begin(), src.end(), AZStd::back_inserter(dest), dest.max_size());
                 }
             }
 
-            static inline char* to_string(char* dest, size_t destSize, const wchar_t* first, const wchar_t* last)
+            static inline char* to_string(char* dest, size_t destSize, AZStd::wstring_view src)
             {
                 if constexpr (Size == 2)
                 {
-                    return Utf8::Unchecked::utf16to8(first, last, dest, destSize);
+                    return Utf8::Unchecked::utf16to8(src.begin(), src.end(), dest, destSize);
                 }
                 else if constexpr (Size == 4)
                 {
-                    return Utf8::Unchecked::utf32to8(first, last, dest, destSize);
+                    return Utf8::Unchecked::utf32to8(src.begin(), src.end(), dest, destSize);
                 }
             }
 
-            template<class Allocator1>
-            static inline void to_wstring(AZStd::basic_string<wstring::value_type, wstring::traits_type, Allocator1>& dest, const char* first, const char* last)
+            template<class Allocator>
+            static inline void to_wstring(AZStd::basic_string<wstring::value_type, wstring::traits_type, Allocator>& dest, AZStd::string_view src)
             {
                 if constexpr (Size == 2)
                 {
-                    Utf8::Unchecked::utf8to16(first, last, AZStd::back_inserter(dest), dest.max_size());
+                    Utf8::Unchecked::utf8to16(src.begin(), src.end(), AZStd::back_inserter(dest), dest.max_size());
                 }
                 else if constexpr (Size == 4)
                 {
-                    Utf8::Unchecked::utf8to32(first, last, AZStd::back_inserter(dest), dest.max_size());
+                    Utf8::Unchecked::utf8to32(src.begin(), src.end(), AZStd::back_inserter(dest), dest.max_size());
                 }
             }
 
             template<size_t MaxElementCount>
-            static inline void to_wstring(AZStd::basic_fixed_string<wstring::value_type, MaxElementCount, wstring::traits_type>& dest, const char* first, const char* last)
+            static inline void to_wstring(AZStd::basic_fixed_string<wstring::value_type, MaxElementCount, wstring::traits_type>& dest, AZStd::string_view src)
             {
                 if constexpr (Size == 2)
                 {
-                    Utf8::Unchecked::utf8to16(first, last, AZStd::back_inserter(dest), dest.max_size());
+                    Utf8::Unchecked::utf8to16(src.begin(), src.end(), AZStd::back_inserter(dest), dest.max_size());
                 }
                 else if constexpr (Size == 4)
                 {
-                    Utf8::Unchecked::utf8to32(first, last, AZStd::back_inserter(dest), dest.max_size());
+                    Utf8::Unchecked::utf8to32(src.begin(), src.end(), AZStd::back_inserter(dest), dest.max_size());
                 }
             }
 
-            static inline wchar_t* to_wstring(wchar_t* dest, size_t destSize, const char* first, const char* last)
+            static inline wchar_t* to_wstring(wchar_t* dest, size_t destSize, AZStd::string_view src)
             {
                 if constexpr (Size == 2)
                 {
-                    return Utf8::Unchecked::utf8to16(first, last, dest, destSize);
+                    return Utf8::Unchecked::utf8to16(src.begin(), src.end(), dest, destSize);
                 }
                 else if constexpr (Size == 4)
                 {
-                    return Utf8::Unchecked::utf8to32(first, last, dest, destSize);
+                    return Utf8::Unchecked::utf8to32(src.begin(), src.end(), dest, destSize);
                 }
             }
         };
@@ -284,64 +284,26 @@ namespace AZStd
     inline AZStd::string to_string(long double val)         { AZStd::string str; to_string(str, val); return str; }
 
     // In our engine we assume AZStd::string is Utf8 encoded!
-    template<class Allocator1>
-    void to_string(AZStd::basic_string<string::value_type, string::traits_type, Allocator1>& dest, const wchar_t* str, size_t srcLen = 0)
+    template<class Allocator>
+    void to_string(AZStd::basic_string<string::value_type, string::traits_type, Allocator>& dest, AZStd::wstring_view src)
     {
         dest.clear();
-
-        if (srcLen == 0)
-        {
-            srcLen = wcslen(str);
-        }
-
-        if (srcLen > 0)
-        {
-            Internal::WCharTPlatformConverter<>::to_string(dest, str, str + srcLen);
-        }
-    }
-
-    template<class Allocator1, class Allocator2>
-    void to_string(AZStd::basic_string<string::value_type, string::traits_type, Allocator1>& dest, const AZStd::basic_string<wstring::value_type, wstring::traits_type, Allocator2>& src)
-    {
-        return to_string(dest, src.c_str(), src.length());
+        Internal::WCharTPlatformConverter<>::to_string(dest, src);
     }
 
     template<size_t MaxElementCount>
-    void to_string(AZStd::basic_fixed_string<string::value_type, MaxElementCount, string::traits_type>& dest, const wchar_t* str, size_t srcLen = 0)
+    void to_string(AZStd::basic_fixed_string<string::value_type, MaxElementCount, string::traits_type>& dest, AZStd::wstring_view src)
     {
         dest.clear();
-
-        if (srcLen == 0)
-        {
-            srcLen = wcslen(str);
-        }
-
-        if (srcLen > 0)
-        {
-            Internal::WCharTPlatformConverter<>::to_string(dest, str, str + srcLen);
-        }
+        Internal::WCharTPlatformConverter<>::to_string(dest, src);
     }
 
-    template<size_t MaxElementCount1, size_t MaxElementCount2>
-    void to_string(AZStd::basic_fixed_string<string::value_type, MaxElementCount1, string::traits_type>& dest, const AZStd::basic_fixed_string<wstring::value_type, MaxElementCount2, wstring::traits_type>& src)
+    inline void to_string(char* dest, size_t destSize, AZStd::wstring_view src)
     {
-        return to_string(dest, src.c_str(), src.length());
-    }
-
-    inline void to_string(char* dest, size_t destSize, const wchar_t* str, size_t srcLen = 0)
-    {
-        if (srcLen == 0)
+        char* endStr = Internal::WCharTPlatformConverter<>::to_string(dest, destSize, src);
+        if (endStr < (dest + destSize))
         {
-            srcLen = wcslen(str);
-        }
-
-        if (srcLen > 0)
-        {
-            char* endStr = Internal::WCharTPlatformConverter<>::to_string(dest, destSize, str, str + srcLen);
-            if (endStr < (dest + destSize))
-            {
-                *endStr = '\0'; // null terminator
-            }
+            *endStr = '\0'; // null terminator
         }
     }
 
@@ -441,64 +403,26 @@ namespace AZStd
     inline AZStd::wstring to_wstring(unsigned long long val)    { AZStd::wstring wstr; to_wstring(wstr, val); return wstr; }
     inline AZStd::wstring to_wstring(long double val)           { AZStd::wstring wstr; to_wstring(wstr, val); return wstr; }
 
-    template<class Allocator1>
-    void to_wstring(AZStd::basic_string<wstring::value_type, wstring::traits_type, Allocator1>& dest, const char* str, size_t strLen = 0)
+    template<class Allocator>
+    void to_wstring(AZStd::basic_string<wstring::value_type, wstring::traits_type, Allocator>& dest, AZStd::string_view src)
     {
         dest.clear();
-
-        if (strLen == 0)
-        {
-            strLen = strlen(str);
-        }
-
-        if (strLen > 0)
-        {
-            Internal::WCharTPlatformConverter<>::to_wstring(dest, str, str + strLen);
-        }
+        Internal::WCharTPlatformConverter<>::to_wstring(dest, src);
     }
 
-    template<class Allocator1, class Allocator2>
-    void to_wstring(AZStd::basic_string<wstring::value_type, wstring::traits_type, Allocator1>& dest, const AZStd::basic_string<string::value_type, string::traits_type, Allocator2>& src)
-    {
-        return to_wstring(dest, src.c_str(), src.length());
-    }
-
-    template<size_t MaxElementCount1>
-    void to_wstring(AZStd::basic_fixed_string<wstring::value_type, MaxElementCount1, wstring::traits_type>& dest, const char* str, size_t strLen = 0)
+    template<size_t MaxElementCount>
+    void to_wstring(AZStd::basic_fixed_string<wstring::value_type, MaxElementCount, wstring::traits_type>& dest, AZStd::string_view src)
     {
         dest.clear();
-
-        if (strLen == 0)
-        {
-            strLen = strlen(str);
-        }
-
-        if (strLen > 0)
-        {
-            Internal::WCharTPlatformConverter<>::to_wstring(dest, str, str + strLen);
-        }
+        Internal::WCharTPlatformConverter<>::to_wstring(dest, src);
     }
 
-    template<size_t MaxElementCount1, size_t MaxElementCount2>
-    void to_wstring(AZStd::basic_fixed_string<wstring::value_type, MaxElementCount1, wstring::traits_type>& dest, const AZStd::basic_fixed_string<string::value_type, MaxElementCount2, string::traits_type>& src)
+    inline void to_wstring(wchar_t* dest, size_t destSize, AZStd::string_view src)
     {
-        return to_wstring(dest, src.c_str(), src.length());
-    }
-
-    inline void to_wstring(wchar_t* dest, size_t destSize, const char* str, size_t srcLen = 0)
-    {
-        if (srcLen == 0)
+        wchar_t* endWStr = Internal::WCharTPlatformConverter<>::to_wstring(dest, destSize, src);
+        if (endWStr < (dest + destSize))
         {
-            srcLen = strlen(str);
-        }
-
-        if (srcLen > 0)
-        {
-            wchar_t* endWStr = Internal::WCharTPlatformConverter<>::to_wstring(dest, destSize, str, str + srcLen);
-            if (endWStr < (dest + destSize))
-            {
-                *endWStr = '\0'; // null terminator
-            }
+            *endWStr = '\0'; // null terminator
         }
     }
 

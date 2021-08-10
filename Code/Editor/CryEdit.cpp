@@ -3225,7 +3225,7 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
 
 #ifdef WIN32
         wchar_t windowsErrorMessageW[ERROR_LEN];
-        windowsErrorMessageW = L'\0';
+        windowsErrorMessageW[0] = L'\0';
         FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
             nullptr,
             dw,
