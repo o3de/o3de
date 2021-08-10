@@ -6,34 +6,67 @@
 #
 #
 
-import os
 import subprocess
 import git
+import pathlib
 
-# Returns True if the dst commit descends from the src commit, otherwise False
-def is_descendent(src_commit_hash, dst_commit_hash):
-    if src_commit_hash is None or dst_commit_hash is None:
-        return False
-    result = subprocess.run(["git", "merge-base", "--is-ancestor", src_commit_hash, dst_commit_hash])
-    return result.returncode == 0
-
-# Attempts to create a diff from the src and dst commits and write to the specified output file
-def create_diff_file(src_commit_hash, dst_commit_hash, output_path):
-    if os.path.isfile(output_path):
-        os.remove(output_path)
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    # git diff will only write to the output file if both commit hashes are valid
-    subprocess.run(["git", "diff", "--name-status", f"--output={output_path}", src_commit_hash, dst_commit_hash])
-    if not os.path.isfile(output_path):
-        raise FileNotFoundError(f"Source commit '{src_commit_hash}' and/or destination commit '{dst_commit_hash}' are invalid")
-
-# Basic representation of a repository
+# Basic representation of a git repository
 class Repo:
-    def __init__(self, repo_path):
-        self.__repo = git.Repo(repo_path)
+    def __init__(self, repo_path: str):
+        self._repo = git.Repo(repo_path)
 
     # Returns the current branch
     @property
     def current_branch(self):
-        branch = self.__repo.active_branch
+        branch = self._repo.active_branch
         return branch.name
+
+    def create_diff_file(self, src_commit_hash: str, dst_commit_hash: str, output_path: pathlib.Path):
+        """
+        Attempts to create a diff from the src and dst commits and write to the specified output file.
+
+        @param src_commit_hash: The hash for the source commit.
+        @param dst_commit_hash: The hash for the destination commit.
+        @param output_path:     The path to the file to write the diff to.
+        """
+
+        try:
+            # Remove the existing file (if any) and create the parent directory
+            output_path.unlink(missing_ok=True)
+            output_path.parent.mkdir(exist_ok=True)
+        except EnvironmentError as e:
+            raise RuntimeError(f"Could not create path for output file '{output_path}'")
+
+        # git diff will only write to the output file if both commit hashes are valid
+        subprocess.run(["git", "diff", "--name-status", f"--output={output_path}", src_commit_hash, dst_commit_hash])
+        if not output_path.is_file():
+            raise RuntimeError(f"Source commit '{src_commit_hash}' and/or destination commit '{dst_commit_hash}' are invalid")
+
+    def is_descendent(self, src_commit_hash: str, dst_commit_hash: str):
+        """
+        Determines whether or not dst_commit is a descendent of src_commit.
+
+        @param src_commit_hash: The hash for the source commit.
+        @param dst_commit_hash: The hash for the destination commit.
+        @return:                True if the dst commit descends from the src commit, otherwise False.
+        """
+
+        if not src_commit_hash and not dst_commit_hash:
+            return False
+        result = subprocess.run(["git", "merge-base", "--is-ancestor", src_commit_hash, dst_commit_hash])
+        return result.returncode == 0
+
+    # Returns the distance between two commits
+    def commit_distance(self, src_commit_hash: str, dst_commit_hash: str):
+        """
+        Determines the number of commits between src_commit and dst_commit.
+
+        @param src_commit_hash: The hash for the source commit.
+        @param dst_commit_hash: The hash for the destination commit.
+        @return:                The distance between src_commit and dst_commit (if both are valid commits), otherwise None.
+        """
+
+        if not src_commit_hash and not dst_commit_hash:
+            return None
+        commits = self._repo.iter_commits(src_commit_hash + '..' + dst_commit_hash)
+        return len(list(commits))

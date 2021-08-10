@@ -26,8 +26,8 @@ namespace TestImpact
             AllTestsPass //!< The test run completed its run and all tests passed.
         };
 
-        //! Representation of a completed test run.
-        class TestRun
+        //! Representation of a test run.
+        class TestRunBase
         {
         public:
             //! Constructs the client facing representation of a given test target's run.
@@ -36,12 +36,14 @@ namespace TestImpact
             //! @param startTime The start time, relative to the sequence start, that this run started.
             //! @param duration The duration that this test run took to complete.
             //! @param result The result of the run.
-            TestRun(
+            TestRunBase(
                 const AZStd::string& name,
                 const AZStd::string& commandString,
                 AZStd::chrono::high_resolution_clock::time_point startTime,
                 AZStd::chrono::milliseconds duration,
                 TestRunResult result);
+
+            virtual ~TestRunBase() = default;
 
             //! Returns the test target name.
             const AZStd::string& GetTargetName() const;
@@ -69,75 +71,120 @@ namespace TestImpact
             AZStd::chrono::milliseconds m_duration;
         };
 
-        //! Represents an individual test of a test target that failed.
-        class TestFailure
+        //! Representation of a test run that failed to execute.
+        class TestRunWithExecutionFailure
+            : public TestRunBase
         {
         public:
-            TestFailure(const AZStd::string& testName, const AZStd::string& errorMessage);
+            using TestRunBase::TestRunBase;
+            TestRunWithExecutionFailure(TestRunBase&& testRun);
+        };
 
-            //! Returns the name of the test that failed.
+        //! Representation of a test run that was terminated in-flight due to timing out.
+        class TimedOutTestRun 
+            : public TestRunBase
+        {
+        public:
+            using TestRunBase::TestRunBase;
+            TimedOutTestRun(TestRunBase&& testRun);
+        };
+
+        //! Representation of a test run that was not executed.
+        class UnexecutedTestRun 
+            : public TestRunBase
+        {
+        public:
+            using TestRunBase::TestRunBase;
+            UnexecutedTestRun(TestRunBase&& testRun);
+        };
+
+        // Result of a test executed during a test run.
+        enum class TestResult : AZ::u8
+        {
+            Passed,
+            Failed,
+            NotRun
+        };
+
+        //! Representation of a single test in a test target.
+        class Test
+        {
+        public:
+            //! Constructs the test with the specified name and result.
+            Test(const AZStd::string& testName, TestResult result);
+
+            //! Returns the name of this test.
             const AZStd::string& GetName() const;
 
-            //! Returns the error message of the test that failed.
-            const AZStd::string& GetErrorMessage() const;
+            //! Returns the result of executing this test.
+            TestResult GetResult() const;
 
         private:
             AZStd::string m_name;
-            AZStd::string m_errorMessage;
+            TestResult m_result;
         };
 
-        //! Represents a collection of tests that failed.
-        //! @note Only the failing tests are included in the collection.
-        class TestCaseFailure
+        //! Representation of a test run that completed with or without test failures.
+        class CompletedTestRun
+            : public TestRunBase
         {
         public:
-            TestCaseFailure(const AZStd::string& testCaseName, AZStd::vector<TestFailure>&& testFailures);
-
-            //! Returns the name of the test case containing the failing tests.
-            const AZStd::string& GetName() const;
-
-            //! Returns the collection of tests in this test case that failed.
-            const AZStd::vector<TestFailure>& GetTestFailures() const;
-
-        private:
-            AZStd::string m_name;
-            AZStd::vector<TestFailure> m_testFailures;
-        };
-
-        //! Representation of a test run's failing tests.
-        class TestRunWithTestFailures
-            : public TestRun
-        {
-        public:
-            //! Constructs the client facing representation of a given test target's run.
-            //! @param name The name of the test target.
-            //! @param commandString The command string used to execute this test target.
-            //! @param startTime The start time, relative to the sequence start, that this run started.
+            //! Constructs the test run from the specified test target executaion data.
+            //! @param name The name of the test target for this run.
+            //! @param commandString The command string used to execute the test target for this run.
+            //! @param startTime The start time, offset from the sequence start time, that this test run started.
             //! @param duration The duration that this test run took to complete.
-            //! @param result The result of the run.
-            //! @param testFailures The failing tests for this test run.
-            TestRunWithTestFailures(
+            //! @param result The result of this test run.
+            //! @param tests The tests contained in the test target for this test run.
+            CompletedTestRun(
                 const AZStd::string& name,
                 const AZStd::string& commandString,
                 AZStd::chrono::high_resolution_clock::time_point startTime,
                 AZStd::chrono::milliseconds duration,
                 TestRunResult result,
-                AZStd::vector<TestCaseFailure>&& testFailures);
+                AZStd::vector<Test>&& tests);
 
-            //! Constructs the client facing representation of a given test target's run.
-            //! @param testRun The test run this run is to be derived from.
-            //! @param testFailures The failing tests for this run.
-            TestRunWithTestFailures(TestRun&& testRun, AZStd::vector<TestCaseFailure>&& testFailures);
+            //! Constructs the test run from the specified test target executaion data.
+            CompletedTestRun(TestRunBase&& testRun, AZStd::vector<Test>&& tests);
 
-            //! Returns the total number of failing tests in this run.
-            size_t GetNumTestFailures() const;
+            //! Returns the total number of tests in the run.
+            size_t GetTotalNumTests() const;
 
-            //! Returns the test cases in this run containing failing tests.
-            const AZStd::vector<TestCaseFailure>& GetTestCaseFailures() const;
+            //! Returns the total number of passing tests in the run.
+            size_t GetTotalNumPassingTests() const;
+
+            //! Returns the total number of failing tests in the run.
+            size_t GetTotalNumFailingTests() const;
+
+            //! Returns the total number of disabled tests in the run.
+            size_t GetTotalNumDisabledTests() const;
+
+            //! Returns the tests in the run.
+            const AZStd::vector<Test>& GetTests() const;
 
         private:
-            AZStd::vector<TestCaseFailure> m_testCaseFailures;
-            size_t m_numTestFailures = 0;
+            AZStd::vector<Test> m_tests;
+            size_t m_totalNumPassingTests = 0;
+            size_t m_totalNumFailingTests = 0;
+            size_t m_totalNumDisabledTests = 0;
+        };
+
+        //! Representation of a test run that completed with no test failures.
+        class PassingTestRun 
+            : public CompletedTestRun
+        {
+        public:
+            using CompletedTestRun::CompletedTestRun;
+            PassingTestRun(TestRunBase&& testRun, AZStd::vector<Test>&& tests);
+        };
+
+        //! Representation of a test run that completed with one or more test failures.
+        class FailingTestRun 
+            : public CompletedTestRun
+        {
+        public:
+            using CompletedTestRun::CompletedTestRun;
+            FailingTestRun(TestRunBase&& testRun, AZStd::vector<Test>&& tests);
         };
     } // namespace Client
 } // namespace TestImpact

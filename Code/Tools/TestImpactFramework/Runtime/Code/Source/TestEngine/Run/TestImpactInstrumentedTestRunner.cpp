@@ -6,7 +6,7 @@
  *
  */
 
-#include <TestImpactFramework/TestImpactFileUtils.h>
+#include <TestImpactFramework/TestImpactUtils.h>
 
 #include <Artifact/Factory/TestImpactModuleCoverageFactory.h>
 #include <Artifact/Factory/TestImpactTestRunSuiteFactory.h>
