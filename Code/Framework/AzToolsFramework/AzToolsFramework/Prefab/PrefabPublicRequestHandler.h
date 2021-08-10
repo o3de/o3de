@@ -63,8 +63,8 @@ namespace AzToolsFramework
                 if (!createPrefabOutcome.IsSuccess())
                 {
                     AZ_Error("CreatePrefabInDisk", false,
-                        "Failed to create Prefab on file path '%s'. Error message: %s.",
-                        filePath,
+                        "Failed to create Prefab on file path '%.*s'. Error message: %s.",
+                        AZ_STRING_ARG(filePath),
                         createPrefabOutcome.GetError().c_str());
 
                     return false;
@@ -79,8 +79,8 @@ namespace AzToolsFramework
                 if (!createPrefabOutcome.IsSuccess())
                 {
                     AZ_Error("CreatePrefabInMemory", false,
-                        "Failed to create Prefab on file path '%s'. Error message: %s.",
-                        filePath,
+                        "Failed to create Prefab on file path '%.*s'. Error message: %s.",
+                        AZ_STRING_ARG(filePath),
                         createPrefabOutcome.GetError().c_str());
 
                     return false;
@@ -95,8 +95,8 @@ namespace AzToolsFramework
                 if (!instantiatePrefabOutcome.IsSuccess())
                 {
                     AZ_Error("InstantiatePrefab", false,
-                        "Failed to instantiate Prefab on file path '%s'. Error message: %s.",
-                        filePath,
+                        "Failed to instantiate Prefab on file path '%.*s'. Error message: %s.",
+                        AZ_STRING_ARG(filePath),
                         instantiatePrefabOutcome.GetError().c_str());
 
                     return AZ::EntityId();

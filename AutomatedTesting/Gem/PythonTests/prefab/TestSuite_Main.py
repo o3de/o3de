@@ -31,13 +31,7 @@ class TestAutomation(TestAutomationBase):
         from . import PrefabLevel_OpensLevelWithEntities as test_module
         self._run_prefab_test(request, workspace, editor, test_module)
 
-    @pytest.mark.parametrize("level", ["tmp_level"])
-    def test_PrefabLevel_BasicWorkflow(self, request, workspace, editor, launcher_platform, level):
-        def teardown():
-            file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
-        request.addfinalizer(teardown)
-        file_system.delete([os.path.join(workspace.paths.project(), "Levels", level)], True, True)
-
+    def test_PrefabLevel_BasicWorkflow(self, request, workspace, editor, launcher_platform):       
         from . import PrefabLevel_BasicWorkflow as test_module
         self._run_prefab_test(request, workspace, editor, test_module)
 
