@@ -79,7 +79,7 @@ namespace TestImpact
     //! @param testRunMeta The test that has completed.
     //! @param numTestRunsCompleted The number of test runs that have completed.
     //! @param totalNumTestRuns The total number of test runs in the sequence.
-    using TestRunCompleteCallback = AZStd::function<void(Client::TestRun& testRun, size_t numTestRunsCompleted, size_t totalNumTestRuns)>;
+    using TestRunCompleteCallback = AZStd::function<void(Client::TestRunBase& testRun, size_t numTestRunsCompleted, size_t totalNumTestRuns)>;
 
     //! The API exposed to the client responsible for all test runs and persistent data management.
     class Runtime
@@ -201,12 +201,16 @@ namespace TestImpact
         //! Updates the dynamic dependency map and serializes the entire map to disk.
         void UpdateAndSerializeDynamicDependencyMap(const AZStd::vector<TestEngineInstrumentedRun>& jobs);
 
+        //! Generates a base policy state for the current runtime policy runtime configuration.
         PolicyStateBase GeneratePolicyStateBase();
 
+        //! Generates a regular/seed sequence policy state for the current runtime policy runtime configuration.
         SequencePolicyState GenerateSequencePolicyState();
 
+        //! Generates a safe impact analysis sequence policy state for the current runtime policy runtime configuration.
         SafeImpactAnalysisSequencePolicyState GenerateSafeImpactAnalysisSequencePolicyState(Policy::TestPrioritization testPrioritizationPolicy);
 
+        //! Generates an impact analysis sequence policy state for the current runtime policy runtime configuration.
         ImpactAnalysisSequencePolicyState GenerateImpactAnalysisSequencePolicyState(
             Policy::TestPrioritization testPrioritizationPolicy, Policy::DynamicDependencyMap dynamicDependencyMapPolicy);
 
