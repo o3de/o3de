@@ -14,7 +14,7 @@
 
 // Include architecture specific code.
 #if defined(LINUX) || defined(APPLE)
-#include <CryThreadImpl_pthreads.h>
+// noting to include
 #define AZ_RESTRICTED_SECTION_IMPLEMENTED
 #elif defined(WIN32) || defined(WIN64)
 #include <CryThreadImpl_windows.h>

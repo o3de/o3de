@@ -365,59 +365,6 @@ void CryInterlockedAdd(volatile size_t* pVal, ptrdiff_t iAdd)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void* CryCreateCriticalSection()
-{
-    CRITICAL_SECTION* pCS = new CRITICAL_SECTION;
-    InitializeCriticalSection(pCS);
-    return pCS;
-}
-
-void  CryCreateCriticalSectionInplace(void* pCS)
-{
-    InitializeCriticalSection((CRITICAL_SECTION*)pCS);
-}
-//////////////////////////////////////////////////////////////////////////
-void  CryDeleteCriticalSection(void* cs)
-{
-    CRITICAL_SECTION* pCS = (CRITICAL_SECTION*)cs;
-    if (pCS->LockCount >= 0)
-    {
-        CryFatalError("Critical Section hanging lock");
-    }
-    DeleteCriticalSection(pCS);
-    delete pCS;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void  CryDeleteCriticalSectionInplace(void* cs)
-{
-    CRITICAL_SECTION* pCS = (CRITICAL_SECTION*)cs;
-    if (pCS->LockCount >= 0)
-    {
-        CryFatalError("Critical Section hanging lock");
-    }
-    DeleteCriticalSection(pCS);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void  CryEnterCriticalSection(void* cs)
-{
-    EnterCriticalSection((CRITICAL_SECTION*)cs);
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool  CryTryCriticalSection(void* cs)
-{
-    return TryEnterCriticalSection((CRITICAL_SECTION*)cs) != 0;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void  CryLeaveCriticalSection(void* cs)
-{
-    LeaveCriticalSection((CRITICAL_SECTION*)cs);
-}
-
-//////////////////////////////////////////////////////////////////////////
 uint32 CryGetFileAttributes(const char* lpFileName)
 {
     WIN32_FILE_ATTRIBUTE_DATA data;

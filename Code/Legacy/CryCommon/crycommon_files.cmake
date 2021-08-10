@@ -162,7 +162,6 @@ set(FILES
     CryLibrary.h
     CryThread_pthreads.h
     CryThread_windows.h
-    CryThreadImpl_pthreads.h
     CryThreadImpl_windows.h
     CryWindows.h
     Linux32Specific.h

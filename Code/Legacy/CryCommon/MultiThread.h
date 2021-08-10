@@ -48,14 +48,6 @@ LONG     CryInterlockedCompareExchange(LONG volatile* dst, LONG exchange, LONG c
 void*    CryInterlockedCompareExchangePointer(void* volatile* dst, void* exchange, void* comperand);
 void*  CryInterlockedExchangePointer       (void* volatile* dst, void* exchange);
 
-void*  CryCreateCriticalSection();
-void   CryCreateCriticalSectionInplace(void*);
-void   CryDeleteCriticalSection(void* cs);
-void   CryDeleteCriticalSectionInplace(void* cs);
-void   CryEnterCriticalSection(void* cs);
-bool   CryTryCriticalSection(void* cs);
-void   CryLeaveCriticalSection(void* cs);
-
 #if defined(AZ_RESTRICTED_PLATFORM)
     #define AZ_RESTRICTED_SECTION MULTITHREAD_H_SECTION_DEFINE_CRYINTERLOCKEXCHANGE
     #include AZ_RESTRICTED_FILE(MultiThread_h)
