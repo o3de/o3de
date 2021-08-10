@@ -290,14 +290,14 @@ void InitRootDir(char szExeFileName[], uint nExeSize, char szExeRootName[], uint
             // Check if the engineroot exists
             azstrcat(szPath, AZ_ARRAY_SIZE(szPath), "\\engine.json");
             WIN32_FILE_ATTRIBUTE_DATA data;
-            AZStd::wstring szPathW;
-            AZStd::to_wstring(szPathW, szPath);
-            BOOL res = GetFileAttributesExW(szPathW.c_str(), GetFileExInfoStandard, &data);
+            wchar_t szPathW[_MAX_PATH];
+            AZStd::to_wstring(szPathW, _MAX_PATH, szPath);
+            BOOL res = GetFileAttributesExW(szPathW, GetFileExInfoStandard, &data);
             if (res != 0 && data.dwFileAttributes != INVALID_FILE_ATTRIBUTES)
             {
                 // Found file
                 szPath[n] = 0;
-                SetCurrentDirectoryW(szPathW.c_str());
+                SetCurrentDirectoryW(szPathW);
                 break;
             }
         }
