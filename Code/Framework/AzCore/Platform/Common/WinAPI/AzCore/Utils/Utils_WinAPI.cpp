@@ -43,7 +43,7 @@ namespace AZ
             }
             else
             {
-                size_t utf8PathSize = Utf8::Unchecked::utf16ToUtf8BytesRequired(pathBufferW, pathBufferW + pathLen);
+                size_t utf8PathSize = AZStd::to_string_length({ pathBufferW, pathLen });
                 if (utf8PathSize >= exeStorageSize)
                 {
                     result.m_pathStored = ExecutablePathResult::BufferSizeNotLargeEnough;

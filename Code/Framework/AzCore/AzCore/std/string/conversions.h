@@ -70,6 +70,18 @@ namespace AZStd
                 }
             }
 
+            static inline size_t to_string_length(AZStd::wstring_view src)
+            {
+                if constexpr (Size == 2)
+                {
+                    return Utf8::Unchecked::utf16ToUtf8BytesRequired(src.begin(), src.end());
+                }
+                else if constexpr (Size == 4)
+                {
+                    return Utf8::Unchecked::utf32ToUtf8BytesRequired(src.begin(), src.end());
+                }
+            }
+
             template<class Allocator>
             static inline void to_wstring(AZStd::basic_string<wstring::value_type, wstring::traits_type, Allocator>& dest, AZStd::string_view src)
             {
@@ -305,6 +317,11 @@ namespace AZStd
         {
             *endStr = '\0'; // null terminator
         }
+    }
+
+    inline size_t to_string_length(AZStd::wstring_view src)
+    {
+        return Internal::WCharTPlatformConverter<>::to_string_length(src);
     }
 
     template<class Allocator>

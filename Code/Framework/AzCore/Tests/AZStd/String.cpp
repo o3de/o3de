@@ -674,6 +674,7 @@ namespace UnitTest
         string str1;
         to_string(str1, wstr);
         AZ_TEST_ASSERT(str1 == "BlaBla 5");
+        EXPECT_EQ(8, to_string_length(wstr));
 
         str1 = string::format("%ls", wstr.c_str());
         AZ_TEST_ASSERT(str1 == "BlaBla 5");
@@ -690,6 +691,11 @@ namespace UnitTest
         char strBuffer[9];
         to_string(strBuffer, 9, wstr1.c_str());
         AZ_TEST_ASSERT(0 == azstricmp(strBuffer, "BLABLA 5"));
+        EXPECT_EQ(8, to_string_length(wstr1));
+
+        // wstring to char with unicode
+        wstring ws1InfinityEscaped = L"Infinity: \u221E"; // escaped
+        EXPECT_EQ(13, to_string_length(ws1InfinityEscaped));
 
         // wchar_t buffer to char buffer
         wchar_t wstrBuffer[9] = L"BLABLA 5";
