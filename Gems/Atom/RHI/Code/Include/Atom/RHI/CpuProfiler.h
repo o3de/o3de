@@ -126,6 +126,7 @@ namespace AZ
 
 //! Macro that allows for region names to be submitted at runtime. Use sparingly - this acquires a lock and allocates new objects within a map.
 #define AZ_ATOM_PROFILE_DYNAMIC(groupName, regionName) \
-    const AZ::RHI::CachedTimeRegion::GroupRegionName& AZ_JOIN(groupRegionName, __LINE__) = \
-        AZ::RHI::CpuProfiler::Get()->InsertDynamicName(groupName, regionName); \
+    static_assert(AZStd::is_convertible_v<decltype(groupName), const char*>, "Runtime group names are not allowed, use a static string literal instead."); \
+    const AZ::RHI::CachedTimeRegion::GroupRegionName& AZ_JOIN(groupRegionName, __LINE__) =                                                                 \
+        AZ::RHI::CpuProfiler::Get()->InsertDynamicName(groupName, regionName);                                                                             \
     AZ::RHI::TimeRegion AZ_JOIN(timeRegion, __LINE__)(&AZ_JOIN(groupRegionName, __LINE__));

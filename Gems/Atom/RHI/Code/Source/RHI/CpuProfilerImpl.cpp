@@ -221,16 +221,14 @@ namespace AZ
         const CachedTimeRegion::GroupRegionName& CpuProfilerImpl::InsertDynamicName(const char* groupName, const AZStd::string& regionName)
         {
             AZStd::scoped_lock lock(m_dynamicNameMutex);
-            AZ_Warning("CpuProfiler", m_dynamicRegionNameMap.size() < 16384, "Stored dynamic region names are accumulating. Consider removing a AZ_ATOM_PROFILE_DYNAMIC invocation.");
-            auto [regionNameItr, inserted] = m_dynamicRegionNameMap.try_emplace(regionName, regionName);
+            AZ_Warning("CpuProfiler", m_dynamicRegionNameSet.size() < 16384, "Stored dynamic region names are accumulating. Consider removing a AZ_ATOM_PROFILE_DYNAMIC invocation.");
+            auto [regionNameItr, wasRegionInserted] =  m_dynamicRegionNameSet.insert(regionName);
 
-            // This is the first time we have constructed a dynamic region with this name, also create a GroupRegionName for the region
-            if (inserted)
-            {
-                m_dynamicGroupRegionNameMap.emplace(regionName, CachedTimeRegion::GroupRegionName{ groupName, regionNameItr->second.c_str() } );
-            }
+            // Since markers might have the same region name but different group names, always check if a new GroupRegionName needs to be constructed.
+            auto [groupRegionNameItr, wasGroupRegionConstructed] = m_dynamicGroupRegionNameMap[groupName].try_emplace(
+                 regionName, groupName, regionNameItr->c_str());
 
-            return m_dynamicGroupRegionNameMap.at(regionName);
+            return groupRegionNameItr->second;
         }
 
         void CpuProfilerImpl::OnSystemTick()

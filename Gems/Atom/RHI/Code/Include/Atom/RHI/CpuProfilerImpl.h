@@ -13,6 +13,7 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/std/containers/map.h>
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/shared_mutex.h>
 #include <AzCore/std/smart_ptr/intrusive_refcount.h>
@@ -131,8 +132,12 @@ namespace AZ
             AZStd::mutex m_threadRegisterMutex;
 
             // Storage for runtime GroupRegionNames
-            AZStd::unordered_map<AZStd::string, AZStd::string> m_dynamicRegionNameMap;
-            AZStd::unordered_map<AZStd::string, TimeRegion::GroupRegionName> m_dynamicGroupRegionNameMap;
+            using DynamicRegionNameMap = AZStd::unordered_map<AZStd::string, TimeRegion::GroupRegionName>;
+             
+            // Use string_view over the const char* as a key because equivalent string literals throughout the source files might be duplicated
+            // (and therefore have different addresses) if string pooling is disabled.
+            AZStd::unordered_map<AZStd::string_view, DynamicRegionNameMap> m_dynamicGroupRegionNameMap;
+            AZStd::unordered_set<AZStd::string> m_dynamicRegionNameSet;
             AZStd::mutex m_dynamicNameMutex;
 
             // Thread local storage, gets lazily allocated when a thread is created
