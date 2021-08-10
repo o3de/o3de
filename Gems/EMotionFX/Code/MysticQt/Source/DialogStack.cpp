@@ -498,7 +498,7 @@ namespace MysticQt
         }
         if (findPreviousMaximizedDialogNeeded)
         {
-            for (auto curDialog = AZStd::make_reverse_iterator(dialog) + 1; curDialog != mDialogs.rend(); ++curDialog)
+            for (auto curDialog = AZStd::make_reverse_iterator(dialog); curDialog != mDialogs.rend(); ++curDialog)
             {
                 if (curDialog->mMaximizeSize && curDialog->mFrame->isHidden() == false)
                 {
