@@ -23,7 +23,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
         NAME AutomatedTesting::PhysicsTests_Main_Optimized
         TEST_SUITE main
         TEST_SERIAL
-        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Main_Test.py
+        PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Main_Optimized.py
         TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             Legacy::Editor
