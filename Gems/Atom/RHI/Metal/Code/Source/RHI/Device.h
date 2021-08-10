@@ -198,7 +198,7 @@ namespace AZ
             NullDescriptorManager m_nullDescriptorManager;
             NSCache* m_samplerCache;
 
-            float m_mainDisplayRefreshRate = 0.0f;
+            uint32_t m_mainDisplayRefreshRate = 0;
         };
     }
 }
