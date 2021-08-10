@@ -45,6 +45,7 @@ namespace Terrain
         static const char* const HeightScale("m_heightScale");
         static const char* const UvMin("m_uvMin");
         static const char* const UvMax("m_uvMax");
+        static const char* const UvStep("m_uvStep");
     }
 
 
@@ -150,6 +151,9 @@ namespace Terrain
 
             m_uvMaxIndex = shaderResourceGroupLayout->FindShaderInputConstantIndex(AZ::Name(ShaderInputs::UvMax));
             AZ_Error("Terrain", m_uvMaxIndex.IsValid(), "Failed to find shader input constant %s.", ShaderInputs::UvMax);
+
+            m_uvStepIndex = shaderResourceGroupLayout->FindShaderInputConstantIndex(AZ::Name(ShaderInputs::UvStep));
+            AZ_Error("Terrain", m_uvStepIndex.IsValid(), "Failed to find shader input constant %s.", ShaderInputs::UvStep);
 
             // If this fails to run now, it's ok, we'll initialize it in OnRenderPipelineAdded later.
             bool success = GetParentScene()->ConfigurePipelineState(m_shader->GetDrawListTag(), m_pipelineStateDescriptor);
@@ -408,6 +412,11 @@ namespace Terrain
                     uvMax[1] =
                         (float)(((yPatch + m_gridMeters) - areaData.m_terrainBounds.GetMin().GetY()) / areaData.m_terrainBounds.GetYExtent());
 
+                    float uvStep[2] = {
+                        1.0f / (m_gridMeters * m_gridSpacing), 
+                        1.0f / (m_gridMeters * m_gridSpacing),
+                    };
+
                     AZ::Transform transform = areaData.m_transform;
                     transform.SetTranslation(xPatch, yPatch, areaData.m_transform.GetTranslation().GetZ());
 
@@ -418,6 +427,7 @@ namespace Terrain
                     m_resourceGroup->SetConstant(m_heightScaleIndex, areaData.m_heightScale);
                     m_resourceGroup->SetConstant(m_uvMinIndex, uvMin);
                     m_resourceGroup->SetConstant(m_uvMaxIndex, uvMax);
+                    m_resourceGroup->SetConstant(m_uvStepIndex, uvStep);
                     m_resourceGroup->Compile();
                     m_processSrgs.push_back(m_resourceGroup);
 

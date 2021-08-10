@@ -101,6 +101,7 @@ namespace Terrain
         AZ::RHI::ShaderInputConstantIndex m_heightScaleIndex;
         AZ::RHI::ShaderInputConstantIndex m_uvMinIndex;
         AZ::RHI::ShaderInputConstantIndex m_uvMaxIndex;
+        AZ::RHI::ShaderInputConstantIndex m_uvStepIndex;
 
 
         // Pos_float_2 + UV_float_2

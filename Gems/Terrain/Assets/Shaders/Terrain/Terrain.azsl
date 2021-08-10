@@ -9,6 +9,7 @@
 #include <Atom/Features/SrgSemantics.azsli>
 #include <viewsrg.srgi>
 
+
 struct VertexInput
 {
     float2 Position : POSITION;
@@ -18,6 +19,7 @@ struct VertexInput
 struct VertexOutput
 {
     float4 Position : SV_Position;
+    float3 Normal : NORMAL;
     float2 UV : UV;
 };
 
@@ -39,6 +41,7 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
     float m_heightScale;
     float2 m_uvMin;
     float2 m_uvMax;
+    float2 m_uvStep;
 }
 
 float4x4 GetObject_WorldMatrix()
@@ -55,6 +58,12 @@ float4x4 GetObject_WorldMatrix()
     return modelToWorld;
 }
 
+float GetHeight(float2 origUv)
+{
+    float2 uv = clamp(origUv, 0.0f, 1.0f);
+    return ObjectSrg::m_heightScale * (ObjectSrg::HeightmapImage.SampleLevel(ObjectSrg::LinearSampler, uv, 0).r - 0.5f);
+}
+
 VertexOutput MainVS(in VertexInput input)
 {
     VertexOutput output;
@@ -65,12 +74,23 @@ VertexOutput MainVS(in VertexInput input)
     float2 uv = clamp(origUv, 0.0f, 1.0f);
 
     // Loop up the height and calculate our final position.
-    float height = ObjectSrg::m_heightScale * (ObjectSrg::HeightmapImage.SampleLevel(ObjectSrg::LinearSampler, uv, 0).r - 0.5f);
+    float height = GetHeight(uv);
     float3 worldPosition = mul(GetObject_WorldMatrix(), float4(input.Position, height, 1.0f)).xyz;
     output.Position = mul(ViewSrg::m_viewProjectionMatrix, float4(worldPosition, 1.0f));
 
     // Remove all vertices outside our bounds by turning them into NaN positions.
     output.Position = output.Position / ((origUv.x >= 0.0f && origUv.x < 1.0f && origUv.y >= 0.0f && origUv.y < 1.0f) ? 1.0f : 0.0f);
+
+    // Calculate normal
+    float2 gridSize = {1.0f, 1.0f};
+    float n = GetHeight(uv + float2(-ObjectSrg::m_uvStep[0], 0.0f));
+    float e = GetHeight(uv + float2(0.0f, ObjectSrg::m_uvStep[1]));
+    float s = GetHeight(uv + float2(ObjectSrg::m_uvStep[0], 0.0f));
+    float w = GetHeight(uv + float2(0.0f, -ObjectSrg::m_uvStep[1]));
+
+    float dydx = (w - e) * gridSize[0];
+    float dydz = (s - n) * gridSize[1];
+    output.Normal = normalize(float3(dydx, 2.0f, dydz));
 
     output.UV = uv;
     return output;
@@ -84,7 +104,22 @@ struct PixelOutput
 PixelOutput MainPS(in VertexOutput input)
 {
     PixelOutput output;
-    float height = ObjectSrg::HeightmapImage.Sample(ObjectSrg::LinearSampler, input.UV).r;
-    output.m_color = float4(height, height, height, 1.0f);
+
+   // Hard-coded fake light direction
+    float3 lightDirection = normalize(float3(1.0, -1.0, 1.0));
+
+    // Fake light intensity ranges from 1.0 for normals directly facing the light to zero for those
+    // directly facing away.
+    float lightDot = dot(normalize(input.Normal), lightDirection);
+    float lightIntensity = lightDot * 0.5 + 0.5;
+
+    // add a small amount of ambient and reduce direct light to keep in 0-1 range
+    lightIntensity = saturate(0.1 + lightIntensity * 0.9);
+
+    // The lightIntensity should not affect alpha so only apply it to rgb.
+    //output.m_color.rgb = input.Normal * lightIntensity;
+    output.m_color.rgb = float3(1.0, 1.0, 1.0) * lightIntensity;
+    output.m_color.a = 1.0f;
+
     return output;
 }
