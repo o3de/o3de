@@ -6,6 +6,8 @@
  *
  */
 
+#pragma once
+
 #include <AzCore/Serialization/Json/JsonSerializationSettings.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
