@@ -113,15 +113,23 @@ set(FILES
     Component/EditorLevelComponentAPIComponent.h
     Editor/EditorContextMenuBus.h
     Editor/EditorSettingsAPIBus.h
+    Editor/Settings/EditorSettingsBlock.cpp
+    Editor/Settings/EditorSettingsBlock.h
     Editor/Settings/EditorSettingsContext.cpp
     Editor/Settings/EditorSettingsContext.h
     Editor/Settings/EditorSettingsContextConstants.inl
     Editor/Settings/EditorSettingsInterface.h
     Editor/Settings/EditorSettingsManager.cpp
     Editor/Settings/EditorSettingsManager.h
+    Editor/Settings/EditorSettingsOriginTracker.cpp
+    Editor/Settings/EditorSettingsOriginTracker.h
     Editor/Settings/Dialog/EditorSettingsDialog.ui
     Editor/Settings/Dialog/EditorSettingsDialog.cpp
     Editor/Settings/Dialog/EditorSettingsDialog.h
+    Editor/Settings/Dialog/EditorSettingsTreeWidgetDelegate.cpp
+    Editor/Settings/Dialog/EditorSettingsTreeWidgetDelegate.h
+    Editor/Settings/Dialog/EditorSettingsTreeWidgetItem.cpp
+    Editor/Settings/Dialog/EditorSettingsTreeWidgetItem.h
     Entity/EditorEntityStartStatus.h
     Entity/EditorEntityAPIBus.h
     Entity/EditorEntityContextComponent.cpp

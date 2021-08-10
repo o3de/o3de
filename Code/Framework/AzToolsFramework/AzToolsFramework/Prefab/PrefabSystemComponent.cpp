@@ -75,7 +75,8 @@ namespace AzToolsFramework
                 settingsContext->Setting<int>("Left Side Category", "Right Side Category", "Setting Name", "The description for this setting.")
                     ->Attribute(AzToolsFramework::SettingProperty::Min, 0)
                     ->Attribute(AzToolsFramework::SettingProperty::Max, 100)
-                    ->Attribute(AzToolsFramework::SettingProperty::Step, 5);
+                    ->Attribute(AzToolsFramework::SettingProperty::Step, 5)
+                    ;
             }
         }
 

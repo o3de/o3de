@@ -9,39 +9,39 @@
 #pragma once
 
 #include <AzCore/RTTI/ReflectContext.h>
+#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/string/string.h>
 
 #include <AzToolsFramework/Editor/Settings/EditorSettingsContextConstants.inl>
 
 namespace AzToolsFramework
 {
-    using AttributePair = AZ::AttributePair;
-    using AttributeArray = AZ::AttributeArray;
 
-    class EditorSettingItem
+    class EditorSettingProperty
     {
     public:
-        EditorSettingItem(
-            AZStd::string_view category, AZStd::string_view subCategory,
-            AZStd::string_view name, AZStd::string_view description);
+        EditorSettingProperty(
+            AZ::Uuid typeId,
+            AZStd::string_view category,
+            AZStd::string_view subCategory,
+            AZStd::string_view name,
+            AZStd::string_view description
+        );
 
-        AZStd::string_view GetCategory();
-        void SetCategory(AZStd::string_view category);
-        AZStd::string_view GetSubCategory();
-        void SetSubCategory(AZStd::string_view subCategory);
         AZStd::string_view GetName();
-        AZStd::string_view GetDescription();
+        AZStd::string_view GetCategory();
+        AZStd::string_view GetSubCategory();
+        const AZ::Edit::ElementData* GetEditData() const;
+        AZ::Uuid GetTypeId();
+        void AddAttribute(AZ::AttributePair attributePair);
 
-        void AddAttribute(AttributePair attributePair);
     private:
-        AZStd::string       m_category;
-        AZStd::string       m_subCategory;
-        AZStd::string       m_name;
-        AZStd::string       m_description;
-        // TODO - store the type!
-        AttributeArray      m_attributes;
+        AZ::Uuid                m_typeId;
+        AZStd::string           m_category;
+        AZStd::string           m_subCategory;
+        AZ::Edit::ElementData   m_editData;
     };
-    using EditorSettingsArray = AZStd::vector<EditorSettingItem>;
+    using EditorSettingsArray = AZStd::vector<EditorSettingProperty>;
 
     class EditorSettingsContext
         : public AZ::ReflectContext
@@ -63,7 +63,7 @@ namespace AzToolsFramework
         class SettingBuilder
         {
             friend EditorSettingsContext;
-            SettingBuilder(EditorSettingsContext* context, EditorSettingItem& setting)
+            SettingBuilder(EditorSettingsContext* context, EditorSettingProperty& setting)
                 : m_context(context)
                 , m_setting(setting)
             {
@@ -71,7 +71,7 @@ namespace AzToolsFramework
             }
 
             EditorSettingsContext* m_context;
-            EditorSettingItem& m_setting;
+            EditorSettingProperty& m_setting;
 
         public:
             ~SettingBuilder()
@@ -97,8 +97,8 @@ namespace AzToolsFramework
     EditorSettingsContext::SettingBuilder EditorSettingsContext::Setting(const char* category, const char* subCategory, const char* name, const char* description)
     {
         // Add the setting to the settings array
-        m_settings.emplace_back(EditorSettingItem(category, subCategory, name, description));
-
+        m_settings.emplace_back(EditorSettingProperty(azrtti_typeid<T>(), category, subCategory, name, description));
+        
         return SettingBuilder(this, m_settings.back());
     }
 
@@ -114,7 +114,7 @@ namespace AzToolsFramework
         */
 
         using ContainerType = AZ::AttributeContainerType<T>;
-        m_setting.AddAttribute(AttributePair(idCrc, aznew ContainerType(value)));
+        m_setting.AddAttribute(AZ::AttributePair(idCrc, aznew ContainerType(value)));
         
         return this;
     }

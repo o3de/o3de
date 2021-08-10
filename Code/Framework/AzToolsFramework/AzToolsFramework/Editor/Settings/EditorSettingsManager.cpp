@@ -20,6 +20,65 @@ namespace AzToolsFramework::Editor
         AZ::Interface<EditorSettingsInterface>::Register(this);
     }
 
+    void EditorSettingsManager::Reflect(AZ::ReflectContext* context)
+    {
+        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
+
+        if (serializeContext)
+        {
+            serializeContext->Class<EditorSettingPropertyValue>()
+                ->Field("Name", &EditorSettingPropertyValue::m_name)
+                ;
+
+            serializeContext->Class<EditorSettingPropertyInt, EditorSettingPropertyValue>()
+                ->Field("Value", &EditorSettingPropertyInt::m_value)
+                ;
+
+            serializeContext->Class<EditorSettingPropertyGroup>()
+                ->Field("Name", &EditorSettingPropertyGroup::m_name)
+                ->Field("Properties", &EditorSettingPropertyGroup::m_properties)
+                ->Field("Groups", &EditorSettingPropertyGroup::m_groups)
+                ;
+
+            serializeContext->Class<EditorSettingsBlock>()
+                ->Field("Name", &EditorSettingsBlock::m_name)
+                ->Field("Elements", &EditorSettingsBlock::m_settingValues);
+
+            AZ::EditContext* editContext = serializeContext->GetEditContext();
+            if (editContext)
+            {
+                editContext->Class<EditorSettingPropertyValue>("Editor Settings Property", "Base class for editor settings properties")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
+
+                editContext->Class<EditorSettingPropertyInt>("Editor Settings Property (int)", "An editor setting int property")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "EditorSettingPropertyGroup's class attributes.")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->DataElement(0, &EditorSettingPropertyInt::m_value, "m_value", "Int")
+                        ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &EditorSettingPropertyValue::m_name)
+                    ;
+
+                editContext->Class<EditorSettingPropertyGroup>("Editor Setting Property group", "This is an editor setting property group")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "EditorSettingPropertyGroup's class attributes.")
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->DataElement(0, &EditorSettingPropertyGroup::m_properties, "m_properties", "Properties in this property group")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->DataElement(0, &EditorSettingPropertyGroup::m_groups, "m_groups", "Subgroups in this property group")
+                        ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ;
+
+                editContext->Class<EditorSettingsBlock>("Editor Settings Block", "Dynamically show Editor Settings")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->DataElement(0, &EditorSettingsBlock::m_settingValues, "Elements", "Elements in the attribute")
+                        ->Attribute(AZ::Edit::Attributes::NameLabelOverride, &EditorSettingsBlock::m_name)
+                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    //->SetDynamicEditDataProvider(&EditorSettingsBlock::GetSettingPropertyEditData)
+                ;
+            }
+        }
+    }
+
     void EditorSettingsManager::Start()
     {
         AZ::ReflectionEnvironment::GetReflectionManager()->AddReflectContext<EditorSettingsContext>();
@@ -38,24 +97,39 @@ namespace AzToolsFramework::Editor
 
     void EditorSettingsManager::OpenEditorSettingsDialog()
     {
+        if (!m_isSetup)
+        {
+            SetupSettings();
+        }
+
         if (m_settingsDialog == nullptr)
         {
             m_settingsDialog = new EditorSettingsDialog(AzToolsFramework::GetActiveWindow());
         }
+
         m_settingsDialog->exec();
     }
 
-    AZStd::string EditorSettingsManager::GetTestSettingsList()
+    CategoryMap* EditorSettingsManager::GetSettingsBlocks()
     {
-        AZStd::string result;
+        return &m_settingItems;
+    }
 
+    void EditorSettingsManager::SetupSettings()
+    {
+        // Organize Settings from EditorSettingsContext into category/subcategory maps
         auto context = AZ::ReflectionEnvironment::GetReflectionManager()->GetReflectContext<EditorSettingsContext>();
         for (auto elem : context->GetSettingsArray())
         {
-            result += AZStd::string::format("%s - %s - %s\n",
-                elem.GetCategory().data(), elem.GetSubCategory().data(), elem.GetName().data());
+            if(m_settingItems[elem.GetCategory()].find(elem.GetSubCategory()) == m_settingItems[elem.GetCategory()].end())
+            {
+                // TODO - Remember to clean!
+                m_settingItems[elem.GetCategory()][elem.GetSubCategory()] = new EditorSettingsBlock(elem.GetSubCategory());
+            }
+
+            m_settingItems[elem.GetCategory()][elem.GetSubCategory()]->AddProperty(elem);
         }
 
-        return result;
+        m_isSetup = true;
     }
 } // namespace AzToolsFramework::Editor

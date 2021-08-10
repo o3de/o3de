@@ -10,6 +10,8 @@
 
 #include <AzCore/Component/Component.h>
 
+#include <AzToolsFramework/Editor/Settings/EditorSettingsBlock.h>
+#include <AzToolsFramework/Editor/Settings/EditorSettingsOriginTracker.h>
 #include <AzToolsFramework/Editor/Settings/Dialog/EditorSettingsDialog.h>
 #include <AzToolsFramework/Editor/Settings/EditorSettingsInterface.h>
 
@@ -22,13 +24,19 @@ namespace AzToolsFramework::Editor
         EditorSettingsManager();
         virtual ~EditorSettingsManager();
 
+        static void Reflect(AZ::ReflectContext* context);
         void Start();
 
         // EditorSettingsInterface
         void OpenEditorSettingsDialog() override;
-        AZStd::string GetTestSettingsList() override;
+        CategoryMap* GetSettingsBlocks() override;
 
     private:
+        void SetupSettings();
+
+        bool m_isSetup = false;
+        CategoryMap m_settingItems;
+
         EditorSettingsDialog* m_settingsDialog = nullptr;
     };
 } // namespace AzToolsFramework::Editor

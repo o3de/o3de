@@ -6,13 +6,14 @@
  *
  */
 
-#include "EditorSettingsDialog.h"
+#include <AzToolsFramework/Editor/EditorSettingsAPIBus.h>
+#include <AzToolsFramework/Editor/Settings/Dialog/EditorSettingsDialog.h>
+#include <AzToolsFramework/Editor/Settings/Dialog/EditorSettingsTreeWidgetDelegate.h>
+#include <AzToolsFramework/Editor/Settings/EditorSettingsBlock.h>
 
-// AzQtComponents
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
 #include <AzQtComponents/Components/StyleManager.h>
 
-#include <AzToolsFramework/Editor/EditorSettingsAPIBus.h>
 
 //#include "EditorPreferencesTreeWidgetItemDelegate.h"
 
@@ -72,7 +73,7 @@ namespace AzToolsFramework
         ui->pageTree->setRootIsDecorated(false);
 
         // Set the delegate so we can use the svg icons.
-        // ui->pageTree->setItemDelegate(new EditorPreferencesTreeWidgetItemDelegate(ui->pageTree));
+        ui->pageTree->setItemDelegate(new EditorSettingsTreeWidgetItemDelegate(ui->pageTree));
 
         // Shrink the spacer so that the search bar fills the dialog.
         ui->horizontalSpacer_2->changeSize(0, 0, QSizePolicy::Maximum);
@@ -84,36 +85,42 @@ namespace AzToolsFramework
 
         AzQtComponents::StyleManager::setStyleSheet(this, QStringLiteral("style:EditorPreferencesDialog.qss"));
 
-        // TEST - loop through the EditorSettingsContext and list all options
-        QString text = "";
+        // TEST - enable RPE
 
         Editor::EditorSettingsInterface* editorSettingsInterface = AZ::Interface<Editor::EditorSettingsInterface>::Get();
         if (editorSettingsInterface != nullptr)
         {
-            text = editorSettingsInterface->GetTestSettingsList().c_str();
+            Editor::CategoryMap* categories = editorSettingsInterface->GetSettingsBlocks();
+
+            for (auto cat : *categories)
+            {
+                for (auto subcat : cat.second)
+                {
+                    auto instance = subcat.second;
+                    const AZ::Uuid& classId = AZ::SerializeTypeInfo<Editor::EditorSettingsBlock>::GetUuid(instance);
+                    ui->propertyEditor->AddInstance(instance, classId);
+                }
+            }
         }
 
-        QLabel* label = new QLabel(this);
-        label->setText(text);
-        ui->verticalLayout_2->addWidget(label);
+        ui->propertyEditor->InvalidateAll();
+
+        ui->propertyEditor->show();
+
+        // Refresh the Stylesheet - style would break on page load sometimes.
+        AzQtComponents::StyleManager::repolishStyleSheet(this);
     }
 
     EditorSettingsDialog::~EditorSettingsDialog()
     {
     }
 
-    void EditorSettingsDialog::showEvent(QShowEvent* /*event*/)
+    void EditorSettingsDialog::showEvent(QShowEvent* event)
     {
-        /*
-        origAutoBackup.bEnabled = gSettings.autoBackupEnabled;
-        origAutoBackup.nTime = gSettings.autoBackupTime;
-        origAutoBackup.nRemindTime = gSettings.autoRemindTime;
-
         CreateImages();
         CreatePages();
-        ui->pageTree->setCurrentItem(ui->pageTree->topLevelItem(0));
+        //ui->pageTree->setCurrentItem(ui->pageTree->topLevelItem(0));
         QDialog::showEvent(event);
-        */
     }
 
     void EditorSettingsDialog::OnTreeCurrentItemChanged()

@@ -50,15 +50,6 @@ namespace Maestro
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }
         }
-
-        AzToolsFramework::EditorSettingsContext* settingsContext = azrtti_cast<AzToolsFramework::EditorSettingsContext*>(context);
-        if (settingsContext)
-        {
-            settingsContext->Setting<int>("Left Side Category", "Right Side Category", "Gem Setting", "The description for this setting.")
-                ->Attribute(AzToolsFramework::SettingProperty::Min, 0)
-                ->Attribute(AzToolsFramework::SettingProperty::Max, 100)
-                ->Attribute(AzToolsFramework::SettingProperty::Step, 5);
-        }
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -6,53 +6,56 @@
  *
  */
 
+#include <AzCore/Serialization/EditContextConstants.inl>
+
 #include <AzToolsFramework/Editor/Settings/EditorSettingsContext.h>
 
 namespace AzToolsFramework
 {
-    EditorSettingItem::EditorSettingItem(
-        AZStd::string_view category, AZStd::string_view subCategory,
-        AZStd::string_view name, AZStd::string_view description)
-        : m_category(category)
+    EditorSettingProperty::EditorSettingProperty(
+        AZ::Uuid typeId,
+        AZStd::string_view category,
+        AZStd::string_view subCategory,
+        AZStd::string_view name,
+        AZStd::string_view description
+    )
+        : m_typeId(typeId)
+        , m_category(category)
         , m_subCategory(subCategory)
-        , m_name(name)
-        , m_description(description)
     {
+        m_editData.m_name = name.data();
+        m_editData.m_description = description.data();
+        m_editData.m_elementId = AZ::Edit::UIHandlers::Default;
     }
 
-    AZStd::string_view EditorSettingItem::GetCategory()
+    AZStd::string_view EditorSettingProperty::GetName()
+    {
+        return m_editData.m_name;
+    }
+
+    AZStd::string_view EditorSettingProperty::GetCategory()
     {
         return m_category;
     }
 
-    void EditorSettingItem::SetCategory(AZStd::string_view category)
-    {
-        m_category = category;
-    }
-
-    AZStd::string_view EditorSettingItem::GetSubCategory()
+    AZStd::string_view EditorSettingProperty::GetSubCategory()
     {
         return m_subCategory;
     }
 
-    void EditorSettingItem::SetSubCategory(AZStd::string_view subCategory)
+    const AZ::Edit::ElementData* EditorSettingProperty::GetEditData() const
     {
-        m_subCategory = subCategory;
+        return &m_editData;
     }
 
-    AZStd::string_view EditorSettingItem::GetName()
+    AZ::Uuid EditorSettingProperty::GetTypeId()
     {
-        return m_name;
+        return m_typeId;
     }
 
-    AZStd::string_view EditorSettingItem::GetDescription()
+    void EditorSettingProperty::AddAttribute(AZ::AttributePair attributePair)
     {
-        return m_description;
-    }
-
-    void EditorSettingItem::AddAttribute(AttributePair attributePair)
-    {
-        m_attributes.emplace_back(AZStd::move(attributePair));
+        m_editData.m_attributes.emplace_back(AZStd::move(attributePair));
     }
 
     const EditorSettingsArray& EditorSettingsContext::GetSettingsArray() const

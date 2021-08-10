@@ -373,6 +373,7 @@ namespace AzToolsFramework
 
         Camera::EditorCameraRequests::Reflect(context);
         AzToolsFramework::EditorTransformComponentSelectionRequests::Reflect(context);
+        AzToolsFramework::Editor::EditorSettingsManager::Reflect(context);
 
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {

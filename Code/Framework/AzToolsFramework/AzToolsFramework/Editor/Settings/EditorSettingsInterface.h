@@ -14,6 +14,9 @@
 
 namespace AzToolsFramework::Editor
 {
+    using SubCategoryMap = AZStd::map<AZStd::string, EditorSettingsBlock*>;
+    using CategoryMap = AZStd::map<AZStd::string, SubCategoryMap>;
+
     /*!
      * EditorSettingsInterface
      * 
@@ -24,19 +27,7 @@ namespace AzToolsFramework::Editor
     public:
         AZ_RTTI(EditorSettingsInterface, "{E7479325-6DA2-4E62-938C-EE4F4727F94B}");
 
-        /*
-        // TODO - what about an Outcome?
-        virtual void RegisterIntProperty(
-            AZStd::string_view category,
-            AZStd::string_view subcategory,
-            int defaultValue,
-            int minValue = AZStd::numeric_limits<int>::min(),
-            int maxValue = AZStd::numeric_limits<int>::max()) = 0;
-        */
-
         virtual void OpenEditorSettingsDialog() = 0;
-
-        // TEMP for testing purposes
-        virtual AZStd::string GetTestSettingsList() = 0;
+        virtual CategoryMap* GetSettingsBlocks() = 0;
     };
 } // namespace AzToolsFramework::Editor
