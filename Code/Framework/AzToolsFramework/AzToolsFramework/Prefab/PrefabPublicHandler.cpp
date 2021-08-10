@@ -1727,6 +1727,7 @@ namespace AzToolsFramework
 
                 AliasPath absoluteInstancePath = commonOwningInstance.GetAbsoluteInstanceAliasPath();
                 absoluteInstancePath.Append(newInstanceAlias);
+                absoluteInstancePath.Append("ContainerEntity");
 
                 AZ::EntityId newEntityId = InstanceEntityIdMapper::GenerateEntityIdForAliasPath(absoluteInstancePath);
                 duplicatedEntityIds.push_back(newEntityId);
