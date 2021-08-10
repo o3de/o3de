@@ -114,6 +114,7 @@ namespace AZ
             bool IsContinuousCaptureInProgress() const final override;
             void SetProfilerEnabled(bool enabled) final override;
             bool IsProfilerEnabled() const final override;
+            const CachedTimeRegion::GroupRegionName& InsertDynamicName(const char* groupName, const AZStd::string& regionName) final override;
 
         private:
             static constexpr AZStd::size_t MaxFramesToSave = 2 * 60 * 120; // 2 minutes of 120fps
@@ -128,6 +129,11 @@ namespace AZ
             // Set of registered threads when created
             AZStd::vector<RHI::Ptr<CpuTimingLocalStorage>, AZ::OSStdAllocator> m_registeredThreads;
             AZStd::mutex m_threadRegisterMutex;
+
+            // Storage for runtime GroupRegionNames
+            AZStd::unordered_map<AZStd::string, AZStd::string> m_dynamicRegionNameMap;
+            AZStd::unordered_map<AZStd::string, TimeRegion::GroupRegionName> m_dynamicGroupRegionNameMap;
+            AZStd::mutex m_dynamicNameMutex;
 
             // Thread local storage, gets lazily allocated when a thread is created
             static thread_local CpuTimingLocalStorage* ms_threadLocalStorage;
