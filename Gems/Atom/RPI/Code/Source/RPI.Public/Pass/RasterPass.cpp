@@ -172,7 +172,7 @@ namespace AZ
             if (viewDrawList.size() > 0 && drawLists.size() == 0)
             {
                 m_drawListView = viewDrawList;
-                m_drawItemCount += viewDrawList.size();
+                m_drawItemCount += (u32)viewDrawList.size();
                 PassSystemInterface::Get()->IncrementFrameDrawItemCount(m_drawItemCount);
                 return;
             }
@@ -183,7 +183,7 @@ namespace AZ
             // combine draw items from mutiple draw lists to one draw list and sort it.
             for (auto drawList : drawLists)
             {
-                m_drawItemCount += drawList.size();
+                m_drawItemCount += (u32)drawList.size();
             }
             PassSystemInterface::Get()->IncrementFrameDrawItemCount(m_drawItemCount);
             m_combinedDrawList.resize(m_drawItemCount);
