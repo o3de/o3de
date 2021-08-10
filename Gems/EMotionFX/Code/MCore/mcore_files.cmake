@@ -106,7 +106,6 @@ set(FILES
     Source/StaticAllocator.cpp
     Source/StaticAllocator.h
     Source/StaticString.h
-    Source/SmallArray.h
     Source/StandardHeaders.h
     Source/Stream.h
     Source/StringConversions.cpp
