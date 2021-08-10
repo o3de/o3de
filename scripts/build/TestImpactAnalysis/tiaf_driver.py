@@ -10,6 +10,7 @@ import argparse
 import mars_utils
 import sys
 import pathlib
+import traceback
 from tiaf import TestImpact
 from tiaf_logger import get_logger
 
@@ -129,7 +130,7 @@ if __name__ == "__main__":
         tiaf = TestImpact(args.config)
         tiaf_result = tiaf.run(args.commit, args.src_branch, args.dst_branch, args.s3_bucket, args.suite, args.test_failure_policy, args.safe_mode, args.test_timeout, args.global_timeout)
         
-        if args.mars_index_prefix is not None:
+        if args.mars_index_prefix:
             logger.info("Transmitting report to MARS...")
             mars_utils.transmit_report_to_mars(args.mars_index_prefix, tiaf_result, sys.argv)
 
@@ -140,3 +141,4 @@ if __name__ == "__main__":
     except Exception as e:
         # Non-gating will be removed from this script and handled at the job level in SPEC-7413
         logger.error(f"Exception caught by TIAF driver: '{e}'.")
+        traceback.print_exc()
