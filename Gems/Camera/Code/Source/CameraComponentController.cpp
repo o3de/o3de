@@ -24,7 +24,7 @@ namespace Camera
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<CameraComponentConfig, AZ::ComponentConfig>()
-                ->Version(3)
+                ->Version(4)
                 ->Field("Orthographic", &CameraComponentConfig::m_orthographic)
                 ->Field("Orthographic Half Width", &CameraComponentConfig::m_orthographicHalfWidth)
                 ->Field("Field of View", &CameraComponentConfig::m_fov)
@@ -51,6 +51,7 @@ namespace Camera
                         ->Attribute(AZ::Edit::Attributes::Visibility, &CameraComponentConfig::GetOrthographicParameterVisibility)
                         ->Attribute(AZ::Edit::Attributes::Min, 0.001f)
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::ValuesOnly)
+
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CameraComponentConfig::m_fov, "Field of view", "Vertical field of view in degrees")
                         ->Attribute(AZ::Edit::Attributes::Min, MIN_FOV)
                         ->Attribute(AZ::Edit::Attributes::Suffix, " degrees")
@@ -114,6 +115,13 @@ namespace Camera
             AZ_Assert(m_atomCamera, "Attempted to activate Atom camera before component activation");
 
             const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
+
+            // Connect to the bus the first time we activate the view
+            if (!AZ::RPI::ViewportContextNotificationBus::Handler::BusIsConnectedId(contextName))
+            {
+                AZ::RPI::ViewportContextNotificationBus::Handler::BusConnect(contextName);
+            }
+
             // Ensure the Atom camera is updated with our current transform state
             AZ::Transform localTransform;
             AZ::TransformBus::EventResult(localTransform, m_entityId, &AZ::TransformBus::Events::GetLocalTM);
@@ -124,17 +132,20 @@ namespace Camera
             // Push the Atom camera after we make sure we're up-to-date with our component's transform to ensure the viewport reads the correct state
             UpdateCamera();
             atomViewportRequests->PushView(contextName, m_atomCamera);
-            AZ::RPI::ViewportContextNotificationBus::Handler::BusConnect(contextName);
         }
     }
 
     void CameraComponentController::DeactivateAtomView()
     {
+        if (!IsActiveView())
+        {
+            return;
+        }
+
         auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
         if (atomViewportRequests)
         {
             const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
-            AZ::RPI::ViewportContextNotificationBus::Handler::BusDisconnect(contextName);
             atomViewportRequests->PopView(contextName, m_atomCamera);
         }
     }
@@ -413,6 +424,11 @@ namespace Camera
 
     void CameraComponentController::MakeActiveView()
     {
+        if (IsActiveView())
+        {
+            return;
+        }
+
         // Set Legacy Cry view, if it exists
         if (m_viewSystem)
         {
@@ -431,6 +447,11 @@ namespace Camera
 
         // Notify of active view changed
         CameraNotificationBus::Broadcast(&CameraNotificationBus::Events::OnActiveViewChanged, m_entityId);
+    }
+
+    bool CameraComponentController::IsActiveView()
+    {
+        return m_isActiveView;
     }
 
     void CameraComponentController::OnTransformChanged([[maybe_unused]] const AZ::Transform& local, const AZ::Transform& world)
@@ -456,7 +477,15 @@ namespace Camera
 
     void CameraComponentController::OnViewportSizeChanged([[maybe_unused]] AzFramework::WindowSize size)
     {
-        UpdateCamera();
+        if (IsActiveView())
+        {
+            UpdateCamera();
+        }
+    }
+
+    void CameraComponentController::OnViewportDefaultViewChanged(AZ::RPI::ViewPtr view)
+    {
+        m_isActiveView = m_atomCamera == view;
     }
 
     AZ::RPI::ViewPtr CameraComponentController::GetView() const

@@ -22,8 +22,6 @@ namespace AzQtComponents
          QApplication::setApplicationName("O3DE Tools Application");
 
          AzQtComponents::PrepareQtPaths();
-
-         QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));
     }
 
     void AzQtApplication::InitializeDpiScaling()

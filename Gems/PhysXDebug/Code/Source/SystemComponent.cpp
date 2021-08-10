@@ -18,13 +18,13 @@
 #include <PhysX/UserDataTypes.h>
 #include <PhysX/Utils.h>
 #include <PhysX/PhysXLocks.h>
-#include <PhysX/Debug/PhysXDebugConfiguration.h>
 
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Physics/Ragdoll.h>
 #include <AzFramework/Physics/SystemBus.h>
 #include <AzFramework/Physics/Utils.h>
+#include <AzFramework/Components/CameraBus.h>
 
 #include <IRenderAuxGeom.h>
 #include <MathConversion.h>
@@ -468,16 +468,25 @@ namespace PhysXDebug
         RenderBuffers();
     }
 
+    AZ::Vector3 GetViewCameraPosition()
+    {
+        using Camera::ActiveCameraRequestBus;
+
+        AZ::Transform tm = AZ::Transform::CreateIdentity();
+        ActiveCameraRequestBus::BroadcastResult(tm, &ActiveCameraRequestBus::Events::GetActiveCameraTransform);
+        return tm.GetTranslation();
+    }
+
     void SystemComponent::UpdateColliderVisualizationByProximity()
     {
         if (auto* debug = AZ::Interface<PhysX::Debug::PhysXDebugInterface>::Get();
             UseEditorPhysicsScene() && m_settings.m_visualizeCollidersByProximity
            && debug != nullptr)
         {
-            const CCamera& camera = gEnv->pSystem->GetViewCamera();
+            const AZ::Vector3& viewPos = GetViewCameraPosition();
             const PhysX::Debug::ColliderProximityVisualization data(
                 m_settings.m_visualizeCollidersByProximity,
-                LYVec3ToAZVec3(camera.GetPosition()),
+                viewPos,
                 m_culling.m_boxSize * 0.5f);
             debug->UpdateColliderProximityVisualization(data);
         }
@@ -663,8 +672,7 @@ namespace PhysXDebug
         AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
 
         // Currently using the Cry view camera to support Editor, Game and Launcher modes. This will be updated in due course.
-        const CCamera& camera = gEnv->pSystem->GetViewCamera();
-        AZ::Vector3 cameraTranslation = LYVec3ToAZVec3(camera.GetPosition());
+        const AZ::Vector3 cameraTranslation = GetViewCameraPosition();
 
         if (!cameraTranslation.IsClose(AZ::Vector3::CreateZero()))
         {

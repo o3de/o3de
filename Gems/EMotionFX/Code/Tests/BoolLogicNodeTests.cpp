@@ -22,7 +22,7 @@
 #include <EMotionFX/Source/Parameter/BoolParameter.h>
 #include <EMotionFX/Source/Parameter/ParameterFactory.h>
 #include <EMotionFX/Source/MotionData/NonUniformMotionData.h>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 
 namespace EMotionFX
 {
@@ -168,15 +168,15 @@ namespace EMotionFX
         const AZStd::vector<EMotionFX::AnimGraphNode::Port>& parameterNodeOutputPorts = parameterNode->GetOutputPorts();
         for (const EMotionFX::AnimGraphNode::Port& port : parameterNodeOutputPorts)
         {
-            uint32 paramIndex = parameterNode->GetParameterIndex(port.mPortID);
+            uint32 paramIndex = parameterNode->GetParameterIndex(port.m_portId);
             if (paramIndex == boolXParamIndexOutcome.GetValue())
             {
-                boolXOutputPortIndex = port.mPortID;
+                boolXOutputPortIndex = port.m_portId;
                 portIndicesFound++;
             }
             else if (paramIndex == boolYParamIndexOutcome.GetValue())
             {
-                boolYOutputPortIndex = port.mPortID;
+                boolYOutputPortIndex = port.m_portId;
                 portIndicesFound++;
             }
         }

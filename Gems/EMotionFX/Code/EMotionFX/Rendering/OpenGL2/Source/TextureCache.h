@@ -10,7 +10,7 @@
 #define __RENDERGL_TEXTURECACHE_H
 
 #include <AzCore/std/string/string.h>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include "RenderGLConfig.h"
 
 #include <AzCore/PlatformIncl.h>
@@ -28,14 +28,14 @@ namespace RenderGL
         Texture(AZ::u32 texID, uint32 width, uint32 height);
         ~Texture();
 
-        MCORE_INLINE uint32 GetHeight() const       { return mHeight; }
-        MCORE_INLINE AZ::u32 GetID() const          { return mTexture; }
-        MCORE_INLINE uint32 GetWidth() const        { return mWidth; }
+        MCORE_INLINE uint32 GetHeight() const       { return m_height; }
+        MCORE_INLINE AZ::u32 GetID() const          { return m_texture; }
+        MCORE_INLINE uint32 GetWidth() const        { return m_width; }
 
     protected:
-        AZ::u32 mTexture;
-        uint32 mWidth;
-        uint32 mHeight;
+        AZ::u32 m_texture;
+        uint32 m_width;
+        uint32 m_height;
     };
 
 
@@ -56,8 +56,8 @@ namespace RenderGL
 
         void AddTexture(const char* filename, Texture* texture);
         Texture* FindTexture(const char* filename) const;
-        MCORE_INLINE Texture* GetWhiteTexture()             { return mWhiteTexture; }
-        MCORE_INLINE Texture* GetDefaultNormalTexture()     { return mDefaultNormalTexture; }
+        MCORE_INLINE Texture* GetWhiteTexture()             { return m_whiteTexture; }
+        MCORE_INLINE Texture* GetDefaultNormalTexture()     { return m_defaultNormalTexture; }
         bool CheckIfHasTexture(Texture* texture) const;
         bool Init();
         void RemoveTexture(Texture* texture);
@@ -68,13 +68,13 @@ namespace RenderGL
 
         struct Entry
         {
-            AZStd::string   mName;      // the search key (unique for each texture)
-            Texture*        mTexture;
+            AZStd::string   m_name;      // the search key (unique for each texture)
+            Texture*        m_texture;
         };
 
-        MCore::Array<Entry>     mEntries;
-        Texture*                mWhiteTexture;
-        Texture*                mDefaultNormalTexture;
+        AZStd::vector<Entry>     m_entries;
+        Texture*                m_whiteTexture;
+        Texture*                m_defaultNormalTexture;
     };
 }
 
