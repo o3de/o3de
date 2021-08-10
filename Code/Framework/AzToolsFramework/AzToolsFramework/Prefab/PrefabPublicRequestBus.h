@@ -14,6 +14,12 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
+        /**
+        * The primary purpose of this bus is to facilitate writing automated tests for prefabs.
+        * It calls PrefabPublicInterface internally to talk to the prefab system.
+        * If you would like to integrate prefabs into your system, please call PrefabPublicInterface
+        * directly for better performance.
+        */
         class PrefabPublicRequests
             : public AZ::EBusTraits
         {
@@ -26,13 +32,6 @@ namespace AzToolsFramework
             //////////////////////////////////////////////////////////////////////////
 
             virtual ~PrefabPublicRequests() = default;
-
-            /**
-            * Create a prefab out of the entities provided, at the path provided, and save it in disk immediately.
-            * Automatically detects descendants of entities, and discerns between entities and child instances.
-            */
-            virtual bool CreatePrefabInDisk(
-                const AZStd::vector<AZ::EntityId>& entityIds, AZStd::string_view filePath) = 0;
 
             /**
              * Create a prefab out of the entities provided, at the path provided, and keep it in memory.

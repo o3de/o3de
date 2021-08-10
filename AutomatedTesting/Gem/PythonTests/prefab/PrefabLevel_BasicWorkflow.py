@@ -7,11 +7,10 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 # fmt:off
 class Tests():
-    create_new_entity =  ("Entity: 'CreateNewEntity' passed",                          "Entity: 'CreateNewEntity' failed")
-    create_prefab =      ("Prefab: 'CreatePrefab' passed",                             "Prefab: 'CreatePrefab' failed")
-    instantiate_prefab = ("Prefab: 'InstantiatePrefab' passed",                        "Prefab: 'InstantiatePrefab' failed")
-    new_prefab_pos =     ("Prefab: new prefab's position is at the expected position", "Prefab: new prefab's position is *not* at the expected position")
-
+    create_new_entity =       ("Entity: 'CreateNewEntity' passed",                          "Entity: 'CreateNewEntity' failed")
+    create_prefab =           ("Prefab: 'CreatePrefab' passed",                             "Prefab: 'CreatePrefab' failed")
+    instantiate_prefab =      ("Prefab: 'InstantiatePrefab' passed",                        "Prefab: 'InstantiatePrefab' failed")
+    new_prefab_position =     ("Prefab: new prefab's position is at the expected position", "Prefab: new prefab's position is *not* at the expected position")
 # fmt:on
 
 def PrefabLevel_BasicWorkflow():
@@ -36,7 +35,7 @@ def PrefabLevel_BasicWorkflow():
     from azlmbr.math import Vector3
     import azlmbr.legacy.general as general
 
-    EXPECTED_NEW_PREFAB_POS = Vector3(10.00, 20.0, 30.0)
+    EXPECTED_NEW_PREFAB_POSITION = Vector3(10.00, 20.0, 30.0)
 
     helper.init_idle()
     helper.open_level("Prefab", "Base")
@@ -46,19 +45,20 @@ def PrefabLevel_BasicWorkflow():
     Report.result(Tests.create_new_entity, new_entity_id.IsValid())
 
 # Checks for prefab creation passed or not 
-    create_prefab_result = prefab.PrefabPublicRequestBus(bus.Broadcast, 'CreatePrefabInMemory', [new_entity_id], "path/to/new_entity_prefab")
+    new_prefab_file_path = r"C:\Prefabs\new_prefab.prefab"
+    create_prefab_result = prefab.PrefabPublicRequestBus(bus.Broadcast, 'CreatePrefabInMemory', [new_entity_id], new_prefab_file_path)
     Report.result(Tests.create_prefab, create_prefab_result)
 
 # Checks for prefab instantiation passed or not 
-    container_entity_id = prefab.PrefabPublicRequestBus(bus.Broadcast, 'InstantiatePrefab', "path/to/new_entity_prefab", EntityId(), EXPECTED_NEW_PREFAB_POS)
+    container_entity_id = prefab.PrefabPublicRequestBus(bus.Broadcast, 'InstantiatePrefab', new_prefab_file_path, EntityId(), EXPECTED_NEW_PREFAB_POSITION)
     Report.result(Tests.instantiate_prefab, container_entity_id.IsValid())
 
 # Checks if the new prefab is at the correct position and if it fails, it will provide the expected postion and the actual postion of the entity in the Editor log
-    new_prefab_pos = azlmbr.components.TransformBus(azlmbr.bus.Event, "GetWorldTranslation", container_entity_id)
-    is_at_position = new_prefab_pos.IsClose(EXPECTED_NEW_PREFAB_POS)
-    Report.result(Tests.new_prefab_pos, is_at_position)
+    new_prefab_position = azlmbr.components.TransformBus(azlmbr.bus.Event, "GetWorldTranslation", container_entity_id)
+    is_at_position = new_prefab_position.IsClose(EXPECTED_NEW_PREFAB_POSITION)
+    Report.result(Tests.new_prefab_position, is_at_position)
     if not is_at_position:
-        Report.info(f'Expected position: {EXPECTED_NEW_PREFAB_POS.ToString()}, actual position: {new_prefab_pos.ToString()}')
+        Report.info(f'Expected position: {EXPECTED_NEW_PREFAB_POSITION.ToString()}, actual position: {new_prefab_position.ToString()}')
     
 
 if __name__ == "__main__":
