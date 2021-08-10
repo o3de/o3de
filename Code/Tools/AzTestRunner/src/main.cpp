@@ -120,12 +120,6 @@ namespace AzTestRunner
         {
             const char* cwd = AzTestRunner::get_current_working_directory();
             std::cout << "cwd = " << cwd << std::endl;
-
-            for (int i = 0; i < argc; i++)
-            {
-                std::cout << "arg[" << i << "] " << argv[i] << std::endl;
-            }
-
             std::cout << "LIB: " << lib << std::endl;
         }
 
