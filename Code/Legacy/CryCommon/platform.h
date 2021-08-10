@@ -24,6 +24,7 @@
 #define PLATFORM_H_SECTION_12 12
 #define PLATFORM_H_SECTION_13 13
 #define PLATFORM_H_SECTION_14 14
+#define PLATFORM_H_SECTION_15 15
 #endif
 
 #if (defined(LINUX) && !defined(ANDROID)) || defined(APPLE)
@@ -412,6 +413,11 @@ threadID CryGetCurrentThreadId();
         #define AZ_RESTRICTED_SECTION PLATFORM_H_SECTION_14
         #include AZ_RESTRICTED_FILE(platform_h)
     #endif
+#endif
+
+#if defined(AZ_RESTRICTED_PLATFORM)
+    #define AZ_RESTRICTED_SECTION PLATFORM_H_SECTION_15
+    #include AZ_RESTRICTED_FILE(platform_h)
 #endif
 
 void InitRootDir(char szExeFileName[] = nullptr, uint nExeSize = 0, char szExeRootName[] = nullptr, uint nRootSize = 0);
