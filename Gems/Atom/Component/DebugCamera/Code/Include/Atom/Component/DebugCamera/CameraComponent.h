@@ -103,6 +103,7 @@ namespace AZ
             void SetOrthographic(bool orthographic) override;
             void SetOrthographicHalfWidth(float halfWidth) override;
             void MakeActiveView() override;
+            bool IsActiveView() override;
 
             // RPI::WindowContextNotificationBus overrides...
             void OnViewportResized(uint32_t width, uint32_t height) override;

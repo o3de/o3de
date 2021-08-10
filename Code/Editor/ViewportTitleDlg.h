@@ -12,7 +12,6 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include "RenderViewport.h"
 #include <AzCore/Component/Component.h>
 
 #include <IAudioSystem.h>

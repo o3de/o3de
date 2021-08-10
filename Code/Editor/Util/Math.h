@@ -128,7 +128,7 @@ inline float PointToLineDistance(const Vec3& p1, const Vec3& p2, const Vec3& p3,
     @param p2 Target point of first line.
     @param p3 Source point of second line.
     @param p4 Target point of second line.
-    @return FALSE if no solution exists.
+    @return false if no solution exists.
 */
 inline bool LineLineIntersect(const Vec3& p1, const Vec3& p2, const Vec3& p3, const Vec3& p4,
     Vec3& pa, Vec3& pb, float& mua, float& mub)

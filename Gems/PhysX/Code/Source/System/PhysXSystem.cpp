@@ -219,7 +219,7 @@ namespace PhysX
 
         if (m_sceneList.size() < std::numeric_limits<AzPhysics::SceneIndex>::max()) //add a new scene if it is under the limit
         {
-            const AzPhysics::SceneHandle sceneHandle(AZ::Crc32(config.m_sceneName), (m_sceneList.size()));
+            const AzPhysics::SceneHandle sceneHandle(AZ::Crc32(config.m_sceneName), static_cast<AzPhysics::SceneIndex>(m_sceneList.size()));
             m_sceneList.emplace_back(AZStd::make_unique<PhysXScene>(config, sceneHandle));
             m_sceneAddedEvent.Signal(sceneHandle);
             return sceneHandle;

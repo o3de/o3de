@@ -56,19 +56,6 @@ namespace AWSCore
         return configFilePath;
     }
 
-    AZStd::string AWSCoreConfiguration::GetResourceMappingConfigFolderPath() const
-    {
-        if (m_sourceProjectFolder.empty())
-        {
-            AZ_Warning(AWSCoreConfigurationName, false, ProjectSourceFolderNotFoundErrorMessage);
-            return "";
-        }
-        AZStd::string configFolderPath = AZStd::string::format(
-            "%s/%s", m_sourceProjectFolder.c_str(), AWSCoreResourceMappingConfigFolderName);
-        AzFramework::StringFunc::Path::Normalize(configFolderPath);
-        return configFolderPath;
-    }
-
     void AWSCoreConfiguration::InitConfig()
     {
         InitSourceProjectFolderPath();

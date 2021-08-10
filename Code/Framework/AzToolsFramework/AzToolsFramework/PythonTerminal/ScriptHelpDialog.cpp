@@ -251,7 +251,7 @@ namespace AzToolsFramework
         {
             EditorPythonConsoleInterface::GlobalFunctionCollection globalFunctionCollection;
             editorPythonConsoleInterface->GetGlobalFunctionList(globalFunctionCollection);
-            m_items.reserve(globalFunctionCollection.size());
+            m_items.reserve(static_cast<int>(globalFunctionCollection.size()));
             for (const EditorPythonConsoleInterface::GlobalFunction& globalFunction : globalFunctionCollection)
             {
                 Item item;

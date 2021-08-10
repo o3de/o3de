@@ -98,7 +98,7 @@ namespace EMotionFX
         void RecursiveCollectActiveNodes(AnimGraphInstance* animGraphInstance, AZStd::vector<AnimGraphNode*>* outNodes, const AZ::TypeId& nodeType) const override;
 
         AnimGraphPose* GetMainOutputPose(AnimGraphInstance* animGraphInstance) const override;
-        void RecursiveCollectObjects(MCore::Array<AnimGraphObject*>& outObjects) const override;
+        void RecursiveCollectObjects(AZStd::vector<AnimGraphObject*>& outObjects) const override;
         void RecursiveCollectObjectsAffectedBy(AnimGraph* animGraph, AZStd::vector<AnimGraphObject*>& outObjects) const override;
 
         bool RecursiveDetectCycles(AZStd::unordered_set<const AnimGraphNode*>& nodes) const override;

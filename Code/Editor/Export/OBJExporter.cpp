@@ -67,7 +67,7 @@ bool COBJExporter::ExportToFile(const char* filename, const Export::IData* pExpo
         while (nParent >= 0 && nParent < pExportData->GetObjectCount())
         {
             const Export::Object* pParentObj = pExportData->GetObject(nParent);
-            assert(NULL != pParentObj);
+            assert(nullptr != pParentObj);
 
             Vec3 pos2(pParentObj->pos.x, pParentObj->pos.y, pParentObj->pos.z);
             Quat rot2(pParentObj->rot.w, pParentObj->rot.v.x, pParentObj->rot.v.y, pParentObj->rot.v.z);

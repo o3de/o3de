@@ -81,6 +81,7 @@ namespace AZ
             Interface<CpuProfiler>::Register(this);
             m_initialized = true;
             SystemTickBus::Handler::BusConnect();
+            m_continuousCaptureData.set_capacity(10);
         }
 
         void CpuProfilerImpl::Shutdown()
@@ -101,6 +102,8 @@ namespace AZ
             m_registeredThreads.clear();
             m_timeRegionMap.clear();
             m_initialized = false;
+            m_continuousCaptureInProgress.store(false);
+            m_continuousCaptureData.clear();
             SystemTickBus::Handler::BusDisconnect();
         }
 
@@ -141,12 +144,54 @@ namespace AZ
             return m_timeRegionMap;
         }
 
+        bool CpuProfilerImpl::BeginContinuousCapture()
+        {
+            bool expected = false;
+            if (m_continuousCaptureInProgress.compare_exchange_strong(expected, true))
+            {
+                m_enabled = true;
+                AZ_TracePrintf("Profiler", "Continuous capture started\n");
+                return true;
+            }
+             
+            AZ_TracePrintf("Profiler", "Attempting to start a continuous capture while one already in progress");
+            return false;
+        }
+
+        bool CpuProfilerImpl::EndContinuousCapture(AZStd::ring_buffer<TimeRegionMap>& flushTarget)
+        {
+            if (!m_continuousCaptureInProgress.load())
+            {
+                AZ_TracePrintf("Profiler", "Attempting to end a continuous capture while one not in progress");
+                return false;
+            }
+
+            if (m_continuousCaptureEndingMutex.try_lock())
+            {
+                m_enabled = false;
+                flushTarget = AZStd::move(m_continuousCaptureData);
+                m_continuousCaptureData.clear();
+                AZ_TracePrintf("Profiler", "Continuous capture ended\n");
+                m_continuousCaptureInProgress.store(false);
+
+                m_continuousCaptureEndingMutex.unlock();
+                return true;
+            }
+
+            return false;
+        }
+
+        bool CpuProfilerImpl::IsContinuousCaptureInProgress() const
+        {
+            return m_continuousCaptureInProgress.load();
+        }
+
         void CpuProfilerImpl::SetProfilerEnabled(bool enabled)
         {
             AZStd::unique_lock<AZStd::mutex> lock(m_threadRegisterMutex);
 
-            // Early out if the state is already the same
-            if (m_enabled == enabled)
+            // Early out if the state is already the same or a continuous capture is in progress
+            if (m_enabled == enabled || m_continuousCaptureInProgress.load())
             {
                 return;
             }
@@ -179,6 +224,20 @@ namespace AZ
             {
                 return;
             }
+
+            if (m_continuousCaptureInProgress.load() && m_continuousCaptureEndingMutex.try_lock())
+            {
+                if (m_continuousCaptureData.full() && m_continuousCaptureData.size() != MaxFramesToSave)
+                {
+                    const AZStd::size_t size = m_continuousCaptureData.size();
+                    m_continuousCaptureData.set_capacity(AZStd::min(MaxFramesToSave, size + size / 2));
+                }
+
+                m_continuousCaptureData.push_back(AZStd::move(m_timeRegionMap));
+                m_timeRegionMap.clear();
+                m_continuousCaptureEndingMutex.unlock();
+            }
+
             AZStd::unique_lock<AZStd::mutex> lock(m_threadRegisterMutex);
 
             // Iterate through all the threads, and collect the thread's cached time regions

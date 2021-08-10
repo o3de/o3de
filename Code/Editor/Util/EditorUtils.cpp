@@ -42,14 +42,14 @@ void HeapCheck::Check([[maybe_unused]] const char* file, [[maybe_unused]] int li
             {
                 CString str;
                 str.Format( "Bad Start of Heap, at file %s line:%d",file,line );
-                MessageBox( NULL,str,"Heap Check",MB_OK );
+                MessageBox( nullptr,str,"Heap Check",MB_OK );
             }
       break;
    case _HEAPBADNODE:
             {
                 CString str;
                 str.Format( "Bad Node in Heap, at file %s line:%d",file,line );
-                MessageBox( NULL,str,"Heap Check",MB_OK );
+                MessageBox( nullptr,str,"Heap Check",MB_OK );
             }
       break;
    }
@@ -258,7 +258,7 @@ namespace EditorUtils
     AzWarningAbsorber::AzWarningAbsorber(const char* window)
         : m_window(window)
     AZ_POP_DISABLE_WARNING
-    { 
+    {
         BusConnect();
     }
 

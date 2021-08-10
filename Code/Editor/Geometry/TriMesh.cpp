@@ -19,13 +19,13 @@
 //////////////////////////////////////////////////////////////////////////
 CTriMesh::CTriMesh()
 {
-    pFaces = NULL;
-    pVertices = NULL;
-    pWSVertices = NULL;
-    pUV = NULL;
-    pColors = NULL;
-    pEdges = NULL;
-    pWeights = NULL;
+    pFaces = nullptr;
+    pVertices = nullptr;
+    pWSVertices = nullptr;
+    pUV = nullptr;
+    pColors = nullptr;
+    pEdges = nullptr;
+    pWeights = nullptr;
 
     nFacesCount = 0;
     nVertCount = 0;
@@ -67,7 +67,7 @@ void CTriMesh::ReallocStream(int stream, int nNewCount)
     {
         return; // Stream already have required size.
     }
-    void* pStream = 0;
+    void* pStream = nullptr;
     int nElementSize = 0;
     GetStreamInfo(stream, pStream, nElementSize);
     pStream = ReAllocElements(pStream, nNewCount, nElementSize);
@@ -256,7 +256,7 @@ void CTriMesh::SharePositions()
     std::vector<int> arrHashTable[256];
 
     CTriVertex* pNewVerts = new CTriVertex[GetVertexCount()];
-    SMeshColor* pNewColors = 0;
+    SMeshColor* pNewColors = nullptr;
     if (pColors)
     {
         pNewColors = new SMeshColor[GetVertexCount()];
@@ -433,8 +433,8 @@ void CTriMesh::UpdateIndexedMesh(IIndexedMesh* pIndexedMesh) const
 //////////////////////////////////////////////////////////////////////////
 void CTriMesh::CopyStream(CTriMesh& fromMesh, int stream)
 {
-    void* pTrgStream = 0;
-    void* pSrcStream = 0;
+    void* pTrgStream = nullptr;
+    void* pSrcStream = nullptr;
     int nElemSize = 0;
     fromMesh.GetStreamInfo(stream, pSrcStream, nElemSize);
     if (pSrcStream)
