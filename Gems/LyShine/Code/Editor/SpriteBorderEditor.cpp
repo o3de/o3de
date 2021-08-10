@@ -191,9 +191,9 @@ void SpriteBorderEditor::UpdateSpriteSheetCellInfo(int newNumRows, int newNumCol
 
     // Calculate uniformly sized sprite-sheet cell UVs based on the given
     // row and column cell configuration.
-    for (int row = 0; row < m_numRows; ++row)
+    for (unsigned int row = 0; row < m_numRows; ++row)
     {
-        for (int col = 0; col < m_numCols; ++col)
+        for (unsigned int col = 0; col < m_numCols; ++col)
         {
             AZ::Vector2 min(col / floatNumCols, row / floatNumRows);
             AZ::Vector2 max((col + 1) / floatNumCols, (row + 1) / floatNumRows);

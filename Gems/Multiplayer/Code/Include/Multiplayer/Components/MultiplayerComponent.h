@@ -105,14 +105,14 @@ namespace Multiplayer
     template <typename TYPE>
     inline void SerializeNetworkPropertyHelper
     (
-        AzNetworking::ISerializer& serializer, 
-        bool modifyRecord, 
-        AzNetworking::FixedSizeBitsetView& bitset, 
-        int32_t bitIndex, 
-        TYPE& value, 
-        const char* name, 
-        NetComponentId componentId, 
-        PropertyIndex propertyIndex, 
+        AzNetworking::ISerializer& serializer,
+        bool modifyRecord,
+        AzNetworking::FixedSizeBitsetView& bitset,
+        int32_t bitIndex,
+        TYPE& value,
+        const char* name,
+        NetComponentId componentId,
+        PropertyIndex propertyIndex,
         MultiplayerStats& stats
     )
     {

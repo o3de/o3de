@@ -17,7 +17,7 @@ namespace EMotionFX
     AZ_CLASS_ALLOCATOR_IMPL(NodeGroup, NodeAllocator, 0)
 
 
-    NodeGroup::NodeGroup(const AZStd::string& groupName, uint16 numNodes, bool enabledOnDefault)
+    NodeGroup::NodeGroup(const AZStd::string& groupName, size_t numNodes, bool enabledOnDefault)
         : m_name(groupName)
         , m_nodes(numNodes)
         , m_enabledOnDefault(enabledOnDefault)
@@ -47,28 +47,28 @@ namespace EMotionFX
 
 
     // set the number of nodes
-    void NodeGroup::SetNumNodes(const uint16 numNodes)
+    void NodeGroup::SetNumNodes(const size_t numNodes)
     {
-        m_nodes.Resize(numNodes);
+        m_nodes.resize(numNodes);
     }
 
 
     // get the number of nodes
-    uint16 NodeGroup::GetNumNodes() const
+    size_t NodeGroup::GetNumNodes() const
     {
-        return static_cast<uint16>(m_nodes.GetLength());
+        return m_nodes.size();
     }
 
 
     // set a given node to a given node number
-    void NodeGroup::SetNode(uint16 index, uint16 nodeIndex)
+    void NodeGroup::SetNode(size_t index, uint16 nodeIndex)
     {
         m_nodes[index] = nodeIndex;
     }
 
 
     // get the node number of a given index
-    uint16 NodeGroup::GetNode(uint16 index) const
+    uint16 NodeGroup::GetNode(size_t index) const
     {
         return m_nodes[index];
     }
@@ -77,10 +77,9 @@ namespace EMotionFX
     // enable all nodes in the group inside a given actor instance
     void NodeGroup::EnableNodes(ActorInstance* targetActorInstance)
     {
-        const uint16 numNodes = static_cast<uint16>(m_nodes.GetLength());
-        for (uint16 i = 0; i < numNodes; ++i)
+        for (uint16 node : m_nodes)
         {
-            targetActorInstance->EnableNode(m_nodes[i]);
+            targetActorInstance->EnableNode(node);
         }
     }
 
@@ -88,10 +87,9 @@ namespace EMotionFX
     // disable all nodes in the group inside a given actor instance
     void NodeGroup::DisableNodes(ActorInstance* targetActorInstance)
     {
-        const uint16 numNodes = static_cast<uint16>(m_nodes.GetLength());
-        for (uint16 i = 0; i < numNodes; ++i)
+        for (uint16 node : m_nodes)
         {
-            targetActorInstance->DisableNode(m_nodes[i]);
+            targetActorInstance->DisableNode(node);
         }
     }
 
@@ -99,26 +97,29 @@ namespace EMotionFX
     // add a given node to the group (performs a realloc internally)
     void NodeGroup::AddNode(uint16 nodeIndex)
     {
-        m_nodes.Add(nodeIndex);
+        m_nodes.emplace_back(nodeIndex);
     }
 
 
     // remove a given node by its node number
     void NodeGroup::RemoveNodeByNodeIndex(uint16 nodeIndex)
     {
-        m_nodes.RemoveByValue(nodeIndex);
+        if (const auto found = AZStd::find(begin(m_nodes), end(m_nodes), nodeIndex); found)
+        {
+            m_nodes.erase(found);
+        }
     }
 
 
     // remove a given array element from the list of nodes
-    void NodeGroup::RemoveNodeByGroupIndex(uint16 index)
+    void NodeGroup::RemoveNodeByGroupIndex(size_t index)
     {
-        m_nodes.Remove(index);
+        m_nodes.erase(AZStd::next(begin(m_nodes), index));
     }
 
 
     // get the node array directly
-    MCore::SmallArray<uint16>& NodeGroup::GetNodeArray()
+    AZStd::vector<uint16>& NodeGroup::GetNodeArray()
     {
         return m_nodes;
     }

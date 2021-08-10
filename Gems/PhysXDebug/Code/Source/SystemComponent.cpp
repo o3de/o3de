@@ -703,7 +703,7 @@ namespace PhysXDebug
         if (GetCurrentPxScene())
         {
             // Reserve vector capacity
-            const int numTriangles = rb.getNbTriangles();
+            const physx::PxU32 numTriangles = static_cast<physx::PxU32>(rb.getNbTriangles());
             m_trianglePoints.reserve(numTriangles * 3);
             m_triangleColors.reserve(numTriangles * 3);
 
@@ -737,7 +737,7 @@ namespace PhysXDebug
 
         if (GetCurrentPxScene())
         {
-            const int numLines = rb.getNbLines();
+            const physx::PxU32 numLines = static_cast<physx::PxU32>(rb.getNbLines());
 
             // Reserve vector capacity
             m_linePoints.reserve(numLines * 2);

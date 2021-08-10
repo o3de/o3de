@@ -393,7 +393,7 @@ void CSystem::debug_GetCallStack(const char** pFunctions, int& nCount)
     unsigned int numFrames = StackRecorder::Record(frames, nMaxCount, 1);
     SymbolStorage::StackLine* textLines = (SymbolStorage::StackLine*)AZ_ALLOCA(sizeof(SymbolStorage::StackLine)*nMaxCount);
     SymbolStorage::DecodeFrames(frames, numFrames, textLines);
-    for (int i = 0; i < numFrames; i++)
+    for (unsigned int i = 0; i < numFrames; i++)
     {
         pFunctions[i] = textLines[i];
     }

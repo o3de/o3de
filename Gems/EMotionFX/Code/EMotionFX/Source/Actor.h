@@ -23,7 +23,6 @@
 // include MCore related files
 #include <MCore/Source/Vector.h>
 #include <AzCore/std/containers/vector.h>
-#include <MCore/Source/SmallArray.h>
 #include <MCore/Source/Distance.h>
 
 // include required headers
@@ -567,13 +566,13 @@ namespace EMotionFX
          * Get the number of node groups inside this actor object.
          * @result The number of node groups.
          */
-        uint32 GetNumNodeGroups() const;
+        size_t GetNumNodeGroups() const;
 
         /**
          * Get a pointer to a given node group.
          * @param index The node group index, which must be in range of [0..GetNumNodeGroups()-1].
          */
-        NodeGroup* GetNodeGroup(uint32 index) const;
+        NodeGroup* GetNodeGroup(size_t index) const;
 
         /**
          * Add a node group.
@@ -586,7 +585,7 @@ namespace EMotionFX
          * @param index The node group number to remove. This value must be in range of [0..GetNumNodeGroups()-1].
          * @param delFromMem Set to true (default) when you wish to also delete the specified group from memory.
          */
-        void RemoveNodeGroup(uint32 index, bool delFromMem = true);
+        void RemoveNodeGroup(size_t index, bool delFromMem = true);
 
         /**
          * Remove a given node group by its pointer.
@@ -601,14 +600,14 @@ namespace EMotionFX
          * @param groupName The name of the group to search for. This is case sensitive.
          * @result The group number, or MCORE_INVALIDINDEX32 when it cannot be found.
          */
-        uint32 FindNodeGroupIndexByName(const char* groupName) const;
+        size_t FindNodeGroupIndexByName(const char* groupName) const;
 
         /**
          * Find a group index by its name, on a non-case sensitive way.
          * @param groupName The name of the group to search for. This is NOT case sensitive.
          * @result The group number, or MCORE_INVALIDINDEX32 when it cannot be found.
          */
-        uint32 FindNodeGroupIndexByNameNoCase(const char* groupName) const;
+        size_t FindNodeGroupIndexByNameNoCase(const char* groupName) const;
 
         /**
          * Find a node group by its name.
@@ -925,7 +924,7 @@ namespace EMotionFX
         AZStd::vector<NodeMirrorInfo>                    m_nodeMirrorInfos;           /**< The array of node mirror info. */
         AZStd::vector< AZStd::vector< Material* > >       m_materials;                 /**< A collection of materials (for each lod). */
         AZStd::vector< MorphSetup* >                     m_morphSetups;               /**< A morph setup for each geometry LOD. */
-        MCore::SmallArray<NodeGroup*>                   m_nodeGroups;                /**< The set of node groups. */
+        AZStd::vector<NodeGroup*>                       m_nodeGroups;                /**< The set of node groups. */
         AZStd::shared_ptr<PhysicsSetup>                 m_physicsSetup;             /**< Hit detection, ragdoll and cloth colliders, joint limits and rigid bodies. */
         AZStd::shared_ptr<SimulatedObjectSetup>         m_simulatedObjectSetup;     /**< Setup for simulated objects */
         MCore::Distance::EUnitType                      m_unitType;                  /**< The unit type used on export. */

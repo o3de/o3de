@@ -616,7 +616,7 @@ UiInteractableStateFont::FontEffectComboBoxVec UiInteractableStateFont::Populate
     // NOTE: Curently, in order for this to work, when the font is changed we need to do
     // "RefreshEntireTree" to get the combo box list refreshed.
     unsigned int numEffects = m_fontFamily ? m_fontFamily->normal->GetNumEffects() : 0;
-    for (int i = 0; i < numEffects; ++i)
+    for (unsigned int i = 0; i < numEffects; ++i)
     {
         const char* name = m_fontFamily->normal->GetEffectName(i);
         result.push_back(AZStd::make_pair(i, name));

@@ -1093,7 +1093,7 @@ void CUiAnimViewSequence::DeselectAllKeys()
     CUiAnimViewSequenceNotificationContext context(this);
 
     CUiAnimViewKeyBundle selectedKeys = GetSelectedKeys();
-    for (int i = 0; i < selectedKeys.GetKeyCount(); ++i)
+    for (unsigned int i = 0; i < selectedKeys.GetKeyCount(); ++i)
     {
         CUiAnimViewKeyHandle keyHandle = selectedKeys.GetKey(i);
         keyHandle.Select(false);
@@ -1237,7 +1237,7 @@ float CUiAnimViewSequence::ClipTimeOffsetForSliding(const float timeOffset)
     for (pTrackIter = tracks.begin(); pTrackIter != tracks.end(); ++pTrackIter)
     {
         CUiAnimViewTrack* pTrack = *pTrackIter;
-        for (int i = 0; i < pTrack->GetKeyCount(); ++i)
+        for (unsigned int i = 0; i < pTrack->GetKeyCount(); ++i)
         {
             CUiAnimViewKeyHandle keyHandle = pTrack->GetKey(i);
 

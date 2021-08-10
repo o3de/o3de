@@ -262,11 +262,11 @@ namespace EMStudio
         m_clearButton->setDisabled(disableButtons);
 
         // set the row count
-        m_nodeGroupsTable->setRowCount(m_actor->GetNumNodeGroups());
+        m_nodeGroupsTable->setRowCount(aznumeric_caster(m_actor->GetNumNodeGroups()));
 
         // fill the table with the existing node groups
-        const uint32 numNodeGroups = m_actor->GetNumNodeGroups();
-        for (uint32 i = 0; i < numNodeGroups; ++i)
+        const size_t numNodeGroups = m_actor->GetNumNodeGroups();
+        for (size_t i = 0; i < numNodeGroups; ++i)
         {
             // get the nodegroup
             EMotionFX::NodeGroup* nodeGroup = m_actor->GetNodeGroup(i);
@@ -287,16 +287,16 @@ namespace EMStudio
 
             // create table items
             QTableWidgetItem* tableItemGroupName = new QTableWidgetItem(nodeGroup->GetName());
-            AZStd::string numGroupString = AZStd::string::format("%i", nodeGroup->GetNumNodes());
+            AZStd::string numGroupString = AZStd::string::format("%zu", nodeGroup->GetNumNodes());
             QTableWidgetItem* tableItemNumNodes = new QTableWidgetItem(numGroupString.c_str());
 
             // add items to the table
-            m_nodeGroupsTable->setCellWidget(i, 0, checkbox);
-            m_nodeGroupsTable->setItem(i, 1, tableItemGroupName);
-            m_nodeGroupsTable->setItem(i, 2, tableItemNumNodes);
+            m_nodeGroupsTable->setCellWidget(aznumeric_caster(i), 0, checkbox);
+            m_nodeGroupsTable->setItem(aznumeric_caster(i), 1, tableItemGroupName);
+            m_nodeGroupsTable->setItem(aznumeric_caster(i), 2, tableItemNumNodes);
 
             // set the row height
-            m_nodeGroupsTable->setRowHeight(i, 21);
+            m_nodeGroupsTable->setRowHeight(aznumeric_caster(i), 21);
         }
 
         // set the old selected row if any one

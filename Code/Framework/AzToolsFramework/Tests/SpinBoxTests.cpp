@@ -245,12 +245,15 @@ namespace UnitTest
     {
         using testing::StrEq;
 
+        QLocale testLocale{ QLocale() };
+        QString testString = "10" + QString(testLocale.decimalPoint()) + "0";
+
         m_doubleSpinBox->setSuffix("m");
         m_doubleSpinBox->setValue(10.0);
 
         // test internal logic (textFromValue() calls private StringValue())
         QString value = m_doubleSpinBox->textFromValue(10.0);
-        EXPECT_THAT(value.toUtf8().constData(), StrEq("10.0"));
+        EXPECT_THAT(value.toUtf8().constData(), testString);
 
         m_doubleSpinBox->setFocus();
         EXPECT_THAT(m_doubleSpinBox->suffix().toUtf8().constData(), StrEq(""));
@@ -293,31 +296,44 @@ namespace UnitTest
 
     TEST_F(SpinBoxFixture, SpinBoxCheckHighValueTruncatesCorrectly)
     {
-        QString value = setupTruncationTest("0.9999999");
+        QLocale testLocale{ QLocale() };
+        QString testString = "0" + QString(testLocale.decimalPoint()) + "9999999";
+        QString value = setupTruncationTest(testString);
 
-        EXPECT_TRUE(value == "0.999");
+        testString = "0" + QString(testLocale.decimalPoint()) + "999";
+        EXPECT_TRUE(value == testString);
     }
 
     TEST_F(SpinBoxFixture, SpinBoxCheckLowValueTruncatesCorrectly)
     {
-        QString value = setupTruncationTest("0.0000001");
+        QLocale testLocale{ QLocale() };
+        QString testString = "0" + QString(testLocale.decimalPoint()) + "0000001";
+        QString value = setupTruncationTest(testString);
 
-        EXPECT_TRUE(value == "0.0");
+        testString = "0" + QString(testLocale.decimalPoint()) + "0";
+        EXPECT_TRUE(value == testString);
     }
 
     TEST_F(SpinBoxFixture, SpinBoxCheckBugValuesTruncatesCorrectly)
     {
-        QString value = setupTruncationTest("0.12395");
+        QLocale testLocale{ QLocale() };
+        QString testString = "0" + QString(testLocale.decimalPoint()) + "12395";
+        QString value = setupTruncationTest(testString);
 
-        EXPECT_TRUE(value == "0.123");
+        testString = "0" + QString(testLocale.decimalPoint()) + "123";
+        EXPECT_TRUE(value == testString);
 
-        value = setupTruncationTest("0.94496");
+        testString = "0" + QString(testLocale.decimalPoint()) + "94496";
+        value = setupTruncationTest(testString);
 
-        EXPECT_TRUE(value == "0.944");
+        testString = "0" + QString(testLocale.decimalPoint()) + "944";
+        EXPECT_TRUE(value == testString);
 
-        value = setupTruncationTest("0.0009999");
+        testString = "0" + QString(testLocale.decimalPoint()) + "0009999";
+        value = setupTruncationTest(testString);
 
-        EXPECT_TRUE(value == "0.0");
+        testString = "0" + QString(testLocale.decimalPoint()) + "0";
+        EXPECT_TRUE(value == testString);
     }
 
 } // namespace UnitTest

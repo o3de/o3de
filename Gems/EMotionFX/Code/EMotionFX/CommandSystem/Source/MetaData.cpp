@@ -41,15 +41,15 @@ namespace CommandSystem
     void MetaData::GenerateNodeGroupMetaData(EMotionFX::Actor* actor, AZStd::string& outMetaDataString)
     {
         AZStd::string nodeNameList;
-        const AZ::u32 numNodeGroups = actor->GetNumNodeGroups();
-        for (uint32 i = 0; i < numNodeGroups; ++i)
+        const size_t numNodeGroups = actor->GetNumNodeGroups();
+        for (size_t i = 0; i < numNodeGroups; ++i)
         {
             EMotionFX::NodeGroup* nodeGroup = actor->GetNodeGroup(i);
             outMetaDataString += AZStd::string::format("AddNodeGroup -actorID $(ACTORID) -name \"%s\"\n", nodeGroup->GetName());
 
             nodeNameList.clear();
-            const AZ::u16 numNodes = nodeGroup->GetNumNodes();
-            for (AZ::u16 n = 0; n < numNodes; ++n)
+            const size_t numNodes = nodeGroup->GetNumNodes();
+            for (size_t n = 0; n < numNodes; ++n)
             {
                 const AZ::u16    nodeIndex = nodeGroup->GetNode(n);
                 EMotionFX::Node* node = actor->GetSkeleton()->GetNode(nodeIndex);
