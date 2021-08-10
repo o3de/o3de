@@ -36,18 +36,9 @@
       "test_cpu_profile_vs2019"
     ]
   },
-  "periodic_test_profile_vs2019_pipe": {
-    "TAGS": [
-      "nightly-incremental",
-      "nightly-clean"
-    ],
-    "steps": [
-      "aws_integration_deployment",
-      "periodic_test_profile_vs2019"
-    ]
-  },
   "aws_integration_deployment": {
     "TAGS": [
+      "nightly-aws-integration-deployment",
       "weekly-build-metrics"
     ],
     "COMMAND": "deploy_cdk_applications.cmd",
@@ -237,6 +228,8 @@
   },
   "periodic_test_profile_vs2019": {
     "TAGS": [
+      "nightly-incremental",
+      "nightly-clean",
       "weekly-build-metrics"
     ],
     "COMMAND": "build_test_windows.cmd",

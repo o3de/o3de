@@ -7,11 +7,19 @@ REM SPDX-License-Identifier: Apache-2.0 OR MIT
 REM
 REM
 
+REM Deploy the CDK applcations for AWS gems (Windows only)
+REM Prerequisites:
+REM 1) Node.js is installed
+REM 2) Node.js version >= 10.13.0, except for versions 13.0.0 - 13.6.0. A version in active long-term support is recommended.
 SETLOCAL EnableDelayedExpansion
 
 SET SOURCE_DIRECTORY=%CD%
 SET PATH=%SOURCE_DIRECTORY%\python;%PATH%
 SET GEM_DIRECTORY=%SOURCE_DIRECTORY%\Gems
+
+REM Create and activate a virtualenv for the CDK deployment
+CALL python -m venv .env
+CALL .env\Scripts\activate.bat
 
 ECHO [cdk_installation] Install the latest version of CDK
 CALL npm uninstall -g aws-cdk
@@ -69,4 +77,5 @@ IF ERRORLEVEL 1 (
 )
 POPD
 
+CALL deactivate
 EXIT /b 0
