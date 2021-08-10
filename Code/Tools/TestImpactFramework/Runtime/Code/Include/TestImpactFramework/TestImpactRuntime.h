@@ -207,20 +207,21 @@ namespace TestImpact
         void UpdateAndSerializeDynamicDependencyMap(const AZStd::vector<TestEngineInstrumentedRun>& jobs);
 
         //! Generates a base policy state for the current runtime policy runtime configuration.
-        PolicyStateBase GeneratePolicyStateBase();
+        PolicyStateBase GeneratePolicyStateBase() const;
 
         //! Generates a regular/seed sequence policy state for the current runtime policy runtime configuration.
-        SequencePolicyState GenerateSequencePolicyState();
+        SequencePolicyState GenerateSequencePolicyState() const;
 
         //! Generates a safe impact analysis sequence policy state for the current runtime policy runtime configuration.
-        SafeImpactAnalysisSequencePolicyState GenerateSafeImpactAnalysisSequencePolicyState(Policy::TestPrioritization testPrioritizationPolicy);
+        SafeImpactAnalysisSequencePolicyState GenerateSafeImpactAnalysisSequencePolicyState(
+            Policy::TestPrioritization testPrioritizationPolicy) const;
 
         //! Generates an impact analysis sequence policy state for the current runtime policy runtime configuration.
         ImpactAnalysisSequencePolicyState GenerateImpactAnalysisSequencePolicyState(
-            Policy::TestPrioritization testPrioritizationPolicy, Policy::DynamicDependencyMap dynamicDependencyMapPolicy);
+            Policy::TestPrioritization testPrioritizationPolicy, Policy::DynamicDependencyMap dynamicDependencyMapPolicy) const;
 
         RuntimeConfig m_config;
-        RepoPath m_sparTIAFile;
+        RepoPath m_sparTiaFile;
         SuiteType m_suiteFilter;
         Policy::ExecutionFailure m_executionFailurePolicy;
         Policy::FailedTestCoverage m_failedTestCoveragePolicy;
