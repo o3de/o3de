@@ -76,7 +76,7 @@ class PersistentStorageS3(PersistentStorage):
         try:
             data = BytesIO(zlib.compress(bytes(historic_data_json, "UTF-8")))
             logger.info(f"Uploading historic data to location '{self._historic_data_key}'...")
-            self._bucket.upload_fileobj(data, self._historic_data_key)
+            self._bucket.upload_fileobj(data, self._historic_data_key, ExtraArgs={'ACL': 'bucket-owner-full-control'})
             logger.info("Upload complete.")
         except botocore.exceptions.BotoCoreError as e:
             logger.error(f"There was a problem with the s3 bucket: {e}")
