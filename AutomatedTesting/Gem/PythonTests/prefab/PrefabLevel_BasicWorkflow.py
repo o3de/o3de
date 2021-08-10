@@ -45,7 +45,7 @@ def PrefabLevel_BasicWorkflow():
     Report.result(Tests.create_new_entity, new_entity_id.IsValid())
 
 # Checks for prefab creation passed or not 
-    new_prefab_file_path = r"C:\Prefabs\new_prefab.prefab"
+    new_prefab_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'new_prefab.prefab')
     create_prefab_result = prefab.PrefabPublicRequestBus(bus.Broadcast, 'CreatePrefabInMemory', [new_entity_id], new_prefab_file_path)
     Report.result(Tests.create_prefab, create_prefab_result)
 
