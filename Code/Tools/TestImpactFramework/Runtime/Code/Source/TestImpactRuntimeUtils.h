@@ -10,7 +10,7 @@
 
 #include <TestImpactFramework/TestImpactConfiguration.h>
 #include <TestImpactFramework/TestImpactClientTestSelection.h>
-#include <TestImpactFramework/TestImpactClientFailureReport.h>
+#include <TestImpactFramework/TestImpactClientSequenceReport.h>
 
 #include <Artifact/Static/TestImpactTestTargetMeta.h>
 #include <Artifact/Static/TestImpactBuildTargetDescriptor.h>
@@ -25,7 +25,7 @@
 namespace TestImpact
 {
     //! Construct a dynamic dependency map from the build target descriptors and test target metas.
-    AZStd::unique_ptr<TestImpact::DynamicDependencyMap> ConstructDynamicDependencyMap(
+    AZStd::unique_ptr<DynamicDependencyMap> ConstructDynamicDependencyMap(
         SuiteType suiteFilter,
         const BuildTargetDescriptorConfig& buildTargetDescriptorConfig,
         const TestTargetMetaConfig& testTargetMetaConfig);
@@ -36,16 +36,17 @@ namespace TestImpact
         const AZStd::vector<AZStd::string>& excludedTestTargets);
 
     //! Extracts the name information from the specified test targets.
-    AZStd::vector<AZStd::string> ExtractTestTargetNames(const AZStd::vector<const TestTarget*> testTargets);    
+    AZStd::vector<AZStd::string> ExtractTestTargetNames(const AZStd::vector<const TestTarget*>& testTargets);
 
     //! Generates a test run failure report from the specified test engine job information.
     //! @tparam TestJob The test engine job type.
     template<typename TestJob>
-    Client::TestRunFailure GenerateTestRunFailure(const TestJob& testJob)
+    AZStd::vector<Client::TestCaseFailure> GenerateTestCaseFailures(const TestJob& testJob)
     {
+        AZStd::vector<Client::TestCaseFailure> testCaseFailures;
+
         if (testJob.GetTestRun().has_value())
         {
-            AZStd::vector<Client::TestCaseFailure> testCaseFailures;
             for (const auto& testSuite : testJob.GetTestRun()->GetTestSuites())
             {
                 AZStd::vector<Client::TestFailure> testFailures;
@@ -56,57 +57,66 @@ namespace TestImpact
                         testFailures.push_back(Client::TestFailure(testCase.m_name, "No error message retrieved"));
                     }
                 }
-
+    
                 if (!testFailures.empty())
                 {
                     testCaseFailures.push_back(Client::TestCaseFailure(testSuite.m_name, AZStd::move(testFailures)));
                 }
             }
+        }
 
-            return Client::TestRunFailure(Client::TestRunFailure(testJob.GetTestTarget()->GetName(), AZStd::move(testCaseFailures)));
-        }
-        else
-        {
-            return Client::TestRunFailure(testJob.GetTestTarget()->GetName(), { });
-        }
+        return testCaseFailures;
     }
 
-    //! Generates a sequence failure report from the specified list of test engine jobs.
-    //! @tparam TestJob The test engine job type.
     template<typename TestJob>
-    Client::SequenceFailure GenerateSequenceFailureReport(const AZStd::vector<TestJob>& testJobs)
+    Client::TestRunReport GenerateTestRunReport(
+        TestSequenceResult result,
+        AZStd::chrono::high_resolution_clock::time_point startTime,
+        AZStd::chrono::milliseconds duration,
+        const AZStd::vector<TestJob>& testJobs)
     {
-        AZStd::vector<Client::ExecutionFailure> executionFailures;
-        AZStd::vector<Client::TestRunFailure> testRunFailures;
-        AZStd::vector<Client::TargetFailure> timedOutTestRuns;
-        AZStd::vector<Client::TargetFailure> unexecutedTestRuns;
-
+        AZStd::vector<Client::TestRun> passingTests;
+        AZStd::vector<Client::TestRunWithTestFailures> failingTests;
+        AZStd::vector<Client::TestRun> executionFailureTests;
+        AZStd::vector<Client::TestRun> timedOutTests;
+        AZStd::vector<Client::TestRun> unexecutedTests;
+        
         for (const auto& testJob : testJobs)
         {
+            // Test job start time relative to start time
+            const auto relativeStartTime =
+                AZStd::chrono::high_resolution_clock::time_point() +
+                AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(testJob.GetStartTime() - startTime);
+
+            Client::TestRun clientTestRun(
+                testJob.GetTestTarget()->GetName(), testJob.GetCommandString(), relativeStartTime, testJob.GetDuration(),
+                testJob.GetTestResult());
+
             switch (testJob.GetTestResult())
             {
             case Client::TestRunResult::FailedToExecute:
             {
-                executionFailures.push_back(Client::ExecutionFailure(testJob.GetTestTarget()->GetName(), testJob.GetCommandString()));
+                executionFailureTests.push_back(clientTestRun);
                 break;
             }
             case Client::TestRunResult::NotRun:
             {
-                unexecutedTestRuns.push_back(testJob.GetTestTarget()->GetName());
+                unexecutedTests.push_back(clientTestRun);
                 break;
             }
             case Client::TestRunResult::Timeout:
             {
-                timedOutTestRuns.push_back(testJob.GetTestTarget()->GetName());
+                timedOutTests.push_back(clientTestRun);
                 break;
             }
             case Client::TestRunResult::AllTestsPass:
             {
+                passingTests.push_back(clientTestRun);
                 break;
             }
             case Client::TestRunResult::TestFailures:
             {
-                testRunFailures.push_back(GenerateTestRunFailure(testJob));
+                failingTests.emplace_back(AZStd::move(clientTestRun), GenerateTestCaseFailures(testJob));
                 break;
             }
             default:
@@ -116,11 +126,15 @@ namespace TestImpact
             }
             }
         }
-
-        return Client::SequenceFailure(
-            AZStd::move(executionFailures),
-            AZStd::move(testRunFailures),
-            AZStd::move(timedOutTestRuns),
-            AZStd::move(unexecutedTestRuns));
+        
+        return Client::TestRunReport(
+            result,
+            startTime,
+            duration,
+            AZStd::move(passingTests),
+            AZStd::move(failingTests),
+            AZStd::move(executionFailureTests),
+            AZStd::move(timedOutTests),
+            AZStd::move(unexecutedTests));
     }
-}
+} // namespace TestImpact

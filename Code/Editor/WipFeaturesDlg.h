@@ -29,7 +29,7 @@ class CWipFeaturesDlg
 {
     Q_OBJECT
 public:
-    CWipFeaturesDlg(QWidget* pParent = NULL);   // standard constructor
+    CWipFeaturesDlg(QWidget* pParent = nullptr);   // standard constructor
     virtual ~CWipFeaturesDlg();
 
 private:

@@ -11,7 +11,7 @@
 #if !defined(Q_MOC_RUN)
 #include "EMStudioConfig.h"
 #include "NotificationWindow.h"
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #endif
 
 
@@ -35,9 +35,9 @@ namespace EMStudio
             return mNotificationWindows[index];
         }
 
-        MCORE_INLINE uint32 GetNumNotificationWindow() const
+        MCORE_INLINE size_t GetNumNotificationWindow() const
         {
-            return mNotificationWindows.GetLength();
+            return mNotificationWindows.size();
         }
 
         void OnMovedOrResized();
@@ -53,7 +53,7 @@ namespace EMStudio
         }
 
     private:
-        MCore::Array<NotificationWindow*> mNotificationWindows;
+        AZStd::vector<NotificationWindow*> mNotificationWindows;
         int32 mVisibleTime;
     };
 } // namespace EMStudio

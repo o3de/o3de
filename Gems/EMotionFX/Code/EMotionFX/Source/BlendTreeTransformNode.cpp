@@ -41,7 +41,7 @@ namespace EMotionFX
 
         const AZStd::string& targetJointName = transformNode->GetTargetJointName();
 
-        mNodeIndex = InvalidIndex32;
+        mNodeIndex = InvalidIndex;
         SetHasError(true);
 
         if (!targetJointName.empty())

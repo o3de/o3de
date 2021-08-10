@@ -49,14 +49,14 @@ namespace EMotionFX
          * @param node The node where the mesh belongs to during this initialization.
          * @param lodLevel The LOD level of the mesh the mesh deformer works on.
          */
-        virtual void Reinitialize(Actor* actor, Node* node, uint32 lodLevel);
+        virtual void Reinitialize(Actor* actor, Node* node, size_t lodLevel);
 
         /**
          * Creates an exact clone (copy) of this deformer, and returns a pointer to it.
          * @param mesh The mesh to apply the cloned deformer on.
          * @result A pointer to the newly created clone of this deformer.
          */
-        virtual MeshDeformer* Clone(Mesh* mesh) = 0;
+        virtual MeshDeformer* Clone(Mesh* mesh) const = 0;
 
         /**
          * Returns the type identification number of the deformer class.

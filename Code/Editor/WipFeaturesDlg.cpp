@@ -152,7 +152,7 @@ public:
     }
 };
 
-CWipFeaturesDlg::CWipFeaturesDlg(QWidget* pParent /*=NULL*/)
+CWipFeaturesDlg::CWipFeaturesDlg(QWidget* pParent /*=nullptr*/)
     : QDialog(pParent)
     , m_ui(new Ui::WipFeaturesDlg)
 {

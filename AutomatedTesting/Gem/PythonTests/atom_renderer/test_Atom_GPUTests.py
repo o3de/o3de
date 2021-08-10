@@ -99,6 +99,7 @@ class TestPerformanceBenchmarkSuite(object):
         expected_lines = [
             "Benchmark metadata captured.",
             "Pass timestamps captured.",
+            "CPU frame time captured.",
             "Capturing complete.",
             "Captured data successfully."
         ]
@@ -106,6 +107,7 @@ class TestPerformanceBenchmarkSuite(object):
         unexpected_lines = [
             "Failed to capture data.",
             "Failed to capture pass timestamps.",
+            "Failed to capture CPU frame time.",
             "Failed to capture benchmark metadata."
         ]
 

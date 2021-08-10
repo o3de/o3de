@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/std/numeric.h>
 #include "TimeTrack.h"
 #include "TimeViewPlugin.h"
 #include <QPainter>
@@ -162,10 +163,9 @@ namespace EMStudio
     {
         if (delFromMem)
         {
-            const size_t numElems = mElements.size();
-            for (size_t i = 0; i < numElems; ++i)
+            for (TimeTrackElement* element : mElements)
             {
-                delete mElements[i];
+                delete element;
             }
         }
 
@@ -174,7 +174,7 @@ namespace EMStudio
 
 
     // get the track element at a given pixel
-    TimeTrackElement* TimeTrack::GetElementAt(int32 x, int32 y)
+    TimeTrackElement* TimeTrack::GetElementAt(int32 x, int32 y) const
     {
         if (mVisible == false)
         {
@@ -182,11 +182,9 @@ namespace EMStudio
         }
 
         // for all elements
-        const size_t numElems = mElements.size();
-        for (size_t i = 0; i < numElems; ++i)
+        for (TimeTrackElement* element : mElements)
         {
             // check if its inside
-            TimeTrackElement* element = mElements[i];
             if (element->GetIsVisible() == false)
             {
                 continue;
@@ -203,26 +201,17 @@ namespace EMStudio
 
 
     // calculate the number of selected elements
-    uint32 TimeTrack::CalcNumSelectedElements() const
+    size_t TimeTrack::CalcNumSelectedElements() const
     {
         if (mVisible == false)
         {
             return 0;
         }
 
-        uint32 result = 0;
-
-        // for all elements
-        const size_t numElems = mElements.size();
-        for (size_t i = 0; i < numElems; ++i)
+        return AZStd::accumulate(begin(mElements), end(mElements), size_t{0}, [](size_t total, const TimeTrackElement* element)
         {
-            if (mElements[i]->GetIsSelected())
-            {
-                result++;
-            }
-        }
-
-        return result;
+            return total + element->GetIsSelected();
+        });
     }
 
 
@@ -234,28 +223,20 @@ namespace EMStudio
             return nullptr;
         }
 
-        // get the number of elements and iterate through them
-        const size_t numElems = mElements.size();
-        for (size_t i = 0; i < numElems; ++i)
+        const auto foundElement = AZStd::find_if(begin(mElements), end(mElements), [](const TimeTrackElement* element)
         {
-            // return the first selected element that we find
-            if (mElements[i]->GetIsSelected())
-            {
-                return mElements[i];
-            }
-        }
-
-        // no selected element found
-        return nullptr;
+            return element->GetIsSelected();
+        });
+        return foundElement != end(mElements) ? *foundElement : nullptr;
     }
 
 
     // select elements in a given range, unselect all other
-    void TimeTrack::RangeSelectElements(uint32 elementStartNr, uint32 elementEndNr)
+    void TimeTrack::RangeSelectElements(size_t elementStartNr, size_t elementEndNr)
     {
         // make sure the start number is actually the smaller one of the two values
-        const uint32 startNr    = MCore::Min<uint32>(elementStartNr, elementEndNr);
-        const uint32 endNr      = MCore::Max<uint32>(elementStartNr, elementEndNr);
+        const size_t startNr    = AZStd::min(elementStartNr, elementEndNr);
+        const size_t endNr      = AZStd::max(elementStartNr, elementEndNr);
 
         // get the number of elements and iterate through them
         const size_t numElems = mElements.size();
@@ -281,11 +262,9 @@ namespace EMStudio
     void TimeTrack::SelectElementsInRect(const QRect& rect, bool overwriteCurSelection, bool select, bool toggleMode)
     {
         // get the number of elements and iterate through them
-        const size_t numElems = mElements.size();
-        for (size_t i = 0; i < numElems; ++i)
+        for (TimeTrackElement* element : mElements)
         {
             // get the current element and the corresponding rect
-            TimeTrackElement*   element     = mElements[i];
             QRect               elementRect = element->CalcRect();
 
             if (elementRect.intersects(rect))

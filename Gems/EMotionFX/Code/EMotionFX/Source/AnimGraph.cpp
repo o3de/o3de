@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Debug/Timer.h>
+#include <AzCore/std/numeric.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/Utils.h>
@@ -36,9 +37,7 @@ namespace EMotionFX
     AnimGraph::AnimGraph()
         : mGameControllerSettings(aznew AnimGraphGameControllerSettings())
     {
-        mNodes.SetMemoryCategory(EMFX_MEMCATEGORY_ANIMGRAPH);
-
-        mID = MCore::GetIDGenerator().GenerateID();
+        mID = aznumeric_caster(MCore::GetIDGenerator().GenerateID());
         mDirtyFlag = false;
         mAutoUnregister = true;
         mRetarget = false;
@@ -50,7 +49,7 @@ namespace EMotionFX
 #endif // EMFX_DEVELOPMENT_BUILD
 
         // reserve some memory
-        mNodes.Reserve(1024);
+        mNodes.reserve(1024);
 
         // automatically register the anim graph
         GetAnimGraphManager().AddAnimGraph(this);
@@ -346,12 +345,12 @@ namespace EMotionFX
     AZStd::string AnimGraph::GenerateNodeName(const AZStd::unordered_set<AZStd::string>& nameReserveList, const char* prefix) const
     {
         AZStd::string result;
-        uint32 number = 0;
+        size_t number = 0;
         bool found = false;
         while (found == false)
         {
             // build the string
-            result = AZStd::string::format("%s%d", prefix, number++);
+            result = AZStd::string::format("%s%zu", prefix, number++);
 
             // if there is no such state machine yet
             if (!RecursiveFindNodeByName(result.c_str()) && nameReserveList.find(result) == nameReserveList.end())
@@ -364,7 +363,7 @@ namespace EMotionFX
     }
 
 
-    uint32 AnimGraph::RecursiveCalcNumNodes() const
+    size_t AnimGraph::RecursiveCalcNumNodes() const
     {
         return mRootStateMachine->RecursiveCalcNumNodes();
     }
@@ -387,9 +386,9 @@ namespace EMotionFX
     }
 
 
-    void AnimGraph::RecursiveCalcStatistics(Statistics& outStatistics, AnimGraphNode* animGraphNode, uint32 currentHierarchyDepth) const
+    void AnimGraph::RecursiveCalcStatistics(Statistics& outStatistics, AnimGraphNode* animGraphNode, size_t currentHierarchyDepth) const
     {
-        outStatistics.m_maxHierarchyDepth = MCore::Max<uint32>(currentHierarchyDepth, outStatistics.m_maxHierarchyDepth);
+        outStatistics.m_maxHierarchyDepth = AZStd::max(currentHierarchyDepth, outStatistics.m_maxHierarchyDepth);
 
         // Are we dealing with a state machine? If yes, increase the number of transitions, states etc. in the statistics.
         if (azrtti_typeid(animGraphNode) == azrtti_typeid<AnimGraphStateMachine>())
@@ -397,12 +396,12 @@ namespace EMotionFX
             AnimGraphStateMachine* stateMachine = static_cast<AnimGraphStateMachine*>(animGraphNode);
             outStatistics.m_numStateMachines++;
 
-            const AZ::u32 numTransitions = static_cast<AZ::u32>(stateMachine->GetNumTransitions());
+            const size_t numTransitions = stateMachine->GetNumTransitions();
             outStatistics.m_numTransitions += numTransitions;
 
             outStatistics.m_numStates += stateMachine->GetNumChildNodes();
 
-            for (uint32 i = 0; i < numTransitions; ++i)
+            for (size_t i = 0; i < numTransitions; ++i)
             {
                 AnimGraphStateTransition* transition = stateMachine->GetTransition(i);
 
@@ -411,12 +410,12 @@ namespace EMotionFX
                     outStatistics.m_numWildcardTransitions++;
                 }
 
-                outStatistics.m_numTransitionConditions += static_cast<uint32>(transition->GetNumConditions());
+                outStatistics.m_numTransitionConditions += transition->GetNumConditions();
             }
         }
 
-        const uint32 numChildNodes = animGraphNode->GetNumChildNodes();
-        for (uint32 i = 0; i < numChildNodes; ++i)
+        const size_t numChildNodes = animGraphNode->GetNumChildNodes();
+        for (size_t i = 0; i < numChildNodes; ++i)
         {
             RecursiveCalcStatistics(outStatistics, animGraphNode->GetChildNode(i), currentHierarchyDepth + 1);
         }
@@ -424,7 +423,7 @@ namespace EMotionFX
 
 
     // recursively calculate the number of node connections
-    uint32 AnimGraph::RecursiveCalcNumNodeConnections() const
+    size_t AnimGraph::RecursiveCalcNumNodeConnections() const
     {
         return mRootStateMachine->RecursiveCalcNumNodeConnections();
     }
@@ -493,7 +492,7 @@ namespace EMotionFX
     
 
     // get a pointer to the given node group
-    AnimGraphNodeGroup* AnimGraph::GetNodeGroup(uint32 index) const
+    AnimGraphNodeGroup* AnimGraph::GetNodeGroup(size_t index) const
     {
         return mNodeGroups[index];
     }
@@ -516,19 +515,13 @@ namespace EMotionFX
 
 
     // find the node group index by name
-    uint32 AnimGraph::FindNodeGroupIndexByName(const char* groupName) const
+    size_t AnimGraph::FindNodeGroupIndexByName(const char* groupName) const
     {
-        const size_t numNodeGroups = mNodeGroups.size();
-        for (size_t i = 0; i < numNodeGroups; ++i)
+        const auto foundNodeGroup = AZStd::find_if(begin(mNodeGroups), end(mNodeGroups), [groupName](const AnimGraphNodeGroup* nodeGroup)
         {
-            // compare the node names and return the index in case they are equal
-            if (mNodeGroups[i]->GetNameString() == groupName)
-            {
-                return static_cast<uint32>(i);
-            }
-        }
-
-        return MCORE_INVALIDINDEX32;
+            return nodeGroup->GetNameString() == groupName;
+        });
+        return foundNodeGroup != end(mNodeGroups) ? AZStd::distance(begin(mNodeGroups), foundNodeGroup) : InvalidIndex;
     }
 
 
@@ -540,7 +533,7 @@ namespace EMotionFX
 
 
     // remove the node group at the given index from the anim graph
-    void AnimGraph::RemoveNodeGroup(uint32 index, bool delFromMem)
+    void AnimGraph::RemoveNodeGroup(size_t index, bool delFromMem)
     {
         // destroy the object
         if (delFromMem)
@@ -571,9 +564,9 @@ namespace EMotionFX
 
 
     // get the number of node groups
-    uint32 AnimGraph::GetNumNodeGroups() const
+    size_t AnimGraph::GetNumNodeGroups() const
     {
-        return static_cast<uint32>(mNodeGroups.size());
+        return mNodeGroups.size();
     }
 
 
@@ -628,7 +621,7 @@ namespace EMotionFX
         mRootStateMachine->RecursiveCollectNodesOfType(nodeType, outNodes);
     }
 
-    void AnimGraph::RecursiveCollectTransitionConditionsOfType(const AZ::TypeId& conditionType, MCore::Array<AnimGraphTransitionCondition*>* outConditions) const
+    void AnimGraph::RecursiveCollectTransitionConditionsOfType(const AZ::TypeId& conditionType, AZStd::vector<AnimGraphTransitionCondition*>* outConditions) const
     {
         mRootStateMachine->RecursiveCollectTransitionConditionsOfType(conditionType, outConditions);
     }
@@ -718,15 +711,15 @@ namespace EMotionFX
         MCore::LockGuard lock(mLock);
 
         // assign the index and add it to the objects array
-        object->SetObjectIndex(static_cast<uint32>(mObjects.size()));
+        object->SetObjectIndex(mObjects.size());
         mObjects.push_back(object);
 
         // if it's a node, add it to the nodes array as well
         if (azrtti_istypeof<AnimGraphNode>(object))
         {
             AnimGraphNode* node = static_cast<AnimGraphNode*>(object);
-            node->SetNodeIndex(mNodes.GetLength());
-            mNodes.Add(node);
+            node->SetNodeIndex(mNodes.size());
+            mNodes.emplace_back(node);
         }
 
         // create a unique data for this added object in the animgraph instances as well
@@ -763,10 +756,10 @@ namespace EMotionFX
         if (azrtti_istypeof<AnimGraphNode>(object))
         {
             AnimGraphNode* node = static_cast<AnimGraphNode*>(object);
-            const uint32 nodeIndex = node->GetNodeIndex();
+            const size_t nodeIndex = node->GetNodeIndex();
 
-            const uint32 numNodes = mNodes.GetLength();
-            for (uint32 i = nodeIndex + 1; i < numNodes; ++i)
+            const size_t numNodes = mNodes.size();
+            for (size_t i = nodeIndex + 1; i < numNodes; ++i)
             {
                 AnimGraphNode* curNode = mNodes[i];
                 MCORE_ASSERT(i == curNode->GetNodeIndex());
@@ -774,38 +767,32 @@ namespace EMotionFX
             }
 
             // remove the object from the array
-            mNodes.Remove(nodeIndex);
+            mNodes.erase(AZStd::next(begin(mNodes), nodeIndex));
         }
     }
 
 
     // reserve space for a given amount of objects
-    void AnimGraph::ReserveNumObjects(uint32 numObjects)
+    void AnimGraph::ReserveNumObjects(size_t numObjects)
     {
         mObjects.reserve(numObjects);
     }
 
 
     // reserve space for a given amount of nodes
-    void AnimGraph::ReserveNumNodes(uint32 numNodes)
+    void AnimGraph::ReserveNumNodes(size_t numNodes)
     {
-        mNodes.Reserve(numNodes);
+        mNodes.reserve(numNodes);
     }
 
 
     // Calculate number of motion nodes in the graph
-    uint32 AnimGraph::CalcNumMotionNodes() const
+    size_t AnimGraph::CalcNumMotionNodes() const
     {
-        const uint32 numNodes = mNodes.GetLength();
-        uint32 numMotionNodes = 0;
-        for (uint32 i = 0; i < numNodes; ++i)
+        return AZStd::accumulate(begin(mNodes), end(mNodes), size_t{0}, [](size_t total, const AnimGraphNode* node)
         {
-            if (azrtti_istypeof<AnimGraphMotionNode>(mNodes[i]))
-            {
-                numMotionNodes++;
-            }
-        }
-        return numMotionNodes;
+            return total + azrtti_istypeof<AnimGraphMotionNode>(node);
+        });
     }
 
 
@@ -833,7 +820,7 @@ namespace EMotionFX
 
 
     // decrease internal attribute indices by one, for values higher than the given parameter
-    void AnimGraph::DecreaseInternalAttributeIndices(uint32 decreaseEverythingHigherThan)
+    void AnimGraph::DecreaseInternalAttributeIndices(size_t decreaseEverythingHigherThan)
     {
         for (AnimGraphObject* object : mObjects)
         {
@@ -1029,11 +1016,9 @@ namespace EMotionFX
     void AnimGraph::RemoveInvalidConnections(bool logWarnings)
     {
         // Iterate over all nodes
-        const AZ::u32 numNodes = mNodes.GetLength();
-        for (AZ::u32 i = 0; i < numNodes; ++i)
+        for (AnimGraphNode* node : mNodes)
         {
-            AnimGraphNode* node = mNodes[i];
-            for (AZ::u32 c = 0; c < node->GetNumConnections();)
+            for (size_t c = 0; c < node->GetNumConnections();)
             {
                 BlendTreeConnection* connection = node->GetConnection(c);
                 if (!connection->GetSourceNode())   // Invalid source node.

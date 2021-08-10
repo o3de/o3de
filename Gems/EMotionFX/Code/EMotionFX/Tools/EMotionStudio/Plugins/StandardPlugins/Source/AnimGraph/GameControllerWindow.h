@@ -14,7 +14,7 @@
 
 
 #include <MCore/Source/StandardHeaders.h>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/Debug/Timer.h>
 #include <MysticQt/Source/DialogStack.h>
 #include <EMotionFX/Source/AnimGraph.h>
@@ -154,9 +154,9 @@ namespace EMStudio
         void UpdateGameControllerComboBox();
 
         AnimGraphPlugin*                mPlugin;
-        MCore::Array<QLabel*>           mPreviewLabels;
-        MCore::Array<ParameterInfo>     mParameterInfos;
-        MCore::Array<ButtonInfo>        mButtonInfos;
+        AZStd::vector<QLabel*>           mPreviewLabels;
+        AZStd::vector<ParameterInfo>     mParameterInfos;
+        AZStd::vector<ButtonInfo>        mButtonInfos;
         QBasicTimer                     mInterfaceTimer;
         QBasicTimer                     mGameControllerTimer;
         AZ::Debug::Timer                mDeltaTimer;

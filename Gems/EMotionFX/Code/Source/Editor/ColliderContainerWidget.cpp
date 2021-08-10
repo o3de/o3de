@@ -553,7 +553,7 @@ namespace EMotionFX
         for (size_t i = numColliders; i < numAvailableColliderWidgets; ++i)
         {
             m_colliderWidgets[i]->hide();
-            m_colliderWidgets[i]->Update(nullptr, nullptr, MCORE_INVALIDINDEX32, PhysicsSetup::ColliderConfigType::Unknown, AzPhysics::ShapeColliderPair());
+            m_colliderWidgets[i]->Update(nullptr, nullptr, InvalidIndex, PhysicsSetup::ColliderConfigType::Unknown, AzPhysics::ShapeColliderPair());
         }
     }
 
@@ -616,7 +616,7 @@ namespace EMotionFX
         EMStudio::EMStudioPlugin::RenderInfo* renderInfo,
         const MCore::RGBAColor& colliderColor)
     {
-        const AZ::u32 nodeIndex = node->GetNodeIndex();
+        const size_t nodeIndex = node->GetNodeIndex();
         MCommon::RenderUtil* renderUtil = renderInfo->mRenderUtil;
 
         for (const auto& collider : colliders)
@@ -681,11 +681,11 @@ namespace EMotionFX
         const bool oldLightingEnabled = renderUtil->GetLightingEnabled();
         renderUtil->EnableLighting(false);
 
-        const AZStd::unordered_set<AZ::u32>& selectedJointIndices = EMStudio::GetManager()->GetSelectedJointIndices();
+        const AZStd::unordered_set<size_t>& selectedJointIndices = EMStudio::GetManager()->GetSelectedJointIndices();
 
         const ActorManager* actorManager = GetEMotionFX().GetActorManager();
-        const AZ::u32 actorInstanceCount = actorManager->GetNumActorInstances();
-        for (AZ::u32 i = 0; i < actorInstanceCount; ++i)
+        const size_t actorInstanceCount = actorManager->GetNumActorInstances();
+        for (size_t i = 0; i < actorInstanceCount; ++i)
         {
             const ActorInstance* actorInstance = actorManager->GetActorInstance(i);
             const Actor* actor = actorInstance->GetActor();

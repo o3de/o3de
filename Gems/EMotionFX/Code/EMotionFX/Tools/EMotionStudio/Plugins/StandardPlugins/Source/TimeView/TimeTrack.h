@@ -45,8 +45,8 @@ namespace EMStudio
         // @param startTime The time in seconds of the left border of the visible area in the widget.
         void RenderData(QPainter& painter, uint32 width, int32 startY, double startTime, double endTime, double animationLength, double clipStartTime, double clipEndTime);
 
-        MCORE_INLINE uint32 GetNumElements() const                      { return static_cast<uint32>(mElements.size()); }
-        MCORE_INLINE TimeTrackElement* GetElement(uint32 index) const   { return mElements[static_cast<uint32>(index)]; }
+        MCORE_INLINE size_t GetNumElements() const                      { return mElements.size(); }
+        MCORE_INLINE TimeTrackElement* GetElement(size_t index) const   { return mElements[index]; }
         void AddElement(TimeTrackElement* elem)                         { elem->SetTrack(this); mElements.push_back(elem); }
         void RemoveElement(TimeTrackElement* elem, bool delFromMem = true)
         {
@@ -56,7 +56,7 @@ namespace EMStudio
                 delete elem;
             }
         }
-        void RemoveElement(uint32 index, bool delFromMem = true)
+        void RemoveElement(size_t index, bool delFromMem = true)
         {
             if (delFromMem)
             {
@@ -70,15 +70,15 @@ namespace EMStudio
             mElements.resize(count);
         }
 
-        uint32 CalcNumSelectedElements() const;
+        size_t CalcNumSelectedElements() const;
         TimeTrackElement* GetFirstSelectedElement() const;
-        void RangeSelectElements(uint32 elementStartNr, uint32 elementEndNr);
+        void RangeSelectElements(size_t elementStartNr, size_t elementEndNr);
         void SelectElementsInRect(const QRect& rect, bool overwriteCurSelection, bool select, bool toggleMode);
 
         MCORE_INLINE TimeViewPlugin* GetPlugin()            { return mPlugin; }
         MCORE_INLINE void SetStartY(uint32 y)               { mStartY = y; }
         MCORE_INLINE uint32 GetStartY() const               { return mStartY; }
-        bool GetIsInside(uint32 y)                          { return (y >= mStartY) && (y <= (mStartY + mHeight)); }
+        bool GetIsInside(uint32 y) const                    { return (y >= mStartY) && (y <= (mStartY + mHeight)); }
 
         void SetName(const char* name)                      { mName = name; }
         const char* GetName() const                         { return mName.c_str(); }
@@ -95,7 +95,7 @@ namespace EMStudio
         MCORE_INLINE bool GetIsHighlighted() const          { return mIsHighlighted; }
         MCORE_INLINE void SetIsHighlighted(bool enabled)    { mIsHighlighted = enabled; }
 
-        TimeTrackElement* GetElementAt(int32 x, int32 y);
+        TimeTrackElement* GetElementAt(int32 x, int32 y) const;
 
     protected:
         AZStd::string                       mName;

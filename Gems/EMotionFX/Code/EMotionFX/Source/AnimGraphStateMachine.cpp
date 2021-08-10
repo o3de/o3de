@@ -36,7 +36,7 @@ namespace EMotionFX
     AnimGraphStateMachine::AnimGraphStateMachine()
         : AnimGraphNode()
         , mEntryState(nullptr)
-        , mEntryStateNodeNr(MCORE_INVALIDINDEX32)
+        , mEntryStateNodeNr(InvalidIndex)
         , m_entryStateId(AnimGraphNodeId::InvalidId)
         , m_alwaysStartInEntryState(true)
     {
@@ -204,7 +204,6 @@ namespace EMotionFX
         bool requestInterruption = false;
         const bool isTransitioning = IsTransitioning(animGraphInstance);
         AnimGraphStateTransition* latestActiveTransition = GetLatestActiveTransition(uniqueData);
-        const AnimGraphNodeId sourceNodeId = sourceNode->GetId();
 
         for (AnimGraphStateTransition* curTransition : mTransitions)
         {
@@ -423,7 +422,6 @@ namespace EMotionFX
         AnimGraphNode* targetState = transition->GetTargetNode();
         AnimGraphStateTransition* latestActiveTransition = GetLatestActiveTransition(uniqueData);
         const bool isLatestTransition = (latestActiveTransition == transition);
-        const bool isDone = transition->GetIsDone(animGraphInstance);
         EventManager& eventManager = GetEventManager();
 
         // End transition and emit transition events.
@@ -973,7 +971,7 @@ namespace EMotionFX
             // Legacy file format way.
             if (!mEntryState)
             {
-                if (mEntryStateNodeNr != MCORE_INVALIDINDEX32 && mEntryStateNodeNr < GetNumChildNodes())
+                if (mEntryStateNodeNr != InvalidIndex && mEntryStateNodeNr < GetNumChildNodes())
                 {
                     mEntryState = GetChildNode(mEntryStateNodeNr);
                 }
@@ -1095,11 +1093,11 @@ namespace EMotionFX
         AZ_Assert(stateMachine, "Unique data linked to incorrect node type.");
 
         // check if any of the active states are invalid and reset them if they are
-        if (mCurrentState && stateMachine->FindChildNodeIndex(mCurrentState) == MCORE_INVALIDINDEX32)
+        if (mCurrentState && stateMachine->FindChildNodeIndex(mCurrentState) == InvalidIndex)
         {
             mCurrentState = nullptr;
         }
-        if (mPreviousState && stateMachine->FindChildNodeIndex(mPreviousState) == MCORE_INVALIDINDEX32)
+        if (mPreviousState && stateMachine->FindChildNodeIndex(mPreviousState) == InvalidIndex)
         {
             mPreviousState = nullptr;
         }
@@ -1113,8 +1111,8 @@ namespace EMotionFX
 
             const bool isTransitionValid = transition &&
                 stateMachine->FindTransitionIndex(transition).IsSuccess() &&
-                stateMachine->FindChildNodeIndex(transition->GetSourceNode(GetAnimGraphInstance())) != MCORE_INVALIDINDEX32 &&
-                stateMachine->FindChildNodeIndex(transition->GetTargetNode()) != MCORE_INVALIDINDEX32;
+                stateMachine->FindChildNodeIndex(transition->GetSourceNode(GetAnimGraphInstance())) != InvalidIndex &&
+                stateMachine->FindChildNodeIndex(transition->GetTargetNode()) != InvalidIndex;
 
             if (!isTransitionValid)
             {
@@ -1277,7 +1275,7 @@ namespace EMotionFX
         return result;
     }
 
-    void AnimGraphStateMachine::RecursiveCollectObjects(MCore::Array<AnimGraphObject*>& outObjects) const
+    void AnimGraphStateMachine::RecursiveCollectObjects(AZStd::vector<AnimGraphObject*>& outObjects) const
     {
         for (const AnimGraphStateTransition* transition : mTransitions)
         {

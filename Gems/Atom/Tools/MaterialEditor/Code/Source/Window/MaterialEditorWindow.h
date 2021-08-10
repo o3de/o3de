@@ -9,30 +9,15 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <AzCore/Memory/SystemAllocator.h>
 #include <Atom/Document/MaterialDocumentNotificationBus.h>
+#include <AtomToolsFramework/Window/AtomToolsMainWindow.h>
+#include <AzCore/Memory/SystemAllocator.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
-#include <AzQtComponents/Components/DockMainWindow.h>
-#include <AzQtComponents/Components/FancyDocking.h>
-#include <AzQtComponents/Components/StyledDockWidget.h>
-#include <AzQtComponents/Components/Widgets/TabWidget.h>
-
-#include <Atom/Window/MaterialEditorWindowRequestBus.h>
 #include <Viewport/MaterialViewportWidget.h>
 #include <Window/ToolBar/MaterialEditorToolBar.h>
-#include <Window/StatusBar/StatusBarWidget.h>
-
-#include <QMenuBar>
-#include <QToolBar>
-#include <QStatusBar>
 AZ_POP_DISABLE_WARNING
 #endif
-
-namespace AzToolsFramework
-{
-    class CScriptTermDialog;
-}
 
 namespace MaterialEditor
 {
@@ -44,26 +29,19 @@ namespace MaterialEditor
      * 3) MaterialPropertyInspector  - The user edits the properties of the selected Material.
      */
     class MaterialEditorWindow
-        : public AzQtComponents::DockMainWindow
-        , private MaterialEditorWindowRequestBus::Handler
+        : public AtomToolsFramework::AtomToolsMainWindow
         , private MaterialDocumentNotificationBus::Handler
     {
         Q_OBJECT
     public:
         AZ_CLASS_ALLOCATOR(MaterialEditorWindow, AZ::SystemAllocator, 0);
 
+        using Base = AtomToolsFramework::AtomToolsMainWindow;
+
         MaterialEditorWindow(QWidget* parent = 0);
         ~MaterialEditorWindow();
 
     private:
-        // MaterialEditorWindowRequestBus::Handler overrides...
-        void ActivateWindow() override;
-        bool AddDockWidget(const AZStd::string& name, QWidget* widget, uint32_t area, uint32_t orientation) override;
-        void RemoveDockWidget(const AZStd::string& name) override;
-        void SetDockWidgetVisible(const AZStd::string& name, bool visible) override;
-        bool IsDockWidgetVisible(const AZStd::string& name) const override;
-        AZStd::vector<AZStd::string> GetDockWidgetNames() const override;
-
         void ResizeViewportRenderTarget(uint32_t width, uint32_t height) override;
         void LockViewportRenderTargetSize(uint32_t width, uint32_t height) override;
         void UnlockViewportRenderTargetSize() override;
@@ -75,29 +53,17 @@ namespace MaterialEditor
         void OnDocumentUndoStateChanged(const AZ::Uuid& documentId) override;
         void OnDocumentSaved(const AZ::Uuid& documentId) override;
 
-        void SetupMenu();
+        void CreateMenu() override;
+        void CreateTabBar() override;
 
-        void SetupTabs();
-        void AddTabForDocumentId(const AZ::Uuid& documentId);
-        void RemoveTabForDocumentId(const AZ::Uuid& documentId);
-        void UpdateTabForDocumentId(const AZ::Uuid& documentId);
         QString GetDocumentPath(const AZ::Uuid& documentId) const;
-        AZ::Uuid GetDocumentIdFromTab(const int tabIndex) const;
 
-        void OpenTabContextMenu();
-        void SelectPreviousTab();
-        void SelectNextTab();
+        void OpenTabContextMenu() override;
 
         void closeEvent(QCloseEvent* closeEvent) override;
 
-        AzQtComponents::FancyDocking* m_advancedDockManager = nullptr;
-        QWidget* m_centralWidget = nullptr;
-        QMenuBar* m_menuBar = nullptr;
-        AzQtComponents::TabWidget* m_tabWidget = nullptr;
         MaterialViewportWidget* m_materialViewport = nullptr;
         MaterialEditorToolBar* m_toolBar = nullptr;
-
-        AZStd::unordered_map <AZStd::string, AzQtComponents::StyledDockWidget*> m_dockWidgets;
 
         QMenu* m_menuFile = {};
         QAction* m_actionNew = {};
@@ -130,7 +96,5 @@ namespace MaterialEditor
         QMenu* m_menuHelp = {};
         QAction* m_actionHelp = {};
         QAction* m_actionAbout = {};
-
-        StatusBarWidget* m_statusBar = {};
     };
 } // namespace MaterialEditor

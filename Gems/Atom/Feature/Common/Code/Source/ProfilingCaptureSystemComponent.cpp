@@ -10,6 +10,9 @@
 
 #include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/RHIUtils.h>
+#include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI.Reflect/CpuTimingStatistics.h>
+#include <AzCore/Statistics/RunningStatistic.h>
 
 #include <Atom/RPI.Public/GpuQuery/GpuQueryTypes.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
@@ -34,6 +37,7 @@ namespace AZ
         public:
             AZ_EBUS_BEHAVIOR_BINDER(ProfilingCaptureNotificationBusHandler, "{E45E4F37-EC1F-4010-994B-4F80998BEF15}", AZ::SystemAllocator,
                 OnCaptureQueryTimestampFinished,
+                OnCaptureCpuFrameTimeFinished,
                 OnCaptureQueryPipelineStatisticsFinished,
                 OnCaptureCpuProfilingStatisticsFinished,
                 OnCaptureBenchmarkMetadataFinished
@@ -42,6 +46,11 @@ namespace AZ
             void OnCaptureQueryTimestampFinished(bool result, const AZStd::string& info) override
             {
                 Call(FN_OnCaptureQueryTimestampFinished, result, info);
+            }
+
+            void OnCaptureCpuFrameTimeFinished(bool result, const AZStd::string& info) override
+            {
+                Call(FN_OnCaptureCpuFrameTimeFinished, result, info);
             }
 
             void OnCaptureQueryPipelineStatisticsFinished(bool result, const AZStd::string& info) override
@@ -93,6 +102,19 @@ namespace AZ
             TimestampSerializer(AZStd::vector<const RPI::Pass*>&& pass);
 
             AZStd::vector<TimestampSerializerEntry> m_timestampEntries;
+        };
+
+        // Intermediate class to serialize CPU frame time statistics.
+        class CpuFrameTimeSerializer
+        {
+        public:
+            AZ_TYPE_INFO(Render::CpuFrameTimeSerializer, "{584B415E-8769-4757-AC64-EA57EDBCBC3E}");
+            static void Reflect(AZ::ReflectContext* context);
+
+            CpuFrameTimeSerializer() = default;
+            CpuFrameTimeSerializer(double frameTime);
+
+            double m_frameTime;
         };
 
         // Intermediate class to serialize pass' PipelineStatistics data.
@@ -244,6 +266,24 @@ namespace AZ
                     ->Version(1)
                     ->Field("passName", &TimestampSerializerEntry::m_passName)
                     ->Field("timestampResultInNanoseconds", &TimestampSerializerEntry::m_timestampResultInNanoseconds)
+                    ;
+            }
+        }
+
+        // --- CpuFrameTimeSerializer ---
+
+        CpuFrameTimeSerializer::CpuFrameTimeSerializer(double frameTime)
+        {
+            m_frameTime = frameTime;
+        }
+
+        void CpuFrameTimeSerializer::Reflect(AZ::ReflectContext* context)
+        {
+            if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+            {
+                serializeContext->Class<CpuFrameTimeSerializer>()
+                    ->Version(1)
+                    ->Field("frameTime", &CpuFrameTimeSerializer::m_frameTime)
                     ;
             }
         }
@@ -408,6 +448,7 @@ namespace AZ
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                     ->Attribute(AZ::Script::Attributes::Module, "atom")
                     ->Event("CapturePassTimestamp", &ProfilingCaptureRequestBus::Events::CapturePassTimestamp)
+                    ->Event("CaptureCpuFrameTime", &ProfilingCaptureRequestBus::Events::CaptureCpuFrameTime)
                     ->Event("CapturePassPipelineStatistics", &ProfilingCaptureRequestBus::Events::CapturePassPipelineStatistics)
                     ->Event("CaptureCpuProfilingStatistics", &ProfilingCaptureRequestBus::Events::CaptureCpuProfilingStatistics)
                     ->Event("CaptureBenchmarkMetadata", &ProfilingCaptureRequestBus::Events::CaptureBenchmarkMetadata)
@@ -417,6 +458,7 @@ namespace AZ
             }
 
             TimestampSerializer::Reflect(context);
+            CpuFrameTimeSerializer::Reflect(context);
             PipelineStatisticsSerializer::Reflect(context);
             CpuProfilingStatisticsSerializer::Reflect(context);
             BenchmarkMetadataSerializer::Reflect(context);
@@ -471,6 +513,71 @@ namespace AZ
 
                 // Notify listeners that the pass' Timestamp queries capture has finished.
                 ProfilingCaptureNotificationBus::Broadcast(&ProfilingCaptureNotificationBus::Events::OnCaptureQueryTimestampFinished,
+                    saveResult.IsSuccess(),
+                    captureInfo);
+            });
+
+            // Start the TickBus.
+            if (captureStarted)
+            {
+                TickBus::Handler::BusConnect();
+            }
+
+            return captureStarted;
+        }
+
+        bool ProfilingCaptureSystemComponent::CaptureCpuFrameTime(const AZStd::string& outputFilePath)
+        {
+            AZ::RHI::RHISystemInterface::Get()->ModifyFrameSchedulerStatisticsFlags(
+                AZ::RHI::FrameSchedulerStatisticsFlags::GatherCpuTimingStatistics, true
+            );
+            bool wasEnabled = RHI::CpuProfiler::Get()->IsProfilerEnabled();
+            if (!wasEnabled)
+            {
+                RHI::CpuProfiler::Get()->SetProfilerEnabled(true);
+            }
+
+            const bool captureStarted = m_cpuFrameTimeStatisticsCapture.StartCapture([this, outputFilePath, wasEnabled]()
+            {
+                JsonSerializerSettings serializationSettings;
+                serializationSettings.m_keepDefaults = true;
+
+                double frameTime = 0.0;
+                const AZ::RHI::CpuTimingStatistics* stats = AZ::RHI::RHISystemInterface::Get()->GetCpuTimingStatistics();
+                if (stats)
+                {
+                    frameTime = stats->GetFrameToFrameTimeMilliseconds();
+                }
+                else
+                {
+                    AZStd::string warning = AZStd::string::format("Failed to get Cpu frame time");
+                    AZ_Warning("ProfilingCaptureSystemComponent", false, warning.c_str());
+                }
+
+                CpuFrameTimeSerializer serializer(frameTime);
+                const auto saveResult = JsonSerializationUtils::SaveObjectToFile(&serializer,
+                    outputFilePath, (CpuFrameTimeSerializer*)nullptr, &serializationSettings);
+
+                AZStd::string captureInfo = outputFilePath;
+                if (!saveResult.IsSuccess())
+                {
+                    captureInfo = AZStd::string::format("Failed to save Cpu frame time to file '%s'. Error: %s",
+                        outputFilePath.c_str(),
+                        saveResult.GetError().c_str());
+                    AZ_Warning("ProfilingCaptureSystemComponent", false, captureInfo.c_str());
+                }
+
+                // Disable the profiler again
+                if (!wasEnabled)
+                {
+                    RHI::CpuProfiler::Get()->SetProfilerEnabled(false);
+                }
+                AZ::RHI::RHISystemInterface::Get()->ModifyFrameSchedulerStatisticsFlags(
+                    AZ::RHI::FrameSchedulerStatisticsFlags::GatherCpuTimingStatistics, false
+                );
+
+                // Notify listeners that the Cpu frame time statistics capture has finished.
+                ProfilingCaptureNotificationBus::Broadcast(&ProfilingCaptureNotificationBus::Events::OnCaptureCpuFrameTimeFinished,
                     saveResult.IsSuccess(),
                     captureInfo);
             });
@@ -666,12 +773,13 @@ namespace AZ
         {
             // Update the delayed captures
             m_timestampCapture.UpdateCapture();
+            m_cpuFrameTimeStatisticsCapture.UpdateCapture();
             m_pipelineStatisticsCapture.UpdateCapture();
             m_cpuProfilingStatisticsCapture.UpdateCapture();
             m_benchmarkMetadataCapture.UpdateCapture();
 
             // Disconnect from the TickBus if all capture states are set to idle.
-            if (m_timestampCapture.IsIdle() && m_pipelineStatisticsCapture.IsIdle() && m_cpuProfilingStatisticsCapture.IsIdle() && m_benchmarkMetadataCapture.IsIdle())
+            if (m_timestampCapture.IsIdle() && m_pipelineStatisticsCapture.IsIdle() && m_cpuProfilingStatisticsCapture.IsIdle() && m_benchmarkMetadataCapture.IsIdle() && m_cpuFrameTimeStatisticsCapture.IsIdle())
             {
                 TickBus::Handler::BusDisconnect();
             }

@@ -12,7 +12,7 @@
 // include required files
 #if !defined(Q_MOC_RUN)
 #include <MCore/Source/StandardHeaders.h>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include "MysticQtConfig.h"
 #include <QWidget>
 #endif
@@ -74,7 +74,7 @@ namespace MysticQt
         };
 
         QWidget*                            mMainWindow;
-        MCore::Array<IconData*>             mIcons;
+        AZStd::vector<IconData*>             mIcons;
         AZStd::string                       mAppDir;
         AZStd::string                       mDataDir;
 

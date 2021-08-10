@@ -11,6 +11,7 @@
 #include "Node.h"
 #include "MorphTarget.h"
 #include <MCore/Source/StringConversions.h>
+#include <MCore/Source/FastMath.h>
 #include <EMotionFX/Source/Allocators.h>
 
 namespace EMotionFX
@@ -28,12 +29,6 @@ namespace EMotionFX
 
         // set the name
         SetName(name);
-    }
-
-
-    // destructor
-    MorphTarget::~MorphTarget()
-    {
     }
 
 
@@ -216,7 +211,7 @@ namespace EMotionFX
 
 
     // copy the base class members to the target class
-    void MorphTarget::CopyBaseClassMemberValues(MorphTarget* target)
+    void MorphTarget::CopyBaseClassMemberValues(MorphTarget* target) const
     {
         target->mNameID         = mNameID;
         target->mRangeMin       = mRangeMin;

@@ -22,13 +22,9 @@ namespace EMStudio
 
 
     // constructor
-    GraphNode::GraphNode(const QModelIndex& modelIndex, const char* name, uint32 numInputs, uint32 numOutputs)
+    GraphNode::GraphNode(const QModelIndex& modelIndex, const char* name, AZ::u16 numInputs, AZ::u16 numOutputs)
         : m_modelIndex(modelIndex)
     {
-        mConnections.SetMemoryCategory(MEMCATEGORY_STANDARDPLUGINS_ANIMGRAPH);
-        mInputPorts.SetMemoryCategory(MEMCATEGORY_STANDARDPLUGINS_ANIMGRAPH);
-        mOutputPorts.SetMemoryCategory(MEMCATEGORY_STANDARDPLUGINS_ANIMGRAPH);
-
         mRect                   = QRect(0, 0, 200, 128);
         mBaseColor              = QColor(74, 63, 238);
         mVisualizeColor         = QColor(0, 255, 0);
@@ -66,8 +62,8 @@ namespace EMStudio
         mTextOptionsAlignRight.setAlignment(Qt::AlignRight | Qt::AlignVCenter);
         mTextOptionsAlignLeft.setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
 
-        mInputPorts.Resize(numInputs);
-        mOutputPorts.Resize(numOutputs);
+        mInputPorts.resize(numInputs);
+        mOutputPorts.resize(numOutputs);
 
         // initialize the port metrics
         mPortFontMetrics    = new QFontMetrics(mPortNameFont);
@@ -123,9 +119,9 @@ namespace EMStudio
         mInfoText.prepare(QTransform(), mSubTitleFont);
 
         // input ports
-        const uint32 numInputs = mInputPorts.GetLength();
-        mInputPortText.Resize(numInputs);
-        for (uint32 i = 0; i < numInputs; ++i)
+        const size_t numInputs = mInputPorts.size();
+        mInputPortText.resize(numInputs);
+        for (size_t i = 0; i < numInputs; ++i)
         {
             QStaticText& staticText = mInputPortText[i];
             staticText.setTextFormat(Qt::PlainText);
@@ -136,9 +132,9 @@ namespace EMStudio
         }
 
         // output ports
-        const uint32 numOutputs = mOutputPorts.GetLength();
-        mOutputPortText.Resize(numOutputs);
-        for (uint32 i = 0; i < numOutputs; ++i)
+        const size_t numOutputs = mOutputPorts.size();
+        mOutputPortText.resize(numOutputs);
+        for (size_t i = 0; i < numOutputs; ++i)
         {
             QStaticText& staticText = mOutputPortText[i];
             staticText.setTextFormat(Qt::PlainText);
@@ -147,107 +143,18 @@ namespace EMStudio
             staticText.setText(mOutputPorts[i].GetName());
             staticText.prepare(QTransform(), mPortNameFont);
         }
-
-        //-------------------------------------------
-        /*
-            // create a new pixmap with the new and correct resolution
-            const uint32 nodeWidth  = mRect.width();
-            const uint32 nodeHeight = mRect.height();
-            mTextPixmap = QPixmap(nodeWidth, nodeHeight);
-
-            // make the pixmap fully transparent
-            mTextPixmap.fill(Qt::transparent);
-
-            mTextPainter.begin( &mTextPixmap );
-
-            // setup colors
-            QColor textColor;
-            if (!GetIsSelected())
-            {
-                if (mIsEnabled)
-                    textColor = Qt::white;
-                else
-                    textColor = QColor( 100, 100, 100 );
-            }
-            else
-                textColor = QColor(255,128,0);
-
-            // some rects we need for the text
-            QRect fullHeaderRect( 0, 0, mRect.width(), 25 );
-            QRect headerRect( 0, 0, mRect.width(), 15 );
-            QRect subHeaderRect( 0, 13, mRect.width(), 10 );
-
-            // draw header text
-            mTextPainter.setBrush( Qt::NoBrush );
-            mTextPainter.setPen( textColor );
-            mTextPainter.setFont( mHeaderFont );
-            mTextPainter.drawText( headerRect, mElidedName, mTextOptionsCenter );
-
-            mTextPainter.setFont( mSubTitleFont );
-            mTextPainter.drawText( subHeaderRect, mElidedSubTitle, mTextOptionsCenter );
-
-            if (mIsCollapsed == false)
-            {
-                // draw the info text
-                QRect textRect;
-                CalcInfoTextRect( textRect, true );
-                mTextPainter.setPen( QColor(255,128,0) );
-                mTextPainter.setFont( mInfoTextFont );
-                mTextPainter.drawText( textRect, mElidedNodeInfo, mTextOptionsCenterHV );
-
-                mTextPainter.setPen( textColor );
-
-                // draw the input ports
-                mTextPainter.setPen( textColor );
-                mTextPainter.setFont( mPortNameFont );
-                const uint32 numInputs = mInputPorts.GetLength();
-                for (uint32 i=0; i<numInputs; ++i)
-                {
-                    // get the input port and the corresponding rect
-                    NodePort* inputPort = &mInputPorts[i];
-                    const QRect& portRect = inputPort->GetRect();
-
-                    if (inputPort->GetNameID() == MCORE_INVALIDINDEX32)
-                        continue;
-
-                    // draw the text
-                    CalcInputPortTextRect(i, textRect, true);
-                    mTextPainter.drawText( textRect, inputPort->GetName(), mTextOptionsAlignLeft );
-                }
-
-                // draw the output ports
-                const uint32 numOutputs = mOutputPorts.GetLength();
-                for (uint32 i=0; i<numOutputs; ++i)
-                {
-                    // get the output port and the corresponding rect
-                    NodePort* outputPort = &mOutputPorts[i];
-
-                    if (outputPort->GetNameID() == MCORE_INVALIDINDEX32)
-                        continue;
-
-                    const QRect& portRect = outputPort->GetRect();
-
-                    // draw the text
-                    CalcOutputPortTextRect(i, textRect, true);
-                    mTextPainter.drawText( textRect, outputPort->GetName(), mTextOptionsAlignRight );
-                }
-            }
-
-            mTextPainter.end();
-        */
     }
 
 
     // remove all node connections
     void GraphNode::RemoveAllConnections()
     {
-        const uint32 numConnections = mConnections.GetLength();
-        for (uint32 i = 0; i < numConnections; ++i)
+        for (NodeConnection* connection : mConnections)
         {
-            delete mConnections[i];
+            delete connection;
         }
 
-        mConnections.Clear();
+        mConnections.clear();
     }
 
 
@@ -337,17 +244,16 @@ namespace EMStudio
         mVisualizeRect.setCoords(mRect.right() - 13, mRect.top() + 6, mRect.right() - 5, mRect.top() + 14);
 
         // update the input ports and reset the port highlight flags
-        uint32 i;
-        const uint32 numInputPorts = mInputPorts.GetLength();
-        for (i = 0; i < numInputPorts; ++i)
+        const AZ::u16 numInputPorts = aznumeric_caster(mInputPorts.size());
+        for (AZ::u16 i = 0; i < numInputPorts; ++i)
         {
             mInputPorts[i].SetRect(CalcInputPortRect(i));
             mInputPorts[i].SetIsHighlighted(false);
         }
 
         // update the output ports and reset the port highlight flags
-        const uint32 numOutputPorts = mOutputPorts.GetLength();
-        for (i = 0; i < numOutputPorts; ++i)
+        const AZ::u16 numOutputPorts = aznumeric_caster(mOutputPorts.size());
+        for (AZ::u16 i = 0; i < numOutputPorts; ++i)
         {
             mOutputPorts[i].SetRect(CalcOutputPortRect(i));
             mOutputPorts[i].SetIsHighlighted(false);
@@ -371,16 +277,15 @@ namespace EMStudio
         {
             // set the set highlight flags for the input ports
             bool highlightedPortFound = false;
-            for (i = 0; i < numInputPorts; ++i)
+            for (NodePort& inputPort : mInputPorts)
             {
                 // get the input port and the corresponding rect
-                NodePort* inputPort = &mInputPorts[i];
-                const QRect& portRect = inputPort->GetRect();
+                const QRect& portRect = inputPort.GetRect();
 
                 // check if the mouse position is inside the port rect and break the loop in this case, as the mouse can be only over one port at the time
                 if (portRect.contains(mousePos))
                 {
-                    inputPort->SetIsHighlighted(true);
+                    inputPort.SetIsHighlighted(true);
                     highlightedPortFound = true;
                     break;
                 }
@@ -390,16 +295,15 @@ namespace EMStudio
             if (highlightedPortFound == false)
             {
                 // set the set highlight flags for the output ports
-                for (i = 0; i < numOutputPorts; ++i)
+                for (NodePort& outputPort : mOutputPorts)
                 {
                     // get the output port and the corresponding rect
-                    NodePort* outputPort = &mOutputPorts[i];
-                    const QRect& portRect = outputPort->GetRect();
+                    const QRect& portRect = outputPort.GetRect();
 
                     // check if the mouse position is inside the port rect and break the loop in this case, as the mouse can be only over one port at the time
                     if (portRect.contains(mousePos))
                     {
-                        outputPort->SetIsHighlighted(true);
+                        outputPort.SetIsHighlighted(true);
                         break;
                     }
                 }
@@ -407,8 +311,8 @@ namespace EMStudio
         }
         
         // Update the connections
-        const uint32 numConnections = GetNumConnections();
-        for (uint32 c = 0; c < numConnections; ++c)
+        const size_t numConnections = GetNumConnections();
+        for (size_t c = 0; c < numConnections; ++c)
         {
             GetConnection(c)->Update(visibleRect, mousePos);
         }
@@ -574,8 +478,8 @@ namespace EMStudio
 
                 // draw the input ports
                 QColor portBrushColor, portPenColor;
-                const uint32 numInputs = mInputPorts.GetLength();
-                for (uint32 i = 0; i < numInputs; ++i)
+                const AZ::u16 numInputs = aznumeric_caster(mInputPorts.size());
+                for (AZ::u16 i = 0; i < numInputs; ++i)
                 {
                     // get the input port and the corresponding rect
                     NodePort* inputPort = &mInputPorts[i];
@@ -599,8 +503,8 @@ namespace EMStudio
                 if (GetHasVisualOutputPorts())
                 {
                     // draw the output ports
-                    const uint32 numOutputs = mOutputPorts.GetLength();
-                    for (uint32 i = 0; i < numOutputs; ++i)
+                    const AZ::u16 numOutputs = aznumeric_caster(mOutputPorts.size());
+                    for (AZ::u16 i = 0; i < numOutputs; ++i)
                     {
                         // get the output port and the corresponding rect
                         NodePort* outputPort = &mOutputPorts[i];
@@ -827,10 +731,8 @@ namespace EMStudio
         const bool alwaysColor = GetAlwaysColor();
 
         // for all connections
-        const uint32 numConnections = mConnections.GetLength();
-        for (uint32 c = 0; c < numConnections; ++c)
+        for (NodeConnection* nodeConnection : mConnections)
         {
-            NodeConnection* nodeConnection = mConnections[c];
             if (nodeConnection->GetIsVisible())
             {
                 float opacity = 1.0f;
@@ -922,8 +824,8 @@ namespace EMStudio
     {
         if (mIsCollapsed == false)
         {
-            uint32 numPorts = MCore::Max<uint32>(mInputPorts.GetLength(), mOutputPorts.GetLength());
-            uint32 result = (numPorts * 15) + 34;
+            int32 numPorts = aznumeric_caster(AZStd::max(mInputPorts.size(), mOutputPorts.size()));
+            int32 result = (numPorts * 15) + 34;
             return MCore::Math::Align(result, 10);
         }
         else
@@ -934,33 +836,26 @@ namespace EMStudio
 
 
     // calc the max input port width
-    uint32 GraphNode::CalcMaxInputPortWidth() const
+    int GraphNode::CalcMaxInputPortWidth() const
     {
         // calc the maximum input port width
-        uint32 maxInputWidth = 0;
-        uint32 width;
-        const uint32 numInputPorts = mInputPorts.GetLength();
-        for (uint32 i = 0; i < numInputPorts; ++i)
+        int maxInputWidth = 0;
+        for (const NodePort& nodePort : mInputPorts)
         {
-            const NodePort* nodePort = &mInputPorts[i];
-            width = mPortFontMetrics->horizontalAdvance(nodePort->GetName());
-            maxInputWidth = MCore::Max<uint32>(maxInputWidth, width);
+            maxInputWidth = AZStd::max(maxInputWidth, mPortFontMetrics->horizontalAdvance(nodePort.GetName()));
         }
 
         return maxInputWidth;
     }
 
     // calculate the max output port width
-    uint32 GraphNode::CalcMaxOutputPortWidth() const
+    int GraphNode::CalcMaxOutputPortWidth() const
     {
         // calc the maximum output port width
-        uint32 width;
-        uint32 maxOutputWidth = 0;
-        const uint32 numOutputPorts = mOutputPorts.GetLength();
-        for (uint32 i = 0; i < numOutputPorts; ++i)
+        int maxOutputWidth = 0;
+        for (const NodePort& nodePort : mOutputPorts)
         {
-            width = mPortFontMetrics->horizontalAdvance(mOutputPorts[i].GetName());
-            maxOutputWidth = MCore::Max<uint32>(maxOutputWidth, width);
+            maxOutputWidth = AZStd::max(maxOutputWidth, mPortFontMetrics->horizontalAdvance(nodePort.GetName()));
         }
 
         return maxOutputWidth;
@@ -978,30 +873,29 @@ namespace EMStudio
         mMaxInputWidth = CalcMaxInputPortWidth();
         mMaxOutputWidth = CalcMaxOutputPortWidth();
 
-        const uint32 infoWidth = mInfoFontMetrics->horizontalAdvance(mElidedNodeInfo);
-        const uint32 totalPortWidth = mMaxInputWidth + mMaxOutputWidth + 40 + infoWidth;
+        const int infoWidth = mInfoFontMetrics->horizontalAdvance(mElidedNodeInfo);
+        const int totalPortWidth = mMaxInputWidth + mMaxOutputWidth + 40 + infoWidth;
 
         // make sure the node is at least 100 units in width
-        uint32 headerWidth = mHeaderFontMetrics->horizontalAdvance(mElidedName) + 40;
-        headerWidth = MCore::Max<uint32>(headerWidth, 100);
+        const int headerWidth = AZStd::max(mHeaderFontMetrics->horizontalAdvance(mElidedName) + 40, 100);
 
-        mRequiredWidth = MCore::Max<uint32>(headerWidth, totalPortWidth);
-        mNameAndPortsUpdated = true;
-
+        mRequiredWidth = AZStd::max(headerWidth, totalPortWidth);
         mRequiredWidth = MCore::Math::Align(mRequiredWidth, 10);
+
+        mNameAndPortsUpdated = true;
 
         return mRequiredWidth;
     }
 
     // get the rect for a given input port
-    QRect GraphNode::CalcInputPortRect(uint32 portNr)
+    QRect GraphNode::CalcInputPortRect(AZ::u16 portNr)
     {
         return QRect(mRect.left() - 5, mRect.top() + 35 + portNr * 15, 8, 8);
     }
 
 
     // get the rect for a given output port
-    QRect GraphNode::CalcOutputPortRect(uint32 portNr)
+    QRect GraphNode::CalcOutputPortRect(AZ::u16 portNr)
     {
         return QRect(mRect.right() - 5, mRect.top() + 35 + portNr * 15, 8, 8);
     }
@@ -1022,7 +916,7 @@ namespace EMStudio
 
 
     // calculate the text rect for the input port
-    void GraphNode::CalcInputPortTextRect(uint32 portNr, QRect& outRect, bool local)
+    void GraphNode::CalcInputPortTextRect(AZ::u16 portNr, QRect& outRect, bool local)
     {
         if (local == false)
         {
@@ -1036,7 +930,7 @@ namespace EMStudio
 
 
     // calculate the text rect for the input port
-    void GraphNode::CalcOutputPortTextRect(uint32 portNr, QRect& outRect, bool local)
+    void GraphNode::CalcOutputPortTextRect(AZ::u16 portNr, QRect& outRect, bool local)
     {
         if (local == false)
         {
@@ -1052,68 +946,46 @@ namespace EMStudio
     // remove all input ports
     void GraphNode::RemoveAllInputPorts()
     {
-        mInputPorts.Clear(false);
+        mInputPorts.clear();
     }
 
 
     // remove all output ports
     void GraphNode::RemoveAllOutputPorts()
     {
-        mOutputPorts.Clear(false);
+        mOutputPorts.clear();
     }
 
 
     // add a new input port
     NodePort* GraphNode::AddInputPort(bool updateTextPixMap)
     {
-        mInputPorts.AddEmpty();
-        mInputPorts.GetLast().SetNode(this);
+        mInputPorts.emplace_back();
+        mInputPorts.back().SetNode(this);
         if (updateTextPixMap)
         {
             UpdateTextPixmap();
         }
-        return &mInputPorts.GetLast();
+        return &mInputPorts.back();
     }
 
 
     // add a new output port
     NodePort* GraphNode::AddOutputPort(bool updateTextPixMap)
     {
-        mOutputPorts.AddEmpty();
-        mOutputPorts.GetLast().SetNode(this);
+        mOutputPorts.emplace_back();
+        mOutputPorts.back().SetNode(this);
         if (updateTextPixMap)
         {
             UpdateTextPixmap();
         }
-        return &mOutputPorts.GetLast();
+        return &mOutputPorts.back();
     }
 
-    /*
-    // update port text path
-    void GraphNode::UpdatePortTextPath()
-    {
-        mPortTextPath = QPainterPath();
-
-        QRect textRect;
-        const uint32 numInputs = mInputPorts.GetLength();
-        for (uint32 i=0; i<numInputs; ++i)
-        {
-            // get the input port and the corresponding rect
-            NodePort* inputPort = &mInputPorts[i];
-
-            // add the text
-            CalcInputPortTextRect( i, textRect );
-            //painter.drawText( textRect, QString::fromWCharArray(inputPort->GetName()), mTextOptionsAlignLeft );
-            mPortTextPath.addText( textRect.left(), textRect.center().y(), mPortNameFont, QString::fromWCharArray(inputPort->GetName()));
-        }
-    }
-    */
 
     // remove all input ports
-    NodePort* GraphNode::FindPort(int32 x, int32 y, uint32* outPortNr, bool* outIsInputPort, bool includeInputPorts)
+    NodePort* GraphNode::FindPort(int32 x, int32 y, AZ::u16* outPortNr, bool* outIsInputPort, bool includeInputPorts)
     {
-        uint32 i;
-
         // if the node is not visible at all skip directly
         if (mIsVisible == false)
         {
@@ -1129,8 +1001,8 @@ namespace EMStudio
         // check the input ports
         if (includeInputPorts)
         {
-            const uint32 numInputPorts = mInputPorts.GetLength();
-            for (i = 0; i < numInputPorts; ++i)
+            const AZ::u16 numInputPorts = aznumeric_caster(mInputPorts.size());
+            for (AZ::u16 i = 0; i < numInputPorts; ++i)
             {
                 QRect rect = CalcInputPortRect(i);
                 if (rect.contains(QPoint(x, y)))
@@ -1143,8 +1015,8 @@ namespace EMStudio
         }
 
         // check the output ports
-        const uint32 numOutputPorts = mOutputPorts.GetLength();
-        for (i = 0; i < numOutputPorts; ++i)
+        const AZ::u16 numOutputPorts = aznumeric_caster(mOutputPorts.size());
+        for (AZ::u16 i = 0; i < numOutputPorts; ++i)
         {
             QRect rect = CalcOutputPortRect(i);
             if (rect.contains(QPoint(x, y)))
@@ -1161,42 +1033,44 @@ namespace EMStudio
     // remove a given connection
     bool GraphNode::RemoveConnection(const void* connection, bool removeFromMemory)
     {
-        const uint32 numConnections = mConnections.GetLength();
-        for (uint32 i = 0; i < numConnections; ++i)
+        const auto foundConnection = AZStd::find_if(begin(mConnections), end(mConnections), [match = connection](const NodeConnection* connection)
         {
-            // if this is the connection we're searching for
-            if (mConnections[i]->GetModelIndex().data(AnimGraphModel::ROLE_POINTER).value<void*>() == connection)
-            {
-                if (removeFromMemory)
-                {
-                    delete mConnections[i];
-                }
-                mConnections.Remove(i);
-                return true;
-            }
+            return connection->GetModelIndex().data(AnimGraphModel::ROLE_POINTER).value<void*>() == match;
+        });
+
+        if (foundConnection == end(mConnections))
+        {
+            return false;
         }
-        return false;
+
+        if (removeFromMemory)
+        {
+            delete *foundConnection;
+        }
+        mConnections.erase(foundConnection);
+        return true;
     }
 
     
     // Remove a given connection by model index
     bool GraphNode::RemoveConnection(const QModelIndex& modelIndex, bool removeFromMemory)
     {
-        const uint32 numConnections = mConnections.GetLength();
-        for (uint32 i = 0; i < numConnections; ++i)
+        const auto foundConnection = AZStd::find_if(begin(mConnections), end(mConnections), [match = modelIndex](const NodeConnection* connection)
         {
-            // if this is the connection we're searching for
-            if (mConnections[i]->GetModelIndex() == modelIndex)
-            {
-                if (removeFromMemory)
-                {
-                    delete mConnections[i];
-                }
-                mConnections.Remove(i);
-                return true;
-            }
+            return connection->GetModelIndex() == match;
+        });
+
+        if (foundConnection == end(mConnections))
+        {
+            return false;
         }
-        return false;
+
+        if (removeFromMemory)
+        {
+            delete *foundConnection;
+        }
+        mConnections.erase(foundConnection);
+        return true;
     }
 
 

@@ -241,8 +241,8 @@ namespace EMotionFX
             // Copy ragdoll transforms (world space) and reconstruct the rest of the skeleton using the target input pose.
             // If the current node is part of the ragdoll, copy the world transforms from the ragdoll node to the pose and recalculate the local transform.
             // In case the current node is not part of the ragdoll, update the world transforms based on the local transform from the bind pose.
-            const AZ::u32 jointCount = skeleton->GetNumNodes();
-            for (AZ::u32 jointIndex = 0; jointIndex < jointCount; ++jointIndex)
+            const size_t jointCount = skeleton->GetNumNodes();
+            for (size_t jointIndex = 0; jointIndex < jointCount; ++jointIndex)
             {
                 Node* joint = skeleton->GetNode(jointIndex);
                 const AZ::Outcome<size_t> ragdollNodeIndex = ragdollInstance->GetRagdollNodeIndex(jointIndex);

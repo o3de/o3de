@@ -199,10 +199,10 @@ namespace ExporterLib
 
 
     // save the given materials
-    void SaveMaterials(MCore::Stream* file, MCore::Array<EMotionFX::Material*>& materials, uint32 lodLevel, MCore::Endian::EEndianType targetEndianType)
+    void SaveMaterials(MCore::Stream* file, AZStd::vector<EMotionFX::Material*>& materials, uint32 lodLevel, MCore::Endian::EEndianType targetEndianType)
     {
         // get the number of materials
-        const uint32 numMaterials = materials.GetLength();
+        const uint32 numMaterials = materials.size();
 
         // chunk header
         EMotionFX::FileFormat::FileChunk chunkHeader;
@@ -269,15 +269,15 @@ namespace ExporterLib
         const uint32 numMaterials = actor->GetNumMaterials(lodLevel);
 
         // create our materials array and reserve some elements
-        MCore::Array<EMotionFX::Material*> materials;
-        materials.Reserve(numMaterials);
+        AZStd::vector<EMotionFX::Material*> materials;
+        materials.reserve(numMaterials);
 
         // iterate through the materials
         for (uint32 j = 0; j < numMaterials; j++)
         {
             // get the base material
             EMotionFX::Material* baseMaterial = actor->GetMaterial(lodLevel, j);
-            materials.Add(baseMaterial);
+            materials.emplace_back(baseMaterial);
         }
 
         // save the materials

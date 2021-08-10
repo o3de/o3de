@@ -17,7 +17,7 @@
 namespace EMStudio
 {
     // constructor
-    NodeConnection::NodeConnection(NodeGraph* parentGraph, const QModelIndex& modelIndex, GraphNode* targetNode, uint32 portNr, GraphNode* sourceNode, uint32 sourceOutputPortNr)
+    NodeConnection::NodeConnection(NodeGraph* parentGraph, const QModelIndex& modelIndex, GraphNode* targetNode, AZ::u16 portNr, GraphNode* sourceNode, AZ::u16 sourceOutputPortNr)
         : m_modelIndex(modelIndex)
         , m_parentGraph(parentGraph)
     {

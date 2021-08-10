@@ -49,7 +49,7 @@ class CEditorPanelUtils_Impl
 {
     #pragma region Drag & Drop
 public:
-    virtual void SetViewportDragOperation(void(* dropCallback)(CViewport* viewport, int dragPointX, int dragPointY, void* custom), void* custom) override
+    void SetViewportDragOperation(void(* dropCallback)(CViewport* viewport, int dragPointX, int dragPointY, void* custom), void* custom) override
     {
         for (int i = 0; i < GetIEditor()->GetViewManager()->GetViewCount(); i++)
         {
@@ -60,13 +60,13 @@ public:
     #pragma region Preview Window
 public:
 
-    virtual int PreviewWindow_GetDisplaySettingsDebugFlags(CDisplaySettings* settings)
+    int PreviewWindow_GetDisplaySettingsDebugFlags(CDisplaySettings* settings) override
     {
         CRY_ASSERT(settings);
         return settings->GetDebugFlags();
     }
 
-    virtual void PreviewWindow_SetDisplaySettingsDebugFlags(CDisplaySettings* settings, int flags)
+    void PreviewWindow_SetDisplaySettingsDebugFlags(CDisplaySettings* settings, int flags) override
     {
         CRY_ASSERT(settings);
         settings->SetDebugFlags(flags);
@@ -79,7 +79,7 @@ protected:
     bool m_hotkeysAreEnabled;
 public:
 
-    virtual bool HotKey_Import() override
+    bool HotKey_Import() override
     {
         QVector<QPair<QString, QString> > keys;
         QString filepath = QFileDialog::getOpenFileName(nullptr, "Select shortcut configuration to load",
@@ -143,7 +143,7 @@ public:
         return result;
     }
 
-    virtual void HotKey_Export() override
+    void HotKey_Export() override
     {
         auto settingDir = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / "Editor" / "Plugins" / "ParticleEditorPlugin" / "settings";
         QString filepath = QFileDialog::getSaveFileName(nullptr, "Select shortcut configuration to load", settingDir.c_str(), "HotKey Config Files (*.hkxml)");
@@ -170,7 +170,7 @@ public:
         file.close();
     }
 
-    virtual QKeySequence HotKey_GetShortcut(const char* path) override
+    QKeySequence HotKey_GetShortcut(const char* path) override
     {
         for (HotKey combo : hotkeys)
         {
@@ -182,7 +182,7 @@ public:
         return QKeySequence();
     }
 
-    virtual bool HotKey_IsPressed(const QKeyEvent* event, const char* path) override
+    bool HotKey_IsPressed(const QKeyEvent* event, const char* path) override
     {
         if (!m_hotkeysAreEnabled)
         {
@@ -221,7 +221,7 @@ public:
         return false;
     }
 
-    virtual bool HotKey_IsPressed(const QShortcutEvent* event, const char* path) override
+    bool HotKey_IsPressed(const QShortcutEvent* event, const char* path) override
     {
         if (!m_hotkeysAreEnabled)
         {
@@ -239,7 +239,7 @@ public:
         return false;
     }
 
-    virtual bool HotKey_LoadExisting() override
+    bool HotKey_LoadExisting() override
     {
         QSettings settings("O3DE", "O3DE");
         QString group = "Hotkeys/";
@@ -275,7 +275,7 @@ public:
         return true;
     }
 
-    virtual void HotKey_SaveCurrent() override
+    void HotKey_SaveCurrent() override
     {
         QSettings settings("O3DE", "O3DE");
         QString group = "Hotkeys/";
@@ -296,7 +296,7 @@ public:
         settings.sync();
     }
 
-    virtual void HotKey_BuildDefaults() override
+    void HotKey_BuildDefaults() override
     {
         m_hotkeysAreEnabled = true;
         QVector<QPair<QString, QString> > keys;
@@ -356,17 +356,17 @@ public:
         }
     }
 
-    virtual void HotKey_SetKeys(QVector<HotKey> keys) override
+    void HotKey_SetKeys(QVector<HotKey> keys) override
     {
         hotkeys = keys;
     }
 
-    virtual QVector<HotKey> HotKey_GetKeys() override
+    QVector<HotKey> HotKey_GetKeys() override
     {
         return hotkeys;
     }
 
-    virtual QString HotKey_GetPressedHotkey(const QKeyEvent* event) override
+    QString HotKey_GetPressedHotkey(const QKeyEvent* event) override
     {
         if (!m_hotkeysAreEnabled)
         {
@@ -381,7 +381,7 @@ public:
         }
         return "";
     }
-    virtual QString HotKey_GetPressedHotkey(const QShortcutEvent* event) override
+    QString HotKey_GetPressedHotkey(const QShortcutEvent* event) override
     {
         if (!m_hotkeysAreEnabled)
         {
@@ -398,12 +398,12 @@ public:
     }
     //building the default hotkey list re-enables hotkeys
     //do not use this when rebuilding the default list is a possibility.
-    virtual void HotKey_SetEnabled(bool val) override
+    void HotKey_SetEnabled(bool val) override
     {
         m_hotkeysAreEnabled = val;
     }
 
-    virtual bool HotKey_IsEnabled() const override
+    bool HotKey_IsEnabled() const override
     {
         return m_hotkeysAreEnabled;
     }
@@ -457,13 +457,13 @@ protected:
     }
 
 public:
-    virtual void ToolTip_LoadConfigXML(QString filepath) override
+    void ToolTip_LoadConfigXML(QString filepath) override
     {
         XmlNodeRef node = GetIEditor()->GetSystem()->LoadXmlFromFile(filepath.toStdString().c_str());
         ToolTip_ParseNode(node);
     }
 
-    virtual void ToolTip_BuildFromConfig(IQToolTip* tooltip, QString path, QString option, QString optionalData = "", bool isEnabled = true)
+    void ToolTip_BuildFromConfig(IQToolTip* tooltip, QString path, QString option, QString optionalData = "", bool isEnabled = true) override
     {
         AZ_Assert(tooltip, "tooltip cannot be null");
 
@@ -488,7 +488,7 @@ public:
         }
     }
 
-    virtual QString ToolTip_GetTitle(QString path, QString option) override
+    QString ToolTip_GetTitle(QString path, QString option) override
     {
         if (!option.isEmpty() && GetToolTip(path + "." + option).isValid)
         {
@@ -501,7 +501,7 @@ public:
         return GetToolTip(path).title;
     }
 
-    virtual QString ToolTip_GetContent(QString path, QString option) override
+    QString ToolTip_GetContent(QString path, QString option) override
     {
         if (!option.isEmpty() && GetToolTip(path + "." + option).isValid)
         {
@@ -514,7 +514,7 @@ public:
         return GetToolTip(path).content;
     }
 
-    virtual QString ToolTip_GetSpecialContentType(QString path, QString option) override
+    QString ToolTip_GetSpecialContentType(QString path, QString option) override
     {
         if (!option.isEmpty() && GetToolTip(path + "." + option).isValid)
         {
@@ -527,7 +527,7 @@ public:
         return GetToolTip(path).specialContent;
     }
 
-    virtual QString ToolTip_GetDisabledContent(QString path, QString option) override
+    QString ToolTip_GetDisabledContent(QString path, QString option) override
     {
         if (!option.isEmpty() && GetToolTip(path + "." + option).isValid)
         {

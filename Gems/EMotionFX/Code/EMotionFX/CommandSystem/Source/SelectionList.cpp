@@ -25,14 +25,14 @@ namespace CommandSystem
         EMotionFX::ActorNotificationBus::Handler::BusDisconnect();
     }
 
-    uint32 SelectionList::GetNumTotalItems() const
+    size_t SelectionList::GetNumTotalItems() const
     {
-        return static_cast<uint32>(mSelectedNodes.size() +
+        return mSelectedNodes.size() +
             mSelectedActors.size() +
             mSelectedActorInstances.size() +
             mSelectedMotions.size() +
             mSelectedMotionInstances.size() +
-            mSelectedAnimGraphs.size());
+            mSelectedAnimGraphs.size();
     }
 
     bool SelectionList::GetIsEmpty() const
@@ -113,48 +113,46 @@ namespace CommandSystem
     // add a complete selection list to this one
     void SelectionList::Add(SelectionList& selection)
     {
-        uint32 i;
-
         // get the number of selected objects
-        const uint32 numSelectedNodes           = selection.GetNumSelectedNodes();
-        const uint32 numSelectedActors          = selection.GetNumSelectedActors();
-        const uint32 numSelectedActorInstances  = selection.GetNumSelectedActorInstances();
-        const uint32 numSelectedMotions         = selection.GetNumSelectedMotions();
-        const uint32 numSelectedMotionInstances = selection.GetNumSelectedMotionInstances();
-        const uint32 numSelectedAnimGraphs      = selection.GetNumSelectedAnimGraphs();
+        const size_t numSelectedNodes           = selection.GetNumSelectedNodes();
+        const size_t numSelectedActors          = selection.GetNumSelectedActors();
+        const size_t numSelectedActorInstances  = selection.GetNumSelectedActorInstances();
+        const size_t numSelectedMotions         = selection.GetNumSelectedMotions();
+        const size_t numSelectedMotionInstances = selection.GetNumSelectedMotionInstances();
+        const size_t numSelectedAnimGraphs      = selection.GetNumSelectedAnimGraphs();
 
         // iterate through all nodes and select them
-        for (i = 0; i < numSelectedNodes; ++i)
+        for (size_t i = 0; i < numSelectedNodes; ++i)
         {
             AddNode(selection.GetNode(i));
         }
 
         // iterate through all actors and select them
-        for (i = 0; i < numSelectedActors; ++i)
+        for (size_t i = 0; i < numSelectedActors; ++i)
         {
             AddActor(selection.GetActor(i));
         }
 
         // iterate through all actor instances and select them
-        for (i = 0; i < numSelectedActorInstances; ++i)
+        for (size_t i = 0; i < numSelectedActorInstances; ++i)
         {
             AddActorInstance(selection.GetActorInstance(i));
         }
 
         // iterate through all motions and select them
-        for (i = 0; i < numSelectedMotions; ++i)
+        for (size_t i = 0; i < numSelectedMotions; ++i)
         {
             AddMotion(selection.GetMotion(i));
         }
 
         // iterate through all motion instances and select them
-        for (i = 0; i < numSelectedMotionInstances; ++i)
+        for (size_t i = 0; i < numSelectedMotionInstances; ++i)
         {
             AddMotionInstance(selection.GetMotionInstance(i));
         }
 
         // iterate through all anim graphs and select them
-        for (i = 0; i < numSelectedAnimGraphs; ++i)
+        for (size_t i = 0; i < numSelectedAnimGraphs; ++i)
         {
             AddAnimGraph(selection.GetAnimGraph(i));
         }
@@ -164,53 +162,46 @@ namespace CommandSystem
     // log the current selection
     void SelectionList::Log()
     {
-        uint32 i;
-
         // get the number of selected objects
-        const uint32 numSelectedNodes           = GetNumSelectedNodes();
-        const uint32 numSelectedActorInstances  = GetNumSelectedActorInstances();
-        const uint32 numSelectedActors          = GetNumSelectedActors();
-        const uint32 numSelectedMotions         = GetNumSelectedMotions();
-        const uint32 numSelectedMotionInstances = GetNumSelectedMotionInstances();
-        const uint32 numSelectedAnimGraphs      = GetNumSelectedAnimGraphs();
+        const size_t numSelectedNodes           = GetNumSelectedNodes();
+        const size_t numSelectedActorInstances  = GetNumSelectedActorInstances();
+        const size_t numSelectedActors          = GetNumSelectedActors();
+        const size_t numSelectedMotions         = GetNumSelectedMotions();
+        const size_t numSelectedAnimGraphs      = GetNumSelectedAnimGraphs();
 
         MCore::LogInfo("SelectionList:");
 
         // iterate through all nodes and select them
         MCore::LogInfo(" - Nodes (%i)", numSelectedNodes);
-        for (i = 0; i < numSelectedNodes; ++i)
+        for (size_t i = 0; i < numSelectedNodes; ++i)
         {
             MCore::LogInfo("    + Node #%.3d: name='%s'", i, GetNode(i)->GetName());
         }
 
         // iterate through all actors and select them
         MCore::LogInfo(" - Actors (%i)", numSelectedActors);
-        for (i = 0; i < numSelectedActors; ++i)
+        for (size_t i = 0; i < numSelectedActors; ++i)
         {
             MCore::LogInfo("    + Actor #%.3d: name='%s'", i, GetActor(i)->GetName());
         }
 
         // iterate through all actor instances and select them
         MCore::LogInfo(" - Actor instances (%i)", numSelectedActorInstances);
-        for (i = 0; i < numSelectedActorInstances; ++i)
+        for (size_t i = 0; i < numSelectedActorInstances; ++i)
         {
             MCore::LogInfo("    + Actor instance #%.3d: name='%s'", i, GetActorInstance(i)->GetActor()->GetName());
         }
 
         // iterate through all motions and select them
         MCore::LogInfo(" - Motions (%i)", numSelectedMotions);
-        for (i = 0; i < numSelectedMotions; ++i)
+        for (size_t i = 0; i < numSelectedMotions; ++i)
         {
             MCore::LogInfo("    + Motion #%.3d: name='%s'", i, GetMotion(i)->GetName());
         }
 
-        // iterate through all motion instances and select them
-        MCore::LogInfo(" - Motion instances (%i)", numSelectedMotionInstances);
-        //for (i=0; i<numSelectedMotionInstances; ++i)
-
         // iterate through all motions and select them
         MCore::LogInfo(" - AnimGraphs (%i)", numSelectedAnimGraphs);
-        for (i = 0; i < numSelectedAnimGraphs; ++i)
+        for (size_t i = 0; i < numSelectedAnimGraphs; ++i)
         {
             MCore::LogInfo("    + AnimGraph #%.3d: %s", i, GetAnimGraph(i)->GetFileName());
         }
@@ -367,8 +358,8 @@ namespace CommandSystem
     void SelectionList::OnActorDestroyed(EMotionFX::Actor* actor)
     {
         const EMotionFX::Skeleton* skeleton = actor->GetSkeleton();
-        const AZ::u32 numJoints = skeleton->GetNumNodes();
-        for (AZ::u32 i = 0; i < numJoints; ++i)
+        const size_t numJoints = skeleton->GetNumNodes();
+        for (size_t i = 0; i < numJoints; ++i)
         {
             EMotionFX::Node* joint = skeleton->GetNode(i);
             RemoveNode(joint);
