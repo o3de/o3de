@@ -79,7 +79,7 @@ CGizmo* CGizmoManager::GetGizmoByIndex(int nIndex) const
             return *ii;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////

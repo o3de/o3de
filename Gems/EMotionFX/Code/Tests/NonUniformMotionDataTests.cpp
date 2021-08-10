@@ -185,15 +185,15 @@ namespace EMotionFX
         EXPECT_FALSE(motionData.FindJointIndexByName("Blah").IsSuccess());
         EXPECT_FALSE(motionData.FindMorphIndexByName("Blah").IsSuccess());
         EXPECT_FALSE(motionData.FindFloatIndexByName("Blah").IsSuccess());
-        EXPECT_TRUE(motionData.FindJointIndexByName("Joint1").IsSuccess());
-        EXPECT_TRUE(motionData.FindJointIndexByName("Joint2").IsSuccess());
-        EXPECT_TRUE(motionData.FindJointIndexByName("Joint3").IsSuccess());
-        EXPECT_TRUE(motionData.FindMorphIndexByName("Morph1").IsSuccess());
-        EXPECT_TRUE(motionData.FindMorphIndexByName("Morph2").IsSuccess());
-        EXPECT_TRUE(motionData.FindMorphIndexByName("Morph3").IsSuccess());
-        EXPECT_TRUE(motionData.FindFloatIndexByName("Float1").IsSuccess());
-        EXPECT_TRUE(motionData.FindFloatIndexByName("Float2").IsSuccess());
-        EXPECT_TRUE(motionData.FindFloatIndexByName("Float3").IsSuccess());
+        ASSERT_TRUE(motionData.FindJointIndexByName("Joint1").IsSuccess());
+        ASSERT_TRUE(motionData.FindJointIndexByName("Joint2").IsSuccess());
+        ASSERT_TRUE(motionData.FindJointIndexByName("Joint3").IsSuccess());
+        ASSERT_TRUE(motionData.FindMorphIndexByName("Morph1").IsSuccess());
+        ASSERT_TRUE(motionData.FindMorphIndexByName("Morph2").IsSuccess());
+        ASSERT_TRUE(motionData.FindMorphIndexByName("Morph3").IsSuccess());
+        ASSERT_TRUE(motionData.FindFloatIndexByName("Float1").IsSuccess());
+        ASSERT_TRUE(motionData.FindFloatIndexByName("Float2").IsSuccess());
+        ASSERT_TRUE(motionData.FindFloatIndexByName("Float3").IsSuccess());
         EXPECT_EQ(motionData.FindJointIndexByName("Joint1").GetValue(), 0);
         EXPECT_EQ(motionData.FindJointIndexByName("Joint2").GetValue(), 1);
         EXPECT_EQ(motionData.FindJointIndexByName("Joint3").GetValue(), 2);
@@ -663,7 +663,7 @@ namespace EMotionFX
 
         // Test morph sampling.
         AZ::Outcome<size_t> index = motionData.FindMorphIndexByName("Morph1");
-        EXPECT_TRUE(index.IsSuccess());
+        ASSERT_TRUE(index.IsSuccess());
         if (index.IsSuccess())
         {
             float result = -1.0f;
@@ -693,7 +693,7 @@ namespace EMotionFX
 
         // Test float sampling.
         index = motionData.FindFloatIndexByName("Float1");
-        EXPECT_TRUE(index.IsSuccess());
+        ASSERT_TRUE(index.IsSuccess());
         if (index.IsSuccess())
         {
             float result = -1.0f;

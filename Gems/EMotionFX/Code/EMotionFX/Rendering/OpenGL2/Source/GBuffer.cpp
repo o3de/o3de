@@ -10,7 +10,7 @@
 #include <MCore/Source/Config.h>
 #include <MCore/Source/LogManager.h>
 
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include "GBuffer.h"
 #include "RenderTexture.h"
 #include "GLSLShader.h"

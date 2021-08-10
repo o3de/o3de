@@ -26,8 +26,8 @@ namespace MCore
     void CommandLine::GetValue(const char* paramName, const char* defaultValue, AZStd::string* outResult) const
     {
         // try to find the parameter index
-        const uint32 paramIndex = FindParameterIndex(paramName);
-        if (paramIndex == MCORE_INVALIDINDEX32)
+        const size_t paramIndex = FindParameterIndex(paramName);
+        if (paramIndex == InvalidIndex)
         {
             *outResult = defaultValue;
             return;
@@ -49,8 +49,8 @@ namespace MCore
     void CommandLine::GetValue(const char* paramName, const char* defaultValue, AZStd::string& outResult) const
     {
         // Try to find the parameter index.
-        const uint32 paramIndex = FindParameterIndex(paramName);
-        if (paramIndex == MCORE_INVALIDINDEX32)
+        const size_t paramIndex = FindParameterIndex(paramName);
+        if (paramIndex == InvalidIndex)
         {
             outResult = defaultValue;
             return;
@@ -72,8 +72,8 @@ namespace MCore
     int32 CommandLine::GetValueAsInt(const char* paramName, int32 defaultValue) const
     {
         // try to find the parameter index
-        const uint32 paramIndex = FindParameterIndex(paramName);
-        if (paramIndex == MCORE_INVALIDINDEX32)
+        const size_t paramIndex = FindParameterIndex(paramName);
+        if (paramIndex == InvalidIndex)
         {
             return defaultValue;
         }
@@ -93,8 +93,8 @@ namespace MCore
     float CommandLine::GetValueAsFloat(const char* paramName, float defaultValue) const
     {
         // try to find the parameter index
-        const uint32 paramIndex = FindParameterIndex(paramName);
-        if (paramIndex == MCORE_INVALIDINDEX32)
+        const size_t paramIndex = FindParameterIndex(paramName);
+        if (paramIndex == InvalidIndex)
         {
             return defaultValue;
         }
@@ -114,8 +114,8 @@ namespace MCore
     bool CommandLine::GetValueAsBool(const char* paramName, bool defaultValue) const
     {
         // try to find the parameter index
-        const uint32 paramIndex = FindParameterIndex(paramName);
-        if (paramIndex == MCORE_INVALIDINDEX32)
+        const size_t paramIndex = FindParameterIndex(paramName);
+        if (paramIndex == InvalidIndex)
         {
             return defaultValue;
         }
@@ -135,8 +135,8 @@ namespace MCore
     AZ::Vector3 CommandLine::GetValueAsVector3(const char* paramName, const AZ::Vector3& defaultValue) const
     {
         // try to find the parameter index
-        const uint32 paramIndex = FindParameterIndex(paramName);
-        if (paramIndex == MCORE_INVALIDINDEX32)
+        const size_t paramIndex = FindParameterIndex(paramName);
+        if (paramIndex == InvalidIndex)
         {
             return defaultValue;
         }
@@ -157,8 +157,8 @@ namespace MCore
     AZ::Vector4 CommandLine::GetValueAsVector4(const char* paramName, const AZ::Vector4& defaultValue) const
     {
         // try to find the parameter index
-        const uint32 paramIndex = FindParameterIndex(paramName);
-        if (paramIndex == MCORE_INVALIDINDEX32)
+        const size_t paramIndex = FindParameterIndex(paramName);
+        if (paramIndex == InvalidIndex)
         {
             return defaultValue;
         }
@@ -178,8 +178,8 @@ namespace MCore
     void CommandLine::GetValue(const char* paramName, Command* command, AZStd::string* outResult) const
     {
         // try to find the parameter index
-        const uint32 paramIndex = FindParameterIndex(paramName);
-        if (paramIndex == MCORE_INVALIDINDEX32)
+        const size_t paramIndex = FindParameterIndex(paramName);
+        if (paramIndex == InvalidIndex)
         {
             command->GetOriginalCommand()->GetSyntax().GetDefaultValue(paramName, *outResult);
             return;
@@ -198,8 +198,8 @@ namespace MCore
     AZ::Outcome<AZStd::string> CommandLine::GetValueIfExists(const char* paramName, Command* command) const
     {
     AZ_UNUSED(command);
-        const uint32 paramIndex = FindParameterIndex(paramName);
-        if (paramIndex != MCORE_INVALIDINDEX32)
+        const size_t paramIndex = FindParameterIndex(paramName);
+        if (paramIndex != InvalidIndex)
         {
             return AZ::Success(m_parameters[paramIndex].mValue);
         }
@@ -211,8 +211,8 @@ namespace MCore
     const AZStd::string& CommandLine::GetValue(const char* paramName, Command* command) const
     {
         // Try to find the parameter index.
-        const uint32 paramIndex = FindParameterIndex(paramName);
-        if (paramIndex == MCORE_INVALIDINDEX32)
+        const size_t paramIndex = FindParameterIndex(paramName);
+        if (paramIndex == InvalidIndex)
         {
             return command->GetOriginalCommand()->GetSyntax().GetDefaultValue(paramName);
         }
@@ -226,8 +226,8 @@ namespace MCore
     int32 CommandLine::GetValueAsInt(const char* paramName, Command* command) const
     {
         // try to find the parameter index
-        const uint32 paramIndex = FindParameterIndex(paramName);
-        if (paramIndex == MCORE_INVALIDINDEX32)
+        const size_t paramIndex = FindParameterIndex(paramName);
+        if (paramIndex == InvalidIndex)
         {
             AZStd::string result;
             if (command->GetOriginalCommand()->GetSyntax().GetDefaultValue(paramName, result))
@@ -236,7 +236,7 @@ namespace MCore
             }
             else
             {
-                return MCORE_INVALIDINDEX32;
+                return InvalidIndexT<int32>;
             }
         }
 
@@ -248,8 +248,8 @@ namespace MCore
     float CommandLine::GetValueAsFloat(const char* paramName, Command* command) const
     {
         // try to find the parameter index
-        const uint32 paramIndex = FindParameterIndex(paramName);
-        if (paramIndex == MCORE_INVALIDINDEX32)
+        const size_t paramIndex = FindParameterIndex(paramName);
+        if (paramIndex == InvalidIndex)
         {
             AZStd::string result;
             if (command->GetOriginalCommand()->GetSyntax().GetDefaultValue(paramName, result))
@@ -271,8 +271,8 @@ namespace MCore
     bool CommandLine::GetValueAsBool(const char* paramName, Command* command) const
     {
         // try to find the parameter index
-        const uint32 paramIndex = FindParameterIndex(paramName);
-        if (paramIndex == MCORE_INVALIDINDEX32)
+        const size_t paramIndex = FindParameterIndex(paramName);
+        if (paramIndex == InvalidIndex)
         {
             AZStd::string result;
             if (command->GetOriginalCommand()->GetSyntax().GetDefaultValue(paramName, result))
@@ -294,8 +294,8 @@ namespace MCore
     AZ::Vector3 CommandLine::GetValueAsVector3(const char* paramName, Command* command) const
     {
         // try to find the parameter index
-        const uint32 paramIndex = FindParameterIndex(paramName);
-        if (paramIndex == MCORE_INVALIDINDEX32)
+        const size_t paramIndex = FindParameterIndex(paramName);
+        if (paramIndex == InvalidIndex)
         {
             AZStd::string result;
             if (command->GetOriginalCommand()->GetSyntax().GetDefaultValue(paramName, result))
@@ -317,8 +317,8 @@ namespace MCore
     AZ::Vector4 CommandLine::GetValueAsVector4(const char* paramName, Command* command) const
     {
         // try to find the parameter index
-        const uint32 paramIndex = FindParameterIndex(paramName);
-        if (paramIndex == MCORE_INVALIDINDEX32)
+        const size_t paramIndex = FindParameterIndex(paramName);
+        if (paramIndex == InvalidIndex)
         {
             AZStd::string result;
             if (command->GetOriginalCommand()->GetSyntax().GetDefaultValue(paramName, result))
@@ -337,21 +337,21 @@ namespace MCore
 
 
     // get the number of parameters
-    uint32 CommandLine::GetNumParameters() const
+    size_t CommandLine::GetNumParameters() const
     {
-        return static_cast<uint32>(m_parameters.size());
+        return m_parameters.size();
     }
 
 
     // get the parameter name for a given parameter
-    const AZStd::string& CommandLine::GetParameterName(uint32 nr) const
+    const AZStd::string& CommandLine::GetParameterName(size_t nr) const
     {
         return m_parameters[nr].mName;
     }
 
 
     // get the parameter value for a given parameter number
-    const AZStd::string& CommandLine::GetParameterValue(uint32 nr) const
+    const AZStd::string& CommandLine::GetParameterValue(size_t nr) const
     {
         return m_parameters[nr].mValue;
     }
@@ -361,8 +361,8 @@ namespace MCore
     bool CommandLine::CheckIfHasValue(const char* paramName) const
     {
         // try to find the parameter index
-        const uint32 paramIndex = FindParameterIndex(paramName);
-        if (paramIndex == MCORE_INVALIDINDEX32)
+        const size_t paramIndex = FindParameterIndex(paramName);
+        if (paramIndex == InvalidIndex)
         {
             return false;
         }
@@ -373,42 +373,37 @@ namespace MCore
 
 
     // try to find a given parameter's index into the parameter array
-    uint32 CommandLine::FindParameterIndex(const char* paramName) const
+    size_t CommandLine::FindParameterIndex(const char* paramName) const
     {
         // compare all parameter names on a non-case sensitive way
-        const size_t numParams = m_parameters.size();
-        for (size_t i = 0; i < numParams; ++i)
+        const auto foundParameter = AZStd::find_if(begin(m_parameters), end(m_parameters), [paramName](const Parameter& parameter)
         {
-            if (AzFramework::StringFunc::Equal(m_parameters[i].mName.c_str(), paramName, false /* no case */))
-            {
-                return static_cast<uint32>(i);
-            }
-        }
+            return AzFramework::StringFunc::Equal(parameter.mName, paramName, false /* no case */);
+        });
 
-        // not found
-        return MCORE_INVALIDINDEX32;
+        return foundParameter != end(m_parameters) ? AZStd::distance(begin(m_parameters), foundParameter) : InvalidIndex;
     }
 
 
     // check if we have a parameter with a given name defined
     bool CommandLine::CheckIfHasParameter(const char* paramName) const
     {
-        return (FindParameterIndex(paramName) != MCORE_INVALIDINDEX32);
+        return (FindParameterIndex(paramName) != InvalidIndex);
     }
 
     bool CommandLine::CheckIfHasParameter(const AZStd::string& paramName) const
     {
-        return (FindParameterIndex(paramName.c_str()) != MCORE_INVALIDINDEX32);
+        return (FindParameterIndex(paramName.c_str()) != InvalidIndex);
     }
 
     // extract the next parameter, starting from a given offset
-    bool CommandLine::ExtractNextParam(const AZStd::string& paramString, AZStd::string& outParamName, AZStd::string& outParamValue, uint32* inOutStartOffset)
+    bool CommandLine::ExtractNextParam(const AZStd::string& paramString, AZStd::string& outParamName, AZStd::string& outParamValue, size_t* inOutStartOffset)
     {
         outParamName.clear();
         outParamValue.clear();
 
         // check if we already reached the end of the string
-        uint32 offset = *inOutStartOffset;
+        size_t offset = *inOutStartOffset;
         if (offset >= paramString.size())
         {
             return false;
@@ -416,8 +411,8 @@ namespace MCore
 
         // filter out the next parameter
         AZStd::string::const_iterator iterator = paramString.begin() + offset;
-        uint32  paramNameStart      = MCORE_INVALIDINDEX32;
-        uint32  paramValueStart     = MCORE_INVALIDINDEX32;
+        size_t  paramNameStart      = InvalidIndex;
+        size_t  paramValueStart     = InvalidIndex;
         bool    readingParamName    = false;
         bool    readingParamValue   = false;
         bool    foundNextParam      = false;
@@ -528,7 +523,7 @@ namespace MCore
         // extract all parameters
         AZStd::string paramName;
         AZStd::string paramValue;
-        uint32 offset = 0;
+        size_t offset = 0;
         while (ExtractNextParam(commandLine, paramName, paramValue, &offset))
         {
             // if the parameter name is empty then it isn't a real parameter
@@ -545,7 +540,7 @@ namespace MCore
     {
         const size_t numParameters = m_parameters.size();
         LogInfo("Command line '%s' has %d parameters", debugName, numParameters);
-        for (uint32 i = 0; i < numParameters; ++i)
+        for (size_t i = 0; i < numParameters; ++i)
         {
             LogInfo("Param %d (name='%s'  value='%s'", i, m_parameters[i].mName.c_str(), m_parameters[i].mValue.c_str());
         }

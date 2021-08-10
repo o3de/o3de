@@ -22,7 +22,7 @@
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
 #include <AzCore/std/string/string.h>
 
-#include "Commands/CommandManager.h"                
+#include "Commands/CommandManager.h"
 
 #include "Include/IErrorReport.h"
 #include "ErrorReport.h"
@@ -63,7 +63,7 @@ namespace AssetDatabase
     class AssetDatabaseLocationListener;
 }
 
-class CEditorImpl 
+class CEditorImpl
     : public IEditor
 {
     Q_DECLARE_TR_FUNCTIONS(CEditorImpl)
@@ -176,7 +176,7 @@ public:
         {
             return m_pSystem->GetIMovieSystem();
         }
-        return NULL;
+        return nullptr;
     };
 
     CPluginManager* GetPluginManager() { return m_pPluginManager; }
@@ -210,7 +210,7 @@ public:
     RefCoordSys GetReferenceCoordSys();
     XmlNodeRef FindTemplate(const QString& templateName);
     void AddTemplate(const QString& templateName, XmlNodeRef& tmpl);
-   
+
     const QtViewPane* OpenView(QString sViewClassName, bool reuseOpened = true) override;
 
     /**

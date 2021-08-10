@@ -95,8 +95,8 @@ namespace EMotionFX
             {
                 MakeNoEvents,
                 0.5f,
-                MCORE_INVALIDINDEX32,
-                MCORE_INVALIDINDEX32
+                InvalidIndex,
+                InvalidIndex
             },
             {
                 MakeOneEvent,
@@ -267,8 +267,8 @@ namespace EMotionFX
                 0,     // startingIndex
                 0,     // inEventAIndex
                 1,     // inEventBIndex
-                MCORE_INVALIDINDEX32, // expectedEventA
-                MCORE_INVALIDINDEX32, // expectedEventB
+                InvalidIndex, // expectedEventA
+                InvalidIndex, // expectedEventB
                 false, // mirrorInput
                 false, // mirrorOutput
                 true   // forward

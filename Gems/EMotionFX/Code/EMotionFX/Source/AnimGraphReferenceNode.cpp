@@ -56,7 +56,7 @@ namespace EMotionFX
         // to the non-existing old anim graph, while the new one is about to be loaded asynchronously.
 
         // In case the asset already got destroyed (AnimGraphAssetHandler::DestroyAsset()), it removed all anim graph instances already.
-        if (GetAnimGraphManager().FindAnimGraphInstanceIndex(m_referencedAnimGraphInstance) != InvalidIndex32)
+        if (GetAnimGraphManager().FindAnimGraphInstanceIndex(m_referencedAnimGraphInstance) != InvalidIndex)
         {
             m_referencedAnimGraphInstance->Destroy();
         }
@@ -375,8 +375,8 @@ namespace EMotionFX
                 // Release any left over ref data for the referenced anim graph instance.
                 const uint32 threadIndex = referencedAnimGraphInstance->GetActorInstance()->GetThreadIndex();
                 AnimGraphRefCountedDataPool& refDataPool = GetEMotionFX().GetThreadData(threadIndex)->GetRefCountedDataPool();
-                const uint32 numReferencedNodes = referencedAnimGraph->GetNumNodes();
-                for (uint32 i = 0; i < numReferencedNodes; ++i)
+                const size_t numReferencedNodes = referencedAnimGraph->GetNumNodes();
+                for (size_t i = 0; i < numReferencedNodes; ++i)
                 {
                     const AnimGraphNode* node = referencedAnimGraph->GetNode(i);
                     AnimGraphNodeData* nodeData = static_cast<AnimGraphNodeData*>(referencedAnimGraphInstance->GetUniqueObjectData(node->GetObjectIndex()));
@@ -499,7 +499,7 @@ namespace EMotionFX
     }
 
 
-    void AnimGraphReferenceNode::RecursiveCollectObjects(MCore::Array<AnimGraphObject*>& outObjects) const
+    void AnimGraphReferenceNode::RecursiveCollectObjects(AZStd::vector<AnimGraphObject*>& outObjects) const
     {
         AnimGraphNode::RecursiveCollectObjects(outObjects);
 

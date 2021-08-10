@@ -27,7 +27,7 @@ namespace EMStudio
     int32  TimeTrackElement::mTickHalfWidth         = 7;
 
     // constructor
-    TimeTrackElement::TimeTrackElement(const char* name, TimeTrack* timeTrack, uint32 elementNumber, QColor color)
+    TimeTrackElement::TimeTrackElement(const char* name, TimeTrack* timeTrack, size_t elementNumber, QColor color)
     {
         mTrack              = timeTrack;
         mName               = name;

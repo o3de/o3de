@@ -15,7 +15,7 @@
 #include "BaseObject.h"
 #include <MCore/Source/Attribute.h>
 #include "MCore/Source/Color.h"
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include <MCore/Source/File.h>
 #include <MCore/Source/Vector.h>
 #include <MCore/Source/MultiThreadManager.h>
@@ -63,7 +63,7 @@ namespace EMotionFX
             AZStd::unordered_set<AZ::TypeId> mNodeHistoryTypesToIgnore; /**< The array of type node type IDs to NOT capture. Empty array means nothing to ignore. */
             uint32 mFPS; /**< The rate at which to sample (default=15). */
             uint32 mNumPreAllocTransformKeys; /**< Pre-allocate space for this amount of transformation keys per node per actor instance (default=32). */
-            uint32 mInitialAnimGraphAnimBytes; /**< The number of bytes to allocate to store the anim graph recording (default=2*1024*1024, which is 2mb). This is only used when actually recording anim graph internal state animation. */
+            size_t mInitialAnimGraphAnimBytes; /**< The number of bytes to allocate to store the anim graph recording (default=2*1024*1024, which is 2mb). This is only used when actually recording anim graph internal state animation. */
             bool mRecordTransforms; /**< Record transformations? (default=true). */
             bool mRecordAnimGraphStates; /**< Record the anim graph internal state? (default=false). */
             bool mRecordNodeHistory; /**< Record the node history? (default=false). */
@@ -95,8 +95,8 @@ namespace EMotionFX
         struct EMFX_API EventHistoryItem
         {
             EventInfo       mEventInfo;
-            uint32          mEventIndex;            /**< The index to use in combination with GetEventManager().GetEvent(index). */
-            uint32          mTrackIndex;
+            size_t          mEventIndex;            /**< The index to use in combination with GetEventManager().GetEvent(index). */
+            size_t          mTrackIndex;
             AnimGraphNodeId mEmitterNodeId;
             uint32          mAnimGraphID;
             AZ::Color       mColor;
@@ -106,8 +106,8 @@ namespace EMotionFX
 
             EventHistoryItem()
             {
-                mEventIndex         = MCORE_INVALIDINDEX32;
-                mTrackIndex         = MCORE_INVALIDINDEX32;
+                mEventIndex         = InvalidIndex;
+                mTrackIndex         = InvalidIndex;
                 mEmitterNodeId      = AnimGraphNodeId();
                 mAnimGraphID        = MCORE_INVALIDINDEX32;
 
@@ -130,8 +130,8 @@ namespace EMotionFX
             KeyTrackLinearDynamic<float, float> mLocalWeights;  // the local weights at given time values
             KeyTrackLinearDynamic<float, float> mPlayTimes;     // normalized time values (current time in the node/motion)
             uint32                  mMotionID;              // the ID of the Motion object used
-            uint32                  mTrackIndex;            // the track index
-            uint32                  mCachedKey;             // a cached key
+            size_t                  mTrackIndex;            // the track index
+            size_t                  mCachedKey;             // a cached key
             AnimGraphNodeId         mNodeId;                // animgraph node Id
             AnimGraphInstance*      mAnimGraphInstance;     // the anim graph instance this node was recorded from
             AZ::Color               mColor;                 // the node viz color
@@ -146,8 +146,8 @@ namespace EMotionFX
                 mStartTime      = 0.0f;
                 mEndTime        = 0.0f;
                 mMotionID       = MCORE_INVALIDINDEX32;
-                mTrackIndex     = MCORE_INVALIDINDEX32;
-                mCachedKey      = MCORE_INVALIDINDEX32;
+                mTrackIndex     = InvalidIndex;
+                mCachedKey      = InvalidIndex;
                 mNodeId         = AnimGraphNodeId();
                 mAnimGraphInstance = nullptr;
                 mAnimGraphID    = MCORE_INVALIDINDEX32;
@@ -169,7 +169,7 @@ namespace EMotionFX
         struct EMFX_API ExtractedNodeHistoryItem
         {
             NodeHistoryItem*    mNodeHistoryItem;
-            uint32              mTrackIndex;
+            size_t              mTrackIndex;
             float               mValue;
             float               mKeyTrackSampleTime;
 
@@ -194,50 +194,66 @@ namespace EMotionFX
 
         struct EMFX_API AnimGraphAnimObjectInfo
         {
-            uint32              mFrameByteOffset;
+            size_t              mFrameByteOffset;
             AnimGraphObject*   mObject;
         };
 
 
         struct EMFX_API AnimGraphAnimFrame
         {
-            float                                       mTimeValue;
-            uint32                                      mByteOffset;
-            uint32                                      mNumBytes;
-            MCore::Array<AnimGraphAnimObjectInfo>      mObjectInfos;
-            MCore::Array<MCore::Attribute*>             mParameterValues;
-
-            AnimGraphAnimFrame()
-            {
-                mTimeValue  = 0.0f;
-                mByteOffset = 0;
-                mNumBytes   = 0;
-            }
-
-            ~AnimGraphAnimFrame()
-            {
-                const uint32 numParams = mParameterValues.GetLength();
-                for (uint32 i = 0; i < numParams; ++i)
-                {
-                    delete mParameterValues[i];
-                }
-            }
+            float                                       mTimeValue = 0.0f;
+            size_t                                      mByteOffset = 0;
+            size_t                                      mNumBytes = 0;
+            AZStd::vector<AnimGraphAnimObjectInfo>      mObjectInfos{};
+            AZStd::vector<AZStd::unique_ptr<MCore::Attribute>>             mParameterValues{};
         };
 
         struct EMFX_API AnimGraphInstanceData
         {
-            AnimGraphInstance* mAnimGraphInstance;
-            uint32              mNumFrames;
-            uint32              mDataBufferSize;
-            uint8*              mDataBuffer;
-            MCore::Array<AnimGraphAnimFrame>   mFrames;
+            AnimGraphInstance* mAnimGraphInstance = nullptr;
+            size_t              mNumFrames = 0;
+            size_t              mDataBufferSize = 0;
+            uint8*              mDataBuffer = nullptr;
+            AZStd::vector<AnimGraphAnimFrame>   mFrames{};
 
-            AnimGraphInstanceData()
+            AnimGraphInstanceData() = default;
+            AnimGraphInstanceData(const AnimGraphInstanceData&) = delete;
+            AnimGraphInstanceData(AnimGraphInstanceData&& rhs)
             {
-                mAnimGraphInstance = nullptr;
-                mNumFrames          = 0;
-                mDataBufferSize     = 0;
-                mDataBuffer         = nullptr;
+                if (&rhs == this)
+                {
+                    return;
+                }
+                mAnimGraphInstance = rhs.mAnimGraphInstance;
+                mNumFrames = rhs.mNumFrames;
+                mDataBufferSize = rhs.mDataBufferSize;
+                mDataBuffer = rhs.mDataBuffer;
+                mFrames = AZStd::move(rhs.mFrames);
+                rhs.mAnimGraphInstance = nullptr;
+                rhs.mNumFrames = 0;
+                rhs.mDataBufferSize = 0;
+                rhs.mDataBuffer = nullptr;
+                rhs.mFrames = {};
+            }
+
+            AnimGraphInstanceData& operator=(const AnimGraphInstanceData&) = delete;
+            AnimGraphInstanceData& operator=(AnimGraphInstanceData&& rhs)
+            {
+                if (&rhs == this)
+                {
+                    return *this;
+                }
+                mAnimGraphInstance = rhs.mAnimGraphInstance;
+                mNumFrames = rhs.mNumFrames;
+                mDataBufferSize = rhs.mDataBufferSize;
+                mDataBuffer = rhs.mDataBuffer;
+                mFrames = AZStd::move(rhs.mFrames);
+                rhs.mAnimGraphInstance = nullptr;
+                rhs.mNumFrames = 0;
+                rhs.mDataBufferSize = 0;
+                rhs.mDataBuffer = nullptr;
+                rhs.mFrames = {};
+                return *this;
             }
 
             ~AnimGraphInstanceData()
@@ -254,19 +270,16 @@ namespace EMotionFX
             ActorInstance*                          mActorInstance;         // the actor instance this data is about
             AnimGraphInstanceData*                  mAnimGraphData;         // the anim graph instance data
             AZStd::vector<TransformTracks>          m_transformTracks;       // the transformation tracks, one for each node
-            MCore::Array<NodeHistoryItem*>          mNodeHistoryItems;      // node history items
-            MCore::Array<EventHistoryItem*>         mEventHistoryItems;     // event history item
+            AZStd::vector<NodeHistoryItem*>          mNodeHistoryItems;      // node history items
+            AZStd::vector<EventHistoryItem*>         mEventHistoryItems;     // event history item
             TransformTracks                         mActorLocalTransform;   // the actor instance's local transformation
-            MCore::Array< KeyTrackLinearDynamic<float, float> > mMorphTracks;   // morph animation data
+            AZStd::vector< KeyTrackLinearDynamic<float, float> > mMorphTracks;   // morph animation data
 
             ActorInstanceData()
             {
-                mNodeHistoryItems.SetMemoryCategory(EMFX_MEMCATEGORY_RECORDER);
-                mEventHistoryItems.SetMemoryCategory(EMFX_MEMCATEGORY_RECORDER);
-                mMorphTracks.SetMemoryCategory(EMFX_MEMCATEGORY_RECORDER);
-                mNodeHistoryItems.Reserve(64);
-                mEventHistoryItems.Reserve(1024);
-                mMorphTracks.Reserve(32);
+                mNodeHistoryItems.reserve(64);
+                mEventHistoryItems.reserve(1024);
+                mMorphTracks.reserve(32);
                 mAnimGraphData = nullptr;
                 mActorInstance = nullptr;
             }
@@ -274,20 +287,18 @@ namespace EMotionFX
             ~ActorInstanceData()
             {
                 // clear the node history items
-                const uint32 numMotionItems = mNodeHistoryItems.GetLength();
-                for (uint32 i = 0; i < numMotionItems; ++i)
+                for (NodeHistoryItem* nodeHistoryItem : mNodeHistoryItems)
                 {
-                    delete mNodeHistoryItems[i];
+                    delete nodeHistoryItem;
                 }
-                mNodeHistoryItems.Clear();
+                mNodeHistoryItems.clear();
 
                 // clear the event history items
-                const uint32 numEventItems = mEventHistoryItems.GetLength();
-                for (uint32 i = 0; i < numEventItems; ++i)
+                for (auto & eventHistoryItem : mEventHistoryItems)
                 {
-                    delete mEventHistoryItems[i];
+                    delete eventHistoryItem;
                 }
-                mEventHistoryItems.Clear();
+                mEventHistoryItems.clear();
 
                 delete mAnimGraphData;
             }
@@ -302,7 +313,6 @@ namespace EMotionFX
 
         static Recorder* Create();
 
-        void Reserve(uint32 numTransformKeys);
         bool HasRecording() const;
         void Clear();
         void StartRecording(const RecordSettings& settings);
@@ -335,17 +345,17 @@ namespace EMotionFX
         const AZStd::vector<float>& GetTimeDeltas()                                             { return m_timeDeltas; }
 
         MCORE_INLINE size_t GetNumActorInstanceDatas() const                                    { return m_actorInstanceDatas.size(); }
-        MCORE_INLINE ActorInstanceData& GetActorInstanceData(uint32 index)                      { return *m_actorInstanceDatas[index]; }
-        MCORE_INLINE const ActorInstanceData& GetActorInstanceData(uint32 index) const          { return *m_actorInstanceDatas[index]; }
-        uint32 FindActorInstanceDataIndex(ActorInstance* actorInstance) const;
+        MCORE_INLINE ActorInstanceData& GetActorInstanceData(size_t index)                      { return *m_actorInstanceDatas[index]; }
+        MCORE_INLINE const ActorInstanceData& GetActorInstanceData(size_t index) const          { return *m_actorInstanceDatas[index]; }
+        size_t FindActorInstanceDataIndex(ActorInstance* actorInstance) const;
 
-        uint32 CalcMaxNodeHistoryTrackIndex(const ActorInstanceData& actorInstanceData) const;
-        uint32 CalcMaxNodeHistoryTrackIndex() const;
-        uint32 CalcMaxEventHistoryTrackIndex(const ActorInstanceData& actorInstanceData) const;
-        AZ::u32 CalcMaxNumActiveMotions(const ActorInstanceData& actorInstanceData) const;
-        AZ::u32 CalcMaxNumActiveMotions() const;
+        size_t CalcMaxNodeHistoryTrackIndex(const ActorInstanceData& actorInstanceData) const;
+        size_t CalcMaxNodeHistoryTrackIndex() const;
+        size_t CalcMaxEventHistoryTrackIndex(const ActorInstanceData& actorInstanceData) const;
+        size_t CalcMaxNumActiveMotions(const ActorInstanceData& actorInstanceData) const;
+        size_t CalcMaxNumActiveMotions() const;
 
-        void ExtractNodeHistoryItems(const ActorInstanceData& actorInstanceData, float timeValue, bool sort, EValueType valueType, MCore::Array<ExtractedNodeHistoryItem>* outItems, MCore::Array<uint32>* outMap);
+        void ExtractNodeHistoryItems(const ActorInstanceData& actorInstanceData, float timeValue, bool sort, EValueType valueType, AZStd::vector<ExtractedNodeHistoryItem>* outItems, AZStd::vector<size_t>* outMap) const;
 
         void StartPlayBack();
         void StopPlayBack();
@@ -360,7 +370,7 @@ namespace EMotionFX
         RecordSettings                          mRecordSettings;
         AZStd::vector<ActorInstanceData*>       m_actorInstanceDatas;
         AZStd::vector<float>                    m_timeDeltas; // The value of the time deltas whenever a key is made
-        MCore::Array<AnimGraphObject*>          mObjects;
+        AZStd::vector<AnimGraphObject*>          mObjects;
         AZStd::vector<AnimGraphNode*>           mActiveNodes;       /**< A temp array to store active animgraph nodes in. */
         MCore::Mutex                            mLock;
         AZ::TypeId                              m_sessionUuid;
@@ -390,12 +400,12 @@ namespace EMotionFX
         // /param numBytes bytes. Returns true if the buffer is big enough
         // after the operation, false otherwise. False indicates there's not
         // enough memory to accommodate the request
-        bool AssureAnimGraphBufferSize(AnimGraphInstanceData& animGraphInstanceData, uint32 numBytes);
-        NodeHistoryItem* FindNodeHistoryItem(const ActorInstanceData& actorInstanceData, AnimGraphNode* node, float recordTime) const;
-        uint32 FindFreeNodeHistoryItemTrack(const ActorInstanceData& actorInstanceData, NodeHistoryItem* item) const;
+        bool AssureAnimGraphBufferSize(AnimGraphInstanceData& animGraphInstanceData, size_t numBytes);
+        NodeHistoryItem* FindNodeHistoryItem(const ActorInstanceData& actorInstanceData, const AnimGraphNode* node, float recordTime) const;
+        size_t FindFreeNodeHistoryItemTrack(const ActorInstanceData& actorInstanceData, NodeHistoryItem* item) const;
         void FinalizeAllNodeHistoryItems();
         EventHistoryItem* FindEventHistoryItem(const ActorInstanceData& actorInstanceData, const EventInfo& eventInfo, float recordTime);
-        uint32 FindFreeEventHistoryItemTrack(const ActorInstanceData& actorInstanceData, EventHistoryItem* item) const;
-        uint32 FindAnimGraphDataFrameNumber(float timeValue) const;
+        size_t FindFreeEventHistoryItemTrack(const ActorInstanceData& actorInstanceData, EventHistoryItem* item) const;
+        size_t FindAnimGraphDataFrameNumber(float timeValue) const;
     };
 }   // namespace EMotionFX

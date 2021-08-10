@@ -280,7 +280,7 @@ namespace EMotionFX
         mStringStorageSize = 0;
     }
 
-    const char* SharedHelperData::ReadString(MCore::Stream* file, MCore::Array<SharedData*>* sharedData, MCore::Endian::EEndianType endianType)
+    const char* SharedHelperData::ReadString(MCore::Stream* file, AZStd::vector<SharedData*>* sharedData, MCore::Endian::EEndianType endianType)
     {
         MCORE_ASSERT(file);
         MCORE_ASSERT(sharedData);
@@ -904,9 +904,9 @@ namespace EMotionFX
 
         // read all tracks
         AZStd::string trackName;
-        MCore::Array<AZStd::string> typeStrings;
-        MCore::Array<AZStd::string> paramStrings;
-        MCore::Array<AZStd::string> mirrorTypeStrings;
+        AZStd::vector<AZStd::string> typeStrings;
+        AZStd::vector<AZStd::string> paramStrings;
+        AZStd::vector<AZStd::string> mirrorTypeStrings;
         for (uint32 t = 0; t < fileEventTable.mNumTracks; ++t)
         {
             // read the motion event table header
@@ -934,9 +934,9 @@ namespace EMotionFX
             }
 
             // the even type and parameter strings
-            typeStrings.Resize(fileTrack.mNumTypeStrings);
-            paramStrings.Resize(fileTrack.mNumParamStrings);
-            mirrorTypeStrings.Resize(fileTrack.mNumMirrorTypeStrings);
+            typeStrings.resize(fileTrack.mNumTypeStrings);
+            paramStrings.resize(fileTrack.mNumParamStrings);
+            mirrorTypeStrings.resize(fileTrack.mNumMirrorTypeStrings);
 
             // read all type strings
             if (GetLogging())
@@ -1165,6 +1165,10 @@ namespace EMotionFX
         }
 
         actor->SetMotionExtractionNodeIndex(fileInformation.mMotionExtractionNodeIndex);
+        if (fileInformation.mMotionExtractionNodeIndex != MCORE_INVALIDINDEX32)
+        {
+            actor->SetMotionExtractionNodeIndex(fileInformation.mMotionExtractionNodeIndex);
+        }
         //  actor->SetRetargetOffset( fileInformation.mRetargetRootOffset );
         actor->SetUnitType(static_cast<MCore::Distance::EUnitType>(fileInformation.mUnitType));
         actor->SetFileUnitType(actor->GetUnitType());
@@ -1211,8 +1215,14 @@ namespace EMotionFX
             MCore::LogDetailedInfo("   + UnitType               = %d", fileInformation.mUnitType);
         }
 
-        actor->SetMotionExtractionNodeIndex(fileInformation.mMotionExtractionNodeIndex);
-        actor->SetRetargetRootNodeIndex(fileInformation.mRetargetRootNodeIndex);
+        if (fileInformation.mMotionExtractionNodeIndex != MCORE_INVALIDINDEX32)
+        {
+            actor->SetMotionExtractionNodeIndex(fileInformation.mMotionExtractionNodeIndex);
+        }
+        if (fileInformation.mRetargetRootNodeIndex != MCORE_INVALIDINDEX32)
+        {
+            actor->SetRetargetRootNodeIndex(fileInformation.mRetargetRootNodeIndex);
+        }
         actor->SetUnitType(static_cast<MCore::Distance::EUnitType>(fileInformation.mUnitType));
         actor->SetFileUnitType(actor->GetUnitType());
 
@@ -1258,8 +1268,14 @@ namespace EMotionFX
             MCore::LogDetailedInfo("   + UnitType               = %d", fileInformation.mUnitType);
         }
 
-        actor->SetMotionExtractionNodeIndex(fileInformation.mMotionExtractionNodeIndex);
-        actor->SetRetargetRootNodeIndex(fileInformation.mRetargetRootNodeIndex);
+        if (fileInformation.mMotionExtractionNodeIndex != MCORE_INVALIDINDEX32)
+        {
+            actor->SetMotionExtractionNodeIndex(fileInformation.mMotionExtractionNodeIndex);
+        }
+        if (fileInformation.mRetargetRootNodeIndex != MCORE_INVALIDINDEX32)
+        {
+            actor->SetRetargetRootNodeIndex(fileInformation.mRetargetRootNodeIndex);
+        }
         actor->SetUnitType(static_cast<MCore::Distance::EUnitType>(fileInformation.mUnitType));
         actor->SetFileUnitType(actor->GetUnitType());
         actor->SetOptimizeSkeleton(fileInformation.mOptimizeSkeleton == 0? false : true);
@@ -1891,7 +1907,6 @@ namespace EMotionFX
         const MCore::Endian::EEndianType endianType = importParams.mEndianType;
         Actor* actor = importParams.mActor;
 
-        uint32 i;
         MCORE_ASSERT(actor);
         Skeleton* skeleton = actor->GetSkeleton();
 
@@ -1904,7 +1919,7 @@ namespace EMotionFX
         const uint32 numAttachmentNodes = attachmentNodesChunk.mNumNodes;
 
         // read all node attachment nodes
-        for (i = 0; i < numAttachmentNodes; ++i)
+        for (uint32 i = 0; i < numAttachmentNodes; ++i)
         {
             // get the attachment node index and endian convert it
             uint16 nodeNr;
@@ -1924,8 +1939,8 @@ namespace EMotionFX
         {
             MCore::LogDetailedInfo("- Attachment Nodes (%i):", numAttachmentNodes);
 
-            const uint32 numNodes = actor->GetNumNodes();
-            for (i = 0; i < numNodes; ++i)
+            const size_t numNodes = actor->GetNumNodes();
+            for (size_t i = 0; i < numNodes; ++i)
             {
                 // get the current node
                 Node* node = skeleton->GetNode(i);
@@ -1933,7 +1948,7 @@ namespace EMotionFX
                 // only log the attachment nodes
                 if (node->GetIsAttachmentNode())
                 {
-                    MCore::LogDetailedInfo("   + '%s' (%i)", node->GetName(), node->GetNodeIndex());
+                    MCore::LogDetailedInfo("   + '%s' (%zu)", node->GetName(), node->GetNodeIndex());
                 }
             }
         }

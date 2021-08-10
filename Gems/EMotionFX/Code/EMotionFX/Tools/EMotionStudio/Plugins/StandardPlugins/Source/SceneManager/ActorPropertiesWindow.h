@@ -45,7 +45,6 @@ namespace EMStudio
         void Init();
 
         // helper functions
-        static void GetNodeName(const MCore::Array<SelectionItem>& selection, AZStd::string* outNodeName, uint32* outActorID);
         static void GetNodeName(const AZStd::vector<SelectionItem>& joints, AZStd::string* outNodeName, uint32* outActorID);
 
     public slots:

@@ -117,8 +117,8 @@ namespace EMotionFX
                 continue;
             }
 
-            const AZ::u32 numNodes = nodeGroup->GetNumNodes();
-            for (AZ::u32 i = 0; i < numNodes; ++i)
+            const size_t numNodes = nodeGroup->GetNumNodes();
+            for (size_t i = 0; i < numNodes; ++i)
             {
                 AnimGraphNodeId nodeId = nodeGroup->GetNode(i);
                 AnimGraphNode* node = stateMachine->FindChildNodeById(nodeId);
@@ -663,14 +663,14 @@ namespace EMotionFX
     }
 
     // add all sub objects
-    void AnimGraphStateTransition::RecursiveCollectObjects(MCore::Array<AnimGraphObject*>& outObjects) const
+    void AnimGraphStateTransition::RecursiveCollectObjects(AZStd::vector<AnimGraphObject*>& outObjects) const
     {
         for (const AnimGraphTransitionCondition* condition : mConditions)
         {
             condition->RecursiveCollectObjects(outObjects);
         }
 
-        outObjects.Add(const_cast<AnimGraphStateTransition*>(this));
+        outObjects.emplace_back(const_cast<AnimGraphStateTransition*>(this));
     }
 
     // calculate the blend weight, based on the type of smoothing

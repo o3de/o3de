@@ -172,9 +172,9 @@ namespace MCore
         {
             const size_t numRead = length - ((mCurrentPos + length) - ((uint8*)mMemoryStart + mLength));
             MCore::MemCopy(data, mCurrentPos, numRead);
-            Forward(static_cast<uint32>(numRead));
+            Forward(numRead);
             MCore::LogWarning("MCore::MemoryFile::Read() - We can only read %d bytes of the %d bytes requested, as we are reading past the end of the memory file!", numRead, length);
-            return static_cast<uint32>(numRead);
+            return numRead;
         }
 
         MCore::MemCopy(data, mCurrentPos, length);
@@ -186,7 +186,7 @@ namespace MCore
     // returns the filesize in bytes
     size_t MemoryFile::GetFileSize() const
     {
-        return static_cast<uint32>(mUsedLength); // TODO: convert to size_t later
+        return mUsedLength;
     }
 
 

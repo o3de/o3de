@@ -54,8 +54,8 @@ namespace EMotionFX
         MCORE_INLINE AnimGraphNode* GetNode() const                            { return reinterpret_cast<AnimGraphNode*>(mObject); }
         MCORE_INLINE void SetNode(AnimGraphNode* node)                         { mObject = reinterpret_cast<AnimGraphObject*>(node); }
 
-        MCORE_INLINE void SetSyncIndex(uint32 syncIndex)                        { mSyncIndex = syncIndex; }
-        MCORE_INLINE uint32 GetSyncIndex() const                                { return mSyncIndex; }
+        MCORE_INLINE void SetSyncIndex(size_t syncIndex)                        { mSyncIndex = syncIndex; }
+        MCORE_INLINE size_t GetSyncIndex() const                                { return mSyncIndex; }
 
         MCORE_INLINE void SetCurrentPlayTime(float absoluteTime)                { mCurrentTime = absoluteTime; }
         MCORE_INLINE float GetCurrentPlayTime() const                           { return mCurrentTime; }
@@ -108,7 +108,7 @@ namespace EMotionFX
         float       mPreSyncTime;
         float       mGlobalWeight;
         float       mLocalWeight;
-        uint32      mSyncIndex;             /**< The last used sync track index. */
+        size_t      mSyncIndex;             /**< The last used sync track index. */
         uint8       mPoseRefCount;
         uint8       mRefDataRefCount;
         uint8       mInheritFlags;

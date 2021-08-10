@@ -39,7 +39,7 @@ namespace MCore
         static AttributeQuaternion* Create(const AZ::Quaternion& value);
 
         MCORE_INLINE uint8* GetRawDataPointer()                     { return reinterpret_cast<uint8*>(&mValue); }
-        MCORE_INLINE uint32 GetRawDataSize() const                  { return sizeof(AZ::Quaternion); }
+        MCORE_INLINE size_t GetRawDataSize() const                  { return sizeof(AZ::Quaternion); }
 
         // adjust values
         MCORE_INLINE const AZ::Quaternion& GetValue() const             { return mValue; }
@@ -68,8 +68,8 @@ namespace MCore
             return true;
         }
         bool ConvertToString(AZStd::string& outString) const override      { AZStd::to_string(outString, mValue); return true; }
-        uint32 GetClassSize() const override                        { return sizeof(AttributeQuaternion); }
-        uint32 GetDefaultInterfaceType() const override             { return ATTRIBUTE_INTERFACETYPE_DEFAULT; }
+        size_t GetClassSize() const override                        { return sizeof(AttributeQuaternion); }
+        AZ::u32 GetDefaultInterfaceType() const override             { return ATTRIBUTE_INTERFACETYPE_DEFAULT; }
 
     private:
         AZ::Quaternion  mValue;     /**< The Quaternion value. */

@@ -39,7 +39,7 @@ namespace EMotionFX
         void LinkToActorInstance(const ActorInstance* actorInstance);
         void InitFromBindPose(const ActorInstance* actorInstance);
 
-        MCORE_INLINE uint32 GetNumNodes() const                 { return mPose.GetNumTransforms(); }
+        MCORE_INLINE size_t GetNumNodes() const                 { return mPose.GetNumTransforms(); }
         MCORE_INLINE const Pose& GetPose() const                { return mPose; }
         MCORE_INLINE Pose& GetPose()                            { return mPose; }
         MCORE_INLINE void SetPose(const Pose& pose)             { mPose = pose; }

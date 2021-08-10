@@ -14,7 +14,7 @@
 #include "MysticQtConfig.h"
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QScrollArea>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #endif
 
 // forward declarations
@@ -28,6 +28,8 @@ QT_FORWARD_DECLARE_CLASS(QSplitter)
 
 namespace MysticQt
 {
+    class DialogStackSplitter;
+
     /**
      *
      *
@@ -36,7 +38,6 @@ namespace MysticQt
         : public QScrollArea
     {
         Q_OBJECT
-        MCORE_MEMORYOBJECTCATEGORY(DialogStack, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_MYSTICQT);
 
     public:
         DialogStack(QWidget* parent = nullptr);
@@ -61,32 +62,29 @@ namespace MysticQt
     private:
         struct Dialog
         {
-            MCORE_MEMORYOBJECTCATEGORY(DialogStack::Dialog, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_MYSTICQT);
-            Dialog();
-            ~Dialog();
-            QPushButton*    mButton;
-            QWidget*        mFrame;
-            QWidget*        mWidget;
-            QWidget*        mDialogWidget;
-            QSplitter*      mSplitter;
-            bool            mClosable;
-            bool            mMaximizeSize;
-            bool            mStretchWhenMaximize;
-            int             mMinimumHeightBeforeClose;
-            int             mMaximumHeightBeforeClose;
-            QLayout*        mLayout;
-            QLayout*        mDialogLayout;
+            QPushButton*    mButton = nullptr;
+            QWidget*        mFrame = nullptr;
+            QWidget*        mWidget = nullptr;
+            QWidget*        mDialogWidget = nullptr;
+            DialogStackSplitter* mSplitter = nullptr;
+            bool            mClosable = true;
+            bool            mMaximizeSize = false;
+            bool            mStretchWhenMaximize = false;
+            int             mMinimumHeightBeforeClose = 0;
+            int             mMaximumHeightBeforeClose = 0;
+            QLayout*        mLayout = nullptr;
+            QLayout*        mDialogLayout = nullptr;
         };
 
     private:
-        uint32 FindDialog(QPushButton* pushButton);
+        size_t FindDialog(QPushButton* pushButton);
         void Open(QPushButton* button);
         void Close(QPushButton* button);
         void UpdateScrollBars();
 
     private:
-        QSplitter*              mRootSplitter;
-        MCore::Array<Dialog>    mDialogs;
+        DialogStackSplitter*    mRootSplitter;
+        AZStd::vector<Dialog>   mDialogs;
         int32                   mPrevMouseX;
         int32                   mPrevMouseY;
     };

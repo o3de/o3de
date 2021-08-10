@@ -98,8 +98,8 @@ namespace EMStudio
         virtual void Update() = 0;
 
         // line rendering helper functions
-        MCORE_INLINE void AddTriangle(const AZ::Vector3& posA, const AZ::Vector3& posB, const AZ::Vector3& posC, const AZ::Vector3& normalA, const AZ::Vector3& normalB, const AZ::Vector3& normalC, uint32 color)        { mTriangles.Add(Triangle(posA, posB, posC, normalA, normalB, normalC, color)); }
-        MCORE_INLINE void ClearTriangles()                                                                  { mTriangles.Clear(false); }
+        MCORE_INLINE void AddTriangle(const AZ::Vector3& posA, const AZ::Vector3& posB, const AZ::Vector3& posC, const AZ::Vector3& normalA, const AZ::Vector3& normalB, const AZ::Vector3& normalC, uint32 color)        { mTriangles.emplace_back(Triangle(posA, posB, posC, normalA, normalB, normalC, color)); }
+        MCORE_INLINE void ClearTriangles()                                                                  { mTriangles.clear(); }
         void RenderTriangles();
 
         // helper rendering functions
@@ -139,10 +139,10 @@ namespace EMStudio
 
         RenderPlugin*                           mPlugin;
         RenderViewWidget*                       mViewWidget;
-        MCore::Array<Triangle>                  mTriangles;
+        AZStd::vector<Triangle>                  mTriangles;
         EventHandler                            mEventHandler;
 
-        MCore::Array<EMotionFX::ActorInstance*> mSelectedActorInstances;
+        AZStd::vector<EMotionFX::ActorInstance*> mSelectedActorInstances;
 
         MCommon::TransformationManipulator*     mActiveTransformManip;
 

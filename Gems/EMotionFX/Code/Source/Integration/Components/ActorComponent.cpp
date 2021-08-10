@@ -722,10 +722,10 @@ namespace EMotionFX
         {
             AZ_Assert(m_actorInstance, "The actor instance needs to be valid.");
 
-            const AZ::u32 index = static_cast<AZ::u32>(jointIndex);
-            const AZ::u32 numNodes = m_actorInstance->GetActor()->GetNumNodes();
+            const size_t index = jointIndex;
+            const size_t numNodes = m_actorInstance->GetActor()->GetNumNodes();
 
-            AZ_Error("EMotionFX", index < numNodes, "GetJointTransform: The joint index %d is out of bounds [0;%d]. Entity: %s",
+            AZ_Error("EMotionFX", index < numNodes, "GetJointTransform: The joint index %zu is out of bounds [0;%zu]. Entity: %s",
                 index, numNodes, GetEntity()->GetName().c_str());
 
             if (index >= numNodes)
@@ -762,10 +762,10 @@ namespace EMotionFX
         {
             AZ_Assert(m_actorInstance, "The actor instance needs to be valid.");
 
-            const AZ::u32 index = static_cast<AZ::u32>(jointIndex);
-            const AZ::u32 numNodes = m_actorInstance->GetActor()->GetNumNodes();
+            const size_t index = jointIndex;
+            const size_t numNodes = m_actorInstance->GetActor()->GetNumNodes();
 
-            AZ_Error("EMotionFX", index < numNodes, "GetJointTransformComponents: The joint index %d is out of bounds [0;%d]. Entity: %s",
+            AZ_Error("EMotionFX", index < numNodes, "GetJointTransformComponents: The joint index %zu is out of bounds [0;%zu]. Entity: %s",
                 index, numNodes, GetEntity()->GetName().c_str());
 
             if (index >= numNodes)
@@ -870,7 +870,7 @@ namespace EMotionFX
                 Node* node = jointName ? m_actorInstance->GetActor()->GetSkeleton()->FindNodeByName(jointName) : m_actorInstance->GetActor()->GetSkeleton()->GetNode(0);
                 if (node)
                 {
-                    const AZ::u32 jointIndex = node->GetNodeIndex();
+                    const size_t jointIndex = node->GetNodeIndex();
                     Attachment* attachment = AttachmentNode::Create(m_actorInstance.get(), jointIndex, targetActorInstance, true /* Managed externally, by this component. */);
                     m_actorInstance->AddAttachment(attachment);
                 }

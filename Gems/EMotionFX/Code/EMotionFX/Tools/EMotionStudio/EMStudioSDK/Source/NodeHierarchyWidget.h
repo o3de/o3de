@@ -68,7 +68,7 @@ namespace EMStudio
 
         void SetSelectionMode(bool useSingleSelection);
         void Update(uint32 actorInstanceID, CommandSystem::SelectionList* selectionList = nullptr);
-        void Update(const MCore::Array<uint32>& actorInstanceIDs, CommandSystem::SelectionList* selectionList = nullptr);
+        void Update(const AZStd::vector<uint32>& actorInstanceIDs, CommandSystem::SelectionList* selectionList = nullptr);
         void FireSelectionDoneSignal();
         MCORE_INLINE QTreeWidget* GetTreeWidget()                                                               { return mHierarchy; }
         MCORE_INLINE AzQtComponents::FilteredSearchWidget* GetSearchWidget()                                    { return m_searchWidget; }
@@ -78,7 +78,6 @@ namespace EMStudio
         bool CheckIfNodeVisible(const AZStd::string& nodeName, bool isMeshNode, bool isBone, bool isNode);
 
         // this calls UpdateSelection() and then returns the member array containing the selected items
-        MCore::Array<SelectionItem> GetSelectedItemsAsMCoreArray();
         AZStd::vector<SelectionItem>& GetSelectedItems();
 
         const AZStd::string& GetSearchWidgetText() const                                                        { return m_searchWidgetText; }
@@ -98,10 +97,6 @@ namespace EMStudio
         Q_DECLARE_FLAGS(FilterTypes, FilterType)
 
     signals:
-        // Deprecated
-        void OnSelectionDone(MCore::Array<SelectionItem> selectedNodes);
-        void OnDoubleClicked(MCore::Array<SelectionItem> selectedNodes);
-
         void OnSelectionDone(AZStd::vector<SelectionItem> selectedNodes);
         void OnDoubleClicked(AZStd::vector<SelectionItem> selectedNodes);
 
@@ -138,8 +133,8 @@ namespace EMStudio
         QIcon*                              mNodeIcon;
         QIcon*                              mMeshIcon;
         QIcon*                              mCharacterIcon;
-        MCore::Array<uint32>                mBoneList;
-        MCore::Array<uint32>                mActorInstanceIDs;
+        AZStd::vector<size_t>                mBoneList;
+        AZStd::vector<uint32>                mActorInstanceIDs;
         AZStd::string                       mItemName;
         AZStd::string                       mActorInstanceIDString;
         bool                                mUseSingleSelection;

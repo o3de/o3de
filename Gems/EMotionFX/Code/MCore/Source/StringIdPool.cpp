@@ -29,10 +29,9 @@ namespace MCore
     {
         Lock();
 
-        const size_t numStrings = mStrings.size();
-        for (size_t i = 0; i < numStrings; ++i)
+        for (AZStd::basic_string<char>*& string : mStrings)
         {
-            delete mStrings[i];
+            delete string;
         }
         mStrings.clear();
 
@@ -44,7 +43,7 @@ namespace MCore
     AZ::u32 StringIdPool::GenerateIdForStringWithoutLock(const AZStd::string& objectName)
     {
         // Try to insert it, if we hit a collision, we have the element.
-        auto iterator = mStringToIndex.emplace(objectName, static_cast<AZ::u32>(mStrings.size()));
+        auto iterator = mStringToIndex.emplace(objectName, aznumeric_caster(mStrings.size()));
         if (!iterator.second)
         {
             // could not insert, we have the element
@@ -69,20 +68,11 @@ namespace MCore
     }
 
 
-    const AZStd::string& StringIdPool::GetName(uint32 id)
+    const AZStd::string& StringIdPool::GetName(AZ::u32 id)
     {
         Lock();
-        MCORE_ASSERT(id != MCORE_INVALIDINDEX32);
+        MCORE_ASSERT(id != InvalidIndex32);
         const AZStd::string* stringAddress = mStrings[id];
-        Unlock();
-        return *stringAddress;
-    }
-
-    const AZStd::string& StringIdPool::GetStringById(AZ::u32 id)
-    {
-        Lock();
-        MCORE_ASSERT(id != MCORE_INVALIDINDEX32);
-        AZStd::string* stringAddress = mStrings[id];
         Unlock();
         return *stringAddress;
     }
@@ -132,8 +122,8 @@ namespace MCore
         size_t Save(const void* classPtr, AZ::IO::GenericStream& stream, bool /*isDataBigEndian = false*/)
         {
             // Look up the string to save
-            const uint32 index = static_cast<const StringIdPoolIndex*>(classPtr)->m_index;
-            if (index == MCORE_INVALIDINDEX32)
+            const AZ::u32 index = static_cast<const StringIdPoolIndex*>(classPtr)->m_index;
+            if (index == InvalidIndex32)
             {
                 return 0;
             }
@@ -158,7 +148,7 @@ namespace MCore
         /// Convert binary data to text.
         size_t DataToText(AZ::IO::GenericStream& in, AZ::IO::GenericStream& out, bool /*isDataBigEndian = false*/)
         {
-            size_t dataSize = static_cast<size_t>(in.GetLength());
+            AZ::u64 dataSize = in.GetLength();
 
             AZStd::string outText;
             outText.resize(dataSize);

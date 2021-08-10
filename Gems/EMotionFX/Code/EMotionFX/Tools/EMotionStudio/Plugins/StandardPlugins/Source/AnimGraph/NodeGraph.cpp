@@ -6,6 +6,7 @@
  *
  */
 
+#include "AzCore/std/numeric.h"
 #include <AzQtComponents/Utilities/Conversions.h>
 #include <EMotionFX/Source/AnimGraphNodeGroup.h>
 #include <EMotionFX/Source/AnimGraphReferenceNode.h>
@@ -54,7 +55,7 @@ namespace EMStudio
         // init connection creation
         mConStartOffset = QPoint(0, 0);
         mConEndOffset = QPoint(0, 0);
-        mConPortNr = MCORE_INVALIDINDEX32;
+        mConPortNr = InvalidIndex16;
         mConIsInputPort = true;
         mConNode = nullptr;  // nullptr when no connection is being created
         mConPort = nullptr;
@@ -137,8 +138,8 @@ namespace EMStudio
             GraphNode* graphNode = indexAndGraphNode.second.get();
 
             // get the number of connections and iterate through them
-            const uint32 numConnections = graphNode->GetNumConnections();
-            for (uint32 c = 0; c < numConnections; ++c)
+            const size_t numConnections = graphNode->GetNumConnections();
+            for (size_t c = 0; c < numConnections; ++c)
             {
                 NodeConnection* connection = graphNode->GetConnection(c);
                 if (connection->GetIsSelected())
@@ -271,8 +272,8 @@ namespace EMStudio
                 EMotionFX::AnimGraphNode* emfxTargetNode = indexAndGraphNode.first.data(AnimGraphModel::ROLE_NODE_POINTER).value<EMotionFX::AnimGraphNode*>();
 
                 // iterate through all connections connected to this node
-                const uint32 numConnections = graphNode->GetNumConnections();
-                for (uint32 c = 0; c < numConnections; ++c)
+                const size_t numConnections = graphNode->GetNumConnections();
+                for (size_t c = 0; c < numConnections; ++c)
                 {
                     NodeConnection*             visualConnection = graphNode->GetConnection(c);
 
@@ -286,8 +287,8 @@ namespace EMStudio
                         continue;
                     }
 
-                    const uint32 inputPortNr = visualConnection->GetInputPortNr();
-                    const uint32 outputPortNr = visualConnection->GetOutputPortNr();
+                    const AZ::u16 inputPortNr = visualConnection->GetInputPortNr();
+                    const AZ::u16 outputPortNr = visualConnection->GetOutputPortNr();
                     MCore::Attribute* attribute = emfxSourceNode->GetOutputValue(animGraphInstance, outputPortNr);
 
                     // fill the string with data
@@ -606,8 +607,8 @@ namespace EMStudio
             GraphNode* graphNode = indexAndGraphNode.second.get();
 
             // iterate over all connections
-            const uint32 numConnections = graphNode->GetNumConnections();
-            for (uint32 c = 0; c < numConnections; ++c)
+            const size_t numConnections = graphNode->GetNumConnections();
+            for (size_t c = 0; c < numConnections; ++c)
             {
                 NodeConnection* connection  = graphNode->GetConnection(c);
                 if (connection->CheckIfIsCloseTo(mousePos))
@@ -632,8 +633,8 @@ namespace EMStudio
             GraphNode* graphNode = indexAndGraphNode.second.get();
 
             // iterate over all connections
-            const uint32 numConnections = graphNode->GetNumConnections();
-            for (uint32 c = 0; c < numConnections; ++c)
+            const size_t numConnections = graphNode->GetNumConnections();
+            for (size_t c = 0; c < numConnections; ++c)
             {
                 NodeConnection* connection  = graphNode->GetConnection(c);
                 GraphNode*      sourceNode  = connection->GetSourceNode();
@@ -797,28 +798,6 @@ namespace EMStudio
 #endif
 
         RenderTitlebar(painter, width);
-
-        // render FPS counter
-        //#ifdef GRAPH_PERFORMANCE_FRAMEDURATION
-        /*  static MCore::AnsiString tempFPSString;
-            static MCore::Timer fpsTimer;
-            static double fpsTimeElapsed = 0.0;
-            static uint32 fpsNumFrames = 0;
-            static uint32 lastFPS = 0;
-            fpsTimeElapsed += fpsTimer.GetTimeDelta();
-            fpsNumFrames++;
-            if (fpsTimeElapsed > 1.0f)
-            {
-                lastFPS         = fpsNumFrames;
-                fpsTimeElapsed  = 0.0;
-                fpsNumFrames    = 0;
-            }
-            tempFPSString.Format( "%i FPS", lastFPS );
-            painter.setPen( QColor(255, 255, 255) );
-            painter.resetTransform();
-            painter.drawText( 5, 20, tempFPSString.c_str() );
-            */
-        //#endif
     }
 
     void NodeGraph::RenderTitlebar(QPainter& painter, const QString& text, int32 width)
@@ -898,8 +877,8 @@ namespace EMStudio
 
             AnimGraphModel::AddToItemSelection(newSelection, modelIndex, nodePreviouslySelected, nodeNewlySelected, toggleMode, overwriteCurSelection);
 
-            const uint32 numConnections = node->GetNumConnections();
-            for (uint32 c = 0; c < numConnections; ++c)
+            const size_t numConnections = node->GetNumConnections();
+            for (size_t c = 0; c < numConnections; ++c)
             {
                 NodeConnection* connection = node->GetConnection(c);
                 const bool connectionPreviouslySelected = std::find(oldSelectionModelIndices.begin(), oldSelectionModelIndices.end(), connection->GetModelIndex()) != oldSelectionModelIndices.end();
@@ -970,8 +949,8 @@ namespace EMStudio
         {
             GraphNode* node = indexAndGraphNode.second.get();
 
-            const uint32 numConnections = node->GetNumConnections();
-            for (uint32 c = 0; c < numConnections; ++c)
+            const size_t numConnections = node->GetNumConnections();
+            for (size_t c = 0; c < numConnections; ++c)
             {
                 NodeConnection* connection = node->GetConnection(c);
                 const bool isNewlySelected = connection->CheckIfIsCloseTo(point);
@@ -1217,20 +1196,12 @@ namespace EMStudio
 
 
     // calc the number of selected nodes
-    uint32 NodeGraph::CalcNumSelectedNodes() const
+    size_t NodeGraph::CalcNumSelectedNodes() const
     {
-        uint32 result = 0;
-
-        for (const GraphNodeByModelIndex::value_type& indexAndGraphNode : m_graphNodeByModelIndex)
+        return AZStd::accumulate(begin(m_graphNodeByModelIndex), end(m_graphNodeByModelIndex), size_t{0}, [](size_t total, const auto& indexAndGraphNode)
         {
-            GraphNode* node = indexAndGraphNode.second.get();
-            if (node->GetIsSelected())
-            {
-                result++;
-            }
-        }
-
-        return result;
+            return total + indexAndGraphNode.second->GetIsSelected();
+        });
     }
 
 
@@ -1254,8 +1225,8 @@ namespace EMStudio
             if (includeConnections)
             {
                 // for all connections
-                const uint32 numConnections = node->GetNumConnections();
-                for (uint32 c = 0; c < numConnections; ++c)
+                const size_t numConnections = node->GetNumConnections();
+                for (size_t c = 0; c < numConnections; ++c)
                 {
                     if (node->GetConnection(c)->GetIsSelected())
                     {
@@ -1283,8 +1254,8 @@ namespace EMStudio
             result |= graphNode->GetRect();
 
             // for all connections
-            const uint32 numConnections = graphNode->GetNumConnections();
-            for (uint32 c = 0; c < numConnections; ++c)
+            const size_t numConnections = graphNode->GetNumConnections();
+            for (size_t c = 0; c < numConnections; ++c)
             {
                 result |= graphNode->GetConnection(c)->CalcRect();
             }
@@ -1499,7 +1470,7 @@ namespace EMStudio
 
 
     // find the port at a given location
-    NodePort* NodeGraph::FindPort(int32 x, int32 y, GraphNode** outNode, uint32* outPortNr, bool* outIsInputPort, bool includeInputPorts)
+    NodePort* NodeGraph::FindPort(int32 x, int32 y, GraphNode** outNode, AZ::u16* outPortNr, bool* outIsInputPort, bool includeInputPorts)
     {
         // get the number of nodes in the graph and iterate through them
         for (const GraphNodeByModelIndex::value_type& indexAndGraphNode : m_graphNodeByModelIndex)
@@ -1527,7 +1498,7 @@ namespace EMStudio
 
 
     // start creating a connection
-    void NodeGraph::StartCreateConnection(uint32 portNr, bool isInputPort, GraphNode* portNode, NodePort* port, const QPoint& startOffset)
+    void NodeGraph::StartCreateConnection(AZ::u16 portNr, bool isInputPort, GraphNode* portNode, NodePort* port, const QPoint& startOffset)
     {
         mConPortNr          = portNr;
         mConIsInputPort     = isInputPort;
@@ -1538,7 +1509,7 @@ namespace EMStudio
 
 
     // start relinking a connection
-    void NodeGraph::StartRelinkConnection(NodeConnection* connection, uint32 portNr, GraphNode* node)
+    void NodeGraph::StartRelinkConnection(NodeConnection* connection, AZ::u16 portNr, GraphNode* node)
     {
         mConPortNr              = portNr;
         mConNode                = node;
@@ -1604,7 +1575,7 @@ namespace EMStudio
     // reset members
     void NodeGraph::StopRelinkConnection()
     {
-        mConPortNr              = MCORE_INVALIDINDEX32;
+        mConPortNr              = InvalidIndex16;
         mConNode                = nullptr;
         mRelinkConnection       = nullptr;
         mConIsValid             = false;
@@ -1616,7 +1587,7 @@ namespace EMStudio
     // reset members
     void NodeGraph::StopCreateConnection()
     {
-        mConPortNr          = MCORE_INVALIDINDEX32;
+        mConPortNr          = InvalidIndex16;
         mConIsInputPort     = true;
         mConNode            = nullptr;  // nullptr when no connection is being created
         mConPort            = nullptr;
@@ -1640,8 +1611,8 @@ namespace EMStudio
             GraphNode* graphNode = indexAndGraphNode.second.get();
 
             // get the number of connections and iterate through them
-            const uint32 numConnections = graphNode->GetNumConnections();
-            for (uint32 j = 0; j < numConnections; ++j)
+            const size_t numConnections = graphNode->GetNumConnections();
+            for (size_t j = 0; j < numConnections; ++j)
             {
                 NodeConnection* connection = graphNode->GetConnection(j);
 
@@ -1672,9 +1643,6 @@ namespace EMStudio
         {
             // gather some information from the connection
             NodeConnection* connection      = GetRelinkConnection();
-            //GraphNode*        sourceNode      = connection->GetSourceNode();
-            //uint32            sourcePortNr    = connection->GetOutputPortNr();
-            //NodePort*     port            = sourceNode->GetOutputPort( connection->GetOutputPortNr() );
             QPoint          start           = connection->GetSourceRect().center();
             QPoint          end             = m_graphWidget->GetMousePos();
 
@@ -1701,8 +1669,8 @@ namespace EMStudio
                 }
 
                 // now check all ports to see if they would be valid
-                const uint32 numInputPorts = node->GetNumInputPorts();
-                for (uint32 i = 0; i < numInputPorts; ++i)
+                const AZ::u16 numInputPorts = node->GetNumInputPorts();
+                for (AZ::u16 i = 0; i < numInputPorts; ++i)
                 {
                     if (CheckIfIsRelinkConnectionValid(mRelinkConnection, node, i, true))
                     {
@@ -1778,8 +1746,8 @@ namespace EMStudio
                 }
 
                 // now check all ports to see if they would be valid
-                const uint32 numInputPorts = node->GetNumInputPorts();
-                for (uint32 i = 0; i < numInputPorts; ++i)
+                const AZ::u16 numInputPorts = node->GetNumInputPorts();
+                for (AZ::u16 i = 0; i < numInputPorts; ++i)
                 {
                     if (m_graphWidget->CheckIfIsCreateConnectionValid(i, node, node->GetInputPort(i), true))
                     {
@@ -1793,8 +1761,8 @@ namespace EMStudio
                 }
 
                 // now check all ports to see if they would be valid
-                const uint32 numOutputPorts = node->GetNumOutputPorts();
-                for (uint32 a = 0; a < numOutputPorts; ++a)
+                const AZ::u16 numOutputPorts = node->GetNumOutputPorts();
+                for (AZ::u16 a = 0; a < numOutputPorts; ++a)
                 {
                     if (m_graphWidget->CheckIfIsCreateConnectionValid(a, node, node->GetOutputPort(a), false))
                     {
@@ -1864,10 +1832,10 @@ namespace EMStudio
 
 
     // check if this connection already exists
-    bool NodeGraph::CheckIfHasConnection(GraphNode* sourceNode, uint32 outputPortNr, GraphNode* targetNode, uint32 inputPortNr) const
+    bool NodeGraph::CheckIfHasConnection(GraphNode* sourceNode, AZ::u16 outputPortNr, GraphNode* targetNode, AZ::u16 inputPortNr) const
     {
-        const uint32 numConnections = targetNode->GetNumConnections();
-        for (uint32 i = 0; i < numConnections; ++i)
+        const size_t numConnections = targetNode->GetNumConnections();
+        for (size_t i = 0; i < numConnections; ++i)
         {
             NodeConnection* connection = targetNode->GetConnection(i);
 
@@ -1888,15 +1856,15 @@ namespace EMStudio
     }
 
 
-    NodeConnection* NodeGraph::FindInputConnection(GraphNode* targetNode, uint32 targetPortNr) const
+    NodeConnection* NodeGraph::FindInputConnection(GraphNode* targetNode, AZ::u16 targetPortNr) const
     {
-        if (targetNode == nullptr || targetPortNr == MCORE_INVALIDINDEX32)
+        if (targetNode == nullptr || targetPortNr == InvalidIndex16)
         {
             return nullptr;
         }
 
-        const uint32 numConnections = targetNode->GetNumConnections();
-        for (uint32 i = 0; i < numConnections; ++i)
+        const size_t numConnections = targetNode->GetNumConnections();
+        for (size_t i = 0; i < numConnections; ++i)
         {
             NodeConnection* connection = targetNode->GetConnection(i);
 
@@ -1967,8 +1935,8 @@ namespace EMStudio
                 const QModelIndex parentModelIndex = modelIndex.model()->parent(modelIndex);
                 EMotionFX::AnimGraphNode* parentNode = parentModelIndex.data(AnimGraphModel::ROLE_NODE_POINTER).value<EMotionFX::AnimGraphNode*>();
                 GraphNode* target = FindGraphNode(parentNode);
-                const uint32 sourcePort = connection->GetSourcePort();
-                const uint32 targetPort = connection->GetTargetPort();
+                const AZ::u16 sourcePort = connection->GetSourcePort();
+                const AZ::u16 targetPort = connection->GetTargetPort();
                 NodeConnection* visualConnection = new NodeConnection(this, modelIndex, target, targetPort, source, sourcePort);
                 target->AddConnection(visualConnection);
                 break;
@@ -2013,9 +1981,9 @@ namespace EMStudio
                 // So we have to rely on the UI data.
                 for (const GraphNodeByModelIndex::value_type& target : m_graphNodeByModelIndex)
                 {
-                    MCore::Array<NodeConnection*>& connections = target.second->GetConnections();
-                    const uint32 connectionsCount = connections.GetLength();
-                    for (uint32 i = 0; i < connectionsCount; ++i)
+                    AZStd::vector<NodeConnection*>& connections = target.second->GetConnections();
+                    const size_t connectionsCount = connections.size();
+                    for (size_t i = 0; i < connectionsCount; ++i)
                     {
                         if (connections[i]->GetType() == StateConnection::TYPE_ID)
                         {
@@ -2023,7 +1991,7 @@ namespace EMStudio
                             if (visualStateConnection->GetModelIndex() == modelIndex)
                             {
                                 delete connections[i];
-                                connections.Remove(i);
+                                connections.erase(AZStd::next(begin(connections), i));
                                 break;
                             }
                         }
@@ -2086,13 +2054,12 @@ namespace EMStudio
                 GraphNode* targetGraphNode = FindGraphNode(targetNode);
 
                 bool foundConnection = false;
-                MCore::Array<NodeConnection*>& connections = targetGraphNode->GetConnections();
-                const uint32 connectionsCount = connections.GetLength();
-                for (uint32 i = 0; i < connectionsCount; ++i)
+                AZStd::vector<NodeConnection*>& connections = targetGraphNode->GetConnections();
+                for (NodeConnection* connection : connections)
                 {
-                    if (connections[i]->GetType() == StateConnection::TYPE_ID)
+                    if (connection->GetType() == StateConnection::TYPE_ID)
                     {
-                        StateConnection* visualStateConnection = static_cast<StateConnection*>(connections[i]);
+                        StateConnection* visualStateConnection = static_cast<StateConnection*>(connection);
                         if (visualStateConnection->GetModelIndex() == modelIndex)
                         {
                             SyncTransition(visualStateConnection, transition, targetGraphNode);
@@ -2110,13 +2077,11 @@ namespace EMStudio
                     {
                         GraphNode* visualNode = indexAndGraphNode.second.get();
 
-                        MCore::Array<NodeConnection*>& connections2 = visualNode->GetConnections();
-                        const uint32 connectionsCount2 = connections2.GetLength();
-                        for (uint32 i = 0; i < connectionsCount2; ++i)
+                        for (NodeConnection* connection : visualNode->GetConnections())
                         {
-                            if (connections2[i]->GetType() == StateConnection::TYPE_ID)
+                            if (connection->GetType() == StateConnection::TYPE_ID)
                             {
-                                StateConnection* visualStateConnection = static_cast<StateConnection*>(connections2[i]);
+                                StateConnection* visualStateConnection = static_cast<StateConnection*>(connection);
                                 if (visualStateConnection->GetModelIndex() == modelIndex)
                                 {
                                     // Transfer ownership from the previous visual node to where we relinked the transition to.
@@ -2176,13 +2141,12 @@ namespace EMStudio
         // We have to rely on the UI data.
         for (const GraphNodeByModelIndex::value_type& target : m_graphNodeByModelIndex)
         {
-            MCore::Array<NodeConnection*>& connections = target.second->GetConnections();
-            const uint32 connectionsCount = connections.GetLength();
-            for (uint32 i = 0; i < connectionsCount; ++i)
+            AZStd::vector<NodeConnection*>& connections = target.second->GetConnections();
+            for (NodeConnection* connection : connections)
             {
-                if (connections[i]->GetType() == StateConnection::TYPE_ID)
+                if (connection->GetType() == StateConnection::TYPE_ID)
                 {
-                    StateConnection* visualStateConnection = static_cast<StateConnection*>(connections[i]);
+                    StateConnection* visualStateConnection = static_cast<StateConnection*>(connection);
                     if (visualStateConnection->GetModelIndex() == modelIndex)
                     {
                         return visualStateConnection;
@@ -2205,13 +2169,12 @@ namespace EMStudio
                 GraphNode* target = FindGraphNode(parentModelIndex);
                 if (target)
                 {
-                    MCore::Array<NodeConnection*>& connections = target->GetConnections();
-                    const uint32 connectionsCount = connections.GetLength();
-                    for (uint32 i = 0; i < connectionsCount; ++i)
+                    AZStd::vector<NodeConnection*>& connections = target->GetConnections();
+                    for (NodeConnection* connection : connections)
                     {
-                        if (connections[i]->GetType() == NodeConnection::TYPE_ID)
+                        if (connection->GetType() == NodeConnection::TYPE_ID)
                         {
-                            NodeConnection* visualNodeConnection = static_cast<NodeConnection*>(connections[i]);
+                            NodeConnection* visualNodeConnection = static_cast<NodeConnection*>(connection);
                             if (visualNodeConnection->GetModelIndex() == modelIndex)
                             {
                                 return visualNodeConnection;
@@ -2239,8 +2202,8 @@ namespace EMStudio
                 graphNode->SetIsProcessed(graphNodeAnimGraphInstance->GetIsOutputReady(emfxNode->GetObjectIndex()));
                 graphNode->SetIsUpdated(graphNodeAnimGraphInstance->GetIsUpdateReady(emfxNode->GetObjectIndex()));
 
-                const uint32 numConnections = graphNode->GetNumConnections();
-                for (uint32 c = 0; c < numConnections; ++c)
+                const size_t numConnections = graphNode->GetNumConnections();
+                for (size_t c = 0; c < numConnections; ++c)
                 {
                     NodeConnection* connection = graphNode->GetConnection(c);
                     if (connection->GetType() == NodeConnection::TYPE_ID)
@@ -2255,8 +2218,8 @@ namespace EMStudio
                 graphNode->SetIsProcessed(false);
                 graphNode->SetIsUpdated(false);
 
-                const uint32 numConnections = graphNode->GetNumConnections();
-                for (uint32 c = 0; c < numConnections; ++c)
+                const size_t numConnections = graphNode->GetNumConnections();
+                for (size_t c = 0; c < numConnections; ++c)
                 {
                     NodeConnection* connection = graphNode->GetConnection(c);
                     if (connection->GetType() == NodeConnection::TYPE_ID)
@@ -2266,8 +2229,8 @@ namespace EMStudio
                 }
             }
 
-            const uint32 numConnections = graphNode->GetNumConnections();
-            for (uint32 c = 0; c < numConnections; ++c)
+            const size_t numConnections = graphNode->GetNumConnections();
+            for (size_t c = 0; c < numConnections; ++c)
             {
                 NodeConnection* connection = graphNode->GetConnection(c);
                 if (connection->GetType() == NodeConnection::TYPE_ID)
@@ -2287,12 +2250,12 @@ namespace EMStudio
     }
 
     // check if a connection is valid or not
-    bool NodeGraph::CheckIfIsRelinkConnectionValid(NodeConnection* connection, GraphNode* newTargetNode, uint32 newTargetPortNr, bool isTargetInput)
+    bool NodeGraph::CheckIfIsRelinkConnectionValid(NodeConnection* connection, GraphNode* newTargetNode, AZ::u16 newTargetPortNr, bool isTargetInput)
     {
         GraphNode* targetNode = connection->GetSourceNode();
         GraphNode* sourceNode = newTargetNode;
-        uint32 sourcePortNr = connection->GetOutputPortNr();
-        uint32 targetPortNr = newTargetPortNr;
+        AZ::u16 sourcePortNr = connection->GetOutputPortNr();
+        AZ::u16 targetPortNr = newTargetPortNr;
 
         // don't allow connection to itself
         if (sourceNode == targetNode)
@@ -2343,8 +2306,8 @@ namespace EMStudio
         graphNode->ResetBorderColor();
 
         // recurse through the inputs
-        const uint32 numConnections = startNode->GetNumConnections();
-        for (uint32 i = 0; i < numConnections; ++i)
+        const size_t numConnections = startNode->GetNumConnections();
+        for (size_t i = 0; i < numConnections; ++i)
         {
             EMotionFX::BlendTreeConnection* connection = startNode->GetConnection(i);
             RecursiveSetOpacity(connection->GetSourceNode(), opacity);
@@ -2460,8 +2423,8 @@ namespace EMStudio
         // get the number of node groups and iterate through them
         QRect nodeRect;
         QRect groupRect;
-        const uint32 numNodeGroups = animGraph->GetNumNodeGroups();
-        for (uint32 i = 0; i < numNodeGroups; ++i)
+        const size_t numNodeGroups = animGraph->GetNumNodeGroups();
+        for (size_t i = 0; i < numNodeGroups; ++i)
         {
             // get the current node group
             EMotionFX::AnimGraphNodeGroup* nodeGroup = animGraph->GetNodeGroup(i);
@@ -2473,7 +2436,7 @@ namespace EMStudio
             }
 
             // get the number of nodes inside the node group and skip the group in case there are no nodes in
-            const uint32 numNodes = nodeGroup->GetNumNodes();
+            const size_t numNodes = nodeGroup->GetNumNodes();
             if (numNodes == 0)
             {
                 continue;
@@ -2485,7 +2448,7 @@ namespace EMStudio
             int32 right = std::numeric_limits<int32>::lowest();
 
             bool nodesInGroupDisplayed = false;
-            for (uint32 j = 0; j < numNodes; ++j)
+            for (size_t j = 0; j < numNodes; ++j)
             {
                 // get the graph node by the id and skip it if the node is not inside the currently visible node graph
                 const EMotionFX::AnimGraphNodeId nodeId = nodeGroup->GetNode(j);

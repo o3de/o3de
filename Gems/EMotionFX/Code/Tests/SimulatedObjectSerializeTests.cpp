@@ -32,10 +32,10 @@ namespace EMotionFX
         Skeleton* skeleton = m_actor->GetSkeleton();
         for (const AZStd::string& name : jointNames)
         {
-            AZ::u32 skeletonJointIndex;
+            size_t skeletonJointIndex;
             const Node* skeletonJoint = skeleton->FindNodeAndIndexByName(name, skeletonJointIndex);
             ASSERT_NE(skeletonJoint, nullptr);
-            ASSERT_NE(skeletonJointIndex, MCORE_INVALIDINDEX32);
+            ASSERT_NE(skeletonJointIndex, InvalidIndex);
 
             SimulatedJoint* simulatedJoint = object->AddSimulatedJoint(skeletonJointIndex);
             simulatedJoint->SetDamping(0.1f);
@@ -63,7 +63,7 @@ namespace EMotionFX
         ASSERT_FLOAT_EQ(loadedObject->GetStiffnessFactor(), 4.0f);
         for (size_t i = 0; i < jointNames.size(); ++i)
         {
-            const SimulatedJoint* loadedJoint = loadedObject->GetSimulatedJoint(static_cast<AZ::u32>(i));
+            const SimulatedJoint* loadedJoint = loadedObject->GetSimulatedJoint(i);
             ASSERT_STREQ(skeleton->GetNode(loadedJoint->GetSkeletonJointIndex())->GetName(), jointNames[i].c_str());
             ASSERT_FLOAT_EQ(loadedJoint->GetDamping(), 0.1f);
             ASSERT_FLOAT_EQ(loadedJoint->GetMass(), 2.0f);

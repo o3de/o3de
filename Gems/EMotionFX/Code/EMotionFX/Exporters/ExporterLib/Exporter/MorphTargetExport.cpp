@@ -20,7 +20,7 @@
 namespace ExporterLib
 {
     // save the given morph target
-    void SaveMorphTarget(MCore::Stream* file, EMotionFX::Actor* actor, EMotionFX::MorphTarget* inputMorphTarget, uint32 lodLevel, MCore::Endian::EEndianType targetEndianType)
+    void SaveMorphTarget(MCore::Stream* file, EMotionFX::Actor* actor, EMotionFX::MorphTarget* inputMorphTarget, size_t lodLevel, MCore::Endian::EEndianType targetEndianType)
     {
         MCORE_ASSERT(file);
         MCORE_ASSERT(actor);
@@ -28,12 +28,12 @@ namespace ExporterLib
         MCORE_ASSERT(inputMorphTarget->GetType() == EMotionFX::MorphTargetStandard::TYPE_ID);
         EMotionFX::MorphTargetStandard* morphTarget = (EMotionFX::MorphTargetStandard*)inputMorphTarget;
 
-        const uint32 numTransformations = morphTarget->GetNumTransformations();
+        const size_t numTransformations = morphTarget->GetNumTransformations();
 
         // copy over the information to the chunk
         EMotionFX::FileFormat::Actor_MorphTarget morphTargetChunk;
-        morphTargetChunk.mLOD                   = lodLevel;
-        morphTargetChunk.mNumTransformations    = numTransformations;
+        morphTargetChunk.mLOD                   = aznumeric_caster(lodLevel);
+        morphTargetChunk.mNumTransformations    = aznumeric_caster(numTransformations);
         morphTargetChunk.mRangeMin              = morphTarget->GetRangeMin();
         morphTargetChunk.mRangeMax              = morphTarget->GetRangeMax();
         morphTargetChunk.mPhonemeSets           = morphTarget->GetPhonemeSets();
@@ -60,7 +60,7 @@ namespace ExporterLib
         SaveString(morphTarget->GetName(), file, targetEndianType);
 
         // create and write the transformations
-        for (uint32 i = 0; i < numTransformations; i++)
+        for (size_t i = 0; i < numTransformations; i++)
         {
             EMotionFX::MorphTargetStandard::Transformation transform    = morphTarget->GetTransformation(i);
             EMotionFX::Node* node                                       = actor->GetSkeleton()->GetNode(transform.mNodeIndex);
@@ -73,7 +73,7 @@ namespace ExporterLib
             // create and fill the transformation
             EMotionFX::FileFormat::Actor_MorphTargetTransform transformChunk;
 
-            transformChunk.mNodeIndex = transform.mNodeIndex;
+            transformChunk.mNodeIndex = aznumeric_caster(transform.mNodeIndex);
             CopyVector(transformChunk.mPosition, AZ::PackedVector3f(transform.mPosition));
             CopyVector(transformChunk.mScale, AZ::PackedVector3f(transform.mScale));
             CopyQuaternion(transformChunk.mRotation, transform.mRotation);
@@ -99,12 +99,12 @@ namespace ExporterLib
 
 
     // get the size of the chunk for the given morph target
-    uint32 GetMorphTargetChunkSize(EMotionFX::MorphTarget* inputMorphTarget)
+    size_t GetMorphTargetChunkSize(EMotionFX::MorphTarget* inputMorphTarget)
     {
         MCORE_ASSERT(inputMorphTarget->GetType() == EMotionFX::MorphTargetStandard::TYPE_ID);
         EMotionFX::MorphTargetStandard* morphTarget = (EMotionFX::MorphTargetStandard*)inputMorphTarget;
 
-        uint32 totalSize = 0;
+        size_t totalSize = 0;
         totalSize += sizeof(EMotionFX::FileFormat::Actor_MorphTarget);
         totalSize += GetStringChunkSize(morphTarget->GetName());
         totalSize += sizeof(EMotionFX::FileFormat::Actor_MorphTargetTransform) * morphTarget->GetNumTransformations();
@@ -114,14 +114,14 @@ namespace ExporterLib
 
 
     // get the size of the chunk for the complete morph setup
-    uint32 GetMorphSetupChunkSize(EMotionFX::MorphSetup* morphSetup)
+    size_t GetMorphSetupChunkSize(EMotionFX::MorphSetup* morphSetup)
     {
         // get the number of morph targets
-        const uint32 numMorphTargets = morphSetup->GetNumMorphTargets();
+        const size_t numMorphTargets = morphSetup->GetNumMorphTargets();
 
         // calculate the size of the chunk
-        uint32 totalSize = sizeof(EMotionFX::FileFormat::Actor_MorphTargets);
-        for (uint32 i = 0; i < numMorphTargets; ++i)
+        size_t totalSize = sizeof(EMotionFX::FileFormat::Actor_MorphTargets);
+        for (size_t i = 0; i < numMorphTargets; ++i)
         {
             totalSize += GetMorphTargetChunkSize(morphSetup->GetMorphTarget(i));
         }
@@ -129,15 +129,14 @@ namespace ExporterLib
         return totalSize;
     }
 
-    uint32 GetNumSavedMorphTargets(EMotionFX::MorphSetup* morphSetup)
+    size_t GetNumSavedMorphTargets(EMotionFX::MorphSetup* morphSetup)
     {
         return morphSetup->GetNumMorphTargets();
     }
 
     // save all morph targets for a given LOD level
-    void SaveMorphTargets(MCore::Stream* file, EMotionFX::Actor* actor, uint32 lodLevel, MCore::Endian::EEndianType targetEndianType)
+    void SaveMorphTargets(MCore::Stream* file, EMotionFX::Actor* actor, size_t lodLevel, MCore::Endian::EEndianType targetEndianType)
     {
-        uint32 i;
         MCORE_ASSERT(file);
         MCORE_ASSERT(actor);
 
@@ -148,7 +147,7 @@ namespace ExporterLib
         }
 
         // get the number of morph targets we need to save to the file and check if there are any at all
-        const uint32 numSavedMorphTargets = GetNumSavedMorphTargets(morphSetup);
+        const size_t numSavedMorphTargets = GetNumSavedMorphTargets(morphSetup);
         if (numSavedMorphTargets <= 0)
         {
             MCore::LogInfo("No morph targets to be saved in morph setup. Skipping writing morph targets.");
@@ -156,10 +155,10 @@ namespace ExporterLib
         }
 
         // get the number of morph targets
-        const uint32 numMorphTargets = morphSetup->GetNumMorphTargets();
+        const size_t numMorphTargets = morphSetup->GetNumMorphTargets();
 
         // check if all morph targets have a valid name and rename them in case they are empty
-        for (i = 0; i < numMorphTargets; ++i)
+        for (size_t i = 0; i < numMorphTargets; ++i)
         {
             EMotionFX::MorphTarget* morphTarget = morphSetup->GetMorphTarget(i);
 
@@ -168,7 +167,7 @@ namespace ExporterLib
             {
                 // rename the morph target
                 AZStd::string morphTargetName;
-                morphTargetName = AZStd::string::format("Morph Target %d", MCore::GetIDGenerator().GenerateID());
+                morphTargetName = AZStd::string::format("Morph Target %zu", MCore::GetIDGenerator().GenerateID());
                 MCore::LogWarning("The morph target has an empty name. The morph target will be automatically renamed to '%s'.", morphTargetName.c_str());
                 morphTarget->SetName(morphTargetName.c_str());
             }
@@ -177,7 +176,7 @@ namespace ExporterLib
         // fill in the chunk header
         EMotionFX::FileFormat::FileChunk chunkHeader;
         chunkHeader.mChunkID        = EMotionFX::FileFormat::ACTOR_CHUNK_STDPMORPHTARGETS;
-        chunkHeader.mSizeInBytes    = GetMorphSetupChunkSize(morphSetup);
+        chunkHeader.mSizeInBytes    = aznumeric_caster(GetMorphSetupChunkSize(morphSetup));
         chunkHeader.mVersion        = 2;
 
         // endian convert the chunk and write it to the file
@@ -186,8 +185,8 @@ namespace ExporterLib
 
         // fill in the chunk header
         EMotionFX::FileFormat::Actor_MorphTargets morphTargetsChunk;
-        morphTargetsChunk.mNumMorphTargets  = numSavedMorphTargets;
-        morphTargetsChunk.mLOD              = lodLevel;
+        morphTargetsChunk.mNumMorphTargets  = aznumeric_caster(numSavedMorphTargets);
+        morphTargetsChunk.mLOD              = aznumeric_caster(lodLevel);
 
         MCore::LogDetailedInfo("============================================================");
         MCore::LogInfo("Morph Targets (%i, LOD=%d)", morphTargetsChunk.mNumMorphTargets, morphTargetsChunk.mLOD);
@@ -199,7 +198,7 @@ namespace ExporterLib
         file->Write(&morphTargetsChunk, sizeof(EMotionFX::FileFormat::Actor_MorphTargets));
 
         // save morph targets
-        for (i = 0; i < numMorphTargets; ++i)
+        for (size_t i = 0; i < numMorphTargets; ++i)
         {
             SaveMorphTarget(file, actor, morphSetup->GetMorphTarget(i), lodLevel, targetEndianType);
         }
@@ -209,8 +208,8 @@ namespace ExporterLib
     void SaveMorphTargets(MCore::Stream* file, EMotionFX::Actor* actor, MCore::Endian::EEndianType targetEndianType)
     {
         // get the number of LOD levels and save the morph targets for each
-        const uint32 numLODLevels = actor->GetNumLODLevels();
-        for (uint32 i = 0; i < numLODLevels; ++i)
+        const size_t numLODLevels = actor->GetNumLODLevels();
+        for (size_t i = 0; i < numLODLevels; ++i)
         {
             SaveMorphTargets(file, actor, i, targetEndianType);
         }

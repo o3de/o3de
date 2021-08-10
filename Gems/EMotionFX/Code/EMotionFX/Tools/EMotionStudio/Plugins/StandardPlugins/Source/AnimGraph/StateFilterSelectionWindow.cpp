@@ -98,9 +98,9 @@ namespace EMStudio
         const EMotionFX::AnimGraph* animGraph = m_stateMachine->GetAnimGraph();
 
         // get the number of nodes inside the active node, the number node groups and set table size and add header items
-        const uint32 numNodeGroups  = animGraph->GetNumNodeGroups();
-        const uint32 numNodes       = m_stateMachine->GetNumChildNodes();
-        const uint32 numRows        = numNodeGroups + numNodes;
+        const size_t numNodeGroups  = animGraph->GetNumNodeGroups();
+        const size_t numNodes       = m_stateMachine->GetNumChildNodes();
+        const int numRows           = aznumeric_caster(numNodeGroups + numNodes);
         mTableWidget->setRowCount(numRows);
 
         // Block signals for the table widget to not reach OnSelectionChanged() when adding rows as that

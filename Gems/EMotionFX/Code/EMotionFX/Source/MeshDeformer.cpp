@@ -45,7 +45,7 @@ namespace EMotionFX
 
 
     // reinitialize the mesh deformer
-    void MeshDeformer::Reinitialize(Actor* actor, Node* node, uint32 lodLevel)
+    void MeshDeformer::Reinitialize(Actor* actor, Node* node, size_t lodLevel)
     {
         MCORE_UNUSED(actor);
         MCORE_UNUSED(node);

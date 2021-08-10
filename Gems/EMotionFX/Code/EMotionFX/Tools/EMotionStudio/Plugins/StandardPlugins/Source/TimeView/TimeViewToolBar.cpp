@@ -100,12 +100,12 @@ namespace EMStudio
                         }
 
                         const CommandSystem::SelectionList& selectionList = GetCommandManager()->GetCurrentSelection();
-                        const uint32 numSelectedMotions = selectionList.GetNumSelectedMotions();
+                        const size_t numSelectedMotions = selectionList.GetNumSelectedMotions();
 
                         AZStd::vector<EMotionFX::Motion*> motionsToPlay;
                         motionsToPlay.reserve(numSelectedMotions);
 
-                        for (uint32 i = 0; i < numSelectedMotions; ++i)
+                        for (size_t i = 0; i < numSelectedMotions; ++i)
                         {
                             EMotionFX::Motion* motion = selectionList.GetMotion(i);
 
@@ -212,11 +212,9 @@ namespace EMStudio
         case RecorderGroup::Default:
         {
             const AZStd::vector<EMotionFX::MotionInstance*>& motionInstances = MotionWindowPlugin::GetSelectedMotionInstances();
-            const size_t numMotionInstances = motionInstances.size();
-            for (size_t i = 0; i < numMotionInstances; ++i)
+            for (EMotionFX::MotionInstance* motionInstance : motionInstances)
             {
-                EMotionFX::MotionInstance* motionInstance = motionInstances[i];
-                motionInstance->SetCurrentTime(motionInstance->GetDuration());
+                 motionInstance->SetCurrentTime(motionInstance->GetDuration());
             }
             break;
         }
@@ -244,11 +242,9 @@ namespace EMStudio
         case RecorderGroup::Default:
         {
             const AZStd::vector<EMotionFX::MotionInstance*>& motionInstances = MotionWindowPlugin::GetSelectedMotionInstances();
-            const size_t numMotionInstances = motionInstances.size();
-            for (size_t i = 0; i < numMotionInstances; ++i)
+            for (EMotionFX::MotionInstance* motionInstance : motionInstances)
             {
-                EMotionFX::MotionInstance* motionInstance = motionInstances[i];
-                motionInstance->Rewind();
+                 motionInstance->Rewind();
             }
             break;
         }
@@ -276,8 +272,8 @@ namespace EMStudio
             // Check if at least one actor instance has an anim graph playing.
             bool activateAnimGraph = true;
             const CommandSystem::SelectionList& selectionList = GetCommandManager()->GetCurrentSelection();
-            const uint32 numActorInstances = selectionList.GetNumSelectedActorInstances();
-            for (uint32 i = 0; i < numActorInstances; ++i)
+            const size_t numActorInstances = selectionList.GetNumSelectedActorInstances();
+            for (size_t i = 0; i < numActorInstances; ++i)
             {
                 EMotionFX::ActorInstance* actorInstance = selectionList.GetActorInstance(i);
                 if (!actorInstance->GetIsOwnedByRuntime() && actorInstance->GetAnimGraphInstance())
@@ -370,8 +366,8 @@ namespace EMStudio
         MCore::CommandGroup commandGroup("Adjust default motion instances");
 
         // get the number of selected motions and iterate through them
-        const uint32 numMotions = selection.GetNumSelectedMotions();
-        for (uint32 i = 0; i < numMotions; ++i)
+        const size_t numMotions = selection.GetNumSelectedMotions();
+        for (size_t i = 0; i < numMotions; ++i)
         {
             MotionWindowPlugin* plugin = GetMotionWindowPlugin();
             MotionWindowPlugin::MotionTableEntry* entry = plugin ? plugin->FindMotionEntryByID(selection.GetMotion(i)->GetID()) : nullptr;
