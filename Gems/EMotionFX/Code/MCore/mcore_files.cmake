@@ -11,7 +11,6 @@ set(FILES
     Source/Algorithms.cpp
     Source/Algorithms.h
     Source/Algorithms.inl
-    Source/AlignedArray.h
     Source/Array2D.h
     Source/Array2D.inl
     Source/Attribute.cpp
