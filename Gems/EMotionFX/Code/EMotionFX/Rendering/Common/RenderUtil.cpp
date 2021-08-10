@@ -51,8 +51,6 @@ namespace MCommon
         mArrowHeadMesh  = CreateArrowHead(1.0f, 0.5f);
         mUnitCubeMesh   = CreateCube(1.0f);
         mFont           = new VectorFont(this);
-
-        mTriangleVertices.SetMemoryCategory(MEMCATEGORY_MCOMMON);
     }
 
 
@@ -106,14 +104,14 @@ namespace MCommon
     void RenderUtil::RenderTriangles()
     {
         // check if we have to render anything and skip directly in case there are no triangles
-        if (mTriangleVertices.GetIsEmpty())
+        if (mTriangleVertices.empty())
         {
             return;
         }
 
         // render the triangles and clear the array
         RenderTriangles(mTriangleVertices);
-        mTriangleVertices.Clear(false);
+        mTriangleVertices.clear();
     }
 
 
@@ -198,7 +196,7 @@ namespace MCommon
 
 
     // render the current bounding box of the given actor instance
-    void RenderUtil::RenderAABB(const MCore::AABB& box, const MCore::RGBAColor& color, bool directlyRender)
+    void RenderUtil::RenderAabb(const AZ::Aabb& box, const MCore::RGBAColor& color, bool directlyRender)
     {
         AZ::Vector3 min = box.GetMin();
         AZ::Vector3 max = box.GetMax();
@@ -238,26 +236,28 @@ namespace MCommon
 
 
     // render selection gizmo around the given AABB
-    void RenderUtil::RenderSelection(const MCore::AABB& box, const MCore::RGBAColor& color, bool directlyRender)
+    void RenderUtil::RenderSelection(const AZ::Aabb& box, const MCore::RGBAColor& color, bool directlyRender)
     {
-        //const Vector3 center  = box.CalcMiddle();
-        const AZ::Vector3       min     = box.GetMin();// + (box.GetMin()-center).Normalized()*0.005f;
-        const AZ::Vector3       max     = box.GetMax();// + (box.GetMax()-center).Normalized()*0.005f;
-        const float             scale   = box.CalcRadius() * 0.1f;
+        const AZ::Vector3&      min     = box.GetMin();
+        const AZ::Vector3&      max     = box.GetMax();
+        const float             radius  = AZ::Vector3(box.GetMax() - box.GetMin()).GetLength() * 0.5f;
+        const float             scale   = radius * 0.1f;
         const AZ::Vector3       up      = AZ::Vector3(0.0f, 1.0f, 0.0f) * scale;
         const AZ::Vector3       right   = AZ::Vector3(1.0f, 0.0f, 0.0f) * scale;
         const AZ::Vector3       front   = AZ::Vector3(0.0f, 0.0f, 1.0f) * scale;
 
         // generate our vertices
-        AZ::Vector3 p[8];
-        p[0].Set(min.GetX(), min.GetY(), min.GetZ());
-        p[1].Set(max.GetX(), min.GetY(), min.GetZ());
-        p[2].Set(max.GetX(), min.GetY(), max.GetZ());
-        p[3].Set(min.GetX(), min.GetY(), max.GetZ());
-        p[4].Set(min.GetX(), max.GetY(), min.GetZ());
-        p[5].Set(max.GetX(), max.GetY(), min.GetZ());
-        p[6].Set(max.GetX(), max.GetY(), max.GetZ());
-        p[7].Set(min.GetX(), max.GetY(), max.GetZ());
+        const AZStd::array p
+        {
+            AZ::Vector3{min.GetX(), min.GetY(), min.GetZ()},
+            AZ::Vector3{max.GetX(), min.GetY(), min.GetZ()},
+            AZ::Vector3{max.GetX(), min.GetY(), max.GetZ()},
+            AZ::Vector3{min.GetX(), min.GetY(), max.GetZ()},
+            AZ::Vector3{min.GetX(), max.GetY(), min.GetZ()},
+            AZ::Vector3{max.GetX(), max.GetY(), min.GetZ()},
+            AZ::Vector3{max.GetX(), max.GetY(), max.GetZ()},
+            AZ::Vector3{min.GetX(), max.GetY(), max.GetZ()},
+        };
 
         // render the box
         RenderLine(p[0], p[0] + up,    color);
@@ -304,46 +304,29 @@ namespace MCommon
     {
         mNodeBasedAABB              = true;
         mMeshBasedAABB              = true;
-        mCollisionMeshBasedAABB     = true;
         mStaticBasedAABB            = true;
         mStaticBasedColor           = MCore::RGBAColor(0.0f, 0.7f, 0.7f);
         mNodeBasedColor             = MCore::RGBAColor(1.0f, 0.0f, 0.0f);
-        mCollisionMeshBasedColor    = MCore::RGBAColor(0.0f, 0.7f, 0.0f);
         mMeshBasedColor             = MCore::RGBAColor(0.0f, 0.0f, 0.7f);
     }
 
 
     // render the given types of AABBs of a actor instance
-    void RenderUtil::RenderAABBs(EMotionFX::ActorInstance* actorInstance, const AABBRenderSettings& renderSettings, bool directlyRender)
+    void RenderUtil::RenderAabbs(EMotionFX::ActorInstance* actorInstance, const AABBRenderSettings& renderSettings, bool directlyRender)
     {
-        // get the current LOD level
-        const uint32 lodLevel = actorInstance->GetLODLevel();
-
-        // handle the collision mesh based AABB
-        if (renderSettings.mCollisionMeshBasedAABB)
-        {
-            // calculate the collision mesh based AABB
-            MCore::AABB box;
-            actorInstance->CalcCollisionMeshBasedAABB(lodLevel, &box);
-
-            // render the aabb
-            if (box.CheckIfIsValid())
-            {
-                RenderAABB(box, renderSettings.mCollisionMeshBasedColor);
-            }
-        }
+        const size_t lodLevel = actorInstance->GetLODLevel();
 
         // handle the node based AABB
         if (renderSettings.mNodeBasedAABB)
         {
             // calculate the node based AABB
-            MCore::AABB box;
-            actorInstance->CalcNodeBasedAABB(&box);
+            AZ::Aabb box;
+            actorInstance->CalcNodeBasedAabb(&box);
 
             // render the aabb
-            if (box.CheckIfIsValid())
+            if (box.IsValid())
             {
-                RenderAABB(box, renderSettings.mNodeBasedColor);
+                RenderAabb(box, renderSettings.mNodeBasedColor);
             }
         }
 
@@ -351,26 +334,26 @@ namespace MCommon
         if (renderSettings.mMeshBasedAABB)
         {
             // calculate the mesh based AABB
-            MCore::AABB box;
-            actorInstance->CalcMeshBasedAABB(lodLevel, &box);
+            AZ::Aabb box;
+            actorInstance->CalcMeshBasedAabb(lodLevel, &box);
 
             // render the aabb
-            if (box.CheckIfIsValid())
+            if (box.IsValid())
             {
-                RenderAABB(box, renderSettings.mMeshBasedColor);
+                RenderAabb(box, renderSettings.mMeshBasedColor);
             }
         }
 
         if (renderSettings.mStaticBasedAABB)
         {
             // calculate the static based AABB
-            MCore::AABB box;
-            actorInstance->CalcStaticBasedAABB(&box);
+            AZ::Aabb box;
+            actorInstance->CalcStaticBasedAabb(&box);
 
             // render the aabb
-            if (box.CheckIfIsValid())
+            if (box.IsValid())
             {
-                RenderAABB(box, renderSettings.mStaticBasedColor);
+                RenderAabb(box, renderSettings.mStaticBasedColor);
             }
         }
 
@@ -382,19 +365,19 @@ namespace MCommon
 
 
     // render a simple line based skeleton
-    void RenderUtil::RenderSimpleSkeleton(EMotionFX::ActorInstance* actorInstance, const AZStd::unordered_set<AZ::u32>* visibleJointIndices,
-        const AZStd::unordered_set<AZ::u32>* selectedJointIndices, const MCore::RGBAColor& color, const MCore::RGBAColor& selectedColor,
+    void RenderUtil::RenderSimpleSkeleton(EMotionFX::ActorInstance* actorInstance, const AZStd::unordered_set<size_t>* visibleJointIndices,
+        const AZStd::unordered_set<size_t>* selectedJointIndices, const MCore::RGBAColor& color, const MCore::RGBAColor& selectedColor,
         float jointSphereRadius, bool directlyRender)
     {
         const EMotionFX::Actor* actor = actorInstance->GetActor();
         const EMotionFX::Skeleton* skeleton = actor->GetSkeleton();
         const EMotionFX::Pose* pose = actorInstance->GetTransformData()->GetCurrentPose();
 
-        const uint32 numNodes = actorInstance->GetNumEnabledNodes();
-        for (uint32 n = 0; n < numNodes; ++n)
+        const size_t numNodes = actorInstance->GetNumEnabledNodes();
+        for (size_t n = 0; n < numNodes; ++n)
         {
             const EMotionFX::Node* joint = skeleton->GetNode(actorInstance->GetEnabledNode(n));
-            const AZ::u32 jointIndex = joint->GetNodeIndex();
+            const size_t jointIndex = joint->GetNodeIndex();
 
             if (!visibleJointIndices || visibleJointIndices->empty() ||
                 (visibleJointIndices->find(jointIndex) != visibleJointIndices->end()))
@@ -402,8 +385,8 @@ namespace MCommon
                 const AZ::Vector3 currentJointPos = pose->GetWorldSpaceTransform(jointIndex).mPosition;
                 const bool jointSelected = selectedJointIndices->find(jointIndex) != selectedJointIndices->end();
 
-                const AZ::u32 parentIndex = joint->GetParentIndex();
-                if (parentIndex != MCORE_INVALIDINDEX32)
+                const size_t parentIndex = joint->GetParentIndex();
+                if (parentIndex != InvalidIndex)
                 {
                     const bool parentSelected = selectedJointIndices->find(parentIndex) != selectedJointIndices->end();
                     const AZ::Vector3 parentJointPos = pose->GetWorldSpaceTransform(parentIndex).mPosition;
@@ -411,77 +394,6 @@ namespace MCommon
                 }
 
                 RenderSphere(currentJointPos, jointSphereRadius, jointSelected ? selectedColor : color);
-            }
-        }
-
-        if (directlyRender)
-        {
-            RenderLines();
-        }
-    }
-
-
-    // render object orientated bounding  boxes for all enabled nodes inside the actor instance
-    void RenderUtil::RenderOBBs(EMotionFX::ActorInstance* actorInstance, const AZStd::unordered_set<AZ::u32>* visibleJointIndices, const AZStd::unordered_set<AZ::u32>* selectedJointIndices, const MCore::RGBAColor& color, const MCore::RGBAColor& selectedColor, bool directlyRender)
-    {
-        AZ::Vector3 p[8];
-
-        // get the actor it is an instance from
-        const EMotionFX::Actor* actor = actorInstance->GetActor();
-        const EMotionFX::Skeleton* skeleton = actor->GetSkeleton();
-        const EMotionFX::Pose* pose = actorInstance->GetTransformData()->GetCurrentPose();
-
-        // iterate through all enabled nodes
-        MCore::RGBAColor tempColor;
-        const uint32 numEnabled = actorInstance->GetNumEnabledNodes();
-        for (uint32 i = 0; i < numEnabled; ++i)
-        {
-            const EMotionFX::Node* joint = skeleton->GetNode(actorInstance->GetEnabledNode(i));
-            const AZ::u32 jointIndex = joint->GetNodeIndex();
-
-            if (!visibleJointIndices || visibleJointIndices->empty() ||
-                (visibleJointIndices->find(jointIndex) != visibleJointIndices->end()))
-            {
-                const MCore::OBB& obb = actor->GetNodeOBB(jointIndex);
-                EMotionFX::Transform worldTransform = pose->GetWorldSpaceTransform(jointIndex);
-
-                // skip the OBB if it isn't valid
-                if (obb.CheckIfIsValid() == false)
-                {
-                    continue;
-                }
-
-                // check if the current bone is selected and set the color according to it
-                if (selectedJointIndices && selectedJointIndices->find(jointIndex) != selectedJointIndices->end())
-                {
-                    tempColor = selectedColor;
-                }
-                else
-                {
-                    tempColor = color;
-                }
-
-                obb.CalcCornerPoints(p);
-                for (uint32 a = 0; a < 8; a++)
-                {
-                    p[a] = worldTransform.TransformPoint(p[a]);
-                }
-
-                // render
-                RenderLine(p[0], p[1], tempColor);
-                RenderLine(p[1], p[2], tempColor);
-                RenderLine(p[2], p[3], tempColor);
-                RenderLine(p[0], p[3], tempColor);
-
-                RenderLine(p[1], p[5], tempColor);
-                RenderLine(p[3], p[7], tempColor);
-                RenderLine(p[2], p[6], tempColor);
-                RenderLine(p[0], p[4], tempColor);
-
-                RenderLine(p[4], p[5], tempColor);
-                RenderLine(p[4], p[7], tempColor);
-                RenderLine(p[6], p[7], tempColor);
-                RenderLine(p[6], p[5], tempColor);
             }
         }
 
@@ -507,7 +419,7 @@ namespace MCommon
         AZ::Vector3* normals = (AZ::Vector3*)mesh->FindVertexData(EMotionFX::Mesh::ATTRIB_NORMALS);
         MCore::RGBAColor* vertexColors = (MCore::RGBAColor*)mesh->FindVertexData(EMotionFX::Mesh::ATTRIB_COLORS128);
 
-        const uint32 numSubMeshes = mesh->GetNumSubMeshes();
+        const size_t numSubMeshes = mesh->GetNumSubMeshes();
         for (uint32 subMeshIndex = 0; subMeshIndex < numSubMeshes; ++subMeshIndex)
         {
             EMotionFX::SubMesh* subMesh = mesh->GetSubMesh(subMeshIndex);
@@ -569,7 +481,7 @@ namespace MCommon
         // render face normals
         if (faceNormals)
         {
-            const uint32 numSubMeshes = mesh->GetNumSubMeshes();
+            const size_t numSubMeshes = mesh->GetNumSubMeshes();
             for (uint32 subMeshIndex = 0; subMeshIndex < numSubMeshes; ++subMeshIndex)
             {
                 EMotionFX::SubMesh* subMesh = mesh->GetSubMesh(subMeshIndex);
@@ -601,7 +513,7 @@ namespace MCommon
         // render vertex normals
         if (vertexNormals)
         {
-            const uint32 numSubMeshes = mesh->GetNumSubMeshes();
+            const size_t numSubMeshes = mesh->GetNumSubMeshes();
             for (uint32 subMeshIndex = 0; subMeshIndex < numSubMeshes; ++subMeshIndex)
             {
                 EMotionFX::SubMesh* subMesh = mesh->GetSubMesh(subMeshIndex);
@@ -722,11 +634,11 @@ namespace MCommon
         EMotionFX::TransformData* transformData = actorInstance->GetTransformData();
         const EMotionFX::Pose* pose = transformData->GetCurrentPose();
 
-        const uint32            nodeIndex       = node->GetNodeIndex();
-        const uint32            parentIndex     = node->GetParentIndex();
+        const size_t            nodeIndex       = node->GetNodeIndex();
+        const size_t            parentIndex     = node->GetParentIndex();
         const AZ::Vector3       nodeWorldPos    = pose->GetWorldSpaceTransform(nodeIndex).mPosition;
 
-        if (parentIndex != MCORE_INVALIDINDEX32)
+        if (parentIndex != InvalidIndex)
         {
             const AZ::Vector3       parentWorldPos  = pose->GetWorldSpaceTransform(parentIndex).mPosition;
             const AZ::Vector3       bone            = parentWorldPos - nodeWorldPos;
@@ -741,7 +653,7 @@ namespace MCommon
 
 
     // render the advanced skeleton
-    void RenderUtil::RenderSkeleton(EMotionFX::ActorInstance* actorInstance, const MCore::Array<uint32>& boneList, const AZStd::unordered_set<AZ::u32>* visibleJointIndices, const AZStd::unordered_set<AZ::u32>* selectedJointIndices, const MCore::RGBAColor& color, const MCore::RGBAColor& selectedColor)
+    void RenderUtil::RenderSkeleton(EMotionFX::ActorInstance* actorInstance, const AZStd::vector<size_t>& boneList, const AZStd::unordered_set<size_t>* visibleJointIndices, const AZStd::unordered_set<size_t>* selectedJointIndices, const MCore::RGBAColor& color, const MCore::RGBAColor& selectedColor)
     {
         // check if our render util supports rendering meshes, if not render the fallback skeleton using lines only
         if (GetIsMeshRenderingSupported() == false)
@@ -758,15 +670,15 @@ namespace MCommon
 
         // iterate through all enabled nodes
         MCore::RGBAColor tempColor;
-        const uint32 numEnabled = actorInstance->GetNumEnabledNodes();
-        for (uint32 i = 0; i < numEnabled; ++i)
+        const size_t numEnabled = actorInstance->GetNumEnabledNodes();
+        for (size_t i = 0; i < numEnabled; ++i)
         {
             EMotionFX::Node* joint = skeleton->GetNode(actorInstance->GetEnabledNode(i));
-            const AZ::u32 jointIndex = joint->GetNodeIndex();
-            const AZ::u32 parentIndex = joint->GetParentIndex();
+            const size_t jointIndex = joint->GetNodeIndex();
+            const size_t parentIndex = joint->GetParentIndex();
 
             // check if this node has a parent and is a bone, if not skip it
-            if (parentIndex == MCORE_INVALIDINDEX32 || boneList.Find(jointIndex) == MCORE_INVALIDINDEX32)
+            if (parentIndex == InvalidIndex || AZStd::find(begin(boneList), end(boneList), jointIndex) == end(boneList))
             {
                 continue;
             }
@@ -803,7 +715,7 @@ namespace MCommon
 
 
     // render node orientations
-    void RenderUtil::RenderNodeOrientations(EMotionFX::ActorInstance* actorInstance, const MCore::Array<uint32>& boneList, const AZStd::unordered_set<AZ::u32>* visibleJointIndices, const AZStd::unordered_set<AZ::u32>* selectedJointIndices, float scale, bool scaleBonesOnLength)
+    void RenderUtil::RenderNodeOrientations(EMotionFX::ActorInstance* actorInstance, const AZStd::vector<size_t>& boneList, const AZStd::unordered_set<size_t>* visibleJointIndices, const AZStd::unordered_set<size_t>* selectedJointIndices, float scale, bool scaleBonesOnLength)
     {
         // get the actor and the transform data
         const float unitScale = 1.0f / (float)MCore::Distance::ConvertValue(1.0f, MCore::Distance::UNITTYPE_METERS, EMotionFX::GetEMotionFX().GetUnitType());
@@ -814,18 +726,18 @@ namespace MCommon
         const float                     constPreScale   = scale * unitScale * 3.0f;
         AxisRenderingSettings axisRenderingSettings;
 
-        const uint32 numEnabled = actorInstance->GetNumEnabledNodes();
-        for (uint32 i = 0; i < numEnabled; ++i)
+        const size_t numEnabled = actorInstance->GetNumEnabledNodes();
+        for (size_t i = 0; i < numEnabled; ++i)
         {
             EMotionFX::Node* joint = skeleton->GetNode(actorInstance->GetEnabledNode(i));
-            const AZ::u32 jointIndex = joint->GetNodeIndex();
-            const AZ::u32 parentIndex = joint->GetParentIndex();
+            const size_t jointIndex = joint->GetNodeIndex();
+            const size_t parentIndex = joint->GetParentIndex();
 
             if (!visibleJointIndices || visibleJointIndices->empty() ||
                 (visibleJointIndices->find(jointIndex) != visibleJointIndices->end()))
             {
                 // either scale the bones based on their length or use the normal size
-                if (scaleBonesOnLength && parentIndex != MCORE_INVALIDINDEX32 && boneList.Find(jointIndex) != MCORE_INVALIDINDEX32)
+                if (scaleBonesOnLength && parentIndex != InvalidIndex && AZStd::find(begin(boneList), end(boneList), jointIndex) != end(boneList))
                 {
                     static const float axisBoneScale = 50.0f;
                     axisRenderingSettings.mSize = GetBoneScale(actorInstance, joint) * constPreScale * axisBoneScale;
@@ -863,11 +775,11 @@ namespace MCommon
         AxisRenderingSettings axisRenderingSettings;
 
         // iterate through all enabled nodes
-        const uint32 numEnabled = actorInstance->GetNumEnabledNodes();
-        for (uint32 i = 0; i < numEnabled; ++i)
+        const size_t numEnabled = actorInstance->GetNumEnabledNodes();
+        for (size_t i = 0; i < numEnabled; ++i)
         {
             EMotionFX::Node*    node        = skeleton->GetNode(actorInstance->GetEnabledNode(i));
-            const uint32        nodeIndex   = node->GetNodeIndex();
+            const size_t        nodeIndex   = node->GetNodeIndex();
 
             // render node orientation
             const EMotionFX::Transform worldTransform = pose->GetWorldSpaceTransform(nodeIndex);
@@ -877,8 +789,8 @@ namespace MCommon
 
             // skip root nodes for the line based skeleton rendering, you could also use curNode->IsRootNode()
             // but we use the parent index here, as we will reuse it
-            uint32 parentIndex = node->GetParentIndex();
-            if (parentIndex != MCORE_INVALIDINDEX32)
+            size_t parentIndex = node->GetParentIndex();
+            if (parentIndex != InvalidIndex)
             {
                 const AZ::Vector3 endPos = pose->GetWorldSpaceTransform(parentIndex).mPosition;
                 RenderLine(worldTransform.mPosition, endPos, color);
@@ -1639,7 +1551,7 @@ namespace MCommon
 
             // calculate the intersection points with the ground plane and create an AABB around those
             // if there is no intersection point then use the ray target as point, which is the projection onto the far plane basically
-            MCore::AABB aabb;
+            AZ::Aabb aabb = AZ::Aabb::CreateNull();
             AZ::Vector3 intersectionPoint;
             const AZ::Plane groundPlane = AZ::Plane::CreateFromNormalAndPoint(AZ::Vector3(0.0f, 0.0f, 1.0f), AZ::Vector3::CreateZero());
             for (AZ::u32 i = 0; i < 4; ++i)
@@ -1649,7 +1561,7 @@ namespace MCommon
                     corners[i] = intersectionPoint;
                 }
 
-                aabb.Encapsulate(corners[i]);
+                aabb.AddPoint(corners[i]);
             }
 
             // set the grid start and end values
@@ -1665,13 +1577,13 @@ namespace MCommon
 
 
     // get aabb which includes all actor instances
-    MCore::AABB RenderUtil::CalcSceneAABB()
+    AZ::Aabb RenderUtil::CalcSceneAabb()
     {
-        MCore::AABB finalAABB;
+        AZ::Aabb finalAABB = AZ::Aabb::CreateNull();
 
         // get the number of actor instances and iterate through them
-        const uint32 numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
-        for (uint32 i = 0; i < numActorInstances; ++i)
+        const size_t numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
+        for (size_t i = 0; i < numActorInstances; ++i)
         {
             // get the actor instance and update its transformations and meshes
             EMotionFX::ActorInstance* actorInstance = EMotionFX::GetActorManager().GetActorInstance(i);
@@ -1685,17 +1597,17 @@ namespace MCommon
             actorInstance->UpdateMeshDeformers(0.0f);
 
             // get the mesh based bounding box
-            MCore::AABB boundingBox;
-            actorInstance->CalcMeshBasedAABB(actorInstance->GetLODLevel(), &boundingBox);
+            AZ::Aabb boundingBox;
+            actorInstance->CalcMeshBasedAabb(actorInstance->GetLODLevel(), &boundingBox);
 
             // in case there aren't any meshes, use the node based bounding box
-            if (boundingBox.CheckIfIsValid() == false)
+            if (!boundingBox.IsValid())
             {
-                actorInstance->CalcNodeBasedAABB(&boundingBox);
+                actorInstance->CalcNodeBasedAabb(&boundingBox);
             }
 
             // make sure the actor instance is covered in our world bounding box
-            finalAABB.Encapsulate(boundingBox);
+            finalAABB.AddAabb(boundingBox);
         }
 
         return finalAABB;
@@ -1761,10 +1673,10 @@ namespace MCommon
     void RenderUtil::RenderTrajectory(EMotionFX::ActorInstance* actorInstance, const MCore::RGBAColor& innerColor, const MCore::RGBAColor& borderColor, float scale)
     {
         EMotionFX::Actor*   actor     = actorInstance->GetActor();
-        const uint32        nodeIndex = actor->GetMotionExtractionNodeIndex();
+        const size_t        nodeIndex = actor->GetMotionExtractionNodeIndex();
 
         // in case the motion extraction node is not set, return directly
-        if (nodeIndex == MCORE_INVALIDINDEX32)
+        if (nodeIndex == InvalidIndex)
         {
             return;
         }
@@ -1797,9 +1709,9 @@ namespace MCommon
         }
 
         // fast access to the trajectory trace particles
-        const MCore::Array<MCommon::RenderUtil::TrajectoryPathParticle>& traceParticles = trajectoryPath->mTraceParticles;
-        const int32 numTraceParticles = traceParticles.GetLength();
-        if (traceParticles.GetIsEmpty())
+        const AZStd::vector<MCommon::RenderUtil::TrajectoryPathParticle>& traceParticles = trajectoryPath->mTraceParticles;
+        const size_t numTraceParticles = traceParticles.size();
+        if (traceParticles.empty())
         {
             return;
         }
@@ -1869,7 +1781,7 @@ namespace MCommon
         MCore::RGBAColor color = innerColor;
 
         // render the path from the arrow head towards the tail
-        for (int32 i = numTraceParticles - 1; i > 0; i--)
+        for (size_t i = numTraceParticles - 1; i > 0; i--)
         {
             // calculate the normalized distance to the head, this value also represents the alpha value as it fades away while getting closer to the end
             float normalizedDistance = (float)i / numTraceParticles;
@@ -1944,7 +1856,7 @@ namespace MCommon
         }
 
         // remove all particles while keeping the data in memory
-        trajectoryPath->mTraceParticles.Clear(false);
+        trajectoryPath->mTraceParticles.clear();
     }
 
 
@@ -1971,18 +1883,18 @@ namespace MCommon
 
 
     // render node names for all enabled nodes
-    void RenderUtil::RenderNodeNames(EMotionFX::ActorInstance* actorInstance, Camera* camera, uint32 screenWidth, uint32 screenHeight, const MCore::RGBAColor& color, const MCore::RGBAColor& selectedColor, const AZStd::unordered_set<AZ::u32>& visibleJointIndices, const AZStd::unordered_set<AZ::u32>& selectedJointIndices)
+    void RenderUtil::RenderNodeNames(EMotionFX::ActorInstance* actorInstance, Camera* camera, uint32 screenWidth, uint32 screenHeight, const MCore::RGBAColor& color, const MCore::RGBAColor& selectedColor, const AZStd::unordered_set<size_t>& visibleJointIndices, const AZStd::unordered_set<size_t>& selectedJointIndices)
     {
         const EMotionFX::Actor* actor = actorInstance->GetActor();
         const EMotionFX::Skeleton* skeleton = actor->GetSkeleton();
         const EMotionFX::TransformData* transformData = actorInstance->GetTransformData();
         const EMotionFX::Pose* pose = transformData->GetCurrentPose();
-        const AZ::u32 numEnabledNodes = actorInstance->GetNumEnabledNodes();
+        const size_t numEnabledNodes = actorInstance->GetNumEnabledNodes();
 
-        for (uint32 i = 0; i < numEnabledNodes; ++i)
+        for (size_t i = 0; i < numEnabledNodes; ++i)
         {
             const EMotionFX::Node* joint = skeleton->GetNode(actorInstance->GetEnabledNode(i));
-            const AZ::u32 jointIndex = joint->GetNodeIndex();
+            const size_t jointIndex = joint->GetNodeIndex();
             const AZ::Vector3 worldPos = pose->GetWorldSpaceTransform(jointIndex).mPosition;
 
             // check if the current enabled node is along the visible nodes and render it if that is the case

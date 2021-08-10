@@ -127,7 +127,7 @@ namespace EMStudio
 
         header.mLayoutVersionHigh = 0;
         header.mLayoutVersionLow = 1;
-        header.mNumPlugins = GetPluginManager()->GetNumActivePlugins();
+        header.mNumPlugins = aznumeric_caster(GetPluginManager()->GetNumActivePlugins());
         if (file.write((char*)&header, sizeof(LayoutHeader)) == -1)
         {
             MCore::LogWarning("Failed to write layout header to layout file '%s'", filename);
@@ -339,8 +339,8 @@ namespace EMStudio
         GetMainWindow()->UpdateCreateWindowMenu(); // update Window->Create menu
 
         // Trigger the OnAfterLoadLayout callbacks.
-        const uint32 numActivePlugins = pluginManager->GetNumActivePlugins();
-        for (uint32 p = 0; p < numActivePlugins; ++p)
+        const size_t numActivePlugins = pluginManager->GetNumActivePlugins();
+        for (size_t p = 0; p < numActivePlugins; ++p)
         {
             GetPluginManager()->GetActivePlugin(p)->OnAfterLoadLayout();
         }

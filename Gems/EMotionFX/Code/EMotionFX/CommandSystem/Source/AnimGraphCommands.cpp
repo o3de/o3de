@@ -77,8 +77,8 @@ namespace CommandSystem
         }
 
         // Check if the anim graph got already loaded via the command system.
-        const AZ::u32 numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
-        for (AZ::u32 i = 0; i < numAnimGraphs; ++i)
+        const size_t numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
+        for (size_t i = 0; i < numAnimGraphs; ++i)
         {
             EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().GetAnimGraph(i);
             if (animGraph->GetFileNameString() == filename &&
@@ -312,7 +312,7 @@ namespace CommandSystem
             // remove all anim graphs, to do so we will iterate over them and issue an internal command for
             // that specific ID. This way we don't need to add complexity to this command to deal with all 
             // the anim graph's undo data
-            for (uint32 i = 0; i < EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();)
+            for (size_t i = 0; i < EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();)
             {
                 EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().GetAnimGraph(i);
                 if (!animGraph->GetIsOwnedByRuntime() && !animGraph->GetIsOwnedByAsset())
@@ -354,7 +354,7 @@ namespace CommandSystem
 
         // remove the given anim graph
         m_oldFileNamesAndIds.emplace_back(animGraph->GetFileName(), animGraph->GetID());
-        uint32 oldIndex = EMotionFX::GetAnimGraphManager().FindAnimGraphIndex(animGraph);
+        size_t oldIndex = EMotionFX::GetAnimGraphManager().FindAnimGraphIndex(animGraph);
 
         // iterate through all anim graph instances and remove the ones that depend on the anim graph to be removed
         for (size_t i = 0; i < EMotionFX::GetAnimGraphManager().GetNumAnimGraphInstances(); )
@@ -375,15 +375,9 @@ namespace CommandSystem
         EMotionFX::GetAnimGraphManager().RemoveAnimGraph(animGraph);
 
         // Reselect the anim graph at the index of the removed one if possible.
-        const int numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
-        for (int indexToSelect = oldIndex; indexToSelect >= 0; indexToSelect--)
+        const size_t numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
+        for (size_t indexToSelect = oldIndex; indexToSelect < numAnimGraphs; indexToSelect--)
         {
-            // Is the index to select in a valid range?
-            if (indexToSelect >= numAnimGraphs)
-            {
-                break;
-            }
-
             EMotionFX::AnimGraph* selectionCandidate = EMotionFX::GetAnimGraphManager().GetAnimGraph(indexToSelect);
             if (!selectionCandidate->GetIsOwnedByRuntime())
             {
@@ -521,8 +515,8 @@ namespace CommandSystem
         EMotionFX::MotionSystem* motionSystem = actorInstance->GetMotionSystem();
 
         // remove all motion instances from this motion system
-        const uint32 numMotionInstances = motionSystem->GetNumMotionInstances();
-        for (uint32 j = 0; j < numMotionInstances; ++j)
+        const size_t numMotionInstances = motionSystem->GetNumMotionInstances();
+        for (size_t j = 0; j < numMotionInstances; ++j)
         {
             EMotionFX::MotionInstance* motionInstance = motionSystem->GetMotionInstance(j);
             motionSystem->RemoveMotionInstance(motionInstance);
@@ -665,8 +659,8 @@ namespace CommandSystem
         EMotionFX::MotionSystem* motionSystem = actorInstance->GetMotionSystem();
 
         // remove all motion instances from this motion system
-        const uint32 numMotionInstances = motionSystem->GetNumMotionInstances();
-        for (uint32 j = 0; j < numMotionInstances; ++j)
+        const size_t numMotionInstances = motionSystem->GetNumMotionInstances();
+        for (size_t j = 0; j < numMotionInstances; ++j)
         {
             EMotionFX::MotionInstance* motionInstance = motionSystem->GetMotionInstance(j);
             motionSystem->RemoveMotionInstance(motionInstance);
@@ -791,8 +785,8 @@ namespace CommandSystem
             if (reload)
             {
                 // Remove all anim graphs with the given filename.
-                const AZ::u32 numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
-                for (AZ::u32 j = 0; j < numAnimGraphs; ++j)
+                const size_t numAnimGraphs = EMotionFX::GetAnimGraphManager().GetNumAnimGraphs();
+                for (size_t j = 0; j < numAnimGraphs; ++j)
                 {
                     const EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().GetAnimGraph(j);
 

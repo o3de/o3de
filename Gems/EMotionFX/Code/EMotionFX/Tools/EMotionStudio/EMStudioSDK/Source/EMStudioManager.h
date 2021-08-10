@@ -93,18 +93,18 @@ namespace EMStudio
         void LogInfo();
 
         // in case the array is empty, all nodes are shown
-        void SetVisibleJointIndices(const AZStd::unordered_set<AZ::u32>& visibleJointIndices);
-        const AZStd::unordered_set<AZ::u32>& GetVisibleJointIndices() const                                 { return m_visibleJointIndices; }
+        void SetVisibleJointIndices(const AZStd::unordered_set<size_t>& visibleJointIndices);
+        const AZStd::unordered_set<size_t>& GetVisibleJointIndices() const                                 { return m_visibleJointIndices; }
 
-        void SetSelectedJointIndices(const AZStd::unordered_set<AZ::u32>& selectedJointIndices);
-        const AZStd::unordered_set<AZ::u32>& GetSelectedJointIndices() const                                { return m_selectedJointIndices; }
+        void SetSelectedJointIndices(const AZStd::unordered_set<size_t>& selectedJointIndices);
+        const AZStd::unordered_set<size_t>& GetSelectedJointIndices() const                                { return m_selectedJointIndices; }
 
         Workspace* GetWorkspace()                                                               { return &mWorkspace; }
 
         // functions for adding/removing gizmos
         MCommon::TransformationManipulator* AddTransformationManipulator(MCommon::TransformationManipulator* manipulator);
         void RemoveTransformationManipulator(MCommon::TransformationManipulator* manipulator);
-        MCore::Array<MCommon::TransformationManipulator*>* GetTransformationManipulators();
+        AZStd::vector<MCommon::TransformationManipulator*>* GetTransformationManipulators();
 
         void ClearScene();  // remove animgraphs, animgraph instances and actors
 
@@ -115,7 +115,7 @@ namespace EMStudio
         MCORE_INLINE bool GetSkipSourceControlCommands()                                        { return m_skipSourceControlCommands; }
         MCORE_INLINE void SetSkipSourceControlCommands(bool skip)                               { m_skipSourceControlCommands = skip; }
     private:
-        MCore::Array<MCommon::TransformationManipulator*> mTransformationManipulators;
+        AZStd::vector<MCommon::TransformationManipulator*> mTransformationManipulators;
         QPointer<MainWindow>                mMainWindow;
         QApplication*                       mApp;
         PluginManager*                      mPluginManager;
@@ -123,8 +123,8 @@ namespace EMStudio
         NotificationWindowManager*          mNotificationWindowManager;
         CommandSystem::CommandManager*      mCommandManager;
         AZStd::string                       mCompileDate;
-        AZStd::unordered_set<AZ::u32>       m_visibleJointIndices;
-        AZStd::unordered_set<AZ::u32>       m_selectedJointIndices;
+        AZStd::unordered_set<size_t>       m_visibleJointIndices;
+        AZStd::unordered_set<size_t>       m_selectedJointIndices;
         Workspace                           mWorkspace;
         bool                                mAutoLoadLastWorkspace;
         AZStd::string                       mHTMLLinkString;
@@ -146,9 +146,9 @@ namespace EMStudio
             void OnPostExecuteCommand(MCore::CommandGroup* group, MCore::Command* command, const MCore::CommandLine& commandLine, bool wasSuccess, const AZStd::string& outResult) override;
             void OnPreExecuteCommandGroup(MCore::CommandGroup* group, bool undo) override                                                                                                       { MCORE_UNUSED(group); MCORE_UNUSED(undo); }
             void OnPostExecuteCommandGroup(MCore::CommandGroup* group, bool wasSuccess) override                                                                                                { MCORE_UNUSED(group); MCORE_UNUSED(wasSuccess); }
-            void OnAddCommandToHistory(uint32 historyIndex, MCore::CommandGroup* group, MCore::Command* command, const MCore::CommandLine& commandLine) override                                { MCORE_UNUSED(historyIndex); MCORE_UNUSED(group); MCORE_UNUSED(command); MCORE_UNUSED(commandLine); }
-            void OnRemoveCommand(uint32 historyIndex) override                                                                                                                                  { MCORE_UNUSED(historyIndex); }
-            void OnSetCurrentCommand(uint32 index) override                                                                                                                                     { MCORE_UNUSED(index); }
+            void OnAddCommandToHistory(size_t historyIndex, MCore::CommandGroup* group, MCore::Command* command, const MCore::CommandLine& commandLine) override                                { MCORE_UNUSED(historyIndex); MCORE_UNUSED(group); MCORE_UNUSED(command); MCORE_UNUSED(commandLine); }
+            void OnRemoveCommand(size_t historyIndex) override                                                                                                                                  { MCORE_UNUSED(historyIndex); }
+            void OnSetCurrentCommand(size_t index) override                                                                                                                                     { MCORE_UNUSED(index); }
         };
         EventProcessingCallback*    mEventProcessingCallback;
     };

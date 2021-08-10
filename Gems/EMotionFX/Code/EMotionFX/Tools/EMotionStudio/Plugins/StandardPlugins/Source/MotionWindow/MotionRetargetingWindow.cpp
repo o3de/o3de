@@ -67,8 +67,8 @@ namespace EMStudio
         MCore::CommandGroup commandGroup("Adjust default motion instances");
 
         // get the number of selected motions and iterate through them
-        const uint32 numMotions = selection.GetNumSelectedMotions();
-        for (uint32 i = 0; i < numMotions; ++i)
+        const size_t numMotions = selection.GetNumSelectedMotions();
+        for (size_t i = 0; i < numMotions; ++i)
         {
             MotionWindowPlugin::MotionTableEntry* entry = mMotionWindowPlugin->FindMotionEntryByID(selection.GetMotion(i)->GetID());
             if (entry == nullptr)
@@ -108,7 +108,7 @@ namespace EMStudio
         const CommandSystem::SelectionList& selection = CommandSystem::GetCommandManager()->GetCurrentSelection();
 
         // check if there actually is any motion selected
-        const uint32 numSelectedMotions = selection.GetNumSelectedMotions();
+        const size_t numSelectedMotions = selection.GetNumSelectedMotions();
         const bool isEnabled = (numSelectedMotions != 0);
 
         mMotionRetargetingButton->setEnabled(isEnabled);
@@ -120,7 +120,7 @@ namespace EMStudio
         }
 
         // iterate through the selected motions
-        for (uint32 i = 0; i < numSelectedMotions; ++i)
+        for (size_t i = 0; i < numSelectedMotions; ++i)
         {
             MotionWindowPlugin::MotionTableEntry* entry = mMotionWindowPlugin->FindMotionEntryByID(selection.GetMotion(i)->GetID());
             if (entry == nullptr)

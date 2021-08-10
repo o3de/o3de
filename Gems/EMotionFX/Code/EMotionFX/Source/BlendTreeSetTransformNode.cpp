@@ -38,7 +38,7 @@ namespace EMotionFX
         ActorInstance* actorInstance = mAnimGraphInstance->GetActorInstance();
         Actor* actor = actorInstance->GetActor();
 
-        m_nodeIndex = InvalidIndex32;
+        m_nodeIndex = InvalidIndex;
 
         const AZStd::string& jointName = transformNode->GetJointName();
         if (!jointName.empty())
@@ -106,7 +106,7 @@ namespace EMotionFX
 
         if (GetEMotionFX().GetIsInEditorMode())
         {
-            SetHasError(uniqueData, uniqueData->m_nodeIndex == MCORE_INVALIDINDEX32);
+            SetHasError(uniqueData, uniqueData->m_nodeIndex == InvalidIndex);
         }
 
         OutputAllIncomingNodes(animGraphInstance);
@@ -129,7 +129,7 @@ namespace EMotionFX
         if (GetIsEnabled())
         {
             // get the local transform from our node
-            if (uniqueData->m_nodeIndex != MCORE_INVALIDINDEX32)
+            if (uniqueData->m_nodeIndex != InvalidIndex)
             {
                 Transform outputTransform;
 

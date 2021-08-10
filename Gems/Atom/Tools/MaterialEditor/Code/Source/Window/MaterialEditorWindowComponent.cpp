@@ -6,8 +6,8 @@
  *
  */
 
-#include <Atom/Window/MaterialEditorWindowFactoryRequestBus.h>
-#include <Atom/Window/MaterialEditorWindowSettings.h>
+#include <AtomToolsFramework/Window/AtomToolsMainWindowFactoryRequestBus.h>
+#include <AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -33,25 +33,25 @@ namespace MaterialEditor
 
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->EBus<MaterialEditorWindowFactoryRequestBus>("MaterialEditorWindowFactoryRequestBus")
+            behaviorContext->EBus<AtomToolsFramework::AtomToolsMainWindowFactoryRequestBus>("MaterialEditorWindowAtomRequestBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Category, "Editor")
                 ->Attribute(AZ::Script::Attributes::Module, "materialeditor")
-                ->Event("CreateMaterialEditorWindow", &MaterialEditorWindowFactoryRequestBus::Events::CreateMaterialEditorWindow)
-                ->Event("DestroyMaterialEditorWindow", &MaterialEditorWindowFactoryRequestBus::Events::DestroyMaterialEditorWindow)
+                ->Event("CreateMaterialEditorWindow", &AtomToolsFramework::AtomToolsMainWindowFactoryRequestBus::Events::CreateMainWindow)
+                ->Event("DestroyMaterialEditorWindow", &AtomToolsFramework::AtomToolsMainWindowFactoryRequestBus::Events::DestroyMainWindow)
                 ;
 
-            behaviorContext->EBus<MaterialEditorWindowRequestBus>("MaterialEditorWindowRequestBus")
+            behaviorContext->EBus<AtomToolsFramework::AtomToolsMainWindowRequestBus>("MaterialEditorWindowRequestBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Category, "Editor")
                 ->Attribute(AZ::Script::Attributes::Module, "materialeditor")
-                ->Event("ActivateWindow", &MaterialEditorWindowRequestBus::Events::ActivateWindow)
-                ->Event("SetDockWidgetVisible", &MaterialEditorWindowRequestBus::Events::SetDockWidgetVisible)
-                ->Event("IsDockWidgetVisible", &MaterialEditorWindowRequestBus::Events::IsDockWidgetVisible)
-                ->Event("GetDockWidgetNames", &MaterialEditorWindowRequestBus::Events::GetDockWidgetNames)
-                ->Event("ResizeViewportRenderTarget", &MaterialEditorWindowRequestBus::Events::ResizeViewportRenderTarget)
-                ->Event("LockViewportRenderTargetSize", &MaterialEditorWindowRequestBus::Events::LockViewportRenderTargetSize)
-                ->Event("UnlockViewportRenderTargetSize", &MaterialEditorWindowRequestBus::Events::UnlockViewportRenderTargetSize)
+                ->Event("ActivateWindow", &AtomToolsFramework::AtomToolsMainWindowRequestBus::Events::ActivateWindow)
+                ->Event("SetDockWidgetVisible", &AtomToolsFramework::AtomToolsMainWindowRequestBus::Events::SetDockWidgetVisible)
+                ->Event("IsDockWidgetVisible", &AtomToolsFramework::AtomToolsMainWindowRequestBus::Events::IsDockWidgetVisible)
+                ->Event("GetDockWidgetNames", &AtomToolsFramework::AtomToolsMainWindowRequestBus::Events::GetDockWidgetNames)
+                ->Event("ResizeViewportRenderTarget", &AtomToolsFramework::AtomToolsMainWindowRequestBus::Events::ResizeViewportRenderTarget)
+                ->Event("LockViewportRenderTargetSize", &AtomToolsFramework::AtomToolsMainWindowRequestBus::Events::LockViewportRenderTargetSize)
+                ->Event("UnlockViewportRenderTargetSize", &AtomToolsFramework::AtomToolsMainWindowRequestBus::Events::UnlockViewportRenderTargetSize)
                 ;
         }
     }
@@ -80,26 +80,26 @@ namespace MaterialEditor
     void MaterialEditorWindowComponent::Activate()
     {
         AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
-        MaterialEditorWindowFactoryRequestBus::Handler::BusConnect();
+        AtomToolsFramework::AtomToolsMainWindowFactoryRequestBus::Handler::BusConnect();
         AzToolsFramework::SourceControlConnectionRequestBus::Broadcast(&AzToolsFramework::SourceControlConnectionRequests::EnableSourceControl, true);
     }
 
     void MaterialEditorWindowComponent::Deactivate()
     {
-        MaterialEditorWindowFactoryRequestBus::Handler::BusDisconnect();
+        AtomToolsFramework::AtomToolsMainWindowFactoryRequestBus::Handler::BusDisconnect();
         AzToolsFramework::EditorWindowRequestBus::Handler::BusDisconnect();
 
         m_window.reset();
     }
 
-    void MaterialEditorWindowComponent::CreateMaterialEditorWindow()
+    void MaterialEditorWindowComponent::CreateMainWindow()
     {
         m_materialEditorBrowserInteractions.reset(aznew MaterialEditorBrowserInteractions);
 
         m_window.reset(aznew MaterialEditorWindow);
     }
 
-    void MaterialEditorWindowComponent::DestroyMaterialEditorWindow()
+    void MaterialEditorWindowComponent::DestroyMainWindow()
     {
         m_window.reset();
     }

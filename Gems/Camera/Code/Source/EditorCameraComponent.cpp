@@ -38,40 +38,24 @@ namespace Camera
         EditorCameraComponentBase::Activate();
 
         AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(GetEntityId());
-        EditorCameraNotificationBus::Handler::BusConnect();
         EditorCameraViewRequestBus::Handler::BusConnect(GetEntityId());
-
-        AZ::EntityId currentViewEntity;
-        EditorCameraRequests::Bus::BroadcastResult(currentViewEntity, &EditorCameraRequests::GetCurrentViewEntityId);
-        if (currentViewEntity == GetEntityId())
-        {
-            m_controller.ActivateAtomView();
-            m_isActiveEditorCamera = true;
-        }
     }
 
     void EditorCameraComponent::Deactivate()
     {
-        if (m_isActiveEditorCamera)
-        {
-            m_controller.DeactivateAtomView();
-            m_isActiveEditorCamera = false;
-        }
-
         EditorCameraViewRequestBus::Handler::BusDisconnect(GetEntityId());
-        EditorCameraNotificationBus::Handler::BusDisconnect();
         AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
         EditorCameraComponentBase::Deactivate();
     }
 
     AZ::u32 EditorCameraComponent::OnConfigurationChanged()
     {
-        bool isActiveEditorCamera = m_isActiveEditorCamera;
+        bool isActiveEditorCamera = m_controller.IsActiveView();
         AZ::u32 configurationHash = EditorCameraComponentBase::OnConfigurationChanged();
         // If we were the active editor camera before, ensure we get reactivated after our controller gets disabled then re-enabled
         if (isActiveEditorCamera)
         {
-            EditorCameraRequests::Bus::Broadcast(&EditorCameraRequests::SetViewFromEntityPerspective, GetEntityId());
+            m_controller.MakeActiveView();
         }
         return configurationHash;
     }
@@ -136,25 +120,6 @@ namespace Camera
                 ->Attribute(AZ::Script::Attributes::Module, "camera")
                 ->Event("ToggleCameraAsActiveView", &EditorCameraViewRequests::ToggleCameraAsActiveView)
                 ;
-        }
-    }
-
-    void EditorCameraComponent::OnViewportViewEntityChanged([[maybe_unused]] const AZ::EntityId& newViewId)
-    {
-        if (newViewId == GetEntityId())
-        {
-            if (!m_isActiveEditorCamera)
-            {
-                m_controller.ActivateAtomView();
-                m_isActiveEditorCamera = true;
-                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh, AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
-            }
-        }
-        else if (m_isActiveEditorCamera)
-        {
-            m_controller.DeactivateAtomView();
-            m_isActiveEditorCamera = false;
-            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&AzToolsFramework::PropertyEditorGUIMessages::RequestRefresh, AzToolsFramework::PropertyModificationRefreshLevel::Refresh_AttributesAndValues);
         }
     }
 

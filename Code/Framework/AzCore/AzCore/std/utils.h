@@ -294,7 +294,7 @@ namespace AZStd
             T& m_v;
             constexpr addr_impl_ref(T& v)
                 : m_v(v) {}
-            constexpr addr_impl_ref& operator=(const addr_impl_ref& v) { m_v = v; }
+            constexpr addr_impl_ref& operator=(const addr_impl_ref& v) { m_v = v; return *this; }
             constexpr operator T& () const { return m_v; }
         };
 

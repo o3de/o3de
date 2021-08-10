@@ -7,7 +7,7 @@
  */
 
 #include "ScaleManipulator.h"
-
+#include <MCore/Source/PlaneEq.h>
 
 namespace MCommon
 {

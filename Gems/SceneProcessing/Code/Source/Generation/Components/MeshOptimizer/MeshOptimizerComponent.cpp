@@ -651,7 +651,7 @@ namespace AZ::SceneGenerationComponents
                 const auto& faceInfo = optimizedMesh->GetFaceInfo(optimizedMesh->GetFaceCount() - 1);
                 AZStd::copy(AZStd::begin(faceInfo.vertexIndex), AZStd::end(faceInfo.vertexIndex), AZStd::inserter(usedIndexes, usedIndexes.begin()));
             }
-            indexOffset += usedIndexes.size();
+            indexOffset += static_cast<unsigned int>(usedIndexes.size());
         }
 
         AZStd::unique_ptr<SkinWeightData> optimizedSkinWeights;

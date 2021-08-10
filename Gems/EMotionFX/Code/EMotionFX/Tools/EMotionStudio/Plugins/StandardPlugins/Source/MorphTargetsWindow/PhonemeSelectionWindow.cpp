@@ -133,7 +133,7 @@ namespace EMStudio
 
 
     // constructor
-    PhonemeSelectionWindow::PhonemeSelectionWindow(EMotionFX::Actor* actor, uint32 lodLevel, EMotionFX::MorphTarget* morphTarget, QWidget* parent)
+    PhonemeSelectionWindow::PhonemeSelectionWindow(EMotionFX::Actor* actor, size_t lodLevel, EMotionFX::MorphTarget* morphTarget, QWidget* parent)
         : QDialog(parent)
     {
         // set the initial size
@@ -327,14 +327,14 @@ namespace EMStudio
         mSelectedPhonemeSetsTable->clear();
 
         // get number of morph targets
-        const uint32 numMorphTargets = mMorphSetup->GetNumMorphTargets();
+        const size_t numMorphTargets = mMorphSetup->GetNumMorphTargets();
         const uint32 numPhonemeSets  = mMorphTarget->GetNumAvailablePhonemeSets();
-        uint32 insertPosition = 0;
-        for (uint32 i = 1; i < numPhonemeSets; ++i)
+        int insertPosition = 0;
+        for (int i = 1; i < numPhonemeSets; ++i)
         {
             // check if another morph target already has this phoneme set.
             bool phonemeSetFound = false;
-            for (uint32 j = 0; j < numMorphTargets; ++j)
+            for (size_t j = 0; j < numMorphTargets; ++j)
             {
                 EMotionFX::MorphTarget* morphTarget = mMorphSetup->GetMorphTarget(j);
                 if (morphTarget->GetIsPhonemeSetEnabled((EMotionFX::MorphTarget::EPhonemeSet)(1 << i)))
@@ -381,9 +381,9 @@ namespace EMStudio
         AzFramework::StringFunc::Tokenize(selectedPhonemeSets.c_str(), splittedPhonemeSets, MCore::CharacterConstants::comma, true /* keep empty strings */, true /* keep space strings */);
 
 
-        const uint32 numSelectedPhonemeSets = static_cast<uint32>(splittedPhonemeSets.size());
+        const int numSelectedPhonemeSets = aznumeric_caster(splittedPhonemeSets.size());
         mSelectedPhonemeSetsTable->setRowCount(numSelectedPhonemeSets);
-        for (uint32 i = 0; i < numSelectedPhonemeSets; ++i)
+        for (int i = 0; i < numSelectedPhonemeSets; ++i)
         {
             // create dummy table widget item.
             const EMotionFX::MorphTarget::EPhonemeSet phonemeSet = mMorphTarget->FindPhonemeSet(splittedPhonemeSets[i].c_str());
@@ -425,7 +425,7 @@ namespace EMStudio
         QTableWidget* table = (QTableWidget*)sender();
 
         // disable/enable buttons
-        bool selected = (table->selectedItems().size() > 0);
+        bool selected = !table->selectedItems().empty();
         if (table == mPossiblePhonemeSetsTable)
         {
             mAddPhonemesButton->setDisabled(!selected);
@@ -438,8 +438,8 @@ namespace EMStudio
         }
 
         // adjust selection state of the cell widgetsmActor
-        const uint32 numRows = table->rowCount();
-        for (uint32 i = 0; i < numRows; ++i)
+        const int numRows = table->rowCount();
+        for (int i = 0; i < numRows; ++i)
         {
             // get the table widget item and check if it exists
             QTableWidgetItem* item  = table->item(i, 0);
@@ -462,21 +462,20 @@ namespace EMStudio
     void PhonemeSelectionWindow::RemoveSelectedPhonemeSets()
     {
         QList<QTableWidgetItem*> selectedItems = mSelectedPhonemeSetsTable->selectedItems();
-        const uint32 numSelectedItems = selectedItems.size();
-        if (numSelectedItems == 0)
+        if (selectedItems.empty())
         {
             return;
         }
 
         // create phoneme sets string from the selected phoneme sets
         AZStd::string phonemeSets;
-        for (uint32 i = 0; i < numSelectedItems; ++i)
+        for (const QTableWidgetItem* selectedItem : selectedItems)
         {
-            phonemeSets += AZStd::string::format("%s,", selectedItems[i]->text().toUtf8().data());
+            phonemeSets += AZStd::string::format("%s,", selectedItem->text().toUtf8().data());
         }
 
         // call command to remove selected the phoneme sets
-        const AZStd::string command = AZStd::string::format("AdjustMorphTarget -actorID %i -lodLevel %i -name \"%s\" -phonemeAction \"remove\" -phonemeSets \"%s\"", mActor->GetID(), mLODLevel,  mMorphTarget->GetName(), phonemeSets.c_str());
+        const AZStd::string command = AZStd::string::format("AdjustMorphTarget -actorID %i -lodLevel %zu -name \"%s\" -phonemeAction \"remove\" -phonemeSets \"%s\"", mActor->GetID(), mLODLevel,  mMorphTarget->GetName(), phonemeSets.c_str());
 
         AZStd::string result;
         if (!EMStudio::GetCommandManager()->ExecuteCommand(command, result))
@@ -494,21 +493,20 @@ namespace EMStudio
     void PhonemeSelectionWindow::AddSelectedPhonemeSets()
     {
         QList<QTableWidgetItem*> selectedItems = mSelectedPhonemeSetsTable->selectedItems();
-        const uint32 numSelectedItems = selectedItems.size();
-        if (numSelectedItems == 0)
+        if (selectedItems.empty())
         {
             return;
         }
 
         // create phoneme sets string from the selected phoneme sets
         AZStd::string phonemeSets;
-        for (uint32 i = 0; i < numSelectedItems; ++i)
+        for (const QTableWidgetItem* selectedItem : selectedItems)
         {
-            phonemeSets += AZStd::string::format("%s,", selectedItems[i]->text().toUtf8().data());
+            phonemeSets += AZStd::string::format("%s,", selectedItem->text().toUtf8().data());
         }
 
         // call command to add the selected phoneme sets
-        const AZStd::string command = AZStd::string::format("AdjustMorphTarget -actorID %i -lodLevel %i -name \"%s\" -phonemeAction \"add\" -phonemeSets \"%s\"", mActor->GetID(), mLODLevel, mMorphTarget->GetName(), phonemeSets.c_str());
+        const AZStd::string command = AZStd::string::format("AdjustMorphTarget -actorID %i -lodLevel %zu -name \"%s\" -phonemeAction \"add\" -phonemeSets \"%s\"", mActor->GetID(), mLODLevel, mMorphTarget->GetName(), phonemeSets.c_str());
 
         AZStd::string result;
         if (!EMStudio::GetCommandManager()->ExecuteCommand(command, result))
@@ -525,7 +523,7 @@ namespace EMStudio
     // clear the selected phoneme sets
     void PhonemeSelectionWindow::ClearSelectedPhonemeSets()
     {
-        const AZStd::string command = AZStd::string::format("AdjustMorphTarget -actorID %i -lodLevel %i -name \"%s\" -phonemeAction \"clear\"", mActor->GetID(), mLODLevel, mMorphTarget->GetName());
+        const AZStd::string command = AZStd::string::format("AdjustMorphTarget -actorID %i -lodLevel %zu -name \"%s\" -phonemeAction \"clear\"", mActor->GetID(), mLODLevel, mMorphTarget->GetName());
 
         AZStd::string result;
         if (!EMStudio::GetCommandManager()->ExecuteCommand(command, result))

@@ -45,7 +45,7 @@ namespace RenderGL
         bool                            mAttributesUpdated;
 
         GLSLShader*                     mActiveShader;
-        MCore::Array<GLSLShader*>       mShaders;
+        AZStd::vector<GLSLShader*>       mShaders;
         AZ::Matrix4x4                   mBoneMatrices[200];
         EMotionFX::Material*            mMaterial;
 

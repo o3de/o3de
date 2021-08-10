@@ -68,8 +68,8 @@ namespace EMotionFX
             Pose& outputPose = outputAnimGraphPose->GetPose();
 
             // Output the assigned value of the node for each joint so that we can identify from which input each joint is coming from.
-            const AZ::u32 numJoints = outputPose.GetNumTransforms();
-            for (AZ::u32 i = 0; i < numJoints; ++i)
+            const size_t numJoints = outputPose.GetNumTransforms();
+            for (size_t i = 0; i < numJoints; ++i)
             {
                 Transform transform = outputPose.GetLocalSpaceTransform(i);
                 transform.mPosition = AZ::Vector3(m_identificationValue, m_identificationValue, m_identificationValue);
@@ -113,7 +113,7 @@ namespace EMotionFX
             return result;
         }
 
-        AZ::Outcome<size_t> FindMaskIndexForJoint(AZ::u32 jointIndex) const
+        AZ::Outcome<size_t> FindMaskIndexForJoint(size_t jointIndex) const
         {
             const MaskNodeTestParam& param = GetParam();
             Skeleton* skeleton = m_actor->GetSkeleton();
@@ -216,12 +216,12 @@ namespace EMotionFX
         GetEMotionFX().Update(0.0f);
 
         Skeleton* skeleton = m_actor->GetSkeleton();
-        const AZ::u32 numJoints = skeleton->GetNumNodes();
+        const size_t numJoints = skeleton->GetNumNodes();
         TransformData* transformData = m_actorInstance->GetTransformData();
         Pose* pose = transformData->GetCurrentPose();
 
         // Iterate through the joints and make sure their transforms originate according to the mask setup.
-        for (AZ::u32 jointIndex = 0; jointIndex < numJoints; jointIndex++)
+        for (size_t jointIndex = 0; jointIndex < numJoints; jointIndex++)
         {
             const Node* joint = skeleton->GetNode(jointIndex);
             const char* jointName = joint->GetName();

@@ -8,5 +8,6 @@
     "canonical_tags": ["Gem"],
     "user_tags": ["Gameplay", "Network", "Framework"],
     "icon_path": "preview.png",
-    "requirements": ""
+    "requirements": "",
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/network/twitch/metastream/"
 }

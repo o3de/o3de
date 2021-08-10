@@ -17,63 +17,16 @@ namespace EMotionFX
     AZ_CLASS_ALLOCATOR_IMPL(NodeGroup, NodeAllocator, 0)
 
 
-    // default constructor
-    NodeGroup::NodeGroup()
-        : BaseObject()
+    NodeGroup::NodeGroup(const AZStd::string& groupName, uint16 numNodes, bool enabledOnDefault)
+        : mName(groupName)
+        , mNodes(numNodes)
+        , mEnabledOnDefault(enabledOnDefault)
     {
-        SetIsEnabledOnDefault(true);
-    }
-
-
-    // extended constructor
-    NodeGroup::NodeGroup(const char* groupName, bool enabledOnDefault)
-        : BaseObject()
-    {
-        SetName(groupName);
-        SetIsEnabledOnDefault(enabledOnDefault);
-    }
-
-
-    // another extended constructor
-    NodeGroup::NodeGroup(const char* groupName, uint16 numNodes, bool enabledOnDefault)
-        : BaseObject()
-    {
-        SetName(groupName);
-        SetNumNodes(numNodes);
-        SetIsEnabledOnDefault(enabledOnDefault);
-    }
-
-
-    // destructor
-    NodeGroup::~NodeGroup()
-    {
-        mNodes.Clear();
-    }
-
-
-    // create
-    NodeGroup* NodeGroup::Create()
-    {
-        return aznew NodeGroup();
-    }
-
-
-    // create
-    NodeGroup* NodeGroup::Create(const char* groupName, bool enabledOnDefault)
-    {
-        return aznew NodeGroup(groupName, enabledOnDefault);
-    }
-
-
-    // create
-    NodeGroup* NodeGroup::Create(const char* groupName, uint16 numNodes, bool enabledOnDefault)
-    {
-        return aznew NodeGroup(groupName, numNodes, enabledOnDefault);
     }
 
 
     // set the name of the group
-    void NodeGroup::SetName(const char* groupName)
+    void NodeGroup::SetName(const AZStd::string& groupName)
     {
         mName = groupName;
     }
@@ -115,7 +68,7 @@ namespace EMotionFX
 
 
     // get the node number of a given index
-    uint16 NodeGroup::GetNode(uint16 index)
+    uint16 NodeGroup::GetNode(uint16 index) const
     {
         return mNodes[index];
     }

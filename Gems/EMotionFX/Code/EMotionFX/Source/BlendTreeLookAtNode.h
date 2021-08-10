@@ -65,7 +65,7 @@ namespace EMotionFX
         public:
             AZ::Quaternion mRotationQuat = AZ::Quaternion::CreateIdentity();
             float mTimeDelta = 0.0f;
-            uint32 mNodeIndex = InvalidIndex32;
+            size_t mNodeIndex = InvalidIndex;
             bool mFirstUpdate = true;
         };
 

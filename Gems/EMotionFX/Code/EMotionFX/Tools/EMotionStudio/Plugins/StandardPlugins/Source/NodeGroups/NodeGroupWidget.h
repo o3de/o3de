@@ -13,6 +13,7 @@
 #include <MysticQt/Source/DialogStack.h>
 #include "../../../../EMStudioSDK/Source/DockWidgetPlugin.h"
 #include "../../../../EMStudioSDK/Source/NodeSelectionWindow.h"
+#include <EMotionFX/CommandSystem/Source/NodeGroupCommands.h>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QLineEdit)
@@ -44,7 +45,7 @@ namespace EMStudio
     public slots:
         void SelectNodesButtonPressed();
         void RemoveNodesButtonPressed();
-        void NodeSelectionFinished(MCore::Array<SelectionItem> selectionList);
+        void NodeSelectionFinished(const AZStd::vector<SelectionItem>& selectionList);
         void OnItemSelectionChanged();
 
     private:
@@ -58,7 +59,7 @@ namespace EMStudio
         CommandSystem::SelectionList    mNodeSelectionList;
         EMotionFX::NodeGroup*           mNodeGroup;
         uint16                          mNodeGroupIndex;
-        AZStd::string                   mNodeAction;
+        CommandSystem::CommandAdjustNodeGroup::NodeAction mNodeAction;
 
         // widgets
         QTableWidget*                   mNodeTable;

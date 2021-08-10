@@ -28,7 +28,7 @@ namespace EMStudio
      * Example:
      * connect( mParameterSelectionWindow,                                              SIGNAL(rejected()),             this, SLOT(UserWantsToCancel_1()) );
      * connect( mParameterSelectionWindow->GetNodeHierarchyWidget()->GetTreeWidget(),   SIGNAL(itemSelectionChanged()), this, SLOT(SelectionChanged_2()) );
-     * connect( mParameterSelectionWindow->GetNodeHierarchyWidget(),                    SIGNAL(OnSelectionDone(MCore::Array<SelectionItem>)), this, SLOT(FinishedSelectionAndPressedOK_3(MCore::Array<SelectionItem>)) );
+     * connect( mParameterSelectionWindow->GetNodeHierarchyWidget(),                    SIGNAL(OnSelectionDone(AZStd::vector<SelectionItem>)), this, SLOT(FinishedSelectionAndPressedOK_3(AZStd::vector<SelectionItem>)) );
     */
     class ParameterSelectionWindow
         : public QDialog

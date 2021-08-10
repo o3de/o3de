@@ -243,7 +243,7 @@ namespace EMStudio
         mMotionTable->setSortingEnabled(false);
 
         // insert the new row
-        const uint32 rowIndex = 0;
+        const int rowIndex = 0;
         mMotionTable->insertRow(rowIndex);
         mMotionTable->setRowHeight(rowIndex, 21);
 
@@ -314,8 +314,8 @@ namespace EMStudio
     uint32 MotionListWindow::FindRowByMotionID(uint32 motionID)
     {
         // iterate through the rows and compare the motion IDs
-        const uint32 rowCount = mMotionTable->rowCount();
-        for (uint32 i = 0; i < rowCount; ++i)
+        const int rowCount = mMotionTable->rowCount();
+        for (int i = 0; i < rowCount; ++i)
         {
             if (GetMotionID(i) == motionID)
             {
@@ -469,7 +469,7 @@ namespace EMStudio
         mMotionTable->clearSelection();
 
         // iterate through the selected motions and select the corresponding rows in the table widget
-        const uint32 numSelectedMotions = selectionList.GetNumSelectedMotions();
+        const size_t numSelectedMotions = selectionList.GetNumSelectedMotions();
         for (uint32 i = 0; i < numSelectedMotions; ++i)
         {
             // get the index of the motion inside the motion manager (which is equal to the row in the motion table) and select the row at the motion index
@@ -531,14 +531,14 @@ namespace EMStudio
         const QList<QTableWidgetItem*> selectedItems = mMotionTable->selectedItems();
 
         // get the number of selected items
-        const uint32 numSelectedItems = selectedItems.count();
+        const int numSelectedItems = selectedItems.count();
 
         // filter the items
-        AZStd::vector<uint32> rowIndices;
+        AZStd::vector<int> rowIndices;
         rowIndices.reserve(numSelectedItems);
-        for (size_t i = 0; i < numSelectedItems; ++i)
+        for (int i = 0; i < numSelectedItems; ++i)
         {
-            const uint32 rowIndex = selectedItems[static_cast<uint32>(i)]->row();
+            const int rowIndex = selectedItems[i]->row();
             if (AZStd::find(rowIndices.begin(), rowIndices.end(), rowIndex) == rowIndices.end())
             {
                 rowIndices.push_back(rowIndex);
@@ -549,22 +549,20 @@ namespace EMStudio
         mSelectedMotionIDs.clear();
 
         // get the number of selected items and iterate through them
-        const size_t numSelectedRows = rowIndices.size();
-        mSelectedMotionIDs.reserve(numSelectedRows);
-        for (size_t i = 0; i < numSelectedRows; ++i)
+        mSelectedMotionIDs.reserve(rowIndices.size());
+        for (const int rowIndex : rowIndices)
         {
-            mSelectedMotionIDs.push_back(GetMotionID(rowIndices[i]));
+            mSelectedMotionIDs.push_back(GetMotionID(rowIndex));
         }
 
         // unselect all motions
         GetCommandManager()->GetCurrentSelection().ClearMotionSelection();
 
         // get the number of selected motions and iterate through them
-        const size_t numSelectedMotions = mSelectedMotionIDs.size();
-        for (size_t i = 0; i < numSelectedMotions; ++i)
+        for (uint32 selectedMotionID : mSelectedMotionIDs)
         {
             // find the motion by name in the motion library and select it
-            EMotionFX::Motion* motion = EMotionFX::GetMotionManager().FindMotionByID(mSelectedMotionIDs[i]);
+            EMotionFX::Motion* motion = EMotionFX::GetMotionManager().FindMotionByID(selectedMotionID);
             if (motion)
             {
                 GetCommandManager()->GetCurrentSelection().AddMotion(motion);
@@ -583,7 +581,7 @@ namespace EMStudio
     {
         // get the current selection
         const CommandSystem::SelectionList& selection = GetCommandManager()->GetCurrentSelection();
-        const uint32 numSelectedMotions = selection.GetNumSelectedMotions();
+        const size_t numSelectedMotions = selection.GetNumSelectedMotions();
         if (numSelectedMotions == 0)
         {
             return;
@@ -607,7 +605,6 @@ namespace EMStudio
 
         // Set the command group name based on the number of motions to add.
         AZStd::string groupName;
-        const size_t numSelectedMotionSets = selectedMotionSets.size();
         if (numSelectedMotions > 1)
         {
             groupName = "Add motions in motion sets";
@@ -621,16 +618,14 @@ namespace EMStudio
 
         // add in each selected motion set
         AZStd::string motionName;
-        for (uint32 m = 0; m < numSelectedMotionSets; ++m)
+        for (const EMotionFX::MotionSet* motionSet : selectedMotionSets)
         {
-            EMotionFX::MotionSet* motionSet = selectedMotionSets[m];
-
             // Build a list of unique string id values from all motion set entries.
             AZStd::vector<AZStd::string> idStrings;
             motionSet->BuildIdStringList(idStrings);
 
             // add each selected motion in the motion set
-            for (uint32 i = 0; i < numSelectedMotions; ++i)
+            for (size_t i = 0; i < numSelectedMotions; ++i)
             {
                 // remove the media root folder from the absolute motion filename so that we get the relative one to the media root folder
                 motionName = selection.GetMotion(i)->GetFileName();
@@ -654,7 +649,7 @@ namespace EMStudio
         const CommandSystem::SelectionList& selection = GetCommandManager()->GetCurrentSelection();
 
         // iterate through the selected motions and show them
-        for (uint32 i = 0; i < selection.GetNumSelectedMotions(); ++i)
+        for (size_t i = 0; i < selection.GetNumSelectedMotions(); ++i)
         {
             EMotionFX::Motion* motion = selection.GetMotion(i);
             AzQtComponents::ShowFileOnDesktop(motion->GetFileName());
@@ -777,8 +772,8 @@ namespace EMStudio
 
         // get the number of selected motions and return directly if there are no motions selected
         AZStd::string textData, command;
-        const uint32 numMotions = selectionList.GetNumSelectedMotions();
-        for (uint32 i = 0; i < numMotions; ++i)
+        const size_t numMotions = selectionList.GetNumSelectedMotions();
+        for (size_t i = 0; i < numMotions; ++i)
         {
             EMotionFX::Motion* motion = selectionList.GetMotion(i);
 

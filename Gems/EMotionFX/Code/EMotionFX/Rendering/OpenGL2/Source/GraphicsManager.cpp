@@ -403,23 +403,22 @@ namespace RenderGL
     // LoadShader
     GLSLShader* GraphicsManager::LoadShader(AZ::IO::PathView vertexFileName, AZ::IO::PathView pixelFileName)
     {
-        MCore::Array<AZStd::string> defines;
+        AZStd::vector<AZStd::string> defines;
         return LoadShader(vertexFileName, pixelFileName, defines);
     }
 
 
     // LoadShader
-    GLSLShader* GraphicsManager::LoadShader(AZ::IO::PathView vertexFileName, AZ::IO::PathView pixelFileName, MCore::Array<AZStd::string>& defines)
+    GLSLShader* GraphicsManager::LoadShader(AZ::IO::PathView vertexFileName, AZ::IO::PathView pixelFileName, AZStd::vector<AZStd::string>& defines)
     {
         const AZ::IO::Path vertexPath {vertexFileName.empty() ? AZ::IO::Path{} : mShaderPath / vertexFileName};
         const AZ::IO::Path pixelPath {pixelFileName.empty() ? AZ::IO::Path{} : mShaderPath / pixelFileName};
 
         // construct the lookup string for the shader cache
         AZStd::string cacheLookupStr = vertexPath.Native() + pixelPath.Native();
-        const uint32 numDefines = defines.GetLength();
-        for (uint32 n = 0; n < numDefines; n++)
+        for (const AZStd::string& define : defines)
         {
-            cacheLookupStr += AZStd::string::format("#%s", defines[n].c_str());
+            cacheLookupStr += AZStd::string::format("#%s", define.c_str());
         }
 
         // check if the shader is already in the cache

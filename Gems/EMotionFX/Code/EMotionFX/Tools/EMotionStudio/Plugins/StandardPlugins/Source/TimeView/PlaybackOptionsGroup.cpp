@@ -81,7 +81,7 @@ namespace EMStudio
         {
             const CommandSystem::SelectionList& selection = CommandSystem::GetCommandManager()->GetCurrentSelection();
 
-            const uint32 numSelectedMotions = selection.GetNumSelectedMotions();
+            const size_t numSelectedMotions = selection.GetNumSelectedMotions();
             const bool isEnabled = (numSelectedMotions == 1);
 
             m_loopForeverAction->setEnabled(isEnabled);
@@ -98,8 +98,8 @@ namespace EMStudio
                 MotionWindowPlugin* motionWindowPlugin = TimeViewToolBar::GetMotionWindowPlugin();
                 if (motionWindowPlugin)
                 {
-                    const uint32 numMotions = selection.GetNumSelectedMotions();
-                    for (uint32 i = 0; i < numMotions; ++i)
+                    const size_t numMotions = selection.GetNumSelectedMotions();
+                    for (size_t i = 0; i < numMotions; ++i)
                     {
                         MotionWindowPlugin::MotionTableEntry* entry = motionWindowPlugin->FindMotionEntryByID(selection.GetMotion(i)->GetID());
                         if (!entry)

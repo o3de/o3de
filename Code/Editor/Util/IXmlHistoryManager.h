@@ -37,7 +37,7 @@ struct IXmlHistoryEventListener
         eHET_HistoryGroupAdded,
         eHET_HistoryGroupRemoved,
     };
-    virtual void OnEvent(EHistoryEventType event, void* pData = NULL) = 0;
+    virtual void OnEvent(EHistoryEventType event, void* pData = nullptr) = 0;
 };
 
 struct IXmlHistoryView

@@ -409,7 +409,7 @@ void UiParticleEmitterComponent::SetSpriteSheetCellIndex(int spriteSheetIndex)
 
     if (m_sprite)
     {
-        const AZ::u32 numCells = m_sprite->GetSpriteSheetCells().size();
+        const AZ::u32 numCells = static_cast<AZ::u32>(m_sprite->GetSpriteSheetCells().size());
         m_spriteSheetCellIndex = AZ::GetMin(numCells, m_spriteSheetCellIndex);
         m_spriteSheetCellEndIndex = AZ::GetMax(m_spriteSheetCellIndex, m_spriteSheetCellEndIndex);
     }
@@ -428,7 +428,7 @@ void UiParticleEmitterComponent::SetSpriteSheetCellEndIndex(int spriteSheetEndIn
 
     if (m_sprite)
     {
-        const AZ::u32 numCells = m_sprite->GetSpriteSheetCells().size();
+        const AZ::u32 numCells = static_cast<AZ::u32>(m_sprite->GetSpriteSheetCells().size());
         m_spriteSheetCellEndIndex = AZ::GetMin(numCells, m_spriteSheetCellEndIndex);
         m_spriteSheetCellIndex = AZ::GetMin(m_spriteSheetCellIndex, m_spriteSheetCellEndIndex);
     }
@@ -759,7 +759,7 @@ void UiParticleEmitterComponent::InGamePostActivate()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiParticleEmitterComponent::Render(LyShine::IRenderGraph* renderGraph)
 {
-    AZ::u32 particlesToRender = AZ::GetMin<AZ::u32>(m_particleContainer.size(), m_particleBufferSize);
+    AZ::u32 particlesToRender = AZ::GetMin<AZ::u32>(static_cast<AZ::u32>(m_particleContainer.size()), m_particleBufferSize);
     if (particlesToRender == 0)
     {
         return;
@@ -1943,7 +1943,7 @@ void UiParticleEmitterComponent::OnSpritePathnameChange()
     m_spriteSheetCellIndex = 0;
     if (IsSpriteTypeSpriteSheet())
     {
-        m_spriteSheetCellEndIndex = m_sprite->GetSpriteSheetCells().size() - 1;
+        m_spriteSheetCellEndIndex = static_cast<AZ::u32>(m_sprite->GetSpriteSheetCells().size() - 1);
     }
 }
 
@@ -2086,7 +2086,7 @@ UiParticleEmitterComponent::AZu32ComboBoxVec UiParticleEmitterComponent::Populat
     // There may not be a sprite loaded for this component
     if (m_sprite)
     {
-        const AZ::u32 numCells = m_sprite->GetSpriteSheetCells().size();
+        const AZ::u32 numCells = static_cast<AZ::u32>(m_sprite->GetSpriteSheetCells().size());
 
         if (numCells != 0)
         {

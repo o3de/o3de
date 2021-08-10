@@ -8,6 +8,7 @@
 
 // include the required headers
 #include "CommandSyntax.h"
+#include <AzCore/std/algorithm.h>
 #include "LogManager.h"
 #include "Algorithms.h"
 #include "StringConversions.h"
@@ -15,7 +16,7 @@
 namespace MCore
 {
     // the constructor
-    CommandSyntax::CommandSyntax(uint32 numParamsToReserve)
+    CommandSyntax::CommandSyntax(size_t numParamsToReserve)
     {
         ReserveParameters(numParamsToReserve);
     }
@@ -29,7 +30,7 @@ namespace MCore
 
 
     // reserve parameter space
-    void CommandSyntax::ReserveParameters(uint32 numParamsToReserve)
+    void CommandSyntax::ReserveParameters(size_t numParamsToReserve)
     {
         if (numParamsToReserve > 0)
         {
@@ -65,28 +66,28 @@ namespace MCore
 
 
     // check if this param is a required one or not
-    bool CommandSyntax::GetParamRequired(uint32 index) const
+    bool CommandSyntax::GetParamRequired(size_t index) const
     {
         return m_parameters[index].mRequired;
     }
 
 
     // get the parameter name
-    const char* CommandSyntax::GetParamName(uint32 index) const
+    const char* CommandSyntax::GetParamName(size_t index) const
     {
         return m_parameters[index].mName.c_str();
     }
 
 
     // get the parameter description
-    const char* CommandSyntax::GetParamDescription(uint32 index) const
+    const char* CommandSyntax::GetParamDescription(size_t index) const
     {
         return m_parameters[index].mDescription.c_str();
     }
 
 
     // get the parameter type string
-    const char* CommandSyntax::GetParamTypeString(uint32 index) const
+    const char* CommandSyntax::GetParamTypeString(size_t index) const
     {
         return GetParamTypeString(m_parameters[index]);
     }
@@ -135,29 +136,23 @@ namespace MCore
     // check if we have a given parameter with a given name in this syntax
     bool CommandSyntax::CheckIfHasParameter(const char* parameter) const
     {
-        return (FindParameterIndex(parameter) != MCORE_INVALIDINDEX32);
+        return (FindParameterIndex(parameter) != InvalidIndex);
     }
 
 
     // find the parameter index of a given parameter name
-    uint32 CommandSyntax::FindParameterIndex(const char* parameter) const
+    size_t CommandSyntax::FindParameterIndex(const char* parameter) const
     {
-        // try to find the parameter with the given name
-        const size_t numParams = m_parameters.size();
-        for (size_t i = 0; i < numParams; ++i)
+        const auto foundParameter = AZStd::find_if(begin(m_parameters), end(m_parameters), [parameter](const Parameter& p)
         {
-            if (AzFramework::StringFunc::Equal(m_parameters[i].mName.c_str(), parameter, false /* no case */))
-            {
-                return static_cast<uint32>(i);
-            }
-        }
-
-        return MCORE_INVALIDINDEX32;
+            return AzFramework::StringFunc::Equal(p.mName, parameter, false /* no case */);
+        });
+        return foundParameter != end(m_parameters) ? AZStd::distance(begin(m_parameters), foundParameter) : InvalidIndex;
     }
 
 
     // get the default value for a given parameter
-    const AZStd::string& CommandSyntax::GetDefaultValue(uint32 index) const
+    const AZStd::string& CommandSyntax::GetDefaultValue(size_t index) const
     {
         return m_parameters[index].mDefaultValue;
     }
@@ -165,8 +160,8 @@ namespace MCore
 
     const AZStd::string& CommandSyntax::GetDefaultValue(const char* paramName) const
     {
-        const uint32 index = FindParameterIndex(paramName);
-        if (index != MCORE_INVALIDINDEX32)
+        const size_t index = FindParameterIndex(paramName);
+        if (index != InvalidIndex)
         {
             return m_parameters[index].mDefaultValue;
         }
@@ -179,8 +174,8 @@ namespace MCore
     // get the default value for a given parameter name
     bool CommandSyntax::GetDefaultValue(const char* paramName, AZStd::string& outDefaultValue) const
     {
-        const uint32 index = FindParameterIndex(paramName);
-        if (index == MCORE_INVALIDINDEX32)
+        const size_t index = FindParameterIndex(paramName);
+        if (index == InvalidIndex)
         {
             return false;
         }
@@ -215,8 +210,8 @@ namespace MCore
             else
             {
                 // find the parameter index
-                const uint32 paramIndex = commandLine.FindParameterIndex(parameter.mName.c_str());
-                if (paramIndex != MCORE_INVALIDINDEX32)
+                const size_t paramIndex = commandLine.FindParameterIndex(parameter.mName.c_str());
+                if (paramIndex != InvalidIndex)
                 {
                     const AZStd::string& value = commandLine.GetParameterValue(paramIndex);
                     const AZStd::string& paramName = parameter.mName;
@@ -282,13 +277,13 @@ namespace MCore
                             }
                         }
                     }
-                } // if (paramIndex != MCORE_INVALIDINDEX32)
+                } // if (paramIndex != InvalidIndex)
             }
         }
 
         // now add parameters that we specified but that are not defined in the syntax
-        const uint32 numCommandLineParams = commandLine.GetNumParameters();
-        for (uint32 p = 0; p < numCommandLineParams; ++p)
+        const size_t numCommandLineParams = commandLine.GetNumParameters();
+        for (size_t p = 0; p < numCommandLineParams; ++p)
         {
             if (CheckIfHasParameter(commandLine.GetParameterName(p).c_str()) == false)
             {
@@ -305,14 +300,13 @@ namespace MCore
     void CommandSyntax::LogSyntax()
     {
         // find the longest command name
-        uint32 offset = 0;
-        for (const Parameter& parameter : m_parameters)
+        size_t offset = AZStd::minmax_element(begin(m_parameters), end(m_parameters), [](const Parameter& left, const Parameter& right)
         {
-            offset = MCore::Max<uint32>(static_cast<uint32>(parameter.mName.size()), offset);
-        }
+            return left.mName.size() < right.mName.size();
+        }).second->mName.size();
 
-        uint32 offset2 = offset;
-        uint32 offset3 = offset;
+        size_t offset2 = offset;
+        size_t offset3 = offset;
 
         // log the header
         AZStd::string header = "Name";

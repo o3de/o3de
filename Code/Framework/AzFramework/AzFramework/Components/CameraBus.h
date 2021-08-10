@@ -114,6 +114,9 @@ namespace Camera
         //! Makes the camera the active view
         virtual void MakeActiveView() = 0;
 
+        //! Check if this camera is the active render camera
+        virtual bool IsActiveView() = 0;
+
         //! Get the camera frustum's aggregate configuration
         virtual Configuration GetCameraConfiguration() 
         {

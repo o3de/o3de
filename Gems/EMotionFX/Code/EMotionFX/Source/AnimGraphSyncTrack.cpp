@@ -114,8 +114,8 @@ namespace EMotionFX
         const size_t numEvents = m_events.size();
         if (numEvents == 0 || timeInSeconds > GetDuration() || timeInSeconds < 0.0f)
         {
-            *outIndexA = MCORE_INVALIDINDEX32;
-            *outIndexB = MCORE_INVALIDINDEX32;
+            *outIndexA = InvalidIndex;
+            *outIndexB = InvalidIndex;
             return false;
         }
 
@@ -189,7 +189,7 @@ namespace EMotionFX
         }
 
         // actually we didn't find this combination
-        return MCORE_INVALIDINDEX32;
+        return InvalidIndex;
     }
 
 
@@ -200,8 +200,8 @@ namespace EMotionFX
         const size_t numEvents = m_events.size();
         if (numEvents == 0)
         {
-            *outIndexA = MCORE_INVALIDINDEX32;
-            *outIndexB = MCORE_INVALIDINDEX32;
+            *outIndexA = InvalidIndex;
+            *outIndexB = InvalidIndex;
             return false;
         }
 
@@ -217,8 +217,8 @@ namespace EMotionFX
             }
             else
             {
-                *outIndexA = MCORE_INVALIDINDEX32;
-                *outIndexB = MCORE_INVALIDINDEX32;
+                *outIndexA = InvalidIndex;
+                *outIndexB = InvalidIndex;
                 return false;
             }
         }
@@ -271,15 +271,15 @@ namespace EMotionFX
             // if we didn't find a single hit we won't find any other
             if (found == false)
             {
-                *outIndexA = MCORE_INVALIDINDEX32;
-                *outIndexB = MCORE_INVALIDINDEX32;
+                *outIndexA = InvalidIndex;
+                *outIndexB = InvalidIndex;
                 return false;
             }
         }
 
         // we didn't find it
-        *outIndexA = MCORE_INVALIDINDEX32;
-        *outIndexB = MCORE_INVALIDINDEX32;
+        *outIndexA = InvalidIndex;
+        *outIndexB = InvalidIndex;
         return false;
     }
 
@@ -307,8 +307,8 @@ namespace EMotionFX
             current = AdvanceAndWrapIterator(current, forward, m_events.cbegin(), m_events.cend());
         } while (current != start);
 
-        *outIndexA = MCORE_INVALIDINDEX32;
-        *outIndexB = MCORE_INVALIDINDEX32;
+        *outIndexA = InvalidIndex;
+        *outIndexB = InvalidIndex;
         return false;
     };
 
@@ -319,13 +319,13 @@ namespace EMotionFX
         const size_t numEvents = m_events.size();
         if (numEvents == 0)
         {
-            *outIndexA = MCORE_INVALIDINDEX32;
-            *outIndexB = MCORE_INVALIDINDEX32;
+            *outIndexA = InvalidIndex;
+            *outIndexB = InvalidIndex;
             return false;
         }
 
         // if the sync index is not set, start at the first pair (which starts from the last sync key)
-        if (syncIndex == MCORE_INVALIDINDEX32)
+        if (syncIndex == InvalidIndex)
         {
             if (forward)
             {

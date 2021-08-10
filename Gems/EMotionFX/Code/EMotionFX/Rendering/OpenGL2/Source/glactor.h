@@ -61,10 +61,10 @@ namespace RenderGL
         struct RENDERGL_API MaterialPrimitives
         {
             Material*               mMaterial;
-            MCore::Array<Primitive> mPrimitives[3];
+            AZStd::vector<Primitive> mPrimitives[3];
 
-            MaterialPrimitives()              { mMaterial = nullptr; mPrimitives[0].Reserve(64); mPrimitives[1].Reserve(64); mPrimitives[2].Reserve(64); }
-            MaterialPrimitives(Material* mat) { mMaterial = mat; mPrimitives[0].Reserve(64); mPrimitives[1].Reserve(64); mPrimitives[2].Reserve(64); }
+            MaterialPrimitives()              { mMaterial = nullptr; mPrimitives[0].reserve(64); mPrimitives[1].reserve(64); mPrimitives[2].reserve(64); }
+            MaterialPrimitives(Material* mat) { mMaterial = mat; mPrimitives[0].reserve(64); mPrimitives[1].reserve(64); mPrimitives[2].reserve(64); }
         };
 
         AZStd::string                   mTexturePath;
@@ -75,22 +75,22 @@ namespace RenderGL
 
         void RenderMeshes(EMotionFX::ActorInstance* actorInstance, EMotionFX::Mesh::EMeshType meshType, uint32 renderFlags);
         void RenderShadowMap(EMotionFX::Mesh::EMeshType meshType);
-        void InitMaterials(uint32 lodLevel);
+        void InitMaterials(size_t lodLevel);
         Material* InitMaterial(EMotionFX::Material* emfxMaterial);
-        void FillIndexBuffers(uint32 lodLevel);
-        void FillStaticVertexBuffers(uint32 lodLevel);
-        void FillGPUSkinnedVertexBuffers(uint32 lodLevel);
+        void FillIndexBuffers(size_t lodLevel);
+        void FillStaticVertexBuffers(size_t lodLevel);
+        void FillGPUSkinnedVertexBuffers(size_t lodLevel);
 
         void UpdateDynamicVertices(EMotionFX::ActorInstance* actorInstance);
 
-        EMotionFX::Mesh::EMeshType ClassifyMeshType(EMotionFX::Node* node, EMotionFX::Mesh* mesh, uint32 lodLevel);
+        EMotionFX::Mesh::EMeshType ClassifyMeshType(EMotionFX::Node* node, EMotionFX::Mesh* mesh, size_t lodLevel);
 
-        MCore::Array< MCore::Array<MaterialPrimitives*> >  mMaterials;
-        MCore::Array2D<uint32>          mDynamicNodes;
+        AZStd::vector< AZStd::vector<MaterialPrimitives*> >  mMaterials;
+        MCore::Array2D<size_t>          mDynamicNodes;
         MCore::Array2D<Primitive>       mPrimitives[3];
-        MCore::Array<bool>              mHomoMaterials;
-        MCore::Array<VertexBuffer*>     mVertexBuffers[3];
-        MCore::Array<IndexBuffer*>      mIndexBuffers[3];
+        AZStd::vector<bool>              mHomoMaterials;
+        AZStd::vector<VertexBuffer*>     mVertexBuffers[3];
+        AZStd::vector<IndexBuffer*>      mIndexBuffers[3];
         MCore::RGBAColor                mGroundColor;
         MCore::RGBAColor                mSkyColor;
 

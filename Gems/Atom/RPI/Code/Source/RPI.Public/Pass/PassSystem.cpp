@@ -298,6 +298,7 @@ namespace AZ
 
         void PassSystem::ProcessQueuedChanges()
         {
+            AZ_ATOM_PROFILE_FUNCTION("RPI", "PassSystem: ProcessQueuedChanges");
             RemovePasses();
             BuildPasses();
             InitializePasses();
@@ -314,7 +315,11 @@ namespace AZ
 
             m_state = PassSystemState::Rendering;
             Pass::FramePrepareParams params{ &frameGraphBuilder };
-            m_rootPass->FrameBegin(params);
+
+            {
+                AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "Pass: FrameBegin");
+                m_rootPass->FrameBegin(params);
+            }
         }
 
         void PassSystem::FrameEnd()

@@ -27,7 +27,7 @@ public:
     CSmartVariable<QString> mv_folder;
     CSmartVariable<bool> mv_once;
 
-    virtual void OnCreateVars()
+    void OnCreateVars() override
     {
         mv_duration.GetVar()->SetLimits(0, 100000.0f);
         mv_timeStep.GetVar()->SetLimits(0.001f, 1.0f);
@@ -39,14 +39,14 @@ public:
         AddVariable(mv_table, mv_folder, "Output Folder");
         AddVariable(mv_table, mv_once, "Just one frame?");
     }
-    bool SupportTrackType(const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, [[maybe_unused]] AnimValueType valueType) const
+    bool SupportTrackType(const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, [[maybe_unused]] AnimValueType valueType) const override
     {
         return paramType == AnimParamType::Capture;
     }
-    virtual bool OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys);
-    virtual void OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys);
+    bool OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys) override;
+    void OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys) override;
 
-    virtual unsigned int GetPriority() const { return 1; }
+    unsigned int GetPriority() const override { return 1; }
 
     static const GUID& GetClassID()
     {

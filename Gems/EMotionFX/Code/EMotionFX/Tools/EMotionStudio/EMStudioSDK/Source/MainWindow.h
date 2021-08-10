@@ -12,7 +12,7 @@
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioConfig.h>
 #include <EMotionStudio/EMStudioSDK/Source/GUIOptions.h>
 #include <EMotionStudio/EMStudioSDK/Source/PluginOptionsBus.h>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include <MCore/Source/Command.h>
 #include <MCore/Source/StandardHeaders.h>
 #include <MCore/Source/CommandManagerCallback.h>
@@ -148,7 +148,7 @@ namespace EMStudio
         FileManager*        GetFileManager() const                              { return mFileManager; }
         PreferencesWindow*  GetPreferencesWindow() const                        { return mPreferencesWindow; }
 
-        uint32 GetNumLayouts() const                                            { return mLayoutNames.GetLength(); }
+        size_t GetNumLayouts() const                                            { return mLayoutNames.size(); }
         const char* GetLayoutName(uint32 index) const                           { return mLayoutNames[index].c_str(); }
         const char* GetCurrentLayoutName() const;
 
@@ -195,7 +195,7 @@ namespace EMStudio
         MysticQt::KeyboardShortcutManager* mShortcutManager;
 
         // layouts (application modes)
-        MCore::Array<AZStd::string> mLayoutNames;
+        AZStd::vector<AZStd::string> mLayoutNames;
         bool mLayoutLoaded;
 
         // menu actions
@@ -296,9 +296,9 @@ namespace EMStudio
             void OnPreUndoCommand(MCore::Command* command, const MCore::CommandLine& commandLine);
             void OnPreExecuteCommandGroup(MCore::CommandGroup* /*group*/, bool /*undo*/) override { }
             void OnPostExecuteCommandGroup(MCore::CommandGroup* /*group*/, bool /*wasSuccess*/) override { }
-            void OnAddCommandToHistory(uint32 /*historyIndex*/, MCore::CommandGroup* /*group*/, MCore::Command* /*command*/, const MCore::CommandLine& /*commandLine*/) override { }
-            void OnRemoveCommand(uint32 /*historyIndex*/) override { }
-            void OnSetCurrentCommand(uint32 /*index*/) override { }
+            void OnAddCommandToHistory(size_t /*historyIndex*/, MCore::CommandGroup* /*group*/, MCore::Command* /*command*/, const MCore::CommandLine& /*commandLine*/) override { }
+            void OnRemoveCommand(size_t /*historyIndex*/) override { }
+            void OnSetCurrentCommand(size_t /*index*/) override { }
             void OnShowErrorReport(const AZStd::vector<AZStd::string>& errors) override;
         private:
             AZStd::vector<AZStd::string> m_skipClearRecorderCommands;

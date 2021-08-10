@@ -63,8 +63,8 @@ namespace EMotionFX
             MotionSet::MotionEntry* motionEntry = AddMotionEntry("testMotion", 1.0);
 
             // Assign a motion to all our motion nodes
-            const AZ::u32 numStates = m_rootStateMachine->GetNumChildNodes();
-            for (AZ::u32 i = 0; i < numStates; ++i)
+            const size_t numStates = m_rootStateMachine->GetNumChildNodes();
+            for (size_t i = 0; i < numStates; ++i)
             {
                 AnimGraphMotionNode* motionNode = azdynamic_cast<AnimGraphMotionNode*>(m_rootStateMachine->GetChildNode(i));
                 if (motionNode)

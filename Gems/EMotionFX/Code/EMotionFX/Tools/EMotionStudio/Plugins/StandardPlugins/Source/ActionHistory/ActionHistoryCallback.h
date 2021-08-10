@@ -37,11 +37,11 @@ namespace EMStudio
 
         void OnPreExecuteCommand(MCore::CommandGroup* group, MCore::Command* command, const MCore::CommandLine& commandLine) override;
         void OnPostExecuteCommand(MCore::CommandGroup* group, MCore::Command* command, const MCore::CommandLine& commandLine, bool wasSuccess, const AZStd::string& outResult) override;
-        void OnAddCommandToHistory(uint32 historyIndex, MCore::CommandGroup* group, MCore::Command* command, const MCore::CommandLine& commandLine) override;
+        void OnAddCommandToHistory(size_t historyIndex, MCore::CommandGroup* group, MCore::Command* command, const MCore::CommandLine& commandLine) override;
         void OnPreExecuteCommandGroup(MCore::CommandGroup* group, bool undo) override;
         void OnPostExecuteCommandGroup(MCore::CommandGroup* group, bool wasSuccess) override;
-        void OnRemoveCommand(uint32 historyIndex) override;
-        void OnSetCurrentCommand(uint32 index) override;
+        void OnRemoveCommand(size_t historyIndex) override;
+        void OnSetCurrentCommand(size_t index) override;
 
     private:
         QListWidget* mList;

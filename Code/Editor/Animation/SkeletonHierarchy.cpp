@@ -63,7 +63,7 @@ int32 CHierarchy::FindNodeIndexByName(const char* name) const
 const CHierarchy::SNode* CHierarchy::FindNode(const char* name) const
 {
     int32 index = FindNodeIndexByName(name);
-    return index < 0 ? NULL : &m_nodes[index];
+    return index < 0 ? nullptr : &m_nodes[index];
 }
 
 void CHierarchy::CreateFrom(IDefaultSkeleton* pIDefaultSkeleton)

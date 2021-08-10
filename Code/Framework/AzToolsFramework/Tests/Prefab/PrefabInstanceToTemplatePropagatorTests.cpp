@@ -245,7 +245,9 @@ namespace UnitTest
         m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomBeforeUpdate, *firstInstance);
 
         //remove instance from instance
-        firstInstance->DetachNestedInstance(addedAlias);
+        AZStd::unique_ptr<Instance> detachedInstance = firstInstance->DetachNestedInstance(addedAlias);
+        ASSERT_TRUE(detachedInstance != nullptr);
+        m_prefabSystemComponent->RemoveLink(detachedInstance->GetLinkId());
 
         //create document with after change snapshot
         PrefabDom instanceDomAfterUpdate;

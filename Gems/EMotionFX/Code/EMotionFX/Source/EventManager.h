@@ -11,7 +11,7 @@
 // include the required headers
 #include "EMotionFXConfig.h"
 #include "BaseObject.h"
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include <MCore/Source/MultiThreadManager.h>
 #include "MemoryCategories.h"
 #include "MotionInstance.h"
