@@ -93,6 +93,7 @@ def run():
     general.idle_wait_frames(100)
     for i in range(1, 101):
         benchmarker.capture_pass_timestamp(i)
+        benchmarker.capture_cpu_frame_time(i)
     general.exit_game_mode()
     helper.wait_for_condition(function=lambda: not general.is_in_game_mode(), timeout_in_seconds=2.0)
     general.log("Capturing complete.")

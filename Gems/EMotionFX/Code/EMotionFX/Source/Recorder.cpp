@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/sort.h>
 #include "Recorder.h"
 #include "RecorderBus.h"
 #include "ActorInstance.h"
@@ -101,7 +102,6 @@ namespace EMotionFX
         mLastRecordTime = 0.0f;
         mCurrentPlayTime = 0.0f;
 
-        mObjects.SetMemoryCategory(EMFX_MEMCATEGORY_RECORDER);
         EMotionFX::ActorInstanceNotificationBus::Handler::BusConnect();
     }
 
@@ -231,9 +231,9 @@ namespace EMotionFX
         // Add all actor instances if we did not specify them explicitly.
         if (mRecordSettings.m_actorInstances.empty())
         {
-            const uint32 numActorInstances = GetActorManager().GetNumActorInstances();
+            const size_t numActorInstances = GetActorManager().GetNumActorInstances();
             mRecordSettings.m_actorInstances.resize(numActorInstances);
-            for (uint32 i = 0; i < numActorInstances; ++i)
+            for (size_t i = 0; i < numActorInstances; ++i)
             {
                 ActorInstance* actorInstance = GetActorManager().GetActorInstance(i);
                 mRecordSettings.m_actorInstances[i] = actorInstance;
@@ -324,9 +324,9 @@ namespace EMotionFX
             if (mRecordSettings.mRecordTransforms)
             {
                 // for all nodes in the actor instance
-                const uint32 numNodes = actorInstance->GetNumNodes();
+                const size_t numNodes = actorInstance->GetNumNodes();
                 actorInstanceData.m_transformTracks.resize(numNodes);
-                for (uint32 n = 0; n < numNodes; ++n)
+                for (size_t n = 0; n < numNodes; ++n)
                 {
                     actorInstanceData.m_transformTracks[n].mPositions.Reserve(mRecordSettings.mNumPreAllocTransformKeys);
                     actorInstanceData.m_transformTracks[n].mRotations.Reserve(mRecordSettings.mNumPreAllocTransformKeys);
@@ -344,9 +344,9 @@ namespace EMotionFX
             // if recording morph targets, resize the morphs array
             if (mRecordSettings.mRecordMorphs)
             {
-                const uint32 numMorphs = actorInstance->GetMorphSetupInstance()->GetNumMorphTargets();
-                actorInstanceData.mMorphTracks.Resize(numMorphs);
-                for (uint32 m = 0; m < numMorphs; ++m)
+                const size_t numMorphs = actorInstance->GetMorphSetupInstance()->GetNumMorphTargets();
+                actorInstanceData.mMorphTracks.resize(numMorphs);
+                for (size_t m = 0; m < numMorphs; ++m)
                 {
                     actorInstanceData.mMorphTracks[m].Reserve(256);
                 }
@@ -387,8 +387,8 @@ namespace EMotionFX
                 continue;
             }
 
-            const uint32 numNodes = actorInstance->GetNumNodes();
-            for (uint32 n = 0; n < numNodes; ++n)
+            const size_t numNodes = actorInstance->GetNumNodes();
+            for (size_t n = 0; n < numNodes; ++n)
             {
                 actorInstanceData->m_transformTracks[n].mPositions.Shrink();
                 actorInstanceData->m_transformTracks[n].mRotations.Shrink();
@@ -470,14 +470,14 @@ namespace EMotionFX
     void Recorder::RecordMorphs()
     {
         // for all actor instances
-        const uint32 numActorInstances = static_cast<uint32>(m_actorInstanceDatas.size());
-        for (uint32 i = 0; i < numActorInstances; ++i)
+        const size_t numActorInstances = m_actorInstanceDatas.size();
+        for (size_t i = 0; i < numActorInstances; ++i)
         {
             ActorInstanceData& actorInstanceData = *m_actorInstanceDatas[i];
             ActorInstance* actorInstance = actorInstanceData.mActorInstance;
 
-            const uint32 numMorphs = actorInstance->GetMorphSetupInstance()->GetNumMorphTargets();
-            for (uint32 m = 0; m < numMorphs; ++m)
+            const size_t numMorphs = actorInstance->GetMorphSetupInstance()->GetNumMorphTargets();
+            for (size_t m = 0; m < numMorphs; ++m)
             {
                 KeyTrackLinearDynamic<float, float>& morphTrack = actorInstanceData.mMorphTracks[i]; // morph animation data
                 morphTrack.AddKey(mRecordTime, actorInstance->GetMorphSetupInstance()->GetMorphTarget(i)->GetWeight());
@@ -513,8 +513,8 @@ namespace EMotionFX
 
             const TransformData* transformData = actorInstance->GetTransformData();
             {
-                const uint32 numNodes = actorInstance->GetNumNodes();
-                for (uint32 n = 0; n < numNodes; ++n)
+                const size_t numNodes = actorInstance->GetNumNodes();
+                for (size_t n = 0; n < numNodes; ++n)
                 {
                     const Transform& localTransform = transformData->GetCurrentPose()->GetLocalSpaceTransform(n);
 
@@ -547,32 +547,31 @@ namespace EMotionFX
                 const AnimGraph*       animGraph              = animGraphInstance->GetAnimGraph();
 
                 // add a new frame
-                MCore::Array<AnimGraphAnimFrame>& frames = animGraphInstanceData.mFrames;
-                if (frames.GetLength() > 0)
+                AZStd::vector<AnimGraphAnimFrame>& frames = animGraphInstanceData.mFrames;
+                if (!frames.empty())
                 {
-                    const uint32 byteOffset = frames.GetLast().mByteOffset + frames.GetLast().mNumBytes;
-                    frames.AddEmpty();
-                    frames.GetLast().mByteOffset    = byteOffset;
-                    frames.GetLast().mNumBytes      = 0;
+                    const size_t byteOffset = frames.back().mByteOffset + frames.back().mNumBytes;
+                    frames.emplace_back();
+                    frames.back().mByteOffset    = byteOffset;
+                    frames.back().mNumBytes      = 0;
                 }
                 else
                 {
-                    frames.AddEmpty();
-                    frames.GetLast().mByteOffset    = 0;
-                    frames.GetLast().mNumBytes      = 0;
+                    frames.emplace_back();
+                    frames.back().mByteOffset    = 0;
+                    frames.back().mNumBytes      = 0;
                 }
 
                 // get the current frame
-                AnimGraphAnimFrame& currentFrame = frames.GetLast();
+                AnimGraphAnimFrame& currentFrame = frames.back();
                 currentFrame.mTimeValue = mRecordTime;
 
                 // save the parameter values
-                const uint32 numParams = static_cast<uint32>(animGraphInstance->GetAnimGraph()->GetNumValueParameters());
-                currentFrame.mParameterValues.SetMemoryCategory(EMFX_MEMCATEGORY_RECORDER);
-                currentFrame.mParameterValues.Resize(numParams);
-                for (uint32 p = 0; p < numParams; ++p)
+                const size_t numParams = animGraphInstance->GetAnimGraph()->GetNumValueParameters();
+                currentFrame.mParameterValues.resize(numParams);
+                for (size_t p = 0; p < numParams; ++p)
                 {
-                    currentFrame.mParameterValues[p] = animGraphInstance->GetParameterValue(p)->Clone();
+                    currentFrame.mParameterValues[p] = AZStd::unique_ptr<MCore::Attribute>(animGraphInstance->GetParameterValue(p)->Clone());
                 }
 
                 // recursively save all unique datas
@@ -595,25 +594,25 @@ namespace EMotionFX
     bool Recorder::SaveUniqueData(AnimGraphInstance* animGraphInstance, AnimGraphObject* object, AnimGraphInstanceData& animGraphInstanceData)
     {
         // get the current frame's data pointer
-        AnimGraphAnimFrame& currentFrame = animGraphInstanceData.mFrames.GetLast();
-        const uint32 frameOffset = currentFrame.mByteOffset;
+        AnimGraphAnimFrame& currentFrame = animGraphInstanceData.mFrames.back();
+        const size_t frameOffset = currentFrame.mByteOffset;
 
         // prepare the objects array
-        mObjects.Clear(false);
-        mObjects.Reserve(1024);
+        mObjects.clear();
+        mObjects.reserve(1024);
 
         // collect the objects we are going to save for this frame
         object->RecursiveCollectObjects(mObjects);
 
         // resize the object infos array
-        const uint32 numObjects = mObjects.GetLength();
-        currentFrame.mObjectInfos.Resize(numObjects);
+        const size_t numObjects = mObjects.size();
+        currentFrame.mObjectInfos.resize(numObjects);
 
         // calculate how much memory we need for this frame
-        uint32 requiredFrameBytes = 0;
-        for (uint32 i = 0; i < numObjects; ++i)
+        size_t requiredFrameBytes = 0;
+        for (const AnimGraphObject* animGraphObject : mObjects)
         {
-            requiredFrameBytes += mObjects[i]->SaveUniqueData(animGraphInstance, nullptr);
+            requiredFrameBytes += animGraphObject->SaveUniqueData(animGraphInstance, nullptr);
         }
 
         // make sure we have at least the given amount of space in the buffer we are going to write the frame data to
@@ -624,7 +623,7 @@ namespace EMotionFX
         uint8* dataPointer = &animGraphInstanceData.mDataBuffer[frameOffset];
 
         // save all the unique datas for the objects
-        for (uint32 i = 0; i < numObjects; ++i)
+        for (size_t i = 0; i < numObjects; ++i)
         {
             // store the object info
             AnimGraphObject* curObject = mObjects[i];
@@ -632,7 +631,7 @@ namespace EMotionFX
             currentFrame.mObjectInfos[i].mFrameByteOffset = currentFrame.mNumBytes;
 
             // write the unique data
-            const uint32 numBytesWritten = curObject->SaveUniqueData(animGraphInstance, dataPointer);
+            const size_t numBytesWritten = curObject->SaveUniqueData(animGraphInstance, dataPointer);
 
             // increase some offsets/pointers
             currentFrame.mNumBytes += numBytesWritten;
@@ -647,7 +646,7 @@ namespace EMotionFX
 
 
     // make sure our anim graph anim buffer is big enough to hold a specified amount of bytes
-    bool Recorder::AssureAnimGraphBufferSize(AnimGraphInstanceData& animGraphInstanceData, uint32 numBytes)
+    bool Recorder::AssureAnimGraphBufferSize(AnimGraphInstanceData& animGraphInstanceData, size_t numBytes)
     {
         // if the buffer is big enough, do nothing
         if (animGraphInstanceData.mDataBufferSize >= numBytes)
@@ -656,7 +655,7 @@ namespace EMotionFX
         }
 
         // we need to reallocate to grow the buffer
-        const uint32 newNumBytes = animGraphInstanceData.mDataBufferSize + (numBytes - animGraphInstanceData.mDataBufferSize) * 100; // allocate 100 frames ahead
+        const size_t newNumBytes = animGraphInstanceData.mDataBufferSize + (numBytes - animGraphInstanceData.mDataBufferSize) * 100; // allocate 100 frames ahead
         void* newBuffer = MCore::Realloc(animGraphInstanceData.mDataBuffer, newNumBytes, EMFX_MEMCATEGORY_RECORDER);
         MCORE_ASSERT(newBuffer);
         if (newBuffer)
@@ -771,15 +770,14 @@ namespace EMotionFX
         const auto iterator = AZStd::find(recordedActorInstances.begin(), recordedActorInstances.end(), actorInstance);
         if (iterator != recordedActorInstances.end())
         {
-            const size_t index = iterator - recordedActorInstances.begin();
+            const size_t index = AZStd::distance(recordedActorInstances.begin(), iterator);
             const ActorInstanceData& actorInstanceData = *m_actorInstanceDatas[index];
-            const uint32 numMorphs = actorInstanceData.mMorphTracks.GetLength();
+            const size_t numMorphs = actorInstanceData.mMorphTracks.size();
             if (numMorphs == actorInstance->GetMorphSetupInstance()->GetNumMorphTargets())
             {
-                for (uint32 i = 0; i < numMorphs; ++i)
+                for (size_t i = 0; i < numMorphs; ++i)
                 {
                     actorInstance->GetMorphSetupInstance()->GetMorphTarget(i)->SetWeight(actorInstanceData.mMorphTracks[i].GetValueAtTime(timeInSeconds));
-                    //  actorInstance->GetMorphSetupInstance()->GetMorphTarget(i)->SetManualMode(true);
                 }
             }
         }
@@ -812,8 +810,8 @@ namespace EMotionFX
 
         // for all nodes in the actor instance
         Transform outTransform;
-        const uint32 numNodes = actorInstance->GetNumNodes();
-        for (uint32 n = 0; n < numNodes; ++n)
+        const size_t numNodes = actorInstance->GetNumNodes();
+        for (size_t n = 0; n < numNodes; ++n)
         {
             outTransform = transformData->GetCurrentPose()->GetLocalSpaceTransform(n);
             const TransformTracks& track = actorInstanceData.m_transformTracks[n];
@@ -838,8 +836,8 @@ namespace EMotionFX
     void Recorder::SampleAndApplyAnimGraphStates(float timeInSeconds, const AnimGraphInstanceData& animGraphInstanceData) const
     {
         // find out the frame number
-        const uint32 frameNumber = FindAnimGraphDataFrameNumber(timeInSeconds);
-        if (frameNumber == MCORE_INVALIDINDEX32)
+        const size_t frameNumber = FindAnimGraphDataFrameNumber(timeInSeconds);
+        if (frameNumber == InvalidIndex)
         {
             return;
         }
@@ -848,31 +846,31 @@ namespace EMotionFX
         AnimGraphInstance* animGraphInstance = animGraphInstanceData.mAnimGraphInstance;
 
         // get the real frame number (clamped)
-        const uint32 realFrameNumber = MCore::Min<uint32>(frameNumber, animGraphInstanceData.mFrames.GetLength() - 1);
+        const size_t realFrameNumber = AZStd::min(frameNumber, animGraphInstanceData.mFrames.size() - 1);
         const AnimGraphAnimFrame& currentFrame = animGraphInstanceData.mFrames[realFrameNumber];
 
         // get the data and objects buffers
-        const uint32 byteOffset = currentFrame.mByteOffset;
+        const size_t byteOffset = currentFrame.mByteOffset;
         const uint8* frameDataBuffer = &animGraphInstanceData.mDataBuffer[byteOffset];
-        const MCore::Array<AnimGraphAnimObjectInfo>& frameObjects = currentFrame.mObjectInfos;
+        const AZStd::vector<AnimGraphAnimObjectInfo>& frameObjects = currentFrame.mObjectInfos;
 
         // first lets update all parameter values
-        MCORE_ASSERT(currentFrame.mParameterValues.GetLength() == animGraphInstance->GetAnimGraph()->GetNumParameters());
-        const uint32 numParameters = currentFrame.mParameterValues.GetLength();
-        for (uint32 p = 0; p < numParameters; ++p)
+        MCORE_ASSERT(currentFrame.mParameterValues.size() == animGraphInstance->GetAnimGraph()->GetNumParameters());
+        const size_t numParameters = currentFrame.mParameterValues.size();
+        for (size_t p = 0; p < numParameters; ++p)
         {
             //  make sure the parameters are of the same type
             MCORE_ASSERT(animGraphInstance->GetParameterValue(p)->GetType() == currentFrame.mParameterValues[p]->GetType());
-            animGraphInstance->GetParameterValue(p)->InitFrom(currentFrame.mParameterValues[p]);
+            animGraphInstance->GetParameterValue(p)->InitFrom(currentFrame.mParameterValues[p].get());
         }
 
         // process all objects for this frame
-        uint32 totalBytesRead = 0;
-        const uint32 numObjects = frameObjects.GetLength();
-        for (uint32 a = 0; a < numObjects; ++a)
+        size_t totalBytesRead = 0;
+        const size_t numObjects = frameObjects.size();
+        for (size_t a = 0; a < numObjects; ++a)
         {
             const AnimGraphAnimObjectInfo& objectInfo = frameObjects[a];
-            const uint32 numBytesRead = objectInfo.mObject->LoadUniqueData(animGraphInstance, &frameDataBuffer[objectInfo.mFrameByteOffset]);
+            const size_t numBytesRead = objectInfo.mObject->LoadUniqueData(animGraphInstance, &frameDataBuffer[objectInfo.mFrameByteOffset]);
             totalBytesRead += numBytesRead;
         }
 
@@ -886,19 +884,13 @@ namespace EMotionFX
             != mRecordSettings.m_actorInstances.end();
     }
 
-    uint32 Recorder::FindActorInstanceDataIndex(ActorInstance* actorInstance) const
+    size_t Recorder::FindActorInstanceDataIndex(ActorInstance* actorInstance) const
     {
-        // for all actor instances
-        const uint32 numActorInstances = static_cast<uint32>(m_actorInstanceDatas.size());
-        for (uint32 a = 0; a < numActorInstances; ++a)
+        const auto found = AZStd::find_if(begin(m_actorInstanceDatas), end(m_actorInstanceDatas), [actorInstance](const ActorInstanceData* data)
         {
-            if (m_actorInstanceDatas[a]->mActorInstance == actorInstance)
-            {
-                return a;
-            }
-        }
-
-        return MCORE_INVALIDINDEX32;
+            return data->mActorInstance == actorInstance;
+        });
+        return found != end(m_actorInstanceDatas) ? AZStd::distance(begin(m_actorInstanceDatas), found) : InvalidIndex;
     }
 
     void Recorder::UpdateNodeHistoryItems()
@@ -917,32 +909,24 @@ namespace EMotionFX
             animGraphInstance->CollectActiveAnimGraphNodes(&mActiveNodes);
 
             // get the history items as shortcut
-            MCore::Array<NodeHistoryItem*>& historyItems = actorInstanceData->mNodeHistoryItems;
+            AZStd::vector<NodeHistoryItem*>& historyItems = actorInstanceData->mNodeHistoryItems;
 
             // finalize items
-            const size_t numActiveNodes = mActiveNodes.size();
-            const uint32 numHistoryItems = historyItems.GetLength();
-            for (uint32 h = 0; h < numHistoryItems; ++h)
+            for (NodeHistoryItem* curItem : historyItems)
             {
-                NodeHistoryItem* curItem = historyItems[h];
                 if (curItem->mIsFinalized)
                 {
                     continue;
                 }
 
                 // check if we have an active node for the given item
-                size_t index = MCORE_INVALIDINDEX32;
-                for (size_t x = 0; x < numActiveNodes; ++x)
+                const bool haveActiveNode = AZStd::find_if(begin(mActiveNodes), end(mActiveNodes), [curItem](const AnimGraphNode* activeNode)
                 {
-                    if (mActiveNodes[x]->GetId() == curItem->mNodeId)
-                    {
-                        index = x;
-                        break;
-                    }
-                }
+                    return activeNode->GetId() == curItem->mNodeId;
+                }) != end(mActiveNodes);
 
                 // the node got deactivated, finalize the item
-                if (index == MCORE_INVALIDINDEX32)
+                if (haveActiveNode)
                 {
                     curItem->mGlobalWeights.Optimize(0.0001f);
                     curItem->mLocalWeights.Optimize(0.0001f);
@@ -954,9 +938,8 @@ namespace EMotionFX
             }
 
             // iterate over all active nodes
-            for (size_t i = 0; i < numActiveNodes; ++i)
+            for (const AnimGraphNode* activeNode : mActiveNodes)
             {
-                AnimGraphNode* activeNode = mActiveNodes[i];
                 if (activeNode == animGraphInstance->GetRootNode()) // skip the root node
                 {
                     continue;
@@ -1014,7 +997,7 @@ namespace EMotionFX
                     // get the motion instance
                     if (typeID == azrtti_typeid<AnimGraphMotionNode>())
                     {
-                        AnimGraphMotionNode* motionNode = static_cast<AnimGraphMotionNode*>(activeNode);
+                        const AnimGraphMotionNode* motionNode = static_cast<const AnimGraphMotionNode*>(activeNode);
                         MotionInstance* motionInstance = motionNode->FindMotionInstance(animGraphInstance);
                         if (motionInstance)
                         {
@@ -1023,7 +1006,7 @@ namespace EMotionFX
                         }
                     }
 
-                    historyItems.Add(item);
+                    historyItems.emplace_back(item);
                 }
 
                 // add the weight key and update infos
@@ -1051,13 +1034,11 @@ namespace EMotionFX
 
 
     // try to find a given node history item
-    Recorder::NodeHistoryItem* Recorder::FindNodeHistoryItem(const ActorInstanceData& actorInstanceData, AnimGraphNode* node, float recordTime) const
+    Recorder::NodeHistoryItem* Recorder::FindNodeHistoryItem(const ActorInstanceData& actorInstanceData, const AnimGraphNode* node, float recordTime) const
     {
-        const MCore::Array<NodeHistoryItem*>& historyItems = actorInstanceData.mNodeHistoryItems;
-        const uint32 numItems = historyItems.GetLength();
-        for (uint32 i = 0; i < numItems; ++i)
+        const AZStd::vector<NodeHistoryItem*>& historyItems = actorInstanceData.mNodeHistoryItems;
+        for (NodeHistoryItem* curItem : historyItems)
         {
-            NodeHistoryItem* curItem = historyItems[i];
             if (curItem->mNodeId == node->GetId() && curItem->mStartTime <= recordTime && curItem->mIsFinalized == false)
             {
                 return curItem;
@@ -1074,21 +1055,19 @@ namespace EMotionFX
 
 
     // find a free track
-    uint32 Recorder::FindFreeNodeHistoryItemTrack(const ActorInstanceData& actorInstanceData, NodeHistoryItem* item) const
+    size_t Recorder::FindFreeNodeHistoryItemTrack(const ActorInstanceData& actorInstanceData, NodeHistoryItem* item) const
     {
-        const MCore::Array<NodeHistoryItem*>& historyItems = actorInstanceData.mNodeHistoryItems;
-        const uint32 numItems = historyItems.GetLength();
+        const AZStd::vector<NodeHistoryItem*>& historyItems = actorInstanceData.mNodeHistoryItems;
 
         bool found = false;
-        uint32 trackIndex = 0;
+        size_t trackIndex = 0;
         while (found == false)
         {
             bool hasCollision = false;
 
-            for (uint32 i = 0; i < numItems; ++i)
+            for (const NodeHistoryItem* curItem : historyItems)
             {
-                NodeHistoryItem* curItem = historyItems[i];
-                if (curItem->mTrackIndex != trackIndex)
+                 if (curItem->mTrackIndex != trackIndex)
                 {
                     continue;
                 }
@@ -1109,12 +1088,6 @@ namespace EMotionFX
                         hasCollision = true;
                         break;
                     }
-                    /*
-                                    if (MCore::Compare<float>::CheckIfIsClose(item->mStartTime, curItem->mStartTime, 0.001f) || MCore::Compare<float>::CheckIfIsClose(item->mStartTime, curItem->mEndTime, 0.001f))
-                                    {
-                                        hasCollision = true;
-                                        break;
-                                    }*/
                 }
                 else // if the current item is still active and has no real end time yet
                 {
@@ -1141,14 +1114,12 @@ namespace EMotionFX
 
 
     // find the maximum track index
-    uint32 Recorder::CalcMaxNodeHistoryTrackIndex(const ActorInstanceData& actorInstanceData) const
+    size_t Recorder::CalcMaxNodeHistoryTrackIndex(const ActorInstanceData& actorInstanceData) const
     {
-        uint32 result = 0;
-        const MCore::Array<NodeHistoryItem*>& historyItems = actorInstanceData.mNodeHistoryItems;
-        const uint32 numItems = historyItems.GetLength();
-        for (uint32 i = 0; i < numItems; ++i)
+        size_t result = 0;
+        const AZStd::vector<NodeHistoryItem*>& historyItems = actorInstanceData.mNodeHistoryItems;
+        for (const NodeHistoryItem* curItem : historyItems)
         {
-            NodeHistoryItem* curItem = historyItems[i];
             if (curItem->mTrackIndex > result)
             {
                 result = curItem->mTrackIndex;
@@ -1160,14 +1131,12 @@ namespace EMotionFX
 
 
     // find the maximum event track index
-    uint32 Recorder::CalcMaxEventHistoryTrackIndex(const ActorInstanceData& actorInstanceData) const
+    size_t Recorder::CalcMaxEventHistoryTrackIndex(const ActorInstanceData& actorInstanceData) const
     {
-        uint32 result = 0;
-        const MCore::Array<EventHistoryItem*>& historyItems = actorInstanceData.mEventHistoryItems;
-        const uint32 numItems = historyItems.GetLength();
-        for (uint32 i = 0; i < numItems; ++i)
+        size_t result = 0;
+        const AZStd::vector<EventHistoryItem*>& historyItems = actorInstanceData.mEventHistoryItems;
+        for (const EventHistoryItem* curItem : historyItems)
         {
-            EventHistoryItem* curItem = historyItems[i];
             if (curItem->mTrackIndex > result)
             {
                 result = curItem->mTrackIndex;
@@ -1179,14 +1148,14 @@ namespace EMotionFX
 
 
     // find the maximum track index
-    uint32 Recorder::CalcMaxNodeHistoryTrackIndex() const
+    size_t Recorder::CalcMaxNodeHistoryTrackIndex() const
     {
-        uint32 result = 0;
+        size_t result = 0;
 
         // for all actor instances
         for (const ActorInstanceData* actorInstanceData : m_actorInstanceDatas)
         {
-            result = MCore::Max<uint32>(result, CalcMaxNodeHistoryTrackIndex(*actorInstanceData));
+            result = AZStd::max(result, CalcMaxNodeHistoryTrackIndex(*actorInstanceData));
         }
 
         return result;
@@ -1210,19 +1179,18 @@ namespace EMotionFX
             animGraphInstance->CollectActiveAnimGraphNodes(&mActiveNodes);
 
             // get the history items as shortcut
-            const MCore::Array<NodeHistoryItem*>& historyItems = actorInstanceData->mNodeHistoryItems;
+            const AZStd::vector<NodeHistoryItem*>& historyItems = actorInstanceData->mNodeHistoryItems;
 
             // finalize all items
-            const uint32 numItems = historyItems.GetLength();
-            for (uint32 i = 0; i < numItems; ++i)
+            for (NodeHistoryItem* historyItem : historyItems)
             {
                 // remove unneeded key frames
-                if (historyItems[i]->mIsFinalized == false)
+                if (historyItem->mIsFinalized == false)
                 {
-                    historyItems[i]->mGlobalWeights.Optimize(0.0001f);
-                    historyItems[i]->mLocalWeights.Optimize(0.0001f);
-                    historyItems[i]->mPlayTimes.Optimize(0.0001f);
-                    historyItems[i]->mIsFinalized = true;
+                    historyItem->mGlobalWeights.Optimize(0.0001f);
+                    historyItem->mLocalWeights.Optimize(0.0001f);
+                    historyItem->mPlayTimes.Optimize(0.0001f);
+                    historyItem->mIsFinalized = true;
                 }
             }
         }
@@ -1246,9 +1214,9 @@ namespace EMotionFX
             const AnimGraphEventBuffer& eventBuffer = animGraphInstance->GetEventBuffer();
 
             // iterate over all events
-            MCore::Array<EventHistoryItem*>& historyItems = actorInstanceData->mEventHistoryItems;
-            const uint32 numEvents = eventBuffer.GetNumEvents();
-            for (uint32 i = 0; i < numEvents; ++i)
+            AZStd::vector<EventHistoryItem*>& historyItems = actorInstanceData->mEventHistoryItems;
+            const size_t numEvents = eventBuffer.GetNumEvents();
+            for (size_t i = 0; i < numEvents; ++i)
             {
                 const EventInfo& eventInfo = eventBuffer.GetEvent(i);
                 if (eventInfo.m_eventState == EventInfo::EventInfo::ACTIVE)
@@ -1271,7 +1239,7 @@ namespace EMotionFX
 
                     item->mTrackIndex   = FindFreeEventHistoryItemTrack(*actorInstanceData, item);
 
-                    historyItems.Add(item);
+                    historyItems.emplace_back(item);
                 }
 
                 item->mEndTime  = mRecordTime;
@@ -1284,12 +1252,9 @@ namespace EMotionFX
     Recorder::EventHistoryItem* Recorder::FindEventHistoryItem(const ActorInstanceData& actorInstanceData, const EventInfo& eventInfo, float recordTime)
     {
         MCORE_UNUSED(recordTime);
-        const MCore::Array<EventHistoryItem*>& historyItems = actorInstanceData.mEventHistoryItems;
-        const uint32 numItems = historyItems.GetLength();
-        for (uint32 i = 0; i < numItems; ++i)
+        const AZStd::vector<EventHistoryItem*>& historyItems = actorInstanceData.mEventHistoryItems;
+        for (const EventHistoryItem* curItem : historyItems)
         {
-            EventHistoryItem* curItem = historyItems[i];
-
             if (curItem->mStartTime < eventInfo.mTimeValue)
             {
                 continue;
@@ -1301,19 +1266,17 @@ namespace EMotionFX
 
 
     // find a free event track index
-    uint32 Recorder::FindFreeEventHistoryItemTrack(const ActorInstanceData& actorInstanceData, EventHistoryItem* item) const
+    size_t Recorder::FindFreeEventHistoryItemTrack(const ActorInstanceData& actorInstanceData, EventHistoryItem* item) const
     {
-        const MCore::Array<EventHistoryItem*>& historyItems = actorInstanceData.mEventHistoryItems;
-        const uint32 numItems = historyItems.GetLength();
+        const AZStd::vector<EventHistoryItem*>& historyItems = actorInstanceData.mEventHistoryItems;
         bool found = false;
-        uint32 trackIndex = 0;
+        size_t trackIndex = 0;
         while (found == false)
         {
             bool hasCollision = false;
 
-            for (uint32 i = 0; i < numItems; ++i)
+            for (const EventHistoryItem* curItem : historyItems)
             {
-                EventHistoryItem* curItem = historyItems[i];
                 if (curItem->mTrackIndex != trackIndex)
                 {
                     continue;
@@ -1341,7 +1304,7 @@ namespace EMotionFX
 
 
     // find the frame number for a time value
-    uint32 Recorder::FindAnimGraphDataFrameNumber(float timeValue) const
+    size_t Recorder::FindAnimGraphDataFrameNumber(float timeValue) const
     {
         // check if we recorded any actor instances at all
         if (m_actorInstanceDatas.empty())
@@ -1354,15 +1317,14 @@ namespace EMotionFX
         const AnimGraphInstanceData* animGraphData = actorInstanceData.mAnimGraphData;
         if (animGraphData == nullptr)
         {
-            return MCORE_INVALIDINDEX32;
+            return InvalidIndex;
         }
 
-        const uint32 numFrames = animGraphData->mFrames.GetLength();
+        const size_t numFrames = animGraphData->mFrames.size();
         if (numFrames == 0)
         {
-            return MCORE_INVALIDINDEX32;
+            return InvalidIndex;
         }
-        else
         if (numFrames == 1)
         {
             return 0;
@@ -1373,12 +1335,12 @@ namespace EMotionFX
             return 0;
         }
 
-        if (timeValue > animGraphData->mFrames.GetLast().mTimeValue)
+        if (timeValue > animGraphData->mFrames.back().mTimeValue)
         {
-            return animGraphData->mFrames.GetLength() - 1;
+            return animGraphData->mFrames.size() - 1;
         }
 
-        for (uint32 i = 0; i < numFrames - 1; ++i)
+        for (size_t i = 0; i < numFrames - 1; ++i)
         {
             const AnimGraphAnimFrame& curFrame  = animGraphData->mFrames[i];
             const AnimGraphAnimFrame& nextFrame = animGraphData->mFrames[i + 1];
@@ -1388,7 +1350,7 @@ namespace EMotionFX
             }
         }
 
-        return MCORE_INVALIDINDEX32;
+        return InvalidIndex;
     }
 
     void Recorder::RemoveActorInstanceFromRecording(ActorInstance* actorInstance)
@@ -1402,7 +1364,7 @@ namespace EMotionFX
             recordedActorInstances.end());
 
         // Remove the actual recorded data.
-        for (uint32 i = 0; i < m_actorInstanceDatas.size();)
+        for (size_t i = 0; i < m_actorInstanceDatas.size();)
         {
             if (m_actorInstanceDatas[i]->mActorInstance == actorInstance)
             {
@@ -1459,27 +1421,25 @@ namespace EMotionFX
 
 
     // extract sorted active items
-    void Recorder::ExtractNodeHistoryItems(const ActorInstanceData& actorInstanceData, float timeValue, bool sort, EValueType valueType, MCore::Array<ExtractedNodeHistoryItem>* outItems, MCore::Array<uint32>* outMap)
+    void Recorder::ExtractNodeHistoryItems(const ActorInstanceData& actorInstanceData, float timeValue, bool sort, EValueType valueType, AZStd::vector<ExtractedNodeHistoryItem>* outItems, AZStd::vector<size_t>* outMap) const
     {
         // clear the map array
-        const uint32 maxIndex = CalcMaxNodeHistoryTrackIndex(actorInstanceData);
-        outItems->Resize(maxIndex + 1);
-        for (uint32 i = 0; i <= maxIndex; ++i)
+        const size_t maxIndex = CalcMaxNodeHistoryTrackIndex(actorInstanceData);
+        outItems->resize(maxIndex + 1);
+        for (size_t i = 0; i <= maxIndex; ++i)
         {
             ExtractedNodeHistoryItem item;
             item.mTrackIndex        = i;
             item.mValue             = 0.0f;
             item.mKeyTrackSampleTime = 0.0f;
             item.mNodeHistoryItem   = nullptr;
-            outItems->SetElem(i, item);
+            outItems->emplace(AZStd::next(begin(*outItems), i), AZStd::move(item));
         }
 
         // find all node history items
-        const MCore::Array<NodeHistoryItem*>& historyItems = actorInstanceData.mNodeHistoryItems;
-        const uint32 numItems = historyItems.GetLength();
-        for (uint32 i = 0; i < numItems; ++i)
+        const AZStd::vector<NodeHistoryItem*>& historyItems = actorInstanceData.mNodeHistoryItems;
+        for (NodeHistoryItem* curItem : historyItems)
         {
-            NodeHistoryItem* curItem = historyItems[i];
             if (curItem->mStartTime <= timeValue && curItem->mEndTime > timeValue)
             {
                 ExtractedNodeHistoryItem item;
@@ -1506,41 +1466,41 @@ namespace EMotionFX
                     item.mValue = curItem->mGlobalWeights.GetValueAtTime(item.mKeyTrackSampleTime, nullptr, nullptr, mRecordSettings.mInterpolate);
                 }
 
-                outItems->SetElem(curItem->mTrackIndex, item);
+                outItems->emplace(AZStd::next(begin(*outItems), curItem->mTrackIndex), item);
             }
         }
 
         // build the map
-        outMap->Resize(maxIndex + 1);
-        for (uint32 i = 0; i <= maxIndex; ++i)
+        outMap->resize(maxIndex + 1);
+        for (size_t i = 0; i <= maxIndex; ++i)
         {
-            outMap->SetElem(i, i);
+            outMap->emplace(AZStd::next(begin(*outMap), i), i);
         }
 
         // sort if desired
         if (sort)
         {
-            outItems->Sort();
+            AZStd::sort(begin(*outItems), end(*outItems));
 
-            for (uint32 i = 0; i <= maxIndex; ++i)
+            for (size_t i = 0; i <= maxIndex; ++i)
             {
-                outMap->SetElem(outItems->GetItem(i).mTrackIndex, i);
+                outMap->emplace(AZStd::next(begin(*outMap), outItems->at(i).mTrackIndex), i);
             }
         }
     }
 
 
-    AZ::u32 Recorder::CalcMaxNumActiveMotions(const ActorInstanceData& actorInstanceData) const
+    size_t Recorder::CalcMaxNumActiveMotions(const ActorInstanceData& actorInstanceData) const
     {
-        AZ::u32 result = 0;
+        size_t result = 0;
 
         // Array of flags that each iteration will use to determine if a given track has already been counted in or not.
         AZStd::vector<bool> trackFlags;
         const size_t maxNumTracks = static_cast<size_t>(CalcMaxNodeHistoryTrackIndex()) + 1;
         trackFlags.resize(maxNumTracks);
 
-        const uint32 numNodeHistoryItems = actorInstanceData.mNodeHistoryItems.GetLength();
-        for (uint32 i = 0; i < numNodeHistoryItems; ++i)
+        const size_t numNodeHistoryItems = actorInstanceData.mNodeHistoryItems.size();
+        for (size_t i = 0; i < numNodeHistoryItems; ++i)
         {
             EMotionFX::Recorder::NodeHistoryItem* item = actorInstanceData.mNodeHistoryItems[i];
 
@@ -1557,10 +1517,10 @@ namespace EMotionFX
             }
 
             // We at least have a single active motion.
-            AZ::u32 intermediateResult = 1;
+            size_t intermediateResult = 1;
             trackFlags[item->mTrackIndex] = true;
 
-            for (uint32 j = 0; j < numNodeHistoryItems; ++j)
+            for (size_t j = 0; j < numNodeHistoryItems; ++j)
             {
                 EMotionFX::Recorder::NodeHistoryItem* innerItem = actorInstanceData.mNodeHistoryItems[j];
 
@@ -1587,20 +1547,20 @@ namespace EMotionFX
                 }
             }
 
-            result = MCore::Max<AZ::u32>(result, intermediateResult);
+            result = AZStd::max(result, intermediateResult);
         }
 
         return result;
     }
 
 
-    AZ::u32 Recorder::CalcMaxNumActiveMotions() const
+    size_t Recorder::CalcMaxNumActiveMotions() const
     {
-        AZ::u32 result = 0;
+        size_t result = 0;
 
         for (const ActorInstanceData* actorInstanceData : m_actorInstanceDatas)
         {
-            result = MCore::Max<AZ::u32>(result, CalcMaxNumActiveMotions(*actorInstanceData));
+            result = AZStd::max(result, CalcMaxNumActiveMotions(*actorInstanceData));
         }
 
         return result;

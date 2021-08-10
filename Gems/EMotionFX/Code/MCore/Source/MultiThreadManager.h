@@ -104,6 +104,22 @@ namespace MCore
     };
 
 
+    class MCORE_API AtomicSizeT
+    {
+    public:
+        MCORE_INLINE AtomicSizeT()                  { SetValue(0); }
+
+        MCORE_INLINE void SetValue(size_t value)    { mAtomic.store(value); }
+        MCORE_INLINE size_t GetValue() const        { size_t value = mAtomic.load(); return value; }
+
+        MCORE_INLINE size_t Increment()             { return mAtomic++; }
+        MCORE_INLINE size_t Decrement()             { return mAtomic--; }
+
+    private:
+        AZStd::atomic<size_t> mAtomic;
+    };
+
+
     class MCORE_API Thread
     {
     public:

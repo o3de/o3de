@@ -118,16 +118,16 @@ namespace EMotionFX
         }
 
     protected:
-        AZ::u32 m_l_handIndex = InvalidIndex32;
-        AZ::u32 m_l_loArmIndex = InvalidIndex32;
-        AZ::u32 m_l_loLegIndex = InvalidIndex32;
-        AZ::u32 m_l_ankleIndex = InvalidIndex32;
-        AZ::u32 m_r_handIndex = InvalidIndex32;
-        AZ::u32 m_r_loArmIndex = InvalidIndex32;
-        AZ::u32 m_r_loLegIndex = InvalidIndex32;
-        AZ::u32 m_r_ankleIndex = InvalidIndex32;
-        AZ::u32 m_jack_rootIndex = InvalidIndex32;
-        AZ::u32 m_bip01__pelvisIndex = InvalidIndex32;
+        size_t m_l_handIndex = InvalidIndex;
+        size_t m_l_loArmIndex = InvalidIndex;
+        size_t m_l_loLegIndex = InvalidIndex;
+        size_t m_l_ankleIndex = InvalidIndex;
+        size_t m_r_handIndex = InvalidIndex;
+        size_t m_r_loArmIndex = InvalidIndex;
+        size_t m_r_loLegIndex = InvalidIndex;
+        size_t m_r_ankleIndex = InvalidIndex;
+        size_t m_jack_rootIndex = InvalidIndex;
+        size_t m_bip01__pelvisIndex = InvalidIndex;
         AnimGraphMotionNode* m_motionNode = nullptr;
         BlendTree* m_blendTree = nullptr;
         BlendTreeFloatConstantNode* m_fltConstNode = nullptr;
@@ -351,7 +351,7 @@ namespace EMotionFX
         AZ::Vector3 rootFinalPosUnderSpeed1 = m_jackPose->GetModelSpaceTransform(m_jack_rootIndex).mPosition;
         std::vector<float> speedFactors = { 2.0f, 3.0f, 10.0f, 100.0f };
         std::vector<float> playTimes = { 0.6f, 0.4f, 0.11f, 0.011f };
-        for (AZ::u32 i = 0; i < 4; i++)
+        for (size_t i = 0; i < 4; i++)
         {
             m_motionNode->Rewind(m_animGraphInstance);
             m_fltConstNode->SetValue(speedFactors[i]);
@@ -385,7 +385,7 @@ namespace EMotionFX
         rootFinalPosUnderSpeed1 = m_jackPose->GetModelSpaceTransform(m_jack_rootIndex).mPosition;
 
         // Similar test to using the InPlace input port.
-        for (AZ::u32 i = 0; i < 4; i++)
+        for (size_t i = 0; i < 4; i++)
         {
             m_motionNode->Rewind(m_animGraphInstance);
             m_motionNode->SetMotionPlaySpeed(speedFactors[i]);
@@ -426,7 +426,7 @@ namespace EMotionFX
         // In randomized index mode, all motions should at least appear once over 10 loops.
         bool motion1Displayed = false;
         bool motion2Displayed = false;
-        for (AZ::u32 i = 0; i < 20; i++)
+        for (size_t i = 0; i < 20; i++)
         {
             // Run the test loop multiple times to make sure all the motion index is picked.
             uniqueData->mReload = true;
@@ -460,7 +460,7 @@ namespace EMotionFX
         uint32 currentMotionIndex = uniqueData->mActiveMotionIndex;
 
         // In randomized no repeat index mode, motions should change in each loop.
-        for (AZ::u32 i = 0; i < 10; i++)
+        for (size_t i = 0; i < 10; i++)
         {
             uniqueData->mReload = true;
             m_motionNode->Reinit();
@@ -476,7 +476,7 @@ namespace EMotionFX
         m_motionNode->SetIndexMode(AnimGraphMotionNode::INDEXMODE_SEQUENTIAL);
 
         // In sequential index mode, motions should increase its index each time and wrap around. Basically iterating over the list of motions.
-        for (AZ::u32 i = 0; i < 10; i++)
+        for (size_t i = 0; i < 10; i++)
         {
             uniqueData->mReload = true;
             m_motionNode->Reinit();

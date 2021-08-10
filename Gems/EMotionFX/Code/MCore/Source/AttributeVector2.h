@@ -43,7 +43,7 @@ namespace MCore
         static AttributeVector2* Create(float x, float y);
 
         MCORE_INLINE uint8* GetRawDataPointer()                     { return reinterpret_cast<uint8*>(&mValue); }
-        MCORE_INLINE uint32 GetRawDataSize() const                  { return sizeofVector2; }
+        MCORE_INLINE size_t GetRawDataSize() const                  { return sizeofVector2; }
 
         // adjust values
         MCORE_INLINE const AZ::Vector2& GetValue() const                { return mValue; }
@@ -66,8 +66,8 @@ namespace MCore
             return AzFramework::StringFunc::LooksLikeVector2(valueString.c_str(), &mValue);
         }
         bool ConvertToString(AZStd::string& outString) const override      { AZStd::to_string(outString, mValue); return true; }
-        uint32 GetClassSize() const override                        { return sizeof(AttributeVector2); }
-        uint32 GetDefaultInterfaceType() const override             { return ATTRIBUTE_INTERFACETYPE_VECTOR2; }
+        size_t GetClassSize() const override                        { return sizeof(AttributeVector2); }
+        AZ::u32 GetDefaultInterfaceType() const override             { return ATTRIBUTE_INTERFACETYPE_VECTOR2; }
 
     private:
         AZ::Vector2     mValue;     /**< The Vector2 value. */

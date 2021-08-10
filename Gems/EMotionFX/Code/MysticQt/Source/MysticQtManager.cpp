@@ -30,12 +30,11 @@ namespace MysticQt
     MysticQtManager::~MysticQtManager()
     {
         // get the number of icons and destroy them
-        const uint32 numIcons = mIcons.GetLength();
-        for (uint32 i = 0; i < numIcons; ++i)
+        for (IconData* icon : mIcons)
         {
-            delete mIcons[i];
+            delete icon;
         }
-        mIcons.Clear();
+        mIcons.clear();
     }
 
 
@@ -58,18 +57,17 @@ namespace MysticQt
     const QIcon& MysticQtManager::FindIcon(const char* filename)
     {
         // get the number of icons and iterate through them
-        const uint32 numIcons = mIcons.GetLength();
-        for (uint32 i = 0; i < numIcons; ++i)
+        for (IconData* icon : mIcons)
         {
-            if (AzFramework::StringFunc::Equal(mIcons[i]->mFileName.c_str(), filename, false /* no case */))
+            if (AzFramework::StringFunc::Equal(icon->mFileName.c_str(), filename, false /* no case */))
             {
-                return *(mIcons[i]->mIcon);
+                return *(icon->mIcon);
             }
         }
 
         // we haven't found it
         IconData* iconData = new IconData(filename);
-        mIcons.Add(iconData);
+        mIcons.emplace_back(iconData);
         return *(iconData->mIcon);
     }
 

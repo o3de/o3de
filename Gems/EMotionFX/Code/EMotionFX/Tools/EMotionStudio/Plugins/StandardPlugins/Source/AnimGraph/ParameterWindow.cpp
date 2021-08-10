@@ -865,14 +865,14 @@ namespace EMStudio
         AZStd::vector<MCore::Attribute*> result;
 
         const CommandSystem::SelectionList& selectionList = GetCommandManager()->GetCurrentSelection();
-        const uint32 numActorInstances = selectionList.GetNumSelectedActorInstances();
-        for (uint32 i = 0; i < numActorInstances; ++i)
+        const size_t numActorInstances = selectionList.GetNumSelectedActorInstances();
+        for (size_t i = 0; i < numActorInstances; ++i)
         {
             const EMotionFX::ActorInstance* actorInstance = selectionList.GetActorInstance(i);
             const EMotionFX::AnimGraphInstance* animGraphInstance = actorInstance->GetAnimGraphInstance();
             if (animGraphInstance && animGraphInstance->GetAnimGraph() == m_animGraph)
             {
-                result.emplace_back(animGraphInstance->GetParameterValue(static_cast<uint32>(parameterIndex)));
+                result.emplace_back(animGraphInstance->GetParameterValue(parameterIndex));
             }
         }
 
@@ -930,7 +930,7 @@ namespace EMStudio
                 // Construct the create parameter command and add it to the command group.
                 const AZStd::unique_ptr<EMotionFX::Parameter>& parameter = createEditParameterDialog->GetParameter();
 
-                CommandSystem::ConstructCreateParameterCommand(commandString, m_animGraph, parameter.get(), MCORE_INVALIDINDEX32);
+                CommandSystem::ConstructCreateParameterCommand(commandString, m_animGraph, parameter.get());
                 commandGroup.AddCommandString(commandString);
 
                 const EMotionFX::GroupParameter* parentGroup = nullptr;
@@ -1033,7 +1033,7 @@ namespace EMStudio
                         {
                             // Get the list of connections from the port whose type is
                             // being changed
-                            const uint32 sourcePortIndex = parameterNode->FindOutputPortIndex(parameter->GetName().c_str());
+                            const size_t sourcePortIndex = parameterNode->FindOutputPortIndex(parameter->GetName().c_str());
 
                             AZStd::vector<AZStd::pair<EMotionFX::BlendTreeConnection*, EMotionFX::AnimGraphNode*>> outgoingConnectionsFromThisPort;
                             parameterNode->CollectOutgoingConnections(outgoingConnectionsFromThisPort, sourcePortIndex);
@@ -1167,8 +1167,8 @@ namespace EMStudio
             }
             const EMotionFX::GroupParameterVector groupParameters = m_animGraph->RecursivelyGetGroupParameters();
             const size_t logNumGroups = groupParameters.size();
-            MCore::LogInfo("Group parameters: (%i)", logNumGroups);
-            for (uint32 g = 0; g < logNumGroups; ++g)
+            MCore::LogInfo("Group parameters: (%zu)", logNumGroups);
+            for (size_t g = 0; g < logNumGroups; ++g)
             {
                 const EMotionFX::GroupParameter* groupParam = groupParameters[g];
                 MCore::LogInfo("Group parameter #%i: Name='%s'", g, groupParam->GetName().c_str());
@@ -1426,7 +1426,7 @@ namespace EMStudio
         const AZ::Outcome<size_t> valueParameterIndex = m_animGraph->FindValueParameterIndex(valueParameter);
         if (valueParameterIndex.IsSuccess())
         {
-            MCore::Attribute* instanceValue = animGraphInstance->GetParameterValue(static_cast<uint32>(valueParameterIndex.GetValue()));
+            MCore::Attribute* instanceValue = animGraphInstance->GetParameterValue(valueParameterIndex.GetValue());
             valueParameter->SetDefaultValueFromAttribute(instanceValue);
 
             m_animGraph->SetDirtyFlag(true);

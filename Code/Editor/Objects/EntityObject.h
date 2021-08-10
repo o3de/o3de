@@ -185,7 +185,7 @@ public:
     void RemoveAllEntityLinks();
     virtual void EntityLinked([[maybe_unused]] const QString& name, [[maybe_unused]] GUID targetEntityId){}
     virtual void EntityUnlinked([[maybe_unused]] const QString& name, [[maybe_unused]] GUID targetEntityId) {}
-    void LoadLink(XmlNodeRef xmlNode, CObjectArchive* pArchive = NULL);
+    void LoadLink(XmlNodeRef xmlNode, CObjectArchive* pArchive = nullptr);
     void SaveLink(XmlNodeRef xmlNode);
     //////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////

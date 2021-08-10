@@ -28,7 +28,7 @@ void CControlMRU::OnCalcDynamicSize(DWORD dwMode)
 
     CString* pArrNames = pRecentFileList->m_arrNames;
 
-    assert(pArrNames != NULL);
+    assert(pArrNames != nullptr);
     if (!pArrNames)
     {
         return;
@@ -52,7 +52,7 @@ void CControlMRU::OnCalcDynamicSize(DWORD dwMode)
     if (m_pParent->IsCustomizeMode())
     {
         m_dwHideFlags = 0;
-        SetEnabled(TRUE);
+        SetEnabled(true);
         return;
     }
 
@@ -61,7 +61,7 @@ void CControlMRU::OnCalcDynamicSize(DWORD dwMode)
         SetCaption(CString(MAKEINTRESOURCE(IDS_NORECENTFILE_CAPTION)));
         SetDescription("No recently opened files");
         m_dwHideFlags = 0;
-        SetEnabled(FALSE);
+        SetEnabled(false);
 
         return;
     }
@@ -105,7 +105,7 @@ void CControlMRU::OnCalcDynamicSize(DWORD dwMode)
 
         int nId = iMRU + GetFirstMruID();
 
-        CXTPControl* pControl = m_pControls->Add(xtpControlButton, nId, _T(""), m_nIndex + iLastValidMRU + 1, TRUE);
+        CXTPControl* pControl = m_pControls->Add(xtpControlButton, nId, _T(""), m_nIndex + iLastValidMRU + 1, true);
         assert(pControl);
 
         pControl->SetCaption(CXTPControlWindowList::ConstructCaption(strName, iLastValidMRU + 1));
@@ -130,6 +130,6 @@ void CControlMRU::OnCalcDynamicSize(DWORD dwMode)
         SetCaption(CString(MAKEINTRESOURCE(IDS_NORECENTFILE_CAPTION)));
         SetDescription("No recently opened files");
         m_dwHideFlags = 0;
-        SetEnabled(FALSE);
+        SetEnabled(false);
     }
 }

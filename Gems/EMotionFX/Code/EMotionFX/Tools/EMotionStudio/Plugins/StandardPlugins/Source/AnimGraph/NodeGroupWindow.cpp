@@ -8,9 +8,11 @@
 
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Math/Color.h>
+#include <AzCore/std/sort.h>
 #include <AzQtComponents/Components/FilteredSearchWidget.h>
 #include <AzQtComponents/Components/Widgets/ColorLabel.h>
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
+#include "MCore/Source/Config.h"
 #include "NodeGroupWindow.h"
 #include "AnimGraphPlugin.h"
 #include "GraphNode.h"
@@ -110,8 +112,8 @@ namespace EMStudio
         else
         {
             // find duplicate name in the anim graph other than this node group
-            const uint32 numNodeGroups = mAnimGraph->GetNumNodeGroups();
-            for (uint32 i = 0; i < numNodeGroups; ++i)
+            const size_t numNodeGroups = mAnimGraph->GetNumNodeGroups();
+            for (size_t i = 0; i < numNodeGroups; ++i)
             {
                 EMotionFX::AnimGraphNodeGroup* nodeGroup = mAnimGraph->GetNodeGroup(i);
                 if (nodeGroup->GetNameString() == convertedNewName)
@@ -159,8 +161,6 @@ namespace EMStudio
         mPlugin             = plugin;
         mTableWidget        = nullptr;
         mAddAction          = nullptr;
-
-        mWidgetTable.SetMemoryCategory(MEMCATEGORY_STANDARDPLUGINS_ANIMGRAPH);
 
         // create and register the command callbacks
         mCreateCallback     = new CommandAnimGraphAddNodeGroupCallback(false);
@@ -280,28 +280,28 @@ namespace EMStudio
     void NodeGroupWindow::Init()
     {
         // selected node groups array
-        MCore::Array<AZStd::string> selectedNodeGroups;
+        AZStd::vector<AZStd::string> selectedNodeGroups;
 
         // get the current selection
         const QList<QTableWidgetItem*> selectedItems = mTableWidget->selectedItems();
 
         // get the number of selected items
-        const uint32 numSelectedItems = selectedItems.count();
+        const int numSelectedItems = selectedItems.count();
 
         // filter the items
-        selectedNodeGroups.Reserve(numSelectedItems);
-        for (uint32 i = 0; i < numSelectedItems; ++i)
+        selectedNodeGroups.reserve(numSelectedItems);
+        for (int i = 0; i < numSelectedItems; ++i)
         {
-            const uint32 rowIndex = selectedItems[i]->row();
+            const int rowIndex = selectedItems[i]->row();
             const AZStd::string nodeGroupName = FromQtString(mTableWidget->item(rowIndex, 2)->text());
-            if (selectedNodeGroups.Find(nodeGroupName) == MCORE_INVALIDINDEX32)
+            if (AZStd::find(begin(selectedNodeGroups), end(selectedNodeGroups), nodeGroupName) == end(selectedNodeGroups))
             {
-                selectedNodeGroups.Add(nodeGroupName);
+                selectedNodeGroups.emplace_back(nodeGroupName);
             }
         }
 
         // clear the lookup array
-        mWidgetTable.Clear(false);
+        mWidgetTable.clear();
 
         // get the anim graph
         EMotionFX::AnimGraph* animGraph = mPlugin->GetActiveAnimGraph();
@@ -316,7 +316,7 @@ namespace EMStudio
         mTableWidget->blockSignals(true);
 
         // get the number of node groups
-        const uint32 numNodeGroups = animGraph->GetNumNodeGroups();
+        const int numNodeGroups = aznumeric_caster(animGraph->GetNumNodeGroups());
 
         // set table size and add header items
         mTableWidget->setRowCount(numNodeGroups);
@@ -325,13 +325,13 @@ namespace EMStudio
         mTableWidget->setSortingEnabled(false);
 
         // add each node group
-        for (uint32 i = 0; i < numNodeGroups; ++i)
+        for (int i = 0; i < numNodeGroups; ++i)
         {
             // get a pointer to the node group
             EMotionFX::AnimGraphNodeGroup* nodeGroup = animGraph->GetNodeGroup(i);
 
             // check if the node group is selected
-            const bool itemSelected = selectedNodeGroups.Find(nodeGroup->GetNameString().c_str()) != MCORE_INVALIDINDEX32;
+            const bool itemSelected = AZStd::find(begin(selectedNodeGroups), end(selectedNodeGroups), nodeGroup->GetNameString()) != end(selectedNodeGroups);
 
             // get the color and convert to Qt color
             AZ::Color color;
@@ -365,7 +365,7 @@ namespace EMStudio
             colorLayout->addWidget(colorWidget);
             colorLayoutWidget->setLayout(colorLayout);
 
-            mWidgetTable.Add(WidgetLookup(colorWidget, i));
+            mWidgetTable.emplace_back(WidgetLookup{colorWidget, i});
             connect(colorWidget, &AzQtComponents::ColorLabel::colorChanged, this, &NodeGroupWindow::OnColorChanged);
 
             // add the color label in the table
@@ -453,19 +453,13 @@ namespace EMStudio
 
 
     // find the index for the given widget
-    uint32 NodeGroupWindow::FindGroupIndexByWidget(QObject* widget) const
+    int NodeGroupWindow::FindGroupIndexByWidget(QObject* widget) const
     {
-        // for all table entries
-        const uint32 numWidgets = mWidgetTable.GetLength();
-        for (uint32 i = 0; i < numWidgets; ++i)
+        const auto foundGroup = AZStd::find_if(begin(mWidgetTable), end(mWidgetTable), [widget](const auto& tableEntry)
         {
-            if (mWidgetTable[i].mWidget == widget) // this is button we search for
-            {
-                return mWidgetTable[i].mGroupIndex;
-            }
-        }
-
-        return MCORE_INVALIDINDEX32;
+            return tableEntry.mWidget == widget;
+        });
+        return foundGroup != end(mWidgetTable) ? foundGroup->mGroupIndex : MCore::InvalidIndexT<int>;
     }
 
 
@@ -479,8 +473,8 @@ namespace EMStudio
         }
 
         // get the node group index by checking the widget lookup table
-        const uint32 groupIndex = row;
-        assert(groupIndex != MCORE_INVALIDINDEX32);
+        const int groupIndex = row;
+        assert(groupIndex != MCore::InvalidIndexT<int>);
 
         // get a pointer to the node group
         EMotionFX::AnimGraphNodeGroup* nodeGroup = animGraph->GetNodeGroup(groupIndex);
@@ -517,8 +511,8 @@ namespace EMStudio
         }
 
         // get the node group index by checking the widget lookup table
-        const uint32 groupIndex = FindGroupIndexByWidget(sender());
-        assert(groupIndex != MCORE_INVALIDINDEX32);
+        const int groupIndex = FindGroupIndexByWidget(sender());
+        assert(groupIndex != MCore::InvalidIndexT<int>);
 
         // get a pointer to the node group
         EMotionFX::AnimGraphNodeGroup* nodeGroup = animGraph->GetNodeGroup(groupIndex);
@@ -575,30 +569,30 @@ namespace EMStudio
         const QList<QTableWidgetItem*> selectedItems = mTableWidget->selectedItems();
 
         // get the number of selected items
-        const uint32 numSelectedItems = selectedItems.count();
-        if (numSelectedItems == 0)
+        const int numSelectedItems = selectedItems.count();
+        if (selectedItems.empty())
         {
             return;
         }
 
         // filter the items
-        MCore::Array<uint32> rowIndices;
-        rowIndices.Reserve(numSelectedItems);
-        for (uint32 i = 0; i < numSelectedItems; ++i)
+        AZStd::vector<int> rowIndices;
+        rowIndices.reserve(numSelectedItems);
+        for (int i = 0; i < numSelectedItems; ++i)
         {
-            const uint32 rowIndex = selectedItems[i]->row();
-            if (rowIndices.Find(rowIndex) == MCORE_INVALIDINDEX32)
+            const int rowIndex = selectedItems[i]->row();
+            if (AZStd::find(begin(rowIndices), end(rowIndices), rowIndex) == end(rowIndices))
             {
-                rowIndices.Add(rowIndex);
+                rowIndices.emplace_back(rowIndex);
             }
         }
 
         // sort the rows
         // it's used to select the next row
-        rowIndices.Sort();
+        AZStd::sort(begin(rowIndices), end(rowIndices));
 
         // get the number of selected rows
-        const uint32 numRowIndices = rowIndices.GetLength();
+        const size_t numRowIndices = rowIndices.size();
 
         // set the command group name
         AZStd::string commandGroupName;
@@ -608,7 +602,7 @@ namespace EMStudio
         }
         else
         {
-            commandGroupName = AZStd::string::format("Remove %d node groups", numRowIndices);
+            commandGroupName = AZStd::string::format("Remove %zu node groups", numRowIndices);
         }
 
         // create the command group
@@ -616,7 +610,7 @@ namespace EMStudio
 
         // Add each command
         AZStd::string tempString;
-        for (uint32 i = 0; i < numRowIndices; ++i)
+        for (size_t i = 0; i < numRowIndices; ++i)
         {
             const AZStd::string nodeGroupName = FromQtString(mTableWidget->item(rowIndices[i], 2)->text());
             if (i == 0 || i == numRowIndices - 1)
@@ -637,7 +631,7 @@ namespace EMStudio
         }
 
         // selected the next row
-        if (rowIndices[0] > ((uint32)mTableWidget->rowCount() - 1))
+        if (rowIndices[0] > (mTableWidget->rowCount() - 1))
         {
             mTableWidget->selectRow(rowIndices[0] - 1);
         }
@@ -724,21 +718,21 @@ namespace EMStudio
         const QList<QTableWidgetItem*> selectedItems = mTableWidget->selectedItems();
 
         // get the number of selected items
-        const uint32 numSelectedItems = selectedItems.count();
-        if (numSelectedItems == 0)
+        const int numSelectedItems = selectedItems.count();
+        if (selectedItems.empty())
         {
             return;
         }
 
         // filter the items
-        MCore::Array<uint32> rowIndices;
-        rowIndices.Reserve(numSelectedItems);
-        for (uint32 i = 0; i < numSelectedItems; ++i)
+        AZStd::vector<int> rowIndices;
+        rowIndices.reserve(numSelectedItems);
+        for (int i = 0; i < numSelectedItems; ++i)
         {
-            const uint32 rowIndex = selectedItems[i]->row();
-            if (rowIndices.Find(rowIndex) == MCORE_INVALIDINDEX32)
+            const int rowIndex = selectedItems[i]->row();
+            if (AZStd::find(begin(rowIndices), end(rowIndices), rowIndex) == end(rowIndices))
             {
-                rowIndices.Add(rowIndex);
+                rowIndices.emplace_back(rowIndex);
             }
         }
 
@@ -746,14 +740,14 @@ namespace EMStudio
         QMenu menu(this);
 
         // add rename if only one selected
-        if (rowIndices.GetLength() == 1)
+        if (rowIndices.size() == 1)
         {
             QAction* renameAction = menu.addAction("Rename Selected Node Group");
             connect(renameAction, &QAction::triggered, this, &NodeGroupWindow::OnRenameSelectedNodeGroup);
         }
 
         // at least one selected, remove action is possible
-        if (rowIndices.GetLength() > 0)
+        if (!rowIndices.empty())
         {
             menu.addSeparator();
             QAction* removeAction = menu.addAction("Remove Selected Node Groups");

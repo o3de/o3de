@@ -51,7 +51,7 @@ namespace EMotionFX
         void OnMotionSetChanged(int index);
 
     private:
-        AZ::Outcome<uint32> GetMotionSetIndex(int comboBoxIndex) const;
+        AZ::Outcome<size_t> GetMotionSetIndex(int comboBoxIndex) const;
 
         MCORE_DEFINECOMMANDCALLBACK(UpdateMotionSetComboBoxCallback)
 

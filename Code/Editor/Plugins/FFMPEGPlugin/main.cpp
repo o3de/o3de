@@ -15,7 +15,7 @@ PLUGIN_API IPlugin* CreatePluginInstance(PLUGIN_INIT_PARAM* pInitParam)
     if (pInitParam->pluginVersion != SANDBOX_PLUGIN_SYSTEM_VERSION)
     {
         pInitParam->outErrorCode = IPlugin::eError_VersionMismatch;
-        return 0;
+        return nullptr;
     }
 
     ModuleInitISystem(GetIEditor()->GetSystem(), "FFMPEGPlugin");

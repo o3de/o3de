@@ -47,7 +47,7 @@ namespace EMotionFX
             ASSERT_EQ(jointNames.size(), 3);
             for (size_t i= 0; i < 3; ++i)
             {
-                AZ::u32 jointIndex = InvalidIndex32;
+                size_t jointIndex = InvalidIndex;
                 const Node* node = skeleton->FindNodeAndIndexByName(jointNames[i].c_str(), jointIndex);
                 ASSERT_NE(node, nullptr);
                 m_jointIndices[i] = jointIndex;
@@ -116,7 +116,7 @@ namespace EMotionFX
         FloatSliderParameter* m_weightParameter = nullptr;
         BlendTreeSimulatedObjectNode* m_simNode = nullptr;
         BlendTreeParameterNode* m_parameterNode = nullptr;
-        AZ::u32 m_jointIndices[3] { InvalidIndex32, InvalidIndex32, InvalidIndex32 };
+        size_t m_jointIndices[3] { InvalidIndex, InvalidIndex, InvalidIndex };
     };
 
     TEST_F(BlendTreeSimulatedObjectNodeFixture, TransformsCheck)

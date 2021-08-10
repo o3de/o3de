@@ -44,7 +44,7 @@ public:
     MCORE_DEFINECOMMAND_1_END
 
     // helper functions
-    void COMMANDSYSTEM_API SelectActorInstancesUsingCommands(const MCore::Array<EMotionFX::ActorInstance*>& selectedActorInstances);
+    void COMMANDSYSTEM_API SelectActorInstancesUsingCommands(const AZStd::vector<EMotionFX::ActorInstance*>& selectedActorInstances);
     bool COMMANDSYSTEM_API CheckIfHasMotionSelectionParameter(const MCore::CommandLine& parameters);
     bool COMMANDSYSTEM_API CheckIfHasAnimGraphSelectionParameter(const MCore::CommandLine& parameters);
     bool COMMANDSYSTEM_API CheckIfHasActorSelectionParameter(const MCore::CommandLine& parameters, bool ignoreInstanceParameters = false);

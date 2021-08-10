@@ -59,8 +59,6 @@ namespace CommandSystem
 
     struct COMMANDSYSTEM_API ParameterConnectionItem
     {
-        uint32  mTargetNodePort;
-
         void SetParameterNodeName(const char* name)         { mParameterNodeNameID  = MCore::GetStringIdPool().GenerateIdForString(name); }
         void SetTargetNodeName(const char* name)            { mTargetNodeNameID     = MCore::GetStringIdPool().GenerateIdForString(name); }
         void SetParameterName(const char* name)             { mParameterNameID      = MCore::GetStringIdPool().GenerateIdForString(name); }
@@ -81,6 +79,6 @@ namespace CommandSystem
     COMMANDSYSTEM_API void ClearParametersCommand(EMotionFX::AnimGraph* animGraph, MCore::CommandGroup* commandGroup = nullptr);
 
     // Construct the create parameter command string using the the given information.
-    COMMANDSYSTEM_API void ConstructCreateParameterCommand(AZStd::string& outResult, EMotionFX::AnimGraph* animGraph, const EMotionFX::Parameter* parameter, uint32 insertAtIndex = MCORE_INVALIDINDEX32);
+    COMMANDSYSTEM_API void ConstructCreateParameterCommand(AZStd::string& outResult, EMotionFX::AnimGraph* animGraph, const EMotionFX::Parameter* parameter, size_t insertAtIndex = InvalidIndex);
 
 } // namespace CommandSystem

@@ -82,11 +82,11 @@ namespace EMotionFX
             //      Transform*  targetData  = targetPose->GetBindPoseLocalTransforms();
 
             // check for transformation changes
-            const uint32 numPoseNodes = targetSkeleton->GetNumNodes();
-            for (uint32 i = 0; i < numPoseNodes; ++i)
+            const size_t numPoseNodes = targetSkeleton->GetNumNodes();
+            for (size_t i = 0; i < numPoseNodes; ++i)
             {
                 // get a node id (both nodes will have the same id since they represent their names)
-                const uint32 nodeID = targetSkeleton->GetNode(i)->GetID();
+                const size_t nodeID = targetSkeleton->GetNode(i)->GetID();
 
                 // try to find the node with the same name inside the neutral pose actor
                 Node* neutralNode = neutralSkeleton->FindNodeByID(nodeID);
@@ -96,8 +96,8 @@ namespace EMotionFX
                 }
 
                 // get the node indices of both nodes
-                const uint32 neutralNodeIndex = neutralNode->GetNodeIndex();
-                const uint32 targetNodeIndex  = targetSkeleton->GetNode(i)->GetNodeIndex();
+                const size_t neutralNodeIndex = neutralNode->GetNodeIndex();
+                const size_t targetNodeIndex  = targetSkeleton->GetNode(i)->GetNodeIndex();
 
                 // skip bones in the bone list
                 //if (mCaptureMeshDeforms)
@@ -170,28 +170,27 @@ namespace EMotionFX
 
     // apply the relative transformation to the specified node
     // store the result in the position, rotation and scale parameters
-    void MorphTargetStandard::ApplyTransformation(ActorInstance* actorInstance, uint32 nodeIndex, AZ::Vector3& position, AZ::Quaternion& rotation, AZ::Vector3& scale, float weight)
+    void MorphTargetStandard::ApplyTransformation(ActorInstance* actorInstance, size_t nodeIndex, AZ::Vector3& position, AZ::Quaternion& rotation, AZ::Vector3& scale, float weight)
     {
         // calculate the normalized weight (in range of 0..1)
         const float newWeight = MCore::Clamp<float>(weight, mRangeMin, mRangeMax); // make sure its within the range
         const float normalizedWeight = CalcNormalizedWeight(newWeight); // convert in range of 0..1
 
         // calculate the new transformations for all nodes of this morph target
-        const uint32 numTransforms = mTransforms.GetLength();
-        for (uint32 i = 0; i < numTransforms; ++i)
+        for (const Transformation& transform : mTransforms)
         {
             // if this is the node that gets modified by this transform
-            if (mTransforms[i].mNodeIndex != nodeIndex)
+            if (transform.mNodeIndex != nodeIndex)
             {
                 continue;
             }
 
-            position += mTransforms[i].mPosition * newWeight;
-            scale += mTransforms[i].mScale * newWeight;
+            position += transform.mPosition * newWeight;
+            scale += transform.mScale * newWeight;
 
             // rotate additively
             const AZ::Quaternion& orgRot = actorInstance->GetTransformData()->GetBindPose()->GetLocalSpaceTransform(nodeIndex).mRotation;
-            const AZ::Quaternion rot = orgRot.NLerp(mTransforms[i].mRotation, normalizedWeight);
+            const AZ::Quaternion rot = orgRot.NLerp(transform.mRotation, normalizedWeight);
             rotation = rotation * (orgRot.GetInverseFull() * rot);
             rotation.Normalize();
 
@@ -202,29 +201,18 @@ namespace EMotionFX
 
 
     // check if this morph target influences the specified node or not
-    bool MorphTargetStandard::Influences(uint32 nodeIndex) const
+    bool MorphTargetStandard::Influences(size_t nodeIndex) const
     {
-        // check if there is a deform data object, which works on the specified node
-        for (const DeformData* deformData : mDeformDatas)
-        {
-            if (deformData->mNodeIndex == nodeIndex)
+        return
+            AZStd::any_of(begin(mDeformDatas), end(mDeformDatas), [nodeIndex](const DeformData* deformData)
             {
-                return true;
-            }
-        }
-
-        // check all transforms
-        const uint32 numTransforms = mTransforms.GetLength();
-        for (uint32 i = 0; i < numTransforms; ++i)
-        {
-            if (mTransforms[i].mNodeIndex == nodeIndex)
+                return deformData->mNodeIndex == nodeIndex;
+            })
+            ||
+            AZStd::any_of(begin(mTransforms), end(mTransforms), [nodeIndex](const Transformation& transform)
             {
-                return true;
-            }
-        }
-
-        // this morph target doesn't influence the given node
-        return false;
+                return transform.mNodeIndex == nodeIndex;
+            });
     }
 
 
@@ -239,27 +227,26 @@ namespace EMotionFX
         Transform newTransform;
 
         // calculate the new transformations for all nodes of this morph target
-        const uint32 numTransforms = mTransforms.GetLength();
-        for (uint32 i = 0; i < numTransforms; ++i)
+        for (const Transformation& transform : mTransforms)
         {
             // try to find the node
-            const uint32 nodeIndex = mTransforms[i].mNodeIndex;
+            const size_t nodeIndex = transform.mNodeIndex;
 
             // init the transform data
             newTransform = transformData->GetCurrentPose()->GetLocalSpaceTransform(nodeIndex);
 
             // calc new position and scale (delta based targetTransform)
-            newTransform.mPosition += mTransforms[i].mPosition * newWeight;
+            newTransform.mPosition += transform.mPosition * newWeight;
 
             EMFX_SCALECODE
             (
-                newTransform.mScale += mTransforms[i].mScale * newWeight;
+                newTransform.mScale += transform.mScale * newWeight;
                 // newTransform.mScaleRotation.Identity();
             )
 
             // rotate additively
             const AZ::Quaternion& orgRot = transformData->GetBindPose()->GetLocalSpaceTransform(nodeIndex).mRotation;
-            const AZ::Quaternion rot = orgRot.NLerp(mTransforms[i].mRotation, normalizedWeight);
+            const AZ::Quaternion rot = orgRot.NLerp(transform.mRotation, normalizedWeight);
             newTransform.mRotation = newTransform.mRotation * (orgRot.GetInverseFull() * rot);
             newTransform.mRotation.Normalize();
             /*
@@ -277,12 +264,12 @@ namespace EMotionFX
         }
     }
 
-    uint32 MorphTargetStandard::GetNumDeformDatas() const
+    size_t MorphTargetStandard::GetNumDeformDatas() const
     {
-        return static_cast<uint32>(mDeformDatas.size());
+        return mDeformDatas.size();
     }
 
-    MorphTargetStandard::DeformData* MorphTargetStandard::GetDeformData(uint32 nr) const
+    MorphTargetStandard::DeformData* MorphTargetStandard::GetDeformData(size_t nr) const
     {
         return mDeformDatas[nr];
     }
@@ -294,22 +281,23 @@ namespace EMotionFX
 
     void MorphTargetStandard::AddTransformation(const Transformation& transform)
     {
-        mTransforms.Add(transform);
+        mTransforms.emplace_back(transform);
     }
 
-    uint32 MorphTargetStandard::GetNumTransformations() const
+    // get the number of transformations in this morph target
+    size_t MorphTargetStandard::GetNumTransformations() const
     {
-        return mTransforms.GetLength();
+        return mTransforms.size();
     }
 
-    MorphTargetStandard::Transformation& MorphTargetStandard::GetTransformation(uint32 nr)
+    MorphTargetStandard::Transformation& MorphTargetStandard::GetTransformation(size_t nr)
     {
         return mTransforms[nr];
     }
 
 
     // clone this morph target
-    MorphTarget* MorphTargetStandard::Clone()
+    MorphTarget* MorphTargetStandard::Clone() const
     {
         // create the clone and copy its base class values
         MorphTargetStandard* clone = aznew MorphTargetStandard(""); // use an empty dummy name, as we will copy over the ID generated from it anyway
@@ -321,7 +309,7 @@ namespace EMotionFX
 
         // now clone the deform datas
         clone->mDeformDatas.resize(mDeformDatas.size());
-        for (size_t i = 0; i < mDeformDatas.size(); ++i)
+        for (uint32 i = 0; i < mDeformDatas.size(); ++i)
         {
             clone->mDeformDatas[i] = mDeformDatas[i]->Clone();
         }
@@ -337,7 +325,7 @@ namespace EMotionFX
     //---------------------------------------------------
 
     // constructor
-    MorphTargetStandard::DeformData::DeformData(uint32 nodeIndex, uint32 numVerts)
+    MorphTargetStandard::DeformData::DeformData(size_t nodeIndex, uint32 numVerts)
     {
         mNodeIndex  = nodeIndex;
         mNumVerts   = numVerts;
@@ -355,7 +343,7 @@ namespace EMotionFX
 
 
     // create
-    MorphTargetStandard::DeformData* MorphTargetStandard::DeformData::Create(uint32 nodeIndex, uint32 numVerts)
+    MorphTargetStandard::DeformData* MorphTargetStandard::DeformData::Create(size_t nodeIndex, uint32 numVerts)
     {
         return aznew MorphTargetStandard::DeformData(nodeIndex, numVerts);
     }
@@ -396,18 +384,18 @@ namespace EMotionFX
     }
 
     // pre-alloc memory for the deform datas
-    void MorphTargetStandard::ReserveDeformDatas(uint32 numDeformDatas)
+    void MorphTargetStandard::ReserveDeformDatas(size_t numDeformDatas)
     {
         mDeformDatas.reserve(numDeformDatas);
     }
 
     // pre-allocate memory for the transformations
-    void MorphTargetStandard::ReserveTransformations(uint32 numTransforms)
+    void MorphTargetStandard::ReserveTransformations(size_t numTransforms)
     {
-        mTransforms.Reserve(numTransforms);
+        mTransforms.reserve(numTransforms);
     }
 
-    void MorphTargetStandard::RemoveDeformData(uint32 index, bool delFromMem)
+    void MorphTargetStandard::RemoveDeformData(size_t index, bool delFromMem)
     {
         if (delFromMem)
         {
@@ -417,9 +405,9 @@ namespace EMotionFX
     }
 
 
-    void MorphTargetStandard::RemoveTransformation(uint32 index)
+    void MorphTargetStandard::RemoveTransformation(size_t index)
     {
-        mTransforms.Remove(index);
+        mTransforms.erase(AZStd::next(begin(mTransforms), index));
     }
 
 
@@ -433,11 +421,9 @@ namespace EMotionFX
         }
 
         // scale the transformations
-        const uint32 numTransformations = mTransforms.GetLength();
-        for (uint32 i = 0; i < numTransformations; ++i)
+        for (Transformation& transform : mTransforms)
         {
-            Transformation& transform = mTransforms[i];
-            transform.mPosition *= scaleFactor;
+             transform.mPosition *= scaleFactor;
         }
 
         // scale the deform datas (packed per vertex morph deltas)
