@@ -8,18 +8,13 @@
 
 #include <RHI/Device_Mac.h>
 
-namespace AZ
+namespace AZ::Metal::Platform
 {
-    namespace Metal
+    uint32_t GetMainDisplayRefreshRateInternal() const
     {
-        namespace Platform
-        {
-            float GetMainDisplayRefreshRateInternal()
-            {
-                CGDirectDisplayID display = CGMainDisplayID();
-                CGDisplayModeRef currentMode = CGDisplayCopyDisplayMode(display);
-                return CGDisplayModeGetRefreshRate(currentMode);
-            }
-        } // namespace Platform
-    } // namespace Metal
-} // namespace AZ
+        CGDirectDisplayID display = CGMainDisplayID();
+        CGDisplayModeRef currentMode = CGDisplayCopyDisplayMode(display);
+        return CGDisplayModeGetRefreshRate(currentMode);
+    }
+} 
+

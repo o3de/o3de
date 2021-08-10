@@ -7,13 +7,7 @@
  */
 #pragma once
 
-namespace AZ
+namespace AZ::Metal::Platform
 {
-    namespace Metal
-    {
-        namespace Platform
-        {
-            float GetMainDisplayRefreshRateInternal();
-        }
-    }
+    uint32_t GetMainDisplayRefreshRateInternal() const;
 }

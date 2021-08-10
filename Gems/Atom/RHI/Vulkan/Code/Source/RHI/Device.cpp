@@ -840,7 +840,7 @@ namespace AZ
             vkDestroyBuffer(GetNativeDevice(), vkBuffer, nullptr);
         }
 
-        uint32_t Device::GetMainDisplayRefreshRate()
+        uint32_t Device::GetMainDisplayRefreshRate() const
         {
             return m_mainDisplayRefreshRate;
         }

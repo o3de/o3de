@@ -433,7 +433,7 @@ namespace AZ
             return AZStd::vector<RHI::Format>{RHI::Format::B8G8R8A8_UNORM};
         }
 
-        float Device::GetMainDisplayRefreshRate()
+        uint32_t Device::GetMainDisplayRefreshRate() const
         {
             return m_mainDisplayRefreshRate;
         }

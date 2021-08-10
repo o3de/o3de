@@ -19,7 +19,7 @@ void OnVsyncIntervalChanged(uint32_t const& interval)
 // NOTE: On change, broadcasts the new requested vsync interval to all windows.
 // The value of the vsync interval is constrained between 0 and 4
 // Vsync intervals greater than 1 are not currently supported on the Vulkan RHI (see #2061 for discussion)
-AZ_CVAR(uint32_t, rpi_vsync_interval, 1, OnVsyncIntervalChanged, AZ::ConsoleFunctorFlags::Null, "Set swapchain vsync interval");
+AZ_CVAR(uint32_t, vsync_interval, 1, OnVsyncIntervalChanged, AZ::ConsoleFunctorFlags::Null, "Set swapchain vsync interval");
 
 namespace AzFramework
 {
@@ -135,7 +135,7 @@ namespace AzFramework
 
     uint32_t NativeWindow::GetSyncInterval() const
     {
-        return rpi_vsync_interval;
+        return vsync_interval;
     }
 
     /*static*/ bool NativeWindow::GetFullScreenStateOfDefaultWindow()

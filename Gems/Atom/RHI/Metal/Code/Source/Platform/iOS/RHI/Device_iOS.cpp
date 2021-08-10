@@ -9,17 +9,11 @@
 #include <RHI/Device_iOS.h>
 #include <Atom_RHI_Metal_Platform.h>
 
-namespace AZ
+namespace AZ::Metal::Platform
 {
-    namespace Metal
+    uint32_t GetMainDisplayRefreshRateInternal() const
     {
-        namespace Platform
-        {
-            float GetMainDisplayRefreshRateInternal()
-            {
-                NativeScreenType* nativeScreen = [NativeScreenType mainScreen];
-                return [nativeScreen maximumFramesPerSecond];
-            }
-        }
+        NativeScreenType* nativeScreen = [NativeScreenType mainScreen];
+        return [nativeScreen maximumFramesPerSecond];
     }
-}
+} 

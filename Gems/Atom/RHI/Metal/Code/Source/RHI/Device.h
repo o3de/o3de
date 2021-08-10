@@ -169,7 +169,7 @@ namespace AZ
             void FillFormatsCapabilitiesInternal(FormatCapabilitiesList& formatsCapabilities) override;
             void PreShutdown() override;
             AZStd::vector<RHI::Format> GetValidSwapChainImageFormats(const RHI::WindowHandle& windowHandle) const override;
-            float GetMainDisplayRefreshRate() override;
+            uint32_t GetMainDisplayRefreshRate() const override;
             //////////////////////////////////////////////////////////////////////////
 
             void InitFeatures();            
