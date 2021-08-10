@@ -81,7 +81,7 @@ namespace TestImpact
             {
                 if (m_testCompleteCallback.has_value())
                 {
-                    Client::TestRun testRun(
+                    Client::TestRunBase testRun(
                         testJob.GetTestTarget()->GetName(),
                         testJob.GetCommandString(),
                         testJob.GetStartTime(),
@@ -110,7 +110,7 @@ namespace TestImpact
         return result;
     }
 
-    //!
+    //! Utility structure for holding the pertinent data for test run reports.
     template<typename TestJob>
     struct TestRunData
     {

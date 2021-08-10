@@ -1,6 +1,7 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of this distribution.
- * 
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
@@ -35,9 +36,9 @@ namespace TestImpact
             TestSequenceResult result,
             AZStd::chrono::high_resolution_clock::time_point startTime,
             AZStd::chrono::milliseconds duration,
-            AZStd::vector<CompletedTestRun>&& passingTestRuns,
-            AZStd::vector<CompletedTestRun>&& failingTestRuns,
-            AZStd::vector<TestRunWithExecutonFailure>&& executionFailureTestRuns,
+            AZStd::vector<PassingTestRun>&& passingTestRuns,
+            AZStd::vector<FailingTestRun>&& failingTestRuns,
+            AZStd::vector<TestRunWithExecutionFailure>&& executionFailureTestRuns,
             AZStd::vector<TimedOutTestRun>&& timedOutTestRuns,
             AZStd::vector<UnexecutedTestRun>&& unexecutedTestRuns)
             : m_startTime(startTime)
@@ -118,17 +119,17 @@ namespace TestImpact
             return m_unexecutedTestRuns.size();
         }
 
-        const AZStd::vector<CompletedTestRun>& TestRunReport::GetPassingTestRuns() const
+        const AZStd::vector<PassingTestRun>& TestRunReport::GetPassingTestRuns() const
         {
             return m_passingTestRuns;
         }
 
-        const AZStd::vector<CompletedTestRun>& TestRunReport::GetFailingTestRuns() const
+        const AZStd::vector<FailingTestRun>& TestRunReport::GetFailingTestRuns() const
         {
             return m_failingTestRuns;
         }
 
-        const AZStd::vector<TestRunWithExecutonFailure>& TestRunReport::GetExecutionFailureTestRuns() const
+        const AZStd::vector<TestRunWithExecutionFailure>& TestRunReport::GetExecutionFailureTestRuns() const
         {
             return m_executionFailureTestRuns;
         }

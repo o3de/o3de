@@ -14,7 +14,7 @@ namespace TestImpact
 {
     namespace Client
     {
-        TestRun::TestRun(
+        TestRunBase::TestRunBase(
             const AZStd::string& name,
             const AZStd::string& commandString,
             AZStd::chrono::high_resolution_clock::time_point startTime,
@@ -28,48 +28,48 @@ namespace TestImpact
         {
         }
 
-        const AZStd::string& TestRun::GetTargetName() const
+        const AZStd::string& TestRunBase::GetTargetName() const
         {
             return m_targetName;
         }
 
-        const AZStd::string& TestRun::GetCommandString() const
+        const AZStd::string& TestRunBase::GetCommandString() const
         {
             return m_commandString;
         }
 
-        AZStd::chrono::high_resolution_clock::time_point TestRun::GetStartTime() const
+        AZStd::chrono::high_resolution_clock::time_point TestRunBase::GetStartTime() const
         {
             return m_startTime;
         }
 
-        AZStd::chrono::high_resolution_clock::time_point TestRun::GetEndTime() const
+        AZStd::chrono::high_resolution_clock::time_point TestRunBase::GetEndTime() const
         {
             return m_startTime + m_duration;
         }
 
-        AZStd::chrono::milliseconds TestRun::GetDuration() const
+        AZStd::chrono::milliseconds TestRunBase::GetDuration() const
         {
             return m_duration;
         }
 
-        TestRunResult TestRun::GetResult() const
+        TestRunResult TestRunBase::GetResult() const
         {
             return m_result;
         }
 
-        TestRunWithExecutonFailure::TestRunWithExecutonFailure(TestRun&& testRun)
-            : TestRun(AZStd::move(testRun))
+        TestRunWithExecutionFailure::TestRunWithExecutionFailure(TestRunBase&& testRun)
+            : TestRunBase(AZStd::move(testRun))
         {
         }
 
-        TimedOutTestRun::TimedOutTestRun(TestRun&& testRun)
-            : TestRun(AZStd::move(testRun))
+        TimedOutTestRun::TimedOutTestRun(TestRunBase&& testRun)
+            : TestRunBase(AZStd::move(testRun))
         {
         }
 
-        UnexecutedTestRun::UnexecutedTestRun(TestRun&& testRun)
-            : TestRun(AZStd::move(testRun))
+        UnexecutedTestRun::UnexecutedTestRun(TestRunBase&& testRun)
+            : TestRunBase(AZStd::move(testRun))
         {
         }
 
@@ -121,14 +121,14 @@ namespace TestImpact
             AZStd::chrono::milliseconds duration,
             TestRunResult result,
             AZStd::vector<Test>&& tests)
-            : TestRun(name, commandString, startTime, duration, result)
+            : TestRunBase(name, commandString, startTime, duration, result)
             , m_tests(AZStd::move(tests))
         {
             AZStd::tie(m_totalNumPassingTests, m_totalNumFailingTests, m_totalNumDisabledTests) = CalculateNumPassingAndFailingTestCases(m_tests);
         }
 
-        CompletedTestRun::CompletedTestRun(TestRun&& testRun, AZStd::vector<Test>&& tests)
-            : TestRun(AZStd::move(testRun))
+        CompletedTestRun::CompletedTestRun(TestRunBase&& testRun, AZStd::vector<Test>&& tests)
+            : TestRunBase(AZStd::move(testRun))
             , m_tests(AZStd::move(tests))
         {
             AZStd::tie(m_totalNumPassingTests, m_totalNumFailingTests, m_totalNumDisabledTests) = CalculateNumPassingAndFailingTestCases(m_tests);
@@ -157,6 +157,16 @@ namespace TestImpact
         const AZStd::vector<Test>& CompletedTestRun::GetTests() const
         {
             return m_tests;
+        }
+
+        PassingTestRun::PassingTestRun(TestRunBase&& testRun, AZStd::vector<Test>&& tests)
+            : CompletedTestRun(AZStd::move(testRun), AZStd::move(tests))
+        {
+        }
+
+        FailingTestRun::FailingTestRun(TestRunBase&& testRun, AZStd::vector<Test>&& tests)
+            : CompletedTestRun(AZStd::move(testRun), AZStd::move(tests))
+        {
         }
     } // namespace Client
 } // namespace TestImpact

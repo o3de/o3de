@@ -1,6 +1,6 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of
- * this distribution.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -25,11 +25,11 @@ namespace TestImpact
             Ignore //!< Continue the test sequence and ignore the execution failures.
         };
 
-        //! Policy for handling the coverage data of failed tests targets (both test that failed to execute and tests that ran but failed).
+        //! Policy for handling the coverage data of failed tests targets (both tests that failed to execute and tests that ran but failed).
         enum class FailedTestCoverage : AZ::u8
         {
             Discard, //!< Discard the coverage data produced by the failing tests, causing them to be drafted into future test runs.
-            Keep //!< Keep any existing coverage data and update the coverage data for failed test targetss that produce coverage.
+            Keep //!< Keep any existing coverage data and update the coverage data for failed test targets that produce coverage.
         };
 
         //! Policy for prioritizing selected tests.
