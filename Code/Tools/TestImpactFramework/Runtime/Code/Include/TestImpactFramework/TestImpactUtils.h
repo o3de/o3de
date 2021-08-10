@@ -59,7 +59,8 @@ namespace TestImpact
     //! Delete the files that match the pattern from the specified directory.
     //! @param path The path to the directory to pattern match the files for deletion.
     //! @param pattern The pattern to match files for deletion.
-    void DeleteFiles(const RepoPath& path, const AZStd::string& pattern);
+    //! @return The number of files that were deleted.
+    size_t DeleteFiles(const RepoPath& path, const AZStd::string& pattern);
 
     //! Deletes the specified file.
     void DeleteFile(const RepoPath& file);

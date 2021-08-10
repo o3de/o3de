@@ -289,15 +289,15 @@ namespace TestImpact
         {
             if (dataFile.has_value())
             {
-                m_sparTIAFile = dataFile.value().String();
+                m_sparTiaFile = dataFile.value().String();
             }
             else
             {
-                m_sparTIAFile = m_config.m_workspace.m_active.m_sparTIAFiles[static_cast<size_t>(m_suiteFilter)].String();
+                m_sparTiaFile = m_config.m_workspace.m_active.m_sparTiaFiles[static_cast<size_t>(m_suiteFilter)].String();
             }
            
             // Populate the dynamic dependency map with the existing source coverage data (if any)
-            const auto tiaDataRaw = ReadFileContents<Exception>(m_sparTIAFile);
+            const auto tiaDataRaw = ReadFileContents<Exception>(m_sparTiaFile);
             const auto tiaData = DeserializeSourceCoveringTestsList(tiaDataRaw);
             if (tiaData.GetNumSources())
             {
@@ -330,7 +330,7 @@ namespace TestImpact
             AZ_Printf(
                 LogCallSite,
                 AZStd::string::format(
-                    "No test impact analysis data found for suite '%s' at %s\n", SuiteTypeAsString(m_suiteFilter).c_str(), m_sparTIAFile.c_str()).c_str());
+                    "No test impact analysis data found for suite '%s' at %s\n", SuiteTypeAsString(m_suiteFilter).c_str(), m_sparTiaFile.c_str()).c_str());
         }
     }
 
@@ -405,7 +405,7 @@ namespace TestImpact
     void Runtime::ClearDynamicDependencyMapAndRemoveExistingFile()
     {
         m_dynamicDependencyMap->ClearAllSourceCoverage();
-        DeleteFile(m_sparTIAFile);
+        DeleteFile(m_sparTiaFile);
     }
 
     SourceCoveringTestsList Runtime::CreateSourceCoveringTestFromTestCoverages(const AZStd::vector<TestEngineInstrumentedRun>& jobs)
@@ -486,9 +486,9 @@ namespace TestImpact
             }
 
             m_dynamicDependencyMap->ReplaceSourceCoverage(sourceCoverageTestsList);
-            const auto sparTIA = m_dynamicDependencyMap->ExportSourceCoverage();
-            const auto sparTIAData = SerializeSourceCoveringTestsList(sparTIA);
-            WriteFileContents<RuntimeException>(sparTIAData, m_sparTIAFile);
+            const auto sparTia = m_dynamicDependencyMap->ExportSourceCoverage();
+            const auto sparTiaData = SerializeSourceCoveringTestsList(sparTia);
+            WriteFileContents<RuntimeException>(sparTiaData, m_sparTiaFile);
             m_hasImpactAnalysisData = true;
         }
         catch(const RuntimeException& e)
@@ -504,7 +504,7 @@ namespace TestImpact
         }
     }
 
-    PolicyStateBase Runtime::GeneratePolicyStateBase()
+    PolicyStateBase Runtime::GeneratePolicyStateBase() const
     {
         PolicyStateBase policyState;
 
@@ -518,19 +518,19 @@ namespace TestImpact
         return policyState;
     }
 
-    SequencePolicyState Runtime::GenerateSequencePolicyState()
+    SequencePolicyState Runtime::GenerateSequencePolicyState() const
     {
         return { GeneratePolicyStateBase() };
     }
 
     SafeImpactAnalysisSequencePolicyState Runtime::GenerateSafeImpactAnalysisSequencePolicyState(
-        Policy::TestPrioritization testPrioritizationPolicy)
+        Policy::TestPrioritization testPrioritizationPolicy) const
     {
         return { GeneratePolicyStateBase(), testPrioritizationPolicy };
     }
 
     ImpactAnalysisSequencePolicyState Runtime::GenerateImpactAnalysisSequencePolicyState(
-        Policy::TestPrioritization testPrioritizationPolicy, Policy::DynamicDependencyMap dynamicDependencyMapPolicy)
+        Policy::TestPrioritization testPrioritizationPolicy, Policy::DynamicDependencyMap dynamicDependencyMapPolicy) const
     {
         return { GeneratePolicyStateBase(), testPrioritizationPolicy, dynamicDependencyMapPolicy };
     }
@@ -770,7 +770,7 @@ namespace TestImpact
         const size_t totalNumTestRuns = includedSelectedTestTargets.size() + draftedTestTargets.size() + includedDiscardedTestTargets.size();
         TestRunCompleteCallbackHandler testRunCompleteHandler(totalNumTestRuns, testCompleteCallback);
         
-		// Functor for running instrumented test targets
+        // Functor for running instrumented test targets
         const auto instrumentedTestRun =
             [this, &testTargetTimeout, &sequenceTimeout, &testRunCompleteHandler](const AZStd::vector<const TestTarget*>& testsTargets)
         {
@@ -801,7 +801,7 @@ namespace TestImpact
                 AZStd::ref(testRunCompleteHandler));
         };
 
-        //
+        // Functor for running instrumented test targets
         const auto gatherTestRunData = [&sequenceTimer]
         (const AZStd::vector<const TestTarget*>& testsTargets, const auto& testRunner, auto& testRunData)
         {
