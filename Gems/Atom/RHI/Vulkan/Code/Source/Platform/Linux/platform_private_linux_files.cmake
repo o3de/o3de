@@ -8,6 +8,9 @@
 
 set(FILES
     RHI/WSISurface_Linux.cpp
+    RHI/Device_Platform.h
+    RHI/Device_Linux.h
+    RHI/Device_Linux.cpp
     Vulkan_Traits_Linux.h
     Vulkan_Traits_Platform.h
 )

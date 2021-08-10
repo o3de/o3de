@@ -19,6 +19,7 @@
 #include <RHI/CommandList.h>
 #include <RHI/CommandQueue.h>
 #include <RHI/Device.h>
+#include <RHI/Device_Platform.h>
 #include <RHI/GraphicsPipeline.h>
 #include <RHI/ImagePool.h>
 #include <RHI/Instance.h>
@@ -228,9 +229,7 @@ namespace AZ
             //Load device features now that we have loaded all extension info
             physicalDevice.LoadSupportedFeatures();
 
-            DEVMODE DisplayConfig;
-            EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &DisplayConfig);
-            m_mainDisplayRefreshRate = DisplayConfig.dmDisplayFrequency;
+            m_mainDisplayRefreshRate = Platform::GetMainDisplayRefreshRateInternal();
 
             InitFeaturesAndLimits(physicalDevice);
             return RHI::ResultCode::Success;
