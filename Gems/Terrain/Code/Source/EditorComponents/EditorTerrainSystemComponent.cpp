@@ -7,24 +7,24 @@
  */
 
 #include <AzCore/Serialization/SerializeContext.h>
-#include <EditorComponents/TerrainEditorSystemComponent.h>
+#include <EditorComponents/EditorTerrainSystemComponent.h>
 
 namespace Terrain
 {
-    void TerrainEditorSystemComponent::Reflect(AZ::ReflectContext* context)
+    void EditorTerrainSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<TerrainEditorSystemComponent, AZ::Component>()->Version(1);
+            serializeContext->Class<EditorTerrainSystemComponent, AZ::Component>()->Version(1);
         }
     }
 
-    void TerrainEditorSystemComponent::Activate()
+    void EditorTerrainSystemComponent::Activate()
     {
         AzToolsFramework::EditorEvents::Bus::Handler::BusConnect();
     }
 
-    void TerrainEditorSystemComponent::Deactivate()
+    void EditorTerrainSystemComponent::Deactivate()
     {
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
     }

@@ -11,14 +11,14 @@
 
 namespace Terrain
 {
-    class TerrainEditorModule
+    class EditorTerrainModule
         : public TerrainModule
     {
     public:
-        AZ_RTTI(TerrainEditorModule, "{68693F28-7051-4C14-85EA-DE6FD8CFCBD6}", TerrainModule);
-        AZ_CLASS_ALLOCATOR(TerrainEditorModule, AZ::SystemAllocator, 0);
+        AZ_RTTI(EditorTerrainModule, "{68693F28-7051-4C14-85EA-DE6FD8CFCBD6}", TerrainModule);
+        AZ_CLASS_ALLOCATOR(EditorTerrainModule, AZ::SystemAllocator, 0);
 
-        TerrainEditorModule();
+        EditorTerrainModule();
 
         AZ::ComponentTypeList GetRequiredSystemComponents() const override;
     };

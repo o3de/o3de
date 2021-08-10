@@ -15,15 +15,15 @@
 namespace Terrain
 {
     /// System component for Terrain editor
-    class TerrainEditorSystemComponent
+    class EditorTerrainSystemComponent
         : public AZ::Component
         , private AzToolsFramework::EditorEvents::Bus::Handler
     {
     public:
-        AZ_COMPONENT(TerrainEditorSystemComponent, "{5e9f2200-9099-4325-babd-6a533a1abea8}");
+        AZ_COMPONENT(EditorTerrainSystemComponent, "{5e9f2200-9099-4325-babd-6a533a1abea8}");
         static void Reflect(AZ::ReflectContext* context);
 
-        TerrainEditorSystemComponent() = default;
+        EditorTerrainSystemComponent() = default;
 
     private:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)

@@ -5,14 +5,14 @@
  *
  */
 
-#include <TerrainEditorModule.h>
+#include <EditorTerrainModule.h>
 #include <EditorTerrainHeightGradientListComponent.h>
 #include <EditorTerrainLayerSpawnerComponent.h>
 #include <EditorTerrainWorldComponent.h>
 
 namespace Terrain
 {
-    TerrainEditorModule::TerrainEditorModule()
+    EditorTerrainModule::EditorTerrainModule()
     {
         m_descriptors.insert(
             m_descriptors.end(),
@@ -24,11 +24,11 @@ namespace Terrain
             });
     }
 
-    AZ::ComponentTypeList TerrainEditorModule::GetRequiredSystemComponents() const
+    AZ::ComponentTypeList EditorTerrainModule::GetRequiredSystemComponents() const
     {
         AZ::ComponentTypeList requiredComponents = TerrainModule::GetRequiredSystemComponents();
         return requiredComponents;
     }
 }
 
-AZ_DECLARE_MODULE_CLASS(Gem_TerrainEditor, Terrain::TerrainEditorModule)
+AZ_DECLARE_MODULE_CLASS(Gem_TerrainEditor, Terrain::EditorTerrainModule)
