@@ -11,7 +11,7 @@
 	<key>CFBundleSignature</key>
 	<string>ASPR</string>
 	<key>CFBundleExecutable</key>
-	<string>AssetProcessor</string>
+	<string>AssetProcessorDummy</string>
 	<key>CFBundleIdentifier</key>
 	<string>com.Amazon.AssetProcessor</string>
 </dict>
