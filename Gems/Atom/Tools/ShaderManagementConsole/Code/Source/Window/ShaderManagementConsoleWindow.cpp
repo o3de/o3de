@@ -5,61 +5,47 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
+ 
 #include <AzCore/Name/Name.h>
-
 #include <AzFramework/StringFunc/StringFunc.h>
-#include <AzFramework/Application/Application.h>
-
-#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
+
 #include <AtomToolsFramework/Util/Util.h>
+#include <AtomToolsFramework/Window/AtomToolsMainWindowNotificationBus.h>
 
 #include <Atom/Document/ShaderManagementConsoleDocumentRequestBus.h>
 #include <Atom/Document/ShaderManagementConsoleDocumentSystemRequestBus.h>
-#include <Atom/Window/ShaderManagementConsoleWindowNotificationBus.h>
-
-#include <Source/Window/ShaderManagementConsoleWindow.h>
+#include <Window/ShaderManagementConsoleWindow.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QCloseEvent>
-#include <QVariant>
 #include <QFileDialog>
-#include <QWindow>
-#include <QVBoxLayout>
-#include <QPushButton>
-#include <QTableView>
 #include <QHeaderView>
+#include <QPushButton>
 #include <QStandardItemModel>
+#include <QTableView>
+#include <QVBoxLayout>
+#include <QVariant>
+#include <QWindow>
 AZ_POP_DISABLE_WARNING
 
 namespace ShaderManagementConsole
 {
     ShaderManagementConsoleWindow::ShaderManagementConsoleWindow(QWidget* parent /* = 0 */)
-        : AzQtComponents::DockMainWindow(parent)
+        : AtomToolsFramework::AtomToolsMainWindow(parent)
     {
         setWindowTitle("Shader Management Console");
 
-        m_advancedDockManager = new AzQtComponents::FancyDocking(this);
-
-        setDockNestingEnabled(true);
-        setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
-        setCorner(Qt::BottomLeftCorner, Qt::LeftDockWidgetArea);
-        setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
-        setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
-
-        m_menuBar = new QMenuBar(this);
-        setMenuBar(m_menuBar);
+        setObjectName("ShaderManagementConsoleWindow");
 
         m_toolBar = new ShaderManagementConsoleToolBar(this);
+        m_toolBar->setObjectName("ToolBar");
         addToolBar(m_toolBar);
 
-        m_centralWidget = new QWidget(this);
-        m_tabWidget = new AzQtComponents::TabWidget(m_centralWidget);
-        m_tabWidget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
-        m_tabWidget->setContentsMargins(0, 0, 0, 0);
+        CreateMenu();
+        CreateTabBar();
 
         QVBoxLayout* vl = new QVBoxLayout(m_centralWidget);
         vl->setMargin(0);
@@ -68,27 +54,8 @@ namespace ShaderManagementConsole
         m_centralWidget->setLayout(vl);
         setCentralWidget(m_centralWidget);
 
-        SetupMenu();
-        SetupTabs();
-
-        m_assetBrowserDockWidget = new AzQtComponents::StyledDockWidget("Asset Browser");
-        m_assetBrowserDockWidget->setObjectName(m_assetBrowserDockWidget->windowTitle());
-        m_assetBrowserDockWidget->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable);
-        m_assetBrowser = new ShaderManagementConsoleBrowserWidget(m_assetBrowserDockWidget);
-        m_assetBrowser->setMinimumSize(QSize(300, 300));
-        m_assetBrowserDockWidget->setWidget(m_assetBrowser);
-        addDockWidget(Qt::BottomDockWidgetArea, m_assetBrowserDockWidget);
-        resizeDocks({ m_assetBrowserDockWidget }, { 400 }, Qt::Vertical);
-
-        m_pythonTerminalDockWidget = new AzQtComponents::StyledDockWidget("Python Terminal");
-        m_pythonTerminalDockWidget->setObjectName(m_pythonTerminalDockWidget->windowTitle());
-        m_pythonTerminalDockWidget->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable);
-        m_pythonTerminal = new AzToolsFramework::CScriptTermDialog(m_pythonTerminalDockWidget);
-        m_pythonTerminal->setMinimumSize(QSize(300, 300));
-        m_pythonTerminalDockWidget->setWidget(m_pythonTerminal);
-        addDockWidget(Qt::BottomDockWidgetArea, m_pythonTerminalDockWidget);
-        resizeDocks({ m_pythonTerminalDockWidget }, { 400 }, Qt::Vertical);
-        m_pythonTerminalDockWidget->setVisible(false);
+        AddDockWidget("Asset Browser", new ShaderManagementConsoleBrowserWidget, Qt::BottomDockWidgetArea, Qt::Vertical);
+        AddDockWidget("Python Terminal", new AzToolsFramework::CScriptTermDialog, Qt::BottomDockWidgetArea, Qt::Horizontal);
 
         ShaderManagementConsoleDocumentNotificationBus::Handler::BusConnect();
         OnDocumentOpened(AZ::Uuid::CreateNull());
@@ -109,7 +76,8 @@ namespace ShaderManagementConsole
             return;
         }
 
-        ShaderManagementConsoleWindowNotificationBus::Broadcast(&ShaderManagementConsoleWindowNotifications::OnShaderManagementConsoleWindowClosing);
+        AtomToolsFramework::AtomToolsMainWindowNotificationBus::Broadcast(
+            &AtomToolsFramework::AtomToolsMainWindowNotifications::OnMainWindowClosing);
     }
 
     void ShaderManagementConsoleWindow::OnDocumentOpened(const AZ::Uuid& documentId)
@@ -118,14 +86,32 @@ namespace ShaderManagementConsole
         ShaderManagementConsoleDocumentRequestBus::EventResult(isOpen, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::IsOpen);
         bool isSavable = false;
         ShaderManagementConsoleDocumentRequestBus::EventResult(isSavable, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::IsSavable);
+        bool isModified = false;
+        ShaderManagementConsoleDocumentRequestBus::EventResult(isModified, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::IsModified);
         bool canUndo = false;
         ShaderManagementConsoleDocumentRequestBus::EventResult(canUndo, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::CanUndo);
         bool canRedo = false;
         ShaderManagementConsoleDocumentRequestBus::EventResult(canRedo, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::CanRedo);
+        AZStd::string absolutePath;
+        ShaderManagementConsoleDocumentRequestBus::EventResult(absolutePath, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::GetAbsolutePath);
+        AZStd::string filename;
+        AzFramework::StringFunc::Path::GetFullFileName(absolutePath.c_str(), filename);
 
         // Update UI to display the new document
-        AddTabForDocumentId(documentId);
-        UpdateTabForDocumentId(documentId);
+        if (!documentId.IsNull() && isOpen)
+        {
+            // Create a new tab for the document ID and assign it's label to the file name of the document.
+            AddTabForDocumentId(documentId, filename, absolutePath, [this, documentId]{
+                // The document tab contains a table view.
+                auto contentWidget = new QTableView(m_centralWidget);
+                contentWidget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+                contentWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
+                contentWidget->setModel(CreateDocumentContent(documentId));
+                return contentWidget;
+            });
+        }
+
+        UpdateTabForDocumentId(documentId, filename, absolutePath, isModified);
 
         const bool hasTabs = m_tabWidget->count() > 0;
 
@@ -144,7 +130,7 @@ namespace ShaderManagementConsole
 
         m_actionUndo->setEnabled(canUndo);
         m_actionRedo->setEnabled(canRedo);
-        m_actionPreferences->setEnabled(false);
+        m_actionSettings->setEnabled(false);
 
         m_actionAssetBrowser->setEnabled(true);
         m_actionPythonTerminal->setEnabled(true);
@@ -165,7 +151,13 @@ namespace ShaderManagementConsole
 
     void ShaderManagementConsoleWindow::OnDocumentModified(const AZ::Uuid& documentId)
     {
-        UpdateTabForDocumentId(documentId);
+        bool isModified = false;
+        ShaderManagementConsoleDocumentRequestBus::EventResult(isModified, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::IsModified);
+        AZStd::string absolutePath;
+        ShaderManagementConsoleDocumentRequestBus::EventResult(absolutePath, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::GetAbsolutePath);
+        AZStd::string filename;
+        AzFramework::StringFunc::Path::GetFullFileName(absolutePath.c_str(), filename);
+        UpdateTabForDocumentId(documentId, filename, absolutePath, isModified);
     }
 
     void ShaderManagementConsoleWindow::OnDocumentUndoStateChanged(const AZ::Uuid& documentId)
@@ -183,11 +175,19 @@ namespace ShaderManagementConsole
 
     void ShaderManagementConsoleWindow::OnDocumentSaved(const AZ::Uuid& documentId)
     {
-        UpdateTabForDocumentId(documentId);
+        bool isModified = false;
+        ShaderManagementConsoleDocumentRequestBus::EventResult(isModified, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::IsModified);
+        AZStd::string absolutePath;
+        ShaderManagementConsoleDocumentRequestBus::EventResult(absolutePath, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::GetAbsolutePath);
+        AZStd::string filename;
+        AzFramework::StringFunc::Path::GetFullFileName(absolutePath.c_str(), filename);
+        UpdateTabForDocumentId(documentId, filename, absolutePath, isModified);
     }
 
-    void ShaderManagementConsoleWindow::SetupMenu()
+    void ShaderManagementConsoleWindow::CreateMenu()
     {
+        Base::CreateMenu();
+
         // Generating the main menu manually because it's easier and we will have some dynamic or data driven entries
         m_menuFile = m_menuBar->addMenu("&File");
 
@@ -264,23 +264,26 @@ namespace ShaderManagementConsole
 
         m_menuEdit->addSeparator();
 
-        m_actionPreferences = m_menuEdit->addAction("&Preferences...", [this]() {
+        m_actionSettings = m_menuEdit->addAction("&Preferences...", [this]() {
         }, QKeySequence::Preferences);
-        m_actionPreferences->setEnabled(false);
+        m_actionSettings->setEnabled(false);
 
         m_menuView = m_menuBar->addMenu("&View");
 
-        m_actionAssetBrowser = m_menuView->addAction("&Asset Browser", [this]() {
-            m_assetBrowserDockWidget->setVisible(!m_assetBrowserDockWidget->isVisible());
-        });
-
-        m_actionPythonTerminal = m_menuView->addAction("Python &Terminal", [this]() {
-            m_pythonTerminalDockWidget->setVisible(!m_pythonTerminalDockWidget->isVisible());
-            if (m_pythonTerminalDockWidget->isVisible())
+        m_actionAssetBrowser = m_menuView->addAction(
+            "&Asset Browser",
+            [this]()
             {
-                // reposition console window on the bottom, otherwise it gets docked in some weird spot...
-                addDockWidget(Qt::BottomDockWidgetArea, m_pythonTerminalDockWidget);
-            }
+                const AZStd::string label = "Asset Browser";
+                SetDockWidgetVisible(label, !IsDockWidgetVisible(label));
+            });
+
+        m_actionPythonTerminal = m_menuView->addAction(
+            "Python &Terminal",
+            [this]()
+            {
+                const AZStd::string label = "Python Terminal";
+                SetDockWidgetVisible(label, !IsDockWidgetVisible(label));
             });
 
         m_menuView->addSeparator();
@@ -302,20 +305,9 @@ namespace ShaderManagementConsole
         });
     }
 
-    void ShaderManagementConsoleWindow::SetupTabs()
+    void ShaderManagementConsoleWindow::CreateTabBar()
     {
-        // The tab bar should only be visible if it has active documents
-        m_tabWidget->setVisible(false);
-        m_tabWidget->setTabBarAutoHide(false);
-        m_tabWidget->setMovable(true);
-        m_tabWidget->setTabsClosable(true);
-        m_tabWidget->setUsesScrollButtons(true);
-
-        // Add context menu for right-clicking on tabs
-        m_tabWidget->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
-        connect(m_tabWidget, &QWidget::customContextMenuRequested, this, [this]() {
-            OpenTabContextMenu();
-        });
+        Base::CreateTabBar();
 
         // This signal will be triggered whenever a tab is added, removed, selected, clicked, dragged
         // When the last tab is removed tabIndex will be -1 and the document ID will be null
@@ -327,125 +319,6 @@ namespace ShaderManagementConsole
         connect(m_tabWidget, &QTabWidget::tabCloseRequested, this, [this](int tabIndex) {
             CloseDocumentForTab(tabIndex);
         });
-    }
-
-    void ShaderManagementConsoleWindow::AddTabForDocumentId(const AZ::Uuid& documentId)
-    {
-        bool isOpen = false;
-        ShaderManagementConsoleDocumentRequestBus::EventResult(isOpen, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::IsOpen);
-
-        if (documentId.IsNull() || !isOpen)
-        {
-            return;
-        }
-
-        // Blocking signals from the tab bar so the currentChanged signal is not sent while a document is already being opened.
-        // This prevents the OnDocumentOpened notification from being sent recursively.
-        const QSignalBlocker blocker(m_tabWidget);
-
-        // If a tab for this document already exists then select it instead of creating a new one
-        for (int tabIndex = 0; tabIndex < m_tabWidget->count(); ++tabIndex)
-        {
-            if (documentId == GetDocumentIdFromTab(tabIndex))
-            {
-                m_tabWidget->setCurrentIndex(tabIndex);
-                m_tabWidget->repaint();
-                return;
-            }
-        }
-
-        // Create a new tab for the document ID and assign it's label to the file name of the document.
-        AZStd::string absolutePath;
-        ShaderManagementConsoleDocumentRequestBus::EventResult(absolutePath, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::GetAbsolutePath);
-
-        AZStd::string filename;
-        AzFramework::StringFunc::Path::GetFullFileName(absolutePath.c_str(), filename);
-
-        // The document tab contains a table view.
-        auto tableView = new QTableView(m_centralWidget);
-        tableView->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-        tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
-
-        auto model = new QStandardItemModel();
-        tableView->setModel(model);
-
-        const int tabIndex = m_tabWidget->addTab(tableView, filename.c_str());
-
-        // The user can manually reorder tabs which will invalidate any association by index.
-        // We need to store the document ID with the tab using the tab instead of a separate mapping.
-        m_tabWidget->tabBar()->setTabData(tabIndex, QVariant(documentId.ToString<QString>()));
-        m_tabWidget->setTabToolTip(tabIndex, absolutePath.c_str());
-        m_tabWidget->setCurrentIndex(tabIndex);
-        m_tabWidget->setVisible(true);
-        m_tabWidget->repaint();
-
-        CreateDocumentContent(documentId, model);
-    }
-
-    void ShaderManagementConsoleWindow::RemoveTabForDocumentId(const AZ::Uuid& documentId)
-    {
-        // We are not blocking signals here because we want closing tabs to close the associated document
-        // and automatically select the next document. 
-        for (int tabIndex = 0; tabIndex < m_tabWidget->count(); ++tabIndex)
-        {
-            if (documentId == GetDocumentIdFromTab(tabIndex))
-            {
-                m_tabWidget->removeTab(tabIndex);
-                m_tabWidget->setVisible(m_tabWidget->count() > 0);
-                m_tabWidget->repaint();
-                break;
-            }
-        }
-    }
-
-    void ShaderManagementConsoleWindow::UpdateTabForDocumentId(const AZ::Uuid& documentId)
-    {
-        // Whenever a document is opened, saved, or modified we need to update the tab label
-        if (!documentId.IsNull())
-        {
-            // Because tab order and indexes can change from user interactions, we cannot store a map
-            // between a tab index and document ID.
-            // We must iterate over all of the tabs to find the one associated with this document.
-            for (int tabIndex = 0; tabIndex < m_tabWidget->count(); ++tabIndex)
-            {
-                if (documentId == GetDocumentIdFromTab(tabIndex))
-                {
-                    AZStd::string absolutePath;
-                    ShaderManagementConsoleDocumentRequestBus::EventResult(absolutePath, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::GetAbsolutePath);
-
-                    AZStd::string filename;
-                    AzFramework::StringFunc::Path::GetFullFileName(absolutePath.c_str(), filename);
-
-                    bool isModified = false;
-                    ShaderManagementConsoleDocumentRequestBus::EventResult(isModified, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::IsModified);
-
-                    // We use an asterisk appended to the file name to denote modified document
-                    if (isModified)
-                    {
-                        filename += " *";
-                    }
-
-                    m_tabWidget->setTabText(tabIndex, filename.c_str());
-                    m_tabWidget->setTabToolTip(tabIndex, absolutePath.c_str());
-                    m_tabWidget->repaint();
-                    break;
-                }
-            }
-        }
-    }
-
-    AZ::Uuid ShaderManagementConsoleWindow::GetDocumentIdFromTab(const int tabIndex) const
-    {
-        const QVariant tabData = m_tabWidget->tabBar()->tabData(tabIndex);
-        if (!tabData.isNull())
-        {
-            // We need to be able to convert between a UUID and a string to store and retrieve a document ID from the tab bar
-            const QString documentIdString = tabData.toString();
-            const QByteArray documentIdBytes = documentIdString.toUtf8();
-            const AZ::Uuid documentId(documentIdBytes.data(), documentIdBytes.size());
-            return documentId;
-        }
-        return AZ::Uuid::CreateNull();
     }
 
     void ShaderManagementConsoleWindow::OpenTabContextMenu()
@@ -469,23 +342,6 @@ namespace ShaderManagementConsole
             });
             closeOthersAction->setEnabled(tabBar->count() > 1);
             tabMenu.exec(QCursor::pos());
-        }
-    }
-
-    void ShaderManagementConsoleWindow::SelectPreviousTab()
-    {
-        if (m_tabWidget->count() > 1)
-        {
-            // Adding count to wrap around when index <= 0
-            m_tabWidget->setCurrentIndex((m_tabWidget->currentIndex() + m_tabWidget->count() - 1) % m_tabWidget->count());
-        }
-    }
-
-    void ShaderManagementConsoleWindow::SelectNextTab()
-    {
-        if (m_tabWidget->count() > 1)
-        {
-            m_tabWidget->setCurrentIndex((m_tabWidget->currentIndex() + 1) % m_tabWidget->count());
         }
     }
 
@@ -521,7 +377,7 @@ namespace ShaderManagementConsole
         }
     }
 
-    void ShaderManagementConsoleWindow::CreateDocumentContent(const AZ::Uuid& documentId, QStandardItemModel* model)
+    QStandardItemModel* ShaderManagementConsoleWindow::CreateDocumentContent(const AZ::Uuid& documentId)
     {
         AZStd::unordered_set<AZStd::string> optionNames;
 
@@ -540,6 +396,7 @@ namespace ShaderManagementConsole
         size_t shaderVariantCount = 0;
         ShaderManagementConsoleDocumentRequestBus::EventResult(shaderVariantCount, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::GetShaderVariantCount);
 
+        auto model = new QStandardItemModel();
         model->setRowCount(static_cast<int>(shaderVariantCount));
         model->setColumnCount(static_cast<int>(optionNames.size()));
 
@@ -568,7 +425,9 @@ namespace ShaderManagementConsole
                 model->setItem(variantIndex, optionIndex, item);
             }
         }
+
+        return model;
     }
 } // namespace ShaderManagementConsole
 
-#include <Source/Window/moc_ShaderManagementConsoleWindow.cpp>
+#include <Window/moc_ShaderManagementConsoleWindow.cpp>

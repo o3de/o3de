@@ -10,17 +10,16 @@
 
 #include <AzCore/EBus/EBus.h>
 
-namespace MaterialEditor
+namespace AtomToolsFramework
 {
-    class MaterialEditorWindowNotifications
-        : public AZ::EBusTraits
+    class AtomToolsMainWindowNotifications : public AZ::EBusTraits
     {
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
 
-        virtual void OnMaterialEditorWindowClosing() {};
+        virtual void OnMainWindowClosing(){};
     };
-    using MaterialEditorWindowNotificationBus = AZ::EBus<MaterialEditorWindowNotifications>;
+    using AtomToolsMainWindowNotificationBus = AZ::EBus<AtomToolsMainWindowNotifications>;
 
-} // namespace MaterialEditor
+} // namespace AtomToolsFramework

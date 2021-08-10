@@ -359,7 +359,7 @@ namespace
             {
                 AZ::TickBus::Handler::BusConnect();
             }
-            ~Ticker()
+            ~Ticker() override
             {
                 AZ::TickBus::Handler::BusDisconnect();
             }

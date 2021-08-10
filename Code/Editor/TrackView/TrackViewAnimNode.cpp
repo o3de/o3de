@@ -27,13 +27,13 @@
 #include <CryCommon/Maestro/Types/AnimNodeType.h>
 #include <CryCommon/Maestro/Types/AnimValueType.h>
 #include <CryCommon/Maestro/Types/AnimParamType.h>
+#include <CryCommon/MathConversion.h>
 
 // Editor
 #include "AnimationContext.h"
 #include "Clipboard.h"
 #include "CommentNodeAnimator.h"
 #include "DirectorNodeAnimator.h"
-#include "RenderViewport.h"
 #include "ViewManager.h"
 #include "Include/IObjectManager.h"
 #include "Objects/GizmoManager.h"

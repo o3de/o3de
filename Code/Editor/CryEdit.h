@@ -347,7 +347,7 @@ private:
 // Disable warning for dll export since this member won't be used outside this class
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     AZ::IO::FileDescriptorRedirector m_stdoutRedirection = AZ::IO::FileDescriptorRedirector(1); // < 1 for STDOUT
-AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING 
+AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 private:
     static inline constexpr const char* DefaultLevelTemplateName = "Prefabs/Default_Level.prefab";
@@ -420,7 +420,7 @@ public:
 };
 
 //////////////////////////////////////////////////////////////////////////
-class CCrySingleDocTemplate 
+class CCrySingleDocTemplate
     : public QObject
 {
 private:

@@ -159,18 +159,10 @@ void CCommentNodeAnimator::Render(CTrackViewAnimNode* pNode, [[maybe_unused]] co
     }
 }
 
-Vec2 CCommentNodeAnimator::GetScreenPosFromNormalizedPos(const Vec2& unitPos)
+Vec2 CCommentNodeAnimator::GetScreenPosFromNormalizedPos(const Vec2&)
 {
-    const CCamera& cam = gEnv->pSystem->GetViewCamera();
-    float width = (float)cam.GetViewSurfaceX();
-    int height = cam.GetViewSurfaceZ();
-    float fAspectRatio = gSettings.viewports.fDefaultAspectRatio;
-    float camWidth = height * fAspectRatio;
-
-    float x = 0.5f * width + 0.5f * camWidth * unitPos.x;
-    float y = 0.5f * height * (1.f - unitPos.y);
-
-    return Vec2(x, y);
+    AZ_Error("CryLegacy", false, "CCommentNodeAnimator::GetScreenPosFromNormalizedPos not supported");
+    return Vec2(0, 0);
 }
 
 void CCommentNodeAnimator::DrawText(const char* szFontName, float fSize, const Vec2& unitPos, const ColorF col, const char* szText, int align)

@@ -353,9 +353,6 @@ public:
     virtual IXmlUtils* GetXmlUtils();
     //////////////////////////////////////////////////////////////////////////
 
-    void SetViewCamera(CCamera& Camera){ m_ViewCamera = Camera; }
-    CCamera& GetViewCamera() { return m_ViewCamera; }
-
     void IgnoreUpdates(bool bIgnore) { m_bIgnoreUpdates = bIgnore; };
 
     void SetIProcess(IProcess* process);
@@ -494,7 +491,6 @@ private: // ------------------------------------------------------
     SSystemGlobalEnvironment m_env;
 
     CTimer                              m_Time;                             //!<
-    CCamera                             m_ViewCamera;                   //!<
     bool                                    m_bInitializedSuccessfully;     //!< true if the system completed all initialization steps
     bool                                    m_bRelaunch;                    //!< relaunching the app or not (true beforerelaunch)
     int                                     m_iLoadingMode;             //!< Game is loading w/o changing context (0 not, 1 quickloading, 2 full loading)

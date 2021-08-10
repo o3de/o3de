@@ -8,7 +8,7 @@
 """
 This file contains utility functions
 """
-
+import sys
 import uuid
 import pathlib
 import shutil
@@ -124,3 +124,50 @@ def download_zip_file(parsed_uri, download_zip_path: pathlib.Path) -> int:
         return 1
 
     return 0
+
+
+def find_ancestor_file(target_file_name: pathlib.PurePath, start_path: pathlib.Path,
+                       max_scan_up_range: int=0) -> pathlib.Path or None:
+    """
+    Find a file with the given name in the ancestor directories by walking up the starting path until the file is found.
+
+    :param target_file_name: Name of the file to find.
+    :param start_path: path to start looking for the file.
+    :param max_scan_up_range: maximum number of directories to scan upwards when searching for target file
+           if the value is 0, then there is no max
+    :return: Path to the file or None if not found.
+    """
+    current_path = pathlib.Path(start_path)
+    candidate_path = current_path / target_file_name
+
+    max_scan_up_range = max_scan_up_range if max_scan_up_range else sys.maxsize
+
+    # Limit the number of directories to traverse, to avoid infinite loop in path cycles
+    for _ in range(max_scan_up_range):
+        if candidate_path.exists():
+            # Found the file we wanted
+            break
+
+        parent_path = current_path.parent
+        if parent_path == current_path:
+            # Only true when we are at the directory root, can't keep searching
+            break
+        candidate_path = parent_path / target_file_name
+        current_path = parent_path
+
+    return candidate_path if candidate_path.exists() else None
+
+def find_ancestor_dir_containing_file(target_file_name: pathlib.PurePath, start_path: pathlib.Path,
+                                      max_scan_up_range: int=0) -> pathlib.Path or None:
+    """
+    Find nearest ancestor directory that contains the file with the given name by walking up
+    from the starting path.
+
+    :param target_file_name: Name of the file to find.
+    :param start_path: path to start looking for the file.
+    :param max_scan_up_range: maximum number of directories to scan upwards when searching for target file
+           if the value is 0, then there is no max
+    :return: Path to the directory containing file or None if not found.
+    """
+    ancestor_file = find_ancestor_file(target_file_name, start_path, max_scan_up_range)
+    return ancestor_file.parent if ancestor_file else None

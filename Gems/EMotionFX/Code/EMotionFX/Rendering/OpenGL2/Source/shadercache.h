@@ -11,7 +11,7 @@
 
 #include "Shader.h"
 #include <AzCore/std/string/string.h>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 
 
 namespace RenderGL
@@ -37,12 +37,12 @@ namespace RenderGL
         // a cache entry
         struct Entry
         {
-            AZStd::string   mName;      // the search key (unique for each shader)
-            Shader*         mShader;
+            AZStd::string   m_name;      // the search key (unique for each shader)
+            Shader*         m_shader;
         };
 
         //
-        MCore::Array<Entry> mEntries;   // the shader cache entries
+        AZStd::vector<Entry> m_entries;   // the shader cache entries
     };
 }   // namespace RenderGL
 

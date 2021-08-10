@@ -63,7 +63,7 @@ void SGameExporterSettings::SetHiQuality()
     nApplySS = 1;
 }
 
-CGameExporter* CGameExporter::m_pCurrentExporter = NULL;
+CGameExporter* CGameExporter::m_pCurrentExporter = nullptr;
 
 //////////////////////////////////////////////////////////////////////////
 // CGameExporter
@@ -76,7 +76,7 @@ CGameExporter::CGameExporter()
 
 CGameExporter::~CGameExporter()
 {
-    m_pCurrentExporter = NULL;
+    m_pCurrentExporter = nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////

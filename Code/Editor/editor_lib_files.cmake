@@ -722,8 +722,6 @@ set(FILES
     Util/GuidUtil.cpp
     Util/GuidUtil.h
     Util/IObservable.h
-    Util/IndexedFiles.cpp
-    Util/IndexedFiles.h
     Util/KDTree.cpp
     Util/Mailer.h
     Util/NamedData.cpp
@@ -803,8 +801,6 @@ set(FILES
     ViewportManipulatorController.h
     LegacyViewportCameraController.cpp
     LegacyViewportCameraController.h
-    RenderViewport.cpp
-    RenderViewport.h
     TopRendererWnd.cpp
     TopRendererWnd.h
     ViewManager.cpp

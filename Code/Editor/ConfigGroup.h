@@ -37,11 +37,11 @@ namespace Config
             , m_description(szDescription)
             , m_type(varType)
             , m_flags(flags)
-            , m_ptr(NULL)
+            , m_ptr(nullptr)
         {};
 
         virtual ~IConfigVar() = default;
-        
+
         ILINE EType GetType() const
         {
             return m_type;

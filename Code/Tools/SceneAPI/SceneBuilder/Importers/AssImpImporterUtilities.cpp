@@ -135,17 +135,12 @@ namespace AZ
                 const aiBone* bone = FindFirstBoneByNodeName(node, boneByNameMap);
                 if (bone)
                 {
-                    const DataTypes::MatrixType inverseOffsetMatrix = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(bone->mOffsetMatrix).GetInverseFull();
-
                     const aiBone* parentBone = FindFirstBoneByNodeName(node->mParent, boneByNameMap);
                     if (parentBone)
                     {
+                        DataTypes::MatrixType inverseOffsetMatrix = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(bone->mOffsetMatrix).GetInverseFull();
                         const DataTypes::MatrixType parentBoneOffsetMatrix = AssImpSDKWrapper::AssImpTypeConverter::ToTransform(parentBone->mOffsetMatrix);
                         return parentBoneOffsetMatrix * inverseOffsetMatrix;
-                    }
-                    else
-                    {
-                        return inverseOffsetMatrix;
                     }
                 }
 

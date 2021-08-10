@@ -162,7 +162,7 @@ QString RemoveGameName(const QString &filename)
 void CEditorFileMonitor::OnFileMonitorChange(const SFileChangeInfo& rChange)
 {
     CCryEditApp* app = CCryEditApp::instance();
-    if (app == NULL || app->IsExiting())
+    if (app == nullptr || app->IsExiting())
     {
         return;
     }

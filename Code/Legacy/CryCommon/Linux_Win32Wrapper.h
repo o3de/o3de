@@ -147,9 +147,6 @@ inline void MemoryBarrier() {
 typedef int64 __m128;
 #endif
 
-#if defined(LINUX64) || defined(APPLE)
-unsigned char _InterlockedCompareExchange128(int64 volatile* dst, int64 exchangehigh, int64 exchangelow, int64* comperand);
-#endif
 //////////////////////////////////////////////////////////////////////////
 // io.h stuff
 #if !defined(ANDROID)

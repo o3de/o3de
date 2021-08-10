@@ -18,7 +18,6 @@
 #include "UiAnimViewSequenceManager.h"
 #include "Objects/EntityObject.h"
 #include "ViewManager.h"
-#include "RenderViewport.h"
 #include "Clipboard.h"
 
 #include <AzCore/Math/Crc.h>

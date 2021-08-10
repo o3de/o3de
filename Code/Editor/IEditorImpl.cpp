@@ -416,7 +416,7 @@ void CEditorImpl::Update()
     }
     if (IsInPreviewMode())
     {
-        SetModifiedFlag(FALSE);
+        SetModifiedFlag(false);
         SetModifiedModule(eModifiedNothing);
     }
 
@@ -551,7 +551,7 @@ QString CEditorImpl::GetResolvedUserFolder()
 
 void CEditorImpl::SetDataModified()
 {
-    GetDocument()->SetModifiedFlag(TRUE);
+    GetDocument()->SetModifiedFlag(true);
 }
 
 void CEditorImpl::SetStatusText(const QString& pszString)
@@ -598,9 +598,9 @@ ITransformManipulator* CEditorImpl::ShowTransformManipulator(bool bShow)
             GetObjectManager()->GetGizmoManager()->RemoveGizmo(m_pAxisGizmo);
             m_pAxisGizmo->Release();
         }
-        m_pAxisGizmo = 0;
+        m_pAxisGizmo = nullptr;
     }
-    return 0;
+    return nullptr;
 }
 
 ITransformManipulator* CEditorImpl::GetTransformManipulator()
@@ -615,7 +615,7 @@ void CEditorImpl::SetAxisConstraints(AxisConstrains axisFlags)
     SetTerrainAxisIgnoreObjects(false);
 
     // Update all views.
-    UpdateViews(eUpdateObjects, NULL);
+    UpdateViews(eUpdateObjects, nullptr);
 }
 
 AxisConstrains CEditorImpl::GetAxisConstrains()
@@ -638,15 +638,15 @@ void CEditorImpl::SetReferenceCoordSys(RefCoordSys refCoords)
     m_refCoordsSys = refCoords;
 
     // Update all views.
-    UpdateViews(eUpdateObjects, NULL);
+    UpdateViews(eUpdateObjects, nullptr);
 
     // Update the construction plane infos.
     CViewport* pViewport = GetActiveView();
     if (pViewport)
     {
         //Pre and Post widget rendering calls are made here to make sure that the proper camera state is set.
-        //MakeConstructionPlane will make a call to ViewToWorldRay which needs the correct camera state 
-        //in the CRenderViewport to be set. 
+        //MakeConstructionPlane will make a call to ViewToWorldRay which needs the correct camera state
+        //in the CRenderViewport to be set.
         pViewport->PreWidgetRendering();
 
         pViewport->MakeConstructionPlane(GetIEditor()->GetAxisConstrains());
@@ -672,7 +672,7 @@ CBaseObject* CEditorImpl::NewObject(const char* typeName, const char* fileName, 
         editor->SetModifiedFlag();
         editor->SetModifiedModule(eModifiedBrushes);
     }
-    CBaseObject* object = editor->GetObjectManager()->NewObject(typeName, 0, fileName, name);
+    CBaseObject* object = editor->GetObjectManager()->NewObject(typeName, nullptr, fileName, name);
     if (!object)
     {
         return nullptr;
@@ -933,7 +933,7 @@ void CEditorImpl::CloseView(const GUID& classId)
 
 IDataBaseManager* CEditorImpl::GetDBItemManager([[maybe_unused]] EDataBaseItemType itemType)
 {
-    return 0;
+    return nullptr;
 }
 
 bool CEditorImpl::SelectColor(QColor& color, QWidget* parent)
@@ -1434,7 +1434,7 @@ void CEditorImpl::NotifyExcept(EEditorNotifyEvent event, IEditorNotifyListener* 
         {
             m_pAxisGizmo->Release();
         }
-        m_pAxisGizmo = 0;
+        m_pAxisGizmo = nullptr;
     }
 
     if (event == eNotify_OnInit)
@@ -1475,7 +1475,7 @@ ISourceControl* CEditorImpl::GetSourceControl()
         for (int i = 0; i < classes.size(); i++)
         {
             IClassDesc* pClass = classes[i];
-            ISourceControl* pSCM = NULL;
+            ISourceControl* pSCM = nullptr;
             HRESULT hRes = pClass->QueryInterface(__uuidof(ISourceControl), (void**)&pSCM);
             if (!FAILED(hRes) && pSCM)
             {
@@ -1485,7 +1485,7 @@ ISourceControl* CEditorImpl::GetSourceControl()
         }
     }
 
-    return 0;
+    return nullptr;
 }
 
 bool CEditorImpl::IsSourceControlAvailable()

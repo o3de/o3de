@@ -127,7 +127,6 @@ AZ_POP_DISABLE_WARNING
 
 #include "Util/AutoDirectoryRestoreFileDialog.h"
 #include "Util/EditorAutoLevelLoadTest.h"
-#include "Util/IndexedFiles.h"
 #include "AboutDialog.h"
 #include <AzToolsFramework/PythonTerminal/ScriptHelpDialog.h>
 
@@ -267,9 +266,9 @@ CCrySingleDocTemplate* CCryDocManager::SetDefaultTemplate(CCrySingleDocTemplate*
 // Copied from MFC to get rid of the silly ugly unoverridable doc-type pick dialog
 void CCryDocManager::OnFileNew()
 {
-    assert(m_pDefTemplate != NULL);
+    assert(m_pDefTemplate != nullptr);
 
-    m_pDefTemplate->OpenDocumentFile(NULL);
+    m_pDefTemplate->OpenDocumentFile(nullptr);
     // if returns NULL, the user has already been alerted
 }
 bool CCryDocManager::DoPromptFileName(QString& fileName, [[maybe_unused]] UINT nIDSTitle,
@@ -289,13 +288,13 @@ bool CCryDocManager::DoPromptFileName(QString& fileName, [[maybe_unused]] UINT n
 }
 CCryEditDoc* CCryDocManager::OpenDocumentFile(const char* lpszFileName, bool bAddToMRU)
 {
-    assert(lpszFileName != NULL);
+    assert(lpszFileName != nullptr);
 
     // find the highest confidence
     auto pos = m_templateList.begin();
     CCrySingleDocTemplate::Confidence bestMatch = CCrySingleDocTemplate::noAttempt;
-    CCrySingleDocTemplate* pBestTemplate = NULL;
-    CCryEditDoc* pOpenDocument = NULL;
+    CCrySingleDocTemplate* pBestTemplate = nullptr;
+    CCryEditDoc* pOpenDocument = nullptr;
 
     if (lpszFileName[0] == '\"')
     {
@@ -312,7 +311,7 @@ CCryEditDoc* CCryDocManager::OpenDocumentFile(const char* lpszFileName, bool bAd
         auto pTemplate = *(pos++);
 
         CCrySingleDocTemplate::Confidence match;
-        assert(pOpenDocument == NULL);
+        assert(pOpenDocument == nullptr);
         match = pTemplate->MatchDocType(szPath.toUtf8().data(), pOpenDocument);
         if (match > bestMatch)
         {
@@ -325,18 +324,18 @@ CCryEditDoc* CCryDocManager::OpenDocumentFile(const char* lpszFileName, bool bAd
         }
     }
 
-    if (pOpenDocument != NULL)
+    if (pOpenDocument != nullptr)
     {
         return pOpenDocument;
     }
 
-    if (pBestTemplate == NULL)
+    if (pBestTemplate == nullptr)
     {
         QMessageBox::critical(AzToolsFramework::GetActiveWindow(), QString(), QObject::tr("Failed to open document."));
-        return NULL;
+        return nullptr;
     }
 
-    return pBestTemplate->OpenDocumentFile(szPath.toUtf8().data(), bAddToMRU, FALSE);
+    return pBestTemplate->OpenDocumentFile(szPath.toUtf8().data(), bAddToMRU, false);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -461,7 +460,7 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_FILE_SAVE_LEVEL, OnFileSave)
     ON_COMMAND(ID_FILE_EXPORTOCCLUSIONMESH, OnFileExportOcclusionMesh)
 
-    // Project Manager 
+    // Project Manager
     ON_COMMAND(ID_FILE_PROJECT_MANAGER_SETTINGS, OnOpenProjectManagerSettings)
     ON_COMMAND(ID_FILE_PROJECT_MANAGER_NEW, OnOpenProjectManagerNew)
     ON_COMMAND(ID_FILE_PROJECT_MANAGER_OPEN, OnOpenProjectManager)
@@ -848,8 +847,8 @@ CCryEditDoc* CCrySingleDocTemplate::OpenDocumentFile(const char* lpszPathName, b
 
 CCrySingleDocTemplate::Confidence CCrySingleDocTemplate::MatchDocType(const char* lpszPathName, CCryEditDoc*& rpDocMatch)
 {
-    assert(lpszPathName != NULL);
-    rpDocMatch = NULL;
+    assert(lpszPathName != nullptr);
+    rpDocMatch = nullptr;
 
     // go through all documents
     CCryEditDoc* pDoc = GetIEditor()->GetDocument();
@@ -1432,7 +1431,7 @@ struct CCryEditApp::PythonOutputHandler
         AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusConnect();
     }
 
-    virtual ~PythonOutputHandler()
+    ~PythonOutputHandler() override
     {
         AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusDisconnect();
     }
@@ -1464,7 +1463,7 @@ struct PythonTestOutputHandler final
     : public CCryEditApp::PythonOutputHandler
 {
     PythonTestOutputHandler() = default;
-    virtual ~PythonTestOutputHandler() = default;
+    ~PythonTestOutputHandler() override = default;
 
     void OnTraceMessage(AZStd::string_view message) override
     {
@@ -1617,7 +1616,7 @@ bool CCryEditApp::InitInstance()
     {
         CAboutDialog aboutDlg(FormatVersion(m_pEditor->GetFileVersion()), FormatRichTextCopyrightNotice());
         aboutDlg.exec();
-        return FALSE;
+        return false;
     }
 
     // Reflect property control classes to the serialize context...
@@ -1715,18 +1714,6 @@ bool CCryEditApp::InitInstance()
 
     if (IsInRegularEditorMode())
     {
-        CIndexedFiles::Create();
-
-        if (gEnv->pConsole->GetCVar("ed_indexfiles")->GetIVal())
-        {
-            Log("Started game resource files indexing...");
-            CIndexedFiles::StartFileIndexing();
-        }
-        else
-        {
-            Log("Game resource files indexing is disabled.");
-        }
-
         // QuickAccessBar creation should be before m_pMainWnd->SetFocus(),
         // since it receives the focus at creation time. It brakes MainFrame key accelerators.
         m_pQuickAccessBar = new CQuickAccessBar;
@@ -1772,7 +1759,7 @@ bool CCryEditApp::InitInstance()
         }
     }
 
-    SetEditorWindowTitle(0, AZ::Utils::GetProjectName().c_str(), 0);
+    SetEditorWindowTitle(nullptr, AZ::Utils::GetProjectName().c_str(), nullptr);
     if (!GetIEditor()->IsInMatEditMode())
     {
         m_pEditor->InitFinished();
@@ -1857,8 +1844,8 @@ void CCryEditApp::RegisterEventLoopHook(IEventLoopHook* pHook)
 
 void CCryEditApp::UnregisterEventLoopHook(IEventLoopHook* pHookToRemove)
 {
-    IEventLoopHook* pPrevious = 0;
-    for (IEventLoopHook* pHook = m_pEventLoopHook; pHook != 0; pHook = pHook->pNextHook)
+    IEventLoopHook* pPrevious = nullptr;
+    for (IEventLoopHook* pHook = m_pEventLoopHook; pHook != nullptr; pHook = pHook->pNextHook)
     {
         if (pHook == pHookToRemove)
         {
@@ -1871,7 +1858,7 @@ void CCryEditApp::UnregisterEventLoopHook(IEventLoopHook* pHookToRemove)
                 m_pEventLoopHook = pHookToRemove->pNextHook;
             }
 
-            pHookToRemove->pNextHook = 0;
+            pHookToRemove->pNextHook = nullptr;
             return;
         }
     }
@@ -1889,7 +1876,7 @@ void CCryEditApp::LoadFile(QString fileName)
 
     if (MainWindow::instance() || m_pConsoleDialog)
     {
-        SetEditorWindowTitle(0, AZ::Utils::GetProjectName().c_str(), GetIEditor()->GetGameEngine()->GetLevelName());
+        SetEditorWindowTitle(nullptr, AZ::Utils::GetProjectName().c_str(), GetIEditor()->GetGameEngine()->GetLevelName());
     }
 
     GetIEditor()->SetModifiedFlag(false);
@@ -1930,7 +1917,7 @@ void CCryEditApp::EnableAccelerator([[maybe_unused]] bool bEnable)
         CMainFrame *mainFrame = (CMainFrame*)m_pMainWnd;
         if (mainFrame->m_hAccelTable)
             DestroyAcceleratorTable( mainFrame->m_hAccelTable );
-        mainFrame->m_hAccelTable = NULL;
+        mainFrame->m_hAccelTable = nullptr;
         mainFrame->LoadAccelTable( MAKEINTRESOURCE(IDR_GAMEACCELERATOR) );
         CLogFile::WriteLine( "Disable Accelerators" );
     }
@@ -2158,12 +2145,6 @@ int CCryEditApp::ExitInstance(int exitCode)
         }
     }
 
-    if (IsInRegularEditorMode())
-    {
-        CIndexedFiles::AbortFileIndexing();
-        CIndexedFiles::Destroy();
-    }
-
     if (GetIEditor() && !GetIEditor()->IsInMatEditMode())
     {
         //Nobody seems to know in what case that kind of exit can happen so instrumented to see if it happens at all
@@ -2281,7 +2262,7 @@ bool CCryEditApp::OnIdle([[maybe_unused]] LONG lCount)
     }
     else
     {
-        return 0;
+        return false;
     }
 }
 
@@ -3243,13 +3224,14 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
         DWORD dw = GetLastError();
 
 #ifdef WIN32
-        wchar_t windowsErrorMessageW[ERROR_LEN] = { 0 };
+        wchar_t windowsErrorMessageW[ERROR_LEN];
+        windowsErrorMessageW = L'\0';
         FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-            NULL,
+            nullptr,
             dw,
             MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
             windowsErrorMessageW,
-            ERROR_LEN - 1, NULL);
+            ERROR_LEN, nullptr);
         _getcwd(cwd.data(), cwd.length());
         AZStd::to_string(windowsErrorMessage.data(), ERROR_LEN, windowsErrorMessageW);
 #else
@@ -3660,24 +3642,12 @@ void CCryEditApp::OnToolsPreferences()
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnSwitchToDefaultCamera()
 {
-    CViewport* vp = GetIEditor()->GetViewManager()->GetSelectedViewport();
-    if (CRenderViewport* rvp = viewport_cast<CRenderViewport*>(vp))
-    {
-        rvp->SetDefaultCamera();
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnUpdateSwitchToDefaultCamera(QAction* action)
 {
     Q_ASSERT(action->isCheckable());
-    CViewport* pViewport = GetIEditor()->GetViewManager()->GetSelectedViewport();
-    if (CRenderViewport* rvp = viewport_cast<CRenderViewport*>(pViewport))
-    {
-        action->setEnabled(true);
-        action->setChecked(rvp->IsDefaultCamera());
-    }
-    else
     {
         action->setEnabled(false);
     }
@@ -3686,39 +3656,12 @@ void CCryEditApp::OnUpdateSwitchToDefaultCamera(QAction* action)
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnSwitchToSequenceCamera()
 {
-    CViewport* vp = GetIEditor()->GetViewManager()->GetSelectedViewport();
-    if (CRenderViewport* rvp = viewport_cast<CRenderViewport*>(vp))
-    {
-        rvp->SetSequenceCamera();
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnUpdateSwitchToSequenceCamera(QAction* action)
 {
     Q_ASSERT(action->isCheckable());
-
-    CViewport* pViewport = GetIEditor()->GetViewManager()->GetSelectedViewport();
-
-    if (CRenderViewport* rvp = viewport_cast<CRenderViewport*>(pViewport))
-    {
-        bool enableAction = false;
-
-        // only enable if we're editing a sequence in Track View and have cameras in the level
-        if (GetIEditor()->GetAnimation()->GetSequence())
-        {
-
-            AZ::EBusAggregateResults<AZ::EntityId> componentCameras;
-            Camera::CameraBus::BroadcastResult(componentCameras, &Camera::CameraRequests::GetCameras);
-
-            const int numCameras = componentCameras.values.size();
-            enableAction = (numCameras > 0);
-        }
-
-        action->setEnabled(enableAction);
-        action->setChecked(rvp->IsSequenceCamera());
-    }
-    else
     {
         action->setEnabled(false);
     }
@@ -3727,31 +3670,12 @@ void CCryEditApp::OnUpdateSwitchToSequenceCamera(QAction* action)
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnSwitchToSelectedcamera()
 {
-    CViewport* vp = GetIEditor()->GetViewManager()->GetSelectedViewport();
-    if (CRenderViewport* rvp = viewport_cast<CRenderViewport*>(vp))
-    {
-        rvp->SetSelectedCamera();
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnUpdateSwitchToSelectedCamera(QAction* action)
 {
     Q_ASSERT(action->isCheckable());
-    AzToolsFramework::EntityIdList selectedEntityList;
-    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(selectedEntityList, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
-    AZ::EBusAggregateResults<AZ::EntityId> cameras;
-    Camera::CameraBus::BroadcastResult(cameras, &Camera::CameraRequests::GetCameras);
-    bool isCameraComponentSelected = selectedEntityList.size() > 0 ? AZStd::find(cameras.values.begin(), cameras.values.end(), *selectedEntityList.begin()) != cameras.values.end() : false;
-
-    CViewport* pViewport = GetIEditor()->GetViewManager()->GetSelectedViewport();
-    CRenderViewport* rvp = viewport_cast<CRenderViewport*>(pViewport);
-    if (isCameraComponentSelected && rvp)
-    {
-        action->setEnabled(true);
-        action->setChecked(rvp->IsSelectedCamera());
-    }
-    else
     {
         action->setEnabled(false);
     }
@@ -3760,11 +3684,7 @@ void CCryEditApp::OnUpdateSwitchToSelectedCamera(QAction* action)
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnSwitchcameraNext()
 {
-    CViewport* vp = GetIEditor()->GetActiveView();
-    if (CRenderViewport* rvp = viewport_cast<CRenderViewport*>(vp))
-    {
-        rvp->CycleCamera();
-    }
+
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -3837,7 +3757,7 @@ bool CCryEditApp::IsInRegularEditorMode()
 
 void CCryEditApp::OnOpenQuickAccessBar()
 {
-    if (m_pQuickAccessBar == NULL)
+    if (m_pQuickAccessBar == nullptr)
     {
         return;
     }

@@ -17,7 +17,7 @@ AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 // CGenericSelectItemDialog dialog
 
-CGenericSelectItemDialog::CGenericSelectItemDialog(QWidget* pParent /*=NULL*/)
+CGenericSelectItemDialog::CGenericSelectItemDialog(QWidget* pParent /*=nullptr*/)
     : QDialog(pParent)
     , ui(new Ui::CGenericSelectItemDialog)
     , m_initialized(false)
