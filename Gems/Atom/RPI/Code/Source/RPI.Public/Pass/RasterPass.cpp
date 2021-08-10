@@ -104,7 +104,7 @@ namespace AZ
             m_flags.m_hasDrawListTag = true;
         }
 
-        void RasterPass::SetPipelineStateDataIndex(u32 index)
+        void RasterPass::SetPipelineStateDataIndex(uint32_t index)
         {
             m_pipelineStateDataIndex.m_index = index;
         }
@@ -114,7 +114,7 @@ namespace AZ
             return m_shaderResourceGroup.get();
         }
 
-        u32 RasterPass::GetDrawItemCount()
+        uint32_t RasterPass::GetDrawItemCount()
         {
             return m_drawItemCount;
         }
@@ -172,7 +172,7 @@ namespace AZ
             if (viewDrawList.size() > 0 && drawLists.size() == 0)
             {
                 m_drawListView = viewDrawList;
-                m_drawItemCount += (u32)viewDrawList.size();
+                m_drawItemCount += static_cast<uint32_t>(viewDrawList.size());
                 PassSystemInterface::Get()->IncrementFrameDrawItemCount(m_drawItemCount);
                 return;
             }
@@ -183,7 +183,7 @@ namespace AZ
             // combine draw items from mutiple draw lists to one draw list and sort it.
             for (auto drawList : drawLists)
             {
-                m_drawItemCount += (u32)drawList.size();
+                m_drawItemCount += static_cast<uint32_t>(drawList.size());
             }
             PassSystemInterface::Get()->IncrementFrameDrawItemCount(m_drawItemCount);
             m_combinedDrawList.resize(m_drawItemCount);
@@ -211,7 +211,7 @@ namespace AZ
         void RasterPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
         {
             RenderPass::SetupFrameGraphDependencies(frameGraph);
-            frameGraph.SetEstimatedItemCount(static_cast<u32>(m_drawListView.size()));
+            frameGraph.SetEstimatedItemCount(static_cast<uint32_t>(m_drawListView.size()));
         }
 
         void RasterPass::CompileResources(const RHI::FrameGraphCompileContext& context)
