@@ -13,7 +13,7 @@
 
 namespace AzToolsFramework
 {
-    EditorPreferencesSettingsOriginTracker::SettingsNotificationHandler::SettingsNotificationHandler(
+    EditorSettingsOriginTracker::SettingsNotificationHandler::SettingsNotificationHandler(
         AZ::SettingsRegistryInterface& registry)
         : m_settingsRegistry(registry)
     {
@@ -33,7 +33,7 @@ namespace AzToolsFramework
         m_settingsRegistry.SetApplyPatchSettings(applyPatchSettings);
     }
 
-    EditorPreferencesSettingsOriginTracker::SettingsNotificationHandler::~SettingsNotificationHandler()
+    EditorSettingsOriginTracker::SettingsNotificationHandler::~SettingsNotificationHandler()
     {
         // Restore previous reporting callback
         AZ::JsonApplyPatchSettings applyPatchSettings;
@@ -44,7 +44,7 @@ namespace AzToolsFramework
 
     // Use the Json Serialization Issue Callback system
     // to determine when a merge option modifies a value
-    AZ::JsonSerializationResult::ResultCode EditorPreferencesSettingsOriginTracker::SettingsNotificationHandler::operator()(
+    AZ::JsonSerializationResult::ResultCode EditorSettingsOriginTracker::SettingsNotificationHandler::operator()(
         AZStd::string_view /*message*/, AZ::JsonSerializationResult::ResultCode result, AZStd::string_view path)
     {
         using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
@@ -65,7 +65,7 @@ namespace AzToolsFramework
         return result;
     }
 
-    void EditorPreferencesSettingsOriginTracker::SettingsNotificationHandler::operator()(
+    void EditorSettingsOriginTracker::SettingsNotificationHandler::operator()(
         AZStd::string_view path, AZ::SettingsRegistryInterface::Type /*type*/)
     {
         constexpr AZ::IO::PathView preferencesRootKey{ "/Amazon/Preferences", AZ::IO::PosixPathSeparator };
@@ -76,7 +76,7 @@ namespace AzToolsFramework
         }
     }
 
-    EditorPreferencesSettingsOriginTracker::EditorPreferencesSettingsOriginTracker(AZ::SettingsRegistryInterface& registry)
+    EditorSettingsOriginTracker::EditorSettingsOriginTracker(AZ::SettingsRegistryInterface& registry)
         : m_settingsRegistry(registry)
     {
         auto PreMergeEvent = [this](AZStd::string_view filePath, AZStd::string_view /*rootKey*/)

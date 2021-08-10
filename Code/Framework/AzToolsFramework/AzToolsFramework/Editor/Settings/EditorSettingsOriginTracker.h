@@ -12,9 +12,9 @@
 
 namespace AzToolsFramework
 {
-    struct EditorPreferencesSettingsOriginTracker
+    struct EditorSettingsOriginTracker
     {
-        explicit EditorPreferencesSettingsOriginTracker(AZ::SettingsRegistryInterface& registry);
+        explicit EditorSettingsOriginTracker(AZ::SettingsRegistryInterface& registry);
 
         struct SettingsNotificationHandler
         {
