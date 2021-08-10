@@ -184,7 +184,7 @@ private:
     void UpdateAllowedAreas(QToolBar* toolbar);
     bool IsDirty(const AmazonToolbar& toolbar) const;
 
-    QMenu* ToolbarManager::GetPlayButtonMenu() const;
+    QMenu* GetPlayButtonMenu() const;
 
     const AmazonToolbar* FindDefaultToolbar(const QString& toolbarName) const;
     AmazonToolbar* FindToolbar(const QString& toolbarName);
