@@ -659,7 +659,6 @@ set(FILES
     Prefab/PrefabPublicNotificationBus.h
     Prefab/PrefabPublicRequestBus.h
     Prefab/PrefabPublicRequestHandler.h
-    #Prefab/PrefabPublicRequestHandler.cpp
     Prefab/PrefabUndo.h
     Prefab/PrefabUndo.cpp
     Prefab/PrefabUndoCache.cpp
