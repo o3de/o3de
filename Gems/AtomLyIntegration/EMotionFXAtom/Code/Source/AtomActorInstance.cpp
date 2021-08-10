@@ -83,10 +83,10 @@ namespace AZ
             // Update RenderActorInstance world bounding box
             // The bounding box is moving with the actor instance.
             // The entity and actor transforms are kept in sync already.
-            m_worldAABB = AZ::Aabb::CreateFromMinMax(m_actorInstance->GetAABB().GetMin(), m_actorInstance->GetAABB().GetMax());
+            m_worldAABB = m_actorInstance->GetAabb();
 
             // Update RenderActorInstance local bounding box
-            // NB: computing the local bbox from the world bbox makes the local bbox artifically larger than it should be
+            // NB: computing the local bbox from the world bbox makes the local bbox artificially larger than it should be
             // instead EMFX should support getting the local bbox from the actor instance directly
             m_localAABB = m_worldAABB.GetTransformedAabb(m_transformInterface->GetWorldTM().GetInverse());
 
@@ -107,9 +107,8 @@ namespace AZ
                 {
                     if (debugOptions.m_drawAABB)
                     {
-                        const MCore::AABB emfxAabb = m_actorInstance->GetAABB();
-                        const AZ::Aabb azAabb = AZ::Aabb::CreateFromMinMax(emfxAabb.GetMin(), emfxAabb.GetMax());
-                        auxGeom->DrawAabb(azAabb, AZ::Color(0.0f, 1.0f, 1.0f, 1.0f), RPI::AuxGeomDraw::DrawStyle::Line);
+                        const AZ::Aabb& aabb = m_actorInstance->GetAabb();
+                        auxGeom->DrawAabb(aabb, AZ::Color(0.0f, 1.0f, 1.0f, 1.0f), RPI::AuxGeomDraw::DrawStyle::Line);
                     }
 
                     if (debugOptions.m_drawSkeleton)

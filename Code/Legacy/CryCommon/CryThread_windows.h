@@ -181,41 +181,6 @@ private:
 };
 
 //////////////////////////////////////////////////////////////////////////
-#if !defined(_CRYTHREAD_HAVE_RWLOCK)
-class CryRWLock
-{
-    void* /*SRWLOCK*/ m_Lock;
-
-    CryRWLock(const CryRWLock&);
-    CryRWLock& operator= (const CryRWLock&);
-
-public:
-    CryRWLock();
-    ~CryRWLock();
-
-    void RLock();
-    void RUnlock();
-
-    void WLock();
-    void WUnlock();
-
-    void Lock();
-    void Unlock();
-
-#if defined(_CRYTHREAD_WANT_TRY_RWLOCK)
-    // Enabling TryXXX requires Windows 7 or newer
-    bool TryRLock();
-    bool TryWLock();
-    bool TryLock();
-#endif
-};
-
-// Indicate that this implementation header provides an implementation for
-// CryRWLock.
-#define _CRYTHREAD_HAVE_RWLOCK 1
-#endif
-
-//////////////////////////////////////////////////////////////////////////
 class CrySimpleThreadSelf
 {
 public:
@@ -420,46 +385,3 @@ public:
     bool IsStarted() const { return m_bIsStarted; }
     bool IsRunning() const { return m_bIsRunning; }
 };
-
-///////////////////////////////////////////////////////////////////////////////
-// base class for lock less Producer/Consumer queue, due platforms specific they
-// are implemented in CryThead_platform.h
-namespace CryMT {
-    namespace detail {
-        ///////////////////////////////////////////////////////////////////////////////
-        ///////////////////////////////////////////////////////////////////////////////
-        class SingleProducerSingleConsumerQueueBase
-        {
-        public:
-            SingleProducerSingleConsumerQueueBase()
-            {}
-
-            void Push(void* pObj, volatile uint32& rProducerIndex, volatile uint32& rComsumerIndex, uint32 nBufferSize, void* arrBuffer, uint32 nObjectSize);
-            void Pop(void* pObj, volatile uint32& rProducerIndex, volatile uint32& rComsumerIndex, uint32 nBufferSize, void* arrBuffer, uint32 nObjectSize);
-        };
-
-
-        ///////////////////////////////////////////////////////////////////////////////
-        ///////////////////////////////////////////////////////////////////////////////
-        class N_ProducerSingleConsumerQueueBase
-        {
-        public:
-            N_ProducerSingleConsumerQueueBase()
-            {
-                CryInitializeSListHead(fallbackList);
-            }
-
-            void Push(void* pObj, volatile uint32& rProducerIndex, volatile uint32& rComsumerIndex, volatile uint32& rRunning, void* arrBuffer, uint32 nBufferSize, uint32 nObjectSize, volatile uint32*   arrStates);
-            bool Pop(void* pObj, volatile uint32& rProducerIndex, volatile uint32& rComsumerIndex, volatile uint32& rRunning, void* arrBuffer, uint32 nBufferSize, uint32 nObjectSize, volatile uint32*    arrStates);
-
-        private:
-            SLockFreeSingleLinkedListHeader fallbackList;
-            struct SFallbackList
-            {
-                SLockFreeSingleLinkedListEntry nextEntry;
-                char alignment_padding[128 - sizeof(SLockFreeSingleLinkedListEntry)];
-                char object[1]; // struct will be overallocated with enough memory for the object
-            };
-        };
-    } // namespace detail
-} // namespace CryMT
