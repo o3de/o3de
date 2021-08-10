@@ -113,7 +113,7 @@ namespace EMotionFX
 
         connect(m_addSimulatedObjectButton, &QPushButton::clicked, this, [this]()
         {
-            m_actionManager->OnAddNewObjectAndAddJoints(m_actor, /*selectedJoints=*/{}, /*addChildJoints=*/false, mDock);
+            m_actionManager->OnAddNewObjectAndAddJoints(m_actor, /*selectedJoints=*/{}, /*addChildJoints=*/false, m_dock);
         });
 
         AZ::SerializeContext* serializeContext;
@@ -130,9 +130,9 @@ namespace EMotionFX
         mainLayout->addWidget(m_selectionWidget, /*stretch=*/1);
         mainLayout->addStretch();
 
-        mDock->setWidget(m_mainWidget);
+        m_dock->setWidget(m_mainWidget);
 
-        m_simulatedObjectInspectorDock = new AzQtComponents::StyledDockWidget("Simulated Object Inspector", mDock);
+        m_simulatedObjectInspectorDock = new AzQtComponents::StyledDockWidget("Simulated Object Inspector", m_dock);
         m_simulatedObjectInspectorDock->setFeatures(QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable);
         m_simulatedObjectInspectorDock->setObjectName("EMFX.SimulatedObjectWidget.SimulatedObjectInspectorDock");
         m_simulatedJointWidget = new SimulatedJointWidget(this);
@@ -361,7 +361,7 @@ namespace EMotionFX
         connect(addToSimulatedObjectMenu->addAction("New simulated object..."), &QAction::triggered, this, [this, selectedRowIndices]() {
             const bool addChildren = (QMessageBox::question(this->GetDockWidget(),
                 "Add children of joints?", "Add all children of selected joints to the simulated object?") == QMessageBox::Yes);
-            m_actionManager->OnAddNewObjectAndAddJoints(m_actor, selectedRowIndices, addChildren, mDock);
+            m_actionManager->OnAddNewObjectAndAddJoints(m_actor, selectedRowIndices, addChildren, m_dock);
         });
         menu->addSeparator();
 
@@ -536,7 +536,7 @@ namespace EMotionFX
     void SimulatedObjectWidget::RenderJointRadius(const SimulatedJoint* joint, ActorInstance* actorInstance,  const AZ::Color& color)
     {
         #ifndef EMFX_SCALE_DISABLED
-            const float scale = actorInstance->GetWorldSpaceTransform().mScale.GetX();
+            const float scale = actorInstance->GetWorldSpaceTransform().m_scale.GetX();
         #else
             const float scale = 1.0f;
         #endif
@@ -553,7 +553,7 @@ namespace EMotionFX
         DebugDraw& debugDraw = GetDebugDraw();
         DebugDraw::ActorInstanceData* drawData = debugDraw.GetActorInstanceData(actorInstance);
         drawData->Lock();
-        drawData->DrawWireframeSphere(jointTransform.mPosition, radius, color, jointTransform.mRotation, 12, 12);
+        drawData->DrawWireframeSphere(jointTransform.m_position, radius, color, jointTransform.m_rotation, 12, 12);
         drawData->Unlock();
     }
 } // namespace EMotionFX

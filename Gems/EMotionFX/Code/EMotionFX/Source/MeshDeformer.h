@@ -86,8 +86,8 @@ namespace EMotionFX
         void SetIsEnabled(bool enabled);
 
     protected:
-        Mesh*   mMesh;      /**< Pointer to the mesh to which the deformer belongs to.*/
-        bool    mIsEnabled; /**< When set to true, this mesh deformer will be processed, otherwise it will be skipped during update. */
+        Mesh*   m_mesh;      /**< Pointer to the mesh to which the deformer belongs to.*/
+        bool    m_isEnabled; /**< When set to true, this mesh deformer will be processed, otherwise it will be skipped during update. */
 
         /**
          * Default constructor.

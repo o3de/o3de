@@ -80,13 +80,13 @@ namespace EMotionFX
             scrollArea->setWidget(m_nodeWidget);
             scrollArea->setWidgetResizable(true);
 
-            mDock->setWidget(scrollArea);
+            m_dock->setWidget(scrollArea);
 
             EMotionFX::SkeletonOutlinerNotificationBus::Handler::BusConnect();
         }
         else
         {
-            mDock->setWidget(CreateErrorContentWidget("Ragdoll editor depends on the PhysX gem. Please enable it in the project configurator."));
+            m_dock->setWidget(CreateErrorContentWidget("Ragdoll editor depends on the PhysX gem. Please enable it in the project configurator."));
         }
 
         return true;
@@ -432,7 +432,7 @@ namespace EMotionFX
             return;
         }
 
-        MCommon::RenderUtil* renderUtil = renderInfo->mRenderUtil;
+        MCommon::RenderUtil* renderUtil = renderInfo->m_renderUtil;
         const bool oldLightingEnabled = renderUtil->GetLightingEnabled();
         renderUtil->EnableLighting(false);
 
@@ -539,8 +539,8 @@ namespace EMotionFX
         const size_t parentNodeIndex = parentNode->GetNodeIndex();
         const Transform& actorInstanceWorldTransform = actorInstance->GetWorldSpaceTransform();
         const Pose* currentPose = actorInstance->GetTransformData()->GetCurrentPose();
-        const AZ::Quaternion& parentOrientation = currentPose->GetModelSpaceTransform(parentNodeIndex).mRotation;
-        const AZ::Quaternion& childOrientation = currentPose->GetModelSpaceTransform(nodeIndex).mRotation;
+        const AZ::Quaternion& parentOrientation = currentPose->GetModelSpaceTransform(parentNodeIndex).m_rotation;
+        const AZ::Quaternion& childOrientation = currentPose->GetModelSpaceTransform(nodeIndex).m_rotation;
 
         m_vertexBuffer.clear();
         m_indexBuffer.clear();
@@ -554,10 +554,10 @@ namespace EMotionFX
         }           
 
         Transform jointModelSpaceTransform = currentPose->GetModelSpaceTransform(parentNodeIndex);
-        jointModelSpaceTransform.mPosition = currentPose->GetModelSpaceTransform(nodeIndex).mPosition;
+        jointModelSpaceTransform.m_position = currentPose->GetModelSpaceTransform(nodeIndex).m_position;
         const Transform jointGlobalTransformNoScale = jointModelSpaceTransform * actorInstanceWorldTransform;
 
-        MCommon::RenderUtil* renderUtil = renderInfo->mRenderUtil;
+        MCommon::RenderUtil* renderUtil = renderInfo->m_renderUtil;
         const size_t numLineBufferEntries = m_lineBuffer.size();
         if (m_lineValidityBuffer.size() * 2 != numLineBufferEntries)
         {
@@ -588,6 +588,6 @@ namespace EMotionFX
         const Transform childModelSpaceTransform = childJointLocalSpaceTransform * currentPose->GetModelSpaceTransform(node->GetNodeIndex());
         const Transform jointChildWorldSpaceTransformNoScale = (childModelSpaceTransform * actorInstanceWorldSpaceTransform);
 
-        renderInfo->mRenderUtil->RenderArrow(0.1f, jointChildWorldSpaceTransformNoScale.mPosition, MCore::GetRight(jointChildWorldSpaceTransformNoScale.ToAZTransform()), color);
+        renderInfo->m_renderUtil->RenderArrow(0.1f, jointChildWorldSpaceTransformNoScale.m_position, MCore::GetRight(jointChildWorldSpaceTransformNoScale.ToAZTransform()), color);
     }
 } // namespace EMotionFX

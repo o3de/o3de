@@ -27,39 +27,39 @@ namespace CommandSystem
 
     size_t SelectionList::GetNumTotalItems() const
     {
-        return mSelectedNodes.size() +
-            mSelectedActors.size() +
-            mSelectedActorInstances.size() +
-            mSelectedMotions.size() +
-            mSelectedMotionInstances.size() +
-            mSelectedAnimGraphs.size();
+        return m_selectedNodes.size() +
+            m_selectedActors.size() +
+            m_selectedActorInstances.size() +
+            m_selectedMotions.size() +
+            m_selectedMotionInstances.size() +
+            m_selectedAnimGraphs.size();
     }
 
     bool SelectionList::GetIsEmpty() const
     {
-        return (mSelectedNodes.empty() &&
-            mSelectedActors.empty() &&
-            mSelectedActorInstances.empty() &&
-            mSelectedMotions.empty() &&
-            mSelectedMotionInstances.empty() &&
-            mSelectedAnimGraphs.empty());
+        return (m_selectedNodes.empty() &&
+            m_selectedActors.empty() &&
+            m_selectedActorInstances.empty() &&
+            m_selectedMotions.empty() &&
+            m_selectedMotionInstances.empty() &&
+            m_selectedAnimGraphs.empty());
     }
 
     void SelectionList::Clear()
     {
-        mSelectedNodes.clear();
-        mSelectedActors.clear();
-        mSelectedActorInstances.clear();
-        mSelectedMotions.clear();
-        mSelectedMotionInstances.clear();
-        mSelectedAnimGraphs.clear();
+        m_selectedNodes.clear();
+        m_selectedActors.clear();
+        m_selectedActorInstances.clear();
+        m_selectedMotions.clear();
+        m_selectedMotionInstances.clear();
+        m_selectedAnimGraphs.clear();
     }
 
     void SelectionList::AddNode(EMotionFX::Node* node)
     {
         if (!CheckIfHasNode(node))
         {
-            mSelectedNodes.emplace_back(node);
+            m_selectedNodes.emplace_back(node);
         }
     }
 
@@ -67,7 +67,7 @@ namespace CommandSystem
     {
         if (!CheckIfHasActor(actor))
         {
-            mSelectedActors.emplace_back(actor);
+            m_selectedActors.emplace_back(actor);
         }
     }
 
@@ -76,7 +76,7 @@ namespace CommandSystem
     {
         if (!CheckIfHasActorInstance(actorInstance))
         {
-            mSelectedActorInstances.emplace_back(actorInstance);
+            m_selectedActorInstances.emplace_back(actorInstance);
         }
     }
 
@@ -86,7 +86,7 @@ namespace CommandSystem
     {
         if (!CheckIfHasMotion(motion))
         {
-            mSelectedMotions.emplace_back(motion);
+            m_selectedMotions.emplace_back(motion);
         }
     }
 
@@ -96,7 +96,7 @@ namespace CommandSystem
     {
         if (!CheckIfHasMotionInstance(motionInstance))
         {
-            mSelectedMotionInstances.emplace_back(motionInstance);
+            m_selectedMotionInstances.emplace_back(motionInstance);
         }
     }
 
@@ -106,7 +106,7 @@ namespace CommandSystem
     {
         if (!CheckIfHasAnimGraph(animGraph))
         {
-            mSelectedAnimGraphs.emplace_back(animGraph);
+            m_selectedAnimGraphs.emplace_back(animGraph);
         }
     }
 
@@ -209,52 +209,52 @@ namespace CommandSystem
 
     void SelectionList::RemoveNode(EMotionFX::Node* node)
     {
-        mSelectedNodes.erase(AZStd::remove(mSelectedNodes.begin(), mSelectedNodes.end(), node), mSelectedNodes.end());
+        m_selectedNodes.erase(AZStd::remove(m_selectedNodes.begin(), m_selectedNodes.end(), node), m_selectedNodes.end());
     }
 
     void SelectionList::RemoveActor(EMotionFX::Actor* actor)
     {
-        mSelectedActors.erase(AZStd::remove(mSelectedActors.begin(), mSelectedActors.end(), actor), mSelectedActors.end());
+        m_selectedActors.erase(AZStd::remove(m_selectedActors.begin(), m_selectedActors.end(), actor), m_selectedActors.end());
     }
 
     // remove the actor from the selection list
     void SelectionList::RemoveActorInstance(EMotionFX::ActorInstance* actorInstance)
     {
-        mSelectedActorInstances.erase(AZStd::remove(mSelectedActorInstances.begin(), mSelectedActorInstances.end(), actorInstance), mSelectedActorInstances.end());
+        m_selectedActorInstances.erase(AZStd::remove(m_selectedActorInstances.begin(), m_selectedActorInstances.end(), actorInstance), m_selectedActorInstances.end());
     }
 
 
     // remove the motion from the selection list
     void SelectionList::RemoveMotion(EMotionFX::Motion* motion)
     {
-        mSelectedMotions.erase(AZStd::remove(mSelectedMotions.begin(), mSelectedMotions.end(), motion), mSelectedMotions.end());
+        m_selectedMotions.erase(AZStd::remove(m_selectedMotions.begin(), m_selectedMotions.end(), motion), m_selectedMotions.end());
     }
 
 
     // remove the motion instance from the selection list
     void SelectionList::RemoveMotionInstance(EMotionFX::MotionInstance* motionInstance)
     {
-        mSelectedMotionInstances.erase(AZStd::remove(mSelectedMotionInstances.begin(), mSelectedMotionInstances.end(), motionInstance), mSelectedMotionInstances.end());
+        m_selectedMotionInstances.erase(AZStd::remove(m_selectedMotionInstances.begin(), m_selectedMotionInstances.end(), motionInstance), m_selectedMotionInstances.end());
     }
 
 
     // remove the anim graph
     void SelectionList::RemoveAnimGraph(EMotionFX::AnimGraph* animGraph)
     {
-        mSelectedAnimGraphs.erase(AZStd::remove(mSelectedAnimGraphs.begin(), mSelectedAnimGraphs.end(), animGraph), mSelectedAnimGraphs.end());
+        m_selectedAnimGraphs.erase(AZStd::remove(m_selectedAnimGraphs.begin(), m_selectedAnimGraphs.end(), animGraph), m_selectedAnimGraphs.end());
     }
 
     // make the selection valid
     void SelectionList::MakeValid()
     {
         // iterate through all actor instances and remove the invalid ones
-        for (size_t i = 0; i < mSelectedActorInstances.size();)
+        for (size_t i = 0; i < m_selectedActorInstances.size();)
         {
-            EMotionFX::ActorInstance* actorInstance = mSelectedActorInstances[i];
+            EMotionFX::ActorInstance* actorInstance = m_selectedActorInstances[i];
 
             if (EMotionFX::GetActorManager().CheckIfIsActorInstanceRegistered(actorInstance) == false)
             {
-                mSelectedActorInstances.erase(mSelectedActorInstances.begin() + i);
+                m_selectedActorInstances.erase(m_selectedActorInstances.begin() + i);
             }
             else
             {
@@ -263,13 +263,13 @@ namespace CommandSystem
         }
 
         // iterate through all anim graphs and remove all valid ones
-        for (size_t i = 0; i < mSelectedAnimGraphs.size();)
+        for (size_t i = 0; i < m_selectedAnimGraphs.size();)
         {
-            EMotionFX::AnimGraph* animGraph = mSelectedAnimGraphs[i];
+            EMotionFX::AnimGraph* animGraph = m_selectedAnimGraphs[i];
 
             if (EMotionFX::GetAnimGraphManager().FindAnimGraphIndex(animGraph) == MCORE_INVALIDINDEX32)
             {
-                mSelectedAnimGraphs.erase(mSelectedAnimGraphs.begin() + i);
+                m_selectedAnimGraphs.erase(m_selectedAnimGraphs.begin() + i);
             }
             else
             {
@@ -294,7 +294,7 @@ namespace CommandSystem
             return nullptr;
         }
 
-        return mSelectedActors[0];
+        return m_selectedActors[0];
     }
 
 
@@ -313,7 +313,7 @@ namespace CommandSystem
             return nullptr;
         }
 
-        EMotionFX::ActorInstance* actorInstance = mSelectedActorInstances[0];
+        EMotionFX::ActorInstance* actorInstance = m_selectedActorInstances[0];
         if (!actorInstance)
         {
             return nullptr;
@@ -324,7 +324,7 @@ namespace CommandSystem
             return nullptr;
         }
 
-        return mSelectedActorInstances[0];
+        return m_selectedActorInstances[0];
     }
 
 
@@ -341,7 +341,7 @@ namespace CommandSystem
             return nullptr;
         }
 
-        EMotionFX::Motion* motion = mSelectedMotions[0];
+        EMotionFX::Motion* motion = m_selectedMotions[0];
         if (!motion)
         {
             return nullptr;

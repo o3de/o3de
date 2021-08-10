@@ -25,15 +25,15 @@ namespace EMotionFX
     ActorManager::ActorManager()
         : BaseObject()
     {
-        mScheduler  = nullptr;
+        m_scheduler  = nullptr;
 
         // setup the default scheduler
         SetScheduler(MultiThreadScheduler::Create());
 
         // reserve memory
         m_actors.reserve(512);
-        mActorInstances.reserve(1024);
-        mRootActorInstances.reserve(1024);
+        m_actorInstances.reserve(1024);
+        m_rootActorInstances.reserve(1024);
     }
 
 
@@ -41,7 +41,7 @@ namespace EMotionFX
     ActorManager::~ActorManager()
     {
         // delete the scheduler
-        mScheduler->Destroy();
+        m_scheduler->Destroy();
     }
 
 
@@ -57,8 +57,8 @@ namespace EMotionFX
         // destroy all actor instances
         while (GetNumActorInstances() > 0)
         {
-            MCORE_ASSERT(mActorInstances[0]->GetReferenceCount() == 1);
-            mActorInstances[0]->Destroy();
+            MCORE_ASSERT(m_actorInstances[0]->GetReferenceCount() == 1);
+            m_actorInstances[0]->Destroy();
         }
 
         UnregisterAllActorInstances();
@@ -75,11 +75,11 @@ namespace EMotionFX
     void ActorManager::UnregisterAllActorInstances()
     {
         LockActorInstances();
-        mActorInstances.clear();
-        mRootActorInstances.clear();
-        if (mScheduler)
+        m_actorInstances.clear();
+        m_rootActorInstances.clear();
+        if (m_scheduler)
         {
-            mScheduler->Clear();
+            m_scheduler->Clear();
         }
         UnlockActorInstances();
     }
@@ -91,19 +91,19 @@ namespace EMotionFX
         LockActorInstances();
 
         // delete the existing scheduler, if wanted
-        if (delExisting && mScheduler)
+        if (delExisting && m_scheduler)
         {
-            mScheduler->Destroy();
+            m_scheduler->Destroy();
         }
 
         // update the scheduler pointer
-        mScheduler = scheduler;
+        m_scheduler = scheduler;
 
         // adjust all visibility flags to false for all actor instances
-        const size_t numActorInstances = mActorInstances.size();
+        const size_t numActorInstances = m_actorInstances.size();
         for (size_t i = 0; i < numActorInstances; ++i)
         {
-            mActorInstances[i]->SetIsVisible(false);
+            m_actorInstances[i]->SetIsVisible(false);
         }
 
         UnlockActorInstances();
@@ -135,7 +135,7 @@ namespace EMotionFX
     {
         LockActorInstances();
 
-        mActorInstances.emplace_back(actorInstance);
+        m_actorInstances.emplace_back(actorInstance);
         UpdateActorInstanceStatus(actorInstance, false);
 
         UnlockActorInstances();
@@ -209,7 +209,7 @@ namespace EMotionFX
         LockActorInstances();
 
         // get the number of actor instances and iterate through them
-        const bool foundActor = AZStd::find(begin(mActorInstances), end(mActorInstances), actorInstance) != end(mActorInstances);
+        const bool foundActor = AZStd::find(begin(m_actorInstances), end(m_actorInstances), actorInstance) != end(m_actorInstances);
         UnlockActorInstances();
         return foundActor;
     }
@@ -218,19 +218,19 @@ namespace EMotionFX
     // find the given actor instance inside the actor manager and return its index
     size_t ActorManager::FindActorInstanceIndex(ActorInstance* actorInstance) const
     {
-        const auto foundActorInstance = AZStd::find(begin(mActorInstances), end(mActorInstances), actorInstance);
-        return foundActorInstance != end(mActorInstances) ? AZStd::distance(begin(mActorInstances), foundActorInstance) : InvalidIndex;
+        const auto foundActorInstance = AZStd::find(begin(m_actorInstances), end(m_actorInstances), actorInstance);
+        return foundActorInstance != end(m_actorInstances) ? AZStd::distance(begin(m_actorInstances), foundActorInstance) : InvalidIndex;
     }
 
 
     // find the actor instance by the identification number
     ActorInstance* ActorManager::FindActorInstanceByID(uint32 id) const
     {
-        const auto foundActorInstance = AZStd::find_if(begin(mActorInstances), end(mActorInstances), [id](const ActorInstance* actorInstance)
+        const auto foundActorInstance = AZStd::find_if(begin(m_actorInstances), end(m_actorInstances), [id](const ActorInstance* actorInstance)
         {
             return actorInstance->GetID() == id;
         });
-        return foundActorInstance != end(mActorInstances) ? *foundActorInstance : nullptr;
+        return foundActorInstance != end(m_actorInstances) ? *foundActorInstance : nullptr;
     }
 
 
@@ -259,7 +259,7 @@ namespace EMotionFX
     // unregister a given actor instance
     void ActorManager::UnregisterActorInstance(size_t nr)
     {
-        UnregisterActorInstance(mActorInstances[nr]);
+        UnregisterActorInstance(m_actorInstances[nr]);
     }
 
 
@@ -284,7 +284,7 @@ namespace EMotionFX
 
         // execute the schedule
         // this makes all the callback OnUpdate calls etc
-        mScheduler->Execute(timePassedInSeconds);
+        m_scheduler->Execute(timePassedInSeconds);
 
         UnlockActorInstances();
         UnlockActors();
@@ -318,19 +318,19 @@ namespace EMotionFX
         if (actorInstance->GetAttachedTo() == nullptr)
         {
             // make sure it's in the root list
-            if (AZStd::find(begin(mRootActorInstances), end(mRootActorInstances), actorInstance) == end(mRootActorInstances))
+            if (AZStd::find(begin(m_rootActorInstances), end(m_rootActorInstances), actorInstance) == end(m_rootActorInstances))
             {
-                mRootActorInstances.emplace_back(actorInstance);
+                m_rootActorInstances.emplace_back(actorInstance);
             }
         }
         else // no root actor instance
         {
             // remove it from the root list
-            if (const auto it = AZStd::find(begin(mRootActorInstances), end(mRootActorInstances), actorInstance); it != end(mRootActorInstances))
+            if (const auto it = AZStd::find(begin(m_rootActorInstances), end(m_rootActorInstances), actorInstance); it != end(m_rootActorInstances))
             {
-                mRootActorInstances.erase(it);
+                m_rootActorInstances.erase(it);
             }
-            mScheduler->RecursiveRemoveActorInstance(actorInstance);
+            m_scheduler->RecursiveRemoveActorInstance(actorInstance);
         }
 
         if (lock)
@@ -346,19 +346,19 @@ namespace EMotionFX
         LockActorInstances();
 
         // remove the actor instance from the list
-        if (const auto it = AZStd::find(begin(mActorInstances), end(mActorInstances), instance); it != end(mActorInstances))
+        if (const auto it = AZStd::find(begin(m_actorInstances), end(m_actorInstances), instance); it != end(m_actorInstances))
         {
-            mActorInstances.erase(it);
+            m_actorInstances.erase(it);
         }
 
         // remove it from the list of roots, if it is in there
-        if (const auto it = AZStd::find(begin(mRootActorInstances), end(mRootActorInstances), instance); it != end(mRootActorInstances))
+        if (const auto it = AZStd::find(begin(m_rootActorInstances), end(m_rootActorInstances), instance); it != end(m_rootActorInstances))
         {
-            mRootActorInstances.erase(it);
+            m_rootActorInstances.erase(it);
         }
 
         // remove it from the schedule
-        mScheduler->RemoveActorInstance(instance);
+        m_scheduler->RemoveActorInstance(instance);
 
         UnlockActorInstances();
     }
@@ -366,25 +366,25 @@ namespace EMotionFX
 
     void ActorManager::LockActorInstances()
     {
-        mActorInstanceLock.Lock();
+        m_actorInstanceLock.Lock();
     }
 
 
     void ActorManager::UnlockActorInstances()
     {
-        mActorInstanceLock.Unlock();
+        m_actorInstanceLock.Unlock();
     }
 
 
     void ActorManager::LockActors()
     {
-        mActorLock.Lock();
+        m_actorLock.Lock();
     }
 
 
     void ActorManager::UnlockActors()
     {
-        mActorLock.Unlock();
+        m_actorLock.Unlock();
     }
 
 
@@ -396,12 +396,12 @@ namespace EMotionFX
 
     const AZStd::vector<ActorInstance*>& ActorManager::GetActorInstanceArray() const
     {
-        return mActorInstances;
+        return m_actorInstances;
     }
 
 
     ActorUpdateScheduler* ActorManager::GetScheduler() const
     {
-        return mScheduler;
+        return m_scheduler;
     }
 }   // namespace EMotionFX

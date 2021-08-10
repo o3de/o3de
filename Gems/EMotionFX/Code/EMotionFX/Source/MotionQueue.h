@@ -43,17 +43,17 @@ namespace EMotionFX
         class QueueEntry
         {
         public:
-            MotionInstance* mMotion;            /**< The motion instance we want to play. */
-            PlayBackInfo    mPlayInfo;          /**< The motion playback settings. */
+            MotionInstance* m_motion;            /**< The motion instance we want to play. */
+            PlayBackInfo    m_playInfo;          /**< The motion playback settings. */
 
             /// The default constructor
             QueueEntry()
-                : mMotion(nullptr) {}
+                : m_motion(nullptr) {}
 
             /// The extended constructor.
             QueueEntry(MotionInstance* motion, class PlayBackInfo* info)
-                : mMotion(motion)
-                , mPlayInfo(*info) {}
+                : m_motion(motion)
+                , m_playInfo(*info) {}
         };
 
         /**
@@ -133,9 +133,9 @@ namespace EMotionFX
         void PlayNextMotion();
 
     private:
-        AZStd::vector<QueueEntry>    mEntries;           /**< The motion queue entries. */
-        MotionSystem*               mMotionSystem;      /**< Motion system access pointer. */
-        ActorInstance*              mActorInstance;     /**< The actor instance where this queue works on. */
+        AZStd::vector<QueueEntry>    m_entries;           /**< The motion queue entries. */
+        MotionSystem*               m_motionSystem;      /**< Motion system access pointer. */
+        ActorInstance*              m_actorInstance;     /**< The actor instance where this queue works on. */
 
         /**
          * Constructor.

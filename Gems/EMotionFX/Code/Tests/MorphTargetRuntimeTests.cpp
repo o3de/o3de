@@ -82,7 +82,7 @@ namespace EMotionFX
             m_morphSetup->AddMorphTarget(morphTarget);
 
             // Without this call, the bind pose does not know about newly added
-            // morph target (mMorphWeights.GetLength() == 0)
+            // morph target (m_morphWeights.size() == 0)
             m_actor->ResizeTransformData();
             m_actor->PostCreateInit(/*makeGeomLodsCompatibleWithSkeletalLODs=*/false, /*convertUnitType=*/false);
 

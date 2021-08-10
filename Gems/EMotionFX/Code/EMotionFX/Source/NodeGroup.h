@@ -154,8 +154,8 @@ namespace EMotionFX
         void SetIsEnabledOnDefault(bool enabledOnDefault);
 
     private:
-        AZStd::string               mName;              /**< The name of the group. */
-        MCore::SmallArray<uint16>   mNodes;             /**< The node index numbers that are inside this group. */
-        bool                        mEnabledOnDefault;  /**< Specifies whether this group is enabled on default (true) or disabled (false). With on default we mean after directly after the actor instance using this group has been created. */
+        AZStd::string               m_name;              /**< The name of the group. */
+        MCore::SmallArray<uint16>   m_nodes;             /**< The node index numbers that are inside this group. */
+        bool                        m_enabledOnDefault;  /**< Specifies whether this group is enabled on default (true) or disabled (false). With on default we mean after directly after the actor instance using this group has been created. */
     };
 }   // namespace EMotionFX

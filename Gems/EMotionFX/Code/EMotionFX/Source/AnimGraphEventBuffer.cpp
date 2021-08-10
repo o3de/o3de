@@ -24,7 +24,7 @@ namespace EMotionFX
     {
         for (EventInfo& event : m_events)
         {
-            event.mEmitter = emitterNode;
+            event.m_emitter = emitterNode;
         }
     }
 
@@ -32,9 +32,9 @@ namespace EMotionFX
     {
         for (EventInfo& curEvent : m_events)
         {
-            AnimGraphNodeData* emitterUniqueData = curEvent.mEmitter->FindOrCreateUniqueNodeData(animGraphInstance);
-            curEvent.mGlobalWeight = emitterUniqueData->GetGlobalWeight();
-            curEvent.mLocalWeight = emitterUniqueData->GetLocalWeight();
+            AnimGraphNodeData* emitterUniqueData = curEvent.m_emitter->FindOrCreateUniqueNodeData(animGraphInstance);
+            curEvent.m_globalWeight = emitterUniqueData->GetGlobalWeight();
+            curEvent.m_localWeight = emitterUniqueData->GetLocalWeight();
         }
     }
 
@@ -45,7 +45,7 @@ namespace EMotionFX
         {
             AZStd::string eventDataString;
 
-            for (const EventDataPtr& eventData : event.mEvent->GetEventDatas())
+            for (const EventDataPtr& eventData : event.m_event->GetEventDatas())
             {
                 if (eventData)
                 {
@@ -57,11 +57,11 @@ namespace EMotionFX
             }
 
             MCore::LogInfo("Event: (time=%f) (eventData=%s) (emitter=%s) (locWeight=%.4f  globWeight=%.4f)",
-                event.mTimeValue,
+                event.m_timeValue,
                 eventDataString.size() ? eventDataString.c_str() : "<none>",
-                event.mEmitter->GetName(),
-                event.mLocalWeight,
-                event.mGlobalWeight);
+                event.m_emitter->GetName(),
+                event.m_localWeight,
+                event.m_globalWeight);
         }
     }
 

@@ -30,8 +30,8 @@ namespace EMotionFX
     MultiThreadScheduler::MultiThreadScheduler()
         : ActorUpdateScheduler()
     {
-        mCleanTimer     = 0.0f; // time passed since last schedule cleanup, in seconds
-        mSteps.reserve(1000);
+        m_cleanTimer     = 0.0f; // time passed since last schedule cleanup, in seconds
+        m_steps.reserve(1000);
     }
 
 
@@ -52,7 +52,7 @@ namespace EMotionFX
     void MultiThreadScheduler::Clear()
     {
         Lock();
-        mSteps.clear();
+        m_steps.clear();
         Unlock();
     }
 
@@ -78,10 +78,10 @@ namespace EMotionFX
     void MultiThreadScheduler::Print()
     {
         // for all steps
-        const size_t numSteps = mSteps.size();
+        const size_t numSteps = m_steps.size();
         for (size_t i = 0; i < numSteps; ++i)
         {
-            AZ_Printf("EMotionFX", "STEP %.3zu - %zu", i, mSteps[i].mActorInstances.size());
+            AZ_Printf("EMotionFX", "STEP %.3zu - %zu", i, m_steps[i].m_actorInstances.size());
         }
 
         AZ_Printf("EMotionFX", "---------");
@@ -91,15 +91,15 @@ namespace EMotionFX
     void MultiThreadScheduler::RemoveEmptySteps()
     {
         // process all steps
-        for (size_t s = 0; s < mSteps.size(); )
+        for (size_t s = 0; s < m_steps.size(); )
         {
-            if (!mSteps[s].mActorInstances.empty())
+            if (!m_steps[s].m_actorInstances.empty())
             {
                 s++;
             }
             else
             {
-                mSteps.erase(AZStd::next(begin(mSteps), s));
+                m_steps.erase(AZStd::next(begin(m_steps), s));
             }
         }
     }
@@ -108,21 +108,21 @@ namespace EMotionFX
     // execute the schedule
     void MultiThreadScheduler::Execute(float timePassedInSeconds)
     {
-        MCore::LockGuardRecursive guard(mMutex);
+        MCore::LockGuardRecursive guard(m_mutex);
 
-        size_t numSteps = mSteps.size();
+        size_t numSteps = m_steps.size();
         if (numSteps == 0)
         {
             return;
         }
 
         // check if we need to cleanup the schedule
-        mCleanTimer += timePassedInSeconds;
-        if (mCleanTimer >= 1.0f)
+        m_cleanTimer += timePassedInSeconds;
+        if (m_cleanTimer >= 1.0f)
         {
-            mCleanTimer = 0.0f;
+            m_cleanTimer = 0.0f;
             RemoveEmptySteps();
-            numSteps = mSteps.size();
+            numSteps = m_steps.size();
         }
 
         //-----------------------------------------------------------
@@ -142,20 +142,20 @@ namespace EMotionFX
         }
 
         // reset stats
-        mNumUpdated.SetValue(0);
-        mNumVisible.SetValue(0);
-        mNumSampled.SetValue(0);
+        m_numUpdated.SetValue(0);
+        m_numVisible.SetValue(0);
+        m_numSampled.SetValue(0);
 
-        for (const ScheduleStep& currentStep : mSteps)
+        for (const ScheduleStep& currentStep : m_steps)
         {
-            if (currentStep.mActorInstances.empty())
+            if (currentStep.m_actorInstances.empty())
             {
                 continue;
             }
 
             // process the actor instances in the current step in parallel
             AZ::JobCompletion jobCompletion;
-            for (ActorInstance* actorInstance : currentStep.mActorInstances)
+            for (ActorInstance* actorInstance : currentStep.m_actorInstances)
             {
                 if (actorInstance->GetIsEnabled() == false)
                 {
@@ -173,7 +173,7 @@ namespace EMotionFX
                     const bool isVisible = actorInstance->GetIsVisible();
                     if (isVisible)
                     {
-                        mNumVisible.Increment();
+                        m_numVisible.Increment();
                     }
 
                     // check if we want to sample motions
@@ -186,7 +186,7 @@ namespace EMotionFX
 
                         if (isVisible)
                         {
-                            mNumSampled.Increment();
+                            m_numSampled.Increment();
                         }
                     }
 
@@ -197,7 +197,7 @@ namespace EMotionFX
                 job->SetDependent(&jobCompletion);               
                 job->Start();
 
-                mNumUpdated.Increment();
+                m_numUpdated.Increment();
             }
 
             jobCompletion.StartAndWaitForCompletion();
@@ -209,11 +209,11 @@ namespace EMotionFX
     bool MultiThreadScheduler::FindNextFreeItem(ActorInstance* actorInstance, size_t startStep, size_t* outStepNr)
     {
         // try out all steps
-        const size_t numSteps = mSteps.size();
+        const size_t numSteps = m_steps.size();
         for (size_t s = startStep; s < numSteps; ++s)
         {
             // if there is a conflicting dependency, skip this step
-            if (CheckIfHasMatchingDependency(actorInstance, &mSteps[s]))
+            if (CheckIfHasMatchingDependency(actorInstance, &m_steps[s]))
             {
                 continue;
             }
@@ -229,11 +229,11 @@ namespace EMotionFX
 
     bool MultiThreadScheduler::HasActorInstanceInSteps(const ActorInstance* actorInstance) const
     {
-        const size_t numSteps = mSteps.size();
+        const size_t numSteps = m_steps.size();
         for (size_t s = 0; s < numSteps; ++s)
         {
-            const ScheduleStep& step = mSteps[s];
-            if (AZStd::find(step.mActorInstances.begin(), step.mActorInstances.end(), actorInstance) != step.mActorInstances.end())
+            const ScheduleStep& step = m_steps[s];
+            if (AZStd::find(step.m_actorInstances.begin(), step.m_actorInstances.end(), actorInstance) != step.m_actorInstances.end())
             {
                 return true;
             }
@@ -244,33 +244,33 @@ namespace EMotionFX
 
     void MultiThreadScheduler::RecursiveInsertActorInstance(ActorInstance* instance, size_t startStep)
     {
-        MCore::LockGuardRecursive guard(mMutex);
+        MCore::LockGuardRecursive guard(m_mutex);
         AZ_Assert(!HasActorInstanceInSteps(instance), "Expected the actor instance not being part of another step already.");
 
         // find the first free location that doesn't conflict
         size_t outStep = startStep;
         if (!FindNextFreeItem(instance, startStep, &outStep))
         {
-            mSteps.reserve(10);
-            mSteps.emplace_back();
-            outStep = mSteps.size() - 1;
+            m_steps.reserve(10);
+            m_steps.emplace_back();
+            outStep = m_steps.size() - 1;
         }
 
         // pre-allocate step size
-        if (mSteps[outStep].mActorInstances.size() % 10 == 0)
+        if (m_steps[outStep].m_actorInstances.size() % 10 == 0)
         {
-            mSteps[outStep].mActorInstances.reserve(mSteps[outStep].mActorInstances.size() + 10);
+            m_steps[outStep].m_actorInstances.reserve(m_steps[outStep].m_actorInstances.size() + 10);
         }
 
-        if (mSteps[outStep].mDependencies.size() % 5 == 0)
+        if (m_steps[outStep].m_dependencies.size() % 5 == 0)
         {
-            mSteps[outStep].mDependencies.reserve(mSteps[outStep].mDependencies.size() + 5);
+            m_steps[outStep].m_dependencies.reserve(m_steps[outStep].m_dependencies.size() + 5);
         }
 
         // add the actor instance and its dependencies
-        mSteps[ outStep ].mActorInstances.reserve(GetEMotionFX().GetNumThreads());
-        mSteps[ outStep ].mActorInstances.emplace_back(instance);
-        AddDependenciesToStep(instance, &mSteps[outStep]);
+        m_steps[ outStep ].m_actorInstances.reserve(GetEMotionFX().GetNumThreads());
+        m_steps[ outStep ].m_actorInstances.emplace_back(instance);
+        AddDependenciesToStep(instance, &m_steps[outStep]);
 
         // recursively add all attachments too
         const size_t numAttachments = instance->GetNumAttachments();
@@ -288,27 +288,27 @@ namespace EMotionFX
     // remove the actor instance from the schedule (excluding attachments)
     size_t MultiThreadScheduler::RemoveActorInstance(ActorInstance* actorInstance, size_t startStep)
     {
-        MCore::LockGuardRecursive guard(mMutex);
+        MCore::LockGuardRecursive guard(m_mutex);
 
         // for all scheduler steps, starting from the specified start step number
-        const size_t numSteps = mSteps.size();
+        const size_t numSteps = m_steps.size();
         for (size_t s = startStep; s < numSteps; ++s)
         {
-            ScheduleStep& step = mSteps[s];
+            ScheduleStep& step = m_steps[s];
 
             // Remove all occurrences of the actor instance.
-            const size_t numActorInstancesPreRemove = step.mActorInstances.size();
-            step.mActorInstances.erase(AZStd::remove(step.mActorInstances.begin(), step.mActorInstances.end(), actorInstance), step.mActorInstances.end());
+            const size_t numActorInstancesPreRemove = step.m_actorInstances.size();
+            step.m_actorInstances.erase(AZStd::remove(step.m_actorInstances.begin(), step.m_actorInstances.end(), actorInstance), step.m_actorInstances.end());
 
             // try to see if there is anything to remove in this step
             // and if so, reconstruct the dependencies of this step
-            if (step.mActorInstances.size() < numActorInstancesPreRemove)
+            if (step.m_actorInstances.size() < numActorInstancesPreRemove)
             {
                 // clear the dependencies (but don't delete the memory)
-                step.mDependencies.clear();
+                step.m_dependencies.clear();
 
                 // calculate the new dependencies for this step
-                for (ActorInstance* stepActorInstance : step.mActorInstances)
+                for (ActorInstance* stepActorInstance : step.m_actorInstances)
                 {
                     AddDependenciesToStep(stepActorInstance, &step);
                 }
@@ -326,7 +326,7 @@ namespace EMotionFX
     // remove the actor instance (including all of its attachments)
     void MultiThreadScheduler::RecursiveRemoveActorInstance(ActorInstance* actorInstance, size_t startStep)
     {
-        MCore::LockGuardRecursive guard(mMutex);
+        MCore::LockGuardRecursive guard(m_mutex);
 
         // remove the actual actor instance
         const size_t step = RemoveActorInstance(actorInstance, startStep);
@@ -346,12 +346,12 @@ namespace EMotionFX
 
     void MultiThreadScheduler::Lock()
     {
-        mMutex.Lock();
+        m_mutex.Lock();
     }
 
 
     void MultiThreadScheduler::Unlock()
     {
-        mMutex.Unlock();
+        m_mutex.Unlock();
     }
 }   // namespace EMotionFX

@@ -729,7 +729,7 @@ namespace EMotionFX
         const Transform transformResult = pose.CalcTrajectoryTransform();
         const Transform expectedResult = pose.GetWorldSpaceTransform(motionExtractionJointIndex).ProjectedToGroundPlane();
         EXPECT_THAT(transformResult, IsClose(expectedResult));
-        EXPECT_EQ(transformResult.mPosition, AZ::Vector3(1.0f, 1.0f, 0.0f));
+        EXPECT_EQ(transformResult.m_position, AZ::Vector3(1.0f, 1.0f, 0.0f));
     }
 
     ///////////////////////////////////////////////////////////////////////////
@@ -747,16 +747,16 @@ namespace EMotionFX
             ASSERT_NE(joint, nullptr) << "Can't find the joint named 'joint4'.";
 
             const Transform jointTransform = pose.GetWorldSpaceTransform(jointIndex);
-            EXPECT_THAT(jointTransform.mScale, IsClose(AZ::Vector3::CreateOne()));
+            EXPECT_THAT(jointTransform.m_scale, IsClose(AZ::Vector3::CreateOne()));
 
             AZ::Vector3 scale(2.0f);
             m_actorInstance->SetLocalSpaceScale(scale);
             m_actorInstance->UpdateWorldTransform();
             const Transform jointTransform2 = pose.GetWorldSpaceTransform(jointIndex);
-            EXPECT_THAT(jointTransform2.mScale, IsClose(scale));
+            EXPECT_THAT(jointTransform2.m_scale, IsClose(scale));
 
-            const float distToOrigin = jointTransform.mPosition.GetLength();
-            const float distToOrigin2= jointTransform2.mPosition.GetLength();
+            const float distToOrigin = jointTransform.m_position.GetLength();
+            const float distToOrigin2= jointTransform2.m_position.GetLength();
             EXPECT_FLOAT_EQ(distToOrigin2 / distToOrigin, 2.0f) << "Expecting the scaled joint to be twice as far from the origin as the unscaled joint.";
         )
     }
@@ -786,7 +786,7 @@ namespace EMotionFX
                 AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3(0.0f, 1.0f, 0.0f), floatI));
             EMFX_SCALECODE
             (
-                transform.mScale = AZ::Vector3(floatI, floatI, floatI);
+                transform.m_scale = AZ::Vector3(floatI, floatI, floatI);
             )
             destPose.SetLocalSpaceTransform(i, transform);
         }
@@ -807,7 +807,7 @@ namespace EMotionFX
             Transform expectedResult = sourceTransform;
             expectedResult.Blend(destTransform, blendWeight);
             EXPECT_THAT(transformResult, IsClose(expectedResult));
-            CheckIfRotationIsNormalized(destTransform.mRotation);
+            CheckIfRotationIsNormalized(destTransform.m_rotation);
         }
     }
 
@@ -827,7 +827,7 @@ namespace EMotionFX
                 AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3(0.0f, 1.0f, 0.0f), floatI));
             EMFX_SCALECODE
             (
-                transform.mScale = AZ::Vector3(floatI, floatI, floatI);
+                transform.m_scale = AZ::Vector3(floatI, floatI, floatI);
             )
 
             sourcePose.SetLocalSpaceTransform(i, transform);
@@ -844,7 +844,7 @@ namespace EMotionFX
                 AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3(1.0f, 0.0f, 0.0f), floatI));
             EMFX_SCALECODE
             (
-                transform.mScale = AZ::Vector3(floatI, floatI, floatI);
+                transform.m_scale = AZ::Vector3(floatI, floatI, floatI);
             )
 
             destPose.SetLocalSpaceTransform(i, transform);
@@ -866,7 +866,7 @@ namespace EMotionFX
             Transform expectedResult = sourceTransform;
             expectedResult.BlendAdditive(destTransform, bindPoseTransform, blendWeight);
             EXPECT_THAT(transformResult, IsClose(expectedResult));
-            CheckIfRotationIsNormalized(destTransform.mRotation);
+            CheckIfRotationIsNormalized(destTransform.m_rotation);
         }
     }
 
@@ -1030,7 +1030,7 @@ namespace EMotionFX
         {
             const Transform& transformRel = poseRel.GetLocalSpaceTransform(i);
 
-            const AZ::Vector3& result = transformRel.mPosition;
+            const AZ::Vector3& result = transformRel.m_position;
             EXPECT_TRUE(result.IsClose(AZ::Vector3::CreateOne()));
         }
     }
@@ -1142,22 +1142,22 @@ namespace EMotionFX
             Transform expectedResult = Transform::CreateIdentity();
             if (additiveFunction == MakeAdditive)
             {
-                expectedResult.mPosition = transformA.mPosition - transformB.mPosition;
-                expectedResult.mRotation = transformB.mRotation.GetConjugate() * transformA.mRotation;
+                expectedResult.m_position = transformA.m_position - transformB.m_position;
+                expectedResult.m_rotation = transformB.m_rotation.GetConjugate() * transformA.m_rotation;
                 EMFX_SCALECODE
                 (
-                    expectedResult.mScale = transformA.mScale * transformB.mScale;
+                    expectedResult.m_scale = transformA.m_scale * transformB.m_scale;
                 )
             }
             else if (additiveFunction == ApplyAdditive || weight > 1.0f - MCore::Math::epsilon)
             {
-                expectedResult.mPosition = transformA.mPosition + transformB.mPosition;
-                expectedResult.mRotation = transformA.mRotation * transformB.mRotation;
-                expectedResult.mRotation.Normalize();
+                expectedResult.m_position = transformA.m_position + transformB.m_position;
+                expectedResult.m_rotation = transformA.m_rotation * transformB.m_rotation;
+                expectedResult.m_rotation.Normalize();
 
                 EMFX_SCALECODE
                 (
-                    expectedResult.mScale = transformA.mScale * transformB.mScale;
+                    expectedResult.m_scale = transformA.m_scale * transformB.m_scale;
                 )
             }
             else if (weight < MCore::Math::epsilon )
@@ -1166,13 +1166,13 @@ namespace EMotionFX
             }
             else
             {
-                expectedResult.mPosition = transformA.mPosition + transformB.mPosition * weight;
-                expectedResult.mRotation = transformA.mRotation.NLerp(transformB.mRotation * transformA.mRotation, weight);
-                expectedResult.mRotation.Normalize();
+                expectedResult.m_position = transformA.m_position + transformB.m_position * weight;
+                expectedResult.m_rotation = transformA.m_rotation.NLerp(transformB.m_rotation * transformA.m_rotation, weight);
+                expectedResult.m_rotation.Normalize();
 
                 EMFX_SCALECODE
                 (
-                    expectedResult.mScale = transformA.mScale * AZ::Vector3::CreateOne().Lerp(transformB.mScale, weight);
+                    expectedResult.m_scale = transformA.m_scale * AZ::Vector3::CreateOne().Lerp(transformB.m_scale, weight);
                 )
             }
 
@@ -1257,7 +1257,7 @@ namespace EMotionFX
 
         for (size_t i = 0; i < m_actor->GetSkeleton()->GetNumNodes(); ++i)
         {
-            CheckIfRotationIsNormalized(pose.GetLocalSpaceTransform(i).mRotation);
+            CheckIfRotationIsNormalized(pose.GetLocalSpaceTransform(i).m_rotation);
         }
     }
 

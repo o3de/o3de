@@ -62,18 +62,18 @@ namespace MysticQt
     private:
         struct Dialog
         {
-            QPushButton*    mButton = nullptr;
-            QWidget*        mFrame = nullptr;
-            QWidget*        mWidget = nullptr;
-            QWidget*        mDialogWidget = nullptr;
-            DialogStackSplitter* mSplitter = nullptr;
-            bool            mClosable = true;
-            bool            mMaximizeSize = false;
-            bool            mStretchWhenMaximize = false;
-            int             mMinimumHeightBeforeClose = 0;
-            int             mMaximumHeightBeforeClose = 0;
-            QLayout*        mLayout = nullptr;
-            QLayout*        mDialogLayout = nullptr;
+            QPushButton*    m_button = nullptr;
+            QWidget*        m_frame = nullptr;
+            QWidget*        m_widget = nullptr;
+            QWidget*        m_dialogWidget = nullptr;
+            DialogStackSplitter* m_splitter = nullptr;
+            bool            m_closable = true;
+            bool            m_maximizeSize = false;
+            bool            m_stretchWhenMaximize = false;
+            int             m_minimumHeightBeforeClose = 0;
+            int             m_maximumHeightBeforeClose = 0;
+            QLayout*        m_layout = nullptr;
+            QLayout*        m_dialogLayout = nullptr;
         };
 
     private:
@@ -83,10 +83,10 @@ namespace MysticQt
         void UpdateScrollBars();
 
     private:
-        DialogStackSplitter*    mRootSplitter;
-        AZStd::vector<Dialog>   mDialogs;
-        int32                   mPrevMouseX;
-        int32                   mPrevMouseY;
+        DialogStackSplitter*    m_rootSplitter;
+        AZStd::vector<Dialog>   m_dialogs;
+        int32                   m_prevMouseX;
+        int32                   m_prevMouseY;
     };
 }   // namespace MysticQt
 

@@ -54,8 +54,8 @@ namespace EMotionFX
             void Update() override;
 
         public:
-            AZStd::vector<size_t>   mMask;
-            AnimGraphNode*          mSyncTrackNode;
+            AZStd::vector<size_t>   m_mask;
+            AnimGraphNode*          m_syncTrackNode;
         };
 
         BlendTreeBlend2NodeBase();

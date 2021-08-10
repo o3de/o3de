@@ -99,7 +99,7 @@ namespace EMStudio
 
                 // add the link to the actual object
                 ObjectPointer objPointer;
-                objPointer.mWorkspace = workspace;
+                objPointer.m_workspace = workspace;
                 outObjects->push_back(objPointer);
             }
         }
@@ -113,12 +113,12 @@ namespace EMStudio
             {
                 // get the current object pointer and skip directly if the type check fails
                 ObjectPointer objPointer = objects[i];
-                if (objPointer.mWorkspace == nullptr)
+                if (objPointer.m_workspace == nullptr)
                 {
                     continue;
                 }
 
-                Workspace* workspace = objPointer.mWorkspace;
+                Workspace* workspace = objPointer.m_workspace;
 
                 // has the workspace been saved already or is it a new one?
                 if (workspace->GetFilenameString().empty())
@@ -183,9 +183,9 @@ namespace EMStudio
         QHBoxLayout* mainLayout = new QHBoxLayout();
         mainLayout->setMargin(0);
 
-        mTextEdit = new QTextEdit();
-        mTextEdit->setTextInteractionFlags(Qt::NoTextInteraction | Qt::TextSelectableByMouse);
-        mainLayout->addWidget(mTextEdit);
+        m_textEdit = new QTextEdit();
+        m_textEdit->setTextInteractionFlags(Qt::NoTextInteraction | Qt::TextSelectableByMouse);
+        mainLayout->addWidget(m_textEdit);
 
         setMinimumWidth(600);
         setMinimumHeight(400);
@@ -222,7 +222,7 @@ namespace EMStudio
             text += "<br><br>";
         }
 
-        mTextEdit->setText(text.c_str());
+        m_textEdit->setText(text.c_str());
     }
 
     MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
@@ -232,45 +232,45 @@ namespace EMStudio
         , m_undoMenuCallback(nullptr)
         , m_fancyDockingManager(new AzQtComponents::FancyDocking(this, "emotionstudiosdk"))
     {
-        mLoadingOptions                 = false;
-        mAutosaveTimer                  = nullptr;
-        mPreferencesWindow              = nullptr;
-        mApplicationMode                = nullptr;
-        mDirtyFileManager               = nullptr;
-        mFileManager                    = nullptr;
-        mShortcutManager                = nullptr;
-        mNativeEventFilter              = nullptr;
-        mImportActorCallback            = nullptr;
-        mRemoveActorCallback            = nullptr;
-        mRemoveActorInstanceCallback    = nullptr;
-        mImportMotionCallback           = nullptr;
-        mRemoveMotionCallback           = nullptr;
-        mCreateMotionSetCallback        = nullptr;
-        mRemoveMotionSetCallback        = nullptr;
-        mLoadMotionSetCallback          = nullptr;
-        mCreateAnimGraphCallback        = nullptr;
-        mRemoveAnimGraphCallback        = nullptr;
-        mLoadAnimGraphCallback          = nullptr;
-        mSelectCallback                 = nullptr;
-        mUnselectCallback               = nullptr;
+        m_loadingOptions                 = false;
+        m_autosaveTimer                  = nullptr;
+        m_preferencesWindow              = nullptr;
+        m_applicationMode                = nullptr;
+        m_dirtyFileManager               = nullptr;
+        m_fileManager                    = nullptr;
+        m_shortcutManager                = nullptr;
+        m_nativeEventFilter              = nullptr;
+        m_importActorCallback            = nullptr;
+        m_removeActorCallback            = nullptr;
+        m_removeActorInstanceCallback    = nullptr;
+        m_importMotionCallback           = nullptr;
+        m_removeMotionCallback           = nullptr;
+        m_createMotionSetCallback        = nullptr;
+        m_removeMotionSetCallback        = nullptr;
+        m_loadMotionSetCallback          = nullptr;
+        m_createAnimGraphCallback        = nullptr;
+        m_removeAnimGraphCallback        = nullptr;
+        m_loadAnimGraphCallback          = nullptr;
+        m_selectCallback                 = nullptr;
+        m_unselectCallback               = nullptr;
         m_clearSelectionCallback        = nullptr;
-        mSaveWorkspaceCallback          = nullptr;
+        m_saveWorkspaceCallback          = nullptr;
     }
 
 
     // destructor
     MainWindow::~MainWindow()
     {
-        if (mNativeEventFilter)
+        if (m_nativeEventFilter)
         {
-            QAbstractEventDispatcher::instance()->removeNativeEventFilter(mNativeEventFilter);
-            delete mNativeEventFilter;
-            mNativeEventFilter = nullptr;
+            QAbstractEventDispatcher::instance()->removeNativeEventFilter(m_nativeEventFilter);
+            delete m_nativeEventFilter;
+            m_nativeEventFilter = nullptr;
         }
 
-        if (mAutosaveTimer)
+        if (m_autosaveTimer)
         {
-            mAutosaveTimer->stop();
+            m_autosaveTimer->stop();
         }
 
         PluginOptionsNotificationsBus::Router::BusRouterDisconnect();
@@ -280,42 +280,42 @@ namespace EMStudio
         // results in an empty scene
         Reset();
 
-        delete mShortcutManager;
-        delete mFileManager;
-        delete mDirtyFileManager;
+        delete m_shortcutManager;
+        delete m_fileManager;
+        delete m_dirtyFileManager;
 
         // unregister the command callbacks and get rid of the memory
-        GetCommandManager()->RemoveCommandCallback(mImportActorCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mRemoveActorCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mRemoveActorInstanceCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mImportMotionCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mRemoveMotionCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mCreateMotionSetCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mRemoveMotionSetCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mLoadMotionSetCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mCreateAnimGraphCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mRemoveAnimGraphCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mLoadAnimGraphCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mSelectCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mUnselectCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_importActorCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_removeActorCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_removeActorInstanceCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_importMotionCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_removeMotionCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_createMotionSetCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_removeMotionSetCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_loadMotionSetCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_createAnimGraphCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_removeAnimGraphCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_loadAnimGraphCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_selectCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_unselectCallback, false);
         GetCommandManager()->RemoveCommandCallback(m_clearSelectionCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mSaveWorkspaceCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_saveWorkspaceCallback, false);
         GetCommandManager()->RemoveCallback(&m_mainWindowCommandManagerCallback, false);
-        delete mImportActorCallback;
-        delete mRemoveActorCallback;
-        delete mRemoveActorInstanceCallback;
-        delete mImportMotionCallback;
-        delete mRemoveMotionCallback;
-        delete mCreateMotionSetCallback;
-        delete mRemoveMotionSetCallback;
-        delete mLoadMotionSetCallback;
-        delete mCreateAnimGraphCallback;
-        delete mRemoveAnimGraphCallback;
-        delete mLoadAnimGraphCallback;
-        delete mSelectCallback;
-        delete mUnselectCallback;
+        delete m_importActorCallback;
+        delete m_removeActorCallback;
+        delete m_removeActorInstanceCallback;
+        delete m_importMotionCallback;
+        delete m_removeMotionCallback;
+        delete m_createMotionSetCallback;
+        delete m_removeMotionSetCallback;
+        delete m_loadMotionSetCallback;
+        delete m_createAnimGraphCallback;
+        delete m_removeAnimGraphCallback;
+        delete m_loadAnimGraphCallback;
+        delete m_selectCallback;
+        delete m_unselectCallback;
         delete m_clearSelectionCallback;
-        delete mSaveWorkspaceCallback;
+        delete m_saveWorkspaceCallback;
 
         EMotionFX::ActorEditorRequestBus::Handler::BusDisconnect();
 
@@ -363,8 +363,8 @@ namespace EMStudio
         QMenuBar* menuBar = new QMenuBar(menuWidget);
         menuLayout->addWidget(menuBar);
 
-        mApplicationMode = new QComboBox();
-        menuLayout->addWidget(mApplicationMode);
+        m_applicationMode = new QComboBox();
+        menuLayout->addWidget(m_applicationMode);
 
         setMenuWidget(menuWidget);
 
@@ -373,26 +373,26 @@ namespace EMStudio
         menu->setObjectName("EMFX.MainWindow.FileMenu");
 
         // reset action
-        mResetAction = menu->addAction(tr("&Reset"), this, &MainWindow::OnReset, QKeySequence::New);
-        mResetAction->setObjectName("EMFX.MainWindow.ResetAction");
+        m_resetAction = menu->addAction(tr("&Reset"), this, &MainWindow::OnReset, QKeySequence::New);
+        m_resetAction->setObjectName("EMFX.MainWindow.ResetAction");
         
         // save all
-        mSaveAllAction = menu->addAction(tr("Save All..."), this, &MainWindow::OnSaveAll, QKeySequence::Save);
-        mSaveAllAction->setObjectName("EMFX.MainWindow.SaveAllAction");
+        m_saveAllAction = menu->addAction(tr("Save All..."), this, &MainWindow::OnSaveAll, QKeySequence::Save);
+        m_saveAllAction->setObjectName("EMFX.MainWindow.SaveAllAction");
 
         // disable the reset and save all menus until one thing is loaded
-        mResetAction->setDisabled(true);
-        mSaveAllAction->setDisabled(true);
+        m_resetAction->setDisabled(true);
+        m_saveAllAction->setDisabled(true);
 
         menu->addSeparator();
 
         // actor file actions
         QAction* openAction = menu->addAction(tr("&Open Actor"), this, &MainWindow::OnFileOpenActor, QKeySequence::Open);
         openAction->setObjectName("EMFX.MainWindow.OpenActorAction");
-        mMergeActorAction = menu->addAction(tr("&Merge Actor"), this, &MainWindow::OnFileMergeActor, Qt::CTRL + Qt::Key_I);
-        mMergeActorAction->setObjectName("EMFX.MainWindow.MergeActorAction");
-        mSaveSelectedActorsAction = menu->addAction(tr("&Save Selected Actors"), this, &MainWindow::OnFileSaveSelectedActors);
-        mSaveSelectedActorsAction->setObjectName("EMFX.MainWindow.SaveActorAction");
+        m_mergeActorAction = menu->addAction(tr("&Merge Actor"), this, &MainWindow::OnFileMergeActor, Qt::CTRL + Qt::Key_I);
+        m_mergeActorAction->setObjectName("EMFX.MainWindow.MergeActorAction");
+        m_saveSelectedActorsAction = menu->addAction(tr("&Save Selected Actors"), this, &MainWindow::OnFileSaveSelectedActors);
+        m_saveSelectedActorsAction->setObjectName("EMFX.MainWindow.SaveActorAction");
 
         // disable the merge actor menu until one actor is in the scene
         DisableMergeActorMenu();
@@ -401,8 +401,8 @@ namespace EMStudio
         DisableSaveSelectedActorsMenu();
 
         // recent actors submenu
-        mRecentActors.Init(menu, mOptions.GetMaxRecentFiles(), "Recent Actors", "recentActorFiles");
-        connect(&mRecentActors, &MysticQt::RecentFiles::OnRecentFile, this, &MainWindow::OnRecentFile);
+        m_recentActors.Init(menu, m_options.GetMaxRecentFiles(), "Recent Actors", "recentActorFiles");
+        connect(&m_recentActors, &MysticQt::RecentFiles::OnRecentFile, this, &MainWindow::OnRecentFile);
 
         // workspace file actions
         menu->addSeparator();
@@ -416,8 +416,8 @@ namespace EMStudio
         saveWorkspaceAsAction->setObjectName("EMFX.MainWindow.SaveWorkspaceAsAction");
 
         // recent workspace submenu
-        mRecentWorkspaces.Init(menu, mOptions.GetMaxRecentFiles(), "Recent Workspaces", "recentWorkspaces");
-        connect(&mRecentWorkspaces, &MysticQt::RecentFiles::OnRecentFile, this, &MainWindow::OnRecentFile);
+        m_recentWorkspaces.Init(menu, m_options.GetMaxRecentFiles(), "Recent Workspaces", "recentWorkspaces");
+        connect(&m_recentWorkspaces, &MysticQt::RecentFiles::OnRecentFile, this, &MainWindow::OnRecentFile);
 
         // edit menu
         menu = menuBar->addMenu(tr("&Edit"));
@@ -443,19 +443,19 @@ namespace EMStudio
         preferencesAction->setObjectName("EMFX.MainWindow.PrefsAction");
 
         // layouts item
-        mLayoutsMenu = menuBar->addMenu(tr("&Layouts"));
-        mLayoutsMenu->setObjectName("LayoutsMenu");
+        m_layoutsMenu = menuBar->addMenu(tr("&Layouts"));
+        m_layoutsMenu->setObjectName("LayoutsMenu");
         UpdateLayoutsMenu();
 
         // reset the application mode selection and connect it
-        mApplicationMode->setCurrentIndex(-1);
-        connect(mApplicationMode, qOverload<int>(&QComboBox::currentIndexChanged), this, qOverload<int>(&MainWindow::ApplicationModeChanged));
-        mLayoutLoaded = false;
+        m_applicationMode->setCurrentIndex(-1);
+        connect(m_applicationMode, qOverload<int>(&QComboBox::currentIndexChanged), this, qOverload<int>(&MainWindow::ApplicationModeChanged));
+        m_layoutLoaded = false;
 
         // view item
         menu = menuBar->addMenu(tr("&View"));
-        mCreateWindowMenu = menu;
-        mCreateWindowMenu->setObjectName("ViewMenu");
+        m_createWindowMenu = menu;
+        m_createWindowMenu->setObjectName("ViewMenu");
 
         // help menu
         menu = menuBar->addMenu(tr("&Help"));
@@ -483,27 +483,27 @@ namespace EMStudio
         SetWindowTitleFromFileName("<not saved yet>");
 
         // create the autosave timer
-        mAutosaveTimer = new QTimer(this);
-        connect(mAutosaveTimer, &QTimer::timeout, this, &MainWindow::OnAutosaveTimeOut);
+        m_autosaveTimer = new QTimer(this);
+        connect(m_autosaveTimer, &QTimer::timeout, this, &MainWindow::OnAutosaveTimeOut);
 
         // load preferences
         PluginOptionsNotificationsBus::Router::BusRouterConnect();
         LoadPreferences();      
-        mAutosaveTimer->setInterval(mOptions.GetAutoSaveInterval() * 60 * 1000);
+        m_autosaveTimer->setInterval(m_options.GetAutoSaveInterval() * 60 * 1000);
 
         // Create the dirty file manager and register the workspace callback.
-        mDirtyFileManager = new DirtyFileManager;
-        mDirtyFileManager->AddCallback(new SaveDirtyWorkspaceCallback);
+        m_dirtyFileManager = new DirtyFileManager;
+        m_dirtyFileManager->AddCallback(new SaveDirtyWorkspaceCallback);
 
         // init the file manager
-        mFileManager = new EMStudio::FileManager(this);
+        m_fileManager = new EMStudio::FileManager(this);
 
         ////////////////////////////////////////////////////////////////////////
         // Keyboard Shortcut Manager
         ////////////////////////////////////////////////////////////////////////
 
         // create the shortcut manager
-        mShortcutManager = new MysticQt::KeyboardShortcutManager();
+        m_shortcutManager = new MysticQt::KeyboardShortcutManager();
 
         // load the old shortcuts
         LoadKeyboardShortcuts();
@@ -514,24 +514,24 @@ namespace EMStudio
             "AnimGraph",
             this);
         animGraphLayoutAction->setShortcut(Qt::Key_1 | Qt::AltModifier);
-        mShortcutManager->RegisterKeyboardShortcut(animGraphLayoutAction, layoutGroupName, false);
-        connect(animGraphLayoutAction, &QAction::triggered, [this]{ mApplicationMode->setCurrentIndex(0); });
+        m_shortcutManager->RegisterKeyboardShortcut(animGraphLayoutAction, layoutGroupName, false);
+        connect(animGraphLayoutAction, &QAction::triggered, [this]{ m_applicationMode->setCurrentIndex(0); });
         addAction(animGraphLayoutAction);
 
         QAction* animationLayoutAction = new QAction(
             "Animation",
             this);
         animationLayoutAction->setShortcut(Qt::Key_2 | Qt::AltModifier);
-        mShortcutManager->RegisterKeyboardShortcut(animationLayoutAction, layoutGroupName, false);
-        connect(animationLayoutAction, &QAction::triggered, [this]{ mApplicationMode->setCurrentIndex(1); });
+        m_shortcutManager->RegisterKeyboardShortcut(animationLayoutAction, layoutGroupName, false);
+        connect(animationLayoutAction, &QAction::triggered, [this]{ m_applicationMode->setCurrentIndex(1); });
         addAction(animationLayoutAction);
 
         QAction* characterLayoutAction = new QAction(
             "Character",
             this);
         characterLayoutAction->setShortcut(Qt::Key_1 | Qt::AltModifier);
-        mShortcutManager->RegisterKeyboardShortcut(characterLayoutAction, layoutGroupName, false);
-        connect(characterLayoutAction, &QAction::triggered, [this]{ mApplicationMode->setCurrentIndex(2); });
+        m_shortcutManager->RegisterKeyboardShortcut(characterLayoutAction, layoutGroupName, false);
+        connect(characterLayoutAction, &QAction::triggered, [this]{ m_applicationMode->setCurrentIndex(2); });
         addAction(characterLayoutAction);
 
         EMotionFX::ActorEditorRequestBus::Handler::BusConnect();
@@ -541,42 +541,42 @@ namespace EMStudio
         EMotionFX::ActorEditorRequestBus::Handler::BusConnect();
 
         // create and register the command callbacks
-        mImportActorCallback = new CommandImportActorCallback(false);
-        mRemoveActorCallback = new CommandRemoveActorCallback(false);
-        mRemoveActorInstanceCallback = new CommandRemoveActorInstanceCallback(false);
-        mImportMotionCallback = new CommandImportMotionCallback(false);
-        mRemoveMotionCallback = new CommandRemoveMotionCallback(false);
-        mCreateMotionSetCallback = new CommandCreateMotionSetCallback(false);
-        mRemoveMotionSetCallback = new CommandRemoveMotionSetCallback(false);
-        mLoadMotionSetCallback = new CommandLoadMotionSetCallback(false);
-        mCreateAnimGraphCallback = new CommandCreateAnimGraphCallback(false);
-        mRemoveAnimGraphCallback = new CommandRemoveAnimGraphCallback(false);
-        mLoadAnimGraphCallback = new CommandLoadAnimGraphCallback(false);
-        mSelectCallback = new CommandSelectCallback(false);
-        mUnselectCallback = new CommandUnselectCallback(false);
+        m_importActorCallback = new CommandImportActorCallback(false);
+        m_removeActorCallback = new CommandRemoveActorCallback(false);
+        m_removeActorInstanceCallback = new CommandRemoveActorInstanceCallback(false);
+        m_importMotionCallback = new CommandImportMotionCallback(false);
+        m_removeMotionCallback = new CommandRemoveMotionCallback(false);
+        m_createMotionSetCallback = new CommandCreateMotionSetCallback(false);
+        m_removeMotionSetCallback = new CommandRemoveMotionSetCallback(false);
+        m_loadMotionSetCallback = new CommandLoadMotionSetCallback(false);
+        m_createAnimGraphCallback = new CommandCreateAnimGraphCallback(false);
+        m_removeAnimGraphCallback = new CommandRemoveAnimGraphCallback(false);
+        m_loadAnimGraphCallback = new CommandLoadAnimGraphCallback(false);
+        m_selectCallback = new CommandSelectCallback(false);
+        m_unselectCallback = new CommandUnselectCallback(false);
         m_clearSelectionCallback = new CommandClearSelectionCallback(false);
-        mSaveWorkspaceCallback = new CommandSaveWorkspaceCallback(false);
-        GetCommandManager()->RegisterCommandCallback("ImportActor", mImportActorCallback);
-        GetCommandManager()->RegisterCommandCallback("RemoveActor", mRemoveActorCallback);
-        GetCommandManager()->RegisterCommandCallback("RemoveActorInstance", mRemoveActorInstanceCallback);
-        GetCommandManager()->RegisterCommandCallback("ImportMotion", mImportMotionCallback);
-        GetCommandManager()->RegisterCommandCallback("RemoveMotion", mRemoveMotionCallback);
-        GetCommandManager()->RegisterCommandCallback("CreateMotionSet", mCreateMotionSetCallback);
-        GetCommandManager()->RegisterCommandCallback("RemoveMotionSet", mRemoveMotionSetCallback);
-        GetCommandManager()->RegisterCommandCallback("LoadMotionSet", mLoadMotionSetCallback);
-        GetCommandManager()->RegisterCommandCallback("CreateAnimGraph", mCreateAnimGraphCallback);
-        GetCommandManager()->RegisterCommandCallback("RemoveAnimGraph", mRemoveAnimGraphCallback);
-        GetCommandManager()->RegisterCommandCallback("LoadAnimGraph", mLoadAnimGraphCallback);
-        GetCommandManager()->RegisterCommandCallback("Select", mSelectCallback);
-        GetCommandManager()->RegisterCommandCallback("Unselect", mUnselectCallback);
+        m_saveWorkspaceCallback = new CommandSaveWorkspaceCallback(false);
+        GetCommandManager()->RegisterCommandCallback("ImportActor", m_importActorCallback);
+        GetCommandManager()->RegisterCommandCallback("RemoveActor", m_removeActorCallback);
+        GetCommandManager()->RegisterCommandCallback("RemoveActorInstance", m_removeActorInstanceCallback);
+        GetCommandManager()->RegisterCommandCallback("ImportMotion", m_importMotionCallback);
+        GetCommandManager()->RegisterCommandCallback("RemoveMotion", m_removeMotionCallback);
+        GetCommandManager()->RegisterCommandCallback("CreateMotionSet", m_createMotionSetCallback);
+        GetCommandManager()->RegisterCommandCallback("RemoveMotionSet", m_removeMotionSetCallback);
+        GetCommandManager()->RegisterCommandCallback("LoadMotionSet", m_loadMotionSetCallback);
+        GetCommandManager()->RegisterCommandCallback("CreateAnimGraph", m_createAnimGraphCallback);
+        GetCommandManager()->RegisterCommandCallback("RemoveAnimGraph", m_removeAnimGraphCallback);
+        GetCommandManager()->RegisterCommandCallback("LoadAnimGraph", m_loadAnimGraphCallback);
+        GetCommandManager()->RegisterCommandCallback("Select", m_selectCallback);
+        GetCommandManager()->RegisterCommandCallback("Unselect", m_unselectCallback);
         GetCommandManager()->RegisterCommandCallback("ClearSelection", m_clearSelectionCallback);
-        GetCommandManager()->RegisterCommandCallback("SaveWorkspace", mSaveWorkspaceCallback);
+        GetCommandManager()->RegisterCommandCallback("SaveWorkspace", m_saveWorkspaceCallback);
 
         GetCommandManager()->RegisterCallback(&m_mainWindowCommandManagerCallback);
 
-        AZ_Assert(!mNativeEventFilter, "Double initialization?");
-        mNativeEventFilter = new NativeEventFilter(this);
-        QAbstractEventDispatcher::instance()->installNativeEventFilter(mNativeEventFilter);
+        AZ_Assert(!m_nativeEventFilter, "Double initialization?");
+        m_nativeEventFilter = new NativeEventFilter(this);
+        QAbstractEventDispatcher::instance()->installNativeEventFilter(m_nativeEventFilter);
     }
 
     MainWindow::MainWindowCommandManagerCallback::MainWindowCommandManagerCallback()
@@ -965,7 +965,7 @@ namespace EMStudio
 
     void MainWindow::OnWorkspaceSaved(const char* filename)
     {
-        mRecentWorkspaces.AddRecentFile(filename);
+        m_recentWorkspaces.AddRecentFile(filename);
         SetWindowTitleFromFileName(filename);
     }
 
@@ -975,50 +975,50 @@ namespace EMStudio
         // enable the menus if at least one actor
         if (EMotionFX::GetActorManager().GetNumActors() > 0)
         {
-            mResetAction->setEnabled(true);
-            mSaveAllAction->setEnabled(true);
+            m_resetAction->setEnabled(true);
+            m_saveAllAction->setEnabled(true);
             return;
         }
 
         // enable the menus if at least one motion
         if (EMotionFX::GetMotionManager().GetNumMotions() > 0)
         {
-            mResetAction->setEnabled(true);
-            mSaveAllAction->setEnabled(true);
+            m_resetAction->setEnabled(true);
+            m_saveAllAction->setEnabled(true);
             return;
         }
 
         // enable the menus if at least one motion set
         if (EMotionFX::GetMotionManager().GetNumMotionSets() > 0)
         {
-            mResetAction->setEnabled(true);
-            mSaveAllAction->setEnabled(true);
+            m_resetAction->setEnabled(true);
+            m_saveAllAction->setEnabled(true);
             return;
         }
 
         // enable the menus if at least one anim graph
         if (EMotionFX::GetAnimGraphManager().GetNumAnimGraphs() > 0)
         {
-            mResetAction->setEnabled(true);
-            mSaveAllAction->setEnabled(true);
+            m_resetAction->setEnabled(true);
+            m_saveAllAction->setEnabled(true);
             return;
         }
 
         // nothing loaded, disable the menus
-        mResetAction->setDisabled(true);
-        mSaveAllAction->setDisabled(true);
+        m_resetAction->setDisabled(true);
+        m_saveAllAction->setDisabled(true);
     }
 
 
     void MainWindow::EnableMergeActorMenu()
     {
-        mMergeActorAction->setEnabled(true);
+        m_mergeActorAction->setEnabled(true);
     }
 
 
     void MainWindow::DisableMergeActorMenu()
     {
-        mMergeActorAction->setDisabled(true);
+        m_mergeActorAction->setDisabled(true);
     }
 
 
@@ -1052,13 +1052,13 @@ namespace EMStudio
 
     void MainWindow::EnableSaveSelectedActorsMenu()
     {
-        mSaveSelectedActorsAction->setEnabled(true);
+        m_saveSelectedActorsAction->setEnabled(true);
     }
 
 
     void MainWindow::DisableSaveSelectedActorsMenu()
     {
-        mSaveSelectedActorsAction->setDisabled(true);
+        m_saveSelectedActorsAction->setDisabled(true);
     }
 
 
@@ -1100,7 +1100,7 @@ namespace EMStudio
         AZStd::sort(begin(sortedPlugins), end(sortedPlugins));
 
         // clear the window menu
-        mCreateWindowMenu->clear();
+        m_createWindowMenu->clear();
 
         // for all registered plugins, create a menu items
         for (size_t p = 0; p < numPlugins; ++p)
@@ -1120,14 +1120,14 @@ namespace EMStudio
             if (plugin->AllowMultipleInstances())
             {
                 // create the menu
-                mCreateWindowMenu->addMenu(plugin->GetName());
+                m_createWindowMenu->addMenu(plugin->GetName());
 
                 // TODO: add each instance inside the submenu
             }
             else
             {
                 // create the action
-                QAction* action = mCreateWindowMenu->addAction(plugin->GetName());
+                QAction* action = m_createWindowMenu->addAction(plugin->GetName());
                 action->setData(plugin->GetName());
 
                 // connect the action to activate the plugin when clicked on it
@@ -1144,7 +1144,7 @@ namespace EMStudio
                 if (activePlugin)
                 {
                     // must use the active plugin, as it needs to be initialized to create window entries
-                    activePlugin->AddWindowMenuEntries(mCreateWindowMenu);
+                    activePlugin->AddWindowMenuEntries(m_createWindowMenu);
                 }
             }
         }
@@ -1210,16 +1210,16 @@ namespace EMStudio
     // show the preferences dialog
     void MainWindow::OnPreferences()
     {
-        if (mPreferencesWindow == nullptr)
+        if (m_preferencesWindow == nullptr)
         {
-            mPreferencesWindow = new PreferencesWindow(this);
-            mPreferencesWindow->Init();
+            m_preferencesWindow = new PreferencesWindow(this);
+            m_preferencesWindow->Init();
 
-            AzToolsFramework::ReflectedPropertyEditor* generalPropertyWidget = mPreferencesWindow->AddCategory("General");
+            AzToolsFramework::ReflectedPropertyEditor* generalPropertyWidget = m_preferencesWindow->AddCategory("General");
             generalPropertyWidget->ClearInstances();
             generalPropertyWidget->InvalidateAll();
 
-            generalPropertyWidget->AddInstance(&mOptions, azrtti_typeid(mOptions));
+            generalPropertyWidget->AddInstance(&m_options, azrtti_typeid(m_options));
 
             PluginManager* pluginManager = GetPluginManager();
             const size_t numPlugins = pluginManager->GetNumActivePlugins();
@@ -1247,11 +1247,11 @@ namespace EMStudio
             generalPropertyWidget->InvalidateAll();
 
             // Keyboard shortcuts
-            KeyboardShortcutsWindow* shortcutsWindow = new KeyboardShortcutsWindow(mPreferencesWindow);
-            mPreferencesWindow->AddCategory(shortcutsWindow, "Keyboard shortcuts");
+            KeyboardShortcutsWindow* shortcutsWindow = new KeyboardShortcutsWindow(m_preferencesWindow);
+            m_preferencesWindow->AddCategory(shortcutsWindow, "Keyboard shortcuts");
         }
 
-        mPreferencesWindow->exec();
+        m_preferencesWindow->exec();
         SavePreferences();
     }
 
@@ -1261,7 +1261,7 @@ namespace EMStudio
     {
         // open the config file
         QSettings settings(this);
-        mOptions.Save(settings, *this);
+        m_options.Save(settings, *this);
     }
 
 
@@ -1270,24 +1270,24 @@ namespace EMStudio
     {
         // When a setting changes, OnOptionChanged will save. To avoid saving while settings are being
         // loaded, we use this flag
-        mLoadingOptions = true;
+        m_loadingOptions = true;
 
         // open the config file
         QSettings settings(this);
-        mOptions = GUIOptions::Load(settings, *this);
+        m_options = GUIOptions::Load(settings, *this);
 
-        mLoadingOptions = false;
+        m_loadingOptions = false;
     }
 
     void MainWindow::AddRecentActorFile(const QString& fileName)
     {
-        mRecentActors.AddRecentFile(fileName.toUtf8().data());
+        m_recentActors.AddRecentFile(fileName.toUtf8().data());
     }
 
     void MainWindow::LoadKeyboardShortcuts()
     {
         QSettings shortcutSettings(AZStd::string(GetManager()->GetAppDataFolder() + "EMStudioKeyboardShortcuts.cfg").c_str(), QSettings::IniFormat, this);
-        mShortcutManager->Load(&shortcutSettings);
+        m_shortcutManager->Load(&shortcutSettings);
     }
 
     void MainWindow::LoadActor(const char* fileName, bool replaceCurrentScene)
@@ -1321,17 +1321,17 @@ namespace EMStudio
 
         // add the load actor settings
         LoadActorSettingsWindow::LoadActorSettings loadActorSettings;
-        loadActorCommand += "-loadMeshes " + AZStd::to_string(loadActorSettings.mLoadMeshes);
-        loadActorCommand += " -loadTangents " + AZStd::to_string(loadActorSettings.mLoadTangents);
-        loadActorCommand += " -autoGenTangents " + AZStd::to_string(loadActorSettings.mAutoGenerateTangents);
-        loadActorCommand += " -loadLimits " + AZStd::to_string(loadActorSettings.mLoadLimits);
-        loadActorCommand += " -loadGeomLods " + AZStd::to_string(loadActorSettings.mLoadGeometryLODs);
-        loadActorCommand += " -loadMorphTargets " + AZStd::to_string(loadActorSettings.mLoadMorphTargets);
-        loadActorCommand += " -loadCollisionMeshes " + AZStd::to_string(loadActorSettings.mLoadCollisionMeshes);
-        loadActorCommand += " -loadMaterialLayers " + AZStd::to_string(loadActorSettings.mLoadStandardMaterialLayers);
-        loadActorCommand += " -loadSkinningInfo " + AZStd::to_string(loadActorSettings.mLoadSkinningInfo);
-        loadActorCommand += " -loadSkeletalLODs " + AZStd::to_string(loadActorSettings.mLoadSkeletalLODs);
-        loadActorCommand += " -dualQuatSkinning " + AZStd::to_string(loadActorSettings.mDualQuaternionSkinning);
+        loadActorCommand += "-loadMeshes " + AZStd::to_string(loadActorSettings.m_loadMeshes);
+        loadActorCommand += " -loadTangents " + AZStd::to_string(loadActorSettings.m_loadTangents);
+        loadActorCommand += " -autoGenTangents " + AZStd::to_string(loadActorSettings.m_autoGenerateTangents);
+        loadActorCommand += " -loadLimits " + AZStd::to_string(loadActorSettings.m_loadLimits);
+        loadActorCommand += " -loadGeomLods " + AZStd::to_string(loadActorSettings.m_loadGeometryLoDs);
+        loadActorCommand += " -loadMorphTargets " + AZStd::to_string(loadActorSettings.m_loadMorphTargets);
+        loadActorCommand += " -loadCollisionMeshes " + AZStd::to_string(loadActorSettings.m_loadCollisionMeshes);
+        loadActorCommand += " -loadMaterialLayers " + AZStd::to_string(loadActorSettings.m_loadStandardMaterialLayers);
+        loadActorCommand += " -loadSkinningInfo " + AZStd::to_string(loadActorSettings.m_loadSkinningInfo);
+        loadActorCommand += " -loadSkeletalLODs " + AZStd::to_string(loadActorSettings.m_loadSkeletalLoDs);
+        loadActorCommand += " -dualQuatSkinning " + AZStd::to_string(loadActorSettings.m_dualQuaternionSkinning);
 
         // add the load and the create instance commands
         commandGroup.AddCommandString(loadActorCommand.c_str());
@@ -1346,14 +1346,14 @@ namespace EMStudio
 
         // add the actor in the recent actor list
         // if the same actor is already in the list, the duplicate is removed
-        mRecentActors.AddRecentFile(fileName);
+        m_recentActors.AddRecentFile(fileName);
     }
 
 
 
     void MainWindow::LoadCharacter(const AZ::Data::AssetId& actorAssetId, const AZ::Data::AssetId& animgraphId, const AZ::Data::AssetId& motionSetId)
     {
-        mCharacterFiles.clear();
+        m_characterFiles.clear();
         AZStd::string cachePath = gEnv->pFileIO->GetAlias("@assets@");
         AZStd::string filename;
         AzFramework::StringFunc::AssetDatabasePath::Normalize(cachePath);
@@ -1396,10 +1396,10 @@ namespace EMStudio
         AZStd::vector<SaveDirtyFilesCallback::ObjectPointer> objects;
         AZStd::vector<SaveDirtyFilesCallback::ObjectPointer> dirtyObjects;
 
-        const size_t numDirtyFilesCallbacks = mDirtyFileManager->GetNumCallbacks();
+        const size_t numDirtyFilesCallbacks = m_dirtyFileManager->GetNumCallbacks();
         for (size_t i = 0; i < numDirtyFilesCallbacks; ++i)
         {
-            SaveDirtyFilesCallback* callback = mDirtyFileManager->GetCallback(i);
+            SaveDirtyFilesCallback* callback = m_dirtyFileManager->GetCallback(i);
             callback->GetDirtyFileNames(&filenames, &objects);
             const size_t numFileNames = filenames.size();
             for (size_t j = 0; j < numFileNames; ++j)
@@ -1429,18 +1429,18 @@ namespace EMStudio
         // Dont reload dirty files that are already open.
         if (!foundActor)
         {
-            mCharacterFiles.push_back(actorFilename);
+            m_characterFiles.push_back(actorFilename);
         }
         if (!foundAnimgraph)
         {
-            mCharacterFiles.push_back(animgraphFilename);
+            m_characterFiles.push_back(animgraphFilename);
         }
         if (!foundMotionSet)
         {
-            mCharacterFiles.push_back(motionSetFilename);
+            m_characterFiles.push_back(motionSetFilename);
         }
 
-        if (isVisible() && mLayoutLoaded)
+        if (isVisible() && m_layoutLoaded)
         {
             LoadCharacterFiles();
         }
@@ -1449,7 +1449,7 @@ namespace EMStudio
     void MainWindow::OnFileNewWorkspace()
     {
         // save all files that have been changed
-        if (mDirtyFileManager->SaveDirtyFiles() == DirtyFileManager::CANCELED)
+        if (m_dirtyFileManager->SaveDirtyFiles() == DirtyFileManager::CANCELED)
         {
             return;
         }
@@ -1491,7 +1491,7 @@ namespace EMStudio
 
     void MainWindow::OnFileOpenWorkspace()
     {
-        const AZStd::string filename = mFileManager->LoadWorkspaceFileDialog(this);
+        const AZStd::string filename = m_fileManager->LoadWorkspaceFileDialog(this);
         if (filename.empty())
         {
             return;
@@ -1503,14 +1503,14 @@ namespace EMStudio
 
     void MainWindow::OnSaveAll()
     {
-        mDirtyFileManager->SaveDirtyFiles(MCORE_INVALIDINDEX32, MCORE_INVALIDINDEX32, QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+        m_dirtyFileManager->SaveDirtyFiles(MCORE_INVALIDINDEX32, MCORE_INVALIDINDEX32, QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
     }
 
 
     void MainWindow::OnFileSaveWorkspace()
     {
         // save all files that have been changed, filter to not show the workspace files
-        if (mDirtyFileManager->SaveDirtyFiles(MCORE_INVALIDINDEX32, SaveDirtyWorkspaceCallback::TYPE_ID) == DirtyFileManager::CANCELED)
+        if (m_dirtyFileManager->SaveDirtyFiles(MCORE_INVALIDINDEX32, SaveDirtyWorkspaceCallback::TYPE_ID) == DirtyFileManager::CANCELED)
         {
             return;
         }
@@ -1552,7 +1552,7 @@ namespace EMStudio
     void MainWindow::OnFileSaveWorkspaceAs()
     {
         // save all files that have been changed, filter to not show the workspace files
-        if (mDirtyFileManager->SaveDirtyFiles(MCORE_INVALIDINDEX32, SaveDirtyWorkspaceCallback::TYPE_ID) == DirtyFileManager::CANCELED)
+        if (m_dirtyFileManager->SaveDirtyFiles(MCORE_INVALIDINDEX32, SaveDirtyWorkspaceCallback::TYPE_ID) == DirtyFileManager::CANCELED)
         {
             return;
         }
@@ -1643,7 +1643,7 @@ namespace EMStudio
 
     void MainWindow::OnReset()
     {
-        if (mDirtyFileManager->SaveDirtyFiles() == DirtyFileManager::CANCELED)
+        if (m_dirtyFileManager->SaveDirtyFiles() == DirtyFileManager::CANCELED)
         {
             return;
         }
@@ -1673,52 +1673,52 @@ namespace EMStudio
         if (optionChanged == GUIOptions::s_maxRecentFilesOptionName)
         {
             // Set the maximum number of recent files
-            mRecentActors.SetMaxRecentFiles(mOptions.GetMaxRecentFiles());
-            mRecentWorkspaces.SetMaxRecentFiles(mOptions.GetMaxRecentFiles());
+            m_recentActors.SetMaxRecentFiles(m_options.GetMaxRecentFiles());
+            m_recentWorkspaces.SetMaxRecentFiles(m_options.GetMaxRecentFiles());
         }
         else if (optionChanged == GUIOptions::s_maxHistoryItemsOptionName)
         {
             // Set the maximum number of history items in the command manager
-            GetCommandManager()->SetMaxHistoryItems(mOptions.GetMaxHistoryItems());
+            GetCommandManager()->SetMaxHistoryItems(m_options.GetMaxHistoryItems());
         }
         else if (optionChanged == GUIOptions::s_notificationVisibleTimeOptionName)
         {
             // Set the notification visible time
-            GetNotificationWindowManager()->SetVisibleTime(mOptions.GetNotificationInvisibleTime());
+            GetNotificationWindowManager()->SetVisibleTime(m_options.GetNotificationInvisibleTime());
         }
         else if (optionChanged == GUIOptions::s_enableAutosaveOptionName)
         {
             // Enable or disable the autosave timer
-            if (mOptions.GetEnableAutoSave())
+            if (m_options.GetEnableAutoSave())
             {
-                mAutosaveTimer->setInterval(mOptions.GetAutoSaveInterval() * 60 * 1000);
-                mAutosaveTimer->start();
+                m_autosaveTimer->setInterval(m_options.GetAutoSaveInterval() * 60 * 1000);
+                m_autosaveTimer->start();
             }
             else
             {
-                mAutosaveTimer->stop();
+                m_autosaveTimer->stop();
             }
         }
         else if (optionChanged == GUIOptions::s_autosaveIntervalOptionName)
         {
             // Set the autosave interval
-            mAutosaveTimer->stop();
-            mAutosaveTimer->setInterval(mOptions.GetAutoSaveInterval() * 60 * 1000);
-            mAutosaveTimer->start();
+            m_autosaveTimer->stop();
+            m_autosaveTimer->setInterval(m_options.GetAutoSaveInterval() * 60 * 1000);
+            m_autosaveTimer->start();
         }
         else if (optionChanged == GUIOptions::s_importerLogDetailsEnabledOptionName)
         {
             // Set if the detail logging of the importer is enabled or not
-            EMotionFX::GetImporter().SetLogDetails(mOptions.GetImporterLogDetailsEnabled());
+            EMotionFX::GetImporter().SetLogDetails(m_options.GetImporterLogDetailsEnabled());
         }
         else if (optionChanged == GUIOptions::s_autoLoadLastWorkspaceOptionName)
         {
             // Set if auto loading the last workspace is enabled or not
-            GetManager()->SetAutoLoadLastWorkspace(mOptions.GetAutoLoadLastWorkspace());
+            GetManager()->SetAutoLoadLastWorkspace(m_options.GetAutoLoadLastWorkspace());
         }
 
         // Save preferences
-        if (!mLoadingOptions)
+        if (!m_loadingOptions)
         {
             SavePreferences();
         }
@@ -1727,12 +1727,12 @@ namespace EMStudio
     // open an actor
     void MainWindow::OnFileOpenActor()
     {
-        if (mDirtyFileManager->SaveDirtyFiles({azrtti_typeid<EMotionFX::Actor>()}) == DirtyFileManager::CANCELED)
+        if (m_dirtyFileManager->SaveDirtyFiles({azrtti_typeid<EMotionFX::Actor>()}) == DirtyFileManager::CANCELED)
         {
             return;
         }
 
-        AZStd::vector<AZStd::string> filenames = mFileManager->LoadActorsFileDialog(this);
+        AZStd::vector<AZStd::string> filenames = m_fileManager->LoadActorsFileDialog(this);
         activateWindow();
         if (filenames.empty())
         {
@@ -1750,7 +1750,7 @@ namespace EMStudio
     // merge an actor
     void MainWindow::OnFileMergeActor()
     {
-        AZStd::vector<AZStd::string> filenames = mFileManager->LoadActorsFileDialog(this);
+        AZStd::vector<AZStd::string> filenames = m_fileManager->LoadActorsFileDialog(this);
         activateWindow();
         if (filenames.empty())
         {
@@ -1829,7 +1829,7 @@ namespace EMStudio
     void MainWindow::UpdateLayoutsMenu()
     {
         // clear the current menu
-        mLayoutsMenu->clear();
+        m_layoutsMenu->clear();
 
         // generate the layouts path
         QDir layoutsPath = QDir{ QString(MysticQt::GetDataDir().c_str()) }.filePath("Layouts");
@@ -1840,7 +1840,7 @@ namespace EMStudio
         dir.setSorting(QDir::Name);
 
         // add each layout
-        mLayoutNames.clear();
+        m_layoutNames.clear();
         AZStd::string filename;
         const QFileInfoList list = dir.entryInfoList();
         const int listSize = list.size();
@@ -1857,36 +1857,36 @@ namespace EMStudio
             if (extension == "layout")
             {
                 AzFramework::StringFunc::Path::GetFileName(filename.c_str(), filename);
-                mLayoutNames.emplace_back(filename);
+                m_layoutNames.emplace_back(filename);
             }
         }
 
         // add each menu
-        for (const AZStd::string& layoutName : mLayoutNames)
+        for (const AZStd::string& layoutName : m_layoutNames)
         {
-            QAction* action = mLayoutsMenu->addAction(layoutName.c_str());
+            QAction* action = m_layoutsMenu->addAction(layoutName.c_str());
             connect(action, &QAction::triggered, this, &MainWindow::OnLoadLayout);
         }
 
         // add the separator only if at least one layout
-        if (!mLayoutNames.empty())
+        if (!m_layoutNames.empty())
         {
-            mLayoutsMenu->addSeparator();
+            m_layoutsMenu->addSeparator();
         }
 
         // add the save current menu
-        QAction* saveCurrentAction = mLayoutsMenu->addAction("Save Current");
+        QAction* saveCurrentAction = m_layoutsMenu->addAction("Save Current");
         connect(saveCurrentAction, &QAction::triggered, this, &MainWindow::OnLayoutSaveAs);
 
         // remove menu is needed only if at least one layout
-        if (!mLayoutNames.empty())
+        if (!m_layoutNames.empty())
         {
             // add the remove menu
-            QMenu* removeMenu = mLayoutsMenu->addMenu("Remove");
+            QMenu* removeMenu = m_layoutsMenu->addMenu("Remove");
             removeMenu->setObjectName("RemoveMenu");
 
             // add each layout in the remove menu
-            for (const AZStd::string& layoutName : mLayoutNames)
+            for (const AZStd::string& layoutName : m_layoutNames)
             {
                 // User cannot remove the default layout. This layout is referenced in the qrc file, removing it will
                 // cause compiling issue too.
@@ -1900,26 +1900,26 @@ namespace EMStudio
         }
 
         // disable signals to avoid to switch of layout
-        mApplicationMode->blockSignals(true);
+        m_applicationMode->blockSignals(true);
 
         // update the combo box
-        mApplicationMode->clear();
-        for (const AZStd::string& layoutName : mLayoutNames)
+        m_applicationMode->clear();
+        for (const AZStd::string& layoutName : m_layoutNames)
         {
-            mApplicationMode->addItem(layoutName.c_str());
+            m_applicationMode->addItem(layoutName.c_str());
         }
 
         // update the current selection of combo box
-        const int layoutIndex = mApplicationMode->findText(QString(mOptions.GetApplicationMode().c_str()));
-        mApplicationMode->setCurrentIndex(layoutIndex);
+        const int layoutIndex = m_applicationMode->findText(QString(m_options.GetApplicationMode().c_str()));
+        m_applicationMode->setCurrentIndex(layoutIndex);
 
         // enable signals
-        mApplicationMode->blockSignals(false);
+        m_applicationMode->blockSignals(false);
     }
 
     void MainWindow::ApplicationModeChanged(int index)
     {
-        QString text = mApplicationMode->itemText(index);
+        QString text = m_applicationMode->itemText(index);
         ApplicationModeChanged(text);
     }
 
@@ -1935,7 +1935,7 @@ namespace EMStudio
         }
 
         // update the last used layout and save it in the preferences file
-        mOptions.SetApplicationMode(text.toUtf8().data());
+        m_options.SetApplicationMode(text.toUtf8().data());
         SavePreferences();
 
         // generate the filename
@@ -1972,16 +1972,16 @@ namespace EMStudio
             }
 
             // check if the layout removed is the current used
-            if (QString(mOptions.GetApplicationMode().c_str()) == m_removeLayoutNameText)
+            if (QString(m_options.GetApplicationMode().c_str()) == m_removeLayoutNameText)
             {
                 // find the layout index on the application mode combo box
-                const int layoutIndex = mApplicationMode->findText(m_removeLayoutNameText);
+                const int layoutIndex = m_applicationMode->findText(m_removeLayoutNameText);
 
                 // set the new layout index, take the previous if the last layout is removed, the next is taken otherwise
-                const int newLayoutIndex = (layoutIndex == (mApplicationMode->count() - 1)) ? layoutIndex - 1 : layoutIndex + 1;
+                const int newLayoutIndex = (layoutIndex == (m_applicationMode->count() - 1)) ? layoutIndex - 1 : layoutIndex + 1;
 
                 // select the layout, it also keeps it and saves to config
-                mApplicationMode->setCurrentIndex(newLayoutIndex);
+                m_applicationMode->setCurrentIndex(newLayoutIndex);
             }
 
             // update the layouts menu
@@ -2021,7 +2021,7 @@ namespace EMStudio
         QAction* action = qobject_cast<QAction*>(sender());
 
         // update the last used layout and save it in the preferences file
-        mOptions.SetApplicationMode(action->text().toUtf8().data());
+        m_options.SetApplicationMode(action->text().toUtf8().data());
         SavePreferences();
 
         // generate the filename
@@ -2031,10 +2031,10 @@ namespace EMStudio
         if (GetLayoutManager()->LoadLayout(filename.c_str()))
         {
             // update the combo box
-            mApplicationMode->blockSignals(true);
-            const int layoutIndex = mApplicationMode->findText(action->text());
-            mApplicationMode->setCurrentIndex(layoutIndex);
-            mApplicationMode->blockSignals(false);
+            m_applicationMode->blockSignals(true);
+            const int layoutIndex = m_applicationMode->findText(action->text());
+            m_applicationMode->setCurrentIndex(layoutIndex);
+            m_applicationMode->blockSignals(false);
         }
         else
         {
@@ -2195,8 +2195,8 @@ namespace EMStudio
         const size_t actorCount = actorFilenames.size();
         if (actorCount == 1)
         {
-            mDroppedActorFileName = actorFilenames[0].c_str();
-            mRecentActors.AddRecentFile(mDroppedActorFileName.c_str());
+            m_droppedActorFileName = actorFilenames[0].c_str();
+            m_recentActors.AddRecentFile(m_droppedActorFileName.c_str());
 
             if (contextMenuEnabled)
             {
@@ -2252,11 +2252,11 @@ namespace EMStudio
         if (numWorkspaces > 0)
         {
             // make sure we did not cancel load workspace
-            if (mDirtyFileManager->SaveDirtyFiles() != DirtyFileManager::CANCELED)
+            if (m_dirtyFileManager->SaveDirtyFiles() != DirtyFileManager::CANCELED)
             {
                 // add the workspace in the recent workspace list
                 // if the same workspace is already in the list, the duplicate is removed
-                mRecentWorkspaces.AddRecentFile(workspaceFilenames[0]);
+                m_recentWorkspaces.AddRecentFile(workspaceFilenames[0]);
 
                 // create the command group
                 MCore::CommandGroup workspaceCommandGroup("Load workspace", 64);
@@ -2344,21 +2344,21 @@ namespace EMStudio
 
     void MainWindow::LoadLayoutAfterShow()
     {
-        if (!mLayoutLoaded)
+        if (!m_layoutLoaded)
         {
-            mLayoutLoaded = true;
+            m_layoutLoaded = true;
 
             LoadDefaultLayout();
-            if (mCharacterFiles.empty() && GetManager()->GetAutoLoadLastWorkspace())
+            if (m_characterFiles.empty() && GetManager()->GetAutoLoadLastWorkspace())
             {
                 // load last workspace
-                const AZStd::string lastRecentWorkspace = mRecentWorkspaces.GetLastRecentFileName();
+                const AZStd::string lastRecentWorkspace = m_recentWorkspaces.GetLastRecentFileName();
                 if (!lastRecentWorkspace.empty())
                 {
-                    mCharacterFiles.push_back(lastRecentWorkspace);
+                    m_characterFiles.push_back(lastRecentWorkspace);
                 }
             }
-            if (!mCharacterFiles.empty())
+            if (!m_characterFiles.empty())
             {
                 // Need to defer loading the character until the layout is ready. We also
                 // need a couple of initializeGL/paintGL to happen before the character
@@ -2391,7 +2391,7 @@ namespace EMStudio
     // Load default layout.
     void MainWindow::LoadDefaultLayout()
     {
-        if (mApplicationMode->count() == 0)
+        if (m_applicationMode->count() == 0)
         {
             // When the combo box is empty, the call to setCurrentIndex will
             // not cause any slots to be fired, so dispatch the call manually.
@@ -2401,23 +2401,23 @@ namespace EMStudio
             return;
         }
 
-        int layoutIndex = mApplicationMode->findText(mOptions.GetApplicationMode().c_str());
+        int layoutIndex = m_applicationMode->findText(m_options.GetApplicationMode().c_str());
 
         // If searching for the last used layout fails load the default or viewer layout if they exist
         if (layoutIndex == -1)
         {
-            layoutIndex = mApplicationMode->findText("AnimGraph");
+            layoutIndex = m_applicationMode->findText("AnimGraph");
         }
         if (layoutIndex == -1)
         {
-            layoutIndex = mApplicationMode->findText("Character");
+            layoutIndex = m_applicationMode->findText("Character");
         }
         if (layoutIndex == -1)
         {
-            layoutIndex = mApplicationMode->findText("Animation");
+            layoutIndex = m_applicationMode->findText("Animation");
         }
 
-        mApplicationMode->setCurrentIndex(layoutIndex);
+        m_applicationMode->setCurrentIndex(layoutIndex);
     }
 
 
@@ -2457,10 +2457,10 @@ namespace EMStudio
 
     void MainWindow::LoadCharacterFiles()
     {
-        if (!mCharacterFiles.empty())
+        if (!m_characterFiles.empty())
         {
-            LoadFiles(mCharacterFiles, 0, 0, false, true);
-            mCharacterFiles.clear();
+            LoadFiles(m_characterFiles, 0, 0, false, true);
+            m_characterFiles.clear();
 
             // for all registered plugins, call the after load actors callback
             PluginManager* pluginManager = GetPluginManager();
@@ -2494,18 +2494,18 @@ namespace EMStudio
     // gets called when the user drag&dropped an actor to the application and then chose to open it in the context menu
     void MainWindow::OnOpenDroppedActor()
     {
-        if (mDirtyFileManager->SaveDirtyFiles({azrtti_typeid<EMotionFX::Actor>()}) == DirtyFileManager::CANCELED)
+        if (m_dirtyFileManager->SaveDirtyFiles({azrtti_typeid<EMotionFX::Actor>()}) == DirtyFileManager::CANCELED)
         {
             return;
         }
-        LoadActor(mDroppedActorFileName.c_str(), true);
+        LoadActor(m_droppedActorFileName.c_str(), true);
     }
 
 
     // gets called when the user drag&dropped an actor to the application and then chose to merge it in the context menu
     void MainWindow::OnMergeDroppedActor()
     {
-        LoadActor(mDroppedActorFileName.c_str(), false);
+        LoadActor(m_droppedActorFileName.c_str(), false);
     }
 
 
@@ -2536,13 +2536,13 @@ namespace EMStudio
 
     void MainWindow::closeEvent(QCloseEvent* event)
     {
-        if (mDirtyFileManager->SaveDirtyFiles() == DirtyFileManager::CANCELED)
+        if (m_dirtyFileManager->SaveDirtyFiles() == DirtyFileManager::CANCELED)
         {
             event->ignore();
         }
         else
         {
-            mAutosaveTimer->stop();
+            m_autosaveTimer->stop();
 
             PluginManager* pluginManager = GetPluginManager();
 
@@ -2570,22 +2570,22 @@ namespace EMStudio
 
         // We mark it as false so next time is shown the layout is re-loaded if
         // necessary
-        mLayoutLoaded = false;
+        m_layoutLoaded = false;
     }
 
 
     void MainWindow::showEvent(QShowEvent* event)
     {
-        if (mOptions.GetEnableAutoSave())
+        if (m_options.GetEnableAutoSave())
         {
-            mAutosaveTimer->setInterval(mOptions.GetAutoSaveInterval() * 60 * 1000);
-            mAutosaveTimer->start();
+            m_autosaveTimer->setInterval(m_options.GetAutoSaveInterval() * 60 * 1000);
+            m_autosaveTimer->start();
         }
 
         // EMotionFX dock widget is created the first time it's opened, so we need to load layout after that
         // The singleShot is needed because show event is fired before the dock widget resizes (in the same function dock widget is created)
         // So we want to load layout after that. It's a bit hacky, but most sensible at the moment.
-        if (!mLayoutLoaded)
+        if (!m_layoutLoaded)
         {
             QTimer::singleShot(0, this, &MainWindow::LoadLayoutAfterShow);
         }
@@ -2603,7 +2603,7 @@ namespace EMStudio
     const char* MainWindow::GetCurrentLayoutName() const
     {
         // get the selected layout
-        const int currentLayoutIndex = mApplicationMode->currentIndex();
+        const int currentLayoutIndex = m_applicationMode->currentIndex();
 
         // if the index is out of range, return empty name
         if ((currentLayoutIndex < 0) || (currentLayoutIndex >= (int32)GetNumLayouts()))
@@ -2628,10 +2628,10 @@ namespace EMStudio
         AZStd::vector<SaveDirtyFilesCallback::ObjectPointer> objects;
         AZStd::vector<SaveDirtyFilesCallback::ObjectPointer> dirtyObjects;
 
-        const size_t numDirtyFilesCallbacks = mDirtyFileManager->GetNumCallbacks();
+        const size_t numDirtyFilesCallbacks = m_dirtyFileManager->GetNumCallbacks();
         for (size_t i = 0; i < numDirtyFilesCallbacks; ++i)
         {
-            SaveDirtyFilesCallback* callback = mDirtyFileManager->GetCallback(i);
+            SaveDirtyFilesCallback* callback = m_dirtyFileManager->GetCallback(i);
             callback->GetDirtyFileNames(&filenames, &objects);
             const size_t numFileNames = filenames.size();
             for (size_t j = 0; j < numFileNames; ++j)
@@ -2721,11 +2721,11 @@ namespace EMStudio
             }
 
             // check if the length is upper than the max num files
-            if (autosaveFileList.length() >= mOptions.GetAutoSaveNumberOfFiles())
+            if (autosaveFileList.length() >= m_options.GetAutoSaveNumberOfFiles())
             {
                 // number of files to delete
                 // one is added because one space needs to be free for the new file
-                const int numFilesToDelete = mOptions.GetAutoSaveNumberOfFiles() ? (autosaveFileList.size() - mOptions.GetAutoSaveNumberOfFiles() + 1) : autosaveFileList.size();
+                const int numFilesToDelete = m_options.GetAutoSaveNumberOfFiles() ? (autosaveFileList.size() - m_options.GetAutoSaveNumberOfFiles() + 1) : autosaveFileList.size();
 
                 // delete each file
                 for (int j = 0; j < numFilesToDelete; ++j)
@@ -2749,18 +2749,18 @@ namespace EMStudio
             AZ_Printf("EMotionFX", "Saving to '%s'\n", newFileFilename.c_str());
 
             // Backing up actors and motions doesn't work anymore as we just update the .assetinfos and the asset processor does the rest.
-            if (dirtyObjects[i].mMotionSet)
+            if (dirtyObjects[i].m_motionSet)
             {
-                command = AZStd::string::format("SaveMotionSet -motionSetID %i -filename \"%s\" -updateFilename false -updateDirtyFlag false -sourceControl false", dirtyObjects[i].mMotionSet->GetID(), newFileFilename.c_str());
+                command = AZStd::string::format("SaveMotionSet -motionSetID %i -filename \"%s\" -updateFilename false -updateDirtyFlag false -sourceControl false", dirtyObjects[i].m_motionSet->GetID(), newFileFilename.c_str());
                 commandGroup.AddCommandString(command);
             }
-            else if (dirtyObjects[i].mAnimGraph)
+            else if (dirtyObjects[i].m_animGraph)
             {
-                const size_t animGraphIndex = EMotionFX::GetAnimGraphManager().FindAnimGraphIndex(dirtyObjects[i].mAnimGraph);
+                const size_t animGraphIndex = EMotionFX::GetAnimGraphManager().FindAnimGraphIndex(dirtyObjects[i].m_animGraph);
                 command = AZStd::string::format("SaveAnimGraph -index %zu -filename \"%s\" -updateFilename false -updateDirtyFlag false -sourceControl false", animGraphIndex, newFileFilename.c_str());
                 commandGroup.AddCommandString(command);
             }
-            else if (dirtyObjects[i].mWorkspace)
+            else if (dirtyObjects[i].m_workspace)
             {
                 Workspace* workspace = GetManager()->GetWorkspace();
                 workspace->Save(newFileFilename.c_str(), false, false);

@@ -62,12 +62,12 @@ namespace EMotionFX
 
         // allocate the number of morph targets
         const size_t numMorphTargets = morphSetup->GetNumMorphTargets();
-        mMorphTargets.resize(numMorphTargets);
+        m_morphTargets.resize(numMorphTargets);
 
         // update the ID values
         for (uint32 i = 0; i < numMorphTargets; ++i)
         {
-            mMorphTargets[i].SetID(morphSetup->GetMorphTarget(i)->GetID());
+            m_morphTargets[i].SetID(morphSetup->GetMorphTarget(i)->GetID());
         }
     }
 
@@ -76,11 +76,11 @@ namespace EMotionFX
     size_t MorphSetupInstance::FindMorphTargetIndexByID(uint32 id) const
     {
         // try to locate the morph target with the given ID
-        const auto foundElement = AZStd::find_if(mMorphTargets.begin(), mMorphTargets.end(), [id](const MorphTarget& morphTarget)
+        const auto foundElement = AZStd::find_if(m_morphTargets.begin(), m_morphTargets.end(), [id](const MorphTarget& morphTarget)
         {
             return morphTarget.GetID() == id;
         });
-        return foundElement != mMorphTargets.end() ? AZStd::distance(mMorphTargets.begin(), foundElement) : InvalidIndex;
+        return foundElement != m_morphTargets.end() ? AZStd::distance(m_morphTargets.begin(), foundElement) : InvalidIndex;
     }
 
 
@@ -89,7 +89,7 @@ namespace EMotionFX
         const size_t index = FindMorphTargetIndexByID(id);
         if (index != InvalidIndex)
         {
-            return &mMorphTargets[index];
+            return &m_morphTargets[index];
         }
         else
         {

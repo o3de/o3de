@@ -91,7 +91,7 @@ namespace EMStudio
         void Init(const AZStd::vector<AZStd::string>& errors);
         
     private:
-        QTextEdit* mTextEdit = nullptr;
+        QTextEdit* m_textEdit = nullptr;
     };
 
     // the main window
@@ -114,7 +114,7 @@ namespace EMStudio
         static void Reflect(AZ::ReflectContext* context);
         void Init();
 
-        MCORE_INLINE QMenu* GetLayoutsMenu()                                    { return mLayoutsMenu; }
+        MCORE_INLINE QMenu* GetLayoutsMenu()                                    { return m_layoutsMenu; }
 
         void LoadActor(const char* fileName, bool replaceCurrentScene);
         void LoadCharacter(const AZ::Data::AssetId& actorAssetId, const AZ::Data::AssetId& animgraphId, const AZ::Data::AssetId& motionSetId);
@@ -123,9 +123,9 @@ namespace EMStudio
 
         void Activate(const AZ::Data::AssetId& actorAssetId, const EMotionFX::AnimGraph* animGraph, const EMotionFX::MotionSet* motionSet);
 
-        MysticQt::RecentFiles* GetRecentWorkspaces()                            { return &mRecentWorkspaces; }
+        MysticQt::RecentFiles* GetRecentWorkspaces()                            { return &m_recentWorkspaces; }
 
-        GUIOptions& GetOptions()                                                { return mOptions; }
+        GUIOptions& GetOptions()                                                { return m_options; }
 
         void Reset(bool clearActors = true, bool clearMotionSets = true, bool clearMotions = true, bool clearAnimGraphs = true, MCore::CommandGroup* commandGroup = nullptr);
 
@@ -143,17 +143,17 @@ namespace EMStudio
 
         void OnWorkspaceSaved(const char* filename);
 
-        MCORE_INLINE QComboBox* GetApplicationModeComboBox()                    { return mApplicationMode; }
-        DirtyFileManager*   GetDirtyFileManager() const                         { return mDirtyFileManager; }
-        FileManager*        GetFileManager() const                              { return mFileManager; }
-        PreferencesWindow*  GetPreferencesWindow() const                        { return mPreferencesWindow; }
+        MCORE_INLINE QComboBox* GetApplicationModeComboBox()                    { return m_applicationMode; }
+        DirtyFileManager*   GetDirtyFileManager() const                         { return m_dirtyFileManager; }
+        FileManager*        GetFileManager() const                              { return m_fileManager; }
+        PreferencesWindow*  GetPreferencesWindow() const                        { return m_preferencesWindow; }
 
-        size_t GetNumLayouts() const                                            { return mLayoutNames.size(); }
-        const char* GetLayoutName(uint32 index) const                           { return mLayoutNames[index].c_str(); }
+        size_t GetNumLayouts() const                                            { return m_layoutNames.size(); }
+        const char* GetLayoutName(uint32 index) const                           { return m_layoutNames[index].c_str(); }
         const char* GetCurrentLayoutName() const;
 
         static const char* GetEMotionFXPaneName();
-        MysticQt::KeyboardShortcutManager* GetShortcutManager() const           { return mShortcutManager; }
+        MysticQt::KeyboardShortcutManager* GetShortcutManager() const           { return m_shortcutManager; }
 
         AzQtComponents::FancyDocking* GetFancyDockingManager() const            { return m_fancyDockingManager; }
 
@@ -186,56 +186,56 @@ namespace EMStudio
         EMotionFX::Actor*           m_prevSelectedActor;
         EMotionFX::ActorInstance*   m_prevSelectedActorInstance;
 
-        QMenu*                  mCreateWindowMenu;
-        QMenu*                  mLayoutsMenu;
+        QMenu*                  m_createWindowMenu;
+        QMenu*                  m_layoutsMenu;
         QAction*                m_undoAction;
         QAction*                m_redoAction;
 
         // keyboard shortcut manager
-        MysticQt::KeyboardShortcutManager* mShortcutManager;
+        MysticQt::KeyboardShortcutManager* m_shortcutManager;
 
         // layouts (application modes)
-        AZStd::vector<AZStd::string> mLayoutNames;
-        bool mLayoutLoaded;
+        AZStd::vector<AZStd::string> m_layoutNames;
+        bool m_layoutLoaded;
 
         // menu actions
-        QAction*                mResetAction;
-        QAction*                mSaveAllAction;
-        QAction*                mMergeActorAction;
-        QAction*                mSaveSelectedActorsAction;
+        QAction*                m_resetAction;
+        QAction*                m_saveAllAction;
+        QAction*                m_mergeActorAction;
+        QAction*                m_saveSelectedActorsAction;
 #ifdef EMFX_DEVELOPMENT_BUILD
-        QAction*                mSaveSelectedActorAsAttachmentsAction;
+        QAction*                m_saveSelectedActorAsAttachmentsAction;
 #endif
 
         // application mode
-        QComboBox*              mApplicationMode;
+        QComboBox*              m_applicationMode;
 
-        PreferencesWindow*      mPreferencesWindow;
+        PreferencesWindow*      m_preferencesWindow;
 
-        FileManager*  mFileManager;
+        FileManager*  m_fileManager;
 
-        MysticQt::RecentFiles   mRecentActors;
-        MysticQt::RecentFiles   mRecentWorkspaces;
+        MysticQt::RecentFiles   m_recentActors;
+        MysticQt::RecentFiles   m_recentWorkspaces;
 
         // dirty files
-        DirtyFileManager*       mDirtyFileManager;
+        DirtyFileManager*       m_dirtyFileManager;
 
         void SetWindowTitleFromFileName(const AZStd::string& fileName);
 
         // drag & drop support
         void dragEnterEvent(QDragEnterEvent* event) override;
         void dropEvent(QDropEvent* event) override;
-        AZStd::string           mDroppedActorFileName;
+        AZStd::string           m_droppedActorFileName;
 
         // General options
-        GUIOptions                              mOptions;
-        bool                                    mLoadingOptions;
+        GUIOptions                              m_options;
+        bool                                    m_loadingOptions;
         
-        QTimer*                                 mAutosaveTimer;
+        QTimer*                                 m_autosaveTimer;
         
-        AZStd::vector<AZStd::string>            mCharacterFiles;
+        AZStd::vector<AZStd::string>            m_characterFiles;
 
-        NativeEventFilter*                      mNativeEventFilter;
+        NativeEventFilter*                      m_nativeEventFilter;
 
         void closeEvent(QCloseEvent* event) override;
         void showEvent(QShowEvent* event) override;
@@ -266,21 +266,21 @@ namespace EMStudio
         MCORE_DEFINECOMMANDCALLBACK(CommandUnselectCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandClearSelectionCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandSaveWorkspaceCallback);
-        CommandImportActorCallback*         mImportActorCallback;
-        CommandRemoveActorCallback*         mRemoveActorCallback;
-        CommandRemoveActorInstanceCallback* mRemoveActorInstanceCallback;
-        CommandImportMotionCallback*        mImportMotionCallback;
-        CommandRemoveMotionCallback*        mRemoveMotionCallback;
-        CommandCreateMotionSetCallback*     mCreateMotionSetCallback;
-        CommandRemoveMotionSetCallback*     mRemoveMotionSetCallback;
-        CommandLoadMotionSetCallback*       mLoadMotionSetCallback;
-        CommandCreateAnimGraphCallback*     mCreateAnimGraphCallback;
-        CommandRemoveAnimGraphCallback*     mRemoveAnimGraphCallback;
-        CommandLoadAnimGraphCallback*       mLoadAnimGraphCallback;
-        CommandSelectCallback*              mSelectCallback;
-        CommandUnselectCallback*            mUnselectCallback;
+        CommandImportActorCallback*         m_importActorCallback;
+        CommandRemoveActorCallback*         m_removeActorCallback;
+        CommandRemoveActorInstanceCallback* m_removeActorInstanceCallback;
+        CommandImportMotionCallback*        m_importMotionCallback;
+        CommandRemoveMotionCallback*        m_removeMotionCallback;
+        CommandCreateMotionSetCallback*     m_createMotionSetCallback;
+        CommandRemoveMotionSetCallback*     m_removeMotionSetCallback;
+        CommandLoadMotionSetCallback*       m_loadMotionSetCallback;
+        CommandCreateAnimGraphCallback*     m_createAnimGraphCallback;
+        CommandRemoveAnimGraphCallback*     m_removeAnimGraphCallback;
+        CommandLoadAnimGraphCallback*       m_loadAnimGraphCallback;
+        CommandSelectCallback*              m_selectCallback;
+        CommandUnselectCallback*            m_unselectCallback;
         CommandClearSelectionCallback*      m_clearSelectionCallback;
-        CommandSaveWorkspaceCallback*       mSaveWorkspaceCallback;
+        CommandSaveWorkspaceCallback*       m_saveWorkspaceCallback;
 
         class MainWindowCommandManagerCallback : public MCore::CommandManagerCallback
         {

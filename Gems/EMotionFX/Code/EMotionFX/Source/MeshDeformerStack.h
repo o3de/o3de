@@ -159,8 +159,8 @@ namespace EMotionFX
         MeshDeformer* FindDeformerByType(uint32 deformerTypeID, size_t occurrence = 0) const;
 
     private:
-        AZStd::vector<MeshDeformer*> mDeformers;     /**< The stack of deformers. */
-        Mesh*                       mMesh;          /**< Pointer to the mesh to which the modifier stack belongs to.*/
+        AZStd::vector<MeshDeformer*> m_deformers;     /**< The stack of deformers. */
+        Mesh*                       m_mesh;          /**< Pointer to the mesh to which the modifier stack belongs to.*/
 
         /**
          * Constructor.

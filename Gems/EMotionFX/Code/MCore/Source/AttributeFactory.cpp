@@ -41,13 +41,13 @@ namespace MCore
     {
         if (delFromMem)
         {
-            for (Attribute* attribute : mRegistered)
+            for (Attribute* attribute : m_registered)
             {
                 delete attribute;
             }
         }
 
-        mRegistered.clear();
+        m_registered.clear();
     }
 
 
@@ -57,11 +57,11 @@ namespace MCore
         const size_t attribIndex = FindAttributeIndexByType(attribute->GetType());
         if (attribIndex != InvalidIndex)
         {
-            MCore::LogWarning("MCore::AttributeFactory::RegisterAttribute() - There is already an attribute of the same type registered (typeID %d vs %d - typeString '%s' vs '%s')", attribute->GetType(), mRegistered[attribIndex]->GetType(), attribute->GetTypeString(), mRegistered[attribIndex]->GetTypeString());
+            MCore::LogWarning("MCore::AttributeFactory::RegisterAttribute() - There is already an attribute of the same type registered (typeID %d vs %d - typeString '%s' vs '%s')", attribute->GetType(), m_registered[attribIndex]->GetType(), attribute->GetTypeString(), m_registered[attribIndex]->GetTypeString());
             return;
         }
 
-        mRegistered.emplace_back(attribute);
+        m_registered.emplace_back(attribute);
     }
 
 
@@ -77,21 +77,21 @@ namespace MCore
 
         if (delFromMem)
         {
-            delete mRegistered[attribIndex];
+            delete m_registered[attribIndex];
         }
 
-        mRegistered.erase(mRegistered.begin() + attribIndex);
+        m_registered.erase(m_registered.begin() + attribIndex);
     }
 
 
     size_t AttributeFactory::FindAttributeIndexByType(size_t typeID) const
     {
-        const auto foundAttribute = AZStd::find_if(begin(mRegistered), end(mRegistered), [typeID](const Attribute* registeredAttribute)
+        const auto foundAttribute = AZStd::find_if(begin(m_registered), end(m_registered), [typeID](const Attribute* registeredAttribute)
         {
             return registeredAttribute->GetType() == typeID;
         });
 
-        return foundAttribute != end(mRegistered) ? AZStd::distance(begin(mRegistered), foundAttribute) : InvalidIndex;
+        return foundAttribute != end(m_registered) ? AZStd::distance(begin(m_registered), foundAttribute) : InvalidIndex;
     }
 
 
@@ -103,13 +103,13 @@ namespace MCore
             return nullptr;
         }
 
-        return mRegistered[attribIndex]->Clone();
+        return m_registered[attribIndex]->Clone();
     }
 
 
     void AttributeFactory::RegisterStandardTypes()
     {
-        mRegistered.reserve(10);
+        m_registered.reserve(10);
         RegisterAttribute(aznew AttributeFloat());
         RegisterAttribute(aznew AttributeInt32());
         RegisterAttribute(aznew AttributeString());

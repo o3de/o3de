@@ -162,8 +162,8 @@ namespace MCore
         const AZStd::string& GetFileName() const;
 
     protected:
-        AZStd::string  mFileName;  /**< The filename */
-        FILE*          mFile;      /**< The file handle. */
-        EMode          mFileMode;  /**< The mode we opened the file with. */
+        AZStd::string  m_fileName;  /**< The filename */
+        FILE*          m_file;      /**< The file handle. */
+        EMode          m_fileMode;  /**< The mode we opened the file with. */
     };
 } // namespace MCore

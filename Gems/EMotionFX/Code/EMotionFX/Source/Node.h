@@ -92,7 +92,7 @@ namespace EMotionFX
          * This is either a valid index, or MCORE_INVALIDINDEX32 in case there is no parent node.
          * @result The index of the parent node, or MCORE_INVALIDINDEX32 in case this node has no parent.
          */
-        MCORE_INLINE size_t GetParentIndex() const                              { return mParentIndex; }
+        MCORE_INLINE size_t GetParentIndex() const                              { return m_parentIndex; }
 
         /**
          * Get the parent node as node pointer.
@@ -155,20 +155,20 @@ namespace EMotionFX
          * same ID number.
          * @result The node ID number, which can be used for fast compares between nodes.
          */
-        MCORE_INLINE uint32 GetID() const                                       { return mNameID; }
+        MCORE_INLINE uint32 GetID() const                                       { return m_nameId; }
 
         /**
          * Get the semantic name ID.
          * To get the name you can also use GetSemanticName() and GetSemanticNameString().
          * @result The semantic name ID.
          */
-        MCORE_INLINE uint32 GetSemanticID() const                               { return mSemanticNameID; }
+        MCORE_INLINE uint32 GetSemanticID() const                               { return m_semanticNameId; }
 
         /**
          * Get the number of child nodes attached to this node.
          * @result The number of child nodes.
          */
-        MCORE_INLINE size_t GetNumChildNodes() const                            { return mChildIndices.size(); }
+        MCORE_INLINE size_t GetNumChildNodes() const                            { return m_childIndices.size(); }
 
         /**
          * Get the number of child nodes down the hierarchy of this node.
@@ -182,14 +182,14 @@ namespace EMotionFX
          * @param nr The child number.
          * @result The index of the child node, which is a node number inside the actor.
          */
-        MCORE_INLINE size_t GetChildIndex(size_t nr) const                      { return mChildIndices[nr]; }
+        MCORE_INLINE size_t GetChildIndex(size_t nr) const                      { return m_childIndices[nr]; }
 
         /**
          * Checks if the given node is a child of this node.
          * @param nodeIndex The node to check whether it is a child or not.
          * @result True if the given node is a child, false if not.
          */
-        MCORE_INLINE bool CheckIfIsChildNode(size_t nodeIndex) const            { return (AZStd::find(begin(mChildIndices), end(mChildIndices), nodeIndex) != end(mChildIndices)); }
+        MCORE_INLINE bool CheckIfIsChildNode(size_t nodeIndex) const            { return (AZStd::find(begin(m_childIndices), end(m_childIndices), nodeIndex) != end(m_childIndices)); }
 
         /**
          * Add a child to this node.
@@ -336,7 +336,7 @@ namespace EMotionFX
          * So Actor::GetNode( nodeIndex ) will return this node.
          * @result The index of the node.
          */
-        MCORE_INLINE size_t GetNodeIndex() const                                        { return mNodeIndex; }
+        MCORE_INLINE size_t GetNodeIndex() const                                        { return m_nodeIndex; }
 
         //------------------------------
 
@@ -364,7 +364,7 @@ namespace EMotionFX
          * @param lodLevel The skeletal LOD level to check.
          * @result Returns true when this node is enabled in the specified LOD level. Otherwise false is returned.
          */
-        MCORE_INLINE bool GetSkeletalLODStatus(size_t lodLevel) const                   { return (mSkeletalLODs & (1ull << lodLevel)) != 0; }
+        MCORE_INLINE bool GetSkeletalLODStatus(size_t lodLevel) const                   { return (m_skeletalLoDs & (1ull << lodLevel)) != 0; }
 
         //--------------------------------------------
 
@@ -376,7 +376,7 @@ namespace EMotionFX
          * On default all nodes are included inside the bounding volume calculations.
          * @result Returns true when this node will be included in the bounds calculation, or false when it won't.
          */
-        MCORE_INLINE bool GetIncludeInBoundsCalc() const                                { return mNodeFlags & FLAG_INCLUDEINBOUNDSCALC; }
+        MCORE_INLINE bool GetIncludeInBoundsCalc() const                                { return m_nodeFlags & FLAG_INCLUDEINBOUNDSCALC; }
 
         /**
          * Specify whether this node should be included inside the bounding volume calculations or not.
@@ -394,7 +394,7 @@ namespace EMotionFX
          * Sometimes we perform optimization process on the node. This flag make sure that critical node will always be included in the actor heirarchy.
          * @result Returns true when this node is critical, or false when it won't.
          */
-        MCORE_INLINE bool GetIsCritical() const { return mNodeFlags & FLAG_CRITICAL; }
+        MCORE_INLINE bool GetIsCritical() const { return m_nodeFlags & FLAG_CRITICAL; }
 
         /**
          * Specify whether this node is critcal and should not be optimized out in any situations.
@@ -415,15 +415,15 @@ namespace EMotionFX
         void SetIsAttachmentNode(bool isAttachmentNode);
 
     private:
-        size_t      mNodeIndex;         /**< The node index, which is the index into the array of nodes inside the Skeleton class. */
-        size_t      mParentIndex;       /**< The parent node index, or MCORE_INVALIDINDEX32 when there is no parent. */
-        size_t      mSkeletalLODs;      /**< The skeletal LOD status values. Each bit represents if this node is enabled or disabled in the given LOD. */
-        uint32      mNameID;            /**< The ID, which is generated from the name. You can use this for fast compares between nodes. */
-        uint32      mSemanticNameID;    /**< The semantic name ID, for example "LeftHand" or "RightFoot" or so, this can be used for retargeting. */
-        Skeleton*   mSkeleton;          /**< The skeleton where this node belongs to. */
-        AZStd::vector<size_t>            mChildIndices;      /**< The indices that point to the child nodes. */
-        AZStd::vector<NodeAttribute*>    mAttributes;        /**< The node attributes. */
-        uint8                           mNodeFlags;         /**< The node flags are used to store boolean attributes of the node as single bits. */
+        size_t      m_nodeIndex;         /**< The node index, which is the index into the array of nodes inside the Skeleton class. */
+        size_t      m_parentIndex;       /**< The parent node index, or MCORE_INVALIDINDEX32 when there is no parent. */
+        size_t      m_skeletalLoDs;      /**< The skeletal LOD status values. Each bit represents if this node is enabled or disabled in the given LOD. */
+        uint32      m_nameId;            /**< The ID, which is generated from the name. You can use this for fast compares between nodes. */
+        uint32      m_semanticNameId;    /**< The semantic name ID, for example "LeftHand" or "RightFoot" or so, this can be used for retargeting. */
+        Skeleton*   m_skeleton;          /**< The skeleton where this node belongs to. */
+        AZStd::vector<size_t>            m_childIndices;      /**< The indices that point to the child nodes. */
+        AZStd::vector<NodeAttribute*>    m_attributes;        /**< The node attributes. */
+        uint8                           m_nodeFlags;         /**< The node flags are used to store boolean attributes of the node as single bits. */
 
         /**
          * Constructor.

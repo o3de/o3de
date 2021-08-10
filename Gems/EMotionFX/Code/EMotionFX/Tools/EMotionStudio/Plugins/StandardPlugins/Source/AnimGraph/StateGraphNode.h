@@ -58,7 +58,7 @@ namespace EMStudio
 
         EMotionFX::AnimGraphTransitionCondition* FindCondition(const QPoint& mousePos);
 
-        bool GetIsWildcardTransition() const override       { return mIsWildcardConnection; }
+        bool GetIsWildcardTransition() const override       { return m_isWildcardConnection; }
 
         static void RenderTransition(QPainter& painter, QBrush& brush, QPen& pen,
             QPoint start, QPoint end,
@@ -70,7 +70,7 @@ namespace EMStudio
     private:
         void RenderConditionsAndActions(EMotionFX::AnimGraphInstance* animGraphInstance, QPainter* painter, QPen* pen, QBrush* brush, QPoint& start, QPoint& end);
 
-        bool mIsWildcardConnection;
+        bool m_isWildcardConnection;
     };
 
 

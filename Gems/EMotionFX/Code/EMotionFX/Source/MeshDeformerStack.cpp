@@ -21,22 +21,22 @@ namespace EMotionFX
     MeshDeformerStack::MeshDeformerStack(Mesh* mesh)
         : BaseObject()
     {
-        mMesh = mesh;
+        m_mesh = mesh;
     }
 
 
     // destructor
     MeshDeformerStack::~MeshDeformerStack()
     {
-        for (MeshDeformer* deformer : mDeformers)
+        for (MeshDeformer* deformer : m_deformers)
         {
             deformer->Destroy();
         }
 
-        mDeformers.clear();
+        m_deformers.clear();
 
         // reset
-        mMesh = nullptr;
+        m_mesh = nullptr;
     }
 
 
@@ -50,7 +50,7 @@ namespace EMotionFX
     // returns the mesh
     Mesh* MeshDeformerStack::GetMesh() const
     {
-        return mMesh;
+        return m_mesh;
     }
 
 
@@ -60,7 +60,7 @@ namespace EMotionFX
         bool firstEnabled = true;
 
         // iterate through the deformers and update them
-        for (MeshDeformer* deformer : mDeformers)
+        for (MeshDeformer* deformer : m_deformers)
         {
             // if the deformer is enabled
             if (deformer->GetIsEnabled() || forceUpdateDisabledDeformers)
@@ -71,7 +71,7 @@ namespace EMotionFX
                     firstEnabled = false;
 
                     // reset all output vertex data to the original vertex data
-                    mMesh->ResetToOriginalData();
+                    m_mesh->ResetToOriginalData();
                 }
 
                 // update the mesh deformer
@@ -84,7 +84,7 @@ namespace EMotionFX
     void MeshDeformerStack::UpdateByModifierType(ActorInstance* actorInstance, Node* node, float timeDelta, uint32 typeID, bool resetMesh, bool forceUpdateDisabledDeformers)
     {
         bool resetDone = false;
-        for (MeshDeformer* deformer : mDeformers)
+        for (MeshDeformer* deformer : m_deformers)
         {
             // if the deformer of the correct type and is enabled
             if (deformer->GetType() == typeID && (deformer->GetIsEnabled() || forceUpdateDisabledDeformers))
@@ -93,7 +93,7 @@ namespace EMotionFX
                 if (resetMesh && !resetDone)
                 {
                     // reset all output vertex data to the original vertex data
-                    mMesh->ResetToOriginalData();
+                    m_mesh->ResetToOriginalData();
                     resetDone = true;
                 }
 
@@ -108,12 +108,12 @@ namespace EMotionFX
     void MeshDeformerStack::ReinitializeDeformers(Actor* actor, Node* node, size_t lodLevel)
     {
         // if we have deformers in the stack
-        const size_t numDeformers = mDeformers.size();
+        const size_t numDeformers = m_deformers.size();
 
         // iterate through the deformers and reinitialize them
         for (size_t i = 0; i < numDeformers; ++i)
         {
-            mDeformers[i]->Reinitialize(actor, node, lodLevel);
+            m_deformers[i]->Reinitialize(actor, node, lodLevel);
         }
     }
 
@@ -121,23 +121,23 @@ namespace EMotionFX
     void MeshDeformerStack::AddDeformer(MeshDeformer* meshDeformer)
     {
         // add the object into the stack
-        mDeformers.emplace_back(meshDeformer);
+        m_deformers.emplace_back(meshDeformer);
     }
 
 
     void MeshDeformerStack::InsertDeformer(size_t pos, MeshDeformer* meshDeformer)
     {
         // add the object into the stack
-        mDeformers.emplace(AZStd::next(begin(mDeformers), pos), meshDeformer);
+        m_deformers.emplace(AZStd::next(begin(m_deformers), pos), meshDeformer);
     }
 
 
     bool MeshDeformerStack::RemoveDeformer(MeshDeformer* meshDeformer)
     {
         // delete the object
-        if (const auto it = AZStd::find(begin(mDeformers), end(mDeformers), meshDeformer); it != end(mDeformers))
+        if (const auto it = AZStd::find(begin(m_deformers), end(m_deformers), meshDeformer); it != end(m_deformers))
         {
-            mDeformers.erase(it);
+            m_deformers.erase(it);
             return true;
         }
         return false;
@@ -150,7 +150,7 @@ namespace EMotionFX
         MeshDeformerStack* newStack = aznew MeshDeformerStack(mesh);
 
         // clone all deformers
-        for (const MeshDeformer* deformer : mDeformers)
+        for (const MeshDeformer* deformer : m_deformers)
         {
             newStack->AddDeformer(deformer->Clone(mesh));
         }
@@ -162,14 +162,14 @@ namespace EMotionFX
 
     size_t MeshDeformerStack::GetNumDeformers() const
     {
-        return mDeformers.size();
+        return m_deformers.size();
     }
 
 
     MeshDeformer* MeshDeformerStack::GetDeformer(size_t nr) const
     {
-        MCORE_ASSERT(nr < mDeformers.size());
-        return mDeformers[nr];
+        MCORE_ASSERT(nr < m_deformers.size());
+        return m_deformers[nr];
     }
 
 
@@ -177,9 +177,9 @@ namespace EMotionFX
     size_t MeshDeformerStack::RemoveAllDeformersByType(uint32 deformerTypeID)
     {
         size_t numRemoved = 0;
-        for (size_t a = 0; a < mDeformers.size(); )
+        for (size_t a = 0; a < m_deformers.size(); )
         {
-            MeshDeformer* deformer = mDeformers[a];
+            MeshDeformer* deformer = m_deformers[a];
             if (deformer->GetType() == deformerTypeID)
             {
                 RemoveDeformer(deformer);
@@ -199,7 +199,7 @@ namespace EMotionFX
     // remove all the deformers
     void MeshDeformerStack::RemoveAllDeformers()
     {
-        for (MeshDeformer* deformer : mDeformers)
+        for (MeshDeformer* deformer : m_deformers)
         {
             // retrieve the current deformer
              // remove the deformer
@@ -213,7 +213,7 @@ namespace EMotionFX
     size_t MeshDeformerStack::EnableAllDeformersByType(uint32 deformerTypeID, bool enabled)
     {
         size_t numChanged = 0;
-        for (MeshDeformer* deformer : mDeformers)
+        for (MeshDeformer* deformer : m_deformers)
         {
              if (deformer->GetType() == deformerTypeID)
             {
@@ -229,7 +229,7 @@ namespace EMotionFX
     // check if the stack contains a deformer of a specified type
     bool MeshDeformerStack::CheckIfHasDeformerOfType(uint32 deformerTypeID) const
     {
-        return AZStd::any_of(begin(mDeformers), end(mDeformers), [deformerTypeID](const MeshDeformer* deformer)
+        return AZStd::any_of(begin(m_deformers), end(m_deformers), [deformerTypeID](const MeshDeformer* deformer)
         {
             return deformer->GetType() == deformerTypeID;
         });
@@ -239,10 +239,10 @@ namespace EMotionFX
     // find a deformer by type ID
     MeshDeformer* MeshDeformerStack::FindDeformerByType(uint32 deformerTypeID, size_t occurrence) const
     {
-        const auto foundDeformer = AZStd::find_if(begin(mDeformers), end(mDeformers), [deformerTypeID, iter = occurrence](const MeshDeformer* deformer) mutable
+        const auto foundDeformer = AZStd::find_if(begin(m_deformers), end(m_deformers), [deformerTypeID, iter = occurrence](const MeshDeformer* deformer) mutable
         {
             return deformer->GetType() == deformerTypeID && iter-- == 0;
         });
-        return foundDeformer != end(mDeformers) ? *foundDeformer : nullptr;
+        return foundDeformer != end(m_deformers) ? *foundDeformer : nullptr;
     }
 } // namespace EMotionFX

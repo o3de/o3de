@@ -377,12 +377,12 @@ namespace EMotionFX
         void AddObject(AnimGraphObject* object);       // registers the object in the array and modifies the object's object index value
         void RemoveObject(AnimGraphObject* object);    // doesn't actually remove it from memory, just removes it from the list
 
-        size_t GetNumObjects() const                                                          { return mObjects.size(); }
-        AnimGraphObject* GetObject(size_t index) const                                        { return mObjects[index]; }
+        size_t GetNumObjects() const                                                          { return m_objects.size(); }
+        AnimGraphObject* GetObject(size_t index) const                                        { return m_objects[index]; }
         void ReserveNumObjects(size_t numObjects);
 
-        size_t GetNumNodes() const                                                            { return mNodes.size(); }
-        AnimGraphNode* GetNode(size_t index) const                                            { return mNodes[index]; }
+        size_t GetNumNodes() const                                                            { return m_nodes.size(); }
+        AnimGraphNode* GetNode(size_t index) const                                            { return m_nodes[index]; }
         void ReserveNumNodes(size_t numNodes);
         size_t CalcNumMotionNodes() const;
 
@@ -415,21 +415,21 @@ namespace EMotionFX
         GroupParameter                                  m_rootParameter;   /**< root group parameter. */
         ValueParameterVector                            m_valueParameters;      /**< Cached version of all parameters with values. */
         AZStd::unordered_map<AZStd::string_view, size_t> m_valueParameterIndexByName; /**< Cached version of parameter index by name to accelerate lookups. */
-        AZStd::vector<AnimGraphNodeGroup*>              mNodeGroups;
-        AZStd::vector<AnimGraphObject*>                 mObjects;
-        AZStd::vector<AnimGraphNode*>                    mNodes;
+        AZStd::vector<AnimGraphNodeGroup*>              m_nodeGroups;
+        AZStd::vector<AnimGraphObject*>                 m_objects;
+        AZStd::vector<AnimGraphNode*>                    m_nodes;
         AZStd::vector<AnimGraphInstance*>               m_animGraphInstances;
-        AZStd::string                                   mFileName;
-        AnimGraphStateMachine*                          mRootStateMachine;
-        AnimGraphGameControllerSettings*                mGameControllerSettings;
-        MCore::Mutex                                    mLock;
-        uint32                                          mID;                    /**< The unique identification number for this anim graph. */
-        bool                                            mAutoUnregister;        /**< Specifies whether we will automatically unregister this anim graph set from this anim graph manager or not, when deleting this object. */
-        bool                                            mRetarget;              /**< Is retargeting enabled on default? */
-        bool                                            mDirtyFlag;             /**< The dirty flag which indicates whether the user has made changes to this anim graph since the last file save operation. */
+        AZStd::string                                   m_fileName;
+        AnimGraphStateMachine*                          m_rootStateMachine;
+        AnimGraphGameControllerSettings*                m_gameControllerSettings;
+        MCore::Mutex                                    m_lock;
+        uint32                                          m_id;                    /**< The unique identification number for this anim graph. */
+        bool                                            m_autoUnregister;        /**< Specifies whether we will automatically unregister this anim graph set from this anim graph manager or not, when deleting this object. */
+        bool                                            m_retarget;              /**< Is retargeting enabled on default? */
+        bool                                            m_dirtyFlag;             /**< The dirty flag which indicates whether the user has made changes to this anim graph since the last file save operation. */
 
 #if defined(EMFX_DEVELOPMENT_BUILD)
-        bool                                            mIsOwnedByRuntime;      /**< Set if the anim graph is used/owned by the engine runtime. */
+        bool                                            m_isOwnedByRuntime;      /**< Set if the anim graph is used/owned by the engine runtime. */
         bool                                            m_isOwnedByAsset;        /**< Set if the anim graph is used/owned by an asset. */
 #endif // EMFX_DEVELOPMENT_BUILD
     };

@@ -39,7 +39,7 @@ namespace RenderGL
         size_t FindAttributeLocation(const char* name);
         uint32 GetType() const override;
 
-        MCORE_INLINE unsigned int GetProgram() const                                    { return mProgram; }
+        MCORE_INLINE unsigned int GetProgram() const                                    { return m_program; }
         bool CheckIfIsDefined(const char* attributeName) const;
 
         bool Init(AZ::IO::PathView vertexFileName, AZ::IO::PathView pixelFileName, AZStd::vector<AZStd::string>& defines);
@@ -65,12 +65,12 @@ namespace RenderGL
         {
             ShaderParameter(const char* name, GLint loc, bool isAttrib);
 
-            AZStd::string       mName;
-            GLint               mLocation;
-            GLenum              mType;
-            uint32              mSize;
-            uint32              mTextureUnit;
-            bool                mIsAttribute;
+            AZStd::string       m_name;
+            GLint               m_location;
+            GLenum              m_type;
+            uint32              m_size;
+            uint32              m_textureUnit;
+            bool                m_isAttribute;
         };
 
         size_t FindAttributeIndex(const char* name);
@@ -82,19 +82,19 @@ namespace RenderGL
         template<class T>
         void InfoLog(GLuint object, T func);
 
-        AZ::IO::Path                    mFileName;
+        AZ::IO::Path                    m_fileName;
 
-        AZStd::vector<size_t>            mActivatedAttribs;
-        AZStd::vector<size_t>            mActivatedTextures;
-        AZStd::vector<ShaderParameter>   mUniforms;
-        AZStd::vector<ShaderParameter>   mAttributes;
-        AZStd::vector<AZStd::string>     mDefines;
+        AZStd::vector<size_t>            m_activatedAttribs;
+        AZStd::vector<size_t>            m_activatedTextures;
+        AZStd::vector<ShaderParameter>   m_uniforms;
+        AZStd::vector<ShaderParameter>   m_attributes;
+        AZStd::vector<AZStd::string>     m_defines;
 
-        unsigned int                    mVertexShader;
-        unsigned int                    mPixelShader;
-        unsigned int                    mProgram;
+        unsigned int                    m_vertexShader;
+        unsigned int                    m_pixelShader;
+        unsigned int                    m_program;
 
-        uint32                          mTextureUnit;
+        uint32                          m_textureUnit;
     };
 }
 
