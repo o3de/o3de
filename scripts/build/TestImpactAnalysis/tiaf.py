@@ -290,7 +290,7 @@ class TestImpact:
         # Run sequence
         unpacked_args = " ".join(args)
         logger.info(f"Args: {unpacked_args}")
-        runtime_result = subprocess.run([self._tiaf_bin] + args)
+        runtime_result = subprocess.run([str(self._tiaf_bin)] + args)
         report = None
 
         # If the sequence completed (with or without failures) we will update the historical meta-data
