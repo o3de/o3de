@@ -6,6 +6,8 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 import pytest
+from _pytest.skipping import pytest_runtest_setup as skipping_pytest_runtest_setup
+
 import inspect
 from typing import List
 from abc import ABC
@@ -342,6 +344,7 @@ class EditorTestSuite():
                             # Teardown step for wrap_run
                             next(wrap, None)
                     return single_run
+                  
                 f = make_test_func(name, test_spec)
                 if hasattr(test_spec, "pytestmark"):
                     f.pytestmark = test_spec.pytestmark
@@ -372,6 +375,8 @@ class EditorTestSuite():
                         return result
                     
                     result_func = make_func(test_spec)
+                    if hasattr(test_spec, "pytestmark"):
+                        result_func.pytestmark = test_spec.pytestmark
                     setattr(self.obj, test_spec.__name__, result_func)
                 runners.append(runner)
             
@@ -463,8 +468,15 @@ class EditorTestSuite():
     def filter_session_shared_tests(session_items, shared_tests):
         # Retrieve the test sub-set that was collected
         # this can be less than the original set if were overriden via -k argument or similars
-        collected_elem_names = [test.originalname for test in session_items]
-        selected_shared_tests = [test for test in shared_tests if test.__name__ in collected_elem_names]
+        def will_run(item):
+            try:
+                skipping_pytest_runtest_setup(item)
+                return True
+            except:
+                return False
+        
+        session_items_by_name = { item.originalname:item for item in session_items }
+        selected_shared_tests = [test for test in shared_tests if test.__name__ in session_items_by_name.keys() and will_run(session_items_by_name[test.__name__])]
         return selected_shared_tests
         
     @staticmethod
