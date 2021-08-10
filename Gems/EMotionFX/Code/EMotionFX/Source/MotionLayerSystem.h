@@ -179,8 +179,8 @@ namespace EMotionFX
 
 
     private:
-        AZStd::vector<LayerPass*>    mLayerPasses;           /**< The layer passes. */
-        RepositioningLayerPass*     mRepositioningPass;     /**< The motion based actor repositioning layer pass. */
+        AZStd::vector<LayerPass*>    m_layerPasses;           /**< The layer passes. */
+        RepositioningLayerPass*     m_repositioningPass;     /**< The motion based actor repositioning layer pass. */
 
         /**
          * Constructor.

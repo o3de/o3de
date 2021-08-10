@@ -40,14 +40,14 @@ namespace EMotionFX
          * Get the number of morph targets inside this  morph setup.
          * @result The number of morph targets.
          */
-        MCORE_INLINE size_t GetNumMorphTargets() const                      { return mMorphTargets.size(); }
+        MCORE_INLINE size_t GetNumMorphTargets() const                      { return m_morphTargets.size(); }
 
         /**
          * Get a given morph target.
          * @param nr The morph target number, must be in range of [0..GetNumMorphTargets()-1].
          * @result A pointer to the morph target.
          */
-        MCORE_INLINE MorphTarget* GetMorphTarget(size_t nr) const           { return mMorphTargets[nr]; }
+        MCORE_INLINE MorphTarget* GetMorphTarget(size_t nr) const           { return m_morphTargets[nr]; }
 
         /**
          * Add a morph target to this  morph setup.
@@ -137,7 +137,7 @@ namespace EMotionFX
 
 
     protected:
-        AZStd::vector<MorphTarget*>  mMorphTargets;  /**< The collection of morph targets. */
+        AZStd::vector<MorphTarget*>  m_morphTargets;  /**< The collection of morph targets. */
 
         /**
          * The constructor.

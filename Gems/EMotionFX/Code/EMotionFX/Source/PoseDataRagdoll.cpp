@@ -94,8 +94,8 @@ namespace EMotionFX
         if (nodeState.m_simulationType == Physics::SimulationType::Kinematic &&
             destNodeState.m_simulationType == Physics::SimulationType::Dynamic)
         {
-            nodeState.m_position = jointTransform.mPosition.Lerp(destNodeState.m_position, weight);
-            nodeState.m_orientation = jointTransform.mRotation.NLerp(destNodeState.m_orientation, weight);
+            nodeState.m_position = jointTransform.m_position.Lerp(destNodeState.m_position, weight);
+            nodeState.m_orientation = jointTransform.m_rotation.NLerp(destNodeState.m_orientation, weight);
 
             // We're blending from a kinematic to a dynamic joint, which means when starting the blend we know that the animation pose matches the ragdoll pose.
             // The closest a powered ragdoll joint can be to its target pose and thus matching the kinematic one is by using its maximum strength.
@@ -114,8 +114,8 @@ namespace EMotionFX
         else if (nodeState.m_simulationType == Physics::SimulationType::Dynamic &&
                  destNodeState.m_simulationType == Physics::SimulationType::Kinematic)
         {
-            nodeState.m_position = nodeState.m_position.Lerp(destJointTransform.mPosition, weight);
-            nodeState.m_orientation = nodeState.m_orientation.NLerp(destJointTransform.mRotation, weight);
+            nodeState.m_position = nodeState.m_position.Lerp(destJointTransform.m_position, weight);
+            nodeState.m_orientation = nodeState.m_orientation.NLerp(destJointTransform.m_rotation, weight);
 
             // Inverse way here. Blending towards the maximum strength possible to make sure we're as close as possible to the target pose when switching simulation
             // state to kinematic.

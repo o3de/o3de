@@ -49,12 +49,12 @@ namespace EMotionFX
         static AttributePose* Create();
         static AttributePose* Create(AnimGraphPose* pose);
 
-        void SetValue(AnimGraphPose* value)                                { mValue = value; }
-        AnimGraphPose* GetValue() const                                    { return mValue; }
-        AnimGraphPose* GetValue()                                          { return mValue; }
+        void SetValue(AnimGraphPose* value)                                { m_value = value; }
+        AnimGraphPose* GetValue() const                                    { return m_value; }
+        AnimGraphPose* GetValue()                                          { return m_value; }
 
         // overloaded from the attribute base class
-        MCore::Attribute* Clone() const override                            { return Create(mValue); }
+        MCore::Attribute* Clone() const override                            { return Create(m_value); }
         const char* GetTypeString() const override                          { return "Pose"; }
         bool InitFrom(const MCore::Attribute* other) override
         {
@@ -63,7 +63,7 @@ namespace EMotionFX
                 return false;
             }
             const AttributePose* pose = static_cast<const AttributePose*>(other);
-            mValue = pose->GetValue();
+            m_value = pose->GetValue();
             return true;
         }
         bool InitFromString(const AZStd::string& valueString) override      { MCORE_UNUSED(valueString); return false; }    // unsupported
@@ -72,12 +72,12 @@ namespace EMotionFX
         AZ::u32 GetDefaultInterfaceType() const override                     { return MCore::ATTRIBUTE_INTERFACETYPE_DEFAULT; }
 
     private:
-        AnimGraphPose* mValue;
+        AnimGraphPose* m_value;
 
         AttributePose()
-            : MCore::Attribute(TYPE_ID)     { mValue = nullptr; }
+            : MCore::Attribute(TYPE_ID)     { m_value = nullptr; }
         AttributePose(AnimGraphPose* pose)
-            : MCore::Attribute(TYPE_ID)     { mValue = pose; }
+            : MCore::Attribute(TYPE_ID)     { m_value = pose; }
         ~AttributePose() {}
     };
 
@@ -97,12 +97,12 @@ namespace EMotionFX
         static AttributeMotionInstance* Create();
         static AttributeMotionInstance* Create(MotionInstance* motionInstance);
 
-        void SetValue(MotionInstance* value)                                { mValue = value; }
-        MotionInstance* GetValue() const                                    { return mValue; }
-        MotionInstance* GetValue()                                          { return mValue; }
+        void SetValue(MotionInstance* value)                                { m_value = value; }
+        MotionInstance* GetValue() const                                    { return m_value; }
+        MotionInstance* GetValue()                                          { return m_value; }
 
         // overloaded from the attribute base class
-        MCore::Attribute* Clone() const override                            { return Create(mValue); }
+        MCore::Attribute* Clone() const override                            { return Create(m_value); }
         const char* GetTypeString() const override                          { return "MotionInstance"; }
         bool InitFrom(const MCore::Attribute* other) override
         {
@@ -111,7 +111,7 @@ namespace EMotionFX
                 return false;
             }
             const AttributeMotionInstance* pose = static_cast<const AttributeMotionInstance*>(other);
-            mValue = pose->GetValue();
+            m_value = pose->GetValue();
             return true;
         }
         bool InitFromString(const AZStd::string& valueString) override      { MCORE_UNUSED(valueString); return false; }    // unsupported
@@ -120,12 +120,12 @@ namespace EMotionFX
         AZ::u32 GetDefaultInterfaceType() const override                     { return MCore::ATTRIBUTE_INTERFACETYPE_DEFAULT; }
 
     private:
-        MotionInstance* mValue;
+        MotionInstance* m_value;
 
         AttributeMotionInstance()
-            : MCore::Attribute(TYPE_ID)     { mValue = nullptr; }
+            : MCore::Attribute(TYPE_ID)     { m_value = nullptr; }
         AttributeMotionInstance(MotionInstance* motionInstance)
-            : MCore::Attribute(TYPE_ID)     { mValue = motionInstance; }
+            : MCore::Attribute(TYPE_ID)     { m_value = motionInstance; }
         ~AttributeMotionInstance() {}
     };
 

@@ -40,10 +40,10 @@ namespace MCore
          * Initializes the array so it's empty and has no memory allocated.
          */
         MCORE_INLINE AlignedArray()
-            : mData(nullptr)
-            , mLength(0)
-            , mMaxLength(0)
-            , mMemCategory(MCORE_MEMCATEGORY_ARRAY)              {}
+            : m_data(nullptr)
+            , m_length(0)
+            , m_maxLength(0)
+            , m_memCategory(MCORE_MEMCATEGORY_ARRAY)              {}
 
         /**
          * Constructor which creates a given number of elements.
@@ -52,12 +52,12 @@ namespace MCore
          * @param memCategory The memory category the array is in.
          */
         MCORE_INLINE explicit AlignedArray(T* elems, size_t num, uint16 memCategory = MCORE_MEMCATEGORY_ARRAY)
-            : mLength(num)
-            , mMaxLength(AllocSize(num))
-            , mMemCategory(memCategory)
+            : m_length(num)
+            , m_maxLength(AllocSize(num))
+            , m_memCategory(memCategory)
         {
-            mData = (T*)AlignedAllocate(mMaxLength * sizeof(T), alignment, mMemCategory, MEMORYBLOCK_ID, MCORE_FILE, MCORE_LINE);
-            for (size_t i = 0; i < mLength; ++i)
+            m_data = (T*)AlignedAllocate(m_maxLength * sizeof(T), alignment, m_memCategory, MEMORYBLOCK_ID, MCORE_FILE, MCORE_LINE);
+            for (size_t i = 0; i < m_length; ++i)
             {
                 Construct(i, elems[i]);
             }
@@ -69,15 +69,15 @@ namespace MCore
          * @param memCategory The memory category the array is in.
          */
         MCORE_INLINE explicit AlignedArray(size_t initSize, uint16 memCategory = MCORE_MEMCATEGORY_ARRAY)
-            : mData(nullptr)
-            , mLength(initSize)
-            , mMaxLength(initSize)
-            , mMemCategory(memCategory)
+            : m_data(nullptr)
+            , m_length(initSize)
+            , m_maxLength(initSize)
+            , m_memCategory(memCategory)
         {
-            if (mMaxLength > 0)
+            if (m_maxLength > 0)
             {
-                mData = (T*)AlignedAllocate(mMaxLength * sizeof(T), alignment, mMemCategory, MEMORYBLOCK_ID, MCORE_FILE, MCORE_LINE);
-                for (size_t i = 0; i < mLength; ++i)
+                m_data = (T*)AlignedAllocate(m_maxLength * sizeof(T), alignment, m_memCategory, MEMORYBLOCK_ID, MCORE_FILE, MCORE_LINE);
+                for (size_t i = 0; i < m_length; ++i)
                 {
                     Construct(i);
                 }
@@ -89,16 +89,16 @@ namespace MCore
          * @param other The other array to copy the data from.
          */
         AlignedArray(const AlignedArray<T, alignment>& other)
-            : mData(nullptr)
-            , mLength(0)
-            , mMaxLength(0)
-            , mMemCategory(MCORE_MEMCATEGORY_ARRAY)              { *this = other; }
+            : m_data(nullptr)
+            , m_length(0)
+            , m_maxLength(0)
+            , m_memCategory(MCORE_MEMCATEGORY_ARRAY)              { *this = other; }
 
         /**
          * Move constructor.
          * @param other The array to move the data from.
          */
-        AlignedArray(AlignedArray<T, alignment>&& other)                                                                { mData = other.mData; mLength = other.mLength; mMaxLength = other.mMaxLength; mMemCategory = other.mMemCategory; other.mData = nullptr; other.mLength = 0; other.mMaxLength = 0; }
+        AlignedArray(AlignedArray<T, alignment>&& other)                                                                { m_data = other.m_data; m_length = other.m_length; m_maxLength = other.m_maxLength; m_memCategory = other.m_memCategory; other.m_data = nullptr; other.m_length = 0; other.m_maxLength = 0; }
 
         /**
          * Destructor. Deletes all entry data.
@@ -119,13 +119,13 @@ namespace MCore
          */
         ~AlignedArray()
         {
-            for (size_t i = 0; i < mLength; ++i)
+            for (size_t i = 0; i < m_length; ++i)
             {
                 Destruct(i);
             }
-            if (mData)
+            if (m_data)
             {
-                AlignedFree(mData);
+                AlignedFree(m_data);
             }
         }
 
@@ -134,89 +134,89 @@ namespace MCore
          * On default the memory category is 0, which means unknown.
          * @result The memory category ID.
          */
-        MCORE_INLINE uint16 GetMemoryCategory() const                           { return mMemCategory; }
+        MCORE_INLINE uint16 GetMemoryCategory() const                           { return m_memCategory; }
 
         /**
          * Set the memory category ID, where allocations made by this array will belong to.
          * On default, after construction of the array, the category ID is 0, which means it is unknown.
          * @param categoryID The memory category ID where this arrays allocations belong to.
          */
-        MCORE_INLINE void SetMemoryCategory(uint16 categoryID)                  { mMemCategory = categoryID; }
+        MCORE_INLINE void SetMemoryCategory(uint16 categoryID)                  { m_memCategory = categoryID; }
 
         /**
          * Get a pointer to the first element.
          * @result A pointer to the first element.
          */
-        MCORE_INLINE T* GetPtr()                                                { return mData; }
+        MCORE_INLINE T* GetPtr()                                                { return m_data; }
 
         /**
          * Get a pointer to the first element.
          * @result A pointer to the first element.
          */
-        MCORE_INLINE T* GetPtr() const                                          { return mData; }
+        MCORE_INLINE T* GetPtr() const                                          { return m_data; }
 
         /**
          * Get a given item/element.
          * @param pos The item/element number.
          * @result A reference to the element.
          */
-        MCORE_INLINE T& GetItem(size_t pos)                                     { return mData[pos]; }
+        MCORE_INLINE T& GetItem(size_t pos)                                     { return m_data[pos]; }
 
         /**
          * Get the first element.
          * @result A reference to the first element.
          */
-        MCORE_INLINE T& GetFirst()                                              { return mData[0]; }
+        MCORE_INLINE T& GetFirst()                                              { return m_data[0]; }
 
         /**
          * Get the last element.
          * @result A reference to the last element.
          */
-        MCORE_INLINE T& GetLast()                                               { return mData[mLength - 1]; }
+        MCORE_INLINE T& GetLast()                                               { return m_data[m_length - 1]; }
 
         /**
          * Get a read-only pointer to the first element.
          * @result A read-only pointer to the first element.
          */
-        MCORE_INLINE const T* GetReadPtr() const                                { return mData; }
+        MCORE_INLINE const T* GetReadPtr() const                                { return m_data; }
 
         /**
          * Get a read-only reference to a given element number.
          * @param pos The element number.
          * @result A read-only reference to the given element.
          */
-        MCORE_INLINE const T& GetItem(size_t pos) const                         { return mData[pos]; }
+        MCORE_INLINE const T& GetItem(size_t pos) const                         { return m_data[pos]; }
 
         /**
          * Get a read-only reference to the first element.
          * @result A read-only reference to the first element.
          */
-        MCORE_INLINE const T& GetFirst() const                                  { return mData[0]; }
+        MCORE_INLINE const T& GetFirst() const                                  { return m_data[0]; }
 
         /**
          * Get a read-only reference to the last element.
          * @result A read-only reference to the last element.
          */
-        MCORE_INLINE const T& GetLast() const                                   { return mData[mLength - 1]; }
+        MCORE_INLINE const T& GetLast() const                                   { return m_data[m_length - 1]; }
 
         /**
          * Check if the array is empty or not.
          * @result Returns true when there are no elements in the array, otherwise false is returned.
          */
-        MCORE_INLINE bool GetIsEmpty() const                                    { return (mLength == 0); }
+        MCORE_INLINE bool GetIsEmpty() const                                    { return (m_length == 0); }
 
         /**
          * Checks if the passed index is in the array's range.
          * @param index The index to check.
          * @return True if the passed index is valid, false if not.
          */
-        MCORE_INLINE bool GetIsValidIndex(size_t index) const                   { return (index < mLength); }
+        MCORE_INLINE bool GetIsValidIndex(size_t index) const                   { return (index < m_length); }
 
         /**
          * Get the number of elements in the array.
          * @result The number of elements in the array.
          */
-        MCORE_INLINE size_t GetLength() const                                   { return mLength; }
+        MCORE_INLINE size_t GetLength() const                                   { return m_length; }
 
         /**
          * Get the maximum number of elements. This is the number of elements there currently is space for to store.
@@ -224,7 +224,7 @@ namespace MCore
          * This purely has to do with pre-allocating, to reduce the number of reallocs.
          * @result The maximum array length.
          */
-        MCORE_INLINE size_t GetMaxLength() const                                { return mMaxLength; }
+        MCORE_INLINE size_t GetMaxLength() const                                { return m_maxLength; }
 
         /**
          * Calculates the memory usage used by this array.
@@ -233,7 +233,7 @@ namespace MCore
          */
         MCORE_INLINE size_t CalcMemoryUsage(bool includeMembers = true) const
         {
-            size_t result = mMaxLength * sizeof(T);
+            size_t result = m_maxLength * sizeof(T);
             if (includeMembers)
             {
                 result += sizeof(AlignedArray<T, alignment>);
@@ -246,19 +246,19 @@ namespace MCore
          * @param pos The element number.
          * @param value The value to store at that element number.
          */
-        MCORE_INLINE void SetElem(size_t pos, const T& value)                   { mData[pos] = value; }
+        MCORE_INLINE void SetElem(size_t pos, const T& value)                   { m_data[pos] = value; }
 
         /**
          * Add a given element to the back of the array.
          * @param x The element to add.
          */
-        MCORE_INLINE void Add(const T& x)                                       { Grow(++mLength); Construct(mLength - 1, x); }
+        MCORE_INLINE void Add(const T& x)                                       { Grow(++m_length); Construct(m_length - 1, x); }
 
         /**
          * Add a given element to the back of the array, but without pre-allocation caching.
          * @param x The element to add.
          */
-        MCORE_INLINE void AddExact(const T& x)                                  { GrowExact(++mLength); Construct(mLength - 1, x); }
+        MCORE_INLINE void AddExact(const T& x)                                  { GrowExact(++m_length); Construct(m_length - 1, x); }
 
         /**
          * Add a given array to the back of this array.
@@ -266,8 +266,8 @@ namespace MCore
          */
         MCORE_INLINE void Add(const AlignedArray<T, alignment>& a)
         {
-            size_t l = mLength;
-            Grow(mLength + a.mLength);
+            size_t l = m_length;
+            Grow(m_length + a.m_length);
             for (size_t i = 0; i < a.GetLength(); ++i)
             {
                 Construct(l + i, a[i]);
@@ -277,19 +277,19 @@ namespace MCore
         /**
          * Add an empty (default constructed) element to the back of the array.
          */
-        MCORE_INLINE void AddEmpty()                                            { Grow(++mLength); Construct(mLength - 1); }
+        MCORE_INLINE void AddEmpty()                                            { Grow(++m_length); Construct(m_length - 1); }
 
         /**
          * Add an empty (default constructed) element to the back of the array, but without pre-allocation caching.
          */
-        MCORE_INLINE void AddEmptyExact()                                       { GrowExact(++mLength); Construct(mLength - 1); }
+        MCORE_INLINE void AddEmptyExact()                                       { GrowExact(++m_length); Construct(m_length - 1); }
 
         /**
          * Remove the first array element.
          */
         MCORE_INLINE void RemoveFirst()
         {
-            if (mLength > 0)
+            if (m_length > 0)
             {
                 Remove(0);
             }
@@ -300,9 +300,9 @@ namespace MCore
          */
         MCORE_INLINE void RemoveLast()
         {
-            if (mLength > 0)
+            if (m_length > 0)
             {
-                Destruct(--mLength);
+                Destruct(--m_length);
             }
         }
 
@@ -310,14 +310,14 @@ namespace MCore
          * Insert an empty element (default constructed) at a given position in the array.
          * @param pos The position to create the empty element.
          */
-        MCORE_INLINE void Insert(size_t pos)                                    { Grow(mLength + 1); MoveElements(pos + 1, pos, mLength - pos - 1); Construct(pos); }
+        MCORE_INLINE void Insert(size_t pos)                                    { Grow(m_length + 1); MoveElements(pos + 1, pos, m_length - pos - 1); Construct(pos); }
 
         /**
          * Insert a given element at a given position in the array.
          * @param pos The position to insert the empty element.
          * @param x The element to store at this position.
          */
-        MCORE_INLINE void Insert(size_t pos, const T& x)                        { Grow(mLength + 1); MoveElements(pos + 1, pos, mLength - pos - 1); Construct(pos, x); }
+        MCORE_INLINE void Insert(size_t pos, const T& x)                        { Grow(m_length + 1); MoveElements(pos + 1, pos, m_length - pos - 1); Construct(pos, x); }
 
         /**
          * Remove an element at a given position.
@@ -326,11 +326,11 @@ namespace MCore
         MCORE_INLINE void Remove(size_t pos)
         {
             Destruct(pos);
-            if (mLength > 1)
+            if (m_length > 1)
             {
-                MoveElements(pos, pos + 1, mLength - pos - 1);
+                MoveElements(pos, pos + 1, m_length - pos - 1);
             }
-            mLength--;
+            m_length--;
         }
 
         /**
@@ -344,8 +344,8 @@ namespace MCore
             {
                 Destruct(i);
             }
-            MoveElements(pos, pos + num, mLength - pos - num);
-            mLength -= num;
+            MoveElements(pos, pos + num, m_length - pos - num);
+            m_length -= num;
         }
 
         /**
@@ -375,12 +375,12 @@ namespace MCore
         MCORE_INLINE void SwapRemove(size_t pos)
         {
             Destruct(pos);
-            if (pos != mLength - 1)
+            if (pos != m_length - 1)
             {
-                Construct(pos, mData[mLength - 1]);
-                Destruct(mLength - 1);
+                Construct(pos, m_data[m_length - 1]);
+                Destruct(m_length - 1);
             }
-            mLength--;
+            m_length--;
         }                                                                                                                                                                                      // remove element at <pos> and place the last element of the array in that position
 
         /**
@@ -403,11 +403,11 @@ namespace MCore
          */
         MCORE_INLINE void Clear(bool clearMem = true)
         {
-            for (size_t i = 0; i < mLength; ++i)
+            for (size_t i = 0; i < m_length; ++i)
             {
                 Destruct(i);
             }
-            mLength = 0;
+            m_length = 0;
             if (clearMem)
             {
                 this->Free();
@@ -420,11 +420,11 @@ namespace MCore
          */
         MCORE_INLINE void AssureSize(size_t newLength)
         {
-            if (mLength >= newLength)
+            if (m_length >= newLength)
             {
                 return;
             }
-            size_t oldLen = mLength;
+            size_t oldLen = m_length;
             Grow(newLength);
             for (size_t i = oldLen; i < newLength; ++i)
             {
@@ -438,7 +438,7 @@ namespace MCore
          */
         MCORE_INLINE void Reserve(size_t minLength)
         {
-            if (mMaxLength < minLength)
+            if (m_maxLength < minLength)
             {
                 Realloc(minLength);
             }
@@ -449,12 +449,12 @@ namespace MCore
          */
         MCORE_INLINE void Shrink()
         {
-            if (mLength == mMaxLength)
+            if (m_length == m_maxLength)
             {
                 return;
             }
-            MCORE_ASSERT(mMaxLength >= mLength);
-            Realloc(mLength);
+            MCORE_ASSERT(m_maxLength >= m_length);
+            Realloc(m_length);
         }
 
         /**
@@ -471,9 +471,9 @@ namespace MCore
          */
         MCORE_INLINE size_t Find(const T& x) const
         {
-            for (size_t i = 0; i < mLength; ++i)
+            for (size_t i = 0; i < m_length; ++i)
             {
-                if (mData[i] == x)
+                if (m_data[i] == x)
                 {
                     return i;
                 }
@@ -487,7 +487,7 @@ namespace MCore
          * This resizes this array to be the exact length of the array we will copy the data from.
          * @param other The array to copy the data from.
          */
-        MCORE_INLINE void MemCopyContentsFrom(const AlignedArray<T, alignment>& other)  { Resize(other.GetLength()); MemCopy((uint8*)mData, (uint8*)other.mData, sizeof(T) * other.mLength); }
+        MCORE_INLINE void MemCopyContentsFrom(const AlignedArray<T, alignment>& other)  { Resize(other.GetLength()); MemCopy((uint8*)m_data, (uint8*)other.m_data, sizeof(T) * other.m_length); }
 
         // sort function and standard sort function
         typedef int32   (MCORE_CDECL * CmpFunc)(const T& itemA, const T& itemB);
@@ -526,7 +526,7 @@ namespace MCore
          * Sort the complete array using a given sort function.
          * @param cmp The sort function to use.
          */
-        MCORE_INLINE void Sort(CmpFunc cmp)                                     { InnerSort(0, mLength - 1, cmp); }
+        MCORE_INLINE void Sort(CmpFunc cmp)                                     { InnerSort(0, m_length - 1, cmp); }
 
         /**
          * Sort a given part of the array using a given sort function.
@@ -540,7 +540,7 @@ namespace MCore
         {
             if (last == InvalidIndex)
             {
-                last = mLength - 1;
+                last = m_length - 1;
             }
             InnerSort(first, last, cmp);
         }
@@ -565,17 +565,17 @@ namespace MCore
         // resize in a fast way that doesn't call constructors or destructors
         void ResizeFast(size_t newLength)
         {
-            if (mLength == newLength)
+            if (m_length == newLength)
             {
                 return;
             }
 
-            if (newLength > mLength)
+            if (newLength > m_length)
             {
                 GrowExact(newLength);
             }
 
-            mLength = newLength;
+            m_length = newLength;
         }
 
         /**
@@ -585,16 +585,16 @@ namespace MCore
          */
         void Resize(size_t newLength)
         {
-            if (mLength == newLength)
+            if (m_length == newLength)
             {
                 return;
             }
 
             // check for growing or shrinking array
-            if (newLength > mLength)
+            if (newLength > m_length)
             {
                 // growing array, construct empty elements at end of array
-                const size_t oldLen = mLength;
+                const size_t oldLen = m_length;
                 GrowExact(newLength);
                 for (size_t i = oldLen; i < newLength; ++i)
                 {
@@ -604,12 +604,12 @@ namespace MCore
             else
             {
                 // shrinking array, destruct elements at end of array
-                for (size_t i = newLength; i < mLength; ++i)
+                for (size_t i = newLength; i < m_length; ++i)
                 {
                     Destruct(i);
                 }
 
-                mLength = newLength;
+                m_length = newLength;
             }
         }
 
@@ -624,20 +624,20 @@ namespace MCore
         {
             if (numElements > 0)
             {
-                MemMove(mData + destIndex, mData + sourceIndex, numElements * sizeof(T));
+                MemMove(m_data + destIndex, m_data + sourceIndex, numElements * sizeof(T));
             }
         }
 
         // operators
         bool                            operator==(const AlignedArray<T, alignment>& other) const
         {
-            if (mLength != other.mLength)
+            if (m_length != other.m_length)
             {
                 return false;
             }
-            for (size_t i = 0; i < mLength; ++i)
+            for (size_t i = 0; i < m_length; ++i)
             {
-                if (mData[i] != other.mData[i])
+                if (m_data[i] != other.m_data[i])
                 {
                     return false;
                 }
@@ -649,11 +649,11 @@ namespace MCore
             if (&other != this)
             {
                 Clear(false);
-                mMemCategory = other.mMemCategory;
-                Grow(other.mLength);
-                for (size_t i = 0; i < mLength; ++i)
+                m_memCategory = other.m_memCategory;
+                Grow(other.m_length);
+                for (size_t i = 0; i < m_length; ++i)
                 {
-                    Construct(i, other.mData[i]);
+                    Construct(i, other.m_data[i]);
                 }
             }
             return *this;
@@ -661,35 +661,35 @@ namespace MCore
         AlignedArray<T, alignment>&     operator= (AlignedArray<T, alignment>&& other)
         {
             MCORE_ASSERT(&other != this);
-            if (mData)
+            if (m_data)
             {
-                AlignedFree(mData);
+                AlignedFree(m_data);
             }
-            mData = other.mData;
-            mMemCategory = other.mMemCategory;
-            mLength = other.mLength;
-            mMaxLength = other.mMaxLength;
-            other.mData = nullptr;
-            other.mLength = 0;
-            other.mMaxLength = 0;
+            m_data = other.m_data;
+            m_memCategory = other.m_memCategory;
+            m_length = other.m_length;
+            m_maxLength = other.m_maxLength;
+            other.m_data = nullptr;
+            other.m_length = 0;
+            other.m_maxLength = 0;
             return *this;
         }
         AlignedArray<T, alignment>&     operator+=(const T& other)                                      { Add(other); return *this; }
         AlignedArray<T, alignment>&     operator+=(const AlignedArray<T, alignment>& other)             { Add(other); return *this; }
-        MCORE_INLINE T&         operator[](size_t index)                            { MCORE_ASSERT(index < mLength); return mData[index]; }
-        MCORE_INLINE const T&   operator[](size_t index) const                      { MCORE_ASSERT(index < mLength); return mData[index]; }
+        MCORE_INLINE T&         operator[](size_t index)                            { MCORE_ASSERT(index < m_length); return m_data[index]; }
+        MCORE_INLINE const T&   operator[](size_t index) const                      { MCORE_ASSERT(index < m_length); return m_data[index]; }
 
     private:
-        T*      mData;          /**< The element data. */
-        size_t  mLength;        /**< The number of used elements in the array. */
-        size_t  mMaxLength;     /**< The number of elements that we have allocated memory for. */
-        uint16  mMemCategory;   /**< The memory category ID. */
+        T*      m_data;          /**< The element data. */
+        size_t  m_length;        /**< The number of used elements in the array. */
+        size_t  m_maxLength;     /**< The number of elements that we have allocated memory for. */
+        uint16  m_memCategory;   /**< The memory category ID. */
 
         // private functions
         MCORE_INLINE void   Grow(size_t newLength)
         {
-            mLength = newLength;
-            if (mMaxLength >= newLength)
+            m_length = newLength;
+            if (m_maxLength >= newLength)
             {
                 return;
             }
@@ -697,14 +697,14 @@ namespace MCore
         }
         MCORE_INLINE void   GrowExact(size_t newLength)
         {
-            mLength = newLength;
-            if (mMaxLength < newLength)
+            m_length = newLength;
+            if (m_maxLength < newLength)
             {
                 Realloc(newLength);
             }
         }
         MCORE_INLINE size_t AllocSize(size_t num)                                   { return 1 + num /*+num/8*/; }
-        MCORE_INLINE void   Alloc(size_t num)                                       { mData = (T*)AlignedAllocate(num * sizeof(T), alignment, mMemCategory, MEMORYBLOCK_ID, MCORE_FILE, MCORE_LINE); }
+        MCORE_INLINE void   Alloc(size_t num)                                       { m_data = (T*)AlignedAllocate(num * sizeof(T), alignment, m_memCategory, MEMORYBLOCK_ID, MCORE_FILE, MCORE_LINE); }
         MCORE_INLINE void   Realloc(size_t newSize)
         {
             if (newSize == 0)
@@ -712,43 +712,43 @@ namespace MCore
                 this->Free();
                 return;
             }
-            if (mData)
+            if (m_data)
             {
-                mData = (T*)AlignedRealloc(mData, newSize * sizeof(T), mMaxLength * sizeof(T), alignment, mMemCategory, MEMORYBLOCK_ID, MCORE_FILE, MCORE_LINE);
+                m_data = (T*)AlignedRealloc(m_data, newSize * sizeof(T), m_maxLength * sizeof(T), alignment, m_memCategory, MEMORYBLOCK_ID, MCORE_FILE, MCORE_LINE);
             }
             else
             {
-                mData = (T*)AlignedAllocate(newSize * sizeof(T), alignment, mMemCategory, MEMORYBLOCK_ID, MCORE_FILE, MCORE_LINE);
+                m_data = (T*)AlignedAllocate(newSize * sizeof(T), alignment, m_memCategory, MEMORYBLOCK_ID, MCORE_FILE, MCORE_LINE);
             }
 
-            mMaxLength = newSize;
+            m_maxLength = newSize;
         }
         void Free()
         {
-            mLength = 0;
-            mMaxLength = 0;
-            if (mData)
+            m_length = 0;
+            m_maxLength = 0;
+            if (m_data)
             {
-                AlignedFree(mData);
-                mData = nullptr;
+                AlignedFree(m_data);
+                m_data = nullptr;
             }
         }
-        MCORE_INLINE void   Construct(size_t index, const T& original)              { ::new(mData + index)T(original); }         // copy-construct an element at <index> which is a copy of <original>
-        MCORE_INLINE void   Construct(size_t index)                                 { ::new(mData + index)T; }                   // construct an element at place <index>
+        MCORE_INLINE void   Construct(size_t index, const T& original)              { ::new(m_data + index)T(original); }         // copy-construct an element at <index> which is a copy of <original>
+        MCORE_INLINE void   Construct(size_t index)                                 { ::new(m_data + index)T; }                   // construct an element at place <index>
         MCORE_INLINE void   Destruct(size_t index)
         {
             #if (MCORE_COMPILER == MCORE_COMPILER_MSVC)
             MCORE_UNUSED(index);        // work around an MSVC compiler bug, where it triggers a warning that parameter 'index' is unused
             #endif
-            (mData + index)->~T();
+            (m_data + index)->~T();
         }
 
         // partition part of array (for sorting)
         int32 Partition(int32 left, int32 right, CmpFunc cmp)
         {
-            ::MCore::Swap(mData[left], mData[ (left + right) >> 1 ]);
+            ::MCore::Swap(m_data[left], m_data[ (left + right) >> 1 ]);
 
-            T& target = mData[right];
+            T& target = m_data[right];
             int32 i = left - 1;
             int32 j = right;
 
@@ -757,14 +757,14 @@ namespace MCore
             {
                 while (i < j)
                 {
-                    if (cmp(mData[++i], target) >= 0)
+                    if (cmp(m_data[++i], target) >= 0)
                     {
                         break;
                     }
                 }
                 while (j > i)
                 {
-                    if (cmp(mData[--j], target) <= 0)
+                    if (cmp(m_data[--j], target) <= 0)
                     {
                         break;
                     }
@@ -773,10 +773,10 @@ namespace MCore
                 {
                     break;
                 }
-                ::MCore::Swap(mData[i], mData[j]);
+                ::MCore::Swap(m_data[i], m_data[j]);
             }
 
-            ::MCore::Swap(mData[i], mData[right]);
+            ::MCore::Swap(m_data[i], m_data[right]);
             return i;
         }
     };

@@ -75,7 +75,7 @@ namespace MCore
          * To check if a log level is enabled use logical bitwise and comparison, example: if (GetLogLevels() & LOGLEVEL_EXAMPLE).
          * @result The log levels packed as bit flags which are enabled on the callback.
          */
-        MCORE_INLINE ELogLevel GetLogLevels() const                             { return mLogLevels; }
+        MCORE_INLINE ELogLevel GetLogLevels() const                             { return m_logLevels; }
 
         /**
          * Set the log levels this callback will accept and pass through.
@@ -86,7 +86,7 @@ namespace MCore
         void SetLogLevels(ELogLevel logLevels);
 
     protected:
-        ELogLevel   mLogLevels; /**< The log levels that will pass the callback. All messages from log flags which are disabled won't be logged. The default value of the log level will be LOGLEVEL_DEFAULT. */
+        ELogLevel   m_logLevels; /**< The log levels that will pass the callback. All messages from log flags which are disabled won't be logged. The default value of the log level will be LOGLEVEL_DEFAULT. */
     };
 
     //----------------------------------------------------------------------------
@@ -232,7 +232,7 @@ namespace MCore
          * To check if a log level is enabled by one of the callbacks use logical bitwise and comparison, example: if (GetLogLevels() & LOGLEVEL_EXAMPLE).
          * @result The log levels packed as bit flags which are enabled on the callback.
          */
-        MCORE_INLINE LogCallback::ELogLevel GetLogLevels() const                                    { return mLogLevels; }
+        MCORE_INLINE LogCallback::ELogLevel GetLogLevels() const                                    { return m_logLevels; }
 
         /**
          * Iterate over all callbacks and collect the enabled log levels.
@@ -249,11 +249,11 @@ namespace MCore
         void LogMessage(const char* message, LogCallback::ELogLevel logLevel = LogCallback::LOGLEVEL_INFO);
 
     public:
-        static Mutex            mGlobalMutex;       /**< The multithread mutex, used by some global Log functions. */
+        static Mutex            s_globalMutex;       /**< The multithread mutex, used by some global Log functions. */
 
     private:
-        AZStd::vector<LogCallback*>     mLogCallbacks;      /**< A collection of log callback instances. */
-        LogCallback::ELogLevel  mLogLevels;         /**< The log levels that will pass one of the callbacks. All messages from log flags which are disabled won't be logged. */
-        Mutex                   mMutex;             /**< The mutex for logging locally. */
+        AZStd::vector<LogCallback*>     m_logCallbacks;      /**< A collection of log callback instances. */
+        LogCallback::ELogLevel  m_logLevels;         /**< The log levels that will pass one of the callbacks. All messages from log flags which are disabled won't be logged. */
+        Mutex                   m_mutex;             /**< The mutex for logging locally. */
     };
 } // namespace MCore

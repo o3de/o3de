@@ -19,8 +19,8 @@ namespace EMotionFX
     MeshDeformer::MeshDeformer(Mesh* mesh)
         : BaseObject()
     {
-        mMesh       = mesh;
-        mIsEnabled  = true;
+        m_mesh       = mesh;
+        m_isEnabled  = true;
     }
 
 
@@ -33,14 +33,14 @@ namespace EMotionFX
     // check if the deformer is enabled
     bool MeshDeformer::GetIsEnabled() const
     {
-        return mIsEnabled;
+        return m_isEnabled;
     }
 
 
     // enable or disable it
     void MeshDeformer::SetIsEnabled(bool enabled)
     {
-        mIsEnabled = enabled;
+        m_isEnabled = enabled;
     }
 
 

@@ -36,7 +36,7 @@ namespace EMStudio
         const AZStd::vector<EMotionFX::AnimGraphObject*>& objectPrototypes = plugin->GetAnimGraphObjectFactory()->GetUiObjectPrototypes();
         for (EMotionFX::AnimGraphObject* objectPrototype : objectPrototypes)
         {
-            if (mPlugin->CheckIfCanCreateObject(focusedGraphObject, objectPrototype, category))
+            if (m_plugin->CheckIfCanCreateObject(focusedGraphObject, objectPrototype, category))
             {
                 isEmpty = false;
                 break;
@@ -54,7 +54,7 @@ namespace EMStudio
 
         for (const EMotionFX::AnimGraphObject* objectPrototype : objectPrototypes)
         {
-            if (mPlugin->CheckIfCanCreateObject(focusedGraphObject, objectPrototype, category))
+            if (m_plugin->CheckIfCanCreateObject(focusedGraphObject, objectPrototype, category))
             {
                 const EMotionFX::AnimGraphNode* nodePrototype = static_cast<const EMotionFX::AnimGraphNode*>(objectPrototype);
                 QAction* action = menu->addAction(nodePrototype->GetPaletteName());
@@ -287,7 +287,7 @@ namespace EMStudio
                     {
                         menu->addSeparator();
                         QAction* action = menu->addAction("Adjust Visualization Color");
-                        connect(action, &QAction::triggered, [this, animGraphNode](bool) { mPlugin->GetActionManager().ShowNodeColorPicker(animGraphNode); });
+                        connect(action, &QAction::triggered, [this, animGraphNode](bool) { m_plugin->GetActionManager().ShowNodeColorPicker(animGraphNode); });
                     }
                 }
             }

@@ -45,9 +45,9 @@ namespace EMotionFX
         const ActorManager& actorManager = GetActorManager();
 
         // reset stats
-        mNumUpdated.SetValue(0);
-        mNumVisible.SetValue(0);
-        mNumSampled.SetValue(0);
+        m_numUpdated.SetValue(0);
+        m_numVisible.SetValue(0);
+        m_numSampled.SetValue(0);
 
         // propagate root actor instance visibility to their attachments
         const size_t numRootActorInstances = GetActorManager().GetNumRootActorInstances();
@@ -81,7 +81,7 @@ namespace EMotionFX
     {
         actorInstance->SetThreadIndex(0);
 
-        mNumUpdated.Increment();
+        m_numUpdated.Increment();
 
         const bool isVisible = actorInstance->GetIsVisible();
 
@@ -95,13 +95,13 @@ namespace EMotionFX
 
             if (isVisible)
             {
-                mNumSampled.Increment();
+                m_numSampled.Increment();
             }
         }
 
         if (isVisible)
         {
-            mNumVisible.Increment();
+            m_numVisible.Increment();
         }
 
         // update the transformations

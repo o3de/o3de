@@ -70,7 +70,7 @@ namespace EMotionFX
             void Update() override;
 
         public:
-            size_t mNodeIndex = InvalidIndex;
+            size_t m_nodeIndex = InvalidIndex;
         };
 
         BlendTreeTransformNode();

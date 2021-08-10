@@ -27,11 +27,11 @@ namespace EMotionFX
 
     void BlendTreeMorphTargetNode::UniqueData::Update()
     {
-        BlendTreeMorphTargetNode* morphTargetNode = azdynamic_cast<BlendTreeMorphTargetNode*>(mObject);
+        BlendTreeMorphTargetNode* morphTargetNode = azdynamic_cast<BlendTreeMorphTargetNode*>(m_object);
         AZ_Assert(morphTargetNode, "Unique data linked to incorrect node type.");
 
         // Force update the morph target indices.
-        morphTargetNode->UpdateMorphIndices(mAnimGraphInstance->GetActorInstance(), this, true);
+        morphTargetNode->UpdateMorphIndices(m_animGraphInstance->GetActorInstance(), this, true);
     }
 
     BlendTreeMorphTargetNode::BlendTreeMorphTargetNode()
@@ -146,7 +146,7 @@ namespace EMotionFX
         
         // If there is no input pose init the uutput pose to the bind pose.
         AnimGraphPose* outputPose;
-        if (!mInputPorts[INPUTPORT_POSE].mConnection)
+        if (!m_inputPorts[INPUTPORT_POSE].m_connection)
         {
             RequestPoses(animGraphInstance);
             outputPose = GetOutputPose(animGraphInstance, OUTPUTPORT_POSE)->GetValue();
@@ -162,10 +162,10 @@ namespace EMotionFX
         }
 
         // Try to modify the morph target weight with the value we specified as input.
-        if (!mDisabled && uniqueData->m_morphTargetIndex != InvalidIndex)
+        if (!m_disabled && uniqueData->m_morphTargetIndex != InvalidIndex)
         {
             // If we have an input to the weight port, read that value use that value to overwrite the pose value with.
-            if (mInputPorts[INPUTPORT_WEIGHT].mConnection)
+            if (m_inputPorts[INPUTPORT_WEIGHT].m_connection)
             {
                 OutputIncomingNode(animGraphInstance, GetInputNode(INPUTPORT_WEIGHT));
                 const float morphWeight = GetInputNumberAsFloat(animGraphInstance, INPUTPORT_WEIGHT);
@@ -178,7 +178,7 @@ namespace EMotionFX
         // Debug visualize the output pose.
         if (GetEMotionFX().GetIsInEditorMode() && GetCanVisualize(animGraphInstance))
         {
-            actorInstance->DrawSkeleton(outputPose->GetPose(), mVisualizeColor);
+            actorInstance->DrawSkeleton(outputPose->GetPose(), m_visualizeColor);
         }
     }
 

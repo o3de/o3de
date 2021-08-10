@@ -44,13 +44,13 @@ namespace EMotionFX
          * @param[in] index The index of the motion. The index must be in range [0, GetNumMotions()-1].
          * @return A pointer to the given motion set.
          */
-        MCORE_INLINE Motion* GetMotion(size_t index) const                                                      { return mMotions[index]; }
+        MCORE_INLINE Motion* GetMotion(size_t index) const                                                      { return m_motions[index]; }
 
         /**
          * Get the number of motions in the motion manager.
          * @return The number of registered motions.
          */
-        MCORE_INLINE size_t GetNumMotions() const                                                               { return mMotions.size(); }
+        MCORE_INLINE size_t GetNumMotions() const                                                               { return m_motions.size(); }
 
         /**
          * Remove the motion with the given name from the motion manager.
@@ -154,13 +154,13 @@ namespace EMotionFX
          * @param[in] index The index of the motion set. The index must be in range [0, GetNumMotionSets()-1].
          * @return A pointer to the given motion set.
          */
-        MCORE_INLINE MotionSet* GetMotionSet(size_t index) const                                                { return mMotionSets[index]; }
+        MCORE_INLINE MotionSet* GetMotionSet(size_t index) const                                                { return m_motionSets[index]; }
 
         /**
          * Get the number of motion sets in the motion manager.
          * @return The number of registered motion sets.
          */
-        MCORE_INLINE size_t GetNumMotionSets() const                                                            { return mMotionSets.size(); }
+        MCORE_INLINE size_t GetNumMotionSets() const                                                            { return m_motionSets.size(); }
 
         /**
          * Calculate the number of root motion sets.
@@ -233,10 +233,10 @@ namespace EMotionFX
         const MotionDataFactory& GetMotionDataFactory() const;
 
     private:
-        AZStd::vector<Motion*>       mMotions;               /**< The array of motions. */
-        AZStd::vector<MotionSet*>    mMotionSets;            /**< The array of motion sets. */
-        MCore::Mutex                mLock;                  /**< Motion lock. */
-        MCore::Mutex                mSetLock;               /**< The motion set multithread lock. */
+        AZStd::vector<Motion*>       m_motions;               /**< The array of motions. */
+        AZStd::vector<MotionSet*>    m_motionSets;            /**< The array of motion sets. */
+        MCore::Mutex                m_lock;                  /**< Motion lock. */
+        MCore::Mutex                m_setLock;               /**< The motion set multithread lock. */
         MotionDataFactory*          m_motionDataFactory = nullptr; /**< The motion data factory. */
 
         //void RecursiveResetMotionNodes(AnimGraphNode* animGraphNode, Motion* motion);

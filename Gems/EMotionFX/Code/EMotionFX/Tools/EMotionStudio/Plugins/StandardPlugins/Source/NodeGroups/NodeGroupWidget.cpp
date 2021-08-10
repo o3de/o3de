@@ -33,10 +33,9 @@ namespace EMStudio
     NodeGroupWidget::NodeGroupWidget(QWidget* parent)
         : QWidget(parent)
     {
-        //mEnabledOnDefaultCheckbox = nullptr;
-        mNodeTable                  = nullptr;
-        mSelectNodesButton          = nullptr;
-        mNodeGroup                  = nullptr;
+        m_nodeTable                  = nullptr;
+        m_selectNodesButton          = nullptr;
+        m_nodeGroup                  = nullptr;
 
         // init the widget
         Init();
@@ -52,60 +51,48 @@ namespace EMStudio
     // the init function
     void NodeGroupWidget::Init()
     {
-        // create the disable checkbox
-        //mEnabledOnDefaultCheckbox = new QCheckBox( "Enabled On Default" );
-
-        // edit field for the group name
-        //mNodeGroupNameEdit = new QLineEdit();
-
         // create the node groups table
-        mNodeTable = new QTableWidget(0, 1, 0);
+        m_nodeTable = new QTableWidget(0, 1, 0);
 
         // create the table widget
-        mNodeTable->setCornerButtonEnabled(false);
-        mNodeTable->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
-        mNodeTable->setContextMenuPolicy(Qt::DefaultContextMenu);
+        m_nodeTable->setCornerButtonEnabled(false);
+        m_nodeTable->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+        m_nodeTable->setContextMenuPolicy(Qt::DefaultContextMenu);
 
         // set the table to row selection
-        mNodeTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+        m_nodeTable->setSelectionBehavior(QAbstractItemView::SelectRows);
 
         // make the table items read only
-        mNodeTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        m_nodeTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
         // set header items for the table
         QTableWidgetItem* nameHeaderItem = new QTableWidgetItem("Nodes");
         nameHeaderItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
 
-        mNodeTable->setHorizontalHeaderItem(0, nameHeaderItem);
+        m_nodeTable->setHorizontalHeaderItem(0, nameHeaderItem);
 
-        QHeaderView* horizontalHeader = mNodeTable->horizontalHeader();
+        QHeaderView* horizontalHeader = m_nodeTable->horizontalHeader();
         horizontalHeader->setStretchLastSection(true);
 
         // create the node selection window
-        mNodeSelectionWindow = new NodeSelectionWindow(this, false);
+        m_nodeSelectionWindow = new NodeSelectionWindow(this, false);
 
         // create the selection buttons
-        mSelectNodesButton  = new QPushButton();
-        mAddNodesButton     = new QPushButton();
-        mRemoveNodesButton  = new QPushButton();
+        m_selectNodesButton  = new QPushButton();
+        m_addNodesButton     = new QPushButton();
+        m_removeNodesButton  = new QPushButton();
 
-        EMStudioManager::MakeTransparentButton(mSelectNodesButton, "Images/Icons/Plus.svg",   "Select nodes and replace the current selection");
-        EMStudioManager::MakeTransparentButton(mAddNodesButton,    "Images/Icons/Plus.svg",   "Select nodes and add them to the current selection");
-        EMStudioManager::MakeTransparentButton(mRemoveNodesButton, "Images/Icons/Minus.svg",  "Remove selected nodes from the list");
+        EMStudioManager::MakeTransparentButton(m_selectNodesButton, "Images/Icons/Plus.svg",   "Select nodes and replace the current selection");
+        EMStudioManager::MakeTransparentButton(m_addNodesButton,    "Images/Icons/Plus.svg",   "Select nodes and add them to the current selection");
+        EMStudioManager::MakeTransparentButton(m_removeNodesButton, "Images/Icons/Minus.svg",  "Remove selected nodes from the list");
 
         // create the buttons layout
         QHBoxLayout* buttonLayout = new QHBoxLayout();
         buttonLayout->setSpacing(0);
         buttonLayout->setAlignment(Qt::AlignLeft);
-        buttonLayout->addWidget(mSelectNodesButton);
-        buttonLayout->addWidget(mAddNodesButton);
-        buttonLayout->addWidget(mRemoveNodesButton);
-
-        // create layout for the edit field
-        /*QHBoxLayout* editLayout = new QHBoxLayout();
-        editLayout->addWidget( new QLabel("Name:") );
-        editLayout->addWidget( mNodeGroupNameEdit );
-        editLayout->addWidget( mEnabledOnDefaultCheckbox );*/
+        buttonLayout->addWidget(m_selectNodesButton);
+        buttonLayout->addWidget(m_addNodesButton);
+        buttonLayout->addWidget(m_removeNodesButton);
 
         // create the layouts
         QVBoxLayout* layout = new QVBoxLayout();
@@ -116,7 +103,7 @@ namespace EMStudio
         tableLayout->setMargin(0);
 
         tableLayout->addLayout(buttonLayout);
-        tableLayout->addWidget(mNodeTable);
+        tableLayout->addWidget(m_nodeTable);
 
         layout->addLayout(tableLayout);
         //layout->addLayout( editLayout );
@@ -125,12 +112,12 @@ namespace EMStudio
         setLayout(layout);
 
         // connect controls to the slots
-        connect(mSelectNodesButton, &QPushButton::clicked, this, &NodeGroupWidget::SelectNodesButtonPressed);
-        connect(mAddNodesButton, &QPushButton::clicked, this, &NodeGroupWidget::SelectNodesButtonPressed);
-        connect(mRemoveNodesButton, &QPushButton::clicked, this, &NodeGroupWidget::RemoveNodesButtonPressed);
-        connect(mNodeTable, &QTableWidget::itemSelectionChanged, this, &NodeGroupWidget::OnItemSelectionChanged);
-        connect(mNodeSelectionWindow->GetNodeHierarchyWidget(), &NodeHierarchyWidget::OnSelectionDone, this, &NodeGroupWidget::NodeSelectionFinished);
-        connect(mNodeSelectionWindow->GetNodeHierarchyWidget(), &NodeHierarchyWidget::OnDoubleClicked, this, &NodeGroupWidget::NodeSelectionFinished);
+        connect(m_selectNodesButton, &QPushButton::clicked, this, &NodeGroupWidget::SelectNodesButtonPressed);
+        connect(m_addNodesButton, &QPushButton::clicked, this, &NodeGroupWidget::SelectNodesButtonPressed);
+        connect(m_removeNodesButton, &QPushButton::clicked, this, &NodeGroupWidget::RemoveNodesButtonPressed);
+        connect(m_nodeTable, &QTableWidget::itemSelectionChanged, this, &NodeGroupWidget::OnItemSelectionChanged);
+        connect(m_nodeSelectionWindow->GetNodeHierarchyWidget(), &NodeHierarchyWidget::OnSelectionDone, this, &NodeGroupWidget::NodeSelectionFinished);
+        connect(m_nodeSelectionWindow->GetNodeHierarchyWidget(), &NodeHierarchyWidget::OnDoubleClicked, this, &NodeGroupWidget::NodeSelectionFinished);
     }
 
 
@@ -138,48 +125,45 @@ namespace EMStudio
     void NodeGroupWidget::UpdateInterface()
     {
         // clear the table widget
-        mNodeTable->clear();
+        m_nodeTable->clear();
 
         // check if the node group is not valid
-        if (mNodeGroup == nullptr)
+        if (m_nodeGroup == nullptr)
         {
             // set the column count
-            mNodeTable->setColumnCount(0);
+            m_nodeTable->setColumnCount(0);
 
             // disable the widgets
             SetWidgetEnabled(false);
-
-            // clear the edit field
-            //mNodeGroupNameEdit->setText( "" );
 
             // stop here
             return;
         }
 
         // set the column count
-        mNodeTable->setColumnCount(1);
+        m_nodeTable->setColumnCount(1);
 
         // enable the widget
         SetWidgetEnabled(true);
 
         // set the remove nodes button enabled or not based on selection
-        mRemoveNodesButton->setEnabled((mNodeTable->rowCount() != 0) && (mNodeTable->selectedItems().size() != 0));
+        m_removeNodesButton->setEnabled((m_nodeTable->rowCount() != 0) && (m_nodeTable->selectedItems().size() != 0));
 
         // clear the table widget
-        mNodeTable->setRowCount(mNodeGroup->GetNumNodes());
+        m_nodeTable->setRowCount(m_nodeGroup->GetNumNodes());
 
         // set header items for the table
-        AZStd::string headerText = AZStd::string::format("%s Nodes (%i / %zu)", ((mNodeGroup->GetIsEnabledOnDefault()) ? "Enabled" : "Disabled"), mNodeGroup->GetNumNodes(), mActor->GetNumNodes());
+        AZStd::string headerText = AZStd::string::format("%s Nodes (%i / %zu)", ((m_nodeGroup->GetIsEnabledOnDefault()) ? "Enabled" : "Disabled"), m_nodeGroup->GetNumNodes(), m_actor->GetNumNodes());
         QTableWidgetItem* nameHeaderItem = new QTableWidgetItem(headerText.c_str());
         nameHeaderItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignCenter);
-        mNodeTable->setHorizontalHeaderItem(0, nameHeaderItem);
+        m_nodeTable->setHorizontalHeaderItem(0, nameHeaderItem);
 
         // fill the table with content
-        const uint16 numNodes = mNodeGroup->GetNumNodes();
+        const uint16 numNodes = m_nodeGroup->GetNumNodes();
         for (uint16 i = 0; i < numNodes; ++i)
         {
             // get the nodegroup
-            EMotionFX::Node* node = mActor->GetSkeleton()->GetNode(mNodeGroup->GetNode(i));
+            EMotionFX::Node* node = m_actor->GetSkeleton()->GetNode(m_nodeGroup->GetNode(i));
 
             // continue if node does not exist
             if (node == nullptr)
@@ -189,23 +173,23 @@ namespace EMStudio
 
             // create table items
             QTableWidgetItem* tableItemNodeName = new QTableWidgetItem(node->GetName());
-            mNodeTable->setItem(i, 0, tableItemNodeName);
+            m_nodeTable->setItem(i, 0, tableItemNodeName);
 
             // set the row height
-            mNodeTable->setRowHeight(i, 21);
+            m_nodeTable->setRowHeight(i, 21);
         }
 
         // resize to contents and adjust header
-        QHeaderView* verticalHeader = mNodeTable->verticalHeader();
+        QHeaderView* verticalHeader = m_nodeTable->verticalHeader();
         verticalHeader->setVisible(false);
-        mNodeTable->resizeColumnsToContents();
-        mNodeTable->horizontalHeader()->setStretchLastSection(true);
+        m_nodeTable->resizeColumnsToContents();
+        m_nodeTable->horizontalHeader()->setStretchLastSection(true);
 
         // set table size
-        mNodeTable->setColumnWidth(0, 37);
-        mNodeTable->setColumnWidth(3, 0);
-        mNodeTable->setColumnHidden(3, true);
-        mNodeTable->sortItems(3);
+        m_nodeTable->setColumnWidth(0, 37);
+        m_nodeTable->setColumnWidth(3, 0);
+        m_nodeTable->setColumnHidden(3, true);
+        m_nodeTable->sortItems(3);
     }
 
 
@@ -213,14 +197,14 @@ namespace EMStudio
     void NodeGroupWidget::SetNodeGroup(EMotionFX::NodeGroup* nodeGroup)
     {
         // check if the actor was set
-        if (mActor == nullptr)
+        if (m_actor == nullptr)
         {
-            mNodeGroup = nullptr;
+            m_nodeGroup = nullptr;
             return;
         }
 
         // set the node group
-        mNodeGroup = nodeGroup;
+        m_nodeGroup = nodeGroup;
 
         // update the interface
         UpdateInterface();
@@ -231,8 +215,8 @@ namespace EMStudio
     void NodeGroupWidget::SetActor(EMotionFX::Actor* actor)
     {
         // set the new actor
-        mActor = actor;
-        mNodeGroup = nullptr;
+        m_actor = actor;
+        m_nodeGroup = nullptr;
 
         // update the interface
         UpdateInterface();
@@ -243,20 +227,20 @@ namespace EMStudio
     void NodeGroupWidget::SelectNodesButtonPressed()
     {
         // check if node group is set
-        if (mNodeGroup == nullptr)
+        if (m_nodeGroup == nullptr)
         {
             return;
         }
 
         // set the action for the selected nodes
         QWidget* senderWidget = (QWidget*)sender();
-        if (senderWidget == mAddNodesButton)
+        if (senderWidget == m_addNodesButton)
         {
-            mNodeAction = CommandSystem::CommandAdjustNodeGroup::NodeAction::Add;
+            m_nodeAction = CommandSystem::CommandAdjustNodeGroup::NodeAction::Add;
         }
         else
         {
-            mNodeAction = CommandSystem::CommandAdjustNodeGroup::NodeAction::Replace;
+            m_nodeAction = CommandSystem::CommandAdjustNodeGroup::NodeAction::Replace;
         }
 
         // get the selected actorinstance
@@ -270,28 +254,28 @@ namespace EMStudio
         }
 
         // create selection list for the current nodes within the group
-        mNodeSelectionList.Clear();
-        if (senderWidget == mSelectNodesButton)
+        m_nodeSelectionList.Clear();
+        if (senderWidget == m_selectNodesButton)
         {
-            MCore::SmallArray<uint16>&  nodes       = mNodeGroup->GetNodeArray();
+            MCore::SmallArray<uint16>&  nodes       = m_nodeGroup->GetNodeArray();
             const uint16                numNodes    = nodes.GetLength();
             for (uint16 i = 0; i < numNodes; ++i)
             {
-                EMotionFX::Node* node = mActor->GetSkeleton()->GetNode(nodes[i]);
-                mNodeSelectionList.AddNode(node);
+                EMotionFX::Node* node = m_actor->GetSkeleton()->GetNode(nodes[i]);
+                m_nodeSelectionList.AddNode(node);
             }
         }
 
         // show the node selection window
-        mNodeSelectionWindow->Update(actorInstance->GetID(), &mNodeSelectionList);
-        mNodeSelectionWindow->show();
+        m_nodeSelectionWindow->Update(actorInstance->GetID(), &m_nodeSelectionList);
+        m_nodeSelectionWindow->show();
     }
 
 
     // remove nodes
     void NodeGroupWidget::RemoveNodesButtonPressed()
     {
-        if (mNodeTable->selectedItems().empty())
+        if (m_nodeTable->selectedItems().empty())
         {
             return;
         }
@@ -299,7 +283,7 @@ namespace EMStudio
         // generate node list string
         AZStd::vector<AZStd::string> nodeList;
         int lowestSelectedRow = AZStd::numeric_limits<int>::max();
-        for (const QTableWidgetItem* item : mNodeTable->selectedItems())
+        for (const QTableWidgetItem* item : m_nodeTable->selectedItems())
         {
             nodeList.emplace_back(FromQtString(item->text()));
             lowestSelectedRow = AZStd::min(lowestSelectedRow, item->row());
@@ -308,8 +292,8 @@ namespace EMStudio
         AZStd::string outResult;
         auto* command = aznew CommandSystem::CommandAdjustNodeGroup(
             GetCommandManager()->FindCommand(CommandSystem::CommandAdjustNodeGroup::s_commandName),
-            /*actorId=*/ mActor->GetID(),
-            /*name=*/ mNodeGroup->GetName(),
+            /*actorId=*/ m_actor->GetID(),
+            /*name=*/ m_nodeGroup->GetName(),
             /*newName=*/ AZStd::nullopt,
             /*enabledOnDefault=*/ AZStd::nullopt,
             /*nodeNames=*/ AZStd::move(nodeList),
@@ -321,13 +305,13 @@ namespace EMStudio
         }
 
         // selected the next row
-        if (lowestSelectedRow > (mNodeTable->rowCount() - 1))
+        if (lowestSelectedRow > (m_nodeTable->rowCount() - 1))
         {
-            mNodeTable->selectRow(lowestSelectedRow - 1);
+            m_nodeTable->selectRow(lowestSelectedRow - 1);
         }
         else
         {
-            mNodeTable->selectRow(lowestSelectedRow);
+            m_nodeTable->selectRow(lowestSelectedRow);
         }
     }
 
@@ -352,12 +336,12 @@ namespace EMStudio
         AZStd::string outResult;
         auto* command = aznew CommandSystem::CommandAdjustNodeGroup(
             GetCommandManager()->FindCommand(CommandSystem::CommandAdjustNodeGroup::s_commandName),
-            /*actorId=*/ mActor->GetID(),
-            /*name=*/ mNodeGroup->GetName(),
+            /*actorId=*/ m_actor->GetID(),
+            /*name=*/ m_nodeGroup->GetName(),
             /*newName=*/ AZStd::nullopt,
             /*enabledOnDefault=*/ AZStd::nullopt,
             /*nodeNames=*/ AZStd::move(nodeList),
-            /*nodeAction=*/ mNodeAction
+            /*nodeAction=*/ m_nodeAction
         );
         if (EMStudio::GetCommandManager()->ExecuteCommand(command, outResult) == false)
         {
@@ -369,19 +353,17 @@ namespace EMStudio
     // handle item selection changes of the node table
     void NodeGroupWidget::OnItemSelectionChanged()
     {
-        mRemoveNodesButton->setEnabled((mNodeTable->rowCount() != 0) && (mNodeTable->selectedItems().size() != 0));
+        m_removeNodesButton->setEnabled((m_nodeTable->rowCount() != 0) && (m_nodeTable->selectedItems().size() != 0));
     }
 
 
     // enable/disable the dialog
     void NodeGroupWidget::SetWidgetEnabled(bool enabled)
     {
-        //mNodeGroupNameEdit->setDisabled( !enabled );
-        //mEnabledOnDefaultCheckbox->setDisabled( !enabled );
-        mNodeTable->setDisabled(!enabled);
-        mSelectNodesButton->setDisabled(!enabled);
-        mAddNodesButton->setDisabled(!enabled);
-        mRemoveNodesButton->setDisabled(!enabled);
+        m_nodeTable->setDisabled(!enabled);
+        m_selectNodesButton->setDisabled(!enabled);
+        m_addNodesButton->setDisabled(!enabled);
+        m_removeNodesButton->setDisabled(!enabled);
     }
 
 

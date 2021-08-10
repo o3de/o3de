@@ -48,16 +48,16 @@ namespace EMStudio
         NodeGraphWidget(AnimGraphPlugin* plugin, NodeGraph* activeGraph = nullptr, QWidget* parent = nullptr);
         virtual ~NodeGraphWidget();
 
-        AnimGraphPlugin* GetPlugin() { return mPlugin; }
+        AnimGraphPlugin* GetPlugin() { return m_plugin; }
 
         void SetActiveGraph(NodeGraph* graph);
         NodeGraph* GetActiveGraph() const;
 
         void SetCallback(GraphWidgetCallback* callback);
-        MCORE_INLINE GraphWidgetCallback* GetCallback()                 { return mCallback; }
-        MCORE_INLINE const QPoint& GetMousePos() const                  { return mMousePos; }
-        MCORE_INLINE void SetMousePos(const QPoint& pos)                { mMousePos = pos; }
-        MCORE_INLINE void SetShowFPS(bool showFPS)                      { mShowFPS = showFPS; }
+        MCORE_INLINE GraphWidgetCallback* GetCallback()                 { return m_callback; }
+        MCORE_INLINE const QPoint& GetMousePos() const                  { return m_mousePos; }
+        MCORE_INLINE void SetMousePos(const QPoint& pos)                { m_mousePos = pos; }
+        MCORE_INLINE void SetShowFPS(bool showFPS)                      { m_showFps = showFPS; }
 
         size_t CalcNumSelectedNodes() const;
 
@@ -125,35 +125,35 @@ namespace EMStudio
         GraphNode* UpdateMouseCursor(const QPoint& localMousePos, const QPoint& globalMousePos);
 
     protected:
-        AnimGraphPlugin*            mPlugin;
-        bool                        mShowFPS;
-        QPoint                      mMousePos;
-        QPoint                      mMouseLastPos;
-        QPoint                      mMouseLastPressPos;
-        QPoint                      mSelectStart;
-        QPoint                      mSelectEnd;
-        int                         mPrevWidth;
-        int                         mPrevHeight;
-        int                         mCurWidth;
-        int                         mCurHeight;
-        GraphNode*                  mMoveNode;  // the node we're moving
-        NodeGraph*                  mActiveGraph = nullptr;
-        GraphWidgetCallback*        mCallback;
-        QFont                       mFont;
-        QFontMetrics*               mFontMetrics;
-        AZ::Debug::Timer            mRenderTimer;
-        AZStd::string               mTempString;
-        AZStd::string               mFullActorName;
-        AZStd::string               mActorName;
-        bool                        mAllowContextMenu;
-        bool                        mLeftMousePressed;
-        bool                        mMiddleMousePressed;
-        bool                        mRightMousePressed;
-        bool                        mPanning;
-        bool                        mRectSelecting;
-        bool                        mShiftPressed;
-        bool                        mControlPressed;
-        bool                        mAltPressed;
+        AnimGraphPlugin*            m_plugin;
+        bool                        m_showFps;
+        QPoint                      m_mousePos;
+        QPoint                      m_mouseLastPos;
+        QPoint                      m_mouseLastPressPos;
+        QPoint                      m_selectStart;
+        QPoint                      m_selectEnd;
+        int                         m_prevWidth;
+        int                         m_prevHeight;
+        int                         m_curWidth;
+        int                         m_curHeight;
+        GraphNode*                  m_moveNode;  // the node we're moving
+        NodeGraph*                  m_activeGraph = nullptr;
+        GraphWidgetCallback*        m_callback;
+        QFont                       m_font;
+        QFontMetrics*               m_fontMetrics;
+        AZ::Debug::Timer            m_renderTimer;
+        AZStd::string               m_tempString;
+        AZStd::string               m_fullActorName;
+        AZStd::string               m_actorName;
+        bool                        m_allowContextMenu;
+        bool                        m_leftMousePressed;
+        bool                        m_middleMousePressed;
+        bool                        m_rightMousePressed;
+        bool                        m_panning;
+        bool                        m_rectSelecting;
+        bool                        m_shiftPressed;
+        bool                        m_controlPressed;
+        bool                        m_altPressed;
         bool                        m_borderOverwrite = false;
         QColor                      m_borderOverwriteColor;
         float                       m_borderOverwriteWidth;

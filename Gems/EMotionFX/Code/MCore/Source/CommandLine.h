@@ -271,8 +271,8 @@ namespace MCore
          */
         struct MCORE_API Parameter
         {
-            AZStd::string   mName;              /**< The parameter name, for example "XRES". */
-            AZStd::string   mValue;             /**< The parameter value, for example "1024". */
+            AZStd::string   m_name;              /**< The parameter name, for example "XRES". */
+            AZStd::string   m_value;             /**< The parameter value, for example "1024". */
         };
 
         AZStd::vector<Parameter> m_parameters;    /**< The parameters that have been detected in the command line string. */
