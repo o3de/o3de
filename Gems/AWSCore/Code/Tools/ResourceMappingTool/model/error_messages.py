@@ -5,8 +5,6 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-from model import constants
-
 ERROR_PAGE_TOOL_SETUP_ERROR_MESSAGE: str = \
     "AWS credentials are missing or invalid. See " \
     "<a href=\"https://docs.o3de.org/docs/user-guide/gems/reference/aws/aws-core/configuring-credentials/\">"\
@@ -17,12 +15,6 @@ VIEW_EDIT_PAGE_SAVING_FAILED_WITH_INVALID_ROW_ERROR_MESSAGE: str = \
     "Row {} have errors. Please correct errors or delete the row to proceed."
 VIEW_EDIT_PAGE_READ_FROM_JSON_FAILED_WITH_UNEXPECTED_FILE_ERROR_MESSAGE: str = \
     "Internal error: unexpected config file {}."
-VIEW_EDIT_PAGE_CREATE_NEW_CONFIG_FILE_NO_DEFAULT_REGION_ERROR_MESSAGE: str = \
-    f"Resource mapping file {constants.RESOURCE_MAPPING_DEFAULT_CONFIG_FILE_NAME} is created"\
-    f" with {constants.RESOURCE_MAPPING_DEFAULT_CONFIG_FILE_REGION} as the default region. "\
-    f"See <a href=\"https://docs.o3de.org/docs/user-guide/gems/reference/aws/aws-core/configuring-credentials/\">"\
-    f"<span style=\"color:#4A90E2;\">documentation</span></a> "\
-    f"for configuring the AWS credentials and default region."
 
 IMPORT_RESOURCES_PAGE_SEARCH_VERSION_ERROR_MESSAGE: str = "Internal error: unexpected import resources search version."
 IMPORT_RESOURCES_PAGE_RESOURCE_TYPE_ERROR_MESSAGE: str = "Unexpected import AWS resource type."

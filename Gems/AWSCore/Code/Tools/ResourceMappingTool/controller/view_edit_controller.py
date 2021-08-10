@@ -123,8 +123,8 @@ class ViewEditController(QObject):
         default_region = configuration.region
         if not default_region or default_region == 'aws-global':
             self.set_notification_frame_text_sender.emit(
-                error_messages.VIEW_EDIT_PAGE_CREATE_NEW_CONFIG_FILE_NO_DEFAULT_REGION_ERROR_MESSAGE)
-            logger.warning(error_messages.VIEW_EDIT_PAGE_CREATE_NEW_CONFIG_FILE_NO_DEFAULT_REGION_ERROR_MESSAGE)
+                notification_label_text.VIEW_EDIT_PAGE_CREATE_NEW_CONFIG_FILE_NO_DEFAULT_REGION_MESSAGE)
+            logger.warning(notification_label_text.VIEW_EDIT_PAGE_CREATE_NEW_CONFIG_FILE_NO_DEFAULT_REGION_MESSAGE)
 
             configuration.region = constants.RESOURCE_MAPPING_DEFAULT_CONFIG_FILE_REGION
 
