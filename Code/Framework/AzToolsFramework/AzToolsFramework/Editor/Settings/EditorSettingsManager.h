@@ -37,6 +37,8 @@ namespace AzToolsFramework::Editor
         bool m_isSetup = false;
         CategoryMap m_settingItems;
 
+        AZ::SettingsRegistryInterface* m_settingsRegistry;
+        EditorSettingsOriginTracker* m_settingsOriginTracker = nullptr;
         EditorSettingsDialog* m_settingsDialog = nullptr;
     };
 } // namespace AzToolsFramework::Editor

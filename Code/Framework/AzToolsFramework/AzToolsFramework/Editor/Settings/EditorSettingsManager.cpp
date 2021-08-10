@@ -82,6 +82,9 @@ namespace AzToolsFramework::Editor
     void EditorSettingsManager::Start()
     {
         AZ::ReflectionEnvironment::GetReflectionManager()->AddReflectContext<EditorSettingsContext>();
+
+        m_settingsRegistry = AZ::SettingsRegistry::Get();
+        m_settingsOriginTracker = new EditorSettingsOriginTracker(*m_settingsRegistry);
     }
 
     EditorSettingsManager::~EditorSettingsManager()
