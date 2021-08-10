@@ -34,10 +34,6 @@
 #define PLATFORM_64BIT
 #endif
 
-#if defined(_CPU_ARM) && defined(PLATFORM_64BIT)
-#   define INTERLOCKED_COMPARE_EXCHANGE_128_NOT_SUPPORTED
-#endif // defined(_CPU_ARM) && defined(PLATFORM_64BIT)
-
 #ifndef MOBILE
 #define MOBILE
 #endif

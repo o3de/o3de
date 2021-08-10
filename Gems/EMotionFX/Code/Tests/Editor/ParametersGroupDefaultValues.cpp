@@ -153,7 +153,7 @@ namespace EMotionFX
         TestInequality(defaultValueParameter->GetDefaultValue(), expectedValue);
 
         AnimGraphInstance* animGraphInstance = animGraph->GetAnimGraphInstance(0);
-        auto instanceValue = static_cast<AttributeT*>(animGraphInstance->GetParameterValue(animGraph->FindValueParameterIndex(valueParameter).GetValue()));
+        auto instanceValue = static_cast<AttributeT*>(animGraphInstance->GetParameterValue(static_cast<uint32>(animGraph->FindValueParameterIndex(valueParameter).GetValue())));
         ASSERT_EQ(instanceValue->GetType(), AttributeT::TYPE_ID);
 
         // Set the parameter's current value

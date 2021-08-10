@@ -129,6 +129,34 @@ namespace AZ
                 m_captureToFile = true;
             }
 
+            ImGui::SameLine();
+            bool isInProgress = RHI::CpuProfiler::Get()->IsContinuousCaptureInProgress();
+            if (ImGui::Button(isInProgress ? "End" : "Begin"))
+            {
+                if (isInProgress)
+                {
+                    AZStd::sys_time_t timeNow = AZStd::GetTimeNowSecond();
+                    AZStd::string timeString;
+                    AZStd::to_string(timeString, timeNow);
+                    u64 currentTick = AZ::RPI::RPISystemInterface::Get()->GetCurrentTick();
+                    const AZStd::string frameDataFilePath = AZStd::string::format(
+                        "@user@/CpuProfiler/%s_%llu.json",
+                        timeString.c_str(),
+                        currentTick);
+                    char resolvedPath[AZ::IO::MaxPathLength];
+                    AZ::IO::FileIOBase::GetInstance()->ResolvePath(frameDataFilePath.c_str(), resolvedPath, AZ::IO::MaxPathLength);
+                    m_lastCapturedFilePath = resolvedPath;
+                    AZ::Render::ProfilingCaptureRequestBus::Broadcast(
+                        &AZ::Render::ProfilingCaptureRequestBus::Events::EndContinuousCpuProfilingCapture, frameDataFilePath);
+                }
+
+                else
+                {
+                    AZ::Render::ProfilingCaptureRequestBus::Broadcast(
+                        &AZ::Render::ProfilingCaptureRequestBus::Events::BeginContinuousCpuProfilingCapture);
+                }
+            }
+
             if (!m_lastCapturedFilePath.empty())
             {
                 ImGui::SameLine();
@@ -520,13 +548,14 @@ namespace AZ
             {
                 AZStd::size_t sizeBeforeRemove = savedRegions.size();
 
-                auto firstRegionToKeep = AZStd::lower_bound(
-                    savedRegions.begin(), savedRegions.end(), deleteBeforeTick,
-                    [](const TimeRegion& region, AZStd::sys_time_t target)
+                // Use erase_if over plain upper_bound + erase to avoid repeated shifts. erase requires a shift of all elements to the right
+                // for each element that is erased, while erase_if squashes all removes into a single shift which significantly improves perf.
+                AZStd::erase_if(
+                    savedRegions,
+                    [deleteBeforeTick](const TimeRegion& region)
                     {
-                        return region.m_startTick < target;
+                        return region.m_startTick < deleteBeforeTick;
                     });
-                savedRegions.erase(savedRegions.begin(), firstRegionToKeep);
 
                 m_savedRegionCount -= sizeBeforeRemove - savedRegions.size();
             }

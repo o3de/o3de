@@ -448,11 +448,15 @@ endfunction()
 function(ly_setup_runtime_dependencies)
 
     # Common functions used by the bellow code
-    install(CODE
+    if(COMMAND ly_install_code_function_override)
+        ly_install_code_function_override()
+    else()
+        install(CODE
 "function(ly_copy source_file target_directory)
     file(COPY \"\${source_file}\" DESTINATION \"\${target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS})
 endfunction()"
-    )
+        )
+    endif()
 
     unset(runtime_commands)
     get_property(all_targets GLOBAL PROPERTY LY_ALL_TARGETS)

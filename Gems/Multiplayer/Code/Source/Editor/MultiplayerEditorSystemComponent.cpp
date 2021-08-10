@@ -147,13 +147,9 @@ namespace Multiplayer
         processLaunchInfo.m_showWindow = true;
         processLaunchInfo.m_processPriority = AzFramework::ProcessPriority::PROCESSPRIORITY_NORMAL;
 
-        // Launch the Server and give it a few seconds to boot up
+        // Launch the Server
         AzFramework::ProcessWatcher* outProcess = AzFramework::ProcessWatcher::LaunchProcess(
             processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_NONE);
-        if (outProcess)
-        {
-            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(15000));
-        }
 
         return outProcess;
     }

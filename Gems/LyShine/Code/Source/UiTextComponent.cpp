@@ -3527,7 +3527,7 @@ UiTextComponent::FontEffectComboBoxVec UiTextComponent::PopulateFontEffectList()
     if (m_font)
     {
         unsigned int numEffects = m_font->GetNumEffects();
-        for (int i = 0; i < numEffects; ++i)
+        for (unsigned int i = 0; i < numEffects; ++i)
         {
             const char* name = m_font->GetEffectName(i);
             result.push_back(AZStd::make_pair(i, name));
@@ -4413,7 +4413,7 @@ void UiTextComponent::HandleWidthOnlyShrinkToFitWithWrapping(
     {
         // Consider the sizes of all overflowing lines when calculating the
         // scale to reduce the number of times we need to iterate.
-        int numOverflowingLines = drawBatchLinesOut.batchLines.size() - maxLinesElementCanHold;
+        int numOverflowingLines = static_cast<int>(drawBatchLinesOut.batchLines.size() - maxLinesElementCanHold);
         DrawBatchLineContainer::reverse_iterator riter;
         int overflowLineCount = 0;
         float overflowingLineSize = 0.0f;

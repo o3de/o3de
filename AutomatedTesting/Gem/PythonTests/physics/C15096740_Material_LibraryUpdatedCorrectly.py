@@ -64,7 +64,8 @@ def C15096740_Material_LibraryUpdatedCorrectly():
 
     # Constants
     library_property_path = "Configuration|Physics Material|Library"
-    default_material_path = "surfacetypemateriallibrary.physmaterial"
+    
+    default_material_path = os.path.join("assets", "physics", "surfacetypemateriallibrary.physmaterial")
     new_material_path = os.path.join("physicssurfaces", "default_phys_materials.physmaterial")
 
     helper.init_idle()
@@ -82,7 +83,7 @@ def C15096740_Material_LibraryUpdatedCorrectly():
     default_asset = Asset.find_asset_by_path(default_material_path)
     test_component.set_component_property_value(library_property_path, default_asset.id)
     default_asset.id = test_component.get_component_property_value(library_property_path)
-    Report.result(Tests.override_default_library, default_asset.get_path() == default_material_path)
+    Report.result(Tests.override_default_library, default_asset.get_path() == default_material_path.replace(os.sep, '/'))
 
     # 4) Switch it back again to the default material library.
     test_component.set_component_property_value(library_property_path, azasset.AssetId())

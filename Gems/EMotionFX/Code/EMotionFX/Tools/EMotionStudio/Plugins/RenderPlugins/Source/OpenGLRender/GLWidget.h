@@ -76,12 +76,12 @@ namespace EMStudio
         void Update()                                           { update(); }
         void RenderBorder(const MCore::RGBAColor& color);
 
-        RenderGL::GBuffer                       mGBuffer;
-        OpenGLRenderPlugin*                     mParentRenderPlugin;
-        QFont                                   mFont;
-        QFontMetrics*                           mFontMetrics;
-        AZ::Debug::Timer                        mRenderTimer;
-        AZ::Debug::Timer                        mPerfTimer;
+        RenderGL::GBuffer                       m_gBuffer;
+        OpenGLRenderPlugin*                     m_parentRenderPlugin;
+        QFont                                   m_font;
+        QFontMetrics*                           m_fontMetrics;
+        AZ::Debug::Timer                        m_renderTimer;
+        AZ::Debug::Timer                        m_perfTimer;
     };
 } // namespace EMStudio
 

@@ -71,7 +71,7 @@ namespace EMotionFX
         AnimGraphPose* outputPose;
 
         // if there is no input, just output a bind pose
-        if (mConnections.empty())
+        if (m_connections.empty())
         {
             RequestPoses(animGraphInstance);
             outputPose = GetOutputPose(animGraphInstance, OUTPUTPORT_RESULT)->GetValue();
@@ -80,7 +80,7 @@ namespace EMotionFX
         }
 
         // output the source node
-        AnimGraphNode* sourceNode = mConnections[0]->GetSourceNode();
+        AnimGraphNode* sourceNode = m_connections[0]->GetSourceNode();
         OutputIncomingNode(animGraphInstance, sourceNode);
 
         RequestPoses(animGraphInstance);
@@ -93,7 +93,7 @@ namespace EMotionFX
     void BlendTreeFinalNode::Update(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
         // if there are no connections, output nothing
-        if (mConnections.empty())
+        if (m_connections.empty())
         {
             AnimGraphNodeData* uniqueData = FindOrCreateUniqueNodeData(animGraphInstance);
             uniqueData->Clear();
@@ -101,7 +101,7 @@ namespace EMotionFX
         }
 
         // update the source node
-        AnimGraphNode* sourceNode = mConnections[0]->GetSourceNode();
+        AnimGraphNode* sourceNode = m_connections[0]->GetSourceNode();
         UpdateIncomingNode(animGraphInstance, sourceNode, timePassedInSeconds);
 
         // update the sync track

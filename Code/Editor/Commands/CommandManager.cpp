@@ -20,8 +20,8 @@
 // AzToolsFramework
 #include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
 
-CAutoRegisterCommandHelper* CAutoRegisterCommandHelper::s_pFirst = 0;
-CAutoRegisterCommandHelper* CAutoRegisterCommandHelper::s_pLast = 0;
+CAutoRegisterCommandHelper* CAutoRegisterCommandHelper::s_pFirst = nullptr;
+CAutoRegisterCommandHelper* CAutoRegisterCommandHelper::s_pLast = nullptr;
 
 CAutoRegisterCommandHelper* CAutoRegisterCommandHelper::GetFirst()
 {
@@ -31,7 +31,7 @@ CAutoRegisterCommandHelper* CAutoRegisterCommandHelper::GetFirst()
 CAutoRegisterCommandHelper::CAutoRegisterCommandHelper(void(*registerFunc)(CEditorCommandManager &))
 {
     m_registerFunc = registerFunc;
-    m_pNext = 0;
+    m_pNext = nullptr;
 
     if (!s_pLast)
     {

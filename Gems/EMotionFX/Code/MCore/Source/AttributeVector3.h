@@ -37,15 +37,15 @@ namespace MCore
         static AttributeVector3* Create(const AZ::Vector3& value);
         static AttributeVector3* Create(float x, float y, float z);
 
-        MCORE_INLINE uint8* GetRawDataPointer()                     { return reinterpret_cast<uint8*>(&mValue); }
-        MCORE_INLINE uint32 GetRawDataSize() const                  { return sizeof(AZ::Vector3); }
+        MCORE_INLINE uint8* GetRawDataPointer()                     { return reinterpret_cast<uint8*>(&m_value); }
+        MCORE_INLINE size_t GetRawDataSize() const                  { return sizeof(AZ::Vector3); }
 
         // adjust values
-        MCORE_INLINE const AZ::Vector3& GetValue() const     { return mValue; }
-        MCORE_INLINE void SetValue(const AZ::Vector3& value) { mValue = value; }
+        MCORE_INLINE const AZ::Vector3& GetValue() const     { return m_value; }
+        MCORE_INLINE void SetValue(const AZ::Vector3& value) { m_value = value; }
 
         // overloaded from the attribute base class
-        Attribute* Clone() const override                           { return AttributeVector3::Create(mValue); }
+        Attribute* Clone() const override                           { return AttributeVector3::Create(m_value); }
         const char* GetTypeString() const override                  { return "AttributeVector3"; }
         bool InitFrom(const Attribute* other) override
         {
@@ -53,7 +53,7 @@ namespace MCore
             {
                 return false;
             }
-            mValue = static_cast<const AttributeVector3*>(other)->GetValue();
+            m_value = static_cast<const AttributeVector3*>(other)->GetValue();
             return true;
         }
         bool InitFromString(const AZStd::string& valueString) override
@@ -63,21 +63,21 @@ namespace MCore
             {
                 return false;
             }
-            mValue.Set(vec3.GetX(), vec3.GetY(), vec3.GetZ());
+            m_value.Set(vec3.GetX(), vec3.GetY(), vec3.GetZ());
             return true;
         }
-        bool ConvertToString(AZStd::string& outString) const override      { AZStd::to_string(outString, mValue); return true; }
-        uint32 GetClassSize() const override                        { return sizeof(AttributeVector3); }
-        uint32 GetDefaultInterfaceType() const override             { return ATTRIBUTE_INTERFACETYPE_VECTOR3; }
+        bool ConvertToString(AZStd::string& outString) const override      { AZStd::to_string(outString, m_value); return true; }
+        size_t GetClassSize() const override                        { return sizeof(AttributeVector3); }
+        AZ::u32 GetDefaultInterfaceType() const override             { return ATTRIBUTE_INTERFACETYPE_VECTOR3; }
 
     private:
-        AZ::Vector3  mValue;     /**< The Vector3 value. */
+        AZ::Vector3  m_value;     /**< The Vector3 value. */
 
         AttributeVector3()
-            : Attribute(TYPE_ID)                    { mValue.Set(0.0f, 0.0f, 0.0f); }
+            : Attribute(TYPE_ID)                    { m_value.Set(0.0f, 0.0f, 0.0f); }
         AttributeVector3(const AZ::Vector3& value)
             : Attribute(TYPE_ID)
-            , mValue(value)     { }
+            , m_value(value)     { }
         ~AttributeVector3() { }
     };
 }   // namespace MCore

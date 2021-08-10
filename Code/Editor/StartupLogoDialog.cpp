@@ -27,14 +27,14 @@ AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 /////////////////////////////////////////////////////////////////////////////
 // CStartupLogoDialog dialog
 
-CStartupLogoDialog* CStartupLogoDialog::s_pLogoWindow = 0;
+CStartupLogoDialog* CStartupLogoDialog::s_pLogoWindow = nullptr;
 
-CStartupLogoDialog::CStartupLogoDialog(QString versionText, QString richTextCopyrightNotice, QWidget* pParent /*=NULL*/)
+CStartupLogoDialog::CStartupLogoDialog(QString versionText, QString richTextCopyrightNotice, QWidget* pParent /*=nullptr*/)
     : QWidget(pParent, Qt::Dialog | Qt::FramelessWindowHint)
     , m_ui(new Ui::StartupLogoDialog)
 {
     m_ui->setupUi(this);
- 
+
     s_pLogoWindow = this;
 
     m_backgroundImage = QPixmap(QStringLiteral(":/StartupLogoDialog/splashscreen_background_developer_preview.jpg"));
@@ -61,7 +61,7 @@ CStartupLogoDialog::CStartupLogoDialog(QString versionText, QString richTextCopy
 
 CStartupLogoDialog::~CStartupLogoDialog()
 {
-    s_pLogoWindow = 0;
+    s_pLogoWindow = nullptr;
 }
 
 void CStartupLogoDialog::SetText(const char* text)
