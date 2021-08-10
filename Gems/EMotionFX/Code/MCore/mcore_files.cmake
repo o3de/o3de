@@ -8,12 +8,10 @@
 
 set(FILES
     Source/AABB.h
-    Source/AbstractData.h
     Source/Algorithms.cpp
     Source/Algorithms.h
     Source/Algorithms.inl
     Source/AlignedArray.h
-    Source/Array.h
     Source/Array2D.h
     Source/Array2D.inl
     Source/Attribute.cpp
@@ -78,9 +76,6 @@ set(FILES
     Source/File.h
     Source/FileSystem.cpp
     Source/FileSystem.h
-    Source/HashFunctions.h
-    Source/HashTable.h
-    Source/HashTable.inl
     Source/IDGenerator.cpp
     Source/IDGenerator.h
     Source/LogManager.cpp

@@ -47,9 +47,6 @@ namespace EMotionFX
     Importer::Importer()
         : BaseObject()
     {
-        // set the memory category
-        mChunkProcessors.SetMemoryCategory(EMFX_MEMCATEGORY_IMPORTER);
-
         // register all standard chunks
         RegisterStandardChunks();
 
@@ -63,10 +60,9 @@ namespace EMotionFX
     Importer::~Importer()
     {
         // remove all chunk processors
-        const uint32 numProcessors = mChunkProcessors.GetLength();
-        for (uint32 i = 0; i < numProcessors; ++i)
+        for (ChunkProcessor* chunkProcessor : mChunkProcessors)
         {
-            mChunkProcessors[i]->Destroy();
+            chunkProcessor->Destroy();
         }
     }
 
@@ -110,7 +106,6 @@ namespace EMotionFX
             MCore::LogError("Unsupported endian type used! (endian type = %d)", header.mEndianType);
             return false;
         }
-        ;
 
         // yes, it is a valid actor file!
         return true;
@@ -150,7 +145,6 @@ namespace EMotionFX
             MCore::LogError("Unsupported endian type used! (endian type = %d)", header.mEndianType);
             return false;
         }
-        ;
 
         // yes, it is a valid motion file!
         return true;
@@ -291,8 +285,7 @@ namespace EMotionFX
         MCORE_ASSERT(f->GetIsOpen());
 
         // create the shared data
-        MCore::Array<SharedData*> sharedData;
-        sharedData.SetMemoryCategory(EMFX_MEMCATEGORY_IMPORTER);
+        AZStd::vector<SharedData*> sharedData;
         PrepareSharedData(sharedData);
 
         // verify if this is a valid actor file or not
@@ -360,7 +353,7 @@ namespace EMotionFX
 
         // get rid of shared data
         ResetSharedData(sharedData);
-        sharedData.Clear();
+        sharedData.clear();
 
         // return the created actor
         return actor;
@@ -461,8 +454,7 @@ namespace EMotionFX
         MCORE_ASSERT(f->GetIsOpen());
 
         // create the shared data
-        MCore::Array<SharedData*> sharedData;
-        sharedData.SetMemoryCategory(EMFX_MEMCATEGORY_IMPORTER);
+        AZStd::vector<SharedData*> sharedData;
         PrepareSharedData(sharedData);
 
         // verify if this is a valid actor file or not
@@ -513,7 +505,7 @@ namespace EMotionFX
 
         // get rid of shared data
         ResetSharedData(sharedData);
-        sharedData.Clear();
+        sharedData.clear();
 
         return motion;
     }
@@ -671,8 +663,7 @@ namespace EMotionFX
         }
 
         // create the shared data
-        MCore::Array<SharedData*> sharedData;
-        sharedData.SetMemoryCategory(EMFX_MEMCATEGORY_IMPORTER);
+        AZStd::vector<SharedData*> sharedData;
         PrepareSharedData(sharedData);
 
         //-----------------------------------------------
@@ -710,7 +701,7 @@ namespace EMotionFX
 
         // get rid of shared data
         ResetSharedData(sharedData);
-        sharedData.Clear();
+        sharedData.clear();
 
         // return the created actor
         return nodeMap;
@@ -722,36 +713,27 @@ namespace EMotionFX
     void Importer::RegisterChunkProcessor(ChunkProcessor* processorToRegister)
     {
         MCORE_ASSERT(processorToRegister);
-        mChunkProcessors.Add(processorToRegister);
+        mChunkProcessors.emplace_back(processorToRegister);
     }
 
 
     // add shared data object to the importer
-    void Importer::AddSharedData(MCore::Array<SharedData*>& sharedData, SharedData* data)
+    void Importer::AddSharedData(AZStd::vector<SharedData*>& sharedData, SharedData* data)
     {
         MCORE_ASSERT(data);
-        sharedData.Add(data);
+        sharedData.emplace_back(data);
     }
 
 
     // search for shared data
-    SharedData* Importer::FindSharedData(MCore::Array<SharedData*>* sharedDataArray, uint32 type)
+    SharedData* Importer::FindSharedData(AZStd::vector<SharedData*>* sharedDataArray, uint32 type)
     {
         // for all shared data
-        const uint32 numSharedData = sharedDataArray->GetLength();
-        for (uint32 i = 0; i < numSharedData; ++i)
+        const auto foundSharedData = AZStd::find_if(begin(*sharedDataArray), end(*sharedDataArray), [type](const SharedData* sharedData)
         {
-            SharedData* sharedData = sharedDataArray->GetItem(i);
-
-            // check if it's the type we are searching for
-            if (sharedData->GetType() == type)
-            {
-                return sharedData;
-            }
-        }
-
-        // nothing found
-        return nullptr;
+            return sharedData->GetType() == type;
+        });
+        return foundSharedData != end(*sharedDataArray) ? *foundSharedData : nullptr;
     }
 
 
@@ -772,11 +754,9 @@ namespace EMotionFX
         mLogDetails = detailLoggingActive;
 
         // set the processors logging flag
-        const int32 numProcessors = mChunkProcessors.GetLength();
-        for (int32 i = 0; i < numProcessors; i++)
+        for (ChunkProcessor* processor : mChunkProcessors)
         {
-            ChunkProcessor* processor = mChunkProcessors[i];
-            processor->SetLogging((mLoggingActive && detailLoggingActive)); // only enable if logging is also enabled
+             processor->SetLogging(mLoggingActive && detailLoggingActive); // only enable if logging is also enabled
         }
     }
 
@@ -787,7 +767,7 @@ namespace EMotionFX
     }
 
 
-    void Importer::PrepareSharedData(MCore::Array<SharedData*>& sharedData)
+    void Importer::PrepareSharedData(AZStd::vector<SharedData*>& sharedData)
     {
         // create standard shared objects
         AddSharedData(sharedData, SharedHelperData::Create());
@@ -795,16 +775,14 @@ namespace EMotionFX
 
 
     // reset shared objects so that the importer is ready for use again
-    void Importer::ResetSharedData(MCore::Array<SharedData*>& sharedData)
+    void Importer::ResetSharedData(AZStd::vector<SharedData*>& sharedData)
     {
-        const int32 numSharedData = sharedData.GetLength();
-        for (int32 i = 0; i < numSharedData; i++)
+        for (SharedData* data : sharedData)
         {
-            SharedData* data = sharedData[i];
             data->Reset();
             data->Destroy();
         }
-        sharedData.Clear();
+        sharedData.clear();
     }
 
 
@@ -812,20 +790,11 @@ namespace EMotionFX
     ChunkProcessor* Importer::FindChunk(uint32 chunkID, uint32 version) const
     {
         // for all chunk processors
-        const uint32 numProcessors = mChunkProcessors.GetLength();
-        for (uint32 i = 0; i < numProcessors; ++i)
+        const auto foundProcessor = AZStd::find_if(begin(mChunkProcessors), end(mChunkProcessors), [chunkID, version](const ChunkProcessor* processor)
         {
-            ChunkProcessor* processor = mChunkProcessors[i];
-
-            // if this chunk is the type we are searching for AND it can process our chunk version, return it
-            if (processor->GetChunkID() == chunkID && processor->GetVersion() == version)
-            {
-                return processor;
-            }
-        }
-
-        // nothing found
-        return nullptr;
+            return processor->GetChunkID() == chunkID && processor->GetVersion() == version;
+        });
+        return foundProcessor != end(mChunkProcessors) ? *foundProcessor : nullptr;
     }
 
 
@@ -833,7 +802,7 @@ namespace EMotionFX
     void Importer::RegisterStandardChunks()
     {
         // reserve space for 75 chunk processors
-        mChunkProcessors.Reserve(75);
+        mChunkProcessors.reserve(75);
 
         // shared processors
         RegisterChunkProcessor(aznew ChunkProcessorMotionEventTrackTable());
@@ -912,12 +881,12 @@ namespace EMotionFX
         bool mustSkip = false;
 
         // check if we specified to ignore this chunk
-        if (actorSettings && actorSettings->mChunkIDsToIgnore.Contains(chunk.mChunkID))
+        if (actorSettings && AZStd::find(begin(actorSettings->mChunkIDsToIgnore), end(actorSettings->mChunkIDsToIgnore), chunk.mChunkID) != end(actorSettings->mChunkIDsToIgnore))
         {
             mustSkip = true;
         }
 
-        if (skelMotionSettings && skelMotionSettings->mChunkIDsToIgnore.Contains(chunk.mChunkID))
+        if (skelMotionSettings && AZStd::find(begin(skelMotionSettings->mChunkIDsToIgnore), end(skelMotionSettings->mChunkIDsToIgnore), chunk.mChunkID) != end(skelMotionSettings->mChunkIDsToIgnore))
         {
             mustSkip = true;
         }
@@ -963,20 +932,29 @@ namespace EMotionFX
     void Importer::ValidateActorSettings(ActorSettings* settings)
     {
         // After atom: Make sure we are not loading the tangents and bitangents
-        if (!settings->mLayerIDsToIgnore.Contains(Mesh::ATTRIB_TANGENTS))
+        if (AZStd::find(begin(settings->mLayerIDsToIgnore), end(settings->mLayerIDsToIgnore), Mesh::ATTRIB_TANGENTS) == end(settings->mLayerIDsToIgnore))
         {
-            settings->mLayerIDsToIgnore.Add(Mesh::ATTRIB_TANGENTS);
+            settings->mLayerIDsToIgnore.emplace_back(Mesh::ATTRIB_TANGENTS);
         }
 
-        if (!settings->mLayerIDsToIgnore.Contains(Mesh::ATTRIB_BITANGENTS))
+        if (AZStd::find(begin(settings->mLayerIDsToIgnore), end(settings->mLayerIDsToIgnore), Mesh::ATTRIB_BITANGENTS) == end(settings->mLayerIDsToIgnore))
         {
-            settings->mLayerIDsToIgnore.Add(Mesh::ATTRIB_BITANGENTS);
+            settings->mLayerIDsToIgnore.emplace_back(Mesh::ATTRIB_BITANGENTS);
         }
 
         // make sure we load at least the position and normals and org vertex numbers
-        settings->mLayerIDsToIgnore.RemoveByValue(Mesh::ATTRIB_ORGVTXNUMBERS);
-        settings->mLayerIDsToIgnore.RemoveByValue(Mesh::ATTRIB_NORMALS);
-        settings->mLayerIDsToIgnore.RemoveByValue(Mesh::ATTRIB_POSITIONS);
+        if(const auto it = AZStd::find(begin(settings->mLayerIDsToIgnore), end(settings->mLayerIDsToIgnore), Mesh::ATTRIB_ORGVTXNUMBERS); it != end(settings->mLayerIDsToIgnore))
+        {
+            settings->mLayerIDsToIgnore.erase(it);
+        }
+        if(const auto it = AZStd::find(begin(settings->mLayerIDsToIgnore), end(settings->mLayerIDsToIgnore), Mesh::ATTRIB_NORMALS); it != end(settings->mLayerIDsToIgnore))
+        {
+            settings->mLayerIDsToIgnore.erase(it);
+        }
+        if(const auto it = AZStd::find(begin(settings->mLayerIDsToIgnore), end(settings->mLayerIDsToIgnore), Mesh::ATTRIB_POSITIONS); it != end(settings->mLayerIDsToIgnore))
+        {
+            settings->mLayerIDsToIgnore.erase(it);
+        }
     }
 
 

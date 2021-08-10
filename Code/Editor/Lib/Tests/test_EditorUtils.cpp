@@ -23,12 +23,12 @@ namespace EditorUtilsTest
             BusConnect();
         }
 
-        ~WarningDetector()
+        ~WarningDetector() override
         {
             BusDisconnect();
         }
 
-        virtual bool OnWarning(const char* /*window*/, const char* /*message*/) override 
+        bool OnWarning(const char* /*window*/, const char* /*message*/) override 
         {
             m_gotWarning = true;
             return true;

@@ -10,8 +10,8 @@
 
 // include the required headers
 #include <AzCore/std/string/string.h>
+#include <AzCore/std/containers/vector.h>
 #include "StandardHeaders.h"
-#include "Array.h"
 #include "MultiThreadManager.h"
 
 
@@ -187,7 +187,7 @@ namespace MCore
          * Remove the given callback from the stack.
          * @param index The index of the callback to remove.
          */
-        void RemoveLogCallback(uint32 index);
+        void RemoveLogCallback(size_t index);
 
         /**
          * Remove all given log callbacks by type from the stack.
@@ -205,20 +205,20 @@ namespace MCore
          * @param index The index of the callback.
          * @return A pointer to the callback.
          */
-        LogCallback* GetLogCallback(uint32 index);
+        LogCallback* GetLogCallback(size_t index);
 
         /**
          * Find the index of a given callback.
          * @param callback The callback object to find.
          * @result Returns the index value, or MCORE_INVALIDINDEX32 when not found.
          */
-        uint32 FindLogCallback(LogCallback* callback) const;
+        size_t FindLogCallback(LogCallback* callback) const;
 
         /**
          * Return the number of log callbacks managed by this class.
          * @return Number of log callbacks.
          */
-        uint32 GetNumLogCallbacks() const;
+        size_t GetNumLogCallbacks() const;
 
         /**
          * Force set the log levels of all callbacks in the log manager.
@@ -252,7 +252,7 @@ namespace MCore
         static Mutex            mGlobalMutex;       /**< The multithread mutex, used by some global Log functions. */
 
     private:
-        Array<LogCallback*>     mLogCallbacks;      /**< A collection of log callback instances. */
+        AZStd::vector<LogCallback*>     mLogCallbacks;      /**< A collection of log callback instances. */
         LogCallback::ELogLevel  mLogLevels;         /**< The log levels that will pass one of the callbacks. All messages from log flags which are disabled won't be logged. */
         Mutex                   mMutex;             /**< The mutex for logging locally. */
     };

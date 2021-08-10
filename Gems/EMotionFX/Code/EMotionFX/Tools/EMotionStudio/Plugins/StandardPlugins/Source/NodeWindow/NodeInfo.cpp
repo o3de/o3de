@@ -23,7 +23,7 @@ namespace EMStudio
 
     NodeInfo::NodeInfo(EMotionFX::ActorInstance* actorInstance, EMotionFX::Node* node)
     {
-        const uint32 nodeIndex = node->GetNodeIndex();
+        const size_t nodeIndex = node->GetNodeIndex();
 
         EMotionFX::Actor* actor = actorInstance->GetActor();
         EMotionFX::TransformData* transformData = actorInstance->GetTransformData();
@@ -60,24 +60,24 @@ namespace EMStudio
         }
 
         // children
-        const uint32 numChildren = node->GetNumChildNodes();
-        for (uint32 i = 0; i < numChildren; ++i)
+        const size_t numChildren = node->GetNumChildNodes();
+        for (size_t i = 0; i < numChildren; ++i)
         {
             EMotionFX::Node* child = actor->GetSkeleton()->GetNode(node->GetChildIndex(i));
             m_childNodeNames.emplace_back(child->GetNameString());
         }
 
         // attributes
-        const uint32 numAttributes = node->GetNumAttributes();
-        for (uint32 i = 0; i < numAttributes; ++i)
+        const size_t numAttributes = node->GetNumAttributes();
+        for (size_t i = 0; i < numAttributes; ++i)
         {
             EMotionFX::NodeAttribute* nodeAttribute = node->GetAttribute(i);
             m_attributeTypes.emplace_back(nodeAttribute->GetTypeString());
         }
 
         // meshes
-        const uint32 numLODLevels = actor->GetNumLODLevels();
-        for (uint32 i = 0; i < numLODLevels; ++i)
+        const size_t numLODLevels = actor->GetNumLODLevels();
+        for (size_t i = 0; i < numLODLevels; ++i)
         {
             EMotionFX::Mesh* mesh = actor->GetMesh(i, node->GetNodeIndex());
             if (mesh)

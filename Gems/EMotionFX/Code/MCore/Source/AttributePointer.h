@@ -53,8 +53,8 @@ namespace MCore
         }
         bool InitFromString(const AZStd::string& valueString) override     { MCORE_UNUSED(valueString); MCORE_ASSERT(false); return false; }   // currently unsupported
         bool ConvertToString(AZStd::string& outString) const override      { MCORE_UNUSED(outString); MCORE_ASSERT(false); return false; }     // currently unsupported
-        uint32 GetClassSize() const override                        { return sizeof(AttributePointer); }
-        uint32 GetDefaultInterfaceType() const override             { return ATTRIBUTE_INTERFACETYPE_DEFAULT; }
+        size_t GetClassSize() const override                        { return sizeof(AttributePointer); }
+        AZ::u32 GetDefaultInterfaceType() const override             { return ATTRIBUTE_INTERFACETYPE_DEFAULT; }
 
     private:
         void*   mValue;     /**< The pointer value. */

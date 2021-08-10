@@ -41,7 +41,7 @@ namespace EMotionFX
         const size_t numValueParameters = instance.GetAnimGraph()->GetNumValueParameters();
         for (size_t i = 0; i < numValueParameters; ++i)
         {
-            m_parameters.emplace_back(instance.GetParameterValue(static_cast<AZ::u32>(i))->Clone());
+            m_parameters.emplace_back(instance.GetParameterValue(i)->Clone());
         }
     }
 
@@ -62,7 +62,7 @@ namespace EMotionFX
         return m_parameters;
     }
 
-    void AnimGraphSnapshot::SetActiveNodes(const AZStd::vector<AZ::u32>& activeNodes)
+    void AnimGraphSnapshot::SetActiveNodes(const NodeIndexContainer& activeNodes)
     {
         if (m_activeStateNodes != activeNodes)
         {
@@ -71,7 +71,7 @@ namespace EMotionFX
         }
     }
 
-    const AZStd::vector<AZ::u32>& AnimGraphSnapshot::GetActiveNodes() const
+    const NodeIndexContainer& AnimGraphSnapshot::GetActiveNodes() const
     {
         return m_activeStateNodes;
     }
@@ -94,7 +94,7 @@ namespace EMotionFX
 
         for (size_t i = 0; i < numParams; ++i)
         {
-            m_parameters[i]->InitFrom(instance.GetParameterValue(static_cast<AZ::u32>(i)));
+            m_parameters[i]->InitFrom(instance.GetParameterValue(i));
         }
     }
 
@@ -111,7 +111,7 @@ namespace EMotionFX
             AnimGraphNode* currentState = stateMachine->GetCurrentState(&instance);
 
             AZ_Assert(currentState, "There should always be a valid current state.");
-            m_activeStateNodes.emplace_back(currentState->GetNodeIndex());
+            m_activeStateNodes.emplace_back(aznumeric_caster(currentState->GetNodeIndex()));
         }
     }
 
@@ -123,9 +123,9 @@ namespace EMotionFX
 
         for (const AnimGraphNode* animGraphNode : tempGraphNodes)
         {
-            const AZ::u32 nodeIndex = animGraphNode->GetNodeIndex();
+            const size_t nodeIndex = animGraphNode->GetNodeIndex();
             float normalizedPlaytime = animGraphNode->GetCurrentPlayTime(&instance) / animGraphNode->GetDuration(&instance);
-            m_motionNodePlaytimes.emplace_back(nodeIndex, normalizedPlaytime);
+            m_motionNodePlaytimes.emplace_back(aznumeric_caster(nodeIndex), normalizedPlaytime);
         }
     }
 
@@ -135,14 +135,14 @@ namespace EMotionFX
 
         for (size_t i = 0; i < numParams; ++i)
         {
-            MCore::Attribute* attribute = instance.GetParameterValue(static_cast<AZ::u32>(i));
+            MCore::Attribute* attribute = instance.GetParameterValue(i);
             attribute->InitFrom(m_parameters[i]);
         }
     }
 
     void AnimGraphSnapshot::RestoreActiveNodes(AnimGraphInstance& instance)
     {
-        for (const AZ::u32 nodeIndex : m_activeStateNodes)
+        for (const size_t nodeIndex : m_activeStateNodes)
         {
             AnimGraphNode* node = instance.GetAnimGraph()->GetNode(nodeIndex);
             AnimGraphNode* parent = node->GetParentNode();

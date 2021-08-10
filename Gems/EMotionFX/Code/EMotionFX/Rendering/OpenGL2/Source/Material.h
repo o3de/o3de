@@ -29,18 +29,18 @@ namespace RenderGL
             mNumTriangles = 0;
             mNumVertices  = 0;
 
-            mNodeIndex     = MCORE_INVALIDINDEX32;
+            mNodeIndex     = InvalidIndex;
             mMaterialIndex = MCORE_INVALIDINDEX32;
         }
 
-        uint32                  mNodeIndex;     /**< The index of the node to which this primitive belongs to. */
+        size_t                  mNodeIndex;     /**< The index of the node to which this primitive belongs to. */
         uint32                  mVertexOffset;
         uint32                  mIndexOffset;   /**< The starting index. */
         uint32                  mNumTriangles;  /**< The number of triangles in the primitive. */
         uint32                  mNumVertices;   /**< The number of vertices in the primitive. */
         uint32                  mMaterialIndex; /**< The material index which is mapped to the primitive. */
 
-        MCore::Array<uint32>    mBoneNodeIndices;/**< Mapping from local bones 0-50 to nodes. */
+        AZStd::vector<size_t>    mBoneNodeIndices;/**< Mapping from local bones 0-50 to nodes. */
     };
 
 

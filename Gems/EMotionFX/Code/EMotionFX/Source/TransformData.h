@@ -81,14 +81,14 @@ namespace EMotionFX
          * Reset the local space transform of a given node to its bind pose local space transform.
          * @param nodeIndex The node number, which must be in range of [0..GetNumTransforms()-1].
          */
-        void ResetToBindPoseTransformation(uint32 nodeIndex)                                            { mPose.SetLocalSpaceTransform(nodeIndex, mBindPose->GetLocalSpaceTransform(nodeIndex)); }
+        void ResetToBindPoseTransformation(size_t nodeIndex)                                            { mPose.SetLocalSpaceTransform(nodeIndex, mBindPose->GetLocalSpaceTransform(nodeIndex)); }
 
         /**
          * Reset all local space transforms to the local space transforms of the bind pose.
          */
         void ResetToBindPoseTransformations()
         {
-            for (uint32 i = 0; i < mNumTransforms; ++i)
+            for (size_t i = 0; i < mNumTransforms; ++i)
             {
                 mPose.SetLocalSpaceTransform(i, mBindPose->GetLocalSpaceTransform(i));
             }
@@ -96,23 +96,23 @@ namespace EMotionFX
 
         EMFX_SCALECODE
         (
-            void SetBindPoseLocalScaleInherit(uint32 nodeIndex, const AZ::Vector3& scale);
-            void SetBindPoseLocalScale(uint32 nodeIndex, const AZ::Vector3& scale);
+            void SetBindPoseLocalScaleInherit(size_t nodeIndex, const AZ::Vector3& scale);
+            void SetBindPoseLocalScale(size_t nodeIndex, const AZ::Vector3& scale);
         )
 
         MCORE_INLINE const ActorInstance* GetActorInstance() const      { return mPose.GetActorInstance(); }
-        MCORE_INLINE uint32 GetNumTransforms() const                    { return mNumTransforms; }
+        MCORE_INLINE size_t GetNumTransforms() const                    { return mNumTransforms; }
 
         void MakeBindPoseTransformsUnique();
 
-        void SetNumMorphWeights(uint32 numMorphWeights);
+        void SetNumMorphWeights(size_t numMorphWeights);
 
 
     private:
         Pose            mPose;                  /**< The current pose. */
         Pose*           mBindPose;              /**< The bind pose, which can be unique or point to the bind pose in the actor. */
         AZ::Matrix3x4*  mSkinningMatrices;      /**< The matrices used for skinning. They are the offset to the bind pose. */
-        uint32          mNumTransforms;         /**< The number of transforms, which is equal to the number of nodes in the linked actor instance. */
+        size_t          mNumTransforms;         /**< The number of transforms, which is equal to the number of nodes in the linked actor instance. */
         bool            mHasUniqueBindPose;     /**< Do we have a unique bind pose (when set to true) or do we use the one from the Actor object (when set to false)? */
 
         /**

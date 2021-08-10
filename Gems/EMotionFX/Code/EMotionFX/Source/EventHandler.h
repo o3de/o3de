@@ -330,7 +330,7 @@ namespace EMotionFX
         virtual void OnStateEnd(AnimGraphInstance* animGraphInstance, AnimGraphNode* state)                                                   { MCORE_UNUSED(animGraphInstance); MCORE_UNUSED(state); }
         virtual void OnStartTransition(AnimGraphInstance* animGraphInstance, AnimGraphStateTransition* transition)                            { MCORE_UNUSED(animGraphInstance); MCORE_UNUSED(transition); }
         virtual void OnEndTransition(AnimGraphInstance* animGraphInstance, AnimGraphStateTransition* transition)                              { MCORE_UNUSED(animGraphInstance); MCORE_UNUSED(transition); }
-        virtual void OnSetVisualManipulatorOffset(AnimGraphInstance* animGraphInstance, uint32 paramIndex, const AZ::Vector3& offset)         { MCORE_UNUSED(animGraphInstance); MCORE_UNUSED(paramIndex); MCORE_UNUSED(offset); }
+        virtual void OnSetVisualManipulatorOffset(AnimGraphInstance* animGraphInstance, size_t paramIndex, const AZ::Vector3& offset)         { MCORE_UNUSED(animGraphInstance); MCORE_UNUSED(paramIndex); MCORE_UNUSED(offset); }
 
         virtual void OnInputPortsChanged(AnimGraphNode* node, const AZStd::vector<AZStd::string>& newInputPorts, const AZStd::string& memberName, const AZStd::vector<AZStd::string>& memberValue)   { AZ_UNUSED(node); AZ_UNUSED(newInputPorts); AZ_UNUSED(memberName); AZ_UNUSED(memberValue); }
         virtual void OnOutputPortsChanged(AnimGraphNode* node, const AZStd::vector<AZStd::string>& newOutputPorts, const AZStd::string& memberName, const AZStd::vector<AZStd::string>& memberValue) { AZ_UNUSED(node); AZ_UNUSED(newOutputPorts); AZ_UNUSED(memberName); AZ_UNUSED(memberValue); }

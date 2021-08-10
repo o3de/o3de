@@ -33,7 +33,7 @@ namespace EMotionFX
     {
     }
 
-    AZ::Outcome<size_t> DualQuatSkinDeformer::FindLocalBoneIndex(uint32 nodeIndex) const
+    AZ::Outcome<size_t> DualQuatSkinDeformer::FindLocalBoneIndex(size_t nodeIndex) const
     {
         const size_t numBones = m_bones.size();
         for (size_t i = 0; i < numBones; ++i)
@@ -62,7 +62,7 @@ namespace EMotionFX
         return SUBTYPE_ID;
     }
 
-    MeshDeformer* DualQuatSkinDeformer::Clone(Mesh* mesh)
+    MeshDeformer* DualQuatSkinDeformer::Clone(Mesh* mesh) const
     {
         // create the new cloned deformer
         DualQuatSkinDeformer* result = aznew DualQuatSkinDeformer(mesh);
@@ -84,7 +84,7 @@ namespace EMotionFX
         // pre-calculate the skinning matrices
         for (BoneInfo& boneInfo : m_bones)
         {
-            const uint32 nodeIndex = boneInfo.mNodeNr;
+            const size_t nodeIndex = boneInfo.mNodeNr;
             const Transform skinTransform = actor->GetInverseBindPoseTransform(nodeIndex) * pose->GetModelSpaceTransform(nodeIndex);
             boneInfo.mDualQuat.FromRotationTranslation(skinTransform.mRotation, skinTransform.mPosition);
         }
@@ -294,7 +294,7 @@ namespace EMotionFX
     }
 
     // initialize the mesh deformer
-    void DualQuatSkinDeformer::Reinitialize(Actor* actor, Node* node, uint32 lodLevel)
+    void DualQuatSkinDeformer::Reinitialize(Actor* actor, Node* node, size_t lodLevel)
     {
         MCORE_UNUSED(actor);
         MCORE_UNUSED(node);
@@ -327,7 +327,7 @@ namespace EMotionFX
                 AZ::Outcome<size_t> boneIndexOutcome = FindLocalBoneIndex(influence->GetNodeNr());
                 if (boneIndexOutcome.IsSuccess())
                 {
-                    influence->SetBoneNr(static_cast<uint16>(boneIndexOutcome.GetValue()));
+                    influence->SetBoneNr(aznumeric_caster(boneIndexOutcome.GetValue()));
                 }
                 else
                 {

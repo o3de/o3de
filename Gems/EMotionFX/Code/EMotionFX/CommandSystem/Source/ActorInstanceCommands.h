@@ -31,7 +31,7 @@ public:
     AZ::Vector3         mOldPosition;
     AZ::Quaternion      mOldRotation;
     AZ::Vector3         mOldScale;
-    uint32              mOldLODLevel;
+    size_t              mOldLODLevel;
     bool                mOldIsVisible;
     bool                mOldDoRender;
     bool                mOldWorkspaceDirtyFlag;
@@ -44,7 +44,7 @@ public:
     AZ::Vector3         mOldPosition;
     AZ::Quaternion      mOldRotation;
     AZ::Vector3         mOldScale;
-    uint32              mOldLODLevel;
+    size_t              mOldLODLevel;
     bool                mOldIsVisible;
     bool                mOldDoRender;
     bool                mOldWorkspaceDirtyFlag;

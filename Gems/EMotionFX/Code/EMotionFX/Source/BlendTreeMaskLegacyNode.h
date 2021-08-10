@@ -53,7 +53,7 @@ namespace EMotionFX
             void Update() override;
 
         public:
-            AZStd::vector< AZStd::vector<AZ::u32> > mMasks;
+            AZStd::vector< AZStd::vector<size_t> > mMasks;
         };
 
         BlendTreeMaskLegacyNode();

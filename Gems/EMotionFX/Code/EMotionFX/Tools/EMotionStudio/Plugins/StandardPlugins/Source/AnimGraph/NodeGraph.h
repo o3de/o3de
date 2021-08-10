@@ -81,24 +81,24 @@ namespace EMStudio
 
         GraphNode* GetCreateConnectionNode()                   { return mConNode; }
         NodeConnection* GetRelinkConnection()                  { return mRelinkConnection; }
-        uint32 GetCreateConnectionPortNr() const               { return mConPortNr; }
+        AZ::u16 GetCreateConnectionPortNr() const              { return mConPortNr; }
         bool GetCreateConnectionIsInputPort() const            { return mConIsInputPort; }
         const QPoint& GetCreateConnectionStartOffset() const   { return mConStartOffset; }
         const QPoint& GetCreateConnectionEndOffset() const     { return mConEndOffset; }
         void SetCreateConnectionEndOffset(const QPoint& offset){ mConEndOffset = offset; }
 
-        bool CheckIfHasConnection(GraphNode* sourceNode, uint32 outputPortNr, GraphNode* targetNode, uint32 inputPortNr) const;
-        NodeConnection* FindInputConnection(GraphNode* targetNode, uint32 targetPortNr) const;
+        bool CheckIfHasConnection(GraphNode* sourceNode, AZ::u16 outputPortNr, GraphNode* targetNode, AZ::u16 inputPortNr) const;
+        NodeConnection* FindInputConnection(GraphNode* targetNode, AZ::u16 targetPortNr) const;
         NodeConnection* FindConnection(const QPoint& mousePos);
 
         void SelectAllNodes();
         void UnselectAllNodes();
 
-        uint32 CalcNumSelectedNodes() const;
+        size_t CalcNumSelectedNodes() const;
 
         GraphNode* FindNode(const QPoint& globalPoint);
-        void StartCreateConnection(uint32 portNr, bool isInputPort, GraphNode* portNode, NodePort* port, const QPoint& startOffset);
-        void StartRelinkConnection(NodeConnection* connection, uint32 portNr, GraphNode* node);
+        void StartCreateConnection(AZ::u16 portNr, bool isInputPort, GraphNode* portNode, NodePort* port, const QPoint& startOffset);
+        void StartRelinkConnection(NodeConnection* connection, AZ::u16 portNr, GraphNode* node);
         void StopCreateConnection();
         void StopRelinkConnection();
 
@@ -118,7 +118,7 @@ namespace EMStudio
         void SelectConnectionCloseTo(const QPoint& point, bool overwriteCurSelection = true, bool toggle = false);
         QRect CalcRectFromSelection(bool includeConnections = true) const;
         QRect CalcRectFromGraph() const;
-        NodePort* FindPort(int32 x, int32 y, GraphNode** outNode, uint32* outPortNr, bool* outIsInputPort, bool includeInputPorts = true);
+        NodePort* FindPort(int32 x, int32 y, GraphNode** outNode, AZ::u16* outPortNr, bool* outIsInputPort, bool includeInputPorts = true);
 
         // entry state helper functions
         void SetEntryNode(GraphNode* entryNode)                                        { mEntryNode = entryNode; }
@@ -157,7 +157,7 @@ namespace EMStudio
 
         void UpdateVisualGraphFlags();
 
-        static bool CheckIfIsRelinkConnectionValid(NodeConnection* connection, GraphNode* newTargetNode, uint32 newTargetPortNr, bool isTargetInput);
+        static bool CheckIfIsRelinkConnectionValid(NodeConnection* connection, GraphNode* newTargetNode, AZ::u16 newTargetPortNr, bool isTargetInput);
 
         void RecursiveSetOpacity(EMotionFX::AnimGraphNode* startNode, float opacity);
 
@@ -197,7 +197,7 @@ namespace EMStudio
         // connection info
         QPoint                      mConStartOffset;
         QPoint                      mConEndOffset;
-        uint32                      mConPortNr;
+        AZ::u16                     mConPortNr;
         bool                        mConIsInputPort;
         GraphNode*                  mConNode;       // nullptr when no connection is being created
         NodeConnection*             mRelinkConnection; // nullptr when not relinking a connection

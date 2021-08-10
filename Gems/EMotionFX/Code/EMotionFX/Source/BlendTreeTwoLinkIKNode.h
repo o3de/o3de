@@ -60,12 +60,12 @@ namespace EMotionFX
             void Update() override;
 
         public:
-            uint32 mNodeIndexA = InvalidIndex32;
-            uint32 mNodeIndexB = InvalidIndex32;
-            uint32 mNodeIndexC = InvalidIndex32;
-            uint32 mEndEffectorNodeIndex = InvalidIndex32;
-            uint32 mAlignNodeIndex = InvalidIndex32;
-            uint32 mBendDirNodeIndex = InvalidIndex32;
+            size_t mNodeIndexA = InvalidIndex;
+            size_t mNodeIndexB = InvalidIndex;
+            size_t mNodeIndexC = InvalidIndex;
+            size_t mEndEffectorNodeIndex = InvalidIndex;
+            size_t mAlignNodeIndex = InvalidIndex;
+            size_t mBendDirNodeIndex = InvalidIndex;
         };
 
         BlendTreeTwoLinkIKNode();

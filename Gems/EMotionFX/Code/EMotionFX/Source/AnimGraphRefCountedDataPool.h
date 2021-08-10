@@ -11,7 +11,7 @@
 // include required headers
 #include "EMotionFXConfig.h"
 #include "AnimGraphRefCountedData.h"
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 
 
 namespace EMotionFX
@@ -29,20 +29,20 @@ namespace EMotionFX
         AnimGraphRefCountedDataPool();
         ~AnimGraphRefCountedDataPool();
 
-        void Resize(uint32 numItems);
+        void Resize(size_t numItems);
 
         AnimGraphRefCountedData* RequestNew();
         void Free(AnimGraphRefCountedData* item);
 
-        MCORE_INLINE uint32 GetNumFreeItems() const             { return mFreeItems.GetLength(); }
-        MCORE_INLINE uint32 GetNumItems() const                 { return mItems.GetLength(); }
-        MCORE_INLINE uint32 GetNumUsedItems() const             { return (mItems.GetLength() - mFreeItems.GetLength()); }
-        MCORE_INLINE uint32 GetNumMaxUsedItems() const          { return mMaxUsed; }
+        MCORE_INLINE size_t GetNumFreeItems() const             { return mFreeItems.size(); }
+        MCORE_INLINE size_t GetNumItems() const                 { return mItems.size(); }
+        MCORE_INLINE size_t GetNumUsedItems() const             { return mItems.size() - mFreeItems.size(); }
+        MCORE_INLINE size_t GetNumMaxUsedItems() const          { return mMaxUsed; }
         MCORE_INLINE void ResetMaxUsedItems()                   { mMaxUsed = 0; }
 
     private:
-        MCore::Array<AnimGraphRefCountedData*> mItems;
-        MCore::Array<AnimGraphRefCountedData*> mFreeItems;
-        uint32                                  mMaxUsed;
+        AZStd::vector<AnimGraphRefCountedData*> mItems;
+        AZStd::vector<AnimGraphRefCountedData*> mFreeItems;
+        size_t                                  mMaxUsed;
     };
 }   // namespace EMotionFX

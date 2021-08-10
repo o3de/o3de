@@ -58,8 +58,8 @@ namespace
     const AZ::RHI::Format BoneIndexFormat = AZ::RHI::Format::R32G32B32A32_UINT;
     const AZ::RHI::Format BoneWeightFormat = AZ::RHI::Format::R32G32B32A32_FLOAT;
 
-    const size_t LinearSkinningFloatsPerBone = 12;
-    const size_t DualQuaternionSkinningFloatsPerBone = 8;
+    const uint32_t LinearSkinningFloatsPerBone = 12;
+    const uint32_t DualQuaternionSkinningFloatsPerBone = 8;
     const uint32_t MaxSupportedSkinInfluences = 4;
 }
 
@@ -266,7 +266,7 @@ namespace AZ
             }
         }
         
-        static void ProcessMorphsForLod(const EMotionFX::Actor* actor, const Data::Asset<RPI::BufferAsset>& morphBufferAsset, uint32_t lodIndex, const AZStd::string& fullFileName, SkinnedMeshInputLod& skinnedMeshLod)
+        static void ProcessMorphsForLod(const EMotionFX::Actor* actor, const Data::Asset<RPI::BufferAsset>& morphBufferAsset, size_t lodIndex, const AZStd::string& fullFileName, SkinnedMeshInputLod& skinnedMeshLod)
         {
             EMotionFX::MorphSetup* morphSetup = actor->GetMorphSetup(lodIndex);
             if (morphSetup)
@@ -275,8 +275,8 @@ namespace AZ
                 const AZStd::vector<AZ::RPI::MorphTargetMetaAsset::MorphTarget>& metaDatas = actor->GetMorphTargetMetaAsset()->GetMorphTargets();
 
                 // Loop over all the EMotionFX morph targets
-                const AZ::u32 numMorphTargets = morphSetup->GetNumMorphTargets();
-                for (AZ::u32 morphTargetIndex = 0; morphTargetIndex < numMorphTargets; ++morphTargetIndex)
+                const size_t numMorphTargets = morphSetup->GetNumMorphTargets();
+                for (size_t morphTargetIndex = 0; morphTargetIndex < numMorphTargets; ++morphTargetIndex)
                 {
                     EMotionFX::MorphTargetStandard* morphTarget = static_cast<EMotionFX::MorphTargetStandard*>(morphSetup->GetMorphTarget(morphTargetIndex));
                     for (const auto& metaData : metaDatas)
@@ -288,7 +288,7 @@ namespace AZ
                         if (metaData.m_morphTargetName == morphTarget->GetNameString() && metaData.m_numVertices > 0)
                         {
                             // The skinned mesh lod gets a unique morph for each meta, since each one has unique min/max delta values to use for decompression
-                            AZStd::string morphString = AZStd::string::format("%s_Lod%u_Morph_%s", fullFileName.c_str(), lodIndex, metaData.m_meshNodeName.c_str());
+                            const AZStd::string morphString = AZStd::string::format("%s_Lod%zu_Morph_%s", fullFileName.c_str(), lodIndex, metaData.m_meshNodeName.c_str());
 
                             float minWeight = morphTarget->GetRangeMin();
                             float maxWeight = morphTarget->GetRangeMax();
@@ -574,7 +574,7 @@ namespace AZ
             AZStd::vector<float> boneTransforms;
             GetBoneTransformsFromActorInstance(actorInstance, boneTransforms, skinningMethod);
 
-            size_t floatsPerBone = 0;
+            uint32_t floatsPerBone = 0;
             if (skinningMethod == EMotionFX::Integration::SkinningMethod::Linear)
             {
                 floatsPerBone = LinearSkinningFloatsPerBone;

@@ -81,7 +81,7 @@ void CIconManager::Reset()
         {
             m_objects[i]->Release();
         }
-        m_objects[i] = 0;
+        m_objects[i] = nullptr;
     }
     for (i = 0; i < eIcon_COUNT; i++)
     {
@@ -135,7 +135,7 @@ IStatObj*   CIconManager::GetObject(EStatObject)
 //////////////////////////////////////////////////////////////////////////
 QImage* CIconManager::GetIconBitmap(const char* filename, bool& bHaveAlpha, uint32 effects /*=0*/)
 {
-    QImage* pBitmap = 0;
+    QImage* pBitmap = nullptr;
 
     QString iconFilename = filename;
 
@@ -160,11 +160,11 @@ QImage* CIconManager::GetIconBitmap(const char* filename, bool& bHaveAlpha, uint
         return pBitmap;
     }
 
-    BOOL bAlphaBitmap = FALSE;
+    bool bAlphaBitmap = false;
     QPixmap pm(iconFilename);
     bAlphaBitmap = pm.hasAlpha();
 
-    bHaveAlpha = (bAlphaBitmap == TRUE);
+    bHaveAlpha = (bAlphaBitmap == true);
     if (!pm.isNull())
     {
         pBitmap = new QImage;
@@ -252,5 +252,5 @@ QImage* CIconManager::GetIconBitmap(const char* filename, bool& bHaveAlpha, uint
 
         return pBitmap;
     }
-    return NULL;
+    return nullptr;
 }
