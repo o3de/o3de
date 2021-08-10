@@ -17,6 +17,7 @@
 // AzToolsFramework
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyAudioCtrl.h>
 
 // Editor
 #include "IResourceSelectorHost.h"
@@ -148,6 +149,54 @@ private:
     }
 };
 
+class AudioControlSelectorButton
+    : public BrowseButton
+{
+public:
+    AZ_CLASS_ALLOCATOR(AudioControlSelectorButton, AZ::SystemAllocator, 0);
+
+    AudioControlSelectorButton(PropertyType type, QWidget* pParent = nullptr)
+        : BrowseButton(type, pParent)
+    {
+        setToolTip(tr("Select Audio Control"));
+    }
+
+private:
+    void OnClicked() override
+    {
+        AZStd::string resourceResult;
+        auto ConvertLegacyAudioPropertyType = [](const PropertyType type) -> AzToolsFramework::AudioPropertyType
+        {
+            switch (type)
+            {
+            case ePropertyAudioTrigger:
+                return AzToolsFramework::AudioPropertyType::Trigger;
+            case ePropertyAudioRTPC:
+                return AzToolsFramework::AudioPropertyType::Rtpc;
+            case ePropertyAudioSwitch:
+                return AzToolsFramework::AudioPropertyType::Switch;
+            case ePropertyAudioSwitchState:
+                return AzToolsFramework::AudioPropertyType::SwitchState;
+            case ePropertyAudioEnvironment:
+                return AzToolsFramework::AudioPropertyType::Environment;
+            case ePropertyAudioPreloadRequest:
+                return AzToolsFramework::AudioPropertyType::Preload;
+            default:
+                return AzToolsFramework::AudioPropertyType::NumTypes;
+            }
+        };
+
+        auto propType = ConvertLegacyAudioPropertyType(m_propertyType);
+        if (propType != AzToolsFramework::AudioPropertyType::NumTypes)
+        {
+            AzToolsFramework::AudioControlSelectorRequestBus::EventResult(
+                resourceResult, propType, &AzToolsFramework::AudioControlSelectorRequestBus::Events::SelectResource,
+                AZStd::string{ m_path.toUtf8().constData() });
+            SetPathAndEmit(QString{ resourceResult.c_str() });
+        }
+    }
+};
+
 class TextureEditButton
     : public BrowseButton
 {
@@ -237,13 +286,15 @@ void FileResourceSelectorWidget::SetPropertyType(PropertyType type)
         break;
     case ePropertyModel:
     case ePropertyGeomCache:
+        AddButton(new ResourceSelectorButton(type));
+        break;
     case ePropertyAudioTrigger:
     case ePropertyAudioSwitch:
     case ePropertyAudioSwitchState:
     case ePropertyAudioRTPC:
     case ePropertyAudioEnvironment:
     case ePropertyAudioPreloadRequest:
-        AddButton(new ResourceSelectorButton(type));
+        AddButton(new AudioControlSelectorButton(type));
         break;
     case ePropertyFile:
         AddButton(new FileBrowseButton(type));
