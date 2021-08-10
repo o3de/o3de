@@ -23,14 +23,14 @@
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <TerrainSystemBus.h>
 
-class TerrainProvider
+class TerrainSystem
     : public AzFramework::Terrain::TerrainDataRequestBus::Handler
     , private Terrain::TerrainSystemServiceRequestBus::Handler
     , private AZ::TickBus::Handler
 {
 public:
-    TerrainProvider();
-    ~TerrainProvider();
+    TerrainSystem();
+    ~TerrainSystem();
 
     ///////////////////////////////////////////
     // TerrainDataRequestBus::Handler Impl

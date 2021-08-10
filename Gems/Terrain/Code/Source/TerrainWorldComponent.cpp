@@ -83,17 +83,17 @@ namespace Terrain
 
     void TerrainWorldComponent::Activate()
     {
-        m_terrainProvider = new TerrainProvider();
+        m_terrainSystem = new TerrainSystem();
 
-        m_terrainProvider->SetWorldMin(m_configuration.m_worldMin);
-        m_terrainProvider->SetWorldMax(m_configuration.m_worldMax);
-        m_terrainProvider->SetHeightQueryResolution(m_configuration.m_heightQueryResolution);
-        m_terrainProvider->SetDebugWireframe(m_configuration.m_debugWireframeEnabled);
+        m_terrainSystem->SetWorldMin(m_configuration.m_worldMin);
+        m_terrainSystem->SetWorldMax(m_configuration.m_worldMax);
+        m_terrainSystem->SetHeightQueryResolution(m_configuration.m_heightQueryResolution);
+        m_terrainSystem->SetDebugWireframe(m_configuration.m_debugWireframeEnabled);
     }
 
     void TerrainWorldComponent::Deactivate()
     {
-        delete m_terrainProvider;
+        delete m_terrainSystem;
     }
 
     bool TerrainWorldComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)

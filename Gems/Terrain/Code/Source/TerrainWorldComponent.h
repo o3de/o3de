@@ -63,6 +63,6 @@ namespace Terrain
 
     private:
         TerrainWorldConfig m_configuration;
-        TerrainProvider* m_terrainProvider{ nullptr };
+        TerrainSystem* m_terrainSystem{ nullptr };
     };
 }
