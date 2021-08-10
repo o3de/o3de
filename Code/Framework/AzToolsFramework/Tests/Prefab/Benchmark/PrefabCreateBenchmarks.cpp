@@ -32,7 +32,7 @@ namespace Benchmark
 
             state.ResumeTiming();
 
-            for (int instanceCounter = 0; instanceCounter < numInstances; ++instanceCounter)
+            for (unsigned int instanceCounter = 0; instanceCounter < numInstances; ++instanceCounter)
             {
                 newInstances.push_back(m_prefabSystemComponent->CreatePrefab(
                     { entities[instanceCounter] },
@@ -110,7 +110,7 @@ namespace Benchmark
             AZStd::vector<AZStd::unique_ptr<Instance>> testInstances;
             testInstances.resize(numInstancesToAdd);
 
-            for (int instanceCounter = 0; instanceCounter < numInstancesToAdd; ++instanceCounter)
+            for (unsigned int instanceCounter = 0; instanceCounter < numInstancesToAdd; ++instanceCounter)
             {
                 testInstances[instanceCounter] = (m_prefabSystemComponent->CreatePrefab(
                     { entities[instanceCounter] }
@@ -161,7 +161,7 @@ namespace Benchmark
 
             state.ResumeTiming();
 
-            for (int instanceCounter = 0; instanceCounter < numInstances; ++instanceCounter)
+            for (unsigned int instanceCounter = 0; instanceCounter < numInstances; ++instanceCounter)
             {
                 nestedInstanceRoot = m_prefabSystemComponent->CreatePrefab(
                     {},

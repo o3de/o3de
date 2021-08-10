@@ -29,7 +29,7 @@ namespace Benchmark
 
             state.ResumeTiming();
 
-            for (int templateCounter = 0; templateCounter < numTemplates; ++templateCounter)
+            for (unsigned int templateCounter = 0; templateCounter < numTemplates; ++templateCounter)
             {
                 m_prefabLoaderInterface->LoadTemplateFromFile(m_paths[templateCounter]);
             }
