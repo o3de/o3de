@@ -10,6 +10,7 @@ import argparse
 import mars_utils
 import sys
 import pathlib
+import traceback
 from tiaf import TestImpact
 from tiaf_logger import get_logger
 
@@ -140,3 +141,4 @@ if __name__ == "__main__":
     except Exception as e:
         # Non-gating will be removed from this script and handled at the job level in SPEC-7413
         logger.error(f"Exception caught by TIAF driver: '{e}'.")
+        traceback.print_exc()
