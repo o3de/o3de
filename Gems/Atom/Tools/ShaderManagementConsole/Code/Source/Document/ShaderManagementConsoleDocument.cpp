@@ -28,6 +28,7 @@ namespace ShaderManagementConsole
     {
         ShaderManagementConsoleDocumentNotificationBus::Broadcast(&ShaderManagementConsoleDocumentNotificationBus::Events::OnDocumentDestroyed, m_id);
         ShaderManagementConsoleDocumentRequestBus::Handler::BusDisconnect();
+        Clear();
     }
 
     const AZ::Uuid& ShaderManagementConsoleDocument::GetId() const
@@ -71,19 +72,21 @@ namespace ShaderManagementConsole
         return m_shaderVariantListSourceData.m_shaderVariants[index];
     }
 
-    ShaderManagementConsoleDocumentResult ShaderManagementConsoleDocument::Open(AZStd::string_view loadPath)
+    bool ShaderManagementConsoleDocument::Open(AZStd::string_view loadPath)
     {
         Clear();
 
         m_absolutePath = loadPath;
         if (!AzFramework::StringFunc::Path::Normalize(m_absolutePath))
         {
-            return AZ::Failure(AZStd::string::format("Document path could not be normalized: '%s'.", m_absolutePath.c_str()));
+            AZ_Error("ShaderManagementConsoleDocument", false, "Document path could not be normalized: '%s'.", m_absolutePath.c_str());
+            return false;
         }
 
         if (AzFramework::StringFunc::Path::IsRelative(m_absolutePath.c_str()))
         {
-            return AZ::Failure(AZStd::string::format("Document path must be absolute: '%s'.", m_absolutePath.c_str()));
+            AZ_Error("ShaderManagementConsoleDocument", false, "Document path must be absolute: '%s'.", m_absolutePath.c_str());
+            return false;
         }
 
         if (AzFramework::StringFunc::Path::IsExtension(m_absolutePath.c_str(), AZ::RPI::ShaderVariantListSourceData::Extension))
@@ -91,7 +94,8 @@ namespace ShaderManagementConsole
             // Load the shader config data and create a shader config asset from it
             if (!AZ::RPI::JsonUtils::LoadObjectFromFile(m_absolutePath, m_shaderVariantListSourceData))
             {
-                return AZ::Failure(AZStd::string::format("Failed loading shader variant list data: '%s.'", m_absolutePath.c_str()));
+                AZ_Error("ShaderManagementConsoleDocument", false, "Failed loading shader variant list data: '%s.'", m_absolutePath.c_str());
+                return false;
             }
         }
 
@@ -103,13 +107,15 @@ namespace ShaderManagementConsole
             watchFolder);
         if (!result)
         {
-            return AZ::Failure(AZStd::string::format("Could not find source data: '%s'.", m_absolutePath.c_str()));
+            AZ_Error("ShaderManagementConsoleDocument", false, "Could not find source data: '%s'.", m_absolutePath.c_str());
+            return false;
         }
 
         m_relativePath = m_shaderVariantListSourceData.m_shaderFilePath;
         if (!AzFramework::StringFunc::Path::Normalize(m_relativePath))
         {
-            return AZ::Failure(AZStd::string::format("Shader path could not be normalized: '%s'.", m_relativePath.c_str()));
+            AZ_Error("ShaderManagementConsoleDocument", false, "Shader path could not be normalized: '%s'.", m_relativePath.c_str());
+            return false;
         }
 
         AZStd::string shaderPath = m_relativePath;
@@ -118,27 +124,32 @@ namespace ShaderManagementConsole
         m_shaderAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::ShaderAsset>(shaderPath.c_str());
         if (!m_shaderAsset)
         {
-            return AZ::Failure(AZStd::string::format("Could not load shader asset: %s.", shaderPath.c_str()));
+            AZ_Error("ShaderManagementConsoleDocument", false, "Could not load shader asset: %s.", shaderPath.c_str());
+            return false;
         }
 
         ShaderManagementConsoleDocumentNotificationBus::Broadcast(&ShaderManagementConsoleDocumentNotificationBus::Events::OnDocumentOpened, m_id);
 
-        return AZ::Success(AZStd::string::format("Document loaded: '%s'", m_absolutePath.c_str()));
+        AZ_TracePrintf("ShaderManagementConsoleDocument", "Document loaded: '%s'", m_absolutePath.c_str());
+        return true;
     }
 
-    ShaderManagementConsoleDocumentResult ShaderManagementConsoleDocument::Save()
+    bool ShaderManagementConsoleDocument::Save()
     {
         if (!IsOpen())
         {
-            return AZ::Failure(AZStd::string::format("Document is not open to be saved: '%s'.", m_absolutePath.c_str()));
+            AZ_Error("ShaderManagementConsoleDocument", false, "Document is not open to be saved: '%s'.", m_absolutePath.c_str());
+            return false;
         }
 
         if (!IsSavable())
         {
-            return AZ::Failure(AZStd::string::format("Document can not be saved: '%s'.", m_absolutePath.c_str()));
+            AZ_Error("ShaderManagementConsoleDocument", false, "Document can not be saved: '%s'.", m_absolutePath.c_str());
+            return false;
         }
 
-        return AZ::Failure(AZStd::string::format("%s is not implemented!", __FUNCTION__));
+        AZ_Error("ShaderManagementConsoleDocument", false, "%s is not implemented!", __FUNCTION__);
+        return false;
 
         // Auto add or checkout saved file
         //AzToolsFramework::SourceControlCommandBus::Broadcast(&AzToolsFramework::SourceControlCommandBus::Events::RequestEdit,
@@ -147,28 +158,33 @@ namespace ShaderManagementConsole
 
         //ShaderManagementConsoleDocumentNotificationBus::Broadcast(&ShaderManagementConsoleDocumentNotificationBus::Events::OnDocumentSaved, m_id);
 
-        //return AZ::Success(AZStd::string::format("Document saved: %s", m_absolutePath.data()));
+        //AZ_TracePrintf("ShaderManagementConsoleDocument", "Document saved: %s", m_absolutePath.data());
+        //return true;
     }
 
-    ShaderManagementConsoleDocumentResult ShaderManagementConsoleDocument::SaveAsCopy(AZStd::string_view savePath)
+    bool ShaderManagementConsoleDocument::SaveAsCopy(AZStd::string_view savePath)
     {
         if (!IsOpen())
         {
-            return AZ::Failure(AZStd::string::format("Document is not open to be saved: '%s'.", m_absolutePath.c_str()));
+            AZ_Error("ShaderManagementConsoleDocument", false, "Document is not open to be saved: '%s'.", m_absolutePath.c_str());
+            return false;
         }
 
         if (!IsSavable())
         {
-            return AZ::Failure(AZStd::string::format("Document can not be saved: '%s'.", m_absolutePath.c_str()));
+            AZ_Error("ShaderManagementConsoleDocument", false, "Document can not be saved: '%s'.", m_absolutePath.c_str());
+            return false;
         }
 
         AZStd::string normalizedSavePath = savePath;
         if (!AzFramework::StringFunc::Path::Normalize(normalizedSavePath))
         {
-            return AZ::Failure(AZStd::string::format("Document save path could not be normalized: '%s'.", normalizedSavePath.c_str()));
+            AZ_Error("ShaderManagementConsoleDocument", false, "Document save path could not be normalized: '%s'.", normalizedSavePath.c_str());
+            return false;
         }
 
-        return AZ::Failure(AZStd::string::format("%s is not implemented!", __FUNCTION__));
+        AZ_Error("ShaderManagementConsoleDocument", false, "%s is not implemented!", __FUNCTION__);
+        return false;
 
         // Auto add or checkout saved file
         //AzToolsFramework::SourceControlCommandBus::Broadcast(&AzToolsFramework::SourceControlCommandBus::Events::RequestEdit,
@@ -177,19 +193,22 @@ namespace ShaderManagementConsole
 
         //ShaderManagementConsoleDocumentNotificationBus::Broadcast(&ShaderManagementConsoleDocumentNotificationBus::Events::OnDocumentSaved, m_id);
 
-        //return AZ::Success(AZStd::string::format("Document saved: %s", normalizedSavePath.c_str()));
+        //AZ_TracePrintf("ShaderManagementConsoleDocument", "Document saved: %s", normalizedSavePath.c_str());
+        //return true;
     }
 
-    ShaderManagementConsoleDocumentResult ShaderManagementConsoleDocument::Close()
+    bool ShaderManagementConsoleDocument::Close()
     {
         if (!IsOpen())
         {
-            return AZ::Failure(AZStd::string("Document is not open"));
+            AZ_Error("ShaderManagementConsoleDocument", false, "Document is not open");
+            return false;
         }
 
         Clear();
         ShaderManagementConsoleDocumentNotificationBus::Broadcast(&ShaderManagementConsoleDocumentNotificationBus::Events::OnDocumentClosed, m_id);
-        return AZ::Success(AZStd::string("Document was closed"));
+        AZ_TracePrintf("ShaderManagementConsoleDocument", "Document was closed");
+        return true;
     }
 
     bool ShaderManagementConsoleDocument::IsOpen() const
@@ -269,5 +288,9 @@ namespace ShaderManagementConsole
     {
         m_absolutePath.clear();
         m_relativePath.clear();
+        m_shaderVariantListSourceData = {};
+        m_shaderAsset = {};
+        m_undoHistory = {};
+        m_undoHistoryIndex = {};
     }
 } // namespace ShaderManagementConsole

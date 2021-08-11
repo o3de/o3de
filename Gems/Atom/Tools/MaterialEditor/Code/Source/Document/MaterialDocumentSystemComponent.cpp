@@ -189,7 +189,7 @@ namespace MaterialEditor
 
             if (m_settings->m_showReloadDocumentPrompt &&
                 (QMessageBox::question(QApplication::activeWindow(),
-                QString("Material document was externally modified"),
+                QString("Document was externally modified"),
                 QString("Would you like to reopen the document:\n%1?").arg(documentPath.c_str()),
                 QMessageBox::Yes | QMessageBox::No) != QMessageBox::Yes))
             {
@@ -203,7 +203,7 @@ namespace MaterialEditor
             if (!openResult)
             {
                 QMessageBox::critical(
-                    QApplication::activeWindow(), QString("Material document could not be opened"),
+                    QApplication::activeWindow(), QString("Document could not be opened"),
                     QString("Failed to open: \n%1\n\n%2").arg(documentPath.c_str()).arg(traceRecorder.GetDump().c_str()));
                 MaterialDocumentSystemRequestBus::Broadcast(&MaterialDocumentSystemRequestBus::Events::CloseDocument, documentId);
             }
@@ -216,7 +216,7 @@ namespace MaterialEditor
 
             if (m_settings->m_showReloadDocumentPrompt &&
                 (QMessageBox::question(QApplication::activeWindow(),
-                QString("Material document dependencies have changed"),
+                QString("Document dependencies have changed"),
                 QString("Would you like to update the document with these changes:\n%1?").arg(documentPath.c_str()),
                 QMessageBox::Yes | QMessageBox::No) != QMessageBox::Yes))
             {
@@ -230,7 +230,7 @@ namespace MaterialEditor
             if (!openResult)
             {
                 QMessageBox::critical(
-                    QApplication::activeWindow(), QString("Material document could not be opened"),
+                    QApplication::activeWindow(), QString("Document could not be opened"),
                     QString("Failed to open: \n%1\n\n%2").arg(documentPath.c_str()).arg(traceRecorder.GetDump().c_str()));
                 MaterialDocumentSystemRequestBus::Broadcast(&MaterialDocumentSystemRequestBus::Events::CloseDocument, documentId);
             }
@@ -284,7 +284,7 @@ namespace MaterialEditor
         if (isModified)
         {
             auto selection = QMessageBox::question(QApplication::activeWindow(),
-                QString("Material document has unsaved changes"),
+                QString("Document has unsaved changes"),
                 QString("Do you want to save changes to\n%1?").arg(documentPath.c_str()),
                 QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
             if (selection == QMessageBox::Cancel)
@@ -309,7 +309,7 @@ namespace MaterialEditor
         if (!closeResult)
         {
             QMessageBox::critical(
-                QApplication::activeWindow(), QString("Material document could not be closed"),
+                QApplication::activeWindow(), QString("Document could not be closed"),
                 QString("Failed to close: \n%1\n\n%2").arg(documentPath.c_str()).arg(traceRecorder.GetDump().c_str()));
             return false;
         }
@@ -353,18 +353,18 @@ namespace MaterialEditor
 
     bool MaterialDocumentSystemComponent::SaveDocument(const AZ::Uuid& documentId)
     {
-        AZStd::string saveMaterialPath;
-        MaterialDocumentRequestBus::EventResult(saveMaterialPath, documentId, &MaterialDocumentRequestBus::Events::GetAbsolutePath);
+        AZStd::string saveDocumentPath;
+        MaterialDocumentRequestBus::EventResult(saveDocumentPath, documentId, &MaterialDocumentRequestBus::Events::GetAbsolutePath);
 
-        if (saveMaterialPath.empty() || !AzFramework::StringFunc::Path::Normalize(saveMaterialPath))
+        if (saveDocumentPath.empty() || !AzFramework::StringFunc::Path::Normalize(saveDocumentPath))
         {
             return false;
         }
 
-        const QFileInfo saveInfo(saveMaterialPath.c_str());
+        const QFileInfo saveInfo(saveDocumentPath.c_str());
         if (saveInfo.exists() && !saveInfo.isWritable())
         {
-            QMessageBox::critical(QApplication::activeWindow(), "Error", QString("Material document could not be overwritten:\n%1").arg(saveMaterialPath.c_str()));
+            QMessageBox::critical(QApplication::activeWindow(), "Error", QString("Document could not be overwritten:\n%1").arg(saveDocumentPath.c_str()));
             return false;
         }
 
@@ -375,8 +375,8 @@ namespace MaterialEditor
         if (!result)
         {
             QMessageBox::critical(
-                QApplication::activeWindow(), QString("Material document could not be saved"),
-                QString("Failed to save: \n%1\n\n%2").arg(saveMaterialPath.c_str()).arg(traceRecorder.GetDump().c_str()));
+                QApplication::activeWindow(), QString("Document could not be saved"),
+                QString("Failed to save: \n%1\n\n%2").arg(saveDocumentPath.c_str()).arg(traceRecorder.GetDump().c_str()));
             return false;
         }
 
@@ -385,28 +385,28 @@ namespace MaterialEditor
 
     bool MaterialDocumentSystemComponent::SaveDocumentAsCopy(const AZ::Uuid& documentId, AZStd::string_view targetPath)
     {
-        AZStd::string saveMaterialPath = targetPath;
-        if (saveMaterialPath.empty() || !AzFramework::StringFunc::Path::Normalize(saveMaterialPath))
+        AZStd::string saveDocumentPath = targetPath;
+        if (saveDocumentPath.empty() || !AzFramework::StringFunc::Path::Normalize(saveDocumentPath))
         {
             return false;
         }
 
-        const QFileInfo saveInfo(saveMaterialPath.c_str());
+        const QFileInfo saveInfo(saveDocumentPath.c_str());
         if (saveInfo.exists() && !saveInfo.isWritable())
         {
-            QMessageBox::critical(QApplication::activeWindow(), "Error", QString("Material document could not be overwritten:\n%1").arg(saveMaterialPath.c_str()));
+            QMessageBox::critical(QApplication::activeWindow(), "Error", QString("Document could not be overwritten:\n%1").arg(saveDocumentPath.c_str()));
             return false;
         }
 
         AtomToolsFramework::TraceRecorder traceRecorder(m_maxMessageBoxLineCount);
 
         bool result = false;
-        MaterialDocumentRequestBus::EventResult(result, documentId, &MaterialDocumentRequestBus::Events::SaveAsCopy, saveMaterialPath);
+        MaterialDocumentRequestBus::EventResult(result, documentId, &MaterialDocumentRequestBus::Events::SaveAsCopy, saveDocumentPath);
         if (!result)
         {
             QMessageBox::critical(
-                QApplication::activeWindow(), QString("Material document could not be saved"),
-                QString("Failed to save: \n%1\n\n%2").arg(saveMaterialPath.c_str()).arg(traceRecorder.GetDump().c_str()));
+                QApplication::activeWindow(), QString("Document could not be saved"),
+                QString("Failed to save: \n%1\n\n%2").arg(saveDocumentPath.c_str()).arg(traceRecorder.GetDump().c_str()));
             return false;
         }
 
@@ -415,28 +415,28 @@ namespace MaterialEditor
 
     bool MaterialDocumentSystemComponent::SaveDocumentAsChild(const AZ::Uuid& documentId, AZStd::string_view targetPath)
     {
-        AZStd::string saveMaterialPath = targetPath;
-        if (saveMaterialPath.empty() || !AzFramework::StringFunc::Path::Normalize(saveMaterialPath))
+        AZStd::string saveDocumentPath = targetPath;
+        if (saveDocumentPath.empty() || !AzFramework::StringFunc::Path::Normalize(saveDocumentPath))
         {
             return false;
         }
 
-        const QFileInfo saveInfo(saveMaterialPath.c_str());
+        const QFileInfo saveInfo(saveDocumentPath.c_str());
         if (saveInfo.exists() && !saveInfo.isWritable())
         {
-            QMessageBox::critical(QApplication::activeWindow(), "Error", QString("Material document could not be overwritten:\n%1").arg(saveMaterialPath.c_str()));
+            QMessageBox::critical(QApplication::activeWindow(), "Error", QString("Document could not be overwritten:\n%1").arg(saveDocumentPath.c_str()));
             return false;
         }
 
         AtomToolsFramework::TraceRecorder traceRecorder(m_maxMessageBoxLineCount);
 
         bool result = false;
-        MaterialDocumentRequestBus::EventResult(result, documentId, &MaterialDocumentRequestBus::Events::SaveAsChild, saveMaterialPath);
+        MaterialDocumentRequestBus::EventResult(result, documentId, &MaterialDocumentRequestBus::Events::SaveAsChild, saveDocumentPath);
         if (!result)
         {
             QMessageBox::critical(
-                QApplication::activeWindow(), QString("Material document could not be saved"),
-                QString("Failed to save: \n%1\n\n%2").arg(saveMaterialPath.c_str()).arg(traceRecorder.GetDump().c_str()));
+                QApplication::activeWindow(), QString("Document could not be saved"),
+                QString("Failed to save: \n%1\n\n%2").arg(saveDocumentPath.c_str()).arg(traceRecorder.GetDump().c_str()));
             return false;
         }
 
@@ -467,7 +467,7 @@ namespace MaterialEditor
 
         if (!AzFramework::StringFunc::Path::Normalize(requestedPath))
         {
-            QMessageBox::critical(QApplication::activeWindow(), "Error", QString("Material document path is invalid:\n%1").arg(requestedPath.c_str()));
+            QMessageBox::critical(QApplication::activeWindow(), "Error", QString("Document path is invalid:\n%1").arg(requestedPath.c_str()));
             return AZ::Uuid::CreateNull();
         }
 
@@ -476,9 +476,9 @@ namespace MaterialEditor
         {
             for (const auto& documentPair : m_documentMap)
             {
-                AZStd::string openMaterialPath;
-                MaterialDocumentRequestBus::EventResult(openMaterialPath, documentPair.first, &MaterialDocumentRequestBus::Events::GetAbsolutePath);
-                if (openMaterialPath == requestedPath)
+                AZStd::string openDocumentPath;
+                MaterialDocumentRequestBus::EventResult(openDocumentPath, documentPair.first, &MaterialDocumentRequestBus::Events::GetAbsolutePath);
+                if (openDocumentPath == requestedPath)
                 {
                     MaterialDocumentNotificationBus::Broadcast(&MaterialDocumentNotificationBus::Events::OnDocumentOpened, documentPair.first);
                     return documentPair.first;
@@ -493,7 +493,7 @@ namespace MaterialEditor
         if (documentId.IsNull())
         {
             QMessageBox::critical(
-                QApplication::activeWindow(), QString("Material document could not be created"),
+                QApplication::activeWindow(), QString("Document could not be created"),
                 QString("Failed to create: \n%1\n\n%2").arg(requestedPath.c_str()).arg(traceRecorder.GetDump().c_str()));
             return AZ::Uuid::CreateNull();
         }
@@ -505,7 +505,7 @@ namespace MaterialEditor
         if (!openResult)
         {
             QMessageBox::critical(
-                QApplication::activeWindow(), QString("Material document could not be opened"),
+                QApplication::activeWindow(), QString("Document could not be opened"),
                 QString("Failed to open: \n%1\n\n%2").arg(requestedPath.c_str()).arg(traceRecorder.GetDump().c_str()));
             MaterialDocumentSystemRequestBus::Broadcast(&MaterialDocumentSystemRequestBus::Events::DestroyDocument, documentId);
             return AZ::Uuid::CreateNull();

@@ -53,16 +53,18 @@ namespace ShaderManagementConsole
         // ShaderManagementConsoleDocumentSystemRequestBus::Handler overrides...
         AZ::Uuid CreateDocument() override;
         bool DestroyDocument(const AZ::Uuid& documentId) override;
-        AZ::Uuid OpenDocument(AZStd::string_view path) override;
+        AZ::Uuid OpenDocument(AZStd::string_view sourcePath) override;
         bool CloseDocument(const AZ::Uuid& documentId) override;
         bool CloseAllDocuments() override;
+        bool CloseAllDocumentsExcept(const AZ::Uuid& documentId) override;
         bool SaveDocument(const AZ::Uuid& documentId) override;
-        bool SaveDocumentAsCopy(const AZ::Uuid& documentId) override;
+        bool SaveDocumentAsCopy(const AZ::Uuid& documentId, AZStd::string_view targetPath) override;
         bool SaveAllDocuments() override;
         ////////////////////////////////////////////////////////////////////////
 
-        AZ::Uuid OpenDocumentImpl(AZStd::string_view path, bool checkIfAlreadyOpen);
+        AZ::Uuid OpenDocumentImpl(AZStd::string_view sourcePath, bool checkIfAlreadyOpen);
 
         AZStd::unordered_map<AZ::Uuid, AZStd::shared_ptr<ShaderManagementConsoleDocument>> m_documentMap;
+        const size_t m_maxMessageBoxLineCount = 15;
     };
 }

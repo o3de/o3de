@@ -52,11 +52,10 @@ namespace ShaderManagementConsole
 
         void CreateMenu() override;
         void CreateTabBar() override;
-        void OpenTabContextMenu() override;
 
-        void SelectDocumentForTab(const int tabIndex);
-        void CloseDocumentForTab(const int tabIndex);
-        void CloseAllExceptDocumentForTab(const int tabIndex);
+        QString GetDocumentPath(const AZ::Uuid& documentId) const;
+
+        void OpenTabContextMenu() override;
 
         void closeEvent(QCloseEvent* closeEvent) override;
 

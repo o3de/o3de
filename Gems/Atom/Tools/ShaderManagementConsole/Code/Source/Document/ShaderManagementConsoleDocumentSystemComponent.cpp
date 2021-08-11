@@ -8,9 +8,11 @@
 
 #include <Document/ShaderManagementConsoleDocumentSystemComponent.h>
 
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/EditContext.h>
+#include <AtomToolsFramework/Debug/TraceRecorder.h>
+#include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -67,6 +69,7 @@ namespace ShaderManagementConsole
                 ->Event("OpenDocument", &ShaderManagementConsoleDocumentSystemRequestBus::Events::OpenDocument)
                 ->Event("CloseDocument", &ShaderManagementConsoleDocumentSystemRequestBus::Events::CloseDocument)
                 ->Event("CloseAllDocuments", &ShaderManagementConsoleDocumentSystemRequestBus::Events::CloseAllDocuments)
+                ->Event("CloseAllDocumentsExcept", &ShaderManagementConsoleDocumentSystemRequestBus::Events::CloseAllDocumentsExcept)
                 ->Event("SaveDocument", &ShaderManagementConsoleDocumentSystemRequestBus::Events::SaveDocument)
                 ->Event("SaveDocumentAsCopy", &ShaderManagementConsoleDocumentSystemRequestBus::Events::SaveDocumentAsCopy)
                 ->Event("SaveAllDocuments", &ShaderManagementConsoleDocumentSystemRequestBus::Events::SaveAllDocuments)
@@ -152,9 +155,9 @@ namespace ShaderManagementConsole
         return m_documentMap.erase(documentId) != 0;
     }
 
-    AZ::Uuid ShaderManagementConsoleDocumentSystemComponent::OpenDocument(AZStd::string_view path)
+    AZ::Uuid ShaderManagementConsoleDocumentSystemComponent::OpenDocument(AZStd::string_view sourcePath)
     {
-        return OpenDocumentImpl(path, true);
+        return OpenDocumentImpl(sourcePath, true);
     }
 
     bool ShaderManagementConsoleDocumentSystemComponent::CloseDocument(const AZ::Uuid& documentId)
@@ -163,26 +166,46 @@ namespace ShaderManagementConsole
         ShaderManagementConsoleDocumentRequestBus::EventResult(isOpen, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::IsOpen);
         if (!isOpen)
         {
+            // immediately destroy unopened documents
+            ShaderManagementConsoleDocumentSystemRequestBus::Broadcast(&ShaderManagementConsoleDocumentSystemRequestBus::Events::DestroyDocument, documentId);
             return true;
         }
+
+        AZStd::string documentPath;
+        ShaderManagementConsoleDocumentRequestBus::EventResult(documentPath, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::GetAbsolutePath);
 
         bool isModified = false;
         ShaderManagementConsoleDocumentRequestBus::EventResult(isModified, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::IsModified);
         if (isModified)
         {
-            if (QMessageBox::question(QApplication::activeWindow(), "document has unsaved changes", "Would you like to close anyway?",
-                QMessageBox::Yes | QMessageBox::No) == QMessageBox::No)
+            auto selection = QMessageBox::question(QApplication::activeWindow(),
+                QString("Document has unsaved changes"),
+                QString("Do you want to save changes to\n%1?").arg(documentPath.c_str()),
+                QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+            if (selection == QMessageBox::Cancel)
             {
+                AZ_TracePrintf("ShaderManagementConsoleDocument", "Close document canceled: %s", documentPath.c_str());
                 return false;
+            }
+            if (selection == QMessageBox::Yes)
+            {
+                if (!SaveDocument(documentId))
+                {
+                    AZ_Error("ShaderManagementConsoleDocument", false, "Close document failed because document was not saved: %s", documentPath.c_str());
+                    return false;
+                }
             }
         }
 
-        ShaderManagementConsoleDocumentResult closeResult = AZ::Success(AZStd::string("There is no active document"));
+        AtomToolsFramework::TraceRecorder traceRecorder(m_maxMessageBoxLineCount);
+
+        bool closeResult = true;
         ShaderManagementConsoleDocumentRequestBus::EventResult(closeResult, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::Close);
         if (!closeResult)
         {
-            QMessageBox::critical(QApplication::activeWindow(), "Failed to close document",
-                QString::fromUtf8(closeResult.GetError().data(), (int)closeResult.GetError().size()));
+            QMessageBox::critical(
+                QApplication::activeWindow(), QString("Document could not be closed"),
+                QString("Failed to close: \n%1\n\n%2").arg(documentPath.c_str()).arg(traceRecorder.GetDump().c_str()));
             return false;
         }
 
@@ -205,60 +228,83 @@ namespace ShaderManagementConsole
         return result;
     }
 
+    bool ShaderManagementConsoleDocumentSystemComponent::CloseAllDocumentsExcept(const AZ::Uuid& documentId)
+    {
+        bool result = true;
+        auto documentMap = m_documentMap;
+        for (const auto& documentPair : documentMap)
+        {
+            if (documentPair.first != documentId)
+            {
+                if (!CloseDocument(documentPair.first))
+                {
+                    result = false;
+                }
+            }
+        }
+
+        return result;
+    }
+
     bool ShaderManagementConsoleDocumentSystemComponent::SaveDocument(const AZ::Uuid& documentId)
     {
-        AZStd::string documentPath;
-        ShaderManagementConsoleDocumentRequestBus::EventResult(documentPath, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::GetAbsolutePath);
+        AZStd::string saveDocumentPath;
+        ShaderManagementConsoleDocumentRequestBus::EventResult(saveDocumentPath, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::GetAbsolutePath);
 
-        const QFileInfo saveInfo(documentPath.c_str());
-        if (saveInfo.absoluteFilePath().isEmpty())
+        if (saveDocumentPath.empty() || !AzFramework::StringFunc::Path::Normalize(saveDocumentPath))
         {
             return false;
         }
 
+        const QFileInfo saveInfo(saveDocumentPath.c_str());
         if (saveInfo.exists() && !saveInfo.isWritable())
         {
-            QMessageBox::critical(QApplication::activeWindow(), "Error", QString("Unable to save document. File can not be overwritten."));
+            QMessageBox::critical(QApplication::activeWindow(), "Error", QString("Document could not be overwritten:\n%1").arg(saveDocumentPath.c_str()));
             return false;
         }
 
-        ShaderManagementConsoleDocumentResult result = AZ::Failure(AZStd::string("There is no active document"));
+        AtomToolsFramework::TraceRecorder traceRecorder(m_maxMessageBoxLineCount);
+
+        bool result = false;
         ShaderManagementConsoleDocumentRequestBus::EventResult(result, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::Save);
         if (!result)
         {
-            QMessageBox::critical(QApplication::activeWindow(), "document not saved",
-                QString::fromUtf8(result.GetError().data(), (int)result.GetError().size()));
+            QMessageBox::critical(
+                QApplication::activeWindow(), QString("Document could not be saved"),
+                QString("Failed to save: \n%1\n\n%2").arg(saveDocumentPath.c_str()).arg(traceRecorder.GetDump().c_str()));
             return false;
         }
 
-        AZ_TracePrintf("ShaderManagementConsole", "%s\n", result.GetValue().c_str());
         return true;
     }
 
-    bool ShaderManagementConsoleDocumentSystemComponent::SaveDocumentAsCopy(const AZ::Uuid& documentId)
+    bool ShaderManagementConsoleDocumentSystemComponent::SaveDocumentAsCopy(const AZ::Uuid& documentId, AZStd::string_view targetPath)
     {
-        AZStd::string documentPath;
-        ShaderManagementConsoleDocumentRequestBus::EventResult(documentPath, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::GetAbsolutePath);
-
-        const QFileInfo& saveInfo = AtomToolsFramework::GetSaveFileInfo(documentPath.c_str());
-        if (saveInfo.absoluteFilePath().isEmpty())
+        AZStd::string saveDocumentPath = targetPath;
+        if (saveDocumentPath.empty() || !AzFramework::StringFunc::Path::Normalize(saveDocumentPath))
         {
             return false;
         }
 
-        AZStd::string saveDocumentPath = saveInfo.absoluteFilePath().toUtf8().constData();
-        AzFramework::StringFunc::Path::Normalize(saveDocumentPath);
+        const QFileInfo saveInfo(saveDocumentPath.c_str());
+        if (saveInfo.exists() && !saveInfo.isWritable())
+        {
+            QMessageBox::critical(QApplication::activeWindow(), "Error", QString("Document could not be overwritten:\n%1").arg(saveDocumentPath.c_str()));
+            return false;
+        }
 
-        ShaderManagementConsoleDocumentResult result = AZ::Failure(AZStd::string("There is no active document"));
+        AtomToolsFramework::TraceRecorder traceRecorder(m_maxMessageBoxLineCount);
+
+        bool result = false;
         ShaderManagementConsoleDocumentRequestBus::EventResult(result, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::SaveAsCopy, saveDocumentPath);
         if (!result)
         {
-            QMessageBox::critical(QApplication::activeWindow(), "document copy not saved",
-                QString::fromUtf8(result.GetError().data(), (int)result.GetError().size()));
+            QMessageBox::critical(
+                QApplication::activeWindow(), QString("Document could not be saved"),
+                QString("Failed to save: \n%1\n\n%2").arg(saveDocumentPath.c_str()).arg(traceRecorder.GetDump().c_str()));
             return false;
         }
 
-        AZ_TracePrintf("ShaderManagementConsole", "%s\n", result.GetValue().c_str());
         return true;
     }
 
@@ -276,13 +322,17 @@ namespace ShaderManagementConsole
         return result;
     }
 
-    AZ::Uuid ShaderManagementConsoleDocumentSystemComponent::OpenDocumentImpl(AZStd::string_view path, bool checkIfAlreadyOpen)
+    AZ::Uuid ShaderManagementConsoleDocumentSystemComponent::OpenDocumentImpl(AZStd::string_view sourcePath, bool checkIfAlreadyOpen)
     {
-        AZStd::string requestedPath = path;
-        if (requestedPath.empty() || !AzFramework::StringFunc::Path::Normalize(requestedPath))
+        AZStd::string requestedPath = sourcePath;
+        if (requestedPath.empty())
         {
-            QMessageBox::critical(QApplication::activeWindow(), "document path is invalid",
-                QString::fromUtf8(requestedPath.data(), (int)requestedPath.size()));
+            return AZ::Uuid::CreateNull();
+        }
+
+        if (!AzFramework::StringFunc::Path::Normalize(requestedPath))
+        {
+            QMessageBox::critical(QApplication::activeWindow(), "Error", QString("Document path is invalid:\n%1").arg(requestedPath.c_str()));
             return AZ::Uuid::CreateNull();
         }
 
@@ -301,21 +351,27 @@ namespace ShaderManagementConsole
             }
         }
 
+        AtomToolsFramework::TraceRecorder traceRecorder(m_maxMessageBoxLineCount);
+
         AZ::Uuid documentId = AZ::Uuid::CreateNull();
         ShaderManagementConsoleDocumentSystemRequestBus::BroadcastResult(documentId, &ShaderManagementConsoleDocumentSystemRequestBus::Events::CreateDocument);
         if (documentId.IsNull())
         {
-            QMessageBox::critical(QApplication::activeWindow(), "Failed to create document",
-                QString::fromUtf8(requestedPath.data(), (int)requestedPath.size()));
+            QMessageBox::critical(
+                QApplication::activeWindow(), QString("Document could not be created"),
+                QString("Failed to create: \n%1\n\n%2").arg(requestedPath.c_str()).arg(traceRecorder.GetDump().c_str()));
             return AZ::Uuid::CreateNull();
         }
 
-        ShaderManagementConsoleDocumentResult openResult = AZ::Failure(AZStd::string("Failed to open document"));
+        traceRecorder.GetDump().clear();
+
+        bool openResult = false;
         ShaderManagementConsoleDocumentRequestBus::EventResult(openResult, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::Open, requestedPath);
         if (!openResult)
         {
-            QMessageBox::critical(QApplication::activeWindow(), "Failed to open document",
-                QString::fromUtf8(openResult.GetError().data(), (int)openResult.GetError().size()));
+            QMessageBox::critical(
+                QApplication::activeWindow(), QString("Document could not be opened"),
+                QString("Failed to open: \n%1\n\n%2").arg(requestedPath.c_str()).arg(traceRecorder.GetDump().c_str()));
             ShaderManagementConsoleDocumentSystemRequestBus::Broadcast(&ShaderManagementConsoleDocumentSystemRequestBus::Events::DestroyDocument, documentId);
             return AZ::Uuid::CreateNull();
         }

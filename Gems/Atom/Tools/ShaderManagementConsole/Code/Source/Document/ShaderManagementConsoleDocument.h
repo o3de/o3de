@@ -41,10 +41,10 @@ namespace ShaderManagementConsole
         const AZ::RPI::ShaderOptionDescriptor& GetShaderOptionDescriptor(size_t index) const override;
         size_t GetShaderVariantCount() const override;
         const AZ::RPI::ShaderVariantListSourceData::VariantInfo& GetShaderVariantInfo(size_t index) const override;
-        ShaderManagementConsoleDocumentResult Open(AZStd::string_view loadPath) override;
-        ShaderManagementConsoleDocumentResult Save() override;
-        ShaderManagementConsoleDocumentResult SaveAsCopy(AZStd::string_view savePath) override;
-        ShaderManagementConsoleDocumentResult Close() override;
+        bool Open(AZStd::string_view loadPath) override;
+        bool Save() override;
+        bool SaveAsCopy(AZStd::string_view savePath) override;
+        bool Close() override;
         bool IsOpen() const override;
         bool IsModified() const override;
         bool IsSavable() const override;

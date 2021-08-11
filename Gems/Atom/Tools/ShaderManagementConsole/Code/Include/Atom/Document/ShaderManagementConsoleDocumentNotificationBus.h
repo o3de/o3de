@@ -10,6 +10,9 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/any.h>
 
+#include <AtomToolsFramework/DynamicProperty/DynamicProperty.h>
+#include <AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h>
+
 namespace ShaderManagementConsole
 {
     class ShaderManagementConsoleDocumentNotifications
@@ -47,9 +50,33 @@ namespace ShaderManagementConsole
         //! @param documentId unique id of document for which the notification is sent
         virtual void OnDocumentModified([[maybe_unused]] const AZ::Uuid& documentId) {}
 
+        //! Signal that a document dependency was modified
+        //! @param documentId unique id of document for which the notification is sent
+        virtual void OnDocumentDependencyModified([[maybe_unused]] const AZ::Uuid& documentId) {}
+
+        //! Signal that a document was modified externally
+        //! @param documentId unique id of document for which the notification is sent
+        virtual void OnDocumentExternallyModified([[maybe_unused]] const AZ::Uuid& documentId) {}
+
         //! Signal that a document undo state was updated
         //! @param documentId unique id of document for which the notification is sent
         virtual void OnDocumentUndoStateChanged([[maybe_unused]] const AZ::Uuid& documentId) {}
+
+        //! Signal that a property changed
+        //! @param documentId unique id of document for which the notification is sent
+        //! @param property object containing the property value and configuration that was modified
+        virtual void OnDocumentPropertyValueModified([[maybe_unused]] const AZ::Uuid& documentId, [[maybe_unused]] const AtomToolsFramework::DynamicProperty& property) {}
+
+        //! Signal that the property configuration has been changed.
+        //! @param documentId unique id of document for which the notification is sent
+        //! @param property object containing the property value and configuration that was modified
+        virtual void OnDocumentPropertyConfigModified([[maybe_unused]] const AZ::Uuid& documentId, [[maybe_unused]] const AtomToolsFramework::DynamicProperty& property) {}
+        
+        //! Signal that the property group visibility has been changed.
+        //! @param documentId unique id of document for which the notification is sent
+        //! @param groupId id of the group that changed
+        //! @param visible whether the property group is visible
+        virtual void OnDocumentPropertyGroupVisibilityChanged([[maybe_unused]] const AZ::Uuid& documentId, [[maybe_unused]] const AZ::Name& groupId, [[maybe_unused]] bool visible) {}
     };
 
     using ShaderManagementConsoleDocumentNotificationBus = AZ::EBus<ShaderManagementConsoleDocumentNotifications>;

@@ -23,53 +23,53 @@ namespace MaterialEditor
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
 
-        //! Create a material document object
-        //! @return Uuid of new material document, or null Uuid if failed
+        //! Create a document object
+        //! @return Uuid of new document, or null Uuid if failed
         virtual AZ::Uuid CreateDocument() = 0;
 
-        //! Destroy a material document object with the specified id
+        //! Destroy a document object with the specified id
         //! @return true if Uuid was found and removed, otherwise false
         virtual bool DestroyDocument(const AZ::Uuid& documentId) = 0;
 
-        //! Open a material document for editing
-        //! @param sourcePath material document to open.
-        //! @return unique id of new material document if successful, otherwise null Uuid
+        //! Open a document for editing
+        //! @param sourcePath document to open.
+        //! @return unique id of new document if successful, otherwise null Uuid
         virtual AZ::Uuid OpenDocument(AZStd::string_view sourcePath) = 0;
 
         //! Create a new document by specifying a source and prompting the user for destination path.
         //! If the source file is a material type then this results in creating a new material based on that type.
         //! If the source file is a material this results in creating a child material with the source file as its parent.
-        //! @param sourcePath material document to open.
+        //! @param sourcePath document to open.
         //! @param targetPath location where document is saved.
-        //! @return unique id of new material document if successful, otherwise null Uuid
+        //! @return unique id of new document if successful, otherwise null Uuid
         virtual AZ::Uuid CreateDocumentFromFile(AZStd::string_view sourcePath, AZStd::string_view targetPath) = 0;
 
-        //! Close the specified material document
-        //! @param documentId unique id of material document to close
+        //! Close the specified document
+        //! @param documentId unique id of document to close
         virtual bool CloseDocument(const AZ::Uuid& documentId) = 0;
 
-        //! Close all material documents
+        //! Close all documents
         virtual bool CloseAllDocuments() = 0;
 
-        //! Close all material documents except for documentId
-        //! @param documentId unique id of material document to not close
+        //! Close all documents except for documentId
+        //! @param documentId unique id of document to not close
         virtual bool CloseAllDocumentsExcept(const AZ::Uuid& documentId) = 0;
 
-        //! Save the specified material document
-        //! @param documentId unique id of material document to save
+        //! Save the specified document
+        //! @param documentId unique id of document to save
         virtual bool SaveDocument(const AZ::Uuid& documentId) = 0;
 
-        //! Save the specified material document to a different file
-        //! @param documentId unique id of material document to save
+        //! Save the specified document to a different file
+        //! @param documentId unique id of document to save
         //! @param targetPath location where document is saved.
         virtual bool SaveDocumentAsCopy(const AZ::Uuid& documentId, AZStd::string_view targetPath) = 0;
 
-        //! Save the specified material document to a different file, referencing the original material as its parent
-        //! @param documentId unique id of material document to save
+        //! Save the specified document to a different file, referencing the original material as its parent
+        //! @param documentId unique id of document to save
         //! @param targetPath location where document is saved.
         virtual bool SaveDocumentAsChild(const AZ::Uuid& documentId, AZStd::string_view targetPath) = 0;
 
-        //! Save all material documents
+        //! Save all documents
         virtual bool SaveAllDocuments() = 0;
     };
 

@@ -29,9 +29,9 @@ namespace ShaderManagementConsole
         virtual bool DestroyDocument(const AZ::Uuid& documentId) = 0;
 
         //! Open a document for editing
-        //! @param path document to edit.
+        //! @param sourcePath document to open.
         //! @return unique id of new document if successful, otherwise null Uuid
-        virtual AZ::Uuid OpenDocument(AZStd::string_view path) = 0;
+        virtual AZ::Uuid OpenDocument(AZStd::string_view sourcePath) = 0;
 
         //! Close the specified document
         //! @param documentId unique id of document to close
@@ -40,13 +40,18 @@ namespace ShaderManagementConsole
         //! Close all documents
         virtual bool CloseAllDocuments() = 0;
 
+        //! Close all documents except for documentId
+        //! @param documentId unique id of document to not close
+        virtual bool CloseAllDocumentsExcept(const AZ::Uuid& documentId) = 0;
+
         //! Save the specified document
         //! @param documentId unique id of document to save
         virtual bool SaveDocument(const AZ::Uuid& documentId) = 0;
 
         //! Save the specified document to a different file
         //! @param documentId unique id of document to save
-        virtual bool SaveDocumentAsCopy(const AZ::Uuid& documentId) = 0;
+        //! @param targetPath location where document is saved.
+        virtual bool SaveDocumentAsCopy(const AZ::Uuid& documentId, AZStd::string_view targetPath) = 0;
 
         //! Save all documents
         virtual bool SaveAllDocuments() = 0;

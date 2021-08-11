@@ -18,7 +18,6 @@
 
 namespace ShaderManagementConsole
 {
-    using ShaderManagementConsoleDocumentResult = AZ::Outcome<AZStd::string, AZStd::string>;
 
     class ShaderManagementConsoleDocumentRequests
         : public AZ::EBusTraits
@@ -48,17 +47,17 @@ namespace ShaderManagementConsole
 
         //! Load document and related data
         //! @param loadPath Absolute path of document to load
-        virtual ShaderManagementConsoleDocumentResult Open(AZStd::string_view loadPath) = 0;
+        virtual bool Open(AZStd::string_view loadPath) = 0;
 
         //! Save document to file
-        virtual ShaderManagementConsoleDocumentResult Save() = 0;
+        virtual bool Save() = 0;
 
         //! Save document copy
         //! @param savePath Absolute path where document is saved
-        virtual ShaderManagementConsoleDocumentResult SaveAsCopy(AZStd::string_view savePath) = 0;
+        virtual bool SaveAsCopy(AZStd::string_view savePath) = 0;
 
         //! Close document and reset its data
-        virtual ShaderManagementConsoleDocumentResult Close() = 0;
+        virtual bool Close() = 0;
 
         //! document is loaded
         virtual bool IsOpen() const = 0;

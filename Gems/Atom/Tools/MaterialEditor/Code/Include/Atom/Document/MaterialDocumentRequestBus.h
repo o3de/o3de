@@ -39,10 +39,10 @@ namespace MaterialEditor
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         typedef AZ::Uuid BusIdType;
 
-        //! Get absolute path of material source file
+        //! Get absolute path of document
         virtual AZStd::string_view GetAbsolutePath() const = 0;
 
-        //! Get relative path of material source file
+        //! Get relative path of document
         virtual AZStd::string_view GetRelativePath() const = 0;
 
         //! Get material asset created by MaterialDocument
@@ -72,52 +72,52 @@ namespace MaterialEditor
         //! Modify material property value
         virtual void SetPropertyValue(const AZ::Name& propertyFullName, const AZStd::any& value) = 0;
 
-        //! Load source material and related data
-        //! @param loadPath Absolute path of material to load
+        //! Load document and related data
+        //! @param loadPath Absolute path of document to load
         virtual bool Open(AZStd::string_view loadPath) = 0;
 
         //! Reload document preserving edits
         virtual bool Rebuild() = 0;
 
-        //! Save material to source file
+        //! Save document to file
         virtual bool Save() = 0;
 
-        //! Save material to a new source file
-        //! @param savePath Absolute path where material is saved
+        //! Save document copy
+        //! @param savePath Absolute path where document is saved
         virtual bool SaveAsCopy(AZStd::string_view savePath) = 0;
 
         //! Save material to a new source file as a child of the open material
         //! @param savePath Absolute path where material is saved
         virtual bool SaveAsChild(AZStd::string_view savePath) = 0;
 
-        //! Close material document and reset its data
+        //! Close document and reset its data
         virtual bool Close() = 0;
 
-        //! Material is loaded
+        //! document is loaded
         virtual bool IsOpen() const = 0;
 
-        //! Material has changes pending
+        //! document has changes pending
         virtual bool IsModified() const = 0;
 
         //! Can the document be saved
         virtual bool IsSavable() const = 0;
 
-        //! Returns true if there are reversible modifications to the material document
+        //! Returns true if there are reversible modifications to the document
         virtual bool CanUndo() const = 0;
 
-        //! Returns true if there are changes that were reversed and can be re-applied to the material document
+        //! Returns true if there are changes that were reversed and can be re-applied to the document
         virtual bool CanRedo() const = 0;
 
-        //! Restores the previous state of the material document
+        //! Restores the previous state of the document
         virtual bool Undo() = 0;
 
-        //! Restores the next state of the material document
+        //! Restores the next state of the document
         virtual bool Redo() = 0;
 
-        //! Signal that property editing is about to begin, like beginning to drag a slider control
+        //! Signal that editing is about to begin, like beginning to drag a slider control
         virtual bool BeginEdit() = 0;
 
-        //! Signal that property editing has completed, like after releasing the mouse button after continuously dragging a slider control
+        //! Signal that editing has completed, like after releasing the mouse button after continuously dragging a slider control
         virtual bool EndEdit() = 0;
     };
 

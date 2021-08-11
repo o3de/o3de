@@ -8,6 +8,8 @@
  
 #include <AzCore/Name/Name.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <AzQtComponents/Components/StyleManager.h>
+#include <AzQtComponents/Components/WindowDecorationWrapper.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
@@ -23,11 +25,8 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnin
 #include <QCloseEvent>
 #include <QFileDialog>
 #include <QHeaderView>
-#include <QPushButton>
 #include <QStandardItemModel>
 #include <QTableView>
-#include <QVBoxLayout>
-#include <QVariant>
 #include <QWindow>
 AZ_POP_DISABLE_WARNING
 
@@ -36,6 +35,14 @@ namespace ShaderManagementConsole
     ShaderManagementConsoleWindow::ShaderManagementConsoleWindow(QWidget* parent /* = 0 */)
         : AtomToolsFramework::AtomToolsMainWindow(parent)
     {
+        resize(1280, 1024);
+
+        // Among other things, we need the window wrapper to save the main window size, position, and state
+        auto mainWindowWrapper =
+            new AzQtComponents::WindowDecorationWrapper(AzQtComponents::WindowDecorationWrapper::OptionAutoTitleBarButtons);
+        mainWindowWrapper->setGuest(this);
+        mainWindowWrapper->enableSaveRestoreGeometry("O3DE", "ShaderManagementConsole", "mainWindowGeometry");
+
         setWindowTitle("Shader Management Console");
 
         setObjectName("ShaderManagementConsoleWindow");
@@ -47,15 +54,13 @@ namespace ShaderManagementConsole
         CreateMenu();
         CreateTabBar();
 
-        QVBoxLayout* vl = new QVBoxLayout(m_centralWidget);
-        vl->setMargin(0);
-        vl->setContentsMargins(0, 0, 0, 0);
-        vl->addWidget(m_tabWidget);
-        m_centralWidget->setLayout(vl);
-        setCentralWidget(m_centralWidget);
-
         AddDockWidget("Asset Browser", new ShaderManagementConsoleBrowserWidget, Qt::BottomDockWidgetArea, Qt::Vertical);
         AddDockWidget("Python Terminal", new AzToolsFramework::CScriptTermDialog, Qt::BottomDockWidgetArea, Qt::Horizontal);
+
+        SetDockWidgetVisible("Python Terminal", false);
+
+        // Restore geometry and show the window
+        mainWindowWrapper->showFromSettings();
 
         ShaderManagementConsoleDocumentNotificationBus::Handler::BusConnect();
         OnDocumentOpened(AZ::Uuid::CreateNull());
@@ -103,8 +108,7 @@ namespace ShaderManagementConsole
             // Create a new tab for the document ID and assign it's label to the file name of the document.
             AddTabForDocumentId(documentId, filename, absolutePath, [this, documentId]{
                 // The document tab contains a table view.
-                auto contentWidget = new QTableView(m_centralWidget);
-                contentWidget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+                auto contentWidget = new QTableView(centralWidget());
                 contentWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
                 contentWidget->setModel(CreateDocumentContent(documentId));
                 return contentWidget;
@@ -142,11 +146,22 @@ namespace ShaderManagementConsole
 
         activateWindow();
         raise();
+
+        const QString documentPath = GetDocumentPath(documentId);
+        if (!documentPath.isEmpty())
+        {
+            const QString status = QString("Document closed: %1").arg(documentPath);
+            m_statusMessage->setText(QString("<font color=\"White\">%1</font>").arg(status));
+        }
     }
 
     void ShaderManagementConsoleWindow::OnDocumentClosed(const AZ::Uuid& documentId)
     {
         RemoveTabForDocumentId(documentId);
+
+        const QString documentPath = GetDocumentPath(documentId);
+        const QString status = QString("Document closed: %1").arg(documentPath);
+        m_statusMessage->setText(QString("<font color=\"White\">%1</font>").arg(status));
     }
 
     void ShaderManagementConsoleWindow::OnDocumentModified(const AZ::Uuid& documentId)
@@ -182,6 +197,10 @@ namespace ShaderManagementConsole
         AZStd::string filename;
         AzFramework::StringFunc::Path::GetFullFileName(absolutePath.c_str(), filename);
         UpdateTabForDocumentId(documentId, filename, absolutePath, isModified);
+
+        const QString documentPath = GetDocumentPath(documentId);
+        const QString status = QString("Document closed: %1").arg(documentPath);
+        m_statusMessage->setText(QString("<font color=\"White\">%1</font>").arg(status));
     }
 
     void ShaderManagementConsoleWindow::CreateMenu()
@@ -206,8 +225,47 @@ namespace ShaderManagementConsole
 
         m_menuFile->addSeparator();
 
+        m_actionSave = m_menuFile->addAction("&Save", [this]() {
+            const AZ::Uuid documentId = GetDocumentIdFromTab(m_tabWidget->currentIndex());
+            bool result = false;
+            ShaderManagementConsoleDocumentSystemRequestBus::BroadcastResult(result, &ShaderManagementConsoleDocumentSystemRequestBus::Events::SaveDocument, documentId);
+            if (!result)
+            {
+                const QString documentPath = GetDocumentPath(documentId);
+                const QString status = QString("Failed to save document: %1").arg(documentPath);
+                m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(status));
+            }
+        }, QKeySequence::Save);
+
+        m_actionSaveAsCopy = m_menuFile->addAction("Save &As...", [this]() {
+            const AZ::Uuid documentId = GetDocumentIdFromTab(m_tabWidget->currentIndex());
+            const QString documentPath = GetDocumentPath(documentId);
+
+            bool result = false;
+            ShaderManagementConsoleDocumentSystemRequestBus::BroadcastResult(result, &ShaderManagementConsoleDocumentSystemRequestBus::Events::SaveDocumentAsCopy,
+                documentId, AtomToolsFramework::GetSaveFileInfo(documentPath).absoluteFilePath().toUtf8().constData());
+            if (!result)
+            {
+                const QString status = QString("Failed to save document: %1").arg(documentPath);
+                m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(status));
+            }
+        }, QKeySequence::SaveAs);
+
+        m_actionSaveAll = m_menuFile->addAction("Save A&ll", [this]() {
+            bool result = false;
+            ShaderManagementConsoleDocumentSystemRequestBus::BroadcastResult(result, &ShaderManagementConsoleDocumentSystemRequestBus::Events::SaveAllDocuments);
+            if (!result)
+            {
+                const QString status = QString("Failed to save documents.");
+                m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(status));
+            }
+        });
+
+        m_menuFile->addSeparator();
+
         m_actionClose = m_menuFile->addAction("&Close", [this]() {
-            CloseDocumentForTab(m_tabWidget->currentIndex());
+            const AZ::Uuid documentId = GetDocumentIdFromTab(m_tabWidget->currentIndex());
+            ShaderManagementConsoleDocumentSystemRequestBus::Broadcast(&ShaderManagementConsoleDocumentSystemRequestBus::Events::CloseDocument, documentId);
         }, QKeySequence::Close);
 
         m_actionCloseAll = m_menuFile->addAction("Close All", [this]() {
@@ -215,23 +273,8 @@ namespace ShaderManagementConsole
         });
 
         m_actionCloseOthers = m_menuFile->addAction("Close Others", [this]() {
-            CloseAllExceptDocumentForTab(m_tabWidget->currentIndex());
-        });
-
-        m_menuFile->addSeparator();
-
-        m_actionSave = m_menuFile->addAction("&Save", [this]() {
             const AZ::Uuid documentId = GetDocumentIdFromTab(m_tabWidget->currentIndex());
-            ShaderManagementConsoleDocumentSystemRequestBus::Broadcast(&ShaderManagementConsoleDocumentSystemRequestBus::Events::SaveDocument, documentId);
-        }, QKeySequence::Save);
-
-        m_actionSaveAsCopy = m_menuFile->addAction("Save &As...", [this]() {
-            const AZ::Uuid documentId = GetDocumentIdFromTab(m_tabWidget->currentIndex());
-            ShaderManagementConsoleDocumentSystemRequestBus::Broadcast(&ShaderManagementConsoleDocumentSystemRequestBus::Events::SaveDocumentAsCopy, documentId);
-        }, QKeySequence::SaveAs);
-
-        m_actionSaveAll = m_menuFile->addAction("Save A&ll", [this]() {
-            ShaderManagementConsoleDocumentSystemRequestBus::Broadcast(&ShaderManagementConsoleDocumentSystemRequestBus::Events::SaveAllDocuments);
+            ShaderManagementConsoleDocumentSystemRequestBus::Broadcast(&ShaderManagementConsoleDocumentSystemRequestBus::Events::CloseAllDocumentsExcept, documentId);
         });
 
         m_menuFile->addSeparator();
@@ -254,37 +297,46 @@ namespace ShaderManagementConsole
 
         m_actionUndo = m_menuEdit->addAction("&Undo", [this]() {
             const AZ::Uuid documentId = GetDocumentIdFromTab(m_tabWidget->currentIndex());
-            ShaderManagementConsoleDocumentRequestBus::Event(documentId, &ShaderManagementConsoleDocumentRequestBus::Events::Undo);
+            bool result = false;
+            ShaderManagementConsoleDocumentRequestBus::EventResult(result, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::Undo);
+            if (!result)
+            {
+                const QString documentPath = GetDocumentPath(documentId);
+                const QString status = QString("Failed to perform Undo on document: %1").arg(documentPath);
+                m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(status));
+            }
         }, QKeySequence::Undo);
 
         m_actionRedo = m_menuEdit->addAction("&Redo", [this]() {
             const AZ::Uuid documentId = GetDocumentIdFromTab(m_tabWidget->currentIndex());
-            ShaderManagementConsoleDocumentRequestBus::Event(documentId, &ShaderManagementConsoleDocumentRequestBus::Events::Redo);
+            bool result = false;
+            ShaderManagementConsoleDocumentRequestBus::EventResult(result, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::Redo);
+            if (!result)
+            {
+                const QString documentPath = GetDocumentPath(documentId);
+                const QString status = QString("Failed to perform Redo on document: %1").arg(documentPath);
+                m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(status));
+            }
         }, QKeySequence::Redo);
 
         m_menuEdit->addSeparator();
 
-        m_actionSettings = m_menuEdit->addAction("&Preferences...", [this]() {
+        m_actionSettings = m_menuEdit->addAction("&Settings...", [this]() {
         }, QKeySequence::Preferences);
         m_actionSettings->setEnabled(false);
 
         m_menuView = m_menuBar->addMenu("&View");
 
-        m_actionAssetBrowser = m_menuView->addAction(
-            "&Asset Browser",
-            [this]()
-            {
-                const AZStd::string label = "Asset Browser";
-                SetDockWidgetVisible(label, !IsDockWidgetVisible(label));
-            });
+        m_actionAssetBrowser = m_menuView->addAction("&Asset Browser", [this]() {
+            const AZStd::string label = "Asset Browser";
+            SetDockWidgetVisible(label, !IsDockWidgetVisible(label));
+        });
 
-        m_actionPythonTerminal = m_menuView->addAction(
-            "Python &Terminal",
-            [this]()
-            {
-                const AZStd::string label = "Python Terminal";
-                SetDockWidgetVisible(label, !IsDockWidgetVisible(label));
-            });
+        m_actionPythonTerminal = m_menuView->addAction("Python &Terminal", [this]() {
+            const AZStd::string label = "Python Terminal";
+            SetDockWidgetVisible(label, !IsDockWidgetVisible(label));
+        });
+
 
         m_menuView->addSeparator();
 
@@ -313,12 +365,21 @@ namespace ShaderManagementConsole
         // When the last tab is removed tabIndex will be -1 and the document ID will be null
         // This should automatically clear the active document
         connect(m_tabWidget, &QTabWidget::currentChanged, this, [this](int tabIndex) {
-            SelectDocumentForTab(tabIndex);
+            const AZ::Uuid documentId = GetDocumentIdFromTab(tabIndex);
+            ShaderManagementConsoleDocumentNotificationBus::Broadcast(&ShaderManagementConsoleDocumentNotificationBus::Events::OnDocumentOpened, documentId);
         });
 
         connect(m_tabWidget, &QTabWidget::tabCloseRequested, this, [this](int tabIndex) {
-            CloseDocumentForTab(tabIndex);
+            const AZ::Uuid documentId = GetDocumentIdFromTab(tabIndex);
+            ShaderManagementConsoleDocumentSystemRequestBus::Broadcast(&ShaderManagementConsoleDocumentSystemRequestBus::Events::CloseDocument, documentId);
         });
+    }
+
+    QString ShaderManagementConsoleWindow::GetDocumentPath(const AZ::Uuid& documentId) const
+    {
+        AZStd::string absolutePath;
+        ShaderManagementConsoleDocumentRequestBus::EventResult(absolutePath, documentId, &ShaderManagementConsoleDocumentRequestBus::Handler::GetAbsolutePath);
+        return absolutePath.c_str();
     }
 
     void ShaderManagementConsoleWindow::OpenTabContextMenu()
@@ -332,48 +393,19 @@ namespace ShaderManagementConsole
             QMenu tabMenu;
             const QString selectActionName = (currentTabIndex == clickedTabIndex) ? "Select in Browser" : "Select";
             tabMenu.addAction(selectActionName, [this, clickedTabIndex]() {
-                SelectDocumentForTab(clickedTabIndex);
+                const AZ::Uuid documentId = GetDocumentIdFromTab(clickedTabIndex);
+                ShaderManagementConsoleDocumentNotificationBus::Broadcast(&ShaderManagementConsoleDocumentNotificationBus::Events::OnDocumentOpened, documentId);
             });
             tabMenu.addAction("Close", [this, clickedTabIndex]() {
-                CloseDocumentForTab(clickedTabIndex);
+                const AZ::Uuid documentId = GetDocumentIdFromTab(clickedTabIndex);
+                ShaderManagementConsoleDocumentSystemRequestBus::Broadcast(&ShaderManagementConsoleDocumentSystemRequestBus::Events::CloseDocument, documentId);
             });
             auto closeOthersAction = tabMenu.addAction("Close Others", [this, clickedTabIndex]() {
-                CloseAllExceptDocumentForTab(clickedTabIndex);
+                const AZ::Uuid documentId = GetDocumentIdFromTab(clickedTabIndex);
+                ShaderManagementConsoleDocumentSystemRequestBus::Broadcast(&ShaderManagementConsoleDocumentSystemRequestBus::Events::CloseAllDocumentsExcept, documentId);
             });
             closeOthersAction->setEnabled(tabBar->count() > 1);
             tabMenu.exec(QCursor::pos());
-        }
-    }
-
-    void ShaderManagementConsoleWindow::SelectDocumentForTab(const int tabIndex)
-    {
-        const AZ::Uuid documentId = GetDocumentIdFromTab(tabIndex);
-        ShaderManagementConsoleDocumentNotificationBus::Broadcast(&ShaderManagementConsoleDocumentNotificationBus::Events::OnDocumentOpened, documentId);
-    }
-
-    void ShaderManagementConsoleWindow::CloseDocumentForTab(const int tabIndex)
-    {
-        const AZ::Uuid documentId = GetDocumentIdFromTab(tabIndex);
-        ShaderManagementConsoleDocumentSystemRequestBus::Broadcast(&ShaderManagementConsoleDocumentSystemRequestBus::Events::CloseDocument, documentId);
-    }
-
-    void ShaderManagementConsoleWindow::CloseAllExceptDocumentForTab(const int tabIndex)
-    {
-        AZStd::vector<AZ::Uuid> documentIdsToClose;
-        documentIdsToClose.reserve(m_tabWidget->count());
-        const AZ::Uuid documentIdToKeepOpen = GetDocumentIdFromTab(tabIndex);
-        for (int tabI = 0; tabI < m_tabWidget->count(); ++tabI)
-        {
-            const AZ::Uuid documentId = GetDocumentIdFromTab(tabI);
-            if (documentId != documentIdToKeepOpen)
-            {
-                documentIdsToClose.push_back(documentId);
-            }
-        }
-
-        for (const AZ::Uuid& documentId : documentIdsToClose)
-        {
-            ShaderManagementConsoleDocumentSystemRequestBus::Broadcast(&ShaderManagementConsoleDocumentSystemRequestBus::Events::CloseDocument, documentId);
         }
     }
 
