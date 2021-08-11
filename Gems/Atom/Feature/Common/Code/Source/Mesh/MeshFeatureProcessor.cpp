@@ -376,7 +376,7 @@ namespace AZ
             else
             {
                 AZ_Assert(false, "Invalid mesh handle");
-                return {0,0,0.0f,0.0f};
+                return {RPI::Cullable::LodType::Default, 0, 0.0f, 0.0f };
             }
         }
 

@@ -79,20 +79,25 @@ namespace AZ
                             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &MeshComponentConfig::m_useForwardPassIblSpecular, "Use Forward Pass IBL Specular",
                                 "Renders IBL specular reflections in the forward pass, using only the most influential probe (based on the position of the entity) and the global IBL cubemap.  Can reduce rendering costs, but only recommended for static objects that are affected by at most one reflection probe.")
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
-                        ->ClassElement(AZ::Edit::ClassElements::Group, "Lod Configuration")
-                            ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &MeshComponentConfig::m_lodType, "Lod Type", "Lod Method.")
                                 ->Attribute(AZ::Edit::Attributes::EnumValues, &MeshComponentConfig::GetLodTypeValues)
+                                ->Attribute(AZ::Edit::Attributes::Visibility, &MeshComponentConfig::IsAssetSet)
+                        ->ClassElement(AZ::Edit::ClassElements::Group, "Lod Configuration")
+                            ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
+                            ->Attribute(AZ::Edit::Attributes::Visibility, &MeshComponentConfig::ShowLodConfig)
                             ->DataElement(AZ::Edit::UIHandlers::ComboBox, &MeshComponentConfig::m_lodOverride, "Lod Override", "Allows the rendered LOD to be overridden instead of being calculated automatically.")
                                 ->Attribute(AZ::Edit::Attributes::EnumValues, &MeshComponentConfig::GetLodOverrideValues)
+                                ->Attribute(AZ::Edit::Attributes::Visibility, &MeshComponentConfig::LodTypeIsSpecificLOD)
                             ->DataElement(AZ::Edit::UIHandlers::Slider, &MeshComponentConfig::m_minimumScreenCoverage, "Minimum Screen Coverage", "Minimum proportion of screen area an entitiy takes up, after that the entitiy is culled.")
                                 ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                                 ->Attribute(AZ::Edit::Attributes::Max, 1.f)
                                 ->Attribute(AZ::Edit::Attributes::Suffix, " percent")
+                                ->Attribute(AZ::Edit::Attributes::Visibility, &MeshComponentConfig::LodTypeIsScreenCoverage)
                             ->DataElement(AZ::Edit::UIHandlers::Slider, &MeshComponentConfig::m_qualityDecayRate, "Quality Decay Rate",
                                 "Rate at which mesh quality decays (0 -> always stay highest quality, 1 -> quality falls off to lowest quality immediately).")
                                 ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                                 ->Attribute(AZ::Edit::Attributes::Max, 1.f)
+                                ->Attribute(AZ::Edit::Attributes::Visibility, &MeshComponentConfig::LodTypeIsScreenCoverage)
                         ;
                 }
             }

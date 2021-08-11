@@ -70,17 +70,22 @@ namespace AZ
             };
             CullData m_cullData;
 
-            using LodType = uint8_t;
+            enum LodType : uint8_t
+            {
+                Default = 0,
+                ScreenCoverage,
+                SpecificLod,
+            };
             using LodOverride = uint8_t;
-            static constexpr uint8_t NoLodOverride = AZStd::numeric_limits<LodOverride>::max();
-            static constexpr uint8_t DefaultLodType = AZStd::numeric_limits<LodType>::max();
 
             struct LodConfiguration
             {
-                LodType m_lodType;
-                LodOverride m_lodOverride;
-                float m_minimumScreenCoverage;
-                float m_qualityDecayRate;
+                LodType m_lodType = LodType::Default;
+                LodOverride m_lodOverride = 0;
+                // the minimum possibe area a sphere enclosing a mesh projected onto the screen should have before it is culled.
+                float m_minimumScreenCoverage = 1.0f / 1080.0f; // For default, mesh should cover at least a screen pixel at 1080p to be drawn;
+                // The screen area decay between 0 and 1, i.e. closer to 1 -> lose quality immediately, closer to 0 -> never lose quality 
+                float m_qualityDecayRate = 0.5f;
             };
 
             struct LodData
@@ -98,12 +103,7 @@ namespace AZ
                 //! Suggest setting to: 0.5f*localAabb.GetExtents().GetMaxElement()
                 float m_lodSelectionRadius = 1.0f;
 
-                // the minimum possibe area a sphere enclosing a mesh projected onto the screen should have before it is culled.
-                static constexpr float DefaultMinimumScreenCoverage = 1.0f / 1080.0f;  //For default, mesh should cover at least a screen pixel at 1080p to be drawn
-                // The screen area decay between 0 and 1, i.e. closer to 1 -> lose quality immediately, closer to 0 -> never lose quality 
-                static constexpr float DefaultQualityDecayRate = 0.5f;
-
-                LodConfiguration m_lodConfiguration = { DefaultLodType, NoLodOverride, DefaultMinimumScreenCoverage, DefaultQualityDecayRate };
+                LodConfiguration m_lodConfiguration;
             };
             LodData m_lodData;
 

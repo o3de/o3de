@@ -672,20 +672,25 @@ namespace AZ
                 }
             };
 
-            if (lodData.m_lodConfiguration.m_lodOverride == Cullable::NoLodOverride)
+            switch (lodData.m_lodConfiguration.m_lodType)
             {
-                for (const Cullable::LodData::Lod& lod : lodData.m_lods)
-                {
-                    //Note that this supports overlapping lod ranges (to suport cross-fading lods, for example)
-                    if (approxScreenPercentage >= lod.m_screenCoverageMin && approxScreenPercentage <= lod.m_screenCoverageMax)
+                case Cullable::LodType::SpecificLod:
+                    if (lodData.m_lodConfiguration.m_lodOverride < lodData.m_lods.size())
                     {
-                        addLodToDrawPacket(lod);
+                        addLodToDrawPacket(lodData.m_lods.at(lodData.m_lodConfiguration.m_lodOverride));
                     }
-                }
-            }
-            else if(lodData.m_lodConfiguration.m_lodOverride < lodData.m_lods.size())
-            {
-                addLodToDrawPacket(lodData.m_lods.at(lodData.m_lodConfiguration.m_lodOverride));
+                    break;
+                case Cullable::LodType::ScreenCoverage:
+                default:
+                    for (const Cullable::LodData::Lod& lod : lodData.m_lods)
+                    {
+                        // Note that this supports overlapping lod ranges (to suport cross-fading lods, for example)
+                        if (approxScreenPercentage >= lod.m_screenCoverageMin && approxScreenPercentage <= lod.m_screenCoverageMax)
+                        {
+                            addLodToDrawPacket(lod);
+                        }
+                    }
+                    break;
             }
 
             return numVisibleDrawPackets;

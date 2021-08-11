@@ -44,6 +44,9 @@ namespace AZ
 
             // Editor helper functions
             bool IsAssetSet();
+            bool LodTypeIsScreenCoverage();
+            bool LodTypeIsSpecificLOD();
+            bool ShowLodConfig();
             AZStd::vector<AZStd::pair<RPI::Cullable::LodOverride, AZStd::string>> GetLodOverrideValues();
             AZStd::vector<AZStd::pair<RPI::Cullable::LodType, AZStd::string>> GetLodTypeValues();
 
@@ -52,10 +55,10 @@ namespace AZ
             bool m_excludeFromReflectionCubeMaps = false;
             bool m_useForwardPassIblSpecular = false;
 
-            RPI::Cullable::LodType m_lodType = RPI::Cullable::DefaultLodType;
-            RPI::Cullable::LodOverride m_lodOverride = RPI::Cullable::NoLodOverride;
-            float m_minimumScreenCoverage = RPI::Cullable::LodData::DefaultMinimumScreenCoverage;
-            float m_qualityDecayRate = RPI::Cullable::LodData::DefaultQualityDecayRate;
+            RPI::Cullable::LodType m_lodType = RPI::Cullable::LodType::Default;
+            RPI::Cullable::LodOverride m_lodOverride = aznumeric_cast<RPI::Cullable::LodOverride>(0);
+            float m_minimumScreenCoverage = 1.0f / 1080.0f;
+            float m_qualityDecayRate = 0.5f;
         };
 
         class MeshComponentController final

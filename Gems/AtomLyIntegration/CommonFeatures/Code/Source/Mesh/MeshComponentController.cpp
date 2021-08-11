@@ -31,11 +31,30 @@ namespace AZ
 {
     namespace Render
     {
+
+        namespace MeshComponentControllerVersionUtility
+        {
+            bool VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
+            {
+                if (classElement.GetVersion() < 2)
+                {
+                    RPI::Cullable::LodOverride lodOverride = classElement.FindElement(AZ_CRC("LodOverride"));
+                    static constexpr uint8_t old_NoLodOverride = AZStd::numeric_limits <RPI::Cullable::LodOverride>::max();
+                    if (lodOverride == old_NoLodOverride)
+                    {
+                        classElement.AddElementWithData(context, "LodType", RPI::Cullable::LodType::SpecificLod);
+                    }
+                }
+                return true;
+            }
+        } // namespace MeshComponentControllerVersionUtility
+
         void MeshComponentConfig::Reflect(ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<MeshComponentConfig>()
+                    //->Version(2, &MeshComponentControllerVersionUtility::VersionConverter)
                     ->Version(1)
                     ->Field("ModelAsset", &MeshComponentConfig::m_modelAsset)
                     ->Field("SortKey", &MeshComponentConfig::m_sortKey)
@@ -51,6 +70,21 @@ namespace AZ
         bool MeshComponentConfig::IsAssetSet()
         {
             return m_modelAsset.GetId().IsValid();
+        }
+
+        bool MeshComponentConfig::LodTypeIsScreenCoverage()
+        {
+            return m_lodType == RPI::Cullable::LodType::ScreenCoverage;
+        }
+
+        bool MeshComponentConfig::LodTypeIsSpecificLOD()
+        {
+            return m_lodType == RPI::Cullable::LodType::SpecificLod;
+        }
+
+        bool MeshComponentConfig::ShowLodConfig()
+        {
+            return LodTypeIsScreenCoverage() && LodTypeIsSpecificLOD();
         }
 
         AZStd::vector<AZStd::pair<RPI::Cullable::LodOverride, AZStd::string>> MeshComponentConfig::GetLodOverrideValues()
@@ -75,9 +109,9 @@ namespace AZ
             }
 
             values.reserve(lodCount + 1);
-            values.push_back({ RPI::Cullable::NoLodOverride, "Not Set" });
+            values.push_back({0, "Default (Highest)" });
 
-            for (uint32_t i = 0; i < lodCount; ++i)
+            for (uint32_t i = 1; i < lodCount; ++i)
             {
                 AZStd::string enumDescription = AZStd::string::format("Lod %i", i);
                 values.push_back({ aznumeric_cast<RPI::Cullable::LodOverride>(i), enumDescription.c_str() });
@@ -89,7 +123,9 @@ namespace AZ
         AZStd::vector<AZStd::pair<RPI::Cullable::LodType, AZStd::string>> MeshComponentConfig::GetLodTypeValues()
         {
             return {
-                {RPI::Cullable::DefaultLodType, "Default"}
+                {aznumeric_cast<RPI::Cullable::LodType>(0), "Default"},
+                {aznumeric_cast<RPI::Cullable::LodType>(1), "Screen Coverage" },
+                {aznumeric_cast<RPI::Cullable::LodType>(2), "Specific Lod" }
             };
         }
 
@@ -112,12 +148,12 @@ namespace AZ
 
             if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
-                behaviorContext->ConstantProperty("NoLodOverride", BehaviorConstant(RPI::Cullable::NoLodOverride))
+                behaviorContext->ConstantProperty("DefaultLodOverride", BehaviorConstant(0))
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                     ->Attribute(AZ::Script::Attributes::Category, "render")
                     ->Attribute(AZ::Script::Attributes::Module, "render");
 
-                behaviorContext->ConstantProperty("DefaultLodType", BehaviorConstant(RPI::Cullable::DefaultLodType))
+                behaviorContext->ConstantProperty("DefaultLodType", BehaviorConstant(RPI::Cullable::LodType::Default))
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                     ->Attribute(AZ::Script::Attributes::Category, "render")
                     ->Attribute(AZ::Script::Attributes::Module, "render");
