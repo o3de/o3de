@@ -1162,7 +1162,7 @@ namespace AZ
             return false;
         }
 
-        ScopedMergeEvent(m_preMergeEvent, m_postMergeEvent, path, rootKey);
+        ScopedMergeEvent scopedMergeEvent(m_preMergeEvent, m_postMergeEvent, path, rootKey);
 
         JsonSerializationResult::ResultCode mergeResult(JsonSerializationResult::Tasks::Merge);
         if (rootKey.empty())
