@@ -99,7 +99,7 @@ class TestImpact:
                 return
 
             # A diff was generated, attempt to parse the diff and construct the change list
-            logger.info(f"Generated diff between commits '{self._src_commit}' and '{self._dst_commitgitk}': '{diff_path}'.") 
+            logger.info(f"Generated diff between commits '{self._src_commit}' and '{self._dst_commit}': '{diff_path}'.") 
             with open(diff_path, "r") as diff_data:
                 lines = diff_data.readlines()
                 for line in lines:
