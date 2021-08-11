@@ -14,6 +14,7 @@
 
 #include <ISystem.h>
 #include <CryListenerSet.h>
+#include <MultiThread_Containers.h>
 
 class CSystemEventDispatcher
     : public ISystemEventDispatcher

@@ -38,10 +38,6 @@ struct SSystemGlobalEnvironment* gEnv = nullptr;
     #include AZ_RESTRICTED_FILE(platform_impl_h)
 #endif
 
-//////////////////////////////////////////////////////////////////////////
-// If not in static library.
-#include <CryThreadImpl.h>
-
 #if defined(WIN32) || defined(WIN64)
 void CryPureCallHandler()
 {

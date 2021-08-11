@@ -89,8 +89,6 @@ set(FILES
     CrySizer.h
     CryString.h
     CrySystemBus.h
-    CryThread.h
-    CryThreadImpl.h
     CryTypeInfo.h
     CryVersion.h
     FrameProfiler.h
@@ -160,9 +158,6 @@ set(FILES
     CryAssert_Mac.h
     CryLibrary.cpp
     CryLibrary.h
-    CryThread_pthreads.h
-    CryThread_windows.h
-    CryThreadImpl_windows.h
     CryWindows.h
     Linux32Specific.h
     Linux64Specific.h

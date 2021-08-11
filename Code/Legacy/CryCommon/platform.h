@@ -732,7 +732,6 @@ typedef int socklen_t;
 
 
 // Include MultiThreading support.
-#include "CryThread.h"
 #include "MultiThread.h"
 
 // In RELEASE disable printf and fprintf

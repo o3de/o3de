@@ -10,7 +10,6 @@
 #pragma once
 
 #include <ILog.h>
-#include <CryThread.h>
 #include <MultiThread.h>
 #include <MultiThread_Containers.h>
 

@@ -22,7 +22,6 @@
 //---------------------------------------------------------------------------
 
 #include "MultiThread.h"
-#include "CryThread.h"
 
 namespace stl
 {
