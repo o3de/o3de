@@ -180,15 +180,16 @@ namespace AZ
                 m_pendingGarbage.push_back({ AZStd::move(m_pendingObjects), m_currentIteration });
             }
 
-            if (m_pendingNotifies.size())
+            if (!m_pendingNotifies.empty())
             {
-                if (m_pendingGarbage.size())
+                if (!m_pendingGarbage.empty())
                 {
                     // find the newest garbage entry and add any pending notifies
                     Garbage& latestGarbage = m_pendingGarbage.front();
                     size_t latestGarbageAge = m_currentIteration - latestGarbage.m_collectIteration;
-                    size_t i = 1;
-                    while (i < m_pendingGarbage.size())
+
+                    // check the rest of the entries to see if they are newer
+                    for (size_t i = 1; i < m_pendingGarbage.size(); ++i)
                     {
                         size_t age = m_currentIteration - m_pendingGarbage[i].m_collectIteration;
                         if (age < latestGarbageAge)
