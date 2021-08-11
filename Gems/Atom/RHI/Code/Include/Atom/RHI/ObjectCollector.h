@@ -34,6 +34,8 @@ namespace AZ
             using MutexType = NullMutex;
         };
 
+        using ObjectCollectorNotifyFunction = AZStd::function<void()>;
+
         /**
          * Deferred-releases reference-counted objects at a specific latency. Example: Use to batch-release
          * objects that exist on the GPU timeline at the end of the frame after syncing the oldest GPU frame.
@@ -85,6 +87,9 @@ namespace AZ
             /// Must not be called at collection time.
             size_t GetObjectCount() const;
 
+            /// Notifies after the current set of pending objects is released.
+            void Notify(ObjectCollectorNotifyFunction notifyFunction);
+
         private:
             void QueueForCollectInternal(ObjectPtrType object);
 
@@ -92,6 +97,7 @@ namespace AZ
             {
                 AZStd::vector<ObjectPtrType> m_objects;
                 uint64_t m_collectIteration;
+                AZStd::vector<ObjectCollectorNotifyFunction> m_notifies;
             };
 
             inline bool IsGarbageReady(size_t collectIteration)
@@ -106,6 +112,7 @@ namespace AZ
             mutable typename Traits::MutexType m_mutex;
             AZStd::vector<ObjectPtrType> m_pendingObjects;
             AZStd::vector<Garbage> m_pendingGarbage;
+            AZStd::vector<ObjectCollectorNotifyFunction> m_pendingNotifies;
         };
 
         template <typename Traits>
@@ -172,6 +179,39 @@ namespace AZ
             {
                 m_pendingGarbage.push_back({ AZStd::move(m_pendingObjects), m_currentIteration });
             }
+
+            if (!m_pendingNotifies.empty())
+            {
+                if (!m_pendingGarbage.empty())
+                {
+                    // find the newest garbage entry and add any pending notifies
+                    Garbage& latestGarbage = m_pendingGarbage.front();
+                    size_t latestGarbageAge = m_currentIteration - latestGarbage.m_collectIteration;
+
+                    // check the rest of the entries to see if they are newer
+                    for (size_t i = 1; i < m_pendingGarbage.size(); ++i)
+                    {
+                        size_t age = m_currentIteration - m_pendingGarbage[i].m_collectIteration;
+                        if (age < latestGarbageAge)
+                        {
+                            latestGarbage = m_pendingGarbage[i];
+                            latestGarbageAge = age;
+                        }
+                    }
+
+                    latestGarbage.m_notifies.insert(latestGarbage.m_notifies.end(), m_pendingNotifies.begin(), m_pendingNotifies.end());
+                }
+                else
+                {
+                    // garbage queue is empty, notify now
+                    for (auto& notifyFunction : m_pendingNotifies)
+                    {
+                        notifyFunction();
+                    }
+                }
+
+                m_pendingNotifies.clear();
+            }
             m_mutex.unlock();
 
             size_t objectCount = 0;
@@ -189,6 +229,12 @@ namespace AZ
                         }
                     }
                     objectCount += garbage.m_objects.size();
+
+                    for (auto& notifyFunction : garbage.m_notifies)
+                    {
+                        notifyFunction();
+                    }
+
                     garbage = AZStd::move(m_pendingGarbage.back());
                     m_pendingGarbage.pop_back();
                 }
@@ -214,6 +260,14 @@ namespace AZ
             }
 
             return objectCount;
+        }
+
+        template <typename Traits>
+        void ObjectCollector<Traits>::Notify(ObjectCollectorNotifyFunction notifyFunction)
+        {
+            m_mutex.lock();
+            m_pendingNotifies.push_back(notifyFunction);
+            m_mutex.unlock();
         }
     }
 }
