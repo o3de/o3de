@@ -82,15 +82,15 @@ class TestImpact:
                     return
                 diff_src = self._src_commit
                 diff_dst = self._dst_commit
+
+                # Calculate the distance (in commits) between the src and dst commits
+                self._commit_distance = self._repo.commit_distance(diff_src, diff_dst)
+                logger.info(f"The distance between '{diff_src}' and '{diff_dst}' commits is '{self._commit_distance}' commits.") 
             else:
                 # For pull request builds we don't use the last commit hash as there is no guarantee that the dst will
                 # be descended from it so instead we will use the diff from src and dst branches
                 diff_src = self._src_branch
                 diff_dst = self._dst_branch
-
-            # Calculate the distance (in commits) between the src and dst commits
-            self._commit_distance = self._repo.commit_distance(diff_src, diff_dst)
-            logger.info(f"The distance between '{diff_src}' and '{diff_dst}' commits is '{self._commit_distance}' commits.") 
 
             try:
                 # Attempt to generate a diff between the src and dst commits
