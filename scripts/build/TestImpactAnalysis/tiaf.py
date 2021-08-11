@@ -71,34 +71,37 @@ class TestImpact:
 
         self._has_change_list = False
         self._change_list_path = None
+        self._src_commit = last_commit_hash
 
         # Check whether or not a previous commit hash exists (no hash is not a failure)
-        if last_commit_hash:
+        if self._src_commit:
             if self._is_source_of_truth_branch:
                 # For branch builds, the dst commit must be descended from the src commit
-                self._src_commit = last_commit_hash
                 if not self._repo.is_descendent(self._src_commit, self._dst_commit):
                     logger.error(f"Source commit '{self._src_commit}' and destination commit '{self._dst_commit}' must be related for branch builds.")
                     return
+                diff_src = self._src_commit
+                diff_dst = self._dst_commit
             else:
                 # For pull request builds we don't use the last commit hash as there is no guarantee that the dst will
-                # be descended from it so instead we will use the diff from dst commit and head
-                self._src_commit = "HEAD^"
+                # be descended from it so instead we will use the diff from src and dst branches
+                diff_src = self._src_branch
+                diff_dst = self._dst_branch
 
             # Calculate the distance (in commits) between the src and dst commits
-            self._commit_distance = self._repo.commit_distance(self._src_commit, self._dst_commit)
-            logger.info(f"The distance between the source and destination commits is '{self._commit_distance}' commits.") 
+            self._commit_distance = self._repo.commit_distance(diff_src, diff_dst)
+            logger.info(f"The distance between '{diff_src}' and '{diff_dst}' commits is '{self._commit_distance}' commits.") 
 
             try:
                 # Attempt to generate a diff between the src and dst commits
                 diff_path = pathlib.Path(pathlib.PurePath(self._temp_workspace).joinpath(f"changelist.{instance_id}.diff"))
-                self._repo.create_diff_file(self._src_commit, self._dst_commit, diff_path)
+                self._repo.create_diff_file(diff_src, diff_dst, diff_path)
             except RuntimeError as e:
                 logger.error(e)
                 return
 
             # A diff was generated, attempt to parse the diff and construct the change list
-            logger.info(f"Generated diff between commits '{self._src_commit}' and '{self._dst_commit}': '{diff_path}'.") 
+            logger.info(f"Generated diff between commits '{diff_src}' and '{diff_dst}': '{diff_path}'.") 
             with open(diff_path, "r") as diff_data:
                 lines = diff_data.readlines()
                 for line in lines:
