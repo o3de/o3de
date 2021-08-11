@@ -157,9 +157,8 @@ namespace AZ
             //Preset the drawable
             Platform::PresentInternal(
                 m_mtlCommandBuffer,
-                m_drawables[currentImageIndex],
-                GetDescriptor().m_verticalSyncInterval,
-                Base::GetDevice().GetMainDisplayRefreshRate());
+                m_drawables[currentImageIndex], GetDescriptor().m_verticalSyncInterval,
+                m_refreshRate);
             
             [m_drawables[currentImageIndex] release];
             m_drawables[currentImageIndex] = nil;

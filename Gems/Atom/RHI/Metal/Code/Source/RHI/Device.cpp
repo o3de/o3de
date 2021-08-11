@@ -13,7 +13,6 @@
 #include <RHI/BufferPool.h>
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
-#include <RHI/Device_Platform.h>
 #include <RHI/Metal.h>
 
 //Symbols related to Obj-c categories are getting stripped out as part of the link step for monolithic builds
@@ -78,7 +77,6 @@ namespace AZ
             
             m_samplerCache = [[NSCache alloc]init];
             [m_samplerCache setName:@"SamplerCache"];
-
             return RHI::ResultCode::Success;
         }
     
