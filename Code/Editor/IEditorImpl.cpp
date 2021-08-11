@@ -251,7 +251,7 @@ void CEditorImpl::Uninitialize()
 
 void CEditorImpl::UnloadPlugins()
 {
-    CryAutoLock<CryMutex> lock(m_pluginMutex);
+    AZStd::lock_guard<AZStd::mutex> lock(m_pluginMutex);
 
     // Flush core buses. We're about to unload DLLs and need to ensure we don't have module-owned functions left behind.
     AZ::Data::AssetBus::ExecuteQueuedEvents();
@@ -272,7 +272,7 @@ void CEditorImpl::UnloadPlugins()
 
 void CEditorImpl::LoadPlugins()
 {
-    CryAutoLock<CryMutex> lock(m_pluginMutex);
+    AZStd::lock_guard<AZStd::mutex> lock(m_pluginMutex);
 
     static const QString editor_plugins_folder("EditorPlugins");
 
@@ -1457,7 +1457,7 @@ void CEditorImpl::UnregisterNotifyListener(IEditorNotifyListener* listener)
 
 ISourceControl* CEditorImpl::GetSourceControl()
 {
-    CryAutoLock<CryMutex> lock(m_pluginMutex);
+    AZStd::lock_guard<AZStd::mutex> lock(m_pluginMutex);
 
     if (m_pSourceControl)
     {

@@ -46,7 +46,7 @@ private:
 
     typedef CryMT::queue<SEventParams> TSystemEventQueue;
     TSystemEventQueue m_systemEventQueue;
-    CryCriticalSection m_listenerRegistrationLock;
+    AZStd::recursive_mutex m_listenerRegistrationLock;
 };
 
 #endif // CRYINCLUDE_CRYSYSTEM_SYSTEMEVENTDISPATCHER_H

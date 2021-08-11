@@ -168,15 +168,13 @@ private: // -------------------------------------------------------------------
     };
 
     std::vector<SAssetScopeInfo> m_assetScopeQueue;
-    CryCriticalSection m_assetScopeQueueLock;
+    AZStd::mutex m_assetScopeQueueLock;
     string m_assetScopeString;
 #endif
 
     ICVar*                 m_pLogIncludeTime;                                       //
 
     IConsole*          m_pConsole;                                                      //
-
-    CryCriticalSection m_logCriticalSection;
 
     struct SLogHistoryItem
     {

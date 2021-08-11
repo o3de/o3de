@@ -136,7 +136,7 @@ bool CGameExporter::Export(unsigned int flags, [[maybe_unused]] EEndian eExportE
             m_settings.SetHiQuality();
         }
 
-        CryAutoLock<CryMutex> autoLock(CGameEngine::GetPakModifyMutex());
+        AZStd::lock_guard<AZStd::recursive_mutex> autoLock(CGameEngine::GetPakModifyMutex());
 
         // Close this pak file.
         if (!CloseLevelPack(m_levelPak, true))

@@ -32,17 +32,6 @@
 #include <syslog.h>
 #endif
 
-
-// Only accept logging from the main thread.
-#ifdef WIN32
-
-#define THREAD_SAFE_LOG
-//#define THREAD_SAFE_LOG  CryAutoCriticalSection scope_lock(m_logCriticalSection);
-
-#else
-#define THREAD_SAFE_LOG
-#endif //WIN32
-
 #define LOG_BACKUP_PATH "@log@/LogBackups"
 
 #if defined(IOS)
@@ -822,13 +811,13 @@ void CLog::PushAssetScopeName(const char* sAssetType, const char* sName)
     SAssetScopeInfo as;
     as.sType = sAssetType;
     as.sName = sName;
-    CryAutoCriticalSection scope_lock(m_assetScopeQueueLock);
+    AZStd::lock_guard<AZStd::mutex> scope_lock(m_assetScopeQueueLock);
     m_assetScopeQueue.push_back(as);
 }
 
 void CLog::PopAssetScopeName()
 {
-    CryAutoCriticalSection scope_lock(m_assetScopeQueueLock);
+    AZStd::lock_guard<AZStd::mutex> scope_lock(m_assetScopeQueueLock);
     assert(!m_assetScopeQueue.empty());
     if (!m_assetScopeQueue.empty())
     {
@@ -839,7 +828,7 @@ void CLog::PopAssetScopeName()
 //////////////////////////////////////////////////////////////////////////
 const char* CLog::GetAssetScopeString()
 {
-    CryAutoCriticalSection scope_lock(m_assetScopeQueueLock);
+    AZStd::lock_guard<AZStd::mutex> scope_lock(m_assetScopeQueueLock);
 
     m_assetScopeString.clear();
     for (size_t i = 0; i < m_assetScopeQueue.size(); i++)
@@ -1470,7 +1459,7 @@ void CLog::Update()
     {
         if (!m_threadSafeMsgQueue.empty())
         {
-            CryAutoCriticalSection lock(m_threadSafeMsgQueue.get_lock());   // Get the lock and hold onto it until we clear the entire queue (prevents other threads adding more things in while we clear it)
+            AZStd::lock_guard<AZStd::recursive_mutex> lock(m_threadSafeMsgQueue.get_lock());   // Get the lock and hold onto it until we clear the entire queue (prevents other threads adding more things in while we clear it)
             // Must be called from main thread
             SLogMsg msg;
             while (m_threadSafeMsgQueue.try_pop(msg))

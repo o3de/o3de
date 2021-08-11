@@ -432,8 +432,6 @@ struct IMaterial
     virtual uint32 GetDccMaterialHash() const = 0;
     virtual void SetDccMaterialHash(uint32 hash) = 0;
 
-    virtual CryCriticalSection& GetSubMaterialResizeLock() = 0;
-
     virtual void UpdateShaderItems() = 0;
 
     // </interfuscator:shuffle>
