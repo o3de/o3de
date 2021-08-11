@@ -11,6 +11,7 @@
 
 #include <AzCore/EBus/Event.h>
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
