@@ -12,6 +12,7 @@
 
 #include "platform.h" // Note: This should be first to get consistent debugging definitions
 
+#include <CryCommon/ISystem.h>
 #include <CryAssert.h>
 
 #if defined(AZ_RESTRICTED_PLATFORM)
@@ -29,7 +30,7 @@
     #include AZ_RESTRICTED_FILE(WinBase_cpp)
 #endif
 #if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
-#undef AZ_RESTRICTED_SECTION_IMPLEMENTED
+    #undef AZ_RESTRICTED_SECTION_IMPLEMENTED
 #else
     #include <signal.h>
 #endif
