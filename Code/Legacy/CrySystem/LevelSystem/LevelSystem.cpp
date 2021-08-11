@@ -476,7 +476,7 @@ CLevelInfo* CLevelSystem::GetLevelInfoInternal(const AZStd::string& levelName)
     for (AZStd::vector<CLevelInfo>::iterator it = m_levelInfos.begin(); it != m_levelInfos.end(); ++it)
     {
         {
-            if (!azstricmp(PathUtil::GetFileName(it->GetName()), levelName.c_str()))
+            if (!azstricmp(PathUtil::GetFileName(it->GetName()).c_str(), levelName.c_str()))
             {
                 return &(*it);
             }
@@ -563,7 +563,7 @@ ILevel* CLevelSystem::LoadLevelInternal(const char* _levelName)
     INDENT_LOG_DURING_SCOPE();
 
     char levelName[256];
-    cry_strcpy(levelName, _levelName);
+    azstrcpy(levelName, AZ_ARRAY_SIZE(levelName), _levelName);
 
     // Not remove a scope!!!
     {

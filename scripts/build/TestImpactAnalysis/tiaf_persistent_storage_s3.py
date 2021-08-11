@@ -48,14 +48,11 @@ class PersistentStorageS3(PersistentStorage):
             for object in self._bucket.objects.filter(Prefix=self._historic_data_key):
                 logger.info(f"Historic data found for branch '{branch}'.")
 
-                # Archive the existing object with the name of the existing last commit hash
-                archive_key = f"{self._dir}/archive/{self._last_commit_hash}.{object_extension}"
-                logger.info(f"Archiving existing historic data to {archive_key}...")
-                self._bucket.copy({"Bucket": self._bucket.name, "Key": self._historic_data_key}, archive_key)
-
                 # Decode the historic data object into raw bytes
+                logger.info(f"Attempting to decode historic data object...")
                 response = object.get()
                 file_stream = response['Body']
+                logger.info(f"Decoding complete.")
 
                 # Decompress and unpack the zipped historic data JSON
                 historic_data_json = zlib.decompress(file_stream.read()).decode('UTF-8')
@@ -79,7 +76,7 @@ class PersistentStorageS3(PersistentStorage):
         try:
             data = BytesIO(zlib.compress(bytes(historic_data_json, "UTF-8")))
             logger.info(f"Uploading historic data to location '{self._historic_data_key}'...")
-            self._bucket.upload_fileobj(data, self._historic_data_key)
+            self._bucket.upload_fileobj(data, self._historic_data_key, ExtraArgs={'ACL': 'bucket-owner-full-control'})
             logger.info("Upload complete.")
         except botocore.exceptions.BotoCoreError as e:
             logger.error(f"There was a problem with the s3 bucket: {e}")

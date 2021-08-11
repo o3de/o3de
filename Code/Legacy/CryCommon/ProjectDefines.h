@@ -35,10 +35,7 @@
 
 // Type used for vertex indices
 // WARNING: If you change this typedef, you need to update AssetProcessorPlatformConfig.ini to convert cgf and abc files to the proper index format.
-#if defined(RESOURCE_COMPILER)
-    typedef uint32 vtx_idx;
-    #define AZ_RESTRICTED_SECTION_IMPLEMENTED
-#elif defined(MOBILE)
+#if defined(MOBILE)
     typedef uint16 vtx_idx;
     #define AZ_RESTRICTED_SECTION_IMPLEMENTED
 #elif defined(AZ_RESTRICTED_PLATFORM)
@@ -100,7 +97,7 @@
     #endif
 #endif
 
-#if (!defined(_RELEASE) || defined(PERFORMANCE_BUILD)) && !defined(RESOURCE_COMPILER)
+#if (!defined(_RELEASE) || defined(PERFORMANCE_BUILD))
     #ifndef ENABLE_PROFILING_CODE
         #define ENABLE_PROFILING_CODE
     #endif

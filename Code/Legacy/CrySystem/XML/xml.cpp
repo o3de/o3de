@@ -984,13 +984,13 @@ XmlString CXmlNode::MakeValidXmlString(const XmlString& instr) const
     XmlString str = instr;
 
     // check if str contains any invalid characters
-    str.replace("&", "&amp;");
-    str.replace("\"", "&quot;");
-    str.replace("\'", "&apos;");
-    str.replace("<", "&lt;");
-    str.replace(">", "&gt;");
-    str.replace("...", "&gt;");
-    str.replace("\n", "&#10;");
+    AZ::StringFunc::Replace(str, "&", "&amp;");
+    AZ::StringFunc::Replace(str, "\"", "&quot;");
+    AZ::StringFunc::Replace(str, "\'", "&apos;");
+    AZ::StringFunc::Replace(str, "<", "&lt;");
+    AZ::StringFunc::Replace(str, ">", "&gt;");
+    AZ::StringFunc::Replace(str, "...", "&gt;");
+    AZ::StringFunc::Replace(str, "\n", "&#10;");
 
     return str;
 }
@@ -1691,8 +1691,8 @@ XmlNodeRef XmlParserImp::ParseFile(const char* filename, XmlString& errorString,
 
     char str[1024];
 
-    CryStackStringT<char, 256> adjustedFilename;
-    CryStackStringT<char, 256> pakPath;
+    AZStd::fixed_string<256> adjustedFilename;
+    AZStd::fixed_string<256> pakPath;
     if (fileSize <= 0)
     {
         CCryFile xmlFile;
@@ -1732,9 +1732,9 @@ XmlNodeRef XmlParserImp::ParseFile(const char* filename, XmlString& errorString,
             return 0;
         }
         adjustedFilename = xmlFile.GetAdjustedFilename();
-        adjustedFilename.replace('\\', '/');
+        AZStd::replace(adjustedFilename.begin(), adjustedFilename.end(), '\\', '/');
         pakPath = xmlFile.GetPakPath();
-        pakPath.replace('\\', '/');
+        AZStd::replace(pakPath.begin(), pakPath.end(), '\\', '/');
     }
 
     if (g_bEnableBinaryXmlLoading)
@@ -1761,7 +1761,7 @@ XmlNodeRef XmlParserImp::ParseFile(const char* filename, XmlString& errorString,
             // not binary XML - refuse to load if in scripts dir and not in bin xml to help reduce hacking
             // wish we could compile the text xml parser out, but too much work to get everything moved over
             static const char SCRIPTS_DIR[] = "Scripts/";
-            CryFixedStringT<32> strScripts("S");
+            AZStd::fixed_string<32> strScripts("S");
             strScripts += "c";
             strScripts += "r";
             strScripts += "i";
@@ -1770,7 +1770,7 @@ XmlNodeRef XmlParserImp::ParseFile(const char* filename, XmlString& errorString,
             strScripts += "s";
             strScripts += "/";
             // exclude files and PAKs from Mods folder
-            CryFixedStringT<8> modsStr("M");
+            AZStd::fixed_string<8> modsStr("M");
             modsStr += "o";
             modsStr += "d";
             modsStr += "s";

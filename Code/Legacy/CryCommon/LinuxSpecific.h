@@ -139,13 +139,8 @@ typedef WCHAR* LPUWSTR, * PUWSTR;
 typedef const WCHAR* LPCWSTR, * PCWSTR;
 typedef const WCHAR* LPCUWSTR, * PCUWSTR;
 
-#ifdef UNICODE
 typedef LPCWSTR LPCTSTR;
 typedef LPWSTR LPTSTR;
-#else
-typedef LPCSTR LPCTSTR;
-typedef LPSTR LPTSTR;
-#endif
 typedef char TCHAR;
 
 typedef DWORD COLORREF;

@@ -208,9 +208,7 @@ public:
         this->AddObject(rPair.first);
         this->AddObject(rPair.second);
     }
-    void AddObject(const string& rString) {this->AddObject(rString.c_str(), rString.capacity()); }
-    void AddObject(const CryStringT<wchar_t>& rString) {this->AddObject(rString.c_str(), rString.capacity()); }
-    void AddObject(const CryFixedStringT<32>&){}
+    void AddObject(const AZStd::string& rString) {this->AddObject(rString.c_str(), rString.capacity()); }
     void AddObject(const wchar_t&) {}
     void AddObject(const char&) {}
     void AddObject(const unsigned char&) {}
@@ -427,7 +425,7 @@ public:
 #endif
 
  #ifndef NOT_USE_CRY_STRING
-    bool Add (const string& strText)
+    bool Add (const AZStd::string& strText)
     {
         AddString(strText);
         return true;

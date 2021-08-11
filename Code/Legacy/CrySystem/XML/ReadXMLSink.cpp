@@ -13,7 +13,7 @@
 #include <ISystem.h>
 #include <stack>
 
-typedef std::map<string, XmlNodeRef> IdTable;
+typedef std::map<AZStd::string, XmlNodeRef> IdTable;
 struct SParseParams
 {
     IdTable idTable;
@@ -98,7 +98,7 @@ struct ReadPropertyTyped
 };
 
 template <>
-struct ReadPropertyTyped<string>
+struct ReadPropertyTyped<AZStd::string>
 {
     static bool Load(const SParseParams& parseParams, const char* name, XmlNodeRef& definition, XmlNodeRef& data, IReadXMLSink* pSink)
     {
@@ -235,8 +235,9 @@ bool LoadProperty(const SParseParams& parseParams, XmlNodeRef& definition, XmlNo
 
             dataToRead = GetISystem()->CreateXmlNode(data->getTag());
 
-            string content = childRef->getContent();
-            dataToRead->setAttr(name, content.Trim().c_str());
+            AZStd::string content = childRef->getContent();
+            AZ::StringFunc::TrimWhiteSpace(content, true, true);
+            dataToRead->setAttr(name, content.c_str());
         }
 
         if (!dataToRead->haveAttr(name))

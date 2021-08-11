@@ -313,7 +313,7 @@ bool CXmlUtils::SaveBinaryXmlFile(const char* filename, XmlNodeRef root)
         return false;
     }
     XMLBinary::CXMLBinaryWriter writer;
-    string error;
+    AZStd::string error;
     return writer.WriteNode(&fileSink, root, false, 0, error);
 }
 

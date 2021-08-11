@@ -12,6 +12,7 @@
 #pragma once
 
 #include <CryLegacyAllocator.h>
+#include <AzCore/std/string/string.h>
 
 //---------------------------------------------------------------------------
 // Convenient iteration macros
@@ -41,18 +42,6 @@ struct fake_move_helper
     {
         ::new(&dest) T(source);
         source.~T();
-    }
-};
-
-// Override for string to ensure proper construction
-template <>
-struct fake_move_helper<string>
-{
-    static void move(string& dest, string& source)
-    {
-        ::new((void*)&dest) string(); 
-        dest = source;
-        source.~string();
     }
 };
 

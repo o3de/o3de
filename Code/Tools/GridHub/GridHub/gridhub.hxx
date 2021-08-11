@@ -141,7 +141,7 @@ public:
     /// Callback that notifies the title when a session will be left. session pointer is NOT valid after the callback returns.
     void OnSessionDelete(GridMate::GridSession* session) override;
     /// Called when a session error occurs.
-    void OnSessionError(GridMate::GridSession* session, const GridMate::string& errorMsg ) { (void)session; (void)errorMsg; }
+    void OnSessionError(GridMate::GridSession* session, const AZStd::string& errorMsg ) { (void)session; (void)errorMsg; }
     /// Called when the actual game(match) starts
     void OnSessionStart(GridMate::GridSession* session) { (void)session; }
     /// Called when the actual game(match) ends

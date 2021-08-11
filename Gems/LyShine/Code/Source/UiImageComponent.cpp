@@ -2663,18 +2663,7 @@ bool UiImageComponent::VersionConverter(AZ::SerializeContext& context,
     // conversion from version 1:
     // - Need to convert CryString elements to AZStd::string
     // - Need to convert Color to Color and Alpha
-    if (classElement.GetVersion() <= 1)
-    {
-        if (!LyShine::ConvertSubElementFromCryStringToAzString(context, classElement, "SpritePath"))
-        {
-            return false;
-        }
-
-        if (!LyShine::ConvertSubElementFromColorToColorPlusAlpha(context, classElement, "Color", "Alpha"))
-        {
-            return false;
-        }
-    }
+    AZ_Assert(classElement.GetVersion() > 1, "Unsupported UiImageComponent version: %d", classElement.GetVersion());
 
     // conversion from version 1 or 2 to current:
     // - Need to convert AZStd::string sprites to AzFramework::SimpleAssetReference<LmbrCentral::TextureAsset>

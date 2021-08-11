@@ -33,7 +33,6 @@
 
 #include "CryLibrary.h"
 #include "CryPath.h"
-#include <StringUtils.h>
 
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/IO/LocalFileIO.h>
@@ -452,7 +451,7 @@ AZStd::unique_ptr<AZ::DynamicModuleHandle> CSystem::LoadDLL(const char* dllName)
     //////////////////////////////////////////////////////////////////////////
     // After loading DLL initialize it by calling ModuleInitISystem
     //////////////////////////////////////////////////////////////////////////
-    string moduleName = PathUtil::GetFileName(dllName);
+    AZStd::string moduleName = PathUtil::GetFileName(dllName);
 
     typedef void*(*PtrFunc_ModuleInitISystem)(ISystem* pSystem, const char* moduleName);
     PtrFunc_ModuleInitISystem pfnModuleInitISystem = handle->GetFunction<PtrFunc_ModuleInitISystem>(DLL_MODULE_INIT_ISYSTEM);
@@ -524,7 +523,7 @@ void CSystem::ShutdownModuleLibraries()
 /////////////////////////////////////////////////////////////////////////////////
 
 #if defined(WIN32) || defined(WIN64)
-wstring GetErrorStringUnsupportedGPU(const char* gpuName, unsigned int gpuVendorId, unsigned int gpuDeviceId)
+AZStd::wstring GetErrorStringUnsupportedGPU(const char* gpuName, unsigned int gpuVendorId, unsigned int gpuDeviceId)
 {
     const size_t fullLangID = (size_t) GetKeyboardLayout(0);
     const size_t primLangID = fullLangID & 0x3FF;
@@ -878,19 +877,19 @@ void CSystem::InitLocalization()
         languageID = ILocalizationManager::EPlatformIndependentLanguageID::ePILID_English_US;
     }
 
-    string language = m_pLocalizationManager->LangNameFromPILID(languageID);
+    AZStd::string language = m_pLocalizationManager->LangNameFromPILID(languageID);
     m_pLocalizationManager->SetLanguage(language.c_str());
     if (m_pLocalizationManager->GetLocalizationFormat() == 1)
     {
-        string translationsListXML = LOCALIZATION_TRANSLATIONS_LIST_FILE_NAME;
-        m_pLocalizationManager->InitLocalizationData(translationsListXML);
+        AZStd::string translationsListXML = LOCALIZATION_TRANSLATIONS_LIST_FILE_NAME;
+        m_pLocalizationManager->InitLocalizationData(translationsListXML.c_str());
 
         m_pLocalizationManager->LoadAllLocalizationData();
     }
     else
     {
         // if the language value cannot be found, let's default to the english pak
-        OpenLanguagePak(language);
+        OpenLanguagePak(language.c_str());
     }
 
     if (auto console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
@@ -906,7 +905,7 @@ void CSystem::InitLocalization()
             language.assign(languageAudio.data(), languageAudio.size());
         }
     }
-    OpenLanguageAudioPak(language);
+    OpenLanguageAudioPak(language.c_str());
 }
 
 void CSystem::OpenBasicPaks()
@@ -970,10 +969,10 @@ void CSystem::OpenLanguagePak(const char* sLanguage)
     // Initialize languages.
 
     // Omit the trailing slash!
-    string sLocalizationFolder = PathUtil::GetLocalizationFolder();
+    AZStd::string sLocalizationFolder = PathUtil::GetLocalizationFolder();
 
     // load xml pak with full filenames to perform wildcard searches.
-    string sLocalizedPath;
+    AZStd::string sLocalizedPath;
     GetLocalizedPath(sLanguage, sLocalizedPath);
     if (!m_env.pCryPak->OpenPacks({ sLocalizationFolder.c_str(), sLocalizationFolder.size() }, { sLocalizedPath.c_str(), sLocalizedPath.size() }, 0))
     {
@@ -1000,15 +999,15 @@ void CSystem::OpenLanguageAudioPak([[maybe_unused]] const char* sLanguage)
     int nPakFlags = 0;
 
     // Omit the trailing slash!
-    string sLocalizationFolder(string().assign(PathUtil::GetLocalizationFolder(), 0, PathUtil::GetLocalizationFolder().size() - 1));
+    AZStd::string sLocalizationFolder(AZStd::string().assign(PathUtil::GetLocalizationFolder(), 0, PathUtil::GetLocalizationFolder().size() - 1));
 
-    if (sLocalizationFolder.compareNoCase("Languages") == 0)
+    if (!AZ::StringFunc::Equal(sLocalizationFolder, "Languages", false))
     {
         sLocalizationFolder = "@assets@";
     }
 
     // load localized pak with crc32 filenames on consoles to save memory.
-    string sLocalizedPath = "loc.pak";
+    AZStd::string sLocalizedPath = "loc.pak";
 
     if (!m_env.pCryPak->OpenPacks(sLocalizationFolder.c_str(), sLocalizedPath.c_str(), nPakFlags))
     {
@@ -1018,10 +1017,10 @@ void CSystem::OpenLanguageAudioPak([[maybe_unused]] const char* sLanguage)
 }
 
 
-string GetUniqueLogFileName(string logFileName)
+AZStd::string GetUniqueLogFileName(AZStd::string logFileName)
 {
-    string logFileNamePrefix = logFileName;
-    if ((logFileNamePrefix[0] != '@') && (AzFramework::StringFunc::Path::IsRelative(logFileNamePrefix)))
+    AZStd::string logFileNamePrefix = logFileName;
+    if ((logFileNamePrefix[0] != '@') && (AzFramework::StringFunc::Path::IsRelative(logFileNamePrefix.c_str())))
     {
         logFileNamePrefix = "@log@/";
         logFileNamePrefix += logFileName;
@@ -1037,9 +1036,9 @@ string GetUniqueLogFileName(string logFileName)
         return logFileNamePrefix;
     }
 
-    string logFileExtension;
+    AZStd::string logFileExtension;
     size_t extensionIndex = logFileName.find_last_of('.');
-    if (extensionIndex != string::npos)
+    if (extensionIndex != AZStd::string::npos)
     {
         logFileExtension = logFileName.substr(extensionIndex, logFileName.length() - extensionIndex);
         logFileNamePrefix = logFileName.substr(0, extensionIndex);
@@ -1213,7 +1212,7 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
 
         osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
 AZ_PUSH_DISABLE_WARNING(4996, "-Wunknown-warning-option")
-        GetVersionExA(&osvi);
+        GetVersionExW(&osvi);
 AZ_POP_DISABLE_WARNING
 
         bool bIsWindowsXPorLater = osvi.dwMajorVersion > 5 || (osvi.dwMajorVersion == 5 && osvi.dwMinorVersion >= 1);
@@ -1308,7 +1307,7 @@ AZ_POP_DISABLE_WARNING
             }
             else if (startupParams.sLogFileName)    //otherwise see if the startup params has a log file name, if so use it
             {
-                const string sUniqueLogFileName = GetUniqueLogFileName(startupParams.sLogFileName);
+                const AZStd::string sUniqueLogFileName = GetUniqueLogFileName(startupParams.sLogFileName);
                 m_env.pLog->SetFileName(sUniqueLogFileName.c_str(), startupParams.autoBackupLogs);
             }
             else//use the default log name
@@ -1656,20 +1655,20 @@ static void LoadConfigurationCmd(IConsoleCmdArgs* pParams)
         return;
     }
 
-    GetISystem()->LoadConfiguration(string("Config/") + pParams->GetArg(1));
+    GetISystem()->LoadConfiguration((AZStd::string("Config/") + pParams->GetArg(1)).c_str());
 }
 
 
 // --------------------------------------------------------------------------------------------------------------------------
 
-static string ConcatPath(const char* szPart1, const char* szPart2)
+static AZStd::string ConcatPath(const char* szPart1, const char* szPart2)
 {
     if (szPart1[0] == 0)
     {
         return szPart2;
     }
 
-    string ret;
+    AZStd::string ret;
 
     ret.reserve(strlen(szPart1) + 1 + strlen(szPart2));
 
@@ -2133,12 +2132,12 @@ void CSystem::CreateAudioVars()
 }
 
 /////////////////////////////////////////////////////////////////////
-void CSystem::AddCVarGroupDirectory(const string& sPath)
+void CSystem::AddCVarGroupDirectory(const AZStd::string& sPath)
 {
     CryLog("creating CVarGroups from directory '%s' ...", sPath.c_str());
     INDENT_LOG_DURING_SCOPE();
 
-    AZ::IO::ArchiveFileIterator handle = gEnv->pCryPak->FindFirst(ConcatPath(sPath, "*.cfg").c_str());
+    AZ::IO::ArchiveFileIterator handle = gEnv->pCryPak->FindFirst(ConcatPath(sPath.c_str(), "*.cfg").c_str());
 
     if (!handle)
     {
@@ -2151,15 +2150,8 @@ void CSystem::AddCVarGroupDirectory(const string& sPath)
         {
             if (handle.m_filename != "." && handle.m_filename != "..")
             {
-                AddCVarGroupDirectory(ConcatPath(sPath, handle.m_filename.data()));
+                AddCVarGroupDirectory(ConcatPath(sPath.c_str(), handle.m_filename.data()));
             }
-        }
-        else
-        {
-            string sFilePath = ConcatPath(sPath, handle.m_filename.data());
-
-            string sCVarName = sFilePath;
-            PathUtil::RemoveExtension(sCVarName);
         }
     } while (handle = gEnv->pCryPak->FindNext(handle));
 

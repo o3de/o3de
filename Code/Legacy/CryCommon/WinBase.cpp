@@ -38,6 +38,7 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/std/string/conversions.h>
 
 #ifdef APPLE
 #include <mach/mach.h>
@@ -76,8 +77,6 @@ unsigned int g_EnableMultipleAssert = 0;//set to something else than 0 if to ena
 #if defined(APPLE)
     #include <AzFramework/Utils/SystemUtilsApple.h>
 #endif
-
-#include "StringUtils.h"
 
 #if AZ_TRAIT_COMPILER_DEFINE_FS_ERRNO_TYPE
 typedef int FS_ERRNO_TYPE;
@@ -349,23 +348,23 @@ void _makepath(char* path, const char* drive, const char* dir, const char* filen
     }
     if (dir && dir[0])
     {
-        cry_strcat(tmp, dir);
+        azstrcat(tmp, MAX_PATH, dir);
         ch = tmp[strlen(tmp) - 1];
         if (ch != '/' && ch != '\\')
         {
-            cry_strcat(tmp, "\\");
+            azstrcat(tmp, MAX_PATH, "\\");
         }
     }
     if (filename && filename[0])
     {
-        cry_strcat(tmp, filename);
+        azstrcat(tmp, MAX_PATH, filename);
         if (ext && ext[0])
         {
             if (ext[0] != '.')
             {
-                cry_strcat(tmp, ".");
+                azstrcat(tmp, MAX_PATH, ".");
             }
-            cry_strcat(tmp, ext);
+            azstrcat(tmp, MAX_PATH, ext);
         }
     }
     azstrcpy(path, strlen(tmp) + 1, tmp);
@@ -486,12 +485,12 @@ void _splitpath(const char* inpath, char* drv, char* dir, char* fname, char* ext
         drv[0] = 0;
     }
 
-    typedef CryStackStringT<char, AZ_MAX_PATH_LEN> path_stack_string;
+    typedef AZStd::fixed_string<AZ_MAX_PATH_LEN> path_stack_string;
 
     const path_stack_string inPath(inpath);
-    string::size_type s = inPath.rfind('/', inPath.size());//position of last /
+    AZStd::string::size_type s = inPath.rfind('/', inPath.size());//position of last /
     path_stack_string fName;
-    if (s == string::npos)
+    if (s == AZStd::string::npos)
     {
         if (dir)
         {
@@ -503,9 +502,9 @@ void _splitpath(const char* inpath, char* drv, char* dir, char* fname, char* ext
     {
         if (dir)
         {
-            azstrcpy(dir, AZ_MAX_PATH_LEN, (inPath.substr((string::size_type)0, (string::size_type)(s + 1))).c_str());    //assign directory
+            azstrcpy(dir, AZ_MAX_PATH_LEN, (inPath.substr((AZStd::string::size_type)0, (AZStd::string::size_type)(s + 1))).c_str());    //assign directory
         }
-        fName = inPath.substr((string::size_type)(s + 1));                    //assign remaining string as rest
+        fName = inPath.substr((AZStd::string::size_type)(s + 1));                    //assign remaining string as rest
     }
     if (fName.size() == 0)
     {
@@ -521,8 +520,8 @@ void _splitpath(const char* inpath, char* drv, char* dir, char* fname, char* ext
     else
     {
         //dir and drive are now set
-        s = fName.find(".", (string::size_type)0);//position of first .
-        if (s == string::npos)
+        s = fName.find(".", (AZStd::string::size_type)0);//position of first .
+        if (s == AZStd::string::npos)
         {
             if (ext)
             {
@@ -547,7 +546,7 @@ void _splitpath(const char* inpath, char* drv, char* dir, char* fname, char* ext
                 }
                 else
                 {
-                    azstrcpy(fname, AZ_MAX_PATH_LEN, (fName.substr((string::size_type)0, s)).c_str());  //assign filename
+                    azstrcpy(fname, AZ_MAX_PATH_LEN, (fName.substr((AZStd::string::size_type)0, s)).c_str());  //assign filename
                 }
             }
         }
@@ -779,17 +778,17 @@ BOOL SystemTimeToFileTime(const SYSTEMTIME* syst, LPFILETIME ft)
     return TRUE;
 }
 
-void adaptFilenameToLinux(string& rAdjustedFilename)
+void adaptFilenameToLinux(AZStd::string& rAdjustedFilename)
 {
     //first replace all \\ by /
-    string::size_type loc = 0;
-    while ((loc = rAdjustedFilename.find("\\", loc)) != string::npos)
+    AZStd::string::size_type loc = 0;
+    while ((loc = rAdjustedFilename.find("\\", loc)) != AZStd::string::npos)
     {
         rAdjustedFilename.replace(loc, 1, "/");
     }
     loc = 0;
     //remove /./
-    while ((loc = rAdjustedFilename.find("/./", loc)) != string::npos)
+    while ((loc = rAdjustedFilename.find("/./", loc)) != AZStd::string::npos)
     {
         rAdjustedFilename.replace(loc, 3, "/");
     }
@@ -798,16 +797,16 @@ void adaptFilenameToLinux(string& rAdjustedFilename)
 void replaceDoublePathFilename(char* szFileName)
 {
     //replace "\.\" by "\"
-    string s(szFileName);
-    string::size_type loc = 0;
+    AZStd::string s(szFileName);
+    AZStd::string::size_type loc = 0;
     //remove /./
-    while ((loc = s.find("/./", loc)) != string::npos)
+    while ((loc = s.find("/./", loc)) != AZStd::string::npos)
     {
         s.replace(loc, 3, "/");
     }
     loc = 0;
     //remove "\.\"
-    while ((loc = s.find("\\.\\", loc)) != string::npos)
+    while ((loc = s.find("\\.\\", loc)) != AZStd::string::npos)
     {
         s.replace(loc, 3, "\\");
     }
@@ -817,8 +816,8 @@ void replaceDoublePathFilename(char* szFileName)
 const int comparePathNames(const char* cpFirst, const char* cpSecond, unsigned int len)
 {
     //create two strings and replace the \\ by / and /./ by /
-    string first(cpFirst);
-    string second(cpSecond);
+    AZStd::string first(cpFirst);
+    AZStd::string second(cpSecond);
     adaptFilenameToLinux(first);
     adaptFilenameToLinux(second);
     if (strlen(cpFirst) < len || strlen(cpSecond) < len)
@@ -1568,14 +1567,16 @@ const bool GetFilenameNoCase
     return true;
 }
 
-DWORD GetFileAttributes(LPCSTR lpFileName)
+DWORD GetFileAttributes(LPCWSTR lpFileNameW)
 {
+    AZStd::string lpFileName;
+    AZStd::to_string(lpFileName, lpFileNameW);
     struct stat fileStats;
-    const int success = stat(lpFileName, &fileStats);
+    const int success = stat(lpFileName.c_str(), &fileStats);
     if (success == -1)
     {
         char adjustedFilename[MAX_PATH];
-        GetFilenameNoCase(lpFileName, adjustedFilename);
+        GetFilenameNoCase(lpFileName.c_str(), adjustedFilename);
         if (stat(adjustedFilename, &fileStats) == -1)
         {
             return (DWORD)INVALID_FILE_ATTRIBUTES;

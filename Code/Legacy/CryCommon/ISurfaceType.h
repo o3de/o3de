@@ -85,7 +85,7 @@ struct ISurfaceType
     };
     struct SBreakable2DParams
     {
-        string particle_effect;
+        AZStd::string particle_effect;
         float blast_radius;
         float blast_radius_first;
         float vert_size_spread;
@@ -97,12 +97,12 @@ struct ISurfaceType
         float shard_density;
         int use_edge_alpha;
         float crack_decal_scale;
-        string crack_decal_mtl;
+        AZStd::string crack_decal_mtl;
         float max_fracture;
-        string full_fracture_fx;
-        string fracture_fx;
+        AZStd::string full_fracture_fx;
+        AZStd::string fracture_fx;
         int no_procedural_full_fracture;
-        string broken_mtl;
+        AZStd::string broken_mtl;
         float destroy_timeout;
         float destroy_timeout_spread;
 
@@ -125,8 +125,8 @@ struct ISurfaceType
     };
     struct SBreakageParticles
     {
-        string type;
-        string particle_effect;
+        AZStd::string type;
+        AZStd::string particle_effect;
         int count_per_unit;
         float count_scale;
         float scale;
