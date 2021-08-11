@@ -88,12 +88,13 @@ class TestImpact:
                 logger.info(f"The distance between '{diff_src}' and '{diff_dst}' commits is '{self._commit_distance}' commits.") 
             else:
                 # For pull request builds we don't use the last commit hash as there is no guarantee that the dst will
-                # be descended from it so instead we will use the diff from the local dst branch and the remote origin
-                diff_src = f"origin/{self._dst_branch}"
-                diff_dst = self._dst_branch
+                # be descended from it so instead we will use the diff from the local src branch and the remote origin
+                diff_src = f"origin/{self._src_branch}"
+                diff_dst = self._src_branch
 
             try:
                 # Attempt to generate a diff between the src and dst commits
+                logger.error(f"Source '{self._src_commit}' and destination '{self._dst_commit}' will be diff'd.")
                 diff_path = pathlib.Path(pathlib.PurePath(self._temp_workspace).joinpath(f"changelist.{instance_id}.diff"))
                 self._repo.create_diff_file(diff_src, diff_dst, diff_path)
             except RuntimeError as e:
