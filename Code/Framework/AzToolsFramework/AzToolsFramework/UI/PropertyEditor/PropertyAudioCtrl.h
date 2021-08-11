@@ -42,9 +42,9 @@ namespace AzToolsFramework
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
         using BusIdType = AudioPropertyType;
 
-        virtual AZStd::string SelectResource(const AZStd::string& /*previousValue*/)
+        virtual AZStd::string SelectResource(const AZStd::string& previousValue)
         {
-            return {};
+            return previousValue;
         }
     };
 
