@@ -67,6 +67,7 @@ namespace AZ
 
         // --- Code related to dependency shader asset handling ---
 
+        // Helper class to pass parameters to the AddDependency and FindReferencedAssets functions below
         struct FindPassReferenceAssetParams
         {
             void* passAssetObject;
@@ -77,50 +78,28 @@ namespace AZ
             const char* jobKey;                         // Job key for adding job dependency
         };
 
-        //! Adds all relevant dependencies for a referenced source file, considering that the path might be relative to the original file location or a full asset path.
-        //! This will usually include multiple source dependencies and a single job dependency, but will include only source dependencies if the file is not found.
-        //! Note the AssetBuilderSDK::JobDependency::m_platformIdentifier will not be set by this function. The calling code must set this value before passing back
-        //! to the AssetBuilderSDK::CreateJobsResponse.
-        void AddPossibleDependencies(
-            FindPassReferenceAssetParams& params,
-            AssetBuilderSDK::CreateJobsResponse& response,
-            AssetBuilderSDK::JobDescriptor& job)
+        // Helper function to get a file reference and create a corresponding job dependency
+        void AddDependency(FindPassReferenceAssetParams& params, AssetBuilderSDK::JobDescriptor* job)
         {
-            bool dependencyFileFound = false;
+            AZStd::string_view& file = params.dependencySourceFile;
+            AZ::Data::AssetInfo sourceInfo;
+            AZStd::string watchFolder;
+            bool fileFound = false;
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(fileFound, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath, file.data(), sourceInfo, watchFolder);
 
-            AZStd::vector<AZStd::string> possibleDependencies = RPI::AssetUtils::GetPossibleDepenencyPaths(params.passAssetSourceFile, params.dependencySourceFile);
-            for (auto& file : possibleDependencies)
+            if (fileFound)
             {
-                AssetBuilderSDK::SourceFileDependency sourceFileDependency;
-                sourceFileDependency.m_sourceFileDependencyPath = file;
-                response.m_sourceFileDependencyList.push_back(sourceFileDependency);
-
-                // The first path found is the highest priority, and will have a job dependency, as this is the one
-                // the builder will actually use
-                if (!dependencyFileFound)
-                {
-                    AZ::Data::AssetInfo sourceInfo;
-                    AZStd::string watchFolder;
-                    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(dependencyFileFound, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetSourceInfoBySourcePath, file.c_str(), sourceInfo, watchFolder);
-
-                    if (dependencyFileFound)
-                    {
-                        AssetBuilderSDK::JobDependency jobDependency;
-                        jobDependency.m_jobKey = params.jobKey;
-                        jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
-                        jobDependency.m_sourceFile.m_sourceFileDependencyPath = file;
-                        job.m_jobDependencyList.push_back(jobDependency);
-                    }
-                }
+                AssetBuilderSDK::JobDependency jobDependency;
+                jobDependency.m_jobKey = params.jobKey;
+                jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
+                jobDependency.m_sourceFile.m_sourceFileDependencyPath = file;
+                job->m_jobDependencyList.push_back(jobDependency);
+                AZ_TracePrintf(PassBuilderName, "Creating job dependency on file [%s] \n", file.data());
             }
         }
 
         // Helper function to find all assetId's and object references
-        bool FindPassReferencedAssets(FindPassReferenceAssetParams& params,
-                                      AZStd::unordered_set<Data::AssetId>& referencedAssetList,
-                                      AssetBuilderSDK::CreateJobsResponse& response,
-                                      AssetBuilderSDK::JobDescriptor& job,
-                                      bool jobCreationPhase)
+        bool FindReferencedAssets(FindPassReferenceAssetParams& params, AssetBuilderSDK::JobDescriptor* job)
         {
             SerializeContext::ErrorHandler errorLogger;
             errorLogger.Reset();
@@ -141,10 +120,10 @@ namespace AZ
                         const AZStd::string& path = assetReference->m_filePath;
                         uint32_t subId = 0;
 
-                        if (jobCreationPhase)
+                        if (job != nullptr) // Create Job Phase
                         {
                             params.dependencySourceFile = path;
-                            AddPossibleDependencies(params, response, job);
+                            AddDependency(params, job);
                         }
                         else // Process Job Phase
                         {
@@ -160,12 +139,6 @@ namespace AZ
                                 foundProblems = true;
                             }
                         }
-                    }
-
-                    // If the asset ID is valid, add it as a dependency
-                    if (assetReference->m_assetId.IsValid())
-                    {
-                        referencedAssetList.insert(assetReference->m_assetId);
                     }
                 }
                 return true;
@@ -196,15 +169,16 @@ namespace AZ
 
         void PassBuilder::CreateJobs(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response) const
         {
+            // --- Handle shutdown case ---
+
             if (m_isShuttingDown)
             {
                 response.m_result = AssetBuilderSDK::CreateJobsResultCode::ShuttingDown;
                 return;
             }
 
-            AssetBuilderSDK::JobDescriptor job;
+            // --- Get serialization context ---
 
-            // Get serialization context
             SerializeContext* serializeContext = nullptr;
             ComponentApplicationBus::BroadcastResult(serializeContext, &ComponentApplicationBus::Events::GetSerializeContext);
             if (!serializeContext)
@@ -213,7 +187,8 @@ namespace AZ
                 return;
             }
 
-            // Load PassAsset
+            // --- Load PassAsset ---
+
             AZStd::string fullPath;
             AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.c_str(), request.m_sourceFile.c_str(), fullPath, true);
 
@@ -227,7 +202,12 @@ namespace AZ
                 return;
             }
 
-            // Find all Asset IDs we depend on
+            AssetBuilderSDK::JobDescriptor job;
+            job.m_jobKey = PassBuilderJobKey;
+            job.m_critical = true;                  // Passes are a critical part of the rendering system
+
+            // --- Find all dependencies ---
+
             AZStd::unordered_set<Data::AssetId> dependentList;
             Uuid passAssetUuid = AzTypeInfo<PassAsset>::Uuid();
 
@@ -238,30 +218,30 @@ namespace AZ
             params.serializeContext = serializeContext;
             params.jobKey = "Shader Asset";
 
-            if (!FindPassReferencedAssets(params, dependentList, response, job, true))
+            if (!FindReferencedAssets(params, &job))
             {
                 return;
             }
 
+            // --- Create a job per platform ---
+
             for (const AssetBuilderSDK::PlatformInfo& platformInfo : request.m_enabledPlatforms)
             {
-                job.m_jobKey = PassBuilderJobKey;
+                for (auto& jobDependency : job.m_jobDependencyList)
+                {
+                    jobDependency.m_platformIdentifier = platformInfo.m_identifier.c_str();
+                }
                 job.SetPlatformIdentifier(platformInfo.m_identifier.c_str());
-
-                // Passes are a critical part of the rendering system
-                job.m_critical = true;
-
                 response.m_createJobOutputs.push_back(job);
             }
 
             response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
         }
 
-
-
         void PassBuilder::ProcessJob(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const
         {
-            // Handle job cancellation and shutdown cases
+            // --- Handle job cancellation and shutdown cases ---
+
             AssetBuilderSDK::JobCancelListener jobCancelListener(request.m_jobId);
             if (jobCancelListener.IsCancelled() || m_isShuttingDown)
             {
@@ -269,7 +249,8 @@ namespace AZ
                 return;
             }
 
-            // Get serialization context
+            // --- Get serialization context ---
+
             SerializeContext* serializeContext = nullptr;
             ComponentApplicationBus::BroadcastResult(serializeContext, &ComponentApplicationBus::Events::GetSerializeContext);
             if (!serializeContext)
@@ -278,7 +259,8 @@ namespace AZ
                 return;
             }
 
-            // Load PassAsset
+            // --- Load PassAsset ---
+
             PassAsset passAsset;
             AZ::Outcome<void, AZStd::string> loadResult = JsonSerializationUtils::LoadObjectFromFile(passAsset, request.m_fullPath);
 
@@ -289,8 +271,8 @@ namespace AZ
                 return;
             }
 
-            // Find all Asset IDs we depend on
-            AZStd::unordered_set<Data::AssetId> dependentList;
+            // --- Find all dependencies ---
+
             Uuid passAssetUuid = AzTypeInfo<PassAsset>::Uuid();
 
             FindPassReferenceAssetParams params;
@@ -300,21 +282,20 @@ namespace AZ
             params.serializeContext = serializeContext;
             params.jobKey = "Shader Asset";
 
-            AssetBuilderSDK::CreateJobsResponse dummyResponse;
-            AssetBuilderSDK::JobDescriptor dummyJob;
-
-            if (!FindPassReferencedAssets(params, dependentList, dummyResponse, dummyJob, false))
+            if (!FindReferencedAssets(params, nullptr))
             {
                 return;
             }
 
-            // Get destination file name and path
+            // --- Get destination file name and path ---
+
             AZStd::string destFileName;
             AZStd::string destPath;
             AzFramework::StringFunc::Path::GetFullFileName(request.m_fullPath.c_str(), destFileName);
             AzFramework::StringFunc::Path::ConstructFull(request.m_tempDirPath.c_str(), destFileName.c_str(), destPath, true);
 
-            // Save the asset to binary format for production
+            // --- Save the asset to binary format for production ---
+
             bool result = Utils::SaveObjectToFile(destPath, DataStream::ST_BINARY, &passAsset, passAssetUuid, serializeContext);
             if (result == false)
             {
@@ -322,14 +303,10 @@ namespace AZ
                 return;
             }
 
-            // Success. Save output product(s) to response
-            AssetBuilderSDK::JobProduct jobProduct(destPath, PassAsset::RTTI_Type(), 0);
-            for (auto& assetId : dependentList)
-            {
-                jobProduct.m_dependencies.emplace_back(AssetBuilderSDK::ProductDependency(assetId, 0));
-            }
+            // --- Save output product(s) to response ---
 
-            jobProduct.m_dependenciesHandled = true; // We've output the dependencies immediately above so it's OK to tell the AP we've handled dependencies
+            AssetBuilderSDK::JobProduct jobProduct(destPath, PassAsset::RTTI_Type(), 0);
+            jobProduct.m_dependenciesHandled = true;
             response.m_outputProducts.push_back(jobProduct);
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
         }
