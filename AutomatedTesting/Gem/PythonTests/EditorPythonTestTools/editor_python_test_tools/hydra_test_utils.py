@@ -61,6 +61,16 @@ def launch_and_validate_results(request, test_directory, editor, editor_script, 
 
         editorlog_file = os.path.join(editor.workspace.paths.project_log(), log_file_name)
 
+        # Log monitor requires the file to exist.
+        logger.debug(f"Waiting until log file <{editorlog_file}> exists...")
+        waiter.wait_for(
+            lambda: os.path.exists(editorlog_file),
+            timeout=60,
+            exc=f"Log file '{editorlog_file}' was never created by another process.",
+            interval=1,
+        )
+        logger.debug(f"Done! log file <{editorlog_file}> exists.")
+
         # Initialize the log monitor and set time to wait for log creation
         log_monitor = ly_test_tools.log.log_monitor.LogMonitor(launcher=editor, log_file_path=editorlog_file)
         log_monitor.log_creation_max_wait_time = timeout
