@@ -50,7 +50,7 @@ class TestImpact:
                     logger.warning(f"Could not find TIAF binary at location {self._tiaf_bin}, TIAF will be turned off.")
                     self._use_test_impact_analysis = False
                 else:
-                    logger.info(f"Runtime binary found at location {self._tiaf_bin}")
+                    logger.info(f"Runtime binary found at location '{self._tiaf_bin}'")
 
                 # Workspaces
                 self._active_workspace = self._config["workspace"]["active"]["root"]
@@ -73,19 +73,30 @@ class TestImpact:
         self._change_list_path = None
 
         # Check whether or not a previous commit hash exists (no hash is not a failure)
-        self._src_commit = last_commit_hash
-        if self._src_commit:
-            if self._repo.is_descendent(self._src_commit, self._dst_commit) == False:
-                logger.info(f"Source commit '{self._src_commit}' and destination commit '{self._dst_commit}' are not related.")
-                return
+        if last_commit_hash:
+            if self._is_source_of_truth_branch:
+                # For branch builds, the dst commit must be descended from the src commit
+                self._src_commit = last_commit_hash
+                if not self._repo.is_descendent(self._src_commit, self._dst_commit):
+                    logger.error(f"Source commit '{self._src_commit}' and destination commit '{self._dst_commit}' must be related for branch builds.")
+                    return
+            else:
+                # For pull request builds we don't use the last commit hash as there is no guarantee that the dst will
+                # be descended from it so instead we will use the diff from dst commit and head
+                self._src_commit = "HEAD^"
+
+            # Calculate the distance (in commits) between the src and dst commits
             self._commit_distance = self._repo.commit_distance(self._src_commit, self._dst_commit)
-            diff_path = pathlib.Path(pathlib.PurePath(self._temp_workspace).joinpath(f"changelist.{instance_id}.diff"))
+            logger.info(f"The distance between the source and destination commits is '{self._commit_distance}' commits.") 
+
             try:
+                # Attempt to generate a diff between the src and dst commits
+                diff_path = pathlib.Path(pathlib.PurePath(self._temp_workspace).joinpath(f"changelist.{instance_id}.diff"))
                 self._repo.create_diff_file(self._src_commit, self._dst_commit, diff_path)
             except RuntimeError as e:
                 logger.error(e)
                 return
-                
+
             # A diff was generated, attempt to parse the diff and construct the change list
             logger.info(f"Generated diff between commits '{self._src_commit}' and '{self._dst_commit}': '{diff_path}'.") 
             with open(diff_path, "r") as diff_data:
@@ -189,7 +200,7 @@ class TestImpact:
             self._is_source_of_truth_branch = True
             self._source_of_truth_branch = self._src_branch
         else:
-            # PR builds use their destination as the source of truth and never update the coverage data for the source of truth
+            # Pull request builds use their destination as the source of truth and never update the coverage data for the source of truth
             self._is_source_of_truth_branch = False
             self._source_of_truth_branch = self._dst_branch
 
