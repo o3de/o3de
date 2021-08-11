@@ -88,8 +88,8 @@ class TestImpact:
                 logger.info(f"The distance between '{diff_src}' and '{diff_dst}' commits is '{self._commit_distance}' commits.") 
             else:
                 # For pull request builds we don't use the last commit hash as there is no guarantee that the dst will
-                # be descended from it so instead we will use the diff from src and dst branches
-                diff_src = self._src_branch
+                # be descended from it so instead we will use the diff from the local dst branch and the remote origin
+                diff_src = f"origin/{self._dst_branch}"
                 diff_dst = self._dst_branch
 
             try:
