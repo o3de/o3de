@@ -125,8 +125,8 @@ namespace
 
 bool CPluginManager::LoadPlugins(const char* pPathWithMask)
 {
-    QString strPath = QtUtil::ToQString(PathUtil::GetPath(pPathWithMask));
-    QString strMask = QString::fromUtf8(PathUtil::GetFile(pPathWithMask));
+    QString strPath = PathUtil::GetPath(pPathWithMask).c_str();
+    QString strMask = PathUtil::GetFile(pPathWithMask);
 
     CLogFile::WriteLine("[Plugin Manager] Loading plugins...");
 

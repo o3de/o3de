@@ -15,7 +15,7 @@
 #define TAG_SCRIPT_TYPE "t"
 #define TAG_SCRIPT_NAME "n"
 
-//#define LOG_SERIALIZE_STACK(tag,szName) CryLogAlways( "<%s> %s/%s",tag,GetStackInfo(),szName );
+//#define LOG_SERIALIZE_STACK(tag,szName) CryLogAlways( "<%s> %s/%s",tag,GetStackInfo().c_str(), szName);
 #define LOG_SERIALIZE_STACK(tag, szName)
 
 CSerializeXMLReaderImpl::CSerializeXMLReaderImpl(const XmlNodeRef& nodeRef)
@@ -49,7 +49,7 @@ bool CSerializeXMLReaderImpl::Value(const char* name, int8& value)
     return bResult;
 }
 
-bool CSerializeXMLReaderImpl::Value(const char* name, string& value)
+bool CSerializeXMLReaderImpl::Value(const char* name, AZStd::string& value)
 {
     DefaultValue(value); // Set input value to default.
     if (m_nErrors)
@@ -175,10 +175,9 @@ void CSerializeXMLReaderImpl::EndGroup()
 }
 
 //////////////////////////////////////////////////////////////////////////
-const char* CSerializeXMLReaderImpl::GetStackInfo() const
+AZStd::string CSerializeXMLReaderImpl::GetStackInfo() const
 {
-    static string str;
-    str.assign("");
+    AZStd::string str;
     for (int i = 0; i < (int)m_nodeStack.size(); i++)
     {
         const char* name = m_nodeStack[i].m_node->getAttr(TAG_SCRIPT_NAME);
@@ -195,7 +194,7 @@ const char* CSerializeXMLReaderImpl::GetStackInfo() const
             str += "/";
         }
     }
-    return str.c_str();
+    return str;
 }
 
 void CSerializeXMLReaderImpl::GetMemoryUsage(ICrySizer* pSizer) const

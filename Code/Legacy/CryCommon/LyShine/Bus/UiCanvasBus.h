@@ -101,7 +101,7 @@ public: // member functions
 
     //! Save this canvas to the given path in XML
     //! \return true if no error
-    virtual bool SaveToXml(const string& assetIdPathname, const string& sourceAssetPathname) = 0;
+    virtual bool SaveToXml(const AZStd::string& assetIdPathname, const AZStd::string& sourceAssetPathname) = 0;
 
     //! Initialize a set of entities that have been added to the canvas
     //! Used when instantiating a slice or for undo/redo, copy/paste

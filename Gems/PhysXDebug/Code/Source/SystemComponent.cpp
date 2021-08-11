@@ -30,7 +30,7 @@
 #include <MathConversion.h>
 
 #include <IConsole.h>
-#include <StringUtils.h>
+#include <CryCommon/ISystem.h>
 
 #include <PhysX/Debug/PhysXDebugInterface.h>
 
@@ -586,8 +586,6 @@ namespace PhysXDebug
 
     static void physx_Debug([[maybe_unused]] const AZ::ConsoleCommandContainer& arguments)
     {
-        using namespace CryStringUtils;
-
         const size_t argumentCount = arguments.size();
 
         if (argumentCount == 1)

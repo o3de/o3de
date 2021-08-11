@@ -18,7 +18,6 @@
 //#define AZ_LOG_UNBOUND_SEND_RECEIVE
 
 #include <GridMate/Containers/unordered_set.h>
-#include <GridMate/String/string.h>
 #include <GridMate/Carrier/DriverEvents.h>
 
 #include <AzCore/std/chrono/types.h>
@@ -498,7 +497,7 @@ namespace GridMate
         }
     }
 
-    SocketDriverAddress::SocketDriverAddress(Driver* driver, const string& ip, unsigned int port)
+    SocketDriverAddress::SocketDriverAddress(Driver* driver, const AZStd::string& ip, unsigned int port)
         : DriverAddress(driver)
     {
         AZ_Assert(!ip.empty(), "Invalid address string!");
@@ -575,7 +574,7 @@ namespace GridMate
         return !(*this == rhs);
     }
 
-    string SocketDriverAddress::ToString() const
+    AZStd::string SocketDriverAddress::ToString() const
     {
         char ip[64];
         unsigned short port;
@@ -590,15 +589,15 @@ namespace GridMate
             port = ntohs(m_sockAddr.sin_port);
         }
 
-        return string::format("%s|%d", ip, port);
+        return AZStd::string::format("%s|%d", ip, port);
     }
 
-    string SocketDriverAddress::ToAddress() const
+    AZStd::string SocketDriverAddress::ToAddress() const
     {
         return ToString();
     }
 
-    string SocketDriverAddress::GetIP() const
+    AZStd::string SocketDriverAddress::GetIP() const
     {
         char ip[64];
         if (m_sockAddr.sin_family == AF_INET6)
@@ -609,7 +608,7 @@ namespace GridMate
         {
             inet_ntop(AF_INET, const_cast<void*>(reinterpret_cast<const void*>(&m_sockAddr.sin_addr)), ip, AZ_ARRAY_SIZE(ip));
         }
-        return string(ip);
+        return AZStd::string(ip);
     }
 
     unsigned int SocketDriverAddress::GetPort() const
@@ -1144,11 +1143,11 @@ namespace GridMate
     // CreateSocketDriver
     // [3/4/2013]
     //=========================================================================
-    string
+    AZStd::string
     SocketDriverCommon::IPPortToAddressString(const char* ip, unsigned int port)
     {
         AZ_Assert(ip != nullptr, "Invalid address!");
-        return string::format("%s|%d", ip, port);
+        return AZStd::string::format("%s|%d", ip, port);
     }
 
     //=========================================================================
@@ -1156,17 +1155,17 @@ namespace GridMate
     // [3/4/2013]
     //=========================================================================
     bool
-    SocketDriverCommon::AddressStringToIPPort(const string& address, string& ip, unsigned int& port)
+    SocketDriverCommon::AddressStringToIPPort(const AZStd::string& address, AZStd::string& ip, unsigned int& port)
     {
         AZStd::size_t pos = address.find('|');
-        AZ_Assert(pos != string::npos, "Invalid driver address!");
-        if (pos == string::npos)
+        AZ_Assert(pos != AZStd::string::npos, "Invalid driver address!");
+        if (pos == AZStd::string::npos)
         {
             return false;
         }
 
-        ip = string(address.begin(), address.begin() + pos);
-        port = AZStd::stoi(string(address.begin() + pos + 1, address.end()));
+        ip = AZStd::string(address.begin(), address.begin() + pos);
+        port = AZStd::stoi(AZStd::string(address.begin() + pos + 1, address.end()));
 
         return true;
     }
@@ -1176,16 +1175,16 @@ namespace GridMate
     // [7/11/2013]
     //=========================================================================
     Driver::BSDSocketFamilyType
-    SocketDriverCommon::AddressFamilyType(const string& ip)
+    SocketDriverCommon::AddressFamilyType(const AZStd::string& ip)
     {
         // TODO: We can/should use inet_ntop() to detect the family type
         AZStd::size_t pos = ip.find(".");
-        if (pos != string::npos)
+        if (pos != AZStd::string::npos)
         {
             return BSD_AF_INET;
         }
         pos = ip.find("::");
-        if (pos != string::npos)
+        if (pos != AZStd::string::npos)
         {
             return BSD_AF_INET6;
         }
@@ -1198,13 +1197,13 @@ namespace GridMate
     //////////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////
     //=========================================================================
-    // CreateDriverAddress(const string&)
+    // CreateDriverAddress(const AZStd::string&)
     // [1/12/2011]
     //=========================================================================
     AZStd::intrusive_ptr<DriverAddress>
-    SocketDriver::CreateDriverAddress(const string& address)
+    SocketDriver::CreateDriverAddress(const AZStd::string& address)
     {
-        string ip;
+        AZStd::string ip;
         unsigned int port;
         if (!AddressToIPPort(address, ip, port))
         {
@@ -1243,7 +1242,7 @@ namespace GridMate
     namespace Utils
     {
         // \note function moved here to use addinfo when IPV6 is not in use, consider moving those definitions to a header file
-        bool GetIpByHostName(int familyType, const char* hostName, string& ip)
+        bool GetIpByHostName(int familyType, const char* hostName, AZStd::string& ip)
         {
             static const size_t kMaxLen = 64; // max length of ipv6 ip is 45 chars, so all ips should be able to fit in this buf
             char ipBuf[kMaxLen];
