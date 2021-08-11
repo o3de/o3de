@@ -12,6 +12,7 @@
 
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Memory/OSAllocator.h>
+#include <AzCore/Name/Name.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/shared_mutex.h>
