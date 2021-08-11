@@ -164,10 +164,11 @@ namespace AzToolsFramework
         }
 
     protected:
-        const int TopMargin = 1;
-        const int RightMargin = 2;
-        const int BottomMargin = 5;
-        const int LeftMargin = 2;
+        static constexpr int TopMargin = 1;
+        static constexpr int RightMargin = 2;
+        static constexpr int BottomMargin = 5;
+        static constexpr int LeftMargin = 2;
+        static constexpr int RowHighlightIndent = 2;
 
         void paintDraggingRowWidget(QPainter& painter)
         {
@@ -189,9 +190,8 @@ namespace AzToolsFramework
                     continue;
                 }
 
-                for (AZStd::pair<InstanceDataNode*, PropertyRowWidget*> widgetPair : componentEditor->GetPropertyEditor()->GetWidgets())
+                for (auto& [dataNode, rowWidget] : componentEditor->GetPropertyEditor()->GetWidgets())
                 {
-                    PropertyRowWidget* rowWidget = widgetPair.second;
                     if (!rowWidget->isVisible())
                     {
                         continue;
@@ -203,15 +203,15 @@ namespace AzToolsFramework
                         QPoint(mapFromGlobal(globalRect.topLeft()) + QPoint(LeftMargin, TopMargin)),
                         QPoint(mapFromGlobal(globalRect.bottomRight()) - QPoint(RightMargin, BottomMargin)));
 
-                    currRect.setLeft(LeftMargin + 2);
-                    currRect.setWidth(rowWidget->GetParentWidgetWidth() - (RightMargin + LeftMargin));
+                    currRect.setLeft(LeftMargin + RowHighlightIndent);
+                    currRect.setWidth(rowWidget->GetContainingEditorWidgetWidth() - (RightMargin + LeftMargin));
 
                     if (rowWidget == dragRowWidget)
                     {
                         QStyleOption opt;
                         opt.init(this);
                         opt.rect = currRect;
-                        static_cast<AzQtComponents::Style*>(style())->drawDragIndicator(&opt, &painter, this);
+                        qobject_cast <AzQtComponents::Style*>(style())->drawDragIndicator(&opt, &painter, this);
                     }
 
                     if (rowWidget == dropTarget)
@@ -364,7 +364,7 @@ namespace AzToolsFramework
                 QPoint(mapFromGlobal(globalRect.bottomRight()) - QPoint(RightMargin, BottomMargin)));
 
             currRect.setLeft(LeftMargin + 2);
-            currRect.setWidth(rowWidget->GetParentWidgetWidth() - (RightMargin + LeftMargin));
+            currRect.setWidth(rowWidget->GetContainingEditorWidgetWidth() - (RightMargin + LeftMargin));
 
             painter.setOpacity(alpha);
 
@@ -2053,7 +2053,7 @@ namespace AzToolsFramework
         }
 
         // Don't show if a move operation is pending.
-        if (m_currentReorderState == ReorderState::MenuOperationInProgress)
+        if (m_currentReorderState != ReorderState::Inactive)
         {
             return;
         }
@@ -2629,7 +2629,7 @@ namespace AzToolsFramework
     void EntityPropertyEditor::BeginMoveRowWidgetFade()
     {
         // Fade out the highlights and indicator bar for two seconds before moving.
-        m_moveFadeTimeRemaining = MoveStartFadeTime;
+        m_moveFadeSecondsRemaining = MoveFadeSeconds;
         m_currentReorderState = EntityPropertyEditor::ReorderState::MenuOperationInProgress;
         AZ::TickBus::Handler::BusConnect();
     }
@@ -2643,7 +2643,7 @@ namespace AzToolsFramework
         UpdateOverlay();
 
         m_currentReorderState = ReorderState::HighlightMovedRow;
-        m_moveFadeTimeRemaining = MoveStartFadeTime;
+        m_moveFadeSecondsRemaining = MoveFadeSeconds;
 
         AZ::TickBus::Handler::BusConnect();
         m_overlay->setVisible(true);
@@ -2651,20 +2651,20 @@ namespace AzToolsFramework
 
     void EntityPropertyEditor::OnTick(float deltaTime, AZ::ScriptTimePoint /*time*/)
     {
-        m_moveFadeTimeRemaining -= deltaTime;
+        m_moveFadeSecondsRemaining -= deltaTime;
         m_overlay->setVisible(true);
-        if (m_moveFadeTimeRemaining <= 0.0f)
+        if (m_moveFadeSecondsRemaining <= 0.0f)
         {
-            m_moveFadeTimeRemaining = 0.0f;
+            m_moveFadeSecondsRemaining = 0.0f;
 
             if (m_currentReorderState == ReorderState::MenuOperationInProgress)
             {
-                m_reorderRowWidgetEditor->GetPropertyEditor()->MoveNodeToIndex(m_nodeToMode, m_indexMapOfMovedRow[0]);
+                m_reorderRowWidgetEditor->GetPropertyEditor()->MoveNodeToIndex(m_nodeToMove, m_indexMapOfMovedRow[0]);
 
                 // Ensure the highlight gets drawn once the RPE is updated.
                 m_currentReorderState = ReorderState::WaitForRedraw;
-
                 AZ::TickBus::Handler::BusDisconnect();
+                ScrollToNewComponent();
             }
             else
             {
@@ -2704,7 +2704,7 @@ namespace AzToolsFramework
         GenerateRowWidgetIndexMapToChildIndex(parent, rowWidget->GetIndexInParent() - 1);
 
         m_reorderRowWidgetEditor = componentEditor;
-        m_nodeToMode = rowWidget->GetNode();
+        m_nodeToMove = rowWidget->GetNode();
         BeginMoveRowWidgetFade();
     }
 
@@ -2714,7 +2714,7 @@ namespace AzToolsFramework
         GenerateRowWidgetIndexMapToChildIndex(parent, rowWidget->GetIndexInParent() + 1);
 
         m_reorderRowWidgetEditor = componentEditor;
-        m_nodeToMode = rowWidget->GetNode();
+        m_nodeToMove = rowWidget->GetNode();
         BeginMoveRowWidgetFade();
     }
 
@@ -4956,14 +4956,11 @@ namespace AzToolsFramework
         for (auto componentEditor : componentEditors)
         {
             AzToolsFramework::ReflectedPropertyEditor::WidgetList widgets = componentEditor->GetPropertyEditor()->GetWidgets();
-            for (AZStd::pair<InstanceDataNode*, PropertyRowWidget*> w : widgets)
+            for (auto& [dataNode, rowWidget] : widgets)
             {
-                if (w.second)
+                if (DoesIntersectWidget(globalRect, reinterpret_cast<QWidget*>(rowWidget)) && rowWidget->CanBeReordered())
                 {
-                    if (DoesIntersectWidget(globalRect, reinterpret_cast<QWidget*>(w.second)) && w.second->CanBeReordered())
-                    {
-                        return w.second;
-                    }
+                    return rowWidget;
                 }
             }
         }
@@ -5769,7 +5766,7 @@ namespace AzToolsFramework
             return 1.0f;
         }
 
-        return m_moveFadeTimeRemaining / MoveStartFadeTime;
+        return m_moveFadeSecondsRemaining / MoveFadeSeconds;
     }
 
     PropertyRowWidget* EntityPropertyEditor::GetRowToHighlight()

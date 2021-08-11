@@ -1773,13 +1773,7 @@ namespace AzToolsFramework
             return false;
         }
 
-        PropertyRowWidget* firstChildOfParent = m_parentRow->GetChildRowByIndex(0);
-        if (this == firstChildOfParent)
-        {
-            return false;
-        }
-
-        return true;
+        return this != m_parentRow->GetChildRowByIndex(0);
     }
 
     bool PropertyRowWidget::CanMoveDown() const
@@ -1790,18 +1784,28 @@ namespace AzToolsFramework
         }
 
         AZ::u32 numChildrenOfParent = m_parentRow->GetChildRowCount();
-        PropertyRowWidget* lastChild = m_parentRow->GetChildRowByIndex(numChildrenOfParent - 1);
-        if (this == lastChild)
-        {
-            return false;
-        }
-        return true;
+
+        return this != m_parentRow->GetChildRowByIndex(numChildrenOfParent - 1);
     }
 
-    int PropertyRowWidget::GetParentWidgetWidth()
+    int PropertyRowWidget::GetContainingEditorFrameWidth()
     {
-        QWidget* parent = parentWidget()->parentWidget()->parentWidget();
+        QWidget* parent = parentWidget();
 
+        // Find the first ancestor that can be cast to a QFrame, this will be the RPE.
+        while (!qobject_cast<QFrame*>(parent))
+        {
+            parent = parent->parentWidget();
+        }
+
+        if (!parent)
+        {
+            return 0;
+        }
+
+        // The parent of the RPE is the size we want.
+        parent = parent->parentWidget();
+        
         return parent->rect().width();
     }
 
@@ -1850,7 +1854,7 @@ namespace AzToolsFramework
     {
         // Make the drag box as wide as the containing editor minus a gap each side for the border.
         static int ParentEditorBorderSize = 2;
-        int width = GetParentWidgetWidth() - ParentEditorBorderSize * 2;
+        int width = GetContainingEditorFrameWidth() - ParentEditorBorderSize * 2;
         int height = 0;
 
         if (imageType == DragImageType::IncludeVisibleChildren)

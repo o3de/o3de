@@ -1672,6 +1672,12 @@ namespace AzToolsFramework
             node = node->GetParent();
         }
 
+        // Check for pContainerNode again, can happen if a node is deleted during operation.
+        if (!pContainerNode)
+        {
+            return nullptr;
+        }
+
         if (IsParentAssociativeContainer(pContainerNode) && IsPairContainer(pContainerNode))
         {
             // Go up one more level to the associative container, we'll remove the pair from that container
@@ -1708,17 +1714,12 @@ namespace AzToolsFramework
             ? containerNode->GetElementMetadata()->m_genericClassInfo->GetClassData()->m_container
             : nullptr;
 
-        if (!container)
-        {
-            return;
-        }
-
-        if (container->GetAssociativeContainerInterface())
-        {
-            return;
-        }
-
         if (fromIndex == toIndex)
+        {
+            return;
+        }
+
+        if (!container || container->GetAssociativeContainerInterface())
         {
             return;
         }
@@ -1747,16 +1748,12 @@ namespace AzToolsFramework
         void* tmpBuffer = serializeContext->CloneObject(srcElement, typeId);
 
         // Shuffle all intervening items up (or down).
-        int inc = 1;
-        if (toIndex < fromIndex)
-        {
-            inc = -1;
-        }
+        int indexOffset = (toIndex < fromIndex) ? -1 : 1;
 
-        while (destIndex != toIndex - inc)
+        while (destIndex != toIndex - indexOffset)
         {
             destIndex = srcIndex;
-            srcIndex += inc;
+            srcIndex += indexOffset;
 
             destElement = srcElement;
 
@@ -1785,6 +1782,11 @@ namespace AzToolsFramework
     void ReflectedPropertyEditor::MoveNodeToIndex(InstanceDataNode* node, int index)
     {
         InstanceDataNode* pContainerNode = FindContainerNodeForNode(node);
+
+        if (!pContainerNode)
+        {
+            return;
+        }
 
         AZ::SerializeContext::IDataContainer* container = pContainerNode->GetClassMetadata()->m_container;
 

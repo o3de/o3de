@@ -614,17 +614,17 @@ namespace AzToolsFramework
         Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;
         bool m_prefabsAreEnabled = false;
 
-                // Reordering row widgets within the RPE.
-        const float MoveStartFadeTime = 0.5f;
+        // Reordering row widgets within the RPE.
+        static constexpr float MoveFadeSeconds = 0.5f;
 
         ReorderState m_currentReorderState = ReorderState::Inactive;
         ComponentEditor* m_reorderRowWidgetEditor = nullptr;
-        InstanceDataNode* m_nodeToMode = nullptr;
+        InstanceDataNode* m_nodeToMove = nullptr;
         PropertyRowWidget* m_reorderRowWidget = nullptr;
         PropertyRowWidget* m_reorderDropTarget = nullptr;
         DropArea m_reorderDropArea = DropArea::Above;
         QPixmap m_reorderRowImage;
-        float m_moveFadeTimeRemaining;
+        float m_moveFadeSecondsRemaining;
         AZStd::vector<int> m_indexMapOfMovedRow;
 
         // When m_initiatingPropertyChangeNotification is set to true, it means this EntityPropertyEditor is
