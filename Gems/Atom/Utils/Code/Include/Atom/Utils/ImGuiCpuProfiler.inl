@@ -618,7 +618,7 @@ namespace AZ
                 else // We have enough space to draw the entire label, draw and center text.
                 {
                     const float remainingWidth = regionPixelWidth - textWidth;
-                    const float offset = remainingWidth * .5;
+                    const float offset = remainingWidth * .5f;
 
                     drawList->AddText({ startPoint.x + offset, startPoint.y }, IM_COL32_WHITE, label.c_str());
                 }

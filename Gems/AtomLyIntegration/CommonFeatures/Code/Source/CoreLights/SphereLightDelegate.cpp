@@ -104,7 +104,7 @@ namespace AZ::Render
     {
         if (GetShadowsEnabled() && GetLightHandle().IsValid())
         {
-            GetFeatureProcessor()->SetPredictionSampleCount(GetLightHandle(), count);
+            GetFeatureProcessor()->SetPredictionSampleCount(GetLightHandle(), aznumeric_cast<uint16_t>(count));
         }
     }
 
@@ -112,7 +112,7 @@ namespace AZ::Render
     {
         if (GetShadowsEnabled() && GetLightHandle().IsValid())
         {
-            GetFeatureProcessor()->SetFilteringSampleCount(GetLightHandle(), count);
+            GetFeatureProcessor()->SetFilteringSampleCount(GetLightHandle(), aznumeric_cast<uint16_t>(count));
         }
     }
 

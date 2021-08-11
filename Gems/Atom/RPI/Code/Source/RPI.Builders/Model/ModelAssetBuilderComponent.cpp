@@ -1807,7 +1807,7 @@ namespace AZ
                 if (iter != materialAssetsByUid.end())
                 {
                     ModelMaterialSlot materialSlot;
-                    materialSlot.m_stableId = meshView.m_materialUid;
+                    materialSlot.m_stableId = static_cast<AZ::RPI::ModelMaterialSlot::StableId>(meshView.m_materialUid);
                     materialSlot.m_displayName = iter->second.m_name;
                     materialSlot.m_defaultMaterialAsset = iter->second.m_asset;
 
