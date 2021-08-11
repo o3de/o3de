@@ -21,7 +21,7 @@
 //
 //---------------------------------------------------------------------------
 
-#include "MultiThread.h"
+#include <AzCore/std/parallel/spin_mutex.h>
 
 namespace stl
 {
@@ -51,43 +51,20 @@ namespace stl
 
     struct PSyncMultiThread
     {
-        PSyncMultiThread()
-            : _Semaphore(0) {}
+        PSyncMultiThread() {}
 
         void Lock()
         {
-            CryWriteLock(&_Semaphore);
+            m_lock.lock();
         }
         void Unlock()
         {
-            CryReleaseWriteLock(&_Semaphore);
-        }
-        int IsLocked() const volatile
-        {
-            return _Semaphore;
+            m_lock.unlock();
         }
 
     private:
-        volatile int _Semaphore;
+        AZStd::spin_mutex m_lock;
     };
-
-#ifdef _DEBUG
-
-    struct PSyncDebug
-        : public PSyncMultiThread
-    {
-        void Lock()
-        {
-            assert(!IsLocked());
-            PSyncMultiThread::Lock();
-        }
-    };
-
-#else
-
-    typedef PSyncNone PSyncDebug;
-
-#endif
 };
 
 #endif // CRYINCLUDE_CRYCOMMON_SYNCHRONIZATION_H
