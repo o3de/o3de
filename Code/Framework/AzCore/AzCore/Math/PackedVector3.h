@@ -8,6 +8,7 @@
 
 #pragma once
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/RTTI/TypeInfo.h>
 
 namespace AZ
 {

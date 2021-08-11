@@ -7,6 +7,7 @@
  */
 
 #pragma once
+#include <AzCore/Casting/numeric_cast.h>
 
 namespace AZ
 {

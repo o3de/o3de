@@ -11,6 +11,7 @@
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/condition_variable.h>
+#include <AzCore/std/parallel/atomic.h>
 
 namespace AZ::Platform
 {

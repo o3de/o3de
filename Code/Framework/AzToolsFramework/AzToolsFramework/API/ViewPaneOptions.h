@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
 
 #include <QRect>
 #include <QKeySequence>

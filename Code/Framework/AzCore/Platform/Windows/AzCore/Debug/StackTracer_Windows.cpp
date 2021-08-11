@@ -7,6 +7,7 @@
  */
 #include <AzCore/Debug/StackTracer.h>
 #include <AzCore/Math/MathUtils.h>
+#include <AzCore/Math/Crc.h>
 
 #include <AzCore/PlatformIncl.h>
 #include <AzCore/std/containers/fixed_vector.h>

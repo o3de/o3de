@@ -75,11 +75,7 @@ public:
 
     void SetGlobalSelection(const char* resourceType, const char* value) override
     {
-        if (!resourceType)
-        {
-            return;
-        }
-        if (!value)
+        if (!resourceType || !value)
         {
             return;
         }
