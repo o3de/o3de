@@ -140,6 +140,8 @@ namespace Terrain
             AZ::Aabb m_terrainBounds;
             float m_heightScale;
             AZ::Data::Instance<AZ::RPI::StreamingImage> m_heightmapImage;
+            uint32_t m_heightmapImageWidth;
+            uint32_t m_heightmapImageHeight;
             bool m_debugDrawWireframe{ false };
             bool m_propertiesDirty{ true };
         };

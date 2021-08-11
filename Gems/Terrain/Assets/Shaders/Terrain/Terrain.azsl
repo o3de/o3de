@@ -83,13 +83,14 @@ VertexOutput MainVS(in VertexInput input)
 
     // Calculate normal
     float2 gridSize = {1.0f, 1.0f};
-    float n = GetHeight(uv + float2(-ObjectSrg::m_uvStep[0], 0.0f));
-    float e = GetHeight(uv + float2(0.0f, ObjectSrg::m_uvStep[1]));
-    float s = GetHeight(uv + float2(ObjectSrg::m_uvStep[0], 0.0f));
-    float w = GetHeight(uv + float2(0.0f, -ObjectSrg::m_uvStep[1]));
+    float up    = GetHeight(uv + ObjectSrg::m_uvStep * float2(-1.0f,  0.0f));
+    float right = GetHeight(uv + ObjectSrg::m_uvStep * float2( 0.0f,  1.0f));
+    float down  = GetHeight(uv + ObjectSrg::m_uvStep * float2( 1.0f,  0.0f));
+    float left  = GetHeight(uv + ObjectSrg::m_uvStep * float2( 0.0f, -1.0f));
 
-    float dydx = (w - e) * gridSize[0];
-    float dydz = (s - n) * gridSize[1];
+    float dydx = (right - left) * gridSize[0];
+    float dydz = (down - up) * gridSize[1];
+    
     output.Normal = normalize(float3(dydx, 2.0f, dydz));
 
     output.UV = uv;
@@ -117,7 +118,7 @@ PixelOutput MainPS(in VertexOutput input)
     lightIntensity = saturate(0.1 + lightIntensity * 0.9);
 
     // The lightIntensity should not affect alpha so only apply it to rgb.
-    //output.m_color.rgb = input.Normal * lightIntensity;
+    //output.m_color.rgb = ((input.Normal + float3(1.0, 1.0, 1.0)) / 2.0);
     output.m_color.rgb = float3(1.0, 1.0, 1.0) * lightIntensity;
     output.m_color.a = 1.0f;
 

@@ -326,6 +326,8 @@ namespace Terrain
         areaData.m_transform = transform;
         areaData.m_heightScale = worldBounds.GetZExtent();
         areaData.m_terrainBounds = worldBounds;
+        areaData.m_heightmapImageHeight = height;
+        areaData.m_heightmapImageWidth = width;
 
         // Create heightmap image data
         {
@@ -412,9 +414,9 @@ namespace Terrain
                     uvMax[1] =
                         (float)(((yPatch + m_gridMeters) - areaData.m_terrainBounds.GetMin().GetY()) / areaData.m_terrainBounds.GetYExtent());
 
-                    float uvStep[2] = {
-                        1.0f / (m_gridMeters * m_gridSpacing), 
-                        1.0f / (m_gridMeters * m_gridSpacing),
+                    float uvStep[2] =
+                    {
+                        1.0f / areaData.m_heightmapImageWidth, 1.0f / areaData.m_heightmapImageHeight,
                     };
 
                     AZ::Transform transform = areaData.m_transform;
