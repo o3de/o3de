@@ -140,11 +140,14 @@ namespace AZ
                     return Failure(AZStd::string::format("Could not fopen file %s, is the path correct?\n", resolvedPath));
                 }
 
+                constexpr AZStd::size_t BufSize = 65536;
+                char* buf = reinterpret_cast<char*>(azmalloc(BufSize));
+
                 rapidjson::Document document;
-                char buf[65536];
-                rapidjson::FileReadStream inputStream(fp, buf, sizeof(buf));
+                rapidjson::FileReadStream inputStream(fp, buf, BufSize);
                 document.ParseStream(inputStream);
 
+                azfree(buf);
                 fclose(fp);
 
                 if (document.HasParseError())
@@ -171,7 +174,7 @@ namespace AZ
                     return Failure(AZStd::string::format("Error in deserializing document: %s\n", deserializationResult.ToString(capturePath.c_str()).c_str()));
                 }
 
-                AZ_TracePrintf("JsonUtils", "Successfuly loaded CPU profiling data with %zu profiling entries.\n",
+                AZ_TracePrintf("JsonUtils", "Successfully loaded CPU profiling data with %zu profiling entries.\n",
                      serializer.m_cpuProfilingStatisticsSerializerEntries.size());
 
                 return Success(AZStd::move(serializer.m_cpuProfilingStatisticsSerializerEntries));
