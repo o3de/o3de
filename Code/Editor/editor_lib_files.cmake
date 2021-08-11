@@ -803,8 +803,6 @@ set(FILES
     EditorViewportCamera.h
     ViewportManipulatorController.cpp
     ViewportManipulatorController.h
-    RenderViewport.cpp
-    RenderViewport.h
     TopRendererWnd.cpp
     TopRendererWnd.h
     ViewManager.cpp
