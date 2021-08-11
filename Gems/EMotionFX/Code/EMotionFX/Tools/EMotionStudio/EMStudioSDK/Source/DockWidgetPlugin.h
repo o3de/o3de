@@ -41,7 +41,7 @@ namespace EMStudio
         virtual void SetInterfaceTitle(const char* name);
         void CreateBaseInterface(const char* objectName) override;
 
-        QString GetObjectName() const override                      { AZ_Assert(mDock, "mDock is null"); return mDock->objectName(); }
+        QString GetObjectName() const override                      { AZ_Assert(m_dock, "m_dock is null"); return m_dock->objectName(); }
         void SetObjectName(const QString& name) override            { GetDockWidget()->setObjectName(name); }
 
         virtual QSize GetInitialWindowSize() const                          { return QSize(500, 650); }
@@ -53,6 +53,6 @@ namespace EMStudio
     protected:
         QWidget* CreateErrorContentWidget(const char* errorMessage) const;
 
-        QPointer<QDockWidget> mDock;
+        QPointer<QDockWidget> m_dock;
     };
 }   // namespace EMStudio

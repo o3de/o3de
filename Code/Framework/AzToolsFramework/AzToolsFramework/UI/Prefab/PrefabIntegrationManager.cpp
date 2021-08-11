@@ -256,11 +256,11 @@ namespace AzToolsFramework
 
         void PrefabIntegrationManager::HandleSourceFileType(AZStd::string_view sourceFilePath, AZ::EntityId parentId, AZ::Vector3 position) const
         {
-            auto createPrefabOutcome = s_prefabPublicInterface->InstantiatePrefab(sourceFilePath, parentId, position);
+            auto instantiatePrefabOutcome = s_prefabPublicInterface->InstantiatePrefab(sourceFilePath, parentId, position);
 
-            if (!createPrefabOutcome.IsSuccess())
+            if (!instantiatePrefabOutcome.IsSuccess())
             {
-                WarnUserOfError("Prefab Instantiation Error", createPrefabOutcome.GetError());
+                WarnUserOfError("Prefab Instantiation Error", instantiatePrefabOutcome.GetError());
             }
         }
 
@@ -348,7 +348,7 @@ namespace AzToolsFramework
                 }
             }
 
-            auto createPrefabOutcome = s_prefabPublicInterface->CreatePrefab(selectedEntities, prefabFilePath.data());
+            auto createPrefabOutcome = s_prefabPublicInterface->CreatePrefabInDisk(selectedEntities, prefabFilePath.data());
 
             if (!createPrefabOutcome.IsSuccess())
             {

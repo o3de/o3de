@@ -82,7 +82,7 @@ namespace AZ
         FontFamilyPtr GetFontFamily(const char* fontFamilyName) override;
         void AddCharsToFontTextures(FontFamilyPtr fontFamily, const char* chars, int glyphSizeX = ICryFont::defaultGlyphSizeX, int glyphSizeY = ICryFont::defaultGlyphSizeY) override;
         void GetMemoryUsage([[maybe_unused]] ICrySizer* sizer) const override {}
-        string GetLoadedFontNames() const;
+        AZStd::string GetLoadedFontNames() const;
         void OnLanguageChanged() override;
         void ReloadAllFonts() override;
         //////////////////////////////////////////////////////////////////////////////////
@@ -124,7 +124,7 @@ namespace AZ
         //! \param fontFamilyName The name of the font family, or path to a font family file.
         //! \param outputDirectory Path to loaded font family (no filename), may need resolving with PathUtil::MakeGamePath.
         //! \param outputFullPath Full path to loaded font family, may need resolving with PathUtil::MakeGamePath.
-        XmlNodeRef LoadFontFamilyXml(const char* fontFamilyName, string& outputDirectory, string& outputFullPath);
+        XmlNodeRef LoadFontFamilyXml(const char* fontFamilyName, AZStd::string& outputDirectory, AZStd::string& outputFullPath);
 
         // Data::AssetBus::Handler overrides...
         void OnAssetReady(Data::Asset<Data::AssetData> asset) override;

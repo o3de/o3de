@@ -114,7 +114,7 @@ function(ly_add_test)
     if(NOT ly_add_test_TIMEOUT)
         set(ly_add_test_TIMEOUT ${LY_TEST_DEFAULT_TIMEOUT})
     elseif(ly_add_test_TIMEOUT GREATER LY_TEST_DEFAULT_TIMEOUT)
-        message(WARNING "TIMEOUT for test ${ly_add_test_NAME} set at ${ly_add_test_TIMEOUT} seconds which is longer than the default of ${LY_TEST_DEFAULT_TIMEOUT}. Allowing a single module to run exceedingly long creates problems in a CI pipeline.")
+        message(FATAL_ERROR "TIMEOUT for test ${ly_add_test_NAME} set at ${ly_add_test_TIMEOUT} seconds which is longer than the default of ${LY_TEST_DEFAULT_TIMEOUT}. Allowing a single module to run exceedingly long creates problems in a CI pipeline.")
     endif()
 
     if(NOT ly_add_test_TEST_COMMAND)

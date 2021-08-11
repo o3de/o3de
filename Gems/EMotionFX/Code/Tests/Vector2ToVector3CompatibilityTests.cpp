@@ -25,7 +25,7 @@
 #include <EMotionFX/Source/Parameter/Vector3Parameter.h>
 #include <EMotionFX/Source/Parameter/ValueParameter.h>
 #include <EMotionFX/Source/BlendTreeParameterNode.h>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 
 namespace EMotionFX
 {

@@ -11,8 +11,8 @@ namespace EMotionFX
     class Skeleton
     {
     public:
-        MOCK_CONST_METHOD1(GetNode, Node*(uint32 index));
+        MOCK_CONST_METHOD1(GetNode, Node*(size_t index));
         MOCK_CONST_METHOD1(FindNodeByName, Node*(const char* name));
-        MOCK_CONST_METHOD0(GetNumNodes, uint32());
+        MOCK_CONST_METHOD0(GetNumNodes, size_t());
     };
 } // namespace EMotionFX

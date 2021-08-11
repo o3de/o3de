@@ -426,7 +426,7 @@ struct IConsole
     //   szPrefix - 0 or prefix e.g. "sys_spec_"
     // Return
     //   used size
-    virtual size_t GetSortedVars(const char** pszArray, size_t numItems, const char* szPrefix = 0) = 0;
+    virtual size_t GetSortedVars(AZStd::vector<AZStd::string_view>& pszArray, const char* szPrefix = 0) = 0;
     virtual const char* AutoComplete(const char* substr) = 0;
     virtual const char* AutoCompletePrev(const char* substr) = 0;
     virtual const char* ProcessCompletion(const char* szInputBuffer) = 0;

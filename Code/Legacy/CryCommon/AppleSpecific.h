@@ -192,13 +192,8 @@ typedef WCHAR* LPUWSTR, * PUWSTR;
 typedef const WCHAR* LPCWSTR, * PCWSTR;
 typedef const WCHAR* LPCUWSTR, * PCUWSTR;
 
-#ifdef UNICODE
 typedef LPCWSTR LPCTSTR;
 typedef LPWSTR LPTSTR;
-#else
-typedef LPCSTR LPCTSTR;
-typedef LPSTR LPTSTR;
-#endif
 
 typedef DWORD COLORREF;
 #define RGB(r,g,b) ((COLORREF)(((BYTE)(r)|((WORD)((BYTE)(g))<<8))|(((DWORD)(BYTE)(b))<<16)))

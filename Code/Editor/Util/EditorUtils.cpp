@@ -30,30 +30,6 @@ void HeapCheck::Check([[maybe_unused]] const char* file, [[maybe_unused]] int li
     _ASSERTE(_CrtCheckMemory());
 #endif
 
-    /*
-   int heapstatus = _heapchk();
-   switch( heapstatus )
-   {
-   case _HEAPOK:
-      break;
-   case _HEAPEMPTY:
-      break;
-   case _HEAPBADBEGIN:
-            {
-                CString str;
-                str.Format( "Bad Start of Heap, at file %s line:%d",file,line );
-                MessageBox( nullptr,str,"Heap Check",MB_OK );
-            }
-      break;
-   case _HEAPBADNODE:
-            {
-                CString str;
-                str.Format( "Bad Node in Heap, at file %s line:%d",file,line );
-                MessageBox( nullptr,str,"Heap Check",MB_OK );
-            }
-      break;
-   }
-     */
     #endif
 }
 

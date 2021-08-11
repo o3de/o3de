@@ -9,7 +9,7 @@
 #pragma once
 
 #include "../EMotionFXConfig.h"
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 #include <MCore/Source/CompressedQuaternion.h>
 #include "../MemoryCategories.h"
 #include "../BaseObject.h"
@@ -94,14 +94,14 @@ namespace EMotionFX
          * @param endianType The endian type to read the string in.
          * @return The actual string.
          */
-        static const char* ReadString(MCore::Stream* file, MCore::Array<SharedData*>* sharedData, MCore::Endian::EEndianType endianType);
+        static const char* ReadString(MCore::Stream* file, AZStd::vector<SharedData*>* sharedData, MCore::Endian::EEndianType endianType);
 
     public:
-        uint32          mFileHighVersion;           /**< The high file version. For example 3 in case of v3.10. */
-        uint32          mFileLowVersion;            /**< The low file version. For example 10 in case of v3.10. */
-        uint32          mStringStorageSize;         /**< The size of the string buffer. */
-        bool            mIsUnicodeFile;             /**< True in case strings in the file are saved using unicode character set, false in case they are saved using multi-byte. */
-        char*           mStringStorage;             /**< The shared string buffer. */
+        uint32          m_fileHighVersion;           /**< The high file version. For example 3 in case of v3.10. */
+        uint32          m_fileLowVersion;            /**< The low file version. For example 10 in case of v3.10. */
+        uint32          m_stringStorageSize;         /**< The size of the string buffer. */
+        bool            m_isUnicodeFile;             /**< True in case strings in the file are saved using unicode character set, false in case they are saved using multi-byte. */
+        char*           m_stringStorage;             /**< The shared string buffer. */
     protected:
         /**
          * The constructor.
@@ -213,12 +213,12 @@ namespace EMotionFX
             // rmalize and make sure their w components are positive
             for (uint32 i = 0; i < count; ++i)
             {
-                if (value[i].mW < 0)
+                if (value[i].m_w < 0)
                 {
-                    value[i].mX = -value[i].mX;
-                    value[i].mY = -value[i].mY;
-                    value[i].mZ = -value[i].mZ;
-                    value[i].mW = -value[i].mW;
+                    value[i].m_x = -value[i].m_x;
+                    value[i].m_y = -value[i].m_y;
+                    value[i].m_z = -value[i].m_z;
+                    value[i].m_w = -value[i].m_w;
                 }
             }
         }
@@ -238,9 +238,9 @@ namespace EMotionFX
         }
 
     protected:
-        uint32                      mChunkID;       /**< The id of the chunk processor. */
-        uint32                      mVersion;       /**< The version number of the chunk processor, to provide backward compatibility. */
-        bool                        mLoggingActive; /**< When set to true the processor chunk will log events, otherwise no logging will be performed. */
+        uint32                      m_chunkId;       /**< The id of the chunk processor. */
+        uint32                      m_version;       /**< The version number of the chunk processor, to provide backward compatibility. */
+        bool                        m_loggingActive; /**< When set to true the processor chunk will log events, otherwise no logging will be performed. */
 
         /**
          * The constructor.

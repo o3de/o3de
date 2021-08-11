@@ -8,8 +8,6 @@
 #pragma once
 
 #include <AzCore/std/parallel/config.h>
-#include <AzCore/std/typetraits/conditional.h>
-#include <AzCore/std/typetraits/is_integral.h>
 #include <atomic>
 
 namespace AZStd
