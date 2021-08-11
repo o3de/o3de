@@ -156,8 +156,6 @@ namespace TestImpact
                 {
                     coveringTestTargetIt->second.erase(source);
                 }
-
-                
             }
 
             // 2.

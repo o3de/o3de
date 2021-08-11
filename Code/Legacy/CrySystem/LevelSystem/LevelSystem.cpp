@@ -614,12 +614,6 @@ ILevel* CLevelSystem::LoadLevelInternal(const char* _levelName)
             }
         }
 
-        // Reset the camera to (1,1,1) (not (0,0,0) which is the invalid/uninitialised state,
-        // to avoid the hack in the renderer to not show anything if the camera is at the origin).
-        CCamera defaultCam;
-        defaultCam.SetPosition(Vec3(1.0f));
-        m_pSystem->SetViewCamera(defaultCam);
-
         m_pLoadingLevelInfo = pLevelInfo;
         OnLoadingStart(levelName);
 
@@ -947,10 +941,6 @@ void CLevelSystem::UnloadLevel()
     Audio::SAudioManagerRequestData<Audio::eAMRT_CLEAR_PRELOADS_DATA> oAMData3(Audio::eADS_LEVEL_SPECIFIC);
     oAudioRequestData.pData = &oAMData3;
     Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
-
-    // Reset the camera to (0,0,0) which is the invalid/uninitialised state
-    CCamera defaultCam;
-    m_pSystem->SetViewCamera(defaultCam);
 
     OnUnloadComplete(m_lastLevelName.c_str());
 

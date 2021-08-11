@@ -194,7 +194,7 @@ namespace AZ
         AZStd::string AssImpMaterialWrapper::GetTextureFileName(MaterialMapType textureType) const
         {
             /// Engine currently doesn't support multiple textures. Right now we only use first texture.
-            int textureIndex = 0;
+            unsigned int textureIndex = 0;
             aiString absTexturePath;
             switch (textureType)
             {

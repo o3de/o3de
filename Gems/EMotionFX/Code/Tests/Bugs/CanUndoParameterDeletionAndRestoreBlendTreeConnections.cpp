@@ -142,7 +142,7 @@ namespace EMotionFX
 
                 for (const AnimGraphNode::Port& outputPort : outputPorts)
                 {
-                    ASSERT_TRUE(outputPort.mConnection) << "Expected a valid connection at the output port.";
+                    ASSERT_TRUE(outputPort.m_connection) << "Expected a valid connection at the output port.";
                 }
             }
 
@@ -173,7 +173,7 @@ namespace EMotionFX
 
                 for (const AnimGraphNode::Port& outputPort : outputPorts)
                 {
-                    ASSERT_TRUE(outputPort.mConnection) << "Expected a valid connection at the output port.";
+                    ASSERT_TRUE(outputPort.m_connection) << "Expected a valid connection at the output port.";
                 }
             }
         }

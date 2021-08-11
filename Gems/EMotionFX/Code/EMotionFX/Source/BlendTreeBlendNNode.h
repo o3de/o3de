@@ -94,8 +94,8 @@ namespace EMotionFX
             void Update() override;
 
         public:
-            uint32 mIndexA = InvalidIndex32;
-            uint32 mIndexB = InvalidIndex32;
+            uint32 m_indexA = InvalidIndex32;
+            uint32 m_indexB = InvalidIndex32;
         };
 
         BlendTreeBlendNNode();

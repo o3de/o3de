@@ -36,7 +36,7 @@ namespace RenderGL
 
     private:
 
-        RenderTexture* mRT;
+        RenderTexture* m_rt;
     };
 }
 

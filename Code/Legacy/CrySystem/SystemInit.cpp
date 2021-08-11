@@ -896,16 +896,14 @@ void CSystem::InitLocalization()
     if (auto console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
     {
         AZ::CVarFixedString languageAudio;
-        if (auto result = console->GetCvarValue("g_languageAudio", languageAudio); result == AZ::GetValueResult::Success)
+        console->GetCvarValue("g_languageAudio", languageAudio);
+        if (languageAudio.empty())
         {
-            if (languageAudio.size() == 0)
-            {
-                console->PerformCommand(AZStd::string::format("g_languageAudio %s", language.c_str()).c_str());
-            }
-            else
-            {
-                language.assign(languageAudio.data(), languageAudio.size());
-            }
+            console->PerformCommand(AZStd::string::format("g_languageAudio %s", language.c_str()).c_str());
+        }
+        else
+        {
+            language.assign(languageAudio.data(), languageAudio.size());
         }
     }
     OpenLanguageAudioPak(language);
