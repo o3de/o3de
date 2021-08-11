@@ -199,18 +199,18 @@ namespace AZ
         //! @callback The function to call when an entry gets a new/updated value.
         [[nodiscard]] virtual NotifyEventHandler RegisterNotifier(NotifyCallback&& callback) = 0;
 
-        //! Register a callback that will be called before an entry is merged.
-        //! @callback The function to call when an entry gets a new/updated value.
+        //! Register a function that will be called before a file is merged.
+        //! @callback The function to call before a file is merged.
         [[nodiscard]] virtual PreMergeEventHandler RegisterPreMergeEvent(const PreMergeEventCallback& callback) = 0;
-        //! Register a callback that will be called before an entry is merged.
-        //! @callback The function to call when an entry gets a new/updated value.
+        //! Register a function that will be called before a file is merged.
+        //! @callback The function to call before a file is merged.
         [[nodiscard]] virtual PreMergeEventHandler RegisterPreMergeEvent (PreMergeEventCallback&& callback) = 0;
 
-        //! Register a callback that will be called after an entry is merged.
-        //! @callback The function to call when an entry gets a new/updated value.
+        //! Register a function that will be called after a file is merged.
+        //! @callback The function to call after a file is merged.
         [[nodiscard]] virtual PostMergeEventHandler RegisterPostMergeEvent(const PostMergeEventCallback& callback) = 0;
-        //! Register a callback that will be called after an entry is merged.
-        //! @callback The function to call when an entry gets a new/updated value.
+        //! Register a function that will be called after a file is merged.
+        //! @callback The function to call after a file is merged.
         [[nodiscard]] virtual PostMergeEventHandler RegisterPostMergeEvent (PostMergeEventCallback&& callback) = 0;
 
         //! Gets the boolean value at the provided path.
