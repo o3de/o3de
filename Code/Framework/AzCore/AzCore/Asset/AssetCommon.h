@@ -325,13 +325,13 @@ namespace AZ
 
             T& operator*() const
             {
-                AZ_Assert(m_assetData, "Asset is not loaded");
+                AZ_Assert(m_assetData, "Asset %s (%s) is not loaded", m_assetId.ToString<AZStd::string>().c_str(), m_assetHint.c_str());
                 return *Get();
             }
 
             T* operator->() const
             {
-                AZ_Assert(m_assetData, "Asset is not loaded");
+                AZ_Assert(m_assetData, "Asset %s (%s) is not loaded", m_assetId.ToString<AZStd::string>().c_str(), m_assetHint.c_str());
                 return Get();
             }
 
