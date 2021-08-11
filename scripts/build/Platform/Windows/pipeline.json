@@ -4,9 +4,7 @@
         "LY_3RDPARTY_PATH": "C:/ly/3rdParty",
         "TIMEOUT": 30,
         "WORKSPACE": "D:/workspace",
-        "MOUNT_VOLUME": true,
-        "AWSI_DEPLOY_REGION": "us-west-2",
-        "ASSUME_ROLE_ARN": "arn:aws:iam::645075835648:role/o3de-automation-tests"
+        "MOUNT_VOLUME": true
     },
     "PIPELINE_ENV_OVERRIDE": {
         "daily-pipeline-metrics": {

@@ -36,18 +36,6 @@
       "test_cpu_profile_vs2019"
     ]
   },
-  "aws_integration_deployment": {
-    "TAGS": [
-      "nightly-aws-integration-deployment"
-    ],
-    "COMMAND": "deploy_cdk_applications.cmd",
-    "PARAMETERS": {
-      "O3DE_AWS_PROJECT_NAME": "AWSAUTO",
-      "O3DE_AWS_DEPLOY_REGION": "!AWSI_DEPLOY_REGION!",
-      "ASSUME_ROLE_ARN": "!AWSI_DEPLOY_ROLE_ARN!",
-      "COMMIT_ID": "HEAD"
-    }
-  },
   "scrubbing": {
     "TAGS": [],
     "COMMAND": "python_windows.cmd",
