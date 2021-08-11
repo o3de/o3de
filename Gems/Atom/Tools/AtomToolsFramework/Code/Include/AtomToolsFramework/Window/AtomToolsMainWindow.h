@@ -16,8 +16,8 @@
 #include <AzQtComponents/Components/StyledDockWidget.h>
 #include <AzQtComponents/Components/Widgets/TabWidget.h>
 
+#include <QLabel>
 #include <QMenuBar>
-#include <QStatusBar>
 #include <QToolBar>
 
 namespace AtomToolsFramework
@@ -53,10 +53,9 @@ namespace AtomToolsFramework
         virtual void SelectNextTab();
 
         AzQtComponents::FancyDocking* m_advancedDockManager = nullptr;
-        QWidget* m_centralWidget = nullptr;
         QMenuBar* m_menuBar = nullptr;
         AzQtComponents::TabWidget* m_tabWidget = nullptr;
-        QStatusBar* m_statusBar = nullptr;
+        QLabel* m_statusMessage = nullptr;
 
         AZStd::unordered_map<AZStd::string, AzQtComponents::StyledDockWidget*> m_dockWidgets;
     };

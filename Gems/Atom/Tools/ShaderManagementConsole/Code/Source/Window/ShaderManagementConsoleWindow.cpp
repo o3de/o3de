@@ -8,6 +8,8 @@
  
 #include <AzCore/Name/Name.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <AzQtComponents/Components/StyleManager.h>
+#include <AzQtComponents/Components/WindowDecorationWrapper.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
@@ -23,11 +25,8 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnin
 #include <QCloseEvent>
 #include <QFileDialog>
 #include <QHeaderView>
-#include <QPushButton>
 #include <QStandardItemModel>
 #include <QTableView>
-#include <QVBoxLayout>
-#include <QVariant>
 #include <QWindow>
 AZ_POP_DISABLE_WARNING
 
@@ -36,6 +35,14 @@ namespace ShaderManagementConsole
     ShaderManagementConsoleWindow::ShaderManagementConsoleWindow(QWidget* parent /* = 0 */)
         : AtomToolsFramework::AtomToolsMainWindow(parent)
     {
+        resize(1280, 1024);
+
+        // Among other things, we need the window wrapper to save the main window size, position, and state
+        auto mainWindowWrapper =
+            new AzQtComponents::WindowDecorationWrapper(AzQtComponents::WindowDecorationWrapper::OptionAutoTitleBarButtons);
+        mainWindowWrapper->setGuest(this);
+        mainWindowWrapper->enableSaveRestoreGeometry("O3DE", "ShaderManagementConsole", "mainWindowGeometry");
+
         setWindowTitle("Shader Management Console");
 
         setObjectName("ShaderManagementConsoleWindow");
@@ -47,15 +54,13 @@ namespace ShaderManagementConsole
         CreateMenu();
         CreateTabBar();
 
-        QVBoxLayout* vl = new QVBoxLayout(m_centralWidget);
-        vl->setMargin(0);
-        vl->setContentsMargins(0, 0, 0, 0);
-        vl->addWidget(m_tabWidget);
-        m_centralWidget->setLayout(vl);
-        setCentralWidget(m_centralWidget);
-
         AddDockWidget("Asset Browser", new ShaderManagementConsoleBrowserWidget, Qt::BottomDockWidgetArea, Qt::Vertical);
         AddDockWidget("Python Terminal", new AzToolsFramework::CScriptTermDialog, Qt::BottomDockWidgetArea, Qt::Horizontal);
+
+        SetDockWidgetVisible("Python Terminal", false);
+
+        // Restore geometry and show the window
+        mainWindowWrapper->showFromSettings();
 
         ShaderManagementConsoleDocumentNotificationBus::Handler::BusConnect();
         OnDocumentOpened(AZ::Uuid::CreateNull());
@@ -103,8 +108,7 @@ namespace ShaderManagementConsole
             // Create a new tab for the document ID and assign it's label to the file name of the document.
             AddTabForDocumentId(documentId, filename, absolutePath, [this, documentId]{
                 // The document tab contains a table view.
-                auto contentWidget = new QTableView(m_centralWidget);
-                contentWidget->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+                auto contentWidget = new QTableView(centralWidget());
                 contentWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
                 contentWidget->setModel(CreateDocumentContent(documentId));
                 return contentWidget;
@@ -142,11 +146,22 @@ namespace ShaderManagementConsole
 
         activateWindow();
         raise();
+
+        const QString documentPath = GetDocumentPath(documentId);
+        if (!documentPath.isEmpty())
+        {
+            const QString status = QString("Document closed: %1").arg(documentPath);
+            m_statusMessage->setText(QString("<font color=\"White\">%1</font>").arg(status));
+        }
     }
 
     void ShaderManagementConsoleWindow::OnDocumentClosed(const AZ::Uuid& documentId)
     {
         RemoveTabForDocumentId(documentId);
+
+        const QString documentPath = GetDocumentPath(documentId);
+        const QString status = QString("Document closed: %1").arg(documentPath);
+        m_statusMessage->setText(QString("<font color=\"White\">%1</font>").arg(status));
     }
 
     void ShaderManagementConsoleWindow::OnDocumentModified(const AZ::Uuid& documentId)
@@ -182,6 +197,10 @@ namespace ShaderManagementConsole
         AZStd::string filename;
         AzFramework::StringFunc::Path::GetFullFileName(absolutePath.c_str(), filename);
         UpdateTabForDocumentId(documentId, filename, absolutePath, isModified);
+
+        const QString documentPath = GetDocumentPath(documentId);
+        const QString status = QString("Document closed: %1").arg(documentPath);
+        m_statusMessage->setText(QString("<font color=\"White\">%1</font>").arg(status));
     }
 
     void ShaderManagementConsoleWindow::CreateMenu()
@@ -254,12 +273,26 @@ namespace ShaderManagementConsole
 
         m_actionUndo = m_menuEdit->addAction("&Undo", [this]() {
             const AZ::Uuid documentId = GetDocumentIdFromTab(m_tabWidget->currentIndex());
-            ShaderManagementConsoleDocumentRequestBus::Event(documentId, &ShaderManagementConsoleDocumentRequestBus::Events::Undo);
+            bool result = false;
+            ShaderManagementConsoleDocumentRequestBus::EventResult(result, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::Undo);
+            if (!result)
+            {
+                const QString documentPath = GetDocumentPath(documentId);
+                const QString status = QString("Failed to perform Undo on document: %1").arg(documentPath);
+                m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(status));
+            }
         }, QKeySequence::Undo);
 
         m_actionRedo = m_menuEdit->addAction("&Redo", [this]() {
             const AZ::Uuid documentId = GetDocumentIdFromTab(m_tabWidget->currentIndex());
-            ShaderManagementConsoleDocumentRequestBus::Event(documentId, &ShaderManagementConsoleDocumentRequestBus::Events::Redo);
+            bool result = false;
+            ShaderManagementConsoleDocumentRequestBus::EventResult(result, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::Redo);
+            if (!result)
+            {
+                const QString documentPath = GetDocumentPath(documentId);
+                const QString status = QString("Failed to perform Redo on document: %1").arg(documentPath);
+                m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(status));
+            }
         }, QKeySequence::Redo);
 
         m_menuEdit->addSeparator();
@@ -278,13 +311,11 @@ namespace ShaderManagementConsole
                 SetDockWidgetVisible(label, !IsDockWidgetVisible(label));
             });
 
-        m_actionPythonTerminal = m_menuView->addAction(
-            "Python &Terminal",
-            [this]()
-            {
-                const AZStd::string label = "Python Terminal";
-                SetDockWidgetVisible(label, !IsDockWidgetVisible(label));
-            });
+        m_actionPythonTerminal = m_menuView->addAction("Python &Terminal", [this]() {
+            const AZStd::string label = "Python Terminal";
+            SetDockWidgetVisible(label, !IsDockWidgetVisible(label));
+        });
+
 
         m_menuView->addSeparator();
 
@@ -319,6 +350,13 @@ namespace ShaderManagementConsole
         connect(m_tabWidget, &QTabWidget::tabCloseRequested, this, [this](int tabIndex) {
             CloseDocumentForTab(tabIndex);
         });
+    }
+
+    QString ShaderManagementConsoleWindow::GetDocumentPath(const AZ::Uuid& documentId) const
+    {
+        AZStd::string absolutePath;
+        ShaderManagementConsoleDocumentRequestBus::EventResult(absolutePath, documentId, &ShaderManagementConsoleDocumentRequestBus::Handler::GetAbsolutePath);
+        return absolutePath.c_str();
     }
 
     void ShaderManagementConsoleWindow::OpenTabContextMenu()
