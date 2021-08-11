@@ -102,7 +102,6 @@ namespace AzNetworking
         bool Disconnect(DisconnectReason reason, TerminationEndpoint endpoint) override;
         void SetConnectionMtu(uint32_t connectionMtu) override;
         uint32_t GetConnectionMtu() const override;
-        void SetConnectionQuality(const ConnectionQuality& connectionQuality) override;
         // @}
 
         //! Sets the registered socket file descriptor for this TcpConnection in the associated ConnectionSet instance.

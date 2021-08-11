@@ -78,7 +78,7 @@ namespace EMotionFX
         void SetName(const char* name);
 
     protected:
-        uint32                  mNameID;            /**< The material id representing the name. */
+        uint32                  m_nameId;            /**< The material id representing the name. */
 
         /**
          * The constructor.

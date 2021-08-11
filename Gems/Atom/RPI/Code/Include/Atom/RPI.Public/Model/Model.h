@@ -90,8 +90,8 @@ namespace AZ
         private:
             Model() = default;
 
-            static Data::Instance<Model> CreateInternal(ModelAsset& modelAsset);
-            RHI::ResultCode Init(ModelAsset& modelAsset);
+            static Data::Instance<Model> CreateInternal(const Data::Asset<ModelAsset>& modelAsset);
+            RHI::ResultCode Init(const Data::Asset<ModelAsset>& modelAsset);
 
             AZStd::fixed_vector<Data::Instance<ModelLod>, ModelLodAsset::LodCountMax> m_lods;
             Data::Asset<ModelAsset> m_modelAsset;

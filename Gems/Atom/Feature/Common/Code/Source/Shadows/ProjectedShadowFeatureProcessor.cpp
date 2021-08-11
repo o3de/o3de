@@ -143,7 +143,15 @@ namespace AZ::Render
         shadowProperty.m_desc.m_fieldOfViewYRadians = fieldOfViewYRadians;
         UpdateShadowView(shadowProperty);
     }
-    
+
+    void ProjectedShadowFeatureProcessor::SetShadowBias(ShadowId id, float bias)
+    {
+        AZ_Assert(id.IsValid(), "Invalid ShadowId passed to ProjectedShadowFeatureProcessor::SetShadowBias().");
+        
+        ShadowProperty& shadowProperty = GetShadowPropertyFromShadowId(id);
+        shadowProperty.m_bias = bias;
+    }
+
     void ProjectedShadowFeatureProcessor::SetShadowmapMaxResolution(ShadowId id, ShadowmapSize size)
     {
         AZ_Assert(id.IsValid(), "Invalid ShadowId passed to ProjectedShadowFeatureProcessor::SetShadowmapMaxResolution().");
@@ -265,23 +273,20 @@ namespace AZ::Render
         view->SetCameraTransform(Matrix3x4::CreateFromTransform(desc.m_transform));
 
         ShadowData& shadowData = m_shadowData.GetElement<ShadowDataIndex>(shadowProperty.m_shadowId.GetIndex());
-        shadowData.m_bias = (nearDist / farDist) * 0.1f;
+
+        // Adjust the manually set bias to a more appropriate range for the shader. Scale the bias by the
+        // near plane so that the bias appears consistent as other light properties change.
+        shadowData.m_bias = nearDist * shadowProperty.m_bias * 0.01f;
         
         FilterParameter& esmData = m_shadowData.GetElement<FilterParamIndex>(shadowProperty.m_shadowId.GetIndex());
-        if (FilterMethodIsEsm(shadowData))
-        {
-            // Set parameters to calculate linear depth if ESM is used.
-            m_filterParameterNeedsUpdate = true;
-            esmData.m_isEnabled = true;
-            esmData.m_n_f_n = nearDist / (farDist - nearDist);
-            esmData.m_n_f = nearDist - farDist;
-            esmData.m_f = farDist;
-        }
-        else
-        {
-            // Reset enabling flag if ESM is not used.
-            esmData.m_isEnabled = false;
-        }
+        
+        // Set parameters to calculate linear depth if ESM is used.
+        esmData.m_n_f_n = nearDist / (farDist - nearDist);
+        esmData.m_n_f = nearDist - farDist;
+        esmData.m_f = farDist;
+
+        esmData.m_isEnabled = FilterMethodIsEsm(shadowData);
+        m_filterParameterNeedsUpdate = m_filterParameterNeedsUpdate || esmData.m_isEnabled;
         
         for (EsmShadowmapsPass* esmPass : m_esmShadowmapsPasses)
         {
@@ -492,7 +497,7 @@ namespace AZ::Render
         const ShadowmapAtlas& atlas = m_projectedShadowmapsPasses.front()->GetShadowmapAtlas();
         const Data::Instance<RPI::Buffer> indexTableBuffer = atlas.CreateShadowmapIndexTableBuffer(indexTableBufferName);
 
-        m_filterParamBufferHandler.UpdateBuffer(m_shadowData.GetRawData<FilterParamIndex>(), m_shadowData.GetSize());
+        m_filterParamBufferHandler.UpdateBuffer(m_shadowData.GetRawData<FilterParamIndex>(), static_cast<uint32_t>(m_shadowData.GetSize()));
 
         // Set index table buffer and ESM parameter buffer to ESM pass.
         for (EsmShadowmapsPass* esmPass : m_esmShadowmapsPasses)
@@ -559,7 +564,7 @@ namespace AZ::Render
 
         if (m_deviceBufferNeedsUpdate)
         {
-            m_shadowBufferHandler.UpdateBuffer(m_shadowData.GetRawData<ShadowDataIndex>(), m_shadowData.GetSize());
+            m_shadowBufferHandler.UpdateBuffer(m_shadowData.GetRawData<ShadowDataIndex>(), static_cast<uint32_t>(m_shadowData.GetSize()));
             m_deviceBufferNeedsUpdate = false;
         }
     }

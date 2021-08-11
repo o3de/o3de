@@ -34,7 +34,7 @@ namespace AZ
             AZStd::string GetLabel() const;
             bool HasSourceData() const;
             void OpenMaterialEditor() const;
-            void SetDefaultAsset();
+            void ResetToDefaultAsset();
             void Clear();
             void ClearOverrides();
             void OpenMaterialExporter();
@@ -42,7 +42,9 @@ namespace AZ
             void OpenUvNameMapInspector();
 
             MaterialAssignmentId m_id;
+            AZStd::string m_label;
             Data::Asset<RPI::MaterialAsset> m_materialAsset;
+            Data::Asset<RPI::MaterialAsset> m_defaultMaterialAsset;
             MaterialPropertyOverrideMap m_propertyOverrides;
             AZStd::function<void()> m_materialChangedCallback;
             AZStd::function<void()> m_propertyChangedCallback;

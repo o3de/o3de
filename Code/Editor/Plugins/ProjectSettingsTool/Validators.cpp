@@ -16,7 +16,7 @@
 
 namespace 
 {
-    typedef ProjectSettingsTool::FunctorValidator::ReturnType RetType;
+    using RetType = ProjectSettingsTool::FunctorValidator::ReturnType;
 
     static const int noMaxLength = -1;
     static const int maxIosVersionLength = 18;

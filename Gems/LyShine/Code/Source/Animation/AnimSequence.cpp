@@ -48,7 +48,7 @@ CUiAnimSequence::CUiAnimSequence(IUiAnimationSystem* pUiAnimationSystem, uint32 
 CUiAnimSequence::~CUiAnimSequence()
 {
     // clear reference to me from all my nodes
-    for (int i = m_nodes.size(); --i >= 0;)
+    for (int i = static_cast<int>(m_nodes.size()); --i >= 0;)
     {
         if (m_nodes[i])
         {
@@ -144,7 +144,7 @@ const IUiAnimSequence* CUiAnimSequence::GetParentSequence() const
 //////////////////////////////////////////////////////////////////////////
 int CUiAnimSequence::GetNodeCount() const
 {
-    return m_nodes.size();
+    return static_cast<int>(m_nodes.size());
 }
 
 //////////////////////////////////////////////////////////////////////////

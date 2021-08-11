@@ -127,7 +127,6 @@ AZ_POP_DISABLE_WARNING
 
 #include "Util/AutoDirectoryRestoreFileDialog.h"
 #include "Util/EditorAutoLevelLoadTest.h"
-#include "Util/IndexedFiles.h"
 #include "AboutDialog.h"
 #include <AzToolsFramework/PythonTerminal/ScriptHelpDialog.h>
 
@@ -267,13 +266,13 @@ CCrySingleDocTemplate* CCryDocManager::SetDefaultTemplate(CCrySingleDocTemplate*
 // Copied from MFC to get rid of the silly ugly unoverridable doc-type pick dialog
 void CCryDocManager::OnFileNew()
 {
-    assert(m_pDefTemplate != NULL);
+    assert(m_pDefTemplate != nullptr);
 
-    m_pDefTemplate->OpenDocumentFile(NULL);
+    m_pDefTemplate->OpenDocumentFile(nullptr);
     // if returns NULL, the user has already been alerted
 }
-BOOL CCryDocManager::DoPromptFileName(QString& fileName, [[maybe_unused]] UINT nIDSTitle,
-    [[maybe_unused]] DWORD lFlags, BOOL bOpenFileDialog, [[maybe_unused]] CDocTemplate* pTemplate)
+bool CCryDocManager::DoPromptFileName(QString& fileName, [[maybe_unused]] UINT nIDSTitle,
+    [[maybe_unused]] DWORD lFlags, bool bOpenFileDialog, [[maybe_unused]] CDocTemplate* pTemplate)
 {
     CLevelFileDialog levelFileDialog(bOpenFileDialog);
     levelFileDialog.show();
@@ -287,15 +286,15 @@ BOOL CCryDocManager::DoPromptFileName(QString& fileName, [[maybe_unused]] UINT n
 
     return false;
 }
-CCryEditDoc* CCryDocManager::OpenDocumentFile(LPCTSTR lpszFileName, BOOL bAddToMRU)
+CCryEditDoc* CCryDocManager::OpenDocumentFile(LPCTSTR lpszFileName, bool bAddToMRU)
 {
-    assert(lpszFileName != NULL);
+    assert(lpszFileName != nullptr);
 
     // find the highest confidence
     auto pos = m_templateList.begin();
     CCrySingleDocTemplate::Confidence bestMatch = CCrySingleDocTemplate::noAttempt;
-    CCrySingleDocTemplate* pBestTemplate = NULL;
-    CCryEditDoc* pOpenDocument = NULL;
+    CCrySingleDocTemplate* pBestTemplate = nullptr;
+    CCryEditDoc* pOpenDocument = nullptr;
 
     if (lpszFileName[0] == '\"')
     {
@@ -312,7 +311,7 @@ CCryEditDoc* CCryDocManager::OpenDocumentFile(LPCTSTR lpszFileName, BOOL bAddToM
         auto pTemplate = *(pos++);
 
         CCrySingleDocTemplate::Confidence match;
-        assert(pOpenDocument == NULL);
+        assert(pOpenDocument == nullptr);
         match = pTemplate->MatchDocType(szPath.toUtf8().data(), pOpenDocument);
         if (match > bestMatch)
         {
@@ -325,18 +324,18 @@ CCryEditDoc* CCryDocManager::OpenDocumentFile(LPCTSTR lpszFileName, BOOL bAddToM
         }
     }
 
-    if (pOpenDocument != NULL)
+    if (pOpenDocument != nullptr)
     {
         return pOpenDocument;
     }
 
-    if (pBestTemplate == NULL)
+    if (pBestTemplate == nullptr)
     {
         QMessageBox::critical(AzToolsFramework::GetActiveWindow(), QString(), QObject::tr("Failed to open document."));
-        return NULL;
+        return nullptr;
     }
 
-    return pBestTemplate->OpenDocumentFile(szPath.toUtf8().data(), bAddToMRU, FALSE);
+    return pBestTemplate->OpenDocumentFile(szPath.toUtf8().data(), bAddToMRU, false);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -375,9 +374,6 @@ void CCryEditApp::RegisterActionHandlers()
     });
     ON_COMMAND(ID_MOVE_OBJECT, OnMoveObject)
     ON_COMMAND(ID_RENAME_OBJ, OnRenameObj)
-    ON_COMMAND(ID_EDITMODE_MOVE, OnEditmodeMove)
-    ON_COMMAND(ID_EDITMODE_ROTATE, OnEditmodeRotate)
-    ON_COMMAND(ID_EDITMODE_SCALE, OnEditmodeScale)
     ON_COMMAND(ID_UNDO, OnUndo)
     ON_COMMAND(ID_TOOLBAR_WIDGET_REDO, OnUndo)     // Can't use the same ID, because for the menu we can't have a QWidgetAction, while for the toolbar we want one
     ON_COMMAND(ID_IMPORT_ASSET, OnOpenAssetImporter)
@@ -464,7 +460,7 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_FILE_SAVE_LEVEL, OnFileSave)
     ON_COMMAND(ID_FILE_EXPORTOCCLUSIONMESH, OnFileExportOcclusionMesh)
 
-    // Project Manager 
+    // Project Manager
     ON_COMMAND(ID_FILE_PROJECT_MANAGER_SETTINGS, OnOpenProjectManagerSettings)
     ON_COMMAND(ID_FILE_PROJECT_MANAGER_NEW, OnOpenProjectManagerNew)
     ON_COMMAND(ID_FILE_PROJECT_MANAGER_OPEN, OnOpenProjectManager)
@@ -581,6 +577,8 @@ public:
             {{"project-path", "Supplies the path to the project that the Editor should use", "project-path"}, dummyString},
             {{"engine-path", "Supplies the path to the engine", "engine-path"}, dummyString},
             {{"project-cache-path", "Path to the project cache", "project-cache-path"}, dummyString},
+            {{"project-user-path", "Path to the project user path", "project-user-path"}, dummyString},
+            {{"project-log-path", "Path to the project log path", "project-log-path"}, dummyString}
             // add dummy entries here to prevent QCommandLineParser error-ing out on cmd line args that will be parsed later
         };
 
@@ -655,7 +653,7 @@ struct SharedData
 //
 //      This function uses a technique similar to that described in KB
 //      article Q141752 to locate the previous instance of the application. .
-BOOL CCryEditApp::FirstInstance(bool bForceNewInstance)
+bool CCryEditApp::FirstInstance(bool bForceNewInstance)
 {
     QSystemSemaphore sem(QString(O3DEApplicationName) + "_sem", 1);
     sem.acquire();
@@ -803,12 +801,12 @@ void CCryEditApp::InitDirectory()
 // Needed to work with custom memory manager.
 //////////////////////////////////////////////////////////////////////////
 
-CCryEditDoc* CCrySingleDocTemplate::OpenDocumentFile(LPCTSTR lpszPathName, BOOL bMakeVisible /*= true*/)
+CCryEditDoc* CCrySingleDocTemplate::OpenDocumentFile(LPCTSTR lpszPathName, bool bMakeVisible /*= true*/)
 {
     return OpenDocumentFile(lpszPathName, true, bMakeVisible);
 }
 
-CCryEditDoc* CCrySingleDocTemplate::OpenDocumentFile(LPCTSTR lpszPathName, BOOL bAddToMRU, [[maybe_unused]] BOOL bMakeVisible)
+CCryEditDoc* CCrySingleDocTemplate::OpenDocumentFile(LPCTSTR lpszPathName, bool bAddToMRU, [[maybe_unused]] bool bMakeVisible)
 {
     CCryEditDoc* pCurDoc = GetIEditor()->GetDocument();
 
@@ -849,8 +847,8 @@ CCryEditDoc* CCrySingleDocTemplate::OpenDocumentFile(LPCTSTR lpszPathName, BOOL 
 
 CCrySingleDocTemplate::Confidence CCrySingleDocTemplate::MatchDocType(LPCTSTR lpszPathName, CCryEditDoc*& rpDocMatch)
 {
-    assert(lpszPathName != NULL);
-    rpDocMatch = NULL;
+    assert(lpszPathName != nullptr);
+    rpDocMatch = nullptr;
 
     // go through all documents
     CCryEditDoc* pDoc = GetIEditor()->GetDocument();
@@ -1057,7 +1055,7 @@ AZ::Outcome<void, AZStd::string> CCryEditApp::InitGameSystem(HWND hwndForInputSy
 }
 
 /////////////////////////////////////////////////////////////////////////////
-BOOL CCryEditApp::CheckIfAlreadyRunning()
+bool CCryEditApp::CheckIfAlreadyRunning()
 {
     bool bForceNewInstance = false;
 
@@ -1301,7 +1299,7 @@ void CCryEditApp::InitLevel(const CEditCommandLineInfo& cmdInfo)
 }
 
 /////////////////////////////////////////////////////////////////////////////
-BOOL CCryEditApp::InitConsole()
+bool CCryEditApp::InitConsole()
 {
     // Execute command from cmdline -exec_line if applicable
     if (!m_execLineCmd.isEmpty())
@@ -1433,7 +1431,7 @@ struct CCryEditApp::PythonOutputHandler
         AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusConnect();
     }
 
-    virtual ~PythonOutputHandler()
+    ~PythonOutputHandler() override
     {
         AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusDisconnect();
     }
@@ -1465,7 +1463,7 @@ struct PythonTestOutputHandler final
     : public CCryEditApp::PythonOutputHandler
 {
     PythonTestOutputHandler() = default;
-    virtual ~PythonTestOutputHandler() = default;
+    ~PythonTestOutputHandler() override = default;
 
     void OnTraceMessage(AZStd::string_view message) override
     {
@@ -1483,7 +1481,6 @@ struct PythonTestOutputHandler final
     {
         PythonOutputHandler::OnExceptionMessage(message);
         printf("EXCEPTION: %.*s\n", static_cast<int>(message.size()), message.data());
-        AZ::Debug::Trace::Terminate(1);
     }
 };
 
@@ -1501,41 +1498,98 @@ void CCryEditApp::RunInitPythonScript(CEditCommandLineInfo& cmdInfo)
     using namespace AzToolsFramework;
     if (cmdInfo.m_bRunPythonScript || cmdInfo.m_bRunPythonTestScript)
     {
+        // cmdInfo data is only available on startup, copy it
+        QByteArray fileStr = cmdInfo.m_strFileName.toUtf8();
+
+        // We support specifying multiple files in the cmdline by separating them with ';'
+        AZStd::vector<AZStd::string_view> fileList;
+        AzFramework::StringFunc::TokenizeVisitor(
+            fileStr.constData(),
+            [&fileList](AZStd::string_view elem)
+            {
+                fileList.push_back(elem);
+            }, ';', false /* keepEmptyStrings */
+        );
+
         if (cmdInfo.m_pythonArgs.length() > 0 || cmdInfo.m_bRunPythonTestScript)
         {
-            AZStd::vector<AZStd::string> tokens;
-            AzFramework::StringFunc::Tokenize(cmdInfo.m_pythonArgs.toUtf8().constData(), tokens, ' ');
+            QByteArray pythonArgsStr = cmdInfo.m_pythonArgs.toUtf8();
             AZStd::vector<AZStd::string_view> pythonArgs;
-            std::transform(tokens.begin(), tokens.end(), std::back_inserter(pythonArgs), [](auto& tokenData) { return tokenData.c_str(); });
+            AzFramework::StringFunc::TokenizeVisitor(pythonArgsStr.constData(),
+                [&pythonArgs](AZStd::string_view elem)
+                {
+                    pythonArgs.push_back(elem);
+                }, ' '
+            );
+
             if (cmdInfo.m_bRunPythonTestScript)
             {
-                AZStd::string pythonTestCase;
-                if (!cmdInfo.m_pythontTestCase.isEmpty())
+                // Multiple testcases can be specified them with ';', these should match the files to run
+                AZStd::vector<AZStd::string_view> testcaseList;
+                testcaseList.resize(fileList.size());
                 {
-                    pythonTestCase = cmdInfo.m_pythontTestCase.toUtf8().constData();
+                    int i = 0;
+                    AzFramework::StringFunc::TokenizeVisitor(
+                        fileStr.constData(),
+                        [&i, &testcaseList](AZStd::string_view elem)
+                        {
+                            testcaseList[i++] = (elem);
+                        }, ';', false /* keepEmptyStrings */
+                    );
                 }
 
-                EditorPythonRunnerRequestBus::Broadcast(&EditorPythonRunnerRequestBus::Events::ExecuteByFilenameAsTest, cmdInfo.m_strFileName.toUtf8().constData(), pythonTestCase, pythonArgs);
+                bool success = true;
+                auto ExecuteByFilenamesTests = [&pythonArgs, &fileList, &testcaseList, &success](EditorPythonRunnerRequests* pythonRunnerRequests)
+                {
+                    for (int i = 0; i < fileList.size(); ++i)
+                    {
+                        bool cur_success = pythonRunnerRequests->ExecuteByFilenameAsTest(fileList[i], testcaseList[i], pythonArgs);
+                        success = success && cur_success;
+                    }
+                };
+                EditorPythonRunnerRequestBus::Broadcast(ExecuteByFilenamesTests);
 
-                // Close the editor gracefully as the test has completed
-                GetIEditor()->GetDocument()->SetModifiedFlag(false);
-                QTimer::singleShot(0, qApp, &QApplication::closeAllWindows);
+                if (success)
+                {
+                    // Close the editor gracefully as the test has completed
+                    GetIEditor()->GetDocument()->SetModifiedFlag(false);
+                    QTimer::singleShot(0, qApp, &QApplication::closeAllWindows);
+                }
+                else
+                {
+                    // Close down the application with 0xF exit code indicating failure of the test
+                    AZ::Debug::Trace::Terminate(0xF);
+                }
             }
             else
             {
-                EditorPythonRunnerRequestBus::Broadcast(&EditorPythonRunnerRequestBus::Events::ExecuteByFilenameWithArgs, cmdInfo.m_strFileName.toUtf8().constData(), pythonArgs);
+                auto ExecuteByFilenamesWithArgs = [&pythonArgs, &fileList](EditorPythonRunnerRequests* pythonRunnerRequests)
+                {
+                    for (AZStd::string_view filename : fileList)
+                    {
+                        pythonRunnerRequests->ExecuteByFilenameWithArgs(filename, pythonArgs);
+                    }
+                };
+                EditorPythonRunnerRequestBus::Broadcast(ExecuteByFilenamesWithArgs);
             }
         }
         else
         {
-            EditorPythonRunnerRequestBus::Broadcast(&EditorPythonRunnerRequestBus::Events::ExecuteByFilename, cmdInfo.m_strFileName.toUtf8().constData());
+            auto ExecuteByFilenames = [&fileList](EditorPythonRunnerRequests* pythonRunnerRequests)
+            {
+                for (AZStd::string_view filename : fileList)
+                {
+                    pythonRunnerRequests->ExecuteByFilename(filename);
+                }
+            };
+            EditorPythonRunnerRequestBus::Broadcast(ExecuteByFilenames);
         }
     }
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // CCryEditApp initialization
-BOOL CCryEditApp::InitInstance()
+bool CCryEditApp::InitInstance()
 {
     QElapsedTimer startupTimer;
     startupTimer.start();
@@ -1562,7 +1616,7 @@ BOOL CCryEditApp::InitInstance()
     {
         CAboutDialog aboutDlg(FormatVersion(m_pEditor->GetFileVersion()), FormatRichTextCopyrightNotice());
         aboutDlg.exec();
-        return FALSE;
+        return false;
     }
 
     // Reflect property control classes to the serialize context...
@@ -1571,9 +1625,6 @@ BOOL CCryEditApp::InitInstance()
     AZ_Assert(serializeContext, "Serialization context not available");
     ReflectedVarInit::setupReflection(serializeContext);
     RegisterReflectedVarHandlers();
-
-
-    QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));
 
     CreateSplashScreen();
 
@@ -1660,18 +1711,6 @@ BOOL CCryEditApp::InitInstance()
 
     if (IsInRegularEditorMode())
     {
-        CIndexedFiles::Create();
-
-        if (gEnv->pConsole->GetCVar("ed_indexfiles")->GetIVal())
-        {
-            Log("Started game resource files indexing...");
-            CIndexedFiles::StartFileIndexing();
-        }
-        else
-        {
-            Log("Game resource files indexing is disabled.");
-        }
-
         // QuickAccessBar creation should be before m_pMainWnd->SetFocus(),
         // since it receives the focus at creation time. It brakes MainFrame key accelerators.
         m_pQuickAccessBar = new CQuickAccessBar;
@@ -1717,7 +1756,7 @@ BOOL CCryEditApp::InitInstance()
         }
     }
 
-    SetEditorWindowTitle(0, AZ::Utils::GetProjectName().c_str(), 0);
+    SetEditorWindowTitle(nullptr, AZ::Utils::GetProjectName().c_str(), nullptr);
     if (!GetIEditor()->IsInMatEditMode())
     {
         m_pEditor->InitFinished();
@@ -1802,8 +1841,8 @@ void CCryEditApp::RegisterEventLoopHook(IEventLoopHook* pHook)
 
 void CCryEditApp::UnregisterEventLoopHook(IEventLoopHook* pHookToRemove)
 {
-    IEventLoopHook* pPrevious = 0;
-    for (IEventLoopHook* pHook = m_pEventLoopHook; pHook != 0; pHook = pHook->pNextHook)
+    IEventLoopHook* pPrevious = nullptr;
+    for (IEventLoopHook* pHook = m_pEventLoopHook; pHook != nullptr; pHook = pHook->pNextHook)
     {
         if (pHook == pHookToRemove)
         {
@@ -1816,7 +1855,7 @@ void CCryEditApp::UnregisterEventLoopHook(IEventLoopHook* pHookToRemove)
                 m_pEventLoopHook = pHookToRemove->pNextHook;
             }
 
-            pHookToRemove->pNextHook = 0;
+            pHookToRemove->pNextHook = nullptr;
             return;
         }
     }
@@ -1839,7 +1878,7 @@ void CCryEditApp::LoadFile(QString fileName)
 
     if (MainWindow::instance() || m_pConsoleDialog)
     {
-        SetEditorWindowTitle(0, AZ::Utils::GetProjectName().c_str(), GetIEditor()->GetGameEngine()->GetLevelName());
+        SetEditorWindowTitle(nullptr, AZ::Utils::GetProjectName().c_str(), GetIEditor()->GetGameEngine()->GetLevelName());
     }
 
     GetIEditor()->SetModifiedFlag(false);
@@ -1880,7 +1919,7 @@ void CCryEditApp::EnableAccelerator([[maybe_unused]] bool bEnable)
         CMainFrame *mainFrame = (CMainFrame*)m_pMainWnd;
         if (mainFrame->m_hAccelTable)
             DestroyAcceleratorTable( mainFrame->m_hAccelTable );
-        mainFrame->m_hAccelTable = NULL;
+        mainFrame->m_hAccelTable = nullptr;
         mainFrame->LoadAccelTable( MAKEINTRESOURCE(IDR_GAMEACCELERATOR) );
         CLogFile::WriteLine( "Disable Accelerators" );
     }
@@ -2108,12 +2147,6 @@ int CCryEditApp::ExitInstance(int exitCode)
         }
     }
 
-    if (IsInRegularEditorMode())
-    {
-        CIndexedFiles::AbortFileIndexing();
-        CIndexedFiles::Destroy();
-    }
-
     if (GetIEditor() && !GetIEditor()->IsInMatEditMode())
     {
         //Nobody seems to know in what case that kind of exit can happen so instrumented to see if it happens at all
@@ -2223,7 +2256,7 @@ void CCryEditApp::EnableIdleProcessing()
     AZ_Assert(m_disableIdleProcessingCounter >= 0, "m_disableIdleProcessingCounter must be nonnegative");
 }
 
-BOOL CCryEditApp::OnIdle([[maybe_unused]] LONG lCount)
+bool CCryEditApp::OnIdle([[maybe_unused]] LONG lCount)
 {
     if (0 == m_disableIdleProcessingCounter)
     {
@@ -2231,7 +2264,7 @@ BOOL CCryEditApp::OnIdle([[maybe_unused]] LONG lCount)
     }
     else
     {
-        return 0;
+        return false;
     }
 }
 
@@ -2271,7 +2304,9 @@ int CCryEditApp::IdleProcessing(bool bBackgroundUpdate)
     bool bIsAppWindow = IsWindowInForeground();
     bool bActive = false;
     int res = 0;
-    if (bIsAppWindow || m_bForceProcessIdle || m_bKeepEditorActive)
+    if (bIsAppWindow || m_bForceProcessIdle || m_bKeepEditorActive
+        // Automated tests must always keep the editor active, or they can get stuck
+        || m_bAutotestMode)
     {
         res = 1;
         bActive = true;
@@ -2517,75 +2552,6 @@ void CCryEditApp::OnMoveObject()
 
 void CCryEditApp::OnRenameObj()
 {
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnEditmodeMove()
-{
-    using namespace AzToolsFramework;
-    EditorTransformComponentSelectionRequestBus::Event(
-        GetEntityContextId(),
-        &EditorTransformComponentSelectionRequests::SetTransformMode,
-        EditorTransformComponentSelectionRequests::Mode::Translation);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnEditmodeRotate()
-{
-    using namespace AzToolsFramework;
-    EditorTransformComponentSelectionRequestBus::Event(
-        GetEntityContextId(),
-        &EditorTransformComponentSelectionRequests::SetTransformMode,
-        EditorTransformComponentSelectionRequests::Mode::Rotation);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnEditmodeScale()
-{
-    using namespace AzToolsFramework;
-    EditorTransformComponentSelectionRequestBus::Event(
-        GetEntityContextId(),
-        &EditorTransformComponentSelectionRequests::SetTransformMode,
-        EditorTransformComponentSelectionRequests::Mode::Scale);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnUpdateEditmodeMove(QAction* action)
-{
-    Q_ASSERT(action->isCheckable());
-
-    AzToolsFramework::EditorTransformComponentSelectionRequests::Mode mode;
-    AzToolsFramework::EditorTransformComponentSelectionRequestBus::EventResult(
-        mode, AzToolsFramework::GetEntityContextId(),
-        &AzToolsFramework::EditorTransformComponentSelectionRequests::GetTransformMode);
-
-    action->setChecked(mode == AzToolsFramework::EditorTransformComponentSelectionRequests::Mode::Translation);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnUpdateEditmodeRotate(QAction* action)
-{
-    Q_ASSERT(action->isCheckable());
-
-    AzToolsFramework::EditorTransformComponentSelectionRequests::Mode mode;
-    AzToolsFramework::EditorTransformComponentSelectionRequestBus::EventResult(
-        mode, AzToolsFramework::GetEntityContextId(),
-        &AzToolsFramework::EditorTransformComponentSelectionRequests::GetTransformMode);
-
-    action->setChecked(mode == AzToolsFramework::EditorTransformComponentSelectionRequests::Mode::Rotation);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnUpdateEditmodeScale(QAction* action)
-{
-    Q_ASSERT(action->isCheckable());
-
-    AzToolsFramework::EditorTransformComponentSelectionRequests::Mode mode;
-    AzToolsFramework::EditorTransformComponentSelectionRequestBus::EventResult(
-        mode, AzToolsFramework::GetEntityContextId(),
-        &AzToolsFramework::EditorTransformComponentSelectionRequests::GetTransformMode);
-
-    action->setChecked(mode == AzToolsFramework::EditorTransformComponentSelectionRequests::Mode::Scale);
 }
 
 void CCryEditApp::OnViewSwitchToGame()
@@ -2841,7 +2807,14 @@ void CCryEditApp::OpenProjectManager(const AZStd::string& screen)
 {
     // provide the current project path for in case we want to update the project
     AZ::IO::FixedMaxPathString projectPath = AZ::Utils::GetProjectPath();
-    const AZStd::string commandLineOptions = AZStd::string::format(" --screen %s --project-path %s", screen.c_str(), projectPath.c_str());
+#if !AZ_TRAIT_OS_PLATFORM_APPLE && !AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
+    const char* argumentQuoteString = R"(")";
+#else
+    const char* argumentQuoteString = R"(\")";
+#endif
+    const AZStd::string commandLineOptions = AZStd::string::format(R"( --screen %s --project-path %s%s%s)",
+        screen.c_str(),
+        argumentQuoteString, projectPath.c_str(), argumentQuoteString);
     bool launchSuccess = AzFramework::ProjectManager::LaunchProjectManager(commandLineOptions);
     if (!launchSuccess)
     {
@@ -3166,7 +3139,7 @@ void CCryEditApp::OnCreateLevel()
 //////////////////////////////////////////////////////////////////////////
 bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
 {
-    BOOL bIsDocModified = GetIEditor()->GetDocument()->IsModified();
+    bool bIsDocModified = GetIEditor()->GetDocument()->IsModified();
     if (GetIEditor()->GetDocument()->IsDocumentReady() && bIsDocModified)
     {
         QString str = QObject::tr("Level %1 has been changed. Save Level?").arg(GetIEditor()->GetGameEngine()->GetLevelName());
@@ -3254,11 +3227,11 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
 
 #ifdef WIN32
         FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-            NULL,
+            nullptr,
             dw,
             MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
             windowsErrorMessage.data(),
-            windowsErrorMessage.length(), NULL);
+            windowsErrorMessage.length(), nullptr);
         _getcwd(cwd.data(), cwd.length());
 #else
         windowsErrorMessage = strerror(dw);
@@ -3668,24 +3641,12 @@ void CCryEditApp::OnToolsPreferences()
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnSwitchToDefaultCamera()
 {
-    CViewport* vp = GetIEditor()->GetViewManager()->GetSelectedViewport();
-    if (CRenderViewport* rvp = viewport_cast<CRenderViewport*>(vp))
-    {
-        rvp->SetDefaultCamera();
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnUpdateSwitchToDefaultCamera(QAction* action)
 {
     Q_ASSERT(action->isCheckable());
-    CViewport* pViewport = GetIEditor()->GetViewManager()->GetSelectedViewport();
-    if (CRenderViewport* rvp = viewport_cast<CRenderViewport*>(pViewport))
-    {
-        action->setEnabled(true);
-        action->setChecked(rvp->IsDefaultCamera());
-    }
-    else
     {
         action->setEnabled(false);
     }
@@ -3694,39 +3655,12 @@ void CCryEditApp::OnUpdateSwitchToDefaultCamera(QAction* action)
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnSwitchToSequenceCamera()
 {
-    CViewport* vp = GetIEditor()->GetViewManager()->GetSelectedViewport();
-    if (CRenderViewport* rvp = viewport_cast<CRenderViewport*>(vp))
-    {
-        rvp->SetSequenceCamera();
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnUpdateSwitchToSequenceCamera(QAction* action)
 {
     Q_ASSERT(action->isCheckable());
-
-    CViewport* pViewport = GetIEditor()->GetViewManager()->GetSelectedViewport();
-
-    if (CRenderViewport* rvp = viewport_cast<CRenderViewport*>(pViewport))
-    {
-        bool enableAction = false;
-
-        // only enable if we're editing a sequence in Track View and have cameras in the level
-        if (GetIEditor()->GetAnimation()->GetSequence())
-        {
-
-            AZ::EBusAggregateResults<AZ::EntityId> componentCameras;
-            Camera::CameraBus::BroadcastResult(componentCameras, &Camera::CameraRequests::GetCameras);
-
-            const int numCameras = componentCameras.values.size();
-            enableAction = (numCameras > 0);
-        }
-
-        action->setEnabled(enableAction);
-        action->setChecked(rvp->IsSequenceCamera());
-    }
-    else
     {
         action->setEnabled(false);
     }
@@ -3735,31 +3669,12 @@ void CCryEditApp::OnUpdateSwitchToSequenceCamera(QAction* action)
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnSwitchToSelectedcamera()
 {
-    CViewport* vp = GetIEditor()->GetViewManager()->GetSelectedViewport();
-    if (CRenderViewport* rvp = viewport_cast<CRenderViewport*>(vp))
-    {
-        rvp->SetSelectedCamera();
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnUpdateSwitchToSelectedCamera(QAction* action)
 {
     Q_ASSERT(action->isCheckable());
-    AzToolsFramework::EntityIdList selectedEntityList;
-    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(selectedEntityList, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
-    AZ::EBusAggregateResults<AZ::EntityId> cameras;
-    Camera::CameraBus::BroadcastResult(cameras, &Camera::CameraRequests::GetCameras);
-    bool isCameraComponentSelected = selectedEntityList.size() > 0 ? AZStd::find(cameras.values.begin(), cameras.values.end(), *selectedEntityList.begin()) != cameras.values.end() : false;
-
-    CViewport* pViewport = GetIEditor()->GetViewManager()->GetSelectedViewport();
-    CRenderViewport* rvp = viewport_cast<CRenderViewport*>(pViewport);
-    if (isCameraComponentSelected && rvp)
-    {
-        action->setEnabled(true);
-        action->setChecked(rvp->IsSelectedCamera());
-    }
-    else
     {
         action->setEnabled(false);
     }
@@ -3768,11 +3683,7 @@ void CCryEditApp::OnUpdateSwitchToSelectedCamera(QAction* action)
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnSwitchcameraNext()
 {
-    CViewport* vp = GetIEditor()->GetActiveView();
-    if (CRenderViewport* rvp = viewport_cast<CRenderViewport*>(vp))
-    {
-        rvp->CycleCamera();
-    }
+
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -3845,7 +3756,7 @@ bool CCryEditApp::IsInRegularEditorMode()
 
 void CCryEditApp::OnOpenQuickAccessBar()
 {
-    if (m_pQuickAccessBar == NULL)
+    if (m_pQuickAccessBar == nullptr)
     {
         return;
     }
@@ -4193,7 +4104,7 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
 
         int exitCode = 0;
 
-        BOOL didCryEditStart = CCryEditApp::instance()->InitInstance();
+        bool didCryEditStart = CCryEditApp::instance()->InitInstance();
         AZ_Error("Editor", didCryEditStart, "O3DE Editor did not initialize correctly, and will close."
             "\nThis could be because of incorrectly configured components, or missing required gems."
             "\nSee other errors for more details.");

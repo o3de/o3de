@@ -77,6 +77,19 @@ namespace UnitTest
             m_intSpinBox.reset();
         }
 
+        QString setupTruncationTest(QString textValue)
+        {
+            QString retval;
+            m_doubleSpinBoxWithLineEdit->setDecimals(7);
+            m_doubleSpinBoxWithLineEdit->setDisplayDecimals(3);
+            m_doubleSpinBoxWithLineEdit->setFocus();
+            m_doubleSpinBoxWithLineEdit->GetLineEdit()->setText(textValue);
+            m_doubleSpinBoxWithLineEdit->clearFocus();
+
+            return m_doubleSpinBoxWithLineEdit->textFromValue(m_doubleSpinBoxWithLineEdit->value());
+        }
+
+
         AZStd::unique_ptr<QWidget> m_dummyWidget;
         AZStd::unique_ptr<AzQtComponents::SpinBox> m_intSpinBox;
         AZStd::unique_ptr<AzQtComponents::DoubleSpinBox> m_doubleSpinBox;
@@ -232,12 +245,15 @@ namespace UnitTest
     {
         using testing::StrEq;
 
+        QLocale testLocale{ QLocale() };
+        QString testString = "10" + QString(testLocale.decimalPoint()) + "0";
+
         m_doubleSpinBox->setSuffix("m");
         m_doubleSpinBox->setValue(10.0);
 
         // test internal logic (textFromValue() calls private StringValue())
         QString value = m_doubleSpinBox->textFromValue(10.0);
-        EXPECT_THAT(value.toUtf8().constData(), StrEq("10.0"));
+        EXPECT_THAT(value.toUtf8().constData(), testString);
 
         m_doubleSpinBox->setFocus();
         EXPECT_THAT(m_doubleSpinBox->suffix().toUtf8().constData(), StrEq(""));
@@ -277,4 +293,47 @@ namespace UnitTest
         // test would result in a crash
         EXPECT_TRUE(m_intSpinBox.get() == nullptr);
     }
+
+    TEST_F(SpinBoxFixture, SpinBoxCheckHighValueTruncatesCorrectly)
+    {
+        QLocale testLocale{ QLocale() };
+        QString testString = "0" + QString(testLocale.decimalPoint()) + "9999999";
+        QString value = setupTruncationTest(testString);
+
+        testString = "0" + QString(testLocale.decimalPoint()) + "999";
+        EXPECT_TRUE(value == testString);
+    }
+
+    TEST_F(SpinBoxFixture, SpinBoxCheckLowValueTruncatesCorrectly)
+    {
+        QLocale testLocale{ QLocale() };
+        QString testString = "0" + QString(testLocale.decimalPoint()) + "0000001";
+        QString value = setupTruncationTest(testString);
+
+        testString = "0" + QString(testLocale.decimalPoint()) + "0";
+        EXPECT_TRUE(value == testString);
+    }
+
+    TEST_F(SpinBoxFixture, SpinBoxCheckBugValuesTruncatesCorrectly)
+    {
+        QLocale testLocale{ QLocale() };
+        QString testString = "0" + QString(testLocale.decimalPoint()) + "12395";
+        QString value = setupTruncationTest(testString);
+
+        testString = "0" + QString(testLocale.decimalPoint()) + "123";
+        EXPECT_TRUE(value == testString);
+
+        testString = "0" + QString(testLocale.decimalPoint()) + "94496";
+        value = setupTruncationTest(testString);
+
+        testString = "0" + QString(testLocale.decimalPoint()) + "944";
+        EXPECT_TRUE(value == testString);
+
+        testString = "0" + QString(testLocale.decimalPoint()) + "0009999";
+        value = setupTruncationTest(testString);
+
+        testString = "0" + QString(testLocale.decimalPoint()) + "0";
+        EXPECT_TRUE(value == testString);
+    }
+
 } // namespace UnitTest

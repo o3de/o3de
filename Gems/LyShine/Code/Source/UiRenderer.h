@@ -36,8 +36,10 @@ public: // types
         AZ::RHI::ShaderInputConstantIndex m_viewProjInputIndex;
         AZ::RHI::ShaderInputConstantIndex m_isClampInputIndex;
 
-        AZ::RPI::ShaderVariantId m_shaderVariantDefault;
-        AZ::RPI::ShaderVariantId m_shaderVariantAlphaTest;
+        AZ::RPI::ShaderVariantId m_shaderVariantTextureLinear;
+        AZ::RPI::ShaderVariantId m_shaderVariantTextureSrgb;
+        AZ::RPI::ShaderVariantId m_shaderVariantAlphaTestMask;
+        AZ::RPI::ShaderVariantId m_shaderVariantGradientMask;
     };
 
     // Base state
@@ -59,12 +61,15 @@ public: // types
             m_stencilState.m_enable = 0;
 
             m_useAlphaTest = false;
+            m_modulateAlpha = false;
         }
 
         uint32_t m_blendStateEnabled = true;
         uint32_t m_blendStateWriteMask = 0xF;
         AZ::RHI::StencilState m_stencilState;
         bool m_useAlphaTest = false;
+        bool m_modulateAlpha = false;
+        bool m_srgbWrite = true;
     };
 
 public: // member functions
@@ -90,6 +95,8 @@ public: // member functions
 
     //! Return the dynamic draw context associated with this UI renderer
     AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> GetDynamicDrawContext();
+
+    AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> CreateDynamicDrawContextForRTT(const AZStd::string& rttName);
 
     //! Return the shader data for the ui shader
     const UiShaderData& GetUiShaderData();
@@ -121,6 +128,9 @@ public: // member functions
     //! Decrement the current stencil reference value
     void DecrementStencilRef();
 
+    //! Return the viewport context set by the user, or the default if not set
+    AZStd::shared_ptr<AZ::RPI::ViewportContext> GetViewportContext();
+
 #ifndef _RELEASE
     //! Setup to record debug texture data before rendering
     void DebugSetRecordingOptionForTextureData(int recordingOption);
@@ -141,10 +151,9 @@ private: // member functions
     AZ::RPI::ScenePtr CreateScene(AZStd::shared_ptr<AZ::RPI::ViewportContext> viewportContext);
 
     //! Create a dynamic draw context for this renderer
-    void CreateDynamicDrawContext(AZ::RPI::ScenePtr scene, AZ::Data::Instance<AZ::RPI::Shader>);
-
-    //! Return the viewport context set by the user, or the default if not set
-    AZStd::shared_ptr<AZ::RPI::ViewportContext> GetViewportContext();
+    AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> CreateDynamicDrawContext(
+        AZ::RPI::ScenePtr scene,
+        AZ::Data::Instance<AZ::RPI::Shader> uiShader);
 
     //! Bind the global white texture for all the texture units we use
     void BindNullTexture();
@@ -165,6 +174,8 @@ protected: // attributes
 
     // Set by user when viewport context is not the main/default viewport
     AZStd::shared_ptr<AZ::RPI::ViewportContext> m_viewportContext;
+
+    AZ::RPI::ScenePtr m_scene;
 
 #ifndef _RELEASE
     int m_debugTextureDataRecordLevel = 0;

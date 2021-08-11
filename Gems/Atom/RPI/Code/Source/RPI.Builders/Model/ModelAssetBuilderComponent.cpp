@@ -109,7 +109,7 @@ namespace AZ
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<ModelAssetBuilderComponent, SceneAPI::SceneCore::ExportingComponent>()
-                    ->Version(27);  // [ATOM-15658]
+                    ->Version(30);  // (updated to separate material slot ID from default material asset)
             }
         }
 
@@ -367,6 +367,9 @@ namespace AZ
 
             MorphTargetMetaAssetCreator morphTargetMetaCreator;
             morphTargetMetaCreator.Begin(MorphTargetMetaAsset::ConstructAssetId(modelAssetId, modelAssetName));
+            
+            ModelAssetCreator modelAssetCreator;
+            modelAssetCreator.Begin(modelAssetId);
 
             uint32_t lodIndex = 0;
             for (const SourceMeshContentList& sourceMeshContentList : sourceMeshContentListsByLod)
@@ -429,7 +432,7 @@ namespace AZ
 
                     for (const ProductMeshView& meshView : lodMeshViews)
                     {
-                        if (!CreateMesh(meshView, indexBuffer, streamBuffers, lodAssetCreator, context.m_materialsByUid))
+                        if (!CreateMesh(meshView, indexBuffer, streamBuffers, modelAssetCreator, lodAssetCreator, context.m_materialsByUid))
                         {
                             return AZ::SceneAPI::Events::ProcessingResult::Failure;
                         }
@@ -468,10 +471,6 @@ namespace AZ
                 lodIndex++;
             }
             sourceMeshContentListsByLod.clear();
-
-            // Build the final asset structure
-            ModelAssetCreator modelAssetCreator;
-            modelAssetCreator.Begin(modelAssetId);
 
             // Finalize all LOD assets
             for (auto& lodAsset : lodAssets)
@@ -883,7 +882,7 @@ namespace AZ
                         processedMorphTargets = true;
                     }
 
-                    totalVertexCount += vertexCount;
+                    totalVertexCount += static_cast<uint32_t>(vertexCount);
                     productMeshList.emplace_back(productMesh);
                 }
             }
@@ -961,7 +960,7 @@ namespace AZ
             for (const auto& skinData : sourceMesh.m_skinData)
             {
                 const size_t numJoints = skinData->GetBoneCount();
-                const AZ::u32 controlPointIndex = sourceMeshData->GetControlPointIndex(vertexIndex);
+                const AZ::u32 controlPointIndex = sourceMeshData->GetControlPointIndex(static_cast<int>(vertexIndex));
                 const size_t numSkinInfluences = skinData->GetLinkCount(controlPointIndex);
 
                 size_t numInfluencesExcess = 0;
@@ -1196,15 +1195,15 @@ namespace AZ
                     mesh.m_skinWeights.size(), m_numSkinJointInfluencesPerVertex, m_numSkinJointInfluencesPerVertex);
                 const size_t numSkinInfluences = mesh.m_skinWeights.size();
 
-                uint32_t jointIndicesSizeInBytes = numSkinInfluences * sizeof(uint16_t);
+                uint32_t jointIndicesSizeInBytes = static_cast<uint32_t>(numSkinInfluences * sizeof(uint16_t));
                 meshView.m_skinJointIndicesView = RHI::BufferViewDescriptor::CreateRaw(0, jointIndicesSizeInBytes);
-                meshView.m_skinWeightsView = RHI::BufferViewDescriptor::CreateTyped(0, numSkinInfluences, SkinWeightFormat);
+                meshView.m_skinWeightsView = RHI::BufferViewDescriptor::CreateTyped(0, static_cast<uint32_t>(numSkinInfluences), SkinWeightFormat);
             }
 
             if (!mesh.m_morphTargetVertexData.empty())
             {
                 const size_t numTotalVertices = mesh.m_morphTargetVertexData.size();
-                meshView.m_morphTargetVertexDataView = RHI::BufferViewDescriptor::CreateStructured(0, numTotalVertices, sizeof(PackedCompressedMorphTargetDelta));
+                meshView.m_morphTargetVertexDataView = RHI::BufferViewDescriptor::CreateStructured(0, static_cast<uint32_t>(numTotalVertices), sizeof(PackedCompressedMorphTargetDelta));
             }
 
             if (!mesh.m_clothData.empty())
@@ -1359,8 +1358,8 @@ namespace AZ
                     const size_t numPrevSkinInfluences = lodBufferInfo.m_skinInfluencesCount;
                     const size_t numNewSkinInfluences = mesh.m_skinWeights.size();
 
-                    meshView.m_skinJointIndicesView = RHI::BufferViewDescriptor::CreateRaw(/*byteOffset=*/numPrevSkinInfluences * sizeof(uint16_t), numNewSkinInfluences  * sizeof(uint16_t));
-                    meshView.m_skinWeightsView = RHI::BufferViewDescriptor::CreateTyped(/*elementOffset=*/numPrevSkinInfluences, numNewSkinInfluences, SkinWeightFormat);
+                    meshView.m_skinJointIndicesView = RHI::BufferViewDescriptor::CreateRaw(/*byteOffset=*/ static_cast<uint32_t>(numPrevSkinInfluences * sizeof(uint16_t)), static_cast<uint32_t>(numNewSkinInfluences  * sizeof(uint16_t)));
+                    meshView.m_skinWeightsView = RHI::BufferViewDescriptor::CreateTyped(/*elementOffset=*/ static_cast<uint32_t>(numPrevSkinInfluences), static_cast<uint32_t>(numNewSkinInfluences), SkinWeightFormat);
 
                     lodBufferInfo.m_skinInfluencesCount += numNewSkinInfluences;
                 }
@@ -1370,7 +1369,7 @@ namespace AZ
                     const size_t numPrevVertexDeltas = lodBufferInfo.m_morphTargetVertexDeltaCount;
                     const size_t numNewVertexDeltas = mesh.m_morphTargetVertexData.size();
 
-                    meshView.m_morphTargetVertexDataView = RHI::BufferViewDescriptor::CreateStructured(/*elementOffset=*/numPrevVertexDeltas, numNewVertexDeltas, sizeof(PackedCompressedMorphTargetDelta));
+                    meshView.m_morphTargetVertexDataView = RHI::BufferViewDescriptor::CreateStructured(/*elementOffset=*/ static_cast<uint32_t>(numPrevVertexDeltas), static_cast<uint32_t>(numNewVertexDeltas), sizeof(PackedCompressedMorphTargetDelta));
 
                     lodBufferInfo.m_morphTargetVertexDeltaCount += numNewVertexDeltas;
                 }
@@ -1796,6 +1795,7 @@ namespace AZ
             const ProductMeshView& meshView,
             const BufferAssetView& lodIndexBuffer,
             const AZStd::vector<ModelLodAsset::Mesh::StreamBufferInfo>& lodStreamBuffers,
+            ModelAssetCreator& modelAssetCreator,
             ModelLodAssetCreator& lodAssetCreator,
             const MaterialAssetsByUid& materialAssetsByUid)
         {
@@ -1806,8 +1806,13 @@ namespace AZ
                 auto iter = materialAssetsByUid.find(meshView.m_materialUid);
                 if (iter != materialAssetsByUid.end())
                 {
-                    const Data::Asset<MaterialAsset>& materialAsset = iter->second.m_asset;
-                    lodAssetCreator.SetMeshMaterialAsset(materialAsset);
+                    ModelMaterialSlot materialSlot;
+                    materialSlot.m_stableId = meshView.m_materialUid;
+                    materialSlot.m_displayName = iter->second.m_name;
+                    materialSlot.m_defaultMaterialAsset = iter->second.m_asset;
+
+                    modelAssetCreator.AddMaterialSlot(materialSlot);
+                    lodAssetCreator.SetMeshMaterialSlot(materialSlot.m_stableId);
                 }
             }
 

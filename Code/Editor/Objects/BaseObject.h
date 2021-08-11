@@ -321,7 +321,7 @@ public:
     //! Set object selected status.
     virtual void SetSelected(bool bSelect);
     //! Return associated 3DEngine render node
-    virtual IRenderNode* GetEngineNode() const { return NULL; };
+    virtual IRenderNode* GetEngineNode() const { return nullptr; };
     //! Set object highlighted (Note: not selected)
     virtual void SetHighlight(bool bHighlight);
     //! Check if object is highlighted.
@@ -410,9 +410,9 @@ public:
     //! Scans hierarchy up to determine if we child of specified node.
     virtual bool IsChildOf(CBaseObject* node);
     //! Get all child objects
-    void GetAllChildren(TBaseObjects& outAllChildren, CBaseObject* pObj = NULL) const;
-    void GetAllChildren(DynArray< _smart_ptr<CBaseObject> >& outAllChildren, CBaseObject* pObj = NULL) const;
-    void GetAllChildren(CSelectionGroup& outAllChildren, CBaseObject* pObj = NULL) const;
+    void GetAllChildren(TBaseObjects& outAllChildren, CBaseObject* pObj = nullptr) const;
+    void GetAllChildren(DynArray< _smart_ptr<CBaseObject> >& outAllChildren, CBaseObject* pObj = nullptr) const;
+    void GetAllChildren(CSelectionGroup& outAllChildren, CBaseObject* pObj = nullptr) const;
     //! Clone Children
     void CloneChildren(CBaseObject* pFromObject);
     //! Attach new child node.
@@ -468,8 +468,8 @@ public:
     //! Called when object is being created (use GetMouseCreateCallback for more advanced mouse creation callback).
     virtual int MouseCreateCallback(CViewport* view, EMouseEvent event, QPoint& point, int flags);
     // Return pointer to the callback object used when creating object by the mouse.
-    // If this function return NULL MouseCreateCallback method will be used instead.
-    virtual IMouseCreateCallback* GetMouseCreateCallback() { return 0; };
+    // If this function return nullptr MouseCreateCallback method will be used instead.
+    virtual IMouseCreateCallback* GetMouseCreateCallback() { return nullptr; };
 
     //! Draw object to specified viewport.
     virtual void Display([[maybe_unused]] DisplayContext& disp) {}
@@ -598,7 +598,7 @@ public:
     bool CanBeHightlighted() const;
     bool IsSkipSelectionHelper() const;
 
-    virtual IStatObj* GetIStatObj() {   return NULL; }
+    virtual IStatObj* GetIStatObj() {   return nullptr; }
 
     // Invalidates cached transformation matrix.
     // nWhyFlags - Flags that indicate the reason for matrix invalidation.
@@ -672,7 +672,7 @@ protected:
     //! Draw warning icons
     virtual void DrawWarningIcons(DisplayContext& dc, const Vec3& pos);
     //! Check if dimension's figures can be displayed before draw them.
-    virtual void DrawDimensions(DisplayContext& dc, AABB* pMergedBoundBox = NULL);
+    virtual void DrawDimensions(DisplayContext& dc, AABB* pMergedBoundBox = nullptr);
 
     //! Draw highlight.
     virtual void DrawHighlight(DisplayContext& dc);

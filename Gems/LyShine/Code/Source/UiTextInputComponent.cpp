@@ -647,7 +647,7 @@ bool UiTextInputComponent::HandleKeyInputBegan(const AzFramework::InputChannel::
 
             // Append text from clipboard
             textString.insert(m_textCursorPos, clipboardText);
-            m_textCursorPos += clipboardText.length();
+            m_textCursorPos += static_cast<int>(clipboardText.length());
             m_textSelectionStartPos = m_textCursorPos;
 
             // If max length is set, remove extra characters

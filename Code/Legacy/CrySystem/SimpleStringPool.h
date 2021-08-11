@@ -216,8 +216,8 @@ public:
             CryFatalError("Can't replace strings in an xml node that reuses strings");
         }
 
-        int nStrLen1 = strlen(str1);
-        int nStrLen2 = strlen(str2);
+        int nStrLen1 = static_cast<int>(strlen(str1));
+        int nStrLen2 = static_cast<int>(strlen(str2));
 
         // undo ptr1 add.
         if (m_ptr != m_start)

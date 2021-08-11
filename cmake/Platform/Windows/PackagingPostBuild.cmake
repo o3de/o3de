@@ -189,7 +189,7 @@ if(CPACK_AUTO_GEN_TAG)
     upload_to_s3(
         ${_latest_upload_url}
         ${_temp_dir}
-        "(${_non_versioned_exe}|build_tag.txt)$"
+        ".*(${_non_versioned_exe}|build_tag.txt)$"
     )
 
     # cleanup the temp files

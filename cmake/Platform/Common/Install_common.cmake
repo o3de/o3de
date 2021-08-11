@@ -10,6 +10,15 @@ include(cmake/FileUtil.cmake)
 
 set(CMAKE_INSTALL_MESSAGE NEVER) # Simplify messages to reduce output noise
 
+define_property(TARGET PROPERTY LY_INSTALL_GENERATE_RUN_TARGET
+    BRIEF_DOCS "Defines if a \"RUN\" targets should be created when installing this target Gem"
+    FULL_DOCS [[
+        Property which is set on targets that should generate a "RUN"
+        target when installed. This \"RUN\" target helps to run the 
+        binary from the installed location directly from the IDE.
+    ]]
+)
+
 ly_set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME Core)
 
 cmake_path(RELATIVE_PATH CMAKE_RUNTIME_OUTPUT_DIRECTORY BASE_DIRECTORY ${CMAKE_BINARY_DIR} OUTPUT_VARIABLE runtime_output_directory)
@@ -36,7 +45,6 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
     # we need to set the PUBLIC_HEADER property of the target for all the headers we are exporting. After doing that, installing the
     # headers end up in one folder instead of duplicating the folder structure of the public/interface include directory.
     # Instead, we install them with install(DIRECTORY)
-    set(include_location "include")
     get_target_property(include_directories ${TARGET_NAME} INTERFACE_INCLUDE_DIRECTORIES)
     if (include_directories)
         unset(public_headers)
@@ -54,9 +62,10 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
                     continue()
                 endif()
 
+                unset(rel_include_dir)
                 cmake_path(RELATIVE_PATH include_directory BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE rel_include_dir)
-                cmake_path(APPEND include_location "${rel_include_dir}" ".." OUTPUT_VARIABLE destination_dir)
-                cmake_path(NORMAL_PATH destination_dir)
+                cmake_path(APPEND rel_include_dir "..")
+                cmake_path(NORMAL_PATH rel_include_dir OUTPUT_VARIABLE destination_dir)
 
                 install(DIRECTORY ${include_directory}
                     DESTINATION ${destination_dir}
@@ -66,6 +75,7 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
                         PATTERN *.hpp
                         PATTERN *.inl
                         PATTERN *.hxx
+                        PATTERN *.jinja # LyAutoGen files
                 )
             endif()
         endforeach()
@@ -117,15 +127,19 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
         set(NAMESPACE_PLACEHOLDER "")
         set(NAME_PLACEHOLDER ${TARGET_NAME})
     endif()
+    get_target_property(should_create_helper ${TARGET_NAME} LY_INSTALL_GENERATE_RUN_TARGET)
+    if(should_create_helper)
+        set(NAME_PLACEHOLDER ${NAME_PLACEHOLDER}.Imported)
+    endif()
 
     set(TARGET_TYPE_PLACEHOLDER "")
-    get_target_property(target_type ${NAME_PLACEHOLDER} TYPE)
+    get_target_property(target_type ${TARGET_NAME} TYPE)
     # Remove the _LIBRARY since we dont need to pass that to ly_add_targets
     string(REPLACE "_LIBRARY" "" TARGET_TYPE_PLACEHOLDER ${target_type})
     # For HEADER_ONLY libs we end up generating "INTERFACE" libraries, need to specify HEADERONLY instead
     string(REPLACE "INTERFACE" "HEADERONLY" TARGET_TYPE_PLACEHOLDER ${TARGET_TYPE_PLACEHOLDER})
     if(TARGET_TYPE_PLACEHOLDER STREQUAL "MODULE")
-        get_target_property(gem_module ${NAME_PLACEHOLDER} GEM_MODULE)
+        get_target_property(gem_module ${TARGET_NAME} GEM_MODULE)
         if(gem_module)
             set(TARGET_TYPE_PLACEHOLDER "GEM_MODULE")
         endif()
@@ -143,10 +157,9 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
         foreach(include ${include_directories})
             string(GENEX_STRIP ${include} include_genex_expr)
             if(include_genex_expr STREQUAL include) # only for cases where there are no generation expressions
-                cmake_path(RELATIVE_PATH include BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE target_include)
-                cmake_path(NORMAL_PATH target_include)
-                # Escape the LY_ROOT_FOLDER variable so that it isn't resolved during the install step
-                string(APPEND INCLUDE_DIRECTORIES_PLACEHOLDER "\${LY_ROOT_FOLDER}/${include_location}/${target_include}\n")
+                # Make the include path relative to the source dir where the target will be declared
+                cmake_path(RELATIVE_PATH include BASE_DIRECTORY ${absolute_target_source_dir} OUTPUT_VARIABLE target_include)
+                string(APPEND INCLUDE_DIRECTORIES_PLACEHOLDER "${target_include}\n")
             endif()
         endforeach()
     endif()
@@ -157,7 +170,6 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
     else()
         unset(RUNTIME_DEPENDENCIES_PLACEHOLDER)
     endif()
-
 
     get_target_property(inteface_build_dependencies_props ${TARGET_NAME} INTERFACE_LINK_LIBRARIES)
     unset(INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER)
@@ -182,6 +194,23 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
     list(REMOVE_DUPLICATES INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER)
     string(REPLACE ";" "\n" INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER "${INTERFACE_BUILD_DEPENDENCIES_PLACEHOLDER}")
 
+    # If the target is an executable/application, add a custom target so we can debug the target in project-centric workflow
+    if(should_create_helper)
+        string(REPLACE ".Imported" "" RUN_TARGET_NAME ${NAME_PLACEHOLDER})
+        set(target_types_with_debugging_helper EXECUTABLE APPLICATION)
+        if(NOT target_type IN_LIST target_types_with_debugging_helper)
+            message(FATAL_ERROR "Cannot generate a RUN target for ${TARGET_NAME}, type is ${target_type}")
+        endif()
+        set(TARGET_RUN_HELPER
+"add_custom_target(${RUN_TARGET_NAME})
+set_target_properties(${RUN_TARGET_NAME} PROPERTIES 
+    FOLDER \"O3DE_SDK\"
+    VS_DEBUGGER_COMMAND \$<GENEX_EVAL:\$<TARGET_PROPERTY:${NAME_PLACEHOLDER},IMPORTED_LOCATION>>
+    VS_DEBUGGER_COMMAND_ARGUMENTS \"--project-path=\${LY_DEFAULT_PROJECT_PATH}\"
+)"
+)
+    endif()
+
     # Config file
     set(target_file_contents "# Generated by O3DE install\n\n")
     if(NOT target_type STREQUAL INTERFACE_LIBRARY)
@@ -194,13 +223,13 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
             set(target_location "\${LY_ROOT_FOLDER}/${library_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/${target_library_output_subdirectory}/$<TARGET_FILE_NAME:${TARGET_NAME}>")
         elseif(target_type STREQUAL SHARED_LIBRARY)
             string(APPEND target_file_contents 
-"set_property(TARGET ${TARGET_NAME} 
+"set_property(TARGET ${NAME_PLACEHOLDER} 
     APPEND_STRING PROPERTY IMPORTED_IMPLIB
         $<$<CONFIG:$<CONFIG>$<ANGLE-R>:\"\${LY_ROOT_FOLDER}/${archive_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/$<TARGET_LINKER_FILE_NAME:${TARGET_NAME}>\"$<ANGLE-R>
 )
 ")
             string(APPEND target_file_contents 
-"set_property(TARGET ${TARGET_NAME} 
+"set_property(TARGET ${NAME_PLACEHOLDER} 
     PROPERTY IMPORTED_IMPLIB_$<UPPER_CASE:$<CONFIG>> 
         \"\${LY_ROOT_FOLDER}/${archive_output_directory}/${PAL_PLATFORM_NAME}/$<CONFIG>/$<TARGET_LINKER_FILE_NAME:${TARGET_NAME}>\"
 )
@@ -212,11 +241,11 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
 
         if(target_location)
             string(APPEND target_file_contents
-"set_property(TARGET ${TARGET_NAME}
+"set_property(TARGET ${NAME_PLACEHOLDER}
     APPEND_STRING PROPERTY IMPORTED_LOCATION
         $<$<CONFIG:$<CONFIG>$<ANGLE-R>:${target_location}$<ANGLE-R>
 )
-set_property(TARGET ${TARGET_NAME}
+set_property(TARGET ${NAME_PLACEHOLDER}
     PROPERTY IMPORTED_LOCATION_$<UPPER_CASE:$<CONFIG>>
         ${target_location}
 )
@@ -419,11 +448,15 @@ endfunction()
 function(ly_setup_runtime_dependencies)
 
     # Common functions used by the bellow code
-    install(CODE
+    if(COMMAND ly_install_code_function_override)
+        ly_install_code_function_override()
+    else()
+        install(CODE
 "function(ly_copy source_file target_directory)
     file(COPY \"\${source_file}\" DESTINATION \"\${target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS})
 endfunction()"
-    )
+        )
+    endif()
 
     unset(runtime_commands)
     get_property(all_targets GLOBAL PROPERTY LY_ALL_TARGETS)

@@ -1951,12 +1951,13 @@ namespace AzToolsFramework
             return;
         }
 
+        // If prefabs are enabled, there will be no root slice so bail out here since we don't need
+        // to show any slice options in the menu
         AZ::SliceComponent* rootSlice = nullptr;
         AzFramework::SliceEntityOwnershipServiceRequestBus::EventResult(rootSlice, contextId,
             &AzFramework::SliceEntityOwnershipServiceRequestBus::Events::GetRootSlice);
         if (!rootSlice)
         {
-            AZ_Error("PropertyEditor", false, "Entity context has no root slice");
             return;
         }
 
@@ -2105,10 +2106,6 @@ namespace AzToolsFramework
     {
         QMenu* revertMenu = nullptr;
 
-        revertMenu = menu.addMenu(tr("Revert overrides"));
-        revertMenu->setToolTipsVisible(true);
-        revertMenu->setEnabled(false);
-
         //check for changes on selected property
         if (componentClassData)
         {
@@ -2127,6 +2124,11 @@ namespace AzToolsFramework
             {
                 return;
             }
+
+            // Only add the "Revert overrides" menu option if it belongs to a slice
+            revertMenu = menu.addMenu(tr("Revert overrides"));
+            revertMenu->setToolTipsVisible(true);
+            revertMenu->setEnabled(false);
 
             if (fieldNode)
             {
@@ -2641,22 +2643,22 @@ namespace AzToolsFramework
         m_gui->m_statusComboBox->setItalic(false);
         if (allActive)
         {
-            m_gui->m_statusComboBox->setHeaderOverride(m_itemNames[StatusTypeToIndex(StatusType::StatusStartActive)]);
-            m_gui->m_statusComboBox->setCurrentIndex(StatusTypeToIndex(StatusType::StatusStartActive));
+            m_gui->m_statusComboBox->setHeaderOverride(m_itemNames[static_cast<int>(StatusTypeToIndex(StatusType::StatusStartActive))]);
+            m_gui->m_statusComboBox->setCurrentIndex(static_cast<int>(StatusTypeToIndex(StatusType::StatusStartActive)));
             m_comboItems[StatusTypeToIndex(StatusType::StatusStartActive)]->setCheckState(Qt::Checked);
         }
         else
         if (allInactive)
         {
-            m_gui->m_statusComboBox->setHeaderOverride(m_itemNames[StatusTypeToIndex(StatusType::StatusStartInactive)]);
-            m_gui->m_statusComboBox->setCurrentIndex(StatusTypeToIndex(StatusType::StatusStartInactive));
+            m_gui->m_statusComboBox->setHeaderOverride(m_itemNames[static_cast<int>(StatusTypeToIndex(StatusType::StatusStartInactive))]);
+            m_gui->m_statusComboBox->setCurrentIndex(static_cast<int>(StatusTypeToIndex(StatusType::StatusStartInactive)));
             m_comboItems[StatusTypeToIndex(StatusType::StatusStartInactive)]->setCheckState(Qt::Checked);
         }
         else
         if (allEditorOnly)
         {
-            m_gui->m_statusComboBox->setHeaderOverride(m_itemNames[StatusTypeToIndex(StatusType::StatusEditorOnly)]);
-            m_gui->m_statusComboBox->setCurrentIndex(StatusTypeToIndex(StatusType::StatusEditorOnly));
+            m_gui->m_statusComboBox->setHeaderOverride(m_itemNames[static_cast<int>(StatusTypeToIndex(StatusType::StatusEditorOnly))]);
+            m_gui->m_statusComboBox->setCurrentIndex(static_cast<int>(StatusTypeToIndex(StatusType::StatusEditorOnly)));
             m_comboItems[StatusTypeToIndex(StatusType::StatusEditorOnly)]->setCheckState(Qt::Checked);
         }
         else // Some marked active, some not

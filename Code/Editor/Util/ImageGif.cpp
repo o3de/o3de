@@ -223,7 +223,7 @@ bool CImageGif::Load(const QString& fileName, CImageEx& outImage)
     Pass = 0;
     OutCount = 0;
 
-    Palette = NULL;
+    Palette = nullptr;
     CHK (Raster = new uint8 [filesize]);
 
     if (strncmp((char*) ptr, id87, 6))

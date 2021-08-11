@@ -66,7 +66,7 @@ namespace AZ::MeshBuilder
                 for (size_t i = 0; i < numSkinInfluences; ++i)
                 {
                     const float influenceWeight = (i != numSkinInfluences - 1 ? fmod(random.GetRandomFloat(), totalWeight) : totalWeight);
-                    skinningInfo->AddInfluence(v, i, influenceWeight);
+                    skinningInfo->AddInfluence(v, {i, influenceWeight});
                     totalWeight -= influenceWeight;
                 }
                 const float totalSkinInfluenceWeight = CalcSkinInfluencesTotalWeight(skinningInfo.get(), v);

@@ -7,6 +7,7 @@
  */
 
 #include <TestImpactFramework/TestImpactConfigurationException.h>
+#include <TestImpactFramework/TestImpactUtils.h>
 
 #include <TestImpactRuntimeConfigurationFactory.h>
 
@@ -140,17 +141,17 @@ namespace TestImpact
         return tempWorkspaceConfig;
     }
 
-    AZStd::array<RepoPath, 3> ParseTestImpactAnalysisDataFiles(const RepoPath& root, const rapidjson::Value& sparTIAFile)
+    AZStd::array<RepoPath, 3> ParseTestImpactAnalysisDataFiles(const RepoPath& root, const rapidjson::Value& sparTiaFile)
     {
-        AZStd::array<RepoPath, 3> sparTIAFiles;
-        sparTIAFiles[static_cast<size_t>(SuiteType::Main)] =
-            GetAbsPathFromRelPath(root, sparTIAFile[GetSuiteTypeName(SuiteType::Main).c_str()].GetString());
-        sparTIAFiles[static_cast<size_t>(SuiteType::Periodic)] =
-            GetAbsPathFromRelPath(root, sparTIAFile[GetSuiteTypeName(SuiteType::Periodic).c_str()].GetString());
-        sparTIAFiles[static_cast<size_t>(SuiteType::Sandbox)] =
-            GetAbsPathFromRelPath(root, sparTIAFile[GetSuiteTypeName(SuiteType::Sandbox).c_str()].GetString());
+        AZStd::array<RepoPath, 3> sparTiaFiles;
+        sparTiaFiles[static_cast<size_t>(SuiteType::Main)] =
+            GetAbsPathFromRelPath(root, sparTiaFile[SuiteTypeAsString(SuiteType::Main).c_str()].GetString());
+        sparTiaFiles[static_cast<size_t>(SuiteType::Periodic)] =
+            GetAbsPathFromRelPath(root, sparTiaFile[SuiteTypeAsString(SuiteType::Periodic).c_str()].GetString());
+        sparTiaFiles[static_cast<size_t>(SuiteType::Sandbox)] =
+            GetAbsPathFromRelPath(root, sparTiaFile[SuiteTypeAsString(SuiteType::Sandbox).c_str()].GetString());
 
-        return sparTIAFiles;
+        return sparTiaFiles;
     }
 
     WorkspaceConfig::Active ParseActiveWorkspaceConfig(const rapidjson::Value& activeWorkspace)
@@ -160,7 +161,7 @@ namespace TestImpact
         activeWorkspaceConfig.m_root = activeWorkspace[Config::Keys[Config::Root]].GetString();
         activeWorkspaceConfig.m_enumerationCacheDirectory
             = GetAbsPathFromRelPath(activeWorkspaceConfig.m_root, relativePaths[Config::Keys[Config::EnumerationCacheDir]].GetString());
-        activeWorkspaceConfig.m_sparTIAFiles =
+        activeWorkspaceConfig.m_sparTiaFiles =
             ParseTestImpactAnalysisDataFiles(activeWorkspaceConfig.m_root, relativePaths[Config::Keys[Config::TestImpactDataFiles]]);
         return activeWorkspaceConfig;
     }

@@ -186,6 +186,7 @@ namespace AzToolsFramework
                 }
             }
             invalidateFilter();
+            
             Q_EMIT filterChanged();
         }
 
@@ -205,6 +206,6 @@ namespace AzToolsFramework
         }
 
     } // namespace AssetBrowser
-} // namespace AzToolsFramework// namespace AssetBrowser
+} // namespace AzToolsFramework
 
 #include "AssetBrowser/moc_AssetBrowserFilterModel.cpp"

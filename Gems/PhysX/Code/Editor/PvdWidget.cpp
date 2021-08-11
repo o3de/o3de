@@ -19,7 +19,7 @@ namespace PhysX
     namespace Editor
     {
         static const char* const s_pvdDocumentationLink = "Learn more about the <a href=%0>PhysX Visual Debugger (PVD).</a>";
-        static const char* const s_pvdDocumentationAddress = "configuration/debugger";
+        static const char* const s_pvdDocumentationAddress = "configuring/configuration-debugger";
 
         PvdWidget::PvdWidget(QWidget* parent)
             : QWidget(parent)

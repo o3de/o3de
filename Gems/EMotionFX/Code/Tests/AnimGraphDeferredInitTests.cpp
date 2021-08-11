@@ -36,7 +36,7 @@ namespace EMotionFX
             m_blendTree->AddChildNode(paramNode);
             paramNode->InitAfterLoading(m_animGraph.get());
             paramNode->InvalidateUniqueData(m_animGraphInstance);
-            m_blend2Node->AddConnection(paramNode, paramNode->FindOutputPortByName("weightParam")->mPortID, BlendTreeBlend2Node::PORTID_INPUT_WEIGHT);
+            m_blend2Node->AddConnection(paramNode, paramNode->FindOutputPortByName("weightParam")->m_portId, BlendTreeBlend2Node::PORTID_INPUT_WEIGHT);
         }
 
         void ConstructGraph()

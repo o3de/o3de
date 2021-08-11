@@ -14,8 +14,6 @@
 #include <ATLControlsModel.h>
 #include <AudioControlsEditorPlugin.h>
 #include <IAudioSystemEditor.h>
-#include <IConsole.h>
-#include <IEditor.h>
 
 
 //-----------------------------------------------------------------------------------------------//

@@ -185,6 +185,15 @@ namespace AZ
             return m_componentConfig.m_depthFar * tanf(m_componentConfig.m_fovY / 2) * 2;
         }
 
+        bool CameraComponent::IsOrthographic()
+        {
+            return false;
+        }
+
+        float CameraComponent::GetOrthographicHalfWidth()
+        {
+            return 0.0f;
+        }
 
         void CameraComponent::SetFovDegrees(float fov)
         {
@@ -226,9 +235,24 @@ namespace AZ
             UpdateViewToClipMatrix();
         }
 
+        void CameraComponent::SetOrthographic([[maybe_unused]] bool orthographic)
+        {
+            AZ_Assert(!orthographic, "DebugCamera does not support orthographic projection");
+        }
+
+        void CameraComponent::SetOrthographicHalfWidth([[maybe_unused]] float halfWidth)
+        {
+            AZ_Assert(false, "DebugCamera does not support orthographic projection");
+        }
+
         void CameraComponent::MakeActiveView() 
         {
             // do nothing
+        }
+
+        bool CameraComponent::IsActiveView()
+        {
+            return false;
         }
 
         void CameraComponent::OnViewportResized(uint32_t width, uint32_t height)

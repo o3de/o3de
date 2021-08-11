@@ -35,7 +35,7 @@ public:
     ~CAlphaBitmap();
 
     //! creates the bitmap from raw 32bpp data
-    //! \param pData the 32bpp raw image data, RGBA, can be NULL and it would create just an empty bitmap
+    //! \param pData the 32bpp raw image data, RGBA, can be nullptr and it would create just an empty bitmap
     //! \param aWidth the bitmap width
     //! \param aHeight the bitmap height
     bool            Create(void* pData, UINT aWidth, UINT aHeight, bool bVerticalFlip = false, bool bPremultiplyAlpha = false);

@@ -45,11 +45,11 @@ namespace AzToolsFramework::ViewportUi::Internal
 
         if (name.empty())
         {
-            m_buttons.insert({buttonId, AZStd::make_unique<Button>(icon, buttonId)});
+            m_buttons.insert({ buttonId, AZStd::make_unique<Button>(icon, buttonId) });
         }
         else
         {
-            m_buttons.insert({buttonId, AZStd::make_unique<Button>(icon, name, buttonId)});
+            m_buttons.insert({ buttonId, AZStd::make_unique<Button>(icon, name, buttonId) });
         }
         return buttonId;
     }
@@ -73,7 +73,8 @@ namespace AzToolsFramework::ViewportUi::Internal
         return buttons;
     }
 
-    void ButtonGroup::ConnectEventHandler(AZ::Event<ButtonId>::Handler& handler) {
+    void ButtonGroup::ConnectEventHandler(AZ::Event<ButtonId>::Handler& handler)
+    {
         handler.Connect(m_buttonTriggeredEvent);
     }
 
