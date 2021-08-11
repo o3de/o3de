@@ -204,7 +204,7 @@ namespace AzToolsFramework
                         QPoint(mapFromGlobal(globalRect.bottomRight()) - QPoint(RightMargin, BottomMargin)));
 
                     currRect.setLeft(LeftMargin + RowHighlightIndent);
-                    currRect.setWidth(rowWidget->GetContainingEditorWidgetWidth() - (RightMargin + LeftMargin));
+                    currRect.setWidth(rowWidget->GetContainingEditorFrameWidth() - (RightMargin + LeftMargin));
 
                     if (rowWidget == dragRowWidget)
                     {
@@ -364,7 +364,7 @@ namespace AzToolsFramework
                 QPoint(mapFromGlobal(globalRect.bottomRight()) - QPoint(RightMargin, BottomMargin)));
 
             currRect.setLeft(LeftMargin + 2);
-            currRect.setWidth(rowWidget->GetContainingEditorWidgetWidth() - (RightMargin + LeftMargin));
+            currRect.setWidth(rowWidget->GetContainingEditorFrameWidth() - (RightMargin + LeftMargin));
 
             painter.setOpacity(alpha);
 

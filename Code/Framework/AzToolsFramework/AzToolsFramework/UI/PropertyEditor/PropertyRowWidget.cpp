@@ -1853,7 +1853,7 @@ namespace AzToolsFramework
         const QColor backgroundColor, const QColor borderColor, const float alpha, DragImageType imageType)
     {
         // Make the drag box as wide as the containing editor minus a gap each side for the border.
-        static int ParentEditorBorderSize = 2;
+        static constexpr int ParentEditorBorderSize = 2;
         int width = GetContainingEditorFrameWidth() - ParentEditorBorderSize * 2;
         int height = 0;
 

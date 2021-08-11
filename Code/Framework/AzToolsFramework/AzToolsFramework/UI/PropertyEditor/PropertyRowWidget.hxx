@@ -167,7 +167,7 @@ namespace AzToolsFramework
         bool CanMoveUp() const;
         bool CanMoveDown() const;
 
-        int GetContainingEditorWidgetWidth();
+        int GetContainingEditorFrameWidth();
         QPixmap createDragImage(const QColor backgroundColor, const QColor borderColor, const float alpha, DragImageType imageType);
     protected:
         int CalculateLabelWidth() const;
