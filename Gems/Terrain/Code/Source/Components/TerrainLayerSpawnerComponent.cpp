@@ -68,17 +68,17 @@ namespace Terrain
 
     void TerrainLayerSpawnerComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("TerrainAreaService", 0x98f9f606));
+        services.push_back(AZ_CRC("TerrainAreaService"));
     }
 
     void TerrainLayerSpawnerComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("TerrainAreaService", 0x98f9f606));
+        services.push_back(AZ_CRC("TerrainAreaService"));
     }
 
     void TerrainLayerSpawnerComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
+        services.push_back(AZ_CRC("BoxShapeService"));
     }
 
     void TerrainLayerSpawnerComponent::Reflect(AZ::ReflectContext* context)

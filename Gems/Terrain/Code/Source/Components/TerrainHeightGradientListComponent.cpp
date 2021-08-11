@@ -52,20 +52,19 @@ namespace Terrain
 
     void TerrainHeightGradientListComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("TerrainHeightProviderService", 0x5be2c613));
+        services.push_back(AZ_CRC("TerrainHeightProviderService"));
     }
 
     void TerrainHeightGradientListComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("TerrainHeightProviderService", 0x5be2c613));
-        services.push_back(AZ_CRC("GradientService", 0x21c18d23));
+        services.push_back(AZ_CRC("TerrainHeightProviderService"));
+        services.push_back(AZ_CRC("GradientService"));
     }
 
     void TerrainHeightGradientListComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        //services.push_back(AZ_CRC("SurfaceDataProviderService", 0xfe9fb95e));
-        services.push_back(AZ_CRC("TerrainAreaService", 0x98f9f606));
-        services.push_back(AZ_CRC("ShapeService", 0xe86aa5fe));
+        services.push_back(AZ_CRC("TerrainAreaService"));
+        services.push_back(AZ_CRC("BoxShapeService"));
     }
 
     void TerrainHeightGradientListComponent::Reflect(AZ::ReflectContext* context)
