@@ -20,7 +20,6 @@
 #include <AzToolsFramework/UI/PropertyEditor/PropertyAudioCtrl.h>
 
 // Editor
-#include "IResourceSelectorHost.h"
 #include "Controls/QToolTipWidget.h"
 #include "Controls/BitmapToolTip.h"
 
@@ -36,8 +35,8 @@ BrowseButton::BrowseButton(PropertyType type, QWidget* parent /*= nullptr*/)
 
 void BrowseButton::SetPathAndEmit(const QString& path)
 {
-    //only emit if path changes, except for ePropertyGeomCache. Old property control
-    if (path != m_path || m_propertyType == ePropertyGeomCache)
+    //only emit if path changes. Old property control
+    if (path != m_path)
     {
         m_path = path;
         emit PathChanged(m_path);
@@ -79,21 +78,6 @@ private:
             // Filters for texture.
             selection = AssetSelectionModel::AssetGroupSelection("Texture");
         }
-        else if (m_propertyType == ePropertyModel)
-        {
-            // Filters for models.
-            selection = AssetSelectionModel::AssetGroupSelection("Geometry");
-        }
-        else if (m_propertyType == ePropertyGeomCache)
-        {
-            // Filters for geom caches.
-            selection = AssetSelectionModel::AssetTypeSelection("Geom Cache");
-        }
-        else if (m_propertyType == ePropertyFile)
-        {
-            // Filters for files.
-            selection = AssetSelectionModel::AssetTypeSelection("File");
-        }
         else
         {
             return;
@@ -107,14 +91,7 @@ private:
             switch (m_propertyType)
             {
             case ePropertyTexture:
-            case ePropertyModel:
                 newPath.replace("\\\\", "/");
-            }
-            switch (m_propertyType)
-            {
-            case ePropertyTexture:
-            case ePropertyModel:
-            case ePropertyFile:
                 if (newPath.size() > MAX_PATH)
                 {
                     newPath.resize(MAX_PATH);
@@ -123,29 +100,6 @@ private:
 
             SetPathAndEmit(newPath);
         }
-    }
-};
-
-class ResourceSelectorButton
-    : public BrowseButton
-{
-public:
-    AZ_CLASS_ALLOCATOR(ResourceSelectorButton, AZ::SystemAllocator, 0);
-
-    ResourceSelectorButton(PropertyType type, QWidget* pParent = nullptr)
-        : BrowseButton(type, pParent)
-    {
-        setToolTip(tr("Select resource"));
-    }
-
-private:
-    void OnClicked() override
-    {
-        SResourceSelectorContext x;
-        x.parentWidget = this;
-        x.typeName = Prop::GetPropertyTypeToResourceType(m_propertyType);
-        QString newPath = GetIEditor()->GetResourceSelectorHost()->SelectResource(x, m_path);
-        SetPathAndEmit(newPath);
     }
 };
 
@@ -284,10 +238,6 @@ void FileResourceSelectorWidget::SetPropertyType(PropertyType type)
         AddButton(new TextureEditButton);
         m_previewToolTip.reset(new CBitmapToolTip);
         break;
-    case ePropertyModel:
-    case ePropertyGeomCache:
-        AddButton(new ResourceSelectorButton(type));
-        break;
     case ePropertyAudioTrigger:
     case ePropertyAudioSwitch:
     case ePropertyAudioSwitchState:
@@ -295,9 +245,6 @@ void FileResourceSelectorWidget::SetPropertyType(PropertyType type)
     case ePropertyAudioEnvironment:
     case ePropertyAudioPreloadRequest:
         AddButton(new AudioControlSelectorButton(type));
-        break;
-    case ePropertyFile:
-        AddButton(new FileBrowseButton(type));
         break;
     default:
         break;

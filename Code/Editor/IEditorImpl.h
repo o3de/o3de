@@ -290,7 +290,6 @@ public:
     ESystemConfigPlatform GetEditorConfigPlatform() const;
     void ReloadTemplates();
     void AddErrorMessage(const QString& text, const QString& caption);
-    IResourceSelectorHost* GetResourceSelectorHost() { return m_pResourceSelectorHost.get(); }
     virtual void ShowStatusText(bool bEnable);
 
     void OnObjectContextMenuOpened(QMenu* pMenu, const CBaseObject* pObject);
@@ -374,7 +373,6 @@ protected:
     //! Export manager for exporting objects and a terrain from the game to DCC tools
     CExportManager* m_pExportManager;
     std::unique_ptr<CEditorFileMonitor> m_pEditorFileMonitor;
-    std::unique_ptr<IResourceSelectorHost> m_pResourceSelectorHost;
     QString m_selectFileBuffer;
     QString m_levelNameBuffer;
 

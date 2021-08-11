@@ -82,7 +82,6 @@
 #include <Editor/QtViewPaneManager.h>
 #include <Editor/EditorViewportSettings.h>
 #include <Editor/Util/PathUtil.h>
-#include <IResourceSelectorHost.h>
 #include "CryEdit.h"
 #include "Undo/Undo.h"
 

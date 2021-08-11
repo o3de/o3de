@@ -449,7 +449,7 @@ void CViewportTitleDlg::AddFOVMenus(QMenu* menu, std::function<void(float)> call
 
     if (!customPresets.empty())
     {
-        for (size_t i = 0; i < customPresets.size(); ++i)
+        for (int i = 0; i < customPresets.size(); ++i)
         {
             if (customPresets[i].isEmpty())
             {
@@ -535,7 +535,7 @@ void CViewportTitleDlg::AddAspectRatioMenus(QMenu* menu, std::function<void(int,
 
     menu->addSeparator();
 
-    for (size_t i = 0; i < customPresets.size(); ++i)
+    for (int i = 0; i < customPresets.size(); ++i)
     {
         if (customPresets[i].isEmpty())
         {
@@ -684,7 +684,7 @@ void CViewportTitleDlg::AddResolutionMenus(QMenu* menu, std::function<void(int, 
 
     menu->addSeparator();
 
-    for (size_t i = 0; i < customPresets.size(); ++i)
+    for (int i = 0; i < customPresets.size(); ++i)
     {
         if (customPresets[i].isEmpty())
         {
