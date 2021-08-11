@@ -41,7 +41,7 @@ namespace AZ
             {
                 Task& task = m_tasks[i];
                 task.m_graph = this;
-                task.m_successorOffset = cursor - m_successors.data();
+                task.m_successorOffset = static_cast<uint32_t>(cursor - m_successors.data());
                 cursor += task.m_outboundLinkCount;
 
                 AZ_Assert(task.m_outboundLinkCount == links[i].size(), "Task outbound link information mismatch");
