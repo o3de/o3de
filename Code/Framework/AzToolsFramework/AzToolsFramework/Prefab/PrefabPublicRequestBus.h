@@ -8,7 +8,11 @@
 
 #pragma once
 
+#include <AzCore/Component/EntityId.h>
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/Math/Vector3.h>
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/string/string_view.h>
 
 namespace AzToolsFramework
 {
