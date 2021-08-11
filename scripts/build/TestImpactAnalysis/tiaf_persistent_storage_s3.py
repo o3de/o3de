@@ -49,10 +49,11 @@ class PersistentStorageS3(PersistentStorage):
                 logger.info(f"Historic data found for branch '{branch}'.")
 
                 # Archive the existing object with the name of the existing last commit hash
-                archive_key = f"{self._dir}/archive/{self._last_commit_hash}.{object_extension}"
-                logger.info(f"Archiving existing historic data to '{archive_key}' in bucket '{self._bucket.name}'...")
-                self._bucket.copy({"Bucket": self._bucket.name, "Key": self._historic_data_key}, archive_key)
-                logger.info(f"Archiving complete.")
+                # NOTE: currently disabled due to inadequate privilages for the role 'LY-Developers-CodeCommit'
+                #archive_key = f"{self._dir}/archive/{self._last_commit_hash}.{object_extension}"
+                #logger.info(f"Archiving existing historic data to '{archive_key}' in bucket '{self._bucket.name}'...")
+                #self._bucket.copy({"Bucket": self._bucket.name, "Key": self._historic_data_key}, archive_key)
+                #logger.info(f"Archiving complete.")
 
                 # Decode the historic data object into raw bytes
                 logger.info(f"Attempting to decode historic data object...")
