@@ -213,6 +213,12 @@ namespace AZ
 
             // Index into the file picker, used to determine which file to load when "Load File" is pressed.
             int m_currentFileIndex = 0;
+
+
+            // --- Loading capture state ---
+            AZStd::unordered_set<AZStd::string> m_loadedNameBuf;
+            AZStd::unordered_set<RHI::CachedTimeRegion::GroupRegionName, RHI::CachedTimeRegion::GroupRegionName::Hash> m_loadedGroupRegionNames;
+            bool m_usingOfflineData = false;
         };
     } // namespace Render
 } // namespace AZ

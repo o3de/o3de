@@ -17,11 +17,14 @@
 #include <AzCore/JSON/filereadstream.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/JsonSerializationResult.h>
+#include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/limits.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/std/time.h>
+#include "../../../Gems/ImGui/External/ImGui/v1.82/imgui/imgui.h"
+#pragma optimize("", off)
 
 
 namespace AZ
@@ -447,13 +450,61 @@ namespace AZ
         inline void ImGuiCpuProfiler::LoadFile()
         {
             const IO::Path& pathToLoad = m_cachedCapturePaths[m_currentFileIndex];
-            auto res = CpuProfilerImGuiHelper::LoadSavedCpuProfilingStatistics(pathToLoad.String());
-            if (!res.IsSuccess())
+            auto loadResult = CpuProfilerImGuiHelper::LoadSavedCpuProfilingStatistics(pathToLoad.String());
+            if (!loadResult.IsSuccess())
             {
-                AZ_TracePrintf("ImGuiCpuProfiler", "%s", res.GetError().c_str());
+                AZ_TracePrintf("ImGuiCpuProfiler", "%s", loadResult.GetError().c_str());
                 return;
             }
             // TODO ATOM-16022 Parse this data and display it in the visualizer widget.
+
+            AZStd::vector<RHI::CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializerEntry> deserializedData = loadResult.TakeValue();
+
+            m_savedRegionCount = deserializedData.size();
+            m_savedData.clear();
+            m_paused = true;
+            AZ::RHI::CpuProfiler::Get()->SetProfilerEnabled(false);
+            m_frameEndTicks.clear();
+
+            m_tableData.clear();
+            m_groupRegionMap.clear();
+
+            // Main transformation loop, create groupregionnames and add to the buffer 
+            for (const auto& entry : deserializedData)
+            {
+                const auto [groupNameItr, wasGroupNameInserted] = m_loadedNameBuf.emplace(entry.m_groupName.GetCStr());
+                const auto [regionNameItr, wasRegionNameInserted] = m_loadedNameBuf.emplace(entry.m_regionName.GetCStr());
+
+                const auto [groupRegionNameItr, wasGroupRegionNameInserted] =
+                    m_loadedGroupRegionNames.emplace(groupNameItr->c_str(), regionNameItr->c_str());
+
+                RHI::CachedTimeRegion newRegion(&(*groupRegionNameItr), entry.m_stackDepth, entry.m_startTick, entry.m_endTick);
+                m_savedData[1234].push_back(newRegion);
+
+                static Name targetName = Name("RPISystem: OnSystemTick");
+                if (entry.m_regionName == targetName)
+                {
+                    m_frameEndTicks.push_back(entry.m_endTick);
+                }  
+
+                if (!m_groupRegionMap[*groupNameItr].contains(*regionNameItr))
+                {
+                    m_groupRegionMap[*groupNameItr][*regionNameItr].m_groupName = *groupNameItr;
+                    m_groupRegionMap[*groupNameItr][*regionNameItr].m_regionName = *regionNameItr;
+                    m_tableData.push_back(&m_groupRegionMap[*groupNameItr][*regionNameItr]);
+                }
+                m_groupRegionMap[*groupNameItr][*regionNameItr].RecordRegion(newRegion, 1234);
+            }
+
+            m_viewportStartTick = m_savedData[1234].back().m_startTick;
+            m_viewportEndTick = m_savedData[1234].back().m_endTick;
+
+            AZStd::sort(
+                m_savedData[1234].begin(), m_savedData[1234].end(), 
+                [](const TimeRegion& lhs, const TimeRegion& rhs)
+                {
+                    return lhs.m_startTick < rhs.m_startTick;
+                });
         }
 
         // -- CPU Visualizer --
