@@ -653,15 +653,9 @@ private:
 
 typedef CryEventTimed CryEvent;
 
-#if !PLATFORM_SUPPORTS_THREADLOCAL
-TLS_DECLARE(class CrySimpleThreadSelf*, g_CrySimpleThreadSelf);
-#endif
-
 class CrySimpleThreadSelf
 {
 protected:
-#if PLATFORM_SUPPORTS_THREADLOCAL
-
     static CrySimpleThreadSelf* GetSelf()
     {
         return m_Self;
@@ -673,20 +667,6 @@ protected:
     }
 private:
     static AZ_THREAD_LOCAL CrySimpleThreadSelf* m_Self;
-
-#else
-
-    static CrySimpleThreadSelf* GetSelf()
-    {
-        return TLS_GET(CrySimpleThreadSelf*, g_CrySimpleThreadSelf);
-    }
-
-    static void SetSelf(CrySimpleThreadSelf* pSelf)
-    {
-        TLS_SET(g_CrySimpleThreadSelf, pSelf);
-    }
-
-#endif
 };
 
 template<class Runnable>

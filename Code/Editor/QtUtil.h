@@ -12,6 +12,7 @@
 #include <QString>
 #include <CryString.h>
 #include "UnicodeFunctions.h"
+#include <CryCommon/StlUtils.h>
 
 #include <QApplication>
 #include <QDropEvent>

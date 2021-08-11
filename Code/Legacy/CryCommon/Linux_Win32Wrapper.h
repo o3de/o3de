@@ -324,8 +324,6 @@ inline uint32 GetTickCount()
 #define _strlwr_s(BUF, SIZE) strlwr(BUF)
 #define _strups strupr
 
-#define _wtof(str) wcstod(str, 0)
-
 // Need to include this before using it's used in finddata, but after the strnicmp definition
 #include "CryString.h"
 

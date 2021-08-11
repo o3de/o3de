@@ -209,8 +209,20 @@ typedef unsigned long int threadID;
 #define wcsicmp wcscasecmp
 #define wcsnicmp wcsncasecmp
 
-
-#define _wtof(str) wcstod(str, 0)
+typedef union _LARGE_INTEGER
+{
+    struct
+    {
+        DWORD LowPart;
+        LONG HighPart;
+    };
+    struct
+    {
+        DWORD LowPart;
+        LONG HighPart;
+    } u;
+    long long QuadPart;
+} LARGE_INTEGER;
 
 // stdlib.h stuff
 #define _MAX_DRIVE  3   // max. length of drive component

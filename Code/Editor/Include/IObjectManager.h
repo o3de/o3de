@@ -12,6 +12,7 @@
 #pragma once
 
 #include <AzCore/PlatformIncl.h>
+#include <AzCore/Math/Guid.h>
 #include <CryCommon/platform.h>
 #include <CryCommon/Cry_Geo.h>
 #include <set>

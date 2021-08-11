@@ -355,12 +355,8 @@ enum
 #define wcsnicmp wcsncasecmp
 //#define memcpy_s(dest,bytes,src,n) memcpy(dest,src,n)
 #define _isnan ISNAN
-#define _wtof(str) wcstod(str, 0)
-
 
 #define TARGET_DEFAULT_ALIGN (0x8U)
-
-
 
 #define _msize malloc_size
 
