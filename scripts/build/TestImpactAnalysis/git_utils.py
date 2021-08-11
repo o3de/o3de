@@ -32,7 +32,9 @@ class Repo:
 
         try:
             # Remove the existing file (if any) and create the parent directory
-            output_path.unlink(missing_ok=True)
+            # output_path.unlink(missing_ok=True) # missing_ok is only available in Python 3.8+
+            if output_path.is_file():
+                output_path.unlink()
             output_path.parent.mkdir(exist_ok=True)
         except EnvironmentError as e:
             raise RuntimeError(f"Could not create path for output file '{output_path}'")
