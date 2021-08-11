@@ -137,9 +137,9 @@ namespace EMotionFX
     TEST_P(BlendTreeTwoLinkIKNodeFixture, ReachablePositionsOutputCorrectPose)
     {
         // Set values for vector3 and twoLinkIKNode weight parameter
-        m_twoLinkIKNode->AddConnection(m_paramNode, m_paramNode->FindOutputPortByName("WeightParam")->m_portId, BlendTreeTwoLinkIKNode::INPUTPORT_WEIGHT);
+        m_twoLinkIKNode->AddConnection(m_paramNode, aznumeric_cast<uint16>(m_paramNode->FindOutputPortByName("WeightParam")->m_portId), BlendTreeTwoLinkIKNode::INPUTPORT_WEIGHT);
         m_twoLinkIKNode->AddConnection(m_paramNode,
-            m_paramNode->FindOutputPortByName("GoalPosParam")->m_portId, BlendTreeTwoLinkIKNode::INPUTPORT_GOALPOS);
+            aznumeric_cast<uint16>(m_paramNode->FindOutputPortByName("GoalPosParam")->m_portId), BlendTreeTwoLinkIKNode::INPUTPORT_GOALPOS);
 
         GetEMotionFX().Update(1.0f / 60.0f);
         const float weight = testing::get<0>(GetParam());
@@ -179,7 +179,7 @@ namespace EMotionFX
 
     TEST_P(BlendTreeTwoLinkIKNodeFixture, ReachableAlignToNodeOutputCorrectPose)
     {
-        m_twoLinkIKNode->AddConnection(m_paramNode, m_paramNode->FindOutputPortByName("WeightParam")->m_portId,
+        m_twoLinkIKNode->AddConnection(m_paramNode, aznumeric_cast<uint16>(m_paramNode->FindOutputPortByName("WeightParam")->m_portId),
             BlendTreeTwoLinkIKNode::INPUTPORT_WEIGHT);
 
         GetEMotionFX().Update(1.0f / 60.0f);
@@ -224,10 +224,10 @@ namespace EMotionFX
     
     TEST_P(BlendTreeTwoLinkIKNodeFixture, UnreachablePositionsOutputCorrectPose)
     {
-        m_twoLinkIKNode->AddConnection(m_paramNode, m_paramNode->FindOutputPortByName("WeightParam")->m_portId,
+        m_twoLinkIKNode->AddConnection(m_paramNode, aznumeric_cast<uint16>(m_paramNode->FindOutputPortByName("WeightParam")->m_portId),
             BlendTreeTwoLinkIKNode::INPUTPORT_WEIGHT);
         m_twoLinkIKNode->AddConnection(m_paramNode,
-            m_paramNode->FindOutputPortByName("GoalPosParam")->m_portId, BlendTreeTwoLinkIKNode::INPUTPORT_GOALPOS);
+            static_cast<uint16>(m_paramNode->FindOutputPortByName("GoalPosParam")->m_portId), BlendTreeTwoLinkIKNode::INPUTPORT_GOALPOS);
 
         GetEMotionFX().Update(1.0f / 60.0f);
         const float weight = testing::get<0>(GetParam());
@@ -272,12 +272,12 @@ namespace EMotionFX
 
     TEST_P(BlendTreeTwoLinkIKNodeFixture, RotatedPositionsOutputCorrectPose)
     {
-        m_twoLinkIKNode->AddConnection(m_paramNode, m_paramNode->FindOutputPortByName("WeightParam")->m_portId,
+        m_twoLinkIKNode->AddConnection(m_paramNode, static_cast<uint16>(m_paramNode->FindOutputPortByName("WeightParam")->m_portId),
             BlendTreeTwoLinkIKNode::INPUTPORT_WEIGHT);
         m_twoLinkIKNode->AddConnection(m_paramNode,
-            m_paramNode->FindOutputPortByName("GoalPosParam")->m_portId, BlendTreeTwoLinkIKNode::INPUTPORT_GOALPOS);
+            aznumeric_cast<uint16>(m_paramNode->FindOutputPortByName("GoalPosParam")->m_portId), BlendTreeTwoLinkIKNode::INPUTPORT_GOALPOS);
         m_twoLinkIKNode->AddConnection(m_paramNode,
-            m_paramNode->FindOutputPortByName("RotationParam")->m_portId, BlendTreeTwoLinkIKNode::INPUTPORT_GOALROT);
+            static_cast<uint16>(m_paramNode->FindOutputPortByName("RotationParam")->m_portId), BlendTreeTwoLinkIKNode::INPUTPORT_GOALROT);
         m_twoLinkIKNode->SetRotationEnabled(true);
         GetEMotionFX().Update(1.0f / 60.0f);
 
@@ -315,12 +315,12 @@ namespace EMotionFX
 
     TEST_P(BlendTreeTwoLinkIKNodeFixture, BendDirectionOutputCorrectPose)
     {
-        m_twoLinkIKNode->AddConnection(m_paramNode, m_paramNode->FindOutputPortByName("WeightParam")->m_portId,
+        m_twoLinkIKNode->AddConnection(m_paramNode, static_cast<uint16>(m_paramNode->FindOutputPortByName("WeightParam")->m_portId),
             BlendTreeTwoLinkIKNode::INPUTPORT_WEIGHT);
         m_twoLinkIKNode->AddConnection(m_paramNode,
-            m_paramNode->FindOutputPortByName("GoalPosParam")->m_portId, BlendTreeTwoLinkIKNode::INPUTPORT_GOALPOS);
+            static_cast<uint16>(m_paramNode->FindOutputPortByName("GoalPosParam")->m_portId), BlendTreeTwoLinkIKNode::INPUTPORT_GOALPOS);
         m_twoLinkIKNode->AddConnection(m_paramNode,
-            m_paramNode->FindOutputPortByName("BendDirParam")->m_portId, BlendTreeTwoLinkIKNode::INPUTPORT_BENDDIR);
+            static_cast<uint16>(m_paramNode->FindOutputPortByName("BendDirParam")->m_portId), BlendTreeTwoLinkIKNode::INPUTPORT_BENDDIR);
         m_twoLinkIKNode->SetRelativeBendDir(true);
         GetEMotionFX().Update(1.0f / 60.0f);
 
@@ -382,14 +382,14 @@ namespace EMotionFX
     TEST_P(BlendTreeTwoLinkIKNodeFixture, CombinedFunctionsOutputCorrectPose)
     {
         // Two Link IK Node should not break when using all of its functions at the same time
-        m_twoLinkIKNode->AddConnection(m_paramNode, m_paramNode->FindOutputPortByName("WeightParam")->m_portId,
+        m_twoLinkIKNode->AddConnection(m_paramNode, static_cast<uint16>(m_paramNode->FindOutputPortByName("WeightParam")->m_portId),
             BlendTreeTwoLinkIKNode::INPUTPORT_WEIGHT);
         m_twoLinkIKNode->AddConnection(m_paramNode,
-            m_paramNode->FindOutputPortByName("GoalPosParam")->m_portId, BlendTreeTwoLinkIKNode::INPUTPORT_GOALPOS);
+            static_cast<uint16>(m_paramNode->FindOutputPortByName("GoalPosParam")->m_portId), BlendTreeTwoLinkIKNode::INPUTPORT_GOALPOS);
         m_twoLinkIKNode->AddConnection(m_paramNode,
-            m_paramNode->FindOutputPortByName("RotationParam")->m_portId, BlendTreeTwoLinkIKNode::INPUTPORT_GOALROT);
+            static_cast<uint16>(m_paramNode->FindOutputPortByName("RotationParam")->m_portId), BlendTreeTwoLinkIKNode::INPUTPORT_GOALROT);
         m_twoLinkIKNode->AddConnection(m_paramNode,
-            m_paramNode->FindOutputPortByName("BendDirParam")->m_portId, BlendTreeTwoLinkIKNode::INPUTPORT_BENDDIR);
+            static_cast<uint16>(m_paramNode->FindOutputPortByName("BendDirParam")->m_portId), BlendTreeTwoLinkIKNode::INPUTPORT_BENDDIR);
         m_twoLinkIKNode->SetRotationEnabled(true);
         m_twoLinkIKNode->SetRelativeBendDir(true);
         GetEMotionFX().Update(1.0f / 60.0f);
