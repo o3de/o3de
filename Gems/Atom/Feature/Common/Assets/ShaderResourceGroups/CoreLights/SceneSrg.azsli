@@ -32,7 +32,7 @@ partial ShaderResourceGroup SceneSrg
     {
         AddressU = Clamp;
         AddressV = Clamp;
-        AddressW = Clamp;    
+        AddressW = Clamp;
         MagFilter = Linear;
         MinFilter = Linear;
         MipFilter = Point;
