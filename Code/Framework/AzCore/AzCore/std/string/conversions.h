@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/std/string/string.h>
+#include <AzCore/std/string/fixed_string.h>
 
 #include <ctype.h>
 #include <wctype.h>
