@@ -315,7 +315,12 @@ namespace AZ
             memoryRequirements.m_sizeInBytes = bufferSizeAndAlign.size;
             return memoryRequirements;
         }
-      
+
+        void Device::ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction)
+        {
+            m_releaseQueue.Notify(notifyFunction);
+        }
+
         void Device::InitFeatures()
         {
             
