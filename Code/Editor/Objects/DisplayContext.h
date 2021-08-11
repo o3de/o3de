@@ -83,12 +83,12 @@ struct SANDBOX_API DisplayContext
     // Draw functions
     //////////////////////////////////////////////////////////////////////////
     //! Set current materialc color.
-    void SetColor(float r, float g, float b, float a = 1) { m_color4b = ColorB(int(r * 255.0f), int(g * 255.0f), int(b * 255.0f), int(a * 255.0f)); };
-    void SetColor(const Vec3& color, float a = 1) { m_color4b = ColorB(int(color.x * 255.0f), int(color.y * 255.0f), int(color.z * 255.0f), int(a * 255.0f)); };
-    void SetColor(const QColor& rgb, float a) { m_color4b = ColorB(rgb.red(), rgb.green(), rgb.blue(), int(a * 255.0f)); };
-    void SetColor(const QColor& color) { m_color4b = ColorB(color.red(), color.green(), color.blue(), color.alpha()); };
+    void SetColor(float r, float g, float b, float a = 1) { m_color4b = ColorB(aznumeric_cast<uint8>(r * 255.0f), aznumeric_cast<uint8>(g * 255.0f), aznumeric_cast<uint8>(b * 255.0f), aznumeric_cast<uint8>(a * 255.0f)); };
+    void SetColor(const Vec3& color, float a = 1) { m_color4b = ColorB(aznumeric_cast<uint8>(color.x * 255.0f), aznumeric_cast<uint8>(color.y * 255.0f), aznumeric_cast<uint8>(color.z * 255.0f), aznumeric_cast<uint8>(a * 255.0f)); };
+    void SetColor(const QColor& rgb, float a) { m_color4b = ColorB(aznumeric_cast<uint8>(rgb.red()), aznumeric_cast<uint8>(rgb.green()), aznumeric_cast<uint8>(rgb.blue()), aznumeric_cast<uint8>(a * 255.0f)); };
+    void SetColor(const QColor& color) { m_color4b = ColorB(aznumeric_cast<uint8>(color.red()), aznumeric_cast<uint8>(color.green()), aznumeric_cast<uint8>(color.blue()), aznumeric_cast<uint8>(color.alpha())); };
     void SetColor(const ColorB& color) { m_color4b = color; };
-    void SetAlpha(float a = 1) { m_color4b.a = int(a * 255.0f); };
+    void SetAlpha(float a = 1) { m_color4b.a = aznumeric_cast<uint8>(a * 255.0f); };
     ColorB GetColor() const { return m_color4b; }
 
     void SetSelectedColor(float fAlpha = 1);
