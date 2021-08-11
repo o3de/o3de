@@ -564,7 +564,7 @@ void UiMaskComponent::CreateOrResizeRenderTarget(const AZ::Vector2& pixelAligned
     // Create a render target that this element and its children will be rendered to
     AZ::EntityId canvasEntityId;
     EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-    AZ::RHI::Size imageSize(renderTargetSize.GetX(), renderTargetSize.GetY(), 1);
+    AZ::RHI::Size imageSize(aznumeric_cast<uint32_t>(renderTargetSize.GetX()), aznumeric_cast<uint32_t>(renderTargetSize.GetY()), 1);
     EBUS_EVENT_ID_RESULT(m_contentAttachmentImageId, canvasEntityId, LyShine::RenderToTextureRequestBus, UseRenderTarget, AZ::Name(m_renderTargetName.c_str()), imageSize);
     if (m_contentAttachmentImageId.IsEmpty())
     {
@@ -762,7 +762,7 @@ void UiMaskComponent::RenderUsingGradientMask(LyShine::IRenderGraph* renderGraph
             {
                 // go through all the cached vertices and update the alpha values
                 UCol desiredPackedColor = m_cachedPrimitive.m_vertices[0].color;
-                desiredPackedColor.a = desiredPackedAlpha;
+                desiredPackedColor.a = aznumeric_cast<uint8>(desiredPackedAlpha);
                 for (int i = 0; i < m_cachedPrimitive.m_numVertices; ++i)
                 {
                     m_cachedPrimitive.m_vertices[i].color = desiredPackedColor;

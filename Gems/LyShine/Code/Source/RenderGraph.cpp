@@ -881,8 +881,8 @@ namespace LyShine
             {
                 for (int i = 0; i < primitive->m_numVertices; ++i)
                 {
-                    primitive->m_vertices[i].texIndex = texUnit0;
-                    primitive->m_vertices[i].texIndex2 = texUnit1;
+                    primitive->m_vertices[i].texIndex = aznumeric_cast<uint8>(texUnit0);
+                    primitive->m_vertices[i].texIndex2 = aznumeric_cast<uint8>(texUnit1);
                 }
             }
 
