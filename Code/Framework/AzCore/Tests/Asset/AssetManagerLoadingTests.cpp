@@ -2243,8 +2243,8 @@ namespace UnitTest
                 EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset1.txt", &a, &context));
             }
 
-            const size_t numThreads = 4;
-            AZStd::atomic_int threadCount(numThreads);
+            constexpr size_t NumThreads = 4;
+            AZStd::atomic_int threadCount(NumThreads);
             AZStd::condition_variable cv;
             AZStd::vector<AZStd::thread> threads;
             AZStd::atomic_bool keepDispatching(true);
@@ -2259,14 +2259,21 @@ namespace UnitTest
 
             AZStd::thread dispatchThread(dispatch);
 
-            for (size_t threadIdx = 0; threadIdx < numThreads; ++threadIdx)
+            UnitTest::ColoredPrintf(UnitTest::COLOR_YELLOW, "Starting %d test threads\n", NumThreads);
+
+            for (size_t threadIdx = 0; threadIdx < NumThreads; ++threadIdx)
             {
                 threads.emplace_back([&threadCount, &db, &cv]()
                     {
                         Data::Asset<AssetWithAssetReference> assetA = db.GetAsset<AssetWithAssetReference>(AssetId(MyAssetAId), AZ::Data::AssetLoadBehavior::Default);
+                        UnitTest::ColoredPrintf(
+                            UnitTest::COLOR_YELLOW, "Thread %d GetAsset completed\n", AZStd::this_thread::get_id().m_id);
 
                         assetA.BlockUntilLoadComplete();
 
+                        UnitTest::ColoredPrintf(
+                            UnitTest::COLOR_YELLOW, "Thread %d BlockUntilLoadComplete completed\n", AZStd::this_thread::get_id().m_id);
+                        
                         EXPECT_TRUE(assetA.IsReady());
 
                         Data::Asset<AssetWithAssetReference> assetB = assetA->m_asset;
@@ -2279,12 +2286,16 @@ namespace UnitTest
                         EXPECT_TRUE(assetD.IsReady());
                         EXPECT_EQ(42, assetD->m_data);
 
+                        UnitTest::ColoredPrintf(UnitTest::COLOR_YELLOW, "Thread %d finished checking assets A through D\n", AZStd::this_thread::get_id().m_id);
+
                         assetA = Data::Asset<AssetWithAssetReference>();
 
                         --threadCount;
                         cv.notify_one();
                     });
             }
+
+            UnitTest::ColoredPrintf(UnitTest::COLOR_YELLOW, "Finished starting test threads\n");
 
             // Used to detect a deadlock.  If we wait for more than 5 seconds, it's likely a deadlock has occurred
             bool timedOut = false;
