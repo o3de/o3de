@@ -96,7 +96,7 @@ namespace AZ
         void UnregisterFont(const char* fontName);
 
     private:
-        using FontMap = std::unordered_map<AzFramework::FontId, FFont*>;
+        using FontMap = AZStd::unordered_map<AzFramework::FontId, FFont*>;
         using FontMapItor = FontMap::iterator;
         using FontMapConstItor = FontMap::const_iterator;
 

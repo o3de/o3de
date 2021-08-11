@@ -11,6 +11,8 @@
 #include <../Common/Apple/Launcher_Apple.h>
 #include <../Common/UnixLike/Launcher_UnixLike.h>
 
+#include <AzCore/Math/Vector2.h>
+
 #if AZ_TESTS_ENABLED
 
 int main(int argc, char* argv[])
