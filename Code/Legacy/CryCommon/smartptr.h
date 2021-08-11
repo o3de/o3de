@@ -13,6 +13,7 @@
 
 #include <platform.h>
 #include <type_traits>
+#include <MultiThread.h>
 
 void CryFatalError(const char*, ...) PRINTF_PARAMS(1, 2);
 #if defined(APPLE)
@@ -171,13 +172,13 @@ public:
 
     void AddRef()
     {
-        CHECK_REFCOUNT_CRASH(m_nRefCounter >= 0);
+        AZ_Assert(m_nRefCounter >= 0, "Invalid ref count");
         ++m_nRefCounter;
     }
 
     void Release()
     {
-        CHECK_REFCOUNT_CRASH(m_nRefCounter > 0);
+        AZ_Assert(m_nRefCounter > 0, "Invalid ref count");
         if (--m_nRefCounter == 0)
         {
             delete static_cast<TDerived*>(this);
@@ -215,13 +216,13 @@ public:
 
     void AddRef()
     {
-        CHECK_REFCOUNT_CRASH(m_nRefCounter >= 0);
+        AZ_Assert(m_nRefCounter >= 0, "Invalid ref count");
         ++m_nRefCounter;
     }
 
     void Release()
     {
-        CHECK_REFCOUNT_CRASH(m_nRefCounter > 0);
+        AZ_Assert(m_nRefCounter > 0, "Invalid ref count");
         if (--m_nRefCounter == 0)
         {
             delete this;
@@ -272,13 +273,13 @@ public:
 
     void AddRef()
     {
-        CHECK_REFCOUNT_CRASH(m_nRefCounter >= 0);
+        AZ_Assert(m_nRefCounter >= 0, "Invalid ref count");
         ++m_nRefCounter;
     }
 
     void Release()
     {
-        CHECK_REFCOUNT_CRASH(m_nRefCounter > 0);
+        AZ_Assert(m_nRefCounter > 0, "Invalid ref count");
         if (--m_nRefCounter == 0)
         {
             assert(m_pDeleteFnc);

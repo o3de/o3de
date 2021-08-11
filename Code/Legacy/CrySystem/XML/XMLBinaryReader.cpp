@@ -194,7 +194,7 @@ void XMLBinary::XMLBinaryReader::CheckHeader(const BinaryFileHeader& header, siz
     // Check the signature of the file to make sure that it is a binary XML file.
     {
         static const char signature[] = "CryXmlB";
-        COMPILE_TIME_ASSERT(sizeof(signature) == sizeof(header.szSignature));
+        static_assert(sizeof(signature) == sizeof(header.szSignature));
         if (memcmp(header.szSignature, signature, sizeof(header.szSignature)) != 0)
         {
             result = eResult_NotBinXml;

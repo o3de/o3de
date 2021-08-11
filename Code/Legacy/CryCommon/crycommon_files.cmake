@@ -68,7 +68,6 @@ set(FILES
     LCGRandom.h
     CryTypeInfo.cpp
     BaseTypes.h
-    CompileTimeAssert.h
     MemoryAccess.h
     AnimKey.h
     BitFiddling.h
@@ -158,7 +157,6 @@ set(FILES
     CryThread_windows.h
     CryThreadImpl_pthreads.h
     CryThreadImpl_windows.h
-    CryWindows.h
     Linux32Specific.h
     Linux64Specific.h
     Linux_Win32Wrapper.h

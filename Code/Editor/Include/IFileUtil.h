@@ -9,6 +9,7 @@
 #pragma once
 
 #include "../Include/SandboxAPI.h"
+#include <set>
 
 class QWidget;
 
