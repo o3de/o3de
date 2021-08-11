@@ -225,7 +225,7 @@ private:
     volatile bool m_bIsStarted;
     volatile bool m_bIsRunning;
     volatile bool m_bCreatedThread;
-    string m_name;
+    AZStd::string m_name;
 
 protected:
     virtual void Terminate()

@@ -623,12 +623,14 @@ namespace
 
             int batchCurChar = 0;
 
-            Unicode::CIterator<const char*, false> pChar(drawBatch.text.c_str());
+            Utf8::Unchecked::octet_iterator pChar(drawBatch.text.data());
             uint32_t prevCh = 0;
             while (uint32_t ch = *pChar)
             {
-                char codepoint[5];
-                Unicode::Convert(codepoint, ch);
+                size_t maxSize = 5;
+                char codepoint[5] = { 0 };
+                char* codepointPtr = codepoint;
+                Utf8::Unchecked::octet_iterator<AZStd::string::iterator>::to_utf8_sequence(ch, codepointPtr, maxSize);
 
                 float curCharWidth = drawBatch.font->GetTextSize(codepoint, true, ctx).x;
 
@@ -652,15 +654,15 @@ namespace
                     lastSpaceIndexInBatch = batchCurChar;
                     lastSpaceBatch = &drawBatch;
                     lastSpaceWidth = curLineWidth + curCharWidth;
-                    pLastSpace = pChar.GetPosition();
+                    pLastSpace = pChar.base();
                     assert(*pLastSpace == ' ');
                 }
 
                 bool prevCharWasNewline = false;
-                const bool isFirstChar = pChar.GetPosition() == drawBatch.text.c_str();
+                const bool isFirstChar = pChar.base() == drawBatch.text.c_str();
                 if (ch && !isFirstChar)
                 {
-                    const char* pPrevCharStr = pChar.GetPosition() - 1;
+                    const char* pPrevCharStr = pChar.base() - 1;
                     prevCharWasNewline = pPrevCharStr[0] == '\n';
                 }
                 else if (isFirstChar)
@@ -705,12 +707,12 @@ namespace
                     }
                     else
                     {
-                        const char* pBuf = pChar.GetPosition();
+                        char* pBuf = pChar.base();
                         AZStd::string::size_type bytesProcessed = pBuf - drawBatch.text.c_str();
                         drawBatch.text.insert(bytesProcessed, "\n"); // Insert the newline, this invalidates the iterator
-                        pBuf = drawBatch.text.c_str() + bytesProcessed; // In case reallocation occurs, we ensure we are inside the new buffer
+                        pBuf = drawBatch.text.data() + bytesProcessed; // In case reallocation occurs, we ensure we are inside the new buffer
                         assert(*pBuf == '\n');
-                        pChar.SetPosition(pBuf); // pChar once again points inside the target string, at the current character
+                        pChar = Utf8::Unchecked::octet_iterator(pBuf); // pChar once again points inside the target string, at the current character
                         assert(*pChar == ch);
                         ++pChar;
                         ++curChar;
@@ -1189,7 +1191,7 @@ void UiTextComponent::DrawBatch::CalculateSize(const STextDrawContext& ctx, bool
             if (displayString.length() > 0)
             {
                 AZStd::string::size_type endpos = displayString.find_last_not_of(" \t\n\v\f\r");
-                if ((endpos != string::npos) && (endpos != displayString.length() - 1))
+                if ((endpos != AZStd::string::npos) && (endpos != displayString.length() - 1))
                 {
                     displayString.erase(endpos + 1);
                 }
@@ -1295,12 +1297,14 @@ bool UiTextComponent::DrawBatch::GetOverflowInfo(const STextDrawContext& ctx,
 
         float maxEffectOffsetX = font->GetMaxEffectOffset(ctx.m_fxIdx).x;
 
-        Unicode::CIterator<const char*, false> pChar(text.c_str());
+        Utf8::Unchecked::octet_iterator pChar(text.data());
         uint32_t prevCh = 0;
         while (uint32_t ch = *pChar)
         {
-            char codepoint[5];
-            Unicode::Convert(codepoint, ch);
+            size_t maxSize = 5;
+            char codepoint[5] = { 0 };
+            char* codepointPtr = codepoint;
+            Utf8::Unchecked::octet_iterator<AZStd::string::iterator>::to_utf8_sequence(ch, codepointPtr, maxSize);
 
             float curCharWidth = font->GetTextSize(codepoint, true, ctx).x;
             if (prevCh)
@@ -2274,7 +2278,7 @@ int UiTextComponent::GetCharIndexFromCanvasSpacePoint(AZ::Vector2 point, bool mu
         // Iterate across the line
         for (const DrawBatch& drawBatch : batchLine.drawBatchList)
         {
-            Unicode::CIterator<const char*, false> pChar(drawBatch.text.c_str());
+            Utf8::Unchecked::octet_iterator pChar(drawBatch.text.data());
             while (uint32_t ch = *pChar)
             {
                 ++pChar;
@@ -4827,14 +4831,16 @@ int UiTextComponent::GetStartEllipseIndexInDrawBatch(const DrawBatch* drawBatchT
 {
     float overflowStringSize = 0.0f;
     int ellipsisCharPos = 0;
-    Unicode::CIterator<const char*, false> pChar(drawBatchToEllipse->text.c_str());
+    Utf8::Unchecked::octet_iterator pChar(drawBatchToEllipse->text.data());
     uint32_t stringBufferIndex = 0;
     uint32_t prevCh = 0;
     while (uint32_t ch = *pChar)
     {
         ++pChar;
-        char codepoint[5];
-        Unicode::Convert(codepoint, ch);
+        size_t maxSize = 5;
+        char codepoint[5] = { 0 };
+        char* codepointPtr = codepoint;
+        Utf8::Unchecked::octet_iterator<AZStd::string::iterator>::to_utf8_sequence(ch, codepointPtr, maxSize);
         
         overflowStringSize += drawBatchToEllipse->font->GetTextSize(codepoint, true, ctx).x;
 
@@ -4925,7 +4931,7 @@ AZ::Vector2 UiTextComponent::GetTextSizeFromDrawBatchLines(const UiTextComponent
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 AZStd::string UiTextComponent::GetLocalizedText([[maybe_unused]] const AZStd::string& text)
 {
-    string locText;
+    AZStd::string locText;
     LocalizationManagerRequestBus::Broadcast(&LocalizationManagerRequestBus::Events::LocalizeString_ch, m_text.c_str(), locText, false);
     return locText.c_str();
 }
@@ -4995,28 +5001,8 @@ bool UiTextComponent::VersionConverter(AZ::SerializeContext& context,
     AZ::SerializeContext::DataElementNode& classElement)
 {
     // conversion from version 1: Need to convert Color to Color and Alpha
-    if (classElement.GetVersion() == 1)
-    {
-        if (!LyShine::ConvertSubElementFromCryStringToAssetRef<LyShine::FontAsset>(context, classElement, "FontFileName"))
-        {
-            return false;
-        }
-
-        if (!LyShine::ConvertSubElementFromColorToColorPlusAlpha(context, classElement, "Color", "Alpha"))
-        {
-            return false;
-        }
-    }
-
     // conversion from version 1 or 2: Need to convert Text from CryString to AzString
-    if (classElement.GetVersion() <= 2)
-    {
-        // Call internal function to work-around serialization of empty AZ std string
-        if (!LyShine::ConvertSubElementFromCryStringToAzString(context, classElement, "Text"))
-        {
-            return false;
-        }
-    }
+    AZ_Assert(classElement.GetVersion() > 2, "Unsupported UiTextComponent version: %d", classElement.GetVersion());
 
     // Versions prior to v4: Change default font
     if (classElement.GetVersion() <= 3)
@@ -5130,7 +5116,7 @@ int UiTextComponent::GetLineNumberFromCharIndex(const DrawBatchLines& drawBatchL
 
         for (const DrawBatch& drawBatch : batchLine.drawBatchList)
         {
-            Unicode::CIterator<const char*, false> pChar(drawBatch.text.c_str());
+            Utf8::Unchecked::octet_iterator pChar(drawBatch.text.data());
             while (uint32_t ch = *pChar)
             {
                 ++pChar;

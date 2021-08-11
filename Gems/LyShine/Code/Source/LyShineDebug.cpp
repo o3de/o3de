@@ -995,7 +995,7 @@ static AZ::Entity* CreateButton(const char* name, bool atRoot, AZ::EntityId pare
         EBUS_EVENT_ID(buttonId, UiInteractableStatesBus, SetStateColor, UiInteractableStatesInterface::StatePressed, buttonId, pressedColor);
         EBUS_EVENT_ID(buttonId, UiInteractableStatesBus, SetStateAlpha, UiInteractableStatesInterface::StatePressed, buttonId, pressedColor.GetA());
 
-        string pathname = "Textures/Basic/Button_Sliced_Normal.sprite";
+        AZStd::string pathname = "Textures/Basic/Button_Sliced_Normal.sprite";
         ISprite* sprite = gEnv->pLyShine->LoadSprite(pathname);
 
         EBUS_EVENT_ID(buttonId, UiImageBus, SetSprite, sprite);
@@ -1094,7 +1094,7 @@ static AZ::Entity* CreateTextInput(const char* name, bool atRoot, AZ::EntityId p
         EBUS_EVENT_ID(textInputId, UiInteractableStatesBus, SetStateColor, UiInteractableStatesInterface::StatePressed, textInputId, pressedColor);
         EBUS_EVENT_ID(textInputId, UiInteractableStatesBus, SetStateAlpha, UiInteractableStatesInterface::StatePressed, textInputId, pressedColor.GetA());
 
-        string pathname = "Textures/Basic/Button_Sliced_Normal.sprite";
+        AZStd::string pathname = "Textures/Basic/Button_Sliced_Normal.sprite";
         ISprite* sprite = gEnv->pLyShine->LoadSprite(pathname);
 
         EBUS_EVENT_ID(textInputId, UiImageBus, SetSprite, sprite);

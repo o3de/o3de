@@ -2362,10 +2362,10 @@ void CUiAnimViewDopeSheetBase::DrawKeys(CUiAnimViewTrack* pTrack, QPainter* pain
                 }
                 else
                 {
-                    cry_strcpy(keydesc, "{");
+                    azstrcpy(keydesc, AZ_ARRAY_SIZE(keydesc), "{");
                 }
-                cry_strcat(keydesc, pDescription);
-                cry_strcat(keydesc, "}");
+                azstrcat(keydesc, AZ_ARRAY_SIZE(keydesc), pDescription);
+                azstrcat(keydesc, AZ_ARRAY_SIZE(keydesc), "}");
                 // Draw key description text.
                 // Find next key.
                 const QRect textRect(QPoint(x + 10, rect.top()), QPoint(x1, rect.bottom()));

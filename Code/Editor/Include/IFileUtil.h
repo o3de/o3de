@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include "StringUtils.h"
 #include "../Include/SandboxAPI.h"
 
 class QWidget;

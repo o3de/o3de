@@ -724,7 +724,7 @@ void EditorWindow::AddMenu_View_LanguageSetting(QMenu* viewMenu)
     // Iterate through the subdirectories of the localization folder. Each
     // directory corresponds to a different language containing localization
     // translations for that language.
-    string fullLocPath(string(gEnv->pFileIO->GetAlias("@assets@")) + "/" + string(m_startupLocFolderName.toUtf8().constData()));
+    AZStd::string fullLocPath(AZStd::string(gEnv->pFileIO->GetAlias("@assets@")) + "/" + AZStd::string(m_startupLocFolderName.toUtf8().constData()));
     QDir locDir(fullLocPath.c_str());
     locDir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot);
     locDir.setSorting(QDir::Name);

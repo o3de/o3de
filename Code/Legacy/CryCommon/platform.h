@@ -176,7 +176,7 @@
 
 // In Win32 Release we use static linkage
 #ifdef WIN32
-    #if !defined(_RELEASE) || defined(RESOURCE_COMPILER) || defined(EDITOR) || defined(_FORCEDLL)
+    #if !defined(_RELEASE) || defined(EDITOR) || defined(_FORCEDLL)
 // All windows targets not in Release built as DLLs.
         #ifndef _USRDLL
             #define _USRDLL
@@ -687,9 +687,6 @@ void SetFlags(T& dest, U flags, bool b)
     #include AZ_RESTRICTED_FILE(platform_h)
 #endif
 
-// Platform wrappers must be included before CryString.h
-#   include "CryString.h"
-
 // Include support for meta-type data.
 #include "TypeInfo_decl.h"
 
@@ -698,12 +695,6 @@ void SetFlags(T& dest, U flags, bool b)
 
 bool   CrySetFileAttributes(const char* lpFileName, uint32 dwFileAttributes);
 threadID CryGetCurrentThreadId();
-
-#if !defined(NOT_USE_CRY_STRING)
-// Fixed-Sized (stack based string)
-// put after the platform wrappers because of missing wcsicmp/wcsnicmp functions
-    #include "CryFixedString.h"
-#endif
 
 // need this in a common header file and any other file would be too misleading
 enum ETriState

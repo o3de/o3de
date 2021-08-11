@@ -84,7 +84,7 @@ static void write(XMLBinary::IDataWriter* const pFile, size_t& nPosition, const 
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool XMLBinary::CXMLBinaryWriter::WriteNode(IDataWriter* pFile, XmlNodeRef node, bool bNeedSwapEndian, XMLBinary::IFilter* pFilter, string& error)
+bool XMLBinary::CXMLBinaryWriter::WriteNode(IDataWriter* pFile, XmlNodeRef node, bool bNeedSwapEndian, XMLBinary::IFilter* pFilter, AZStd::string& error)
 {
     error = "";
 
@@ -99,7 +99,7 @@ bool XMLBinary::CXMLBinaryWriter::WriteNode(IDataWriter* pFile, XmlNodeRef node,
     static const uint nMaxNodeCount = (NodeIndex) ~0;
     if (m_nodes.size() > nMaxNodeCount)
     {
-        error.Format("XMLBinary: Too many nodes: %d (max is %i)", m_nodes.size(), nMaxNodeCount);
+        error = AZStd::string::format("XMLBinary: Too many nodes: %zu (max is %i)", m_nodes.size(), nMaxNodeCount);
         return false;
     }
 
@@ -192,7 +192,7 @@ bool XMLBinary::CXMLBinaryWriter::WriteNode(IDataWriter* pFile, XmlNodeRef node,
     return true;
 }
 
-bool XMLBinary::CXMLBinaryWriter::CompileTables(XmlNodeRef node, XMLBinary::IFilter* pFilter, string& error)
+bool XMLBinary::CXMLBinaryWriter::CompileTables(XmlNodeRef node, XMLBinary::IFilter* pFilter, AZStd::string& error)
 {
     bool ok = CompileTablesForNode(node, -1, pFilter, error);
     ok = ok && CompileChildTable(node, pFilter, error);
@@ -200,7 +200,7 @@ bool XMLBinary::CXMLBinaryWriter::CompileTables(XmlNodeRef node, XMLBinary::IFil
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool XMLBinary::CXMLBinaryWriter::CompileTablesForNode(XmlNodeRef node, int nParentIndex, XMLBinary::IFilter* pFilter, string& error)
+bool XMLBinary::CXMLBinaryWriter::CompileTablesForNode(XmlNodeRef node, int nParentIndex, XMLBinary::IFilter* pFilter, AZStd::string& error)
 {
     // Add the tag to the string table.
     int nTagStringOffset = AddString(node->getTag());
@@ -231,7 +231,7 @@ bool XMLBinary::CXMLBinaryWriter::CompileTablesForNode(XmlNodeRef node, int nPar
     static const int nMaxAttributeCount = (uint16) ~0;
     if (nAttributeCount > nMaxAttributeCount)
     {
-        error.Format("XMLBinary: Too many attributes in a node: %d (max is %i)", nAttributeCount, nMaxAttributeCount);
+        error = AZStd::string::format("XMLBinary: Too many attributes in a node: %d (max is %i)", nAttributeCount, nMaxAttributeCount);
         return false;
     }
 
@@ -261,7 +261,7 @@ bool XMLBinary::CXMLBinaryWriter::CompileTablesForNode(XmlNodeRef node, int nPar
         {
             if (++nChildCount > nMaxChildCount)
             {
-                error.Format("XMLBinary: Too many children in node '%s': %d (max is %i)", childNode->getTag(), nChildCount, nMaxChildCount);
+                error = AZStd::string::format("XMLBinary: Too many children in node '%s': %d (max is %i)", childNode->getTag(), nChildCount, nMaxChildCount);
                 return false;
             }
             if (!CompileTablesForNode(childNode, nIndex, pFilter, error))
@@ -277,7 +277,7 @@ bool XMLBinary::CXMLBinaryWriter::CompileTablesForNode(XmlNodeRef node, int nPar
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool XMLBinary::CXMLBinaryWriter::CompileChildTable(XmlNodeRef node, XMLBinary::IFilter* pFilter, string& error)
+bool XMLBinary::CXMLBinaryWriter::CompileChildTable(XmlNodeRef node, XMLBinary::IFilter* pFilter, AZStd::string& error)
 {
     const int nIndex = m_nodesMap.find(node)->second; // Assume node always exist in map.
     const int nFirstChildIndex = (int)m_childs.size();
@@ -298,7 +298,7 @@ bool XMLBinary::CXMLBinaryWriter::CompileChildTable(XmlNodeRef node, XMLBinary::
     }
     if (nChildCount != nd.nChildCount)
     {
-        error.Format("XMLBinary: Internal error in CompileChildTable()");
+        error = AZStd::string::format("XMLBinary: Internal error in CompileChildTable()");
         return false;
     }
 

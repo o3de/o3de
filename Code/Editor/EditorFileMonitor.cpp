@@ -55,10 +55,10 @@ bool CEditorFileMonitor::RegisterListener(IFileChangeListener* pListener, const 
 
 
 //////////////////////////////////////////////////////////////////////////
-static string CanonicalizePath(const char* path)
+static AZStd::string CanonicalizePath(const char* path)
 {
     auto canon = QFileInfo(path).canonicalFilePath();
-    return canon.isEmpty() ? string(path) : string(canon.toUtf8());
+    return canon.isEmpty() ? AZStd::string(path) : AZStd::string(canon.toUtf8());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -66,8 +66,8 @@ bool CEditorFileMonitor::RegisterListener(IFileChangeListener* pListener, const 
 {
     bool success = true;
 
-    string gameFolder = Path::GetEditingGameDataFolder().c_str();
-    string naivePath;
+    AZStd::string gameFolder = Path::GetEditingGameDataFolder().c_str();
+    AZStd::string naivePath;
     CFileChangeMonitor* fileChangeMonitor = CFileChangeMonitor::Instance();
     AZ_Assert(fileChangeMonitor, "CFileChangeMonitor singleton missing.");
 
@@ -75,12 +75,12 @@ bool CEditorFileMonitor::RegisterListener(IFileChangeListener* pListener, const 
     // Append slash in preparation for appending the second part.
     naivePath = PathUtil::AddSlash(naivePath);
     naivePath += sFolderRelativeToGame;
-    naivePath.replace('/', '\\');
+    AZ::StringFunc::Replace(naivePath, '/', '\\');
 
     // Remove the final slash if the given item is a folder so the file change monitor correctly picks up on it.
     naivePath = PathUtil::RemoveSlash(naivePath);
 
-    string canonicalizedPath = CanonicalizePath(naivePath.c_str());
+    AZStd::string canonicalizedPath = CanonicalizePath(naivePath.c_str());
 
     if (fileChangeMonitor->IsDirectory(canonicalizedPath.c_str()) || fileChangeMonitor->IsFile(canonicalizedPath.c_str()))
     {

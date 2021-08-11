@@ -12,7 +12,7 @@ import os
 import pytest
 
 import editor_python_test_tools.hydra_test_utils as hydra
-from atom_renderer.atom_utils.atom_component_helper import LIGHT_TYPES
+from atom_renderer.atom_utils.atom_constants import LIGHT_TYPES
 
 logger = logging.getLogger(__name__)
 EDITOR_TIMEOUT = 120

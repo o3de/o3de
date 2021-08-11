@@ -24,13 +24,6 @@ if(NOT LY_MONOLITHIC_GAME)
                 INCLUDE_DIRECTORIES "."
                 RUNTIME_DEPENDENCIES "${RENDERDOC_PATH}/librenderdoc.so"
             )
-
-            ly_add_external_target(
-                NAME renderdoc_api
-                VERSION
-                3RDPARTY_ROOT_DIRECTORY ${RENDERDOC_PATH}
-                INCLUDE_DIRECTORIES "."
-            )
         endif()
     endif()
 endif()
