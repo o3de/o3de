@@ -117,7 +117,7 @@ namespace O3DE::ProjectManager
         if (!path.isAbsolute())
         {
             projectPathIsValid = false;
-            m_projectPath->setErrorLabelText(tr("Please provide a valid location."));
+            m_projectPath->setErrorLabelText(tr("Please provide an absolute path for the project location."));
         }
         else if (path.exists() && !path.isEmpty())
         {
