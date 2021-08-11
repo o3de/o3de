@@ -113,8 +113,6 @@ set(FILES
     Component/EditorLevelComponentAPIComponent.h
     Editor/EditorContextMenuBus.h
     Editor/EditorSettingsAPIBus.h
-    Editor/Settings/EditorSettingsOriginTracker.cpp
-    Editor/Settings/EditorSettingsOriginTracker.h
     Entity/EditorEntityStartStatus.h
     Entity/EditorEntityAPIBus.h
     Entity/EditorEntityContextComponent.cpp
