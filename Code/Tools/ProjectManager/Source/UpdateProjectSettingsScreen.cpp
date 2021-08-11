@@ -108,7 +108,8 @@ namespace O3DE::ProjectManager
     bool UpdateProjectSettingsScreen::ValidateProjectPath()
     {
         bool projectPathIsValid = true;
-        if (m_projectPath->lineEdit()->text().isEmpty())
+        QDir path(m_projectPath->lineEdit()->text());
+        if (!path.isAbsolute())
         {
             projectPathIsValid = false;
             m_projectPath->setErrorLabelText(tr("Please provide a valid location."));
