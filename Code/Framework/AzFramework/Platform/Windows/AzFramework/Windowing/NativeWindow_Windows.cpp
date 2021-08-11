@@ -36,7 +36,7 @@ namespace AzFramework
         void SetFullScreenState(bool fullScreenState) override;
         bool CanToggleFullScreenState() const override { return true; }
         float GetDpiScaleFactor() const override;
-        uint32_t GetMainDisplayRefreshRate() const override;
+        uint32_t GetDisplayRefreshRate() const override;
 
     private:
         static DWORD ConvertToWin32WindowStyleMask(const WindowStyleMasks& styleMasks);
@@ -377,7 +377,7 @@ namespace AzFramework
         return aznumeric_cast<float>(dotsPerInch) / aznumeric_cast<float>(defaultDotsPerInch);
     }
 
-    uint32_t NativeWindowImpl_Win32::GetMainDisplayRefreshRate() const
+    uint32_t NativeWindowImpl_Win32::GetDisplayRefreshRate() const
     {
         return m_mainDisplayRefreshRate;
     }

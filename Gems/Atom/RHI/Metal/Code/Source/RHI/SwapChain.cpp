@@ -82,7 +82,7 @@ namespace AZ
             }
 
             AzFramework::WindowRequestBus::EventResult(
-                m_refreshRate, m_nativeWindow, &AzFramework::WindowRequestBus::Events::GetMainDisplayRefreshRate);
+                m_refreshRate, m_nativeWindow, &AzFramework::WindowRequestBus::Events::GetDisplayRefreshRate);
 
             return RHI::ResultCode::Success;
         }

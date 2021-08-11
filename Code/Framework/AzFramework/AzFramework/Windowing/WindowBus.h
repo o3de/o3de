@@ -79,7 +79,7 @@ namespace AzFramework
         virtual uint32_t GetSyncInterval() const = 0;
 
         //! Returns the refresh rate of the main display
-        virtual uint32_t GetMainDisplayRefreshRate() const = 0;
+        virtual uint32_t GetDisplayRefreshRate() const = 0;
     };
     using WindowRequestBus = AZ::EBus<WindowRequests>;
 

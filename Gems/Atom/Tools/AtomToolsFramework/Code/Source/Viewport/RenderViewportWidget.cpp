@@ -466,13 +466,19 @@ namespace AtomToolsFramework
         return aznumeric_cast<float>(devicePixelRatioF());
     }
 
-    uint32_t RenderViewportWidget::GetMainDisplayRefreshRate() const
+    uint32_t RenderViewportWidget::GetDisplayRefreshRate() const
     {
-        return 60;
+        AzFramework::NativeWindowHandle windowId = m_viewportContext->GetWindowContext()->GetWindowHandle();
+        uint32_t refreshRate = 0;
+        AzFramework::WindowRequestBus::EventResult(refreshRate, windowId, &AzFramework::WindowRequestBus::Events::GetDisplayRefreshRate);
+        return refreshRate;
     }
 
     uint32_t RenderViewportWidget::GetSyncInterval() const
     {
-        return 1;
+        AzFramework::NativeWindowHandle windowId = m_viewportContext->GetWindowContext()->GetWindowHandle();
+        uint32_t syncInterval = 0;
+        AzFramework::WindowRequestBus::EventResult(syncInterval, windowId, &AzFramework::WindowRequestBus::Events::GetSyncInterval);
+        return syncInterval;
     }
 } //namespace AtomToolsFramework

@@ -133,9 +133,9 @@ namespace AzFramework
         return m_pimpl->GetDpiScaleFactor();
     }
 
-    uint32_t NativeWindow::GetMainDisplayRefreshRate() const
+    uint32_t NativeWindow::GetDisplayRefreshRate() const
     {
-        return m_pimpl->GetMainDisplayRefreshRate();
+        return m_pimpl->GetDisplayRefreshRate();
     }
 
     uint32_t NativeWindow::GetSyncInterval() const
@@ -261,7 +261,7 @@ namespace AzFramework
         return 1.0f;
     }
 
-    uint32_t NativeWindow::Implementation::GetMainDisplayRefreshRate() const
+    uint32_t NativeWindow::Implementation::GetDisplayRefreshRate() const
     {
         // Default to 60
         return 60;
