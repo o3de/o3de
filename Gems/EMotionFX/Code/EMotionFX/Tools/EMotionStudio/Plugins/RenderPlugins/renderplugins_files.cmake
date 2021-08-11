@@ -11,4 +11,6 @@ set(FILES
     Source/OpenGLRender/GLWidget.cpp
     Source/OpenGLRender/OpenGLRenderPlugin.h
     Source/OpenGLRender/OpenGLRenderPlugin.cpp
+    Source/AtomRender/AtomRenderPlugin.h
+    Source/AtomRender/AtomRenderPlugin.cpp
 )

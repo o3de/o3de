@@ -88,6 +88,7 @@
 #   include <EMotionStudio/Plugins/StandardPlugins/Source/NodeGroups/NodeGroupsPlugin.h>
 #   include <EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphPlugin.h>
 #   include <EMotionStudio/Plugins/RenderPlugins/Source/OpenGLRender/OpenGLRenderPlugin.h>
+#   include <EMotionStudio/Plugins/RenderPlugins/Source/AtomRender/AtomRenderPlugin.h>
 #   include <Editor/Plugins/HitDetection/HitDetectionJointInspectorPlugin.h>
 #   include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
 #   include <Editor/Plugins/Ragdoll/RagdollNodeInspectorPlugin.h>
@@ -794,6 +795,7 @@ namespace EMotionFX
             pluginManager->RegisterPlugin(new EMStudio::NodeGroupsPlugin());
             pluginManager->RegisterPlugin(new EMStudio::AnimGraphPlugin());
             pluginManager->RegisterPlugin(new EMStudio::OpenGLRenderPlugin());
+            pluginManager->RegisterPlugin(new EMStudio::AtomRenderPlugin());
             pluginManager->RegisterPlugin(new EMotionFX::HitDetectionJointInspectorPlugin());
             pluginManager->RegisterPlugin(new EMotionFX::SkeletonOutlinerPlugin());
             pluginManager->RegisterPlugin(new EMotionFX::RagdollNodeInspectorPlugin());
