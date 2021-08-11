@@ -19,11 +19,27 @@ SET GEM_DIRECTORY=%SOURCE_DIRECTORY%\Gems
 
 REM Create and activate a virtualenv for the CDK deployment
 CALL python -m venv .env
+IF ERRORLEVEL 1 (
+    ECHO [cdk_bootstrap] Failed to create a virtualenv for the CDK deployment
+    exit /b 1
+)
 CALL .env\Scripts\activate.bat
+IF ERRORLEVEL 1 (
+    ECHO [cdk_bootstrap] Failed to activate the virtualenv for the CDK deployment
+    exit /b 1
+)
 
 ECHO [cdk_installation] Install the latest version of CDK
 CALL npm uninstall -g aws-cdk
+IF ERRORLEVEL 1 (
+    ECHO [cdk_bootstrap] Failed to uninstall the current version of CDK
+    exit /b 1
+)
 CALL npm install -g aws-cdk@latest
+IF ERRORLEVEL 1 (
+    ECHO [cdk_bootstrap] Failed to install the latest version of CDK
+    exit /b 1
+)
 
 REM Set temporary AWS credentials from the assume role
 FOR /f "tokens=1,2,3" %%a IN ('CALL aws sts assume-role --query Credentials.[SecretAccessKey^,SessionToken^,AccessKeyId] --output text --role-arn %ASSUME_ROLE_ARN% --role-session-name o3de-Automation-session') DO (
@@ -33,7 +49,7 @@ FOR /f "tokens=1,2,3" %%a IN ('CALL aws sts assume-role --query Credentials.[Sec
 )
 FOR /F "tokens=4 delims=:" %%a IN ("%ASSUME_ROLE_ARN%") DO SET O3DE_AWS_DEPLOY_ACCOUNT=%%a
 
-REM Deploy the CDK applications
+REM Bootstrap and deploy the CDK applications
 ECHO [cdk_bootstrap] Bootstrap CDK
 CALL cdk bootstrap aws://%O3DE_AWS_DEPLOY_ACCOUNT%/%O3DE_AWS_DEPLOY_REGION%
 IF ERRORLEVEL 1 (
@@ -41,41 +57,49 @@ IF ERRORLEVEL 1 (
     exit /b 1
 )
 
-ECHO [cdk_deployment] Deploy the CDK application for the AWS Core gem
-PUSHD %GEM_DIRECTORY%\AWSCore\cdk
-CALL git checkout %COMMIT_ID% -- .
-CALL python -m pip install -r requirements.txt
-CALL cdk deploy --all --require-approval never
+CALL :DeployCDKApplication AWSCore --all
 IF ERRORLEVEL 1 (
-    ECHO [cdk_deployment] Failed to deploy the CDK application for the AWS Core gem
-    POPD
     exit /b 1
 )
-POPD
-
-ECHO [cdk_deployment] Deploy the CDK application for the AWS Client Auth gem
-PUSHD %GEM_DIRECTORY%\AWSClientAuth\cdk
-CALL git checkout %COMMIT_ID% -- .
-CALL python -m pip install -r requirements.txt
-CALL cdk deploy --require-approval never
+CALL :DeployCDKApplication AWSClientAuth
 IF ERRORLEVEL 1 (
-    ECHO [cdk_deployment] Failed to deploy the CDK application for the AWS Client Auth gem
-    POPD
     exit /b 1
 )
-POPD
-
-ECHO [cdk_deployment] Deploy the CDK application for the AWS Metrics gem
-PUSHD %GEM_DIRECTORY%\AWSMetrics\cdk
-CALL git checkout %COMMIT_ID% -- .
-CALL python -m pip install -r requirements.txt
-CALL cdk deploy -c batch_processing=true --require-approval never
+CALL :DeployCDKApplication AWSMetrics "-c batch_processing=true"
 IF ERRORLEVEL 1 (
-    ECHO [cdk_deployment] Failed to deploy the CDK application for the AWS Metrics gem
-    POPD
     exit /b 1
 )
-POPD
 
-CALL deactivate
 EXIT /b 0
+
+:DeployCDKApplication
+REM Deploy the CDK application for a specific AWS gem
+SET GEM_NAME=%~1
+SET ADDITIONAL_ARGUMENTS=%~2
+ECHO [cdk_deployment] Deploy the CDK application for the %GEM_NAME% gem
+PUSHD %GEM_DIRECTORY%\%GEM_NAME%\cdk
+
+REM Revert the CDK application code to a stable state using the provided commit ID
+CALL git checkout %COMMIT_ID% -- .
+IF ERRORLEVEL 1 (
+    ECHO [git_checkout] Failed to checkout the CDK application for the %GEM_NAME% gem using commit ID %COMMIT_ID%
+    POPD
+    exit /b 1
+)
+
+REM Install required packages for the CDK application
+CALL python -m pip install -r requirements.txt
+IF ERRORLEVEL 1 (
+    ECHO [cdk_deployment] Failed to install required packages for the %GEM_NAME% gem
+    POPD
+    exit /b 1
+)
+
+REM Deploy the CDK application
+CALL cdk deploy %ADDITIONAL_ARGUMENTS% --require-approval never
+IF ERRORLEVEL 1 (
+    ECHO [cdk_deployment] Failed to deploy the CDK application for the %GEM_NAME% gem
+    POPD
+    exit /b 1
+)
+POPD
