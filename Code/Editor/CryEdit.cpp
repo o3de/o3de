@@ -368,7 +368,7 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_EDIT_FETCH, OnEditFetch)
     ON_COMMAND(ID_FILE_EXPORTTOGAMENOSURFACETEXTURE, OnFileExportToGameNoSurfaceTexture)
     ON_COMMAND(ID_VIEW_SWITCHTOGAME, OnViewSwitchToGame)
-    ON_COMMAND(ID_VIEW_SWITCHTOGAME_WINDOWED, OnViewSwitchToGameWindowed)
+    ON_COMMAND(ID_VIEW_SWITCHTOGAME_VIEWPORT, OnViewSwitchToGameViewport)
     ON_COMMAND(ID_VIEW_SWITCHTOGAME_FULLSCREEN, OnViewSwitchToGameFullScreen)
     ON_COMMAND(ID_MOVE_OBJECT, OnMoveObject)
     ON_COMMAND(ID_RENAME_OBJ, OnRenameObj)
@@ -2572,10 +2572,9 @@ void CCryEditApp::OnViewSwitchToGame()
     GetIEditor()->SetInGameMode(inGame);
 }
 
-void CCryEditApp::OnViewSwitchToGameWindowed()
+void CCryEditApp::OnViewSwitchToGameViewport()
 {
     gSettings.gameModeEnterFullScreen = false;
-
     OnViewSwitchToGame();
 }
 

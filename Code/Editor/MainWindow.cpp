@@ -947,7 +947,7 @@ void MainWindow::InitActions()
         .SetToolTip(tr("Play Game"))
         .SetStatusTip(tr("Activate the game input mode"))
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdatePlayGame);
-    am->AddAction(ID_VIEW_SWITCHTOGAME_WINDOWED, tr("Play Game"))
+    am->AddAction(ID_VIEW_SWITCHTOGAME_VIEWPORT, tr("Play Game"))
         .SetShortcut(tr("Ctrl+G"))
         .SetToolTip(tr("Play Game (Ctrl+G)"))
         .SetStatusTip(tr("Activate the game input mode"))
@@ -1271,7 +1271,7 @@ void MainWindow::OnGameModeChanged(bool inGameMode)
     // block signals on the switch to game actions before setting the checked state, as
     // setting the checked state triggers the action, which will re-enter this function
     // and result in an infinite loop
-    AZStd::vector<QAction*> actions = { m_actionManager->GetAction(ID_VIEW_SWITCHTOGAME_WINDOWED),
+    AZStd::vector<QAction*> actions = { m_actionManager->GetAction(ID_VIEW_SWITCHTOGAME_VIEWPORT),
                                         m_actionManager->GetAction(ID_VIEW_SWITCHTOGAME_FULLSCREEN),
                                         m_actionManager->GetAction(ID_VIEW_SWITCHTOGAME)};
     for (auto action : actions)

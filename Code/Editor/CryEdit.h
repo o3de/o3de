@@ -204,7 +204,7 @@ public:
     void OnEditFetch();
     void OnFileExportToGameNoSurfaceTexture();
     void OnViewSwitchToGame();
-    void OnViewSwitchToGameWindowed();
+    void OnViewSwitchToGameViewport();
     void OnViewSwitchToGameFullScreen();
     void OnViewDeploy();
     void DeleteSelectedEntities(bool includeDescendants);

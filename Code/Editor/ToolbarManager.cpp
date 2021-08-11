@@ -594,7 +594,7 @@ QMenu* ToolbarManager::GetPlayButtonMenu() const
 {
     QMenu* playButtonMenu = new QMenu("Play Game");
 
-    playButtonMenu->addAction(m_actionManager->GetAction(ID_VIEW_SWITCHTOGAME_WINDOWED));
+    playButtonMenu->addAction(m_actionManager->GetAction(ID_VIEW_SWITCHTOGAME_VIEWPORT));
     playButtonMenu->addAction(m_actionManager->GetAction(ID_VIEW_SWITCHTOGAME_FULLSCREEN));
 
     return playButtonMenu;
@@ -602,20 +602,11 @@ QMenu* ToolbarManager::GetPlayButtonMenu() const
 
 void ToolbarManager::SetupPlayButtonMenu()
 {
-    QAction* playWindowedAction = m_actionManager->GetAction(ID_VIEW_SWITCHTOGAME_WINDOWED);
+    QAction* playWindowedAction = m_actionManager->GetAction(ID_VIEW_SWITCHTOGAME_VIEWPORT);
     QAction* playFullScreenAction = m_actionManager->GetAction(ID_VIEW_SWITCHTOGAME_FULLSCREEN);
 
-    playWindowedAction->setChecked(false);
-    playFullScreenAction->setChecked(false);
-
-    if (gSettings.gameModeEnterFullScreen)
-    {
-        playFullScreenAction->setChecked(true);
-    }
-    else
-    {
-        playWindowedAction->setChecked(true);
-    }
+    playFullScreenAction->setChecked(gSettings.gameModeEnterFullScreen);
+    playWindowedAction->setChecked(!gSettings.gameModeEnterFullScreen);
 }
 
 AmazonToolbar ToolbarManager::GetPlayConsoleToolbar() const
