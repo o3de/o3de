@@ -139,9 +139,6 @@ namespace AZ
             //! Get the memory requirements for allocating a buffer resource.
             virtual ResourceMemoryRequirements GetResourceMemoryRequirements(const BufferDescriptor& descriptor) = 0;
 
-             //! Get the refresh rate of the main display.
-            virtual uint32_t GetMainDisplayRefreshRate() const;
-
         protected:
             DeviceFeatures m_features;
             DeviceLimits m_limits;

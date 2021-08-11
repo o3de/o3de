@@ -133,6 +133,11 @@ namespace AzFramework
         return m_pimpl->GetDpiScaleFactor();
     }
 
+    uint32_t NativeWindow::GetMainDisplayRefreshRate() const
+    {
+        return m_pimpl->GetMainDisplayRefreshRate();
+    }
+
     uint32_t NativeWindow::GetSyncInterval() const
     {
         return vsync_interval;
@@ -254,6 +259,12 @@ namespace AzFramework
     {
         // For platforms that aren't DPI-aware, we simply return a 1.0 ratio for no scaling
         return 1.0f;
+    }
+
+    uint32_t NativeWindow::Implementation::GetMainDisplayRefreshRate() const
+    {
+        // Default to 60
+        return 60;
     }
 
 } // namespace AzFramework

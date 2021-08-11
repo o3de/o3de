@@ -80,6 +80,10 @@ namespace AZ
             {
                 *nativeDimensions = descriptor.m_dimensions;
             }
+
+            AzFramework::WindowRequestBus::EventResult(
+                m_refreshRate, m_nativeWindow, &AzFramework::WindowRequestBus::Events::GetMainDisplayRefreshRate);
+
             return RHI::ResultCode::Success;
         }
 

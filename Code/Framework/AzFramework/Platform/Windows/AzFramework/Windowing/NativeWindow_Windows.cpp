@@ -36,6 +36,7 @@ namespace AzFramework
         void SetFullScreenState(bool fullScreenState) override;
         bool CanToggleFullScreenState() const override { return true; }
         float GetDpiScaleFactor() const override;
+        uint32_t GetMainDisplayRefreshRate() const override;
 
     private:
         static DWORD ConvertToWin32WindowStyleMask(const WindowStyleMasks& styleMasks);
@@ -55,6 +56,7 @@ namespace AzFramework
 
         using GetDpiForWindowType = UINT(HWND hwnd);
         GetDpiForWindowType* m_getDpiFunction = nullptr;
+        uint32_t m_mainDisplayRefreshRate = 0;
     };
 
     const char* NativeWindowImpl_Win32::s_defaultClassName = "O3DEWin32Class";
@@ -141,6 +143,10 @@ namespace AzFramework
         {
             SetWindowLongPtr(m_win32Handle, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
         }
+
+        DEVMODE DisplayConfig;
+        EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &DisplayConfig);
+        m_mainDisplayRefreshRate = DisplayConfig.dmDisplayFrequency;
     }
 
     void NativeWindowImpl_Win32::Activate()
@@ -258,6 +264,15 @@ namespace AzFramework
             WindowNotificationBus::Event(nativeWindowImpl->GetWindowHandle(), &WindowNotificationBus::Events::OnDpiScaleFactorChanged, newScaleFactor);
             break;
         }
+        case WM_WINDOWPOSCHANGED:
+        {
+            DEVMODE DisplayConfig;
+            EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &DisplayConfig);
+            uint32_t refreshRate = DisplayConfig.dmDisplayFrequency;
+            WindowNotificationBus::Event(
+                nativeWindowImpl->GetWindowHandle(), &WindowNotificationBus::Events::OnRefreshRateChanged, refreshRate);
+            break;
+        }
         default:
             return DefWindowProc(hWnd, message, wParam, lParam);
             break;
@@ -360,6 +375,11 @@ namespace AzFramework
             dotsPerInch = m_getDpiFunction(m_win32Handle);
         }
         return aznumeric_cast<float>(dotsPerInch) / aznumeric_cast<float>(defaultDotsPerInch);
+    }
+
+    uint32_t NativeWindowImpl_Win32::GetMainDisplayRefreshRate() const
+    {
+        return m_mainDisplayRefreshRate;
     }
 
     void NativeWindowImpl_Win32::EnterBorderlessWindowFullScreen()

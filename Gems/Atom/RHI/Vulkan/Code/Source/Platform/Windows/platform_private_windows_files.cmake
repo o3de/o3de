@@ -8,9 +8,6 @@
 
 set(FILES
     RHI/WSISurface_Windows.cpp
-    RHI/Device_Platform.h
-    RHI/Device_Windows.h
-    RHI/Device_Windows.cpp
     Vulkan_Traits_Windows.h
     Vulkan_Traits_Platform.h
 )

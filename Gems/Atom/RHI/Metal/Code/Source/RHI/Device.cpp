@@ -79,15 +79,6 @@ namespace AZ
             m_samplerCache = [[NSCache alloc]init];
             [m_samplerCache setName:@"SamplerCache"];
 
-            m_mainDisplayRefreshRate = Platform::GetMainDisplayRefreshRateInternal();
-
-            // Assume 60hz if 0 is returned.
-            // This can happen on OSX. In future we can hopefully use maximumFramesPerSecond which wont have this issue
-            if (m_mainDisplayRefreshRate == 0)
-            {
-                m_mainDisplayRefreshRate = 60;
-            }
-
             return RHI::ResultCode::Success;
         }
     
@@ -431,11 +422,6 @@ namespace AZ
         AZStd::vector<RHI::Format> Device::GetValidSwapChainImageFormats(const RHI::WindowHandle& windowHandle) const
         {
             return AZStd::vector<RHI::Format>{RHI::Format::B8G8R8A8_UNORM};
-        }
-
-        uint32_t Device::GetMainDisplayRefreshRate() const
-        {
-            return m_mainDisplayRefreshRate;
         }
     }
 }

@@ -16,7 +16,4 @@ set(FILES
     RHI/Conversions_Platform.h
     RHI/Conversions_iOS.cpp
     RHI/Conversions_iOS.h
-    RHI/Device_Platform.h
-    RHI/Device_iOS.cpp
-    RHI/Device_iOS.h
 )

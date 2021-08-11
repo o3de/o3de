@@ -77,6 +77,9 @@ namespace AzFramework
 
         //! Returns the sync interval which tells the drivers the number of v-blanks to synchronize with
         virtual uint32_t GetSyncInterval() const = 0;
+
+        //! Returns the refresh rate of the main display
+        virtual uint32_t GetMainDisplayRefreshRate() const = 0;
     };
     using WindowRequestBus = AZ::EBus<WindowRequests>;
 
@@ -104,6 +107,9 @@ namespace AzFramework
 
         //! This is called when vsync interval is changed.
         virtual void OnVsyncIntervalChanged(uint32_t interval) { AZ_UNUSED(interval); };
+
+        //! This is called if the main display's refresh rate changes
+        virtual void OnRefreshRateChanged([[maybe_unused]] uint32_t refreshRate) {}
     };
     using WindowNotificationBus = AZ::EBus<WindowNotifications>;
 

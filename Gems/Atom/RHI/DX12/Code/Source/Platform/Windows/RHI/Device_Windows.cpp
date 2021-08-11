@@ -225,9 +225,6 @@ namespace AZ
             m_dxgiFactory = physicalDevice.GetFactory();
             m_dxgiAdapter = physicalDevice.GetAdapter();
 
-            DEVMODE DisplayConfig;
-            EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &DisplayConfig);
-            m_mainDisplayRefreshRate = DisplayConfig.dmDisplayFrequency;
             m_isAftermathInitialized = Aftermath::InitializeAftermath(m_dx12Device);
             return RHI::ResultCode::Success;
         }

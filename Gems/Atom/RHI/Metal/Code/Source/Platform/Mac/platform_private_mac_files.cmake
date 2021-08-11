@@ -16,9 +16,6 @@ set(FILES
     RHI/Conversions_Platform.h
     RHI/Conversions_Mac.cpp
     RHI/Conversions_Mac.h
-    RHI/Device_Platform.h
-    RHI/Device_Mac.cpp
-    RHI/Device_Mac.h
 )
 
 ly_add_source_properties(

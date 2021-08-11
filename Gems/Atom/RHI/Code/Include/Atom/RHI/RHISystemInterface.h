@@ -63,8 +63,6 @@ namespace AZ
             virtual ConstPtr<PlatformLimitsDescriptor> GetPlatformLimitsDescriptor() const = 0;
 
             virtual void QueueRayTracingShaderTableForBuild(RayTracingShaderTable* rayTracingShaderTable) = 0;
-
-            virtual uint32_t GetMainDisplayRefreshRate() const = 0;
         };
 
         //! This bus exists to give RHI samples the ability to slot in scopes manually

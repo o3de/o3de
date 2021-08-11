@@ -19,7 +19,6 @@
 #include <RHI/CommandList.h>
 #include <RHI/CommandQueue.h>
 #include <RHI/Device.h>
-#include <RHI/Device_Platform.h>
 #include <RHI/GraphicsPipeline.h>
 #include <RHI/ImagePool.h>
 #include <RHI/Instance.h>
@@ -228,8 +227,6 @@ namespace AZ
 
             //Load device features now that we have loaded all extension info
             physicalDevice.LoadSupportedFeatures();
-
-            m_mainDisplayRefreshRate = Platform::GetMainDisplayRefreshRateInternal();
 
             InitFeaturesAndLimits(physicalDevice);
             return RHI::ResultCode::Success;
@@ -837,11 +834,6 @@ namespace AZ
         void Device::DestroyBufferResource(VkBuffer vkBuffer) const
         {
             vkDestroyBuffer(GetNativeDevice(), vkBuffer, nullptr);
-        }
-
-        uint32_t Device::GetMainDisplayRefreshRate() const
-        {
-            return m_mainDisplayRefreshRate;
         }
     }
 }

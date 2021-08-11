@@ -313,10 +313,5 @@ namespace AZ
                 }
             }
         }
-
-        uint32_t Device::GetMainDisplayRefreshRate() const
-        {
-            return 0;
-        }
     }
 }
