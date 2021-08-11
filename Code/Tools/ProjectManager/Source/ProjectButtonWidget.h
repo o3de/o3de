@@ -77,6 +77,7 @@ namespace O3DE::ProjectManager
 
         void SetProjectButtonAction(const QString& text, AZStd::function<void()> lambda);
         void SetProjectBuildButtonAction();
+        void SetBuildLogsLink(const QUrl& logUrl);
         void ShowBuildFailed(bool show, const QUrl& logUrl);
 
         void SetLaunchButtonEnabled(bool enabled);
@@ -87,7 +88,7 @@ namespace O3DE::ProjectManager
     signals:
         void OpenProject(const QString& projectName);
         void EditProject(const QString& projectName);
-        void CopyProject(const QString& projectName);
+        void CopyProject(const ProjectInfo& projectInfo);
         void RemoveProject(const QString& projectName);
         void DeleteProject(const QString& projectName);
         void BuildProject(const ProjectInfo& projectInfo);

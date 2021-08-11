@@ -124,6 +124,9 @@ namespace UnitTest
         const AZStd::vector<AZ::Vector4>& motionConstraints = clothConstraints->GetMotionConstraints();
 
         EXPECT_TRUE(motionConstraints.size() == SimulationParticles.size());
+        EXPECT_THAT(motionConstraints[0].GetAsVector3(), IsCloseTolerance(SimulationParticles[0].GetAsVector3(), Tolerance));
+        EXPECT_THAT(motionConstraints[1].GetAsVector3(), IsCloseTolerance(SimulationParticles[1].GetAsVector3(), Tolerance));
+        EXPECT_THAT(motionConstraints[2].GetAsVector3(), IsCloseTolerance(SimulationParticles[2].GetAsVector3(), Tolerance));
         EXPECT_NEAR(motionConstraints[0].GetW(), 6.0f, Tolerance);
         EXPECT_NEAR(motionConstraints[1].GetW(), 0.0f, Tolerance);
         EXPECT_NEAR(motionConstraints[2].GetW(), 0.0f, Tolerance);
@@ -277,6 +280,9 @@ namespace UnitTest
         const AZStd::vector<AZ::Vector4>& separationConstraints = clothConstraints->GetSeparationConstraints();
 
         EXPECT_TRUE(motionConstraints.size() == newParticles.size());
+        EXPECT_THAT(motionConstraints[0].GetAsVector3(), IsCloseTolerance(newParticles[0].GetAsVector3(), Tolerance));
+        EXPECT_THAT(motionConstraints[1].GetAsVector3(), IsCloseTolerance(newParticles[1].GetAsVector3(), Tolerance));
+        EXPECT_THAT(motionConstraints[2].GetAsVector3(), IsCloseTolerance(newParticles[2].GetAsVector3(), Tolerance));
         EXPECT_NEAR(motionConstraints[0].GetW(), 3.0f, Tolerance);
         EXPECT_NEAR(motionConstraints[1].GetW(), 1.5f, Tolerance);
         EXPECT_NEAR(motionConstraints[2].GetW(), 0.0f, Tolerance);
@@ -285,8 +291,8 @@ namespace UnitTest
         EXPECT_NEAR(separationConstraints[0].GetW(), 3.0f, Tolerance);
         EXPECT_NEAR(separationConstraints[1].GetW(), 1.5f, Tolerance);
         EXPECT_NEAR(separationConstraints[2].GetW(), 0.3f, Tolerance);
-        EXPECT_THAT(separationConstraints[0].GetAsVector3(), IsCloseTolerance(AZ::Vector3(-3.03902f, 2.80752f, 3.80752f), Tolerance));
-        EXPECT_THAT(separationConstraints[1].GetAsVector3(), IsCloseTolerance(AZ::Vector3(-1.41659f, 0.651243f, -0.348757f), Tolerance));
-        EXPECT_THAT(separationConstraints[2].GetAsVector3(), IsCloseTolerance(AZ::Vector3(6.15313f, -0.876132f, 0.123868f), Tolerance));
+        EXPECT_THAT(separationConstraints[0].GetAsVector3(), IsCloseTolerance(AZ::Vector3(0.0f, 3.53553f, 4.53553f), Tolerance));
+        EXPECT_THAT(separationConstraints[1].GetAsVector3(), IsCloseTolerance(AZ::Vector3(0.0f, 2.06066f, 1.06066f), Tolerance));
+        EXPECT_THAT(separationConstraints[2].GetAsVector3(), IsCloseTolerance(AZ::Vector3(1.0f, -3.74767f, -2.74767f), Tolerance));
     }
 } // namespace UnitTest

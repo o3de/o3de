@@ -577,7 +577,7 @@ namespace NvCloth
                     const AZ::Vector3& renderTangent = renderTangents[renderVertexIndex];
                     destTangentsBuffer[index].Set(
                         renderTangent,
-                        1.0f);
+                        -1.0f); // Shader function ConstructTBN inverts w to change bitangent sign, but the bitangents passed are already corrected, so passing -1.0 to counteract.
                 }
 
                 if (destBitangentsBuffer)

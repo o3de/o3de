@@ -8,4 +8,6 @@
 set(FILES
     Python_mac.cpp
     ProjectBuilderWorker_mac.cpp
+    ProjectUtils_mac.cpp
+    ProjectManagerDefs_mac.cpp
 )

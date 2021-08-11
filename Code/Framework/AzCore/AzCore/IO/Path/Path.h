@@ -277,7 +277,7 @@ namespace AZ::IO
     //! then their hash values are also equal
     //! For example : path "a//b" equals  "a/b", the
     //! hash value of "a//b" would also equal the hash value of "a/b"
-    constexpr size_t hash_value(const PathView& pathToHash) noexcept;
+    size_t hash_value(const PathView& pathToHash) noexcept;
 
     // path.comparison
     constexpr bool operator==(const PathView& lhs, const PathView& rhs) noexcept;
@@ -622,7 +622,7 @@ namespace AZ::IO
     //! For example : path "a//b" equals  "a/b", the
     //! hash value of "a//b" would also equal the hash value of "a/b"
     template <typename StringType>
-    constexpr size_t hash_value(const BasicPath<StringType>& pathToHash);
+    size_t hash_value(const BasicPath<StringType>& pathToHash);
 
     // path.append
     template <typename StringType>

@@ -124,3 +124,42 @@ function(ly_file_read path content)
     set(${content} ${file_content} PARENT_SCOPE)
     set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${path})
 endfunction()
+
+
+#! ly_get_last_path_segment_concat_sha256 : Concatenates the last path segment of the absolute path
+# with the first 8 characters of the absolute path SHA256 hash to make a unique relative path segment
+function(ly_get_last_path_segment_concat_sha256 absolute_path output_path)
+    string(SHA256 target_source_hash ${absolute_path})
+    string(SUBSTRING ${target_source_hash} 0 8 target_source_hash)
+    cmake_path(GET absolute_path FILENAME last_path_segment)
+    cmake_path(SET last_path_segment_sha256_path "${last_path_segment}-${target_source_hash}")
+
+    set(${output_path} ${last_path_segment_sha256_path} PARENT_SCOPE)
+endfunction()
+
+#! ly_get_engine_relative_source_dir: Attempts to form a path relative to the BASE_DIRECTORY.
+#  If that fails the last path segment of the absolute_target_source_dir concatenated with a SHA256 hash to form a target directory
+# \arg:BASE_DIRECTORY - Directory to base relative path against. Defaults to LY_ROOT_FOLDER
+function(ly_get_engine_relative_source_dir absolute_target_source_dir output_source_dir)
+
+    set(options)
+    set(oneValueArgs BASE_DIRECTORY)
+    set(multiValueArgs)
+    cmake_parse_arguments(ly_get_engine_relative_source_dir "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    if(NOT ly_get_engine_relative_source_dir_BASE_DIRECTORY)
+        set(ly_get_engine_relative_source_dir_BASE_DIRECTORY ${LY_ROOT_FOLDER})
+    endif()
+
+    # Get a relative target source directory to the LY root folder if possible
+    # Otherwise use the final component name
+    cmake_path(IS_PREFIX LY_ROOT_FOLDER ${absolute_target_source_dir} is_target_source_dir_subdirectory_of_engine)
+    if(is_target_source_dir_subdirectory_of_engine)
+        cmake_path(RELATIVE_PATH absolute_target_source_dir BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE relative_target_source_dir)
+    else()
+        ly_get_last_path_segment_concat_sha256(${absolute_target_source_dir} target_source_dir_last_path_segment)
+        unset(relative_target_source_dir)
+        cmake_path(APPEND relative_target_source_dir "External" ${target_source_dir_last_path_segment})
+    endif()
+
+    set(${output_source_dir} ${relative_target_source_dir} PARENT_SCOPE)
+endfunction()
