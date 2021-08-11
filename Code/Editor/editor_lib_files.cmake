@@ -493,9 +493,7 @@ set(FILES
     UndoViewPosition.h
     UndoViewRotation.h
     Util/GeometryUtil.h
-    Util/IXmlHistoryManager.h
     Util/KDTree.h
-    Util/XmlHistoryManager.h
     WipFeaturesDlg.h
     WipFeaturesDlg.ui
     WipFeaturesDlg.qrc
@@ -727,14 +725,12 @@ set(FILES
     Util/PredefinedAspectRatios.h
     Util/StringHelpers.cpp
     Util/StringHelpers.h
-    Util/StringNoCasePredicate.h
     Util/TRefCountBase.h
     Util/Triangulate.cpp
     Util/Triangulate.h
     Util/Util.h
     Util/XmlArchive.cpp
     Util/XmlArchive.h
-    Util/XmlHistoryManager.cpp
     Util/XmlTemplate.cpp
     Util/XmlTemplate.h
     Util/bitarray.h

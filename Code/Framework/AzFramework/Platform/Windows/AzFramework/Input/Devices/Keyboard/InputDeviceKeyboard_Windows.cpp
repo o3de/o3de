@@ -253,7 +253,7 @@ namespace AzFramework
         if (stringLength != 0)
         {
             // Convert UTF-16 to UTF-8
-            AZStd::to_string(o_keyOrButtonText, buffer, stringLength);
+            AZStd::to_string(o_keyOrButtonText, { buffer, aznumeric_cast<size_t>(stringLength) });
         }
     }
 

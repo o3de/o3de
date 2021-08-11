@@ -292,6 +292,11 @@ namespace AZ
             return memoryRequirements;
         }
 
+        void Device::ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction)
+        {
+            m_releaseQueue.Notify(notifyFunction);
+        }
+
         //AZStd::vector<RHI::Format> Device::GetValidSwapChainImageFormats(const RHI::WindowHandle& windowHandle) const
         //{
         //    AZStd::vector<RHI::Format> formatsList;

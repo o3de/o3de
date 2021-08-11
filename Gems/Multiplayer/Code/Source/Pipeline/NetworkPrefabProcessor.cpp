@@ -56,7 +56,7 @@ namespace Multiplayer
 
         // convert Prefab DOM into Prefab Instance.
         AZStd::unique_ptr<Instance> sourceInstance(aznew Instance());
-        if (!PrefabDomUtils::LoadInstanceFromPrefabDom(*sourceInstance, prefab, PrefabDomUtils::LoadInstanceFlags::AssignRandomEntityId))
+        if (!PrefabDomUtils::LoadInstanceFromPrefabDom(*sourceInstance, prefab, PrefabDomUtils::LoadFlags::AssignRandomEntityId))
         {
             PrefabDomValueConstReference sourceReference = PrefabDomUtils::FindPrefabDomValue(prefab, PrefabDomUtils::SourceName);
 

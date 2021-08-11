@@ -33,7 +33,7 @@ namespace Benchmark
             AZStd::vector<AZStd::unique_ptr<AzFramework::Spawnable>> spawnables;
             spawnables.reserve(numSpawnables);
             
-            for (int spwanableCounter = 0; spwanableCounter < numSpawnables; ++spwanableCounter)
+            for (unsigned int spwanableCounter = 0; spwanableCounter < numSpawnables; ++spwanableCounter)
             {
                 AZStd::unique_ptr<AzFramework::Spawnable> spawnable = AZStd::make_unique<AzFramework::Spawnable>();
                 AzToolsFramework::Prefab::SpawnableUtils::CreateSpawnable(*spawnable, prefabDom);

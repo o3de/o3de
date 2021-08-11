@@ -84,8 +84,8 @@ namespace EMotionFX
         EnableAllNodes();
 
         // apply actor node group default states (disable groups of nodes that are disabled on default)
-        const uint32 numGroups = m_actor->GetNumNodeGroups();
-        for (uint32 i = 0; i < numGroups; ++i)
+        const size_t numGroups = m_actor->GetNumNodeGroups();
+        for (size_t i = 0; i < numGroups; ++i)
         {
             if (m_actor->GetNodeGroup(i)->GetIsEnabledOnDefault() == false) // if this group is disabled on default
             {

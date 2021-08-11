@@ -150,17 +150,17 @@ namespace EMStudio
         m_removeNodesButton->setEnabled((m_nodeTable->rowCount() != 0) && (m_nodeTable->selectedItems().size() != 0));
 
         // clear the table widget
-        m_nodeTable->setRowCount(m_nodeGroup->GetNumNodes());
+        m_nodeTable->setRowCount(aznumeric_caster(m_nodeGroup->GetNumNodes()));
 
         // set header items for the table
-        AZStd::string headerText = AZStd::string::format("%s Nodes (%i / %zu)", ((m_nodeGroup->GetIsEnabledOnDefault()) ? "Enabled" : "Disabled"), m_nodeGroup->GetNumNodes(), m_actor->GetNumNodes());
+        AZStd::string headerText = AZStd::string::format("%s Nodes (%zu / %zu)", ((m_nodeGroup->GetIsEnabledOnDefault()) ? "Enabled" : "Disabled"), m_nodeGroup->GetNumNodes(), m_actor->GetNumNodes());
         QTableWidgetItem* nameHeaderItem = new QTableWidgetItem(headerText.c_str());
         nameHeaderItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignCenter);
         m_nodeTable->setHorizontalHeaderItem(0, nameHeaderItem);
 
         // fill the table with content
-        const uint16 numNodes = m_nodeGroup->GetNumNodes();
-        for (uint16 i = 0; i < numNodes; ++i)
+        const size_t numNodes = m_nodeGroup->GetNumNodes();
+        for (size_t i = 0; i < numNodes; ++i)
         {
             // get the nodegroup
             EMotionFX::Node* node = m_actor->GetSkeleton()->GetNode(m_nodeGroup->GetNode(i));
@@ -173,10 +173,10 @@ namespace EMStudio
 
             // create table items
             QTableWidgetItem* tableItemNodeName = new QTableWidgetItem(node->GetName());
-            m_nodeTable->setItem(i, 0, tableItemNodeName);
+            m_nodeTable->setItem(aznumeric_caster(i), 0, tableItemNodeName);
 
             // set the row height
-            m_nodeTable->setRowHeight(i, 21);
+            m_nodeTable->setRowHeight(aznumeric_caster(i), 21);
         }
 
         // resize to contents and adjust header
@@ -257,11 +257,9 @@ namespace EMStudio
         m_nodeSelectionList.Clear();
         if (senderWidget == m_selectNodesButton)
         {
-            MCore::SmallArray<uint16>&  nodes       = m_nodeGroup->GetNodeArray();
-            const uint16                numNodes    = nodes.GetLength();
-            for (uint16 i = 0; i < numNodes; ++i)
+            for (const uint16 i : m_nodeGroup->GetNodeArray())
             {
-                EMotionFX::Node* node = m_actor->GetSkeleton()->GetNode(nodes[i]);
+                EMotionFX::Node* node = m_actor->GetSkeleton()->GetNode(i);
                 m_nodeSelectionList.AddNode(node);
             }
         }

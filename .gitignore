@@ -25,3 +25,4 @@ TestResults/**
 *.swatches
 /imgui.ini
 /scripts/project_manager/logs/
+/AutomatedTesting/Gem/PythonTests/scripting/TestResults

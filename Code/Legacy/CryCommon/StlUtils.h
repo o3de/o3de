@@ -494,7 +494,7 @@ namespace stl
 
     //! Specialization of string to const char cast.
     template <>
-    inline const char* constchar_cast(const string& type)
+    inline const char* constchar_cast(const AZStd::string& type)
     {
         return type.c_str();
     }

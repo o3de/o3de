@@ -59,7 +59,7 @@ namespace AzFramework
             {
                 // Convert the valid UTF-16 surrogate pair to a UTF-8 code point
                 const wchar_t codePointUTF16[2] = { m_leadSurrogate, codeUnitUTF16 };
-                AZStd::to_string(codePointUTF8, codePointUTF16, 2);
+                AZStd::to_string(codePointUTF8, { codePointUTF16, 2 });
                 m_leadSurrogate = 0;
             }
             else
@@ -72,7 +72,7 @@ namespace AzFramework
         {
             // Convert the standalone UTF-16 code point to a UTF-8 code point
             const wchar_t codePointUTF16[1] = { codeUnitUTF16 };
-            AZStd::to_string(codePointUTF8, codePointUTF16, 1);
+            AZStd::to_string(codePointUTF8, { codePointUTF16, 1 });
             m_leadSurrogate = 0;
         }
 

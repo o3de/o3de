@@ -32,6 +32,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/SourceControl/SourceControlAPI.h>
 #endif
+#include <CryCommon/ISystem.h>
 
 namespace Blast
 {
@@ -437,8 +438,6 @@ namespace Blast
 
     static void CmdToggleBlastDebugVisualization(IConsoleCmdArgs* args)
     {
-        using namespace CryStringUtils;
-
         const int argumentCount = args->GetArgCount();
 
         if (argumentCount == 2)

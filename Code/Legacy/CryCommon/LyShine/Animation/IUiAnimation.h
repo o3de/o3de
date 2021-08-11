@@ -120,7 +120,7 @@ public:
     CUiAnimParamType()
         : m_type(eUiAnimParamType_Invalid) {}
 
-    CUiAnimParamType(const string& name)
+    CUiAnimParamType(const AZStd::string& name)
     {
         *this = name;
     }
@@ -136,17 +136,12 @@ public:
         m_type = (EUiAnimParamType)type;
     }
 
-    void operator =(const string& name)
-    {
-        m_type = eUiAnimParamType_ByString;
-        m_name = name;
-    }
-
     void operator =(const AZStd::string& name)
     {
         m_type = eUiAnimParamType_ByString;
         m_name = name.c_str();
     }
+
     // Convert to enum. This needs to be explicit,
     // otherwise operator== will be ambiguous
     EUiAnimParamType GetType() const { return m_type; }
@@ -1301,7 +1296,7 @@ inline void SUiAnimContext::Serialize(IUiAnimationSystem* animationSystem, XmlNo
     {
         if (pSequence)
         {
-            string fullname = pSequence->GetName();
+            AZStd::string fullname = pSequence->GetName();
             xmlNode->setAttr("sequence", fullname.c_str());
         }
         xmlNode->setAttr("dt", dt);

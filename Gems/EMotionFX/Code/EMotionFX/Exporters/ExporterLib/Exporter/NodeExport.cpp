@@ -249,7 +249,7 @@ namespace ExporterLib
         {
             chunkHeader.m_sizeInBytes += sizeof(EMotionFX::FileFormat::Actor_NodeGroup);
             chunkHeader.m_sizeInBytes += GetStringChunkSize(nodeGroup->GetNameString());
-            chunkHeader.m_sizeInBytes += sizeof(uint16) * nodeGroup->GetNumNodes();
+            chunkHeader.m_sizeInBytes += sizeof(uint16) * aznumeric_cast<uint32>(nodeGroup->GetNumNodes());
         }
 
         // endian conversion
@@ -277,14 +277,14 @@ namespace ExporterLib
         MCORE_ASSERT(actor);
 
         // get the number of node groups
-        const uint32 numGroups = actor->GetNumNodeGroups();
+        const size_t numGroups = actor->GetNumNodeGroups();
 
         // create the node group array and reserve some elements
         AZStd::vector<EMotionFX::NodeGroup*> nodeGroups;
         nodeGroups.reserve(numGroups);
 
         // iterate through the node groups and add them to the array
-        for (uint32 i = 0; i < numGroups; ++i)
+        for (size_t i = 0; i < numGroups; ++i)
         {
             nodeGroups.emplace_back(actor->GetNodeGroup(i));
         }

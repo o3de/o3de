@@ -85,7 +85,7 @@ namespace AZ
                 {
                     int sceneMeshIdx = context.m_sourceNode.GetAssImpNode()->mMeshes[nodeMeshIdx];
                     const aiMesh* aiMesh = context.m_sourceScene.GetAssImpScene()->mMeshes[sceneMeshIdx];
-                    for (int animIdx = 0; animIdx < aiMesh->mNumAnimMeshes; animIdx++)
+                    for (unsigned int animIdx = 0; animIdx < aiMesh->mNumAnimMeshes; animIdx++)
                     {
                         aiAnimMesh* aiAnimMesh = aiMesh->mAnimMeshes[animIdx];
                         animToMeshToAnimMeshIndices[aiAnimMesh->mName.C_Str()].emplace_back(nodeMeshIdx, animIdx);
@@ -130,7 +130,7 @@ namespace AZ
                         blendShapeData->ReserveData(
                             aiAnimMesh->mNumVertices, aiAnimMesh->HasTangentsAndBitangents(), uvSetUsedFlags, colorSetUsedFlags);
 
-                        for (int vertIdx = 0; vertIdx < aiAnimMesh->mNumVertices; ++vertIdx)
+                        for (unsigned int vertIdx = 0; vertIdx < aiAnimMesh->mNumVertices; ++vertIdx)
                         {
                             AZ::Vector3 vertex(AssImpSDKWrapper::AssImpTypeConverter::ToVector3(aiAnimMesh->mVertices[vertIdx]));
                    
@@ -184,7 +184,7 @@ namespace AZ
                         }
 
                         // aiAnimMesh just has a list of positions for vertices. The face indices are on the original mesh.
-                        for (int faceIdx = 0; faceIdx < aiMesh->mNumFaces; ++faceIdx)
+                        for (unsigned int faceIdx = 0; faceIdx < aiMesh->mNumFaces; ++faceIdx)
                         {
                             aiFace face = aiMesh->mFaces[faceIdx];
                             DataTypes::IBlendShapeData::Face blendFace;
@@ -199,7 +199,7 @@ namespace AZ
                                     face.mNumIndices);
                                 continue;
                             }
-                            for (int idx = 0; idx < face.mNumIndices; ++idx)
+                            for (unsigned int idx = 0; idx < face.mNumIndices; ++idx)
                             {
                                 blendFace.vertexIndex[idx] = face.mIndices[idx] + vertexOffset;
                             }

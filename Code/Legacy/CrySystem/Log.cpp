@@ -18,7 +18,6 @@
 #include <ISystem.h>
 #include "System.h"
 #include "CryPath.h"                    // PathUtil::ReplaceExtension()
-#include "UnicodeFunctions.h"
 
 #include <AzFramework/IO/FileOperations.h>
 #include <AzCore/IO/FileIO.h>
@@ -466,7 +465,7 @@ void CLog::LogV(const ELogType type, [[maybe_unused]]int flags, const char* szFo
     {
     case eWarning:
     case eWarningAlways:
-        cry_strcpy(szString, MAX_WARNING_LENGTH, "$6[Warning] ");
+        azstrcpy(szString, MAX_WARNING_LENGTH, "$6[Warning] ");
         szString += 12;     // strlen("$6[Warning] ");
         szAfterColour += 2;
         prefixSize = 12;
@@ -474,7 +473,7 @@ void CLog::LogV(const ELogType type, [[maybe_unused]]int flags, const char* szFo
 
     case eError:
     case eErrorAlways:
-        cry_strcpy(szString, MAX_WARNING_LENGTH, "$4[Error] ");
+        azstrcpy(szString, MAX_WARNING_LENGTH, "$4[Error] ");
         szString += 10;     // strlen("$4[Error] ");
         szAfterColour += 2;
         prefixSize = 10;
@@ -509,7 +508,7 @@ void CLog::LogV(const ELogType type, [[maybe_unused]]int flags, const char* szFo
             stack_string s = szBuffer;
             s += "\t<Scope> ";
             s += sAssetScope;
-            cry_strcpy(szBuffer, s.c_str());
+            azstrcpy(szBuffer, AZ_ARRAY_SIZE(szBuffer), s.c_str());
         }
     }
 
@@ -532,7 +531,7 @@ void CLog::LogV(const ELogType type, [[maybe_unused]]int flags, const char* szFo
             }
         }
         i = m_iLastHistoryItem = m_iLastHistoryItem + 1 & sz - 1;
-        cry_strcpy(m_history[i].str, m_history[i].ptr = szSpamCheck);
+        azstrcpy(m_history[i].str, AZ_ARRAY_SIZE(m_history[i].str), m_history[i].ptr = szSpamCheck);
         m_history[i].type = type;
         m_history[i].time = time;
     }
@@ -863,7 +862,7 @@ bool CLog::LogToMainThread(const char* szString, ELogType logType, bool bAdd, SL
     {
         // When logging from other thread then main, push all log strings to queue.
         SLogMsg msg;
-        cry_strcpy(msg.msg, szString);
+        azstrcpy(msg.msg, AZ_ARRAY_SIZE(msg.msg), szString);
         msg.bAdd = bAdd;
         msg.destination = destination;
         msg.logType = logType;
@@ -956,7 +955,7 @@ void CLog::LogStringToFile(const char* szString, ELogType logType, bool bAdd, [[
             {
                 timeStr.clear();
                 uint32 dwMs = (uint32)((currenttime - lasttime).GetMilliSeconds());
-                timeStr.Format("<%3d.%.3d>: ", dwMs / 1000, dwMs % 1000);
+                timeStr = AZStd::string::format("<%3d.%.3d>: ", dwMs / 1000, dwMs % 1000);
                 tempString = timeStr + tempString;
             }
             lasttime = currenttime;
@@ -983,7 +982,7 @@ void CLog::LogStringToFile(const char* szString, ELogType logType, bool bAdd, [[
             {
                 timeStr.clear();
                 uint32 dwMs = (uint32)((currenttime - lasttime).GetMilliSeconds());
-                timeStr.Format("<%3d.%.3d>: ", dwMs / 1000, dwMs % 1000);
+                timeStr = AZStd::string::format("<%3d.%.3d>: ", dwMs / 1000, dwMs % 1000);
                 tempString = timeStr + tempString;
             }
             lasttime = currenttime;
@@ -1000,7 +999,7 @@ void CLog::LogStringToFile(const char* szString, ELogType logType, bool bAdd, [[
                 {
                     timeStr.clear();
                     uint32 dwMs = (uint32)((currenttime - lasttime).GetMilliSeconds());
-                    timeStr.Format("<%3d.%.3d>: ", dwMs / 1000, dwMs % 1000);
+                    timeStr = AZStd::string::format("<%3d.%.3d>: ", dwMs / 1000, dwMs % 1000);
                     tempString = timeStr + tempString;
                 }
                 if (bFirst)
@@ -1052,13 +1051,7 @@ void CLog::LogStringToFile(const char* szString, ELogType logType, bool bAdd, [[
 #if !defined(_RELEASE)
     if (queueState == MessageQueueState::NotQueued)
     {
-        // Note: OutputDebugString(A) only accepts current ANSI code-page, and the W variant will call the A variant internally.
-        // Here we replace non-ASCII characters with '?', which is the same as OutputDebugStringW will do for non-ANSI.
-        // Thus, we discard slightly more characters (ie, those inside the current ANSI code-page, but outside ASCII).
-        // In exchange, we save double-converting that would have happened otherwise (UTF-8 -> UTF-16 -> ANSI).
-        LogStringType asciiString;
-        Unicode::ConvertSafe<Unicode::EErrorRecovery::eErrorRecovery_FallbackLatin1ThenDiscard, Unicode::eEncoding_ASCII, Unicode::eEncoding_UTF8>(asciiString, tempString);
-        OutputDebugString(asciiString.c_str());
+        AZ::Debug::Platform::OutputToDebugger(nullptr, tempString.c_str());
     }
 
     if (!bIsMainThread)
@@ -1218,14 +1211,14 @@ void CLog::CreateBackupFile() const
 
     // boswej: only create a backup if logging to the engine root, otherwise the
     // log output has been overridden and the user is responsible
-    string logDir = PathUtil::RemoveSlash(PathUtil::ToUnixPath(PathUtil::GetParentDirectory(m_szFilename)));
+    AZStd::string logDir = PathUtil::RemoveSlash(PathUtil::ToUnixPath(PathUtil::GetParentDirectory(m_szFilename)));
 
-    string sExt = PathUtil::GetExt(m_szFilename);
-    string sFileWithoutExt = PathUtil::GetFileName(m_szFilename);
+    AZStd::string sExt = PathUtil::GetExt(m_szFilename);
+    AZStd::string sFileWithoutExt = PathUtil::GetFileName(m_szFilename);
 
     {
-        assert(::strstr(sFileWithoutExt, ":") == 0);
-        assert(::strstr(sFileWithoutExt, "\\") == 0);
+        assert(::strstr(sFileWithoutExt.c_str(), ":") == 0);
+        assert(::strstr(sFileWithoutExt.c_str(), "\\") == 0);
     }
 
     PathUtil::RemoveExtension(sFileWithoutExt);
@@ -1234,14 +1227,14 @@ void CLog::CreateBackupFile() const
     AZ::IO::HandleType inFileHandle = AZ::IO::InvalidHandle;
     fileSystem->Open(m_szFilename, AZ::IO::OpenMode::ModeRead | AZ::IO::OpenMode::ModeBinary, inFileHandle);
 
-    string sBackupNameAttachment;
+    AZStd::string sBackupNameAttachment;
 
     // parse backup name attachment
     // e.g. BackupNameAttachment="attachment name"
     if (inFileHandle != AZ::IO::InvalidHandle)
     {
         bool bKeyFound = false;
-        string sName;
+        AZStd::string sName;
 
         while (!fileSystem->Eof(inFileHandle))
         {
@@ -1253,13 +1246,11 @@ void CLog::CreateBackupFile() const
                 {
                     bKeyFound = true;
 
-                    if (sName.find("BackupNameAttachment=") == string::npos)
+                    if (sName.find("BackupNameAttachment=") == AZStd::string::npos)
                     {
-#ifdef WIN32
-                        OutputDebugString("Log::CreateBackupFile ERROR '");
-                        OutputDebugString(sName.c_str());
-                        OutputDebugString("' not recognized \n");
-#endif
+                        AZ::Debug::Platform::OutputToDebugger("CrySystem Log", "Log::CreateBackupFile ERROR '");
+                        AZ::Debug::Platform::OutputToDebugger(nullptr, sName.c_str());
+                        AZ::Debug::Platform::OutputToDebugger(nullptr, "' not recognized \n");
                         assert(0);      // broken log file? - first line should include this name - written by LogVersion()
                         return;
                     }
@@ -1284,12 +1275,12 @@ void CLog::CreateBackupFile() const
         fileSystem->Close(inFileHandle);
     }
 
-    string bakdest = PathUtil::Make(LOG_BACKUP_PATH, sFileWithoutExt + sBackupNameAttachment + "." + sExt);
+    AZStd::string bakdest = PathUtil::Make(LOG_BACKUP_PATH, sFileWithoutExt + sBackupNameAttachment + "." + sExt);
     fileSystem->CreatePath(LOG_BACKUP_PATH);
-    cry_strcpy(m_sBackupFilename, bakdest.c_str());
+    azstrcpy(m_sBackupFilename, AZ_ARRAY_SIZE(m_sBackupFilename), bakdest.c_str());
     // Remove any existing backup file with the same name first since the copy will fail otherwise.
     fileSystem->Remove(m_sBackupFilename);
-    fileSystem->Copy(m_szFilename, bakdest);
+    fileSystem->Copy(m_szFilename, bakdest.c_str());
 #endif // AZ_LEGACY_CRYSYSTEM_TRAIT_ALLOW_CREATE_BACKUP_LOG_FILE
 }
 

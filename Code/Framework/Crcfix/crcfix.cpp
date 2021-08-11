@@ -12,6 +12,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Memory/AllocationRecords.h>
 #include <AzCore/std/chrono/chrono.h>
+#include <AzCore/std/string/conversions.h>
 #include <AzCore/Utils/Utils.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,11 +24,11 @@ int g_longestFixTimeMs = 0;
 
 class Filename
 {
-    char    fullpath[MAX_PATH];
-    char    drive[_MAX_DRIVE];
-    char    dir[_MAX_DIR];
-    char    fname[_MAX_FNAME];
-    char    ext[_MAX_EXT];
+    wchar_t    fullpath[MAX_PATH];
+    wchar_t    drive[_MAX_DRIVE];
+    wchar_t    dir[_MAX_DIR];
+    wchar_t    fname[_MAX_FNAME];
+    wchar_t    ext[_MAX_EXT];
 
 public:
     Filename()
@@ -35,21 +36,21 @@ public:
         fullpath[0] = drive[0] = dir[0] = fname[0] = ext[0] = 0;
     }
 
-    Filename(const AZStd::string& filename)
+    Filename(const AZStd::wstring& filename)
     {
-        _splitpath(filename.c_str(), drive, dir, fname, ext);
-        strcpy(fullpath, filename.c_str());
+        _wsplitpath(filename.c_str(), drive, dir, fname, ext);
+        wcscpy(fullpath, filename.c_str());
     }
 
-    void        SetExt(const char* pExt)        { strcpy(ext, pExt); _makepath(fullpath, drive, dir, fname, pExt); }
-    const char* GetFullPath() const             { return fullpath; }
-    bool        Exists() const                  { return _access(fullpath, 0) == 0; }
-    bool        IsReadOnly() const              { return _access(fullpath, 6) == -1; }
-    bool        SetReadOnly() const             { return _chmod(fullpath, _S_IREAD) == 0; }
-    bool        SetWritable() const             { return _chmod(fullpath, _S_IREAD | _S_IWRITE) == 0; }
-    bool        Delete() const                  { return remove(fullpath) == 0; }
-    bool        Rename(const char* fn2) const   { return MoveFileEx(fullpath, fn2, MOVEFILE_COPY_ALLOWED|MOVEFILE_REPLACE_EXISTING) == 0; }
-    bool        Copy(const char* dest) const    { return ::CopyFileA(fullpath, dest, FALSE) == TRUE; }
+    void        SetExt(const wchar_t* pExt)     { wcscpy(ext, pExt); _wmakepath(fullpath, drive, dir, fname, pExt); }
+    const wchar_t* GetFullPath() const          { return fullpath; }
+    bool        Exists() const                  { return _waccess(fullpath, 0) == 0; }
+    bool        IsReadOnly() const              { return _waccess(fullpath, 6) == -1; }
+    bool        SetReadOnly() const             { return _wchmod(fullpath, _S_IREAD) == 0; }
+    bool        SetWritable() const             { return _wchmod(fullpath, _S_IREAD | _S_IWRITE) == 0; }
+    bool        Delete() const                  { return _wremove(fullpath) == 0; }
+    bool        Rename(const wchar_t* fn2) const{ return MoveFileEx(fullpath, fn2, MOVEFILE_COPY_ALLOWED|MOVEFILE_REPLACE_EXISTING) == 0; }
+    bool        Copy(const wchar_t* dest) const { return ::CopyFile(fullpath, dest, FALSE) == TRUE; }
 };
 
 class CRCfix
@@ -64,7 +65,7 @@ public:
     int     Fix(Filename srce);
 };
 
-void FixFiles(const AZStd::string& dir, const AZStd::string& files, FILETIME* pLastRun, bool verbose, int& nFound, int& nProcessed, int& nFixed, int& nFailed)
+void FixFiles(const AZStd::wstring& dir, const AZStd::wstring& files, FILETIME* pLastRun, bool verbose, int& nFound, int& nProcessed, int& nFixed, int& nFailed)
 {
     CRCfix fixer;
     WIN32_FIND_DATA wfd;
@@ -78,14 +79,14 @@ void FixFiles(const AZStd::string& dir, const AZStd::string& files, FILETIME* pL
             {
                 if (verbose)
                 {
-                    AZ_TracePrintf("CrcFix", "\tProcessing %s ...", wfd.cFileName);
+                    AZ_TracePrintf("CrcFix", "\tProcessing %ls ...", wfd.cFileName);
                 }
                 nFound++;
 
                 int n = 0;
                 if ((wfd.dwFileAttributes & FILE_ATTRIBUTE_READONLY) == 0 && (!pLastRun || CompareFileTime(pLastRun, &wfd.ftLastWriteTime) <= 0))
                 {
-                    n = fixer.Fix(Filename(dir + "\\" + wfd.cFileName));
+                    n = fixer.Fix(Filename(dir + L"\\" + wfd.cFileName));
                     nProcessed++;
                 }
                 if (n < 0)
@@ -110,11 +111,11 @@ void FixFiles(const AZStd::string& dir, const AZStd::string& files, FILETIME* pL
     FindClose(hFind);
 }
 
-void FixDirectories(const AZStd::string& dirs, const AZStd::string& files, FILETIME* pLastRun, bool verbose, int& nFound, int& nProcessed, int& nFixed, int& nFailed)
+void FixDirectories(const AZStd::wstring& dirs, const AZStd::wstring& files, FILETIME* pLastRun, bool verbose, int& nFound, int& nProcessed, int& nFixed, int& nFailed)
 {
     if (verbose)
     {
-        AZ_TracePrintf("CrcFix", "Processing %s ...\n", dirs.c_str());
+        AZ_TracePrintf("CrcFix", "Processing %ls ...\n", dirs.c_str());
     }
 
     // do files
@@ -123,7 +124,7 @@ void FixDirectories(const AZStd::string& dirs, const AZStd::string& files, FILET
     // do folders
     WIN32_FIND_DATA wfd;
     HANDLE hFind;
-    hFind = FindFirstFile((dirs + "\\*").c_str(), &wfd);
+    hFind = FindFirstFile((dirs + L"\\*").c_str(), &wfd);
     if (hFind != INVALID_HANDLE_VALUE)
     {
         do
@@ -134,7 +135,7 @@ void FixDirectories(const AZStd::string& dirs, const AZStd::string& files, FILET
                 {
                     continue;
                 }
-                FixDirectories(AZStd::string(dirs + "\\" + wfd.cFileName), files, pLastRun, verbose, nFound, nProcessed, nFixed, nFailed);
+                FixDirectories(AZStd::wstring(dirs + L"\\" + wfd.cFileName), files, pLastRun, verbose, nFound, nProcessed, nFixed, nFailed);
             }
         } while (FindNextFile(hFind, &wfd));
     }
@@ -161,9 +162,9 @@ int main(int argc, char* argv[])
         char root[MAX_PATH];
         AZ::Utils::GetExecutableDirectory(root, MAX_PATH);
 
-        AZStd::vector<AZStd::string> entries;
+        AZStd::vector<AZStd::wstring> entries;
 
-        const char* logfilename = NULL;
+        AZStd::wstring logfilename;
         FILETIME    lastRun;
         FILETIME* pLastRun = NULL;
 
@@ -176,10 +177,12 @@ int main(int argc, char* argv[])
             {
                 continue;
             }
+            AZStd::wstring pArgW;
+            AZStd::to_wstring(pArgW, pArg);
             if (_strnicmp(pArg, "-log:", 5) == 0)
             {
-                logfilename = pArg + 5;
-                HANDLE hFile = CreateFile(logfilename, 0, 0, NULL, OPEN_EXISTING, 0, NULL);
+                logfilename.assign(pArgW.begin() + 5, pArgW.end());
+                HANDLE hFile = CreateFile(logfilename.data(), 0, 0, NULL, OPEN_EXISTING, 0, NULL);
                 if (hFile != INVALID_HANDLE_VALUE)
                 {
                     pLastRun = &lastRun;
@@ -193,7 +196,7 @@ int main(int argc, char* argv[])
             }
             else
             {
-                entries.push_back(AZStd::string(pArg));
+                entries.emplace_back(AZStd::move(pArgW));
             }
         }
 
@@ -202,10 +205,10 @@ int main(int argc, char* argv[])
         int nProcessed = 0;
         int nFixed = 0;
         int nFailed = 0;
-        for (AZStd::vector<AZStd::string>::const_iterator iEntry = entries.begin(); iEntry != entries.end(); ++iEntry)
+        for (AZStd::vector<AZStd::wstring>::const_iterator iEntry = entries.begin(); iEntry != entries.end(); ++iEntry)
         {
-            AZStd::string entry = (iEntry->at(0) == '\\' || iEntry->find(":") != iEntry->npos) ? *iEntry : AZStd::string(root) + "\\" + *iEntry;
-            AZStd::string::size_type split = entry.find("*\\");
+            AZStd::wstring entry = (iEntry->at(0) == L'\\' || iEntry->find(L":") != iEntry->npos) ? *iEntry : AZStd::wstring(root) + L"\\" + *iEntry;
+            AZStd::wstring::size_type split = entry.find(L"*\\");
             bool doSubdirs = split != entry.npos;
             if (doSubdirs)
             {
@@ -213,7 +216,7 @@ int main(int argc, char* argv[])
             }
             else
             {
-                split = entry.rfind("\\");
+                split = entry.rfind(L"\\");
                 if (split == entry.npos)
                 {
                     split = 0;
@@ -223,9 +226,9 @@ int main(int argc, char* argv[])
         }
 
         // update timestamp
-        if (logfilename)
+        if (!logfilename.empty())
         {
-            HANDLE      hFile = CreateFile(logfilename, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, 0, NULL);
+            HANDLE      hFile = CreateFile(logfilename.data(), GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, 0, NULL);
             GetSystemTimeAsFileTime(&lastRun);
             SetFileTime(hFile, NULL, NULL, &lastRun);
             char log[1024];
@@ -383,12 +386,12 @@ int CRCfix::Fix(Filename srce)
 
     bool        changed = false;
     Filename    dest(srce);
-    dest.SetExt("xxx");
+    dest.SetExt(L"xxx");
 
     linenum = 0;
 
-    FILE* infile = fopen(srce.GetFullPath(), "r");
-    FILE* outfile = fopen(dest.GetFullPath(), "w");
+    FILE* infile = _wfopen(srce.GetFullPath(), L"r");
+    FILE* outfile = _wfopen(dest.GetFullPath(), L"w");
 
     if (!infile || !outfile)
     {
@@ -475,7 +478,7 @@ int CRCfix::Fix(Filename srce)
     if (changed)
     {
         Filename    backup(srce);
-        backup.SetExt("crcfix_old");
+        backup.SetExt(L"crcfix_old");
 
         if (backup.Exists())
         {
@@ -486,7 +489,7 @@ int CRCfix::Fix(Filename srce)
 
         if (!srce.Copy(backup.GetFullPath()))
         {
-            AZ_TracePrintf("CrcFix", "Failed to copy %s to %s\n", srce, backup);
+            AZ_TracePrintf("CrcFix", "Failed to copy %ls to %ls\n", srce, backup);
 
             int dt = static_cast<int>(AZStd::chrono::milliseconds(AZStd::chrono::system_clock::now() - startTime).count());
             g_totalFixTimeMs += dt;
@@ -500,7 +503,7 @@ int CRCfix::Fix(Filename srce)
 
         if (!dest.Rename(srce.GetFullPath()))
         {
-            AZ_TracePrintf("CrcFix", "Failed to rename %s to %s\n", dest, srce);
+            AZ_TracePrintf("CrcFix", "Failed to rename %ls to %ls\n", dest, srce);
 
             int dt = static_cast<int>(AZStd::chrono::milliseconds(AZStd::chrono::system_clock::now() - startTime).count());
             g_totalFixTimeMs += dt;
@@ -514,7 +517,7 @@ int CRCfix::Fix(Filename srce)
 
         if (!backup.Delete())
         {
-            AZ_TracePrintf("CrcFix", "Failed to delete %s\n", backup);
+            AZ_TracePrintf("CrcFix", "Failed to delete %ls\n", backup);
         }
     }
     else

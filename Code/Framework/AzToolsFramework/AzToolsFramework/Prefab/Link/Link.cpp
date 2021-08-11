@@ -196,7 +196,8 @@ namespace AzToolsFramework
                         m_sourceTemplateId, m_targetTemplateId);
                     return false;
                 }
-                if (applyPatchResult.GetOutcome() == AZ::JsonSerializationResult::Outcomes::PartialSkip)
+                if (applyPatchResult.GetOutcome() == AZ::JsonSerializationResult::Outcomes::PartialSkip ||
+                    applyPatchResult.GetOutcome() == AZ::JsonSerializationResult::Outcomes::Skipped)
                 {
                     AZ_Error(
                         "Prefab", false,

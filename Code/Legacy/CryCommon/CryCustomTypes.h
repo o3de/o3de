@@ -16,10 +16,10 @@
 #pragma once
 
 #include "CryTypeInfo.h"
-#include "CryFixedString.h"
 #include <Cry_Math.h>
 #include <Cry_Color.h>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/std/string/fixed_string.h>
 
 #define STATIC_CONST(T, name, val) \
     static inline T name()  { static T t = val; return t; }
@@ -46,7 +46,7 @@ inline bool HasString(const T& val, FToString flags, const void* def_data = 0)
 float NumToFromString(float val, int digits, bool floating, char buffer[], int buf_size);
 
 template<class T>
-string NumToString(T val, int min_digits, int max_digits, bool floating)
+AZStd::string NumToString(T val, int min_digits, int max_digits, bool floating)
 {
     char buffer[64];
     float f(val);
@@ -68,7 +68,7 @@ struct CStructInfo
 {
     CStructInfo(cstr name, size_t size, size_t align, Array<CVarInfo> vars = Array<CVarInfo>(), Array<CTypeInfo const*> templates = Array<CTypeInfo const*>());
     virtual bool IsType(CTypeInfo const& Info) const;
-    virtual string ToString(const void* data, FToString flags = 0, const void* def_data = 0) const;
+    virtual AZStd::string ToString(const void* data, FToString flags = 0, const void* def_data = 0) const;
     virtual bool FromString(void* data, cstr str, FFromString flags = 0) const;
     virtual bool ToValue(const void* data, void* value, const CTypeInfo& typeVal) const;
     virtual bool FromValue(void* data, const void* value, const CTypeInfo& typeVal) const;
@@ -86,9 +86,9 @@ struct CStructInfo
     }
 
 protected:
-    Array<CVarInfo>                     Vars;
-    CryStackStringT<char, 16>   EndianDesc;             // Encodes instructions for endian swapping.
-    bool                                            HasBitfields;
+    Array<CVarInfo>             Vars;
+    AZStd::fixed_string<16>     EndianDesc;             // Encodes instructions for endian swapping.
+    bool                        HasBitfields;
     Array<CTypeInfo const*>     TemplateTypes;
 
     void MakeEndianDesc();
@@ -124,11 +124,11 @@ struct TTypeInfo
         return false;
     }
 
-    virtual string ToString(const void* data, FToString flags = 0, const void* def_data = 0) const
+    virtual AZStd::string ToString(const void* data, FToString flags = 0, const void* def_data = 0) const
     {
         if (!HasString(*(const T*)data, flags, def_data))
         {
-            return string();
+            return AZStd::string();
         }
         return ::ToString(*(const T*)data);
     }
@@ -193,7 +193,7 @@ struct TProxyTypeInfo
         return false;
     }
 
-    virtual string ToString(const void* data, FToString flags = 0, const void* def_data = 0) const
+    virtual AZStd::string ToString(const void* data, FToString flags = 0, const void* def_data = 0) const
     {
         T val = T(*(const S*)data);
         T def_val = def_data ? T(*(const S*)def_data) : T();
@@ -234,32 +234,32 @@ protected:
 // Customisation for string.
 
 template<>
-inline string TTypeInfo<string>::ToString(const void* data, FToString flags, const void* def_data) const
+inline AZStd::string TTypeInfo<AZStd::string>::ToString(const void* data, FToString flags, const void* def_data) const
 {
-    const string& val = *(const string*)data;
+    const AZStd::string& val = *(const AZStd::string*)data;
     if (def_data && flags.SkipDefault)
     {
-        if (val == *(const string*)def_data)
+        if (val == *(const AZStd::string*)def_data)
         {
-            return string();
+            return AZStd::string();
         }
     }
     return val;
 }
 
 template<>
-inline bool TTypeInfo<string>::FromString(void* data, cstr str, FFromString flags) const
+inline bool TTypeInfo<AZStd::string>::FromString(void* data, cstr str, FFromString flags) const
 {
     if (!*str && flags.SkipEmpty)
     {
         return true;
     }
-    *(string*)data = str;
+    *(AZStd::string*)data = str;
     return true;
 }
 
 template<>
-void TTypeInfo<string>::GetMemoryUsage(ICrySizer* pSizer, void const* data) const;
+void TTypeInfo<AZStd::string>::GetMemoryUsage(ICrySizer* pSizer, void const* data) const;
 
 //---------------------------------------------------------------------------
 //
@@ -632,11 +632,11 @@ protected:
         }
 
         // Override ToString: Limit to significant digits.
-        virtual string ToString(const void* data, FToString flags = 0, const void* def_data = 0) const
+        virtual AZStd::string ToString(const void* data, FToString flags = 0, const void* def_data = 0) const
         {
             if (!HasString(*(const S*)data, flags, def_data))
             {
-                return string();
+                return AZStd::string();
             }
             static int digits = int_ceil(log10f(float(nQUANT)));
             return NumToString(*(const TFixed*)data, 1, digits + 3, true);
@@ -907,12 +907,12 @@ struct TEnumInfo
         return false;
     }
 
-    virtual string ToString(const void* data, FToString flags, const void* def_data) const
+    virtual AZStd::string ToString(const void* data, FToString flags, const void* def_data) const
     {
         TInt val = *(const TInt*)(data);
         if (flags.SkipDefault && val == (def_data ? *(const TInt*)def_data : TInt(0)))
         {
-            return string();
+            return AZStd::string();
         }
 
         if (cstr sName = TEnumDef::ToName(val))
@@ -1153,13 +1153,13 @@ struct CEnumDefUuid
         return false;
     }
 
-    string ToString(const void* data, FToString flags, const void* def_data) const override
+    AZStd::string ToString(const void* data, FToString flags, const void* def_data) const override
     {
         const AZ::Uuid& uuidData = *reinterpret_cast<const AZ::Uuid*>(data);
         const AZ::Uuid& defUuidData = *reinterpret_cast<const AZ::Uuid*>(def_data);
         if (flags.SkipDefault && uuidData == (def_data ? defUuidData : AZ::Uuid::CreateNull()))
         {
-            return string();
+            return AZStd::string();
         }
 
         if (cstr sName = ToName(uuidData))
@@ -1167,7 +1167,7 @@ struct CEnumDefUuid
             return sName;
         }
 
-        return string();
+        return AZStd::string();
     }
 
     bool FromString(void* data, cstr str, FFromString flags) const override

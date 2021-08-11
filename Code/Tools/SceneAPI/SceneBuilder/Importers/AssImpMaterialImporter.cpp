@@ -56,7 +56,7 @@ namespace AZ
                 Events::ProcessingResultCombiner combinedMaterialImportResults;
 
                 AZStd::unordered_map<int, AZStd::shared_ptr<SceneData::GraphData::MaterialData>> materialMap;
-                for (int idx = 0; idx < context.m_sourceNode.m_assImpNode->mNumMeshes; ++idx)
+                for (unsigned int idx = 0; idx < context.m_sourceNode.m_assImpNode->mNumMeshes; ++idx)
                 {
                     int meshIndex = context.m_sourceNode.m_assImpNode->mMeshes[idx];
                     const aiMesh* assImpMesh = context.m_sourceScene.GetAssImpScene()->mMeshes[meshIndex];
