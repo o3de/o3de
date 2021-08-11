@@ -2857,7 +2857,7 @@ void CXConsole::Paste()
         Utf8::Unchecked::octet_iterator end(data.end());
         for (Utf8::Unchecked::octet_iterator it(data.begin()); it != end; ++it)
         {
-            const wchar_t cp = *it;
+            const wchar_t cp = static_cast<wchar_t>(*it);
             if (cp != '\r')
             {
                 // Convert UCS code-point into UTF-8 string
