@@ -192,7 +192,7 @@
 #else
     #if defined(WIN64)
         #include "Win64specific.h"
-    #elif defined(LINUX64)
+    #elif defined(LINUX64) && !defined(ANDROID)
         #include "Linux64Specific.h"
     #elif defined(MAC)
         #include "MacSpecific.h"

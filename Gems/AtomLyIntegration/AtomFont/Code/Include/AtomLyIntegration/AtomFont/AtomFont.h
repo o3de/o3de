@@ -20,6 +20,7 @@
 #include <AzCore/std/parallel/shared_mutex.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <map>
+#include <unordered_map>
 
 #include <AzFramework/Font/FontInterface.h>
 #include <AzFramework/Scene/SceneSystemInterface.h>
