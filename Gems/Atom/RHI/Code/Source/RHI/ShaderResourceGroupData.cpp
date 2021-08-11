@@ -335,5 +335,10 @@ namespace AZ
             return m_constantsData.GetConstantData();
         }
 
+        const ConstantsData& ShaderResourceGroupData::GetConstantsData() const
+        {
+            return m_constantsData;
+        }
+
     } // namespace RHI
 } // namespace AZ
