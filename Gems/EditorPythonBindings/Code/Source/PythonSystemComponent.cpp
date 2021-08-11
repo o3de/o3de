@@ -10,6 +10,7 @@
 #include <EditorPythonBindings/EditorPythonBindingsBus.h>
 
 #include <Source/PythonCommon.h>
+#include <Source/PythonSymbolsBus.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/embed.h>
 #include <pybind11/eval.h>
@@ -25,6 +26,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/string/conversions.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/Utils/Utils.h>
 
@@ -39,7 +41,7 @@
 
 namespace Platform
 {
-    // Implemented in each different platform's implentation files, as it differs per platform.
+    // Implemented in each different platform's implementation files, as it differs per platform.
     bool InsertPythonBinaryLibraryPaths(AZStd::unordered_set<AZStd::string>& paths, const char* pythonPackage, const char* engineRoot);
     AZStd::string GetPythonHomePath(const char* pythonPackage, const char* engineRoot);
 }
@@ -225,6 +227,32 @@ namespace RedirectOutput
 
 namespace EditorPythonBindings
 {
+    // A stand in bus to capture the log symbol queue events
+    // so that when/if the PythonLogSymbolsComponent becomes
+    // active it can write out the python symbols to disk
+    class PythonSystemComponent::SymbolLogHelper final
+        : public PythonSymbolEventBus::Handler
+    {
+    public:
+        SymbolLogHelper()
+        {
+            PythonSymbolEventBus::Handler::BusConnect();
+        }
+
+        ~SymbolLogHelper()
+        {
+            PythonSymbolEventBus::Handler::BusDisconnect();
+        }
+
+        void LogClass(AZStd::string, AZ::BehaviorClass*) override {}
+        void LogClassWithName(AZStd::string, AZ::BehaviorClass*, AZStd::string) override {}
+        void LogClassMethod(AZStd::string, AZStd::string, AZ::BehaviorClass*, AZ::BehaviorMethod*) override {}
+        void LogBus(AZStd::string, AZStd::string, AZ::BehaviorEBus*) override {}
+        void LogGlobalMethod(AZStd::string, AZStd::string, AZ::BehaviorMethod*) override {}
+        void LogGlobalProperty(AZStd::string, AZStd::string, AZ::BehaviorProperty*) override {}
+        void Finalize() override {}
+    };
+
     void PythonSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
@@ -471,8 +499,6 @@ namespace EditorPythonBindings
         }
     }
 
-
-
     bool PythonSystemComponent::StartPythonInterpreter(const PythonPathStack& pythonPathStack)
     {
         AZStd::unordered_set<AZStd::string> pyPackageSites(pythonPathStack.begin(), pythonPathStack.end());
@@ -519,6 +545,11 @@ namespace EditorPythonBindings
             // Acquire GIL before calling Python code
             AZStd::lock_guard<decltype(m_lock)> lock(m_lock);
             pybind11::gil_scoped_acquire acquire;
+
+            if (EditorPythonBindings::PythonSymbolEventBus::GetTotalNumOfEventHandlers() == 0)
+            {
+                m_symbolLogHelper = AZStd::make_shared<PythonSystemComponent::SymbolLogHelper>();
+            }
 
             // print Python version using AZ logging
             const int verRet = PyRun_SimpleStringFlags("import sys \nprint (sys.version) \n", nullptr);

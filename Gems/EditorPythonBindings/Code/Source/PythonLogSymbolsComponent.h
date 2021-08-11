@@ -51,12 +51,12 @@ namespace EditorPythonBindings
 
         ////////////////////////////////////////////////////////////////////////
         // PythonSymbolEventBus::Handler
-        void LogClass(AZStd::string_view moduleName, AZ::BehaviorClass* behaviorClass) override;
-        void LogClassWithName(AZStd::string_view moduleName, AZ::BehaviorClass* behaviorClass, AZStd::string_view className) override;
-        void LogClassMethod(AZStd::string_view moduleName, AZStd::string_view globalMethodName, AZ::BehaviorClass* behaviorClass, AZ::BehaviorMethod* behaviorMethod) override;
-        void LogBus(AZStd::string_view moduleName, AZStd::string_view busName, AZ::BehaviorEBus* behaviorEBus) override;
-        void LogGlobalMethod(AZStd::string_view moduleName, AZStd::string_view methodName, AZ::BehaviorMethod* behaviorMethod) override;
-        void LogGlobalProperty(AZStd::string_view moduleName, AZStd::string_view propertyName, AZ::BehaviorProperty* behaviorProperty) override;
+        void LogClass(AZStd::string moduleName, AZ::BehaviorClass* behaviorClass) override;
+        void LogClassWithName(AZStd::string moduleName, AZ::BehaviorClass* behaviorClass, AZStd::string className) override;
+        void LogClassMethod(AZStd::string moduleName, AZStd::string globalMethodName, AZ::BehaviorClass* behaviorClass, AZ::BehaviorMethod* behaviorMethod) override;
+        void LogBus(AZStd::string moduleName, AZStd::string busName, AZ::BehaviorEBus* behaviorEBus) override;
+        void LogGlobalMethod(AZStd::string moduleName, AZStd::string methodName, AZ::BehaviorMethod* behaviorMethod) override;
+        void LogGlobalProperty(AZStd::string moduleName, AZStd::string propertyName, AZ::BehaviorProperty* behaviorProperty) override;
         void Finalize() override;
         AZStd::string FetchPythonTypeName(const AZ::BehaviorParameter& param) override;
 
