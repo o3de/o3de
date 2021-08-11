@@ -14,7 +14,7 @@
 #include <SurfaceData/SurfaceDataModifierRequestBus.h>
 #include <SurfaceData/SurfaceDataProviderRequestBus.h>
 
-namespace SurfaceData
+namespace Terrain
 {
     class TerrainSurfaceDataSystemConfig
         : public AZ::ComponentConfig
@@ -30,7 +30,7 @@ namespace SurfaceData
     */
     class TerrainSurfaceDataSystemComponent
         : public AZ::Component
-        , private SurfaceDataProviderRequestBus::Handler
+        , private SurfaceData::SurfaceDataProviderRequestBus::Handler
         , private AzFramework::Terrain::TerrainDataNotificationBus::Handler
     {
         friend class EditorTerrainSurfaceDataSystemComponent;
@@ -56,7 +56,7 @@ namespace SurfaceData
 
         //////////////////////////////////////////////////////////////////////////
         // SurfaceDataProviderRequestBus
-        void GetSurfacePoints(const AZ::Vector3& inPosition, SurfacePointList& surfacePointList) const;
+        void GetSurfacePoints(const AZ::Vector3& inPosition, SurfaceData::SurfacePointList& surfacePointList) const;
 
         //////////////////////////////////////////////////////////////////////////
         // AzFramework::Terrain::TerrainDataNotificationBus
@@ -65,8 +65,8 @@ namespace SurfaceData
     private:
         void UpdateTerrainData(const AZ::Aabb& dirtyRegion);
         AZ::Aabb GetSurfaceAabb() const;
-        SurfaceTagVector GetSurfaceTags() const;
-        SurfaceDataRegistryHandle m_providerHandle = InvalidSurfaceDataRegistryHandle;
+        SurfaceData::SurfaceTagVector GetSurfaceTags() const;
+        SurfaceData::SurfaceDataRegistryHandle m_providerHandle = SurfaceData::InvalidSurfaceDataRegistryHandle;
 
         TerrainSurfaceDataSystemConfig m_configuration;
 

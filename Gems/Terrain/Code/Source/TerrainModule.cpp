@@ -14,6 +14,7 @@
 #include <Components/TerrainWorldComponent.h>
 #include <Components/TerrainHeightGradientListComponent.h>
 #include <Components/TerrainLayerSpawnerComponent.h>
+#include <Components/TerrainSurfaceDataSystemComponent.h>
 
 namespace Terrain
 {
@@ -25,6 +26,7 @@ namespace Terrain
                 TerrainWorldComponent::CreateDescriptor(),
                 TerrainHeightGradientListComponent::CreateDescriptor(),
                 TerrainLayerSpawnerComponent::CreateDescriptor(),
+                TerrainSurfaceDataSystemComponent::CreateDescriptor(),
             });
     }
 
@@ -32,6 +34,7 @@ namespace Terrain
     {
         return AZ::ComponentTypeList{
             azrtti_typeid<TerrainSystemComponent>(),
+            azrtti_typeid<TerrainSurfaceDataSystemComponent>(),
         };
     }
 }
