@@ -52,7 +52,7 @@ namespace Terrain
 
         TerrainWorldComponent(const TerrainWorldConfig& configuration);
         TerrainWorldComponent() = default;
-        ~TerrainWorldComponent() = default;
+        ~TerrainWorldComponent() override;
 
         //////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation

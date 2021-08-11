@@ -38,6 +38,13 @@ TerrainSystem::~TerrainSystem()
     Terrain::TerrainSystemServiceRequestBus::Handler::BusDisconnect();
 
     AzFramework::Terrain::TerrainDataRequestBus::Handler::BusDisconnect();
+
+    const AZ::RPI::Scene* scene = AZ::RPI::RPISystemInterface::Get()->GetDefaultScene().get();
+    auto terrainFeatureProcessor = scene->GetFeatureProcessor<TerrainFeatureProcessor>();
+    if (terrainFeatureProcessor)
+    {
+        terrainFeatureProcessor->RemoveTerrainData();
+    }
 }
 
 AZ::Aabb TerrainSystem::GetTerrainAabb() const

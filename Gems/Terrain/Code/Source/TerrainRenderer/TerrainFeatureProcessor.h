@@ -59,6 +59,10 @@ namespace Terrain
         {
             m_areaData.erase(areaId);
         }
+        void RemoveTerrainData()
+        {
+            m_areaData.clear();
+        }
 
     private:
         // RPI::SceneNotificationBus overrides ...

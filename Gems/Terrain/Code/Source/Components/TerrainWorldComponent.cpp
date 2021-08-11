@@ -81,6 +81,11 @@ namespace Terrain
     {
     }
 
+    TerrainWorldComponent::~TerrainWorldComponent()
+    {
+        delete m_terrainSystem;
+    }
+
     void TerrainWorldComponent::Activate()
     {
         m_terrainSystem = new TerrainSystem();
@@ -94,6 +99,7 @@ namespace Terrain
     void TerrainWorldComponent::Deactivate()
     {
         delete m_terrainSystem;
+        m_terrainSystem = nullptr;
     }
 
     bool TerrainWorldComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
