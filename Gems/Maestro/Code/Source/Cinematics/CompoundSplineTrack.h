@@ -108,7 +108,7 @@ public:
 
     virtual int NextKeyByTime(int key) const;
 
-    void SetSubTrackName(const int i, const string& name) { assert (i < MAX_SUBTRACKS); m_subTrackNames[i] = name; }
+    void SetSubTrackName(const int i, const AZStd::string& name) { assert (i < MAX_SUBTRACKS); m_subTrackNames[i] = name; }
 
 #ifdef MOVIESYSTEM_SUPPORT_EDITING
     virtual ColorB GetCustomColor() const

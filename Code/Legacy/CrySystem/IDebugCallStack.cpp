@@ -187,7 +187,7 @@ AZ_PUSH_DISABLE_WARNING(4996, "-Wunknown-warning-option")
     azstrcat(str, length, "\n");
 
 #if AZ_LEGACY_CRYSYSTEM_TRAIT_DEBUGCALLSTACK_APPEND_MODULENAME
-    GetModuleFileNameA(NULL, s, sizeof(s));
+    AZ::Utils::GetExecutablePath(s, sizeof(s));
     
     // Log EXE filename only if possible (not full EXE path which could contain sensitive info)
     AZStd::string exeName;
@@ -237,7 +237,7 @@ void IDebugCallStack::WriteLineToLog(const char* format, ...)
     char        szBuffer[MAX_WARNING_LENGTH];
     va_start(ArgList, format);
     vsnprintf_s(szBuffer, sizeof(szBuffer), sizeof(szBuffer) - 1, format, ArgList);
-    cry_strcat(szBuffer, "\n");
+    azstrcat(szBuffer, MAX_WARNING_LENGTH, "\n");
     szBuffer[sizeof(szBuffer) - 1] = '\0';
     va_end(ArgList);
 

@@ -83,14 +83,14 @@ namespace GridMate
 
         SocketDriverAddress(Driver* driver);
         SocketDriverAddress(Driver* driver, const sockaddr* addr);
-        SocketDriverAddress(Driver* driver, const string& ip, unsigned int port);
+        SocketDriverAddress(Driver* driver, const AZStd::string& ip, unsigned int port);
 
         bool operator==(const SocketDriverAddress& rhs) const;
         bool operator!=(const SocketDriverAddress& rhs) const;
 
-        virtual string ToString() const;
-        virtual string ToAddress() const;
-        virtual string GetIP() const;
+        virtual AZStd::string ToString() const;
+        virtual AZStd::string ToAddress() const;
+        virtual AZStd::string GetIP() const;
         virtual unsigned int  GetPort() const;
         virtual const void* GetTargetAddress(unsigned int& addressSize) const;
 
@@ -163,18 +163,18 @@ namespace GridMate
 
         /// @{ Address conversion functionality. They MUST implemented thread safe. Generally this is not a problem since they just part local data.
         ///  Create address from ip and port. If ip == NULL we will assign a broadcast address.
-        virtual string  IPPortToAddress(const char* ip, unsigned int port) const                        { return IPPortToAddressString(ip, port); }
-        virtual bool    AddressToIPPort(const string& address, string& ip, unsigned int& port) const    { return AddressStringToIPPort(address, ip, port); }
+        virtual AZStd::string  IPPortToAddress(const char* ip, unsigned int port) const                               { return IPPortToAddressString(ip, port); }
+        virtual bool    AddressToIPPort(const AZStd::string& address, AZStd::string& ip, unsigned int& port) const    { return AddressStringToIPPort(address, ip, port); }
         /// Create address for the socket driver from IP and port
-        static string   IPPortToAddressString(const char* ip, unsigned int port);
+        static AZStd::string   IPPortToAddressString(const char* ip, unsigned int port);
         /// Decompose an address to IP and port
-        static bool     AddressStringToIPPort(const string& address, string& ip, unsigned int& port);
+        static bool     AddressStringToIPPort(const AZStd::string& address, AZStd::string& ip, unsigned int& port);
         /// Return the family type of the address (AF_INET,AF_INET6 AF_UNSPEC)
-        static BSDSocketFamilyType  AddressFamilyType(const string& ip);
-        static BSDSocketFamilyType  AddressFamilyType(const char* ip)           { return AddressFamilyType(string(ip)); }
+        static BSDSocketFamilyType  AddressFamilyType(const AZStd::string& ip);
+        static BSDSocketFamilyType  AddressFamilyType(const char* ip)           { return AddressFamilyType(AZStd::string(ip)); }
         /// @}
 
-        virtual AZStd::intrusive_ptr<DriverAddress> CreateDriverAddress(const string& address) = 0;
+        virtual AZStd::intrusive_ptr<DriverAddress> CreateDriverAddress(const AZStd::string& address) = 0;
         /// Additional CreateDriverAddress function should be implemented.
         virtual AZStd::intrusive_ptr<DriverAddress> CreateDriverAddress(const sockaddr* sockAddr) = 0;
 
@@ -352,7 +352,7 @@ namespace GridMate
         * \note Driver address allocates internal resources, use it only when you intend to communicate. Otherwise operate with
         * the string address.
         */
-        virtual AZStd::intrusive_ptr<DriverAddress> CreateDriverAddress(const string& address);
+        virtual AZStd::intrusive_ptr<DriverAddress> CreateDriverAddress(const AZStd::string& address);
         virtual AZStd::intrusive_ptr<DriverAddress> CreateDriverAddress(const sockaddr* addr);
         /// Called only from the DriverAddress when the use count becomes 0
         virtual void    DestroyDriverAddress(DriverAddress* address);
@@ -364,7 +364,7 @@ namespace GridMate
     namespace Utils
     {
         ///< Retrieves ip address corresponding to a host name. Blocks thread until dns resolving is happened.
-        bool GetIpByHostName(int familyType, const char* hostName, string& ip);
+        bool GetIpByHostName(int familyType, const char* hostName, AZStd::string& ip);
     }
 
     /**

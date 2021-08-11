@@ -48,7 +48,7 @@ public:
     static void InvalidateAllNodes();
 
 private:
-    typedef std::map<string, CLightAnimWrapper*> LightAnimWrapperCache;
+    typedef std::map<AZStd::string, CLightAnimWrapper*> LightAnimWrapperCache;
     static StaticInstance<LightAnimWrapperCache> ms_lightAnimWrapperCache;
     static AZStd::intrusive_ptr<IAnimSequence> ms_pLightAnimSet;
 

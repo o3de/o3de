@@ -80,7 +80,7 @@ namespace CommandSystem
         {
             if (*m_nodeAction == NodeAction::Replace)
             {
-                nodeGroup->GetNodeArray().Clear();
+                nodeGroup->GetNodeArray().clear();
             }
             for (const AZStd::string& nodeName : *m_nodeNames)
             {
@@ -146,12 +146,12 @@ namespace CommandSystem
         if (m_nodeNames.has_value())
         {
             // clear previous nodes
-            nodeGroup->GetNodeArray().Clear();
-            const uint16 numNodes = m_oldNodeGroup->GetNumNodes();
+            nodeGroup->GetNodeArray().clear();
+            const size_t numNodes = m_oldNodeGroup->GetNumNodes();
             nodeGroup->SetNumNodes(numNodes);
 
             // add all nodes to the group
-            for (uint16 i = 0; i < numNodes; ++i)
+            for (size_t i = 0; i < numNodes; ++i)
             {
                 nodeGroup->SetNode(i, m_oldNodeGroup->GetNode(i));
             }

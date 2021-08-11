@@ -943,7 +943,7 @@ struct ISystem
     //   If m_GraphicsSettingsMap is defined (in Graphics Settings Dialog box), fills in mapping based on sys_spec_Full
     // Arguments:
     //   sPath - e.g. "Game/Config/CVarGroups"
-    virtual void AddCVarGroupDirectory(const string& sPath) = 0;
+    virtual void AddCVarGroupDirectory(const AZStd::string& sPath) = 0;
 
     // Summary:
     //   Saves system configuration.

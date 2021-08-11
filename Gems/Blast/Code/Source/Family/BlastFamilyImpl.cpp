@@ -450,7 +450,7 @@ namespace Blast
             const auto buffer = m_asset.GetAccelerator()->fillDebugRender(-1, mode == DebugRenderAabbTreeSegments);
             if (buffer.lineCount)
             {
-                for (int i = 0; i < buffer.lineCount; ++i)
+                for (uint32_t i = 0; i < buffer.lineCount; ++i)
                 {
                     auto& line = buffer.lines[i];
                     AZ::Color color;

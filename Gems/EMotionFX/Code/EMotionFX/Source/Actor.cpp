@@ -142,9 +142,9 @@ namespace EMotionFX
         result->RecursiveAddDependencies(this);
 
         // clone all nodes groups
-        for (uint32 i = 0; i < m_nodeGroups.GetLength(); ++i)
+        for (const NodeGroup* nodeGroup : m_nodeGroups)
         {
-            result->AddNodeGroup(aznew NodeGroup(*m_nodeGroups[i]));
+            result->AddNodeGroup(aznew NodeGroup(*nodeGroup));
         }
 
         // clone the materials
@@ -948,12 +948,11 @@ namespace EMotionFX
     // remove all node groups
     void Actor::RemoveAllNodeGroups()
     {
-        const uint32 numGroups = m_nodeGroups.GetLength();
-        for (uint32 i = 0; i < numGroups; ++i)
+        for (NodeGroup*& nodeGroup : m_nodeGroups)
         {
-            delete m_nodeGroups[i];
+            delete nodeGroup;
         }
-        m_nodeGroups.Clear();
+        m_nodeGroups.clear();
     }
 
 
@@ -1965,13 +1964,13 @@ namespace EMotionFX
     }
 
 
-    uint32 Actor::GetNumNodeGroups() const
+    size_t Actor::GetNumNodeGroups() const
     {
-        return m_nodeGroups.GetLength();
+        return m_nodeGroups.size();
     }
 
 
-    NodeGroup* Actor::GetNodeGroup(uint32 index) const
+    NodeGroup* Actor::GetNodeGroup(size_t index) const
     {
         return m_nodeGroups[index];
     }
@@ -1979,90 +1978,76 @@ namespace EMotionFX
 
     void Actor::AddNodeGroup(NodeGroup* newGroup)
     {
-        m_nodeGroups.Add(newGroup);
+        m_nodeGroups.emplace_back(newGroup);
     }
 
 
-    void Actor::RemoveNodeGroup(uint32 index, bool delFromMem)
+    void Actor::RemoveNodeGroup(size_t index, bool delFromMem)
     {
         if (delFromMem)
         {
             delete m_nodeGroups[index];
         }
 
-        m_nodeGroups.Remove(index);
+        m_nodeGroups.erase(AZStd::next(begin(m_nodeGroups), index));
     }
 
 
     void Actor::RemoveNodeGroup(NodeGroup* group, bool delFromMem)
     {
-        m_nodeGroups.RemoveByValue(group);
-        if (delFromMem)
+        const auto found = AZStd::find(begin(m_nodeGroups), end(m_nodeGroups), group);
+        if (found != end(m_nodeGroups))
         {
-            delete group;
+            m_nodeGroups.erase(found);
+            if (delFromMem)
+            {
+                delete group;
+            }
         }
     }
 
 
     // find a group index by its name
-    uint32 Actor::FindNodeGroupIndexByName(const char* groupName) const
+    size_t Actor::FindNodeGroupIndexByName(const char* groupName) const
     {
-        const uint32 numGroups = m_nodeGroups.GetLength();
-        for (uint32 i = 0; i < numGroups; ++i)
+        const auto found = AZStd::find_if(begin(m_nodeGroups), end(m_nodeGroups), [groupName](const NodeGroup* nodeGroup)
         {
-            if (m_nodeGroups[i]->GetNameString() == groupName)
-            {
-                return i;
-            }
-        }
-
-        return MCORE_INVALIDINDEX32;
+            return nodeGroup->GetNameString() == groupName;
+        });
+        return found != end(m_nodeGroups) ? AZStd::distance(begin(m_nodeGroups), found) : InvalidIndex;
     }
 
 
     // find a group index by its name, but not case sensitive
-    uint32 Actor::FindNodeGroupIndexByNameNoCase(const char* groupName) const
+    size_t Actor::FindNodeGroupIndexByNameNoCase(const char* groupName) const
     {
-        const uint32 numGroups = m_nodeGroups.GetLength();
-        for (uint32 i = 0; i < numGroups; ++i)
+        const auto found = AZStd::find_if(begin(m_nodeGroups), end(m_nodeGroups), [groupName](const NodeGroup* nodeGroup)
         {
-            if (AzFramework::StringFunc::Equal(m_nodeGroups[i]->GetNameString().c_str(), groupName, false /* no case */))
-            {
-                return i;
-            }
-        }
-
-        return MCORE_INVALIDINDEX32;
+            return AzFramework::StringFunc::Equal(nodeGroup->GetNameString(), groupName, false /* no case */);
+        });
+        return found != end(m_nodeGroups) ? AZStd::distance(begin(m_nodeGroups), found) : InvalidIndex;
     }
 
 
     // find a group by its name
     NodeGroup* Actor::FindNodeGroupByName(const char* groupName) const
     {
-        const uint32 numGroups = m_nodeGroups.GetLength();
-        for (uint32 i = 0; i < numGroups; ++i)
+        const auto found = AZStd::find_if(begin(m_nodeGroups), end(m_nodeGroups), [groupName](const NodeGroup* nodeGroup)
         {
-            if (m_nodeGroups[i]->GetNameString() == groupName)
-            {
-                return m_nodeGroups[i];
-            }
-        }
-        return nullptr;
+            return nodeGroup->GetNameString() == groupName;
+        });
+        return found != end(m_nodeGroups) ? *found : nullptr;
     }
 
 
     // find a group by its name, but without case sensitivity
     NodeGroup* Actor::FindNodeGroupByNameNoCase(const char* groupName) const
     {
-        const uint32 numGroups = m_nodeGroups.GetLength();
-        for (uint32 i = 0; i < numGroups; ++i)
+        const auto found = AZStd::find_if(begin(m_nodeGroups), end(m_nodeGroups), [groupName](const NodeGroup* nodeGroup)
         {
-            if (AzFramework::StringFunc::Equal(m_nodeGroups[i]->GetNameString().c_str(), groupName, false /* no case */))
-            {
-                return m_nodeGroups[i];
-            }
-        }
-        return nullptr;
+            return AzFramework::StringFunc::Equal(nodeGroup->GetNameString(), groupName, false /* no case */);
+        });
+        return found != end(m_nodeGroups) ? *found : nullptr;
     }
 
 

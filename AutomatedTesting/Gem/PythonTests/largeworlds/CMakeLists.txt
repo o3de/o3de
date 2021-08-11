@@ -16,7 +16,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         TEST_SUITE main
         PATH ${CMAKE_CURRENT_LIST_DIR}/dyn_veg
         PYTEST_MARKS "not SUITE_sandbox and not SUITE_periodic and not SUITE_benchmark"
-        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             Legacy::Editor
@@ -33,7 +32,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         TEST_SUITE sandbox
         PATH ${CMAKE_CURRENT_LIST_DIR}/dyn_veg
         PYTEST_MARKS "SUITE_sandbox"
-        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             Legacy::Editor
@@ -49,7 +47,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         TEST_SUITE periodic
         PATH ${CMAKE_CURRENT_LIST_DIR}/dyn_veg
         PYTEST_MARKS "SUITE_periodic and dynveg_filter"
-        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             Legacy::Editor
@@ -64,7 +61,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         TEST_SUITE periodic
         PATH ${CMAKE_CURRENT_LIST_DIR}/dyn_veg
         PYTEST_MARKS "SUITE_periodic and dynveg_modifier"
-        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             Legacy::Editor
@@ -79,7 +75,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         TEST_SUITE periodic
         PATH ${CMAKE_CURRENT_LIST_DIR}/dyn_veg
         PYTEST_MARKS "SUITE_periodic and dynveg_regression"
-        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             Legacy::Editor
@@ -94,7 +89,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         TEST_SUITE periodic
         PATH ${CMAKE_CURRENT_LIST_DIR}/dyn_veg
         PYTEST_MARKS "SUITE_periodic and dynveg_area"
-        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             Legacy::Editor
@@ -109,7 +103,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         TEST_SUITE periodic
         PATH ${CMAKE_CURRENT_LIST_DIR}/dyn_veg
         PYTEST_MARKS "SUITE_periodic and dynveg_misc"
-        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             Legacy::Editor
@@ -124,7 +117,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         TEST_SUITE periodic
         PATH ${CMAKE_CURRENT_LIST_DIR}/dyn_veg
         PYTEST_MARKS "SUITE_periodic and dynveg_surfacetagemitter"
-        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             Legacy::Editor
@@ -140,7 +132,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         TEST_SUITE main
         PATH ${CMAKE_CURRENT_LIST_DIR}/landscape_canvas
         PYTEST_MARKS "not SUITE_sandbox and not SUITE_periodic and not SUITE_benchmark"
-        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
            AZ::AssetProcessor
            Legacy::Editor
@@ -155,7 +146,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         TEST_SUITE periodic
         PATH ${CMAKE_CURRENT_LIST_DIR}/landscape_canvas
         PYTEST_MARKS "SUITE_periodic"
-        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
            AZ::AssetProcessor
            Legacy::Editor
@@ -170,7 +160,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         TEST_SERIAL
         TEST_SUITE periodic
         PATH ${CMAKE_CURRENT_LIST_DIR}/gradient_signal
-        TIMEOUT 1500
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             Legacy::Editor

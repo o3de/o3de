@@ -58,7 +58,7 @@ private:
     float m_fMaxKeyValue;
 
     std::vector< CAnimNode::SParamInfo > m_dynamicShaderParamInfos;
-    typedef AZStd::unordered_map< string, size_t, stl::hash_string_caseless<string>, stl::equality_string_caseless<string> > TDynamicShaderParamsMap;
+    typedef AZStd::unordered_map<AZStd::string, size_t, stl::hash_string_caseless<AZStd::string>, stl::equality_string_caseless<AZStd::string> > TDynamicShaderParamsMap;
     TDynamicShaderParamsMap m_nameToDynamicShaderParam;
 };
 
