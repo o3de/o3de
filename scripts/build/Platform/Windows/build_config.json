@@ -43,8 +43,8 @@
     "COMMAND": "deploy_cdk_applications.cmd",
     "PARAMETERS": {
       "O3DE_AWS_PROJECT_NAME": "AWSAUTO",
-      "O3DE_AWS_DEPLOY_REGION": "us-west-2",
-      "ASSUME_ROLE_ARN": "arn:aws:iam::645075835648:role/o3de-automation-tests",
+      "O3DE_AWS_DEPLOY_REGION": "!AWSI_DEPLOY_REGION!",
+      "ASSUME_ROLE_ARN": "!AWSI_DEPLOY_ROLE_ARN!",
       "COMMIT_ID": "HEAD"
     }
   },
