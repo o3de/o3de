@@ -15,7 +15,7 @@ logger = get_logger(__file__)
 
 MARS_JOB_KEY = "job"
 SRC_COMMIT_KEY = "src_commit"
-DST_COMMIT_KEY = "src_commit"
+DST_COMMIT_KEY = "dst_commit"
 COMMIT_DISTANCE_KEY = "commit_distance"
 SRC_BRANCH_KEY = "src_branch"
 DST_BRANCH_KEY = "dst_branch"
