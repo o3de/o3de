@@ -25,6 +25,10 @@ namespace AZ
         MOCK_CONST_METHOD2(Visit, bool(const VisitorCallback&, AZStd::string_view));
         MOCK_METHOD1(RegisterNotifier, NotifyEventHandler(const NotifyCallback&));
         MOCK_METHOD1(RegisterNotifier, NotifyEventHandler(NotifyCallback&&));
+        MOCK_METHOD1(RegisterPreMergeEvent, PreMergeEventHandler(const PreMergeEventCallback&));
+        MOCK_METHOD1(RegisterPreMergeEvent, PreMergeEventHandler(PreMergeEventCallback&&));
+        MOCK_METHOD1(PostMergeEventHandler, PreMergeEventHandler(const PostMergeEventCallback&));
+        MOCK_METHOD1(PostMergeEventHandler, PreMergeEventHandler(PostMergeEventCallback&&));
 
         MOCK_CONST_METHOD2(Get, bool(bool&, AZStd::string_view));
         MOCK_CONST_METHOD2(Get, bool(s64&, AZStd::string_view));
