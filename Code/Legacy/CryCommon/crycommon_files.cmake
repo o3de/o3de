@@ -96,7 +96,6 @@ set(FILES
     LegacyAllocator.h
     MetaUtils.h
     MiniQueue.h
-    MultiThread.h
     MultiThread_Containers.h
     NullAudioSystem.h
     PNoise3.h

@@ -730,10 +730,6 @@ enum ETriState
 typedef int socklen_t;
 #endif
 
-
-// Include MultiThreading support.
-#include "MultiThread.h"
-
 // In RELEASE disable printf and fprintf
 #if defined(_RELEASE) && !defined(RELEASE_LOGGING)
     #if defined(AZ_RESTRICTED_PLATFORM)

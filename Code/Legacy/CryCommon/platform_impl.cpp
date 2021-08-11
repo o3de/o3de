@@ -309,58 +309,6 @@ short CryGetAsyncKeyState([[maybe_unused]] int vKey)
 }
 
 //////////////////////////////////////////////////////////////////////////
-LONG  CryInterlockedIncrement(int volatile* lpAddend)
-{
-    return InterlockedIncrement((volatile LONG*)lpAddend);
-}
-
-//////////////////////////////////////////////////////////////////////////
-LONG  CryInterlockedDecrement(int volatile* lpAddend)
-{
-    return InterlockedDecrement((volatile LONG*)lpAddend);
-}
-
-//////////////////////////////////////////////////////////////////////////
-LONG  CryInterlockedExchangeAdd(LONG volatile* lpAddend, LONG Value)
-{
-    return InterlockedExchangeAdd(lpAddend, Value);
-}
-
-LONG  CryInterlockedOr(LONG volatile* Destination, LONG Value)
-{
-    return InterlockedOr(Destination, Value);
-}
-
-LONG  CryInterlockedCompareExchange(LONG volatile* dst, LONG exchange, LONG comperand)
-{
-    return InterlockedCompareExchange(dst, exchange, comperand);
-}
-
-void* CryInterlockedCompareExchangePointer(void* volatile* dst, void* exchange, void* comperand)
-{
-    return InterlockedCompareExchangePointer(dst, exchange, comperand);
-}
-
-void* CryInterlockedExchangePointer(void* volatile* dst, void* exchange)
-{
-    return InterlockedExchangePointer(dst, exchange);
-}
-
-void CryInterlockedAdd(volatile size_t* pVal, ptrdiff_t iAdd)
-{
-#if defined (PLATFORM_64BIT)
-#if !defined(NDEBUG)
-    size_t v = (size_t)
-#endif
-        InterlockedAdd64((volatile int64*)pVal, iAdd);
-#else
-    size_t v = (size_t)CryInterlockedExchangeAdd((volatile long*)pVal, (long)iAdd);
-    v += iAdd;
-#endif
-    assert((iAdd == 0) || (iAdd < 0 && v < v - (size_t)iAdd) || (iAdd > 0 && v > v - (size_t)iAdd));
-}
-
-//////////////////////////////////////////////////////////////////////////
 uint32 CryGetFileAttributes(const char* lpFileName)
 {
     WIN32_FILE_ATTRIBUTE_DATA data;
