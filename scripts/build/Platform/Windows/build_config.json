@@ -38,8 +38,7 @@
   },
   "aws_integration_deployment": {
     "TAGS": [
-      "nightly-aws-integration-deployment",
-      "weekly-build-metrics"
+      "nightly-aws-integration-deployment"
     ],
     "COMMAND": "deploy_cdk_applications.cmd",
     "PARAMETERS": {
