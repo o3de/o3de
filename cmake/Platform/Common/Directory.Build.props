@@ -9,6 +9,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
     <PropertyGroup>
         <UseMultiToolTask>true</UseMultiToolTask>
         <EnforceProcessCountAcrossBuilds>true</EnforceProcessCountAcrossBuilds>
+@VCPKG_CONFIGURATION_MAPPING@
     </PropertyGroup>
     <ItemDefinitionGroup>
         <ClCompile>

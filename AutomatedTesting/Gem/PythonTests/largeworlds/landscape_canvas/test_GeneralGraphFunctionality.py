@@ -104,6 +104,7 @@ class TestGeneralGraphFunctionality(object):
 
     @pytest.mark.test_case_id("C17488412")
     @pytest.mark.SUITE_periodic
+    @pytest.mark.xfail(reason="https://github.com/o3de/o3de/issues/2201")
     def test_LandscapeCanvas_GraphClosed_OnEntityDelete(self, request, editor, level, launcher_platform):
         cfg_args = [level]
 

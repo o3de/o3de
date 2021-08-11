@@ -219,11 +219,13 @@ namespace O3DE::ProjectManager
             // Move project first to avoid trying to update settings at the new location before it has been moved there
             if (newProjectSettings.m_path != m_projectInfo.m_path)
             {
-                if (!ProjectUtils::MoveProject(m_projectInfo.m_path, newProjectSettings.m_path))
+                if (!ProjectUtils::MoveProject(m_projectInfo.m_path, newProjectSettings.m_path, this))
                 {
                     QMessageBox::critical(this, tr("Project move failed"), tr("Failed to move project."));
                     return false;
                 }
+
+                emit NotifyBuildProject(newProjectSettings);
             }
 
             // Update project if settings changed

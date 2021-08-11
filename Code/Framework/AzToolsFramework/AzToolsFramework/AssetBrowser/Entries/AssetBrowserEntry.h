@@ -9,6 +9,7 @@
 #if !defined(Q_MOC_RUN)
 #include <AzCore/std/string/string.h>
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/Math/Uuid.h>
 
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
@@ -130,8 +131,8 @@ namespace AzToolsFramework
         protected:
             AZStd::string m_name;
             QString m_displayName;
-            AZStd::string m_relativePath;
-            AZStd::string m_fullPath;
+            AZ::IO::Path m_relativePath;
+            AZ::IO::Path m_fullPath;
             AZStd::vector<AssetBrowserEntry*> m_children;
             AssetBrowserEntry* m_parentAssetEntry = nullptr;
 

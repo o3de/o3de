@@ -206,12 +206,12 @@ namespace AzToolsFramework
 
         const AZStd::string& AssetBrowserEntry::GetRelativePath() const
         {
-            return m_relativePath;
+            return m_relativePath.Native();
         }
 
         const AZStd::string& AssetBrowserEntry::GetFullPath() const
         {
-            return m_fullPath;
+            return m_fullPath.Native();
         }
 
         const AssetBrowserEntry* AssetBrowserEntry::GetChild(int index) const

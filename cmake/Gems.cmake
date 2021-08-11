@@ -90,6 +90,13 @@ function(ly_create_alias)
     # Replace the CMake list separator with a space to replicate the space separated TARGETS arguments
     string(REPLACE ";" " " create_alias_args "${ly_create_alias_NAME},${ly_create_alias_NAMESPACE},${ly_create_alias_TARGETS}")
     set_property(DIRECTORY APPEND PROPERTY LY_CREATE_ALIAS_ARGUMENTS "${create_alias_args}")
+
+    # Store the directory path in the GLOBAL property so that it can be accessed
+    # in the layout install logic. Skip if the directory has already been added
+    get_property(ly_all_target_directories GLOBAL PROPERTY LY_ALL_TARGET_DIRECTORIES)
+    if(NOT CMAKE_CURRENT_SOURCE_DIR IN_LIST ly_all_target_directories)
+        set_property(GLOBAL APPEND PROPERTY LY_ALL_TARGET_DIRECTORIES ${CMAKE_CURRENT_SOURCE_DIR})
+    endif()
 endfunction()
 
 # ly_enable_gems
