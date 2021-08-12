@@ -88,6 +88,13 @@ def parse_args():
         required=False
     )
 
+    # Build number
+    parser.add_argument(
+        '--build-number', 
+        help="The build number this run of TIAF corresponds to", 
+        required=True
+    )
+
     # Test suite
     parser.add_argument(
         '--suite', 
@@ -142,13 +149,13 @@ if __name__ == "__main__":
             s3_top_level_dir = "".join(re.findall("([a-zA-z]+|[0-9]+)", args.s3_top_level_dir))
         else:
             s3_top_level_dir = "tiaf"
-            
+
         tiaf = TestImpact(args.config)
         tiaf_result = tiaf.run(args.commit, args.src_branch, args.dst_branch, args.s3_bucket, s3_top_level_dir, args.suite, args.test_failure_policy, args.safe_mode, args.test_timeout, args.global_timeout)
         
         if args.mars_index_prefix:
             logger.info("Transmitting report to MARS...")
-            mars_utils.transmit_report_to_mars(args.mars_index_prefix, tiaf_result, sys.argv)
+            mars_utils.transmit_report_to_mars(args.mars_index_prefix, tiaf_result, sys.argv, args.build_number)
 
         logger.info("Complete!")
         # Non-gating will be removed from this script and handled at the job level in SPEC-7413
