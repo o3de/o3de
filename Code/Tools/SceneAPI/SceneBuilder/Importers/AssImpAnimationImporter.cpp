@@ -634,7 +634,7 @@ namespace AZ
                 for (const auto& [meshIdx, keys] : valueToKeyDataMap)
                 {
 
-                    if (meshIdx >= mesh->mNumAnimMeshes)
+                    if (static_cast<AZ::u32>(meshIdx) >= mesh->mNumAnimMeshes)
                     {
                         AZ_Error(
                             "AnimationImporter", false,
