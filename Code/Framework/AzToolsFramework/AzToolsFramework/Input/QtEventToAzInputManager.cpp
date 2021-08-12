@@ -307,9 +307,9 @@ namespace AzToolsFramework
         // Generate movement events based on the pixel delta divided by the DPI scaling factor, to calculate a rough approximation
         // of cursor movement velocity.
         movementXChannel->ProcessRawInputEvent(
-            m_cursorPosition->m_normalizedPositionDelta.GetX() * aznumeric_cast<float>(m_sourceWidget->width()) / m_sourceWidget->devicePixelRatioF());
+            static_cast<float>(m_cursorPosition->m_normalizedPositionDelta.GetX()) * aznumeric_cast<float>(m_sourceWidget->width()) / m_sourceWidget->devicePixelRatioF());
         movementYChannel->ProcessRawInputEvent(
-            m_cursorPosition->m_normalizedPositionDelta.GetY() * aznumeric_cast<float>(m_sourceWidget->height()) / m_sourceWidget->devicePixelRatioF());
+            static_cast<float>(m_cursorPosition->m_normalizedPositionDelta.GetY()) * aznumeric_cast<float>(m_sourceWidget->height()) / m_sourceWidget->devicePixelRatioF());
         mouseWheelChannel->ProcessRawInputEvent(0.f);
 
         NotifyUpdateChannelIfNotIdle(systemCursorChannel, nullptr);
