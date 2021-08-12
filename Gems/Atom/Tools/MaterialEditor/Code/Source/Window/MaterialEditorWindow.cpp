@@ -248,7 +248,7 @@ namespace MaterialEditor
         RemoveTabForDocumentId(documentId);
 
         const QString documentPath = GetDocumentPath(documentId);
-        const QString status = QString("Material closed: %1").arg(documentPath);
+        const QString status = QString("Document closed: %1").arg(documentPath);
         m_statusMessage->setText(QString("<font color=\"White\">%1</font>").arg(status));
     }
 
@@ -416,7 +416,7 @@ namespace MaterialEditor
             if (!result)
             {
                 const QString documentPath = GetDocumentPath(documentId);
-                const QString status = QString("Failed to perform Undo on document: %1").arg(documentPath);
+                const QString status = QString("Failed to perform undo on document: %1").arg(documentPath);
                 m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(status));
             }
         }, QKeySequence::Undo);
@@ -428,7 +428,7 @@ namespace MaterialEditor
             if (!result)
             {
                 const QString documentPath = GetDocumentPath(documentId);
-                const QString status = QString("Failed to perform Redo on document: %1").arg(documentPath);
+                const QString status = QString("Failed to perform redo on document: %1").arg(documentPath);
                 m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(status));
             }
         }, QKeySequence::Redo);
