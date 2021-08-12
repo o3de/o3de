@@ -14,8 +14,6 @@
 #define CRYINCLUDE_CRYCOMMON_IFUNCTORBASE_H
 #pragma once
 
-#include <CryCommon/CryThread.h>
-
 #include <AzCore/std/parallel/atomic.h>
 
 // Base class for functor storage.

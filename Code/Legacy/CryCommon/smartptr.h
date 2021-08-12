@@ -13,7 +13,6 @@
 
 #include <platform.h>
 #include <type_traits>
-#include <MultiThread.h>
 
 void CryFatalError(const char*, ...) PRINTF_PARAMS(1, 2);
 #if defined(APPLE)

@@ -37,7 +37,6 @@ struct IRenderMesh;
 #include <IXml.h>
 #include <smartptr.h>
 #include <AzCore/EBus/EBus.h>
-#include <CryThread.h>
 
 #ifdef MAX_SUB_MATERIALS
 // This checks that the values are in sync in the different files.
