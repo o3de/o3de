@@ -235,7 +235,7 @@ class TestImpact:
                         logger.error(f"Source commit '{self._src_commit}' and destination commit '{self._dst_commit}', implying the integrity of the historic data is compromised.")
                         persistent_storage = None
                     else:
-                        self._attempt_to_generate_change_list(self._instance_id)
+                        self._attempt_to_generate_change_list()
                 else:
                     logger.info("No historic data found.")
                     
