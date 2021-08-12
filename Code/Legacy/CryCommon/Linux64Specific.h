@@ -20,11 +20,6 @@
 #define _CPU_AMD64
 #define _CPU_SSE
 
-#define DEBUG_BREAK ::raise(SIGTRAP)
-#define RC_EXECUTABLE "rc"
-#define USE_CRT 1
-#define SIZEOF_PTR 8
-
 //////////////////////////////////////////////////////////////////////////
 // Standard includes.
 //////////////////////////////////////////////////////////////////////////
@@ -104,10 +99,6 @@ typedef uint8               byte;
 
 #define DEFINE_ALIGNED_DATA(type, name, alignment) \
     type __attribute__ ((aligned(alignment))) name;
-#define DEFINE_ALIGNED_DATA_STATIC(type, name, alignment) \
-    static type __attribute__ ((aligned(alignment))) name;
-#define DEFINE_ALIGNED_DATA_CONST(type, name, alignment) \
-    const type __attribute__ ((aligned(alignment))) name;
 
 #include "LinuxSpecific.h"
 

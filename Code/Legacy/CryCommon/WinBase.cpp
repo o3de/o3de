@@ -12,6 +12,7 @@
 
 #include "platform.h" // Note: This should be first to get consistent debugging definitions
 
+#include <CryCommon/ISystem.h>
 #include <CryAssert.h>
 
 #if defined(AZ_RESTRICTED_PLATFORM)
@@ -29,7 +30,7 @@
     #include AZ_RESTRICTED_FILE(WinBase_cpp)
 #endif
 #if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
-#undef AZ_RESTRICTED_SECTION_IMPLEMENTED
+    #undef AZ_RESTRICTED_SECTION_IMPLEMENTED
 #else
     #include <signal.h>
 #endif
@@ -1127,20 +1128,6 @@ void CrySleep(unsigned int dwMilliseconds)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CryLowLatencySleep(unsigned int dwMilliseconds)
-{
-#if defined(AZ_RESTRICTED_PLATFORM)
-    #define AZ_RESTRICTED_SECTION WINBASE_CPP_SECTION_6
-    #include AZ_RESTRICTED_FILE(WinBase_cpp)
-#endif
-#if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
-#undef AZ_RESTRICTED_SECTION_IMPLEMENTED
-#else
-    CrySleep(dwMilliseconds);
-#endif
-}
-
-//////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////
 int CryMessageBox(const char* lpText, const char* lpCaption, unsigned int uType)
 {
@@ -1283,14 +1270,6 @@ int CryMessageBox(const char* lpText, const char* lpCaption, unsigned int uType)
 #endif
 }
 
-//////////////////////////////////////////////////////////////////////////
-short CryGetAsyncKeyState(int vKey)
-{
-    //TODO: implement
-    CRY_ASSERT_MESSAGE(0, "CryGetAsyncKeyState not implemented yet");
-    return 0;
-}
-
 #if defined(LINUX) || defined(APPLE) || defined(DEFINE_CRY_INTERLOCKED_INCREMENT)
 //[K01]: http://www.memoryhole.net/kyle/2007/05/atomic_incrementing.html
 //http://forums.devx.com/archive/index.php/t-160558.html
@@ -1381,10 +1360,6 @@ threadID CryGetCurrentThreadId()
     return GetCurrentThreadId();
 }
 
-void CryDebugBreak()
-{
-    __builtin_trap();
-}
 #endif//LINUX APPLE
 
 #if defined(APPLE) || defined(LINUX)
@@ -1395,11 +1370,6 @@ DLL_EXPORT void OutputDebugString(const char* outputString)
     // Emulates dev tools output in Xcode and cmd line launch with idevicedebug.
     fprintf(stdout, "%s", outputString);
 #endif
-}
-
-DLL_EXPORT void DebugBreak()
-{
-    CryDebugBreak();
 }
 
 #endif
@@ -1625,37 +1595,6 @@ DWORD GetFileAttributes(LPCWSTR lpFileNameW)
         }
     }
     return (ret == 0) ? FILE_ATTRIBUTE_NORMAL : ret;//return file attribute normal as the default value, must only be set if no other attributes have been found
-}
-
-uint32 CryGetFileAttributes(const char* lpFileName)
-{
-    AZStd::string fn = lpFileName;
-    adaptFilenameToLinux(fn);
-    const char* buffer = fn.c_str();
-    
-    struct stat fileStats;
-    const int success = stat(buffer, &fileStats);
-    if (success == -1)
-    {
-        char adjustedFilename[MAX_PATH];
-        GetFilenameNoCase(buffer, adjustedFilename);
-        if (stat(adjustedFilename, &fileStats) == -1)
-        {
-            return (DWORD)INVALID_FILE_ATTRIBUTES;
-        }
-    }
-    DWORD ret = 0;
-
-    const int acc = (fileStats.st_mode & S_IWRITE);
-
-    if (acc != 0)
-    {
-        if (S_ISDIR(fileStats.st_mode) != 0)
-        {
-            ret |= FILE_ATTRIBUTE_DIRECTORY;
-        }
-    }
-    return (ret == 0) ? FILE_ATTRIBUTE_NORMAL : ret;//return file attribute normal as the default value, must only be set if no other attributes have been found    
 }
 
 __finddata64_t::~__finddata64_t()

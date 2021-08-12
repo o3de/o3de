@@ -50,7 +50,7 @@ class TestImpact:
                     logger.warning(f"Could not find TIAF binary at location {self._tiaf_bin}, TIAF will be turned off.")
                     self._use_test_impact_analysis = False
                 else:
-                    logger.info(f"Runtime binary found at location {self._tiaf_bin}")
+                    logger.info(f"Runtime binary found at location '{self._tiaf_bin}'")
 
                 # Workspaces
                 self._active_workspace = self._config["workspace"]["active"]["root"]
@@ -61,31 +61,39 @@ class TestImpact:
             logger.error(f"The config does not contain the key {str(e)}.")
             return
 
-    def _attempt_to_generate_change_list(self, last_commit_hash, instance_id: str):
+    def _attempt_to_generate_change_list(self):
         """
         Attempts to determine the change list bewteen now and the last tiaf run (if any).
-
-        @param last_commit_hash: The commit hash of the last TIAF run.
-        @param instance_id:      The unique id to derive the change list file name from.
         """
 
         self._has_change_list = False
         self._change_list_path = None
 
         # Check whether or not a previous commit hash exists (no hash is not a failure)
-        self._src_commit = last_commit_hash
         if self._src_commit:
-            if self._repo.is_descendent(self._src_commit, self._dst_commit) == False:
-                logger.info(f"Source commit '{self._src_commit}' and destination commit '{self._dst_commit}' are not related.")
-                return
-            self._commit_distance = self._repo.commit_distance(self._src_commit, self._dst_commit)
-            diff_path = pathlib.Path(pathlib.PurePath(self._temp_workspace).joinpath(f"changelist.{instance_id}.diff"))
+            if self._is_source_of_truth_branch:
+                # For branch builds, the dst commit must be descended from the src commit
+                if not self._repo.is_descendent(self._src_commit, self._dst_commit):
+                    logger.error(f"Source commit '{self._src_commit}' and destination commit '{self._dst_commit}' must be related for branch builds.")
+                    return
+
+                # Calculate the distance (in commits) between the src and dst commits
+                self._commit_distance = self._repo.commit_distance(self._src_commit, self._dst_commit)
+                logger.info(f"The distance between '{self._src_commit}' and '{self._dst_commit}' commits is '{self._commit_distance}' commits.")
+                multi_branch = False
+            else:
+                # For pull request builds, the src and dst commits are on different branches so we need to ensure a common ancestor is used for the diff
+                multi_branch = True
+
             try:
-                self._repo.create_diff_file(self._src_commit, self._dst_commit, diff_path)
+                # Attempt to generate a diff between the src and dst commits
+                logger.error(f"Source '{self._src_commit}' and destination '{self._dst_commit}' will be diff'd.")
+                diff_path = pathlib.Path(pathlib.PurePath(self._temp_workspace).joinpath(f"changelist.{self._instance_id}.diff"))
+                self._repo.create_diff_file(self._src_commit, self._dst_commit, diff_path, multi_branch)
             except RuntimeError as e:
                 logger.error(e)
                 return
-                
+
             # A diff was generated, attempt to parse the diff and construct the change list
             logger.info(f"Generated diff between commits '{self._src_commit}' and '{self._dst_commit}': '{diff_path}'.") 
             with open(diff_path, "r") as diff_data:
@@ -112,7 +120,7 @@ class TestImpact:
 
             # Serialize the change list to the JSON format the test impact analysis runtime expects
             change_list_json = json.dumps(self._change_list, indent = 4)
-            change_list_path = pathlib.PurePath(self._temp_workspace).joinpath(f"changelist.{instance_id}.json")
+            change_list_path = pathlib.PurePath(self._temp_workspace).joinpath(f"changelist.{self._instance_id}.json")
             f = open(change_list_path, "w")
             f.write(change_list_json)
             f.close()
@@ -189,7 +197,7 @@ class TestImpact:
             self._is_source_of_truth_branch = True
             self._source_of_truth_branch = self._src_branch
         else:
-            # PR builds use their destination as the source of truth and never update the coverage data for the source of truth
+            # Pull request builds use their destination as the source of truth and never update the coverage data for the source of truth
             self._is_source_of_truth_branch = False
             self._source_of_truth_branch = self._dst_branch
 
@@ -203,7 +211,7 @@ class TestImpact:
         self._commit_distance = None
 
         # Generate a unique ID to be used as part of the file name for required runtime dynamic artifacts.
-        instance_id = uuid.uuid4().hex
+        self._instance_id = uuid.uuid4().hex
         
         if self._use_test_impact_analysis:
             logger.info("Test impact analysis is enabled.")
@@ -220,7 +228,14 @@ class TestImpact:
             if persistent_storage:
                 if persistent_storage.has_historic_data:
                     logger.info("Historic data found.")
-                    self._attempt_to_generate_change_list(persistent_storage.last_commit_hash, instance_id)
+                    self._src_commit = persistent_storage.last_commit_hash
+
+                    # Perform some basic sanity checks on the commit hashes to ensure confidence in the integrity of of the environment
+                    if self._src_commit == self._dst_commit:
+                        logger.error(f"Source commit '{self._src_commit}' and destination commit '{self._dst_commit}', implying the integrity of the historic data is compromised.")
+                        persistent_storage = None
+                    else:
+                        self._attempt_to_generate_change_list()
                 else:
                     logger.info("No historic data found.")
                     
@@ -271,7 +286,7 @@ class TestImpact:
         logger.info(f"Test failure policy is set to '{test_failure_policy}'.")
 
         # Sequence report
-        report_file = pathlib.PurePath(self._temp_workspace).joinpath(f"report.{instance_id}.json")
+        report_file = pathlib.PurePath(self._temp_workspace).joinpath(f"report.{self._instance_id}.json")
         args.append(f"--report={report_file}")
         logger.info(f"Sequence report file is set to '{report_file}'.")
 
