@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <RHI/Device.h>
 #include <RHI/PhysicalDevice.h>
@@ -18,6 +19,7 @@
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Utils/TypeHash.h>
+#include <AzCore/Settings/SettingsRegistryImpl.h>
 
 namespace AZ
 {
@@ -27,6 +29,21 @@ namespace AZ
         {
             void DeviceShutdownInternal(ID3D12DeviceX* device);
             void DeviceCompileMemoryStatisticsInternal(RHI::MemoryStatisticsBuilder& builder, IDXGIAdapterX* dxgiAdapter);
+        }
+
+        Device::Device()
+        {
+            auto settingsRegistry = AZ::SettingsRegistry::Get();
+            RHI::Ptr<PlatformLimitsDescriptor> platformLimitsDescriptor = aznew PlatformLimitsDescriptor();
+            AZStd::string platformLimitsRegPath = AZStd::string::format("/Amazon/Atom/RHI/PlatformLimits/%s", RHI::Factory::Get().GetName().GetCStr());
+            if (!(settingsRegistry &&
+                settingsRegistry->GetObject(platformLimitsDescriptor.get(), azrtti_typeid(platformLimitsDescriptor.get()), platformLimitsRegPath.c_str())))
+            {
+                AZ_Warning(
+                    "Device", false, "Platform limits for %s %s is not loaded correctly. Will use default values.",
+                    AZ_TRAIT_OS_PLATFORM_NAME, RHI::Factory::Get().GetName().GetCStr());
+            }
+            m_descriptor.m_platformLimitsDescriptor = RHI::Ptr<RHI::PlatformLimitsDescriptor>(platformLimitsDescriptor);
         }
 
         RHI::Ptr<Device> Device::Create()
@@ -43,22 +60,23 @@ namespace AZ
             }
 
             InitFeatures();
+
             return RHI::ResultCode::Success;
         }
 
-        RHI::ResultCode Device::PostInitInternal(const RHI::DeviceDescriptor& descriptor)
+        RHI::ResultCode Device::InitializeLimits()
         {
             m_allocationInfoCache.SetInitFunction([](auto& cache) { cache.set_capacity(64); });
 
             {
                 ReleaseQueue::Descriptor releaseQueueDescriptor;
-                releaseQueueDescriptor.m_collectLatency = descriptor.m_frameCountMax - 1;
+                releaseQueueDescriptor.m_collectLatency = m_descriptor.m_frameCountMax - 1;
                 m_releaseQueue.Init(releaseQueueDescriptor);
             }
 
             m_descriptorContext = AZStd::make_shared<DescriptorContext>();
 
-            RHI::ConstPtr<RHI::PlatformLimitsDescriptor> rhiDescriptor = descriptor.m_platformLimitsDescriptor;
+            RHI::ConstPtr<RHI::PlatformLimitsDescriptor> rhiDescriptor = m_descriptor.m_platformLimitsDescriptor;
             if (RHI::ConstPtr<PlatformLimitsDescriptor> platLimitsDesc = azrtti_cast<const PlatformLimitsDescriptor*>(rhiDescriptor))
             {
                 m_descriptorContext->Init(m_dx12Device.get(), platLimitsDesc);
@@ -71,7 +89,7 @@ namespace AZ
             {
                 CommandListAllocator::Descriptor commandListAllocatorDescriptor;
                 commandListAllocatorDescriptor.m_device = this;
-                commandListAllocatorDescriptor.m_frameCountMax = descriptor.m_frameCountMax;
+                commandListAllocatorDescriptor.m_frameCountMax = m_descriptor.m_frameCountMax;
                 commandListAllocatorDescriptor.m_descriptorContext = m_descriptorContext;
                 m_commandListAllocator.Init(commandListAllocatorDescriptor);
             }
@@ -82,7 +100,7 @@ namespace AZ
 
                 allocatorDesc.m_mediumPageSizeInBytes = RHI::RHISystemInterface::Get()->GetPlatformLimitsDescriptor()->m_platformDefaultValues.m_mediumStagingBufferPageSizeInBytes;
                 allocatorDesc.m_largePageSizeInBytes = RHI::RHISystemInterface::Get()->GetPlatformLimitsDescriptor()->m_platformDefaultValues.m_largestStagingBufferPageSizeInBytes;
-                allocatorDesc.m_collectLatency = descriptor.m_frameCountMax;
+                allocatorDesc.m_collectLatency = m_descriptor.m_frameCountMax;
                 m_stagingMemoryAllocator.Init(allocatorDesc);
             }
 

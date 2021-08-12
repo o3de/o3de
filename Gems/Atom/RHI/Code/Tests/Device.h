@@ -34,7 +34,6 @@ namespace UnitTest
     private:
 
         AZ::RHI::ResultCode InitInternal(AZ::RHI::PhysicalDevice&) override { return AZ::RHI::ResultCode::Success; }
-        AZ::RHI::ResultCode PostInitInternal(const AZ::RHI::DeviceDescriptor&) override { return AZ::RHI::ResultCode::Success; }
 
         void ShutdownInternal() override {}
 
@@ -54,7 +53,9 @@ namespace UnitTest
         }
 
         void FillFormatsCapabilitiesInternal([[maybe_unused]] FormatCapabilitiesList& formatsCapabilities) override {}
-        
+
+        AZ::RHI::ResultCode InitializeLimits() override { return AZ::RHI::ResultCode::Success; }
+
         void PreShutdown() override {}
 
         AZ::RHI::ResourceMemoryRequirements GetResourceMemoryRequirements([[maybe_unused]] const AZ::RHI::ImageDescriptor& descriptor) { return AZ::RHI::ResourceMemoryRequirements{}; };
