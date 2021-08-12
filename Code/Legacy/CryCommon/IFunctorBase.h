@@ -14,6 +14,7 @@
 #define CRYINCLUDE_CRYCOMMON_IFUNCTORBASE_H
 #pragma once
 
+#include <CryCommon/CryThread.h>
 
 // Base class for functor storage.
 // Not intended for direct usage.
