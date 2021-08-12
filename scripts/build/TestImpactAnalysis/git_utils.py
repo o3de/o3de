@@ -14,12 +14,18 @@ import pathlib
 class Repo:
     def __init__(self, repo_path: str):
         self._repo = git.Repo(repo_path)
+        self._remote_url = self._repo.remotes[0].config_reader.get("url")
 
     # Returns the current branch
     @property
     def current_branch(self):
         branch = self._repo.active_branch
         return branch.name
+
+    # Returns the remote URL
+    @property
+    def remote_url(self):
+        return self._remote_url
 
     def create_diff_file(self, src_commit_hash: str, dst_commit_hash: str, output_path: pathlib.Path, multi_branch: bool):
         """
