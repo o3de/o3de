@@ -445,8 +445,8 @@ namespace {{ Component.attrib['Namespace'] }}
 
         static AZStd::unique_ptr<Multiplayer::IMultiplayerComponentInput> AllocateComponentInput();
 
-        {{ ComponentBaseName }}() = default;
-        ~{{ ComponentBaseName }}() override = default;
+        {{ ComponentBaseName }}();
+        ~{{ ComponentBaseName }}() override;
 
         void Init() override;
         void Activate() override;
