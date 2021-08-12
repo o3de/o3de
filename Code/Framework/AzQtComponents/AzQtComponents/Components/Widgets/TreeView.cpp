@@ -13,6 +13,8 @@
 #include <QSettings>
 #include <QPainter>
 
+#include <AzCore/std/algorithm.h>
+
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/ConfigHelpers.h>
