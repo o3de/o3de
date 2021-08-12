@@ -43,7 +43,7 @@ void CUiAVNewSequenceDialog::OnOK()
         return;
     }
 
-    for (int k = 0; k < CUiAnimViewSequenceManager::GetSequenceManager()->GetCount(); ++k)
+    for (unsigned int k = 0; k < CUiAnimViewSequenceManager::GetSequenceManager()->GetCount(); ++k)
     {
         CUiAnimViewSequence* pSequence = CUiAnimViewSequenceManager::GetSequenceManager()->GetSequenceByIndex(k);
         QString fullname = pSequence->GetName();

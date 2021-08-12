@@ -20,6 +20,7 @@
 #include "LogFile.h"
 #include "CryListenerSet.h"
 #include "Util/ModalWindowDismisser.h"
+#include <CryCommon/CryThread.h>
 #endif
 
 class CStartupLogoDialog;

@@ -20,7 +20,7 @@ struct SThreadNameDesc
     DWORD dwFlags;
 };
 
-THREADLOCAL CrySimpleThreadSelf* CrySimpleThreadSelf::m_Self = NULL;
+AZ_THREAD_LOCAL CrySimpleThreadSelf* CrySimpleThreadSelf::m_Self = NULL;
 
 //////////////////////////////////////////////////////////////////////////
 CryEvent::CryEvent()

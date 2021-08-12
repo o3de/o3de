@@ -45,4 +45,6 @@ set(FILES
     Source/Viewport/RenderViewportWidget.cpp
     Source/Viewport/ModularViewportCameraController.cpp
     Source/Window/AtomToolsMainWindow.cpp
+    Source/Window/AtomToolsMainWindowSystemComponent.cpp
+    Source/Window/AtomToolsMainWindowSystemComponent.h
 )

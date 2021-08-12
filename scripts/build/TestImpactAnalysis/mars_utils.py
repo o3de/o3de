@@ -15,7 +15,7 @@ logger = get_logger(__file__)
 
 MARS_JOB_KEY = "job"
 SRC_COMMIT_KEY = "src_commit"
-DST_COMMIT_KEY = "src_commit"
+DST_COMMIT_KEY = "dst_commit"
 COMMIT_DISTANCE_KEY = "commit_distance"
 SRC_BRANCH_KEY = "src_branch"
 DST_BRANCH_KEY = "dst_branch"
@@ -318,7 +318,7 @@ def generate_mars_sequence(sequence_report: dict, mars_job: dict, change_list:di
     test_run_selection = {}
     test_run_selection[SELECTED_KEY] = generate_mars_test_run_selections(sequence_report[SELECTED_TEST_RUNS_KEY], sequence_report[SELECTED_TEST_RUN_REPORT_KEY], t0_timestamp)
     if sequence_report[SEQUENCE_TYPE_KEY] == IMPACT_ANALYSIS_SEQUENCE_TYPE_KEY or sequence_report[SEQUENCE_TYPE_KEY] == SAFE_IMPACT_ANALYSIS_SEQUENCE_TYPE_KEY:
-        total_test_runs = sequence_report[TOTAL_NUM_TEST_RUNS_KEY]
+        total_test_runs = sequence_report[TOTAL_NUM_TEST_RUNS_KEY] + len(sequence_report[DISCARDED_TEST_RUNS_KEY])
         if total_test_runs > 0:
             test_run_selection[SELECTED_KEY][EFFICIENCY_KEY] = (1.0 - (test_run_selection[SELECTED_KEY][TOTAL_NUM_TEST_RUNS_KEY] / total_test_runs)) * 100
         else:
