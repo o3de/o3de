@@ -202,7 +202,7 @@ namespace AzToolsFramework
         m_rootInstance->SetTemplateId(templateId);
         m_rootInstance->SetTemplateSourcePath(m_loaderInterface->GenerateRelativePath(filename));
         m_rootInstance->SetContainerEntityName("Level");
-        m_prefabSystemComponent->PropagateTemplateChanges(templateId);
+        m_prefabSystemComponent->PropagateTemplateChangesDown(templateId);
 
         return true;
     }

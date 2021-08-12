@@ -153,6 +153,24 @@ namespace AzToolsFramework
             }
         }
 
+        void PrefabSystemComponent::PropagateTemplateChangesDown(TemplateId templateId, InstanceOptionalReference instanceToExclude)
+        {
+            PropagateTemplateChanges(templateId, instanceToExclude);
+
+            auto templateIterator = m_templateIdMap.find(templateId);
+            if (templateIterator != m_templateIdMap.end())
+            {
+                for (LinkId linkId : templateIterator->second.GetLinks())
+                {
+                    auto linkIterator = m_linkIdMap.find(linkId);
+                    if (linkIterator != m_linkIdMap.end())
+                    {
+                        PropagateTemplateChangesDown(linkIterator->second.GetSourceTemplateId(), instanceToExclude);
+                    }
+                }
+            }
+        }
+
         void PrefabSystemComponent::UpdatePrefabTemplate(TemplateId templateId, const PrefabDom& updatedDom)
         {
             auto templateToUpdate = FindTemplate(templateId);

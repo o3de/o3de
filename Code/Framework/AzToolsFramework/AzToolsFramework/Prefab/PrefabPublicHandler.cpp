@@ -482,22 +482,36 @@ namespace AzToolsFramework
             AZStd::unique_ptr<Instance>& sourceInstance, TemplateId targetTemplateId, UndoSystem::URSequencePoint* undoBatch)
         {
             LinkReference nestedInstanceLink = m_prefabSystemComponentInterface->FindLink(sourceInstance->GetLinkId());
-            AZ_Assert(
-                nestedInstanceLink.has_value(),
-                "A valid link was not found for one of the instances provided as input for the CreatePrefab operation.");    
+            if (!nestedInstanceLink)
+            {
+                AZ_Assert(
+                    false,
+                    "A valid link was not found for one of the instances provided as input for the CreatePrefab operation.");
+                return;
+            }
 
             PrefabDomReference nestedInstanceLinkDom = nestedInstanceLink->get().GetLinkDom();
-            AZ_Assert(
-                nestedInstanceLinkDom.has_value(),
-                "A valid DOM was not found for the link corresponding to one of the instances provided as input for the "
-                "CreatePrefab operation.");
+
+            if (!nestedInstanceLinkDom)
+            {
+                AZ_Assert(
+                    false,
+                    "A valid DOM was not found for the link corresponding to one of the instances provided as input for the "
+                    "CreatePrefab operation.");
+                return;
+            }
 
             PrefabDomValueReference nestedInstanceLinkPatches =
                 PrefabDomUtils::FindPrefabDomValue(nestedInstanceLinkDom->get(), PrefabDomUtils::PatchesName);
-            AZ_Assert(
-                nestedInstanceLinkPatches.has_value(),
-                "A valid DOM for patches was not found for the link corresponding to one of the instances provided as input for the "
-                "CreatePrefab operation.");
+
+            if (!nestedInstanceLinkPatches)
+            {
+                AZ_Assert(
+                    false,
+                    "A valid DOM for patches was not found for the link corresponding to one of the instances provided as input for the "
+                    "CreatePrefab operation.");
+                return;
+            }
 
             PrefabDom patchesCopyForUndoSupport;
             patchesCopyForUndoSupport.CopyFrom(nestedInstanceLinkPatches->get(), patchesCopyForUndoSupport.GetAllocator());

@@ -213,6 +213,8 @@ namespace AzToolsFramework
 
             void PropagateTemplateChanges(TemplateId templateId, InstanceOptionalReference instanceToExclude = AZStd::nullopt) override;
 
+            void PropagateTemplateChangesDown(TemplateId templateIdd, InstanceOptionalReference instanceToExclude = AZStd::nullopt) override;
+
             /**
              * Updates all Instances owned by a Template.
              *
