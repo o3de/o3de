@@ -18,6 +18,6 @@ namespace AudioControls
     public:
         AudioControlSelectorHandler();
         ~AudioControlSelectorHandler();
-        AZStd::string SelectResource(const AZStd::string& previousValue) override;
+        AZStd::string SelectResource(AZStd::string_view previousValue) override;
     };
 }

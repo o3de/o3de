@@ -145,7 +145,7 @@ private:
         {
             AzToolsFramework::AudioControlSelectorRequestBus::EventResult(
                 resourceResult, propType, &AzToolsFramework::AudioControlSelectorRequestBus::Events::SelectResource,
-                AZStd::string{ m_path.toUtf8().constData() });
+                AZStd::string_view{ m_path.toUtf8().constData() });
             SetPathAndEmit(QString{ resourceResult.c_str() });
         }
     }

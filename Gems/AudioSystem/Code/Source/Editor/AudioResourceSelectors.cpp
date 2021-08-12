@@ -31,7 +31,7 @@ namespace AudioControls
         AzToolsFramework::AudioControlSelectorRequestBus::MultiHandler::BusDisconnect();
     }
 
-    AZStd::string AudioControlSelectorHandler::SelectResource(const AZStd::string& previousValue)
+    AZStd::string AudioControlSelectorHandler::SelectResource(AZStd::string_view previousValue)
     {
         using namespace AzToolsFramework;
         if (auto busId = AudioControlSelectorRequestBus::GetCurrentBusId();
@@ -46,7 +46,7 @@ namespace AudioControls
 
             ATLControlsDialog dialog(parentWidget, controlType);
             dialog.SetScope(levelName);
-            return dialog.ChooseItem(previousValue.c_str());
+            return dialog.ChooseItem(previousValue.data());
         }
         return previousValue;
     }
