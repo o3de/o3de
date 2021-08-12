@@ -13,4 +13,6 @@ set(FILES
     Source/OpenGLRender/OpenGLRenderPlugin.cpp
     Source/AtomRender/AtomRenderPlugin.h
     Source/AtomRender/AtomRenderPlugin.cpp
+    Source/AtomRender/AnimViewportWidget.h
+    Source/AtomRender/AnimViewportWidget.cpp
 )

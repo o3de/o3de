@@ -8,7 +8,11 @@
 
 #pragma once
 
+#if !defined(Q_MOC_RUN)
 #include <EMotionStudio/EMStudioSDK/Source/DockWidgetPlugin.h>
+#include <EMotionStudio/Plugins/RenderPlugins/Source/AtomRender/AnimViewportWidget.h>
+#include <QWidget>
+#endif
 
 namespace EMStudio
 {
@@ -59,7 +63,7 @@ namespace EMStudio
             return false;
         }
 
-        bool Init();
+        bool Init() override;
         EMStudioPlugin* Clone()
         {
             return new AtomRenderPlugin();
@@ -68,5 +72,9 @@ namespace EMStudio
         {
             return EMStudioPlugin::PLUGINTYPE_RENDERING;
         }
+
+    private:
+        QWidget* m_innerWidget;
+        AnimViewportWidget* m_animViewportWidget;
     };
 }

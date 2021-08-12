@@ -7,12 +7,13 @@
  */
 
 #include <EMotionStudio/Plugins/RenderPlugins/Source/AtomRender/AtomRenderPlugin.h>
+#include <QHBoxLayout>
 
 namespace EMStudio
 {
     AtomRenderPlugin::AtomRenderPlugin()
+        : DockWidgetPlugin()
     {
-
     }
 
     AtomRenderPlugin::~AtomRenderPlugin()
@@ -22,6 +23,16 @@ namespace EMStudio
 
     bool AtomRenderPlugin::Init()
     {
+        m_innerWidget = new QWidget();
+        m_dock->setWidget(m_innerWidget);
+
+        QVBoxLayout* verticalLayout = new QVBoxLayout(m_innerWidget);
+        verticalLayout->setSizeConstraint(QLayout::SetNoConstraint);
+        verticalLayout->setSpacing(1);
+        verticalLayout->setMargin(0);
+
+        m_animViewportWidget = new AnimViewportWidget(m_innerWidget);
+
         return true;
     }
 }
