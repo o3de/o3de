@@ -11,7 +11,6 @@
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/fixed_vector.h>
-#include <AzCore/Casting/lossy_cast.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -343,8 +342,8 @@ namespace AZ::StringFunc::Internal
         {
             for (const char stripCharacter : stripCharacters)
             {
-                const char lower = azlossy_cast<char>(tolower(stripCharacter));
-                const char upper = azlossy_cast<char>(toupper(stripCharacter));
+                const char lower = static_cast<char>(tolower(stripCharacter));
+                const char upper = static_cast<char>(toupper(stripCharacter));
                 if (lower != upper)
                 {
                     combinedStripCharacters.push_back(lower);

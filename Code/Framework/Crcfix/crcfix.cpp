@@ -14,7 +14,6 @@
 #include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/Utils/Utils.h>
-#include <AzCore/Casting/lossy_cast.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <io.h>
@@ -285,7 +284,7 @@ char* CRCfix::GetToken(FILE* infile, FILE* outfile)
         {
             if ((c >= '0' && c <= '9') || (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || c == '#' || c == '_')
             {
-                token[i++] = azlossy_cast<char>(c);
+                token[i++] = static_cast<char>(c);
                 continue;
             }
             else
@@ -376,7 +375,7 @@ void CRCfix::GetPreviousCRC(char* token, FILE* infile)
     int     c;
     while ((c = fgetc(infile)) != ')')
     {
-        *token++ = azlossy_cast<char>(c);
+        *token++ = static_cast<char>(c);
     }
     *token = 0;
 }
@@ -427,7 +426,7 @@ int CRCfix::Fix(Filename srce)
         if (strcmp(token, "AZ_CRC") == 0 && lastchar == '(')
         {
             size_t  i   = strlen(token);
-            token[i++]  = azlossy_cast<char>(lastchar);
+            token[i++]  = static_cast<char>(lastchar);
             int     c   = fgetc(infile);
 
             if (c == '"')
@@ -436,11 +435,11 @@ int CRCfix::Fix(Filename srce)
 
                 do
                 {
-                    token[i++] = azlossy_cast<char>(c);
+                    token[i++] = static_cast<char>(c);
                     c = fgetc(infile);
                 } while (c != '"');
 
-                token[i++] = azlossy_cast<char>(c);
+                token[i++] = static_cast<char>(c);
                 c = fgetc(infile);
 
                 int oldcrc = 0, newcrc;

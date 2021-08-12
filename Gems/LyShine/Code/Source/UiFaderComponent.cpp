@@ -463,7 +463,7 @@ void UiFaderComponent::CreateOrResizeRenderTarget(const AZ::Vector2& pixelAligne
     // Create a render target that this element and its children will be rendered to
     AZ::EntityId canvasEntityId;
     EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-    AZ::RHI::Size imageSize(aznumeric_cast<uint32_t>(renderTargetSize.GetX()), aznumeric_cast<uint32_t>(renderTargetSize.GetY()), 1);
+    AZ::RHI::Size imageSize(static_cast<uint32_t>(renderTargetSize.GetX()), static_cast<uint32_t>(renderTargetSize.GetY()), 1);
     EBUS_EVENT_ID_RESULT(m_attachmentImageId, canvasEntityId, LyShine::RenderToTextureRequestBus, UseRenderTarget, AZ::Name(m_renderTargetName.c_str()), imageSize);
     if (m_attachmentImageId.IsEmpty())
     {
