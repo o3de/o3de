@@ -546,6 +546,8 @@ namespace Multiplayer
             if (entityList.size() == 1)
             {
                 replicatorEntity = entityList[0];
+                AZ_TracePrintf("Multiplayer", "EntityUpdate created entity %s (NetID: %d) from prefab %s, index %d", replicatorEntity.GetEntity()->GetName().c_str(),
+                    netEntityId, prefabEntityId.m_prefabName.GetCStr(), prefabEntityId.m_entityOffset);
             }
             else
             {

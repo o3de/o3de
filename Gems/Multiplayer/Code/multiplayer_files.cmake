@@ -101,8 +101,8 @@ set(FILES
     Source/NetworkInput/NetworkInputMigrationVector.h
     Source/NetworkTime/NetworkTime.cpp
     Source/NetworkTime/NetworkTime.h
-    Source/Pipeline/NetBindMarkerComponent.cpp
-    Source/Pipeline/NetBindMarkerComponent.h
+    Source/Pipeline/MultiplayerDependentSpawnableController.cpp
+    Source/Pipeline/MultiplayerDependentSpawnableController.h
     Source/Pipeline/NetworkSpawnableHolderComponent.cpp
     Source/Pipeline/NetworkSpawnableHolderComponent.h
     Source/Physics/PhysicsUtils.cpp

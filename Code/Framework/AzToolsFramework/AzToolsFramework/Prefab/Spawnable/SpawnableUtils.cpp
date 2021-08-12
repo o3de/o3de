@@ -33,6 +33,7 @@ namespace AzToolsFramework::Prefab::SpawnableUtils
             Prefab::PrefabDomUtils::LoadFlags::AssignRandomEntityId)) // Always assign random entity ids because the spawnable is
                                                                               // going to be used to create clones of the entities.
         {
+            spawnable.SetDependentSpawnableList(instance.GetDependentSpawnableList());
             AzFramework::Spawnable::EntityList& entities = spawnable.GetEntities();
             instance.DetachAllEntitiesInHierarchy(
                 [&entities](AZStd::unique_ptr<AZ::Entity> entity)

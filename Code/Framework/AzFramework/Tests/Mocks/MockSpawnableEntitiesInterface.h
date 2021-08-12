@@ -59,7 +59,8 @@ namespace AzFramework
 
         MOCK_METHOD1(CreateTicket, AZStd::pair<EntitySpawnTicket::Id, void*>(AZ::Data::Asset<Spawnable>&& spawnable));
         MOCK_METHOD1(DestroyTicket, void(void* ticket));
-
+        MOCK_METHOD1(RegisterDependentSpawnableController, void(DependentSpawnableController* controller));
+        
         /** Installs some default result values for the above functions.
          *   Note that you can always override these in scope of your test by adding additional ON_CALL / EXPECT_CALL
          *   statements in the body of your test or after calling this function, and yours will take precedence.

@@ -65,6 +65,7 @@ namespace AzToolsFramework
                     ->Field("m_entities", &Instance::m_entities)
                     ->Field("m_nestedInstances", &Instance::m_nestedInstances)
                     ->Field("m_templateSourcePath", &Instance::m_templateSourcePath)
+                    ->Field("m_dependentSpawnables", &Instance::m_dependentSpawnables)
                     ;
             }
         }
@@ -652,6 +653,16 @@ namespace AzToolsFramework
         {
             m_instanceEntityMapper->UnregisterEntity(m_containerEntity->GetId());
             return AZStd::move(m_containerEntity);
+        }
+
+        const AzFramework::Spawnable::DependentSpawnableList& Instance::GetDependentSpawnableList() const
+        {
+            return m_dependentSpawnables;
+        }
+
+        AzFramework::Spawnable::DependentSpawnableList& Instance::GetDependentSpawnableList()
+        {
+            return m_dependentSpawnables;
         }
     }
 }

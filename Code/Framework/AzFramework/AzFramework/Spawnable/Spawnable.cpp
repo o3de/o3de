@@ -46,9 +46,26 @@ namespace AzFramework
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext != nullptr)
         {
-            serializeContext->Class<Spawnable, AZ::Data::AssetData>()->Version(1)
+            serializeContext->Class<Spawnable, AZ::Data::AssetData>()->Version(2)
                 ->Field("Meta data", &Spawnable::m_metaData)
-                ->Field("Entities", &Spawnable::m_entities);
+                ->Field("Entities", &Spawnable::m_entities)
+                ->Field("DependentSpawnables", &Spawnable::m_dependentSpawnables);
         }
     }
+
+    const Spawnable::DependentSpawnableList& Spawnable::GetDependentSpawnableList() const
+    {
+        return m_dependentSpawnables;
+    }
+
+    Spawnable::DependentSpawnableList& Spawnable::GetDependentSpawnableList()
+    {
+        return m_dependentSpawnables;
+    }
+
+    void Spawnable::SetDependentSpawnableList(const Spawnable::DependentSpawnableList& dependentSpawnables)
+    {
+        m_dependentSpawnables = dependentSpawnables;
+    }
+
 } // namespace AzFramework

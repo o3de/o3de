@@ -18,6 +18,7 @@
 #include <AzCore/std/optional.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/string.h>
+#include <AzFramework/Spawnable/Spawnable.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 
 namespace AZ
@@ -181,6 +182,9 @@ namespace AzToolsFramework
 
             static InstanceAlias GenerateInstanceAlias();
 
+            const AzFramework::Spawnable::DependentSpawnableList& GetDependentSpawnableList() const;
+            AzFramework::Spawnable::DependentSpawnableList& GetDependentSpawnableList();
+
         private:
             static constexpr const char s_aliasPathSeparator = '/';
 
@@ -234,6 +238,9 @@ namespace AzToolsFramework
 
             // Interface for registering the Instance itself for external queries.
             TemplateInstanceMapperInterface* m_templateInstanceMapper = nullptr;
+
+            // List of dependent spawnables.
+            AzFramework::Spawnable::DependentSpawnableList m_dependentSpawnables;
         };
     } // namespace Prefab
 } // namespace AzToolsFramework

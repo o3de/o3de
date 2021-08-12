@@ -11,6 +11,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Name/Name.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzFramework/Spawnable/SpawnableMetaData.h>
@@ -30,6 +31,7 @@ namespace AzFramework
         AZ_RTTI(AzFramework::Spawnable, "{855E3021-D305-4845-B284-20C3F7FDF16B}", AZ::Data::AssetData);
 
         using EntityList = AZStd::vector<AZStd::unique_ptr<AZ::Entity>>;
+        using DependentSpawnableList = AZStd::vector<AZStd::pair<AZ::Name, AZ::Data::Asset<AzFramework::Spawnable>>>;
 
         inline static constexpr const char* FileExtension = "spawnable";
         inline static constexpr const char* DotFileExtension = ".spawnable";
@@ -52,12 +54,19 @@ namespace AzFramework
 
         static void Reflect(AZ::ReflectContext* context);
 
+        const DependentSpawnableList& GetDependentSpawnableList() const;
+        DependentSpawnableList& GetDependentSpawnableList();
+        void SetDependentSpawnableList(const DependentSpawnableList& dependentSpawnables);
+
     private:
         SpawnableMetaData m_metaData;
 
         // Container for keeping all entities of the prefab the Spawnable was created from.
         // Includes both direct and nested entities of the prefab.
         EntityList m_entities;
+
+        // List of dependent spawnables
+        DependentSpawnableList m_dependentSpawnables;
     };
 
     using SpawnableList = AZStd::vector<Spawnable>;

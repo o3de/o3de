@@ -10,6 +10,7 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Name/Name.h>
 #include <AzCore/RTTI/TypeSafeIntegral.h>
 #include <AzCore/std/functional.h>
 #include <AzFramework/Spawnable/Spawnable.h>
@@ -29,6 +30,14 @@ namespace AzFramework
     inline static constexpr SpawnablePriority SpawnablePriority_Default  { 128 };
     inline static constexpr SpawnablePriority SpawnablePriority_Low      { 192 };
     inline static constexpr SpawnablePriority SpawnablePriority_Lowest   { 255 };
+
+    class DependentSpawnableController
+    {
+    public:
+        virtual AZ::Name GetName() const = 0;
+        virtual void ProcessSpawnable(const AzFramework::Spawnable& dependentSpawnable,
+            AZStd::unordered_map<AZ::EntityId, AZ::EntityId>& entityIdMap, AZ::SerializeContext* serializeContext) = 0;
+    };
 
     class SpawnableEntityContainerView
     {
@@ -319,6 +328,10 @@ namespace AzFramework
         //! @param completionCallback Required callback that will be called as soon as the barrier has been reached.
         //! @param optionalArgs Optional additional arguments, see BarrierOptionalArgs.
         virtual void Barrier(EntitySpawnTicket& ticket, BarrierCallback completionCallback, BarrierOptionalArgs optionalArgs = {}) = 0;
+
+        //! Registers a DependentSpawnableController to handle processing of dependent spawnables for a given spawnable.
+        //! @param controller The controller to register.
+        virtual void RegisterDependentSpawnableController(DependentSpawnableController* controller) = 0;
 
     protected:
         [[nodiscard]] virtual AZStd::pair<EntitySpawnTicket::Id, void*> CreateTicket(AZ::Data::Asset<Spawnable>&& spawnable) = 0;

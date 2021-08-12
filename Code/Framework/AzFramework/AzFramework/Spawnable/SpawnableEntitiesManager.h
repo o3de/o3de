@@ -75,6 +75,8 @@ namespace AzFramework
 
         CommandQueueStatus ProcessQueue(CommandQueuePriority priority);
 
+        void RegisterDependentSpawnableController(DependentSpawnableController* controller) override;
+
     protected:
         struct Ticket
         {
@@ -224,6 +226,8 @@ namespace AzFramework
         //! SpawnablePriority_Default which gives users a bit of room to fine tune the priorities as this value can be configured
         //! through the Settings Registry under the key "/O3DE/AzFramework/Spawnables/HighPriorityThreshold".
         SpawnablePriority m_highPriorityThreshold { 64 };
+
+        AZStd::unordered_map<AZ::Name, DependentSpawnableController*> m_dependentSpawnableControllers;
     };
 
     AZ_DEFINE_ENUM_BITWISE_OPERATORS(AzFramework::SpawnableEntitiesManager::CommandQueuePriority);

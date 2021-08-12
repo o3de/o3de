@@ -13,6 +13,7 @@
 #include <NetworkTime/NetworkTime.h>
 #include <NetworkEntity/NetworkEntityManager.h>
 #include <Source/AutoGen/Multiplayer.AutoPacketDispatcher.h>
+#include <Source/Pipeline/MultiplayerDependentSpawnableController.h>
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
@@ -162,5 +163,6 @@ namespace Multiplayer
 #if !defined(AZ_RELEASE_BUILD)
         MultiplayerEditorConnection m_editorConnectionListener;
 #endif
+        MultiplayerDependentSpawnableController m_dependentSpawnableController;
     };
 }

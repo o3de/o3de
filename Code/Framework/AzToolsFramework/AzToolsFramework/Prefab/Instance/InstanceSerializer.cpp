@@ -81,6 +81,18 @@ namespace AzToolsFramework
                 result.Combine(resultInstances);
             }
 
+            {
+                const AZStd::vector<AZStd::pair<AZ::Name, AZ::Data::Asset<AzFramework::Spawnable>>>* dependentSpawnables = &instance->m_dependentSpawnables;
+                const AZStd::vector<AZStd::pair<AZ::Name, AZ::Data::Asset<AzFramework::Spawnable>>>* defaultDependentSpawnables = defaultInstance ?
+                    &defaultInstance->m_dependentSpawnables : nullptr;
+
+                JSR::ResultCode resultInstances =
+                    ContinueStoringToJsonObjectField(outputValue, "DependentSpawnables",
+                        dependentSpawnables, defaultDependentSpawnables, azrtti_typeid<decltype(instance->m_dependentSpawnables)>(), context);
+
+                result.Combine(resultInstances);
+            }
+
             return context.Report(result,
                 result.GetProcessing() == JSR::Processing::Completed ? "Successfully stored Instance information for Prefab." :
                 "Failed to store Instance information for Prefab.");
@@ -192,6 +204,14 @@ namespace AzToolsFramework
 
             {
                 result.Combine(ContinueLoadingFromJsonObjectField(&instance->m_linkId, azrtti_typeid<LinkId>(), inputValue, "LinkId", context));
+            }
+
+            {
+                JSR::ResultCode dependentSpawnablesResult = ContinueLoadingFromJsonObjectField(
+                    &instance->m_dependentSpawnables, azrtti_typeid<decltype(instance->m_dependentSpawnables)>(), inputValue, "DependentSpawnables",
+                    context);
+
+                result.Combine(dependentSpawnablesResult);
             }
 
             return context.Report(result,

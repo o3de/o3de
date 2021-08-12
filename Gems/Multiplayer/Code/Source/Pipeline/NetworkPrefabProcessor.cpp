@@ -8,7 +8,7 @@
 
 #include <Multiplayer/IMultiplayerTools.h>
 #include <Multiplayer/Components/NetBindComponent.h>
-#include <Pipeline/NetBindMarkerComponent.h>
+#include <Pipeline/MultiplayerDependentSpawnableController.h>
 #include <Pipeline/NetworkPrefabProcessor.h>
 #include <Pipeline/NetworkSpawnableHolderComponent.h>
 
@@ -17,7 +17,7 @@
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
-#include <Prefab/Spawnable/SpawnableUtils.h>
+#include <AzToolsFramework/Prefab/Spawnable/SpawnableUtils.h>
 
 namespace Multiplayer
 {
@@ -46,7 +46,7 @@ namespace Multiplayer
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext != nullptr)
         {
-            serializeContext->Class<NetworkPrefabProcessor, PrefabProcessor>()->Version(1);
+            serializeContext->Class<NetworkPrefabProcessor, PrefabProcessor>()->Version(2);
         }
     }
 
@@ -156,21 +156,6 @@ namespace Multiplayer
             // Insert the entity into the target net spawnable
             netSpawnableEntities.emplace_back(netEntity);
 
-            // Use the old ID for the breadcrumb entity to keep parent-child relationship in the original spawnable
-            AZ::Entity* breadcrumbEntity = aznew AZ::Entity(entityId, netEntity->GetName());
-            breadcrumbEntity->SetRuntimeActiveByDefault(netEntity->IsRuntimeActiveByDefault());
-
-            // Marker component is responsible to spawning entities based on the index.
-            NetBindMarkerComponent* netBindMarkerComponent = breadcrumbEntity->CreateComponent<NetBindMarkerComponent>();
-            netBindMarkerComponent->SetNetEntityIndex(netEntitiesIndexCounter);
-            netBindMarkerComponent->SetNetworkSpawnableAsset(networkSpawnableAsset);
-
-            // Copy the transform component from the original entity to have the correct transform and parent-child relationship
-            AzFramework::TransformComponent* transformComponent = netEntity->FindComponent<AzFramework::TransformComponent>();
-            breadcrumbEntity->CreateComponent<AzFramework::TransformComponent>(*transformComponent);
-
-            instance->AddEntity(*breadcrumbEntity);
-
             netEntitiesIndexCounter++;
         }
 
@@ -189,6 +174,9 @@ namespace Multiplayer
                 networkSpawnableHolderComponent->SetNetworkSpawnableAsset(networkSpawnableAsset);
                 sourceInstance->AddEntity(*networkSpawnableHolderEntity);
             }
+
+            sourceInstance->GetDependentSpawnableList().push_back(AZStd::make_pair(MultiplayerDependentSpawnableController::GetControllerName(),
+                networkSpawnableAsset));
         }
 
         // save the final result in the target Prefab DOM.

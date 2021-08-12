@@ -190,6 +190,8 @@ namespace Multiplayer
 
         //! Register our gems multiplayer components to assign NetComponentIds
         RegisterMultiplayerComponents();
+
+        AzFramework::SpawnableEntitiesInterface::Get()->RegisterDependentSpawnableController(&m_dependentSpawnableController);
     }
 
     void MultiplayerSystemComponent::Deactivate()
@@ -1016,4 +1018,4 @@ namespace Multiplayer
         AZ::Interface<IMultiplayer>::Get()->Terminate(DisconnectReason::TerminatedByUser);
     }
     AZ_CONSOLEFREEFUNC(disconnect, AZ::ConsoleFunctorFlags::DontReplicate, "Disconnects any open multiplayer connections");
-}
+} // namespace Multiplayer

@@ -223,6 +223,11 @@ namespace AzFramework
         return queue.m_delayed.empty() ? CommandQueueStatus::NoCommandsLeft : CommandQueueStatus::HasCommandsLeft;
     }
 
+    void SpawnableEntitiesManager::RegisterDependentSpawnableController(DependentSpawnableController* controller)
+    {
+        m_dependentSpawnableControllers[controller->GetName()] = controller;
+    }
+
     AZStd::pair<uint64_t, void*> SpawnableEntitiesManager::CreateTicket(AZ::Data::Asset<Spawnable>&& spawnable)
     {
         static AZStd::atomic_uint64_t idCounter { 1 };
@@ -313,6 +318,18 @@ namespace AzFramework
             // of spawn order.  If we didn't clear out the map, it would be possible for some entities here to have references to
             // previously-spawned entities from a previous SpawnEntities or SpawnAllEntities call.
             InitializeEntityIdMappings(entitiesToSpawn, ticket.m_entityIdReferenceMap, ticket.m_previouslySpawned);
+
+            for (const auto& nameSpawnablePair : ticket.m_spawnable->GetDependentSpawnableList())
+            {
+                const AZ::Name& controllerName = nameSpawnablePair.first;
+                const AZ::Data::Asset<AzFramework::Spawnable>& dependentSpawnableAsset = nameSpawnablePair.second;
+
+                auto controllerIt = m_dependentSpawnableControllers.find(controllerName);
+                if (controllerIt != m_dependentSpawnableControllers.end())
+                {
+                    controllerIt->second->ProcessSpawnable(*dependentSpawnableAsset, ticket.m_entityIdReferenceMap, request.m_serializeContext);
+                }
+            }
 
             for (size_t i = 0; i < entitiesToSpawnSize; ++i)
             {
