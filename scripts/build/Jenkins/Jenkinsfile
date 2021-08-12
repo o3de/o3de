@@ -248,6 +248,7 @@ def CheckoutRepo(boolean disableSubmodules = false) {
             ],
             userRemoteConfigs: scm.userRemoteConfigs
        ]
+       env.REPOSITORY_URL = scm.url
     }
 
     // CHANGE_ID is used by some scripts to identify uniquely the current change (usually metric jobs)
