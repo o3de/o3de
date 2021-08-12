@@ -93,10 +93,10 @@ namespace MaterialEditor
         //! Close document and reset its data
         virtual bool Close() = 0;
 
-        //! document is loaded
+        //! Document is loaded
         virtual bool IsOpen() const = 0;
 
-        //! document has changes pending
+        //! Document has changes pending
         virtual bool IsModified() const = 0;
 
         //! Can the document be saved
