@@ -50,16 +50,6 @@ namespace AZ
             , "scriptCanvasType"
             , context));
 
-        ScriptCanvas::Datum::eOriginality originality;
-        AZ_Assert(azrtti_typeid<decltype(outputDatum->m_originality)>() == azrtti_typeid<decltype(originality)>()
-            , "m_originality type changed and won't load properly");
-        result.Combine(ContinueLoadingFromJsonObjectField
-            ( &originality
-            , azrtti_typeid<decltype(outputDatum->m_originality)>()
-            , inputValue
-            , "originality"
-            , context));
-
         AZStd::any storage;
         { // datum storage begin
             AZ::Uuid typeId = AZ::Uuid::CreateNull();
@@ -98,10 +88,10 @@ namespace AZ
             ( &label
             , azrtti_typeid<decltype(outputDatum->m_datumLabel)>()
             , inputValue
-            , "originality"
+            , "label"
             , context));
 
-        Datum copy(scType, originality, AZStd::any_cast<void>(&storage), scType.GetAZType());
+        Datum copy(scType, Datum::eOriginality::Original, AZStd::any_cast<void>(&storage), scType.GetAZType());
         copy.SetLabel(label);
         *outputDatum = copy;
 
@@ -152,15 +142,7 @@ namespace AZ
             , defaultScriptDataPtr ? &defaultScriptDataPtr->GetType() : nullptr
             , azrtti_typeid<decltype(inputScriptDataPtr->GetType())>()
             , context));
-
-        result.Combine(ContinueStoringToJsonObjectField
-            ( outputValue
-            , "originality"
-            , &inputScriptDataPtr->m_originality
-            , defaultScriptDataPtr ? &defaultScriptDataPtr->m_originality : nullptr
-            , azrtti_typeid<decltype(inputScriptDataPtr->m_originality)>()
-            , context));
-                
+                        
         { // datum storage begin
             {
                 rapidjson::Value typeValue;
