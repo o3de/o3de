@@ -266,8 +266,8 @@ namespace AzToolsFramework
 
             AZ_Error(
                 "Prefab",
-                result.GetOutcome() == AZ::JsonSerializationResult::Outcomes::PartialSkip ||
-                    result.GetOutcome() == AZ::JsonSerializationResult::Outcomes::Success,
+                (result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::Skipped) &&
+                (result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::PartialSkip),
                 "Some of the patches are not successfully applied.");
 
             //remove the link id placed into the instance

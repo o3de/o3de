@@ -54,18 +54,18 @@ namespace EMotionFX
          */
         struct EMFX_API DeformPass
         {
-            MorphTargetStandard*    mMorphTarget;   /**< The morph target working on the mesh. */
-            size_t                  mDeformDataNr;  /**< An index inside the deform datas of the standard morph target. */
-            bool                    mLastNearZero;  /**< Was the last frame's weight near zero? */
+            MorphTargetStandard*    m_morphTarget;   /**< The morph target working on the mesh. */
+            size_t                  m_deformDataNr;  /**< An index inside the deform datas of the standard morph target. */
+            bool                    m_lastNearZero;  /**< Was the last frame's weight near zero? */
 
             /**
              * Constructor.
              * Automatically initializes on defaults.
              */
             DeformPass()
-                : mMorphTarget(nullptr)
-                , mDeformDataNr(InvalidIndex)
-                , mLastNearZero(false) {}
+                : m_morphTarget(nullptr)
+                , m_deformDataNr(InvalidIndex)
+                , m_lastNearZero(false) {}
         };
 
         /**
@@ -132,7 +132,7 @@ namespace EMotionFX
         void ReserveDeformPasses(size_t numPasses);
 
     private:
-        AZStd::vector<DeformPass>    mDeformPasses;  /**< The deform passes. Each pass basically represents a morph target. */
+        AZStd::vector<DeformPass>    m_deformPasses;  /**< The deform passes. Each pass basically represents a morph target. */
 
         /**
          * Default constructor.

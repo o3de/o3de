@@ -66,9 +66,9 @@ private:
 #       if !defined(eLittleEndian)
 #           error eLittleEndian is not defined, please include CryEndian.h.
 #       endif
-        COMPILE_TIME_ASSERT(metautils::is_const<dtype>::value || !metautils::is_const<dtype1>::value);
+        static_assert(metautils::is_const<dtype>::value || !metautils::is_const<dtype1>::value);
         // note: we allow xint32 -> xint16 converting
-        COMPILE_TIME_ASSERT(
+        static_assert(
             (metautils::is_same<typename metautils::remove_const<dtype1>::type, typename metautils::remove_const<dtype>::type>::value ||
              ((metautils::is_same<typename metautils::remove_const<dtype1>::type, sint32>::value ||
                metautils::is_same<typename metautils::remove_const<dtype1>::type, uint32>::value ||

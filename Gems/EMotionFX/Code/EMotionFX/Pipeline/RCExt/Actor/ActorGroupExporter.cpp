@@ -49,7 +49,7 @@ namespace EMotionFX
             if (serializeContext)
             {
                 // Increasing the version number of the actor group exporter will make sure all actor products will be force re-generated.
-                serializeContext->Class<ActorGroupExporter, AZ::SceneAPI::SceneCore::ExportingComponent>()->Version(3);
+                serializeContext->Class<ActorGroupExporter, AZ::SceneAPI::SceneCore::ExportingComponent>()->Version(4);
             }
         }
 

@@ -27,8 +27,8 @@ namespace EMotionFX
     AZ_CLASS_ALLOCATOR_IMPL(AnimGraphObject, AnimGraphAllocator, 0)
 
     AnimGraphObject::AnimGraphObject()
-        : mAnimGraph(nullptr)
-        , mObjectIndex(MCORE_INVALIDINDEX32)
+        : m_animGraph(nullptr)
+        , m_objectIndex(MCORE_INVALIDINDEX32)
     {
     }
 
@@ -36,7 +36,7 @@ namespace EMotionFX
     AnimGraphObject::AnimGraphObject(AnimGraph* animGraph)
         : AnimGraphObject()
     {
-        mAnimGraph = animGraph;
+        m_animGraph = animGraph;
     }
 
 
@@ -124,17 +124,17 @@ namespace EMotionFX
     void AnimGraphObject::InvalidateUniqueDatas()
     {
         AnimGraphObject* object = this;
-        const size_t numAnimGraphInstances = mAnimGraph->GetNumAnimGraphInstances();
+        const size_t numAnimGraphInstances = m_animGraph->GetNumAnimGraphInstances();
         for (size_t i = 0; i < numAnimGraphInstances; ++i)
         {
-            AnimGraphInstance* animGraphInstance = mAnimGraph->GetAnimGraphInstance(i);
+            AnimGraphInstance* animGraphInstance = m_animGraph->GetAnimGraphInstance(i);
             object->InvalidateUniqueData(animGraphInstance);
         }
     }
 
     void AnimGraphObject::InvalidateUniqueData(AnimGraphInstance* animGraphInstance)
     {
-        AnimGraphObjectData* uniqueData = animGraphInstance->GetUniqueObjectData(mObjectIndex);
+        AnimGraphObjectData* uniqueData = animGraphInstance->GetUniqueObjectData(m_objectIndex);
         if (uniqueData)
         {
             uniqueData->Invalidate();
@@ -143,7 +143,7 @@ namespace EMotionFX
 
     void AnimGraphObject::ResetUniqueData(AnimGraphInstance* animGraphInstance)
     {
-        AnimGraphObjectData* uniqueData = animGraphInstance->GetUniqueObjectData(mObjectIndex);
+        AnimGraphObjectData* uniqueData = animGraphInstance->GetUniqueObjectData(m_objectIndex);
         if (uniqueData)
         {
             uniqueData->Reset();
@@ -153,10 +153,10 @@ namespace EMotionFX
     void AnimGraphObject::ResetUniqueDatas()
     {
         AnimGraphObject* object = this;
-        const size_t numAnimGraphInstances = mAnimGraph->GetNumAnimGraphInstances();
+        const size_t numAnimGraphInstances = m_animGraph->GetNumAnimGraphInstances();
         for (size_t i = 0; i < numAnimGraphInstances; ++i)
         {
-            AnimGraphInstance* animGraphInstance = mAnimGraph->GetAnimGraphInstance(i);
+            AnimGraphInstance* animGraphInstance = m_animGraph->GetAnimGraphInstance(i);
             object->ResetUniqueData(animGraphInstance);
         }
     }
@@ -165,7 +165,7 @@ namespace EMotionFX
     void AnimGraphObject::Update(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
         MCORE_UNUSED(timePassedInSeconds);
-        animGraphInstance->EnableObjectFlags(mObjectIndex, AnimGraphInstance::OBJECTFLAGS_UPDATE_READY);
+        animGraphInstance->EnableObjectFlags(m_objectIndex, AnimGraphInstance::OBJECTFLAGS_UPDATE_READY);
     }
 
     void AnimGraphObject::Reinit()
@@ -230,15 +230,15 @@ namespace EMotionFX
     // does the init for all anim graph instances in the parent animgraph
     void AnimGraphObject::InitInternalAttributesForAllInstances()
     {
-        if (mAnimGraph == nullptr)
+        if (m_animGraph == nullptr)
         {
             return;
         }
 
-        const size_t numInstances = mAnimGraph->GetNumAnimGraphInstances();
+        const size_t numInstances = m_animGraph->GetNumAnimGraphInstances();
         for (size_t i = 0; i < numInstances; ++i)
         {
-            InitInternalAttributes(mAnimGraph->GetAnimGraphInstance(i));
+            InitInternalAttributes(m_animGraph->GetAnimGraphInstance(i));
         }
     }
 

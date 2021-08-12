@@ -30,16 +30,16 @@ namespace EMotionFX
 
     void BlendTreeMaskNode::UniqueData::Update()
     {
-        BlendTreeMaskNode* maskNode = azdynamic_cast<BlendTreeMaskNode*>(mObject);
+        BlendTreeMaskNode* maskNode = azdynamic_cast<BlendTreeMaskNode*>(m_object);
         AZ_Assert(maskNode, "Unique data linked to incorrect node type.");
 
-        const Actor* actor = mAnimGraphInstance->GetActorInstance()->GetActor();
+        const Actor* actor = m_animGraphInstance->GetActorInstance()->GetActor();
         const size_t numMaskInstances = maskNode->GetNumUsedMasks();
         m_maskInstances.resize(numMaskInstances);
         size_t maskInstanceIndex = 0;
 
         m_motionExtractionInputPortNr.reset();
-        const size_t motionExtractionJointIndex = mAnimGraphInstance->GetActorInstance()->GetActor()->GetMotionExtractionNodeIndex();
+        const size_t motionExtractionJointIndex = m_animGraphInstance->GetActorInstance()->GetActor()->GetMotionExtractionNodeIndex();
 
         const AZStd::vector<Mask>& masks = maskNode->GetMasks();
         const size_t numMasks = masks.size();
@@ -129,16 +129,16 @@ namespace EMotionFX
 
     void BlendTreeMaskNode::OnMotionExtractionNodeChanged(Actor* actor, [[maybe_unused]] Node* newMotionExtractionNode)
     {
-        if (!mAnimGraph)
+        if (!m_animGraph)
         {
             return;
         }
 
         bool needsReinit = false;
-        const size_t numAnimGraphInstances = mAnimGraph->GetNumAnimGraphInstances();
+        const size_t numAnimGraphInstances = m_animGraph->GetNumAnimGraphInstances();
         for (size_t i = 0; i < numAnimGraphInstances; ++i)
         {
-            AnimGraphInstance* animGraphInstance = mAnimGraph->GetAnimGraphInstance(i);
+            AnimGraphInstance* animGraphInstance = m_animGraph->GetAnimGraphInstance(i);
             if (actor == animGraphInstance->GetActorInstance()->GetActor())
             {
                 needsReinit = true;
@@ -192,7 +192,7 @@ namespace EMotionFX
 
         if (GetEMotionFX().GetIsInEditorMode() && GetCanVisualize(animGraphInstance))
         {
-            animGraphInstance->GetActorInstance()->DrawSkeleton(outputAnimGraphPose->GetPose(), mVisualizeColor);
+            animGraphInstance->GetActorInstance()->DrawSkeleton(outputAnimGraphPose->GetPose(), m_visualizeColor);
         }
     }
 

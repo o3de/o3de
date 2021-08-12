@@ -333,12 +333,12 @@ namespace EMotionFX
     void RagdollInstance::GetWorldSpaceTransform(const Pose* pose, size_t jointIndex, AZ::Vector3& outPosition, AZ::Quaternion& outRotation)
     {
         const Transform& globalTransform = pose->GetModelSpaceTransform(jointIndex);
-        const AZ::Quaternion actorInstanceRotation = m_actorInstance->GetLocalSpaceTransform().mRotation;
-        const AZ::Vector3& actorInstanceTranslation = m_actorInstance->GetLocalSpaceTransform().mPosition;
+        const AZ::Quaternion actorInstanceRotation = m_actorInstance->GetLocalSpaceTransform().m_rotation;
+        const AZ::Vector3& actorInstanceTranslation = m_actorInstance->GetLocalSpaceTransform().m_position;
 
         // Calculate the world space position and rotation (The actor instance position and rotation equal the entity transform).
-        outPosition = actorInstanceRotation.TransformVector(globalTransform.mPosition) + actorInstanceTranslation;
-        outRotation = actorInstanceRotation * globalTransform.mRotation;
+        outPosition = actorInstanceRotation.TransformVector(globalTransform.m_position) + actorInstanceTranslation;
+        outRotation = actorInstanceRotation * globalTransform.m_rotation;
     }
 
     void RagdollInstance::ReadRagdollStateFromActorInstance(Physics::RagdollState& outRagdollState, AZ::Vector3& outRagdollPos, AZ::Quaternion& outRagdollRot)
@@ -349,8 +349,8 @@ namespace EMotionFX
         const Skeleton* skeleton = actor->GetSkeleton();
         const Pose* currentPose = m_actorInstance->GetTransformData()->GetCurrentPose();
 
-        const AZ::Quaternion& actorInstanceRotation = m_actorInstance->GetLocalSpaceTransform().mRotation;
-        const AZ::Vector3& actorInstanceTranslation = m_actorInstance->GetLocalSpaceTransform().mPosition;
+        const AZ::Quaternion& actorInstanceRotation = m_actorInstance->GetLocalSpaceTransform().m_rotation;
+        const AZ::Vector3& actorInstanceTranslation = m_actorInstance->GetLocalSpaceTransform().m_position;
 
         const size_t ragdollNodeCount = m_ragdoll->GetNumNodes();
         outRagdollState.resize(ragdollNodeCount);
@@ -371,14 +371,14 @@ namespace EMotionFX
         {
             // Calculate the ragdoll world space position and rotation from the ragdoll root node representative in the animation skeleton (e.g. the Pelvis).
             const Transform& globalTransform = currentPose->GetModelSpaceTransform(m_ragdollRootJoint->GetNodeIndex());
-            outRagdollPos = actorInstanceRotation.TransformVector(globalTransform.mPosition) + actorInstanceTranslation;
-            outRagdollRot = actorInstanceRotation * globalTransform.mRotation;
+            outRagdollPos = actorInstanceRotation.TransformVector(globalTransform.m_position) + actorInstanceTranslation;
+            outRagdollRot = actorInstanceRotation * globalTransform.m_rotation;
         }
         else
         {
             AZ_Assert(false, "Expected valid ragdoll root node. Either the ragdoll root node does not exist in the animation skeleton or the ragdoll is empty.");
-            outRagdollPos = m_actorInstance->GetLocalSpaceTransform().mPosition;
-            outRagdollRot = m_actorInstance->GetLocalSpaceTransform().mRotation;
+            outRagdollPos = m_actorInstance->GetLocalSpaceTransform().m_position;
+            outRagdollRot = m_actorInstance->GetLocalSpaceTransform().m_rotation;
         }
     }
 
@@ -512,8 +512,8 @@ namespace EMotionFX
                         drawLine(currentParentPos, simulatedColor, currentPos, simulatedColor, defaultLineThickness);
 
                         // Render target pose
-                        const AZ::Vector3& targetPos = targetPose.GetWorldSpaceTransform(jointIndex).mPosition;
-                        const AZ::Vector3& targetParentPos = targetPose.GetWorldSpaceTransform(ragdollParentJoint->GetNodeIndex()).mPosition;
+                        const AZ::Vector3& targetPos = targetPose.GetWorldSpaceTransform(jointIndex).m_position;
+                        const AZ::Vector3& targetParentPos = targetPose.GetWorldSpaceTransform(ragdollParentJoint->GetNodeIndex()).m_position;
                         drawLine(targetParentPos, simulatedTargetColor, targetPos, simulatedTargetColor, targetLineThickness);
                     }
                     else

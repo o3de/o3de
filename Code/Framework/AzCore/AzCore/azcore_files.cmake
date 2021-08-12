@@ -434,6 +434,7 @@ set(FILES
     Preprocessor/Sequences.h
     RTTI/RTTI.h
     RTTI/TypeInfo.h
+    RTTI/TypeInfoSimple.h
     RTTI/ReflectContext.h
     RTTI/ReflectContext.cpp
     RTTI/ReflectionManager.h
@@ -462,6 +463,8 @@ set(FILES
     Script/ScriptTimePoint.h
     Script/ScriptProperty.h
     Script/ScriptProperty.cpp
+    Script/ScriptPropertySerializer.h
+    Script/ScriptPropertySerializer.cpp
     Script/ScriptPropertyTable.h
     Script/ScriptPropertyTable.cpp
     Script/ScriptPropertyWatcherBus.h

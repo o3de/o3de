@@ -562,7 +562,7 @@ namespace Blast
     public:
         FakeEntityProvider(uint32_t entityCount)
         {
-            for (int i = 0; i < entityCount; ++i)
+            for (uint32 i = 0; i < entityCount; ++i)
             {
                 m_entities.push_back(AZStd::make_shared<AZ::Entity>());
             }

@@ -47,15 +47,15 @@ namespace MCore
         struct MCORE_API Parameter
         {
             Parameter(AZStd::string name, AZStd::string description, AZStd::string defaultValue, EParamType paramType, bool required)
-                : mName(AZStd::move(name)), mDescription(AZStd::move(description)), mDefaultValue(AZStd::move(defaultValue)), mParamType(paramType), mRequired(required)
+                : m_name(AZStd::move(name)), m_description(AZStd::move(description)), m_defaultValue(AZStd::move(defaultValue)), m_paramType(paramType), m_required(required)
             {
             }
 
-            AZStd::string      mName;          /**< The name of the parameter. */
-            AZStd::string      mDescription;   /**< The description of the parameter. */
-            AZStd::string      mDefaultValue;  /**< The default value. */
-            EParamType         mParamType;     /**< The parameter type. */
-            bool               mRequired;      /**< Is this parameter required or optional? */
+            AZStd::string      m_name;          /**< The name of the parameter. */
+            AZStd::string      m_description;   /**< The description of the parameter. */
+            AZStd::string      m_defaultValue;  /**< The default value. */
+            EParamType         m_paramType;     /**< The parameter type. */
+            bool               m_required;      /**< Is this parameter required or optional? */
         };
 
     public:

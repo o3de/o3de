@@ -47,46 +47,46 @@ namespace EMStudio
     TimeViewPlugin::TimeViewPlugin()
         : EMStudio::DockWidgetPlugin()
     {
-        mPixelsPerSecond    = 60;
-        mCurTime            = 0;
-        mFPS                = 32;
-        mTimeScale          = 1.0;
-        mTargetTimeScale    = 1.0;
-        mScrollX            = 0.0;
-        mTargetScrollX      = 0.0;
-        mMaxTime            = 0.0;
-        mMaxHeight          = 0.0;
-        mMinScale           = 0.25;
-        mMaxScale           = 100.0;
-        mCurMouseX          = 0;
-        mCurMouseY          = 0;
-        mTotalTime          = FLT_MAX;
-        mZoomInCursor       = nullptr;
-        mZoomOutCursor      = nullptr;
-        mIsAnimating        = false;
-        mDirty              = true;
+        m_pixelsPerSecond    = 60;
+        m_curTime            = 0;
+        m_fps                = 32;
+        m_timeScale          = 1.0;
+        m_targetTimeScale    = 1.0;
+        m_scrollX            = 0.0;
+        m_targetScrollX      = 0.0;
+        m_maxTime            = 0.0;
+        m_maxHeight          = 0.0;
+        m_minScale           = 0.25;
+        m_maxScale           = 100.0;
+        m_curMouseX          = 0;
+        m_curMouseY          = 0;
+        m_totalTime          = FLT_MAX;
+        m_zoomInCursor       = nullptr;
+        m_zoomOutCursor      = nullptr;
+        m_isAnimating        = false;
+        m_dirty              = true;
 
-        mTrackDataHeaderWidget = nullptr;
-        mTrackDataWidget    = nullptr;
-        mTrackHeaderWidget  = nullptr;
-        mTimeInfoWidget     = nullptr;
+        m_trackDataHeaderWidget = nullptr;
+        m_trackDataWidget    = nullptr;
+        m_trackHeaderWidget  = nullptr;
+        m_timeInfoWidget     = nullptr;
 
-        mNodeHistoryItem    = nullptr;
-        mEventHistoryItem   = nullptr;
-        mActorInstanceData  = nullptr;
-        mEventEmitterNode   = nullptr;
+        m_nodeHistoryItem    = nullptr;
+        m_eventHistoryItem   = nullptr;
+        m_actorInstanceData  = nullptr;
+        m_eventEmitterNode   = nullptr;
 
-        mMainWidget                 = nullptr;
-        mMotionWindowPlugin         = nullptr;
-        mMotionEventsPlugin         = nullptr;
-        mMotionListWindow           = nullptr;
+        m_mainWidget                 = nullptr;
+        m_motionWindowPlugin         = nullptr;
+        m_motionEventsPlugin         = nullptr;
+        m_motionListWindow           = nullptr;
         m_motionSetPlugin           = nullptr;
-        mMotion                     = nullptr;
+        m_motion                     = nullptr;
 
-        mBrushCurTimeHandle = QBrush(QColor(255, 180, 0));
-        mPenCurTimeHandle   = QPen(QColor(255, 180, 0));
-        mPenTimeHandles     = QPen(QColor(150, 150, 150), 1, Qt::DotLine);
-        mPenCurTimeHelper   = QPen(QColor(100, 100, 100), 1, Qt::DotLine);
+        m_brushCurTimeHandle = QBrush(QColor(255, 180, 0));
+        m_penCurTimeHandle   = QPen(QColor(255, 180, 0));
+        m_penTimeHandles     = QPen(QColor(150, 150, 150), 1, Qt::DotLine);
+        m_penCurTimeHelper   = QPen(QColor(100, 100, 100), 1, Qt::DotLine);
     }
 
     TimeViewPlugin::~TimeViewPlugin()
@@ -103,11 +103,11 @@ namespace EMStudio
         RemoveAllTracks();
 
         // get rid of the cursors
-        delete mZoomInCursor;
-        delete mZoomOutCursor;
+        delete m_zoomInCursor;
+        delete m_zoomOutCursor;
 
         // get rid of the motion infos
-        for (MotionInfo* motionInfo : mMotionInfos)
+        for (MotionInfo* motionInfo : m_motionInfos)
         {
             delete motionInfo;
         }
@@ -162,12 +162,12 @@ namespace EMStudio
     {
         if (classID == MotionWindowPlugin::CLASS_ID)
         {
-            mMotionWindowPlugin = nullptr;
+            m_motionWindowPlugin = nullptr;
         }
 
         if (classID == MotionEventsPlugin::CLASS_ID)
         {
-            mMotionEventsPlugin = nullptr;
+            m_motionEventsPlugin = nullptr;
         }
     }
 
@@ -196,37 +196,37 @@ namespace EMStudio
         GetCommandManager()->RegisterCommandCallback("PlayMotion", m_commandCallbacks.back());
 
         // load the cursors
-        mZoomInCursor = new QCursor(QPixmap(QDir{ QString(MysticQt::GetDataDir().c_str()) }.filePath("Images/Rendering/ZoomInCursor.png")).scaled(32, 32));
-        mZoomOutCursor = new QCursor(QPixmap(QDir{ QString(MysticQt::GetDataDir().c_str()) }.filePath("Images/Rendering/ZoomOutCursor.png")).scaled(32, 32));
+        m_zoomInCursor = new QCursor(QPixmap(QDir{ QString(MysticQt::GetDataDir().c_str()) }.filePath("Images/Rendering/ZoomInCursor.png")).scaled(32, 32));
+        m_zoomOutCursor = new QCursor(QPixmap(QDir{ QString(MysticQt::GetDataDir().c_str()) }.filePath("Images/Rendering/ZoomOutCursor.png")).scaled(32, 32));
 
         // create main widget
-        mMainWidget = new QWidget(mDock);
-        mDock->setWidget(mMainWidget);
+        m_mainWidget = new QWidget(m_dock);
+        m_dock->setWidget(m_mainWidget);
         QGridLayout* mainLayout = new QGridLayout();
         mainLayout->setMargin(0);
         mainLayout->setSpacing(0);
-        mMainWidget->setLayout(mainLayout);
+        m_mainWidget->setLayout(mainLayout);
 
         // create widgets in the header
         QHBoxLayout* topLayout = new QHBoxLayout();
         // Top
-        mTimeViewToolBar = new TimeViewToolBar(this);
+        m_timeViewToolBar = new TimeViewToolBar(this);
 
         // Top-left
-        mTimeInfoWidget = new TimeInfoWidget(this);
-        mTimeInfoWidget->setFixedWidth(175);
-        topLayout->addWidget(mTimeInfoWidget);
-        topLayout->addWidget(mTimeViewToolBar);
+        m_timeInfoWidget = new TimeInfoWidget(this);
+        m_timeInfoWidget->setFixedWidth(175);
+        topLayout->addWidget(m_timeInfoWidget);
+        topLayout->addWidget(m_timeViewToolBar);
         mainLayout->addLayout(topLayout, 0, 0, 1, 2);
 
         // Top-right
-        mTrackDataHeaderWidget = new TrackDataHeaderWidget(this, mDock);
-        mTrackDataHeaderWidget->setFixedHeight(40);
+        m_trackDataHeaderWidget = new TrackDataHeaderWidget(this, m_dock);
+        m_trackDataHeaderWidget->setFixedHeight(40);
 
         // create widgets in the body. For the body we are going to put a scroll area
         // so we can get a vertical scroll bar when we have more tracks than what the
         // view can show
-        QScrollArea* bodyWidget = new QScrollArea(mMainWidget);
+        QScrollArea* bodyWidget = new QScrollArea(m_mainWidget);
         bodyWidget->setFrameShape(QFrame::NoFrame);
         bodyWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
         bodyWidget->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
@@ -242,39 +242,39 @@ namespace EMStudio
         mainLayout->addWidget(bodyWidget, 2, 0, 1, 2);
 
         // Bottom-left
-        mTrackHeaderWidget = new TrackHeaderWidget(this, mDock);
-        mTrackHeaderWidget->setFixedWidth(175);
-        bodyLayout->addWidget(mTrackHeaderWidget);
+        m_trackHeaderWidget = new TrackHeaderWidget(this, m_dock);
+        m_trackHeaderWidget->setFixedWidth(175);
+        bodyLayout->addWidget(m_trackHeaderWidget);
 
         // Left
         QHBoxLayout* addTrackAndTrackDataLayout = new QHBoxLayout;
-        addTrackAndTrackDataLayout->addWidget(mTrackHeaderWidget->GetAddTrackWidget());
-        mTrackHeaderWidget->GetAddTrackWidget()->setFixedWidth(175);
-        addTrackAndTrackDataLayout->addWidget(mTrackDataHeaderWidget);
+        addTrackAndTrackDataLayout->addWidget(m_trackHeaderWidget->GetAddTrackWidget());
+        m_trackHeaderWidget->GetAddTrackWidget()->setFixedWidth(175);
+        addTrackAndTrackDataLayout->addWidget(m_trackDataHeaderWidget);
 
         mainLayout->addLayout(addTrackAndTrackDataLayout, 1, 0, 1, 2);
 
         // bottom-right
-        mTrackDataWidget = new TrackDataWidget(this, mDock);
-        bodyLayout->addWidget(mTrackDataWidget);
+        m_trackDataWidget = new TrackDataWidget(this, m_dock);
+        bodyLayout->addWidget(m_trackDataWidget);
 
-        connect(mTrackDataWidget, &TrackDataWidget::SelectionChanged, this, &TimeViewPlugin::OnSelectionChanged);
+        connect(m_trackDataWidget, &TrackDataWidget::SelectionChanged, this, &TimeViewPlugin::OnSelectionChanged);
 
-        connect(mTrackDataWidget, &TrackDataWidget::ElementTrackChanged, this, &TimeViewPlugin::MotionEventTrackChanged);
-        connect(mTrackDataWidget, &TrackDataWidget::MotionEventChanged, this, &TimeViewPlugin::MotionEventChanged);
+        connect(m_trackDataWidget, &TrackDataWidget::ElementTrackChanged, this, &TimeViewPlugin::MotionEventTrackChanged);
+        connect(m_trackDataWidget, &TrackDataWidget::MotionEventChanged, this, &TimeViewPlugin::MotionEventChanged);
         connect(this, &TimeViewPlugin::DeleteKeyPressed, this, &TimeViewPlugin::RemoveSelectedMotionEvents);
-        connect(mDock, &QDockWidget::visibilityChanged, this, &TimeViewPlugin::VisibilityChanged);
+        connect(m_dock, &QDockWidget::visibilityChanged, this, &TimeViewPlugin::VisibilityChanged);
 
         connect(this, &TimeViewPlugin::ManualTimeChange, this, &TimeViewPlugin::OnManualTimeChange);
 
-        connect(mTimeViewToolBar, &TimeViewToolBar::RecorderStateChanged, this, &TimeViewPlugin::RecorderStateChanged);
+        connect(m_timeViewToolBar, &TimeViewToolBar::RecorderStateChanged, this, &TimeViewPlugin::RecorderStateChanged);
 
         SetCurrentTime(0.0f);
         SetScale(1.0f);
 
         SetRedrawFlag();
 
-        mTimeViewToolBar->UpdateInterface();
+        m_timeViewToolBar->UpdateInterface();
 
         EMotionFX::AnimGraphEditorNotificationBus::Handler::BusConnect();
         return true;
@@ -284,7 +284,7 @@ namespace EMStudio
     // add a new track
     void TimeViewPlugin::AddTrack(TimeTrack* track)
     {
-        mTracks.emplace_back(track);
+        m_tracks.emplace_back(track);
         SetRedrawFlag();
     }
 
@@ -293,18 +293,18 @@ namespace EMStudio
     void TimeViewPlugin::RemoveAllTracks()
     {
         // get the number of time tracks and iterate through them
-        for (TimeTrack* track : mTracks)
+        for (TimeTrack* track : m_tracks)
         {
             delete track;
         }
 
-        mTracks.clear();
+        m_tracks.clear();
         SetRedrawFlag();
     }
 
     TimeTrack* TimeViewPlugin::FindTrackByElement(TimeTrackElement* element) const
     {
-        const auto foundTrack = AZStd::find_if(begin(mTracks), end(mTracks), [element](const TimeTrack* timeTrack)
+        const auto foundTrack = AZStd::find_if(begin(m_tracks), end(m_tracks), [element](const TimeTrack* timeTrack)
         {
             // get the number of time track elements and iterate through them
             const size_t numElements = timeTrack->GetNumElements();
@@ -317,15 +317,15 @@ namespace EMStudio
             }
             return false;
         });
-        return foundTrack != end(mTracks) ? *foundTrack : nullptr;
+        return foundTrack != end(m_tracks) ? *foundTrack : nullptr;
     }
 
     AZ::Outcome<size_t> TimeViewPlugin::FindTrackIndex(const TimeTrack* track) const
     {
-        const auto foundTrack = AZStd::find(begin(mTracks), end(mTracks), track);
-        if (foundTrack != end(mTracks))
+        const auto foundTrack = AZStd::find(begin(m_tracks), end(m_tracks), track);
+        if (foundTrack != end(m_tracks))
         {
-            return AZ::Success(static_cast<size_t>(AZStd::distance(begin(mTracks), foundTrack)));
+            return AZ::Success(static_cast<size_t>(AZStd::distance(begin(m_tracks), foundTrack)));
         }
         return AZ::Failure();
     }
@@ -378,7 +378,7 @@ namespace EMStudio
         }
         if (outFrameNr)
         {
-            *outFrameNr     = aznumeric_cast<uint32>(timeValue / (double)mFPS);
+            *outFrameNr     = aznumeric_cast<uint32>(timeValue / (double)m_fps);
         }
     }
 
@@ -388,10 +388,10 @@ namespace EMStudio
     {
         if (scaleXPixel)
         {
-            xPixel *= mTimeScale;
+            xPixel *= m_timeScale;
         }
 
-        const double pixelTime = ((xPixel + mScrollX) / mPixelsPerSecond);
+        const double pixelTime = ((xPixel + m_scrollX) / m_pixelsPerSecond);
 
         if (outPixelTime)
         {
@@ -411,7 +411,7 @@ namespace EMStudio
         }
         if (outFrameNr)
         {
-            *outFrameNr     = aznumeric_cast<uint32>(pixelTime / (double)mFPS);
+            *outFrameNr     = aznumeric_cast<uint32>(pixelTime / (double)m_fps);
         }
     }
 
@@ -423,11 +423,11 @@ namespace EMStudio
             return;
         }
 
-        if (mMotion)
+        if (m_motion)
         {
-            MotionInfo* motionInfo  = FindMotionInfo(mMotion->GetID());
-            motionInfo->mScale      = mTargetTimeScale;
-            motionInfo->mScrollX    = mTargetScrollX;
+            MotionInfo* motionInfo  = FindMotionInfo(m_motion->GetID());
+            motionInfo->m_scale      = m_targetTimeScale;
+            motionInfo->m_scrollX    = m_targetScrollX;
         }
     }
 
@@ -436,20 +436,19 @@ namespace EMStudio
     void TimeViewPlugin::UpdateVisualData()
     {
         ValidatePluginLinks();
-        mTrackDataHeaderWidget->update();
-        mTrackDataWidget->update();
-        mTimeInfoWidget->update();
-        mDirty = false;
+        m_trackDataHeaderWidget->update();
+        m_trackDataWidget->update();
+        m_timeInfoWidget->update();
+        m_dirty = false;
     }
 
     // calc the time value to a pixel value (excluding scroll)
     double TimeViewPlugin::TimeToPixel(double timeInSeconds, bool scale) const
     {
-        //  return ((timeInSeconds * mPixelsPerSecond)/* / mTimeScale*/) - mScrollX;
-        double result = ((timeInSeconds * mPixelsPerSecond)) - mScrollX;
+        double result = ((timeInSeconds * m_pixelsPerSecond)) - m_scrollX;
         if (scale)
         {
-            return (result * mTimeScale);
+            return (result * m_timeScale);
         }
         else
         {
@@ -462,10 +461,10 @@ namespace EMStudio
     TimeTrackElement* TimeViewPlugin::GetElementAt(int32 x, int32 y)
     {
         // for all tracks
-        for (const TimeTrack* track : mTracks)
+        for (const TimeTrack* track : m_tracks)
         {
             // check if the absolute pixel is inside
-            TimeTrackElement* result = track->GetElementAt(aznumeric_cast<int32>(x + mScrollX), y);
+            TimeTrackElement* result = track->GetElementAt(aznumeric_cast<int32>(x + m_scrollX), y);
             if (result)
             {
                 return result;
@@ -480,11 +479,11 @@ namespace EMStudio
     TimeTrack* TimeViewPlugin::GetTrackAt(int32 y)
     {
         // for all tracks
-        const auto foundTrack = AZStd::find_if(begin(mTracks), end(mTracks), [y](const TimeTrack* track)
+        const auto foundTrack = AZStd::find_if(begin(m_tracks), end(m_tracks), [y](const TimeTrack* track)
         {
             return track->GetIsInside(y);
         });
-        return foundTrack != end(mTracks) ? *foundTrack : nullptr;
+        return foundTrack != end(m_tracks) ? *foundTrack : nullptr;
     }
 
 
@@ -492,7 +491,7 @@ namespace EMStudio
     void TimeViewPlugin::UnselectAllElements()
     {
         // for all tracks
-        for (TimeTrack* track : mTracks)
+        for (TimeTrack* track : m_tracks)
         {
             // for all elements, deselect it
             const size_t numElems = track->GetNumElements();
@@ -510,7 +509,7 @@ namespace EMStudio
     // return the time of the current time marker, in seconds
     double TimeViewPlugin::GetCurrentTime() const
     {
-        return mCurTime;
+        return m_curTime;
     }
 
 
@@ -518,39 +517,39 @@ namespace EMStudio
     {
         if (isScaledPixel)
         {
-            xPixel /= mTimeScale;
+            xPixel /= m_timeScale;
         }
 
-        return ((xPixel + mScrollX) / mPixelsPerSecond);
+        return ((xPixel + m_scrollX) / m_pixelsPerSecond);
     }
 
 
     void TimeViewPlugin::DeltaScrollX(double deltaX, bool animate)
     {
-        double newTime = (mTargetScrollX + (deltaX / mTimeScale)) / mPixelsPerSecond;
-        if (newTime < mMaxTime - (1 / mTimeScale))
+        double newTime = (m_targetScrollX + (deltaX / m_timeScale)) / m_pixelsPerSecond;
+        if (newTime < m_maxTime - (1 / m_timeScale))
         {
-            SetScrollX(mTargetScrollX + (deltaX / mTimeScale), animate);
+            SetScrollX(m_targetScrollX + (deltaX / m_timeScale), animate);
         }
         else
         {
-            SetScrollX((mMaxTime - ((1 / mTimeScale))) * mPixelsPerSecond, animate);
+            SetScrollX((m_maxTime - ((1 / m_timeScale))) * m_pixelsPerSecond, animate);
         }
         SetRedrawFlag();
     }
 
     void TimeViewPlugin::SetScrollX(double scrollX, bool animate)
     {
-        mTargetScrollX = scrollX;
+        m_targetScrollX = scrollX;
 
-        if (mTargetScrollX < 0)
+        if (m_targetScrollX < 0)
         {
-            mTargetScrollX = 0;
+            m_targetScrollX = 0;
         }
 
         if (animate == false)
         {
-            mScrollX = mTargetScrollX;
+            m_scrollX = m_targetScrollX;
         }
 
         // inform the motion info about the changes
@@ -563,11 +562,11 @@ namespace EMStudio
     void TimeViewPlugin::SetCurrentTime(double timeInSeconds)
     {
         const double oneMs = 1.0 / 1000.0;
-        if (!AZ::IsClose(mCurTime, timeInSeconds, oneMs))
+        if (!AZ::IsClose(m_curTime, timeInSeconds, oneMs))
         {
-            mDirty = true;
+            m_dirty = true;
         }
-        mCurTime = timeInSeconds;
+        m_curTime = timeInSeconds;
     }
 
 
@@ -583,7 +582,7 @@ namespace EMStudio
         }
 
         // for all tracks
-        for (TimeTrack* track : mTracks)
+        for (TimeTrack* track : m_tracks)
         {
             if (track->GetIsVisible() == false || track->GetIsEnabled() == false)
             {
@@ -624,7 +623,7 @@ namespace EMStudio
     void TimeViewPlugin::RenderElementTimeHandles(QPainter& painter, uint32 dataWindowHeight, const QPen& pen)
     {
         // for all tracks
-        for (const TimeTrack* track : mTracks)
+        for (const TimeTrack* track : m_tracks)
         {
             if (track->GetIsVisible() == false)
             {
@@ -658,7 +657,7 @@ namespace EMStudio
     void TimeViewPlugin::DisableAllToolTips()
     {
         // for all tracks
-        for (const TimeTrack* track : mTracks)
+        for (const TimeTrack* track : m_tracks)
         {
              // for all elements
             const size_t numElems = track->GetNumElements();
@@ -676,7 +675,7 @@ namespace EMStudio
     bool TimeViewPlugin::FindResizePoint(int32 x, int32 y, TimeTrackElement** outElement, uint32* outID)
     {
         // for all tracks
-        for (const TimeTrack* track : mTracks)
+        for (const TimeTrack* track : m_tracks)
         {
              if (track->GetIsVisible() == false)
             {
@@ -720,95 +719,95 @@ namespace EMStudio
     // render the frame
     void TimeViewPlugin::ProcessFrame(float timePassedInSeconds)
     {
-        if (GetManager()->GetAvoidRendering() || mMainWidget->visibleRegion().isEmpty())
+        if (GetManager()->GetAvoidRendering() || m_mainWidget->visibleRegion().isEmpty())
         {
             return;
         }
 
-        mTotalTime += timePassedInSeconds;
+        m_totalTime += timePassedInSeconds;
 
         ValidatePluginLinks();
 
         // animate the zoom
-        mScrollX += (mTargetScrollX - mScrollX) * 0.2;
+        m_scrollX += (m_targetScrollX - m_scrollX) * 0.2;
 
-        mIsAnimating = false;
-        if (mTargetTimeScale > mTimeScale)
+        m_isAnimating = false;
+        if (m_targetTimeScale > m_timeScale)
         {
-            if (MCore::Math::Abs(aznumeric_cast<float>(mTargetScrollX - mScrollX)) <= 1)
+            if (MCore::Math::Abs(aznumeric_cast<float>(m_targetScrollX - m_scrollX)) <= 1)
             {
-                mTimeScale += (mTargetTimeScale - mTimeScale) * 0.1;
+                m_timeScale += (m_targetTimeScale - m_timeScale) * 0.1;
             }
         }
         else
         {
-            mTimeScale += (mTargetTimeScale - mTimeScale) * 0.1;
+            m_timeScale += (m_targetTimeScale - m_timeScale) * 0.1;
         }
 
-        if (MCore::Math::Abs(aznumeric_cast<float>(mTargetScrollX - mScrollX)) <= 1)
+        if (MCore::Math::Abs(aznumeric_cast<float>(m_targetScrollX - m_scrollX)) <= 1)
         {
-            mScrollX = mTargetScrollX;
+            m_scrollX = m_targetScrollX;
         }
         else
         {
-            mIsAnimating = true;
+            m_isAnimating = true;
         }
 
-        if (MCore::Math::Abs(aznumeric_cast<float>(mTargetTimeScale - mTimeScale)) <= 0.001)
+        if (MCore::Math::Abs(aznumeric_cast<float>(m_targetTimeScale - m_timeScale)) <= 0.001)
         {
-            mTimeScale = mTargetTimeScale;
+            m_timeScale = m_targetTimeScale;
         }
         else
         {
-            mIsAnimating = true;
+            m_isAnimating = true;
         }
 
         // get the maximum time
-        GetDataTimes(&mMaxTime, nullptr, nullptr);
+        GetDataTimes(&m_maxTime, nullptr, nullptr);
         UpdateMaxHeight();
-        mTrackDataWidget->UpdateRects();
+        m_trackDataWidget->UpdateRects();
 
-        if (MCore::Math::Abs(aznumeric_cast<float>(mMaxHeight - mLastMaxHeight)) > 0.0001)
+        if (MCore::Math::Abs(aznumeric_cast<float>(m_maxHeight - m_lastMaxHeight)) > 0.0001)
         {
-            mLastMaxHeight = mMaxHeight;
+            m_lastMaxHeight = m_maxHeight;
         }
 
-        if (mTrackDataWidget->mDragging == false && mTrackDataWidget->mResizing == false)
+        if (m_trackDataWidget->m_dragging == false && m_trackDataWidget->m_resizing == false)
         {
-            mTimeInfoWidget->SetOverwriteTime(PixelToTime(mCurMouseX), mMaxTime);
+            m_timeInfoWidget->SetOverwriteTime(PixelToTime(m_curMouseX), m_maxTime);
         }
 
         // update the hovering items
-        mEventEmitterNode = nullptr;
-        mActorInstanceData  = mTrackDataWidget->FindActorInstanceData();
+        m_eventEmitterNode = nullptr;
+        m_actorInstanceData  = m_trackDataWidget->FindActorInstanceData();
         if (EMotionFX::GetRecorder().GetRecordTime() > MCore::Math::epsilon)
         {
-            mEventHistoryItem   = mTrackDataWidget->FindEventHistoryItem(mActorInstanceData, aznumeric_cast<int32>(mCurMouseX), aznumeric_cast<int32>(mCurMouseY));
-            mNodeHistoryItem    = mTrackDataWidget->FindNodeHistoryItem(mActorInstanceData, aznumeric_cast<int32>(mCurMouseX), aznumeric_cast<int32>(mCurMouseY));
+            m_eventHistoryItem   = m_trackDataWidget->FindEventHistoryItem(m_actorInstanceData, aznumeric_cast<int32>(m_curMouseX), aznumeric_cast<int32>(m_curMouseY));
+            m_nodeHistoryItem    = m_trackDataWidget->FindNodeHistoryItem(m_actorInstanceData, aznumeric_cast<int32>(m_curMouseX), aznumeric_cast<int32>(m_curMouseY));
 
-            if (mEventHistoryItem)
+            if (m_eventHistoryItem)
             {
-                EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().FindAnimGraphByID(mEventHistoryItem->mAnimGraphID);
+                EMotionFX::AnimGraph* animGraph = EMotionFX::GetAnimGraphManager().FindAnimGraphByID(m_eventHistoryItem->m_animGraphId);
                 if (animGraph)
                 {
-                    mEventEmitterNode = animGraph->RecursiveFindNodeById(mEventHistoryItem->mEmitterNodeId);
+                    m_eventEmitterNode = animGraph->RecursiveFindNodeById(m_eventHistoryItem->m_emitterNodeId);
                 }
             }
         }
         else
         {
-            mActorInstanceData  = nullptr;
-            mNodeHistoryItem    = nullptr;
-            mEventHistoryItem   = nullptr;
+            m_actorInstanceData  = nullptr;
+            m_nodeHistoryItem    = nullptr;
+            m_eventHistoryItem   = nullptr;
         }
 
         switch (m_mode)
         {
             case TimeViewMode::Motion:
             {
-                double newCurrentTime = mCurTime;
+                double newCurrentTime = m_curTime;
 
-                if (!mMotion)
+                if (!m_motion)
                 {
                     // Use the start time when either no motion is selected.
                     newCurrentTime = 0.0f;
@@ -817,17 +816,17 @@ namespace EMStudio
                 {
                     const AZStd::vector<EMotionFX::MotionInstance*>& motionInstances = MotionWindowPlugin::GetSelectedMotionInstances();
                     if (motionInstances.size() == 1 &&
-                        motionInstances[0]->GetMotion() == mMotion)
+                        motionInstances[0]->GetMotion() == m_motion)
                     {
                         EMotionFX::MotionInstance* motionInstance = motionInstances[0];
-                        if (!AZ::IsClose(aznumeric_cast<float>(mCurTime), motionInstance->GetCurrentTime(), MCore::Math::epsilon))
+                        if (!AZ::IsClose(aznumeric_cast<float>(m_curTime), motionInstance->GetCurrentTime(), MCore::Math::epsilon))
                         {
                             newCurrentTime = motionInstance->GetCurrentTime();
                         }
                     }
                 }
 
-                if (!mTrackDataWidget->mDragging && !mTrackDataWidget->mResizing)
+                if (!m_trackDataWidget->m_dragging && !m_trackDataWidget->m_resizing)
                 {
                     SetCurrentTime(newCurrentTime);
                 }
@@ -843,12 +842,12 @@ namespace EMStudio
                     if (recorder.GetIsInPlayMode() && recorder.GetIsInAutoPlayMode())
                     {
                         SetCurrentTime(recorder.GetCurrentPlayTime());
-                        MakeTimeVisible(mCurTime, 0.5, false);
+                        MakeTimeVisible(m_curTime, 0.5, false);
                     }
 
                     if (recorder.GetIsRecording())
                     {
-                        SetCurrentTime(mMaxTime);
+                        SetCurrentTime(m_maxTime);
                         MakeTimeVisible(recorder.GetRecordTime(), 0.95, false);
                     }
                 }
@@ -867,15 +866,15 @@ namespace EMStudio
             }
         }
 
-        if (mIsAnimating)
+        if (m_isAnimating)
         {
-            mDirty = true;
+            m_dirty = true;
         }
 
         bool redraw = false;
         float fps = 15.0f;
     #ifndef MCORE_DEBUG
-        if (mIsAnimating)
+        if (m_isAnimating)
         {
             fps = 60.0f;
         }
@@ -885,13 +884,13 @@ namespace EMStudio
         }
     #endif
 
-        if (mTotalTime >= 1.0f / fps)
+        if (m_totalTime >= 1.0f / fps)
         {
             redraw = true;
-            mTotalTime = 0.0f;
+            m_totalTime = 0.0f;
         }
 
-        if (redraw && mDirty)
+        if (redraw && m_dirty)
         {
             UpdateVisualData();
         }
@@ -900,34 +899,26 @@ namespace EMStudio
 
     void TimeViewPlugin::SetRedrawFlag()
     {
-        mDirty = true;
+        m_dirty = true;
     }
 
 
     void TimeViewPlugin::UpdateViewSettings()
     {
-        SetScale(mTimeScale);
+        SetScale(m_timeScale);
     }
 
 
     void TimeViewPlugin::SetScale(double scale, bool animate)
     {
-        //  if (mMaxTime < centerTime)
-        /*  double rangeStart   = PixelToTime( 0.0 );
-            double rangeEnd     = PixelToTime( mTrackDataWidget->geometry().width() );
-            if (rangeEnd > mMaxTime)
-                rangeEnd = mMaxTime;
-
-            double centerTime   = (rangeStart + rangeEnd) / 2.0;
-        */
         double curTime = GetCurrentTime();
 
-        mTargetTimeScale    = scale;
-        mTargetTimeScale    = MCore::Clamp(scale, mMinScale, mMaxScale);
+        m_targetTimeScale    = scale;
+        m_targetTimeScale    = MCore::Clamp(scale, m_minScale, m_maxScale);
 
         if (animate == false)
         {
-            mTimeScale  = mTargetTimeScale;
+            m_timeScale  = m_targetTimeScale;
         }
 
         UpdateCurrentMotionInfo();
@@ -936,44 +927,6 @@ namespace EMStudio
 
         //  MakeTimeVisible( centerTime, 0.5 );
     }
-
-    // set the maximum time value
-    /*void TimeViewPlugin::SetMaxTime(double maxTime)
-    {
-        mMaxTime            = maxTime;
-        mMaxTimeInPixels    = (maxTime * TIMEVIEW_PIXELSPERSECOND) / mTimeScale;
-
-        double oldSliderMax         = mHorizontalScroll->maximum();
-        double oldNormalizedValue   = (double)mHorizontalScroll->value() / oldSliderMax;
-
-        mHorizontalScroll->setRange( 0, mMaxTimeInPixels );
-        mHorizontalScroll->setValue( oldNormalizedValue * mMaxTimeInPixels );
-    }
-
-
-    // set the time view scale and keep it in a reasonable range
-    void TimeViewPlugin::SetTimeScale(float scale)
-    {
-        mTimeScale = scale;
-
-        const float minScale = 0.01f;
-        //const float maxScale = 100.0f;
-
-        if (mTimeScale < minScale)
-            mTimeScale = minScale;
-
-        if (mTimeScale > mMaxScale)
-            mTimeScale = mMaxScale;
-
-        // adjust the maximum time
-        SetMaxTime(mMaxTime);
-
-        // adjust the current play time
-        SetCurrentTime( GetCurrentTime() );
-
-        // inform the motion info about the changes
-        UpdateCurrentMotionInfo();
-    }*/
 
 
     void TimeViewPlugin::OnKeyPressEvent(QKeyEvent* event)
@@ -988,30 +941,30 @@ namespace EMStudio
 
         if (event->key() == Qt::Key_Down)
         {
-            mTrackDataWidget->scroll(0, 20);
+            m_trackDataWidget->scroll(0, 20);
             event->accept();
             return;
         }
 
         if (event->key() == Qt::Key_Up)
         {
-            mTrackDataWidget->scroll(0, -20);
+            m_trackDataWidget->scroll(0, -20);
             event->accept();
             return;
         }
 
         if (event->key() == Qt::Key_Plus)
         {
-            double zoomDelta = 0.1 * 3 * MCore::Clamp(mTargetTimeScale / 2.0, 1.0, 22.0);
-            SetScale(mTargetTimeScale + zoomDelta);
+            double zoomDelta = 0.1 * 3 * MCore::Clamp(m_targetTimeScale / 2.0, 1.0, 22.0);
+            SetScale(m_targetTimeScale + zoomDelta);
             event->accept();
             return;
         }
 
         if (event->key() == Qt::Key_Minus)
         {
-            double zoomDelta = 0.1 * 3 * MCore::Clamp(mTargetTimeScale / 2.0, 1.0, 22.0);
-            SetScale(mTargetTimeScale - zoomDelta);
+            double zoomDelta = 0.1 * 3 * MCore::Clamp(m_targetTimeScale / 2.0, 1.0, 22.0);
+            SetScale(m_targetTimeScale - zoomDelta);
             event->accept();
             return;
         }
@@ -1020,10 +973,10 @@ namespace EMStudio
         {
             if (event->key() == Qt::Key_Left)
             {
-                mTargetScrollX -= (mPixelsPerSecond * 3) / mTimeScale;
-                if (mTargetScrollX < 0)
+                m_targetScrollX -= (m_pixelsPerSecond * 3) / m_timeScale;
+                if (m_targetScrollX < 0)
                 {
-                    mTargetScrollX = 0;
+                    m_targetScrollX = 0;
                 }
                 event->accept();
                 return;
@@ -1031,10 +984,10 @@ namespace EMStudio
 
             if (event->key() == Qt::Key_Right)
             {
-                const double newTime = (mScrollX + ((mPixelsPerSecond * 3) / mTimeScale)) / mPixelsPerSecond;
-                if (newTime < mMaxTime)
+                const double newTime = (m_scrollX + ((m_pixelsPerSecond * 3) / m_timeScale)) / m_pixelsPerSecond;
+                if (newTime < m_maxTime)
                 {
-                    mTargetScrollX += ((mPixelsPerSecond * 3) / mTimeScale);
+                    m_targetScrollX += ((m_pixelsPerSecond * 3) / m_timeScale);
                 }
 
                 event->accept();
@@ -1065,10 +1018,10 @@ namespace EMStudio
 
             if (event->key() == Qt::Key_PageUp)
             {
-                mTargetScrollX -= mTrackDataWidget->geometry().width() / mTimeScale;
-                if (mTargetScrollX < 0)
+                m_targetScrollX -= m_trackDataWidget->geometry().width() / m_timeScale;
+                if (m_targetScrollX < 0)
                 {
-                    mTargetScrollX = 0;
+                    m_targetScrollX = 0;
                 }
                 event->accept();
                 return;
@@ -1076,10 +1029,10 @@ namespace EMStudio
 
             if (event->key() == Qt::Key_PageDown)
             {
-                const double newTime = (mScrollX + (mTrackDataWidget->geometry().width() / mTimeScale)) / mPixelsPerSecond;
-                if (newTime < mMaxTime)
+                const double newTime = (m_scrollX + (m_trackDataWidget->geometry().width() / m_timeScale)) / m_pixelsPerSecond;
+                if (newTime < m_maxTime)
                 {
-                    mTargetScrollX += mTrackDataWidget->geometry().width() / mTimeScale;
+                    m_targetScrollX += m_trackDataWidget->geometry().width() / m_timeScale;
                 }
 
                 event->accept();
@@ -1106,9 +1059,9 @@ namespace EMStudio
 
     void TimeViewPlugin::ValidatePluginLinks()
     {
-        mMotionWindowPlugin = nullptr;
-        mMotionListWindow = nullptr;
-        mMotionEventsPlugin = nullptr;
+        m_motionWindowPlugin = nullptr;
+        m_motionListWindow = nullptr;
+        m_motionEventsPlugin = nullptr;
         m_motionSetPlugin = nullptr;
 
         EMStudio::PluginManager* pluginManager = EMStudio::GetPluginManager();
@@ -1116,9 +1069,9 @@ namespace EMStudio
         EMStudioPlugin* motionBasePlugin = pluginManager->FindActivePlugin(MotionWindowPlugin::CLASS_ID);
         if (motionBasePlugin)
         {
-            mMotionWindowPlugin = static_cast<MotionWindowPlugin*>(motionBasePlugin);
-            mMotionListWindow   = mMotionWindowPlugin->GetMotionListWindow();
-            connect(mMotionListWindow, &MotionListWindow::MotionSelectionChanged, this, &TimeViewPlugin::MotionSelectionChanged, Qt::UniqueConnection); // UniqueConnection as we could connect multiple times.
+            m_motionWindowPlugin = static_cast<MotionWindowPlugin*>(motionBasePlugin);
+            m_motionListWindow   = m_motionWindowPlugin->GetMotionListWindow();
+            connect(m_motionListWindow, &MotionListWindow::MotionSelectionChanged, this, &TimeViewPlugin::MotionSelectionChanged, Qt::UniqueConnection); // UniqueConnection as we could connect multiple times.
         }
 
         EMStudioPlugin* motionSetBasePlugin = pluginManager->FindActivePlugin(MotionSetsWindowPlugin::CLASS_ID);
@@ -1131,8 +1084,8 @@ namespace EMStudio
         EMStudioPlugin* motionEventsBasePlugin = pluginManager->FindActivePlugin(MotionEventsPlugin::CLASS_ID);
         if (motionEventsBasePlugin)
         {
-            mMotionEventsPlugin = static_cast<MotionEventsPlugin*>(motionEventsBasePlugin);
-            mMotionEventsPlugin->ValidatePluginLinks();
+            m_motionEventsPlugin = static_cast<MotionEventsPlugin*>(motionEventsBasePlugin);
+            m_motionEventsPlugin->ValidatePluginLinks();
         }
     }
 
@@ -1140,7 +1093,7 @@ namespace EMStudio
     void TimeViewPlugin::MotionSelectionChanged()
     {
         ValidatePluginLinks();
-        if ((mMotionListWindow && mMotionListWindow->isVisible()) ||
+        if ((m_motionListWindow && m_motionListWindow->isVisible()) ||
             (m_motionSetPlugin && m_motionSetPlugin->GetMotionSetWindow() && m_motionSetPlugin->GetMotionSetWindow()->isVisible()))
         {
             SetMode(TimeViewMode::Motion);
@@ -1150,14 +1103,14 @@ namespace EMStudio
 
     void TimeViewPlugin::UpdateSelection()
     {
-        mSelectedEvents.clear();
-        if (!mMotion)
+        m_selectedEvents.clear();
+        if (!m_motion)
         {
             return;
         }
 
         // get the motion event table
-        const EMotionFX::MotionEventTable* eventTable = mMotion->GetEventTable();
+        const EMotionFX::MotionEventTable* eventTable = m_motion->GetEventTable();
 
         // get the number of tracks in the time view and iterate through them
         const size_t numTracks = GetNumTracks();
@@ -1189,10 +1142,10 @@ namespace EMStudio
                 if (element->GetIsSelected())
                 {
                     EventSelectionItem selectionItem;
-                    selectionItem.mMotion = mMotion;
-                    selectionItem.mTrackNr = trackNr.GetValue();
-                    selectionItem.mEventNr = element->GetElementNumber();
-                    mSelectedEvents.emplace_back(selectionItem);
+                    selectionItem.m_motion = m_motion;
+                    selectionItem.m_trackNr = trackNr.GetValue();
+                    selectionItem.m_eventNr = element->GetElementNumber();
+                    m_selectedEvents.emplace_back(selectionItem);
                 }
             }
         }
@@ -1201,10 +1154,10 @@ namespace EMStudio
 
     void TimeViewPlugin::ReInit()
     {
-        if (EMotionFX::GetMotionManager().FindMotionIndex(mMotion) == InvalidIndex)
+        if (EMotionFX::GetMotionManager().FindMotionIndex(m_motion) == InvalidIndex)
         {
             // set the motion first back to nullptr
-            mMotion = nullptr;
+            m_motion = nullptr;
         }
 
         // update the selection and save it
@@ -1217,16 +1170,16 @@ namespace EMStudio
             (EMotionFX::GetRecorder().GetIsRecording() || EMotionFX::GetRecorder().GetRecordTime() > MCore::Math::epsilon || EMotionFX::GetRecorder().GetIsInPlayMode()))
         {
             SetScrollX(0);
-            mTrackHeaderWidget->ReInit();
+            m_trackHeaderWidget->ReInit();
             return;
         }
 
-        if (mMotion)
+        if (m_motion)
         {
             size_t trackIndex;
             AZStd::string text;
 
-            const EMotionFX::MotionEventTable* eventTable = mMotion->GetEventTable();
+            const EMotionFX::MotionEventTable* eventTable = m_motion->GetEventTable();
 
             RemoveAllTracks();
 
@@ -1268,14 +1221,14 @@ namespace EMStudio
                             timeTrack->AddElement(element);
                         }
 
-                        // Select the element if in mSelectedEvents.
-                        for (const EventSelectionItem& selectionItem : mSelectedEvents)
+                        // Select the element if in m_selectedEvents.
+                        for (const EventSelectionItem& selectionItem : m_selectedEvents)
                         {
-                            if (mMotion != selectionItem.mMotion)
+                            if (m_motion != selectionItem.m_motion)
                             {
                                 continue;
                             }
-                            if (selectionItem.mTrackNr == trackIndex && selectionItem.mEventNr == eventIndex)
+                            if (selectionItem.m_trackNr == trackIndex && selectionItem.m_eventNr == eventIndex)
                             {
                                 element->SetIsSelected(true);
                                 break;
@@ -1367,7 +1320,7 @@ namespace EMStudio
                 timeTrack->SetElementCount(numMotionEvents);
             }
         }
-        else // mMotion == nullptr
+        else // m_motion == nullptr
         {
             const size_t numEventTracks = GetNumTracks();
             for (size_t trackIndex = 0; trackIndex < numEventTracks; ++trackIndex)
@@ -1385,27 +1338,26 @@ namespace EMStudio
         }
 
         // update the time view plugin
-        mTrackHeaderWidget->ReInit();
+        m_trackHeaderWidget->ReInit();
 
-        if (mMotion)
+        if (m_motion)
         {
-            //animationLength = mMotion->GetMaxTime();
-            MotionInfo* motionInfo = FindMotionInfo(mMotion->GetID());
+            MotionInfo* motionInfo = FindMotionInfo(m_motion->GetID());
 
             // if we already selected before, set the remembered settings
-            if (motionInfo->mInitialized)
+            if (motionInfo->m_initialized)
             {
-                const int32 tempScroll = aznumeric_cast<int32>(motionInfo->mScrollX);
-                SetScale(motionInfo->mScale);
+                const int32 tempScroll = aznumeric_cast<int32>(motionInfo->m_scrollX);
+                SetScale(motionInfo->m_scale);
                 SetScrollX(tempScroll);
             }
             else
             {
                 // selected the animation the first time
-                motionInfo->mInitialized = true;
-                mTargetTimeScale        = CalcFitScale(mMinScale, mMaxScale) * 0.8;
-                motionInfo->mScale      = mTargetTimeScale;
-                motionInfo->mScrollX    = 0.0;
+                motionInfo->m_initialized = true;
+                m_targetTimeScale        = CalcFitScale(m_minScale, m_maxScale) * 0.8;
+                motionInfo->m_scale      = m_targetTimeScale;
+                motionInfo->m_scrollX    = 0.0;
             }
         }
 
@@ -1416,27 +1368,27 @@ namespace EMStudio
     // find the motion info for the given motion id
     TimeViewPlugin::MotionInfo* TimeViewPlugin::FindMotionInfo(uint32 motionID)
     {
-        const auto foundMotionInfo = AZStd::find_if(begin(mMotionInfos), end(mMotionInfos), [motionID](const MotionInfo* motionInfo)
+        const auto foundMotionInfo = AZStd::find_if(begin(m_motionInfos), end(m_motionInfos), [motionID](const MotionInfo* motionInfo)
         {
-            return motionInfo->mMotionID == motionID;
+            return motionInfo->m_motionId == motionID;
         });
-        if (foundMotionInfo != end(mMotionInfos))
+        if (foundMotionInfo != end(m_motionInfos))
         {
             return *foundMotionInfo;
         }
 
         // we haven't found a motion info for the given id yet, so create a new one
         MotionInfo* motionInfo  = new MotionInfo();
-        motionInfo->mMotionID   = motionID;
-        motionInfo->mInitialized = false;
-        mMotionInfos.emplace_back(motionInfo);
+        motionInfo->m_motionId   = motionID;
+        motionInfo->m_initialized = false;
+        m_motionInfos.emplace_back(motionInfo);
         return motionInfo;
     }
 
 
     void TimeViewPlugin::Select(const AZStd::vector<EventSelectionItem>& selection)
     {
-        mSelectedEvents = selection;
+        m_selectedEvents = selection;
 
         // get the number of tracks in the time view and iterate through them
         const size_t numTracks = GetNumTracks();
@@ -1455,8 +1407,8 @@ namespace EMStudio
 
         for (const EventSelectionItem& selectionItem : selection)
         {
-            TimeTrack*                  track           = GetTrack(selectionItem.mTrackNr);
-            TimeTrackElement*           element         = track->GetElement(selectionItem.mEventNr);
+            TimeTrack*                  track           = GetTrack(selectionItem.m_trackNr);
+            TimeTrackElement*           element         = track->GetElement(selectionItem.m_eventNr);
 
             element->SetIsSelected(true);
         }
@@ -1472,23 +1424,23 @@ namespace EMStudio
             return nullptr;
         }
 
-        if (mEventNr >= eventTrack->GetNumEvents())
+        if (m_eventNr >= eventTrack->GetNumEvents())
         {
             return nullptr;
         }
 
-        return &(eventTrack->GetEvent(mEventNr));
+        return &(eventTrack->GetEvent(m_eventNr));
     }
 
 
     EMotionFX::MotionEventTrack* EventSelectionItem::GetEventTrack()
     {
-        if (mTrackNr >= mMotion->GetEventTable()->GetNumTracks())
+        if (m_trackNr >= m_motion->GetEventTable()->GetNumTracks())
         {
             return nullptr;
         }
 
-        EMotionFX::MotionEventTrack* eventTrack = mMotion->GetEventTable()->GetTrack(mTrackNr);
+        EMotionFX::MotionEventTrack* eventTrack = m_motion->GetEventTable()->GetTrack(m_trackNr);
         return eventTrack;
     }
 
@@ -1496,7 +1448,7 @@ namespace EMStudio
 
     void TimeViewPlugin::AddMotionEvent(int32 x, int32 y)
     {
-        if (mMotion == nullptr)
+        if (m_motion == nullptr)
         {
             return;
         }
@@ -1560,7 +1512,7 @@ namespace EMStudio
         }
 
         // get the corresponding motion event track
-        EMotionFX::MotionEventTable* eventTable = mMotion->GetEventTable();
+        EMotionFX::MotionEventTable* eventTable = m_motion->GetEventTable();
         EMotionFX::MotionEventTrack* eventTrack = eventTable->FindTrackByName(timeTrack->GetName());
         if (eventTrack == nullptr)
         {
@@ -1575,7 +1527,7 @@ namespace EMStudio
 
         // adjust the motion event
         AZStd::string outResult, command;
-        command = AZStd::string::format("AdjustMotionEvent -motionID %i -eventTrackName \"%s\" -eventNr %zu -startTime %f -endTime %f", mMotion->GetID(), eventTrack->GetName(), motionEventNr, startTime, endTime);
+        command = AZStd::string::format("AdjustMotionEvent -motionID %i -eventTrackName \"%s\" -eventNr %zu -startTime %f -endTime %f", m_motion->GetID(), eventTrack->GetName(), motionEventNr, startTime, endTime);
         if (EMStudio::GetCommandManager()->ExecuteCommand(command.c_str(), outResult) == false)
         {
             MCore::LogError(outResult.c_str());
@@ -1589,23 +1541,23 @@ namespace EMStudio
         AZStd::string result;
         MCore::CommandGroup commandGroup("Remove motion events");
 
-        if (mTrackDataWidget)
+        if (m_trackDataWidget)
         {
-            mTrackDataWidget->ClearState();
+            m_trackDataWidget->ClearState();
         }
 
-        if (mMotion == nullptr)
+        if (m_motion == nullptr)
         {
             return;
         }
 
-        if (EMotionFX::GetMotionManager().FindMotionIndex(mMotion) == InvalidIndex)
+        if (EMotionFX::GetMotionManager().FindMotionIndex(m_motion) == InvalidIndex)
         {
             return;
         }
 
         // get the motion event table
-        //  MotionEventTable& eventTable = mMotion->GetEventTable();
+        //  MotionEventTable& eventTable = m_motion->GetEventTable();
         AZStd::vector<size_t> eventNumbers;
 
         // get the number of tracks in the time view and iterate through them
@@ -1653,18 +1605,17 @@ namespace EMStudio
         AZStd::string result;
         MCore::CommandGroup commandGroup("Remove motion events");
 
-        if (mMotion == nullptr)
+        if (m_motion == nullptr)
         {
             return;
         }
 
-        if (EMotionFX::GetMotionManager().FindMotionIndex(mMotion) == InvalidIndex)
+        if (EMotionFX::GetMotionManager().FindMotionIndex(m_motion) == InvalidIndex)
         {
             return;
         }
 
         // get the motion event table
-        //  MotionEventTable& eventTable = mMotion->GetEventTable();
         AZStd::vector<size_t> eventNumbers;
 
         // get the number of tracks in the time view and iterate through them
@@ -1732,11 +1683,11 @@ namespace EMStudio
 
                     if (outClipStart)
                     {
-                        *outClipStart = playbackInfo->mClipStartTime;
+                        *outClipStart = playbackInfo->m_clipStartTime;
                     }
                     if (outClipEnd)
                     {
-                        *outClipEnd = playbackInfo->mClipEndTime;
+                        *outClipEnd = playbackInfo->m_clipEndTime;
                     }
                     if (outMaxTime)
                     {
@@ -1770,8 +1721,8 @@ namespace EMStudio
     // zoom to fit
     void TimeViewPlugin::ZoomToFit()
     {
-        mTargetScrollX      = 0.0;
-        mTargetTimeScale    = CalcFitScale(mMinScale, mMaxScale);
+        m_targetScrollX      = 0.0;
+        m_targetTimeScale    = CalcFitScale(m_minScale, m_maxScale);
     }
 
 
@@ -1786,8 +1737,8 @@ namespace EMStudio
         double scale = 1.0;
         if (maxTime > 0.0)
         {
-            double width    = mTrackDataWidget->geometry().width();
-            scale   = (width / mPixelsPerSecond) / maxTime;
+            double width    = m_trackDataWidget->geometry().width();
+            scale   = (width / m_pixelsPerSecond) / maxTime;
         }
 
         if (scale < minScale)
@@ -1808,7 +1759,7 @@ namespace EMStudio
     bool TimeViewPlugin::GetIsTimeVisible(double timeValue) const
     {
         const double pixel = TimeToPixel(timeValue);
-        return (pixel >= 0.0 && pixel < mTrackDataWidget->geometry().width());
+        return (pixel >= 0.0 && pixel < m_trackDataWidget->geometry().width());
     }
 
 
@@ -1820,17 +1771,17 @@ namespace EMStudio
         const double pixel = TimeToPixel(timeValue, false);
 
         // if we need to scroll to the right
-        double width = mTrackDataWidget->geometry().width() / mTimeScale;
-        mTargetScrollX += (pixel - width) + width * (1.0 - offsetFactor);
+        double width = m_trackDataWidget->geometry().width() / m_timeScale;
+        m_targetScrollX += (pixel - width) + width * (1.0 - offsetFactor);
 
-        if (mTargetScrollX < 0)
+        if (m_targetScrollX < 0)
         {
-            mTargetScrollX = 0;
+            m_targetScrollX = 0;
         }
 
         if (animate == false)
         {
-            mScrollX = mTargetScrollX;
+            m_scrollX = m_targetScrollX;
         }
     }
 
@@ -1838,7 +1789,7 @@ namespace EMStudio
     // update the maximum height
     void TimeViewPlugin::UpdateMaxHeight()
     {
-        mMaxHeight = 0.0;
+        m_maxHeight = 0.0;
 
         // find the selected actor instance
         EMotionFX::Recorder& recorder = EMotionFX::GetRecorder();
@@ -1851,7 +1802,7 @@ namespace EMStudio
                 const size_t actorInstanceDataIndex = recorder.FindActorInstanceDataIndex(actorInstance);
                 if (actorInstanceDataIndex != InvalidIndex)
                 {
-                    RecorderGroup* recorderGroup = mTimeViewToolBar->GetRecorderGroup();
+                    RecorderGroup* recorderGroup = m_timeViewToolBar->GetRecorderGroup();
                     const bool displayNodeActivity = recorderGroup->GetDisplayNodeActivity();
                     const bool displayEvents = recorderGroup->GetDisplayMotionEvents();
                     const bool displayRelativeGraph = recorderGroup->GetDisplayRelativeGraph();
@@ -1860,7 +1811,7 @@ namespace EMStudio
                     const EMotionFX::Recorder::ActorInstanceData& actorInstanceData = recorder.GetActorInstanceData(actorInstanceDataIndex);
                     if (displayNodeActivity)
                     {
-                        mMaxHeight += ((recorder.CalcMaxNodeHistoryTrackIndex(actorInstanceData) + 1) * (mTrackDataWidget->mNodeHistoryItemHeight + 3));
+                        m_maxHeight += ((recorder.CalcMaxNodeHistoryTrackIndex(actorInstanceData) + 1) * (m_trackDataWidget->m_nodeHistoryItemHeight + 3));
                         isTop = false;
                     }
 
@@ -1868,18 +1819,18 @@ namespace EMStudio
                     {
                         if (isTop == false)
                         {
-                            mMaxHeight += 10 + 10;
+                            m_maxHeight += 10 + 10;
                         }
 
                         isTop = false;
-                        mMaxHeight += mTrackDataWidget->mEventHistoryTotalHeight;
+                        m_maxHeight += m_trackDataWidget->m_eventHistoryTotalHeight;
                     }
 
                     if (displayRelativeGraph)
                     {
                         if (isTop == false)
                         {
-                            mMaxHeight += 10;
+                            m_maxHeight += 10;
                         }
 
                         isTop = false;
@@ -1889,17 +1840,17 @@ namespace EMStudio
         }
         else
         {
-            if (mMotion)
+            if (m_motion)
             {
-                for (const TimeTrack* track : mTracks)
+                for (const TimeTrack* track : m_tracks)
                 {
                      if (track->GetIsVisible() == false)
                     {
                         continue;
                     }
 
-                    mMaxHeight += track->GetHeight();
-                    mMaxHeight += 1;
+                    m_maxHeight += track->GetHeight();
+                    m_maxHeight += 1;
                 }
             }
         }
@@ -1910,39 +1861,37 @@ namespace EMStudio
     void TimeViewPlugin::OnZoomAll()
     {
         ZoomToFit();
-        //if (mTargetTimeScale < 1.0)
-        //mTargetTimeScale = 1.0;
     }
 
 
     // goto time zero
     void TimeViewPlugin::OnGotoTimeZero()
     {
-        mTargetScrollX = 0;
+        m_targetScrollX = 0;
     }
 
 
     // reset timeline
     void TimeViewPlugin::OnResetTimeline()
     {
-        mTargetScrollX      = 0;
-        mTargetTimeScale    = 1.0;
+        m_targetScrollX      = 0;
+        m_targetTimeScale    = 1.0;
     }
 
 
     // center on current time
     void TimeViewPlugin::OnCenterOnCurTime()
     {
-        MakeTimeVisible(mCurTime, 0.5);
+        MakeTimeVisible(m_curTime, 0.5);
     }
 
 
     // center on current time
     void TimeViewPlugin::OnShowNodeHistoryNodeInGraph()
     {
-        if (mNodeHistoryItem && mActorInstanceData)
+        if (m_nodeHistoryItem && m_actorInstanceData)
         {
-            emit DoubleClickedRecorderNodeHistoryItem(mActorInstanceData, mNodeHistoryItem);
+            emit DoubleClickedRecorderNodeHistoryItem(m_actorInstanceData, m_nodeHistoryItem);
         }
     }
 
@@ -1950,9 +1899,9 @@ namespace EMStudio
     // center on current time
     void TimeViewPlugin::OnClickNodeHistoryNode()
     {
-        if (mNodeHistoryItem && mActorInstanceData)
+        if (m_nodeHistoryItem && m_actorInstanceData)
         {
-            emit ClickedRecorderNodeHistoryItem(mActorInstanceData, mNodeHistoryItem);
+            emit ClickedRecorderNodeHistoryItem(m_actorInstanceData, m_nodeHistoryItem);
         }
     }
 
@@ -1960,17 +1909,17 @@ namespace EMStudio
     // zooming on rect
     void TimeViewPlugin::ZoomRect(const QRect& rect)
     {
-        mTargetScrollX      = mScrollX + (rect.left() / mTimeScale);
-        mTargetTimeScale    = mTrackDataWidget->geometry().width() / (double)(rect.width() / mTimeScale);
+        m_targetScrollX      = m_scrollX + (rect.left() / m_timeScale);
+        m_targetTimeScale    = m_trackDataWidget->geometry().width() / (double)(rect.width() / m_timeScale);
 
-        if (mTargetTimeScale < 1.0)
+        if (m_targetTimeScale < 1.0)
         {
-            mTargetTimeScale = 1.0;
+            m_targetTimeScale = 1.0;
         }
 
-        if (mTargetTimeScale > mMaxScale)
+        if (m_targetTimeScale > m_maxScale)
         {
-            mTargetTimeScale = mMaxScale;
+            m_targetTimeScale = m_maxScale;
         }
     }
 
@@ -2070,7 +2019,7 @@ namespace EMStudio
     // calculate the content heights
     uint32 TimeViewPlugin::CalcContentHeight() const
     {
-        RecorderGroup* recorderGroup = mTimeViewToolBar->GetRecorderGroup();
+        RecorderGroup* recorderGroup = m_timeViewToolBar->GetRecorderGroup();
         const bool displayNodeActivity = recorderGroup->GetDisplayNodeActivity();
         const bool displayEvents = recorderGroup->GetDisplayMotionEvents();
         const bool displayRelativeGraph = recorderGroup->GetDisplayRelativeGraph();
@@ -2078,12 +2027,12 @@ namespace EMStudio
         uint32 result = 0;
         if (displayNodeActivity)
         {
-            result += mTrackDataWidget->mNodeHistoryRect.bottom();
+            result += m_trackDataWidget->m_nodeHistoryRect.bottom();
         }
 
         if (displayEvents)
         {
-            result += mTrackDataWidget->mEventHistoryTotalHeight;
+            result += m_trackDataWidget->m_eventHistoryTotalHeight;
         }
 
         if (displayRelativeGraph)
@@ -2120,15 +2069,15 @@ namespace EMStudio
             case TimeViewMode::Motion:
             {
                 EMotionFX::Motion* motion = GetCommandManager()->GetCurrentSelection().GetSingleMotion();
-                if ((mMotion != motion) || modeChanged)
+                if ((m_motion != motion) || modeChanged)
                 {
-                    mMotion = motion;
+                    m_motion = motion;
                     ReInit();
                 }
 
-                if (mTrackHeaderWidget)
+                if (m_trackHeaderWidget)
                 {
-                    mTrackHeaderWidget->GetAddTrackWidget()->setEnabled(motion != nullptr);
+                    m_trackHeaderWidget->GetAddTrackWidget()->setEnabled(motion != nullptr);
                 }
 
                 break;
@@ -2136,13 +2085,13 @@ namespace EMStudio
 
             default:
             {
-                mMotion = nullptr;
+                m_motion = nullptr;
                 ReInit();
                 OnZoomAll();
                 SetCurrentTime(0.0f);
             }
         }
 
-        mTimeViewToolBar->UpdateInterface();
+        m_timeViewToolBar->UpdateInterface();
     }
 } // namespace EMStudio

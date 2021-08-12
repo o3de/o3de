@@ -104,7 +104,7 @@ namespace EMotionFX
          * @param index The local bone number, which must be in range of [0..GetNumLocalBones()-1].
          * @result The node number, which is in range of [0..Actor::GetNumNodes()-1], depending on the actor where this deformer works on.
          */
-        MCORE_INLINE size_t GetLocalBone(size_t index) const                { return m_bones[index].mNodeNr; }
+        MCORE_INLINE size_t GetLocalBone(size_t index) const                { return m_bones[index].m_nodeNr; }
 
         /**
          * Pre-allocate space for a given number of local bones.
@@ -119,11 +119,11 @@ namespace EMotionFX
          */
         struct EMFX_API BoneInfo
         {
-            size_t                  mNodeNr;        /**< The node number. */
-            MCore::DualQuaternion   mDualQuat;      /**< The dual quat of the pre-calculated matrix that contains the "globalMatrix * inverse(bindPoseMatrix)". */
+            size_t                  m_nodeNr;        /**< The node number. */
+            MCore::DualQuaternion   m_dualQuat;      /**< The dual quat of the pre-calculated matrix that contains the "globalMatrix * inverse(bindPoseMatrix)". */
 
             MCORE_INLINE BoneInfo()
-                : mNodeNr(InvalidIndex) {}
+                : m_nodeNr(InvalidIndex) {}
         };
         AZStd::vector<BoneInfo> m_bones; /**< The array of bone information used for pre-calculation. */
 
@@ -153,7 +153,7 @@ namespace EMotionFX
         /**
          * Find the entry number that uses a specified node number.
          * @param nodeIndex The node number to search for.
-         * @result The index inside the mBones member array, which uses the given node.
+         * @result The index inside the m_bones member array, which uses the given node.
          */
         AZ::Outcome<size_t> FindLocalBoneIndex(size_t nodeIndex) const;
     };

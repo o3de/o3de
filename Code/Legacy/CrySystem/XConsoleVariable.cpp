@@ -286,7 +286,7 @@ void CXConsoleVariableCVarGroup::OnLoadConfigurationEntry_End()
 {
     if (!m_sDefaultValue.empty())
     {
-        gEnv->pConsole->LoadConfigVar(GetName(), m_sDefaultValue);
+        gEnv->pConsole->LoadConfigVar(GetName(), m_sDefaultValue.c_str());
         m_sDefaultValue.clear();
     }
 }
@@ -299,9 +299,9 @@ CXConsoleVariableCVarGroup::CXConsoleVariableCVarGroup(CXConsole* pConsole, cons
 }
 
 
-string CXConsoleVariableCVarGroup::GetDetailedInfo() const
+AZStd::string CXConsoleVariableCVarGroup::GetDetailedInfo() const
 {
-    string sRet = GetName();
+    AZStd::string sRet = GetName();
 
     sRet += " [";
 
@@ -326,11 +326,11 @@ string CXConsoleVariableCVarGroup::GetDetailedInfo() const
     sRet += "/default] [current]:\n";
 
 
-    std::map<string, string>::const_iterator it, end = m_CVarGroupDefault.m_KeyValuePair.end();
+    std::map<AZStd::string, AZStd::string>::const_iterator it, end = m_CVarGroupDefault.m_KeyValuePair.end();
 
     for (it = m_CVarGroupDefault.m_KeyValuePair.begin(); it != end; ++it)
     {
-        const string& rKey = it->first;
+        const AZStd::string& rKey = it->first;
 
         sRet += " ... ";
         sRet += rKey;
@@ -344,7 +344,7 @@ string CXConsoleVariableCVarGroup::GetDetailedInfo() const
             sRet += "/";
         }
         sRet += GetValueSpec(rKey);
-        ICVar* pCVar = gEnv->pConsole->GetCVar(rKey);
+        ICVar* pCVar = gEnv->pConsole->GetCVar(rKey.c_str());
         if (pCVar)
         {
             sRet += " [";
@@ -369,7 +369,7 @@ const char* CXConsoleVariableCVarGroup::GetHelp()
     }
 
     // create help on demand
-    string sRet = "Console variable group to apply settings to multiple variables\n\n";
+    AZStd::string sRet = "Console variable group to apply settings to multiple variables\n\n";
 
     sRet += GetDetailedInfo();
 
@@ -545,12 +545,12 @@ bool CXConsoleVariableCVarGroup::TestCVars(const SCVarGroup* pGroup, const ICVar
 bool CXConsoleVariableCVarGroup::TestCVars(const SCVarGroup& rGroup, const ICVar::EConsoleLogMode mode, const SCVarGroup* pExclude) const
 {
     bool bRet = true;
-    std::map<string, string>::const_iterator it, end = rGroup.m_KeyValuePair.end();
+    std::map<AZStd::string, AZStd::string>::const_iterator it, end = rGroup.m_KeyValuePair.end();
 
     for (it = rGroup.m_KeyValuePair.begin(); it != end; ++it)
     {
-        const string& rKey = it->first;
-        const string& rValue = it->second;
+        const AZStd::string& rKey = it->first;
+        const AZStd::string& rValue = it->second;
 
         if (pExclude)
         {
@@ -674,7 +674,7 @@ bool CXConsoleVariableCVarGroup::TestCVars(const SCVarGroup& rGroup, const ICVar
 
 
 
-string CXConsoleVariableCVarGroup::GetValueSpec(const string& sKey, const int* pSpec) const
+AZStd::string CXConsoleVariableCVarGroup::GetValueSpec(const AZStd::string& sKey, const int* pSpec) const
 {
     if (pSpec)
     {
@@ -685,7 +685,7 @@ string CXConsoleVariableCVarGroup::GetValueSpec(const string& sKey, const int* p
             const SCVarGroup* pGrp = itGrp->second;
 
             // check in spec
-            std::map<string, string>::const_iterator it = pGrp->m_KeyValuePair.find(sKey);
+            std::map<AZStd::string, AZStd::string>::const_iterator it = pGrp->m_KeyValuePair.find(sKey);
 
             if (it != pGrp->m_KeyValuePair.end())
             {
@@ -695,7 +695,7 @@ string CXConsoleVariableCVarGroup::GetValueSpec(const string& sKey, const int* p
     }
 
     // check in default
-    std::map<string, string>::const_iterator it = m_CVarGroupDefault.m_KeyValuePair.find(sKey);
+    std::map<AZStd::string, AZStd::string>::const_iterator it = m_CVarGroupDefault.m_KeyValuePair.find(sKey);
 
     if (it != m_CVarGroupDefault.m_KeyValuePair.end())
     {
@@ -708,14 +708,14 @@ string CXConsoleVariableCVarGroup::GetValueSpec(const string& sKey, const int* p
 
 void CXConsoleVariableCVarGroup::ApplyCVars(const SCVarGroup& rGroup, const SCVarGroup* pExclude)
 {
-    std::map<string, string>::const_iterator it, end = rGroup.m_KeyValuePair.end();
+    std::map<AZStd::string, AZStd::string>::const_iterator it, end = rGroup.m_KeyValuePair.end();
 
     bool wasProcessingGroup = m_pConsole->GetIsProcessingGroup();
     m_pConsole->SetProcessingGroup(true);
 
     for (it = rGroup.m_KeyValuePair.begin(); it != end; ++it)
     {
-        const string& rKey = it->first;
+        const AZStd::string& rKey = it->first;
 
         if (pExclude)
         {
@@ -728,7 +728,7 @@ void CXConsoleVariableCVarGroup::ApplyCVars(const SCVarGroup& rGroup, const SCVa
         // Useful for debugging cvar groups
         //CryLogAlways("[CVARS]: [APPLY] ([%s]) [%s] = [%s]", GetName(), rKey.c_str(), it->second.c_str());
 
-        m_pConsole->LoadConfigVar(rKey, it->second);
+        m_pConsole->LoadConfigVar(rKey.c_str(), it->second.c_str());
     }
 
     m_pConsole->SetProcessingGroup(wasProcessingGroup);

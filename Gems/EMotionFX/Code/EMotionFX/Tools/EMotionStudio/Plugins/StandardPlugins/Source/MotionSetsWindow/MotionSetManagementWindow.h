@@ -61,10 +61,9 @@ namespace EMStudio
         void Accepted();
 
     private:
-        EMotionFX::MotionSet*   mMotionSet;
-        QLineEdit*              mLineEdit;
-        QPushButton*            mOKButton;
-        //QLabel*               mErrorMsg;
+        EMotionFX::MotionSet*   m_motionSet;
+        QLineEdit*              m_lineEdit;
+        QPushButton*            m_okButton;
     };
 
 
@@ -113,8 +112,8 @@ namespace EMStudio
         void contextMenuEvent(QContextMenuEvent* event) override;
 
     private:
-        QVBoxLayout* mVLayout = nullptr;
-        QTreeWidget* mMotionSetsTree = nullptr;
+        QVBoxLayout* m_vLayout = nullptr;
+        QTreeWidget* m_motionSetsTree = nullptr;
         QAction* m_addAction = nullptr;
         QAction* m_openAction = nullptr;
         QAction* m_saveMenuAction = nullptr;
@@ -122,6 +121,6 @@ namespace EMStudio
         QAction* m_saveAsAction = nullptr;
         AzQtComponents::FilteredSearchWidget* m_searchWidget = nullptr;
         AZStd::string m_searchWidgetText;
-        MotionSetsWindowPlugin* mPlugin = nullptr;
+        MotionSetsWindowPlugin* m_plugin = nullptr;
     };
 } // namespace EMStudio

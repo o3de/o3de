@@ -51,10 +51,10 @@ namespace EMStudio
 
         // OpenGL engine helper functions
         bool InitializeGraphicsManager();
-        MCORE_INLINE RenderGL::GraphicsManager* GetGraphicsManager()                { return mGraphicsManager; }
+        MCORE_INLINE RenderGL::GraphicsManager* GetGraphicsManager()                { return m_graphicsManager; }
 
     private:
-        RenderGL::GraphicsManager*          mGraphicsManager;           // shared OpenGL engine object
+        RenderGL::GraphicsManager*          m_graphicsManager;           // shared OpenGL engine object
 
         // overloaded emstudio actor create function which creates an OpenGL render actor internally
         bool CreateEMStudioActor(EMotionFX::Actor* actor);

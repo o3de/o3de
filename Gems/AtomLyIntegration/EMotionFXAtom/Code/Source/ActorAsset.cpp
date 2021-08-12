@@ -562,8 +562,8 @@ namespace AZ
                 for (size_t i = 0; i < numBoneTransforms; ++i)
                 {
                     MCore::DualQuaternion dualQuat = MCore::DualQuaternion::ConvertFromTransform(AZ::Transform::CreateFromMatrix3x4(skinningMatrices[i]));
-                    dualQuat.mReal.StoreToFloat4(&boneTransforms[i * DualQuaternionSkinningFloatsPerBone]);
-                    dualQuat.mDual.StoreToFloat4(&boneTransforms[i * DualQuaternionSkinningFloatsPerBone + 4]);
+                    dualQuat.m_real.StoreToFloat4(&boneTransforms[i * DualQuaternionSkinningFloatsPerBone]);
+                    dualQuat.m_dual.StoreToFloat4(&boneTransforms[i * DualQuaternionSkinningFloatsPerBone + 4]);
                 }
             }
         }

@@ -72,8 +72,8 @@ namespace EMStudio
         void SetSelectedSet(EMotionFX::MotionSet* motionSet);
         int SaveDirtyMotionSet(EMotionFX::MotionSet* motionSet, MCore::CommandGroup* commandGroup, bool askBeforeSaving, bool showCancelButton = true);
 
-        MotionSetManagementWindow*  GetManagementWindow()                                                       { return mMotionSetManagementWindow; }
-        MotionSetWindow*            GetMotionSetWindow()                                                        { return mMotionSetWindow; }
+        MotionSetManagementWindow*  GetManagementWindow()                                                       { return m_motionSetManagementWindow; }
+        MotionSetWindow*            GetMotionSetWindow()                                                        { return m_motionSetWindow; }
 
         int OnSaveDirtyMotionSets();
         void LoadMotionSet(AZStd::string filename);
@@ -94,22 +94,21 @@ namespace EMStudio
         MCORE_DEFINECOMMANDCALLBACK(CommandMotionSetAdjustMotionCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandLoadMotionSetCallback);
 
-        CommandCreateMotionSetCallback*         mCreateMotionSetCallback;
+        CommandCreateMotionSetCallback*         m_createMotionSetCallback;
         CommandReinitCallback*                  m_reinitCallback;
-        CommandAdjustMotionSetCallback*         mAdjustMotionSetCallback;
-        CommandMotionSetAddMotionCallback*      mMotionSetAddMotionCallback;
-        CommandMotionSetRemoveMotionCallback*   mMotionSetRemoveMotionCallback;
-        CommandMotionSetAdjustMotionCallback*   mMotionSetAdjustMotionCallback;
-        CommandLoadMotionSetCallback*           mLoadMotionSetCallback;
+        CommandAdjustMotionSetCallback*         m_adjustMotionSetCallback;
+        CommandMotionSetAddMotionCallback*      m_motionSetAddMotionCallback;
+        CommandMotionSetRemoveMotionCallback*   m_motionSetRemoveMotionCallback;
+        CommandMotionSetAdjustMotionCallback*   m_motionSetAdjustMotionCallback;
+        CommandLoadMotionSetCallback*           m_loadMotionSetCallback;
 
-        MotionSetManagementWindow*              mMotionSetManagementWindow;
-        MotionSetWindow*                        mMotionSetWindow;
+        MotionSetManagementWindow*              m_motionSetManagementWindow;
+        MotionSetWindow*                        m_motionSetWindow;
 
-        MysticQt::DialogStack*                  mDialogStack;
-        //MotionSetStringIDWindow*              mStringIDWindow;
+        MysticQt::DialogStack*                  m_dialogStack;
 
-        EMotionFX::MotionSet*                   mSelectedSet;
+        EMotionFX::MotionSet*                   m_selectedSet;
 
-        SaveDirtyMotionSetFilesCallback*        mDirtyFilesCallback;
+        SaveDirtyMotionSetFilesCallback*        m_dirtyFilesCallback;
     };
 } // namespace EMStudio

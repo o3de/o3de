@@ -131,7 +131,7 @@ namespace EMotionFX
             if (newSelection.size() == 1)
             {
                 AZStd::string selectedNodeName = newSelection[0].GetNodeName();
-                AZ::u32 selectedActorInstanceId = newSelection[0].mActorInstanceID;
+                AZ::u32 selectedActorInstanceId = newSelection[0].m_actorInstanceId;
 
                 const auto parentDepth = AZStd::find(begin(actorInstanceIDs), end(actorInstanceIDs), selectedActorInstanceId);
                 AZ_Assert(parentDepth != end(actorInstanceIDs), "Cannot get parent depth. The selected actor instance was not shown in the selection window.");

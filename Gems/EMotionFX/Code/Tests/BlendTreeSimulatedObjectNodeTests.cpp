@@ -135,10 +135,10 @@ namespace EMotionFX
 
             for (size_t joint = 0; joint < 3; ++joint)
             {
-                const AZ::Vector3& jointPos = currentPose.GetWorldSpaceTransform(m_jointIndices[joint]).mPosition;
-                const AZ::Vector3& jointBindPos = bindPose.GetWorldSpaceTransform(m_jointIndices[joint]).mPosition;
+                const AZ::Vector3& jointPos = currentPose.GetWorldSpaceTransform(m_jointIndices[joint]).m_position;
+                const AZ::Vector3& jointBindPos = bindPose.GetWorldSpaceTransform(m_jointIndices[joint]).m_position;
                 ASSERT_TRUE((jointPos - jointBindPos).GetLength() <= 0.01f);   // Make sure we didn't move too far from the bind pose.
-                ASSERT_TRUE(AZ::IsClose(currentPose.GetWorldSpaceTransform(m_jointIndices[joint]).mRotation.GetLength(), 1.0f, 0.001f));   // Make sure we have a unit quaternion.
+                ASSERT_TRUE(AZ::IsClose(currentPose.GetWorldSpaceTransform(m_jointIndices[joint]).m_rotation.GetLength(), 1.0f, 0.001f));   // Make sure we have a unit quaternion.
             }
         }
     }

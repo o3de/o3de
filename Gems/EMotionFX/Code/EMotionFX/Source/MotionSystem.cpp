@@ -29,11 +29,11 @@ namespace EMotionFX
     {
         MCORE_ASSERT(actorInstance);
 
-        mActorInstance  = actorInstance;
-        mMotionQueue    = nullptr;
+        m_actorInstance  = actorInstance;
+        m_motionQueue    = nullptr;
 
         // create the motion queue
-        mMotionQueue = MotionQueue::Create(actorInstance, this);
+        m_motionQueue = MotionQueue::Create(actorInstance, this);
 
         GetEventManager().OnCreateMotionSystem(this);
     }
@@ -45,17 +45,16 @@ namespace EMotionFX
         GetEventManager().OnDeleteMotionSystem(this);
 
         // delete the motion infos
-        while (!mMotionInstances.empty())
+        while (!m_motionInstances.empty())
         {
-            //delete mMotionInstances.GetLast();
-            GetMotionInstancePool().Free(mMotionInstances.back());
-            mMotionInstances.pop_back();
+            GetMotionInstancePool().Free(m_motionInstances.back());
+            m_motionInstances.pop_back();
         }
 
         // get rid of the motion queue
-        if (mMotionQueue)
+        if (m_motionQueue)
         {
-            mMotionQueue->Destroy();
+            m_motionQueue->Destroy();
         }
     }
 
@@ -75,33 +74,21 @@ namespace EMotionFX
             info = &tempInfo;
         }
 
-        /*
-            // if we want to play a motion which will loop forever (so never ends) and we want to put it on the queue
-            if (info->mNumLoops==FOREVER && info->mPlayNow==false)
-            {
-                // if there is already a motion on the queue, this means the queue would end up in some kind of deadlock
-                // because it has to wait until the current motion is finished with playing, before it would start this motion
-                // and since that will never happen, the queue won't be processed anymore...
-                // so we may simply not allow this to happen.
-                if (mMotionQueue->GetNumEntries() > 0)
-                    throw Exception("Cannot schedule this LOOPING motion to be played later, because there are already motions queued. If we would put this motion on the queue, all motions added later on to the queue will never be processed because this motion is a looping (so never ending) one.", MCORE_HERE);
-            }*/
-
         // trigger the OnPlayMotion event
         GetEventManager().OnPlayMotion(motion, info);
 
         // make sure we always mix when using additive blending
-        if (info->mBlendMode == BLENDMODE_ADDITIVE && info->mMix == false)
+        if (info->m_blendMode == BLENDMODE_ADDITIVE && info->m_mix == false)
         {
             MCORE_ASSERT(false); // this shouldn't happen actually, please make sure you always mix additive motions
-            info->mMix = true;
+            info->m_mix = true;
         }
 
         // create the motion instance and add the motion info the this actor
         MotionInstance* motionInst = CreateMotionInstance(motion, info);
 
         // if we want to play it immediately (so if we do NOT want to schedule it for later on)
-        if (info->mPlayNow)
+        if (info->m_playNow)
         {
             // start the motion for real
             StartMotion(motionInst, info);
@@ -109,7 +96,7 @@ namespace EMotionFX
         else
         {
             // schedule the motion, by adding it to the back of the motion queue
-            mMotionQueue->AddEntry(MotionQueue::QueueEntry(motionInst, info));
+            m_motionQueue->AddEntry(MotionQueue::QueueEntry(motionInst, info));
             motionInst->Pause();
             motionInst->SetIsActive(false);
             GetEventManager().OnQueueMotionInstance(motionInst, info);
@@ -124,7 +111,7 @@ namespace EMotionFX
     MotionInstance* MotionSystem::CreateMotionInstance(Motion* motion, PlayBackInfo* info)
     {
         // create the motion instance
-        MotionInstance* motionInst = GetMotionInstancePool().RequestNew(motion, mActorInstance);
+        MotionInstance* motionInst = GetMotionInstancePool().RequestNew(motion, m_actorInstance);
 
         // initialize the motion instance from the playback info settings
         motionInst->InitFromPlayBackInfo(*info);
@@ -138,9 +125,9 @@ namespace EMotionFX
     {
         // remove the motion instance from the actor
         const bool isSuccess = [this, instance] {
-            if(const auto it = AZStd::find(begin(mMotionInstances), end(mMotionInstances), instance); it != end(mMotionInstances))
+            if(const auto it = AZStd::find(begin(m_motionInstances), end(m_motionInstances), instance); it != end(m_motionInstances))
             {
-                mMotionInstances.erase(it);
+                m_motionInstances.erase(it);
                 return true;
             }
             return false;
@@ -163,7 +150,7 @@ namespace EMotionFX
         MCORE_UNUSED(updateNodes);
 
         // update the motion queue
-        mMotionQueue->Update();
+        m_motionQueue->Update();
 
         // update the motions
         UpdateMotionInstances(timePassed);
@@ -173,7 +160,7 @@ namespace EMotionFX
     // stop all the motions that are currently playing
     void MotionSystem::StopAllMotions()
     {
-        for (MotionInstance* motionInstance : mMotionInstances)
+        for (MotionInstance* motionInstance : m_motionInstances)
         {
             motionInstance->Stop();
         }
@@ -183,7 +170,7 @@ namespace EMotionFX
     // stop all motion instances of a given motion
     void MotionSystem::StopAllMotions(Motion* motion)
     {
-        for (MotionInstance* motionInstance : mMotionInstances)
+        for (MotionInstance* motionInstance : m_motionInstances)
         {
             if (motionInstance->GetMotion()->GetID() == motion->GetID())
             {
@@ -196,14 +183,14 @@ namespace EMotionFX
     // remove the given motion
     void MotionSystem::RemoveMotion(size_t nr, bool deleteMem)
     {
-        MCORE_ASSERT(nr < mMotionInstances.size());
+        MCORE_ASSERT(nr < m_motionInstances.size());
 
         if (deleteMem)
         {
-            GetEMotionFX().GetMotionInstancePool()->Free(mMotionInstances[nr]);
+            GetEMotionFX().GetMotionInstancePool()->Free(m_motionInstances[nr]);
         }
 
-        mMotionInstances.erase(AZStd::next(begin(mMotionInstances), nr));
+        m_motionInstances.erase(AZStd::next(begin(m_motionInstances), nr));
     }
 
 
@@ -212,15 +199,15 @@ namespace EMotionFX
     {
         MCORE_ASSERT(motion);
 
-        const auto it = AZStd::find(begin(mMotionInstances), end(mMotionInstances), motion);
-        MCORE_ASSERT(it != end(mMotionInstances));
+        const auto it = AZStd::find(begin(m_motionInstances), end(m_motionInstances), motion);
+        MCORE_ASSERT(it != end(m_motionInstances));
 
-        if (it == end(mMotionInstances))
+        if (it == end(m_motionInstances))
         {
             return;
         }
 
-        RemoveMotion(AZStd::distance(begin(mMotionInstances), it), delMem);
+        RemoveMotion(AZStd::distance(begin(m_motionInstances), it), delMem);
     }
 
 
@@ -228,7 +215,7 @@ namespace EMotionFX
     void MotionSystem::UpdateMotionInstances(float timePassed)
     {
         // update all the motion infos
-        for (MotionInstance* motionInstance : mMotionInstances)
+        for (MotionInstance* motionInstance : m_motionInstances)
         {
             motionInstance->Update(timePassed);
         }
@@ -238,7 +225,7 @@ namespace EMotionFX
     // check if the given motion instance still exists within the actor, so if it hasn't been deleted from memory yet
     bool MotionSystem::CheckIfIsValidMotionInstance(MotionInstance* instance) const
     {
-        return instance && AZStd::any_of(begin(mMotionInstances), end(mMotionInstances), [instance](const MotionInstance* motionInstance)
+        return instance && AZStd::any_of(begin(m_motionInstances), end(m_motionInstances), [instance](const MotionInstance* motionInstance)
         {
             return motionInstance->GetID() == instance->GetID();
         });
@@ -248,7 +235,7 @@ namespace EMotionFX
     // check if there is a motion instance playing, which is an instance of a specified motion
     bool MotionSystem::CheckIfIsPlayingMotion(Motion* motion, bool ignorePausedMotions) const
     {
-        return motion && AZStd::any_of(begin(mMotionInstances), end(mMotionInstances), [motion, ignorePausedMotions](const MotionInstance* motionInstance)
+        return motion && AZStd::any_of(begin(m_motionInstances), end(m_motionInstances), [motion, ignorePausedMotions](const MotionInstance* motionInstance)
         {
             return !(ignorePausedMotions && motionInstance->GetIsPaused()) &&
                 motionInstance->GetMotion()->GetID() == motion->GetID();
@@ -259,27 +246,27 @@ namespace EMotionFX
     // return given motion instance
     MotionInstance* MotionSystem::GetMotionInstance(size_t nr) const
     {
-        MCORE_ASSERT(nr < mMotionInstances.size());
-        return mMotionInstances[nr];
+        MCORE_ASSERT(nr < m_motionInstances.size());
+        return m_motionInstances[nr];
     }
 
 
     // return number of motion instances
     size_t MotionSystem::GetNumMotionInstances() const
     {
-        return mMotionInstances.size();
+        return m_motionInstances.size();
     }
 
 
     // set a new motion queue
     void MotionSystem::SetMotionQueue(MotionQueue* motionQueue)
     {
-        if (mMotionQueue)
+        if (m_motionQueue)
         {
-            mMotionQueue->Destroy();
+            m_motionQueue->Destroy();
         }
 
-        mMotionQueue = motionQueue;
+        m_motionQueue = motionQueue;
     }
 
 
@@ -291,7 +278,7 @@ namespace EMotionFX
         // copy entries from the given queue to the motion system's one
         for (size_t i = 0; i < motionQueue->GetNumEntries(); ++i)
         {
-            mMotionQueue->AddEntry(motionQueue->GetEntry(i));
+            m_motionQueue->AddEntry(motionQueue->GetEntry(i));
         }
 
         // get rid of the given motion queue
@@ -302,25 +289,25 @@ namespace EMotionFX
     // return motion queue pointer
     MotionQueue* MotionSystem::GetMotionQueue() const
     {
-        return mMotionQueue;
+        return m_motionQueue;
     }
 
 
     // return the actor to which this motion system belongs to
     ActorInstance* MotionSystem::GetActorInstance() const
     {
-        return mActorInstance;
+        return m_actorInstance;
     }
 
 
     void MotionSystem::AddMotionInstance(MotionInstance* instance)
     {
-        mMotionInstances.emplace_back(instance);
+        m_motionInstances.emplace_back(instance);
     }
 
 
     bool MotionSystem::GetIsPlaying() const
     {
-        return !mMotionInstances.empty();
+        return !m_motionInstances.empty();
     }
 } // namespace EMotionFX

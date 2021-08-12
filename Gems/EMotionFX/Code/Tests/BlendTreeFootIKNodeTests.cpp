@@ -142,8 +142,8 @@ namespace EMotionFX
             ASSERT_NE(footIndex, InvalidIndex);
             EMotionFX::Transform transform = m_actorInstance->GetTransformData()->GetCurrentPose()->GetWorldSpaceTransform(footIndex);
             const BlendTreeFootIKNode::UniqueData* uniqueData = static_cast<const BlendTreeFootIKNode::UniqueData*>(m_animGraphInstance->FindOrCreateUniqueNodeData(m_ikNode));
-            const float correction = (m_actorInstance->GetWorldSpaceTransform().mRotation.TransformVector(AZ::Vector3(0.0f, 0.0f, uniqueData->m_legs[legId].m_footHeight))).GetZ();
-            const float pos = transform.mPosition.GetZ() - correction;
+            const float correction = (m_actorInstance->GetWorldSpaceTransform().m_rotation.TransformVector(AZ::Vector3(0.0f, 0.0f, uniqueData->m_legs[legId].m_footHeight))).GetZ();
+            const float pos = transform.m_position.GetZ() - correction;
             EXPECT_NEAR(pos, height, tolerance);
         }
 
@@ -325,7 +325,7 @@ namespace EMotionFX
         // Rotate the actor instance 180 degrees over the X axis as well.
         EMotionFX::Transform transform;
         transform.Identity();
-        transform.mRotation = AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3(1.0f, 0.0f, 0.0f), MCore::Math::pi);
+        transform.m_rotation = AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3(1.0f, 0.0f, 0.0f), MCore::Math::pi);
         m_actorInstance->SetLocalSpaceTransform(transform);
 
         // Tests where the leg can reach the target position just fine, make sure the hip adjustment doesn't break it.

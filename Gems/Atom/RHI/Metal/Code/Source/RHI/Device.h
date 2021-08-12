@@ -151,7 +151,8 @@ namespace AZ
             NullDescriptorManager& GetNullDescriptorManager();
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements(const RHI::ImageDescriptor & descriptor) override;
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements(const RHI::BufferDescriptor & descriptor) override;
-            
+            void ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction) override;
+
         private:
             Device() = default;
             

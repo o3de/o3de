@@ -11,7 +11,6 @@ set(FILES
     Source/Algorithms.cpp
     Source/Algorithms.h
     Source/Algorithms.inl
-    Source/AlignedArray.h
     Source/Array2D.h
     Source/Array2D.inl
     Source/Attribute.cpp
@@ -106,7 +105,6 @@ set(FILES
     Source/StaticAllocator.cpp
     Source/StaticAllocator.h
     Source/StaticString.h
-    Source/SmallArray.h
     Source/StandardHeaders.h
     Source/Stream.h
     Source/StringConversions.cpp

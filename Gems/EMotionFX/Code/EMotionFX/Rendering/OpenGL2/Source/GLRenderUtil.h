@@ -73,45 +73,45 @@ namespace RenderGL
         void CleanUp();
 
         #define MAX_LINE_VERTEXBUFFERS 2
-        GraphicsManager*            mGraphicsManager;
-        VertexBuffer*               mLineVertexBuffers[MAX_LINE_VERTEXBUFFERS]{};
-        uint16                      mCurrentLineVB;
-        GLSLShader*                 mLineShader;
-        GLSLShader*                 mMeshShader;
-        VertexBuffer*               mMeshVertexBuffer;
-        IndexBuffer*                mMeshIndexBuffer;
+        GraphicsManager*            m_graphicsManager;
+        VertexBuffer*               m_lineVertexBuffers[MAX_LINE_VERTEXBUFFERS]{};
+        uint16                      m_currentLineVb;
+        GLSLShader*                 m_lineShader;
+        GLSLShader*                 m_meshShader;
+        VertexBuffer*               m_meshVertexBuffer;
+        IndexBuffer*                m_meshIndexBuffer;
 
         // vertex and index buffers for rendering triangles
-        VertexBuffer*               mTriangleVertexBuffer;
-        IndexBuffer*                mTriangleIndexBuffer;
+        VertexBuffer*               m_triangleVertexBuffer;
+        IndexBuffer*                m_triangleIndexBuffer;
 
         // texture rendering
         struct TextureEntry
         {
             MCORE_MEMORYOBJECTCATEGORY(GLRenderUtil::TextureEntry, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_RENDERING);
-            Texture*                texture;
-            AZ::Vector2         pos;
+            Texture*                m_texture;
+            AZ::Vector2         m_pos;
             TextureEntry()
-                : pos(0.0f, 0.0f)
-                , texture(nullptr) {}
+                : m_pos(0.0f, 0.0f)
+                , m_texture(nullptr) {}
         };
 
         struct TextEntry
         {
             MCORE_MEMORYOBJECTCATEGORY(GLRenderUtil::TextEntry, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_RENDERING);
-            uint32                  mX;
-            uint32                  mY;
-            AZStd::string           mText;
-            float                   mLifeTime;
-            MCore::RGBAColor        mColor;
-            float                   mFontSize;
-            bool                    mCentered;
+            uint32                  m_x;
+            uint32                  m_y;
+            AZStd::string           m_text;
+            float                   m_lifeTime;
+            MCore::RGBAColor        m_color;
+            float                   m_fontSize;
+            bool                    m_centered;
         };
 
-        AZStd::vector<TextEntry*>    mTextEntries;
-        TextureEntry*               mTextures;
-        uint32                      mNumTextures;
-        uint32                      mMaxNumTextures;
+        AZStd::vector<TextEntry*>    m_textEntries;
+        TextureEntry*               m_textures;
+        uint32                      m_numTextures;
+        uint32                      m_maxNumTextures;
     };
 } // namespace RenderGL
 

@@ -38,9 +38,9 @@ namespace MCore
         struct MCORE_API CommandHistoryEntry
         {
             CommandHistoryEntry()
-                : mCommandGroup(nullptr)
-                , mExecutedCommand(nullptr)
-                , mParameters(nullptr) {}
+                : m_commandGroup(nullptr)
+                , m_executedCommand(nullptr)
+                , m_parameters(nullptr) {}
 
             /**
              * Extended Constructor.
@@ -55,9 +55,9 @@ namespace MCore
             static AZStd::string ToString(CommandGroup* group, Command* command, size_t historyItemNr);
             AZStd::string ToString() const;
 
-            CommandGroup*   mCommandGroup;          /**< A pointer to the command group, or nullptr when no group is used (in that case it uses a single command). */
-            Command*        mExecutedCommand;       /**< A pointer to the command object, or nullptr when no command is used (in that case it uses a group). */
-            CommandLine     mParameters;            /**< The used command arguments, unused in case no command is used (in that case it uses a group). */
+            CommandGroup*   m_commandGroup;          /**< A pointer to the command group, or nullptr when no group is used (in that case it uses a single command). */
+            Command*        m_executedCommand;       /**< A pointer to the command object, or nullptr when no command is used (in that case it uses a group). */
+            CommandLine     m_parameters;            /**< The used command arguments, unused in case no command is used (in that case it uses a group). */
             size_t          m_historyItemNr;        /**< The global history item number. This number will neither change depending on the size of the history queue nor with undo/redo. */
         };
 
@@ -280,8 +280,8 @@ namespace MCore
          * Add error message to the internal callback based error handling system.
          * @param[in] errorLine The error line to add to the internal error handler.
          */
-        MCORE_INLINE void AddError(const char* errorLine)                                       { mErrors.push_back(errorLine); }
-        MCORE_INLINE void AddError(const AZStd::string& errorLine)                              { mErrors.push_back(errorLine); }
+        MCORE_INLINE void AddError(const char* errorLine)                                       { m_errors.push_back(errorLine); }
+        MCORE_INLINE void AddError(const AZStd::string& errorLine)                              { m_errors.push_back(errorLine); }
 
         /**
          * Checks if an error occurred and calls the error handling callbacks.
@@ -296,13 +296,13 @@ namespace MCore
         bool IsExecuting() const { return m_commandsInExecution > 0; }
 
     protected:
-        AZStd::unordered_map<AZStd::string, Command*>   mRegisteredCommands;    /**< A hash table storing the command objects for fast command object access. */
-        AZStd::vector<CommandHistoryEntry>              mCommandHistory;        /**< The command history stack for undo/redo functionality. */
-        AZStd::vector<CommandManagerCallback*>          mCallbacks;             /**< The command manager callbacks. */
-        AZStd::vector<AZStd::string>                    mErrors;                /**< List of errors that happened during command execution. */
-        AZStd::vector<Command*>                         mCommands;              /**< A flat array of registered commands, for easy traversal. */
-        size_t                                          mMaxHistoryEntries;     /**< The maximum remembered commands in the command history. */
-        ptrdiff_t                                       mHistoryIndex;          /**< The command history iterator. The current position in the undo/redo history. */
+        AZStd::unordered_map<AZStd::string, Command*>   m_registeredCommands;    /**< A hash table storing the command objects for fast command object access. */
+        AZStd::vector<CommandHistoryEntry>              m_commandHistory;        /**< The command history stack for undo/redo functionality. */
+        AZStd::vector<CommandManagerCallback*>          m_callbacks;             /**< The command manager callbacks. */
+        AZStd::vector<AZStd::string>                    m_errors;                /**< List of errors that happened during command execution. */
+        AZStd::vector<Command*>                         m_commands;              /**< A flat array of registered commands, for easy traversal. */
+        size_t                                          m_maxHistoryEntries;     /**< The maximum remembered commands in the command history. */
+        ptrdiff_t                                       m_historyIndex;          /**< The command history iterator. The current position in the undo/redo history. */
         size_t                                          m_totalNumHistoryItems; /**< The number of history items since the application start. This number will neither change depending on the size of the history queue nor with undo/redo. */
         int                                             m_commandsInExecution;  /**< The number of commands currently in execution. */
 

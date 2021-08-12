@@ -34,8 +34,8 @@ namespace EMStudio
     // constructor
     PluginManager::PluginManager()
     {
-        mActivePlugins.reserve(50);
-        mPlugins.reserve(50);
+        m_activePlugins.reserve(50);
+        m_plugins.reserve(50);
     }
 
 
@@ -50,19 +50,19 @@ namespace EMStudio
     // remove a given active plugin
     void PluginManager::RemoveActivePlugin(EMStudioPlugin* plugin)
     {
-        PluginVector::const_iterator itPlugin = AZStd::find(mActivePlugins.begin(), mActivePlugins.end(), plugin);
-        if (itPlugin == mActivePlugins.end())
+        PluginVector::const_iterator itPlugin = AZStd::find(m_activePlugins.begin(), m_activePlugins.end(), plugin);
+        if (itPlugin == m_activePlugins.end())
         {
             MCore::LogWarning("Failed to remove plugin '%s'", plugin->GetName());
             return;
         }
 
-        for (EMStudioPlugin* activePlugin : mActivePlugins)
+        for (EMStudioPlugin* activePlugin : m_activePlugins)
         {
             activePlugin->OnBeforeRemovePlugin(plugin->GetClassID());
         }
 
-        mActivePlugins.erase(itPlugin);
+        m_activePlugins.erase(itPlugin);
         delete plugin;
     }
 
@@ -74,22 +74,22 @@ namespace EMStudio
         QApplication::processEvents();
 
         // delete all plugins
-        for (EMStudioPlugin* plugin : mPlugins)
+        for (EMStudioPlugin* plugin : m_plugins)
         {
             delete plugin;
         }
-        mPlugins.clear();
+        m_plugins.clear();
 
         // delete all active plugins
-        for (auto plugin = mActivePlugins.rbegin(); plugin != mActivePlugins.rend(); ++plugin)
+        for (auto plugin = m_activePlugins.rbegin(); plugin != m_activePlugins.rend(); ++plugin)
         {
-            for (EMStudioPlugin* pluginToNotify : mActivePlugins)
+            for (EMStudioPlugin* pluginToNotify : m_activePlugins)
             {
                 pluginToNotify->OnBeforeRemovePlugin((*plugin)->GetClassID());
             }
 
             delete *plugin;
-            mActivePlugins.pop_back();
+            m_activePlugins.pop_back();
         }
     }
 
@@ -97,7 +97,7 @@ namespace EMStudio
     // register the plugin
     void PluginManager::RegisterPlugin(EMStudioPlugin* plugin)
     {
-        mPlugins.push_back(plugin);
+        m_plugins.push_back(plugin);
     }
 
 
@@ -112,7 +112,7 @@ namespace EMStudio
         }
 
         // create the new plugin of this type
-        EMStudioPlugin* newPlugin = mPlugins[ pluginIndex ]->Clone();
+        EMStudioPlugin* newPlugin = m_plugins[ pluginIndex ]->Clone();
 
         // init the plugin
         newPlugin->CreateBaseInterface(objectName);
@@ -120,7 +120,7 @@ namespace EMStudio
         // register as active plugin. This has to be done at this point since
         // the initialization could try to access the plugin and assume that
         // is active.
-        mActivePlugins.push_back(newPlugin);
+        m_activePlugins.push_back(newPlugin);
 
         newPlugin->Init();
 
@@ -131,20 +131,20 @@ namespace EMStudio
     // find a given plugin by its name (type string)
     size_t PluginManager::FindPluginByTypeString(const char* pluginType) const
     {
-        const auto foundPlugin = AZStd::find_if(begin(mPlugins), end(mPlugins), [pluginType](const EMStudioPlugin* plugin)
+        const auto foundPlugin = AZStd::find_if(begin(m_plugins), end(m_plugins), [pluginType](const EMStudioPlugin* plugin)
         {
             return AzFramework::StringFunc::Equal(pluginType, plugin->GetName());
         });
-        return foundPlugin != end(mPlugins) ? AZStd::distance(begin(mPlugins), foundPlugin) : InvalidIndex;
+        return foundPlugin != end(m_plugins) ? AZStd::distance(begin(m_plugins), foundPlugin) : InvalidIndex;
     }
 
     EMStudioPlugin* PluginManager::GetActivePluginByTypeString(const char* pluginType) const
     {
-        const auto foundPlugin = AZStd::find_if(begin(mActivePlugins), end(mActivePlugins), [pluginType](const EMStudioPlugin* plugin)
+        const auto foundPlugin = AZStd::find_if(begin(m_activePlugins), end(m_activePlugins), [pluginType](const EMStudioPlugin* plugin)
         {
             return AzFramework::StringFunc::Equal(pluginType, plugin->GetName());
         });
-        return foundPlugin != end(mActivePlugins) ? *foundPlugin : nullptr;
+        return foundPlugin != end(m_activePlugins) ? *foundPlugin : nullptr;
     }
 
     // generate a unique object name
@@ -166,7 +166,7 @@ namespace EMStudio
             );
 
             // check if we have a conflict with a current plugin
-            const bool hasConflict = AZStd::any_of(begin(mActivePlugins), end(mActivePlugins), [&randomString](EMStudioPlugin* plugin)
+            const bool hasConflict = AZStd::any_of(begin(m_activePlugins), end(m_activePlugins), [&randomString](EMStudioPlugin* plugin)
             {
                 return plugin->GetHasWindowWithObjectName(randomString);
             });
@@ -181,7 +181,7 @@ namespace EMStudio
     // find the number of active plugins of a given type
     size_t PluginManager::GetNumActivePluginsOfType(const char* pluginType) const
     {
-        return AZStd::accumulate(mActivePlugins.begin(), mActivePlugins.end(), size_t{0}, [pluginType](size_t total, const EMStudioPlugin* plugin)
+        return AZStd::accumulate(m_activePlugins.begin(), m_activePlugins.end(), size_t{0}, [pluginType](size_t total, const EMStudioPlugin* plugin)
         {
             return total + AzFramework::StringFunc::Equal(pluginType, plugin->GetName());
         });
@@ -191,11 +191,11 @@ namespace EMStudio
     // find the first active plugin of a given type
     EMStudioPlugin* PluginManager::FindActivePlugin(uint32 classID) const
     {
-        const auto foundPlugin = AZStd::find_if(begin(mActivePlugins), end(mActivePlugins), [classID](const EMStudioPlugin* plugin)
+        const auto foundPlugin = AZStd::find_if(begin(m_activePlugins), end(m_activePlugins), [classID](const EMStudioPlugin* plugin)
         {
             return plugin->GetClassID() == classID;
         });
-        return foundPlugin != end(mActivePlugins) ? *foundPlugin : nullptr;
+        return foundPlugin != end(m_activePlugins) ? *foundPlugin : nullptr;
     }
 
 
@@ -203,7 +203,7 @@ namespace EMStudio
     // find the number of active plugins of a given type
     size_t PluginManager::GetNumActivePluginsOfType(uint32 classID) const
     {
-        return AZStd::accumulate(mActivePlugins.begin(), mActivePlugins.end(), size_t{0}, [classID](size_t total, const EMStudioPlugin* plugin)
+        return AZStd::accumulate(m_activePlugins.begin(), m_activePlugins.end(), size_t{0}, [classID](size_t total, const EMStudioPlugin* plugin)
         {
             return total + (plugin->GetClassID() == classID);
         });

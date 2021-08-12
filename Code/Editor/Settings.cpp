@@ -661,22 +661,6 @@ void SEditorSettings::Save()
     //////////////////////////////////////////////////////////////////////////
     SaveValue("Settings\\Slices", "DynamicByDefault", sliceSettings.dynamicByDefault);
 
-    /*
-    //////////////////////////////////////////////////////////////////////////
-    // Save paths.
-    //////////////////////////////////////////////////////////////////////////
-    for (int id = 0; id < EDITOR_PATH_LAST; id++)
-    {
-        for (int i = 0; i < searchPaths[id].size(); i++)
-        {
-            CString path = searchPaths[id][i];
-            CString key;
-            key.Format( "Paths","Path_%.2d_%.2d",id,i );
-            SaveValue( "Paths",key,path );
-        }
-    }
-    */
-
     s_editorSettings()->sync();
 
     // --- Settings Registry values

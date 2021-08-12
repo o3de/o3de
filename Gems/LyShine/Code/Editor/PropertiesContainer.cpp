@@ -788,7 +788,7 @@ void PropertiesContainer::Update()
     }
     else // more than one entity selected
     {
-        displayName = ToString(selectedEntitiesAmount) + " elements selected";
+        displayName = (ToString(selectedEntitiesAmount) + " elements selected").c_str();
     }
 
     // Update the selected element display name

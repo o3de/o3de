@@ -14,6 +14,8 @@
 #include <CryAssert.h>
 #include <dirent.h>
 #include <vector>
+#include <AzCore/std/string/string.h>
+
 /* Memory block identification */
 #define _FREE_BLOCK      0
 #define _NORMAL_BLOCK    1
@@ -324,11 +326,6 @@ inline uint32 GetTickCount()
 #define _strlwr_s(BUF, SIZE) strlwr(BUF)
 #define _strups strupr
 
-#define _wtof(str) wcstod(str, 0)
-
-// Need to include this before using it's used in finddata, but after the strnicmp definition
-#include "CryString.h"
-
 typedef struct __finddata64_t
 {
     //!< atributes set by find request
@@ -344,7 +341,7 @@ private:
     char                                m_DirectoryName[260];           //!< directory name, needed when getting file attributes on the fly
     char                                m_ToMatch[260];                     //!< pattern to match with
     DIR*                                m_Dir;                                  //!< directory handle
-    std::vector<string> m_Entries;                      //!< all file entries in the current directories
+    std::vector<AZStd::string> m_Entries;                      //!< all file entries in the current directories
 public:
 
     inline __finddata64_t()
@@ -376,7 +373,7 @@ typedef struct _finddata_t
 extern int _findnext64(intptr_t last, __finddata64_t* pFindData);
 extern intptr_t _findfirst64(const char* pFileName, __finddata64_t* pFindData);
 
-extern DWORD GetFileAttributes(LPCSTR lpFileName);
+extern DWORD GetFileAttributesW(LPCWSTR lpFileName);
 
 extern const bool GetFilenameNoCase(const char* file, char*, const bool cCreateNew = false);
 
@@ -490,8 +487,6 @@ extern void adaptFilenameToLinux(char* rAdjustedFilename);
 extern const int comparePathNames(const char* cpFirst, const char* cpSecond, unsigned int len);//returns 0 if identical
 extern void replaceDoublePathFilename(char* szFileName);//removes "\.\" to "\" and "/./" to "/"
 
-//////////////////////////////////////////////////////////////////////////
-extern char* _fullpath(char* absPath, const char* relPath, size_t maxLength);
 //////////////////////////////////////////////////////////////////////////
 extern void _makepath(char* path, const char* drive, const char* dir, const char* filename, const char* ext);
 

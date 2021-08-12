@@ -54,10 +54,10 @@ namespace EMStudio
         void Accepted();
 
     private:
-        EMotionFX::AnimGraph*   mAnimGraph;
-        AZStd::string           mNodeGroup;
-        QLineEdit*              mLineEdit;
-        QPushButton*            mOKButton;
+        EMotionFX::AnimGraph*   m_animGraph;
+        AZStd::string           m_nodeGroup;
+        QLineEdit*              m_lineEdit;
+        QPushButton*            m_okButton;
     };
 
     class NodeGroupWindow
@@ -98,22 +98,22 @@ namespace EMStudio
         MCORE_DEFINECOMMANDCALLBACK(CommandAnimGraphAdjustNodeGroupCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandAnimGraphRemoveNodeGroupCallback);
 
-        CommandAnimGraphAddNodeGroupCallback*      mCreateCallback;
-        CommandAnimGraphAdjustNodeGroupCallback*   mAdjustCallback;
-        CommandAnimGraphRemoveNodeGroupCallback*   mRemoveCallback;
+        CommandAnimGraphAddNodeGroupCallback*      m_createCallback;
+        CommandAnimGraphAdjustNodeGroupCallback*   m_adjustCallback;
+        CommandAnimGraphRemoveNodeGroupCallback*   m_removeCallback;
 
         struct WidgetLookup
         {
-            QObject*    mWidget;
-            int         mGroupIndex;
+            QObject*    m_widget;
+            int         m_groupIndex;
         };
 
-        AnimGraphPlugin*               mPlugin;
-        QTableWidget*                   mTableWidget;
-        QVBoxLayout*                    mVerticalLayout;
-        QAction*                        mAddAction;
+        AnimGraphPlugin*               m_plugin;
+        QTableWidget*                   m_tableWidget;
+        QVBoxLayout*                    m_verticalLayout;
+        QAction*                        m_addAction;
         AzQtComponents::FilteredSearchWidget* m_searchWidget;
         AZStd::string                   m_searchWidgetText;
-        AZStd::vector<WidgetLookup>      mWidgetTable;
+        AZStd::vector<WidgetLookup>      m_widgetTable;
     };
 } // namespace EMStudio

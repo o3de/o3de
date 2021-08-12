@@ -80,14 +80,14 @@ namespace EMotionFX
          */
         virtual size_t RemoveActorInstance(ActorInstance* actorInstance, size_t startStep = 0) = 0;
 
-        size_t GetNumUpdatedActorInstances() const                  { return mNumUpdated.GetValue(); }
-        size_t GetNumVisibleActorInstances() const                  { return mNumVisible.GetValue(); }
-        size_t GetNumSampledActorInstances() const                  { return mNumSampled.GetValue(); }
+        size_t GetNumUpdatedActorInstances() const                  { return m_numUpdated.GetValue(); }
+        size_t GetNumVisibleActorInstances() const                  { return m_numVisible.GetValue(); }
+        size_t GetNumSampledActorInstances() const                  { return m_numSampled.GetValue(); }
 
     protected:
-        MCore::AtomicSizeT mNumUpdated;
-        MCore::AtomicSizeT mNumVisible;
-        MCore::AtomicSizeT mNumSampled;
+        MCore::AtomicSizeT m_numUpdated;
+        MCore::AtomicSizeT m_numVisible;
+        MCore::AtomicSizeT m_numSampled;
 
         /**
          * The constructor.

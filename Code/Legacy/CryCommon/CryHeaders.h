@@ -17,7 +17,7 @@
 
 #ifdef MAX_SUB_MATERIALS
 // This checks that the values are in sync in the different files.
-COMPILE_TIME_ASSERT(MAX_SUB_MATERIALS == 128);
+static_assert(MAX_SUB_MATERIALS == 128);
 #else
     #define MAX_SUB_MATERIALS 128
 #endif

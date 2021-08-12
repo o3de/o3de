@@ -22,51 +22,51 @@
 namespace MCommon
 {
     // gizmo colors
-    MCore::RGBAColor ManipulatorColors::mSelectionColor         = MCore::RGBAColor(1.0f, 1.0f, 0.0f);
-    MCore::RGBAColor ManipulatorColors::mSelectionColorDarker   = MCore::RGBAColor(0.5f, 0.5f, 0.0f, 0.5f);
-    MCore::RGBAColor ManipulatorColors::mRed                    = MCore::RGBAColor(0.781f, 0.0f, 0.0f);
-    MCore::RGBAColor ManipulatorColors::mGreen                  = MCore::RGBAColor(0.0f, 0.609f, 0.0f);
-    MCore::RGBAColor ManipulatorColors::mBlue                   = MCore::RGBAColor(0.0f, 0.0f, 0.762f);
+    MCore::RGBAColor ManipulatorColors::s_selectionColor         = MCore::RGBAColor(1.0f, 1.0f, 0.0f);
+    MCore::RGBAColor ManipulatorColors::s_selectionColorDarker   = MCore::RGBAColor(0.5f, 0.5f, 0.0f, 0.5f);
+    MCore::RGBAColor ManipulatorColors::s_red                    = MCore::RGBAColor(0.781f, 0.0f, 0.0f);
+    MCore::RGBAColor ManipulatorColors::s_green                  = MCore::RGBAColor(0.0f, 0.609f, 0.0f);
+    MCore::RGBAColor ManipulatorColors::s_blue                   = MCore::RGBAColor(0.0f, 0.0f, 0.762f);
 
 
     // static variables
-    uint32 RenderUtil::mNumMaxLineVertices          = 8192 * 16;// 8096 * 16 * sizeof(LineVertex) = 3,5 MB
-    uint32 RenderUtil::mNumMaxMeshVertices          = 1024;
-    uint32 RenderUtil::mNumMaxMeshIndices           = 1024 * 3;
-    uint32 RenderUtil::mNumMax2DLines               = 8192;
-    uint32 RenderUtil::mNumMaxTriangleVertices      = 8192 * 16;// 8096 * 16 * sizeof(LineVertex) = 3,5 MB
-    float RenderUtil::m_wireframeSphereSegmentCount = 16.0f;
+    uint32 RenderUtil::s_numMaxLineVertices          = 8192 * 16;// 8096 * 16 * sizeof(LineVertex) = 3,5 MB
+    uint32 RenderUtil::s_numMaxMeshVertices          = 1024;
+    uint32 RenderUtil::s_numMaxMeshIndices           = 1024 * 3;
+    uint32 RenderUtil::s_numMax2DLines               = 8192;
+    uint32 RenderUtil::s_numMaxTriangleVertices      = 8192 * 16;// 8096 * 16 * sizeof(LineVertex) = 3,5 MB
+    float RenderUtil::s_wireframeSphereSegmentCount = 16.0f;
 
 
     // constructor
     RenderUtil::RenderUtil()
         : m_devicePixelRatio(1.0f)
     {
-        mVertexBuffer   = new LineVertex[mNumMaxLineVertices];
-        m2DLines        = new Line2D[mNumMax2DLines];
-        mNumVertices    = 0;
-        mNum2DLines     = 0;
-        mUnitSphereMesh = CreateSphere(1.0f);
-        mCylinderMesh   = CreateCylinder(2.0f, 1.0f, 2.0f);
-        mArrowHeadMesh  = CreateArrowHead(1.0f, 0.5f);
-        mUnitCubeMesh   = CreateCube(1.0f);
-        mFont           = new VectorFont(this);
+        m_vertexBuffer   = new LineVertex[s_numMaxLineVertices];
+        m_m2DLines        = new Line2D[s_numMax2DLines];
+        m_numVertices    = 0;
+        m_num2DLines     = 0;
+        m_unitSphereMesh = CreateSphere(1.0f);
+        m_cylinderMesh   = CreateCylinder(2.0f, 1.0f, 2.0f);
+        m_arrowHeadMesh  = CreateArrowHead(1.0f, 0.5f);
+        m_unitCubeMesh   = CreateCube(1.0f);
+        m_font           = new VectorFont(this);
     }
 
 
     // destructor
     RenderUtil::~RenderUtil()
     {
-        delete[]    mVertexBuffer;
-        delete[]    m2DLines;
-        delete      mUnitSphereMesh;
-        delete      mCylinderMesh;
-        delete      mUnitCubeMesh;
-        delete      mArrowHeadMesh;
-        delete      mFont;
+        delete[]    m_vertexBuffer;
+        delete[]    m_m2DLines;
+        delete      m_unitSphereMesh;
+        delete      m_cylinderMesh;
+        delete      m_unitCubeMesh;
+        delete      m_arrowHeadMesh;
+        delete      m_font;
 
         // get rid of the world space positions
-        mWorldSpacePositions.clear();
+        m_worldSpacePositions.clear();
     }
 
 
@@ -74,14 +74,14 @@ namespace MCommon
     void RenderUtil::RenderLines()
     {
         // check if we have to render anything and skip directly in case the line vertex buffer is empty
-        if (mNumVertices == 0)
+        if (m_numVertices == 0)
         {
             return;
         }
 
         // render the lines and reset the number of vertices
-        RenderLines(mVertexBuffer, mNumVertices);
-        mNumVertices = 0;
+        RenderLines(m_vertexBuffer, m_numVertices);
+        m_numVertices = 0;
     }
 
 
@@ -89,14 +89,14 @@ namespace MCommon
     void RenderUtil::Render2DLines()
     {
         // check if we have to render anything and skip directly in case the line buffer is empty
-        if (mNum2DLines == 0)
+        if (m_num2DLines == 0)
         {
             return;
         }
 
         // render the lines and reset the number of lines
-        Render2DLines(m2DLines, mNum2DLines);
-        mNum2DLines = 0;
+        Render2DLines(m_m2DLines, m_num2DLines);
+        m_num2DLines = 0;
     }
 
 
@@ -104,14 +104,14 @@ namespace MCommon
     void RenderUtil::RenderTriangles()
     {
         // check if we have to render anything and skip directly in case there are no triangles
-        if (mTriangleVertices.empty())
+        if (m_triangleVertices.empty())
         {
             return;
         }
 
         // render the triangles and clear the array
-        RenderTriangles(mTriangleVertices);
-        mTriangleVertices.clear();
+        RenderTriangles(m_triangleVertices);
+        m_triangleVertices.clear();
     }
 
 
@@ -302,12 +302,12 @@ namespace MCommon
     // constructor
     RenderUtil::AABBRenderSettings::AABBRenderSettings()
     {
-        mNodeBasedAABB              = true;
-        mMeshBasedAABB              = true;
-        mStaticBasedAABB            = true;
-        mStaticBasedColor           = MCore::RGBAColor(0.0f, 0.7f, 0.7f);
-        mNodeBasedColor             = MCore::RGBAColor(1.0f, 0.0f, 0.0f);
-        mMeshBasedColor             = MCore::RGBAColor(0.0f, 0.0f, 0.7f);
+        m_nodeBasedAabb              = true;
+        m_meshBasedAabb              = true;
+        m_staticBasedAabb            = true;
+        m_staticBasedColor           = MCore::RGBAColor(0.0f, 0.7f, 0.7f);
+        m_nodeBasedColor             = MCore::RGBAColor(1.0f, 0.0f, 0.0f);
+        m_meshBasedColor             = MCore::RGBAColor(0.0f, 0.0f, 0.7f);
     }
 
 
@@ -317,7 +317,7 @@ namespace MCommon
         const size_t lodLevel = actorInstance->GetLODLevel();
 
         // handle the node based AABB
-        if (renderSettings.mNodeBasedAABB)
+        if (renderSettings.m_nodeBasedAabb)
         {
             // calculate the node based AABB
             AZ::Aabb box;
@@ -326,12 +326,12 @@ namespace MCommon
             // render the aabb
             if (box.IsValid())
             {
-                RenderAabb(box, renderSettings.mNodeBasedColor);
+                RenderAabb(box, renderSettings.m_nodeBasedColor);
             }
         }
 
         // handle the mesh based AABB
-        if (renderSettings.mMeshBasedAABB)
+        if (renderSettings.m_meshBasedAabb)
         {
             // calculate the mesh based AABB
             AZ::Aabb box;
@@ -340,11 +340,11 @@ namespace MCommon
             // render the aabb
             if (box.IsValid())
             {
-                RenderAabb(box, renderSettings.mMeshBasedColor);
+                RenderAabb(box, renderSettings.m_meshBasedColor);
             }
         }
 
-        if (renderSettings.mStaticBasedAABB)
+        if (renderSettings.m_staticBasedAabb)
         {
             // calculate the static based AABB
             AZ::Aabb box;
@@ -353,7 +353,7 @@ namespace MCommon
             // render the aabb
             if (box.IsValid())
             {
-                RenderAabb(box, renderSettings.mStaticBasedColor);
+                RenderAabb(box, renderSettings.m_staticBasedColor);
             }
         }
 
@@ -382,14 +382,14 @@ namespace MCommon
             if (!visibleJointIndices || visibleJointIndices->empty() ||
                 (visibleJointIndices->find(jointIndex) != visibleJointIndices->end()))
             {
-                const AZ::Vector3 currentJointPos = pose->GetWorldSpaceTransform(jointIndex).mPosition;
+                const AZ::Vector3 currentJointPos = pose->GetWorldSpaceTransform(jointIndex).m_position;
                 const bool jointSelected = selectedJointIndices->find(jointIndex) != selectedJointIndices->end();
 
                 const size_t parentIndex = joint->GetParentIndex();
                 if (parentIndex != InvalidIndex)
                 {
                     const bool parentSelected = selectedJointIndices->find(parentIndex) != selectedJointIndices->end();
-                    const AZ::Vector3 parentJointPos = pose->GetWorldSpaceTransform(parentIndex).mPosition;
+                    const AZ::Vector3 parentJointPos = pose->GetWorldSpaceTransform(parentIndex).m_position;
                     RenderLine(currentJointPos, parentJointPos, parentSelected ? selectedColor : color);
                 }
 
@@ -434,9 +434,9 @@ namespace MCommon
                 const uint32 indexB = indices[triangleStartIndex + 1] + startVertex;
                 const uint32 indexC = indices[triangleStartIndex + 2] + startVertex;
 
-                const AZ::Vector3 posA = mWorldSpacePositions[indexA] + normals[indexA] * scale;
-                const AZ::Vector3 posB = mWorldSpacePositions[indexB] + normals[indexB] * scale;
-                const AZ::Vector3 posC = mWorldSpacePositions[indexC] + normals[indexC] * scale;
+                const AZ::Vector3 posA = m_worldSpacePositions[indexA] + normals[indexA] * scale;
+                const AZ::Vector3 posB = m_worldSpacePositions[indexB] + normals[indexB] * scale;
+                const AZ::Vector3 posC = m_worldSpacePositions[indexC] + normals[indexC] * scale;
 
                 if (vertexColors)
                 {
@@ -496,9 +496,9 @@ namespace MCommon
                     const uint32 indexB = indices[triangleStartIndex + 1] + startVertex;
                     const uint32 indexC = indices[triangleStartIndex + 2] + startVertex;
 
-                    const AZ::Vector3& posA = mWorldSpacePositions[ indexA ];
-                    const AZ::Vector3& posB = mWorldSpacePositions[ indexB ];
-                    const AZ::Vector3& posC = mWorldSpacePositions[ indexC ];
+                    const AZ::Vector3& posA = m_worldSpacePositions[ indexA ];
+                    const AZ::Vector3& posB = m_worldSpacePositions[ indexB ];
+                    const AZ::Vector3& posC = m_worldSpacePositions[ indexC ];
 
                     const AZ::Vector3 normalDir = (posB - posA).Cross(posC - posA).GetNormalized();
 
@@ -524,7 +524,7 @@ namespace MCommon
                 for (uint32 j = 0; j < numVertices; ++j)
                 {
                     const uint32 vertexIndex = j + startVertex;
-                    const AZ::Vector3& position = mWorldSpacePositions[vertexIndex];
+                    const AZ::Vector3& position = m_worldSpacePositions[vertexIndex];
                     const AZ::Vector3 normal = worldTM.TransformVector(normals[vertexIndex]).GetNormalizedSafe() * vertexNormalsScale;
                     RenderLine(position, position + normal, colorVertexNormals);
                 }
@@ -578,15 +578,15 @@ namespace MCommon
             }
             bitangent = (worldTM.TransformVector(bitangent)).GetNormalizedSafe();
 
-            RenderLine(mWorldSpacePositions[i], mWorldSpacePositions[i] + (tangent * scale), colorTangents);
+            RenderLine(m_worldSpacePositions[i], m_worldSpacePositions[i] + (tangent * scale), colorTangents);
 
             if (tangents[i].GetW() < 0.0f)
             {
-                RenderLine(mWorldSpacePositions[i], mWorldSpacePositions[i] + (bitangent * scale), mirroredBitangentColor);
+                RenderLine(m_worldSpacePositions[i], m_worldSpacePositions[i] + (bitangent * scale), mirroredBitangentColor);
             }
             else
             {
-                RenderLine(mWorldSpacePositions[i], mWorldSpacePositions[i] + (bitangent * scale), colorBitangent);
+                RenderLine(m_worldSpacePositions[i], m_worldSpacePositions[i] + (bitangent * scale), colorBitangent);
             }
         }
 
@@ -601,28 +601,28 @@ namespace MCommon
     void RenderUtil::PrepareForMesh(EMotionFX::Mesh* mesh, const AZ::Transform& worldTM)
     {
         // check if we have already prepared for the given mesh
-        if (mCurrentMesh == mesh)
+        if (m_currentMesh == mesh)
         {
             return;
         }
 
         // set our new current mesh
-        mCurrentMesh = mesh;
+        m_currentMesh = mesh;
 
         // get the number of vertices and the data
-        const uint32    numVertices = mCurrentMesh->GetNumVertices();
-        AZ::Vector3*    positions   = (AZ::Vector3*)mCurrentMesh->FindVertexData(EMotionFX::Mesh::ATTRIB_POSITIONS);
+        const uint32    numVertices = m_currentMesh->GetNumVertices();
+        AZ::Vector3*    positions   = (AZ::Vector3*)m_currentMesh->FindVertexData(EMotionFX::Mesh::ATTRIB_POSITIONS);
 
         // check if the vertices fits in our buffer
-        if (mWorldSpacePositions.size() < numVertices)
+        if (m_worldSpacePositions.size() < numVertices)
         {
-            mWorldSpacePositions.resize(numVertices);
+            m_worldSpacePositions.resize(numVertices);
         }
 
         // pre-calculate the world space positions
         for (uint32 i = 0; i < numVertices; ++i)
         {
-            mWorldSpacePositions[i] = worldTM.TransformPoint(positions[i]);
+            m_worldSpacePositions[i] = worldTM.TransformPoint(positions[i]);
         }
     }
 
@@ -636,11 +636,11 @@ namespace MCommon
 
         const size_t            nodeIndex       = node->GetNodeIndex();
         const size_t            parentIndex     = node->GetParentIndex();
-        const AZ::Vector3       nodeWorldPos    = pose->GetWorldSpaceTransform(nodeIndex).mPosition;
+        const AZ::Vector3       nodeWorldPos    = pose->GetWorldSpaceTransform(nodeIndex).m_position;
 
         if (parentIndex != InvalidIndex)
         {
-            const AZ::Vector3       parentWorldPos  = pose->GetWorldSpaceTransform(parentIndex).mPosition;
+            const AZ::Vector3       parentWorldPos  = pose->GetWorldSpaceTransform(parentIndex).m_position;
             const AZ::Vector3       bone            = parentWorldPos - nodeWorldPos;
             const float             boneLength      = MCore::SafeLength(bone);
 
@@ -686,8 +686,8 @@ namespace MCommon
             if (!visibleJointIndices || visibleJointIndices->empty() ||
                 (visibleJointIndices->find(jointIndex) != visibleJointIndices->end()))
             {
-                const AZ::Vector3       nodeWorldPos        = pose->GetWorldSpaceTransform(jointIndex).mPosition;
-                const AZ::Vector3       parentWorldPos      = pose->GetWorldSpaceTransform(parentIndex).mPosition;
+                const AZ::Vector3       nodeWorldPos        = pose->GetWorldSpaceTransform(jointIndex).m_position;
+                const AZ::Vector3       parentWorldPos      = pose->GetWorldSpaceTransform(parentIndex).m_position;
                 const AZ::Vector3       bone                = parentWorldPos - nodeWorldPos;
                 const AZ::Vector3       boneDirection       = MCore::SafeNormalize(bone);
                 const float             boneLength          = MCore::SafeLength(bone);
@@ -740,24 +740,24 @@ namespace MCommon
                 if (scaleBonesOnLength && parentIndex != InvalidIndex && AZStd::find(begin(boneList), end(boneList), jointIndex) != end(boneList))
                 {
                     static const float axisBoneScale = 50.0f;
-                    axisRenderingSettings.mSize = GetBoneScale(actorInstance, joint) * constPreScale * axisBoneScale;
+                    axisRenderingSettings.m_size = GetBoneScale(actorInstance, joint) * constPreScale * axisBoneScale;
                 }
                 else
                 {
-                    axisRenderingSettings.mSize = constPreScale;
+                    axisRenderingSettings.m_size = constPreScale;
                 }
 
                 // check if the current bone is selected and set the color according to it
                 if (selectedJointIndices && selectedJointIndices->find(jointIndex) != selectedJointIndices->end())
                 {
-                    axisRenderingSettings.mSelected = true;
+                    axisRenderingSettings.m_selected = true;
                 }
                 else
                 {
-                    axisRenderingSettings.mSelected = false;
+                    axisRenderingSettings.m_selected = false;
                 }
 
-                axisRenderingSettings.mWorldTM = pose->GetWorldSpaceTransform(jointIndex).ToAZTransform();
+                axisRenderingSettings.m_worldTm = pose->GetWorldSpaceTransform(jointIndex).ToAZTransform();
                 RenderLineAxis(axisRenderingSettings);
             }
         }
@@ -783,8 +783,8 @@ namespace MCommon
 
             // render node orientation
             const EMotionFX::Transform worldTransform = pose->GetWorldSpaceTransform(nodeIndex);
-            axisRenderingSettings.mSize     = GetBoneScale(actorInstance, node) * 5.0f;
-            axisRenderingSettings.mWorldTM  = worldTransform.ToAZTransform();
+            axisRenderingSettings.m_size     = GetBoneScale(actorInstance, node) * 5.0f;
+            axisRenderingSettings.m_worldTm  = worldTransform.ToAZTransform();
             RenderLineAxis(axisRenderingSettings);// line based axis rendering
 
             // skip root nodes for the line based skeleton rendering, you could also use curNode->IsRootNode()
@@ -792,8 +792,8 @@ namespace MCommon
             size_t parentIndex = node->GetParentIndex();
             if (parentIndex != InvalidIndex)
             {
-                const AZ::Vector3 endPos = pose->GetWorldSpaceTransform(parentIndex).mPosition;
-                RenderLine(worldTransform.mPosition, endPos, color);
+                const AZ::Vector3 endPos = pose->GetWorldSpaceTransform(parentIndex).m_position;
+                RenderLine(worldTransform.m_position, endPos, color);
             }
         }
 
@@ -821,14 +821,14 @@ namespace MCommon
     void RenderUtil::UtilMesh::CalculateNormals(bool counterClockWise)
     {
         // check if the normals actually got allocated
-        if (mNormals.empty())
+        if (m_normals.empty())
         {
             return;
         }
 
         // reset all normals to the zero vector
-        const size_t numNormals = mNormals.size();
-        MCore::MemSet(&mNormals[0], 0, sizeof(AZ::Vector3) * numNormals);
+        const size_t numNormals = m_normals.size();
+        MCore::MemSet(&m_normals[0], 0, sizeof(AZ::Vector3) * numNormals);
 
         // iterate through all vertices and sum up the face normals
         uint32 i;
@@ -837,24 +837,24 @@ namespace MCommon
 
         for (i = 0; i < numNormals; i += 3)
         {
-            indexA = mIndices[i];
-            indexB = mIndices[i + (counterClockWise ? 1 : 2)];
-            indexC = mIndices[i + (counterClockWise ? 2 : 1)];
+            indexA = m_indices[i];
+            indexB = m_indices[i + (counterClockWise ? 1 : 2)];
+            indexC = m_indices[i + (counterClockWise ? 2 : 1)];
 
-            v1 = mPositions[indexB] - mPositions[indexA];
-            v2 = mPositions[indexC] - mPositions[indexA];
+            v1 = m_positions[indexB] - m_positions[indexA];
+            v2 = m_positions[indexC] - m_positions[indexA];
 
             normal = v1.Cross(v2);
 
-            mNormals[indexA] = mNormals[indexA] + normal;
-            mNormals[indexB] = mNormals[indexB] + normal;
-            mNormals[indexC] = mNormals[indexC] + normal;
+            m_normals[indexA] = m_normals[indexA] + normal;
+            m_normals[indexB] = m_normals[indexB] + normal;
+            m_normals[indexC] = m_normals[indexC] + normal;
         }
 
         // normalize all the normals
         for (i = 0; i < numNormals; ++i)
         {
-            mNormals[i] = mNormals[i].GetNormalized();
+            m_normals[i] = m_normals[i].GetNormalized();
         }
     }
 
@@ -863,14 +863,14 @@ namespace MCommon
     void RenderUtil::UtilMesh::Allocate(uint32 numVertices, uint32 numIndices, bool hasNormals)
     {
         AZ_Assert(numVertices > 0 && numIndices % 3 == 0, "Invalid numVertices or numIndices");
-        AZ_Assert(mPositions.empty() && mIndices.empty() && mNormals.empty(), "data already initialized");
+        AZ_Assert(m_positions.empty() && m_indices.empty() && m_normals.empty(), "data already initialized");
 
         // allocate the buffers
-        mPositions.resize(numVertices);
-        mIndices.resize(numIndices);
+        m_positions.resize(numVertices);
+        m_indices.resize(numIndices);
         if (hasNormals)
         {
-            mNormals.resize(numVertices);
+            m_normals.resize(numVertices);
         }
     }
 
@@ -897,13 +897,13 @@ namespace MCommon
     void RenderUtil::FillCylinder(UtilMesh* mesh, float baseRadius, float topRadius, float length, bool calculateNormals)
     {
         // check if the positions and the indices have been allocated already by the CreateCylinder() function
-        if (mesh->mPositions.empty() || mesh->mIndices.empty())
+        if (mesh->m_positions.empty() || mesh->m_indices.empty())
         {
             return;
         }
 
         // number of segments/sides of the cylinder
-        const uint32 numSegments = static_cast<uint32>(mesh->mPositions.size()) / 2;
+        const uint32 numSegments = static_cast<uint32>(mesh->m_positions.size()) / 2;
 
         // fill in the vertices
         uint32 i;
@@ -913,24 +913,24 @@ namespace MCommon
             const float z = MCore::Math::Sin(p);
             const float y = MCore::Math::Cos(p);
 
-            mesh->mPositions[i]               = AZ::Vector3(0.0f,    y * baseRadius, z * baseRadius);
-            mesh->mPositions[i + numSegments] = AZ::Vector3(-length, y * topRadius,  z * topRadius);
+            mesh->m_positions[i]               = AZ::Vector3(0.0f,    y * baseRadius, z * baseRadius);
+            mesh->m_positions[i + numSegments] = AZ::Vector3(-length, y * topRadius,  z * topRadius);
         }
 
         // fill in the indices
         uint32 c = 0;
         for (i = 0; i < numSegments; ++i)
         {
-            mesh->mIndices[c++] = i;
-            mesh->mIndices[c++] = ((i + 1) % numSegments);
-            mesh->mIndices[c++] = i + numSegments;
+            mesh->m_indices[c++] = i;
+            mesh->m_indices[c++] = ((i + 1) % numSegments);
+            mesh->m_indices[c++] = i + numSegments;
         }
 
         for (i = 0; i < numSegments; ++i)
         {
-            mesh->mIndices[c++] = i + numSegments;
-            mesh->mIndices[c++] = ((i + 1) % numSegments);
-            mesh->mIndices[c++] = ((i + 1) % numSegments) + numSegments;
+            mesh->m_indices[c++] = i + numSegments;
+            mesh->m_indices[c++] = ((i + 1) % numSegments);
+            mesh->m_indices[c++] = ((i + 1) % numSegments) + numSegments;
         }
 
         // recalculate normals if desired
@@ -995,19 +995,19 @@ namespace MCommon
                 const float x = r * MCore::Math::Sin(p);
                 const float y = r * MCore::Math::Cos(p);
 
-                sphereMesh->mPositions[(i - 1) * numSegments + j] = AZ::Vector3(x, y, z * radius);
+                sphereMesh->m_positions[(i - 1) * numSegments + j] = AZ::Vector3(x, y, z * radius);
             }
         }
 
         // the highest and lowest vertices
-        sphereMesh->mPositions[(numSegments - 2) * numSegments + 0]   = AZ::Vector3(0.0f, 0.0f,  radius);
-        sphereMesh->mPositions[(numSegments - 2) * numSegments + 1]   = AZ::Vector3(0.0f, 0.0f, -radius);
+        sphereMesh->m_positions[(numSegments - 2) * numSegments + 0]   = AZ::Vector3(0.0f, 0.0f,  radius);
+        sphereMesh->m_positions[(numSegments - 2) * numSegments + 1]   = AZ::Vector3(0.0f, 0.0f, -radius);
 
         // calculate normals
-        const size_t numPositions = sphereMesh->mPositions.size();
+        const size_t numPositions = sphereMesh->m_positions.size();
         for (i = 0; i < numPositions; ++i)
         {
-            sphereMesh->mNormals[i] = -sphereMesh->mPositions[i].GetNormalized();
+            sphereMesh->m_normals[i] = -sphereMesh->m_positions[i].GetNormalized();
         }
 
         // fill the indices
@@ -1016,46 +1016,46 @@ namespace MCommon
         {
             for (uint32 j = 0; j < numSegments - 1; j++)
             {
-                sphereMesh->mIndices[c++] = (i - 1) * numSegments + j;
-                sphereMesh->mIndices[c++] = (i - 1) * numSegments + j + 1;
-                sphereMesh->mIndices[c++] = i * numSegments + j;
+                sphereMesh->m_indices[c++] = (i - 1) * numSegments + j;
+                sphereMesh->m_indices[c++] = (i - 1) * numSegments + j + 1;
+                sphereMesh->m_indices[c++] = i * numSegments + j;
 
-                sphereMesh->mIndices[c++] = (i - 1) * numSegments + j + 1;
-                sphereMesh->mIndices[c++] = i * numSegments + j + 1;
-                sphereMesh->mIndices[c++] = i * numSegments + j;
+                sphereMesh->m_indices[c++] = (i - 1) * numSegments + j + 1;
+                sphereMesh->m_indices[c++] = i * numSegments + j + 1;
+                sphereMesh->m_indices[c++] = i * numSegments + j;
             }
 
-            sphereMesh->mIndices[c++] = (i - 1) * numSegments + numSegments - 1;
-            sphereMesh->mIndices[c++] = (i - 1) * numSegments;
-            sphereMesh->mIndices[c++] = i * numSegments + numSegments - 1;
+            sphereMesh->m_indices[c++] = (i - 1) * numSegments + numSegments - 1;
+            sphereMesh->m_indices[c++] = (i - 1) * numSegments;
+            sphereMesh->m_indices[c++] = i * numSegments + numSegments - 1;
 
-            sphereMesh->mIndices[c++] = i * numSegments;
-            sphereMesh->mIndices[c++] = (i - 1) * numSegments;
-            sphereMesh->mIndices[c++] = i * numSegments + numSegments - 1;
+            sphereMesh->m_indices[c++] = i * numSegments;
+            sphereMesh->m_indices[c++] = (i - 1) * numSegments;
+            sphereMesh->m_indices[c++] = i * numSegments + numSegments - 1;
         }
 
         // highest and deepest indices
         for (i = 0; i < numSegments - 1; ++i)
         {
-            sphereMesh->mIndices[c++] = i;
-            sphereMesh->mIndices[c++] = i + 1;
-            sphereMesh->mIndices[c++] = (numSegments - 2) * numSegments;
+            sphereMesh->m_indices[c++] = i;
+            sphereMesh->m_indices[c++] = i + 1;
+            sphereMesh->m_indices[c++] = (numSegments - 2) * numSegments;
         }
 
-        sphereMesh->mIndices[c++] = numSegments - 1;
-        sphereMesh->mIndices[c++] = 0;
-        sphereMesh->mIndices[c++] = (numSegments - 2) * numSegments;
+        sphereMesh->m_indices[c++] = numSegments - 1;
+        sphereMesh->m_indices[c++] = 0;
+        sphereMesh->m_indices[c++] = (numSegments - 2) * numSegments;
 
         for (i = 0; i < numSegments - 1; ++i)
         {
-            sphereMesh->mIndices[c++] = (numSegments - 3) * numSegments + i;
-            sphereMesh->mIndices[c++] = (numSegments - 3) * numSegments + i + 1;
-            sphereMesh->mIndices[c++] = (numSegments - 2) * numSegments + 1;
+            sphereMesh->m_indices[c++] = (numSegments - 3) * numSegments + i;
+            sphereMesh->m_indices[c++] = (numSegments - 3) * numSegments + i + 1;
+            sphereMesh->m_indices[c++] = (numSegments - 2) * numSegments + 1;
         }
 
-        sphereMesh->mIndices[c++] = (numSegments - 3) * numSegments + (numSegments - 1);
-        sphereMesh->mIndices[c++] = (numSegments - 3) * numSegments;
-        sphereMesh->mIndices[c++] = (numSegments - 2) * numSegments + 1;
+        sphereMesh->m_indices[c++] = (numSegments - 3) * numSegments + (numSegments - 1);
+        sphereMesh->m_indices[c++] = (numSegments - 3) * numSegments;
+        sphereMesh->m_indices[c++] = (numSegments - 2) * numSegments + 1;
 
         return sphereMesh;
     }
@@ -1139,63 +1139,63 @@ namespace MCommon
         mesh->Allocate(numVertices, numTriangles * 3, true);
 
         // define the vertices
-        mesh->mPositions[0] = AZ::Vector3(-0.5f, -0.5f, -0.5f) * size;
-        mesh->mPositions[1] = AZ::Vector3(0.5f, -0.5f, -0.5f) * size;
-        mesh->mPositions[2] = AZ::Vector3(0.5f, 0.5f, -0.5f) * size;
-        mesh->mPositions[3] = AZ::Vector3(-0.5f, 0.5f, -0.5f) * size;
-        mesh->mPositions[4] = AZ::Vector3(-0.5f, -0.5f, 0.5f) * size;
-        mesh->mPositions[5] = AZ::Vector3(0.5f, -0.5f, 0.5f) * size;
-        mesh->mPositions[6] = AZ::Vector3(0.5f, 0.5f, 0.5f) * size;
-        mesh->mPositions[7] = AZ::Vector3(-0.5f, 0.5f, 0.5f) * size;
+        mesh->m_positions[0] = AZ::Vector3(-0.5f, -0.5f, -0.5f) * size;
+        mesh->m_positions[1] = AZ::Vector3(0.5f, -0.5f, -0.5f) * size;
+        mesh->m_positions[2] = AZ::Vector3(0.5f, 0.5f, -0.5f) * size;
+        mesh->m_positions[3] = AZ::Vector3(-0.5f, 0.5f, -0.5f) * size;
+        mesh->m_positions[4] = AZ::Vector3(-0.5f, -0.5f, 0.5f) * size;
+        mesh->m_positions[5] = AZ::Vector3(0.5f, -0.5f, 0.5f) * size;
+        mesh->m_positions[6] = AZ::Vector3(0.5f, 0.5f, 0.5f) * size;
+        mesh->m_positions[7] = AZ::Vector3(-0.5f, 0.5f, 0.5f) * size;
 
         // define the indices
-        mesh->mIndices[0]  = 0;
-        mesh->mIndices[1]  = 1;
-        mesh->mIndices[2]  = 2;
+        mesh->m_indices[0]  = 0;
+        mesh->m_indices[1]  = 1;
+        mesh->m_indices[2]  = 2;
 
-        mesh->mIndices[3]  = 0;
-        mesh->mIndices[4]  = 2;
-        mesh->mIndices[5]  = 3;
+        mesh->m_indices[3]  = 0;
+        mesh->m_indices[4]  = 2;
+        mesh->m_indices[5]  = 3;
 
-        mesh->mIndices[6]  = 1;
-        mesh->mIndices[7]  = 5;
-        mesh->mIndices[8]  = 6;
+        mesh->m_indices[6]  = 1;
+        mesh->m_indices[7]  = 5;
+        mesh->m_indices[8]  = 6;
 
-        mesh->mIndices[9]  = 1;
-        mesh->mIndices[10] = 6;
-        mesh->mIndices[11] = 2;
+        mesh->m_indices[9]  = 1;
+        mesh->m_indices[10] = 6;
+        mesh->m_indices[11] = 2;
 
-        mesh->mIndices[12] = 5;
-        mesh->mIndices[13] = 4;
-        mesh->mIndices[14] = 7;
+        mesh->m_indices[12] = 5;
+        mesh->m_indices[13] = 4;
+        mesh->m_indices[14] = 7;
 
-        mesh->mIndices[15] = 5;
-        mesh->mIndices[16] = 7;
-        mesh->mIndices[17] = 6;
+        mesh->m_indices[15] = 5;
+        mesh->m_indices[16] = 7;
+        mesh->m_indices[17] = 6;
 
-        mesh->mIndices[18] = 4;
-        mesh->mIndices[19] = 0;
-        mesh->mIndices[20] = 3;
+        mesh->m_indices[18] = 4;
+        mesh->m_indices[19] = 0;
+        mesh->m_indices[20] = 3;
 
-        mesh->mIndices[21] = 4;
-        mesh->mIndices[22] = 3;
-        mesh->mIndices[23] = 7;
+        mesh->m_indices[21] = 4;
+        mesh->m_indices[22] = 3;
+        mesh->m_indices[23] = 7;
 
-        mesh->mIndices[24] = 1;
-        mesh->mIndices[25] = 0;
-        mesh->mIndices[26] = 4;
+        mesh->m_indices[24] = 1;
+        mesh->m_indices[25] = 0;
+        mesh->m_indices[26] = 4;
 
-        mesh->mIndices[27] = 1;
-        mesh->mIndices[28] = 4;
-        mesh->mIndices[29] = 5;
+        mesh->m_indices[27] = 1;
+        mesh->m_indices[28] = 4;
+        mesh->m_indices[29] = 5;
 
-        mesh->mIndices[30] = 3;
-        mesh->mIndices[31] = 2;
-        mesh->mIndices[32] = 6;
+        mesh->m_indices[30] = 3;
+        mesh->m_indices[31] = 2;
+        mesh->m_indices[32] = 6;
 
-        mesh->mIndices[33] = 3;
-        mesh->mIndices[34] = 6;
-        mesh->mIndices[35] = 7;
+        mesh->m_indices[33] = 3;
+        mesh->m_indices[34] = 6;
+        mesh->m_indices[35] = 7;
 
         // calculate the normals
         mesh->CalculateNormals();
@@ -1219,7 +1219,7 @@ namespace MCommon
         // fill in the indices
         for (uint32 i = 0; i < numVertices; ++i)
         {
-            mesh->mIndices[i] = i;
+            mesh->m_indices[i] = i;
         }
 
         // fill in the vertices and recalculate the normals
@@ -1234,7 +1234,7 @@ namespace MCommon
     {
         static AZ::Vector3      points[12];
         size_t                  pointNr     = 0;
-        const size_t            numVertices = mesh->mPositions.size();
+        const size_t            numVertices = mesh->m_positions.size();
         const size_t            numTriangles = numVertices / 3;
         assert(numTriangles * 3 == numVertices);
         const size_t            numSegments = numTriangles / 2;
@@ -1273,14 +1273,14 @@ namespace MCommon
             vertexNr        = i * 6;
 
             // triangle 1
-            mesh->mPositions[vertexNr + 0] = segmentPoint;
-            mesh->mPositions[vertexNr + 1] = previousPoint;
-            mesh->mPositions[vertexNr + 2] = center;
+            mesh->m_positions[vertexNr + 0] = segmentPoint;
+            mesh->m_positions[vertexNr + 1] = previousPoint;
+            mesh->m_positions[vertexNr + 2] = center;
 
             // triangle 2
-            mesh->mPositions[vertexNr + 3] = previousPoint;
-            mesh->mPositions[vertexNr + 4] = segmentPoint;
-            mesh->mPositions[vertexNr + 5] = top;
+            mesh->m_positions[vertexNr + 3] = previousPoint;
+            mesh->m_positions[vertexNr + 4] = segmentPoint;
+            mesh->m_positions[vertexNr + 5] = top;
 
             // postprocess data
             previousPoint = segmentPoint;
@@ -1350,36 +1350,36 @@ namespace MCommon
     // constructor
     RenderUtil::AxisRenderingSettings::AxisRenderingSettings()
     {
-        mSize           = 1.0f;
-        mRenderXAxis    = true;
-        mRenderYAxis    = true;
-        mRenderZAxis    = true;
-        mRenderXAxisName = false;
-        mRenderYAxisName = false;
-        mRenderZAxisName = false;
-        mSelected       = false;
+        m_size           = 1.0f;
+        m_renderXAxis    = true;
+        m_renderYAxis    = true;
+        m_renderZAxis    = true;
+        m_renderXAxisName = false;
+        m_renderYAxisName = false;
+        m_renderZAxisName = false;
+        m_selected       = false;
     }
 
 
     // render line based axis
     void RenderUtil::RenderLineAxis(const AxisRenderingSettings& settings)
     {
-        const float             size                = settings.mSize;
-        const AZ::Transform&    worldTM             = settings.mWorldTM;
-        const AZ::Vector3&      cameraRight         = settings.mCameraRight;
-        const AZ::Vector3&      cameraUp            = settings.mCameraUp;
+        const float             size                = settings.m_size;
+        const AZ::Transform&    worldTM             = settings.m_worldTm;
+        const AZ::Vector3&      cameraRight         = settings.m_cameraRight;
+        const AZ::Vector3&      cameraUp            = settings.m_cameraUp;
         const float             arrowHeadRadius     = size * 0.1f;
         const float             arrowHeadHeight     = size * 0.3f;
         const float             axisHeight          = size * 0.7f;
         const AZ::Vector3       position            = worldTM.GetTranslation();
 
-        if (settings.mRenderXAxis)
+        if (settings.m_renderXAxis)
         {
             // set the color
             MCore::RGBAColor xAxisColor = MCore::RGBAColor(1.0f, 0.0f, 0.0f);
 
             MCore::RGBAColor xSelectedColor;
-            if (settings.mSelected)
+            if (settings.m_selected)
             {
                 xSelectedColor = MCore::RGBAColor(1.0f, 0.647f, 0.0f);
             }
@@ -1393,7 +1393,7 @@ namespace MCommon
             RenderArrowHead(arrowHeadHeight, arrowHeadRadius, xAxisArrowStart, xAxisDir, xSelectedColor);
             RenderLine(position, xAxisArrowStart, xAxisColor);
 
-            if (settings.mRenderXAxisName)
+            if (settings.m_renderXAxisName)
             {
                 const AZ::Vector3 xNamePos = position + xAxisDir * (size * 1.15f);
                 RenderLine(xNamePos + cameraUp * (-0.15f * size) + cameraRight * (0.1f * size),    xNamePos + cameraUp * (0.15f * size) + cameraRight * (-0.1f * size),    xAxisColor);
@@ -1401,13 +1401,13 @@ namespace MCommon
             }
         }
 
-        if (settings.mRenderYAxis)
+        if (settings.m_renderYAxis)
         {
             // set the color
             MCore::RGBAColor yAxisColor = MCore::RGBAColor(0.0f, 1.0f, 0.0f);
 
             MCore::RGBAColor ySelectedColor;
-            if (settings.mSelected)
+            if (settings.m_selected)
             {
                 ySelectedColor = MCore::RGBAColor(1.0f, 0.647f, 0.0f);
             }
@@ -1421,7 +1421,7 @@ namespace MCommon
             RenderArrowHead(arrowHeadHeight, arrowHeadRadius, yAxisArrowStart, yAxisDir, ySelectedColor);
             RenderLine(position, yAxisArrowStart, yAxisColor);
 
-            if (settings.mRenderYAxisName)
+            if (settings.m_renderYAxisName)
             {
                 const AZ::Vector3 yNamePos = position + yAxisDir * (size * 1.15f);
                 RenderLine(yNamePos,   yNamePos + cameraRight * (-0.1f * size) + cameraUp * (0.15f * size),    yAxisColor);
@@ -1430,13 +1430,13 @@ namespace MCommon
             }
         }
 
-        if (settings.mRenderZAxis)
+        if (settings.m_renderZAxis)
         {
             // set the color
             MCore::RGBAColor zAxisColor = MCore::RGBAColor(0.0f, 0.0f, 1.0f);
 
             MCore::RGBAColor zSelectedColor;
-            if (settings.mSelected)
+            if (settings.m_selected)
             {
                 zSelectedColor = MCore::RGBAColor(1.0f, 0.647f, 0.0f);
             }
@@ -1450,7 +1450,7 @@ namespace MCommon
             RenderArrowHead(arrowHeadHeight, arrowHeadRadius, zAxisArrowStart, zAxisDir, zSelectedColor);
             RenderLine(position, zAxisArrowStart, zAxisColor);
 
-            if (settings.mRenderZAxisName)
+            if (settings.m_renderZAxisName)
             {
                 const AZ::Vector3 zNamePos = position + zAxisDir * (size * 1.15f);
                 RenderLine(zNamePos + cameraRight * (-0.1f * size) + cameraUp * (0.15f * size),    zNamePos + cameraRight * (0.1f * size) + cameraUp * (0.15f * size),            zAxisColor);
@@ -1700,7 +1700,7 @@ namespace MCommon
         }
 
         // get some helper variables and check if there is a motion extraction node set
-        EMotionFX::ActorInstance*   actorInstance   = trajectoryPath->mActorInstance;
+        EMotionFX::ActorInstance*   actorInstance   = trajectoryPath->m_actorInstance;
         EMotionFX::Actor*           actor           = actorInstance->GetActor();
         EMotionFX::Node*            extractionNode  = actor->GetMotionExtractionNode();
         if (extractionNode == NULL)
@@ -1709,7 +1709,7 @@ namespace MCommon
         }
 
         // fast access to the trajectory trace particles
-        const AZStd::vector<MCommon::RenderUtil::TrajectoryPathParticle>& traceParticles = trajectoryPath->mTraceParticles;
+        const AZStd::vector<MCommon::RenderUtil::TrajectoryPathParticle>& traceParticles = trajectoryPath->m_traceParticles;
         const size_t numTraceParticles = traceParticles.size();
         if (traceParticles.empty())
         {
@@ -1728,7 +1728,7 @@ namespace MCommon
         // Render arrow head
         //////////////////////////////////////////////////////////////////////////////////////////////////////
         // get the position and some direction vectors of the trajectory node matrix
-        EMotionFX::Transform worldTM = traceParticles[numTraceParticles - 1].mWorldTM;
+        EMotionFX::Transform worldTM = traceParticles[numTraceParticles - 1].m_worldTm;
         AZ::Vector3 right = MCore::GetRight(trajectoryWorldTM).GetNormalized();
         AZ::Vector3 center = trajectoryWorldTM.GetTranslation();
         AZ::Vector3 forward = MCore::GetForward(trajectoryWorldTM).GetNormalized();
@@ -1787,17 +1787,17 @@ namespace MCommon
             float normalizedDistance = (float)i / numTraceParticles;
 
             // get the start and end point of the line segment and calculate the delta between them
-            worldTM     = traceParticles[i].mWorldTM;
-            a           = worldTM.mPosition;
-            b           = traceParticles[i - 1].mWorldTM.mPosition;
+            worldTM     = traceParticles[i].m_worldTm;
+            a           = worldTM.m_position;
+            b           = traceParticles[i - 1].m_worldTm.m_position;
             right       = MCore::GetRight(worldTM.ToAZTransform()).GetNormalized();
 
             if (i > 1 && i < numTraceParticles - 3)
             {
-                const AZ::Vector3 deltaA = traceParticles[i - 2].mWorldTM.mPosition - traceParticles[i - 1].mWorldTM.mPosition;
-                const AZ::Vector3 deltaB = traceParticles[i - 1].mWorldTM.mPosition - traceParticles[i    ].mWorldTM.mPosition;
-                const AZ::Vector3 deltaC = traceParticles[i    ].mWorldTM.mPosition - traceParticles[i + 1].mWorldTM.mPosition;
-                const AZ::Vector3 deltaD = traceParticles[i + 1].mWorldTM.mPosition - traceParticles[i + 2].mWorldTM.mPosition;
+                const AZ::Vector3 deltaA = traceParticles[i - 2].m_worldTm.m_position - traceParticles[i - 1].m_worldTm.m_position;
+                const AZ::Vector3 deltaB = traceParticles[i - 1].m_worldTm.m_position - traceParticles[i    ].m_worldTm.m_position;
+                const AZ::Vector3 deltaC = traceParticles[i    ].m_worldTm.m_position - traceParticles[i + 1].m_worldTm.m_position;
+                const AZ::Vector3 deltaD = traceParticles[i + 1].m_worldTm.m_position - traceParticles[i + 2].m_worldTm.m_position;
                 AZ::Vector3 delta = deltaA + deltaB + deltaC + deltaD;
                 delta = MCore::SafeNormalize(delta);
 
@@ -1832,7 +1832,7 @@ namespace MCommon
             }
 
             // render the solid arrow
-            color.a = normalizedDistance;
+            color.m_a = normalizedDistance;
             RenderTriangle(vertices[0] + liftFromGround, vertices[2] + liftFromGround, vertices[1] + liftFromGround, color);
             RenderTriangle(vertices[1] + liftFromGround, vertices[2] + liftFromGround, vertices[3] + liftFromGround, color);
 
@@ -1856,7 +1856,7 @@ namespace MCommon
         }
 
         // remove all particles while keeping the data in memory
-        trajectoryPath->mTraceParticles.clear();
+        trajectoryPath->m_traceParticles.clear();
     }
 
 
@@ -1895,7 +1895,7 @@ namespace MCommon
         {
             const EMotionFX::Node* joint = skeleton->GetNode(actorInstance->GetEnabledNode(i));
             const size_t jointIndex = joint->GetNodeIndex();
-            const AZ::Vector3 worldPos = pose->GetWorldSpaceTransform(jointIndex).mPosition;
+            const AZ::Vector3 worldPos = pose->GetWorldSpaceTransform(jointIndex).m_position;
 
             // check if the current enabled node is along the visible nodes and render it if that is the case
             if (visibleJointIndices.empty() ||
@@ -1961,7 +1961,7 @@ namespace MCommon
 
     void RenderUtil::RenderWireframeSphere(float radius, const AZ::Transform& worldTM, const MCore::RGBAColor& color, bool directlyRender)
     {
-        const float stepSize = AZ::Constants::TwoPi / m_wireframeSphereSegmentCount;
+        const float stepSize = AZ::Constants::TwoPi / s_wireframeSphereSegmentCount;
 
         AZ::Vector3 pos1, pos2;
         float x1, y1, x2, y2;
@@ -1997,7 +1997,7 @@ namespace MCommon
     // The end points of these half circles connect the bottom cap to the top cap (the cylinder part in the middle).
     void RenderUtil::RenderWireframeCapsule(float radius, float height, const AZ::Transform& worldTM, const MCore::RGBAColor& color, bool directlyRender)
     {
-        float stepSize = AZ::Constants::TwoPi / m_wireframeSphereSegmentCount;
+        float stepSize = AZ::Constants::TwoPi / s_wireframeSphereSegmentCount;
         const float cylinderHeight = height - 2.0f * radius;
         const float halfCylinderHeight = cylinderHeight * 0.5f;
 
@@ -2341,55 +2341,50 @@ namespace MCommon
 
     RenderUtil::FontChar::FontChar()
     {
-        mIndexCount = 0;
-        mIndices    = 0;
-        mX1 = mY1 = mX2 = mY2 = 0;
+        m_indexCount = 0;
+        m_indices    = 0;
+        m_x1 = m_y1 = m_x2 = m_y2 = 0;
     }
 
 
     const unsigned char* RenderUtil::FontChar::Init(const unsigned char* data, const float* vertices)
     {
-        data        = getUShort(data, mIndexCount);
-        mIndices    = (const unsigned short*)data;
-        data        += mIndexCount * sizeof(unsigned short);
+        data        = getUShort(data, m_indexCount);
+        m_indices    = (const unsigned short*)data;
+        data        += m_indexCount * sizeof(unsigned short);
 
-        for (uint32 i = 0; i < mIndexCount; ++i)
+        for (uint32 i = 0; i < m_indexCount; ++i)
         {
-            uint32          index   = mIndices[i];
+            uint32          index   = m_indices[i];
             const float*    vertex  = &vertices[index * 2];
             //assert( _finite(vertex[0]) );
             //assert( _finite(vertex[1]) );
 
             if (i == 0)
             {
-                mX1 = mX2 = vertex[0];
-                mY1 = mY2 = vertex[1];
+                m_x1 = m_x2 = vertex[0];
+                m_y1 = m_y2 = vertex[1];
             }
             else
             {
-                if (vertex[0] < mX1)
+                if (vertex[0] < m_x1)
                 {
-                    mX1 = vertex[0];
+                    m_x1 = vertex[0];
                 }
-                if (vertex[1] < mY1)
+                if (vertex[1] < m_y1)
                 {
-                    mY1 = vertex[1];
+                    m_y1 = vertex[1];
                 }
-                if (vertex[0] > mX2)
+                if (vertex[0] > m_x2)
                 {
-                    mX2 = vertex[0];
+                    m_x2 = vertex[0];
                 }
-                if (vertex[1] > mY2)
+                if (vertex[1] > m_y2)
                 {
-                    mY2 = vertex[1];
+                    m_y2 = vertex[1];
                 }
             }
         }
-
-        //assert( _finite(mX1) );
-        //assert( _finite(mX2) );
-        //assert( _finite(mY1) );
-        //assert( _finite(mY2) );
 
         return data;
     }
@@ -2397,17 +2392,17 @@ namespace MCommon
 
     void RenderUtil::FontChar::Render(const float* vertices, RenderUtil* renderUtil, float textScale, float& x, float& y, float posX, float posY, const MCore::RGBAColor& color)
     {
-        if (mIndices)
+        if (m_indices)
         {
-            const uint32    lineCount   = mIndexCount / 2;
-            const float     spacing     = (mX2 - mX1) + 0.05f;
+            const uint32    lineCount   = m_indexCount / 2;
+            const float     spacing     = (m_x2 - m_x1) + 0.05f;
 
             AZ::Vector2 p1;
             AZ::Vector2 p2;
             for (uint32 i = 0; i < lineCount; ++i)
             {
-                const float* v1 = &vertices[ mIndices[i * 2 + 0] * 2 ];
-                const float* v2 = &vertices[ mIndices[i * 2 + 1] * 2 ];
+                const float* v1 = &vertices[ m_indices[i * 2 + 0] * 2 ];
+                const float* v2 = &vertices[ m_indices[i * 2 + 1] * 2 ];
                 p1.SetX((v1[0] + x) * textScale + posX);
                 p1.SetY((v1[1] + y) * textScale);
                 p2.SetX((v2[0] + x) * textScale + posX);
@@ -2427,11 +2422,11 @@ namespace MCommon
 
     RenderUtil::VectorFont::VectorFont(RenderUtil* renderUtil)
     {
-        mRenderUtil = renderUtil;
-        mVersion    = 0;
-        mVcount     = 0;
-        mCount      = 0;
-        mVertices   = NULL;
+        m_renderUtil = renderUtil;
+        m_version    = 0;
+        m_vcount     = 0;
+        m_count      = 0;
+        m_vertices   = NULL;
 
         Init(gFontData);
     }
@@ -2445,10 +2440,10 @@ namespace MCommon
 
     void RenderUtil::VectorFont::Release()
     {
-        mVersion    = 0;
-        mVcount     = 0;
-        mCount      = 0;
-        mVertices   = NULL;
+        m_version    = 0;
+        m_vcount     = 0;
+        m_count      = 0;
+        m_vertices   = NULL;
     }
 
 
@@ -2458,22 +2453,22 @@ namespace MCommon
         if (fontData[0] == 'F' && fontData[1] == 'O' && fontData[2] == 'N' && fontData[3] == 'T')
         {
             fontData += 4;
-            fontData = getUint(fontData, mVersion);
+            fontData = getUint(fontData, m_version);
 
-            if (mVersion == FONT_VERSION)
+            if (m_version == FONT_VERSION)
             {
-                fontData = getUint(fontData, mVcount);
-                fontData = getUint(fontData, mCount);
-                fontData = getUint(fontData, mIcount);
+                fontData = getUint(fontData, m_vcount);
+                fontData = getUint(fontData, m_count);
+                fontData = getUint(fontData, m_icount);
 
-                uint32 vsize    = sizeof(float) * mVcount * 2;
-                mVertices       = (float*)fontData;
+                uint32 vsize    = sizeof(float) * m_vcount * 2;
+                m_vertices       = (float*)fontData;
                 fontData        += vsize;
 
-                for (uint32 i = 0; i < mCount; ++i)
+                for (uint32 i = 0; i < m_count; ++i)
                 {
                     unsigned char c = *fontData++;
-                    fontData = mCharacters[c].Init(fontData, mVertices);
+                    fontData = m_characters[c].Init(fontData, m_vertices);
                 }
             }
         }
@@ -2487,10 +2482,7 @@ namespace MCommon
         while (*text)
         {
             char codeUnit = *text++;
-            //if (codeUnit <= 255)
-            textWidth += mCharacters[(int)codeUnit].GetWidth();
-            //else
-            //  textWidth += mCharacters['?'].GetWidth();
+            textWidth += m_characters[(int)codeUnit].GetWidth();
         }
 
         return textWidth;
@@ -2511,10 +2503,7 @@ namespace MCommon
         while (*text)
         {
             const char c = *text++;
-            //      if (c <= 255)
-            mCharacters[(int)c].Render(mVertices, mRenderUtil, fontScale, x, y, posX, posY, color);
-            //      else
-            //          mCharacters['?'].Render( mVertices, mRenderUtil, fontScale, x, y, posX, posY, color );
+            m_characters[(int)c].Render(m_vertices, m_renderUtil, fontScale, x, y, posX, posY, color);
         }
     }
 } // namespace MCommon

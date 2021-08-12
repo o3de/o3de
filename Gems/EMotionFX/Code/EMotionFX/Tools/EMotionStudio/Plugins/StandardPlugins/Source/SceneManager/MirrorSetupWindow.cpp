@@ -42,7 +42,7 @@ namespace EMStudio
     MirrorSetupWindow::MirrorSetupWindow(QWidget* parent, SceneManagerPlugin* plugin)
         : QDialog(parent)
     {
-        mPlugin = plugin;
+        m_plugin = plugin;
 
         // set the window title
         setWindowTitle("Mirror Setup");
@@ -53,10 +53,10 @@ namespace EMStudio
 
         // load some icons
         const QDir dataDir{ QString(MysticQt::GetDataDir().c_str()) };
-        mBoneIcon   = new QIcon(dataDir.filePath("Images/Icons/Bone.svg"));
-        mNodeIcon   = new QIcon(dataDir.filePath("Images/Icons/Node.svg"));
-        mMeshIcon   = new QIcon(dataDir.filePath("Images/Icons/Mesh.svg"));
-        mMappedIcon = new QIcon(dataDir.filePath("Images/Icons/Confirm.svg"));
+        m_boneIcon   = new QIcon(dataDir.filePath("Images/Icons/Bone.svg"));
+        m_nodeIcon   = new QIcon(dataDir.filePath("Images/Icons/Node.svg"));
+        m_meshIcon   = new QIcon(dataDir.filePath("Images/Icons/Mesh.svg"));
+        m_mappedIcon = new QIcon(dataDir.filePath("Images/Icons/Confirm.svg"));
 
         // create the main layout
         QVBoxLayout* mainLayout = new QVBoxLayout();
@@ -72,36 +72,36 @@ namespace EMStudio
         toolBarLayout->setMargin(0);
         toolBarLayout->setSpacing(0);
         mainLayout->addLayout(toolBarLayout);
-        mButtonOpen = new QPushButton();
-        EMStudioManager::MakeTransparentButton(mButtonOpen,    "Images/Icons/Open.svg",       "Load and apply a mapping template.");
-        connect(mButtonOpen, &QPushButton::clicked, this, &MirrorSetupWindow::OnLoadMapping);
-        mButtonSave = new QPushButton();
-        EMStudioManager::MakeTransparentButton(mButtonSave,    "Images/Menu/FileSave.svg",    "Save the currently setup mapping as template.");
-        connect(mButtonSave, &QPushButton::clicked, this, &MirrorSetupWindow::OnSaveMapping);
-        mButtonClear = new QPushButton();
-        EMStudioManager::MakeTransparentButton(mButtonClear,   "Images/Icons/Clear.svg",      "Clear the currently setup mapping entirely.");
-        connect(mButtonClear, &QPushButton::clicked, this, &MirrorSetupWindow::OnClearMapping);
+        m_buttonOpen = new QPushButton();
+        EMStudioManager::MakeTransparentButton(m_buttonOpen,    "Images/Icons/Open.svg",       "Load and apply a mapping template.");
+        connect(m_buttonOpen, &QPushButton::clicked, this, &MirrorSetupWindow::OnLoadMapping);
+        m_buttonSave = new QPushButton();
+        EMStudioManager::MakeTransparentButton(m_buttonSave,    "Images/Menu/FileSave.svg",    "Save the currently setup mapping as template.");
+        connect(m_buttonSave, &QPushButton::clicked, this, &MirrorSetupWindow::OnSaveMapping);
+        m_buttonClear = new QPushButton();
+        EMStudioManager::MakeTransparentButton(m_buttonClear,   "Images/Icons/Clear.svg",      "Clear the currently setup mapping entirely.");
+        connect(m_buttonClear, &QPushButton::clicked, this, &MirrorSetupWindow::OnClearMapping);
 
-        mButtonGuess = new QPushButton();
-        EMStudioManager::MakeTransparentButton(mButtonGuess,   "Images/Icons/Character.svg",  "Perform name based mapping.");
-        connect(mButtonGuess, &QPushButton::clicked, this, &MirrorSetupWindow::OnBestGuess);
+        m_buttonGuess = new QPushButton();
+        EMStudioManager::MakeTransparentButton(m_buttonGuess,   "Images/Icons/Character.svg",  "Perform name based mapping.");
+        connect(m_buttonGuess, &QPushButton::clicked, this, &MirrorSetupWindow::OnBestGuess);
 
-        toolBarLayout->addWidget(mButtonOpen, 0, Qt::AlignLeft);
-        toolBarLayout->addWidget(mButtonSave, 0, Qt::AlignLeft);
-        toolBarLayout->addWidget(mButtonClear, 0, Qt::AlignLeft);
+        toolBarLayout->addWidget(m_buttonOpen, 0, Qt::AlignLeft);
+        toolBarLayout->addWidget(m_buttonSave, 0, Qt::AlignLeft);
+        toolBarLayout->addWidget(m_buttonClear, 0, Qt::AlignLeft);
 
         toolBarLayout->addSpacerItem(new QSpacerItem(100, 1, QSizePolicy::Expanding, QSizePolicy::Minimum));
 
         QHBoxLayout* leftRightLayout = new QHBoxLayout();
         leftRightLayout->addWidget(new QLabel("Left:"), 0, Qt::AlignRight);
-        mLeftEdit = new QLineEdit("Bip01 L");
-        mLeftEdit->setMaximumWidth(75);
-        leftRightLayout->addWidget(mLeftEdit, 0, Qt::AlignRight);
-        mRightEdit = new QLineEdit("Bip01 R");
-        mRightEdit->setMaximumWidth(75);
+        m_leftEdit = new QLineEdit("Bip01 L");
+        m_leftEdit->setMaximumWidth(75);
+        leftRightLayout->addWidget(m_leftEdit, 0, Qt::AlignRight);
+        m_rightEdit = new QLineEdit("Bip01 R");
+        m_rightEdit->setMaximumWidth(75);
         leftRightLayout->addWidget(new QLabel("Right:"), 0, Qt::AlignRight);
-        leftRightLayout->addWidget(mRightEdit, 0, Qt::AlignRight);
-        leftRightLayout->addWidget(mButtonGuess, 0, Qt::AlignRight);
+        leftRightLayout->addWidget(m_rightEdit, 0, Qt::AlignRight);
+        leftRightLayout->addWidget(m_buttonGuess, 0, Qt::AlignRight);
         leftRightLayout->setSpacing(6);
         leftRightLayout->setMargin(0);
 
@@ -140,36 +140,35 @@ namespace EMStudio
         curSearchLayout->setSpacing(6);
         curSearchLayout->setMargin(0);
 
-        mCurrentList = new QTableWidget();
-        mCurrentList->setAlternatingRowColors(true);
-        mCurrentList->setGridStyle(Qt::SolidLine);
-        mCurrentList->setSelectionBehavior(QAbstractItemView::SelectRows);
-        mCurrentList->setSelectionMode(QAbstractItemView::SingleSelection);
-        //mCurrentList->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-        mCurrentList->setCornerButtonEnabled(false);
-        mCurrentList->setEditTriggers(QAbstractItemView::NoEditTriggers);
-        mCurrentList->setContextMenuPolicy(Qt::DefaultContextMenu);
-        mCurrentList->setColumnCount(3);
-        mCurrentList->setColumnWidth(0, 20);
-        mCurrentList->setColumnWidth(1, 20);
-        mCurrentList->setSortingEnabled(true);
-        QHeaderView* verticalHeader = mCurrentList->verticalHeader();
+        m_currentList = new QTableWidget();
+        m_currentList->setAlternatingRowColors(true);
+        m_currentList->setGridStyle(Qt::SolidLine);
+        m_currentList->setSelectionBehavior(QAbstractItemView::SelectRows);
+        m_currentList->setSelectionMode(QAbstractItemView::SingleSelection);
+        m_currentList->setCornerButtonEnabled(false);
+        m_currentList->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        m_currentList->setContextMenuPolicy(Qt::DefaultContextMenu);
+        m_currentList->setColumnCount(3);
+        m_currentList->setColumnWidth(0, 20);
+        m_currentList->setColumnWidth(1, 20);
+        m_currentList->setSortingEnabled(true);
+        QHeaderView* verticalHeader = m_currentList->verticalHeader();
         verticalHeader->setVisible(false);
         QTableWidgetItem* headerItem = new QTableWidgetItem("");
         headerItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-        mCurrentList->setHorizontalHeaderItem(0, headerItem);
+        m_currentList->setHorizontalHeaderItem(0, headerItem);
         headerItem = new QTableWidgetItem("");
         headerItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-        mCurrentList->setHorizontalHeaderItem(1, headerItem);
+        m_currentList->setHorizontalHeaderItem(1, headerItem);
         headerItem = new QTableWidgetItem("Name");
         headerItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-        mCurrentList->setHorizontalHeaderItem(2, headerItem);
-        mCurrentList->horizontalHeader()->setStretchLastSection(true);
-        mCurrentList->horizontalHeader()->setSortIndicatorShown(false);
-        mCurrentList->horizontalHeader()->setSectionsClickable(false);
-        connect(mCurrentList, &QTableWidget::itemSelectionChanged, this, &MirrorSetupWindow::OnCurrentListSelectionChanged);
-        connect(mCurrentList, &QTableWidget::itemDoubleClicked, this, &MirrorSetupWindow::OnCurrentListDoubleClicked);
-        leftListLayout->addWidget(mCurrentList);
+        m_currentList->setHorizontalHeaderItem(2, headerItem);
+        m_currentList->horizontalHeader()->setStretchLastSection(true);
+        m_currentList->horizontalHeader()->setSortIndicatorShown(false);
+        m_currentList->horizontalHeader()->setSectionsClickable(false);
+        connect(m_currentList, &QTableWidget::itemSelectionChanged, this, &MirrorSetupWindow::OnCurrentListSelectionChanged);
+        connect(m_currentList, &QTableWidget::itemDoubleClicked, this, &MirrorSetupWindow::OnCurrentListDoubleClicked);
+        leftListLayout->addWidget(m_currentList);
 
         // add link button middle part
         QVBoxLayout* middleLayout = new QVBoxLayout();
@@ -204,35 +203,34 @@ namespace EMStudio
         sourceSearchLayout->setSpacing(6);
         sourceSearchLayout->setMargin(0);
 
-        mSourceList = new QTableWidget();
-        mSourceList->setAlternatingRowColors(true);
-        mSourceList->setGridStyle(Qt::SolidLine);
-        mSourceList->setSelectionBehavior(QAbstractItemView::SelectRows);
-        mSourceList->setSelectionMode(QAbstractItemView::SingleSelection);
-        //mSourceList->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-        mSourceList->setCornerButtonEnabled(false);
-        mSourceList->setEditTriggers(QAbstractItemView::NoEditTriggers);
-        mSourceList->setContextMenuPolicy(Qt::DefaultContextMenu);
-        mSourceList->setColumnCount(3);
-        mSourceList->setColumnWidth(0, 20);
-        mSourceList->setColumnWidth(1, 20);
-        mSourceList->setSortingEnabled(true);
-        verticalHeader = mSourceList->verticalHeader();
+        m_sourceList = new QTableWidget();
+        m_sourceList->setAlternatingRowColors(true);
+        m_sourceList->setGridStyle(Qt::SolidLine);
+        m_sourceList->setSelectionBehavior(QAbstractItemView::SelectRows);
+        m_sourceList->setSelectionMode(QAbstractItemView::SingleSelection);
+        m_sourceList->setCornerButtonEnabled(false);
+        m_sourceList->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        m_sourceList->setContextMenuPolicy(Qt::DefaultContextMenu);
+        m_sourceList->setColumnCount(3);
+        m_sourceList->setColumnWidth(0, 20);
+        m_sourceList->setColumnWidth(1, 20);
+        m_sourceList->setSortingEnabled(true);
+        verticalHeader = m_sourceList->verticalHeader();
         verticalHeader->setVisible(false);
         headerItem = new QTableWidgetItem("");
         headerItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-        mSourceList->setHorizontalHeaderItem(0, headerItem);
+        m_sourceList->setHorizontalHeaderItem(0, headerItem);
         headerItem = new QTableWidgetItem("");
         headerItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-        mSourceList->setHorizontalHeaderItem(1, headerItem);
+        m_sourceList->setHorizontalHeaderItem(1, headerItem);
         headerItem = new QTableWidgetItem("Name");
         headerItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-        mSourceList->setHorizontalHeaderItem(2, headerItem);
-        mSourceList->horizontalHeader()->setStretchLastSection(true);
-        mSourceList->horizontalHeader()->setSortIndicatorShown(false);
-        mSourceList->horizontalHeader()->setSectionsClickable(false);
-        connect(mSourceList, &QTableWidget::itemSelectionChanged, this, &MirrorSetupWindow::OnSourceListSelectionChanged);
-        rightListLayout->addWidget(mSourceList);
+        m_sourceList->setHorizontalHeaderItem(2, headerItem);
+        m_sourceList->horizontalHeader()->setStretchLastSection(true);
+        m_sourceList->horizontalHeader()->setSortIndicatorShown(false);
+        m_sourceList->horizontalHeader()->setSectionsClickable(false);
+        connect(m_sourceList, &QTableWidget::itemSelectionChanged, this, &MirrorSetupWindow::OnSourceListSelectionChanged);
+        rightListLayout->addWidget(m_sourceList);
 
         // create the mapping table
         QVBoxLayout* lowerLayout = new QVBoxLayout();
@@ -244,53 +242,48 @@ namespace EMStudio
         mappingLayout->setMargin(0);
         lowerLayout->addLayout(mappingLayout);
         mappingLayout->addWidget(new QLabel("Mapping:"), 0, Qt::AlignLeft | Qt::AlignVCenter);
-        //mButtonGuess = new QPushButton();
-        //EMStudioManager::MakeTransparentButton( mButtonGuess, "Images/Icons/Character.svg",  "Best guess mapping" );
-        //connect( mButtonGuess, SIGNAL(clicked()), this, SLOT(OnBestGuessGeometrical()) );
-        //mappingLayout->addWidget( mButtonGuess, 0, Qt::AlignLeft );
         spacerWidget = new QWidget();
         spacerWidget->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Minimum);
         mappingLayout->addWidget(spacerWidget);
 
-        mMappingTable = new QTableWidget();
-        lowerLayout->addWidget(mMappingTable);
-        mMappingTable->setAlternatingRowColors(true);
-        mMappingTable->setGridStyle(Qt::SolidLine);
-        mMappingTable->setSelectionBehavior(QAbstractItemView::SelectRows);
-        mMappingTable->setSelectionMode(QAbstractItemView::SingleSelection);
-        //mMappingTable->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
-        mMappingTable->setCornerButtonEnabled(false);
-        mMappingTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
-        mMappingTable->setContextMenuPolicy(Qt::DefaultContextMenu);
-        mMappingTable->setContentsMargins(3, 1, 3, 1);
-        mMappingTable->setColumnCount(2);
-        mMappingTable->setColumnWidth(0, mMappingTable->width() / 2);
-        mMappingTable->setColumnWidth(1, mMappingTable->width() / 2);
-        verticalHeader = mMappingTable->verticalHeader();
+        m_mappingTable = new QTableWidget();
+        lowerLayout->addWidget(m_mappingTable);
+        m_mappingTable->setAlternatingRowColors(true);
+        m_mappingTable->setGridStyle(Qt::SolidLine);
+        m_mappingTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+        m_mappingTable->setSelectionMode(QAbstractItemView::SingleSelection);
+        m_mappingTable->setCornerButtonEnabled(false);
+        m_mappingTable->setEditTriggers(QAbstractItemView::NoEditTriggers);
+        m_mappingTable->setContextMenuPolicy(Qt::DefaultContextMenu);
+        m_mappingTable->setContentsMargins(3, 1, 3, 1);
+        m_mappingTable->setColumnCount(2);
+        m_mappingTable->setColumnWidth(0, m_mappingTable->width() / 2);
+        m_mappingTable->setColumnWidth(1, m_mappingTable->width() / 2);
+        verticalHeader = m_mappingTable->verticalHeader();
         verticalHeader->setVisible(false);
 
         // add the table headers
         headerItem = new QTableWidgetItem("Node");
         headerItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-        mMappingTable->setHorizontalHeaderItem(0, headerItem);
+        m_mappingTable->setHorizontalHeaderItem(0, headerItem);
         headerItem = new QTableWidgetItem("Mapped to");
         headerItem->setTextAlignment(Qt::AlignVCenter | Qt::AlignLeft);
-        mMappingTable->setHorizontalHeaderItem(1, headerItem);
-        mMappingTable->horizontalHeader()->setStretchLastSection(true);
-        mMappingTable->horizontalHeader()->setSortIndicatorShown(false);
-        mMappingTable->horizontalHeader()->setSectionsClickable(false);
-        connect(mMappingTable, &QTableWidget::itemDoubleClicked, this, &MirrorSetupWindow::OnMappingTableDoubleClicked);
-        connect(mMappingTable, &QTableWidget::itemSelectionChanged, this, &MirrorSetupWindow::OnMappingTableSelectionChanged);
+        m_mappingTable->setHorizontalHeaderItem(1, headerItem);
+        m_mappingTable->horizontalHeader()->setStretchLastSection(true);
+        m_mappingTable->horizontalHeader()->setSortIndicatorShown(false);
+        m_mappingTable->horizontalHeader()->setSectionsClickable(false);
+        connect(m_mappingTable, &QTableWidget::itemDoubleClicked, this, &MirrorSetupWindow::OnMappingTableDoubleClicked);
+        connect(m_mappingTable, &QTableWidget::itemSelectionChanged, this, &MirrorSetupWindow::OnMappingTableSelectionChanged);
     }
 
 
     // destructor
     MirrorSetupWindow::~MirrorSetupWindow()
     {
-        delete mBoneIcon;
-        delete mNodeIcon;
-        delete mMeshIcon;
-        delete mMappedIcon;
+        delete m_boneIcon;
+        delete m_nodeIcon;
+        delete m_meshIcon;
+        delete m_mappedIcon;
     }
 
 
@@ -298,7 +291,7 @@ namespace EMStudio
     void MirrorSetupWindow::OnMappingTableDoubleClicked(QTableWidgetItem* item)
     {
         MCORE_UNUSED(item);
-        // TODO: open a node hierarchy widget, where we can select a node from the mSourceActor
+        // TODO: open a node hierarchy widget, where we can select a node from the m_sourceActor
         // the problem is that the node hierarchy widget works with actor instances, which we don't have and do not really want to create either
         // I think the node hierarchy widget shouldn't use actor instances only, but should support actors as well
     }
@@ -322,7 +315,7 @@ namespace EMStudio
 
         // get the node name
         const uint32 rowIndex = item->row();
-        const AZStd::string nodeName = mCurrentList->item(rowIndex, 2)->text().toUtf8().data();
+        const AZStd::string nodeName = m_currentList->item(rowIndex, 2)->text().toUtf8().data();
 
         // find its index in the current actor, and remove its mapping
         EMotionFX::Node* node = currentActor->GetSkeleton()->FindNodeByName(nodeName.c_str());
@@ -336,12 +329,12 @@ namespace EMStudio
     // current list selection changed
     void MirrorSetupWindow::OnCurrentListSelectionChanged()
     {
-        QList<QTableWidgetItem*> items = mCurrentList->selectedItems();
+        QList<QTableWidgetItem*> items = m_currentList->selectedItems();
         if (items.count() > 0)
         {
             //const uint32 currentListRow = items[0]->row();
-            QTableWidgetItem* nameItem = mCurrentList->item(items[0]->row(), 2);
-            QList<QTableWidgetItem*> mappingTableItems = mMappingTable->findItems(nameItem->text(), Qt::MatchExactly);
+            QTableWidgetItem* nameItem = m_currentList->item(items[0]->row(), 2);
+            QList<QTableWidgetItem*> mappingTableItems = m_mappingTable->findItems(nameItem->text(), Qt::MatchExactly);
 
             for (int32 i = 0; i < mappingTableItems.count(); ++i)
             {
@@ -352,8 +345,8 @@ namespace EMStudio
 
                 const uint32 rowIndex = mappingTableItems[i]->row();
 
-                mMappingTable->selectRow(rowIndex);
-                mMappingTable->setCurrentItem(mappingTableItems[i]);
+                m_mappingTable->selectRow(rowIndex);
+                m_mappingTable->setCurrentItem(mappingTableItems[i]);
             }
         }
     }
@@ -362,12 +355,12 @@ namespace EMStudio
     // source list selection changed
     void MirrorSetupWindow::OnSourceListSelectionChanged()
     {
-        QList<QTableWidgetItem*> items = mSourceList->selectedItems();
+        QList<QTableWidgetItem*> items = m_sourceList->selectedItems();
         if (items.count() > 0)
         {
             //const uint32 currentListRow = items[0]->row();
-            QTableWidgetItem* nameItem = mSourceList->item(items[0]->row(), 2);
-            QList<QTableWidgetItem*> mappingTableItems = mMappingTable->findItems(nameItem->text(), Qt::MatchExactly);
+            QTableWidgetItem* nameItem = m_sourceList->item(items[0]->row(), 2);
+            QList<QTableWidgetItem*> mappingTableItems = m_mappingTable->findItems(nameItem->text(), Qt::MatchExactly);
 
             for (int32 i = 0; i < mappingTableItems.count(); ++i)
             {
@@ -378,8 +371,8 @@ namespace EMStudio
 
                 const uint32 rowIndex = mappingTableItems[i]->row();
 
-                mMappingTable->selectRow(rowIndex);
-                mMappingTable->setCurrentItem(mappingTableItems[i]);
+                m_mappingTable->selectRow(rowIndex);
+                m_mappingTable->setCurrentItem(mappingTableItems[i]);
             }
         }
     }
@@ -389,30 +382,30 @@ namespace EMStudio
     void MirrorSetupWindow::OnMappingTableSelectionChanged()
     {
         // select both items in the list widgets as well
-        QList<QTableWidgetItem*> items = mMappingTable->selectedItems();
+        QList<QTableWidgetItem*> items = m_mappingTable->selectedItems();
         if (items.count() > 0)
         {
             const uint32 rowIndex = items[0]->row();
 
-            QTableWidgetItem* item = mMappingTable->item(rowIndex, 0);
+            QTableWidgetItem* item = m_mappingTable->item(rowIndex, 0);
             if (item)
             {
-                QList<QTableWidgetItem*> listItems = mCurrentList->findItems(item->text(), Qt::MatchExactly);
+                QList<QTableWidgetItem*> listItems = m_currentList->findItems(item->text(), Qt::MatchExactly);
                 if (listItems.count() > 0)
                 {
-                    mCurrentList->selectRow(listItems[0]->row());
-                    mCurrentList->setCurrentItem(listItems[0]);
+                    m_currentList->selectRow(listItems[0]->row());
+                    m_currentList->setCurrentItem(listItems[0]);
                 }
             }
 
-            item = mMappingTable->item(rowIndex, 1);
+            item = m_mappingTable->item(rowIndex, 1);
             if (item)
             {
-                QList<QTableWidgetItem*> listItems = mSourceList->findItems(item->text(), Qt::MatchExactly);
+                QList<QTableWidgetItem*> listItems = m_sourceList->findItems(item->text(), Qt::MatchExactly);
                 if (listItems.count() > 0)
                 {
-                    mSourceList->selectRow(listItems[0]->row());
-                    mSourceList->setCurrentItem(listItems[0]);
+                    m_sourceList->selectRow(listItems[0]->row());
+                    m_sourceList->setCurrentItem(listItems[0]);
                 }
             }
         }
@@ -432,18 +425,18 @@ namespace EMStudio
         // extract the list of bones
         if (currentActor)
         {
-            currentActor->ExtractBoneList(0, &mCurrentBoneList);
+            currentActor->ExtractBoneList(0, &m_currentBoneList);
         }
 
         // clear the node map
         if (reInitMap)
         {
-            mMap.clear();
+            m_map.clear();
             if (currentActor)
             {
                 const size_t numNodes = aznumeric_caster(currentActor->GetNumNodes());
-                mMap.resize(numNodes);
-                AZStd::fill(mMap.begin(), mMap.end(), InvalidIndex);
+                m_map.resize(numNodes);
+                AZStd::fill(m_map.begin(), m_map.end(), InvalidIndex);
             }
         }
 
@@ -481,7 +474,7 @@ namespace EMStudio
     {
         if (!actor)
         {
-            mCurrentList->setRowCount(0);
+            m_currentList->setRowCount(0);
             return;
         }
 
@@ -499,7 +492,7 @@ namespace EMStudio
                 numRows++;
             }
         }
-        mCurrentList->setRowCount(numRows);
+        m_currentList->setRowCount(numRows);
 
         // fill the rows
         int rowIndex = 0;
@@ -510,34 +503,34 @@ namespace EMStudio
             if (currentName.contains(filterString, Qt::CaseInsensitive) || filterString.isEmpty())
             {
                 // mark if there is a mapping or not
-                const bool mapped = (mMap[node->GetNodeIndex()] != InvalidIndex);
+                const bool mapped = (m_map[node->GetNodeIndex()] != InvalidIndex);
                 QTableWidgetItem* mappedItem = new QTableWidgetItem();
-                mappedItem->setIcon(mapped ? *mMappedIcon : QIcon());
-                mCurrentList->setItem(rowIndex, 0, mappedItem);
+                mappedItem->setIcon(mapped ? *m_mappedIcon : QIcon());
+                m_currentList->setItem(rowIndex, 0, mappedItem);
 
                 // pick the right icon for the type column
                 QTableWidgetItem* typeItem = new QTableWidgetItem();
                 if (actor->GetMesh(0, node->GetNodeIndex()))
                 {
-                    typeItem->setIcon(*mMeshIcon);
+                    typeItem->setIcon(*m_meshIcon);
                 }
-                else if (AZStd::find(begin(mCurrentBoneList), end(mCurrentBoneList), node->GetNodeIndex()) != end(mCurrentBoneList))
+                else if (AZStd::find(begin(m_currentBoneList), end(m_currentBoneList), node->GetNodeIndex()) != end(m_currentBoneList))
                 {
-                    typeItem->setIcon(*mBoneIcon);
+                    typeItem->setIcon(*m_boneIcon);
                 }
                 else
                 {
-                    typeItem->setIcon(*mNodeIcon);
+                    typeItem->setIcon(*m_nodeIcon);
                 }
 
-                mCurrentList->setItem(rowIndex, 1, typeItem);
+                m_currentList->setItem(rowIndex, 1, typeItem);
 
                 // set the name
                 QTableWidgetItem* currentTableItem = new QTableWidgetItem(currentName);
-                mCurrentList->setItem(rowIndex, 2, currentTableItem);
+                m_currentList->setItem(rowIndex, 2, currentTableItem);
 
                 // set the row height and add one index
-                mCurrentList->setRowHeight(rowIndex, 21);
+                m_currentList->setRowHeight(rowIndex, 21);
                 ++rowIndex;
             }
         }
@@ -549,7 +542,7 @@ namespace EMStudio
     {
         if (!actor)
         {
-            mSourceList->setRowCount(0);
+            m_sourceList->setRowCount(0);
             return;
         }
 
@@ -567,7 +560,7 @@ namespace EMStudio
                 numRows++;
             }
         }
-        mSourceList->setRowCount(numRows);
+        m_sourceList->setRowCount(numRows);
 
         // fill the rows
         int rowIndex = 0;
@@ -578,34 +571,34 @@ namespace EMStudio
             if (name.contains(filterString, Qt::CaseInsensitive) || filterString.isEmpty())
             {
                 // mark if there is a mapping or not
-                const bool mapped = AZStd::find(mMap.begin(), mMap.end(), i) != mMap.end();
+                const bool mapped = AZStd::find(m_map.begin(), m_map.end(), i) != m_map.end();
                 QTableWidgetItem* mappedItem = new QTableWidgetItem();
-                mappedItem->setIcon(mapped ? *mMappedIcon : QIcon());
-                mSourceList->setItem(rowIndex, 0, mappedItem);
+                mappedItem->setIcon(mapped ? *m_mappedIcon : QIcon());
+                m_sourceList->setItem(rowIndex, 0, mappedItem);
 
                 // pick the right icon for the type column
                 QTableWidgetItem* typeItem = new QTableWidgetItem();
                 if (actor->GetMesh(0, node->GetNodeIndex()))
                 {
-                    typeItem->setIcon(*mMeshIcon);
+                    typeItem->setIcon(*m_meshIcon);
                 }
-                else if (AZStd::find(mSourceBoneList.begin(), mSourceBoneList.end(), node->GetNodeIndex()) != mSourceBoneList.end())
+                else if (AZStd::find(m_sourceBoneList.begin(), m_sourceBoneList.end(), node->GetNodeIndex()) != m_sourceBoneList.end())
                 {
-                    typeItem->setIcon(*mBoneIcon);
+                    typeItem->setIcon(*m_boneIcon);
                 }
                 else
                 {
-                    typeItem->setIcon(*mNodeIcon);
+                    typeItem->setIcon(*m_nodeIcon);
                 }
 
-                mSourceList->setItem(rowIndex, 1, typeItem);
+                m_sourceList->setItem(rowIndex, 1, typeItem);
 
                 // set the name
                 QTableWidgetItem* currentTableItem = new QTableWidgetItem(name);
-                mSourceList->setItem(rowIndex, 2, currentTableItem);
+                m_sourceList->setItem(rowIndex, 2, currentTableItem);
 
                 // set the row height and add one index
-                mSourceList->setRowHeight(rowIndex, 21);
+                m_sourceList->setRowHeight(rowIndex, 21);
                 ++rowIndex;
             }
         }
@@ -617,7 +610,7 @@ namespace EMStudio
     {
         if (!currentActor)
         {
-            mMappingTable->setRowCount(0);
+            m_mappingTable->setRowCount(0);
             return;
         }
 
@@ -625,24 +618,24 @@ namespace EMStudio
         QString currentName;
         QString sourceName;
         const int numNodes = aznumeric_caster(currentActor->GetNumNodes());
-        mMappingTable->setRowCount(numNodes);
+        m_mappingTable->setRowCount(numNodes);
         for (int i = 0; i < numNodes; ++i)
         {
             currentName = currentActor->GetSkeleton()->GetNode(i)->GetName();
 
             QTableWidgetItem* currentTableItem = new QTableWidgetItem(currentName);
-            mMappingTable->setItem(i, 0, currentTableItem);
-            mMappingTable->setRowHeight(i, 21);
+            m_mappingTable->setItem(i, 0, currentTableItem);
+            m_mappingTable->setRowHeight(i, 21);
 
-            if (mMap[i] != InvalidIndex)
+            if (m_map[i] != InvalidIndex)
             {
-                sourceName = sourceActor->GetSkeleton()->GetNode(mMap[i])->GetName();
+                sourceName = sourceActor->GetSkeleton()->GetNode(m_map[i])->GetName();
                 currentTableItem = new QTableWidgetItem(sourceName);
-                mMappingTable->setItem(i, 1, currentTableItem);
+                m_mappingTable->setItem(i, 1, currentTableItem);
             }
             else
             {
-                mMappingTable->setItem(i, 1, new QTableWidgetItem());
+                m_mappingTable->setItem(i, 1, new QTableWidgetItem());
             }
         }
     }
@@ -651,24 +644,24 @@ namespace EMStudio
     // pressing the link button
     void MirrorSetupWindow::OnLinkPressed()
     {
-        if (mCurrentList->currentRow() == -1 || mSourceList->currentRow() == -1)
+        if (m_currentList->currentRow() == -1 || m_sourceList->currentRow() == -1)
         {
             return;
         }
 
         // get the names
-        QTableWidgetItem* curItem = mCurrentList->currentItem();
-        QTableWidgetItem* sourceItem = mSourceList->currentItem();
+        QTableWidgetItem* curItem = m_currentList->currentItem();
+        QTableWidgetItem* sourceItem = m_sourceList->currentItem();
         if (!curItem || !sourceItem)
         {
             return;
         }
 
-        curItem = mCurrentList->item(curItem->row(), 2);
-        sourceItem = mSourceList->item(sourceItem->row(), 2);
+        curItem = m_currentList->item(curItem->row(), 2);
+        sourceItem = m_sourceList->item(sourceItem->row(), 2);
 
         const AZStd::string currentNodeName = curItem->text().toUtf8().data();
-        const AZStd::string sourceNodeName  = mSourceList->currentItem()->text().toUtf8().data();
+        const AZStd::string sourceNodeName  = m_sourceList->currentItem()->text().toUtf8().data();
         if (sourceNodeName.empty() || currentNodeName.empty())
         {
             return;
@@ -692,21 +685,21 @@ namespace EMStudio
         EMotionFX::Actor* currentActor = GetSelectedActor();
 
         // update the map
-        const size_t oldSourceIndex = mMap[currentNodeIndex];
-        mMap[currentNodeIndex] = sourceNodeIndex;
+        const size_t oldSourceIndex = m_map[currentNodeIndex];
+        m_map[currentNodeIndex] = sourceNodeIndex;
 
         // update the current table
         const QString curName = currentActor->GetSkeleton()->GetNode(currentNodeIndex)->GetName();
-        const QList<QTableWidgetItem*> currentListItems = mCurrentList->findItems(curName, Qt::MatchExactly);
+        const QList<QTableWidgetItem*> currentListItems = m_currentList->findItems(curName, Qt::MatchExactly);
         for (int32 i = 0; i < currentListItems.count(); ++i)
         {
             const int rowIndex = currentListItems[i]->row();
 
-            QTableWidgetItem* mappedItem = mCurrentList->item(rowIndex, 0);
+            QTableWidgetItem* mappedItem = m_currentList->item(rowIndex, 0);
             if (!mappedItem)
             {
                 mappedItem = new QTableWidgetItem();
-                mCurrentList->setItem(rowIndex, 0, mappedItem);
+                m_currentList->setItem(rowIndex, 0, mappedItem);
             }
 
             if (sourceNodeIndex == InvalidIndex)
@@ -715,25 +708,25 @@ namespace EMStudio
             }
             else
             {
-                mappedItem->setIcon(*mMappedIcon);
+                mappedItem->setIcon(*m_mappedIcon);
             }
         }
 
         // update source table
         if (sourceNodeIndex != InvalidIndex)
         {
-            const bool stillUsed = AZStd::find(mMap.begin(), mMap.end(), sourceNodeIndex) != mMap.end();
+            const bool stillUsed = AZStd::find(m_map.begin(), m_map.end(), sourceNodeIndex) != m_map.end();
             const QString sourceName = currentActor->GetSkeleton()->GetNode(sourceNodeIndex)->GetName();
-            const QList<QTableWidgetItem*> sourceListItems = mSourceList->findItems(sourceName, Qt::MatchExactly);
+            const QList<QTableWidgetItem*> sourceListItems = m_sourceList->findItems(sourceName, Qt::MatchExactly);
             for (int32 i = 0; i < sourceListItems.count(); ++i)
             {
                 const int rowIndex = sourceListItems[i]->row();
 
-                QTableWidgetItem* mappedItem = mSourceList->item(rowIndex, 0);
+                QTableWidgetItem* mappedItem = m_sourceList->item(rowIndex, 0);
                 if (!mappedItem)
                 {
                     mappedItem = new QTableWidgetItem();
-                    mSourceList->setItem(rowIndex, 0, mappedItem);
+                    m_sourceList->setItem(rowIndex, 0, mappedItem);
                 }
 
                 if (stillUsed == false)
@@ -742,7 +735,7 @@ namespace EMStudio
                 }
                 else
                 {
-                    mappedItem->setIcon(*mMappedIcon);
+                    mappedItem->setIcon(*m_mappedIcon);
                 }
             }
         }
@@ -750,18 +743,18 @@ namespace EMStudio
         {
             if (oldSourceIndex != InvalidIndex)
             {
-                const bool stillUsed = AZStd::find(mMap.begin(), mMap.end(), sourceNodeIndex) != mMap.end();
+                const bool stillUsed = AZStd::find(m_map.begin(), m_map.end(), sourceNodeIndex) != m_map.end();
                 const QString sourceName = currentActor->GetSkeleton()->GetNode(oldSourceIndex)->GetName();
-                const QList<QTableWidgetItem*> sourceListItems = mSourceList->findItems(sourceName, Qt::MatchExactly);
+                const QList<QTableWidgetItem*> sourceListItems = m_sourceList->findItems(sourceName, Qt::MatchExactly);
                 for (int32 i = 0; i < sourceListItems.count(); ++i)
                 {
                     const int rowIndex = sourceListItems[i]->row();
 
-                    QTableWidgetItem* mappedItem = mSourceList->item(rowIndex, 0);
+                    QTableWidgetItem* mappedItem = m_sourceList->item(rowIndex, 0);
                     if (!mappedItem)
                     {
                         mappedItem = new QTableWidgetItem();
-                        mSourceList->setItem(rowIndex, 0, mappedItem);
+                        m_sourceList->setItem(rowIndex, 0, mappedItem);
                     }
 
                     if (stillUsed == false)
@@ -770,18 +763,18 @@ namespace EMStudio
                     }
                     else
                     {
-                        mappedItem->setIcon(*mMappedIcon);
+                        mappedItem->setIcon(*m_mappedIcon);
                     }
                 }
             }
         }
 
         // update the mapping table
-        QTableWidgetItem* item = mMappingTable->item(aznumeric_caster(currentNodeIndex), 1);
+        QTableWidgetItem* item = m_mappingTable->item(aznumeric_caster(currentNodeIndex), 1);
         if (!item && sourceNodeIndex != InvalidIndex)
         {
             item = new QTableWidgetItem();
-            mMappingTable->setItem(aznumeric_caster(currentNodeIndex), 1, item);
+            m_mappingTable->setItem(aznumeric_caster(currentNodeIndex), 1, item);
         }
 
         if (sourceNodeIndex == InvalidIndex)
@@ -827,10 +820,10 @@ namespace EMStudio
     // remove the currently selected mapping
     void MirrorSetupWindow::RemoveCurrentSelectedMapping()
     {
-        QList<QTableWidgetItem*> items = mCurrentList->selectedItems();
+        QList<QTableWidgetItem*> items = m_currentList->selectedItems();
         if (items.count() > 0)
         {
-            QTableWidgetItem* item = mCurrentList->item(items[0]->row(), 0);
+            QTableWidgetItem* item = m_currentList->item(items[0]->row(), 0);
             if (item)
             {
                 OnCurrentListDoubleClicked(item);
@@ -881,7 +874,7 @@ namespace EMStudio
 
         // now update our mapping data
         const size_t numNodes = currentActor->GetNumNodes();
-        AZStd::fill(mMap.begin(), AZStd::next(mMap.begin(), numNodes), InvalidIndex);
+        AZStd::fill(m_map.begin(), AZStd::next(m_map.begin(), numNodes), InvalidIndex);
 
         // now apply the map we loaded to the data we have here
         const size_t numEntries = nodeMap->GetNumEntries();
@@ -902,7 +895,7 @@ namespace EMStudio
             }
 
             // create the mapping
-            mMap[currentNode->GetNodeIndex()] = sourceNode->GetNodeIndex();
+            m_map[currentNode->GetNodeIndex()] = sourceNode->GetNodeIndex();
         }
 
         // apply the current map as command
@@ -952,7 +945,7 @@ namespace EMStudio
         for (size_t i = 0; i < numNodes; ++i)
         {
             // skip unmapped entries
-            if (mMap[i] == InvalidIndex)
+            if (m_map[i] == InvalidIndex)
             {
                 continue;
             }
@@ -960,7 +953,7 @@ namespace EMStudio
             // add the entry to the map if it doesn't yet exist
             if (map->GetHasEntry(currentActor->GetSkeleton()->GetNode(i)->GetName()) == false)
             {
-                map->AddEntry(currentActor->GetSkeleton()->GetNode(i)->GetName(), currentActor->GetSkeleton()->GetNode(mMap[i])->GetName());
+                map->AddEntry(currentActor->GetSkeleton()->GetNode(i)->GetName(), currentActor->GetSkeleton()->GetNode(m_map[i])->GetName());
             }
         }
 
@@ -1018,7 +1011,7 @@ namespace EMStudio
         }
 
         const size_t numNodes = currentActor->GetNumNodes();
-        return AZStd::all_of(mMap.begin(), AZStd::next(mMap.begin(), numNodes), [](const size_t nodeIndex)
+        return AZStd::all_of(m_map.begin(), AZStd::next(m_map.begin(), numNodes), [](const size_t nodeIndex)
         {
             return nodeIndex != InvalidIndex;
         });
@@ -1037,10 +1030,10 @@ namespace EMStudio
         const bool canGuess = (currentActor);
 
         // enable or disable them
-        mButtonOpen->setEnabled(canOpen);
-        mButtonSave->setEnabled(canSave);
-        mButtonClear->setEnabled(canClear);
-        mButtonGuess->setEnabled(canGuess);
+        m_buttonOpen->setEnabled(canOpen);
+        m_buttonSave->setEnabled(canSave);
+        m_buttonClear->setEnabled(canClear);
+        m_buttonGuess->setEnabled(canGuess);
     }
 
 
@@ -1054,7 +1047,7 @@ namespace EMStudio
             return;
         }
 
-        if (mLeftEdit->text().size() == 0 || mRightEdit->text().size() == 0)
+        if (m_leftEdit->text().size() == 0 || m_rightEdit->text().size() == 0)
         {
             QMessageBox::information(this, "Empty Left And Right Strings", "Please enter both a left and right sub-string.\nThis can be something like 'Left' and 'Right'.\nThis would map nodes like 'Left Arm' to 'Right Arm' nodes.", QMessageBox::Ok);
             return;
@@ -1066,15 +1059,15 @@ namespace EMStudio
         for (size_t i = 0; i < numNodes; ++i)
         {
             // skip already setup mappings
-            if (mMap[i] != InvalidIndex)
+            if (m_map[i] != InvalidIndex)
             {
                 continue;
             }
 
-            const uint16 matchIndex = currentActor->FindBestMatchForNode(currentActor->GetSkeleton()->GetNode(i)->GetName(), FromQtString(mLeftEdit->text()).c_str(), FromQtString(mRightEdit->text()).c_str());
+            const uint16 matchIndex = currentActor->FindBestMatchForNode(currentActor->GetSkeleton()->GetNode(i)->GetName(), FromQtString(m_leftEdit->text()).c_str(), FromQtString(m_rightEdit->text()).c_str());
             if (matchIndex != MCORE_INVALIDINDEX16)
             {
-                mMap[i] = matchIndex;
+                m_map[i] = matchIndex;
                 numGuessed++;
             }
         }
@@ -1117,19 +1110,19 @@ namespace EMStudio
         {
             if (actor->GetHasMirrorInfo())
             {
-                uint16 motionSource = actor->GetNodeMirrorInfo(i).mSourceNode;
+                uint16 motionSource = actor->GetNodeMirrorInfo(i).m_sourceNode;
                 if (motionSource != i)
                 {
-                    mMap[i] = motionSource;
+                    m_map[i] = motionSource;
                 }
                 else
                 {
-                    mMap[i] = InvalidIndex;
+                    m_map[i] = InvalidIndex;
                 }
             }
             else
             {
-                mMap[i] = InvalidIndex;
+                m_map[i] = InvalidIndex;
             }
         }
     }
@@ -1149,7 +1142,7 @@ namespace EMStudio
         AZStd::string commandString = AZStd::string::format("AdjustActor -actorID %d -mirrorSetup \"", currentActor->GetID());
         for (size_t i = 0; i < currentActor->GetNumNodes(); ++i)
         {
-            size_t sourceNode = mMap[i];
+            size_t sourceNode = m_map[i];
             if (sourceNode != InvalidIndex && sourceNode != i)
             {
                 commandString += currentActor->GetSkeleton()->GetNode(i)->GetName();

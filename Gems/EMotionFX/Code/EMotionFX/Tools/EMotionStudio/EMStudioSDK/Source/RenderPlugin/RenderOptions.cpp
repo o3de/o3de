@@ -130,7 +130,7 @@ namespace EMStudio
         MCommon::OrbitCamera tempCam;
         m_nearClipPlaneDistance = tempCam.GetNearClipDistance();
         m_farClipPlaneDistance = tempCam.GetFarClipDistance();
-        m_FOV = tempCam.GetFOV();
+        m_fov = tempCam.GetFOV();
     }
 
     RenderOptions& RenderOptions::operator=(const RenderOptions& other)
@@ -229,7 +229,7 @@ namespace EMStudio
         settings->setValue(s_tangentsScaleOptionName, (double)m_tangentsScale);
         settings->setValue(s_nearClipPlaneDistanceOptionName, (double)m_nearClipPlaneDistance);
         settings->setValue(s_farClipPlaneDistanceOptionName, (double)m_farClipPlaneDistance);
-        settings->setValue(s_FOVOptionName, (double)m_FOV);
+        settings->setValue(s_FOVOptionName, (double)m_fov);
         settings->setValue(s_showFPSOptionName, m_showFPS);
 
         settings->setValue(s_lastUsedLayoutOptionName, m_lastUsedLayout.c_str());
@@ -300,7 +300,7 @@ namespace EMStudio
 
         options.m_nearClipPlaneDistance = (float)settings->value(s_nearClipPlaneDistanceOptionName, (double)options.m_nearClipPlaneDistance).toDouble();
         options.m_farClipPlaneDistance = (float)settings->value(s_farClipPlaneDistanceOptionName, (double)options.m_farClipPlaneDistance).toDouble();
-        options.m_FOV = (float)settings->value(s_FOVOptionName, (double)options.m_FOV).toDouble();
+        options.m_fov = (float)settings->value(s_FOVOptionName, (double)options.m_fov).toDouble();
 
         options.m_mainLightIntensity = (float)settings->value(s_mainLightIntensityOptionName, (double)options.m_mainLightIntensity).toDouble();
         options.m_mainLightAngleA = (float)settings->value(s_mainLightAngleAOptionName, (double)options.m_mainLightAngleA).toDouble();
@@ -358,7 +358,7 @@ namespace EMStudio
             ->Field(s_scaleBonesOnLengthOptionName, &RenderOptions::m_scaleBonesOnLength)
             ->Field(s_nearClipPlaneDistanceOptionName, &RenderOptions::m_nearClipPlaneDistance)
             ->Field(s_farClipPlaneDistanceOptionName, &RenderOptions::m_farClipPlaneDistance)
-            ->Field(s_FOVOptionName, &RenderOptions::m_FOV)
+            ->Field(s_FOVOptionName, &RenderOptions::m_fov)
             ->Field(s_mainLightIntensityOptionName, &RenderOptions::m_mainLightIntensity)
             ->Field(s_mainLightAngleAOptionName, &RenderOptions::m_mainLightAngleA)
             ->Field(s_mainLightAngleBOptionName, &RenderOptions::m_mainLightAngleB)
@@ -449,7 +449,7 @@ namespace EMStudio
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &RenderOptions::OnFarClipPlaneDistanceChangedCallback)
             ->Attribute(AZ::Edit::Attributes::Min, 1.0f)
             ->Attribute(AZ::Edit::Attributes::Max, 100000.0f)
-            ->DataElement(AZ::Edit::UIHandlers::Default, &RenderOptions::m_FOV, "Field of view",
+            ->DataElement(AZ::Edit::UIHandlers::Default, &RenderOptions::m_fov, "Field of view",
                 "Angle in degrees of the field of view.")
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &RenderOptions::OnFOVChangedCallback)
             ->Attribute(AZ::Edit::Attributes::Min, 1.0f)
@@ -662,9 +662,9 @@ namespace EMStudio
 
     void RenderOptions::SetFOV(float FOV)
     {
-        if (!AZ::IsClose(FOV, m_FOV, std::numeric_limits<float>::epsilon()))
+        if (!AZ::IsClose(FOV, m_fov, std::numeric_limits<float>::epsilon()))
         {
-            m_FOV = FOV;
+            m_fov = FOV;
             OnFOVChangedCallback();
         }
     }

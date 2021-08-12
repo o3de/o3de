@@ -440,7 +440,7 @@ namespace AZ::IO::ZipDir
             azstrcpy(volume, AZ_ARRAY_SIZE(volume), filename);
         }
 
-        AZStd::fixed_string<AZ::IO::MaxPathLength> drive{ AZ::IO::PathView(volume).RootName().Native() };
+        AZ::IO::FixedMaxPathString drive{ AZ::IO::PathView(volume).RootName().Native() };
         if (drive.empty())
         {
             return false;

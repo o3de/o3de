@@ -547,7 +547,7 @@ namespace CommandSystem
     bool CommandSelect::Execute(const MCore::CommandLine& parameters, AZStd::string& outResult)
     {
         // store the old selection list for undo
-        mData = GetCommandManager()->GetCurrentSelection();
+        m_data = GetCommandManager()->GetCurrentSelection();
 
         // selection add mode
         return Select(this, parameters, outResult, false);
@@ -561,7 +561,7 @@ namespace CommandSystem
         MCORE_UNUSED(outResult);
 
         // restore the old selection and return success
-        GetCommandManager()->SetCurrentSelection(mData);
+        GetCommandManager()->SetCurrentSelection(m_data);
         return true;
     }
 
@@ -604,7 +604,7 @@ namespace CommandSystem
     bool CommandUnselect::Execute(const MCore::CommandLine& parameters, AZStd::string& outResult)
     {
         // store the old selection list for undo
-        mData = GetCommandManager()->GetCurrentSelection();
+        m_data = GetCommandManager()->GetCurrentSelection();
 
         // unselect mode
         return CommandSelect::Select(this, parameters, outResult, true);
@@ -618,7 +618,7 @@ namespace CommandSystem
         MCORE_UNUSED(outResult);
 
         // restore the old selection and return success
-        GetCommandManager()->SetCurrentSelection(mData);
+        GetCommandManager()->SetCurrentSelection(m_data);
         return true;
     }
 
@@ -665,7 +665,7 @@ namespace CommandSystem
 
         // get the current selection, store it for the undo function and unselect everything
         SelectionList& selection = GetCommandManager()->GetCurrentSelection();
-        mData = selection;
+        m_data = selection;
 
         // if we are in selection lock mode return directly
         //if (GetCommandManager()->GetLockSelection())
@@ -686,7 +686,7 @@ namespace CommandSystem
         MCORE_UNUSED(outResult);
 
         // restore the old selection and return success
-        GetCommandManager()->SetCurrentSelection(mData);
+        GetCommandManager()->SetCurrentSelection(m_data);
         return true;
     }
 
@@ -721,10 +721,10 @@ namespace CommandSystem
         MCORE_UNUSED(outResult);
 
         // store the selection locked flag for the undo function
-        mData = GetCommandManager()->GetLockSelection();
+        m_data = GetCommandManager()->GetLockSelection();
 
         // toggle the flag
-        GetCommandManager()->SetLockSelection(!mData);
+        GetCommandManager()->SetLockSelection(!m_data);
 
         return true;
     }
@@ -737,7 +737,7 @@ namespace CommandSystem
         MCORE_UNUSED(outResult);
 
         // restore the old selection locked flag and return success
-        GetCommandManager()->SetLockSelection(mData);
+        GetCommandManager()->SetLockSelection(m_data);
         return true;
     }
 
