@@ -10,6 +10,8 @@
 #if !defined(Q_MOC_RUN)
 #include "EditorCommon.h"
 
+#include <AzQtComponents/Components/Widgets/TreeView.h>
+
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/ToolsMessaging/EntityHighlightBus.h>
 
@@ -19,7 +21,7 @@
 class QMimeData;
 
 class HierarchyWidget
-    : public QTreeWidget
+    : public AzQtComponents::StyledTreeWidget
     , private AzToolsFramework::EditorPickModeNotificationBus::Handler
     , private AzToolsFramework::EntityHighlightMessages::Bus::Handler
 {

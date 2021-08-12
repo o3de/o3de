@@ -14,11 +14,11 @@
 
 namespace AZ
 {
-    class ScriptUserDataSerializer
+    class DatumSerializer
         : public BaseJsonSerializer
     {
     public:
-        AZ_RTTI(ScriptUserDataSerializer, "{7E5FC193-8CDB-4251-A68B-F337027381DF}", BaseJsonSerializer);
+        AZ_RTTI(DatumSerializer, "{FBEBF833-465F-49F4-AFB1-CC9D3B25C16C}", BaseJsonSerializer);
         AZ_CLASS_ALLOCATOR_DECL;
 
     private:
