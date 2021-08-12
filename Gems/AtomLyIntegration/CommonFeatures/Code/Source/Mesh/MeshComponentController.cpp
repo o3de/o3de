@@ -54,8 +54,7 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<MeshComponentConfig>()
-                    //->Version(2, &MeshComponentControllerVersionUtility::VersionConverter)
-                    ->Version(1)
+                    ->Version(2, &MeshComponentControllerVersionUtility::VersionConverter)
                     ->Field("ModelAsset", &MeshComponentConfig::m_modelAsset)
                     ->Field("SortKey", &MeshComponentConfig::m_sortKey)
                     ->Field("ExcludeFromReflectionCubeMaps", &MeshComponentConfig::m_excludeFromReflectionCubeMaps)
@@ -65,6 +64,7 @@ namespace AZ
                     ->Field("MinimumScreenCoverage", &MeshComponentConfig::m_minimumScreenCoverage)
                     ->Field("QualityDecayRate", &MeshComponentConfig::m_qualityDecayRate);
             }
+
         }
 
         bool MeshComponentConfig::IsAssetSet()
@@ -118,15 +118,6 @@ namespace AZ
             }
 
             return values;
-        }
-
-        AZStd::vector<AZStd::pair<RPI::Cullable::LodType, AZStd::string>> MeshComponentConfig::GetLodTypeValues()
-        {
-            return {
-                {aznumeric_cast<RPI::Cullable::LodType>(0), "Default"},
-                {aznumeric_cast<RPI::Cullable::LodType>(1), "Screen Coverage" },
-                {aznumeric_cast<RPI::Cullable::LodType>(2), "Specific Lod" }
-            };
         }
 
         MeshComponentController::~MeshComponentController()

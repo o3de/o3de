@@ -48,7 +48,6 @@ namespace AZ
             bool LodTypeIsSpecificLOD();
             bool ShowLodConfig();
             AZStd::vector<AZStd::pair<RPI::Cullable::LodOverride, AZStd::string>> GetLodOverrideValues();
-            AZStd::vector<AZStd::pair<RPI::Cullable::LodType, AZStd::string>> GetLodTypeValues();
 
             Data::Asset<RPI::ModelAsset> m_modelAsset = { AZ::Data::AssetLoadBehavior::QueueLoad };
             RHI::DrawItemSortKey m_sortKey = 0;
