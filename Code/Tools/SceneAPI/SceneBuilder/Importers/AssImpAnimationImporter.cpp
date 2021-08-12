@@ -681,7 +681,7 @@ namespace AZ
                     // scan for a period in the node name that came before this.
                     AZStd::string originalNodeName(AZStd::string::format("%s_%s", s_animationNodeName, nodeName.data()));
                     AZStd::string animNodeName(originalNodeName);
-                    if(RenamedNodesMap::SanitizeNodeName(
+                    if (RenamedNodesMap::SanitizeNodeName(
                         animNodeName, context.m_scene.GetGraph(), context.m_currentGraphPosition, originalNodeName.c_str()))
                     {
                         AZ_Warning(
