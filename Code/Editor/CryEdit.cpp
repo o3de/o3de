@@ -938,10 +938,9 @@ void CCryEditApp::ShowSplashScreen(CCryEditApp* app)
 
     QObject::connect(splashScreen, &QObject::destroyed, splashScreen, [=]
     {
-        g_splashScreenStateLock.lock();
+        AZStd::scoped_lock lock(g_splashScreenStateLock);
         g_pInitializeUIInfo = nullptr;
         g_splashScreen = nullptr;
-        g_splashScreenStateLock.unlock();
     });
 }
 

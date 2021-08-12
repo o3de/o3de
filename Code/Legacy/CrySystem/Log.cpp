@@ -810,13 +810,13 @@ void CLog::PushAssetScopeName(const char* sAssetType, const char* sName)
     SAssetScopeInfo as;
     as.sType = sAssetType;
     as.sName = sName;
-    AZStd::lock_guard<AZStd::mutex> scope_lock(m_assetScopeQueueLock);
+    AZStd::scoped_lock scope_lock(m_assetScopeQueueLock);
     m_assetScopeQueue.push_back(as);
 }
 
 void CLog::PopAssetScopeName()
 {
-    AZStd::lock_guard<AZStd::mutex> scope_lock(m_assetScopeQueueLock);
+    AZStd::scoped_lock scope_lock(m_assetScopeQueueLock);
     assert(!m_assetScopeQueue.empty());
     if (!m_assetScopeQueue.empty())
     {
@@ -827,7 +827,7 @@ void CLog::PopAssetScopeName()
 //////////////////////////////////////////////////////////////////////////
 const char* CLog::GetAssetScopeString()
 {
-    AZStd::lock_guard<AZStd::mutex> scope_lock(m_assetScopeQueueLock);
+    AZStd::scoped_lock scope_lock(m_assetScopeQueueLock);
 
     m_assetScopeString.clear();
     for (size_t i = 0; i < m_assetScopeQueue.size(); i++)
@@ -1450,7 +1450,7 @@ void CLog::Update()
     {
         if (!m_threadSafeMsgQueue.empty())
         {
-            AZStd::lock_guard<AZStd::recursive_mutex> lock(m_threadSafeMsgQueue.get_lock());   // Get the lock and hold onto it until we clear the entire queue (prevents other threads adding more things in while we clear it)
+            AZStd::scoped_lock lock(m_threadSafeMsgQueue.get_lock());   // Get the lock and hold onto it until we clear the entire queue (prevents other threads adding more things in while we clear it)
             // Must be called from main thread
             SLogMsg msg;
             while (m_threadSafeMsgQueue.try_pop(msg))

@@ -80,7 +80,7 @@ bool CryAssert(const char* szCondition, const char* szFile, unsigned int line, b
 
     if (!gEnv->bNoAssertDialog && !gEnv->bIgnoreAllAsserts)
     {
-        AZStd::lock_guard<AZStd::recursive_mutex> lk (lock);
+        AZStd::scoped_lock lk(lock);
         snprintf(gs_command_str, max_len, "xterm -geometry 100x20 -n 'Assert Dialog [Linux Launcher]' -T 'Assert Dialog [Linux Launcher]' -e 'BinLinux/assert_term \"%s\" \"%s\" %d \"%s\"; echo \"$?\" > .assert_return'",
             szCondition, (file_len > 60) ? szFile + (file_len - 61) : szFile, line, gs_szMessage);
         int ret = system(gs_command_str);

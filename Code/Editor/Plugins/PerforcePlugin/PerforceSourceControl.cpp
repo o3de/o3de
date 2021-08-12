@@ -56,7 +56,7 @@ void CPerforceSourceControl::ShowSettings()
 
 void CPerforceSourceControl::SetSourceControlState(SourceControlState state)
 {
-    AZStd::lock_guard<AZStd::mutex> lock(g_cPerforceValues);
+    AZStd::scoped_lock lock(g_cPerforceValues);
 
     switch (state)
     {

@@ -133,19 +133,20 @@ void SRemoteServer::StopServer()
     AZ::AzSock::CloseSocket(m_socket);
     m_socket = SOCKET_ERROR;
     {
-        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
+        AZStd::scoped_lock lock(m_mutex);
         for (TClients::iterator it = m_clients.begin(); it != m_clients.end(); ++it)
         {
             it->pClient->StopClient();
         }
     }
     AZStd::unique_lock<AZStd::recursive_mutex> lock(m_mutex);
-    m_stopCondition.wait(lock, [this] { return m_clients.empty(); });}
+    m_stopCondition.wait(lock, [this] { return m_clients.empty(); });
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 void SRemoteServer::ClientDone(SRemoteClient* pClient)
 {
-    AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
+    AZStd::scoped_lock lock(m_mutex);
     for (TClients::iterator it = m_clients.begin(); it != m_clients.end(); ++it)
     {
         if (it->pClient == pClient)
@@ -253,7 +254,7 @@ void SRemoteServer::Run()
             continue;
         }
 
-        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
+        AZStd::scoped_lock lock(m_mutex);
         SRemoteClient* pClient = new SRemoteClient(this);
         m_clients.push_back(SRemoteClientInfo(pClient));
         pClient->StartClient(sClient);
@@ -266,7 +267,7 @@ void SRemoteServer::Run()
 /////////////////////////////////////////////////////////////////////////////////////////////
 void SRemoteServer::AddEvent(IRemoteEvent* pEvent)
 {
-    AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
+    AZStd::scoped_lock lock(m_mutex);
     for (TClients::iterator it = m_clients.begin(); it != m_clients.end(); ++it)
     {
         it->pEvents->push_back(pEvent->Clone());
@@ -277,7 +278,7 @@ void SRemoteServer::AddEvent(IRemoteEvent* pEvent)
 /////////////////////////////////////////////////////////////////////////////////////////////
 void SRemoteServer::GetEvents(TEventBuffer& buffer)
 {
-    AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
+    AZStd::scoped_lock lock(m_mutex);
     buffer = m_eventBuffer;
     m_eventBuffer.clear();
 }
@@ -287,7 +288,7 @@ bool SRemoteServer::WriteBuffer(SRemoteClient* pClient,  char* buffer, int& size
 {
     IRemoteEvent* pEvent = nullptr;
     {
-        AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
+        AZStd::scoped_lock lock(m_mutex);
         for (TClients::iterator it = m_clients.begin(); it != m_clients.end(); ++it)
         {
             if (it->pClient == pClient)
@@ -330,7 +331,7 @@ bool SRemoteServer::ReadBuffer(const char* buffer, int data)
         {
             if (event->GetType() != eCET_Noop)
             {
-                AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
+                AZStd::scoped_lock lock(m_mutex);
                 m_eventBuffer.push_back(event);
             }
             else

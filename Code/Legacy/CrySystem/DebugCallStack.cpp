@@ -154,13 +154,13 @@ void DebugCallStack::SetUserDialogEnable(const bool bUserDialogEnable)
 DWORD g_idDebugThreads[10];
 const char* g_nameDebugThreads[10];
 int g_nDebugThreads = 0;
-AZStd::spin_mutex g_lockThreadDumpList = 0;
+AZStd::spin_mutex g_lockThreadDumpList;
 
 void MarkThisThreadForDebugging(const char* name)
 {
     EBUS_EVENT(AZ::Debug::EventTraceDrillerSetupBus, SetThreadName, AZStd::this_thread::get_id(), name);
 
-    AZStd::lock_guard<AZStd::spin_mutex> lock(g_lockThreadDumpList);
+    AZStd::scoped_lock lock(g_lockThreadDumpList);
     DWORD id = GetCurrentThreadId();
     if (g_nDebugThreads == sizeof(g_idDebugThreads) / sizeof(g_idDebugThreads[0]))
     {
@@ -180,7 +180,7 @@ void MarkThisThreadForDebugging(const char* name)
 
 void UnmarkThisThreadFromDebugging()
 {
-    AZStd::lock_guard<AZStd::spin_mutex> lock(g_lockThreadDumpList);
+    AZStd::scoped_lock lock(g_lockThreadDumpList);
     DWORD id = GetCurrentThreadId();
     for (int i = g_nDebugThreads - 1; i >= 0; i--)
     {
