@@ -81,17 +81,11 @@ namespace AZ
                 // AssImp separates meshes that have multiple materials.
                 // This code re-combines them to match previous FBX SDK behavior,
                 // so they can be separated by engine code instead.
-
-                // NEW
                 // Can't de-dupe nodes in the first loop because we can't generate names until we create nodes later.
                 // Because meshes are split on material at this point and need to be recombined, we can be in a position where
                 // There is a legit duped anim mesh that needs to be combined based on the outer non-anim mesh,
                 // or this is a duplicately named anim mesh that needs to be de-duped. There is also the case where both are true,
                 // it's a duplicate name and the non-anim mesh has to be deduped.
-
-                // Index on:
-                // Anim index (deduped)
-                //  Then mesh
 
                 // Helper struct to track an anim mesh and its associated mesh.
                 struct AnimMeshAndSceneMeshIndex
@@ -111,7 +105,7 @@ namespace AZ
                     AZStd::vector<AnimMeshAndSceneMeshIndex> m_animMeshAndSceneMeshIndex;
                 };
 
-                // Map the 
+                // Map the animation index to the list of anim meshes at that index, and the mesh associated with those anim meshes.
                 AZStd::map<int, AnimMeshAndSceneMeshes> animMeshIndexToSceneMeshes;
                 for (int nodeMeshIdx = 0; nodeMeshIdx < numMesh; nodeMeshIdx++)
                 {
