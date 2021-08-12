@@ -23,7 +23,6 @@ ly_add_target(
             AZ::AzCore
             Gem::Atom_RHI.Public
         PUBLIC
-            Gem::Atom_RPI.Edit
             Gem::Atom_RHI.Reflect
 )
 

@@ -13,7 +13,6 @@
 
 #include <AtomCore/Serialization/Json/JsonUtils.h>
 
-#include <Atom/RHI/CpuProfilerImpl.h>
 #include <Atom/RPI.Edit/Common/JsonFileLoadContext.h>
 #include <Atom/RPI.Edit/Common/JsonReportingHelper.h>
 
@@ -121,9 +120,6 @@ namespace AZ
                 AZ_Error("AZ::RPI::JsonUtils", false, "Failed to load object from json string: %s", loadResult.GetError().c_str());
                 return false;
             }
-
-            using DeserializedCpuData = AZStd::vector<RHI::CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializerEntry>;
-            Outcome<DeserializedCpuData, AZStd::string> LoadSavedCpuProfilingStatistics(const AZStd::string& capturePath);
         } // namespace JsonUtils
     } // namespace RPI
 } // namespace AZ
