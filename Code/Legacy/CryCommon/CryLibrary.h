@@ -50,7 +50,6 @@
 
 #include <stdio.h>
 #include <AzCore/PlatformIncl.h>
-#include <AzCore/PlatformDef.h>
 #include <AzCore/Module/Environment.h>
 
 #define INJECT_ENVIRONMENT_FUNCTION "InjectEnvironment"
