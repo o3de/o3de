@@ -34,7 +34,7 @@ namespace AzFramework
         bool GetFullScreenState() const override;
         void SetFullScreenState(bool fullScreenState) override;
         bool CanToggleFullScreenState() const override { return true; }
-        uint32_t GetMainDisplayRefreshRate() const override;
+        uint32_t GetMainDisplayRefreshRate() const;
 
     private:
         static NSWindowStyleMask ConvertToNSWindowStyleMask(const WindowStyleMasks& styleMasks);
