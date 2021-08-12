@@ -6,17 +6,16 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 
 Prerequisites for running AWS automation tests on your local Windows machine:
-1) Go to the AWS IAM console and create an IAM role called o3de-automation-tests with admin permissions
-2) Grant your AWS account permission to assume the o3de-automation-tests IAM role following:
-   https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_use_permissions-to-switch.html
-3) Copy o3de\scripts\build\Platform\Windows\deploy_cdk_applications.cmd to your engine root folder
-4) Open a Command Prompt window and set the following environment variables:
+1) Go to the AWS IAM console and create an IAM role called o3de-automation-tests which adds your own AWS account as
+   a trusted entity and has the admin permissions
+2) Copy o3de\scripts\build\Platform\Windows\deploy_cdk_applications.cmd to your engine root folder
+3) Open a Command Prompt window and set the following environment variables:
    Set O3DE_AWS_PROJECT_NAME=AWSAUTO
    Set O3DE_AWS_DEPLOY_REGION=us-west-2
    Set ASSUME_ROLE_ARN="arn:aws:iam::{your_aws_account_id}:role/o3de-automation-tests"
    Set COMMIT_ID=HEAD
-5) Deploy the CDK applications for AWS gems by running deploy_cdk_applications.cmd in the same Command Prompt window
-6) Edit AWS/common/constants.py to replace the assume role ARN with your own:
+4) Deploy the CDK applications for AWS gems by running deploy_cdk_applications.cmd in the same Command Prompt window
+5) Edit AWS/common/constants.py to replace the assume role ARN with your own:
    arn:aws:iam::{your_aws_account_id}:role/o3de-automation-tests
 """
 
@@ -108,7 +107,7 @@ class TestAWSClientAuthWindows(object):
 
         cognito_idp = aws_utils.client('cognito-idp')
         user_pool_id = resource_mappings.get_resource_name_id(f'{AWS_CLIENT_AUTH_FEATURE_NAME}.CognitoUserPoolId')
-        print(f'UserPoolId:{user_pool_id}')
+        logger.info(f'UserPoolId:{user_pool_id}')
 
         # Remove the user if already exists
         try:
