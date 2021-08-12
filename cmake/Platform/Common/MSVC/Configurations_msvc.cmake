@@ -95,7 +95,7 @@ ly_append_configurations_options(
 
 set(LY_BUILD_WITH_ADDRESS_SANITIZER FALSE CACHE BOOL "Builds using AddressSanitizer (ASan). Will disable Edit/Continue, Incremental building and Run-Time checks (default = FALSE)")
 if(LY_BUILD_WITH_ADDRESS_SANITIZER)
-    set(LY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG FALSE)
+    set(LY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG FALSE) 
     ly_append_configurations_options(
         COMPILATION_DEBUG
             /fsanitize=address
