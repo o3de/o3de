@@ -468,17 +468,11 @@ namespace AtomToolsFramework
 
     uint32_t RenderViewportWidget::GetDisplayRefreshRate() const
     {
-        AzFramework::NativeWindowHandle windowId = m_viewportContext->GetWindowContext()->GetWindowHandle();
-        uint32_t refreshRate = 0;
-        AzFramework::WindowRequestBus::EventResult(refreshRate, windowId, &AzFramework::WindowRequestBus::Events::GetDisplayRefreshRate);
-        return refreshRate;
+        return 60;
     }
 
     uint32_t RenderViewportWidget::GetSyncInterval() const
     {
-        AzFramework::NativeWindowHandle windowId = m_viewportContext->GetWindowContext()->GetWindowHandle();
-        uint32_t syncInterval = 0;
-        AzFramework::WindowRequestBus::EventResult(syncInterval, windowId, &AzFramework::WindowRequestBus::Events::GetSyncInterval);
-        return syncInterval;
+        return 1;
     }
 } //namespace AtomToolsFramework
