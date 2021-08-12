@@ -25,6 +25,7 @@
 #include <AzCore/std/time.h>
 #include "../../../Gems/ImGui/External/ImGui/v1.82/imgui/imgui.h"
 #pragma optimize("", off)
+#include "AzCore/Casting/lossy_cast.h"
 
 
 namespace AZ
@@ -33,19 +34,6 @@ namespace AZ
     {
         namespace CpuProfilerImGuiHelper
         {
-            // NOTE: Fix build error in case AZStd::thread_id is not of an arithmetic type, and instead a pointer
-            template<typename ThreadId, typename AZStd::enable_if<AZStd::is_pointer<ThreadId>::value>::type* = nullptr>
-            AZStd::string TextThreadId(ThreadId threadId)
-            {
-                return AZStd::string::format("Thread: %p", threadId);
-            }
-
-            template<typename ThreadId, typename AZStd::enable_if<!AZStd::is_pointer<ThreadId>::value>::type* = nullptr>
-            AZStd::string TextThreadId(ThreadId threadId)
-            {
-                return AZStd::string::format("Thread: %zu", static_cast<size_t>(threadId));
-            }
-
             inline float TicksToMs(AZStd::sys_time_t ticks)
             {
                 // Note: converting to microseconds integer before converting to milliseconds float
@@ -456,7 +444,6 @@ namespace AZ
                 AZ_TracePrintf("ImGuiCpuProfiler", "%s", loadResult.GetError().c_str());
                 return;
             }
-            // TODO ATOM-16022 Parse this data and display it in the visualizer widget.
 
             AZStd::vector<RHI::CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializerEntry> deserializedData = loadResult.TakeValue();
 
@@ -478,8 +465,8 @@ namespace AZ
                 const auto [groupRegionNameItr, wasGroupRegionNameInserted] =
                     m_loadedGroupRegionNames.emplace(groupNameItr->c_str(), regionNameItr->c_str());
 
-                RHI::CachedTimeRegion newRegion(&(*groupRegionNameItr), entry.m_stackDepth, entry.m_startTick, entry.m_endTick);
-                m_savedData[1234].push_back(newRegion);
+                const RHI::CachedTimeRegion newRegion(&(*groupRegionNameItr), entry.m_stackDepth, entry.m_startTick, entry.m_endTick);
+                m_savedData[entry.m_threadId].push_back(newRegion);
 
                 static Name targetName = Name("RPISystem: OnSystemTick");
                 if (entry.m_regionName == targetName)
@@ -493,18 +480,18 @@ namespace AZ
                     m_groupRegionMap[*groupNameItr][*regionNameItr].m_regionName = *regionNameItr;
                     m_tableData.push_back(&m_groupRegionMap[*groupNameItr][*regionNameItr]);
                 }
-                m_groupRegionMap[*groupNameItr][*regionNameItr].RecordRegion(newRegion, 1234);
+                m_groupRegionMap[*groupNameItr][*regionNameItr].RecordRegion(newRegion, entry.m_threadId);
             }
 
-            m_viewportStartTick = m_savedData[1234].back().m_startTick;
-            m_viewportEndTick = m_savedData[1234].back().m_endTick;
 
-            AZStd::sort(
-                m_savedData[1234].begin(), m_savedData[1234].end(), 
+            for (auto& [threadId, singleThreadData] : m_savedData)
+            {
+                AZStd::sort(singleThreadData.begin(), singleThreadData.end(), 
                 [](const TimeRegion& lhs, const TimeRegion& rhs)
                 {
                     return lhs.m_startTick < rhs.m_startTick;
                 });
+            }
         }
 
         // -- CPU Visualizer --
@@ -682,6 +669,7 @@ namespace AZ
             // Iterate through the entire TimeRegionMap and copy the data since it will get deleted on the next frame
             for (const auto& [threadId, singleThreadRegionMap] : timeRegionMap)
             {
+                const size_t threadIdHashed = AZStd::hash<AZStd::thread_id>{}(threadId); 
                 // The profiler can sometime return threads without any profiling events when dropping threads, FIXME(ATOM-15949)
                 if (singleThreadRegionMap.size() == 0)
                 {
@@ -707,7 +695,7 @@ namespace AZ
                             m_tableData.push_back(&m_groupRegionMap[groupName][regionName]);
                         }
 
-                        m_groupRegionMap[groupName][regionName].RecordRegion(region, threadId);
+                        m_groupRegionMap[groupName][regionName].RecordRegion(region, threadIdHashed);
                     }
                 }
 
@@ -727,7 +715,7 @@ namespace AZ
                 m_savedRegionCount += newVisualizerData.size();
 
                 // Move onto the end of the current thread's saved data, sorted order maintained
-                AZStd::vector<TimeRegion>& savedDataVec = m_savedData[threadId];
+                AZStd::vector<TimeRegion>& savedDataVec = m_savedData[threadIdHashed];
                 savedDataVec.insert(
                     savedDataVec.end(), AZStd::make_move_iterator(newVisualizerData.begin()), AZStd::make_move_iterator(newVisualizerData.end()));
             }
@@ -871,11 +859,11 @@ namespace AZ
             ImGui::GetWindowDrawList()->AddLine({ wx, boundaryY }, { wx + windowWidth, boundaryY }, red, 2.0f);
         }
 
-        inline void ImGuiCpuProfiler::DrawThreadLabel(u64 baseRow, AZStd::thread_id threadId)
+        inline void ImGuiCpuProfiler::DrawThreadLabel(u64 baseRow, size_t threadId)
         {
             auto [wx, wy] = ImGui::GetWindowPos();
             wy -= ImGui::GetScrollY();
-            const AZStd::string threadIdText =  CpuProfilerImGuiHelper::TextThreadId(threadId.m_id);
+            const AZStd::string threadIdText = AZStd::string::format("Thread: %zu", threadId);
 
             ImGui::GetWindowDrawList()->AddText({ wx + 10, wy + baseRow * RowHeight + 5 }, IM_COL32_WHITE, threadIdText.c_str());
         }
@@ -1094,7 +1082,7 @@ namespace AZ
 
         // ---- TableRow impl ----
 
-        inline void TableRow::RecordRegion(const AZ::RHI::CachedTimeRegion& region, AZStd::thread_id threadId)
+        inline void TableRow::RecordRegion(const AZ::RHI::CachedTimeRegion& region, size_t threadId)
         {
             const AZStd::sys_time_t deltaTime = region.m_endTick - region.m_startTick;
 
@@ -1123,7 +1111,7 @@ namespace AZ
             auto threadString = AZStd::string::format("Executed in %zu threads\n", m_executingThreads.size());
             for (const auto& threadId : m_executingThreads)
             {
-                threadString.append(CpuProfilerImGuiHelper::TextThreadId(threadId.m_id) + "\n");
+                threadString.append(AZStd::string::format("Thread: %zu\n", threadId));
             }
             return threadString;
         }
