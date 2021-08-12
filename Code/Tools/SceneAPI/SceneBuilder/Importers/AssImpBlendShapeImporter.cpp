@@ -23,7 +23,7 @@
 #include <SceneAPI/SceneData/GraphData/SkinMeshData.h>
 #include <SceneAPI/SceneData/GraphData/BlendShapeData.h>
 #include <assimp/scene.h>
-
+#pragma optimize("", off)
 namespace AZ
 {
     namespace SceneAPI
@@ -40,7 +40,8 @@ namespace AZ
                 SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
                 if (serializeContext)
                 {
-                    serializeContext->Class<AssImpBlendShapeImporter, SceneCore::LoadingComponent>()->Version(3); // LYN-2576
+                    // Revision 4: Handle duplicate blend shape animations
+                    serializeContext->Class<AssImpBlendShapeImporter, SceneCore::LoadingComponent>()->Version(4); // LYN-2576
                 }
             }
 
@@ -73,6 +74,12 @@ namespace AZ
 
                 Events::ProcessingResultCombiner combinedBlendShapeResult;
 
+                /*struct animMeshHelper
+                {
+                    AZStd::string m_animName;
+                    AZStd::vector<AZStd::pair<int, int>> m_nodeAndMeshIndices;
+                };
+
                 // 1. Loop through meshes & anims
                 //      Create storage: Anim to meshes
                 // 2. Loop through anims & meshes
@@ -80,7 +87,8 @@ namespace AZ
                 // AssImp separates meshes that have multiple materials.
                 // This code re-combines them to match previous FBX SDK behavior,
                 // so they can be separated by engine code instead.
-                AZStd::map<AZStd::string_view, AZStd::vector<AZStd::pair<int, int>>> animToMeshToAnimMeshIndices;
+                AZStd::map<AZStd::string_view, animMeshHelper> animToMeshToAnimMeshIndices;
+                // NEXT : Need to generate safe duplicate string_view name here.
                 for (int nodeMeshIdx = 0; nodeMeshIdx < numMesh; nodeMeshIdx++)
                 {
                     int sceneMeshIdx = context.m_sourceNode.GetAssImpNode()->mMeshes[nodeMeshIdx];
@@ -90,8 +98,127 @@ namespace AZ
                         aiAnimMesh* aiAnimMesh = aiMesh->mAnimMeshes[animIdx];
                         animToMeshToAnimMeshIndices[aiAnimMesh->mName.C_Str()].emplace_back(nodeMeshIdx, animIdx);
                     }
+                }*/
+
+                // NEW
+                // Can't de-dupe nodes in the first loop because we can't generate names until we create nodes later.
+                // Because meshes are split on material at this point and need to be recombined, we can be in a position where
+                // There is a legit duped anim mesh that needs to be combined based on the outer non-anim mesh,
+                // or this is a duplicately named anim mesh that needs to be de-duped. There is also the case where both are true,
+                // it's a duplicate name and the non-anim mesh has to be deduped.
+
+                // Index on:
+                // Anim index (deduped)
+                //  Then mesh
+
+                struct AnimMeshAndSceneMeshIndex
+                {
+                    AnimMeshAndSceneMeshIndex(const aiAnimMesh* aiAnimMesh, const aiMesh* aiMesh)
+                        : m_aiAnimMesh(aiAnimMesh)
+                        , m_aiMesh(aiMesh)
+                    {
+                    }
+                    const aiAnimMesh* m_aiAnimMesh = nullptr;
+                    const aiMesh* m_aiMesh = nullptr;
+                };
+
+                struct AnimMeshAndSceneMeshes
+                {
+                    int m_animMeshIndex = 0; // Used to validate anim meshes are consistent across the meshes on this node.
+                    AZStd::vector<AnimMeshAndSceneMeshIndex> m_animMeshAndSceneMeshIndex;
+                };
+                AZStd::map<int, AnimMeshAndSceneMeshes> animMeshIndexToSceneMeshes;
+                for (int nodeMeshIdx = 0; nodeMeshIdx < numMesh; nodeMeshIdx++)
+                {
+                    int sceneMeshIdx = context.m_sourceNode.GetAssImpNode()->mMeshes[nodeMeshIdx];
+                    const aiMesh* aiMesh = context.m_sourceScene.GetAssImpScene()->mMeshes[sceneMeshIdx];
+                    for (int animIdx = 0; animIdx < aiMesh->mNumAnimMeshes; animIdx++)
+                    {
+                        aiAnimMesh* aiAnimMesh = aiMesh->mAnimMeshes[animIdx];
+                        if (animMeshIndexToSceneMeshes.contains(animIdx))
+                        {
+                            // TODO : If this fails, it's my fault. Do we need this check?
+                            if (animMeshIndexToSceneMeshes[animIdx].m_animMeshIndex != animIdx)
+                            {
+                                AZ_Error(Utilities::ErrorWindow, false, "Mesh has TODO ERROR TO FILL IN OUT OF ORDER MESHES.");
+                                return Events::ProcessingResult::Failure;
+                            }
+                            // TODO : This is an assumption on how assimp organizes things. Do we need this?
+                            if (strcmp(
+                                    animMeshIndexToSceneMeshes[animIdx].m_animMeshAndSceneMeshIndex[0].m_aiAnimMesh->mName.C_Str(),
+                                    aiAnimMesh->mName.C_Str()) != 0)
+                            {
+                                AZ_Error(Utilities::ErrorWindow, false, "Mesh has TODO names don't match.");
+                                return Events::ProcessingResult::Failure;
+                            }
+                        }
+                        else
+                        {
+                            animMeshIndexToSceneMeshes[animIdx].m_animMeshIndex = animIdx;
+                        }
+
+                        animMeshIndexToSceneMeshes[animIdx].m_animMeshAndSceneMeshIndex.emplace_back(
+                            AnimMeshAndSceneMeshIndex(aiAnimMesh, aiMesh));
+                    }
                 }
 
+
+                #if 0
+                AZStd::map<int, AZStd::vector<int>> animMeshIndexToSceneMeshes;
+                for (int nodeMeshIdx = 0; nodeMeshIdx < numMesh; nodeMeshIdx++)
+                {
+                    int sceneMeshIdx = context.m_sourceNode.GetAssImpNode()->mMeshes[nodeMeshIdx];
+                    const aiMesh* aiMesh = context.m_sourceScene.GetAssImpScene()->mMeshes[sceneMeshIdx];
+                    for (int animIdx = 0; animIdx < aiMesh->mNumAnimMeshes; animIdx++)
+                    {
+                        aiAnimMesh* aiAnimMesh = aiMesh->mAnimMeshes[animIdx];
+                        animMeshIndexToSceneMeshes[animIdx].emplace_back(nodeMeshIdx);
+                    }
+                }
+                #endif
+
+                for (const auto& animMeshToSceneMeshes : animMeshIndexToSceneMeshes)
+                {
+                    AZStd::shared_ptr<SceneData::GraphData::BlendShapeData> blendShapeData =
+                        AZStd::make_shared<SceneData::GraphData::BlendShapeData>();
+
+                    if (animMeshToSceneMeshes.second.m_animMeshAndSceneMeshIndex.size() == 0)
+                    {
+                        AZ_Error(Utilities::ErrorWindow, false, "Somehow this mesh has no animations when it should have them.");
+                        return Events::ProcessingResult::Failure;
+                    }
+                    // Some DCC tools, like Maya, include a full path separated by '.' in the node names.
+                    // For example, "cone_skin_blendShapeNode.cone_squash"
+                    // Downstream processing doesn't want anything but the last part of that node name,
+                    // so find the last '.' and remove anything before it.
+                    AZStd::string nodeName(animMeshToSceneMeshes.second.m_animMeshAndSceneMeshIndex[0].m_aiAnimMesh->mName.C_Str());
+                    size_t dotIndex = nodeName.rfind('.');
+                    if (dotIndex != AZStd::string::npos)
+                    {
+                        nodeName.erase(0, dotIndex + 1);
+                    }
+                    int vertexOffset = 0;
+                    RenamedNodesMap::SanitizeNodeName(nodeName, context.m_scene.GetGraph(), context.m_currentGraphPosition, "BlendShape");
+
+                    for (const auto& animMeshAndSceneIndex : animMeshToSceneMeshes.second.m_animMeshAndSceneMeshIndex)
+                    {
+                        const aiAnimMesh* aiAnimMesh = animMeshAndSceneIndex.m_aiAnimMesh;
+                        const aiMesh* aiMesh = animMeshAndSceneIndex.m_aiMesh;
+
+                // OLD
+                /*AZStd::map<AZStd::string_view, AZStd::vector<AZStd::pair<int, int>>> animToMeshToAnimMeshIndices;
+                for (int nodeMeshIdx = 0; nodeMeshIdx < numMesh; nodeMeshIdx++)
+                {
+                    int sceneMeshIdx = context.m_sourceNode.GetAssImpNode()->mMeshes[nodeMeshIdx];
+                    const aiMesh* aiMesh = context.m_sourceScene.GetAssImpScene()->mMeshes[sceneMeshIdx];
+                    for (int animIdx = 0; animIdx < aiMesh->mNumAnimMeshes; animIdx++)
+                    {
+                        aiAnimMesh* aiAnimMesh = aiMesh->mAnimMeshes[animIdx];
+                        animToMeshToAnimMeshIndices[aiAnimMesh->mName.C_Str()].emplace_back(nodeMeshIdx, animIdx);
+                    }
+                }*/
+
+                #if 0
                 for (const auto& animToMeshIndex : animToMeshToAnimMeshIndices)
                 {
                     AZStd::shared_ptr<SceneData::GraphData::BlendShapeData> blendShapeData =
@@ -115,6 +242,8 @@ namespace AZ
                         int sceneMeshIdx = context.m_sourceNode.GetAssImpNode()->mMeshes[meshIndex.first];
                         const aiMesh* aiMesh = context.m_sourceScene.GetAssImpScene()->mMeshes[sceneMeshIdx];
                         const aiAnimMesh* aiAnimMesh = aiMesh->mAnimMeshes[meshIndex.second];
+
+                        #endif
 
                         AZStd::bitset<SceneData::GraphData::BlendShapeData::MaxNumUVSets> uvSetUsedFlags;
                         for (AZ::u8 uvSetIndex = 0; uvSetIndex < SceneData::GraphData::BlendShapeData::MaxNumUVSets; ++uvSetIndex)
@@ -238,3 +367,4 @@ namespace AZ
         } // namespace SceneBuilder
     } // namespace SceneAPI
 } // namespace AZ
+#pragma optimize("", on)
