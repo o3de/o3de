@@ -924,21 +924,6 @@ threadID GetCurrentThreadId()
 #endif
 
 //////////////////////////////////////////////////////////////////////////
-HANDLE CreateEvent
-(
-    LPSECURITY_ATTRIBUTES lpEventAttributes,
-    BOOL bManualReset,
-    BOOL bInitialState,
-    LPCSTR lpName
-)
-{
-    //TODO: implement
-    CRY_ASSERT_MESSAGE(0, "CreateEvent not implemented yet");
-    return 0;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
 DWORD Sleep(DWORD dwMilliseconds)
 {
 #if defined(LINUX) || defined(APPLE)
@@ -1000,95 +985,6 @@ DWORD SleepEx(DWORD dwMilliseconds, BOOL bAlertable)
     //  CRY_ASSERT_MESSAGE(0, "SleepEx not implemented yet");
     printf("SleepEx not properly implemented yet\n");
     Sleep(dwMilliseconds);
-    return 0;
-}
-
-//////////////////////////////////////////////////////////////////////////
-DWORD WaitForSingleObjectEx(HANDLE hHandle, DWORD dwMilliseconds,   BOOL bAlertable)
-{
-    //TODO: implement
-    CRY_ASSERT_MESSAGE(0, "WaitForSingleObjectEx not implemented yet");
-    return 0;
-}
-
-#if 0
-//////////////////////////////////////////////////////////////////////////
-DWORD WaitForMultipleObjectsEx(
-    DWORD nCount,
-    const HANDLE* lpHandles,
-    BOOL bWaitAll,
-    DWORD dwMilliseconds,
-    BOOL bAlertable)
-{
-    //TODO: implement
-    return 0;
-}
-#endif
-
-//////////////////////////////////////////////////////////////////////////
-DWORD WaitForSingleObject(HANDLE hHandle, DWORD dwMilliseconds)
-{
-    //TODO: implement
-    CRY_ASSERT_MESSAGE(0, "WaitForSingleObject not implemented yet");
-    return 0;
-}
-
-//////////////////////////////////////////////////////////////////////////
-BOOL SetEvent(HANDLE hEvent)
-{
-    //TODO: implement
-    CRY_ASSERT_MESSAGE(0, "SetEvent not implemented yet");
-    return TRUE;
-}
-
-//////////////////////////////////////////////////////////////////////////
-BOOL ResetEvent(HANDLE hEvent)
-{
-    //TODO: implement
-    CRY_ASSERT_MESSAGE(0, "ResetEvent not implemented yet");
-    return TRUE;
-}
-
-//////////////////////////////////////////////////////////////////////////
-HANDLE CreateMutex
-(
-    LPSECURITY_ATTRIBUTES lpMutexAttributes,
-    BOOL bInitialOwner,
-    LPCSTR lpName
-)
-{
-    //TODO: implement
-    CRY_ASSERT_MESSAGE(0, "CreateMutex not implemented yet");
-    return 0;
-}
-
-//////////////////////////////////////////////////////////////////////////
-BOOL ReleaseMutex(HANDLE hMutex)
-{
-    //TODO: implement
-    CRY_ASSERT_MESSAGE(0, "ReleaseMutex not implemented yet");
-    return TRUE;
-}
-
-//////////////////////////////////////////////////////////////////////////
-
-
-typedef DWORD (* PTHREAD_START_ROUTINE)(LPVOID lpThreadParameter);
-typedef PTHREAD_START_ROUTINE LPTHREAD_START_ROUTINE;
-
-//////////////////////////////////////////////////////////////////////////
-HANDLE CreateThread
-(
-    LPSECURITY_ATTRIBUTES lpThreadAttributes,
-    SIZE_T dwStackSize,
-    LPTHREAD_START_ROUTINE lpStartAddress,
-    LPVOID lpParameter,
-    DWORD dwCreationFlags,
-    LPDWORD lpThreadId
-)
-{
-    //TODO: implement
-    CRY_ASSERT_MESSAGE(0, "CreateThread not implemented yet");
     return 0;
 }
 
