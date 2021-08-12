@@ -34,7 +34,7 @@ namespace AzFramework
         bool GetFullScreenState() const override;
         void SetFullScreenState(bool fullScreenState) override;
         bool CanToggleFullScreenState() const override { return true; }
-        uint32_t GetMainDisplayRefreshRate() const override;
+        uint32_t GetDisplayRefreshRate() const override;
 
     private:
         static NSWindowStyleMask ConvertToNSWindowStyleMask(const WindowStyleMasks& styleMasks);
@@ -142,7 +142,7 @@ namespace AzFramework
         return nativeMask ? nativeMask : defaultMask;
     }
 
-    uint32_t NativeWindowImpl_Darwin::GetMainDisplayRefreshRate() const
+    uint32_t NativeWindowImpl_Darwin::GetDisplayRefreshRate() const
     {
         return m_mainDisplayRefreshRate;
     }
