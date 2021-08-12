@@ -81,6 +81,13 @@ namespace AzToolsFramework
                 result.Combine(resultInstances);
             }
 
+            {
+                AZ::ScopedContextPath subPathSource(context, "m_linkId");
+
+                result = ContinueStoringToJsonObjectField(
+                    outputValue, "LinkId", &(instance->m_linkId), &InvalidLinkId, azrtti_typeid<AZ::u64>(), context);
+            }
+
             return context.Report(result,
                 result.GetProcessing() == JSR::Processing::Completed ? "Successfully stored Instance information for Prefab." :
                 "Failed to store Instance information for Prefab.");
