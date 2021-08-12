@@ -3246,6 +3246,10 @@ const char* CXConsole::AutoComplete(const char* substr)
     for (size_t i = 0; i < cmdCount; i++)
     {
         const char* szCmd = cmds[i].data();
+        if (!szCmd)
+        {
+            return substr;
+        }
         size_t cmdlen = strlen(szCmd);
         if (cmdlen >= substrLen && memcmp(szCmd, substr, substrLen) == 0)
         {
