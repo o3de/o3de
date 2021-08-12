@@ -1458,17 +1458,17 @@ namespace UnitTest
         constexpr double               v15 = 0;
         constexpr const char*          v16 = "Hello";
         constexpr const wchar_t*       v17 = L"Hello";
-        constexpr void*                v18 = 0;
+        constexpr void*                v18 = nullptr;
 
         // This shouldn't give a compile error
         AZStd::string::format(
-            "%i  %c %uc  %c %c %i  %i  %u   %i   %lu  %li  %llu  %lli  %f   %f   %s   %ls  %p",
+           "%i  %c %uc  %hc %lc %i  %i  %u   %i   %lu  %li  %llu  %lli  %f   %f   %hs   %ls  %p",
             v1, v2, v3, v4, v5, v6, v7, v8,  v9,  v10, v11, v12,  v13,  v14, v15, v16, v17, v18);
 
         // This shouldn't give a compile error
         AZStd::wstring::format(
-            L"%i  %c %uc  %c %lc  %i  %i  %u   %i   %lu  %li  %llu  %lli  %f   %f   %s   %ls  %p",
-              v1, v2, v3, v4, v5, v6, v7, v8,  v9,  v10, v11, v12,  v13,  v14, v15, v16, v17, v18);
+          L"%i  %c %uc  %hc %lc %i  %i  %u   %i   %lu  %li  %llu  %lli  %f   %f   %hs   %ls  %p",
+            v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17, v18);
 
         class WrappedInt
         {
