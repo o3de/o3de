@@ -145,8 +145,7 @@ if __name__ == "__main__":
 
         s3_top_level_dir = None
         if args.s3_top_level_dir:
-            # Compile the bucket top level directory from the specified top level directory's alphanumeric characters
-            s3_top_level_dir = "".join(re.findall("([a-zA-z]+|[0-9]+)", args.s3_top_level_dir))
+            s3_top_level_dir = args.s3_top_level_dir
         else:
             s3_top_level_dir = "tiaf"
 

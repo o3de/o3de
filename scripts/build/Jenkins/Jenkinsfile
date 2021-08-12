@@ -247,7 +247,7 @@ def CheckoutRepo(boolean disableSubmodules = false) {
                 [$class: 'CheckoutOption', timeout: 60]
             ],
             userRemoteConfigs: scm.userRemoteConfigs
-       ]       
+       ]
     }
 
     // CHANGE_ID is used by some scripts to identify uniquely the current change (usually metric jobs)
@@ -594,7 +594,6 @@ try {
                     // repositoryName is the full repository name
                     repositoryName = (repositoryUrl =~ /https:\/\/github.com\/(.*)\.git/)[0][1]
                     env.REPOSITORY_NAME = repositoryName
-                    env.REPOSITORY_URL = repositoryUrl
                     (projectName, pipelineName) = GetRunningPipelineName(env.JOB_NAME) // env.JOB_NAME is the name of the job given by Jenkins
                     env.PIPELINE_NAME = pipelineName
                     if(env.BRANCH_NAME) {
