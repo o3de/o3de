@@ -10,7 +10,6 @@
 
 #include <GridMate/Memory.h>
 #include <AzCore/EBus/EBus.h>
-#include <GridMate/String/string.h>
 
 namespace GridMate
 {

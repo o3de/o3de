@@ -215,7 +215,7 @@ namespace LyShine
     AZ::EntityId LyShineLoadScreenComponent::loadFromCfg(const char* pathVarName, const char* autoPlayVarName)
     {
         ICVar* pathVar = gEnv->pConsole->GetCVar(pathVarName);
-        string path = pathVar ? pathVar->GetString() : "";
+        AZStd::string path = pathVar ? pathVar->GetString() : "";
         if (path.empty())
         {
             // No canvas specified.
@@ -238,7 +238,7 @@ namespace LyShine
         EBUS_EVENT_ID(canvasId, UiCanvasBus, SetDrawOrder, std::numeric_limits<int>::max());
 
         ICVar* autoPlayVar = gEnv->pConsole->GetCVar(autoPlayVarName);
-        string sequence = autoPlayVar ? autoPlayVar->GetString() : "";
+        AZStd::string sequence = autoPlayVar ? autoPlayVar->GetString() : "";
         if (sequence.empty())
         {
             // Nothing to auto-play.
@@ -253,7 +253,7 @@ namespace LyShine
             return canvasId;
         }
 
-        animSystem->PlaySequence(sequence, nullptr, false, false);
+        animSystem->PlaySequence(sequence.c_str(), nullptr, false, false);
 
         return canvasId;
     }

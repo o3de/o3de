@@ -52,6 +52,9 @@ namespace ShaderManagementConsole
 
         void CreateMenu() override;
         void CreateTabBar() override;
+
+        QString GetDocumentPath(const AZ::Uuid& documentId) const;
+
         void OpenTabContextMenu() override;
 
         void SelectDocumentForTab(const int tabIndex);

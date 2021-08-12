@@ -49,6 +49,7 @@ class PersistentStorage(ABC):
         try:
             historic_data = json.loads(historic_data_json)
             self._last_commit_hash = historic_data["last_commit_hash"]
+            logger.info(f"Last commit hash '{self._last_commit_hash}' found.")
 
             # Create the active workspace directory where the coverage data file will be placed and unpack the coverage data so 
             # it is accessible by the runtime
@@ -105,7 +106,10 @@ class PersistentStorage(ABC):
 
         historic_data_json = self._pack_historic_data(last_commit_hash)
         if historic_data_json:
+            logger.info(f"Attempting to store historic data with new last commit hash '{last_commit_hash}'...")
             self._store_historic_data(historic_data_json)
+            logger.info("The historic data was successfully stored.")
+
         else:
             logger.info("The historic data could not be successfully stored.")
 

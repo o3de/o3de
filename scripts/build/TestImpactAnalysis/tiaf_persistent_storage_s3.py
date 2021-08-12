@@ -18,7 +18,7 @@ logger = get_logger(__file__)
 
 # Implementation of s3 bucket persistent storage
 class PersistentStorageS3(PersistentStorage):
-    def __init__(self, config: dict, suite: str, s3_bucket: str, branch: str):
+    def __init__(self, config: dict, suite: str, s3_bucket: str, root_dir: str, branch: str):
         """
         Initializes the persistent storage with the specified s3 bucket.
 
@@ -36,8 +36,8 @@ class PersistentStorageS3(PersistentStorage):
             # historic_data.json.zip is the file containing the coverage and meta-data of the last TIAF sequence run
             historic_data_file = f"historic_data.{object_extension}"
 
-            # The location of the data is in the form <branch>/<config> so the build config of each branch gets its own historic data
-            self._dir = f'{branch}/{config["meta"]["build_config"]}'
+            # The location of the data is in the form <root_dir>/<branch>/<config> so the build config of each branch gets its own historic data
+            self._dir = f'{root_dir}/{branch}/{config["meta"]["build_config"]}'
             self._historic_data_key = f'{self._dir}/{historic_data_file}'
             
             logger.info(f"Attempting to retrieve historic data for branch '{branch}' at location '{self._historic_data_key}' on bucket '{s3_bucket}'...")
@@ -49,13 +49,16 @@ class PersistentStorageS3(PersistentStorage):
                 logger.info(f"Historic data found for branch '{branch}'.")
 
                 # Archive the existing object with the name of the existing last commit hash
-                archive_key = f"{self._dir}/archive/{self._last_commit_hash}.{object_extension}"
-                logger.info(f"Archiving existing historic data to {archive_key}...")
-                self._bucket.copy({"Bucket": self._bucket.name, "Key": self._historic_data_key}, archive_key)
+                #archive_key = f"{self._dir}/archive/{self._last_commit_hash}.{object_extension}"
+                #logger.info(f"Archiving existing historic data to '{archive_key}' in bucket '{self._bucket.name}'...")
+                #self._bucket.copy({"Bucket": self._bucket.name, "Key": self._historic_data_key}, archive_key)
+                #logger.info(f"Archiving complete.")
 
                 # Decode the historic data object into raw bytes
+                logger.info(f"Attempting to decode historic data object...")
                 response = object.get()
                 file_stream = response['Body']
+                logger.info(f"Decoding complete.")
 
                 # Decompress and unpack the zipped historic data JSON
                 historic_data_json = zlib.decompress(file_stream.read()).decode('UTF-8')
@@ -79,7 +82,7 @@ class PersistentStorageS3(PersistentStorage):
         try:
             data = BytesIO(zlib.compress(bytes(historic_data_json, "UTF-8")))
             logger.info(f"Uploading historic data to location '{self._historic_data_key}'...")
-            self._bucket.upload_fileobj(data, self._historic_data_key)
+            self._bucket.upload_fileobj(data, self._historic_data_key, ExtraArgs={'ACL': 'bucket-owner-full-control'})
             logger.info("Upload complete.")
         except botocore.exceptions.BotoCoreError as e:
             logger.error(f"There was a problem with the s3 bucket: {e}")

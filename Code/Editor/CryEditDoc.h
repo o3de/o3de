@@ -180,7 +180,7 @@ protected:
     void OnStartLevelResourceList();
     static void OnValidateSurfaceTypesChanged(ICVar*);
 
-    QString GetCryIndexPath(const LPCTSTR levelFilePath) const;
+    QString GetCryIndexPath(const char* levelFilePath) const;
 
     //////////////////////////////////////////////////////////////////////////
     // SliceEditorEntityOwnershipServiceNotificationBus::Handler

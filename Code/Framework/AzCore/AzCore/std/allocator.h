@@ -10,7 +10,7 @@
 
 #include <AzCore/std/base.h>
 #include <AzCore/std/typetraits/integral_constant.h>
-#include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
 
 namespace AZStd
 {

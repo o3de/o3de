@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/IO/Path/Path_fwd.h>
+#include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/std/string/fixed_string.h>
 #include <AzCore/std/string/string.h>
 

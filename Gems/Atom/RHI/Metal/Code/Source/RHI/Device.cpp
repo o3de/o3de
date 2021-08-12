@@ -77,7 +77,6 @@ namespace AZ
             
             m_samplerCache = [[NSCache alloc]init];
             [m_samplerCache setName:@"SamplerCache"];
-            
             return RHI::ResultCode::Success;
         }
     
@@ -315,7 +314,12 @@ namespace AZ
             memoryRequirements.m_sizeInBytes = bufferSizeAndAlign.size;
             return memoryRequirements;
         }
-      
+
+        void Device::ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction)
+        {
+            m_releaseQueue.Notify(notifyFunction);
+        }
+
         void Device::InitFeatures()
         {
             

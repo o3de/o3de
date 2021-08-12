@@ -15,6 +15,7 @@
 
 #include <AzCore/base.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/std/containers/fixed_vector.h>
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 

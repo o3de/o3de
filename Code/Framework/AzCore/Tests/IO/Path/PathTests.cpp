@@ -418,7 +418,7 @@ namespace UnitTest
 
         // Check each operator/= and append overload for success
         {
-            AZStd::fixed_string<AZ::IO::MaxPathLength> pathString{ "foo" };
+            AZ::IO::FixedMaxPathString pathString{ "foo" };
             AZ::IO::FixedMaxPath testPath('/');
             testPath /= AZ::IO::PathView(pathString);
             testPath /= pathString;
@@ -428,7 +428,7 @@ namespace UnitTest
             EXPECT_STREQ("foo/foo/foo/foo/f", testPath.c_str());
         }
         {
-            AZStd::fixed_string<AZ::IO::MaxPathLength> pathString{ "foo" };
+            AZ::IO::FixedMaxPathString pathString{ "foo" };
             AZ::IO::FixedMaxPath testPath('/');
             testPath.Append(AZ::IO::PathView(pathString));
             testPath.Append(pathString);

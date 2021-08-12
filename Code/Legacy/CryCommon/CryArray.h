@@ -12,27 +12,14 @@
 #pragma once
 
 #include <CryLegacyAllocator.h>
+#include <AzCore/std/string/string.h>
 
 //---------------------------------------------------------------------------
 // Convenient iteration macros
-#define for_iter(IT, it, b, e)          for (IT it = (b), _e = (e); it != _e; ++it)
-#define for_container(CT, it, cont) for_iter (CT::iterator, it, (cont).begin(), (cont).end())
 
 #define for_ptr(T, it, b, e)                for (T* it = (b), * _e = (e); it != _e; ++it)
-#define for_array_ptr(T, it, arr)       for_ptr (T, it, (arr).begin(), (arr).end())
-
-#define for_array(i, arr)                       for (int i = 0, _e = (arr).size(); i < _e; i++)
-#define for_all(cont)                               for_array (_i, cont) cont[_i]
-
-//---------------------------------------------------------------------------
-// Stack array helper
-#define ALIGNED_STACK_ARRAY(T, name, size, alignment)           \
-    PREFAST_SUPPRESS_WARNING(6255)                              \
-    T * name = (T*) alloca((size) * sizeof(T) + alignment - 1); \
-    name = Align(name, alignment);
-
-#define STACK_ARRAY(T, name, size)                 \
-    ALIGNED_STACK_ARRAY(T, name, size, alignof(T)) \
+#define for_array_ptr(T, it, arr)           for_ptr (T, it, (arr).begin(), (arr).end())
+#define for_array(i, arr)                   for (int i = 0, _e = (arr).size(); i < _e; i++)
 
 //---------------------------------------------------------------------------
 // Specify semantics for moving objects.
@@ -55,18 +42,6 @@ struct fake_move_helper
     {
         ::new(&dest) T(source);
         source.~T();
-    }
-};
-
-// Override for string to ensure proper construction
-template <>
-struct fake_move_helper<string>
-{
-    static void move(string& dest, string& source)
-    {
-        ::new((void*)&dest) string(); 
-        dest = source;
-        source.~string();
     }
 };
 
@@ -785,7 +760,7 @@ namespace NArray
 
             AP& allocator()
             {
-                COMPILE_TIME_ASSERT(sizeof(AP) == sizeof(A));
+                static_assert(sizeof(AP) == sizeof(A));
                 return *(AP*)this;
             }
             const AP& allocator() const

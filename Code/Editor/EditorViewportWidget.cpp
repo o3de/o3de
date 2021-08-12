@@ -72,7 +72,6 @@
 #include "IPostEffectGroup.h"
 #include "EditorPreferencesPageGeneral.h"
 #include "ViewportManipulatorController.h"
-#include "LegacyViewportCameraController.h"
 #include "EditorViewportSettings.h"
 
 #include "ViewPane.h"
@@ -105,16 +104,7 @@
 
 AZ_CVAR(
     bool, ed_visibility_logTiming, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Output the timing of the new IVisibilitySystem query");
-AZ_CVAR(bool, ed_useNewCameraSystem, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Use the new Editor camera system");
 AZ_CVAR(bool, ed_showCursorCameraLook, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Show the cursor when using free look with the new camera system");
-
-namespace SandboxEditor
-{
-    bool UsingNewCameraSystem()
-    {
-        return ed_useNewCameraSystem;
-    }
-} // namespace SandboxEditor
 
 EditorViewportWidget* EditorViewportWidget::m_pPrimaryViewport = nullptr;
 
@@ -640,7 +630,7 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
 
         if (m_renderViewport)
         {
-            m_renderViewport->GetControllerList()->SetEnabled(true);
+            m_renderViewport->SetInputProcessingEnabled(true);
         }
         break;
 
@@ -1274,15 +1264,8 @@ void EditorViewportWidget::SetViewportId(int id)
 
     m_renderViewport->GetControllerList()->Add(AZStd::make_shared<SandboxEditor::ViewportManipulatorController>());
 
-    if (ed_useNewCameraSystem)
-    {
-        m_renderViewport->GetControllerList()->Add(CreateModularViewportCameraController(AzFramework::ViewportId(id)));
-    }
-    else
-    {
-        m_renderViewport->GetControllerList()->Add(AZStd::make_shared<SandboxEditor::LegacyViewportCameraController>());
-    }
-
+    m_renderViewport->GetControllerList()->Add(CreateModularViewportCameraController(AzFramework::ViewportId(id)));
+    
     m_renderViewport->SetViewportSettings(&g_EditorViewportSettings);
 
     UpdateScene();
@@ -2239,7 +2222,6 @@ void EditorViewportWidget::CenterOnAABB(const AABB& aabb)
     orbitDistance = fabs(orbitDistance);
 
     SetViewTM(newTM);
-    SandboxEditor::OrbitCameraControlsBus::Event(GetViewportId(), &SandboxEditor::OrbitCameraControlsBus::Events::SetOrbitDistance, orbitDistance);
 }
 
 void EditorViewportWidget::CenterOnSliceInstance()

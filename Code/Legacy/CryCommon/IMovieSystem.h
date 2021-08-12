@@ -112,7 +112,7 @@ public:
     CAnimParamType()
         : m_type(kAnimParamTypeInvalid) {}
 
-    CAnimParamType(const string& name)
+    CAnimParamType(const AZStd::string& name)
     {
         *this = name;
     }
@@ -128,17 +128,12 @@ public:
         m_type = type;
     }
 
-    void operator =(const string& name)
-    {
-        m_type = kAnimParamTypeByString;
-        m_name = name;
-    }
-
     void operator =(const AZStd::string& name)
     {
         m_type = kAnimParamTypeByString;
         m_name = name;
     }
+
     // Convert to enum. This needs to be explicit,
     // otherwise operator== will be ambiguous
     AnimParamType GetType() const { return m_type; }
@@ -1437,7 +1432,7 @@ inline void SAnimContext::Serialize(XmlNodeRef& xmlNode, bool bLoading)
     {
         if (sequence)
         {
-            string fullname = sequence->GetName();
+            AZStd::string fullname = sequence->GetName();
             xmlNode->setAttr("sequence", fullname.c_str());
         }
         xmlNode->setAttr("dt", dt);

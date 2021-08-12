@@ -159,9 +159,14 @@ namespace AZ::RPI
 
         // Determine the vertex index range for the morph target.
         const uint32_t numVertices = blendShapeData->GetVertexCount();
-        AZ_Assert(blendShapeData->GetVertexCount() == sourceMesh.m_meshData->GetVertexCount(),
-            "Blend shape (%s) contains more/less vertices (%d) than the neutral mesh (%d).",
-            blendShapeName.c_str(), numVertices, sourceMesh.m_meshData->GetVertexCount());
+        if (blendShapeData->GetVertexCount() != sourceMesh.m_meshData->GetVertexCount())
+        {
+            AZ_Error(ModelAssetBuilderComponent::s_builderName, false,
+                "Skipping blend shape (%s) as it contains more/less vertices (%d) than the neutral mesh (%d). "
+                "The blend shape is most likely influencing multiple meshes, which is currently not supported.",
+                blendShapeName.c_str(), numVertices, sourceMesh.m_meshData->GetVertexCount());
+            return;
+        }
 
         // The start index is after any previously added deltas
         metaData.m_startIndex = aznumeric_cast<uint32_t>(packedCompressedMorphTargetVertexData.size());

@@ -20,5 +20,10 @@ namespace AZ
         {
             formatsCapabilities.fill(static_cast<RHI::FormatCapabilities>(~0));
         }
+
+        void Device::ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction)
+        {
+            notifyFunction();
+        }
     }
 }
