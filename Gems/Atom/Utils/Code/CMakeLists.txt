@@ -22,8 +22,8 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             Gem::Atom_RHI.Public
-            Gem::Atom_RPI.Edit
         PUBLIC
+            Gem::Atom_RPI.Edit
             Gem::Atom_RHI.Reflect
 )
 

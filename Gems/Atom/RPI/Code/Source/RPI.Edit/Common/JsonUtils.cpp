@@ -43,7 +43,7 @@ namespace AZ
                 }
 
                 constexpr AZStd::size_t MaxBufSize = 65536;
-                const AZStd::size_t bufSize = AZStd::min(MaxBufSize, captureSizeBytes);
+                const AZStd::size_t bufSize = AZStd::min(MaxBufSize, aznumeric_cast<AZStd::size_t>(captureSizeBytes));
                 char* buf = reinterpret_cast<char*>(azmalloc(bufSize));
 
                 rapidjson::Document document;
