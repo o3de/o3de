@@ -138,9 +138,11 @@ namespace AzFramework
     {
         memset(&m_lastClientRect, 0, sizeof(m_lastClientRect));
 
+        static const char* s_mouseCountEnvironmentVarName = "InputDeviceMouseInstanceCount";
+        s_instanceCount = AZ::Environment::FindVariable<int>(s_mouseCountEnvironmentVarName);
         if (!s_instanceCount)
         {
-            s_instanceCount = AZ::Environment::CreateVariable<int>("InputDeviceMouseInstanceCount", 1);
+            s_instanceCount = AZ::Environment::CreateVariable<int>(s_mouseCountEnvironmentVarName, 1);
 
             // Register for raw mouse input
             RAWINPUTDEVICE rawInputDevice;

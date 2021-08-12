@@ -36,8 +36,6 @@ AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnin
 #include <QCloseEvent>
 #include <QDesktopWidget>
 #include <QFileDialog>
-#include <QVBoxLayout>
-#include <QVariant>
 #include <QWindow>
 AZ_POP_DISABLE_WARNING
 
@@ -77,20 +75,13 @@ namespace MaterialEditor
         m_toolBar->setObjectName("ToolBar");
         addToolBar(m_toolBar);
 
-        m_materialViewport = new MaterialViewportWidget(m_centralWidget);
-        m_materialViewport->setObjectName("Viewport");
-        m_materialViewport->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
-
         CreateMenu();
         CreateTabBar();
 
-        QVBoxLayout* vl = new QVBoxLayout(m_centralWidget);
-        vl->setMargin(0);
-        vl->setContentsMargins(0, 0, 0, 0);
-        vl->addWidget(m_tabWidget);
-        vl->addWidget(m_materialViewport);
-        m_centralWidget->setLayout(vl);
-        setCentralWidget(m_centralWidget);
+        m_materialViewport = new MaterialViewportWidget(centralWidget());
+        m_materialViewport->setObjectName("Viewport");
+        m_materialViewport->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+        centralWidget()->layout()->addWidget(m_materialViewport);
 
         AddDockWidget("Asset Browser", new MaterialBrowserWidget, Qt::BottomDockWidgetArea, Qt::Vertical);
         AddDockWidget("Inspector", new MaterialInspector, Qt::RightDockWidgetArea, Qt::Horizontal);
@@ -200,7 +191,7 @@ namespace MaterialEditor
             // Create a new tab for the document ID and assign it's label to the file name of the document.
             AddTabForDocumentId(documentId, filename, absolutePath, [this]{
                 // The tab widget requires a dummy page per tab
-                auto contentWidget = new QWidget(m_centralWidget);
+                auto contentWidget = new QWidget(centralWidget());
                 contentWidget->setContentsMargins(0, 0, 0, 0);
                 contentWidget->setFixedSize(0, 0);
                 return contentWidget;
@@ -247,8 +238,8 @@ namespace MaterialEditor
         const QString documentPath = GetDocumentPath(documentId);
         if (!documentPath.isEmpty())
         {
-            const QString status = QString("Material closed: %1").arg(documentPath);
-            m_statusBar->setWindowIconText(QString("<font color=\"White\">%1</font>").arg(status));
+            const QString status = QString("Document closed: %1").arg(documentPath);
+            m_statusMessage->setText(QString("<font color=\"White\">%1</font>").arg(status));
         }
     }
 
@@ -257,8 +248,8 @@ namespace MaterialEditor
         RemoveTabForDocumentId(documentId);
 
         const QString documentPath = GetDocumentPath(documentId);
-        const QString status = QString("Material closed: %1").arg(documentPath);
-        m_statusBar->setWindowIconText(QString("<font color=\"White\">%1</font>").arg(status));
+        const QString status = QString("Document closed: %1").arg(documentPath);
+        m_statusMessage->setText(QString("<font color=\"White\">%1</font>").arg(status));
     }
 
     void MaterialEditorWindow::OnDocumentModified(const AZ::Uuid& documentId)
@@ -296,8 +287,8 @@ namespace MaterialEditor
         UpdateTabForDocumentId(documentId, filename, absolutePath, isModified);
 
         const QString documentPath = GetDocumentPath(documentId);
-        const QString status = QString("Material closed: %1").arg(documentPath);
-        m_statusBar->setWindowIconText(QString("<font color=\"White\">%1</font>").arg(status));
+        const QString status = QString("Document closed: %1").arg(documentPath);
+        m_statusMessage->setText(QString("<font color=\"White\">%1</font>").arg(status));
     }
 
     void MaterialEditorWindow::CreateMenu()
@@ -341,8 +332,8 @@ namespace MaterialEditor
             if (!result)
             {
                 const QString documentPath = GetDocumentPath(documentId);
-                const QString status = QString("Failed to save material: %1").arg(documentPath);
-                m_statusBar->setWindowIconText(QString("<font color=\"Red\">%1</font>").arg(status));
+                const QString status = QString("Failed to save document: %1").arg(documentPath);
+                m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(status));
             }
         }, QKeySequence::Save);
 
@@ -355,8 +346,8 @@ namespace MaterialEditor
                 documentId, AtomToolsFramework::GetSaveFileInfo(documentPath).absoluteFilePath().toUtf8().constData());
             if (!result)
             {
-                const QString status = QString("Failed to save material: %1").arg(documentPath);
-                m_statusBar->setWindowIconText(QString("<font color=\"Red\">%1</font>").arg(status));
+                const QString status = QString("Failed to save document: %1").arg(documentPath);
+                m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(status));
             }
         }, QKeySequence::SaveAs);
 
@@ -369,8 +360,8 @@ namespace MaterialEditor
                 documentId, AtomToolsFramework::GetSaveFileInfo(documentPath).absoluteFilePath().toUtf8().constData());
             if (!result)
             {
-                const QString status = QString("Failed to save material: %1").arg(documentPath);
-                m_statusBar->setWindowIconText(QString("<font color=\"Red\">%1</font>").arg(status));
+                const QString status = QString("Failed to save document: %1").arg(documentPath);
+                m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(status));
             }
         });
 
@@ -379,8 +370,8 @@ namespace MaterialEditor
             MaterialDocumentSystemRequestBus::BroadcastResult(result, &MaterialDocumentSystemRequestBus::Events::SaveAllDocuments);
             if (!result)
             {
-                const QString status = QString("Failed to save materials.");
-                m_statusBar->setWindowIconText(QString("<font color=\"Red\">%1</font>").arg(status));
+                const QString status = QString("Failed to save documents.");
+                m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(status));
             }
         });
 
@@ -425,8 +416,8 @@ namespace MaterialEditor
             if (!result)
             {
                 const QString documentPath = GetDocumentPath(documentId);
-                const QString status = QString("Failed to perform Undo in material: %1").arg(documentPath);
-                m_statusBar->setWindowIconText(QString("<font color=\"Red\">%1</font>").arg(status));
+                const QString status = QString("Failed to perform undo on document: %1").arg(documentPath);
+                m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(status));
             }
         }, QKeySequence::Undo);
 
@@ -437,8 +428,8 @@ namespace MaterialEditor
             if (!result)
             {
                 const QString documentPath = GetDocumentPath(documentId);
-                const QString status = QString("Failed to perform Undo in material: %1").arg(documentPath);
-                m_statusBar->setWindowIconText(QString("<font color=\"Red\">%1</font>").arg(status));
+                const QString status = QString("Failed to perform redo on document: %1").arg(documentPath);
+                m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(status));
             }
         }, QKeySequence::Redo);
 

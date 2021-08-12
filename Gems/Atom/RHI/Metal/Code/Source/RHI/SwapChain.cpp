@@ -74,21 +74,16 @@ namespace AZ
                 AddSubView();
             }
 
-            m_refreshRate = Platform::GetRefreshRate();
-            
-            //Assume 60hz if 0 is returned.
-            //Internal OSX displays have 'flexible' refresh rates, with a max of 60Hz - but report 0hz
-            if (m_refreshRate < 0.1f)
-            {
-                m_refreshRate = 60.0f;
-            }
-            
             m_drawables.resize(descriptor.m_dimensions.m_imageCount);
 
             if (nativeDimensions)
             {
                 *nativeDimensions = descriptor.m_dimensions;
             }
+
+            AzFramework::WindowRequestBus::EventResult(
+                m_refreshRate, m_nativeWindow, &AzFramework::WindowRequestBus::Events::GetDisplayRefreshRate);
+
             return RHI::ResultCode::Success;
         }
 
@@ -160,7 +155,10 @@ namespace AZ
             const uint32_t currentImageIndex = GetCurrentImageIndex();
             
             //Preset the drawable
-            Platform::PresentInternal(m_mtlCommandBuffer, m_drawables[currentImageIndex], GetDescriptor().m_verticalSyncInterval, m_refreshRate);
+            Platform::PresentInternal(
+                m_mtlCommandBuffer,
+                m_drawables[currentImageIndex], GetDescriptor().m_verticalSyncInterval,
+                m_refreshRate);
             
             [m_drawables[currentImageIndex] release];
             m_drawables[currentImageIndex] = nil;

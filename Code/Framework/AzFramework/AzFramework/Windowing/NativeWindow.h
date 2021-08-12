@@ -130,6 +130,8 @@ namespace AzFramework
         bool CanToggleFullScreenState() const override;
         void ToggleFullScreenState() override;
         float GetDpiScaleFactor() const override;
+        uint32_t GetSyncInterval() const override;
+        uint32_t GetDisplayRefreshRate() const override;
 
         //! Get the full screen state of the default window.
         //! \return True if the default window is currently in full screen, false otherwise.
@@ -172,6 +174,7 @@ namespace AzFramework
             virtual void SetFullScreenState(bool fullScreenState);
             virtual bool CanToggleFullScreenState() const;
             virtual float GetDpiScaleFactor() const;
+            virtual uint32_t GetDisplayRefreshRate() const;
 
         protected:
             uint32_t m_width = 0;
