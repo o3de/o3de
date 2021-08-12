@@ -458,6 +458,21 @@ typedef HANDLE HMENU;
 
 #endif //__cplusplus
 
+typedef union _LARGE_INTEGER
+{
+    struct
+    {
+        DWORD LowPart;
+        LONG HighPart;
+    };
+    struct
+    {
+        DWORD LowPart;
+        LONG HighPart;
+    } u;
+    long long QuadPart;
+} LARGE_INTEGER;
+
 extern bool QueryPerformanceCounter(LARGE_INTEGER*);
 extern bool QueryPerformanceFrequency(LARGE_INTEGER* frequency);
 
