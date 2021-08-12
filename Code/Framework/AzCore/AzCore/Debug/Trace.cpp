@@ -38,7 +38,6 @@ namespace AZ
             void DebugBreak();
 #endif
             void Terminate(int exitCode);
-            void OutputToDebugger(const char* window, const char* message);
         }
     }
 

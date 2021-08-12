@@ -27,13 +27,13 @@
 #include <CryCommon/Maestro/Types/AnimNodeType.h>
 #include <CryCommon/Maestro/Types/AnimValueType.h>
 #include <CryCommon/Maestro/Types/AnimParamType.h>
+#include <CryCommon/MathConversion.h>
 
 // Editor
 #include "AnimationContext.h"
 #include "Clipboard.h"
 #include "CommentNodeAnimator.h"
 #include "DirectorNodeAnimator.h"
-#include "RenderViewport.h"
 #include "ViewManager.h"
 #include "Include/IObjectManager.h"
 #include "Objects/GizmoManager.h"
@@ -370,7 +370,7 @@ bool CTrackViewAnimNode::IsBoundToEditorObjects() const
         else
         {
             // check if bound to legacy entity
-            return (m_animNode->GetNodeOwner() != NULL);
+            return (m_animNode->GetNodeOwner() != nullptr);
         }
     }
 
@@ -1010,13 +1010,13 @@ bool CTrackViewAnimNode::SetName(const char* pName)
         }
     }
 
-    string oldName = GetName();
+    AZStd::string oldName = GetName();
     m_animNode->SetName(pName);
 
     CTrackViewSequence* sequence = GetSequence();
     AZ_Assert(sequence, "Nodes should never have a null sequence.");
 
-    sequence->OnNodeRenamed(this, oldName);
+    sequence->OnNodeRenamed(this, oldName.c_str());
 
     return true;
 }
@@ -1468,7 +1468,7 @@ bool CTrackViewAnimNode::PasteNodesFromClipboard(QWidget* context)
     }
 
     XmlNodeRef animNodesRoot = clipboard.Get();
-    if (animNodesRoot == NULL || strcmp(animNodesRoot->getTag(), "CopyAnimNodesRoot") != 0)
+    if (animNodesRoot == nullptr || strcmp(animNodesRoot->getTag(), "CopyAnimNodesRoot") != 0)
     {
         return false;
     }

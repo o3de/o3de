@@ -328,8 +328,8 @@ bool CTrackViewTrackPropsDlg::OnKeySelectionChange(CTrackViewKeyBundle& selected
     }
     else
     {
-        ui->PREVNEXT->setEnabled(FALSE);
-        ui->TIME->setEnabled(FALSE);
+        ui->PREVNEXT->setEnabled(false);
+        ui->TIME->setEnabled(false);
     }
     return true;
 }

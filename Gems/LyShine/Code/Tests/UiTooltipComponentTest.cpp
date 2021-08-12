@@ -163,11 +163,9 @@ namespace UnitTest
         SSystemGlobalEnvironment* prevEnv = gEnv;
         gEnv = &env;
         gEnv->pTimer = &m_timer;
+        gEnv->pLyShine = nullptr;
 
-        UiCanvasComponent* uiCanvasComponent;
-        UiTooltipDisplayComponent* uiTooltipDisplayComponent;
-        UiTooltipComponent* uiTooltipComponent;
-        std::tie(uiCanvasComponent, uiTooltipDisplayComponent, uiTooltipComponent) = CreateUiCanvasWithTooltip();
+        auto [uiCanvasComponent, uiTooltipDisplayComponent, uiTooltipComponent] = CreateUiCanvasWithTooltip();
         uiTooltipDisplayComponent->SetTriggerMode(UiTooltipDisplayInterface::TriggerMode::OnHover);
         AZ::Entity* uiTooltipEntity = uiTooltipComponent->GetEntity();
 
@@ -193,11 +191,9 @@ namespace UnitTest
         SSystemGlobalEnvironment* prevEnv = gEnv;
         gEnv = &env;
         gEnv->pTimer = &m_timer;
+        gEnv->pLyShine = nullptr;
 
-        UiCanvasComponent* uiCanvasComponent;
-        UiTooltipDisplayComponent* uiTooltipDisplayComponent;
-        UiTooltipComponent* uiTooltipComponent;
-        std::tie(uiCanvasComponent, uiTooltipDisplayComponent, uiTooltipComponent) = CreateUiCanvasWithTooltip();
+        auto [uiCanvasComponent, uiTooltipDisplayComponent, uiTooltipComponent] = CreateUiCanvasWithTooltip();
         uiTooltipDisplayComponent->SetTriggerMode(UiTooltipDisplayInterface::TriggerMode::OnHover);
         AZ::Entity* uiTooltipEntity = uiTooltipComponent->GetEntity();
 
@@ -221,11 +217,9 @@ namespace UnitTest
         SSystemGlobalEnvironment* prevEnv = gEnv;
         gEnv = &env;
         gEnv->pTimer = &m_timer;
+        gEnv->pLyShine = nullptr;
 
-        UiCanvasComponent* uiCanvasComponent;
-        UiTooltipDisplayComponent* uiTooltipDisplayComponent;
-        UiTooltipComponent* uiTooltipComponent;
-        std::tie(uiCanvasComponent, uiTooltipDisplayComponent, uiTooltipComponent) = CreateUiCanvasWithTooltip();
+        auto [uiCanvasComponent, uiTooltipDisplayComponent, uiTooltipComponent] = CreateUiCanvasWithTooltip();
         uiTooltipDisplayComponent->SetTriggerMode(UiTooltipDisplayInterface::TriggerMode::OnPress);
         AZ::Entity* uiTooltipEntity = uiTooltipComponent->GetEntity();
 
@@ -249,11 +243,9 @@ namespace UnitTest
         SSystemGlobalEnvironment* prevEnv = gEnv;
         gEnv = &env;
         gEnv->pTimer = &m_timer;
+        gEnv->pLyShine = nullptr;
 
-        UiCanvasComponent* uiCanvasComponent;
-        UiTooltipDisplayComponent* uiTooltipDisplayComponent;
-        UiTooltipComponent* uiTooltipComponent;
-        std::tie(uiCanvasComponent, uiTooltipDisplayComponent, uiTooltipComponent) = CreateUiCanvasWithTooltip();
+        auto [uiCanvasComponent, uiTooltipDisplayComponent, uiTooltipComponent] = CreateUiCanvasWithTooltip();
         uiTooltipDisplayComponent->SetTriggerMode(UiTooltipDisplayInterface::TriggerMode::OnPress);
         AZ::Entity* uiTooltipEntity = uiTooltipComponent->GetEntity();
 
@@ -277,11 +269,9 @@ namespace UnitTest
         SSystemGlobalEnvironment* prevEnv = gEnv;
         gEnv = &env;
         gEnv->pTimer = &m_timer;
+        gEnv->pLyShine = nullptr;
 
-        UiCanvasComponent* uiCanvasComponent;
-        UiTooltipDisplayComponent* uiTooltipDisplayComponent;
-        UiTooltipComponent* uiTooltipComponent;
-        std::tie(uiCanvasComponent, uiTooltipDisplayComponent, uiTooltipComponent) = CreateUiCanvasWithTooltip();
+        auto [uiCanvasComponent, uiTooltipDisplayComponent, uiTooltipComponent] = CreateUiCanvasWithTooltip();
         uiTooltipDisplayComponent->SetTriggerMode(UiTooltipDisplayInterface::TriggerMode::OnClick);
         AZ::Entity* uiTooltipEntity = uiTooltipComponent->GetEntity();
 

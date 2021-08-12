@@ -17,7 +17,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedT
         TEST_SUITE main
         PATH ${CMAKE_CURRENT_LIST_DIR}/test_Atom_MainSuite.py
         TEST_SERIAL
-        TIMEOUT 400
+        TIMEOUT 600
         RUNTIME_DEPENDENCIES
             AssetProcessor
             AutomatedTesting.Assets
@@ -39,7 +39,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_BUILD_TESTS_SUPPORTED AND AutomatedT
         TEST_SUITE main
         TEST_REQUIRES gpu
         TEST_SERIAL
-        TIMEOUT 800
+        TIMEOUT 1200
         PATH ${CMAKE_CURRENT_LIST_DIR}/test_Atom_GPUTests.py
         RUNTIME_DEPENDENCIES
             AssetProcessor

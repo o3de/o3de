@@ -311,7 +311,7 @@ namespace ScriptCanvasEditor
     {
         if (AZStd::wildcard_match("*.scriptcanvas", fullSourceFileName))
         {
-            return AzToolsFramework::AssetBrowser::SourceFileDetails("Icons/AssetBrowser/ScriptCanvas_16.png");
+            return AzToolsFramework::AssetBrowser::SourceFileDetails("Editor/Icons/AssetBrowser/ScriptCanvas_16.png");
         }
 
         // not one of our types.

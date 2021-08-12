@@ -434,6 +434,7 @@ set(FILES
     Preprocessor/Sequences.h
     RTTI/RTTI.h
     RTTI/TypeInfo.h
+    RTTI/TypeInfoSimple.h
     RTTI/ReflectContext.h
     RTTI/ReflectContext.cpp
     RTTI/ReflectionManager.h
@@ -462,6 +463,8 @@ set(FILES
     Script/ScriptTimePoint.h
     Script/ScriptProperty.h
     Script/ScriptProperty.cpp
+    Script/ScriptPropertySerializer.h
+    Script/ScriptPropertySerializer.cpp
     Script/ScriptPropertyTable.h
     Script/ScriptPropertyTable.cpp
     Script/ScriptPropertyWatcherBus.h
@@ -616,6 +619,16 @@ set(FILES
     Socket/AzSocket_fwd.h
     Socket/AzSocket.cpp
     Socket/AzSocket.h
+    Task/Internal/Task.cpp
+    Task/Internal/Task.inl
+    Task/Internal/Task.h
+    Task/Internal/TaskConfig.h
+    Task/TaskDescriptor.h
+    Task/TaskExecutor.cpp
+    Task/TaskExecutor.h
+    Task/TaskGraph.cpp
+    Task/TaskGraph.h
+    Task/TaskGraph.inl
     Threading/ThreadSafeDeque.h
     Threading/ThreadSafeDeque.inl
     Threading/ThreadSafeObject.h

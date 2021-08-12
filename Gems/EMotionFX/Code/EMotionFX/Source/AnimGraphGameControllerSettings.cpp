@@ -6,6 +6,8 @@
  *
  */
 
+#include <AzCore/Math/Crc.h>
+#include <AzCore/std/string/string_view.h>
 #include <EMotionFX/Source/AnimGraphGameControllerSettings.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
@@ -181,7 +183,7 @@ namespace EMotionFX
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     AnimGraphGameControllerSettings::AnimGraphGameControllerSettings()
-        : m_activePresetIndex(MCORE_INVALIDINDEX32)
+        : m_activePresetIndex(InvalidIndex)
     {
     }
 
@@ -230,50 +232,35 @@ namespace EMotionFX
 
     size_t AnimGraphGameControllerSettings::FindPresetIndexByName(const char* presetName) const
     {
-        const size_t presetCount = m_presets.size();
-        for (size_t i = 0; i < presetCount; ++i)
+        const auto foundPreset = AZStd::find_if(begin(m_presets), end(m_presets), [presetName](const Preset* preset)
         {
-            if (m_presets[i]->GetNameString() == presetName)
-            {
-                return i;
-            }
-        }
-
-        // return failure
-        return MCORE_INVALIDINDEX32;
+            return preset->GetNameString() == presetName;
+        });
+        return foundPreset != end(m_presets) ? AZStd::distance(begin(m_presets), foundPreset) : InvalidIndex;
     }
 
 
     size_t AnimGraphGameControllerSettings::FindPresetIndex(Preset* preset) const
     {
-        const size_t presetCount = m_presets.size();
-        for (size_t i = 0; i < presetCount; ++i)
-        {
-            if (m_presets[i] == preset)
-            {
-                return i;
-            }
-        }
-
-        // return failure
-        return MCORE_INVALIDINDEX32;
+        const auto foundPreset = AZStd::find(begin(m_presets), end(m_presets), preset);
+        return foundPreset != end(m_presets) ? AZStd::distance(begin(m_presets), foundPreset) : InvalidIndex;
     }
 
 
     void AnimGraphGameControllerSettings::SetActivePreset(Preset* preset)
     {
-        m_activePresetIndex = static_cast<AZ::u32>(FindPresetIndex(preset));
+        m_activePresetIndex = FindPresetIndex(preset);
     }
 
 
-    uint32 AnimGraphGameControllerSettings::GetActivePresetIndex() const
+    size_t AnimGraphGameControllerSettings::GetActivePresetIndex() const
     {
         if (m_activePresetIndex < m_presets.size())
         {
             return m_activePresetIndex;
         }
 
-        return MCORE_INVALIDINDEX32;
+        return InvalidIndex;
     }
 
 
@@ -384,6 +371,22 @@ namespace EMotionFX
     }
 
 
+    static bool AnimGraphGameControllerSettingsVersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& element)
+    {
+        if (element.GetVersion() < 2)
+        {
+            constexpr AZStd::string_view activePresetIndex{"activePresetIndex"};
+            if (AZ::SerializeContext::DataElementNode* presetIndexElement = element.FindSubElement(AZ::Crc32(activePresetIndex)))
+            {
+                uint32 value;
+                presetIndexElement->GetData(value);
+                presetIndexElement->Convert<AZ::u64>(context);
+                presetIndexElement->SetData(context, static_cast<AZ::u64>(value));
+            }
+        }
+        return true;
+    }
+
     void AnimGraphGameControllerSettings::Reflect(AZ::ReflectContext* context)
     {
         ParameterInfo::Reflect(context);
@@ -398,7 +401,7 @@ namespace EMotionFX
         }
 
         serializeContext->Class<AnimGraphGameControllerSettings>()
-            ->Version(1)
+            ->Version(2, &AnimGraphGameControllerSettingsVersionConverter)
             ->Field("activePresetIndex", &AnimGraphGameControllerSettings::m_activePresetIndex)
             ->Field("presets", &AnimGraphGameControllerSettings::m_presets)
             ;

@@ -48,7 +48,7 @@ namespace Config
             }
         }
 
-        return NULL;
+        return nullptr;
     }
 
     const IConfigVar* CConfigGroup::GetVar(const char* szName) const
@@ -63,7 +63,7 @@ namespace Config
             }
         }
 
-        return NULL;
+        return nullptr;
     }
 
     IConfigVar* CConfigGroup::GetVar(uint index)
@@ -73,7 +73,7 @@ namespace Config
             return m_vars[index];
         }
 
-        return NULL;
+        return nullptr;
     }
 
     const IConfigVar* CConfigGroup::GetVar(uint index) const
@@ -83,7 +83,7 @@ namespace Config
             return m_vars[index];
         }
 
-        return NULL;
+        return nullptr;
     }
 
     void CConfigGroup::SaveToXML(XmlNodeRef node)
@@ -127,9 +127,9 @@ namespace Config
 
                     case IConfigVar::eType_STRING:
                     {
-                        string currentValue = 0;
+                        AZStd::string currentValue;
                         var->Get(&currentValue);
-                        node->setAttr(szName, currentValue);
+                        node->setAttr(szName, currentValue.c_str());
                         break;
                     }
                     }
@@ -186,7 +186,7 @@ namespace Config
 
                 case IConfigVar::eType_STRING:
                 {
-                    string currentValue = 0;
+                    AZStd::string currentValue;
                     var->GetDefault(&currentValue);
                     QString readValue(currentValue.c_str());
                     if (node->getAttr(szName, readValue))

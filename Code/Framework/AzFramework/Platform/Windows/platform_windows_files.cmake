@@ -18,7 +18,6 @@ set(FILES
     AzFramework/Process/ProcessCommunicator_Win.cpp
     ../Common/WinAPI/AzFramework/IO/LocalFileIO_WinAPI.cpp
     AzFramework/IO/LocalFileIO_Windows.cpp
-    ../Common/WinAPI/AzFramework/Network/AssetProcessorConnection_WinAPI.cpp
     ../Common/Unimplemented/AzFramework/StreamingInstall/StreamingInstall_Unimplemented.cpp
     AzFramework/TargetManagement/TargetManagementComponent_Windows.cpp
     AzFramework/Windowing/NativeWindow_Windows.cpp

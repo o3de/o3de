@@ -9,6 +9,7 @@
 #include "CryFile.h"
 #include "PerforceSourceControl.h"
 #include "PasswordDlg.h"
+#include <CryCommon/CryThread.h>
 
 #include <QSettings>
 #include <QDir>
@@ -56,7 +57,7 @@ void CPerforceSourceControl::ShowSettings()
 
 void CPerforceSourceControl::SetSourceControlState(SourceControlState state)
 {
-    AUTO_LOCK(g_cPerforceValues);
+    CryAutoLock<CryCriticalSection> lock(g_cPerforceValues);
 
     switch (state)
     {

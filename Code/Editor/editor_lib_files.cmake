@@ -498,9 +498,7 @@ set(FILES
     UndoViewPosition.h
     UndoViewRotation.h
     Util/GeometryUtil.h
-    Util/IXmlHistoryManager.h
     Util/KDTree.h
-    Util/XmlHistoryManager.h
     WipFeaturesDlg.h
     WipFeaturesDlg.ui
     WipFeaturesDlg.qrc
@@ -724,8 +722,6 @@ set(FILES
     Util/GuidUtil.cpp
     Util/GuidUtil.h
     Util/IObservable.h
-    Util/IndexedFiles.cpp
-    Util/IndexedFiles.h
     Util/KDTree.cpp
     Util/Mailer.h
     Util/NamedData.cpp
@@ -737,14 +733,12 @@ set(FILES
     Util/PredefinedAspectRatios.h
     Util/StringHelpers.cpp
     Util/StringHelpers.h
-    Util/StringNoCasePredicate.h
     Util/TRefCountBase.h
     Util/Triangulate.cpp
     Util/Triangulate.h
     Util/Util.h
     Util/XmlArchive.cpp
     Util/XmlArchive.h
-    Util/XmlHistoryManager.cpp
     Util/XmlTemplate.cpp
     Util/XmlTemplate.h
     Util/bitarray.h
@@ -805,10 +799,6 @@ set(FILES
     EditorViewportCamera.h
     ViewportManipulatorController.cpp
     ViewportManipulatorController.h
-    LegacyViewportCameraController.cpp
-    LegacyViewportCameraController.h
-    RenderViewport.cpp
-    RenderViewport.h
     TopRendererWnd.cpp
     TopRendererWnd.h
     ViewManager.cpp

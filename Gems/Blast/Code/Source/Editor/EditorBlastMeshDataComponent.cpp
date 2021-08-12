@@ -45,10 +45,10 @@ namespace Blast
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<EditorBlastMeshDataComponent, AzToolsFramework::Components::EditorComponentBase>()
-                ->Version(4)
+                ->Version(5)
                 ->Field("Show Mesh Assets", &EditorBlastMeshDataComponent::m_showMeshAssets)
                 ->Field("Mesh Assets", &EditorBlastMeshDataComponent::m_meshAssets)
-                ->Field("Blast Slice", &EditorBlastMeshDataComponent::m_blastSliceAsset);
+                ->Field("Blast Chunks", &EditorBlastMeshDataComponent::m_blastChunksAsset);
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
@@ -61,7 +61,7 @@ namespace Blast
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->Attribute(
                         AZ::Edit::Attributes::HelpPageURL,
-                        "https://o3de.org/docs/user-guide/components/reference/blast-family-mesh-data/")
+                        "https://o3de.org/docs/user-guide/components/reference/destruction/blast-family-mesh-data/")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
                         AZ::Edit::UIHandlers::CheckBox, &EditorBlastMeshDataComponent::m_showMeshAssets,
@@ -77,9 +77,9 @@ namespace Blast
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorBlastMeshDataComponent::OnMeshAssetsChanged)
                     ->DataElement(
-                        AZ::Edit::UIHandlers::Default, &EditorBlastMeshDataComponent::m_blastSliceAsset, "Blast Slice",
-                        "Slice override to fill out meshes and material")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorBlastMeshDataComponent::OnSliceAssetChanged);
+                        AZ::Edit::UIHandlers::Default, &EditorBlastMeshDataComponent::m_blastChunksAsset, "Blast Chunks",
+                        "Manifest override to fill out meshes and material")
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorBlastMeshDataComponent::OnBlastChunksAssetChanged);
             }
         }
     }
@@ -107,23 +107,27 @@ namespace Blast
         UnregisterModel();
     }
 
-    void EditorBlastMeshDataComponent::OnSliceAssetChanged()
+    void EditorBlastMeshDataComponent::OnBlastChunksAssetChanged()
     {
-        if (!m_blastSliceAsset.GetId().IsValid())
+        if (!m_blastChunksAsset.GetId().IsValid())
         {
             return;
         }
 
         using namespace AZ::Data;
+        const AssetId blastAssetId = m_blastChunksAsset.GetId();
+        m_blastChunksAsset = AssetManager::Instance().GetAsset<BlastChunksAsset>(blastAssetId, AssetLoadBehavior::QueueLoad);
+        m_blastChunksAsset.BlockUntilLoadComplete();
 
-        const AssetId blastAssetId = m_blastSliceAsset.GetId();
-        m_blastSliceAsset =
-            AssetManager::Instance().GetAsset<BlastSliceAsset>(blastAssetId, AssetLoadBehavior::QueueLoad);
-        m_blastSliceAsset.BlockUntilLoadComplete();
+        if (!m_blastChunksAsset.Get() || m_blastChunksAsset.Get()->GetModelAssetIds().empty())
+        {
+            AZ_Warning("blast", false, "Blast Chunk Asset does not contain any models.")
+            return;
+        }
 
         // load up the new mesh list
         m_meshAssets.clear();
-        for (const auto& meshId : m_blastSliceAsset.Get()->GetMeshIdList())
+        for (const auto& meshId : m_blastChunksAsset.Get()->GetModelAssetIds())
         {
             auto meshAsset = AssetManager::Instance().GetAsset<AZ::RPI::ModelAsset>(meshId, AssetLoadBehavior::QueueLoad);
             if (meshAsset)
@@ -135,8 +139,8 @@ namespace Blast
         UnregisterModel();
         RegisterModel();
 
-        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
+        using namespace AzToolsFramework;
+        ToolsApplicationEvents::Bus::Broadcast(&ToolsApplicationEvents::InvalidatePropertyDisplay, Refresh_EntireTree);
     }
 
     void EditorBlastMeshDataComponent::OnMeshAssetsChanged()
@@ -205,9 +209,9 @@ namespace Blast
         gameEntity->CreateComponent<BlastMeshDataComponent>(m_meshAssets);
     }
 
-    const AZ::Data::Asset<BlastSliceAsset>& EditorBlastMeshDataComponent::GetBlastSliceAsset() const
+    const AZ::Data::Asset<BlastChunksAsset>& EditorBlastMeshDataComponent::GetBlastChunksAsset() const
     {
-        return m_blastSliceAsset;
+        return m_blastChunksAsset;
     }
 
     const AZStd::vector<AZ::Data::Asset<AZ::RPI::ModelAsset>>& EditorBlastMeshDataComponent::GetMeshAssets() const

@@ -170,14 +170,14 @@ private:
 
     struct SScriptPropertyParamInfo
     {
-        string variableName;
-        string displayName;
+        AZStd::string variableName;
+        AZStd::string displayName;
         bool isVectorTable;
         SParamInfo animNodeParamInfo;
     };
 
     std::vector< SScriptPropertyParamInfo > m_entityScriptPropertiesParamInfos;
-    typedef AZStd::unordered_map< string, size_t, stl::hash_string_caseless<string>, stl::equality_string_caseless<string> > TScriptPropertyParamInfoMap;
+    typedef AZStd::unordered_map<AZStd::string, size_t, stl::hash_string_caseless<AZStd::string>, stl::equality_string_caseless<AZStd::string> > TScriptPropertyParamInfoMap;
     TScriptPropertyParamInfoMap m_nameToScriptPropertyParamInfo;
     #ifdef CHECK_FOR_TOO_MANY_ONPROPERTY_SCRIPT_CALLS
     uint32 m_OnPropertyCalls;

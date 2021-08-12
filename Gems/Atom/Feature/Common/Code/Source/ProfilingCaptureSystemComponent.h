@@ -12,6 +12,7 @@
 #include <AzCore/Component/TickBus.h>
 
 #include <Atom/Feature/Utils/ProfilingCaptureBus.h>
+#include <Atom/RHI/CpuProfiler.h>
 
 namespace AZ
 {
@@ -68,8 +69,11 @@ namespace AZ
 
             // ProfilingCaptureRequestBus overrides...
             bool CapturePassTimestamp(const AZStd::string& outputFilePath) override;
+            bool CaptureCpuFrameTime(const AZStd::string& outputFilePath) override;
             bool CapturePassPipelineStatistics(const AZStd::string& outputFilePath) override;
             bool CaptureCpuProfilingStatistics(const AZStd::string& outputFilePath) override;
+            bool BeginContinuousCpuProfilingCapture() override;
+            bool EndContinuousCpuProfilingCapture(const AZStd::string& outputFilePath) override;
             bool CaptureBenchmarkMetadata(const AZStd::string& benchmarkName, const AZStd::string& outputFilePath) override;
 
         private:
@@ -81,9 +85,15 @@ namespace AZ
             AZStd::vector<AZ::RPI::Pass*> FindPasses(AZStd::vector<AZStd::string>&& passHierarchy) const;
 
             DelayedQueryCaptureHelper m_timestampCapture;
+            DelayedQueryCaptureHelper m_cpuFrameTimeStatisticsCapture;
             DelayedQueryCaptureHelper m_pipelineStatisticsCapture;
             DelayedQueryCaptureHelper m_cpuProfilingStatisticsCapture;
             DelayedQueryCaptureHelper m_benchmarkMetadataCapture;
+
+            // Flag passed by reference to the CPU profiling data serialization job, blocks new continuous capture requests when set.
+            AZStd::atomic_bool m_cpuDataSerializationInProgress = false;
+            
+            AZStd::thread m_cpuDataSerializationThread;
         };
     }
 }

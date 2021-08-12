@@ -75,11 +75,7 @@ public:
 
     void SetGlobalSelection(const char* resourceType, const char* value) override
     {
-        if (!resourceType)
-        {
-            return;
-        }
-        if (!value)
+        if (!resourceType || !value)
         {
             return;
         }
@@ -101,10 +97,10 @@ public:
     }
 
 private:
-    typedef std::map<string, const SStaticResourceSelectorEntry*, stl::less_stricmp<string> > TTypeMap;
+    using TTypeMap = std::map<AZStd::string, const SStaticResourceSelectorEntry *, stl::less_stricmp<AZStd::string>>;
     TTypeMap m_typeMap;
 
-    std::map<string, string> m_globallySelectedResources;
+    std::map<AZStd::string, AZStd::string> m_globallySelectedResources;
 };
 
 // ---------------------------------------------------------------------------

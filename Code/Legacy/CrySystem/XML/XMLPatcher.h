@@ -59,7 +59,7 @@ protected:
         AZ::IO::HandleType                                  inFileHandle,
         int                                                 inIndent,
         const XmlNodeRef& inNode,
-        CryFixedStringT<512>* ioTempString);
+        AZStd::fixed_string<512>* ioTempString);
     void                                                DumpFiles(
         const char* pInXMLFileName,
         const XmlNodeRef& inBefore,

@@ -18,7 +18,6 @@
 #include "UiAnimViewSequenceManager.h"
 #include "Objects/EntityObject.h"
 #include "ViewManager.h"
-#include "RenderViewport.h"
 #include "Clipboard.h"
 
 #include <AzCore/Math/Crc.h>
@@ -1100,7 +1099,7 @@ bool CUiAnimViewAnimNode::SetName(const char* pName)
         }
     }
 
-    string oldName = GetName();
+    AZStd::string oldName = GetName();
     m_pAnimNode->SetName(pName);
 
     if (UiAnimUndo::IsRecording())
@@ -1108,7 +1107,7 @@ bool CUiAnimViewAnimNode::SetName(const char* pName)
         UiAnimUndo::Record(new CUndoAnimNodeRename(this, oldName));
     }
 
-    GetSequence()->OnNodeRenamed(this, oldName);
+    GetSequence()->OnNodeRenamed(this, oldName.c_str());
 
     return true;
 }
