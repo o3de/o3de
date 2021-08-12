@@ -132,14 +132,12 @@ void SRemoteServer::StopServer()
     m_bAcceptClients = false;
     AZ::AzSock::CloseSocket(m_socket);
     m_socket = SOCKET_ERROR;
-    {
-        AZStd::scoped_lock lock(m_mutex);
-        for (TClients::iterator it = m_clients.begin(); it != m_clients.end(); ++it)
-        {
-            it->pClient->StopClient();
-        }
-    }
+
     AZStd::unique_lock<AZStd::recursive_mutex> lock(m_mutex);
+    for (TClients::iterator it = m_clients.begin(); it != m_clients.end(); ++it)
+    {
+        it->pClient->StopClient();
+    }
     m_stopCondition.wait(lock, [this] { return m_clients.empty(); });
 }
 
