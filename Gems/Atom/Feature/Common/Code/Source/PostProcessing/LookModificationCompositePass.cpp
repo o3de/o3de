@@ -173,9 +173,9 @@ namespace AZ
                 {
                     m_shaderResourceGroup->SetImageView(m_shaderColorGradingLutImageIndex, m_blendedColorGradingLut.m_lutImageView.get());
 
-                    m_shaderResourceGroup->SetConstant(m_shaderColorGradingShaperTypeIndex, m_colorGradingShaperParams.type);
-                    m_shaderResourceGroup->SetConstant(m_shaderColorGradingShaperBiasIndex, m_colorGradingShaperParams.bias);
-                    m_shaderResourceGroup->SetConstant(m_shaderColorGradingShaperScaleIndex, m_colorGradingShaperParams.scale);
+                    m_shaderResourceGroup->SetConstant(m_shaderColorGradingShaperTypeIndex, m_colorGradingShaperParams.m_type);
+                    m_shaderResourceGroup->SetConstant(m_shaderColorGradingShaperBiasIndex, m_colorGradingShaperParams.m_bias);
+                    m_shaderResourceGroup->SetConstant(m_shaderColorGradingShaperScaleIndex, m_colorGradingShaperParams.m_scale);
                 }
             }
 

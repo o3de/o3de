@@ -151,9 +151,9 @@ namespace AZ
             {
                 m_shaderResourceGroup->SetImageView(m_shaderInputBlendedLutImageIndex, m_blendedLut.m_lutImageView.get());
                 m_shaderResourceGroup->SetConstant(m_shaderInputBlendedLutDimensionsIndex, m_blendedLutDimensions);
-                m_shaderResourceGroup->SetConstant(m_shaderInputBlendedLutShaperTypeIndex, m_blendedLutShaperParams.type);
-                m_shaderResourceGroup->SetConstant(m_shaderInputBlendededLutShaperBiasIndex, m_blendedLutShaperParams.bias);
-                m_shaderResourceGroup->SetConstant(m_shaderInputBlendededLutShaperScaleIndex, m_blendedLutShaperParams.scale);
+                m_shaderResourceGroup->SetConstant(m_shaderInputBlendedLutShaperTypeIndex, m_blendedLutShaperParams.m_type);
+                m_shaderResourceGroup->SetConstant(m_shaderInputBlendededLutShaperBiasIndex, m_blendedLutShaperParams.m_bias);
+                m_shaderResourceGroup->SetConstant(m_shaderInputBlendededLutShaperScaleIndex, m_blendedLutShaperParams.m_scale);
                 m_shaderResourceGroup->SetConstant(m_shaderInputWeight0Index, m_weights[0]);
                 m_shaderResourceGroup->SetConstant(m_shaderInputWeight1Index, m_weights[1]);
                 m_shaderResourceGroup->SetConstant(m_shaderInputWeight2Index, m_weights[2]);
@@ -163,33 +163,33 @@ namespace AZ
                 if (m_colorGradingLuts[0].m_lutStreamingImage)
                 {
                     m_shaderResourceGroup->SetImageView(m_shaderInputSourceLut1ImageIndex, m_colorGradingLuts[0].m_lutStreamingImage->GetImageView());
-                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut1ShaperTypeIndex, m_colorGradingShaperParams[0].type);
-                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut1ShaperBiasIndex, m_colorGradingShaperParams[0].bias);
-                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut1ShaperScaleIndex, m_colorGradingShaperParams[0].scale);
+                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut1ShaperTypeIndex, m_colorGradingShaperParams[0].m_type);
+                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut1ShaperBiasIndex, m_colorGradingShaperParams[0].m_bias);
+                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut1ShaperScaleIndex, m_colorGradingShaperParams[0].m_scale);
                 }
 
                 if (m_colorGradingLuts[1].m_lutStreamingImage)
                 {
                     m_shaderResourceGroup->SetImageView(m_shaderInputSourceLut2ImageIndex, m_colorGradingLuts[1].m_lutStreamingImage->GetImageView());
-                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut2ShaperTypeIndex, m_colorGradingShaperParams[1].type);
-                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut2ShaperBiasIndex, m_colorGradingShaperParams[1].bias);
-                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut2ShaperScaleIndex, m_colorGradingShaperParams[1].scale);
+                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut2ShaperTypeIndex, m_colorGradingShaperParams[1].m_type);
+                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut2ShaperBiasIndex, m_colorGradingShaperParams[1].m_bias);
+                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut2ShaperScaleIndex, m_colorGradingShaperParams[1].m_scale);
                 }
 
                 if (m_colorGradingLuts[2].m_lutStreamingImage)
                 {
                     m_shaderResourceGroup->SetImageView(m_shaderInputSourceLut3ImageIndex, m_colorGradingLuts[2].m_lutStreamingImage->GetImageView());
-                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut3ShaperTypeIndex, m_colorGradingShaperParams[2].type);
-                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut3ShaperBiasIndex, m_colorGradingShaperParams[2].bias);
-                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut3ShaperScaleIndex, m_colorGradingShaperParams[2].scale);
+                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut3ShaperTypeIndex, m_colorGradingShaperParams[2].m_type);
+                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut3ShaperBiasIndex, m_colorGradingShaperParams[2].m_bias);
+                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut3ShaperScaleIndex, m_colorGradingShaperParams[2].m_scale);
                 }
 
                 if (m_colorGradingLuts[3].m_lutStreamingImage)
                 {
                     m_shaderResourceGroup->SetImageView(m_shaderInputSourceLut4ImageIndex, m_colorGradingLuts[3].m_lutStreamingImage->GetImageView());
-                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut4ShaperTypeIndex, m_colorGradingShaperParams[3].type);
-                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut4ShaperBiasIndex, m_colorGradingShaperParams[3].bias);
-                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut4ShaperScaleIndex, m_colorGradingShaperParams[3].scale);
+                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut4ShaperTypeIndex, m_colorGradingShaperParams[3].m_type);
+                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut4ShaperBiasIndex, m_colorGradingShaperParams[3].m_bias);
+                    m_shaderResourceGroup->SetConstant(m_shaderInputSourceLut4ShaperScaleIndex, m_colorGradingShaperParams[3].m_scale);
                 }
 
                 if (m_shaderResourceGroup->HasShaderVariantKeyFallbackEntry())
@@ -309,7 +309,7 @@ namespace AZ
                                 one_over[current] = 1.f - over[lutIndex];
                                 m_colorGradingLutAssets[current] = lutBlendItem.m_assetId;
                                 m_colorGradingShaperPresets[current] = lutBlendItem.m_shaperPreset;
-                                m_colorGradingShaperParams[current] = AcesDisplayMapperFeatureProcessor::GetShaperParameters(m_colorGradingShaperPresets[lutIndex]);
+                                m_colorGradingShaperParams[current] = AcesDisplayMapperFeatureProcessor::GetShaperParameters(m_colorGradingShaperPresets[lutIndex], lutBlendItem.m_customMinExposure, lutBlendItem.m_customMaxExposure);
                                 current++;
                                 if (current == LookModificationSettings::MaxBlendLuts)
                                 {

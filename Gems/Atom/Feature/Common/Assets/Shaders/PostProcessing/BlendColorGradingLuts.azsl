@@ -68,11 +68,11 @@ float3 ShaperToLinear(float3 shaperColor, ShaperType shaperType, float shaperBia
     float3 linearColor = shaperColor;
     if (shaperType == ShaperType::ShaperLinear)
     {
-        linearColor = (shaperColor - shaperBias)/shaperScale;
+        linearColor = (shaperColor - shaperBias) / shaperScale;
     }
     else if (shaperType == ShaperType::ShaperLog2)
     {
-        linearColor = pow(2.0, (shaperColor - shaperBias)/shaperScale);
+        linearColor = pow(2.0, (shaperColor - shaperBias) / shaperScale);
     }
     return linearColor;
 }

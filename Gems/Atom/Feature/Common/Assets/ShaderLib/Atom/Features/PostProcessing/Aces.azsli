@@ -90,7 +90,8 @@ static const float DIM_SURROUND_GAMMA = 0.9811;
 enum class ShaperType
 {
     ShaperLinear,
-    ShaperLog2
+    ShaperLog2,
+    PqSmpteSt2084,
 };
 
 ////////////////////////////////////////////////////////////////////////////////
