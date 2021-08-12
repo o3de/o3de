@@ -61,6 +61,25 @@ class BenchmarkHelper(object):
             general.log('Failed to capture pass timestamps.')
         return self.capturedData
 
+    def capture_cpu_frame_time(self, frame_number):
+        """
+        Capture CPU frame times and block further execution until it has been written to the disk.
+        """
+        self.handler = azlmbr.atom.ProfilingCaptureNotificationBusHandler()
+        self.handler.connect()
+        self.handler.add_callback('OnCaptureCpuFrameTimeFinished', self.on_data_captured)
+
+        self.done = False
+        self.capturedData = False
+        success = azlmbr.atom.ProfilingCaptureRequestBus(
+            azlmbr.bus.Broadcast, "CaptureCpuFrameTime", f'{self.output_path}/cpu_frame{frame_number}_time.json')
+        if success:
+            self.wait_until_data()
+            general.log('CPU frame time captured.')
+        else:
+            general.log('Failed to capture CPU frame time.')
+        return self.capturedData
+
     def on_data_captured(self, parameters):
         # the parameters come in as a tuple
         if parameters[0]:

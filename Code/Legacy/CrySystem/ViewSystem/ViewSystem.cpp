@@ -26,7 +26,7 @@
         if (count > 0)                                                                                              \
         {                                                                                                           \
             const size_t memSize = count * sizeof(IViewSystemListener*);                                            \
-            PREFAST_SUPPRESS_WARNING(6255) IViewSystemListener * *pArray = (IViewSystemListener**) alloca(memSize); \
+            IViewSystemListener* *pArray = (IViewSystemListener**) alloca(memSize);                                 \
             memcpy(pArray, &*m_listeners.begin(), memSize);                                                         \
             while (count--)                                                                                         \
             {                                                                                                       \
@@ -253,7 +253,7 @@ void CViewSystem::Update(float frameTime)
                 }
             }
 
-            m_pSystem->SetViewCamera(rCamera);
+            AZ_ErrorOnce("CryLegacy", false, "CryLegacy view system no longer available (CViewSystem::Update)");
         }
     }
 
@@ -557,23 +557,7 @@ void CViewSystem::SetOverrideCameraRotation(bool bOverride, Quat rotation)
 //////////////////////////////////////////////////////////////////////////
 void CViewSystem::UpdateSoundListeners()
 {
-    assert(gEnv->IsEditor() && !gEnv->IsEditorGameMode());
-
-    // In Editor we may want to control global listeners outside of the game view.
-    if (m_bControlsAudioListeners)
-    {
-        IView* const pActiveView = static_cast<IView*>(GetActiveView());
-        TViewMap::const_iterator Iter(m_views.begin());
-        TViewMap::const_iterator const IterEnd(m_views.end());
-
-        for (; Iter != IterEnd; ++Iter)
-        {
-            IView* const pView = Iter->second;
-            bool const bIsActive = (pView == pActiveView);
-            CCamera const& rCamera = bIsActive ? gEnv->pSystem->GetViewCamera() : pView->GetCamera();
-            pView->UpdateAudioListener(rCamera.GetMatrix());
-        }
-    }
+    AZ_ErrorOnce("CryLegacy", false, "CryLegacy view system no longer available (CViewSystem::UpdateSoundListeners)");
 }
 
 //////////////////////////////////////////////////////////////////

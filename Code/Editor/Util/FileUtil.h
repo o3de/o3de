@@ -9,7 +9,6 @@
 
 #pragma once
 
-#include "StringUtils.h"
 #include "../Include/SandboxAPI.h"
 #include <QString>
 #include <QFileInfo>

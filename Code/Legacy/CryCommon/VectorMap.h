@@ -14,7 +14,7 @@
 #define CRYINCLUDE_CRYCOMMON_VECTORMAP_H
 #pragma once
 
-#include <StlUtils.h> // for stl::free_container
+#include <CryCommon/StlUtils.h>
 
 //--------------------------------------------------------------------------
 // VectorMap

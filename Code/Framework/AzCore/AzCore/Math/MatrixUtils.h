@@ -64,4 +64,8 @@ namespace AZ
     //! Transforms a position by a matrix. This function can be used with any generic cases which include projection matrices.
     Vector3 MatrixTransformPosition(const Matrix4x4& matrix, const Vector3& inPosition);
 
+
+    void SetPerspectiveMatrixFOV(Matrix4x4& out, float fovY, float aspectRatio);
+    float GetPerspectiveMatrixFOV(const Matrix4x4& m);
+
 } // namespace AZ

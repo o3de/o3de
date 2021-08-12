@@ -73,8 +73,8 @@ namespace EMotionFX
         UpdateAllIncomingNodes(animGraphInstance, timePassedInSeconds);
 
         // if there are less than two incoming connections, there is nothing to do
-        const size_t numConnections = mConnections.size();
-        if (numConnections < 2 || mDisabled)
+        const size_t numConnections = m_connections.size();
+        if (numConnections < 2 || m_disabled)
         {
             GetOutputFloat(animGraphInstance, OUTPUTPORT_WEIGHT)->SetValue(0.0f);
             return;

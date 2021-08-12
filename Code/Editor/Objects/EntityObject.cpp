@@ -56,18 +56,18 @@ public:
     }
 
 protected:
-    virtual void Release() { delete this; };
-    virtual int GetSize() { return sizeof(*this); }; // Return size of xml state.
-    virtual QString GetDescription() { return "Entity Link"; };
-    virtual QString GetObjectName(){ return ""; };
+    void Release() override { delete this; };
+    int GetSize() override { return sizeof(*this); }; // Return size of xml state.
+    QString GetDescription() override { return "Entity Link"; };
+    QString GetObjectName() override{ return ""; };
 
-    virtual void Undo([[maybe_unused]] bool bUndo)
+    void Undo([[maybe_unused]] bool bUndo) override
     {
         for (int i = 0, iLinkSize(m_Links.size()); i < iLinkSize; ++i)
         {
             SLink& link = m_Links[i];
             CBaseObject* pObj = GetIEditor()->GetObjectManager()->FindObject(link.entityID);
-            if (pObj == NULL)
+            if (pObj == nullptr)
             {
                 continue;
             }
@@ -83,7 +83,7 @@ protected:
             pEntity->LoadLink(link.linkXmlNode->getChild(0));
         }
     }
-    virtual void Redo(){}
+    void Redo() override{}
 
 private:
 
@@ -109,7 +109,7 @@ public:
         , m_bAttach(bAttach)
     {}
 
-    virtual void Undo([[maybe_unused]] bool bUndo) override
+    void Undo([[maybe_unused]] bool bUndo) override
     {
         if (!m_bAttach)
         {
@@ -117,7 +117,7 @@ public:
         }
     }
 
-    virtual void Redo() override
+    void Redo() override
     {
         if (m_bAttach)
         {
@@ -138,8 +138,8 @@ private:
         }
     }
 
-    virtual int GetSize() { return sizeof(CUndoAttachEntity); }
-    virtual QString GetDescription() { return "Attachment Changed"; }
+    int GetSize() override { return sizeof(CUndoAttachEntity); }
+    QString GetDescription() override { return "Attachment Changed"; }
 
     GUID m_attachedEntityGUID;
     CEntityObject::EAttachmentType m_attachmentType;
@@ -167,7 +167,7 @@ CEntityObject::CEntityObject()
 {
     m_bLoadFailed = false;
 
-    m_visualObject = 0;
+    m_visualObject = nullptr;
 
     m_box.min.Set(0, 0, 0);
     m_box.max.Set(0, 0, 0);
@@ -225,7 +225,7 @@ CEntityObject::CEntityObject()
     mv_ratioLOD.SetLimits(0, 255);
     mv_viewDistanceMultiplier.SetLimits(0.0f, IRenderNode::VIEW_DISTANCE_MULTIPLIER_MAX);
 
-    m_physicsState = 0;
+    m_physicsState = nullptr;
 
     m_attachmentType = eAT_Pivot;
 
@@ -540,7 +540,7 @@ IVariable* CEntityObject::FindVariableInSubBlock(CVarBlockPtr& properties, IVari
 //////////////////////////////////////////////////////////////////////////
 void CEntityObject::AdjustLightProperties(CVarBlockPtr& properties, const char* pSubBlock)
 {
-    IVariable* pSubBlockVar = pSubBlock ? properties->FindVariable(pSubBlock) : NULL;
+    IVariable* pSubBlockVar = pSubBlock ? properties->FindVariable(pSubBlock) : nullptr;
 
     if (IVariable* pRadius = FindVariableInSubBlock(properties, pSubBlockVar, "Radius"))
     {
@@ -933,7 +933,7 @@ void CEntityObject::Serialize(CObjectArchive& ar)
             {
                 XmlNodeRef eventTarget = eventTargets->getChild(i);
                 CEntityEventTarget et;
-                et.target = 0;
+                et.target = nullptr;
                 GUID targetId = GUID_NULL;
                 eventTarget->getAttr("TargetId", targetId);
                 eventTarget->getAttr("Event", et.event);
@@ -1029,7 +1029,7 @@ void CEntityObject::Serialize(CObjectArchive& ar)
             {
                 CEntityEventTarget& et = m_eventTargets[i];
                 GUID targetId = GUID_NULL;
-                if (et.target != 0)
+                if (et.target != nullptr)
                 {
                     targetId = et.target->GetId();
                 }
@@ -1060,7 +1060,7 @@ XmlNodeRef CEntityObject::Export([[maybe_unused]] const QString& levelPath, XmlN
 {
     if (m_bLoadFailed)
     {
-        return 0;
+        return nullptr;
     }
 
     // Do not export entity with bad id.
@@ -1268,7 +1268,7 @@ void CEntityObject::OnEvent(ObjectEvent event)
         IObjectManager* objMan = GetIEditor()->GetObjectManager();
         if (objMan && objMan->IsLightClass(this))
         {
-            OnPropertyChange(NULL);
+            OnPropertyChange(nullptr);
         }
         break;
     }
@@ -1314,7 +1314,7 @@ IVariable* CEntityObject::GetLightVariable(const char* name0) const
             {
                 IVariable* pChild = pLightProperties->GetVariable(i);
 
-                if (pChild == NULL)
+                if (pChild == nullptr)
                 {
                     continue;
                 }
@@ -1341,7 +1341,7 @@ QString CEntityObject::GetLightAnimation() const
         {
             IVariable* pChild = pStyleGroup->GetVariable(i);
 
-            if (pChild == NULL)
+            if (pChild == nullptr)
             {
                 continue;
             }
@@ -1617,7 +1617,7 @@ void CEntityObject::RemoveEventTarget(int index, [[maybe_unused]] bool bUpdateSc
 //////////////////////////////////////////////////////////////////////////
 int CEntityObject::AddEntityLink(const QString& name, GUID targetEntityId)
 {
-    CEntityObject* target = 0;
+    CEntityObject* target = nullptr;
     if (targetEntityId != GUID_NULL)
     {
         CBaseObject* pObject = FindObject(targetEntityId);
@@ -1635,7 +1635,7 @@ int CEntityObject::AddEntityLink(const QString& name, GUID targetEntityId)
 
     StoreUndo("Add EntityLink");
 
-    CLineGizmo* pLineGizmo = 0;
+    CLineGizmo* pLineGizmo = nullptr;
 
     // Assign event target.
     if (target)
@@ -1968,7 +1968,7 @@ void CEntityObject::ResetCallbacks()
 
         //@FIXME Hack to display radii of properties.
         // wires properties from param block, to this entity internal variables.
-        IVariable* var = 0;
+        IVariable* var = nullptr;
         var = pProperties->FindVariable("Radius", false);
         if (var && (var->GetType() == IVariable::FLOAT || var->GetType() == IVariable::INT))
         {
@@ -2194,7 +2194,7 @@ template <typename T>
 T CEntityObject::GetEntityProperty(const char* pName, T defaultvalue) const
 {
     CVarBlock* pProperties = GetProperties2();
-    IVariable* pVariable = NULL;
+    IVariable* pVariable = nullptr;
     if (pProperties)
     {
         pVariable = pProperties->FindVariable(pName);
@@ -2228,7 +2228,7 @@ template <typename T>
 void CEntityObject::SetEntityProperty(const char* pName, T value)
 {
     CVarBlock* pProperties = GetProperties2();
-    IVariable* pVariable = NULL;
+    IVariable* pVariable = nullptr;
     if (pProperties)
     {
         pVariable = pProperties->FindVariable(pName);

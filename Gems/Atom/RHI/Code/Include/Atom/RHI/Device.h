@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/RHI/ObjectCollector.h>
 #include <Atom/RHI.Reflect/DeviceDescriptor.h>
 #include <Atom/RHI.Reflect/DeviceFeatures.h>
 #include <Atom/RHI.Reflect/DeviceLimits.h>
@@ -139,6 +140,9 @@ namespace AZ
             virtual ResourceMemoryRequirements GetResourceMemoryRequirements(const ImageDescriptor& descriptor) = 0;
             //! Get the memory requirements for allocating a buffer resource.
             virtual ResourceMemoryRequirements GetResourceMemoryRequirements(const BufferDescriptor& descriptor) = 0;
+
+            //! Notifies after all objects currently in the platform release queue are released
+            virtual void ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction) = 0;
 
         protected:
             DeviceFeatures m_features;

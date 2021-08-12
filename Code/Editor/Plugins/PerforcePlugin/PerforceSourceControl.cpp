@@ -9,6 +9,7 @@
 #include "CryFile.h"
 #include "PerforceSourceControl.h"
 #include "PasswordDlg.h"
+#include <CryCommon/CryThread.h>
 
 #include <QSettings>
 #include <QDir>

@@ -34,7 +34,7 @@ namespace {
 //////////////////////////////////////////////////////////////////////////
 CTrackGizmo::CTrackGizmo()
 {
-    m_pAnimNode = 0;
+    m_pAnimNode = nullptr;
 
     m_worldBbox.min = Vec3(-10000, -10000, -10000);
     m_worldBbox.max = Vec3(10000, 10000, 10000);

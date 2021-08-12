@@ -6,237 +6,301 @@
 #
 #
 
-import os
 import json
 import subprocess
 import re
-import git_utils
+import uuid
+import pathlib
 from git_utils import Repo
-from enum import Enum
+from tiaf_persistent_storage_local import PersistentStorageLocal
+from tiaf_persistent_storage_s3 import PersistentStorageS3
+from tiaf_logger import get_logger
 
-# Returns True if the specified child path is a child of the specified parent path, otherwise False
-def is_child_path(parent_path, child_path):
-    parent_path = os.path.abspath(parent_path)
-    child_path = os.path.abspath(child_path)
-    return os.path.commonpath([os.path.abspath(parent_path)]) == os.path.commonpath([os.path.abspath(parent_path), os.path.abspath(child_path)])
+logger = get_logger(__file__)
 
 class TestImpact:
-    def __init__(self, config_file, dst_commit, src_branch, dst_branch, pipeline, seeding_branches, seeding_pipelines):
-        # Commit
-        self.__dst_commit = dst_commit
-        print(f"Commit: '{self.__dst_commit}'.")
-        self.__src_commit = None
-        self.__has_src_commit = False
-        # Branch
-        self.__src_branch = src_branch
-        print(f"Source branch: '{self.__src_branch}'.")
-        self.__dst_branch = dst_branch
-        print(f"Destination branch: '{self.__dst_branch}'.")
-        print(f"Seeding branches: '{seeding_branches}'.")
-        if self.__src_branch in seeding_branches:
-            self.__is_seeding_branch = True
-        else:
-            self.__is_seeding_branch = False
-        print(f"Is seeding branch: '{self.__is_seeding_branch}'.")
-        # Pipeline
-        self.__pipeline = pipeline
-        print(f"Pipeline: '{self.__pipeline}'.")
-        print(f"Seeding pipelines: '{seeding_pipelines}'.")
-        if self.__pipeline in seeding_pipelines:
-            self.__is_seeding_pipeline = True
-        else:
-            self.__is_seeding_pipeline = False
-        print(f"Is seeding pipeline: '{self.__is_seeding_pipeline}'.")
-        # Config
-        self.__parse_config_file(config_file)
-        # Sequence
-        if self.__is_seeding_branch and self.__is_seeding_pipeline:
-            self.__is_seeding = True
-        else:
-            self.__is_seeding = False
-        print(f"Is seeding: '{self.__is_seeding}'.")
-        if self.__use_test_impact_analysis and not self.__is_seeding:
-            self.__generate_change_list()
+    def __init__(self, config_file: str):
+        """
+        Initializes the test impact model with the commit, branches as runtime configuration.
 
-    # Parse the configuration file and retrieve the data needed for launching the test impact analysis runtime
-    def __parse_config_file(self, config_file):
-        print(f"Attempting to parse configuration file '{config_file}'...")
-        with open(config_file, "r") as config_data:
-            config = json.load(config_data)
-            self.__repo_dir = config["repo"]["root"]
-            self.__repo = Repo(self.__repo_dir)
-            # TIAF
-            self.__use_test_impact_analysis = config["jenkins"]["use_test_impact_analysis"]
-            print(f"Is using test impact analysis: '{self.__use_test_impact_analysis}'.")
-            self.__tiaf_bin = config["repo"]["tiaf_bin"]
-            if self.__use_test_impact_analysis and not os.path.isfile(self.__tiaf_bin):
-                raise FileNotFoundError("Could not find tiaf binary")
-            # Workspaces
-            self.__active_workspace = config["workspace"]["active"]["root"]
-            self.__historic_workspace = config["workspace"]["historic"]["root"]
-            self.__temp_workspace = config["workspace"]["temp"]["root"]
-            # Last commit hash
-            last_commit_hash_path_file = config["workspace"]["historic"]["relative_paths"]["last_run_hash_file"]
-            self.__last_commit_hash_path = os.path.join(self.__historic_workspace, last_commit_hash_path_file)
-            print("The configuration file was parsed successfully.")
+        @param config_file: The runtime config file to obtain the runtime configuration data from.
+        """
 
-    # Restricts change lists from checking in test impact analysis files
-    def __check_for_restricted_files(self, file_path):
-        if is_child_path(self.__active_workspace, file_path) or is_child_path(self.__historic_workspace, file_path) or is_child_path(self.__temp_workspace, file_path):
-            raise ValueError(f"Checking in test impact analysis framework files is illegal: '{file_path}''.")
+        self._has_change_list = False
+        self._parse_config_file(config_file)
 
-    def __read_last_run_hash(self):
-        self.__has_src_commit = False
-        if os.path.isfile(self.__last_commit_hash_path):
-            print(f"Previous commit hash found at '{self.__last_commit_hash_path}'.")
-            with open(self.__last_commit_hash_path) as file:
-                self.__src_commit = file.read()
-                self.__has_src_commit = True
+    def _parse_config_file(self, config_file: str):
+        """
+        Parse the configuration file and retrieve the data needed for launching the test impact analysis runtime.
 
-    def __write_last_run_hash(self, last_run_hash):
-        os.makedirs(self.__historic_workspace, exist_ok=True)
-        f = open(self.__last_commit_hash_path, "w")
-        f.write(last_run_hash)
-        f.close()
+        @param config_file: The runtime config file to obtain the runtime configuration data from.
+        """
 
-    # Determines the change list bewteen now and the last tiaf run (if any)
-    def __generate_change_list(self):
-        self.__has_change_list = False
-        self.__change_list_path = None
+        logger.info(f"Attempting to parse configuration file '{config_file}'...")
+        try:
+            with open(config_file, "r") as config_data:
+                self._config = json.load(config_data)
+                self._repo_dir = self._config["repo"]["root"]
+                self._repo = Repo(self._repo_dir)
+
+                # TIAF
+                self._use_test_impact_analysis = self._config["jenkins"]["use_test_impact_analysis"]
+                self._tiaf_bin = pathlib.Path(self._config["repo"]["tiaf_bin"])
+                if self._use_test_impact_analysis and not self._tiaf_bin.is_file():
+                    logger.warning(f"Could not find TIAF binary at location {self._tiaf_bin}, TIAF will be turned off.")
+                    self._use_test_impact_analysis = False
+                else:
+                    logger.info(f"Runtime binary found at location {self._tiaf_bin}")
+
+                # Workspaces
+                self._active_workspace = self._config["workspace"]["active"]["root"]
+                self._historic_workspace = self._config["workspace"]["historic"]["root"]
+                self._temp_workspace = self._config["workspace"]["temp"]["root"]
+                logger.info("The configuration file was parsed successfully.")
+        except KeyError as e:
+            logger.error(f"The config does not contain the key {str(e)}.")
+            return
+
+    def _attempt_to_generate_change_list(self, last_commit_hash, instance_id: str):
+        """
+        Attempts to determine the change list bewteen now and the last tiaf run (if any).
+
+        @param last_commit_hash: The commit hash of the last TIAF run.
+        @param instance_id:      The unique id to derive the change list file name from.
+        """
+
+        self._has_change_list = False
+        self._change_list_path = None
+
         # Check whether or not a previous commit hash exists (no hash is not a failure)
-        self.__read_last_run_hash()
-        if self.__has_src_commit == True:
-            if git_utils.is_descendent(self.__src_commit, self.__dst_commit) == False:
-                print(f"Source commit '{self.__src_commit}' and destination commit '{self.__dst_commit}' are not related.")
+        self._src_commit = last_commit_hash
+        if self._src_commit:
+            if self._repo.is_descendent(self._src_commit, self._dst_commit) == False:
+                logger.info(f"Source commit '{self._src_commit}' and destination commit '{self._dst_commit}' are not related.")
                 return
-            diff_path = os.path.join(self.__temp_workspace, "changelist.diff")
+            self._commit_distance = self._repo.commit_distance(self._src_commit, self._dst_commit)
+            diff_path = pathlib.Path(pathlib.PurePath(self._temp_workspace).joinpath(f"changelist.{instance_id}.diff"))
             try:
-                git_utils.create_diff_file(self.__src_commit, self.__dst_commit, diff_path)
-            except FileNotFoundError as e:
-                print(e)
+                self._repo.create_diff_file(self._src_commit, self._dst_commit, diff_path)
+            except RuntimeError as e:
+                logger.error(e)
                 return
+                
             # A diff was generated, attempt to parse the diff and construct the change list
-            print(f"Generated diff between commits '{self.__src_commit}' and '{self.__dst_commit}': '{diff_path}'.") 
-            change_list = {}
-            change_list["createdFiles"] = []
-            change_list["updatedFiles"] = []
-            change_list["deletedFiles"] = []
+            logger.info(f"Generated diff between commits '{self._src_commit}' and '{self._dst_commit}': '{diff_path}'.") 
             with open(diff_path, "r") as diff_data:
                 lines = diff_data.readlines()
                 for line in lines:
                     match = re.split("^R[0-9]+\\s(\\S+)\\s(\\S+)", line)
                     if len(match) > 1:
                         # File rename
-                        self.__check_for_restricted_files(match[1])
-                        self.__check_for_restricted_files(match[2])
                         # Treat renames as a deletion and an addition
-                        change_list["deletedFiles"].append(match[1])
-                        change_list["createdFiles"].append(match[2])
+                        self._change_list["deletedFiles"].append(match[1])
+                        self._change_list["createdFiles"].append(match[2])
                     else:
                         match = re.split("^[AMD]\\s(\\S+)", line)
-                        self.__check_for_restricted_files(match[1])
                         if len(match) > 1:
                             if line[0] == 'A':
                                 # File addition
-                                change_list["createdFiles"].append(match[1])
+                                self._change_list["createdFiles"].append(match[1])
                             elif line[0] == 'M':
                                 # File modification
-                                change_list["updatedFiles"].append(match[1])
+                                self._change_list["updatedFiles"].append(match[1])
                             elif line[0] == 'D':
                                 # File Deletion
-                                change_list["deletedFiles"].append(match[1])
+                                self._change_list["deletedFiles"].append(match[1])
+
             # Serialize the change list to the JSON format the test impact analysis runtime expects
-            change_list_json = json.dumps(change_list, indent = 4)
-            change_list_path = os.path.join(self.__temp_workspace, "changelist.json")
+            change_list_json = json.dumps(self._change_list, indent = 4)
+            change_list_path = pathlib.PurePath(self._temp_workspace).joinpath(f"changelist.{instance_id}.json")
             f = open(change_list_path, "w")
             f.write(change_list_json)
             f.close()
-            print(f"Change list constructed successfully: '{change_list_path}'.")
-            print(f"{len(change_list['createdFiles'])} created files, {len(change_list['updatedFiles'])} updated files and {len(change_list['deletedFiles'])} deleted files.")
+            logger.info(f"Change list constructed successfully: '{change_list_path}'.")
+            logger.info(f"{len(self._change_list['createdFiles'])} created files, {len(self._change_list['updatedFiles'])} updated files and {len(self._change_list['deletedFiles'])} deleted files.")
+            
             # Note: an empty change list generated due to no changes between last and current commit is valid
-            self.__has_change_list = True
-            self.__change_list_path = change_list_path
+            self._has_change_list = True
+            self._change_list_path = change_list_path
         else:
-            print("No previous commit hash found, regular or seeded sequences only will be run.")
-            self.__has_change_list = False
+            logger.error("No previous commit hash found, regular or seeded sequences only will be run.")
+            self._has_change_list = False
             return
 
-    # Runs the specified test sequence
-    def run(self, suite, test_failure_policy, safe_mode, test_timeout, global_timeout):
+    def _generate_result(self, s3_bucket: str, suite: str, return_code: int, report: dict, runtime_args: list):
+        """
+        Generates the result object from the pertinent runtime meta-data and sequence report.
+
+        @param The generated result object.
+        """
+
+        result = {}
+        result["src_commit"] = self._src_commit
+        result["dst_commit"] = self._dst_commit
+        result["commit_distance"] = self._commit_distance
+        result["src_branch"] = self._src_branch
+        result["dst_branch"] = self._dst_branch
+        result["suite"] = suite
+        result["use_test_impact_analysis"] = self._use_test_impact_analysis
+        result["source_of_truth_branch"] = self._source_of_truth_branch
+        result["is_source_of_truth_branch"] = self._is_source_of_truth_branch
+        result["has_change_list"] = self._has_change_list
+        result["has_historic_data"] = self._has_historic_data
+        result["s3_bucket"] = s3_bucket
+        result["runtime_args"] = runtime_args
+        result["return_code"] = return_code
+        result["report"] = report
+        result["change_list"] = self._change_list
+        return result
+
+    def run(self, commit: str, src_branch: str, dst_branch: str, s3_bucket: str, suite: str, test_failure_policy: str, safe_mode: bool, test_timeout: int, global_timeout: int):
+        """
+        Determins the type of sequence to run based on the commit, source branch and test branch before running the
+        sequence with the specified values.
+
+        @param commit:              The commit hash of the changes to run test impact analysis on. 
+        @param src_branch:          If not equal to dst_branch, the branch that is being built.
+        @param dst_branch:          If not equal to src_branch, the destination branch for the PR being built.
+        @param s3_bucket:           Location of S3 bucket to use for persistent storage, otherwise local disk storage will be used.
+        @param suite:               Test suite to run.
+        @param test_failure_policy: Test failure policy for regular and test impact sequences (ignored when seeding).
+        @param safe_mode:           Flag to run impact analysis tests in safe mode (ignored when seeding).
+        @param test_timeout:        Maximum run time (in seconds) of any test target before being terminated (unlimited if None).
+        @param global_timeout:      Maximum run time of the sequence before being terminated (unlimited if None).
+        """
+
         args = []
-        seed_sequence_test_failure_policy = "continue"
-        # Suite
-        args.append(f"--suite={suite}")
-        print(f"Test suite is set to '{suite}'.")
-        # Timeouts
-        if test_timeout != None:
-            args.append(f"--ttimeout={test_timeout}")
-            print(f"Test target timeout is set to {test_timeout} seconds.")
-        if global_timeout != None:
-            args.append(f"--gtimeout={global_timeout}")
-            print(f"Global sequence timeout is set to {test_timeout} seconds.")
-        if self.__use_test_impact_analysis:
-            print("Test impact analysis is enabled.")
-            # Seed sequences
-            if self.__is_seeding:
+        persistent_storage = None
+        self._has_historic_data = False
+        self._change_list = {}
+        self._change_list["createdFiles"] = []
+        self._change_list["updatedFiles"] = []
+        self._change_list["deletedFiles"] = []
+
+        # Branches
+        self._src_branch = src_branch
+        self._dst_branch = dst_branch
+        logger.info(f"Src branch: '{self._src_branch}'.")
+        logger.info(f"Dst branch: '{self._dst_branch}'.")
+
+        # Source of truth (the branch from which the coverage data will be stored/retrieved from)
+        if not self._dst_branch or self._src_branch == self._dst_branch:
+            # Branch builds are their own source of truth and will update the coverage data for the source of truth after any instrumented sequences complete
+            self._is_source_of_truth_branch = True
+            self._source_of_truth_branch = self._src_branch
+        else:
+            # PR builds use their destination as the source of truth and never update the coverage data for the source of truth
+            self._is_source_of_truth_branch = False
+            self._source_of_truth_branch = self._dst_branch
+
+        logger.info(f"Source of truth branch: '{self._source_of_truth_branch}'.")
+        logger.info(f"Is source of truth branch: '{self._is_source_of_truth_branch}'.")
+
+        # Commit
+        self._dst_commit = commit
+        logger.info(f"Commit: '{self._dst_commit}'.")
+        self._src_commit = None
+        self._commit_distance = None
+
+        # Generate a unique ID to be used as part of the file name for required runtime dynamic artifacts.
+        instance_id = uuid.uuid4().hex
+        
+        if self._use_test_impact_analysis:
+            logger.info("Test impact analysis is enabled.")
+            try:
+                # Persistent storage location
+                if s3_bucket:
+                    persistent_storage = PersistentStorageS3(self._config, suite, s3_bucket, self._source_of_truth_branch)
+                else:
+                    persistent_storage = PersistentStorageLocal(self._config, suite)
+            except SystemError as e:
+                logger.warning(f"The persistent storage encountered an irrecoverable error, test impact analysis will be disabled: '{e}'")
+                persistent_storage = None
+
+            if persistent_storage:
+                if persistent_storage.has_historic_data:
+                    logger.info("Historic data found.")
+                    self._attempt_to_generate_change_list(persistent_storage.last_commit_hash, instance_id)
+                else:
+                    logger.info("No historic data found.")
+                    
                 # Sequence type
-                args.append("--sequence=seed")
-                print("Sequence type is set to 'seed'.")
-                # Test failure policy
-                args.append(f"--fpolicy={seed_sequence_test_failure_policy}")
-                print(f"Test failure policy is set to '{seed_sequence_test_failure_policy}'.")
-            # Impact analysis sequences
-            else:
-                if self.__has_change_list:
-                    # Change list
-                    args.append(f"--changelist={self.__change_list_path}")
-                    print(f"Change list is set to '{self.__change_list_path}'.")
-                    # Sequence type
-                    args.append("--sequence=tianowrite")
-                    print("Sequence type is set to 'tianowrite'.")
-                    # Integrity failure policy
-                    args.append("--ipolicy=continue")
-                    print("Integration failure policy is set to 'continue'.")
+                if self._has_change_list:
+                    if self._is_source_of_truth_branch:
+                        # Use TIA sequence (instrumented subset of tests) for coverage updating branches so we can update the coverage data with the generated coverage
+                        sequence_type = "tia"
+                    else:
+                        # Use TIA no-write sequence (regular subset of tests) for non coverage updating branche
+                        sequence_type = "tianowrite"
+                        # Ignore integrity failures for non coverage updating branches as our confidence in the
+                        args.append("--ipolicy=continue")
+                        logger.info("Integration failure policy is set to 'continue'.")
                     # Safe mode
                     if safe_mode:
                         args.append("--safemode=on")
-                        print("Safe mode set to 'on'.")
+                        logger.info("Safe mode set to 'on'.")
                     else:
                         args.append("--safemode=off")
-                        print("Safe mode set to 'off'.")
+                        logger.info("Safe mode set to 'off'.")
+                    # Change list
+                    args.append(f"--changelist={self._change_list_path}")
+                    logger.info(f"Change list is set to '{self._change_list_path}'.")
                 else:
-                    args.append("--sequence=regular")
-                    print("Sequence type is set to 'regular'.")
-                # Test failure policy
-                args.append(f"--fpolicy={test_failure_policy}")
-                print(f"Test failure policy is set to '{test_failure_policy}'.")
-        else:
-            print("Test impact analysis is disabled.")
-             # Sequence type
-            args.append("--sequence=regular")
-            print("Sequence type is set to 'regular'.")
-            # Seeding job
-            if self.__is_seeding:
-                # Test failure policy
-                args.append(f"--fpolicy={seed_sequence_test_failure_policy}")
-                print(f"Test failure policy is set to '{seed_sequence_test_failure_policy}'.")
-            # Non seeding job
+                    if self._is_source_of_truth_branch:
+                        # Use seed sequence (instrumented all tests) for coverage updating branches so we can generate the coverage bed for future sequences
+                        sequence_type = "seed"
+                        # We always continue after test failures when seeding to ensure we capture the coverage for all test targets
+                        test_failure_policy = "continue"
+                    else:
+                        # Use regular sequence (regular all tests) for non coverage updating branches as we have no coverage to use nor coverage to update
+                        sequence_type = "regular"
+                        # Ignore integrity failures for non coverage updating branches as our confidence in the
+                        args.append("--ipolicy=continue")
+                        logger.info("Integration failure policy is set to 'continue'.")
             else:
-                # Test failure policy
-                args.append(f"--fpolicy={test_failure_policy}")
-                print(f"Test failure policy is set to '{test_failure_policy}'.")
-        
-        print("Args: ", end='')
-        print(*args)
-        result = subprocess.run([self.__tiaf_bin] + args)
-        # If the sequence completed (with or without failures) we will update the historical meta-data
-        if result.returncode == 0 or result.returncode == 7:
-            print("Test impact analysis runtime returned successfully.")
-            if self.__is_seeding:
-                print("Writing historical meta-data...")
-                self.__write_last_run_hash(self.__dst_commit)
-            print("Complete!")
+                # Use regular sequence (regular all tests) when the persistent storage fails to avoid wasting time generating seed data that will not be preserved
+                sequence_type = "regular"
         else:
-            print(f"The test impact analysis runtime returned with error: '{result.returncode}'.")
-        return result.returncode
-        
+            # Use regular sequence (regular all tests) when test impact analysis is disabled
+            sequence_type = "regular"
+        args.append(f"--sequence={sequence_type}")
+        logger.info(f"Sequence type is set to '{sequence_type}'.")
+
+         # Test failure policy
+        args.append(f"--fpolicy={test_failure_policy}")
+        logger.info(f"Test failure policy is set to '{test_failure_policy}'.")
+
+        # Sequence report
+        report_file = pathlib.PurePath(self._temp_workspace).joinpath(f"report.{instance_id}.json")
+        args.append(f"--report={report_file}")
+        logger.info(f"Sequence report file is set to '{report_file}'.")
+
+        # Suite
+        args.append(f"--suite={suite}")
+        logger.info(f"Test suite is set to '{suite}'.")
+
+        # Timeouts
+        if test_timeout is not None:
+            args.append(f"--ttimeout={test_timeout}")
+            logger.info(f"Test target timeout is set to {test_timeout} seconds.")
+        if global_timeout is not None:
+            args.append(f"--gtimeout={global_timeout}")
+            logger.info(f"Global sequence timeout is set to {test_timeout} seconds.")
+
+        # Run sequence
+        unpacked_args = " ".join(args)
+        logger.info(f"Args: {unpacked_args}")
+        runtime_result = subprocess.run([str(self._tiaf_bin)] + args)
+        report = None
+
+        # If the sequence completed (with or without failures) we will update the historical meta-data
+        if runtime_result.returncode == 0 or runtime_result.returncode == 7:
+            logger.info("Test impact analysis runtime returned successfully.")
+            if self._is_source_of_truth_branch and persistent_storage is not None:
+                persistent_storage.update_and_store_historic_data(self._dst_commit)
+            with open(report_file) as json_file:
+                report = json.load(json_file)
+        else:
+            logger.error(f"The test impact analysis runtime returned with error: '{runtime_result.returncode}'.")
+    
+        return self._generate_result(s3_bucket, suite, runtime_result.returncode, report, args)

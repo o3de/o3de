@@ -35,7 +35,7 @@ class CLog
 {
 public:
     typedef std::list<ILogCallback*> Callbacks;
-    typedef CryStackStringT<char, MAX_TEMP_LENGTH_SIZE> LogStringType;
+    typedef AZStd::fixed_string<MAX_TEMP_LENGTH_SIZE> LogStringType;
 
     // constructor
     CLog(ISystem* pSystem);

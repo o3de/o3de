@@ -11,6 +11,7 @@
 
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/PlatformIncl.h>
+#include <AzCore/std/string/conversions.h>
 
 namespace AzFramework
 {
@@ -41,7 +42,7 @@ namespace AzFramework
         static DWORD ConvertToWin32WindowStyleMask(const WindowStyleMasks& styleMasks);
         static LRESULT CALLBACK WindowCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-        static const char* s_defaultClassName;
+        static const wchar_t* s_defaultClassName;
 
         void WindowSizeChanged(const uint32_t width, const uint32_t height);
 
@@ -57,7 +58,7 @@ namespace AzFramework
         GetDpiForWindowType* m_getDpiFunction = nullptr;
     };
 
-    const char* NativeWindowImpl_Win32::s_defaultClassName = "O3DEWin32Class";
+    const wchar_t* NativeWindowImpl_Win32::s_defaultClassName = L"O3DEWin32Class";
 
     NativeWindow::Implementation* NativeWindow::Implementation::Create()
     {
@@ -88,7 +89,7 @@ namespace AzFramework
 
         // register window class if it does not exist
         WNDCLASSEX windowClass;
-        if (GetClassInfoEx(hInstance, s_defaultClassName, &windowClass) == false)
+        if (GetClassInfoExW(hInstance, s_defaultClassName, &windowClass) == false)
         {
             windowClass.cbSize = sizeof(WNDCLASSEX);
             windowClass.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
@@ -127,8 +128,10 @@ namespace AzFramework
         m_height = geometry.m_height;
 
         // create main window
-        m_win32Handle = CreateWindow(
-            s_defaultClassName, title.c_str(),
+        AZStd::wstring titleW;
+        AZStd::to_wstring(titleW, title);
+        m_win32Handle = CreateWindowW(
+            s_defaultClassName, titleW.c_str(),
             windowStyle,
             geometry.m_posX, geometry.m_posY, windowRect.right - windowRect.left, windowRect.bottom - windowRect.top,
             NULL, NULL, hInstance, NULL);
@@ -175,7 +178,9 @@ namespace AzFramework
 
     void NativeWindowImpl_Win32::SetWindowTitle(const AZStd::string& title)
     {
-        SetWindowText(m_win32Handle, title.c_str());
+        AZStd::wstring titleW;
+        AZStd::to_wstring(titleW, title);
+        SetWindowTextW(m_win32Handle, titleW.c_str());
     }
 
     DWORD NativeWindowImpl_Win32::ConvertToWin32WindowStyleMask(const WindowStyleMasks& styleMasks)

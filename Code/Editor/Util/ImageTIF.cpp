@@ -399,8 +399,8 @@ bool CImageTIF::SaveRAW(const QString& fileName, const void* pData, int width, i
 
         if (preset && preset[0])
         {
-            string tiffphotoshopdata, valueheader;
-            string presetkeyvalue = string("/preset=") + string(preset);
+            AZStd::string tiffphotoshopdata, valueheader;
+            AZStd::string presetkeyvalue = AZStd::string("/preset=") + AZStd::string(preset);
 
             valueheader.push_back('\x1C');
             valueheader.push_back('\x02');
@@ -472,7 +472,7 @@ const char* CImageTIF::GetPreset(const QString& fileName)
             libtiffDummyWriteProc, libtiffDummySeekProc,
             libtiffDummyCloseProc, libtiffDummySizeProc, libtiffDummyMapFileProc, libtiffDummyUnmapFileProc);
 
-    string strReturn;
+    AZStd::string strReturn;
     char* preset = nullptr;
     int size;
     if (tif)

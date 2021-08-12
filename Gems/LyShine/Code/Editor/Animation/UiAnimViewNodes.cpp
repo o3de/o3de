@@ -23,7 +23,6 @@
 
 #include "Objects/EntityObject.h"
 #include "ViewManager.h"
-#include "RenderViewport.h"
 #include "Export/ExportManager.h"
 #include <Editor/Util/fastlib.h>
 
@@ -486,7 +485,7 @@ CUiAnimViewNodesCtrl::CRecord* CUiAnimViewNodesCtrl::AddAnimNodeRecord(CRecord* 
 {
     CRecord* pNewRecord = new CRecord(pAnimNode);
 
-    pNewRecord->setText(0, QtUtil::ToQString(pAnimNode->GetName()));
+    pNewRecord->setText(0, pAnimNode->GetName());
     UpdateUiAnimNodeRecord(pNewRecord, pAnimNode);
     pParentRecord->insertChild(GetInsertPosition(pParentRecord, pAnimNode), pNewRecord);
     FillNodesRec(pNewRecord, pAnimNode);
@@ -499,7 +498,7 @@ CUiAnimViewNodesCtrl::CRecord* CUiAnimViewNodesCtrl::AddTrackRecord(CRecord* pPa
 {
     CRecord* pNewTrackRecord = new CRecord(pTrack);
     pNewTrackRecord->setSizeHint(0, QSize(30, 18));
-    pNewTrackRecord->setText(0, QtUtil::ToQString(pTrack->GetName()));
+    pNewTrackRecord->setText(0, pTrack->GetName());
     UpdateTrackRecord(pNewTrackRecord, pTrack);
     pParentRecord->insertChild(GetInsertPosition(pParentRecord, pTrack), pNewTrackRecord);
     FillNodesRec(pNewTrackRecord, pTrack);
@@ -708,7 +707,7 @@ void CUiAnimViewNodesCtrl::OnFillItems()
         m_nodeToRecordMap.clear();
 
         CRecord* pRootGroupRec = new CRecord(pSequence);
-        pRootGroupRec->setText(0, QtUtil::ToQString(pSequence->GetName()));
+        pRootGroupRec->setText(0, pSequence->GetName());
         QFont f = font();
         f.setBold(true);
         pRootGroupRec->setData(0, Qt::FontRole, f);
@@ -1323,7 +1322,7 @@ int CUiAnimViewNodesCtrl::ShowPopupMenuSingleSelection(UiAnimContextMenu& contex
                     continue;
                 }
 
-                QAction* a = contextMenu.main.addAction(QString("  %1").arg(QtUtil::ToQString(pTrack2->GetName())));
+                QAction* a = contextMenu.main.addAction(QString("  %1").arg(pTrack2->GetName()));
                 a->setData(eMI_ShowHideBase + childIndex);
                 a->setCheckable(true);
                 a->setChecked(!pTrack2->IsHidden());
@@ -1459,7 +1458,7 @@ void CUiAnimViewNodesCtrl::FillAutoCompletionListForFilter()
 
         for (unsigned int i = 0; i < animNodeCount; ++i)
         {
-            strings << QtUtil::ToQString(animNodes.GetNode(i)->GetName());
+            strings << QString(animNodes.GetNode(i)->GetName());
         }
     }
     else
@@ -1512,7 +1511,7 @@ int CUiAnimViewNodesCtrl::GetMatNameAndSubMtlIndexFromName(QString& matName, con
     if (const char* pCh = strstr(nodeName, ".["))
     {
         char matPath[MAX_PATH];
-        cry_strcpy(matPath, nodeName, (size_t)(pCh - nodeName));
+        azstrncpy(matPath, AZ_ARRAY_SIZE(matPath), nodeName, (size_t)(pCh - nodeName));
         matName = matPath;
         pCh += 2;
         if ((*pCh) != 0)
@@ -1763,7 +1762,7 @@ void CUiAnimViewNodesCtrl::OnNodeRenamed(CUiAnimViewNode* pNode, [[maybe_unused]
     if (!m_bIgnoreNotifications)
     {
         CRecord* pNodeRecord = GetNodeRecord(pNode);
-        pNodeRecord->setText(0, QtUtil::ToQString(pNode->GetName()));
+        pNodeRecord->setText(0, pNode->GetName());
 
         update();
     }

@@ -244,12 +244,12 @@ namespace EMotionFX
     // constructor
     SharedHelperData::SharedHelperData()
     {
-        mFileHighVersion    = 1;
-        mFileLowVersion     = 0;
+        m_fileHighVersion    = 1;
+        m_fileLowVersion     = 0;
 
         // allocate the string buffer used for reading in variable sized strings
-        mStringStorageSize  = 256;
-        mStringStorage      = (char*)MCore::Allocate(mStringStorageSize, EMFX_MEMCATEGORY_IMPORTER);
+        m_stringStorageSize  = 256;
+        m_stringStorage      = (char*)MCore::Allocate(m_stringStorageSize, EMFX_MEMCATEGORY_IMPORTER);
     }
 
 
@@ -271,16 +271,16 @@ namespace EMotionFX
     void SharedHelperData::Reset()
     {
         // free the string buffer
-        if (mStringStorage)
+        if (m_stringStorage)
         {
-            MCore::Free(mStringStorage);
+            MCore::Free(m_stringStorage);
         }
 
-        mStringStorage = nullptr;
-        mStringStorageSize = 0;
+        m_stringStorage = nullptr;
+        m_stringStorageSize = 0;
     }
 
-    const char* SharedHelperData::ReadString(MCore::Stream* file, MCore::Array<SharedData*>* sharedData, MCore::Endian::EEndianType endianType)
+    const char* SharedHelperData::ReadString(MCore::Stream* file, AZStd::vector<SharedData*>* sharedData, MCore::Endian::EEndianType endianType)
     {
         MCORE_ASSERT(file);
         MCORE_ASSERT(sharedData);
@@ -295,23 +295,17 @@ namespace EMotionFX
         MCore::Endian::ConvertUnsignedInt32(&numCharacters, endianType);
 
         // if we need to enlarge the buffer
-        if (helperData->mStringStorageSize < numCharacters + 1)
+        if (helperData->m_stringStorageSize < numCharacters + 1)
         {
-            helperData->mStringStorageSize = numCharacters + 1;
-            helperData->mStringStorage = (char*)MCore::Realloc(helperData->mStringStorage, helperData->mStringStorageSize, EMFX_MEMCATEGORY_IMPORTER);
+            helperData->m_stringStorageSize = numCharacters + 1;
+            helperData->m_stringStorage = (char*)MCore::Realloc(helperData->m_stringStorage, helperData->m_stringStorageSize, EMFX_MEMCATEGORY_IMPORTER);
         }
 
         // receive the actual string
-        file->Read(helperData->mStringStorage, numCharacters * sizeof(uint8));
-        helperData->mStringStorage[numCharacters] = '\0';
+        file->Read(helperData->m_stringStorage, numCharacters * sizeof(uint8));
+        helperData->m_stringStorage[numCharacters] = '\0';
 
-        //if (helperData->mIsUnicodeFile)
-        //helperData->mConvertString = helperData->mStringStorage;
-        //else
-        //          helperData->mConvertString = helperData->mStringStorage;
-
-        //result = helperData->mStringStorage;
-        return helperData->mStringStorage;
+        return helperData->m_stringStorage;
     }
 
     //-----------------------------------------------------------------------------
@@ -320,9 +314,9 @@ namespace EMotionFX
     ChunkProcessor::ChunkProcessor(uint32 chunkID, uint32 version)
         : BaseObject()
     {
-        mChunkID        = chunkID;
-        mVersion        = version;
-        mLoggingActive  = false;
+        m_chunkId        = chunkID;
+        m_version        = version;
+        m_loggingActive  = false;
     }
 
 
@@ -334,100 +328,80 @@ namespace EMotionFX
 
     uint32 ChunkProcessor::GetChunkID() const
     {
-        return mChunkID;
+        return m_chunkId;
     }
 
 
     uint32 ChunkProcessor::GetVersion() const
     {
-        return mVersion;
+        return m_version;
     }
 
 
     void ChunkProcessor::SetLogging(bool loggingActive)
     {
-        mLoggingActive = loggingActive;
+        m_loggingActive = loggingActive;
     }
 
 
     bool ChunkProcessor::GetLogging() const
     {
-        return mLoggingActive;
+        return m_loggingActive;
     }
-
 
     //=================================================================================================
 
-
-    // a chunk that contains all nodes in one chunk
-    bool ChunkProcessorActorNodes::Process(MCore::File* file, Importer::ImportParameters& importParams)
+    bool ChunkProcessorActorNodes2::Process(MCore::File* file, Importer::ImportParameters& importParams)
     {
-        const MCore::Endian::EEndianType endianType = importParams.mEndianType;
-        Actor* actor = importParams.mActor;
-        Importer::ActorSettings* actorSettings = importParams.mActorSettings;
+        const MCore::Endian::EEndianType endianType = importParams.m_endianType;
+        Actor* actor = importParams.m_actor;
+        Importer::ActorSettings* actorSettings = importParams.m_actorSettings;
 
         MCORE_ASSERT(actor);
         Skeleton* skeleton = actor->GetSkeleton();
 
-        FileFormat::Actor_Nodes nodesHeader;
-        file->Read(&nodesHeader, sizeof(FileFormat::Actor_Nodes));
+        FileFormat::Actor_Nodes2 nodesHeader;
+        file->Read(&nodesHeader, sizeof(FileFormat::Actor_Nodes2));
 
         // convert endian
-        MCore::Endian::ConvertUnsignedInt32(&nodesHeader.mNumNodes, endianType);
-        MCore::Endian::ConvertUnsignedInt32(&nodesHeader.mNumRootNodes, endianType);
-        MCore::Endian::ConvertFloat(&nodesHeader.mStaticBoxMin.mX, endianType);
-        MCore::Endian::ConvertFloat(&nodesHeader.mStaticBoxMin.mY, endianType);
-        MCore::Endian::ConvertFloat(&nodesHeader.mStaticBoxMin.mZ, endianType);
-        MCore::Endian::ConvertFloat(&nodesHeader.mStaticBoxMax.mX, endianType);
-        MCore::Endian::ConvertFloat(&nodesHeader.mStaticBoxMax.mY, endianType);
-        MCore::Endian::ConvertFloat(&nodesHeader.mStaticBoxMax.mZ, endianType);
-
-        // convert endian and coord system of the static box
-        AZ::Vector3 boxMin(nodesHeader.mStaticBoxMin.mX, nodesHeader.mStaticBoxMin.mY, nodesHeader.mStaticBoxMin.mZ);
-        AZ::Vector3 boxMax(nodesHeader.mStaticBoxMax.mX, nodesHeader.mStaticBoxMax.mY, nodesHeader.mStaticBoxMax.mZ);
-
-        // build the box and set it
-        MCore::AABB staticBox;
-        staticBox.SetMin(boxMin);
-        staticBox.SetMax(boxMax);
-        actor->SetStaticAABB(staticBox);
+        MCore::Endian::ConvertUnsignedInt32(&nodesHeader.m_numNodes, endianType);
+        MCore::Endian::ConvertUnsignedInt32(&nodesHeader.m_numRootNodes, endianType);
 
         // pre-allocate space for the nodes
-        actor->SetNumNodes(nodesHeader.mNumNodes);
+        actor->SetNumNodes(nodesHeader.m_numNodes);
 
         // pre-allocate space for the root nodes
-        skeleton->ReserveRootNodes(nodesHeader.mNumRootNodes);
+        skeleton->ReserveRootNodes(nodesHeader.m_numRootNodes);
 
         if (GetLogging())
         {
-            MCore::LogDetailedInfo("- Nodes: %d (%d root nodes)", nodesHeader.mNumNodes, nodesHeader.mNumRootNodes);
+            MCore::LogDetailedInfo("- Nodes: %d (%d root nodes)", nodesHeader.m_numNodes, nodesHeader.m_numRootNodes);
         }
 
         // add the transform
         actor->ResizeTransformData();
 
         // read all nodes
-        for (uint32 n = 0; n < nodesHeader.mNumNodes; ++n)
+        for (uint32 n = 0; n < nodesHeader.m_numNodes; ++n)
         {
             // read the node header
-            FileFormat::Actor_Node nodeChunk;
-            file->Read(&nodeChunk, sizeof(FileFormat::Actor_Node));
+            FileFormat::Actor_Node2 nodeChunk;
+            file->Read(&nodeChunk, sizeof(FileFormat::Actor_Node2));
 
             // read the node name
-            const char* nodeName = SharedHelperData::ReadString(file, importParams.mSharedData, endianType);
+            const char* nodeName = SharedHelperData::ReadString(file, importParams.m_sharedData, endianType);
 
             // convert endian
-            MCore::Endian::ConvertUnsignedInt32(&nodeChunk.mParentIndex, endianType);
-            MCore::Endian::ConvertUnsignedInt32(&nodeChunk.mSkeletalLODs, endianType);
-            MCore::Endian::ConvertUnsignedInt32(&nodeChunk.mNumChilds, endianType);
-            MCore::Endian::ConvertFloat(&nodeChunk.mOBB[0], endianType, 16);
+            MCore::Endian::ConvertUnsignedInt32(&nodeChunk.m_parentIndex, endianType);
+            MCore::Endian::ConvertUnsignedInt32(&nodeChunk.m_skeletalLoDs, endianType);
+            MCore::Endian::ConvertUnsignedInt32(&nodeChunk.m_numChilds, endianType);
 
             // show the name of the node, the parent and the number of children
             if (GetLogging())
             {
                 MCore::LogDetailedInfo("   + Node name = '%s'", nodeName);
-                MCore::LogDetailedInfo("     - Parent = '%s'", (nodeChunk.mParentIndex != MCORE_INVALIDINDEX32) ? skeleton->GetNode(nodeChunk.mParentIndex)->GetName() : "");
-                MCore::LogDetailedInfo("     - NumChild Nodes = %d", nodeChunk.mNumChilds);
+                MCore::LogDetailedInfo("     - Parent = '%s'", (nodeChunk.m_parentIndex != MCORE_INVALIDINDEX32) ? skeleton->GetNode(nodeChunk.m_parentIndex)->GetName() : "");
+                MCore::LogDetailedInfo("     - NumChild Nodes = %d", nodeChunk.m_numChilds);
             }
 
             // create the new node
@@ -438,63 +412,58 @@ namespace EMotionFX
             node->SetNodeIndex(nodeIndex);
 
             // pre-allocate space for the number of child nodes
-            node->PreAllocNumChildNodes(nodeChunk.mNumChilds);
+            node->PreAllocNumChildNodes(nodeChunk.m_numChilds);
 
             // add it to the actor
             skeleton->SetNode(n, node);
 
             // create Core objects from the data
-            AZ::Vector3 pos(nodeChunk.mLocalPos.mX, nodeChunk.mLocalPos.mY, nodeChunk.mLocalPos.mZ);
-            AZ::Vector3 scale(nodeChunk.mLocalScale.mX, nodeChunk.mLocalScale.mY, nodeChunk.mLocalScale.mZ);
-            AZ::Quaternion rot(nodeChunk.mLocalQuat.mX, nodeChunk.mLocalQuat.mY, nodeChunk.mLocalQuat.mZ, nodeChunk.mLocalQuat.mW);
+            AZ::Vector3 pos(nodeChunk.m_localPos.m_x, nodeChunk.m_localPos.m_y, nodeChunk.m_localPos.m_z);
+            AZ::Vector3 scale(nodeChunk.m_localScale.m_x, nodeChunk.m_localScale.m_y, nodeChunk.m_localScale.m_z);
+            AZ::Quaternion rot(nodeChunk.m_localQuat.m_x, nodeChunk.m_localQuat.m_y, nodeChunk.m_localQuat.m_z, nodeChunk.m_localQuat.m_w);
 
             // convert endian and coordinate system
             ConvertVector3(&pos, endianType);
             ConvertScale(&scale, endianType);
             ConvertQuaternion(&rot, endianType);
 
-            // make sure the input data is normalized
-            // TODO: this isn't really needed as we already normalized?
-            //rot.FastNormalize();
-            //scaleRot.FastNormalize();
-
             // set the local transform
             Transform bindTransform;
-            bindTransform.mPosition     = pos;
-            bindTransform.mRotation     = rot.GetNormalized();
+            bindTransform.m_position     = pos;
+            bindTransform.m_rotation     = rot.GetNormalized();
             EMFX_SCALECODE
             (
-                bindTransform.mScale    = scale;
+                bindTransform.m_scale    = scale;
             )
 
             actor->GetBindPose()->SetLocalSpaceTransform(nodeIndex, bindTransform);
 
             // set the skeletal LOD levels
-            if (actorSettings->mLoadSkeletalLODs)
+            if (actorSettings->m_loadSkeletalLoDs)
             {
-                node->SetSkeletalLODLevelBits(nodeChunk.mSkeletalLODs);
+                node->SetSkeletalLODLevelBits(nodeChunk.m_skeletalLoDs);
             }
 
             // set if this node has to be taken into the bounding volume calculation
-            const bool includeInBoundsCalc = (nodeChunk.mNodeFlags & Node::ENodeFlags::FLAG_INCLUDEINBOUNDSCALC); // first bit
+            const bool includeInBoundsCalc = (nodeChunk.m_nodeFlags & Node::ENodeFlags::FLAG_INCLUDEINBOUNDSCALC); // first bit
             node->SetIncludeInBoundsCalc(includeInBoundsCalc);
 
             // Set if this node is critical and cannot be optimized out.
-            const bool isCritical = (nodeChunk.mNodeFlags & Node::ENodeFlags::FLAG_CRITICAL); // third bit
+            const bool isCritical = (nodeChunk.m_nodeFlags & Node::ENodeFlags::FLAG_CRITICAL); // third bit
             node->SetIsCritical(isCritical);
 
             // set the parent, and add this node as child inside the parent
-            if (nodeChunk.mParentIndex != MCORE_INVALIDINDEX32) // if this node has a parent and the parent node is valid
+            if (nodeChunk.m_parentIndex != MCORE_INVALIDINDEX32) // if this node has a parent and the parent node is valid
             {
-                if (nodeChunk.mParentIndex < n)
+                if (nodeChunk.m_parentIndex < n)
                 {
-                    node->SetParentIndex(nodeChunk.mParentIndex);
-                    Node* parentNode = skeleton->GetNode(nodeChunk.mParentIndex);
+                    node->SetParentIndex(nodeChunk.m_parentIndex);
+                    Node* parentNode = skeleton->GetNode(nodeChunk.m_parentIndex);
                     parentNode->AddChild(nodeIndex);
                 }
                 else
                 {
-                    MCore::LogError("Cannot assign parent node index (%d) for node '%s' as the parent node is not yet loaded. Making '%s' a root node.", nodeChunk.mParentIndex, node->GetName(), node->GetName());
+                    MCore::LogError("Cannot assign parent node index (%d) for node '%s' as the parent node is not yet loaded. Making '%s' a root node.", nodeChunk.m_parentIndex, node->GetName(), node->GetName());
                     skeleton->AddRootNode(nodeIndex);
                 }
             }
@@ -502,23 +471,6 @@ namespace EMotionFX
             {
                 skeleton->AddRootNode(nodeIndex);
             }
-
-            // OBB
-            AZ::Matrix4x4 obbMatrix4x4 = AZ::Matrix4x4::CreateFromRowMajorFloat16(nodeChunk.mOBB);
-
-            const AZ::Vector3 obbCenter = obbMatrix4x4.GetTranslation();
-            const AZ::Vector3 obbExtents = obbMatrix4x4.GetRowAsVector3(3);
-
-            // initialize the OBB
-            MCore::OBB obb;
-            obb.SetCenter(obbCenter);
-            obb.SetExtents(obbExtents);
-
-            // need to transpose to go from row major to column major
-            const AZ::Matrix3x3 obbMatrix3x3 = AZ::Matrix3x3::CreateFromMatrix4x4(obbMatrix4x4).GetTranspose();
-            const AZ::Transform obbTransform = AZ::Transform::CreateFromMatrix3x3AndTranslation(obbMatrix3x3, obbExtents);
-            obb.SetTransformation(obbTransform);
-            actor->SetNodeOBB(nodeIndex, obb);
 
             if (GetLogging())
             {
@@ -547,42 +499,42 @@ namespace EMotionFX
     // read all submotions in one chunk
     bool ChunkProcessorMotionSubMotions::Process(MCore::File* file, Importer::ImportParameters& importParams)
     {
-        const MCore::Endian::EEndianType endianType = importParams.mEndianType;
-        Motion* motion = importParams.mMotion;
+        const MCore::Endian::EEndianType endianType = importParams.m_endianType;
+        Motion* motion = importParams.m_motion;
         AZ_Assert(motion, "Expected a valid motion object.");
 
         // read the header
         FileFormat::Motion_SubMotions subMotionsHeader;
         file->Read(&subMotionsHeader, sizeof(FileFormat::Motion_SubMotions));
-        MCore::Endian::ConvertUnsignedInt32(&subMotionsHeader.mNumSubMotions, endianType);
+        MCore::Endian::ConvertUnsignedInt32(&subMotionsHeader.m_numSubMotions, endianType);
 
         // Create a uniform motion data.
         NonUniformMotionData* motionData = aznew NonUniformMotionData();
         motion->SetMotionData(motionData);
-        motionData->Resize(subMotionsHeader.mNumSubMotions, motionData->GetNumMorphs(), motionData->GetNumFloats());
+        motionData->Resize(subMotionsHeader.m_numSubMotions, motionData->GetNumMorphs(), motionData->GetNumFloats());
 
         // for all submotions
-        for (uint32 s = 0; s < subMotionsHeader.mNumSubMotions; ++s)
+        for (uint32 s = 0; s < subMotionsHeader.m_numSubMotions; ++s)
         {
             FileFormat::Motion_SkeletalSubMotion fileSubMotion;
             file->Read(&fileSubMotion, sizeof(FileFormat::Motion_SkeletalSubMotion));
 
             // convert endian
-            MCore::Endian::ConvertUnsignedInt32(&fileSubMotion.mNumPosKeys, endianType);
-            MCore::Endian::ConvertUnsignedInt32(&fileSubMotion.mNumRotKeys, endianType);
-            MCore::Endian::ConvertUnsignedInt32(&fileSubMotion.mNumScaleKeys, endianType);
+            MCore::Endian::ConvertUnsignedInt32(&fileSubMotion.m_numPosKeys, endianType);
+            MCore::Endian::ConvertUnsignedInt32(&fileSubMotion.m_numRotKeys, endianType);
+            MCore::Endian::ConvertUnsignedInt32(&fileSubMotion.m_numScaleKeys, endianType);
 
             // read the motion part name
-            const char* motionJointName = SharedHelperData::ReadString(file, importParams.mSharedData, endianType);
+            const char* motionJointName = SharedHelperData::ReadString(file, importParams.m_sharedData, endianType);
 
             // convert into Core objects
-            AZ::Vector3 posePos(fileSubMotion.mPosePos.mX, fileSubMotion.mPosePos.mY, fileSubMotion.mPosePos.mZ);
-            AZ::Vector3 poseScale(fileSubMotion.mPoseScale.mX, fileSubMotion.mPoseScale.mY, fileSubMotion.mPoseScale.mZ);
-            MCore::Compressed16BitQuaternion poseRot(fileSubMotion.mPoseRot.mX, fileSubMotion.mPoseRot.mY, fileSubMotion.mPoseRot.mZ, fileSubMotion.mPoseRot.mW);
+            AZ::Vector3 posePos(fileSubMotion.m_posePos.m_x, fileSubMotion.m_posePos.m_y, fileSubMotion.m_posePos.m_z);
+            AZ::Vector3 poseScale(fileSubMotion.m_poseScale.m_x, fileSubMotion.m_poseScale.m_y, fileSubMotion.m_poseScale.m_z);
+            MCore::Compressed16BitQuaternion poseRot(fileSubMotion.m_poseRot.m_x, fileSubMotion.m_poseRot.m_y, fileSubMotion.m_poseRot.m_z, fileSubMotion.m_poseRot.m_w);
 
-            AZ::Vector3 bindPosePos(fileSubMotion.mBindPosePos.mX, fileSubMotion.mBindPosePos.mY, fileSubMotion.mBindPosePos.mZ);
-            AZ::Vector3 bindPoseScale(fileSubMotion.mBindPoseScale.mX, fileSubMotion.mBindPoseScale.mY, fileSubMotion.mBindPoseScale.mZ);
-            MCore::Compressed16BitQuaternion bindPoseRot(fileSubMotion.mBindPoseRot.mX, fileSubMotion.mBindPoseRot.mY, fileSubMotion.mBindPoseRot.mZ, fileSubMotion.mBindPoseRot.mW);
+            AZ::Vector3 bindPosePos(fileSubMotion.m_bindPosePos.m_x, fileSubMotion.m_bindPosePos.m_y, fileSubMotion.m_bindPosePos.m_z);
+            AZ::Vector3 bindPoseScale(fileSubMotion.m_bindPoseScale.m_x, fileSubMotion.m_bindPoseScale.m_y, fileSubMotion.m_bindPoseScale.m_z);
+            MCore::Compressed16BitQuaternion bindPoseRot(fileSubMotion.m_bindPoseRot.m_x, fileSubMotion.m_bindPoseRot.m_y, fileSubMotion.m_bindPoseRot.m_z, fileSubMotion.m_bindPoseRot.m_w);
 
             // convert endian and coordinate system
             ConvertVector3(&posePos, endianType);
@@ -624,9 +576,9 @@ namespace EMotionFX
                     static_cast<float>(bindPoseScale.GetX()),
                     static_cast<float>(bindPoseScale.GetY()),
                     static_cast<float>(bindPoseScale.GetZ()));
-                MCore::LogDetailedInfo("    + Num Pos Keys:          %d", fileSubMotion.mNumPosKeys);
-                MCore::LogDetailedInfo("    + Num Rot Keys:          %d", fileSubMotion.mNumRotKeys);
-                MCore::LogDetailedInfo("    + Num Scale Keys:        %d", fileSubMotion.mNumScaleKeys);
+                MCore::LogDetailedInfo("    + Num Pos Keys:          %d", fileSubMotion.m_numPosKeys);
+                MCore::LogDetailedInfo("    + Num Rot Keys:          %d", fileSubMotion.m_numRotKeys);
+                MCore::LogDetailedInfo("    + Num Scale Keys:        %d", fileSubMotion.m_numScaleKeys);
             }
 
             motionData->SetJointName(s, motionJointName);
@@ -642,62 +594,62 @@ namespace EMotionFX
 
             // now read the animation data
             uint32 i;
-            if (fileSubMotion.mNumPosKeys > 0)
+            if (fileSubMotion.m_numPosKeys > 0)
             {
-                motionData->AllocateJointPositionSamples(s, fileSubMotion.mNumPosKeys);
-                for (i = 0; i < fileSubMotion.mNumPosKeys; ++i)
+                motionData->AllocateJointPositionSamples(s, fileSubMotion.m_numPosKeys);
+                for (i = 0; i < fileSubMotion.m_numPosKeys; ++i)
                 {
                     FileFormat::Motion_Vector3Key key;
                     file->Read(&key, sizeof(FileFormat::Motion_Vector3Key));
 
-                    MCore::Endian::ConvertFloat(&key.mTime, endianType);
-                    AZ::Vector3 pos(key.mValue.mX, key.mValue.mY, key.mValue.mZ);
+                    MCore::Endian::ConvertFloat(&key.m_time, endianType);
+                    AZ::Vector3 pos(key.m_value.m_x, key.m_value.m_y, key.m_value.m_z);
                     ConvertVector3(&pos, endianType);
 
-                    motionData->SetJointPositionSample(s, i, {key.mTime, pos});
+                    motionData->SetJointPositionSample(s, i, {key.m_time, pos});
                 }
             }
 
             // now the rotation keys
-            if (fileSubMotion.mNumRotKeys > 0)
+            if (fileSubMotion.m_numRotKeys > 0)
             {
-                motionData->AllocateJointRotationSamples(s, fileSubMotion.mNumRotKeys);
-                for (i = 0; i < fileSubMotion.mNumRotKeys; ++i)
+                motionData->AllocateJointRotationSamples(s, fileSubMotion.m_numRotKeys);
+                for (i = 0; i < fileSubMotion.m_numRotKeys; ++i)
                 {
                     FileFormat::Motion_16BitQuaternionKey key;
                     file->Read(&key, sizeof(FileFormat::Motion_16BitQuaternionKey));
 
-                    MCore::Endian::ConvertFloat(&key.mTime, endianType);
-                    MCore::Compressed16BitQuaternion rot(key.mValue.mX, key.mValue.mY, key.mValue.mZ, key.mValue.mW);
+                    MCore::Endian::ConvertFloat(&key.m_time, endianType);
+                    MCore::Compressed16BitQuaternion rot(key.m_value.m_x, key.m_value.m_y, key.m_value.m_z, key.m_value.m_w);
                     Convert16BitQuaternion(&rot, endianType);
 
-                    motionData->SetJointRotationSample(s, i, {key.mTime, rot.ToQuaternion().GetNormalized()});
+                    motionData->SetJointRotationSample(s, i, {key.m_time, rot.ToQuaternion().GetNormalized()});
                 }
             }
 
 
     #ifndef EMFX_SCALE_DISABLED
             // and the scale keys
-            if (fileSubMotion.mNumScaleKeys > 0)
+            if (fileSubMotion.m_numScaleKeys > 0)
             {
-                motionData->AllocateJointScaleSamples(s, fileSubMotion.mNumScaleKeys);
-                for (i = 0; i < fileSubMotion.mNumScaleKeys; ++i)
+                motionData->AllocateJointScaleSamples(s, fileSubMotion.m_numScaleKeys);
+                for (i = 0; i < fileSubMotion.m_numScaleKeys; ++i)
                 {
                     FileFormat::Motion_Vector3Key key;
                     file->Read(&key, sizeof(FileFormat::Motion_Vector3Key));
 
-                    MCore::Endian::ConvertFloat(&key.mTime, endianType);
-                    AZ::Vector3 scale(key.mValue.mX, key.mValue.mY, key.mValue.mZ);
+                    MCore::Endian::ConvertFloat(&key.m_time, endianType);
+                    AZ::Vector3 scale(key.m_value.m_x, key.m_value.m_y, key.m_value.m_z);
                     ConvertScale(&scale, endianType);
 
-                    motionData->SetJointScaleSample(s, i, {key.mTime, scale});
+                    motionData->SetJointScaleSample(s, i, {key.m_time, scale});
                 }
             }
     #else   // no scaling
             // and the scale keys
-            if (fileSubMotion.mNumScaleKeys > 0)
+            if (fileSubMotion.m_numScaleKeys > 0)
             {
-                for (i = 0; i < fileSubMotion.mNumScaleKeys; ++i)
+                for (i = 0; i < fileSubMotion.m_numScaleKeys; ++i)
                 {
                     FileFormat::Motion_Vector3Key key;
                     file->Read(&key, sizeof(FileFormat::Motion_Vector3Key));
@@ -715,8 +667,8 @@ namespace EMotionFX
 
     bool ChunkProcessorMotionInfo::Process(MCore::File* file, Importer::ImportParameters& importParams)
     {
-        const MCore::Endian::EEndianType endianType = importParams.mEndianType;
-        Motion* motion = importParams.mMotion;
+        const MCore::Endian::EEndianType endianType = importParams.m_endianType;
+        Motion* motion = importParams.m_motion;
 
         MCORE_ASSERT(motion);
 
@@ -725,8 +677,8 @@ namespace EMotionFX
         file->Read(&fileInformation, sizeof(FileFormat::Motion_Info));
 
         // convert endian
-        MCore::Endian::ConvertUnsignedInt32(&fileInformation.mMotionExtractionMask, endianType);
-        MCore::Endian::ConvertUnsignedInt32(&fileInformation.mMotionExtractionNodeIndex, endianType);
+        MCore::Endian::ConvertUnsignedInt32(&fileInformation.m_motionExtractionMask, endianType);
+        MCore::Endian::ConvertUnsignedInt32(&fileInformation.m_motionExtractionNodeIndex, endianType);
 
         if (GetLogging())
         {
@@ -735,15 +687,15 @@ namespace EMotionFX
 
         if (GetLogging())
         {
-            MCore::LogDetailedInfo("   + Unit Type                     = %d", fileInformation.mUnitType);
+            MCore::LogDetailedInfo("   + Unit Type                     = %d", fileInformation.m_unitType);
         }
 
-        motion->SetUnitType(static_cast<MCore::Distance::EUnitType>(fileInformation.mUnitType));
+        motion->SetUnitType(static_cast<MCore::Distance::EUnitType>(fileInformation.m_unitType));
         motion->SetFileUnitType(motion->GetUnitType());
 
 
         // Try to remain backward compatible by still capturing height when this was enabled in the old mask system.
-        if (fileInformation.mMotionExtractionMask & (1 << 2))   // The 1<<2 was the mask used for position Z in the old motion extraction mask settings
+        if (fileInformation.m_motionExtractionMask & (1 << 2))   // The 1<<2 was the mask used for position Z in the old motion extraction mask settings
         {
             motion->SetMotionExtractionFlags(MOTIONEXTRACT_CAPTURE_Z);
         }
@@ -755,8 +707,8 @@ namespace EMotionFX
 
     bool ChunkProcessorMotionInfo2::Process(MCore::File* file, Importer::ImportParameters& importParams)
     {
-        const MCore::Endian::EEndianType endianType = importParams.mEndianType;
-        Motion* motion = importParams.mMotion;
+        const MCore::Endian::EEndianType endianType = importParams.m_endianType;
+        Motion* motion = importParams.m_motion;
         MCORE_ASSERT(motion);
 
         // read the chunk
@@ -764,8 +716,8 @@ namespace EMotionFX
         file->Read(&fileInformation, sizeof(FileFormat::Motion_Info2));
 
         // convert endian
-        MCore::Endian::ConvertUnsignedInt32(&fileInformation.mMotionExtractionFlags, endianType);
-        MCore::Endian::ConvertUnsignedInt32(&fileInformation.mMotionExtractionNodeIndex, endianType);
+        MCore::Endian::ConvertUnsignedInt32(&fileInformation.m_motionExtractionFlags, endianType);
+        MCore::Endian::ConvertUnsignedInt32(&fileInformation.m_motionExtractionNodeIndex, endianType);
 
         if (GetLogging())
         {
@@ -774,13 +726,13 @@ namespace EMotionFX
 
         if (GetLogging())
         {
-            MCore::LogDetailedInfo("   + Unit Type                     = %d", fileInformation.mUnitType);
-            MCore::LogDetailedInfo("   + Motion Extraction Flags       = 0x%x [capZ=%d]", fileInformation.mMotionExtractionFlags, (fileInformation.mMotionExtractionFlags & EMotionFX::MOTIONEXTRACT_CAPTURE_Z) ? 1 : 0);
+            MCore::LogDetailedInfo("   + Unit Type                     = %d", fileInformation.m_unitType);
+            MCore::LogDetailedInfo("   + Motion Extraction Flags       = 0x%x [capZ=%d]", fileInformation.m_motionExtractionFlags, (fileInformation.m_motionExtractionFlags & EMotionFX::MOTIONEXTRACT_CAPTURE_Z) ? 1 : 0);
         }
 
-        motion->SetUnitType(static_cast<MCore::Distance::EUnitType>(fileInformation.mUnitType));
+        motion->SetUnitType(static_cast<MCore::Distance::EUnitType>(fileInformation.m_unitType));
         motion->SetFileUnitType(motion->GetUnitType());
-        motion->SetMotionExtractionFlags(static_cast<EMotionFX::EMotionExtractionFlags>(fileInformation.mMotionExtractionFlags));
+        motion->SetMotionExtractionFlags(static_cast<EMotionFX::EMotionExtractionFlags>(fileInformation.m_motionExtractionFlags));
 
         return true;
     }
@@ -789,8 +741,8 @@ namespace EMotionFX
 
     bool ChunkProcessorMotionInfo3::Process(MCore::File* file, Importer::ImportParameters& importParams)
     {
-        const MCore::Endian::EEndianType endianType = importParams.mEndianType;
-        Motion* motion = importParams.mMotion;
+        const MCore::Endian::EEndianType endianType = importParams.m_endianType;
+        Motion* motion = importParams.m_motion;
         MCORE_ASSERT(motion);
 
         // read the chunk
@@ -798,8 +750,8 @@ namespace EMotionFX
         file->Read(&fileInformation, sizeof(FileFormat::Motion_Info3));
 
         // convert endian
-        MCore::Endian::ConvertUnsignedInt32(&fileInformation.mMotionExtractionFlags, endianType);
-        MCore::Endian::ConvertUnsignedInt32(&fileInformation.mMotionExtractionNodeIndex, endianType);
+        MCore::Endian::ConvertUnsignedInt32(&fileInformation.m_motionExtractionFlags, endianType);
+        MCore::Endian::ConvertUnsignedInt32(&fileInformation.m_motionExtractionNodeIndex, endianType);
 
         if (GetLogging())
         {
@@ -808,15 +760,15 @@ namespace EMotionFX
 
         if (GetLogging())
         {
-            MCore::LogDetailedInfo("   + Unit Type                     = %d", fileInformation.mUnitType);
-            MCore::LogDetailedInfo("   + Is Additive Motion            = %d", fileInformation.mIsAdditive);
-            MCore::LogDetailedInfo("   + Motion Extraction Flags       = 0x%x [capZ=%d]", fileInformation.mMotionExtractionFlags, (fileInformation.mMotionExtractionFlags & EMotionFX::MOTIONEXTRACT_CAPTURE_Z) ? 1 : 0);
+            MCore::LogDetailedInfo("   + Unit Type                     = %d", fileInformation.m_unitType);
+            MCore::LogDetailedInfo("   + Is Additive Motion            = %d", fileInformation.m_isAdditive);
+            MCore::LogDetailedInfo("   + Motion Extraction Flags       = 0x%x [capZ=%d]", fileInformation.m_motionExtractionFlags, (fileInformation.m_motionExtractionFlags & EMotionFX::MOTIONEXTRACT_CAPTURE_Z) ? 1 : 0);
         }
 
-        motion->SetUnitType(static_cast<MCore::Distance::EUnitType>(fileInformation.mUnitType));
-        importParams.m_additiveMotion = (fileInformation.mIsAdditive == 0 ? false : true);
+        motion->SetUnitType(static_cast<MCore::Distance::EUnitType>(fileInformation.m_unitType));
+        importParams.m_additiveMotion = (fileInformation.m_isAdditive == 0 ? false : true);
         motion->SetFileUnitType(motion->GetUnitType());
-        motion->SetMotionExtractionFlags(static_cast<EMotionFX::EMotionExtractionFlags>(fileInformation.mMotionExtractionFlags));
+        motion->SetMotionExtractionFlags(static_cast<EMotionFX::EMotionExtractionFlags>(fileInformation.m_motionExtractionFlags));
 
         return true;
     }
@@ -825,8 +777,8 @@ namespace EMotionFX
 
     bool ChunkProcessorActorPhysicsSetup::Process(MCore::File* file, Importer::ImportParameters& importParams)
     {
-        const MCore::Endian::EEndianType endianType = importParams.mEndianType;
-        Actor* actor = importParams.mActor;
+        const MCore::Endian::EEndianType endianType = importParams.m_endianType;
+        Actor* actor = importParams.m_actor;
 
         AZ::u32 bufferSize;
         file->Read(&bufferSize, sizeof(AZ::u32));
@@ -849,7 +801,7 @@ namespace EMotionFX
 
         if (resultPhysicsSetup)
         {
-            if (importParams.mActorSettings->mOptimizeForServer)
+            if (importParams.m_actorSettings->m_optimizeForServer)
             {
                 resultPhysicsSetup->OptimizeForServer();
             }
@@ -863,8 +815,8 @@ namespace EMotionFX
 
     bool ChunkProcessorActorSimulatedObjectSetup::Process(MCore::File* file, Importer::ImportParameters& importParams)
     {
-        const MCore::Endian::EEndianType endianType = importParams.mEndianType;
-        Actor* actor = importParams.mActor;
+        const MCore::Endian::EEndianType endianType = importParams.m_endianType;
+        Actor* actor = importParams.m_actor;
 
         AZ::u32 bufferSize;
         file->Read(&bufferSize, sizeof(AZ::u32));
@@ -896,13 +848,13 @@ namespace EMotionFX
 
     bool ChunkProcessorMeshAsset::Process(MCore::File* file, Importer::ImportParameters& importParams)
     {
-        const MCore::Endian::EEndianType endianType = importParams.mEndianType;
-        Actor* actor = importParams.mActor;
+        const MCore::Endian::EEndianType endianType = importParams.m_endianType;
+        Actor* actor = importParams.m_actor;
         AZ_Assert(actor, "Actor needs to be valid.");
 
         EMotionFX::FileFormat::Actor_MeshAsset meshAssetChunk;
         file->Read(&meshAssetChunk, sizeof(FileFormat::Actor_MeshAsset));
-        const char* meshAssetIdString = SharedHelperData::ReadString(file, importParams.mSharedData, endianType);
+        const char* meshAssetIdString = SharedHelperData::ReadString(file, importParams.m_sharedData, endianType);
         const AZ::Data::AssetId meshAssetId = AZ::Data::AssetId::CreateString(meshAssetIdString);
         if (meshAssetId.IsValid())
         {
@@ -922,8 +874,8 @@ namespace EMotionFX
 
     bool ChunkProcessorMotionEventTrackTable::Process(MCore::File* file, Importer::ImportParameters& importParams)
     {
-        const MCore::Endian::EEndianType endianType = importParams.mEndianType;
-        Motion* motion = importParams.mMotion;
+        const MCore::Endian::EEndianType endianType = importParams.m_endianType;
+        Motion* motion = importParams.m_motion;
 
         MCORE_ASSERT(motion);
 
@@ -932,53 +884,53 @@ namespace EMotionFX
         file->Read(&fileEventTable, sizeof(FileFormat::FileMotionEventTable));
 
         // convert endian
-        MCore::Endian::ConvertUnsignedInt32(&fileEventTable.mNumTracks, endianType);
+        MCore::Endian::ConvertUnsignedInt32(&fileEventTable.m_numTracks, endianType);
 
         if (GetLogging())
         {
             MCore::LogDetailedInfo("- Motion Event Table:");
-            MCore::LogDetailedInfo("  + Num Tracks = %d", fileEventTable.mNumTracks);
+            MCore::LogDetailedInfo("  + Num Tracks = %d", fileEventTable.m_numTracks);
         }
 
         // get the motion event table the reserve the event tracks
         MotionEventTable* motionEventTable = motion->GetEventTable();
-        motionEventTable->ReserveNumTracks(fileEventTable.mNumTracks);
+        motionEventTable->ReserveNumTracks(fileEventTable.m_numTracks);
 
         // read all tracks
         AZStd::string trackName;
-        MCore::Array<AZStd::string> typeStrings;
-        MCore::Array<AZStd::string> paramStrings;
-        MCore::Array<AZStd::string> mirrorTypeStrings;
-        for (uint32 t = 0; t < fileEventTable.mNumTracks; ++t)
+        AZStd::vector<AZStd::string> typeStrings;
+        AZStd::vector<AZStd::string> paramStrings;
+        AZStd::vector<AZStd::string> mirrorTypeStrings;
+        for (uint32 t = 0; t < fileEventTable.m_numTracks; ++t)
         {
             // read the motion event table header
             FileFormat::FileMotionEventTrack fileTrack;
             file->Read(&fileTrack, sizeof(FileFormat::FileMotionEventTrack));
 
             // read the track name
-            trackName = SharedHelperData::ReadString(file, importParams.mSharedData, endianType);
+            trackName = SharedHelperData::ReadString(file, importParams.m_sharedData, endianType);
 
             // convert endian
-            MCore::Endian::ConvertUnsignedInt32(&fileTrack.mNumEvents,             endianType);
-            MCore::Endian::ConvertUnsignedInt32(&fileTrack.mNumTypeStrings,        endianType);
-            MCore::Endian::ConvertUnsignedInt32(&fileTrack.mNumParamStrings,       endianType);
-            MCore::Endian::ConvertUnsignedInt32(&fileTrack.mNumMirrorTypeStrings,  endianType);
+            MCore::Endian::ConvertUnsignedInt32(&fileTrack.m_numEvents,             endianType);
+            MCore::Endian::ConvertUnsignedInt32(&fileTrack.m_numTypeStrings,        endianType);
+            MCore::Endian::ConvertUnsignedInt32(&fileTrack.m_numParamStrings,       endianType);
+            MCore::Endian::ConvertUnsignedInt32(&fileTrack.m_numMirrorTypeStrings,  endianType);
 
             if (GetLogging())
             {
                 MCore::LogDetailedInfo("- Motion Event Track:");
                 MCore::LogDetailedInfo("   + Name       = %s", trackName.c_str());
-                MCore::LogDetailedInfo("   + Num events = %d", fileTrack.mNumEvents);
-                MCore::LogDetailedInfo("   + Num types  = %d", fileTrack.mNumTypeStrings);
-                MCore::LogDetailedInfo("   + Num params = %d", fileTrack.mNumParamStrings);
-                MCore::LogDetailedInfo("   + Num mirror = %d", fileTrack.mNumMirrorTypeStrings);
-                MCore::LogDetailedInfo("   + Enabled    = %d", fileTrack.mIsEnabled);
+                MCore::LogDetailedInfo("   + Num events = %d", fileTrack.m_numEvents);
+                MCore::LogDetailedInfo("   + Num types  = %d", fileTrack.m_numTypeStrings);
+                MCore::LogDetailedInfo("   + Num params = %d", fileTrack.m_numParamStrings);
+                MCore::LogDetailedInfo("   + Num mirror = %d", fileTrack.m_numMirrorTypeStrings);
+                MCore::LogDetailedInfo("   + Enabled    = %d", fileTrack.m_isEnabled);
             }
 
             // the even type and parameter strings
-            typeStrings.Resize(fileTrack.mNumTypeStrings);
-            paramStrings.Resize(fileTrack.mNumParamStrings);
-            mirrorTypeStrings.Resize(fileTrack.mNumMirrorTypeStrings);
+            typeStrings.resize(fileTrack.m_numTypeStrings);
+            paramStrings.resize(fileTrack.m_numParamStrings);
+            mirrorTypeStrings.resize(fileTrack.m_numMirrorTypeStrings);
 
             // read all type strings
             if (GetLogging())
@@ -986,9 +938,9 @@ namespace EMotionFX
                 MCore::LogDetailedInfo("   + Event types:");
             }
             uint32 i;
-            for (i = 0; i < fileTrack.mNumTypeStrings; ++i)
+            for (i = 0; i < fileTrack.m_numTypeStrings; ++i)
             {
-                typeStrings[i] = SharedHelperData::ReadString(file, importParams.mSharedData, endianType);
+                typeStrings[i] = SharedHelperData::ReadString(file, importParams.m_sharedData, endianType);
                 if (GetLogging())
                 {
                     MCore::LogDetailedInfo("     [%d] = '%s'", i, typeStrings[i].c_str());
@@ -1000,9 +952,9 @@ namespace EMotionFX
             {
                 MCore::LogDetailedInfo("   + Parameters:");
             }
-            for (i = 0; i < fileTrack.mNumParamStrings; ++i)
+            for (i = 0; i < fileTrack.m_numParamStrings; ++i)
             {
-                paramStrings[i] = SharedHelperData::ReadString(file, importParams.mSharedData, endianType);
+                paramStrings[i] = SharedHelperData::ReadString(file, importParams.m_sharedData, endianType);
                 if (GetLogging())
                 {
                     MCore::LogDetailedInfo("     [%d] = '%s'", i, paramStrings[i].c_str());
@@ -1013,9 +965,9 @@ namespace EMotionFX
             {
                 MCore::LogDetailedInfo("   + Mirror Type Strings:");
             }
-            for (i = 0; i < fileTrack.mNumMirrorTypeStrings; ++i)
+            for (i = 0; i < fileTrack.m_numMirrorTypeStrings; ++i)
             {
-                mirrorTypeStrings[i] = SharedHelperData::ReadString(file, importParams.mSharedData, endianType);
+                mirrorTypeStrings[i] = SharedHelperData::ReadString(file, importParams.m_sharedData, endianType);
                 if (GetLogging())
                 {
                     MCore::LogDetailedInfo("     [%d] = '%s'", i, mirrorTypeStrings[i].c_str());
@@ -1024,8 +976,8 @@ namespace EMotionFX
 
             // create the default event track
             MotionEventTrack* track = MotionEventTrack::Create(trackName.c_str(), motion);
-            track->SetIsEnabled(fileTrack.mIsEnabled != 0);
-            track->ReserveNumEvents(fileTrack.mNumEvents);
+            track->SetIsEnabled(fileTrack.m_isEnabled != 0);
+            track->ReserveNumEvents(fileTrack.m_numEvents);
             motionEventTable->AddTrack(track);
 
             // read all motion events
@@ -1033,35 +985,35 @@ namespace EMotionFX
             {
                 MCore::LogDetailedInfo("   + Motion Events:");
             }
-            for (i = 0; i < fileTrack.mNumEvents; ++i)
+            for (i = 0; i < fileTrack.m_numEvents; ++i)
             {
                 // read the event header
                 FileFormat::FileMotionEvent fileEvent;
                 file->Read(&fileEvent, sizeof(FileFormat::FileMotionEvent));
 
                 // convert endian
-                MCore::Endian::ConvertUnsignedInt32(&fileEvent.mEventTypeIndex, endianType);
-                MCore::Endian::ConvertUnsignedInt16(&fileEvent.mParamIndex, endianType);
-                MCore::Endian::ConvertUnsignedInt32(&fileEvent.mMirrorTypeIndex, endianType);
-                MCore::Endian::ConvertFloat(&fileEvent.mStartTime, endianType);
-                MCore::Endian::ConvertFloat(&fileEvent.mEndTime, endianType);
+                MCore::Endian::ConvertUnsignedInt32(&fileEvent.m_eventTypeIndex, endianType);
+                MCore::Endian::ConvertUnsignedInt16(&fileEvent.m_paramIndex, endianType);
+                MCore::Endian::ConvertUnsignedInt32(&fileEvent.m_mirrorTypeIndex, endianType);
+                MCore::Endian::ConvertFloat(&fileEvent.m_startTime, endianType);
+                MCore::Endian::ConvertFloat(&fileEvent.m_endTime, endianType);
 
                 // print motion event information
                 if (GetLogging())
                 {
-                    MCore::LogDetailedInfo("     [%d] StartTime = %f  -  EndTime = %f  -  Type = '%s'  -  Param = '%s'  -  Mirror = '%s'", i, fileEvent.mStartTime, fileEvent.mEndTime, typeStrings[fileEvent.mEventTypeIndex].c_str(), paramStrings[fileEvent.mParamIndex].c_str(), mirrorTypeStrings[fileEvent.mMirrorTypeIndex].c_str());
+                    MCore::LogDetailedInfo("     [%d] StartTime = %f  -  EndTime = %f  -  Type = '%s'  -  Param = '%s'  -  Mirror = '%s'", i, fileEvent.m_startTime, fileEvent.m_endTime, typeStrings[fileEvent.m_eventTypeIndex].c_str(), paramStrings[fileEvent.m_paramIndex].c_str(), mirrorTypeStrings[fileEvent.m_mirrorTypeIndex].c_str());
                 }
 
-                const AZStd::string eventTypeName = fileEvent.mEventTypeIndex != MCORE_INVALIDINDEX32 ?
-                    typeStrings[fileEvent.mEventTypeIndex] : "";
-                const AZStd::string mirrorTypeName = fileEvent.mMirrorTypeIndex != MCORE_INVALIDINDEX32 ?
-                    mirrorTypeStrings[fileEvent.mMirrorTypeIndex] : "";
-                const AZStd::string params = paramStrings[fileEvent.mParamIndex];
+                const AZStd::string eventTypeName = fileEvent.m_eventTypeIndex != MCORE_INVALIDINDEX32 ?
+                    typeStrings[fileEvent.m_eventTypeIndex] : "";
+                const AZStd::string mirrorTypeName = fileEvent.m_mirrorTypeIndex != MCORE_INVALIDINDEX32 ?
+                    mirrorTypeStrings[fileEvent.m_mirrorTypeIndex] : "";
+                const AZStd::string params = paramStrings[fileEvent.m_paramIndex];
 
                 // add the event
                 track->AddEvent(
-                    fileEvent.mStartTime,
-                    fileEvent.mEndTime,
+                    fileEvent.m_startTime,
+                    fileEvent.m_endTime,
                     GetEventManager().FindOrCreateEventData<EMotionFX::TwoStringEventData>(eventTypeName, params, mirrorTypeName)
                     );
             }
@@ -1074,7 +1026,7 @@ namespace EMotionFX
 
     bool ChunkProcessorMotionEventTrackTable2::Process(MCore::File* file, Importer::ImportParameters& importParams)
     {
-        Motion* motion = importParams.mMotion;
+        Motion* motion = importParams.m_motion;
 
         MCORE_ASSERT(motion);
 
@@ -1113,7 +1065,7 @@ namespace EMotionFX
 
     bool ChunkProcessorMotionEventTrackTable3::Process(MCore::File* file, Importer::ImportParameters& importParams)
     {
-        Motion* motion = importParams.mMotion;
+        Motion* motion = importParams.m_motion;
         MCORE_ASSERT(motion);
 
         FileFormat::FileMotionEventTableSerialized fileEventTable;
@@ -1164,8 +1116,8 @@ namespace EMotionFX
 
     bool ChunkProcessorActorInfo::Process(MCore::File* file, Importer::ImportParameters& importParams)
     {
-        const MCore::Endian::EEndianType endianType = importParams.mEndianType;
-        Actor* actor = importParams.mActor;
+        const MCore::Endian::EEndianType endianType = importParams.m_endianType;
+        Actor* actor = importParams.m_actor;
 
         MCORE_ASSERT(actor);
 
@@ -1174,10 +1126,10 @@ namespace EMotionFX
         file->Read(&fileInformation, sizeof(FileFormat::Actor_Info));
 
         // convert endian
-        MCore::Endian::ConvertUnsignedInt32(&fileInformation.mMotionExtractionNodeIndex, endianType);
-        MCore::Endian::ConvertUnsignedInt32(&fileInformation.mTrajectoryNodeIndex, endianType);
-        MCore::Endian::ConvertUnsignedInt32(&fileInformation.mNumLODs, endianType);
-        MCore::Endian::ConvertFloat(&fileInformation.mRetargetRootOffset, endianType);
+        MCore::Endian::ConvertUnsignedInt32(&fileInformation.m_motionExtractionNodeIndex, endianType);
+        MCore::Endian::ConvertUnsignedInt32(&fileInformation.m_trajectoryNodeIndex, endianType);
+        MCore::Endian::ConvertUnsignedInt32(&fileInformation.m_numLoDs, endianType);
+        MCore::Endian::ConvertFloat(&fileInformation.m_retargetRootOffset, endianType);
 
         if (GetLogging())
         {
@@ -1185,11 +1137,11 @@ namespace EMotionFX
         }
 
         // read the source application, original filename and the compilation date of the exporter string
-        SharedHelperData::ReadString(file, importParams.mSharedData, endianType);
-        SharedHelperData::ReadString(file, importParams.mSharedData, endianType);
-        SharedHelperData::ReadString(file, importParams.mSharedData, endianType);
+        SharedHelperData::ReadString(file, importParams.m_sharedData, endianType);
+        SharedHelperData::ReadString(file, importParams.m_sharedData, endianType);
+        SharedHelperData::ReadString(file, importParams.m_sharedData, endianType);
 
-        const char* name = SharedHelperData::ReadString(file, importParams.mSharedData, endianType);
+        const char* name = SharedHelperData::ReadString(file, importParams.m_sharedData, endianType);
         actor->SetName(name);
         if (GetLogging())
         {
@@ -1199,16 +1151,19 @@ namespace EMotionFX
         // print motion event information
         if (GetLogging())
         {
-            MCore::LogDetailedInfo("   + Exporter version       = v%d.%d", fileInformation.mExporterHighVersion, fileInformation.mExporterLowVersion);
-            MCore::LogDetailedInfo("   + Num LODs               = %d", fileInformation.mNumLODs);
-            MCore::LogDetailedInfo("   + Motion Extraction node = %d", fileInformation.mMotionExtractionNodeIndex);
-            MCore::LogDetailedInfo("   + Retarget root offset   = %f", fileInformation.mRetargetRootOffset);
-            MCore::LogDetailedInfo("   + UnitType               = %d", fileInformation.mUnitType);
+            MCore::LogDetailedInfo("   + Exporter version       = v%d.%d", fileInformation.m_exporterHighVersion, fileInformation.m_exporterLowVersion);
+            MCore::LogDetailedInfo("   + Num LODs               = %d", fileInformation.m_numLoDs);
+            MCore::LogDetailedInfo("   + Motion Extraction node = %d", fileInformation.m_motionExtractionNodeIndex);
+            MCore::LogDetailedInfo("   + Retarget root offset   = %f", fileInformation.m_retargetRootOffset);
+            MCore::LogDetailedInfo("   + UnitType               = %d", fileInformation.m_unitType);
         }
 
-        actor->SetMotionExtractionNodeIndex(fileInformation.mMotionExtractionNodeIndex);
-        //  actor->SetRetargetOffset( fileInformation.mRetargetRootOffset );
-        actor->SetUnitType(static_cast<MCore::Distance::EUnitType>(fileInformation.mUnitType));
+        actor->SetMotionExtractionNodeIndex(fileInformation.m_motionExtractionNodeIndex);
+        if (fileInformation.m_motionExtractionNodeIndex != MCORE_INVALIDINDEX32)
+        {
+            actor->SetMotionExtractionNodeIndex(fileInformation.m_motionExtractionNodeIndex);
+        }
+        actor->SetUnitType(static_cast<MCore::Distance::EUnitType>(fileInformation.m_unitType));
         actor->SetFileUnitType(actor->GetUnitType());
 
         return true;
@@ -1218,17 +1173,17 @@ namespace EMotionFX
 
     bool ChunkProcessorActorInfo2::Process(MCore::File* file, Importer::ImportParameters& importParams)
     {
-        const MCore::Endian::EEndianType endianType = importParams.mEndianType;
-        Actor* actor = importParams.mActor;
+        const MCore::Endian::EEndianType endianType = importParams.m_endianType;
+        Actor* actor = importParams.m_actor;
 
         // read the chunk
         FileFormat::Actor_Info2 fileInformation;
         file->Read(&fileInformation, sizeof(FileFormat::Actor_Info2));
 
         // convert endian
-        MCore::Endian::ConvertUnsignedInt32(&fileInformation.mMotionExtractionNodeIndex, endianType);
-        MCore::Endian::ConvertUnsignedInt32(&fileInformation.mRetargetRootNodeIndex, endianType);
-        MCore::Endian::ConvertUnsignedInt32(&fileInformation.mNumLODs, endianType);
+        MCore::Endian::ConvertUnsignedInt32(&fileInformation.m_motionExtractionNodeIndex, endianType);
+        MCore::Endian::ConvertUnsignedInt32(&fileInformation.m_retargetRootNodeIndex, endianType);
+        MCore::Endian::ConvertUnsignedInt32(&fileInformation.m_numLoDs, endianType);
 
         if (GetLogging())
         {
@@ -1236,26 +1191,32 @@ namespace EMotionFX
         }
 
         // read the source application, original filename and the compilation date of the exporter string
-        SharedHelperData::ReadString(file, importParams.mSharedData, endianType);
-        SharedHelperData::ReadString(file, importParams.mSharedData, endianType);
-        SharedHelperData::ReadString(file, importParams.mSharedData, endianType);
+        SharedHelperData::ReadString(file, importParams.m_sharedData, endianType);
+        SharedHelperData::ReadString(file, importParams.m_sharedData, endianType);
+        SharedHelperData::ReadString(file, importParams.m_sharedData, endianType);
 
-        const char* name = SharedHelperData::ReadString(file, importParams.mSharedData, endianType);
+        const char* name = SharedHelperData::ReadString(file, importParams.m_sharedData, endianType);
         actor->SetName(name);
 
         if (GetLogging())
         {
             MCore::LogDetailedInfo("   + Actor name             = '%s'", name);
-            MCore::LogDetailedInfo("   + Exporter version       = v%d.%d", fileInformation.mExporterHighVersion, fileInformation.mExporterLowVersion);
-            MCore::LogDetailedInfo("   + Num LODs               = %d", fileInformation.mNumLODs);
-            MCore::LogDetailedInfo("   + Motion Extraction node = %d", fileInformation.mMotionExtractionNodeIndex);
-            MCore::LogDetailedInfo("   + Retarget root node     = %d", fileInformation.mRetargetRootNodeIndex);
-            MCore::LogDetailedInfo("   + UnitType               = %d", fileInformation.mUnitType);
+            MCore::LogDetailedInfo("   + Exporter version       = v%d.%d", fileInformation.m_exporterHighVersion, fileInformation.m_exporterLowVersion);
+            MCore::LogDetailedInfo("   + Num LODs               = %d", fileInformation.m_numLoDs);
+            MCore::LogDetailedInfo("   + Motion Extraction node = %d", fileInformation.m_motionExtractionNodeIndex);
+            MCore::LogDetailedInfo("   + Retarget root node     = %d", fileInformation.m_retargetRootNodeIndex);
+            MCore::LogDetailedInfo("   + UnitType               = %d", fileInformation.m_unitType);
         }
 
-        actor->SetMotionExtractionNodeIndex(fileInformation.mMotionExtractionNodeIndex);
-        actor->SetRetargetRootNodeIndex(fileInformation.mRetargetRootNodeIndex);
-        actor->SetUnitType(static_cast<MCore::Distance::EUnitType>(fileInformation.mUnitType));
+        if (fileInformation.m_motionExtractionNodeIndex != MCORE_INVALIDINDEX32)
+        {
+            actor->SetMotionExtractionNodeIndex(fileInformation.m_motionExtractionNodeIndex);
+        }
+        if (fileInformation.m_retargetRootNodeIndex != MCORE_INVALIDINDEX32)
+        {
+            actor->SetRetargetRootNodeIndex(fileInformation.m_retargetRootNodeIndex);
+        }
+        actor->SetUnitType(static_cast<MCore::Distance::EUnitType>(fileInformation.m_unitType));
         actor->SetFileUnitType(actor->GetUnitType());
 
         return true;
@@ -1265,17 +1226,17 @@ namespace EMotionFX
 
     bool ChunkProcessorActorInfo3::Process(MCore::File* file, Importer::ImportParameters& importParams)
     {
-        const MCore::Endian::EEndianType endianType = importParams.mEndianType;
-        Actor* actor = importParams.mActor;
+        const MCore::Endian::EEndianType endianType = importParams.m_endianType;
+        Actor* actor = importParams.m_actor;
 
         // read the chunk
         FileFormat::Actor_Info3 fileInformation;
         file->Read(&fileInformation, sizeof(FileFormat::Actor_Info3));
 
         // convert endian
-        MCore::Endian::ConvertUnsignedInt32(&fileInformation.mMotionExtractionNodeIndex, endianType);
-        MCore::Endian::ConvertUnsignedInt32(&fileInformation.mRetargetRootNodeIndex, endianType);
-        MCore::Endian::ConvertUnsignedInt32(&fileInformation.mNumLODs, endianType);
+        MCore::Endian::ConvertUnsignedInt32(&fileInformation.m_motionExtractionNodeIndex, endianType);
+        MCore::Endian::ConvertUnsignedInt32(&fileInformation.m_retargetRootNodeIndex, endianType);
+        MCore::Endian::ConvertUnsignedInt32(&fileInformation.m_numLoDs, endianType);
 
         if (GetLogging())
         {
@@ -1283,28 +1244,34 @@ namespace EMotionFX
         }
 
         // read the source application, original filename and the compilation date of the exporter string
-        SharedHelperData::ReadString(file, importParams.mSharedData, endianType);
-        SharedHelperData::ReadString(file, importParams.mSharedData, endianType);
-        SharedHelperData::ReadString(file, importParams.mSharedData, endianType);
+        SharedHelperData::ReadString(file, importParams.m_sharedData, endianType);
+        SharedHelperData::ReadString(file, importParams.m_sharedData, endianType);
+        SharedHelperData::ReadString(file, importParams.m_sharedData, endianType);
 
-        const char* name = SharedHelperData::ReadString(file, importParams.mSharedData, endianType);
+        const char* name = SharedHelperData::ReadString(file, importParams.m_sharedData, endianType);
         actor->SetName(name);
 
         if (GetLogging())
         {
             MCore::LogDetailedInfo("   + Actor name             = '%s'", name);
-            MCore::LogDetailedInfo("   + Exporter version       = v%d.%d", fileInformation.mExporterHighVersion, fileInformation.mExporterLowVersion);
-            MCore::LogDetailedInfo("   + Num LODs               = %d", fileInformation.mNumLODs);
-            MCore::LogDetailedInfo("   + Motion Extraction node = %d", fileInformation.mMotionExtractionNodeIndex);
-            MCore::LogDetailedInfo("   + Retarget root node     = %d", fileInformation.mRetargetRootNodeIndex);
-            MCore::LogDetailedInfo("   + UnitType               = %d", fileInformation.mUnitType);
+            MCore::LogDetailedInfo("   + Exporter version       = v%d.%d", fileInformation.m_exporterHighVersion, fileInformation.m_exporterLowVersion);
+            MCore::LogDetailedInfo("   + Num LODs               = %d", fileInformation.m_numLoDs);
+            MCore::LogDetailedInfo("   + Motion Extraction node = %d", fileInformation.m_motionExtractionNodeIndex);
+            MCore::LogDetailedInfo("   + Retarget root node     = %d", fileInformation.m_retargetRootNodeIndex);
+            MCore::LogDetailedInfo("   + UnitType               = %d", fileInformation.m_unitType);
         }
 
-        actor->SetMotionExtractionNodeIndex(fileInformation.mMotionExtractionNodeIndex);
-        actor->SetRetargetRootNodeIndex(fileInformation.mRetargetRootNodeIndex);
-        actor->SetUnitType(static_cast<MCore::Distance::EUnitType>(fileInformation.mUnitType));
+        if (fileInformation.m_motionExtractionNodeIndex != MCORE_INVALIDINDEX32)
+        {
+            actor->SetMotionExtractionNodeIndex(fileInformation.m_motionExtractionNodeIndex);
+        }
+        if (fileInformation.m_retargetRootNodeIndex != MCORE_INVALIDINDEX32)
+        {
+            actor->SetRetargetRootNodeIndex(fileInformation.m_retargetRootNodeIndex);
+        }
+        actor->SetUnitType(static_cast<MCore::Distance::EUnitType>(fileInformation.m_unitType));
         actor->SetFileUnitType(actor->GetUnitType());
-        actor->SetOptimizeSkeleton(fileInformation.mOptimizeSkeleton == 0? false : true);
+        actor->SetOptimizeSkeleton(fileInformation.m_optimizeSkeleton == 0? false : true);
 
         return true;
     }
@@ -1314,8 +1281,8 @@ namespace EMotionFX
     // morph targets
     bool ChunkProcessorActorProgMorphTarget::Process(MCore::File* file, Importer::ImportParameters& importParams)
     {
-        const MCore::Endian::EEndianType endianType = importParams.mEndianType;
-        Actor* actor = importParams.mActor;
+        const MCore::Endian::EEndianType endianType = importParams.m_endianType;
+        Actor* actor = importParams.m_actor;
 
         MCORE_ASSERT(actor);
         Skeleton* skeleton = actor->GetSkeleton();
@@ -1325,27 +1292,27 @@ namespace EMotionFX
         file->Read(&morphTargetChunk, sizeof(FileFormat::Actor_MorphTarget));
 
         // convert endian
-        MCore::Endian::ConvertFloat(&morphTargetChunk.mRangeMin, endianType);
-        MCore::Endian::ConvertFloat(&morphTargetChunk.mRangeMax, endianType);
-        MCore::Endian::ConvertUnsignedInt32(&morphTargetChunk.mLOD, endianType);
-        MCore::Endian::ConvertUnsignedInt32(&morphTargetChunk.mNumTransformations, endianType);
-        MCore::Endian::ConvertUnsignedInt32(&morphTargetChunk.mPhonemeSets, endianType);
+        MCore::Endian::ConvertFloat(&morphTargetChunk.m_rangeMin, endianType);
+        MCore::Endian::ConvertFloat(&morphTargetChunk.m_rangeMax, endianType);
+        MCore::Endian::ConvertUnsignedInt32(&morphTargetChunk.m_lod, endianType);
+        MCore::Endian::ConvertUnsignedInt32(&morphTargetChunk.m_numTransformations, endianType);
+        MCore::Endian::ConvertUnsignedInt32(&morphTargetChunk.m_phonemeSets, endianType);
 
         // get the expression name
-        const char* morphTargetName = SharedHelperData::ReadString(file, importParams.mSharedData, endianType);
+        const char* morphTargetName = SharedHelperData::ReadString(file, importParams.m_sharedData, endianType);
 
         // get the level of detail of the expression part
-        const uint32 morphTargetLOD = morphTargetChunk.mLOD;
+        const uint32 morphTargetLOD = morphTargetChunk.m_lod;
 
         if (GetLogging())
         {
             MCore::LogDetailedInfo(" - Morph Target:");
             MCore::LogDetailedInfo("    + Name               = '%s'", morphTargetName);
-            MCore::LogDetailedInfo("    + LOD Level          = %d", morphTargetChunk.mLOD);
-            MCore::LogDetailedInfo("    + RangeMin           = %f", morphTargetChunk.mRangeMin);
-            MCore::LogDetailedInfo("    + RangeMax           = %f", morphTargetChunk.mRangeMax);
-            MCore::LogDetailedInfo("    + NumTransformations = %d", morphTargetChunk.mNumTransformations);
-            MCore::LogDetailedInfo("    + PhonemeSets: %s", MorphTarget::GetPhonemeSetString((MorphTarget::EPhonemeSet)morphTargetChunk.mPhonemeSets).c_str());
+            MCore::LogDetailedInfo("    + LOD Level          = %d", morphTargetChunk.m_lod);
+            MCore::LogDetailedInfo("    + RangeMin           = %f", morphTargetChunk.m_rangeMin);
+            MCore::LogDetailedInfo("    + RangeMax           = %f", morphTargetChunk.m_rangeMax);
+            MCore::LogDetailedInfo("    + NumTransformations = %d", morphTargetChunk.m_numTransformations);
+            MCore::LogDetailedInfo("    + PhonemeSets: %s", MorphTarget::GetPhonemeSetString((MorphTarget::EPhonemeSet)morphTargetChunk.m_phonemeSets).c_str());
         }
 
         // check if the morph setup has already been created, if not create it
@@ -1362,59 +1329,59 @@ namespace EMotionFX
         MorphTargetStandard* morphTarget = MorphTargetStandard::Create(morphTargetName);
 
         // set the slider range
-        morphTarget->SetRangeMin(morphTargetChunk.mRangeMin);
-        morphTarget->SetRangeMax(morphTargetChunk.mRangeMax);
+        morphTarget->SetRangeMin(morphTargetChunk.m_rangeMin);
+        morphTarget->SetRangeMax(morphTargetChunk.m_rangeMax);
 
         // set the phoneme sets
-        morphTarget->SetPhonemeSets((MorphTarget::EPhonemeSet)morphTargetChunk.mPhonemeSets);
+        morphTarget->SetPhonemeSets((MorphTarget::EPhonemeSet)morphTargetChunk.m_phonemeSets);
 
         // add the morph target
         actor->GetMorphSetup(morphTargetLOD)->AddMorphTarget(morphTarget);
 
         // read the facial transformations
-        for (uint32 i = 0; i < morphTargetChunk.mNumTransformations; ++i)
+        for (uint32 i = 0; i < morphTargetChunk.m_numTransformations; ++i)
         {
             // read the facial transformation from disk
             FileFormat::Actor_MorphTargetTransform transformChunk;
             file->Read(&transformChunk, sizeof(FileFormat::Actor_MorphTargetTransform));
 
             // create Core objects from the data
-            AZ::Vector3 pos(transformChunk.mPosition.mX, transformChunk.mPosition.mY, transformChunk.mPosition.mZ);
-            AZ::Vector3 scale(transformChunk.mScale.mX, transformChunk.mScale.mY, transformChunk.mScale.mZ);
-            AZ::Quaternion rot(transformChunk.mRotation.mX, transformChunk.mRotation.mY, transformChunk.mRotation.mZ, transformChunk.mRotation.mW);
-            AZ::Quaternion scaleRot(transformChunk.mScaleRotation.mX, transformChunk.mScaleRotation.mY, transformChunk.mScaleRotation.mZ, transformChunk.mScaleRotation.mW);
+            AZ::Vector3 pos(transformChunk.m_position.m_x, transformChunk.m_position.m_y, transformChunk.m_position.m_z);
+            AZ::Vector3 scale(transformChunk.m_scale.m_x, transformChunk.m_scale.m_y, transformChunk.m_scale.m_z);
+            AZ::Quaternion rot(transformChunk.m_rotation.m_x, transformChunk.m_rotation.m_y, transformChunk.m_rotation.m_z, transformChunk.m_rotation.m_w);
+            AZ::Quaternion scaleRot(transformChunk.m_scaleRotation.m_x, transformChunk.m_scaleRotation.m_y, transformChunk.m_scaleRotation.m_z, transformChunk.m_scaleRotation.m_w);
 
             // convert endian and coordinate system
             ConvertVector3(&pos, endianType);
             ConvertScale(&scale, endianType);
             ConvertQuaternion(&rot, endianType);
             ConvertQuaternion(&scaleRot, endianType);
-            MCore::Endian::ConvertUnsignedInt32(&transformChunk.mNodeIndex, endianType);
+            MCore::Endian::ConvertUnsignedInt32(&transformChunk.m_nodeIndex, endianType);
 
             // create our transformation
             MorphTargetStandard::Transformation transform;
-            transform.mPosition         = pos;
-            transform.mScale            = scale;
-            transform.mRotation         = rot;
-            transform.mScaleRotation    = scaleRot;
-            transform.mNodeIndex        = transformChunk.mNodeIndex;
+            transform.m_position         = pos;
+            transform.m_scale            = scale;
+            transform.m_rotation         = rot;
+            transform.m_scaleRotation    = scaleRot;
+            transform.m_nodeIndex        = transformChunk.m_nodeIndex;
 
             if (GetLogging())
             {
-                MCore::LogDetailedInfo("    - Transform #%d: Node='%s' (index=%d)", i, skeleton->GetNode(transform.mNodeIndex)->GetName(), transform.mNodeIndex);
+                MCore::LogDetailedInfo("    - Transform #%d: Node='%s' (index=%d)", i, skeleton->GetNode(transform.m_nodeIndex)->GetName(), transform.m_nodeIndex);
                 MCore::LogDetailedInfo("       + Pos:      %f, %f, %f",
-                    static_cast<float>(transform.mPosition.GetX()),
-                    static_cast<float>(transform.mPosition.GetY()),
-                    static_cast<float>(transform.mPosition.GetZ()));
+                    static_cast<float>(transform.m_position.GetX()),
+                    static_cast<float>(transform.m_position.GetY()),
+                    static_cast<float>(transform.m_position.GetZ()));
                 MCore::LogDetailedInfo("       + Rotation: %f, %f, %f %f", 
-                    static_cast<float>(transform.mRotation.GetX()),
-                    static_cast<float>(transform.mRotation.GetY()),
-                    static_cast<float>(transform.mRotation.GetZ()),
-                    static_cast<float>(transform.mRotation.GetW()));
+                    static_cast<float>(transform.m_rotation.GetX()),
+                    static_cast<float>(transform.m_rotation.GetY()),
+                    static_cast<float>(transform.m_rotation.GetZ()),
+                    static_cast<float>(transform.m_rotation.GetW()));
                 MCore::LogDetailedInfo("       + Scale:    %f, %f, %f",
-                    static_cast<float>(transform.mScale.GetX()),
-                    static_cast<float>(transform.mScale.GetY()),
-                    static_cast<float>(transform.mScale.GetZ()));
+                    static_cast<float>(transform.m_scale.GetX()),
+                    static_cast<float>(transform.m_scale.GetY()),
+                    static_cast<float>(transform.m_scale.GetZ()));
                 MCore::LogDetailedInfo("       + ScaleRot: %f, %f, %f %f",
                     static_cast<float>(scaleRot.GetX()),
                     static_cast<float>(scaleRot.GetY()),
@@ -1434,8 +1401,8 @@ namespace EMotionFX
     // the node groups chunk
     bool ChunkProcessorActorNodeGroups::Process(MCore::File* file, Importer::ImportParameters& importParams)
     {
-        const MCore::Endian::EEndianType endianType = importParams.mEndianType;
-        Actor* actor = importParams.mActor;
+        const MCore::Endian::EEndianType endianType = importParams.m_endianType;
+        Actor* actor = importParams.m_actor;
 
         MCORE_ASSERT(actor);
 
@@ -1455,25 +1422,25 @@ namespace EMotionFX
             // read the group header
             FileFormat::Actor_NodeGroup fileGroup;
             file->Read(&fileGroup, sizeof(FileFormat::Actor_NodeGroup));
-            MCore::Endian::ConvertUnsignedInt16(&fileGroup.mNumNodes, endianType);
+            MCore::Endian::ConvertUnsignedInt16(&fileGroup.m_numNodes, endianType);
 
             // read the group name
-            const char* groupName = SharedHelperData::ReadString(file, importParams.mSharedData, endianType);
+            const char* groupName = SharedHelperData::ReadString(file, importParams.m_sharedData, endianType);
 
             // log some info
             if (GetLogging())
             {
                 MCore::LogDetailedInfo("   + Group '%s'", groupName);
-                MCore::LogDetailedInfo("     - Num nodes: %d", fileGroup.mNumNodes);
-                MCore::LogDetailedInfo("     - Disabled on default: %s", fileGroup.mDisabledOnDefault ? "Yes" : "No");
+                MCore::LogDetailedInfo("     - Num nodes: %d", fileGroup.m_numNodes);
+                MCore::LogDetailedInfo("     - Disabled on default: %s", fileGroup.m_disabledOnDefault ? "Yes" : "No");
             }
 
             // create the new group inside the actor
-            NodeGroup* newGroup = aznew NodeGroup(groupName, fileGroup.mNumNodes, fileGroup.mDisabledOnDefault ? false : true);
+            NodeGroup* newGroup = aznew NodeGroup(groupName, fileGroup.m_numNodes, fileGroup.m_disabledOnDefault ? false : true);
 
             // read the node numbers
             uint16 nodeIndex;
-            for (uint16 n = 0; n < fileGroup.mNumNodes; ++n)
+            for (uint16 n = 0; n < fileGroup.m_numNodes; ++n)
             {
                 file->Read(&nodeIndex, sizeof(uint16));
                 MCore::Endian::ConvertUnsignedInt16(&nodeIndex, endianType);
@@ -1491,8 +1458,8 @@ namespace EMotionFX
     // all submotions in one chunk
     bool ChunkProcessorMotionMorphSubMotions::Process(MCore::File* file, Importer::ImportParameters& importParams)
     {
-        const MCore::Endian::EEndianType endianType = importParams.mEndianType;
-        Motion* motion = importParams.mMotion;
+        const MCore::Endian::EEndianType endianType = importParams.m_endianType;
+        Motion* motion = importParams.m_motion;
         AZ_Assert(motion, "Expecting a valid motion pointer.");
 
         // cast to  morph motion
@@ -1504,54 +1471,54 @@ namespace EMotionFX
         file->Read(&subMotionsHeader, sizeof(FileFormat::Motion_MorphSubMotions));
 
         // convert endian
-        MCore::Endian::ConvertUnsignedInt32(&subMotionsHeader.mNumSubMotions, endianType);
+        MCore::Endian::ConvertUnsignedInt32(&subMotionsHeader.m_numSubMotions, endianType);
 
         // pre-allocate the number of submotions
         motionData->SetAdditive(importParams.m_additiveMotion);
-        motionData->Resize(motionData->GetNumJoints(), subMotionsHeader.mNumSubMotions, motionData->GetNumFloats());
+        motionData->Resize(motionData->GetNumJoints(), subMotionsHeader.m_numSubMotions, motionData->GetNumFloats());
 
         // for all submotions
-        for (uint32 s = 0; s < subMotionsHeader.mNumSubMotions; ++s)
+        for (uint32 s = 0; s < subMotionsHeader.m_numSubMotions; ++s)
         {
             // get the  morph motion part
             FileFormat::Motion_MorphSubMotion morphSubMotionChunk;
             file->Read(&morphSubMotionChunk, sizeof(FileFormat::Motion_MorphSubMotion));
 
             // convert endian
-            MCore::Endian::ConvertUnsignedInt32(&morphSubMotionChunk.mNumKeys, endianType);
-            MCore::Endian::ConvertUnsignedInt32(&morphSubMotionChunk.mPhonemeSet, endianType);
-            MCore::Endian::ConvertFloat(&morphSubMotionChunk.mPoseWeight, endianType);
-            MCore::Endian::ConvertFloat(&morphSubMotionChunk.mMinWeight, endianType);
-            MCore::Endian::ConvertFloat(&morphSubMotionChunk.mMaxWeight, endianType);
+            MCore::Endian::ConvertUnsignedInt32(&morphSubMotionChunk.m_numKeys, endianType);
+            MCore::Endian::ConvertUnsignedInt32(&morphSubMotionChunk.m_phonemeSet, endianType);
+            MCore::Endian::ConvertFloat(&morphSubMotionChunk.m_poseWeight, endianType);
+            MCore::Endian::ConvertFloat(&morphSubMotionChunk.m_minWeight, endianType);
+            MCore::Endian::ConvertFloat(&morphSubMotionChunk.m_maxWeight, endianType);
 
             // read the name of the submotion
-            const char* name = SharedHelperData::ReadString(file, importParams.mSharedData, endianType);
+            const char* name = SharedHelperData::ReadString(file, importParams.m_sharedData, endianType);
 
             motionData->SetMorphName(s, name);
-            motionData->AllocateMorphSamples(s, morphSubMotionChunk.mNumKeys);
-            motionData->SetMorphStaticValue(s, morphSubMotionChunk.mPoseWeight);
+            motionData->AllocateMorphSamples(s, morphSubMotionChunk.m_numKeys);
+            motionData->SetMorphStaticValue(s, morphSubMotionChunk.m_poseWeight);
 
             if (GetLogging())
             {
                 MCore::LogDetailedInfo("    - Morph Submotion: %s", name);
-                MCore::LogDetailedInfo("       + NrKeys             = %d", morphSubMotionChunk.mNumKeys);
-                MCore::LogDetailedInfo("       + Pose Weight        = %f", morphSubMotionChunk.mPoseWeight);
-                MCore::LogDetailedInfo("       + Minimum Weight     = %f", morphSubMotionChunk.mMinWeight);
-                MCore::LogDetailedInfo("       + Maximum Weight     = %f", morphSubMotionChunk.mMaxWeight);
-                MCore::LogDetailedInfo("       + PhonemeSet         = %s", MorphTarget::GetPhonemeSetString((MorphTarget::EPhonemeSet)morphSubMotionChunk.mPhonemeSet).c_str());
+                MCore::LogDetailedInfo("       + NrKeys             = %d", morphSubMotionChunk.m_numKeys);
+                MCore::LogDetailedInfo("       + Pose Weight        = %f", morphSubMotionChunk.m_poseWeight);
+                MCore::LogDetailedInfo("       + Minimum Weight     = %f", morphSubMotionChunk.m_minWeight);
+                MCore::LogDetailedInfo("       + Maximum Weight     = %f", morphSubMotionChunk.m_maxWeight);
+                MCore::LogDetailedInfo("       + PhonemeSet         = %s", MorphTarget::GetPhonemeSetString((MorphTarget::EPhonemeSet)morphSubMotionChunk.m_phonemeSet).c_str());
             }
 
             // add keyframes
-            for (uint32 i = 0; i < morphSubMotionChunk.mNumKeys; ++i)
+            for (uint32 i = 0; i < morphSubMotionChunk.m_numKeys; ++i)
             {
                 FileFormat::Motion_UnsignedShortKey keyframeChunk;
 
                 file->Read(&keyframeChunk, sizeof(FileFormat::Motion_UnsignedShortKey));
-                MCore::Endian::ConvertFloat(&keyframeChunk.mTime, endianType);
-                MCore::Endian::ConvertUnsignedInt16(&keyframeChunk.mValue, endianType);
+                MCore::Endian::ConvertFloat(&keyframeChunk.m_time, endianType);
+                MCore::Endian::ConvertUnsignedInt16(&keyframeChunk.m_value, endianType);
 
-                const float value = keyframeChunk.mValue / static_cast<float>(std::numeric_limits<uint16_t>::max());
-                motionData->SetMorphSample(s, i, {keyframeChunk.mTime, value});
+                const float value = keyframeChunk.m_value / static_cast<float>(std::numeric_limits<uint16_t>::max());
+                motionData->SetMorphSample(s, i, {keyframeChunk.m_time, value});
             }
         } // for all submotions
 
@@ -1565,8 +1532,8 @@ namespace EMotionFX
     // morph targets
     bool ChunkProcessorActorProgMorphTargets::Process(MCore::File* file, Importer::ImportParameters& importParams)
     {
-        const MCore::Endian::EEndianType endianType = importParams.mEndianType;
-        Actor* actor = importParams.mActor;
+        const MCore::Endian::EEndianType endianType = importParams.m_endianType;
+        Actor* actor = importParams.m_actor;
 
         MCORE_ASSERT(actor);
         Skeleton* skeleton = actor->GetSkeleton();
@@ -1576,122 +1543,122 @@ namespace EMotionFX
         file->Read(&morphTargetsHeader, sizeof(FileFormat::Actor_MorphTargets));
 
         // convert endian
-        MCore::Endian::ConvertUnsignedInt32(&morphTargetsHeader.mNumMorphTargets, endianType);
-        MCore::Endian::ConvertUnsignedInt32(&morphTargetsHeader.mLOD, endianType);
+        MCore::Endian::ConvertUnsignedInt32(&morphTargetsHeader.m_numMorphTargets, endianType);
+        MCore::Endian::ConvertUnsignedInt32(&morphTargetsHeader.m_lod, endianType);
 
         if (GetLogging())
         {
-            MCore::LogDetailedInfo("- Morph targets: %d (LOD=%d)", morphTargetsHeader.mNumMorphTargets, morphTargetsHeader.mLOD);
+            MCore::LogDetailedInfo("- Morph targets: %d (LOD=%d)", morphTargetsHeader.m_numMorphTargets, morphTargetsHeader.m_lod);
         }
 
         // check if the morph setup has already been created, if not create it
-        if (actor->GetMorphSetup(morphTargetsHeader.mLOD) == nullptr)
+        if (actor->GetMorphSetup(morphTargetsHeader.m_lod) == nullptr)
         {
             // create the morph setup
             MorphSetup* morphSetup = MorphSetup::Create();
 
             // set the morph setup
-            actor->SetMorphSetup(morphTargetsHeader.mLOD, morphSetup);
+            actor->SetMorphSetup(morphTargetsHeader.m_lod, morphSetup);
         }
 
         // pre-allocate the morph targets
-        MorphSetup* setup = actor->GetMorphSetup(morphTargetsHeader.mLOD);
-        setup->ReserveMorphTargets(morphTargetsHeader.mNumMorphTargets);
+        MorphSetup* setup = actor->GetMorphSetup(morphTargetsHeader.m_lod);
+        setup->ReserveMorphTargets(morphTargetsHeader.m_numMorphTargets);
 
         // read in all morph targets
-        for (uint32 mt = 0; mt < morphTargetsHeader.mNumMorphTargets; ++mt)
+        for (uint32 mt = 0; mt < morphTargetsHeader.m_numMorphTargets; ++mt)
         {
             // read the expression part from disk
             FileFormat::Actor_MorphTarget morphTargetChunk;
             file->Read(&morphTargetChunk, sizeof(FileFormat::Actor_MorphTarget));
 
             // convert endian
-            MCore::Endian::ConvertFloat(&morphTargetChunk.mRangeMin, endianType);
-            MCore::Endian::ConvertFloat(&morphTargetChunk.mRangeMax, endianType);
-            MCore::Endian::ConvertUnsignedInt32(&morphTargetChunk.mLOD, endianType);
-            MCore::Endian::ConvertUnsignedInt32(&morphTargetChunk.mNumTransformations, endianType);
-            MCore::Endian::ConvertUnsignedInt32(&morphTargetChunk.mPhonemeSets, endianType);
+            MCore::Endian::ConvertFloat(&morphTargetChunk.m_rangeMin, endianType);
+            MCore::Endian::ConvertFloat(&morphTargetChunk.m_rangeMax, endianType);
+            MCore::Endian::ConvertUnsignedInt32(&morphTargetChunk.m_lod, endianType);
+            MCore::Endian::ConvertUnsignedInt32(&morphTargetChunk.m_numTransformations, endianType);
+            MCore::Endian::ConvertUnsignedInt32(&morphTargetChunk.m_phonemeSets, endianType);
 
             // make sure they match
-            MCORE_ASSERT(morphTargetChunk.mLOD == morphTargetsHeader.mLOD);
+            MCORE_ASSERT(morphTargetChunk.m_lod == morphTargetsHeader.m_lod);
 
             // get the expression name
-            const char* morphTargetName = SharedHelperData::ReadString(file, importParams.mSharedData, endianType);
+            const char* morphTargetName = SharedHelperData::ReadString(file, importParams.m_sharedData, endianType);
 
             // get the level of detail of the expression part
-            const uint32 morphTargetLOD = morphTargetChunk.mLOD;
+            const uint32 morphTargetLOD = morphTargetChunk.m_lod;
 
             if (GetLogging())
             {
                 MCore::LogDetailedInfo("  + Morph Target:");
                 MCore::LogDetailedInfo("     - Name               = '%s'", morphTargetName);
-                MCore::LogDetailedInfo("     - LOD Level          = %d", morphTargetChunk.mLOD);
-                MCore::LogDetailedInfo("     - RangeMin           = %f", morphTargetChunk.mRangeMin);
-                MCore::LogDetailedInfo("     - RangeMax           = %f", morphTargetChunk.mRangeMax);
-                MCore::LogDetailedInfo("     - NumTransformations = %d", morphTargetChunk.mNumTransformations);
-                MCore::LogDetailedInfo("     - PhonemeSets: %s", MorphTarget::GetPhonemeSetString((MorphTarget::EPhonemeSet)morphTargetChunk.mPhonemeSets).c_str());
+                MCore::LogDetailedInfo("     - LOD Level          = %d", morphTargetChunk.m_lod);
+                MCore::LogDetailedInfo("     - RangeMin           = %f", morphTargetChunk.m_rangeMin);
+                MCore::LogDetailedInfo("     - RangeMax           = %f", morphTargetChunk.m_rangeMax);
+                MCore::LogDetailedInfo("     - NumTransformations = %d", morphTargetChunk.m_numTransformations);
+                MCore::LogDetailedInfo("     - PhonemeSets: %s", MorphTarget::GetPhonemeSetString((MorphTarget::EPhonemeSet)morphTargetChunk.m_phonemeSets).c_str());
             }
 
             // create the morph target
             MorphTargetStandard* morphTarget = MorphTargetStandard::Create(morphTargetName);
 
             // set the slider range
-            morphTarget->SetRangeMin(morphTargetChunk.mRangeMin);
-            morphTarget->SetRangeMax(morphTargetChunk.mRangeMax);
+            morphTarget->SetRangeMin(morphTargetChunk.m_rangeMin);
+            morphTarget->SetRangeMax(morphTargetChunk.m_rangeMax);
 
             // set the phoneme sets
-            morphTarget->SetPhonemeSets((MorphTarget::EPhonemeSet)morphTargetChunk.mPhonemeSets);
+            morphTarget->SetPhonemeSets((MorphTarget::EPhonemeSet)morphTargetChunk.m_phonemeSets);
 
             // add the morph target
             setup->AddMorphTarget(morphTarget);
 
             // the same for the transformations
-            morphTarget->ReserveTransformations(morphTargetChunk.mNumTransformations);
+            morphTarget->ReserveTransformations(morphTargetChunk.m_numTransformations);
 
             // read the facial transformations
-            for (uint32 i = 0; i < morphTargetChunk.mNumTransformations; ++i)
+            for (uint32 i = 0; i < morphTargetChunk.m_numTransformations; ++i)
             {
                 // read the facial transformation from disk
                 FileFormat::Actor_MorphTargetTransform transformChunk;
                 file->Read(&transformChunk, sizeof(FileFormat::Actor_MorphTargetTransform));
 
                 // create Core objects from the data
-                AZ::Vector3 pos(transformChunk.mPosition.mX, transformChunk.mPosition.mY, transformChunk.mPosition.mZ);
-                AZ::Vector3 scale(transformChunk.mScale.mX, transformChunk.mScale.mY, transformChunk.mScale.mZ);
-                AZ::Quaternion rot(transformChunk.mRotation.mX, transformChunk.mRotation.mY, transformChunk.mRotation.mZ, transformChunk.mRotation.mW);
-                AZ::Quaternion scaleRot(transformChunk.mScaleRotation.mX, transformChunk.mScaleRotation.mY, transformChunk.mScaleRotation.mZ, transformChunk.mScaleRotation.mW);
+                AZ::Vector3 pos(transformChunk.m_position.m_x, transformChunk.m_position.m_y, transformChunk.m_position.m_z);
+                AZ::Vector3 scale(transformChunk.m_scale.m_x, transformChunk.m_scale.m_y, transformChunk.m_scale.m_z);
+                AZ::Quaternion rot(transformChunk.m_rotation.m_x, transformChunk.m_rotation.m_y, transformChunk.m_rotation.m_z, transformChunk.m_rotation.m_w);
+                AZ::Quaternion scaleRot(transformChunk.m_scaleRotation.m_x, transformChunk.m_scaleRotation.m_y, transformChunk.m_scaleRotation.m_z, transformChunk.m_scaleRotation.m_w);
 
                 // convert endian and coordinate system
                 ConvertVector3(&pos, endianType);
                 ConvertScale(&scale, endianType);
                 ConvertQuaternion(&rot, endianType);
                 ConvertQuaternion(&scaleRot, endianType);
-                MCore::Endian::ConvertUnsignedInt32(&transformChunk.mNodeIndex, endianType);
+                MCore::Endian::ConvertUnsignedInt32(&transformChunk.m_nodeIndex, endianType);
 
                 // create our transformation
                 MorphTargetStandard::Transformation transform;
-                transform.mPosition         = pos;
-                transform.mScale            = scale;
-                transform.mRotation         = rot;
-                transform.mScaleRotation    = scaleRot;
-                transform.mNodeIndex        = transformChunk.mNodeIndex;
+                transform.m_position         = pos;
+                transform.m_scale            = scale;
+                transform.m_rotation         = rot;
+                transform.m_scaleRotation    = scaleRot;
+                transform.m_nodeIndex        = transformChunk.m_nodeIndex;
 
                 if (GetLogging())
                 {
-                    MCore::LogDetailedInfo("     + Transform #%d: Node='%s' (index=%d)", i, skeleton->GetNode(transform.mNodeIndex)->GetName(), transform.mNodeIndex);
+                    MCore::LogDetailedInfo("     + Transform #%d: Node='%s' (index=%d)", i, skeleton->GetNode(transform.m_nodeIndex)->GetName(), transform.m_nodeIndex);
                     MCore::LogDetailedInfo("        - Pos:      %f, %f, %f",
-                        static_cast<float>(transform.mPosition.GetX()),
-                        static_cast<float>(transform.mPosition.GetY()),
-                        static_cast<float>(transform.mPosition.GetZ()));
+                        static_cast<float>(transform.m_position.GetX()),
+                        static_cast<float>(transform.m_position.GetY()),
+                        static_cast<float>(transform.m_position.GetZ()));
                     MCore::LogDetailedInfo("        - Rotation: %f, %f, %f %f",
-                        static_cast<float>(transform.mRotation.GetX()),
-                        static_cast<float>(transform.mRotation.GetY()),
-                        static_cast<float>(transform.mRotation.GetZ()),
-                        static_cast<float>(transform.mRotation.GetW()));
+                        static_cast<float>(transform.m_rotation.GetX()),
+                        static_cast<float>(transform.m_rotation.GetY()),
+                        static_cast<float>(transform.m_rotation.GetZ()),
+                        static_cast<float>(transform.m_rotation.GetW()));
                     MCore::LogDetailedInfo("        - Scale:    %f, %f, %f",
-                        static_cast<float>(transform.mScale.GetX()),
-                        static_cast<float>(transform.mScale.GetY()),
-                        static_cast<float>(transform.mScale.GetZ()));
+                        static_cast<float>(transform.m_scale.GetX()),
+                        static_cast<float>(transform.m_scale.GetY()),
+                        static_cast<float>(transform.m_scale.GetZ()));
                     MCore::LogDetailedInfo("        - ScaleRot: %f, %f, %f %f",
                         static_cast<float>(scaleRot.GetX()),
                         static_cast<float>(scaleRot.GetY()),
@@ -1712,8 +1679,8 @@ namespace EMotionFX
     // morph targets
     bool ChunkProcessorActorProgMorphTargets2::Process(MCore::File* file, Importer::ImportParameters& importParams)
     {
-        const MCore::Endian::EEndianType endianType = importParams.mEndianType;
-        Actor* actor = importParams.mActor;
+        const MCore::Endian::EEndianType endianType = importParams.m_endianType;
+        Actor* actor = importParams.m_actor;
 
         MCORE_ASSERT(actor);
         Skeleton* skeleton = actor->GetSkeleton();
@@ -1723,122 +1690,122 @@ namespace EMotionFX
         file->Read(&morphTargetsHeader, sizeof(FileFormat::Actor_MorphTargets));
 
         // convert endian
-        MCore::Endian::ConvertUnsignedInt32(&morphTargetsHeader.mNumMorphTargets, endianType);
-        MCore::Endian::ConvertUnsignedInt32(&morphTargetsHeader.mLOD, endianType);
+        MCore::Endian::ConvertUnsignedInt32(&morphTargetsHeader.m_numMorphTargets, endianType);
+        MCore::Endian::ConvertUnsignedInt32(&morphTargetsHeader.m_lod, endianType);
 
         if (GetLogging())
         {
-            MCore::LogDetailedInfo("- Morph targets: %d (LOD=%d)", morphTargetsHeader.mNumMorphTargets, morphTargetsHeader.mLOD);
+            MCore::LogDetailedInfo("- Morph targets: %d (LOD=%d)", morphTargetsHeader.m_numMorphTargets, morphTargetsHeader.m_lod);
         }
 
         // check if the morph setup has already been created, if not create it
-        if (actor->GetMorphSetup(morphTargetsHeader.mLOD) == nullptr)
+        if (actor->GetMorphSetup(morphTargetsHeader.m_lod) == nullptr)
         {
             // create the morph setup
             MorphSetup* morphSetup = MorphSetup::Create();
 
             // set the morph setup
-            actor->SetMorphSetup(morphTargetsHeader.mLOD, morphSetup);
+            actor->SetMorphSetup(morphTargetsHeader.m_lod, morphSetup);
         }
 
         // pre-allocate the morph targets
-        MorphSetup* setup = actor->GetMorphSetup(morphTargetsHeader.mLOD);
-        setup->ReserveMorphTargets(morphTargetsHeader.mNumMorphTargets);
+        MorphSetup* setup = actor->GetMorphSetup(morphTargetsHeader.m_lod);
+        setup->ReserveMorphTargets(morphTargetsHeader.m_numMorphTargets);
 
         // read in all morph targets
-        for (uint32 mt = 0; mt < morphTargetsHeader.mNumMorphTargets; ++mt)
+        for (uint32 mt = 0; mt < morphTargetsHeader.m_numMorphTargets; ++mt)
         {
             // read the expression part from disk
             FileFormat::Actor_MorphTarget morphTargetChunk;
             file->Read(&morphTargetChunk, sizeof(FileFormat::Actor_MorphTarget));
 
             // convert endian
-            MCore::Endian::ConvertFloat(&morphTargetChunk.mRangeMin, endianType);
-            MCore::Endian::ConvertFloat(&morphTargetChunk.mRangeMax, endianType);
-            MCore::Endian::ConvertUnsignedInt32(&morphTargetChunk.mLOD, endianType);
-            MCore::Endian::ConvertUnsignedInt32(&morphTargetChunk.mNumTransformations, endianType);
-            MCore::Endian::ConvertUnsignedInt32(&morphTargetChunk.mPhonemeSets, endianType);
+            MCore::Endian::ConvertFloat(&morphTargetChunk.m_rangeMin, endianType);
+            MCore::Endian::ConvertFloat(&morphTargetChunk.m_rangeMax, endianType);
+            MCore::Endian::ConvertUnsignedInt32(&morphTargetChunk.m_lod, endianType);
+            MCore::Endian::ConvertUnsignedInt32(&morphTargetChunk.m_numTransformations, endianType);
+            MCore::Endian::ConvertUnsignedInt32(&morphTargetChunk.m_phonemeSets, endianType);
 
             // make sure they match
-            MCORE_ASSERT(morphTargetChunk.mLOD == morphTargetsHeader.mLOD);
+            MCORE_ASSERT(morphTargetChunk.m_lod == morphTargetsHeader.m_lod);
 
             // get the expression name
-            const char* morphTargetName = SharedHelperData::ReadString(file, importParams.mSharedData, endianType);
+            const char* morphTargetName = SharedHelperData::ReadString(file, importParams.m_sharedData, endianType);
 
             // get the level of detail of the expression part
-            const uint32 morphTargetLOD = morphTargetChunk.mLOD;
+            const uint32 morphTargetLOD = morphTargetChunk.m_lod;
 
             if (GetLogging())
             {
                 MCore::LogDetailedInfo("  + Morph Target:");
                 MCore::LogDetailedInfo("     - Name               = '%s'", morphTargetName);
-                MCore::LogDetailedInfo("     - LOD Level          = %d", morphTargetChunk.mLOD);
-                MCore::LogDetailedInfo("     - RangeMin           = %f", morphTargetChunk.mRangeMin);
-                MCore::LogDetailedInfo("     - RangeMax           = %f", morphTargetChunk.mRangeMax);
-                MCore::LogDetailedInfo("     - NumTransformations = %d", morphTargetChunk.mNumTransformations);
-                MCore::LogDetailedInfo("     - PhonemeSets: %s", MorphTarget::GetPhonemeSetString((MorphTarget::EPhonemeSet)morphTargetChunk.mPhonemeSets).c_str());
+                MCore::LogDetailedInfo("     - LOD Level          = %d", morphTargetChunk.m_lod);
+                MCore::LogDetailedInfo("     - RangeMin           = %f", morphTargetChunk.m_rangeMin);
+                MCore::LogDetailedInfo("     - RangeMax           = %f", morphTargetChunk.m_rangeMax);
+                MCore::LogDetailedInfo("     - NumTransformations = %d", morphTargetChunk.m_numTransformations);
+                MCore::LogDetailedInfo("     - PhonemeSets: %s", MorphTarget::GetPhonemeSetString((MorphTarget::EPhonemeSet)morphTargetChunk.m_phonemeSets).c_str());
             }
 
             // create the morph target
             MorphTargetStandard* morphTarget = MorphTargetStandard::Create(morphTargetName);
 
             // set the slider range
-            morphTarget->SetRangeMin(morphTargetChunk.mRangeMin);
-            morphTarget->SetRangeMax(morphTargetChunk.mRangeMax);
+            morphTarget->SetRangeMin(morphTargetChunk.m_rangeMin);
+            morphTarget->SetRangeMax(morphTargetChunk.m_rangeMax);
 
             // set the phoneme sets
-            morphTarget->SetPhonemeSets((MorphTarget::EPhonemeSet)morphTargetChunk.mPhonemeSets);
+            morphTarget->SetPhonemeSets((MorphTarget::EPhonemeSet)morphTargetChunk.m_phonemeSets);
 
             // add the morph target
             setup->AddMorphTarget(morphTarget);
 
             // the same for the transformations
-            morphTarget->ReserveTransformations(morphTargetChunk.mNumTransformations);
+            morphTarget->ReserveTransformations(morphTargetChunk.m_numTransformations);
 
             // read the facial transformations
-            for (uint32 i = 0; i < morphTargetChunk.mNumTransformations; ++i)
+            for (uint32 i = 0; i < morphTargetChunk.m_numTransformations; ++i)
             {
                 // read the facial transformation from disk
                 FileFormat::Actor_MorphTargetTransform transformChunk;
                 file->Read(&transformChunk, sizeof(FileFormat::Actor_MorphTargetTransform));
 
                 // create Core objects from the data
-                AZ::Vector3 pos(transformChunk.mPosition.mX, transformChunk.mPosition.mY, transformChunk.mPosition.mZ);
-                AZ::Vector3 scale(transformChunk.mScale.mX, transformChunk.mScale.mY, transformChunk.mScale.mZ);
-                AZ::Quaternion rot(transformChunk.mRotation.mX, transformChunk.mRotation.mY, transformChunk.mRotation.mZ, transformChunk.mRotation.mW);
-                AZ::Quaternion scaleRot(transformChunk.mScaleRotation.mX, transformChunk.mScaleRotation.mY, transformChunk.mScaleRotation.mZ, transformChunk.mScaleRotation.mW);
+                AZ::Vector3 pos(transformChunk.m_position.m_x, transformChunk.m_position.m_y, transformChunk.m_position.m_z);
+                AZ::Vector3 scale(transformChunk.m_scale.m_x, transformChunk.m_scale.m_y, transformChunk.m_scale.m_z);
+                AZ::Quaternion rot(transformChunk.m_rotation.m_x, transformChunk.m_rotation.m_y, transformChunk.m_rotation.m_z, transformChunk.m_rotation.m_w);
+                AZ::Quaternion scaleRot(transformChunk.m_scaleRotation.m_x, transformChunk.m_scaleRotation.m_y, transformChunk.m_scaleRotation.m_z, transformChunk.m_scaleRotation.m_w);
 
                 // convert endian and coordinate system
                 ConvertVector3(&pos, endianType);
                 ConvertScale(&scale, endianType);
                 ConvertQuaternion(&rot, endianType);
                 ConvertQuaternion(&scaleRot, endianType);
-                MCore::Endian::ConvertUnsignedInt32(&transformChunk.mNodeIndex, endianType);
+                MCore::Endian::ConvertUnsignedInt32(&transformChunk.m_nodeIndex, endianType);
 
                 // create our transformation
                 MorphTargetStandard::Transformation transform;
-                transform.mPosition         = pos;
-                transform.mScale            = scale;
-                transform.mRotation         = rot;
-                transform.mScaleRotation    = scaleRot;
-                transform.mNodeIndex        = transformChunk.mNodeIndex;
+                transform.m_position         = pos;
+                transform.m_scale            = scale;
+                transform.m_rotation         = rot;
+                transform.m_scaleRotation    = scaleRot;
+                transform.m_nodeIndex        = transformChunk.m_nodeIndex;
 
                 if (GetLogging())
                 {
-                    MCore::LogDetailedInfo("     + Transform #%d: Node='%s' (index=%d)", i, skeleton->GetNode(transform.mNodeIndex)->GetName(), transform.mNodeIndex);
+                    MCore::LogDetailedInfo("     + Transform #%d: Node='%s' (index=%d)", i, skeleton->GetNode(transform.m_nodeIndex)->GetName(), transform.m_nodeIndex);
                     MCore::LogDetailedInfo("        - Pos:      %f, %f, %f",
-                        static_cast<float>(transform.mPosition.GetX()),
-                        static_cast<float>(transform.mPosition.GetY()),
-                        static_cast<float>(transform.mPosition.GetZ()));
+                        static_cast<float>(transform.m_position.GetX()),
+                        static_cast<float>(transform.m_position.GetY()),
+                        static_cast<float>(transform.m_position.GetZ()));
                     MCore::LogDetailedInfo("        - Rotation: %f, %f, %f %f", 
-                        static_cast<float>(transform.mRotation.GetX()),
-                        static_cast<float>(transform.mRotation.GetY()),
-                        static_cast<float>(transform.mRotation.GetZ()),
-                        static_cast<float>(transform.mRotation.GetW()));
+                        static_cast<float>(transform.m_rotation.GetX()),
+                        static_cast<float>(transform.m_rotation.GetY()),
+                        static_cast<float>(transform.m_rotation.GetZ()),
+                        static_cast<float>(transform.m_rotation.GetW()));
                     MCore::LogDetailedInfo("        - Scale:    %f, %f, %f",
-                        static_cast<float>(transform.mScale.GetX()),
-                        static_cast<float>(transform.mScale.GetY()),
-                        static_cast<float>(transform.mScale.GetZ()));
+                        static_cast<float>(transform.m_scale.GetX()),
+                        static_cast<float>(transform.m_scale.GetY()),
+                        static_cast<float>(transform.m_scale.GetZ()));
                     MCore::LogDetailedInfo("        - ScaleRot: %f, %f, %f %f", 
                         static_cast<float>(scaleRot.GetX()),
                         static_cast<float>(scaleRot.GetY()),
@@ -1860,8 +1827,8 @@ namespace EMotionFX
     // the node motion sources chunk
     bool ChunkProcessorActorNodeMotionSources::Process(MCore::File* file, Importer::ImportParameters& importParams)
     {
-        const MCore::Endian::EEndianType endianType = importParams.mEndianType;
-        Actor* actor = importParams.mActor;
+        const MCore::Endian::EEndianType endianType = importParams.m_endianType;
+        Actor* actor = importParams.m_actor;
 
         uint32 i;
         MCORE_ASSERT(actor);
@@ -1872,8 +1839,8 @@ namespace EMotionFX
         file->Read(&nodeMotionSourcesChunk, sizeof(FileFormat::Actor_NodeMotionSources2));
 
         // convert endian
-        MCore::Endian::ConvertUnsignedInt32(&nodeMotionSourcesChunk.mNumNodes, endianType);
-        const uint32 numNodes = nodeMotionSourcesChunk.mNumNodes;
+        MCore::Endian::ConvertUnsignedInt32(&nodeMotionSourcesChunk.m_numNodes, endianType);
+        const uint32 numNodes = nodeMotionSourcesChunk.m_numNodes;
         if (numNodes == 0)
         {
             return true;
@@ -1890,7 +1857,7 @@ namespace EMotionFX
             uint16 sourceNode;
             file->Read(&sourceNode, sizeof(uint16));
             MCore::Endian::ConvertUnsignedInt16(&sourceNode, endianType);
-            actor->GetNodeMirrorInfo(i).mSourceNode = sourceNode;
+            actor->GetNodeMirrorInfo(i).m_sourceNode = sourceNode;
         }
 
         // read all axes
@@ -1898,7 +1865,7 @@ namespace EMotionFX
         {
             uint8 axis;
             file->Read(&axis, sizeof(uint8));
-            actor->GetNodeMirrorInfo(i).mAxis = axis;
+            actor->GetNodeMirrorInfo(i).m_axis = axis;
         }
 
         // read all flags
@@ -1906,7 +1873,7 @@ namespace EMotionFX
         {
             uint8 flags;
             file->Read(&flags, sizeof(uint8));
-            actor->GetNodeMirrorInfo(i).mFlags = flags;
+            actor->GetNodeMirrorInfo(i).m_flags = flags;
         }
 
         // log details
@@ -1915,9 +1882,9 @@ namespace EMotionFX
             MCore::LogDetailedInfo("- Node Motion Sources (%i):", numNodes);
             for (i = 0; i < numNodes; ++i)
             {
-                if (actor->GetNodeMirrorInfo(i).mSourceNode != MCORE_INVALIDINDEX16)
+                if (actor->GetNodeMirrorInfo(i).m_sourceNode != MCORE_INVALIDINDEX16)
                 {
-                    MCore::LogDetailedInfo("   + '%s' (%i) -> '%s' (%i) [axis=%d] [flags=%d]", skeleton->GetNode(i)->GetName(), i, skeleton->GetNode(actor->GetNodeMirrorInfo(i).mSourceNode)->GetName(), actor->GetNodeMirrorInfo(i).mSourceNode, actor->GetNodeMirrorInfo(i).mAxis, actor->GetNodeMirrorInfo(i).mFlags);
+                    MCore::LogDetailedInfo("   + '%s' (%i) -> '%s' (%i) [axis=%d] [flags=%d]", skeleton->GetNode(i)->GetName(), i, skeleton->GetNode(actor->GetNodeMirrorInfo(i).m_sourceNode)->GetName(), actor->GetNodeMirrorInfo(i).m_sourceNode, actor->GetNodeMirrorInfo(i).m_axis, actor->GetNodeMirrorInfo(i).m_flags);
                 }
             }
         }
@@ -1930,10 +1897,9 @@ namespace EMotionFX
 
     bool ChunkProcessorActorAttachmentNodes::Process(MCore::File* file, Importer::ImportParameters& importParams)
     {
-        const MCore::Endian::EEndianType endianType = importParams.mEndianType;
-        Actor* actor = importParams.mActor;
+        const MCore::Endian::EEndianType endianType = importParams.m_endianType;
+        Actor* actor = importParams.m_actor;
 
-        uint32 i;
         MCORE_ASSERT(actor);
         Skeleton* skeleton = actor->GetSkeleton();
 
@@ -1942,11 +1908,11 @@ namespace EMotionFX
         file->Read(&attachmentNodesChunk, sizeof(FileFormat::Actor_AttachmentNodes));
 
         // convert endian
-        MCore::Endian::ConvertUnsignedInt32(&attachmentNodesChunk.mNumNodes, endianType);
-        const uint32 numAttachmentNodes = attachmentNodesChunk.mNumNodes;
+        MCore::Endian::ConvertUnsignedInt32(&attachmentNodesChunk.m_numNodes, endianType);
+        const uint32 numAttachmentNodes = attachmentNodesChunk.m_numNodes;
 
         // read all node attachment nodes
-        for (i = 0; i < numAttachmentNodes; ++i)
+        for (uint32 i = 0; i < numAttachmentNodes; ++i)
         {
             // get the attachment node index and endian convert it
             uint16 nodeNr;
@@ -1966,8 +1932,8 @@ namespace EMotionFX
         {
             MCore::LogDetailedInfo("- Attachment Nodes (%i):", numAttachmentNodes);
 
-            const uint32 numNodes = actor->GetNumNodes();
-            for (i = 0; i < numNodes; ++i)
+            const size_t numNodes = actor->GetNumNodes();
+            for (size_t i = 0; i < numNodes; ++i)
             {
                 // get the current node
                 Node* node = skeleton->GetNode(i);
@@ -1975,7 +1941,7 @@ namespace EMotionFX
                 // only log the attachment nodes
                 if (node->GetIsAttachmentNode())
                 {
-                    MCore::LogDetailedInfo("   + '%s' (%i)", node->GetName(), node->GetNodeIndex());
+                    MCore::LogDetailedInfo("   + '%s' (%zu)", node->GetName(), node->GetNodeIndex());
                 }
             }
         }
@@ -1990,35 +1956,35 @@ namespace EMotionFX
     // node map
     bool ChunkProcessorNodeMap::Process(MCore::File* file, Importer::ImportParameters& importParams)
     {
-        const MCore::Endian::EEndianType endianType = importParams.mEndianType;
+        const MCore::Endian::EEndianType endianType = importParams.m_endianType;
 
         // read the header
         FileFormat::NodeMapChunk nodeMapChunk;
         file->Read(&nodeMapChunk, sizeof(FileFormat::NodeMapChunk));
 
         // convert endian
-        MCore::Endian::ConvertUnsignedInt32(&nodeMapChunk.mNumEntries, endianType);
+        MCore::Endian::ConvertUnsignedInt32(&nodeMapChunk.m_numEntries, endianType);
 
         // load the source actor filename string, but discard it
-        SharedHelperData::ReadString(file, importParams.mSharedData, endianType);
+        SharedHelperData::ReadString(file, importParams.m_sharedData, endianType);
 
         // log some info
         if (GetLogging())
         {
             MCore::LogDetailedInfo("- Node Map:");
-            MCore::LogDetailedInfo("  + Num entries = %d", nodeMapChunk.mNumEntries);
+            MCore::LogDetailedInfo("  + Num entries = %d", nodeMapChunk.m_numEntries);
         }
 
         // for all entries
-        const uint32 numEntries = nodeMapChunk.mNumEntries;
-        importParams.mNodeMap->Reserve(numEntries);
+        const uint32 numEntries = nodeMapChunk.m_numEntries;
+        importParams.m_nodeMap->Reserve(numEntries);
         AZStd::string firstName;
         AZStd::string secondName;
         for (uint32 i = 0; i < numEntries; ++i)
         {
             // read both names
-            firstName  = SharedHelperData::ReadString(file, importParams.mSharedData, endianType);
-            secondName = SharedHelperData::ReadString(file, importParams.mSharedData, endianType);
+            firstName  = SharedHelperData::ReadString(file, importParams.m_sharedData, endianType);
+            secondName = SharedHelperData::ReadString(file, importParams.m_sharedData, endianType);
 
             if (GetLogging())
             {
@@ -2026,9 +1992,9 @@ namespace EMotionFX
             }
 
             // create the entry
-            if (importParams.mNodeMapSettings->mLoadNodes)
+            if (importParams.m_nodeMapSettings->m_loadNodes)
             {
-                importParams.mNodeMap->AddEntry(firstName.c_str(), secondName.c_str());
+                importParams.m_nodeMap->AddEntry(firstName.c_str(), secondName.c_str());
             }
         }
 
@@ -2046,12 +2012,12 @@ namespace EMotionFX
         {
             return false;
         }
-        MCore::Endian::ConvertUnsignedInt32(&dataHeader.m_sizeInBytes, importParams.mEndianType);
-        MCore::Endian::ConvertUnsignedInt32(&dataHeader.m_dataVersion, importParams.mEndianType);
+        MCore::Endian::ConvertUnsignedInt32(&dataHeader.m_sizeInBytes, importParams.m_endianType);
+        MCore::Endian::ConvertUnsignedInt32(&dataHeader.m_dataVersion, importParams.m_endianType);
 
         // Read the strings.
-        const AZStd::string uuidString = SharedHelperData::ReadString(file, importParams.mSharedData, importParams.mEndianType);
-        const AZStd::string className = SharedHelperData::ReadString(file, importParams.mSharedData, importParams.mEndianType);
+        const AZStd::string uuidString = SharedHelperData::ReadString(file, importParams.m_sharedData, importParams.m_endianType);
+        const AZStd::string className = SharedHelperData::ReadString(file, importParams.m_sharedData, importParams.m_endianType);
 
         // Create the motion data of this type.
         const AZ::Uuid uuid = AZ::Uuid::CreateString(uuidString.c_str(), uuidString.size());
@@ -2062,25 +2028,25 @@ namespace EMotionFX
         {
             AZ_Assert(false, "Unsupported motion data type '%s' using uuid '%s'", className.c_str(), uuidString.c_str());
             motionData = aznew UniformMotionData(); // Create an empty dummy motion data, so we don't break things.
-            importParams.mMotion->SetMotionData(motionData);
+            importParams.m_motion->SetMotionData(motionData);
             file->Forward(dataHeader.m_sizeInBytes);
             return false;
         }
 
         // Read the data.
         MotionData::ReadSettings readSettings;
-        readSettings.m_sourceEndianType = importParams.mEndianType;
+        readSettings.m_sourceEndianType = importParams.m_endianType;
         readSettings.m_logDetails = GetLogging();
         readSettings.m_version = dataHeader.m_dataVersion;
         if (!motionData->Read(file, readSettings))
         {
             AZ_Error("EMotionFX", false, "Failed to load motion data of type '%s'", className.c_str());
             motionData = aznew UniformMotionData(); // Create an empty dummy motion data, so we don't break things.
-            importParams.mMotion->SetMotionData(motionData);
+            importParams.m_motion->SetMotionData(motionData);
             return false;
         }
 
-        importParams.mMotion->SetMotionData(motionData);
+        importParams.m_motion->SetMotionData(motionData);
         return true;
     }
 

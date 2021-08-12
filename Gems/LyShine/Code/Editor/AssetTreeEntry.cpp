@@ -75,7 +75,7 @@ void AssetTreeEntry::Insert(const AZStd::string& path, const AZStd::string& menu
         AZStd::string folderName;
         AZStd::string remainderPath;
         size_t separator = path.find('/');
-        if (separator == string::npos)
+        if (separator == AZStd::string::npos)
         {
             folderName = path;
         }
@@ -136,7 +136,7 @@ AssetTreeEntry* AssetTreeEntry::BuildAssetTree(const AZ::Data::AssetType& assetT
         // product name stored in db is in all lower case, but we want to preserve case here
         AzFramework::StringFunc::Path::Split(product->GetParent()->GetRelativePath().c_str(), nullptr, &path, &name);
         // find next character position after default slice path in order to generate hierarchical sub-menus matching the subfolders
-        int pos = AzFramework::StringFunc::Find(path.c_str(), pathToSearch.c_str()) + pathToSearch.length();
+        const size_t pos = AzFramework::StringFunc::Find(path.c_str(), pathToSearch.c_str()) + pathToSearch.length();
         assetTree->Insert(path.substr(pos), name, product->GetAssetId());
     }
     return assetTree;

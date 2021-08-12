@@ -6,7 +6,7 @@
  *
  */
 
-#include <TestImpactFramework/TestImpactFileUtils.h>
+#include <TestImpactFramework/TestImpactUtils.h>
 
 #include <Artifact/Factory/TestImpactTestEnumerationSuiteFactory.h>
 #include <TestEngine/TestImpactTestEngineException.h>

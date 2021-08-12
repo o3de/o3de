@@ -33,10 +33,6 @@
 
 #include <AzCore/Script/ScriptSystemBus.h>
 
-#ifdef WIN32
-#include <CryWindows.h>
-#endif
-
 namespace LegacyLevelSystem
 {
 static constexpr const char* ArchiveExtension = ".pak";
@@ -480,7 +476,7 @@ CLevelInfo* CLevelSystem::GetLevelInfoInternal(const AZStd::string& levelName)
     for (AZStd::vector<CLevelInfo>::iterator it = m_levelInfos.begin(); it != m_levelInfos.end(); ++it)
     {
         {
-            if (!azstricmp(PathUtil::GetFileName(it->GetName()), levelName.c_str()))
+            if (!azstricmp(PathUtil::GetFileName(it->GetName()).c_str(), levelName.c_str()))
             {
                 return &(*it);
             }
@@ -567,7 +563,7 @@ ILevel* CLevelSystem::LoadLevelInternal(const char* _levelName)
     INDENT_LOG_DURING_SCOPE();
 
     char levelName[256];
-    cry_strcpy(levelName, _levelName);
+    azstrcpy(levelName, AZ_ARRAY_SIZE(levelName), _levelName);
 
     // Not remove a scope!!!
     {
@@ -617,12 +613,6 @@ ILevel* CLevelSystem::LoadLevelInternal(const char* _levelName)
                 g_enableloadingscreen->Set(0);
             }
         }
-
-        // Reset the camera to (1,1,1) (not (0,0,0) which is the invalid/uninitialised state,
-        // to avoid the hack in the renderer to not show anything if the camera is at the origin).
-        CCamera defaultCam;
-        defaultCam.SetPosition(Vec3(1.0f));
-        m_pSystem->SetViewCamera(defaultCam);
 
         m_pLoadingLevelInfo = pLevelInfo;
         OnLoadingStart(levelName);
@@ -951,10 +941,6 @@ void CLevelSystem::UnloadLevel()
     Audio::SAudioManagerRequestData<Audio::eAMRT_CLEAR_PRELOADS_DATA> oAMData3(Audio::eADS_LEVEL_SPECIFIC);
     oAudioRequestData.pData = &oAMData3;
     Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
-
-    // Reset the camera to (0,0,0) which is the invalid/uninitialised state
-    CCamera defaultCam;
-    m_pSystem->SetViewCamera(defaultCam);
 
     OnUnloadComplete(m_lastLevelName.c_str());
 

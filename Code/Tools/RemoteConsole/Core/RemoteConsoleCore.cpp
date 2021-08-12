@@ -462,10 +462,10 @@ bool SRemoteClient::SendPackage(const char* buffer, int size)
 /////////////////////////////////////////////////////////////////////////////////////////////
 void SRemoteClient::FillAutoCompleteList(AZStd::vector<AZStd::string>& list)
 {
-    AZStd::vector<const char*> cmds;
-    size_t count = gEnv->pConsole->GetSortedVars(nullptr, 0);
+    AZStd::vector<AZStd::string_view> cmds;
+    size_t count = gEnv->pConsole->GetSortedVars(cmds);
     cmds.resize(count);
-    count = gEnv->pConsole->GetSortedVars(&cmds[0], count);
+    count = gEnv->pConsole->GetSortedVars(cmds);
     for (size_t i = 0; i < count; ++i)
     {
         list.push_back(cmds[i]);

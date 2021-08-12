@@ -28,6 +28,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::CrashHandler
+            AZ::AzCore
 )
 
 # Load the "Gem::CrashReporting" module in Clients and Servers
