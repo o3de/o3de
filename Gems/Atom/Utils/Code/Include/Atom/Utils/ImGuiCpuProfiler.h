@@ -95,7 +95,7 @@ namespace AZ
             void Draw(bool& keepDrawing, const AZ::RHI::CpuTimingStatistics& cpuTimingStatistics);
 
         private:
-            static constexpr float RowHeight = 50.0;
+            static constexpr float RowHeight = 35.0;
             static constexpr int DefaultFramesToCollect = 50;
             static constexpr float MediumFrameTimeLimit = 16.6; // 60 fps
             static constexpr float HighFrameTimeLimit = 33.3; // 30 fps
@@ -218,9 +218,8 @@ namespace AZ
 
 
             // --- Loading capture state ---
-            AZStd::unordered_set<AZStd::string> m_loadedNameBuf;
-            AZStd::unordered_set<RHI::CachedTimeRegion::GroupRegionName, RHI::CachedTimeRegion::GroupRegionName::Hash> m_loadedGroupRegionNames;
-            bool m_usingOfflineData = false;
+            AZStd::unordered_set<AZStd::string> m_deserializedStringPool;
+            AZStd::unordered_set<RHI::CachedTimeRegion::GroupRegionName, RHI::CachedTimeRegion::GroupRegionName::Hash> m_deserializedGroupRegionNamePool;
         };
     } // namespace Render
 } // namespace AZ

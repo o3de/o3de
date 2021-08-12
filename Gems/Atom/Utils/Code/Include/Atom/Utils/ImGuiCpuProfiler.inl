@@ -13,19 +13,16 @@
 #include <Atom/RPI.Edit/Common/JsonUtils.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 
+#include <AzCore/Casting/lossy_cast.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/JSON/filereadstream.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/JsonSerializationResult.h>
-#include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/limits.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/std/time.h>
-#include "../../../Gems/ImGui/External/ImGui/v1.82/imgui/imgui.h"
-#pragma optimize("", off)
-#include "AzCore/Casting/lossy_cast.h"
 
 
 namespace AZ
@@ -222,6 +219,7 @@ namespace AZ
                     m_lastCapturedFilePath = resolvedPath;
                     AZ::Render::ProfilingCaptureRequestBus::Broadcast(
                         &AZ::Render::ProfilingCaptureRequestBus::Events::EndContinuousCpuProfilingCapture, frameDataFilePath);
+                    m_paused = true;
                 }
 
                 else
@@ -447,6 +445,7 @@ namespace AZ
 
             AZStd::vector<RHI::CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializerEntry> deserializedData = loadResult.TakeValue();
 
+            // Clear visualizer and statistics view state
             m_savedRegionCount = deserializedData.size();
             m_savedData.clear();
             m_paused = true;
@@ -456,24 +455,24 @@ namespace AZ
             m_tableData.clear();
             m_groupRegionMap.clear();
 
-            // Main transformation loop, create groupregionnames and add to the buffer 
             for (const auto& entry : deserializedData)
             {
-                const auto [groupNameItr, wasGroupNameInserted] = m_loadedNameBuf.emplace(entry.m_groupName.GetCStr());
-                const auto [regionNameItr, wasRegionNameInserted] = m_loadedNameBuf.emplace(entry.m_regionName.GetCStr());
-
+                const auto [groupNameItr, wasGroupNameInserted] = m_deserializedStringPool.emplace(entry.m_groupName.GetCStr());
+                const auto [regionNameItr, wasRegionNameInserted] = m_deserializedStringPool.emplace(entry.m_regionName.GetCStr());
                 const auto [groupRegionNameItr, wasGroupRegionNameInserted] =
-                    m_loadedGroupRegionNames.emplace(groupNameItr->c_str(), regionNameItr->c_str());
+                    m_deserializedGroupRegionNamePool.emplace(groupNameItr->c_str(), regionNameItr->c_str());
 
                 const RHI::CachedTimeRegion newRegion(&(*groupRegionNameItr), entry.m_stackDepth, entry.m_startTick, entry.m_endTick);
                 m_savedData[entry.m_threadId].push_back(newRegion);
 
-                static Name targetName = Name("RPISystem: OnSystemTick");
-                if (entry.m_regionName == targetName)
+                // Since we don't serialize the frame boundaries, we need to use the RPI's OnSystemTick event as a heuristic. 
+                const static Name frameBoundaryName = Name("RPISystem: OnSystemTick");
+                if (entry.m_regionName == frameBoundaryName)
                 {
                     m_frameEndTicks.push_back(entry.m_endTick);
                 }  
 
+                // Update running statistics 
                 if (!m_groupRegionMap[*groupNameItr].contains(*regionNameItr))
                 {
                     m_groupRegionMap[*groupNameItr][*regionNameItr].m_groupName = *groupNameItr;
@@ -483,7 +482,11 @@ namespace AZ
                 m_groupRegionMap[*groupNameItr][*regionNameItr].RecordRegion(newRegion, entry.m_threadId);
             }
 
+            // Update viewport bounds with some added UX fudge factor
+            m_viewportStartTick = deserializedData.back().m_startTick - 1000;
+            m_viewportEndTick = deserializedData.back().m_endTick + 1000;
 
+            // Invariant: each vector in m_savedData must be sorted so that we can efficiently cull region data.
             for (auto& [threadId, singleThreadData] : m_savedData)
             {
                 AZStd::sort(singleThreadData.begin(), singleThreadData.end(), 
@@ -503,7 +506,7 @@ namespace AZ
             if (ImGui::BeginChild("Options and Statistics", { 0, 0 }, true))
             {
                 ImGui::Columns(3, "Options", true);
-                ImGui::SliderInt("Saved Frames", &m_framesToCollect, 10, 10000, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_Logarithmic);
+                ImGui::SliderInt("Saved Frames", &m_framesToCollect, 10, 20000, "%d", ImGuiSliderFlags_AlwaysClamp | ImGuiSliderFlags_Logarithmic);
                 m_visualizerHighlightFilter.Draw("Find Region");
 
                 ImGui::NextColumn();
@@ -735,6 +738,12 @@ namespace AZ
             {
                 AZStd::size_t sizeBeforeRemove = savedRegions.size();
 
+                // Early out to avoid the linear erase_if call
+                if (savedRegions.size() >= 1 && savedRegions.at(0).m_startTick > deleteBeforeTick)
+                {
+                    continue;
+                }
+
                 // Use erase_if over plain upper_bound + erase to avoid repeated shifts. erase requires a shift of all elements to the right
                 // for each element that is erased, while erase_if squashes all removes into a single shift which significantly improves perf.
                 AZStd::erase_if(
@@ -771,12 +780,19 @@ namespace AZ
             const float startPixel = ConvertTickToPixelSpace(block.m_startTick, m_viewportStartTick, m_viewportEndTick);
             const float endPixel = ConvertTickToPixelSpace(block.m_endTick, m_viewportStartTick, m_viewportEndTick);
 
-            const ImVec2 startPoint = { startPixel, wy + targetRow * RowHeight };
-            const ImVec2 endPoint = { endPixel, wy + targetRow * RowHeight + 40 };
+            if (endPixel - startPixel < 0.5f)
+            {
+                return;
+            }
+
+            const ImVec2 startPoint = { startPixel, wy + targetRow * RowHeight + 1};
+            const ImVec2 endPoint = { endPixel, wy + (targetRow + 1) * RowHeight };
 
             const ImU32 blockColor = GetBlockColor(block);
 
             drawList->AddRectFilled(startPoint, endPoint, blockColor, 0);
+            drawList->AddLine(startPoint, { endPixel, startPoint.y }, IM_COL32_BLACK, 0.5f);
+            drawList->AddLine({ startPixel, endPoint.y }, endPoint, IM_COL32_BLACK, 0.5f);
 
             // Draw the region name if possible
             // If the block's current width is too small, we skip drawing the label.
@@ -790,11 +806,13 @@ namespace AZ
 
                 if (regionPixelWidth < textWidth) // Not enough space in the block to draw the whole name, draw clipped text.
                 {
-                    // clipRect appears to only clip when a character is fully outside of its bounds which can lead to overflow
-                    // for now subtract the width of a character
                     const ImVec4 clipRect = { startPoint.x, startPoint.y, endPoint.x - maxCharWidth, endPoint.y };
-                    const float fontSize = ImGui::GetFont()->FontSize;
 
+                    // NOTE: RenderText calls do not automatically account for the global scale (which is modified at high DPI)
+                    // so we must adjust for the scale manually.
+                    const float scaleFactor = ImGui::GetIO().FontGlobalScale;
+                    const float fontSize = ImGui::GetFont()->FontSize * scaleFactor;
+                    
                     ImGui::GetFont()->RenderText(drawList, fontSize, startPoint, IM_COL32_WHITE, clipRect, label.c_str(), 0);
                 }
                 else // We have enough space to draw the entire label, draw and center text.
@@ -854,9 +872,9 @@ namespace AZ
             auto [wx, wy] = ImGui::GetWindowPos();
             wy -= ImGui::GetScrollY();
             const float windowWidth = ImGui::GetWindowWidth();
-            const float boundaryY = wy + (baseRow + maxDepth + 1) * RowHeight - 5;
+            const float boundaryY = wy + (baseRow + maxDepth + 1) * RowHeight;
 
-            ImGui::GetWindowDrawList()->AddLine({ wx, boundaryY }, { wx + windowWidth, boundaryY }, red, 2.0f);
+            ImGui::GetWindowDrawList()->AddLine({ wx, boundaryY }, { wx + windowWidth, boundaryY }, red, 1.0f);
         }
 
         inline void ImGuiCpuProfiler::DrawThreadLabel(u64 baseRow, size_t threadId)
@@ -865,7 +883,7 @@ namespace AZ
             wy -= ImGui::GetScrollY();
             const AZStd::string threadIdText = AZStd::string::format("Thread: %zu", threadId);
 
-            ImGui::GetWindowDrawList()->AddText({ wx + 10, wy + baseRow * RowHeight + 5 }, IM_COL32_WHITE, threadIdText.c_str());
+            ImGui::GetWindowDrawList()->AddText({ wx + 10, wy + baseRow * RowHeight}, IM_COL32_WHITE, threadIdText.c_str());
         }
 
         inline void ImGuiCpuProfiler::DrawFrameBoundaries()
@@ -923,8 +941,10 @@ namespace AZ
                     const float textBeginPixel = lastFrameBoundaryPixel + offset;
                     const float textEndPixel = textBeginPixel + labelWidth;
 
+                    const float verticalOffset = (ImGui::GetWindowHeight() - ImGui::GetFontSize()) / 2;
+
                     // Execution time label
-                    drawList->AddText({ textBeginPixel, wy + ImGui::GetWindowHeight() / 4 }, IM_COL32_WHITE, label.c_str());
+                    drawList->AddText({ textBeginPixel, wy + verticalOffset }, IM_COL32_WHITE, label.c_str());
 
                     // Left side
                     drawList->AddLine(
