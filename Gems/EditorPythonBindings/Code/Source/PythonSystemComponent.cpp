@@ -245,12 +245,16 @@ namespace EditorPythonBindings
             PythonSymbolEventBus::Handler::BusDisconnect();
         }
 
-        void LogClass(AZStd::string, AZ::BehaviorClass*) override {}
-        void LogClassWithName(AZStd::string, AZ::BehaviorClass*, AZStd::string) override {}
-        void LogClassMethod(AZStd::string, AZStd::string, AZ::BehaviorClass*, AZ::BehaviorMethod*) override {}
-        void LogBus(AZStd::string, AZStd::string, AZ::BehaviorEBus*) override {}
-        void LogGlobalMethod(AZStd::string, AZStd::string, AZ::BehaviorMethod*) override {}
-        void LogGlobalProperty(AZStd::string, AZStd::string, AZ::BehaviorProperty*) override {}
+        void LogClass(const AZStd::string, const AZ::BehaviorClass*) override {}
+        void LogClassWithName(const AZStd::string, const AZ::BehaviorClass*, const AZStd::string) override {}
+        void LogClassMethod(
+            const AZStd::string,
+            const AZStd::string,
+            const AZ::BehaviorClass*,
+            const AZ::BehaviorMethod*) override {}
+        void LogBus(const AZStd::string, const AZStd::string, const AZ::BehaviorEBus*) override {}
+        void LogGlobalMethod(const AZStd::string, const AZStd::string, const AZ::BehaviorMethod*) override {}
+        void LogGlobalProperty(const AZStd::string, const AZStd::string, const AZ::BehaviorProperty*) override {}
         void Finalize() override {}
     };
 

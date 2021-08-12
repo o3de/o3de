@@ -212,12 +212,12 @@ namespace EditorPythonBindings
         AZ::IO::FileIOBase::GetInstance()->Write(handle, buffer.c_str(), buffer.size());
     }
 
-    void PythonLogSymbolsComponent::LogClass(AZStd::string moduleName, AZ::BehaviorClass* behaviorClass)
+    void PythonLogSymbolsComponent::LogClass(const AZStd::string moduleName, const AZ::BehaviorClass* behaviorClass)
     {
         LogClassWithName(moduleName, behaviorClass, behaviorClass->m_name.c_str());
     }
 
-    void PythonLogSymbolsComponent::LogClassWithName(AZStd::string moduleName, AZ::BehaviorClass* behaviorClass, AZStd::string className)
+    void PythonLogSymbolsComponent::LogClassWithName(const AZStd::string moduleName, const AZ::BehaviorClass* behaviorClass, const AZStd::string className)
     {
         Internal::FileHandle fileHandle(OpenModuleAt(moduleName));
         if (fileHandle.IsValid())
@@ -261,7 +261,11 @@ namespace EditorPythonBindings
         }
     }
 
-    void PythonLogSymbolsComponent::LogClassMethod(AZStd::string moduleName, AZStd::string globalMethodName, AZ::BehaviorClass* behaviorClass, AZ::BehaviorMethod* behaviorMethod)
+    void PythonLogSymbolsComponent::LogClassMethod(
+        const AZStd::string moduleName,
+        const AZStd::string globalMethodName,
+        const AZ::BehaviorClass* behaviorClass,
+        const AZ::BehaviorMethod* behaviorMethod)
     {
         AZ_UNUSED(behaviorClass);
         Internal::FileHandle fileHandle(OpenModuleAt(moduleName));
@@ -271,7 +275,7 @@ namespace EditorPythonBindings
         }
     }
 
-    void PythonLogSymbolsComponent::LogBus(AZStd::string moduleName, AZStd::string busName, AZ::BehaviorEBus* behaviorEBus)
+    void PythonLogSymbolsComponent::LogBus(const AZStd::string moduleName, const AZStd::string busName, const AZ::BehaviorEBus* behaviorEBus)
     {
         if (behaviorEBus->m_events.empty())
         {
@@ -410,7 +414,7 @@ namespace EditorPythonBindings
         }
     }
 
-    void PythonLogSymbolsComponent::LogGlobalMethod(AZStd::string moduleName, AZStd::string methodName, AZ::BehaviorMethod* behaviorMethod)
+    void PythonLogSymbolsComponent::LogGlobalMethod(const AZStd::string moduleName, const AZStd::string methodName, const AZ::BehaviorMethod* behaviorMethod)
     {
         Internal::FileHandle fileHandle(OpenModuleAt(moduleName));
         if (fileHandle.IsValid())
@@ -434,7 +438,10 @@ namespace EditorPythonBindings
         }
     }
 
-    void PythonLogSymbolsComponent::LogGlobalProperty(AZStd::string moduleName, AZStd::string propertyName, AZ::BehaviorProperty* behaviorProperty)
+    void PythonLogSymbolsComponent::LogGlobalProperty(
+        const AZStd::string moduleName,
+        const AZStd::string propertyName,
+        const AZ::BehaviorProperty* behaviorProperty)
     {
         if (!behaviorProperty->m_getter || !behaviorProperty->m_getter->GetResult())
         {
