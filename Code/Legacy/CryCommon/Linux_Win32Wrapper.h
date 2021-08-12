@@ -326,8 +326,6 @@ inline uint32 GetTickCount()
 #define _strlwr_s(BUF, SIZE) strlwr(BUF)
 #define _strups strupr
 
-#define _wtof(str) wcstod(str, 0)
-
 typedef struct __finddata64_t
 {
     //!< atributes set by find request
@@ -489,8 +487,6 @@ extern void adaptFilenameToLinux(char* rAdjustedFilename);
 extern const int comparePathNames(const char* cpFirst, const char* cpSecond, unsigned int len);//returns 0 if identical
 extern void replaceDoublePathFilename(char* szFileName);//removes "\.\" to "\" and "/./" to "/"
 
-//////////////////////////////////////////////////////////////////////////
-extern char* _fullpath(char* absPath, const char* relPath, size_t maxLength);
 //////////////////////////////////////////////////////////////////////////
 extern void _makepath(char* path, const char* drive, const char* dir, const char* filename, const char* ext);
 

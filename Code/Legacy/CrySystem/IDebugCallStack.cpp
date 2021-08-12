@@ -227,7 +227,7 @@ void IDebugCallStack::FatalError(const char* description)
 
 #if defined(WIN32) || !defined(_RELEASE)
     int* p = 0x0;
-    PREFAST_SUPPRESS_WARNING(6011) * p = 1; // we're intentionally crashing here
+    *p = 1; // we're intentionally crashing here
 #endif
 }
 

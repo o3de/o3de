@@ -30,6 +30,7 @@
 #include <Cry_Quat.h>
 #include <Cry_Color.h>
 #include <smartptr.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 
 // forward declarations for overloads
 struct AABB;
@@ -579,7 +580,7 @@ protected:
 
 // use this to push (and automatically pop) the sizer component name at the beginning of the
 // getSize() function
-#define SIZER_COMPONENT_NAME(pSizerPointer, szComponentName) PREFAST_SUPPRESS_WARNING(6246) CrySizerComponentNameHelper AZ_JOIN(sizerHelper, __LINE__)(pSizerPointer, szComponentName, false)
-#define SIZER_SUBCOMPONENT_NAME(pSizerPointer, szComponentName) PREFAST_SUPPRESS_WARNING(6246) CrySizerComponentNameHelper AZ_JOIN(sizerHelper, __LINE__)(pSizerPointer, szComponentName, true)
+#define SIZER_COMPONENT_NAME(pSizerPointer, szComponentName) CrySizerComponentNameHelper AZ_JOIN(sizerHelper, __LINE__)(pSizerPointer, szComponentName, false)
+#define SIZER_SUBCOMPONENT_NAME(pSizerPointer, szComponentName) CrySizerComponentNameHelper AZ_JOIN(sizerHelper, __LINE__)(pSizerPointer, szComponentName, true)
 
 #endif // CRYINCLUDE_CRYCOMMON_CRYSIZER_H
