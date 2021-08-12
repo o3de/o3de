@@ -77,7 +77,6 @@ namespace AZ
             
             m_samplerCache = [[NSCache alloc]init];
             [m_samplerCache setName:@"SamplerCache"];
-            
             return RHI::ResultCode::Success;
         }
     
