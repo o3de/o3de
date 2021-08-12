@@ -94,7 +94,6 @@ namespace EditorPythonBindings
         if (PythonSymbolEventBus::GetTotalNumOfEventHandlers() > 1)
         {
             OnPostInitialize();
-            PythonSymbolEventBus::ExecuteQueuedEvents();
         }
     }
 
@@ -117,6 +116,7 @@ namespace EditorPythonBindings
             m_basePath = pythonSymbolsPath;
         }
         EditorPythonBindingsNotificationBus::Handler::BusDisconnect();
+        PythonSymbolEventBus::ExecuteQueuedEvents();
     }
 
     void PythonLogSymbolsComponent::WriteMethod(AZ::IO::HandleType handle, AZStd::string_view methodName, const AZ::BehaviorMethod& behaviorMethod, const AZ::BehaviorClass* behaviorClass)

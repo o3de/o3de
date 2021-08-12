@@ -241,6 +241,7 @@ namespace EditorPythonBindings
 
         ~SymbolLogHelper()
         {
+            PythonSymbolEventBus::ExecuteQueuedEvents();
             PythonSymbolEventBus::Handler::BusDisconnect();
         }
 
