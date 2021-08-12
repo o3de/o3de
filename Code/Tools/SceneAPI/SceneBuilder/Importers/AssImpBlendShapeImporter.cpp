@@ -40,8 +40,9 @@ namespace AZ
                 SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
                 if (serializeContext)
                 {
+                    // Revision 3: Fixed an issue where jack.fbx was failing to process
                     // Revision 4: Handle duplicate blend shape animations
-                    serializeContext->Class<AssImpBlendShapeImporter, SceneCore::LoadingComponent>()->Version(4); // LYN-2576
+                    serializeContext->Class<AssImpBlendShapeImporter, SceneCore::LoadingComponent>()->Version(4);
                 }
             }
 
