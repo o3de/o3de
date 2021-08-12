@@ -226,14 +226,17 @@ class TestImpact:
                 persistent_storage = None
 
             if persistent_storage:
+                # Presume the src and dst commit combination is valid (that is to say, this is not a re-run of the same changes)
+                valid_commit_combination = True
                 if persistent_storage.has_historic_data:
                     logger.info("Historic data found.")
                     self._src_commit = persistent_storage.last_commit_hash
 
-                    # Perform some basic sanity checks on the commit hashes to ensure confidence in the integrity of of the environment
+                    # Perform some basic sanity checks on the commit hashes to ensure confidence in the integrity of the environment
                     if self._src_commit == self._dst_commit:
                         logger.error(f"Source commit '{self._src_commit}' and destination commit '{self._dst_commit}', implying the integrity of the historic data is compromised.")
                         persistent_storage = None
+                        valid_commit_combination = False
                     else:
                         self._attempt_to_generate_change_list()
                 else:
@@ -261,7 +264,7 @@ class TestImpact:
                     args.append(f"--changelist={self._change_list_path}")
                     logger.info(f"Change list is set to '{self._change_list_path}'.")
                 else:
-                    if self._is_source_of_truth_branch:
+                    if self._is_source_of_truth_branch and valid_commit_combination:
                         # Use seed sequence (instrumented all tests) for coverage updating branches so we can generate the coverage bed for future sequences
                         sequence_type = "seed"
                         # We always continue after test failures when seeding to ensure we capture the coverage for all test targets
