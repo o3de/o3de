@@ -606,7 +606,7 @@ namespace AZ
             const bool captureStarted = m_cpuProfilingStatisticsCapture.StartCapture([this, outputFilePath, wasEnabled]()
             {
                 // Blocking call for a single frame of data, avoid thread overhead
-                AZStd::ring_buffer<RHI::CpuProfiler::TimeRegionMap> singleFrameData;
+                AZStd::ring_buffer<RHI::CpuProfiler::TimeRegionMap> singleFrameData(1);
                 singleFrameData.push_back(RHI::CpuProfiler::Get()->GetTimeRegionMap());
                 SerializeCpuProfilingData(singleFrameData, outputFilePath, wasEnabled);
             });

@@ -9,7 +9,6 @@
 #pragma once
 
 #include <AzCore/JSON/document.h>
-#include <AzCore/JSON/filereadstream.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 
 #include <AtomCore/Serialization/Json/JsonUtils.h>
@@ -124,61 +123,7 @@ namespace AZ
             }
 
             using DeserializedCpuData = AZStd::vector<RHI::CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializerEntry>;
-            inline Outcome<DeserializedCpuData, AZStd::string> LoadSavedCpuProfilingStatistics(const AZStd::string& capturePath)
-            {
-                const auto* base = IO::FileIOBase::GetInstance();
-
-                char resolvedPath[IO::MaxPathLength];
-                base->ResolvePath(capturePath.c_str(), resolvedPath, IO::MaxPathLength);
-
-                // NOTE: this uses raw file pointers over the abstractions and utility functions provided by AZ::JsonSerializationUtils because
-                // saved profiling captures can be upwards of 400 MB. This necessitates a buffered approach to avoid allocating huge chunks of memory.
-                FILE* fp = nullptr;
-                azfopen(&fp, resolvedPath, "rb");
-                if (!fp)
-                {
-                    return Failure(AZStd::string::format("Could not fopen file %s, is the path correct?\n", resolvedPath));
-                }
-
-                constexpr AZStd::size_t BufSize = 65536;
-                char* buf = reinterpret_cast<char*>(azmalloc(BufSize));
-
-                rapidjson::Document document;
-                rapidjson::FileReadStream inputStream(fp, buf, BufSize);
-                document.ParseStream(inputStream);
-
-                azfree(buf);
-                fclose(fp);
-
-                if (document.HasParseError())
-                {
-                    const auto pe = document.GetParseError();
-                    return Failure(AZStd::string::format(
-                        "Rapidjson could not parse the document with ParseErrorCode %u. See 3rdParty/rapidjson/error.h for definitions.\n", pe));
-                }
-
-                if (!document.IsObject() || !document.HasMember("ClassData"))
-                {
-                    return Failure(AZStd::string::format(
-                        "Error in loading saved capture: top-level object does not have a ClassData field. Did the serialization format change recently?\n"));
-                }
-
-                AZ_TracePrintf("JsonUtils", "Successfully loaded JSON into memory.\n");
-
-                const auto& root = document["ClassData"];
-                RHI::CpuProfilingStatisticsSerializer serializer;
-                const JsonSerializationResult::ResultCode deserializationResult = JsonSerialization::Load(serializer, root);
-                if (deserializationResult.GetProcessing() == JsonSerializationResult::Processing::Halted
-                    || serializer.m_cpuProfilingStatisticsSerializerEntries.empty())
-                {
-                    return Failure(AZStd::string::format("Error in deserializing document: %s\n", deserializationResult.ToString(capturePath.c_str()).c_str()));
-                }
-
-                AZ_TracePrintf("JsonUtils", "Successfully loaded CPU profiling data with %zu profiling entries.\n",
-                     serializer.m_cpuProfilingStatisticsSerializerEntries.size());
-
-                return Success(AZStd::move(serializer.m_cpuProfilingStatisticsSerializerEntries));
-            }
+            Outcome<DeserializedCpuData, AZStd::string> LoadSavedCpuProfilingStatistics(const AZStd::string& capturePath);
         } // namespace JsonUtils
     } // namespace RPI
 } // namespace AZ
