@@ -249,7 +249,7 @@ namespace AZ
             AZStd::scoped_lock lock(m_notifierMutex);
             AZStd::swap(m_notifiers, localNotifierEvent);
             // Append any added handlers to the m_notifier structure
-            m_notifiers.StealHandlers(AZStd::move(localNotifierEvent));
+            m_notifiers.ClaimHandlers(AZStd::move(localNotifierEvent));
         }
     }
 

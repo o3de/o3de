@@ -62,7 +62,7 @@ namespace AZ
         //! and move them to this event. The other will event
         //! will be cleared after call
         //! @param other event to move handlers
-        Event& StealHandlers(Event&& other);
+        Event& ClaimHandlers(Event&& other);
 
         //! Returns true if at least one handler is connected to this event.
         bool HasHandlerConnected() const;

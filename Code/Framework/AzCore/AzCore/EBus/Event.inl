@@ -208,10 +208,10 @@ namespace AZ
 
 
     template <typename... Params>
-    auto Event<Params...>::StealHandlers(Event&& other) -> Event&
+    auto Event<Params...>::ClaimHandlers(Event&& other) -> Event&
     {
-        decltype(other.m_handlers) handlers = AZStd::move(other.m_handlers);
-        decltype(other.m_addList) addList = AZStd::move(other.m_addList);
+        auto handlers = AZStd::move(other.m_handlers);
+        auto addList = AZStd::move(other.m_addList);
         other.m_freeList = {};
         other.m_updating = false;
 

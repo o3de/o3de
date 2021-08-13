@@ -240,7 +240,7 @@ namespace UnitTest
         static_assert(!AZStd::is_copy_assignable_v<AZ::Event<int32_t>>, "AZ Events should not be copy assignable");
     }
 
-    TEST_F(EventTests, TestStealHandlers_TakesAllSourceHandlers)
+    TEST_F(EventTests, TestClaimHandlers_TakesAllSourceHandlers)
     {
         AZ::Event<> testEvent1;
         AZ::Event<> testEvent2;
@@ -259,7 +259,7 @@ namespace UnitTest
         EXPECT_TRUE(testEvent1.HasHandlerConnected());
         EXPECT_TRUE(testEvent2.HasHandlerConnected());
 
-        testEvent1.StealHandlers(AZStd::move(testEvent2));
+        testEvent1.ClaimHandlers(AZStd::move(testEvent2));
         EXPECT_TRUE(testEvent1.HasHandlerConnected());
         EXPECT_FALSE(testEvent2.HasHandlerConnected());
 
