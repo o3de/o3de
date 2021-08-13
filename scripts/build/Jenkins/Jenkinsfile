@@ -378,6 +378,25 @@ def TestMetrics(Map pipelineConfig, String workspace, String branchName, String 
     }
 }
 
+def BenchmarkMetrics(String workspace, String branchName, String outputDirectory) {
+    catchError(buildResult: null, stageResult: null) {
+        def cmakeBuildDir = [workspace, ENGINE_REPOSITORY_NAME, outputDirectory].join('/')
+        dir("${workspace}/${ENGINE_REPOSITORY_NAME}") {
+            checkout scm: [
+                $class: 'GitSCM',
+                branches: [[name: '*/main']],
+                extensions: [
+                    [$class: 'AuthorInChangelog'],
+                    [$class: 'RelativeTargetDirectory', relativeTargetDir: 'mars']
+                ],
+                userRemoteConfigs: [[url: "${env.MARS_REPO}", name: 'mars', credentialsId: "${env.GITHUB_USER}"]]
+            ]
+            def command = "${pipelineConfig.PYTHON_DIR}/python.cmd -u mars/scripts/python/benchmark_scraper.py ${cmakeBuildDir} ${branchName}"
+            palSh(command, "Publishing Benchmark Metrics")
+        }
+    }
+}
+
 def ExportTestResults(Map options, String platform, String type, String workspace, Map params) {
     catchError(message: "Error exporting tests results (this won't fail the build)", buildResult: 'SUCCESS', stageResult: 'FAILURE') {
         def o3deroot = "${workspace}/${ENGINE_REPOSITORY_NAME}"
@@ -433,6 +452,7 @@ def CreateTestMetricsStage(Map pipelineConfig, String branchName, Map environmen
     return {
         stage("${buildJobName}_metrics") {
             TestMetrics(pipelineConfig, environmentVars['WORKSPACE'], branchName, env.DEFAULT_REPOSITORY_NAME, buildJobName, outputDirectory, configuration)
+            BenchmarkMetrics(environmentVars['WORKSPACE'], branchName, outputDirectory)
         }
     }
 }
