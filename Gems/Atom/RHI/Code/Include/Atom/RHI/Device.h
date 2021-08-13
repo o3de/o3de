@@ -121,7 +121,6 @@ namespace AZ
             Format GetNearestSupportedFormat(Format requestedFormat, FormatCapabilities requestedCapabilities) const;
 
             //! Small API to support getting supported/working swapchain formats for a window.
-            //! [GFX TODO]ATOM-1125] [RHI] Device::GetValidSwapChainImageFormats()
             //! Returns the set of supported formats for swapchain images.
             virtual AZStd::vector<Format> GetValidSwapChainImageFormats(const WindowHandle& windowHandle) const;
 
