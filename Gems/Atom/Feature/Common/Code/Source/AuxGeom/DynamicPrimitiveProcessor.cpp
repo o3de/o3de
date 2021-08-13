@@ -196,7 +196,7 @@ namespace AZ
         {
             const size_t sourceByteSize = source.size() * sizeof(AuxGeomIndex);
             
-            RHI::Ptr<RPI::DynamicBuffer> dynamicBuffer = RPI::DynamicDrawInterface::Get()->GetDynamicBuffer(static_cast<uint32_t>(sourceByteSize));
+            RHI::Ptr<RPI::DynamicBuffer> dynamicBuffer = RPI::DynamicDrawInterface::Get()->GetDynamicBuffer(static_cast<uint32_t>(sourceByteSize), RHI::Alignment::InputAssembly);
             if (!dynamicBuffer)
             {
                 AZ_WarningOnce("AuxGeom", false, "Failed to allocate dynamic buffer of size %d.", sourceByteSize);
@@ -211,7 +211,7 @@ namespace AZ
         {
             const size_t sourceByteSize = source.size() * sizeof(AuxGeomDynamicVertex);
 
-            RHI::Ptr<RPI::DynamicBuffer> dynamicBuffer = RPI::DynamicDrawInterface::Get()->GetDynamicBuffer(static_cast<uint32_t>(sourceByteSize));
+            RHI::Ptr<RPI::DynamicBuffer> dynamicBuffer = RPI::DynamicDrawInterface::Get()->GetDynamicBuffer(static_cast<uint32_t>(sourceByteSize), RHI::Alignment::InputAssembly);
             if (!dynamicBuffer)
             {
                 AZ_WarningOnce("AuxGeom", false, "Failed to allocate dynamic buffer of size %d.", sourceByteSize);
