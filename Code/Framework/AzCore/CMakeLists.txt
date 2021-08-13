@@ -19,6 +19,12 @@ if(LY_RAD_TELEMETRY_ENABLED)
     set(AZ_CORE_RADTELEMETRY_BUILD_DEPENDENCIES 3rdParty::RadTelemetry)
 endif()
 
+if(PAL_TRAIT_PROF_PIX_SUPPORTED AND LY_PIX_ENABLED)
+    set(LY_PIX_PATH "${LY_3RDPARTY_PATH}/winpixeventruntime" CACHE PATH "Path to the Windows Pix Event Runtime.")
+    set(AZ_CORE_PIX_BUILD_DEPENDENCIES 3rdParty::pix)
+    set(AZ_CORE_PIX_BUILD_DEFINES "USE_PIX")
+endif()
+
 ly_add_target(
     NAME AzCore STATIC
     NAMESPACE AZ
@@ -45,6 +51,10 @@ ly_add_target(
             3rdParty::zstd
             3rdParty::cityhash
             ${AZ_CORE_RADTELEMETRY_BUILD_DEPENDENCIES}
+            ${AZ_CORE_PIX_BUILD_DEPENDENCIES}
+    COMPILE_DEFINITIONS
+        PUBLIC
+            ${AZ_CORE_PIX_BUILD_DEFINES}
 )
 ly_add_source_properties(
     SOURCES

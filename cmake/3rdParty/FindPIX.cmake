@@ -6,15 +6,14 @@
 #
 #
 
-file(TO_CMAKE_PATH "$ENV{ATOM_PIX_PATH}" ATOM_PIX_PATH_CMAKE_FORMATTED)
+if(LY_PIX_ENABLED)
+    file(TO_CMAKE_PATH "${LY_PIX_PATH}" PIX_PATH)
+    message(STATUS "PIX PATH ${PIX_PATH}")
 
-if(EXISTS "${ATOM_PIX_PATH_CMAKE_FORMATTED}/include/WinPixEventRuntime/pix3.h")
     ly_add_external_target(
         NAME pix
+        3RDPARTY_ROOT_DIRECTORY "${PIX_PATH}"
         VERSION
-        3RDPARTY_ROOT_DIRECTORY ${ATOM_PIX_PATH_CMAKE_FORMATTED}
         INCLUDE_DIRECTORIES include
     )
 endif()
-
-

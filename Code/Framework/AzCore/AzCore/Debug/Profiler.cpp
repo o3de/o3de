@@ -18,6 +18,12 @@
 #include <AzCore/std/functional.h>
 #include <AzCore/Math/Crc.h>
 
+#ifdef USE_PIX
+#include <AzCore/PlatformIncl.h>
+#include <WinPixEventRuntime/pix3.h>
+#endif
+
+
 namespace AZ
 {
     namespace Debug
@@ -495,6 +501,10 @@ namespace AZ
         ProfilerRegister*
         ProfilerRegister::TimerCreateAndStart(const char* systemName, const char* name, ProfilerSection * section, const char* function, int line)
         {
+#if defined(USE_PIX)
+            PIXBeginEvent(PIX_COLOR(0, 0, 1), "%s:%s", name, function);
+#endif
+
             AZStd::chrono::system_clock::time_point start = AZStd::chrono::system_clock::now();
             ProfilerRegister* reg = CreateRegister(systemName, name, function, line, ProfilerRegister::PRT_TIME);
             AZStd::chrono::system_clock::time_point end = AZStd::chrono::system_clock::now();
@@ -537,6 +547,11 @@ namespace AZ
         void ProfilerRegister::TimerStart(ProfilerSection* section)
         {
             ProfilerRegister* reg = this;
+
+#if defined(USE_PIX)
+            PIXBeginEvent(PIX_COLOR(0, 0, 1), "%s:%s", reg->m_name, reg->m_function);
+#endif
+
             if (reg->m_isActive)
             {
                 section->m_register = reg;
@@ -555,6 +570,10 @@ namespace AZ
         //=========================================================================
         void ProfilerRegister::TimerStop()
         {
+#if defined(USE_PIX)
+            PIXEndEvent();
+#endif
+
             AZStd::chrono::system_clock::time_point end = AZStd::chrono::system_clock::now();
             ProfilerSection* section = m_threadData->m_stack.back();
             AZStd::chrono::microseconds elapsedTime = end - section->m_start;

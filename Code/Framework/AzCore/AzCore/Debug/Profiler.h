@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_PROFILER_H
-#define AZCORE_PROFILER_H 1
+#pragma once
 
 #include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/function/function_fwd.h>
@@ -615,5 +614,3 @@ namespace AZ
     }
 } // namespace AZ
 
-#endif // AZCORE_PROFILER_H
-#pragma once

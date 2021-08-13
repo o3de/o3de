@@ -21,18 +21,6 @@ endif()
 set(PAL_TRAIT_PIX_AVAILABLE FALSE)
 unset(pix3_header CACHE)
 
-file(TO_CMAKE_PATH "$ENV{ATOM_PIX_PATH}" ATOM_PIX_PATH_CMAKE_FORMATTED)
-find_file(pix3_header
-    pix3.h
-    PATHS
-        "${ATOM_PIX_PATH_CMAKE_FORMATTED}/Include/WinPixEventRuntime"
-)
-
-mark_as_advanced(pix3_header)
-if(pix3_header)
-    set(PAL_TRAIT_PIX_AVAILABLE TRUE)
-endif()
-
 set(PAL_TRAIT_AFTERMATH_AVAILABLE FALSE)
 unset(aftermath_header CACHE)
 file(TO_CMAKE_PATH "$ENV{ATOM_AFTERMATH_PATH}" ATOM_AFTERMATH_PATH_CMAKE_FORMATTED)
