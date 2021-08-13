@@ -185,7 +185,24 @@ namespace AZ
             return;
         }
 
+        // Get the hash before locking since another thread could be deleting the object within the lock
+        Internal::NameData::Hash hash = nameData->GetHash();
+
         AZStd::unique_lock<AZStd::shared_mutex> lock(m_sharedMutex);
+
+        auto dictIt = m_dictionary.find(hash);
+        if (dictIt == m_dictionary.end())
+        {
+            // This check is to safeguard around the following scenario
+            // T1, gets into TryReleaseName
+            // T2 gets into MakeName, acquires the lock, returns a new Name that increments the counter
+            // T2 deletes the Name decrements the counter, gets into TryReleaseName
+            // T1 gets the lock, goes to the compare_exchange if and has a counter of 0, deletes
+            // Then T2 continues, gets the lock and crashes because nameData was deleted
+            return;
+        }
+
+        nameData = dictIt->second; // restore the pointer in case the intrusive ptr was already assigned by other thread
 
         // Check m_hashCollision again inside the m_sharedMutex because a new collision could have happened
         // on another thread before taking the lock.
