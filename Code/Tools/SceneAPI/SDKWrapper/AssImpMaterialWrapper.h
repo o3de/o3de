@@ -40,6 +40,7 @@ namespace AZ
             AZStd::optional<float> GetEmissiveIntensity() const;
             AZStd::optional<bool> GetUseAOMap() const;
 
+        protected:
             aiMaterial* m_assImpMaterial = nullptr;
         };
     } // namespace AssImpSDKWrapper

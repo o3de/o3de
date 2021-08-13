@@ -30,6 +30,7 @@ namespace AZ
             bool ContainsBones(const aiScene& scene) const;
             int GetMaterialCount() const override;
 
+        protected:
             aiNode* m_assImpNode = nullptr;
         };
     } // namespace AssImpSDKWrapper

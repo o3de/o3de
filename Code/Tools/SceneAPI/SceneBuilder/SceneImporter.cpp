@@ -223,7 +223,7 @@ namespace AZ
                     for (int i = 0; i < childCount; ++i)
                     {
                         const std::shared_ptr<SDKNode::NodeWrapper> nodeWrapper = node.m_node->GetChild(i);
-                        auto assImpNodeWrapper = std::dynamic_pointer_cast<AssImpSDKWrapper::AssImpNodeWrapper>(nodeWrapper);
+                        auto assImpNodeWrapper = std::shared_ptr<AssImpSDKWrapper::AssImpNodeWrapper>(azrtti_cast<AssImpSDKWrapper::AssImpNodeWrapper*>(nodeWrapper.get()));
 
                         AZ_Assert(assImpNodeWrapper, "Child node is not the expected AssImpNodeWrapper type");
 

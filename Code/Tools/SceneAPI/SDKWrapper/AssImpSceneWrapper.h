@@ -31,8 +31,6 @@ namespace AZ
             virtual const aiScene* GetAssImpScene() const;
             void Clear() override;
 
-            const aiScene* m_assImpScene = nullptr;
-
             enum class AxisVector
             {
                 X = 0,
@@ -46,7 +44,7 @@ namespace AZ
 
             AZStd::string GetSceneFileName() const { return m_sceneFileName; }
         protected:
-
+            const aiScene* m_assImpScene = nullptr;
             Assimp::Importer m_importer;
 
             // FBX SDK automatically resolved relative paths to textures based on the current file location.
