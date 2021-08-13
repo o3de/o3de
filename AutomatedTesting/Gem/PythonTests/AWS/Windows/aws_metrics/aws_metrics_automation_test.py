@@ -22,6 +22,7 @@ Prerequisites for running AWS automation tests on your local Windows machine:
 import logging
 import os
 import pytest
+import typing
 from datetime import datetime
 
 import ly_test_tools.log.log_monitor
