@@ -117,8 +117,11 @@ namespace AZ
             char localBuffer[DefaultFprintfBufferSize];
 
             va_list args;
+            
             va_start(args, format);
             int count = azvsnprintf(localBuffer, DefaultFprintfBufferSize, format, args);
+            va_end(args);
+            
             char* result = localBuffer;
 
             // @result will be bound to @biggerData in case @localBuffer is not big enough.
@@ -127,11 +130,16 @@ namespace AZ
             // We will need an extra byte to accomodate the '\0' ending character.
             if (count >= DefaultFprintfBufferSize)
             {
-                // there wasn't enough space in the local store.
+                // There wasn't enough space in the local store.
                 count++; // vsnprintf returns a size that doesn't include the null character.
                 biggerData.reset(new char[count]);
                 result = &biggerData[0];
+                
+                // Remark: for MacOS & Linux it is important to call va_start again before
+                // each call to azvsnprintf. Not required for Windows.
+                va_start(args, format);
                 count = azvsnprintf(result, count, format, args);
+                va_end(args);
             }
             else if (count == -1)
             {
@@ -142,15 +150,22 @@ namespace AZ
                 // In particular: "If the number of characters to write is greater than count,
                 // these functions return -1 indicating that output has been truncated."
                 
-                // there wasn't enough space in the local store.
+                // There wasn't enough space in the local store.
+                // Remark: for MacOS & Linux it is important to call va_start again before
+                // each call to azvsnprintf. Not required for Windows.
+                va_start(args, format);
                 count = azvscprintf(format, args) + 1; // vscprintf returns a size that doesn't include the null character.
+                va_end(args);
+                
                 biggerData.reset(new char[count]);
                 result = &biggerData[0];
+                
+                va_start(args, format);
                 count = azvsnprintf(result, count, format, args);
+                va_end(args);
             }
 
             AZ_Error("Preprocessor", count >= 0, "String formatting of pre-precessor output failed");
-            va_end(args);
             return Fputs_StaticHinge(result, od);
         }
 
