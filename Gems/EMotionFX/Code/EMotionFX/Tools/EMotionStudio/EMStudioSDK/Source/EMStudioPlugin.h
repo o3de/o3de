@@ -80,16 +80,16 @@ namespace EMStudio
 
             RenderInfo(MCommon::RenderUtil* renderUtil, MCommon::Camera* camera, uint32 screenWidth, uint32 screenHeight)
             {
-                mRenderUtil     = renderUtil;
-                mCamera         = camera;
-                mScreenWidth    = screenWidth;
-                mScreenHeight   = screenHeight;
+                m_renderUtil     = renderUtil;
+                m_camera         = camera;
+                m_screenWidth    = screenWidth;
+                m_screenHeight   = screenHeight;
             }
 
-            MCommon::RenderUtil*        mRenderUtil;
-            MCommon::Camera*            mCamera;
-            uint32                      mScreenWidth;
-            uint32                      mScreenHeight;
+            MCommon::RenderUtil*        m_renderUtil;
+            MCommon::Camera*            m_camera;
+            uint32                      m_screenWidth;
+            uint32                      m_screenHeight;
         };
 
         virtual void Render(RenderPlugin* renderPlugin, RenderInfo* renderInfo)             { MCORE_UNUSED(renderPlugin); MCORE_UNUSED(renderInfo); }

@@ -42,6 +42,7 @@ namespace AZ
             void PreShutdown() override {}
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements([[maybe_unused]] const RHI::ImageDescriptor& descriptor) override { return RHI::ResourceMemoryRequirements();}
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements([[maybe_unused]] const RHI::BufferDescriptor& descriptor) override { return RHI::ResourceMemoryRequirements();}
+            void ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction) override;
             //////////////////////////////////////////////////////////////////////////
         };
     }

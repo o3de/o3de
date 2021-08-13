@@ -34,14 +34,14 @@ namespace MCore
         }
 
         // return the default value if the parameter value is empty
-        if (m_parameters[paramIndex].mValue.empty())
+        if (m_parameters[paramIndex].m_value.empty())
         {
             *outResult = defaultValue;
             return;
         }
 
         // return the parameter value
-        *outResult = m_parameters[paramIndex].mValue;
+        *outResult = m_parameters[paramIndex].m_value;
     }
 
 
@@ -57,14 +57,14 @@ namespace MCore
         }
 
         // Return the default value if the parameter value is empty.
-        if (m_parameters[paramIndex].mValue.empty())
+        if (m_parameters[paramIndex].m_value.empty())
         {
             outResult = defaultValue;
             return;
         }
 
         // Return the actual parameter value.
-        outResult = m_parameters[paramIndex].mValue.c_str();
+        outResult = m_parameters[paramIndex].m_value.c_str();
     }
 
 
@@ -79,13 +79,13 @@ namespace MCore
         }
 
         // return the default value if the parameter value is empty
-        if (m_parameters[paramIndex].mValue.empty())
+        if (m_parameters[paramIndex].m_value.empty())
         {
             return defaultValue;
         }
 
         // return the parameter value
-        return AzFramework::StringFunc::ToInt(m_parameters[paramIndex].mValue.c_str());
+        return AzFramework::StringFunc::ToInt(m_parameters[paramIndex].m_value.c_str());
     }
 
 
@@ -100,13 +100,13 @@ namespace MCore
         }
 
         // return the default value if the parameter value is empty
-        if (m_parameters[paramIndex].mValue.empty())
+        if (m_parameters[paramIndex].m_value.empty())
         {
             return defaultValue;
         }
 
         // return the parameter value
-        return AzFramework::StringFunc::ToFloat(m_parameters[paramIndex].mValue.c_str());
+        return AzFramework::StringFunc::ToFloat(m_parameters[paramIndex].m_value.c_str());
     }
 
 
@@ -121,13 +121,13 @@ namespace MCore
         }
 
         // return the default value if the parameter value is empty
-        if (m_parameters[paramIndex].mValue.empty())
+        if (m_parameters[paramIndex].m_value.empty())
         {
             return true;
         }
 
         // return the parameter value
-        return AzFramework::StringFunc::ToBool(m_parameters[paramIndex].mValue.c_str());
+        return AzFramework::StringFunc::ToBool(m_parameters[paramIndex].m_value.c_str());
     }
 
 
@@ -142,14 +142,14 @@ namespace MCore
         }
 
         // return the default value if the parameter value is empty
-        if (m_parameters[paramIndex].mValue.empty())
+        if (m_parameters[paramIndex].m_value.empty())
         {
             return defaultValue;
         }
 
         // return the parameter value
 
-        return AzFramework::StringFunc::ToVector3(m_parameters[paramIndex].mValue.c_str());
+        return AzFramework::StringFunc::ToVector3(m_parameters[paramIndex].m_value.c_str());
     }
 
 
@@ -164,13 +164,13 @@ namespace MCore
         }
 
         // return the default value if the parameter value is empty
-        if (m_parameters[paramIndex].mValue.empty())
+        if (m_parameters[paramIndex].m_value.empty())
         {
             return defaultValue;
         }
 
         // return the parameter value
-        return AzFramework::StringFunc::ToVector4(m_parameters[paramIndex].mValue.c_str());
+        return AzFramework::StringFunc::ToVector4(m_parameters[paramIndex].m_value.c_str());
     }
 
 
@@ -186,7 +186,7 @@ namespace MCore
         }
 
         // return the parameter value
-        *outResult = m_parameters[paramIndex].mValue;
+        *outResult = m_parameters[paramIndex].m_value;
     }
 
 
@@ -201,7 +201,7 @@ namespace MCore
         const size_t paramIndex = FindParameterIndex(paramName);
         if (paramIndex != InvalidIndex)
         {
-            return AZ::Success(m_parameters[paramIndex].mValue);
+            return AZ::Success(m_parameters[paramIndex].m_value);
         }
 
         return AZ::Failure();
@@ -218,7 +218,7 @@ namespace MCore
         }
 
         // return the parameter value
-        return m_parameters[paramIndex].mValue;
+        return m_parameters[paramIndex].m_value;
     }
 
 
@@ -241,7 +241,7 @@ namespace MCore
         }
 
         // return the parameter value
-        return AzFramework::StringFunc::ToInt(m_parameters[paramIndex].mValue.c_str());
+        return AzFramework::StringFunc::ToInt(m_parameters[paramIndex].m_value.c_str());
     }
 
     // get the value as float
@@ -263,7 +263,7 @@ namespace MCore
         }
 
         // return the parameter value
-        return AzFramework::StringFunc::ToFloat(m_parameters[paramIndex].mValue.c_str());
+        return AzFramework::StringFunc::ToFloat(m_parameters[paramIndex].m_value.c_str());
     }
 
 
@@ -286,7 +286,7 @@ namespace MCore
         }
 
         // return the parameter value
-        return AzFramework::StringFunc::ToBool(m_parameters[paramIndex].mValue.c_str());
+        return AzFramework::StringFunc::ToBool(m_parameters[paramIndex].m_value.c_str());
     }
 
 
@@ -309,7 +309,7 @@ namespace MCore
         }
 
         // return the parameter value
-        return AzFramework::StringFunc::ToVector3(m_parameters[paramIndex].mValue.c_str());
+        return AzFramework::StringFunc::ToVector3(m_parameters[paramIndex].m_value.c_str());
     }
 
 
@@ -332,7 +332,7 @@ namespace MCore
         }
 
         // return the parameter value
-        return AzFramework::StringFunc::ToVector4(m_parameters[paramIndex].mValue.c_str());
+        return AzFramework::StringFunc::ToVector4(m_parameters[paramIndex].m_value.c_str());
     }
 
 
@@ -346,14 +346,14 @@ namespace MCore
     // get the parameter name for a given parameter
     const AZStd::string& CommandLine::GetParameterName(size_t nr) const
     {
-        return m_parameters[nr].mName;
+        return m_parameters[nr].m_name;
     }
 
 
     // get the parameter value for a given parameter number
     const AZStd::string& CommandLine::GetParameterValue(size_t nr) const
     {
-        return m_parameters[nr].mValue;
+        return m_parameters[nr].m_value;
     }
 
 
@@ -368,7 +368,7 @@ namespace MCore
         }
 
         // return true the parameter has a value that is not empty
-        return (m_parameters[paramIndex].mValue.empty() == false);
+        return (m_parameters[paramIndex].m_value.empty() == false);
     }
 
 
@@ -378,7 +378,7 @@ namespace MCore
         // compare all parameter names on a non-case sensitive way
         const auto foundParameter = AZStd::find_if(begin(m_parameters), end(m_parameters), [paramName](const Parameter& parameter)
         {
-            return AzFramework::StringFunc::Equal(parameter.mName, paramName, false /* no case */);
+            return AzFramework::StringFunc::Equal(parameter.m_name, paramName, false /* no case */);
         });
 
         return foundParameter != end(m_parameters) ? AZStd::distance(begin(m_parameters), foundParameter) : InvalidIndex;
@@ -542,7 +542,7 @@ namespace MCore
         LogInfo("Command line '%s' has %d parameters", debugName, numParameters);
         for (size_t i = 0; i < numParameters; ++i)
         {
-            LogInfo("Param %d (name='%s'  value='%s'", i, m_parameters[i].mName.c_str(), m_parameters[i].mValue.c_str());
+            LogInfo("Param %d (name='%s'  value='%s'", i, m_parameters[i].m_name.c_str(), m_parameters[i].m_value.c_str());
         }
     }
 }   // namespace MCore

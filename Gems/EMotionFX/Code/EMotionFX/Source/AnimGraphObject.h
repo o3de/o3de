@@ -144,11 +144,11 @@ namespace EMotionFX
         virtual void RecursiveOnChangeMotionSet(AnimGraphInstance* animGraphInstance, MotionSet* newMotionSet)   { MCORE_UNUSED(animGraphInstance); MCORE_UNUSED(newMotionSet); }
         virtual void OnActorMotionExtractionNodeChanged()                                                        {}
 
-        MCORE_INLINE size_t GetObjectIndex() const                                      { return mObjectIndex; }
-        MCORE_INLINE void SetObjectIndex(size_t index)                                  { mObjectIndex = index; }
+        MCORE_INLINE size_t GetObjectIndex() const                                      { return m_objectIndex; }
+        MCORE_INLINE void SetObjectIndex(size_t index)                                  { m_objectIndex = index; }
 
-        MCORE_INLINE AnimGraph* GetAnimGraph() const                                    { return mAnimGraph; }
-        MCORE_INLINE void SetAnimGraph(AnimGraph* animGraph)                            { mAnimGraph = animGraph; }
+        MCORE_INLINE AnimGraph* GetAnimGraph() const                                    { return m_animGraph; }
+        MCORE_INLINE void SetAnimGraph(AnimGraph* animGraph)                            { m_animGraph = animGraph; }
 
         size_t SaveUniqueData(AnimGraphInstance* animGraphInstance, uint8* outputBuffer) const;  // save and return number of bytes written, when outputBuffer is nullptr only return num bytes it would write
         size_t LoadUniqueData(AnimGraphInstance* animGraphInstance, const uint8* dataBuffer);    // load and return number of bytes read, when dataBuffer is nullptr, 0 should be returned
@@ -166,8 +166,8 @@ namespace EMotionFX
         static void Reflect(AZ::ReflectContext* context);
 
     protected:
-        AnimGraph*                          mAnimGraph;
-        size_t                              mObjectIndex;
+        AnimGraph*                          m_animGraph;
+        size_t                              m_objectIndex;
     };
 } // namespace EMotionFX
 

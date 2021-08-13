@@ -26,8 +26,8 @@
 
 namespace EMotionFX
 {
-    const int AnimGraphEditor::m_propertyLabelWidth = 120;
-    QString AnimGraphEditor::m_lastMotionSetText = "";
+    const int AnimGraphEditor::s_propertyLabelWidth = 120;
+    QString AnimGraphEditor::s_lastMotionSetText = "";
 
     AnimGraphEditor::AnimGraphEditor(EMotionFX::AnimGraph* animGraph, AZ::SerializeContext* serializeContext, QWidget* parent)
         : QWidget(parent)
@@ -64,7 +64,7 @@ namespace EMotionFX
         m_propertyEditor = aznew AzToolsFramework::ReflectedPropertyEditor(this);
         m_propertyEditor->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
         m_propertyEditor->setObjectName("PropertyEditor");
-        m_propertyEditor->Setup(serializeContext, nullptr, false/*enableScrollbars*/, m_propertyLabelWidth);
+        m_propertyEditor->Setup(serializeContext, nullptr, false/*enableScrollbars*/, s_propertyLabelWidth);
         m_propertyEditor->SetSizeHintOffset(QSize(0, 0));
         m_propertyEditor->SetAutoResizeLabels(false);
         m_propertyEditor->SetLeafIndentation(0);
@@ -86,9 +86,9 @@ namespace EMotionFX
         m_motionSetComboBox = new QComboBox();
         m_motionSetComboBox->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         //initializes to last selection if it is there
-        if (!m_lastMotionSetText.isEmpty())
+        if (!s_lastMotionSetText.isEmpty())
         {
-            m_motionSetComboBox->addItem(m_lastMotionSetText);
+            m_motionSetComboBox->addItem(s_lastMotionSetText);
             m_motionSetComboBox->setCurrentIndex(0);
         }
         connect(m_motionSetComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &AnimGraphEditor::OnMotionSetChanged);
@@ -303,7 +303,7 @@ namespace EMotionFX
         const CommandSystem::SelectionList& selectionList = CommandSystem::GetCommandManager()->GetCurrentSelection();
         const size_t numActorInstances = selectionList.GetNumSelectedActorInstances();
 
-        AnimGraphEditor::m_lastMotionSetText = m_motionSetComboBox->itemText(index);
+        AnimGraphEditor::s_lastMotionSetText = m_motionSetComboBox->itemText(index);
         // if no one actor instance is selected, the combo box has no effect
         if (numActorInstances == 0)
         {

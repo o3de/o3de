@@ -230,24 +230,19 @@ namespace AZ::Render
         AZ::RPI::ViewportContextPtr viewportContext = GetViewportContext();
         auto rootPass = viewportContext->GetCurrentPipeline()->GetRootPass();
         const RPI::PipelineStatisticsResult stats = rootPass->GetLatestPipelineStatisticsResult();
-        AZStd::function<int(const AZ::RPI::Ptr<AZ::RPI::Pass>)> containingPassCount = [&containingPassCount](const AZ::RPI::Ptr<AZ::RPI::Pass> pass)
-        {
-            int count = 1;
-            if (auto passAsParent = pass->AsParent())
-            {
-                for (const auto& child : passAsParent->GetChildren())
-                {
-                    count += containingPassCount(child);
-                }
-            }
-            return count;
-        };
-        const int numPasses = containingPassCount(rootPass);
+
+        RPI::PassSystemFrameStatistics passSystemFrameStatistics = AZ::RPI::PassSystemInterface::Get()->GetFrameStatistics();
+
         DrawLine(AZStd::string::format(
-            "Total Passes: %d Vertex Count: %lld Primitive Count: %lld",
-            numPasses,
+            "RenderPasses: %d Vertex Count: %lld Primitive Count: %lld",
+            passSystemFrameStatistics.m_numRenderPassesExecuted,
             aznumeric_cast<long long>(stats.m_vertexCount),
             aznumeric_cast<long long>(stats.m_primitiveCount)
+        ));
+        DrawLine(AZStd::string::format(
+            "Total Draw Item Count: %d  Max Draw Items in a Pass: %d",
+            passSystemFrameStatistics.m_totalDrawItemsRendered,
+            passSystemFrameStatistics.m_maxDrawItemsRenderedInAPass
         ));
     }
 

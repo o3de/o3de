@@ -56,7 +56,7 @@ namespace UnitTest
                 int isFoundModule = 0;
                 char expectedNameBuffer[AZ_ARRAY_SIZE(SymbolStorage::ModuleInfo::m_modName)];
 #if defined(AZCORETEST_DLL_NAME)
-                azstrncpy(expectedNameBuffer, AZCORETEST_DLL_NAME, AZ_ARRAY_SIZE(expectedNameBuffer));
+                azstrncpy(expectedNameBuffer, AZ_ARRAY_SIZE(expectedNameBuffer), AZCORETEST_DLL_NAME, AZ_ARRAY_SIZE(expectedNameBuffer));
 #else
                 azstrncpy(expectedNameBuffer, "azcoretests.dll", AZ_ARRAY_SIZE(expectedNameBuffer));
 #endif
@@ -65,7 +65,7 @@ namespace UnitTest
                 for (u32 i = 0; i < SymbolStorage::GetNumLoadedModules(); ++i)
                 {
                     char nameBuffer[AZ_ARRAY_SIZE(SymbolStorage::ModuleInfo::m_modName)];
-                    azstrncpy(nameBuffer, SymbolStorage::GetModuleInfo(i)->m_fileName, AZ_ARRAY_SIZE(nameBuffer));
+                    azstrncpy(nameBuffer, AZ_ARRAY_SIZE(nameBuffer), SymbolStorage::GetModuleInfo(i)->m_fileName, AZ_ARRAY_SIZE(nameBuffer));
                     AZStd::to_lower(nameBuffer, nameBuffer + AZ_ARRAY_SIZE(nameBuffer));
 
                     if (strstr(nameBuffer, expectedNameBuffer))

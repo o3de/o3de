@@ -36,11 +36,11 @@ namespace MCore
         static AttributePointer* Create(void* value = nullptr);
 
         // adjust values
-        MCORE_INLINE void* GetValue() const                         { return mValue; }
-        MCORE_INLINE void SetValue(void* value)                     { mValue = value; }
+        MCORE_INLINE void* GetValue() const                         { return m_value; }
+        MCORE_INLINE void SetValue(void* value)                     { m_value = value; }
 
         // overloaded from the attribute base class
-        Attribute* Clone() const override                           { return AttributePointer::Create(mValue); }
+        Attribute* Clone() const override                           { return AttributePointer::Create(m_value); }
         const char* GetTypeString() const override                  { return "AttributePointer"; }
         bool InitFrom(const Attribute* other) override
         {
@@ -48,7 +48,7 @@ namespace MCore
             {
                 return false;
             }
-            mValue = static_cast<const AttributePointer*>(other)->GetValue();
+            m_value = static_cast<const AttributePointer*>(other)->GetValue();
             return true;
         }
         bool InitFromString(const AZStd::string& valueString) override     { MCORE_UNUSED(valueString); MCORE_ASSERT(false); return false; }   // currently unsupported
@@ -57,14 +57,14 @@ namespace MCore
         AZ::u32 GetDefaultInterfaceType() const override             { return ATTRIBUTE_INTERFACETYPE_DEFAULT; }
 
     private:
-        void*   mValue;     /**< The pointer value. */
+        void*   m_value;     /**< The pointer value. */
 
         AttributePointer()
             : Attribute(TYPE_ID)
-            , mValue(nullptr)   { }
+            , m_value(nullptr)   { }
         AttributePointer(void* pointer)
             : Attribute(TYPE_ID)
-            , mValue(pointer)   { }
+            , m_value(pointer)   { }
         ~AttributePointer() {}
     };
 }   // namespace MCore

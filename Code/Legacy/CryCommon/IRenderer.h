@@ -17,7 +17,6 @@
 #include "Cry_Matrix33.h"
 #include "Cry_Color.h"
 #include "smartptr.h"
-#include "StringUtils.h"
 #include <IXml.h> // <> required for Interfuscator
 #include "smartptr.h"
 #include <AzCore/Casting/numeric_cast.h>
@@ -1449,7 +1448,7 @@ struct IRenderer
     virtual const char* EF_GetShaderMissLogPath() = 0;
 
     /////////////////////////////////////////////////////////////////////////////////
-    virtual string* EF_GetShaderNames(int& nNumShaders) = 0;
+    virtual AZStd::string* EF_GetShaderNames(int& nNumShaders) = 0;
     // Summary:
     //  Reloads file
     virtual bool          EF_ReloadFile (const char* szFileName) = 0;

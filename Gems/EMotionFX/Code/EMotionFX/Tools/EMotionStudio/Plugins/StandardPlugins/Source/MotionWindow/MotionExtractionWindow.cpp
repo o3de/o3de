@@ -31,32 +31,32 @@ namespace EMStudio
     MotionExtractionWindow::MotionExtractionWindow(QWidget* parent, MotionWindowPlugin* motionWindowPlugin)
         : QWidget(parent)
     {
-        mMotionWindowPlugin                 = motionWindowPlugin;
-        mSelectCallback                     = nullptr;
-        mUnselectCallback                   = nullptr;
-        mClearSelectionCallback             = nullptr;
-        mWarningWidget                      = nullptr;
-        mMainVerticalLayout                 = nullptr;
-        mChildVerticalLayout                = nullptr;
-        mMotionExtractionNodeSelectionWindow= nullptr;
-        mWarningSelectNodeLink              = nullptr;
-        mAdjustActorCallback                = nullptr;
-        mCaptureHeight                      = nullptr;
-        mWarningShowed                      = false;
+        m_motionWindowPlugin                 = motionWindowPlugin;
+        m_selectCallback                     = nullptr;
+        m_unselectCallback                   = nullptr;
+        m_clearSelectionCallback             = nullptr;
+        m_warningWidget                      = nullptr;
+        m_mainVerticalLayout                 = nullptr;
+        m_childVerticalLayout                = nullptr;
+        m_motionExtractionNodeSelectionWindow= nullptr;
+        m_warningSelectNodeLink              = nullptr;
+        m_adjustActorCallback                = nullptr;
+        m_captureHeight                      = nullptr;
+        m_warningShowed                      = false;
     }
 
 
     // destructor
     MotionExtractionWindow::~MotionExtractionWindow()
     {
-        GetCommandManager()->RemoveCommandCallback(mSelectCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mUnselectCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mClearSelectionCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mAdjustActorCallback, false);
-        delete mAdjustActorCallback;
-        delete mSelectCallback;
-        delete mUnselectCallback;
-        delete mClearSelectionCallback;
+        GetCommandManager()->RemoveCommandCallback(m_selectCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_unselectCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_clearSelectionCallback, false);
+        GetCommandManager()->RemoveCommandCallback(m_adjustActorCallback, false);
+        delete m_adjustActorCallback;
+        delete m_selectCallback;
+        delete m_unselectCallback;
+        delete m_clearSelectionCallback;
     }
 
 
@@ -65,21 +65,21 @@ namespace EMStudio
     // Create the flags widget.
     void MotionExtractionWindow::CreateFlagsWidget()
     {
-        mFlagsWidget = new QWidget();
+        m_flagsWidget = new QWidget();
 
-        mCaptureHeight = new QCheckBox();
-        AzQtComponents::CheckBox::applyToggleSwitchStyle(mCaptureHeight);
-        connect(mCaptureHeight, &QCheckBox::clicked, this, &MotionExtractionWindow::OnMotionExtractionFlagsUpdated);
+        m_captureHeight = new QCheckBox();
+        AzQtComponents::CheckBox::applyToggleSwitchStyle(m_captureHeight);
+        connect(m_captureHeight, &QCheckBox::clicked, this, &MotionExtractionWindow::OnMotionExtractionFlagsUpdated);
 
         QGridLayout* layout = new QGridLayout();
         layout->setAlignment(Qt::AlignTop);
         layout->setSpacing(3);
         layout->addWidget(new QLabel(tr("Capture Height Changes")), 0, 0);
-        layout->addWidget(mCaptureHeight, 0, 1);
+        layout->addWidget(m_captureHeight, 0, 1);
         layout->setContentsMargins(0, 0, 0, 0);
-        mFlagsWidget->setLayout(layout);
+        m_flagsWidget->setLayout(layout);
 
-        mChildVerticalLayout->addWidget(mFlagsWidget);
+        m_childVerticalLayout->addWidget(m_flagsWidget);
     }
 
 
@@ -87,17 +87,17 @@ namespace EMStudio
     void MotionExtractionWindow::CreateWarningWidget()
     {
         // create the warning widget
-        mWarningWidget = new QWidget();
-        mWarningWidget->setMinimumHeight(MOTIONEXTRACTIONWINDOW_HEIGHT);
-        mWarningWidget->setMaximumHeight(MOTIONEXTRACTIONWINDOW_HEIGHT);
+        m_warningWidget = new QWidget();
+        m_warningWidget->setMinimumHeight(MOTIONEXTRACTIONWINDOW_HEIGHT);
+        m_warningWidget->setMaximumHeight(MOTIONEXTRACTIONWINDOW_HEIGHT);
 
         QLabel* warningLabel = new QLabel("<qt>No node has been selected yet to enable Motion Extraction.</qt>");
         warningLabel->setWordWrap(true);
         warningLabel->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
 
-        mWarningSelectNodeLink = new AzQtComponents::BrowseEdit(mWarningWidget);
-        mWarningSelectNodeLink->setPlaceholderText("Click here to setup the Motion Extraction node");
-        connect(mWarningSelectNodeLink, &AzQtComponents::BrowseEdit::attachedButtonTriggered, this, &MotionExtractionWindow::OnSelectMotionExtractionNode);
+        m_warningSelectNodeLink = new AzQtComponents::BrowseEdit(m_warningWidget);
+        m_warningSelectNodeLink->setPlaceholderText("Click here to setup the Motion Extraction node");
+        connect(m_warningSelectNodeLink, &AzQtComponents::BrowseEdit::attachedButtonTriggered, this, &MotionExtractionWindow::OnSelectMotionExtractionNode);
 
         // create and fill the layout
         QVBoxLayout* layout = new QVBoxLayout();
@@ -106,12 +106,12 @@ namespace EMStudio
         layout->setContentsMargins(0, 0, 0, 0);
 
         layout->addWidget(warningLabel);
-        layout->addWidget(mWarningSelectNodeLink);
+        layout->addWidget(m_warningSelectNodeLink);
 
-        mWarningWidget->setLayout(layout);
+        m_warningWidget->setLayout(layout);
 
         // add it to our main layout
-        mChildVerticalLayout->addWidget(mWarningWidget);
+        m_childVerticalLayout->addWidget(m_warningWidget);
     }
 
 
@@ -119,23 +119,23 @@ namespace EMStudio
     void MotionExtractionWindow::Init()
     {
         // create and register the command callbacks
-        mSelectCallback         = new CommandSelectCallback(false);
-        mUnselectCallback       = new CommandUnselectCallback(false);
-        mClearSelectionCallback = new CommandClearSelectionCallback(false);
-        mAdjustActorCallback    = new CommandAdjustActorCallback(false);
-        GetCommandManager()->RegisterCommandCallback("AdjustActor", mAdjustActorCallback);
-        GetCommandManager()->RegisterCommandCallback("Select", mSelectCallback);
-        GetCommandManager()->RegisterCommandCallback("Unselect", mUnselectCallback);
-        GetCommandManager()->RegisterCommandCallback("ClearSelection", mClearSelectionCallback);
+        m_selectCallback         = new CommandSelectCallback(false);
+        m_unselectCallback       = new CommandUnselectCallback(false);
+        m_clearSelectionCallback = new CommandClearSelectionCallback(false);
+        m_adjustActorCallback    = new CommandAdjustActorCallback(false);
+        GetCommandManager()->RegisterCommandCallback("AdjustActor", m_adjustActorCallback);
+        GetCommandManager()->RegisterCommandCallback("Select", m_selectCallback);
+        GetCommandManager()->RegisterCommandCallback("Unselect", m_unselectCallback);
+        GetCommandManager()->RegisterCommandCallback("ClearSelection", m_clearSelectionCallback);
 
         // create the node selection windows
-        mMotionExtractionNodeSelectionWindow = new NodeSelectionWindow(this, true);
-        connect(mMotionExtractionNodeSelectionWindow->GetNodeHierarchyWidget(), &NodeHierarchyWidget::OnSelectionDone, this, &MotionExtractionWindow::OnMotionExtractionNodeSelected);
+        m_motionExtractionNodeSelectionWindow = new NodeSelectionWindow(this, true);
+        connect(m_motionExtractionNodeSelectionWindow->GetNodeHierarchyWidget(), &NodeHierarchyWidget::OnSelectionDone, this, &MotionExtractionWindow::OnMotionExtractionNodeSelected);
 
         // set some layout for our window
-        mMainVerticalLayout = new QVBoxLayout();
-        mMainVerticalLayout->setSpacing(0);
-        setLayout(mMainVerticalLayout);
+        m_mainVerticalLayout = new QVBoxLayout();
+        m_mainVerticalLayout->setSpacing(0);
+        setLayout(m_mainVerticalLayout);
 
         QCheckBox* checkBox = new QCheckBox(tr("Motion extraction"));
         checkBox->setChecked(true);
@@ -160,17 +160,17 @@ namespace EMStudio
                 {\
                     image: url(:/Cards/img/UI20/Cards/caret-right.svg);\
                 }");
-        mMainVerticalLayout->addWidget(checkBox);
+        m_mainVerticalLayout->addWidget(checkBox);
         QWidget* childWidget = new QWidget(this);
-        mMainVerticalLayout->addWidget(childWidget);
+        m_mainVerticalLayout->addWidget(childWidget);
 
-        mChildVerticalLayout = new QVBoxLayout(childWidget);
-        mChildVerticalLayout->setContentsMargins(28,0,0,0);
+        m_childVerticalLayout = new QVBoxLayout(childWidget);
+        m_childVerticalLayout->setContentsMargins(28,0,0,0);
         connect(checkBox, &QCheckBox::toggled, childWidget, &QWidget::setVisible);
 
         // default create the warning widget (this is needed else we're getting a crash when switching layouts as the widget and the flag might be out of sync)
         CreateWarningWidget();
-        mWarningShowed = true;
+        m_warningShowed = true;
 
         // update interface
         UpdateInterface();
@@ -191,9 +191,9 @@ namespace EMStudio
         EMotionFX::Actor*   actor          = nullptr;
         EMotionFX::Node*    extractionNode = nullptr;
 
-        if (mCaptureHeight)
+        if (m_captureHeight)
         {
-            mCaptureHeight->setEnabled( isEnabled );
+            m_captureHeight->setEnabled( isEnabled );
         }
 
         if (actorInstance)
@@ -205,51 +205,51 @@ namespace EMStudio
         if (extractionNode == nullptr)
         {
             // Check if we already show the warning widget, if yes, do nothing.
-            if (mWarningShowed == false)
+            if (m_warningShowed == false)
             {
                 CreateWarningWidget();
 
-                if (mFlagsWidget)
+                if (m_flagsWidget)
                 {
-                    mFlagsWidget->hide();
-                    mFlagsWidget->deleteLater();
-                    mFlagsWidget = nullptr;
-                    mCaptureHeight = nullptr;
+                    m_flagsWidget->hide();
+                    m_flagsWidget->deleteLater();
+                    m_flagsWidget = nullptr;
+                    m_captureHeight = nullptr;
                 }
             }
 
             // Disable the link in case no actor is selected.
             if (actorInstance == nullptr)
             {
-                mWarningSelectNodeLink->setEnabled(false);
+                m_warningSelectNodeLink->setEnabled(false);
             }
             else
             {
-                mWarningSelectNodeLink->setEnabled(true);
+                m_warningSelectNodeLink->setEnabled(true);
             }
 
             // Return directly in case we show the warning widget.
-            mWarningShowed = true;
+            m_warningShowed = true;
             return;
         }
         else
         {
             // Check if we already show the motion extraction flags widget, if yes, do nothing.
-            if (mWarningShowed)
+            if (m_warningShowed)
             {
-                if (mWarningWidget)
+                if (m_warningWidget)
                 {
-                    mWarningWidget->hide();
-                    mWarningWidget->deleteLater();
-                    mWarningWidget = nullptr;
+                    m_warningWidget->hide();
+                    m_warningWidget->deleteLater();
+                    m_warningWidget = nullptr;
                 }
 
                 CreateFlagsWidget();
             }
 
-            if (mCaptureHeight)
+            if (m_captureHeight)
             {
-                mCaptureHeight->setEnabled( isEnabled );
+                m_captureHeight->setEnabled( isEnabled );
             }
 
             // Figure out if all selected motions use the same settings.
@@ -280,31 +280,31 @@ namespace EMStudio
 
             // Adjust the height capture checkbox, based on the selected motions.
             const bool triState = (numMotions > 1) && !allCaptureHeightEqual;
-            mCaptureHeight->setTristate( triState );
+            m_captureHeight->setTristate( triState );
             if (numMotions > 1)
             {
                 if (!allCaptureHeightEqual)
                 {
-                    mCaptureHeight->setCheckState( Qt::CheckState::PartiallyChecked );
+                    m_captureHeight->setCheckState( Qt::CheckState::PartiallyChecked );
                 }
                 else
                 {
-                    mCaptureHeight->setChecked( curCaptureHeight );
+                    m_captureHeight->setChecked( curCaptureHeight );
                 }
             }
             else
             {
                 if (numCaptureHeight > 0)
                 {
-                    mCaptureHeight->setCheckState( Qt::CheckState::Checked );
+                    m_captureHeight->setCheckState( Qt::CheckState::Checked );
                 }
                 else
                 {
-                    mCaptureHeight->setCheckState( Qt::CheckState::Unchecked );
+                    m_captureHeight->setCheckState( Qt::CheckState::Unchecked );
                 }
             }
 
-            mWarningShowed = false;
+            m_warningShowed = false;
         }
     }
 
@@ -314,7 +314,7 @@ namespace EMStudio
     {
         int flags = 0;
         
-        if (mCaptureHeight->checkState() == Qt::CheckState::Checked)
+        if (m_captureHeight->checkState() == Qt::CheckState::Checked)
             flags |= EMotionFX::MOTIONEXTRACT_CAPTURE_Z;
 
         return static_cast<EMotionFX::EMotionExtractionFlags>(flags);
@@ -388,8 +388,8 @@ namespace EMStudio
             return;
         }
 
-        mMotionExtractionNodeSelectionWindow->Update(actorInstance->GetID());
-        mMotionExtractionNodeSelectionWindow->show();
+        m_motionExtractionNodeSelectionWindow->Update(actorInstance->GetID());
+        m_motionExtractionNodeSelectionWindow->show();
     }
 
 

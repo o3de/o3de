@@ -415,7 +415,7 @@ namespace NvCloth
 
             const MCore::DualQuaternion& skinningDualQuaternion = m_skinningDualQuaternions.at(jointIndex);
 
-            float flip = AZ::GetSign(vertexSkinningTransform.mReal.Dot(skinningDualQuaternion.mReal));
+            float flip = AZ::GetSign(vertexSkinningTransform.m_real.Dot(skinningDualQuaternion.m_real));
             vertexSkinningTransform += skinningDualQuaternion * jointWeight * flip;
         }
         // Normalizing the dual quaternion as the GPU shaders do. This will remove the scale from the transform.

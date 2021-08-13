@@ -56,11 +56,11 @@ namespace EMotionFX
 
         public:
             AZStd::vector<AnimGraphStateTransition*>    m_activeTransitions;    /**< Stack of active transitions. */
-            AnimGraphNode*                              mCurrentState;          /**< The current state. */
-            AnimGraphNode*                              mPreviousState;         /**< The previously used state, so the one used before the current one, the one from which we transitioned into the current one. */
-            bool                                        mReachedExitState;      /**< True in case the state machine's current state is an exit state, false it not. */
+            AnimGraphNode*                              m_currentState;          /**< The current state. */
+            AnimGraphNode*                              m_previousState;         /**< The previously used state, so the one used before the current one, the one from which we transitioned into the current one. */
+            bool                                        m_reachedExitState;      /**< True in case the state machine's current state is an exit state, false it not. */
             AnimGraphRefCountedData                     m_prevData;
-            bool                                        mSwitchToEntryState;
+            bool                                        m_switchToEntryState;
 
         private:
             AZStd::vector<AnimGraphNode*>               m_activeStates;         // TODO: See function comment.
@@ -112,14 +112,14 @@ namespace EMotionFX
          * Get the number of transitions inside this state machine. This includes all kinds of transitions, so also wildcard transitions.
          * @result The number of transitions inside the state machine.
          */
-        size_t GetNumTransitions() const                                            { return mTransitions.size(); }
+        size_t GetNumTransitions() const                                            { return m_transitions.size(); }
 
         /**
          * Get a pointer to the state machine transition of the given index.
          * @param[in] index The index of the transition to return.
          * @result A pointer to the state machine transition at the given index.
          */
-        AnimGraphStateTransition* GetTransition(size_t index) const                 { return mTransitions[index]; }
+        AnimGraphStateTransition* GetTransition(size_t index) const                 { return m_transitions[index]; }
 
         /**
          * Remove the state machine transition at the given index.
@@ -265,9 +265,9 @@ namespace EMotionFX
         void EndAllActiveTransitions(AnimGraphInstance* animGraphInstance);
 
     private:
-        AZStd::vector<AnimGraphStateTransition*>    mTransitions; /**< The higher the index, the older the active transtion, the more time passed since it got started. Index = 0 is the most recent transition and the one with the highest global influence.*/
-        AnimGraphNode*                              mEntryState;                /**< A pointer to the initial state, so the state where the machine starts. */
-        size_t                                      mEntryStateNodeNr;          /**< Used only in the legacy file format. Remove after the legacy file format will be removed. */
+        AZStd::vector<AnimGraphStateTransition*>    m_transitions; /**< The higher the index, the older the active transtion, the more time passed since it got started. Index = 0 is the most recent transition and the one with the highest global influence.*/
+        AnimGraphNode*                              m_entryState;                /**< A pointer to the initial state, so the state where the machine starts. */
+        size_t                                      m_entryStateNodeNr;          /**< Used only in the legacy file format. Remove after the legacy file format will be removed. */
         AZ::u64                                     m_entryStateId;             /**< The node id of the entry state. */
         bool                                        m_alwaysStartInEntryState;
 

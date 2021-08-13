@@ -55,7 +55,7 @@ namespace MCore
 
         virtual Attribute* Clone() const = 0;
         virtual const char* GetTypeString() const = 0;
-        MCORE_INLINE AZ::u32 GetType() const                                         { return mTypeID; }
+        MCORE_INLINE AZ::u32 GetType() const                                         { return m_typeId; }
         virtual bool InitFromString(const AZStd::string& valueString) = 0;
         virtual bool ConvertToString(AZStd::string& outString) const = 0;
         virtual bool InitFrom(const Attribute* other) = 0;
@@ -67,7 +67,7 @@ namespace MCore
         virtual void NetworkSerialize(EMotionFX::Network::AnimGraphSnapshotChunkSerializer&) {};
 
     protected:
-        AZ::u32      mTypeID;    /**< The unique type ID of the attribute class. */
+        AZ::u32      m_typeId;    /**< The unique type ID of the attribute class. */
 
         Attribute(AZ::u32 typeID);
     };

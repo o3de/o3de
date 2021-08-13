@@ -1099,7 +1099,7 @@ bool CUiAnimViewAnimNode::SetName(const char* pName)
         }
     }
 
-    string oldName = GetName();
+    AZStd::string oldName = GetName();
     m_pAnimNode->SetName(pName);
 
     if (UiAnimUndo::IsRecording())
@@ -1107,7 +1107,7 @@ bool CUiAnimViewAnimNode::SetName(const char* pName)
         UiAnimUndo::Record(new CUndoAnimNodeRename(this, oldName));
     }
 
-    GetSequence()->OnNodeRenamed(this, oldName);
+    GetSequence()->OnNodeRenamed(this, oldName.c_str());
 
     return true;
 }
@@ -1482,7 +1482,7 @@ bool CUiAnimViewAnimNode::PasteNodesFromClipboard(QWidget* context)
     const bool bLightAnimationSetActive = GetSequence()->GetFlags() & IUiAnimSequence::eSeqFlags_LightAnimationSet;
 
     const unsigned int numNodes = animNodesRoot->getChildCount();
-    for (int i = 0; i < numNodes; ++i)
+    for (unsigned int i = 0; i < numNodes; ++i)
     {
         XmlNodeRef xmlNode = animNodesRoot->getChild(i);
 

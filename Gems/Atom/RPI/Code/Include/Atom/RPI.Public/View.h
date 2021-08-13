@@ -110,9 +110,6 @@ namespace AZ
             //! Value returned is 1.0f when an area equal to the viewport height squared is covered. Useful for accurate LOD decisions.
             float CalculateSphereAreaInClipSpace(const AZ::Vector3& sphereWorldPosition, float sphereRadius) const;
 
-            //! Invalidate the view srg to rebuild the srg.
-            void InvalidateSrg();
-
             const AZ::Name& GetName() const { return m_name; }
             const UsageFlags GetUsageFlags() { return m_usageFlags; }
 
@@ -191,9 +188,6 @@ namespace AZ
 
             // Clip space offset for camera jitter with taa
             Vector2 m_clipSpaceOffset = Vector2(0.0f, 0.0f);
-
-            // Flags whether view matrices are dirty which requires rebuild srg
-            bool m_needBuildSrg = true;
 
             MatrixChangedEvent m_onWorldToClipMatrixChange;
             MatrixChangedEvent m_onWorldToViewMatrixChange;

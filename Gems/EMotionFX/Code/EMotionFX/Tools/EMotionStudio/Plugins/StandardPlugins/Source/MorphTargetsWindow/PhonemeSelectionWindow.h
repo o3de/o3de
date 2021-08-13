@@ -91,19 +91,19 @@ namespace EMStudio
         VisimeWidget(const AZStd::string& filename);
         virtual ~VisimeWidget();
 
-        void SetSelected(bool selected = true)        { mSelected = selected; }
+        void SetSelected(bool selected = true)        { m_selected = selected; }
         void UpdateInterface();
 
         void paintEvent(QPaintEvent* event) override;
-        void enterEvent(QEvent* event) override             { MCORE_UNUSED(event); mMouseWithinWidget = true; repaint(); }
-        void leaveEvent(QEvent* event) override             { MCORE_UNUSED(event); mMouseWithinWidget = false; repaint(); }
+        void enterEvent(QEvent* event) override             { MCORE_UNUSED(event); m_mouseWithinWidget = true; repaint(); }
+        void leaveEvent(QEvent* event) override             { MCORE_UNUSED(event); m_mouseWithinWidget = false; repaint(); }
 
     private:
-        AZStd::string   mFileName;
-        AZStd::string   mFileNameWithoutExt;
-        QPixmap*        mPixmap;
-        bool            mSelected;
-        bool            mMouseWithinWidget;
+        AZStd::string   m_fileName;
+        AZStd::string   m_fileNameWithoutExt;
+        QPixmap*        m_pixmap;
+        bool            m_selected;
+        bool            m_mouseWithinWidget;
     };
 
 
@@ -138,23 +138,23 @@ namespace EMStudio
 
     private:
         // the morph target
-        EMotionFX::Actor*           mActor;
-        EMotionFX::MorphTarget*     mMorphTarget;
-        size_t                      mLODLevel;
-        EMotionFX::MorphSetup*      mMorphSetup;
+        EMotionFX::Actor*           m_actor;
+        EMotionFX::MorphTarget*     m_morphTarget;
+        size_t                      m_lodLevel;
+        EMotionFX::MorphSetup*      m_morphSetup;
 
         // the dialogstacks
-        MysticQt::DialogStack*      mPossiblePhonemeSets;
-        MysticQt::DialogStack*      mSelectedPhonemeSets;
-        DragTableWidget*            mPossiblePhonemeSetsTable;
-        DragTableWidget*            mSelectedPhonemeSetsTable;
+        MysticQt::DialogStack*      m_possiblePhonemeSets;
+        MysticQt::DialogStack*      m_selectedPhonemeSets;
+        DragTableWidget*            m_possiblePhonemeSetsTable;
+        DragTableWidget*            m_selectedPhonemeSetsTable;
 
-        QPushButton*    mAddPhonemesButton;
-        QPushButton*    mRemovePhonemesButton;
-        QPushButton*    mClearPhonemesButton;
-        QPushButton*    mAddPhonemesButtonArrow;
-        QPushButton*    mRemovePhonemesButtonArrow;
+        QPushButton*    m_addPhonemesButton;
+        QPushButton*    m_removePhonemesButton;
+        QPushButton*    m_clearPhonemesButton;
+        QPushButton*    m_addPhonemesButtonArrow;
+        QPushButton*    m_removePhonemesButtonArrow;
 
-        bool            mDirtyFlag;
+        bool            m_dirtyFlag;
     };
 } // namespace EMStudio

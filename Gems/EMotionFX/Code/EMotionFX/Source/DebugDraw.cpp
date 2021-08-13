@@ -117,8 +117,8 @@ namespace EMotionFX
             const size_t parentIndex = skeleton->GetNode(nodeIndex)->GetParentIndex();
             if (parentIndex != InvalidIndex)
             {
-                const AZ::Vector3& startPos = pose.GetWorldSpaceTransform(nodeIndex).mPosition;
-                const AZ::Vector3& endPos = pose.GetWorldSpaceTransform(parentIndex).mPosition;
+                const AZ::Vector3& startPos = pose.GetWorldSpaceTransform(nodeIndex).m_position;
+                const AZ::Vector3& endPos = pose.GetWorldSpaceTransform(parentIndex).m_position;
                 DrawLine(offset + startPos, offset + endPos, color);
             }
         }

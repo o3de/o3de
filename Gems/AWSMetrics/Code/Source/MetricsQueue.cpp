@@ -216,7 +216,7 @@ namespace AWSMetrics
             return false;
         }
 
-        for (int metricsIndex = 0; metricsIndex < doc.Size(); metricsIndex++)
+        for (rapidjson::SizeType metricsIndex = 0; metricsIndex < doc.Size(); metricsIndex++)
         {
             MetricsEvent metrics;
             if (!metrics.ReadFromJson(doc[metricsIndex]))

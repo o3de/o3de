@@ -201,7 +201,7 @@ struct IStreamable
     virtual void StartStreaming(bool bFinishNow, IReadStream_AutoPtr* ppStream) = 0;
     virtual int GetStreamableContentMemoryUsage(bool bJustForDebug = false) = 0;
     virtual void ReleaseStreamableContent() = 0;
-    virtual void GetStreamableName(string& sName) = 0;
+    virtual void GetStreamableName(AZStd::string& sName) = 0;
     virtual uint32 GetLastDrawMainFrameId() = 0;
     virtual bool IsUnloadable() const = 0;
 
@@ -239,8 +239,8 @@ struct IStatObj
         SSubObject() { bShadowProxy = 0; }
 
         EStaticSubObjectType nType;
-        string name;
-        string properties;
+        AZStd::string name;
+        AZStd::string properties;
         int nParent;          // Index of the parent sub object, if there`s hierarchy between them.
         Matrix34 tm;          // Transformation matrix.
         Matrix34 localTM;     // Local transformation matrix, relative to parent.
@@ -510,10 +510,10 @@ struct IStatObj
     virtual bool IsUnloadable() const = 0;
     virtual void SetCanUnload(bool value) = 0;
 
-    virtual string& GetFileName() = 0;
-    virtual const string& GetFileName() const = 0;
+    virtual AZStd::string& GetFileName() = 0;
+    virtual const AZStd::string& GetFileName() const = 0;
 
-    virtual const string& GetCGFNodeName() const = 0;
+    virtual const AZStd::string& GetCGFNodeName() const = 0;
 
     // Summary:
     //     Returns the filename of the object

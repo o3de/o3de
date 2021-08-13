@@ -100,26 +100,26 @@ namespace EMotionFX
          * This is the number of different bones that the skinning information of the mesh where this deformer works on uses.
          * @result The number of bones.
          */
-        MCORE_INLINE size_t GetNumLocalBones() const                        { return mNodeNumbers.size(); }
+        MCORE_INLINE size_t GetNumLocalBones() const                        { return m_nodeNumbers.size(); }
 
         /**
          * Get the node number of a given local bone.
          * @param index The local bone number, which must be in range of [0..GetNumLocalBones()-1].
          * @result The node number, which is in range of [0..Actor::GetNumNodes()-1], depending on the actor where this deformer works on.
          */
-        MCORE_INLINE size_t GetLocalBone(size_t index) const                { return mNodeNumbers[index]; }
+        MCORE_INLINE size_t GetLocalBone(size_t index) const                { return m_nodeNumbers[index]; }
 
         /**
          * Pre-allocate space for a given number of local bones.
          * This does not alter the value returned by GetNumLocalBones().
          * @param numBones The number of bones to pre-allocate space for.
          */
-        MCORE_INLINE void ReserveLocalBones(size_t numBones)                { mNodeNumbers.reserve(numBones); mBoneMatrices.reserve(numBones); }
+        MCORE_INLINE void ReserveLocalBones(size_t numBones)                { m_nodeNumbers.reserve(numBones); m_boneMatrices.reserve(numBones); }
 
 
     protected:
-        AZStd::vector<AZ::Matrix3x4>    mBoneMatrices;
-        AZStd::vector<size_t>           mNodeNumbers;
+        AZStd::vector<AZ::Matrix3x4>    m_boneMatrices;
+        AZStd::vector<size_t>           m_nodeNumbers;
 
         /**
          * Default constructor.
@@ -135,12 +135,12 @@ namespace EMotionFX
         /**
          * Find the entry number that uses a specified node number.
          * @param nodeIndex The node number to search for.
-         * @result The index inside the mBones member array, which uses the given node.
+         * @result The index inside the m_bones member array, which uses the given node.
          */
         MCORE_INLINE size_t FindLocalBoneIndex(size_t nodeIndex) const
         {
-            const auto foundBoneIndex = AZStd::find(begin(mNodeNumbers), end(mNodeNumbers), nodeIndex);
-            return foundBoneIndex != end(mNodeNumbers) ? AZStd::distance(begin(mNodeNumbers), foundBoneIndex) : InvalidIndex;
+            const auto foundBoneIndex = AZStd::find(begin(m_nodeNumbers), end(m_nodeNumbers), nodeIndex);
+            return foundBoneIndex != end(m_nodeNumbers) ? AZStd::distance(begin(m_nodeNumbers), foundBoneIndex) : InvalidIndex;
         }
 
         void SkinVertexRange(uint32 startVertex, uint32 endVertex, AZ::Vector3* positions, AZ::Vector3* normals, AZ::Vector4* tangents, AZ::Vector3* bitangents, uint32* orgVerts, SkinningInfoVertexAttributeLayer* layer);

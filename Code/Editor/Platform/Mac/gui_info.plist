@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleExecutable</key>
-	<string>Editor</string>
+	<string>EditorDummy</string>
 	<key>CFBundleIdentifier</key>
 	<string>org.O3DE.Editor</string>
 	<key>CFBundlePackageType</key>

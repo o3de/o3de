@@ -29,25 +29,25 @@ namespace EMotionFX
     Mesh::Mesh()
         : BaseObject()
     {
-        mNumVertices        = 0;
-        mNumIndices         = 0;
-        mNumOrgVerts        = 0;
-        mNumPolygons        = 0;
-        mIndices            = nullptr;
-        mPolyVertexCounts   = nullptr;
-        mIsCollisionMesh    = false;
+        m_numVertices        = 0;
+        m_numIndices         = 0;
+        m_numOrgVerts        = 0;
+        m_numPolygons        = 0;
+        m_indices            = nullptr;
+        m_polyVertexCounts   = nullptr;
+        m_isCollisionMesh    = false;
     }
 
     // allocation constructor
     Mesh::Mesh(uint32 numVerts, uint32 numIndices, uint32 numPolygons, uint32 numOrgVerts, bool isCollisionMesh)
     {
-        mNumVertices        = 0;
-        mNumIndices         = 0;
-        mNumPolygons        = 0;
-        mNumOrgVerts        = 0;
-        mIndices            = nullptr;
-        mPolyVertexCounts   = nullptr;
-        mIsCollisionMesh    = isCollisionMesh;
+        m_numVertices        = 0;
+        m_numIndices         = 0;
+        m_numPolygons        = 0;
+        m_numOrgVerts        = 0;
+        m_indices            = nullptr;
+        m_polyVertexCounts   = nullptr;
+        m_isCollisionMesh    = isCollisionMesh;
 
         // allocate the mesh data
         Allocate(numVerts, numIndices, numPolygons, numOrgVerts);
@@ -73,22 +73,22 @@ namespace EMotionFX
         // Local 2D and 4D packed vector structs as we don't have packed representations in AzCore and don't plan to add these.
         struct Vector2
         {
-            float x;
-            float y;
+            float m_x;
+            float m_y;
         };
 
         struct Vector4
         {
-            float x;
-            float y;
-            float z;
-            float w;
+            float m_x;
+            float m_y;
+            float m_z;
+            float m_w;
         };
 
         // Needed for converting the packed vectors from the Atom buffers that normally load directly into GPU into AzCore versions used by EMFX.
         AZ::Vector2 ConvertVector(const Vector2& input)
         {
-            return AZ::Vector2(input.x, input.y);
+            return AZ::Vector2(input.m_x, input.m_y);
         }
 
         AZ::Vector3 ConvertVector(const AZ::PackedVector3f& input)
@@ -98,7 +98,7 @@ namespace EMotionFX
 
         AZ::Vector4 ConvertVector(const Vector4& input)
         {
-            return AZ::Vector4(input.x, input.y, input.z, input.w);
+            return AZ::Vector4(input.m_x, input.m_y, input.m_z, input.m_w);
         }
 
         // Convert Atom buffer storing elements of type SourceType to an EMFX vertex attribute layer storing elements of type TargetType.
@@ -192,10 +192,10 @@ namespace EMotionFX
         AZ_ErrorOnce("EMotionFX", indexBufferViewDescriptor.m_elementSize == 4, "Index buffer must stored as 4 bytes.");
         const size_t indexBufferCountsInBytes = indexBufferViewDescriptor.m_elementCount * indexBufferViewDescriptor.m_elementSize;
         const size_t indexBufferOffsetInBytes = indexBufferViewDescriptor.m_elementOffset * indexBufferViewDescriptor.m_elementSize;
-        memcpy(mesh->mIndices, indexBuffer.begin() + indexBufferOffsetInBytes, indexBufferCountsInBytes);
+        memcpy(mesh->m_indices, indexBuffer.begin() + indexBufferOffsetInBytes, indexBufferCountsInBytes);
 
         // Set the polygon buffer
-        AZStd::fill(mesh->mPolyVertexCounts, mesh->mPolyVertexCounts + mesh->mNumPolygons, 3);
+        AZStd::fill(mesh->m_polyVertexCounts, mesh->m_polyVertexCounts + mesh->m_numPolygons, 3);
 
         // Skinning data from atom are stored in two separate buffer layer.
         AZ::u8 maxSkinInfluences = 255; // Later we will calculate this value from skinning data.
@@ -359,22 +359,22 @@ namespace EMotionFX
         // allocate the indices
         if (numIndices > 0 && numPolygons > 0)
         {
-            mIndices            = (uint32*)MCore::AlignedAllocate(sizeof(uint32) * numIndices,  32, EMFX_MEMCATEGORY_GEOMETRY_MESHES, Mesh::MEMORYBLOCK_ID);
-            mPolyVertexCounts   = (uint8*)MCore::AlignedAllocate(sizeof(uint8) * numPolygons, 16, EMFX_MEMCATEGORY_GEOMETRY_MESHES, Mesh::MEMORYBLOCK_ID);
+            m_indices            = (uint32*)MCore::AlignedAllocate(sizeof(uint32) * numIndices,  32, EMFX_MEMCATEGORY_GEOMETRY_MESHES, Mesh::MEMORYBLOCK_ID);
+            m_polyVertexCounts   = (uint8*)MCore::AlignedAllocate(sizeof(uint8) * numPolygons, 16, EMFX_MEMCATEGORY_GEOMETRY_MESHES, Mesh::MEMORYBLOCK_ID);
         }
 
         // set number values
-        mNumVertices    = numVerts;
-        mNumPolygons    = numPolygons;
-        mNumIndices     = numIndices;
-        mNumOrgVerts    = numOrgVerts;
+        m_numVertices    = numVerts;
+        m_numPolygons    = numPolygons;
+        m_numIndices     = numIndices;
+        m_numOrgVerts    = numOrgVerts;
     }
 
 
     // copy all original data over the output data
     void Mesh::ResetToOriginalData()
     {
-        for (VertexAttributeLayer* vertexAttribute : mVertexAttributes)
+        for (VertexAttributeLayer* vertexAttribute : m_vertexAttributes)
         {
             vertexAttribute->ResetToOriginalData();
         }
@@ -391,29 +391,29 @@ namespace EMotionFX
         RemoveAllVertexAttributeLayers();
 
         // get rid of all sub meshes
-        for (SubMesh* subMesh : mSubMeshes)
+        for (SubMesh* subMesh : m_subMeshes)
         {
             subMesh->Destroy();
         }
-        mSubMeshes.clear();
+        m_subMeshes.clear();
 
-        if (mIndices)
+        if (m_indices)
         {
-            MCore::AlignedFree(mIndices);
+            MCore::AlignedFree(m_indices);
         }
 
-        if (mPolyVertexCounts)
+        if (m_polyVertexCounts)
         {
-            MCore::AlignedFree(mPolyVertexCounts);
+            MCore::AlignedFree(m_polyVertexCounts);
         }
 
         // re-init members
-        mIndices        = nullptr;
-        mPolyVertexCounts = nullptr;
-        mNumIndices     = 0;
-        mNumVertices    = 0;
-        mNumOrgVerts    = 0;
-        mNumPolygons    = 0;
+        m_indices        = nullptr;
+        m_polyVertexCounts = nullptr;
+        m_numIndices     = 0;
+        m_numVertices    = 0;
+        m_numOrgVerts    = 0;
+        m_numPolygons    = 0;
     }
 
 
@@ -503,14 +503,14 @@ namespace EMotionFX
         for (size_t i = numTangentLayers; i <= uvSet; ++i)
         {
             // add a new tangent layer
-            AddVertexAttributeLayer(VertexAttributeLayerAbstractData::Create(mNumVertices, Mesh::ATTRIB_TANGENTS, sizeof(AZ::Vector4), true));
+            AddVertexAttributeLayer(VertexAttributeLayerAbstractData::Create(m_numVertices, Mesh::ATTRIB_TANGENTS, sizeof(AZ::Vector4), true));
             tangents    = static_cast<AZ::Vector4*>(FindVertexData(Mesh::ATTRIB_TANGENTS, i));
             orgTangents = static_cast<AZ::Vector4*>(FindOriginalVertexData(Mesh::ATTRIB_TANGENTS, i));
 
             // Add the bitangents layer.
             if (storeBitangents)
             {
-                AddVertexAttributeLayer(VertexAttributeLayerAbstractData::Create(mNumVertices, Mesh::ATTRIB_BITANGENTS, sizeof(AZ::PackedVector3f), true));
+                AddVertexAttributeLayer(VertexAttributeLayerAbstractData::Create(m_numVertices, Mesh::ATTRIB_BITANGENTS, sizeof(AZ::PackedVector3f), true));
                 bitangents    = static_cast<AZ::Vector3*>(FindVertexData(Mesh::ATTRIB_BITANGENTS, i));
                 orgBitangents = static_cast<AZ::Vector3*>(FindOriginalVertexData(Mesh::ATTRIB_BITANGENTS, i));
             }
@@ -518,7 +518,7 @@ namespace EMotionFX
             // default all tangents for the newly created layer
             AZ::Vector4 defaultTangent(1.0f, 0.0f, 0.0f, 0.0f);
             AZ::Vector3 defaultBitangent(0.0f, 0.0f, 1.0f);
-            for (uint32 vtx = 0; vtx < mNumVertices; ++vtx)
+            for (uint32 vtx = 0; vtx < m_numVertices; ++vtx)
             {
                 tangents[vtx]      = defaultTangent;
                 orgTangents[vtx]   = defaultTangent;
@@ -545,7 +545,7 @@ namespace EMotionFX
         AZ::Vector3     curBitangent;
 
         // calculate for every vertex the tangent and bitangent
-        for (uint32 i = 0; i < mNumVertices; ++i)
+        for (uint32 i = 0; i < m_numVertices; ++i)
         {
             orgTangents[i] = AZ::Vector4::CreateZero();
             tangents[i] = AZ::Vector4::CreateZero();
@@ -601,7 +601,7 @@ namespace EMotionFX
         }
 
         // calculate the per vertex tangents now, fixing up orthogonality and handling mirroring of the bitangent
-        for (uint32 i = 0; i < mNumVertices; ++i)
+        for (uint32 i = 0; i < m_numVertices; ++i)
         {
             // get the normal
             AZ::Vector3 normal(normals[i]);
@@ -800,8 +800,8 @@ namespace EMotionFX
     // remove a given submesh
     void Mesh::RemoveSubMesh(size_t nr, bool delFromMem)
     {
-        SubMesh* subMesh = mSubMeshes[nr];
-        mSubMeshes.erase(AZStd::next(begin(mSubMeshes), nr));
+        SubMesh* subMesh = m_subMeshes[nr];
+        m_subMeshes.erase(AZStd::next(begin(m_subMeshes), nr));
         if (delFromMem)
         {
             subMesh->Destroy();
@@ -812,7 +812,7 @@ namespace EMotionFX
     // insert a given submesh
     void Mesh::InsertSubMesh(size_t insertIndex, SubMesh* subMesh)
     {
-        mSubMeshes.emplace(AZStd::next(begin(mSubMeshes), insertIndex), subMesh);
+        m_subMeshes.emplace(AZStd::next(begin(m_subMeshes), insertIndex), subMesh);
     }
 
 
@@ -822,7 +822,7 @@ namespace EMotionFX
         size_t numLayers = 0;
 
         // check the types of all vertex attribute layers
-        for (auto* vertexAttribute : mVertexAttributes)
+        for (auto* vertexAttribute : m_vertexAttributes)
         {
             if (vertexAttribute->GetType() == type)
             {
@@ -844,31 +844,31 @@ namespace EMotionFX
 
     VertexAttributeLayer* Mesh::GetSharedVertexAttributeLayer(size_t layerNr)
     {
-        MCORE_ASSERT(layerNr < mSharedVertexAttributes.size());
-        return mSharedVertexAttributes[layerNr];
+        MCORE_ASSERT(layerNr < m_sharedVertexAttributes.size());
+        return m_sharedVertexAttributes[layerNr];
     }
 
 
     void Mesh::AddSharedVertexAttributeLayer(VertexAttributeLayer* layer)
     {
-        MCORE_ASSERT(AZStd::find(begin(mSharedVertexAttributes), end(mSharedVertexAttributes), layer) == end(mSharedVertexAttributes));
-        mSharedVertexAttributes.emplace_back(layer);
+        MCORE_ASSERT(AZStd::find(begin(m_sharedVertexAttributes), end(m_sharedVertexAttributes), layer) == end(m_sharedVertexAttributes));
+        m_sharedVertexAttributes.emplace_back(layer);
     }
 
 
     size_t Mesh::GetNumSharedVertexAttributeLayers() const
     {
-        return mSharedVertexAttributes.size();
+        return m_sharedVertexAttributes.size();
     }
 
 
     size_t Mesh::FindSharedVertexAttributeLayerNumber(uint32 layerTypeID, size_t occurrence) const
     {
-        const auto foundLayer = AZStd::find_if(begin(mSharedVertexAttributes), end(mSharedVertexAttributes), [layerTypeID, occurrence](const VertexAttributeLayer* layer) mutable
+        const auto foundLayer = AZStd::find_if(begin(m_sharedVertexAttributes), end(m_sharedVertexAttributes), [layerTypeID, occurrence](const VertexAttributeLayer* layer) mutable
         {
             return layer->GetType() == layerTypeID && occurrence-- == 0;
         });
-        return foundLayer != end(mSharedVertexAttributes) ? AZStd::distance(begin(mSharedVertexAttributes), foundLayer) : InvalidIndex;
+        return foundLayer != end(m_sharedVertexAttributes) ? AZStd::distance(begin(m_sharedVertexAttributes), foundLayer) : InvalidIndex;
     }
 
 
@@ -881,7 +881,7 @@ namespace EMotionFX
             return nullptr;
         }
 
-        return mSharedVertexAttributes[layerNr];
+        return m_sharedVertexAttributes[layerNr];
     }
 
 
@@ -889,10 +889,10 @@ namespace EMotionFX
     // delete all shared attribute layers
     void Mesh::RemoveAllSharedVertexAttributeLayers()
     {
-        while (mSharedVertexAttributes.size())
+        while (m_sharedVertexAttributes.size())
         {
-            mSharedVertexAttributes.back()->Destroy();
-            mSharedVertexAttributes.pop_back();
+            m_sharedVertexAttributes.back()->Destroy();
+            m_sharedVertexAttributes.pop_back();
         }
     }
 
@@ -900,51 +900,51 @@ namespace EMotionFX
     // remove a layer by its index
     void Mesh::RemoveSharedVertexAttributeLayer(size_t layerNr)
     {
-        MCORE_ASSERT(layerNr < mSharedVertexAttributes.size());
-        mSharedVertexAttributes[layerNr]->Destroy();
-        mSharedVertexAttributes.erase(AZStd::next(begin(mSharedVertexAttributes), layerNr));
+        MCORE_ASSERT(layerNr < m_sharedVertexAttributes.size());
+        m_sharedVertexAttributes[layerNr]->Destroy();
+        m_sharedVertexAttributes.erase(AZStd::next(begin(m_sharedVertexAttributes), layerNr));
     }
 
 
     size_t Mesh::GetNumVertexAttributeLayers() const
     {
-        return mVertexAttributes.size();
+        return m_vertexAttributes.size();
     }
 
 
     VertexAttributeLayer* Mesh::GetVertexAttributeLayer(size_t layerNr)
     {
-        MCORE_ASSERT(layerNr < mVertexAttributes.size());
-        return mVertexAttributes[layerNr];
+        MCORE_ASSERT(layerNr < m_vertexAttributes.size());
+        return m_vertexAttributes[layerNr];
     }
 
 
     void Mesh::AddVertexAttributeLayer(VertexAttributeLayer* layer)
     {
-        MCORE_ASSERT(AZStd::find(begin(mVertexAttributes), end(mVertexAttributes), layer) == end(mVertexAttributes));
-        mVertexAttributes.emplace_back(layer);
+        MCORE_ASSERT(AZStd::find(begin(m_vertexAttributes), end(m_vertexAttributes), layer) == end(m_vertexAttributes));
+        m_vertexAttributes.emplace_back(layer);
     }
 
 
     // find the layer number
     size_t Mesh::FindVertexAttributeLayerNumber(uint32 layerTypeID, size_t occurrence) const
     {
-        const auto foundLayer = AZStd::find_if(begin(mVertexAttributes), end(mVertexAttributes), [layerTypeID, occurrence](const VertexAttributeLayer* layer) mutable
+        const auto foundLayer = AZStd::find_if(begin(m_vertexAttributes), end(m_vertexAttributes), [layerTypeID, occurrence](const VertexAttributeLayer* layer) mutable
         {
             return layer->GetType() == layerTypeID && occurrence-- == 0;
         });
-        return foundLayer != end(mVertexAttributes) ? AZStd::distance(begin(mVertexAttributes), foundLayer) : InvalidIndex;
+        return foundLayer != end(m_vertexAttributes) ? AZStd::distance(begin(m_vertexAttributes), foundLayer) : InvalidIndex;
     }
 
 
     // find the layer number
     size_t Mesh::FindVertexAttributeLayerNumberByName(uint32 layerTypeID, const char* name) const
     {
-        const auto foundLayer = AZStd::find_if(begin(mVertexAttributes), end(mVertexAttributes), [layerTypeID, name](const VertexAttributeLayer* layer)
+        const auto foundLayer = AZStd::find_if(begin(m_vertexAttributes), end(m_vertexAttributes), [layerTypeID, name](const VertexAttributeLayer* layer)
         {
             return layer->GetType() == layerTypeID && layer->GetNameString() == name;
         });
-        return foundLayer != end(mVertexAttributes) ? AZStd::distance(begin(mVertexAttributes), foundLayer) : InvalidIndex;
+        return foundLayer != end(m_vertexAttributes) ? AZStd::distance(begin(m_vertexAttributes), foundLayer) : InvalidIndex;
     }
 
 
@@ -958,7 +958,7 @@ namespace EMotionFX
             return nullptr;
         }
 
-        return mVertexAttributes[layerNr];
+        return m_vertexAttributes[layerNr];
     }
 
 
@@ -971,25 +971,25 @@ namespace EMotionFX
             return nullptr;
         }
 
-        return mVertexAttributes[layerNr];
+        return m_vertexAttributes[layerNr];
     }
 
 
     void Mesh::RemoveAllVertexAttributeLayers()
     {
-        while (mVertexAttributes.size())
+        while (m_vertexAttributes.size())
         {
-            mVertexAttributes.back()->Destroy();
-            mVertexAttributes.pop_back();
+            m_vertexAttributes.back()->Destroy();
+            m_vertexAttributes.pop_back();
         }
     }
 
 
     void Mesh::RemoveVertexAttributeLayer(size_t layerNr)
     {
-        MCORE_ASSERT(layerNr < mVertexAttributes.size());
-        mVertexAttributes[layerNr]->Destroy();
-        mVertexAttributes.erase(AZStd::next(begin(mVertexAttributes), layerNr));
+        MCORE_ASSERT(layerNr < m_vertexAttributes.size());
+        m_vertexAttributes[layerNr]->Destroy();
+        m_vertexAttributes.erase(AZStd::next(begin(m_vertexAttributes), layerNr));
     }
 
 
@@ -998,34 +998,34 @@ namespace EMotionFX
     Mesh* Mesh::Clone()
     {
         // allocate a mesh of the same dimensions
-        Mesh* clone = aznew Mesh(mNumVertices, mNumIndices, mNumPolygons, mNumOrgVerts, mIsCollisionMesh);
+        Mesh* clone = aznew Mesh(m_numVertices, m_numIndices, m_numPolygons, m_numOrgVerts, m_isCollisionMesh);
 
         // copy the mesh data
-        MCore::MemCopy(clone->mIndices, mIndices, sizeof(uint32) * mNumIndices);
-        MCore::MemCopy(clone->mPolyVertexCounts, mPolyVertexCounts, sizeof(uint8) * mNumPolygons);
+        MCore::MemCopy(clone->m_indices, m_indices, sizeof(uint32) * m_numIndices);
+        MCore::MemCopy(clone->m_polyVertexCounts, m_polyVertexCounts, sizeof(uint8) * m_numPolygons);
 
         // copy the submesh data
-        const size_t numSubMeshes = mSubMeshes.size();
-        clone->mSubMeshes.resize(numSubMeshes);
+        const size_t numSubMeshes = m_subMeshes.size();
+        clone->m_subMeshes.resize(numSubMeshes);
         for (size_t i = 0; i < numSubMeshes; ++i)
         {
-            clone->mSubMeshes[i] = mSubMeshes[i]->Clone(clone);
+            clone->m_subMeshes[i] = m_subMeshes[i]->Clone(clone);
         }
 
         // clone the shared vertex attributes
-        const size_t numSharedAttributes = mSharedVertexAttributes.size();
-        clone->mSharedVertexAttributes.resize(numSharedAttributes);
+        const size_t numSharedAttributes = m_sharedVertexAttributes.size();
+        clone->m_sharedVertexAttributes.resize(numSharedAttributes);
         for (size_t i = 0; i < numSharedAttributes; ++i)
         {
-            clone->mSharedVertexAttributes[i] = mSharedVertexAttributes[i]->Clone();
+            clone->m_sharedVertexAttributes[i] = m_sharedVertexAttributes[i]->Clone();
         }
 
         // clone the non-shared vertex attributes
-        const size_t numAttributes = mVertexAttributes.size();
-        clone->mVertexAttributes.resize(numAttributes);
+        const size_t numAttributes = m_vertexAttributes.size();
+        clone->m_vertexAttributes.resize(numAttributes);
         for (size_t i = 0; i < numAttributes; ++i)
         {
-            clone->mVertexAttributes[i] = mVertexAttributes[i]->Clone();
+            clone->m_vertexAttributes[i] = m_vertexAttributes[i]->Clone();
         }
 
         // return the resulting cloned mesh
@@ -1036,8 +1036,8 @@ namespace EMotionFX
     // swap the data for two vertices
     void Mesh::SwapVertex(uint32 vertexA, uint32 vertexB)
     {
-        MCORE_ASSERT(vertexA < mNumVertices);
-        MCORE_ASSERT(vertexB < mNumVertices);
+        MCORE_ASSERT(vertexA < m_numVertices);
+        MCORE_ASSERT(vertexB < m_numVertices);
 
         // if we try to swap itself then there is nothing to do
         if (vertexA == vertexB)
@@ -1046,10 +1046,10 @@ namespace EMotionFX
         }
 
         // swap all vertex attribute layers
-        const size_t numLayers = mVertexAttributes.size();
+        const size_t numLayers = m_vertexAttributes.size();
         for (size_t i = 0; i < numLayers; ++i)
         {
-            mVertexAttributes[i]->SwapAttributes(vertexA, vertexB);
+            m_vertexAttributes[i]->SwapAttributes(vertexA, vertexB);
         }
     }
 
@@ -1057,8 +1057,8 @@ namespace EMotionFX
     void Mesh::RemoveVertices(uint32 startVertexNr, uint32 endVertexNr, bool changeIndexBuffer, bool removeEmptySubMeshes)
     {
         // perform some checks on the input data
-        MCORE_ASSERT(endVertexNr < mNumVertices);
-        MCORE_ASSERT(startVertexNr < mNumVertices);
+        MCORE_ASSERT(endVertexNr < m_numVertices);
+        MCORE_ASSERT(startVertexNr < m_numVertices);
 
         // make sure the start vertex is before the end vertex in release mode, to prevent weirdness
         if (startVertexNr > endVertexNr)
@@ -1074,7 +1074,7 @@ namespace EMotionFX
         const uint32 numVertsToRemove = (endVertexNr - startVertexNr) + 1; // +1 because we remove the end vertex as well
 
                                                                            // remove the num verices counter
-        mNumVertices -= numVertsToRemove;
+        m_numVertices -= numVertsToRemove;
 
         // remove the attributes from the vertex attribute layers
         const size_t numLayers = GetNumVertexAttributeLayers();
@@ -1091,9 +1091,9 @@ namespace EMotionFX
         for (uint32 w = 0; w < numVertsToRemove; ++w)
         {
             // adjust all submesh start index offsets changed
-            for (size_t s = 0; s < mSubMeshes.size();)
+            for (size_t s = 0; s < m_subMeshes.size();)
             {
-                SubMesh* subMesh = mSubMeshes[s];
+                SubMesh* subMesh = m_subMeshes[s];
 
                 // if we remove a vertex from this submesh
                 if (subMesh->GetStartVertex() <= v && subMesh->GetStartVertex() + subMesh->GetNumVertices() > v)
@@ -1111,7 +1111,7 @@ namespace EMotionFX
                 // remove the submesh if it's empty
                 if (subMesh->GetNumVertices() == 0 && removeEmptySubMeshes)
                 {
-                    mSubMeshes.erase(AZStd::next(begin(mSubMeshes), s));
+                    m_subMeshes.erase(AZStd::next(begin(m_subMeshes), s));
                 }
                 else
                 {
@@ -1128,11 +1128,11 @@ namespace EMotionFX
         //------------------------------------
         if (changeIndexBuffer)
         {
-            for (uint32 i = 0; i < mNumIndices; ++i)
+            for (uint32 i = 0; i < m_numIndices; ++i)
             {
-                if (mIndices[i] > startVertexNr)
+                if (m_indices[i] > startVertexNr)
                 {
-                    mIndices[i] -= numVertsToRemove;
+                    m_indices[i] -= numVertsToRemove;
                 }
             }
         }
@@ -1145,9 +1145,9 @@ namespace EMotionFX
         size_t numRemoved = 0;
 
         // for all the submeshes
-        for (size_t i = 0; i < mSubMeshes.size();)
+        for (size_t i = 0; i < m_subMeshes.size();)
         {
-            SubMesh* subMesh = mSubMeshes[i];
+            SubMesh* subMesh = m_subMeshes[i];
 
             // get some stats about the submesh
             bool mustRemove;
@@ -1167,7 +1167,7 @@ namespace EMotionFX
             // remove or skip
             if (mustRemove)
             {
-                mSubMeshes.erase(AZStd::next(begin(mSubMeshes), i));
+                m_subMeshes.erase(AZStd::next(begin(m_subMeshes), i));
                 numRemoved++;
             }
             else
@@ -1542,19 +1542,19 @@ namespace EMotionFX
         bool result = true;
 
         // check if the indices are valid and return false in case they aren't
-        if (mIndices == nullptr)
+        if (m_indices == nullptr)
         {
             return false;
         }
 
         // use our 32-bit index buffer as new 16-bit index array directly
-        uint16* indices = (uint16*)mIndices;
+        uint16* indices = (uint16*)m_indices;
 
         // iterate over all indices and convert the values
-        for (uint32 i = 0; i < mNumIndices; ++i)
+        for (uint32 i = 0; i < m_numIndices; ++i)
         {
             // create a temporary copy of our 32-bit vertex index
-            const uint32 oldVertexIndex = mIndices[i];
+            const uint32 oldVertexIndex = m_indices[i];
 
             // check if our index is in range of an unsigned short
             if (oldVertexIndex < 65536)
@@ -1570,7 +1570,7 @@ namespace EMotionFX
         }
 
         // realloc the memory to the new index buffer size using 16-bit values and return the result
-        mIndices = (uint32*)MCore::AlignedRealloc(mIndices, sizeof(uint16) * mNumIndices, 32, EMFX_MEMCATEGORY_GEOMETRY_MESHES, Mesh::MEMORYBLOCK_ID);
+        m_indices = (uint32*)MCore::AlignedRealloc(m_indices, sizeof(uint16) * m_numIndices, 32, EMFX_MEMCATEGORY_GEOMETRY_MESHES, Mesh::MEMORYBLOCK_ID);
         return result;
     }
 
@@ -1610,19 +1610,19 @@ namespace EMotionFX
     void Mesh::ExtractOriginalVertexPositions(AZStd::vector<AZ::Vector3>& outPoints) const
     {
         // allocate space
-        outPoints.resize(mNumOrgVerts);
+        outPoints.resize(m_numOrgVerts);
 
         // get the mesh data
         const AZ::Vector3*      positions = (AZ::Vector3*)FindOriginalVertexData(ATTRIB_POSITIONS);
         const uint32*           orgVerts  = (uint32*) FindVertexData(ATTRIB_ORGVTXNUMBERS);
 
         // init all org vertices
-        for (uint32 v = 0; v < mNumOrgVerts; ++v)
+        for (uint32 v = 0; v < m_numOrgVerts; ++v)
         {
             outPoints[v] = positions[0]; // init them, as there are some unused original vertices sometimes
         }
         // output the points
-        for (uint32 i = 0; i < mNumVertices; ++i)
+        for (uint32 i = 0; i < m_numVertices; ++i)
         {
             outPoints[ orgVerts[i] ] = positions[i];
         }
@@ -1640,8 +1640,8 @@ namespace EMotionFX
         if (useDuplicates == false)
         {
             // the smoothed normals array
-            AZStd::vector<AZ::Vector3>    smoothNormals(mNumOrgVerts);
-            for (uint32 i = 0; i < mNumOrgVerts; ++i)
+            AZStd::vector<AZ::Vector3>    smoothNormals(m_numOrgVerts);
+            for (uint32 i = 0; i < m_numOrgVerts; ++i)
             {
                 smoothNormals[i] = AZ::Vector3::CreateZero();
             }
@@ -1681,39 +1681,20 @@ namespace EMotionFX
 
                 polyStartIndex += numPolyVerts;
             }
-            /*
-            for (uint32 f=0; f<mNumIndices; f+=3)
-            {
-            // get the face indices
-            const uint32 indexA = indices[f];
-            const uint32 indexB = indices[f+1];
-            const uint32 indexC = indices[f+2];
-
-            const MCore::Vector3& posA = positions[ indexA ];
-            const MCore::Vector3& posB = positions[ indexB ];
-            const MCore::Vector3& posC = positions[ indexC ];
-            MCore::Vector3 faceNormal = (posB - posA).Cross( posC - posB ).SafeNormalize();
-
-            // store the tangents in the orgTangents array
-            smoothNormals[ orgVerts[indexA] ] += faceNormal;
-            smoothNormals[ orgVerts[indexB] ] += faceNormal;
-            smoothNormals[ orgVerts[indexC] ] += faceNormal;
-            }
-            */
             // normalize
-            for (uint32 i = 0; i < mNumOrgVerts; ++i)
+            for (uint32 i = 0; i < m_numOrgVerts; ++i)
             {
                 smoothNormals[i] = MCore::SafeNormalize(smoothNormals[i]);
             }
 
-            for (uint32 i = 0; i < mNumVertices; ++i)
+            for (uint32 i = 0; i < m_numVertices; ++i)
             {
                 normals[i] = smoothNormals[ orgVerts[i] ];
             }
         }
         else
         {
-            for (uint32 i = 0; i < mNumVertices; ++i)
+            for (uint32 i = 0; i < m_numVertices; ++i)
             {
                 normals[i] = AZ::Vector3::CreateZero();
             }
@@ -1750,28 +1731,8 @@ namespace EMotionFX
 
                 polyStartIndex += numPolyVerts;
             }
-            /*
-            // sum all face normals
-            for (uint32 f=0; f<mNumIndices; f+=3)
-            {
-            // get the face indices
-            const uint32 indexA = indices[f];
-            const uint32 indexB = indices[f+1];
-            const uint32 indexC = indices[f+2];
-
-            const MCore::Vector3& posA = positions[ indexA ];
-            const MCore::Vector3& posB = positions[ indexB ];
-            const MCore::Vector3& posC = positions[ indexC ];
-            MCore::Vector3 faceNormal = (posB - posA).Cross( posC - posB ).SafeNormalize();
-
-            // store the tangents in the orgTangents array
-            normals[indexA] += faceNormal;
-            normals[indexB] += faceNormal;
-            normals[indexC] += faceNormal;
-            }
-            */
             // normalize the normals
-            for (uint32 i = 0; i < mNumVertices; ++i)
+            for (uint32 i = 0; i < m_numVertices; ++i)
             {
                 normals[i] = MCore::SafeNormalize(normals[i]);
             }
@@ -1782,9 +1743,9 @@ namespace EMotionFX
     // check if we are a triangle mesh
     bool Mesh::CheckIfIsTriangleMesh() const
     {
-        for (uint32 i = 0; i < mNumPolygons; ++i)
+        for (uint32 i = 0; i < m_numPolygons; ++i)
         {
-            if (mPolyVertexCounts[i] != 3)
+            if (m_polyVertexCounts[i] != 3)
             {
                 return false;
             }
@@ -1797,9 +1758,9 @@ namespace EMotionFX
     // check if we are a quad mesh
     bool Mesh::CheckIfIsQuadMesh() const
     {
-        for (uint32 i = 0; i < mNumPolygons; ++i)
+        for (uint32 i = 0; i < m_numPolygons; ++i)
         {
-            if (mPolyVertexCounts[i] != 4)
+            if (m_polyVertexCounts[i] != 4)
             {
                 return false;
             }
@@ -1826,19 +1787,19 @@ namespace EMotionFX
 
     void Mesh::ReserveVertexAttributeLayerSpace(uint32 numLayers)
     {
-        mVertexAttributes.reserve(numLayers);
+        m_vertexAttributes.reserve(numLayers);
     }
 
 
     // scale all positional data
     void Mesh::Scale(float scaleFactor)
     {
-        for (VertexAttributeLayer* layer : mVertexAttributes)
+        for (VertexAttributeLayer* layer : m_vertexAttributes)
         {
             layer->Scale(scaleFactor);
         }
 
-        for (VertexAttributeLayer* layer : mSharedVertexAttributes)
+        for (VertexAttributeLayer* layer : m_sharedVertexAttributes)
         {
             layer->Scale(scaleFactor);
         }
@@ -1847,7 +1808,7 @@ namespace EMotionFX
         AZ::Vector3* positions       = (AZ::Vector3*)FindVertexData(ATTRIB_POSITIONS);
         AZ::Vector3* orgPositions    = (AZ::Vector3*)FindOriginalVertexData(ATTRIB_POSITIONS);
 
-        const uint32 numVerts = mNumVertices;
+        const uint32 numVerts = m_numVertices;
         for (uint32 i = 0; i < numVerts; ++i)
         {
             positions[i] = positions[i] * scaleFactor;
@@ -1859,65 +1820,65 @@ namespace EMotionFX
     // find by name
     size_t Mesh::FindVertexAttributeLayerIndexByName(const char* name) const
     {
-        const auto foundLayer = AZStd::find_if(begin(mVertexAttributes), end(mVertexAttributes), [name](const VertexAttributeLayer* layer)
+        const auto foundLayer = AZStd::find_if(begin(m_vertexAttributes), end(m_vertexAttributes), [name](const VertexAttributeLayer* layer)
         {
             return layer->GetNameString() == name;
         });
-        return foundLayer != end(mVertexAttributes) ? AZStd::distance(begin(mVertexAttributes), foundLayer) : InvalidIndex;
+        return foundLayer != end(m_vertexAttributes) ? AZStd::distance(begin(m_vertexAttributes), foundLayer) : InvalidIndex;
     }
 
 
     // find by name as string
     size_t Mesh::FindVertexAttributeLayerIndexByNameString(const AZStd::string& name) const
     {
-        const auto foundLayer = AZStd::find_if(begin(mVertexAttributes), end(mVertexAttributes), [name](const VertexAttributeLayer* layer)
+        const auto foundLayer = AZStd::find_if(begin(m_vertexAttributes), end(m_vertexAttributes), [name](const VertexAttributeLayer* layer)
         {
             return layer->GetNameString() == name;
         });
-        return foundLayer != end(mVertexAttributes) ? AZStd::distance(begin(mVertexAttributes), foundLayer) : InvalidIndex;
+        return foundLayer != end(m_vertexAttributes) ? AZStd::distance(begin(m_vertexAttributes), foundLayer) : InvalidIndex;
     }
 
 
     // find by name ID
     size_t Mesh::FindVertexAttributeLayerIndexByNameID(uint32 nameID) const
     {
-        const auto foundLayer = AZStd::find_if(begin(mVertexAttributes), end(mVertexAttributes), [nameID](const VertexAttributeLayer* layer)
+        const auto foundLayer = AZStd::find_if(begin(m_vertexAttributes), end(m_vertexAttributes), [nameID](const VertexAttributeLayer* layer)
         {
             return layer->GetNameID() == nameID;
         });
-        return foundLayer != end(mVertexAttributes) ? AZStd::distance(begin(mVertexAttributes), foundLayer) : InvalidIndex;
+        return foundLayer != end(m_vertexAttributes) ? AZStd::distance(begin(m_vertexAttributes), foundLayer) : InvalidIndex;
     }
 
 
     // find by name
     size_t Mesh::FindSharedVertexAttributeLayerIndexByName(const char* name) const
     {
-        const auto foundLayer = AZStd::find_if(begin(mSharedVertexAttributes), end(mSharedVertexAttributes), [name](const VertexAttributeLayer* layer)
+        const auto foundLayer = AZStd::find_if(begin(m_sharedVertexAttributes), end(m_sharedVertexAttributes), [name](const VertexAttributeLayer* layer)
         {
             return layer->GetNameString() == name;
         });
-        return foundLayer != end(mSharedVertexAttributes) ? AZStd::distance(begin(mSharedVertexAttributes), foundLayer) : InvalidIndex;
+        return foundLayer != end(m_sharedVertexAttributes) ? AZStd::distance(begin(m_sharedVertexAttributes), foundLayer) : InvalidIndex;
     }
 
 
     // find by name as string
     size_t Mesh::FindSharedVertexAttributeLayerIndexByNameString(const AZStd::string& name) const
     {
-        const auto foundLayer = AZStd::find_if(begin(mSharedVertexAttributes), end(mSharedVertexAttributes), [name](const VertexAttributeLayer* layer)
+        const auto foundLayer = AZStd::find_if(begin(m_sharedVertexAttributes), end(m_sharedVertexAttributes), [name](const VertexAttributeLayer* layer)
         {
             return layer->GetNameString() == name;
         });
-        return foundLayer != end(mSharedVertexAttributes) ? AZStd::distance(begin(mSharedVertexAttributes), foundLayer) : InvalidIndex;
+        return foundLayer != end(m_sharedVertexAttributes) ? AZStd::distance(begin(m_sharedVertexAttributes), foundLayer) : InvalidIndex;
     }
 
 
     // find by name ID
     size_t Mesh::FindSharedVertexAttributeLayerIndexByNameID(uint32 nameID) const
     {
-        const auto foundLayer = AZStd::find_if(begin(mSharedVertexAttributes), end(mSharedVertexAttributes), [nameID](const VertexAttributeLayer* layer)
+        const auto foundLayer = AZStd::find_if(begin(m_sharedVertexAttributes), end(m_sharedVertexAttributes), [nameID](const VertexAttributeLayer* layer)
         {
             return layer->GetNameID() == nameID;
         });
-        return foundLayer != end(mSharedVertexAttributes) ? AZStd::distance(begin(mSharedVertexAttributes), foundLayer) : InvalidIndex;
+        return foundLayer != end(m_sharedVertexAttributes) ? AZStd::distance(begin(m_sharedVertexAttributes), foundLayer) : InvalidIndex;
     }
 } // namespace EMotionFX

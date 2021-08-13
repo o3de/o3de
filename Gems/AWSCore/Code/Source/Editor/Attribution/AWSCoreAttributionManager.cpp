@@ -139,7 +139,7 @@ namespace AWSCore
         AZStd::chrono::seconds lastSendTimeStamp = AZStd::chrono::seconds(lastSendTimeStampSeconds);
         AZStd::chrono::seconds secondsSinceLastSend =
             AZStd::chrono::duration_cast<AZStd::chrono::seconds>(AZStd::chrono::system_clock::now().time_since_epoch()) - lastSendTimeStamp;
-        if (secondsSinceLastSend.count() >= delayInSeconds)
+        if (static_cast<AZ::u64>(secondsSinceLastSend.count()) >= delayInSeconds)
         {
             return true;
         }

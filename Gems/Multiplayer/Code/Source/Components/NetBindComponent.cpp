@@ -473,11 +473,18 @@ namespace Multiplayer
 
     bool NetBindComponent::SerializeStateDeltaMessage(ReplicationRecord& replicationRecord, AzNetworking::ISerializer& serializer)
     {
+        auto& stats = GetMultiplayer()->GetStats();
+        stats.RecordEntitySerializeStart(serializer.GetSerializerMode(), GetEntityId(), GetEntity()->GetName().c_str());
+
         bool success = true;
         for (auto iter = m_multiplayerSerializationComponentVector.begin(); iter != m_multiplayerSerializationComponentVector.end(); ++iter)
         {
             success &= (*iter)->SerializeStateDeltaMessage(replicationRecord, serializer);
+
+            stats.RecordComponentSerializeEnd(serializer.GetSerializerMode(), (*iter)->GetNetComponentId());
         }
+
+        stats.RecordEntitySerializeStop(serializer.GetSerializerMode(), GetEntityId(), GetEntity()->GetName().c_str());
 
         return success;
     }

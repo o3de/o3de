@@ -31,7 +31,7 @@ namespace MCore
         size_t GenerateID();
 
     private:
-        AZStd::atomic<size_t>    mNextID;    /**< The id used for the next GenerateID() call. */
+        AZStd::atomic<size_t>    m_nextId;    /**< The id used for the next GenerateID() call. */
 
         /**
          * Default constructor.

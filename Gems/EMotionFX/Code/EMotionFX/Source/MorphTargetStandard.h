@@ -59,11 +59,11 @@ namespace EMotionFX
              */
             struct EMFX_API VertexDelta
             {
-                MCore::Compressed16BitVector3   mPosition;          /**< The position delta. */
-                MCore::Compressed8BitVector3    mNormal;            /**< The normal delta. */
-                MCore::Compressed8BitVector3    mTangent;           /**< The first tangent layer delta. */
-                MCore::Compressed8BitVector3    mBitangent;         /**< The first bitangent layer delta. */
-                uint32                          mVertexNr;          /**< The vertex number inside the mesh to apply this to. */
+                MCore::Compressed16BitVector3   m_position;          /**< The position delta. */
+                MCore::Compressed8BitVector3    m_normal;            /**< The normal delta. */
+                MCore::Compressed8BitVector3    m_tangent;           /**< The first tangent layer delta. */
+                MCore::Compressed8BitVector3    m_bitangent;         /**< The first bitangent layer delta. */
+                uint32                          m_vertexNr;          /**< The vertex number inside the mesh to apply this to. */
             };
 
             static DeformData* Create(size_t nodeIndex, uint32 numVerts);
@@ -72,11 +72,11 @@ namespace EMotionFX
             DeformData* Clone();
 
         public:
-            VertexDelta*    mDeltas;            /**< The delta values. */
-            uint32          mNumVerts;          /**< The number of vertices in the mDeltas and mVertexNumbers arrays. */
-            size_t          mNodeIndex;         /**< The node which this data works on. */
-            float           mMinValue;          /**< The compression/decompression minimum value for the delta positions. */
-            float           mMaxValue;          /**< The compression/decompression maximum value for the delta positions. */
+            VertexDelta*    m_deltas;            /**< The delta values. */
+            uint32          m_numVerts;          /**< The number of vertices in the m_deltas and m_vertexNumbers arrays. */
+            size_t          m_nodeIndex;         /**< The node which this data works on. */
+            float           m_minValue;          /**< The compression/decompression minimum value for the delta positions. */
+            float           m_maxValue;          /**< The compression/decompression maximum value for the delta positions. */
 
             /**
              * The constructor.
@@ -100,11 +100,11 @@ namespace EMotionFX
          */
         struct EMFX_API MCORE_ALIGN_PRE(16) Transformation
         {
-            AZ::Quaternion      mRotation;          /**< The rotation as absolute value. So not a delta value, but a target (absolute) rotation. */
-            AZ::Quaternion      mScaleRotation;     /**< The scale rotation, as absolute value. */
-            AZ::Vector3         mPosition;          /**< The position as a delta, so the difference between the original and target position. */
-            AZ::Vector3         mScale;             /**< The scale as a delta, so the difference between the original and target scale. */
-            size_t              mNodeIndex;         /**< The node number to apply this on. */
+            AZ::Quaternion      m_rotation;          /**< The rotation as absolute value. So not a delta value, but a target (absolute) rotation. */
+            AZ::Quaternion      m_scaleRotation;     /**< The scale rotation, as absolute value. */
+            AZ::Vector3         m_position;          /**< The position as a delta, so the difference between the original and target position. */
+            AZ::Vector3         m_scale;             /**< The scale as a delta, so the difference between the original and target scale. */
+            size_t              m_nodeIndex;         /**< The node number to apply this on. */
         }
         MCORE_ALIGN_POST(16);
 
@@ -260,8 +260,8 @@ namespace EMotionFX
         void Scale(float scaleFactor) override;
 
     private:
-        AZStd::vector<Transformation>   mTransforms;            /**< The relative transformations for the given nodes, in local space. The rotation however is absolute. */
-        AZStd::vector<DeformData*>      mDeformDatas;           /**< The deformation data objects. */
+        AZStd::vector<Transformation>   m_transforms;            /**< The relative transformations for the given nodes, in local space. The rotation however is absolute. */
+        AZStd::vector<DeformData*>      m_deformDatas;           /**< The deformation data objects. */
 
         /**
          * The constructor.

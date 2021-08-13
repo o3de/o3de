@@ -18,6 +18,7 @@
 #include <IXml.h>
 #include "Util/FileUtil.h"
 #include <Cry_Color.h>
+#include <CryCommon/ISystem.h>
 
 //! Typedef for quaternion.
 //typedef CryQuat Quat;

@@ -94,7 +94,7 @@ namespace AZ
             if (m_memoryAllocation.m_memory)
             {
                 AZStd::wstring wname;
-                AZStd::to_wstring(wname, name.data(), name.size());
+                AZStd::to_wstring(wname, name);
                 m_memoryAllocation.m_memory->SetName(wname.data());
             }
         }

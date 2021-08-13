@@ -63,10 +63,10 @@ namespace EMotionFX
             void Update() override;
 
         public:
-            AZ::Quaternion mRotationQuat = AZ::Quaternion::CreateIdentity();
-            float mTimeDelta = 0.0f;
-            size_t mNodeIndex = InvalidIndex;
-            bool mFirstUpdate = true;
+            AZ::Quaternion m_rotationQuat = AZ::Quaternion::CreateIdentity();
+            float m_timeDelta = 0.0f;
+            size_t m_nodeIndex = InvalidIndex;
+            bool m_firstUpdate = true;
         };
 
         BlendTreeLookAtNode();

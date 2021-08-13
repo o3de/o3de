@@ -992,7 +992,7 @@ void CUiAnimViewDialog::ReloadSequencesComboBox()
         for (int k = 0; k < numSequences; ++k)
         {
             CUiAnimViewSequence* pSequence = pSequenceManager->GetSequenceByIndex(k);
-            QString fullname = QtUtil::ToQString(pSequence->GetName());
+            QString fullname = pSequence->GetName();
             m_sequencesComboBox->addItem(fullname);
         }
     }
@@ -1132,7 +1132,7 @@ void CUiAnimViewDialog::OnSequenceChanged(CUiAnimViewSequence* pSequence)
 
     if (pSequence)
     {
-        m_currentSequenceName = QtUtil::ToQString(pSequence->GetName());
+        m_currentSequenceName = pSequence->GetName();
 
         pSequence->Reset(true);
         SaveZoomScrollSettings();
@@ -1733,7 +1733,7 @@ void CUiAnimViewDialog::OnNodeRenamed(CUiAnimViewNode* pNode, const char* pOldNa
     {
         if (m_currentSequenceName == QString(pOldName))
         {
-            m_currentSequenceName = QtUtil::ToQString(pNode->GetName());
+            m_currentSequenceName = pNode->GetName();
         }
 
         ReloadSequencesComboBox();

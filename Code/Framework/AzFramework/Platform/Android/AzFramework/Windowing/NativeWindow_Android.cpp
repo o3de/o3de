@@ -25,7 +25,7 @@ namespace AzFramework
                         const WindowGeometry& geometry,
                         const WindowStyleMasks& styleMasks) override;
         NativeWindowHandle GetWindowHandle() const override;
-
+        uint32_t GetDisplayRefreshRate() const override;
     private:
         ANativeWindow* m_nativeWindow = nullptr;
     };
@@ -55,4 +55,9 @@ namespace AzFramework
         return reinterpret_cast<NativeWindowHandle>(m_nativeWindow);
     }
 
+    uint32_t NativeWindowImpl_Android::GetDisplayRefreshRate() const
+    {
+        // Using 60 for now until proper support is added
+        return 60;
+    }
 } // namespace AzFramework

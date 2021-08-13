@@ -15,13 +15,13 @@ namespace EMStudio
 {
     RemovePluginOnCloseDockWidget::RemovePluginOnCloseDockWidget(QWidget* parent, const QString& name, EMStudio::EMStudioPlugin* plugin)
         : AzQtComponents::StyledDockWidget(name, parent)
-        , mPlugin(plugin)
+        , m_plugin(plugin)
     {}
 
     void RemovePluginOnCloseDockWidget::closeEvent(QCloseEvent* event)
     {
         MCORE_UNUSED(event);
-        GetPluginManager()->RemoveActivePlugin(mPlugin);
+        GetPluginManager()->RemoveActivePlugin(m_plugin);
         GetMainWindow()->UpdateCreateWindowMenu();
     }
 }

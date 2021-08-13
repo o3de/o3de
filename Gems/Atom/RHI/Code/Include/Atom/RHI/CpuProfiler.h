@@ -10,6 +10,7 @@
 
 #include <AzCore/Debug/EventTrace.h>
 #include <AzCore/RTTI/RTTI.h>
+#include <AzCore/std/containers/ring_buffer.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/string/string.h>
 
@@ -81,6 +82,14 @@ namespace AZ
 
             //! Get the last frame's TimeRegionMap
             virtual const TimeRegionMap& GetTimeRegionMap() const = 0;
+
+            //! Begin a continuous capture. Blocks the profiler from being toggled off until EndContinuousCapture is called. 
+            [[nodiscard]] virtual bool BeginContinuousCapture() = 0;
+
+            //! Flush the CPU Profiler's saved data into the passed ring buffer .
+            [[nodiscard]] virtual bool EndContinuousCapture(AZStd::ring_buffer<TimeRegionMap>& flushTarget) = 0;
+
+            virtual bool IsContinuousCaptureInProgress() const = 0;
 
             //! Enable/Disable the CpuProfiler
             virtual void SetProfilerEnabled(bool enabled) = 0;

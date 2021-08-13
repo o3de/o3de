@@ -62,7 +62,7 @@ namespace AZ
                 // so they can be separated by engine code instead.
                 bool foundTextureCoordinates = false;
                 AZStd::array<int, AI_MAX_NUMBER_OF_TEXTURECOORDS> meshesPerTextureCoordinateIndex = {};
-                for (int localMeshIndex = 0; localMeshIndex < currentNode->mNumMeshes; ++localMeshIndex)
+                for (unsigned int localMeshIndex = 0; localMeshIndex < currentNode->mNumMeshes; ++localMeshIndex)
                 {
                     aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[localMeshIndex]];
                     for (int texCoordIndex = 0; texCoordIndex < meshesPerTextureCoordinateIndex.size(); ++texCoordIndex)
@@ -110,7 +110,7 @@ namespace AZ
                     uvMap->ReserveContainerSpace(vertexCount);
                     bool customNameFound = false;
                     AZStd::string name(AZStd::string::format("%s%d", m_defaultNodeName, texCoordIndex));
-                    for (int sdkMeshIndex = 0; sdkMeshIndex < currentNode->mNumMeshes; ++sdkMeshIndex)
+                    for (unsigned int sdkMeshIndex = 0; sdkMeshIndex < currentNode->mNumMeshes; ++sdkMeshIndex)
                     {
                         const aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[sdkMeshIndex]];
                         if(mesh->mTextureCoords[texCoordIndex])
@@ -136,7 +136,7 @@ namespace AZ
                             }
                         }
 
-                        for (int v = 0; v < mesh->mNumVertices; ++v)
+                        for (unsigned int v = 0; v < mesh->mNumVertices; ++v)
                         {
                             if (mesh->mTextureCoords[texCoordIndex])
                             {
