@@ -293,7 +293,7 @@ namespace TestImpact
             }
             else
             {
-                m_sparTiaFile = m_config.m_workspace.m_active.m_sparTiaFiles[static_cast<size_t>(m_suiteFilter)].String();
+                m_sparTiaFile = m_config.m_workspace.m_active.m_sparTiaFile / RepoPath(SuiteTypeAsString(m_suiteFilter));
             }
            
             // Populate the dynamic dependency map with the existing source coverage data (if any)

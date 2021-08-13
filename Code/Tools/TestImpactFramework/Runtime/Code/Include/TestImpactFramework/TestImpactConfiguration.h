@@ -44,7 +44,7 @@ namespace TestImpact
         {
             RepoPath m_root; //!< Path to the persistent workspace tracked by the repository.
             RepoPath m_enumerationCacheDirectory; //!< Path to the test enumerations cache.
-            AZStd::array<RepoPath, 3> m_sparTiaFiles; //!< Paths to the test impact analysis data files for each test suite.
+            RepoPath m_sparTiaFile; //!< Paths to the test impact analysis data file.
         };
 
         Temp m_temp;
