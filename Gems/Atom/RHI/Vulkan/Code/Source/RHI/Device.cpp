@@ -36,16 +36,8 @@ namespace AZ
     {
         Device::Device()
         {
-            auto settingsRegistry = AZ::SettingsRegistry::Get();
             RHI::Ptr<PlatformLimitsDescriptor> platformLimitsDescriptor = aznew PlatformLimitsDescriptor();
-            AZStd::string platformLimitsRegPath = AZStd::string::format("/Amazon/Atom/RHI/PlatformLimits/%s", RHI::Factory::Get().GetName().GetCStr());
-            if (!(settingsRegistry &&
-                settingsRegistry->GetObject(platformLimitsDescriptor.get(), platformLimitsDescriptor->RTTI_Type(), platformLimitsRegPath.c_str())))
-            {
-                AZ_Warning(
-                    "Device", false, "Platform limits for %s %s is not loaded correctly. Will use default values.",
-                    AZ_TRAIT_OS_PLATFORM_NAME, RHI::Factory::Get().GetName().GetCStr());
-            }
+            platformLimitsDescriptor->LoadPlatformLimitsDescriptor();
             m_descriptor.m_platformLimitsDescriptor = RHI::Ptr<RHI::PlatformLimitsDescriptor>(platformLimitsDescriptor);
         }
 
@@ -299,7 +291,7 @@ namespace AZ
             {
                 m_nullDescriptorManager = NullDescriptorManager::Create();
                 result = m_nullDescriptorManager->Init(*this);
-                //RETURN_RESULT_IF_UNSUCCESSFUL(result);
+                RETURN_RESULT_IF_UNSUCCESSFUL(result);
             }
 
             SetName(GetName());

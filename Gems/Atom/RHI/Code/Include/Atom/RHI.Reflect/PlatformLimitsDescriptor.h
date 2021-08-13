@@ -67,6 +67,8 @@ namespace AZ
             HeapPagingParameters m_pagingParameters;
             HeapMemoryHintParameters m_usageHintParameters;
             HeapAllocationStrategy m_heapAllocationStrategy = HeapAllocationStrategy::MemoryHint;
+
+            void LoadPlatformLimitsDescriptor();
         };
 
         class PlatformLimits final
