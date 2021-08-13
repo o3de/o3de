@@ -70,16 +70,16 @@ namespace AZ
         // Helper class to pass parameters to the AddDependency and FindReferencedAssets functions below
         struct FindPassReferenceAssetParams
         {
-            void* passAssetObject;
+            void* passAssetObject = nullptr;
             Uuid passAssetUuid;
-            SerializeContext* serializeContext;
-            AZStd::string_view passAssetSourceFile;     // File path of the pass asset
-            AZStd::string_view dependencySourceFile;    // File pass of the asset the pass asset depends on
-            const char* jobKey;                         // Job key for adding job dependency
+            SerializeContext* serializeContext = nullptr;
+            AZStd::string_view passAssetSourceFile;         // File path of the pass asset
+            AZStd::string_view dependencySourceFile;        // File pass of the asset the pass asset depends on
+            const char* jobKey = nullptr;                   // Job key for adding job dependency
         };
 
         // Helper function to get a file reference and create a corresponding job dependency
-        void AddDependency(FindPassReferenceAssetParams& params, AssetBuilderSDK::JobDescriptor* job)
+        bool AddDependency(FindPassReferenceAssetParams& params, AssetBuilderSDK::JobDescriptor* job)
         {
             AZStd::string_view& file = params.dependencySourceFile;
             AZ::Data::AssetInfo sourceInfo;
@@ -95,6 +95,12 @@ namespace AZ
                 jobDependency.m_sourceFile.m_sourceFileDependencyPath = file;
                 job->m_jobDependencyList.push_back(jobDependency);
                 AZ_TracePrintf(PassBuilderName, "Creating job dependency on file [%s] \n", file.data());
+                return true;
+            }
+            else
+            {
+                AZ_Error(PassBuilderName, false, "Could not find referenced file [%s]", file.data());
+                return false;
             }
         }
 
@@ -104,7 +110,7 @@ namespace AZ
             SerializeContext::ErrorHandler errorLogger;
             errorLogger.Reset();
 
-            bool foundProblems = false;
+            bool success = true;
 
             // This callback will check whether the given element is an asset reference. If so, it will add it to the list of asset references
             auto beginCallback = [&](void* ptr, const SerializeContext::ClassData* classData, [[maybe_unused]] const SerializeContext::ClassElement* classElement)
@@ -123,7 +129,8 @@ namespace AZ
                         if (job != nullptr) // Create Job Phase
                         {
                             params.dependencySourceFile = path;
-                            AddDependency(params, job);
+                            bool dependencyAddedSuccessfully = AddDependency(params, job);
+                            success = dependencyAddedSuccessfully && success;
                         }
                         else // Process Job Phase
                         {
@@ -136,7 +143,7 @@ namespace AZ
                             else
                             {
                                 AZ_Error(PassBuilderName, false, "Could not get AssetId for [%s]", assetReference->m_filePath.c_str());
-                                foundProblems = true;
+                                success = false;
                             }
                         }
                     }
@@ -162,7 +169,7 @@ namespace AZ
                 , nullptr
             );
 
-            return !foundProblems;
+            return success;
         }
 
         // --- Code related to dependency shader asset handling ---
