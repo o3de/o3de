@@ -9,7 +9,6 @@
 
 #pragma once
 
-#include "CryThread.h"
 #include "FileUtil_Common.h"
 #include "StringUtils.h"
 #include "../Include/SandboxAPI.h"
