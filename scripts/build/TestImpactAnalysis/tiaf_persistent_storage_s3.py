@@ -18,7 +18,7 @@ logger = get_logger(__file__)
 
 # Implementation of s3 bucket persistent storage
 class PersistentStorageS3(PersistentStorage):
-    def __init__(self, config: dict, suite: str, s3_bucket: str, branch: str):
+    def __init__(self, config: dict, suite: str, s3_bucket: str, root_dir: str, branch: str):
         """
         Initializes the persistent storage with the specified s3 bucket.
 
@@ -36,8 +36,8 @@ class PersistentStorageS3(PersistentStorage):
             # historic_data.json.zip is the file containing the coverage and meta-data of the last TIAF sequence run
             historic_data_file = f"historic_data.{object_extension}"
 
-            # The location of the data is in the form <branch>/<config> so the build config of each branch gets its own historic data
-            self._dir = f'{branch}/{config["meta"]["build_config"]}'
+            # The location of the data is in the form <root_dir>/<branch>/<config> so the build config of each branch gets its own historic data
+            self._dir = f'{root_dir}/{branch}/{config["meta"]["build_config"]}'
             self._historic_data_key = f'{self._dir}/{historic_data_file}'
             
             logger.info(f"Attempting to retrieve historic data for branch '{branch}' at location '{self._historic_data_key}' on bucket '{s3_bucket}'...")

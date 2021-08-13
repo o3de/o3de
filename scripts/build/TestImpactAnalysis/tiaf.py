@@ -161,7 +161,7 @@ class TestImpact:
         result["change_list"] = self._change_list
         return result
 
-    def run(self, commit: str, src_branch: str, dst_branch: str, s3_bucket: str, suite: str, test_failure_policy: str, safe_mode: bool, test_timeout: int, global_timeout: int):
+    def run(self, commit: str, src_branch: str, dst_branch: str, s3_bucket: str, s3_top_level_dir: str, suite: str, test_failure_policy: str, safe_mode: bool, test_timeout: int, global_timeout: int):
         """
         Determins the type of sequence to run based on the commit, source branch and test branch before running the
         sequence with the specified values.
@@ -170,6 +170,7 @@ class TestImpact:
         @param src_branch:          If not equal to dst_branch, the branch that is being built.
         @param dst_branch:          If not equal to src_branch, the destination branch for the PR being built.
         @param s3_bucket:           Location of S3 bucket to use for persistent storage, otherwise local disk storage will be used.
+        @param s3_top_level_dir:    Top level directory to use in the S3 bucket.
         @param suite:               Test suite to run.
         @param test_failure_policy: Test failure policy for regular and test impact sequences (ignored when seeding).
         @param safe_mode:           Flag to run impact analysis tests in safe mode (ignored when seeding).
@@ -218,7 +219,7 @@ class TestImpact:
             try:
                 # Persistent storage location
                 if s3_bucket:
-                    persistent_storage = PersistentStorageS3(self._config, suite, s3_bucket, self._source_of_truth_branch)
+                    persistent_storage = PersistentStorageS3(self._config, suite, s3_bucket, s3_top_level_dir, self._source_of_truth_branch)
                 else:
                     persistent_storage = PersistentStorageLocal(self._config, suite)
             except SystemError as e:
@@ -226,14 +227,20 @@ class TestImpact:
                 persistent_storage = None
 
             if persistent_storage:
+                # Flag to signify whether or not this is a re-run (multiple runs of the same commit)
+                # Right now, we don't fully support re-runs but in the future we will have an extra subfolder for each commit hash with the
+                # last run hash that was used for the first run for the commit so we can retreive the same reference point for building the
+                # change list to ensure each subsequent run is using the same data but for the time being, just perform a regular run
+                is_rerun = False
                 if persistent_storage.has_historic_data:
                     logger.info("Historic data found.")
                     self._src_commit = persistent_storage.last_commit_hash
 
-                    # Perform some basic sanity checks on the commit hashes to ensure confidence in the integrity of of the environment
+                    # Perform some basic sanity checks on the commit hashes to ensure confidence in the integrity of the environment
                     if self._src_commit == self._dst_commit:
-                        logger.error(f"Source commit '{self._src_commit}' and destination commit '{self._dst_commit}', implying the integrity of the historic data is compromised.")
+                        logger.info(f"Source commit '{self._src_commit}' and destination commit '{self._dst_commit}', implying this is a re-run. A regular sequence will instead be performed.")
                         persistent_storage = None
+                        is_rerun = True
                     else:
                         self._attempt_to_generate_change_list()
                 else:
@@ -261,7 +268,7 @@ class TestImpact:
                     args.append(f"--changelist={self._change_list_path}")
                     logger.info(f"Change list is set to '{self._change_list_path}'.")
                 else:
-                    if self._is_source_of_truth_branch:
+                    if self._is_source_of_truth_branch and not is_rerun:
                         # Use seed sequence (instrumented all tests) for coverage updating branches so we can generate the coverage bed for future sequences
                         sequence_type = "seed"
                         # We always continue after test failures when seeding to ensure we capture the coverage for all test targets

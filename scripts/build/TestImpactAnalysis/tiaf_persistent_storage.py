@@ -106,7 +106,7 @@ class PersistentStorage(ABC):
 
         historic_data_json = self._pack_historic_data(last_commit_hash)
         if historic_data_json:
-            logger.info(f"Attempting to store historic data with new last commit hash '{self._last_commit_hash}'...")
+            logger.info(f"Attempting to store historic data with new last commit hash '{last_commit_hash}'...")
             self._store_historic_data(historic_data_json)
             logger.info("The historic data was successfully stored.")
 
