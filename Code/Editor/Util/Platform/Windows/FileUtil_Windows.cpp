@@ -20,10 +20,11 @@ namespace Platform
 
         // Use the Win32API calls as they aren't limited to running items in the path.
         QString fullTexturePathFixedForWindows = QString(arg.data()).replace('/', '\\');
-        QByteArray fullTexturePathFixedForWindowsUtf8 = fullTexturePathFixedForWindows.toUtf8();
 
-        QByteArray editorPath = editor.toUtf8();
-        HINSTANCE hInst = ShellExecute(NULL, "open", editorPath.data(), fullTexturePathFixedForWindowsUtf8.data(), NULL, SW_SHOWNORMAL);
+        HINSTANCE hInst = ShellExecuteW(
+            nullptr, L"open", editor.toStdWString().c_str(), fullTexturePathFixedForWindows.toStdWString().c_str(), NULL,
+            SW_SHOWNORMAL);
+        
         success = ((DWORD_PTR)hInst > 32);
 
         return success;
