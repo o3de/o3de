@@ -359,7 +359,7 @@ namespace AZ
             }
         }
 
-        void MeshFeatureProcessor::SetMeshLodConfiguration(const MeshHandle& meshHandle, RPI::Cullable::LodConfiguration meshLodConfig)
+        void MeshFeatureProcessor::SetMeshLodConfiguration(const MeshHandle& meshHandle, const RPI::Cullable::LodConfiguration meshLodConfig)
         {
             if (meshHandle.IsValid())
             {

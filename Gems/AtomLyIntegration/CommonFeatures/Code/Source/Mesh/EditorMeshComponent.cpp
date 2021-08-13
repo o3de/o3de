@@ -84,6 +84,7 @@ namespace AZ
                                 ->EnumAttribute(RPI::Cullable::LodType::ScreenCoverage, "Screen Coverage")
                                 ->EnumAttribute(RPI::Cullable::LodType::SpecificLod, "Specific Lod")
                                 ->Attribute(AZ::Edit::Attributes::Visibility, &MeshComponentConfig::IsAssetSet)
+                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::EntireTree)
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Lod Configuration")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                             ->Attribute(AZ::Edit::Attributes::Visibility, &MeshComponentConfig::ShowLodConfig)

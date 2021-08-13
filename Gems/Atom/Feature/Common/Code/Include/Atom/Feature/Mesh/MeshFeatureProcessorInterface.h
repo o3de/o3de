@@ -95,7 +95,7 @@ namespace AZ
             //! Gets the sort key for a given mesh handle.
             virtual RHI::DrawItemSortKey GetSortKey(const MeshHandle& meshHandle) = 0;
             //! Sets LOD mesh configurations to be used in the Mesh Feature Processor
-            virtual void SetMeshLodConfiguration(const MeshHandle& meshHandle, RPI::Cullable::LodConfiguration meshLodConfig) = 0;
+            virtual void SetMeshLodConfiguration(const MeshHandle& meshHandle, const RPI::Cullable::LodConfiguration meshLodConfig) = 0;
             //! Gets the LOD mesh configurations being used in the Mesh Feature Processor
             virtual RPI::Cullable::LodConfiguration GetMeshLodConfiguration(const MeshHandle& meshHandle) const = 0;
             //! Sets the option to exclude this mesh from baked reflection probe cubemaps
