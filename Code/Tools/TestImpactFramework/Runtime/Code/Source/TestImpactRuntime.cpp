@@ -279,7 +279,7 @@ namespace TestImpact
         m_testEngine = AZStd::make_unique<TestEngine>(
             m_config.m_repo.m_root,
             m_config.m_target.m_outputDirectory,
-            m_config.m_workspace.m_active.m_enumerationCacheDirectory,
+            m_config.m_workspace.m_temp.m_enumerationCacheDirectory,
             m_config.m_workspace.m_temp.m_artifactDirectory,
             m_config.m_testEngine.m_testRunner.m_binary,
             m_config.m_testEngine.m_instrumentation.m_binary,
@@ -293,7 +293,8 @@ namespace TestImpact
             }
             else
             {
-                m_sparTiaFile = m_config.m_workspace.m_active.m_sparTiaFile / RepoPath(SuiteTypeAsString(m_suiteFilter));
+                m_sparTiaFile =
+                    m_config.m_workspace.m_active.m_root / RepoPath(SuiteTypeAsString(m_suiteFilter)) / m_config.m_workspace.m_active.m_sparTiaFile;
             }
            
             // Populate the dynamic dependency map with the existing source coverage data (if any)

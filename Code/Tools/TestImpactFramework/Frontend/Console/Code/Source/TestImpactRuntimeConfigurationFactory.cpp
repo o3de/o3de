@@ -150,6 +150,9 @@ namespace TestImpact
         tempWorkspaceConfig.m_artifactDirectory =
             GetAbsPathFromRelPath(
                 tempWorkspaceConfig.m_root, tempWorkspace[Config::Keys[Config::RelativePaths]][Config::Keys[Config::ArtifactDir]].GetString());
+        tempWorkspaceConfig.m_enumerationCacheDirectory = GetAbsPathFromRelPath(
+            tempWorkspaceConfig.m_root,
+            tempWorkspace[Config::Keys[Config::RelativePaths]][Config::Keys[Config::EnumerationCacheDir]].GetString());
         return tempWorkspaceConfig;
     }
 
@@ -158,10 +161,7 @@ namespace TestImpact
         WorkspaceConfig::Active activeWorkspaceConfig;
         const auto& relativePaths = activeWorkspace[Config::Keys[Config::RelativePaths]];
         activeWorkspaceConfig.m_root = activeWorkspace[Config::Keys[Config::Root]].GetString();
-        activeWorkspaceConfig.m_enumerationCacheDirectory
-            = GetAbsPathFromRelPath(activeWorkspaceConfig.m_root, relativePaths[Config::Keys[Config::EnumerationCacheDir]].GetString());
-        activeWorkspaceConfig.m_sparTiaFile =
-            GetAbsPathFromRelPath(activeWorkspaceConfig.m_root, relativePaths[Config::Keys[Config::TestImpactDataFile]].GetString());
+        activeWorkspaceConfig.m_sparTiaFile = relativePaths[Config::Keys[Config::TestImpactDataFile]].GetString();
         return activeWorkspaceConfig;
     }
 
