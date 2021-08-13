@@ -10,7 +10,6 @@
 #pragma once
 
 #include "FileUtil_Common.h"
-#include "StringUtils.h"
 #include "../Include/SandboxAPI.h"
 #include <QString>
 #include <QFileInfo>
