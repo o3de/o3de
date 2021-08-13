@@ -119,6 +119,7 @@ namespace AZ
 
         private:
             static constexpr AZStd::size_t MaxFramesToSave = 2 * 60 * 120; // 2 minutes of 120fps
+            static constexpr AZStd::size_t MaxRegionStringPoolSize = 16384; // Max amount of unique strings to save in the pool before throwing warnings.
 
             // Lazily create and register the local thread data
             void RegisterThreadStorage();
@@ -131,9 +132,13 @@ namespace AZ
             AZStd::vector<RHI::Ptr<CpuTimingLocalStorage>, AZ::OSStdAllocator> m_registeredThreads;
             AZStd::mutex m_threadRegisterMutex;
 
-            // Storage for runtime GroupRegionNames
-            AZStd::unordered_set<CachedTimeRegion::GroupRegionName, CachedTimeRegion::GroupRegionName::Hash> m_dynamicGroupRegionNameSet;
-            AZStd::unordered_set<AZStd::string> m_dynamicRegionNameSet;
+            // Pool for GroupRegionNames that are generated at runtime through AZ_ATOM_PROFILE_DYNAMIC. Each unique
+            // combination of group name and region name submitted will be stored in this pool to emulate static lifetime.
+            AZStd::unordered_set<CachedTimeRegion::GroupRegionName, CachedTimeRegion::GroupRegionName::Hash> m_dynamicGroupRegionNamePool;
+
+            // String pool for storing region names submitted at runtime. Each call to AZ_ATOM_PROFILE_DYNAMIC will either construct
+            // a string in this pool or use an already-existing entry.
+            AZStd::unordered_set<AZStd::string> m_regionNameStringPool;
             AZStd::mutex m_dynamicNameMutex;
 
             // Thread local storage, gets lazily allocated when a thread is created
