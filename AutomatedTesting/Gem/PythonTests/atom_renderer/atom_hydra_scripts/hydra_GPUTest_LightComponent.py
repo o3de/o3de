@@ -23,7 +23,8 @@ import azlmbr.legacy.general as general
 sys.path.append(os.path.join(azlmbr.paths.devroot, "AutomatedTesting", "Gem", "PythonTests"))
 
 import editor_python_test_tools.hydra_editor_utils as hydra
-from atom_renderer.atom_utils import atom_component_helper, atom_constants, screenshot_utils
+from atom_renderer.atom_utils import screenshot_utils
+from atom_renderer.atom_utils import atom_component_helper
 from editor_python_test_tools.editor_test_helper import EditorTestHelper
 
 helper = EditorTestHelper(log_prefix="Atom_EditorTestHelper")
@@ -91,7 +92,7 @@ def area_light_test():
         'SetComponentProperty',
         light_component_id_pair,
         LIGHT_TYPE_PROPERTY,
-        atom_constants.LIGHT_TYPES['capsule']
+        atom_component_helper.LIGHT_TYPES['capsule']
     )
 
     # Update color and take screenshot in game mode
@@ -117,7 +118,7 @@ def area_light_test():
         'SetComponentProperty',
         light_component_id_pair,
         LIGHT_TYPE_PROPERTY,
-        atom_constants.LIGHT_TYPES['spot_disk']
+        atom_component_helper.LIGHT_TYPES['spot_disk']
     )
     area_light_rotation = math.Vector3(DEGREE_RADIAN_FACTOR * 90.0, 0.0, 0.0)
     azlmbr.components.TransformBus(azlmbr.bus.Event, "SetLocalRotation", area_light.id, area_light_rotation)
@@ -130,7 +131,7 @@ def area_light_test():
         'SetComponentProperty',
         light_component_id_pair,
         LIGHT_TYPE_PROPERTY,
-        atom_constants.LIGHT_TYPES['sphere']
+        atom_component_helper.LIGHT_TYPES['sphere']
     )
     general.idle_wait(1.0)
     screenshot_utils.take_screenshot_game_mode("AreaLight_5", area_light_entity_name)
@@ -209,7 +210,7 @@ def spot_light_test():
         'SetComponentProperty',
         light_component_type,
         LIGHT_TYPE_PROPERTY,
-        atom_constants.LIGHT_TYPES['spot_disk']
+        atom_component_helper.LIGHT_TYPES['spot_disk']
     )
 
     general.idle_wait(1.0)
