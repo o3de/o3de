@@ -14,7 +14,7 @@
 #define CRYINCLUDE_CRYCOMMON_IFUNCTORBASE_H
 #pragma once
 
-#include <CryCommon/CryThread.h>
+#include <AzCore/std/parallel/atomic.h>
 
 // Base class for functor storage.
 // Not intended for direct usage.
@@ -28,19 +28,19 @@ public:
 
     void AddRef()
     {
-        CryInterlockedIncrement(&m_nReferences);
+        m_nReferences.fetch_add(1, AZStd::memory_order_acq_rel);
     }
 
     void Release()
     {
-        if (CryInterlockedDecrement(&m_nReferences) <= 0)
+        if (m_nReferences.fetch_sub(1, AZStd::memory_order_acq_rel) == 1)
         {
             delete this;
         }
     }
 
 protected:
-    volatile int m_nReferences;
+    AZStd::atomic_int m_nReferences;
 };
 
 // Base Template for specialization.

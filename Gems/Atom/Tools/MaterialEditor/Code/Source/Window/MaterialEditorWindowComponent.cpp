@@ -30,47 +30,24 @@ namespace MaterialEditor
             serialize->Class<MaterialEditorWindowComponent, AZ::Component>()
                 ->Version(0);
         }
-
-        if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-        {
-            behaviorContext->EBus<AtomToolsFramework::AtomToolsMainWindowFactoryRequestBus>("MaterialEditorWindowAtomRequestBus")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
-                ->Attribute(AZ::Script::Attributes::Category, "Editor")
-                ->Attribute(AZ::Script::Attributes::Module, "materialeditor")
-                ->Event("CreateMaterialEditorWindow", &AtomToolsFramework::AtomToolsMainWindowFactoryRequestBus::Events::CreateMainWindow)
-                ->Event("DestroyMaterialEditorWindow", &AtomToolsFramework::AtomToolsMainWindowFactoryRequestBus::Events::DestroyMainWindow)
-                ;
-
-            behaviorContext->EBus<AtomToolsFramework::AtomToolsMainWindowRequestBus>("MaterialEditorWindowRequestBus")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
-                ->Attribute(AZ::Script::Attributes::Category, "Editor")
-                ->Attribute(AZ::Script::Attributes::Module, "materialeditor")
-                ->Event("ActivateWindow", &AtomToolsFramework::AtomToolsMainWindowRequestBus::Events::ActivateWindow)
-                ->Event("SetDockWidgetVisible", &AtomToolsFramework::AtomToolsMainWindowRequestBus::Events::SetDockWidgetVisible)
-                ->Event("IsDockWidgetVisible", &AtomToolsFramework::AtomToolsMainWindowRequestBus::Events::IsDockWidgetVisible)
-                ->Event("GetDockWidgetNames", &AtomToolsFramework::AtomToolsMainWindowRequestBus::Events::GetDockWidgetNames)
-                ->Event("ResizeViewportRenderTarget", &AtomToolsFramework::AtomToolsMainWindowRequestBus::Events::ResizeViewportRenderTarget)
-                ->Event("LockViewportRenderTargetSize", &AtomToolsFramework::AtomToolsMainWindowRequestBus::Events::LockViewportRenderTargetSize)
-                ->Event("UnlockViewportRenderTargetSize", &AtomToolsFramework::AtomToolsMainWindowRequestBus::Events::UnlockViewportRenderTargetSize)
-                ;
-        }
     }
 
     void MaterialEditorWindowComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("AssetBrowserService", 0x1e54fffb));
-        required.push_back(AZ_CRC("PropertyManagerService", 0x63a3d7ad));
-        required.push_back(AZ_CRC("SourceControlService", 0x67f338fd));
+        required.push_back(AZ_CRC_CE("AssetBrowserService"));
+        required.push_back(AZ_CRC_CE("PropertyManagerService"));
+        required.push_back(AZ_CRC_CE("SourceControlService"));
+        required.push_back(AZ_CRC_CE("AtomToolsMainWindowSystemService"));
     }
 
     void MaterialEditorWindowComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("MaterialEditorWindowService", 0xb6e7d922));
+        provided.push_back(AZ_CRC_CE("MaterialEditorWindowService"));
     }
 
     void MaterialEditorWindowComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("MaterialEditorWindowService", 0xb6e7d922));
+        incompatible.push_back(AZ_CRC_CE("MaterialEditorWindowService"));
     }
 
     void MaterialEditorWindowComponent::Init()
