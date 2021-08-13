@@ -1477,7 +1477,7 @@ bool EditorViewportWidget::AddCameraMenuItems(QMenu* menu)
     Camera::CameraBus::BroadcastResult(getCameraResults, &Camera::CameraRequests::GetCameras);
 
     QVector<QAction*> additionalCameras;
-    additionalCameras.reserve(getCameraResults.values.size());
+    additionalCameras.reserve(static_cast<int>(getCameraResults.values.size()));
 
     for (const AZ::EntityId& entityId : getCameraResults.values)
     {

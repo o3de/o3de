@@ -244,7 +244,7 @@ void CImageHistogramDisplay::paintEvent([[maybe_unused]] QPaintEvent* event)
             }
             }
 
-            crtX = rcGraph.left() + x + 1;
+            crtX = static_cast<int>(rcGraph.left() + x + 1);
             painter.drawLine(crtX, graphBottom, crtX, graphBottom - scale * graphHeight);
         }
     }
@@ -260,7 +260,7 @@ void CImageHistogramDisplay::paintEvent([[maybe_unused]] QPaintEvent* event)
         {
             i = ((float)x / graphWidth) * (kNumColorLevels - 1);
             i = CLAMP(i, 0, kNumColorLevels - 1);
-            crtX = rcGraph.left() + x + 1;
+            crtX = static_cast<UINT>(rcGraph.left() + x + 1);
             scaleR = scaleG = scaleB = scaleA = 0;
 
             if (m_maxCount[0])
@@ -385,7 +385,7 @@ void CImageHistogramDisplay::paintEvent([[maybe_unused]] QPaintEvent* event)
             }
 
             painter.setPen(pPen);
-            painter.drawLine(rcGraph.left() + x + 1, graphBottom, rcGraph.left() + x + 1, graphBottom - scale * graphHeight);
+            painter.drawLine(rcGraph.left() + static_cast<int>(x) + 1, graphBottom, rcGraph.left() + static_cast<int>(x) + 1, graphBottom - scale * graphHeight);
         }
 
         // then draw 3 lines so we separate the channels

@@ -840,8 +840,8 @@ void CBaseObject::DrawDefault(DisplayContext& dc, const QColor& labelColor)
         {
             dc.DrawLine(GetParentAttachPointWorldTM().GetTranslation(), wp, IsFrozen() ? kLinkColorGray : kLinkColorParent, IsFrozen() ? kLinkColorGray : kLinkColorChild);
         }
-        int nChildCount = GetChildCount();
-        for (int i = 0; i < nChildCount; ++i)
+        size_t nChildCount = GetChildCount();
+        for (size_t i = 0; i < nChildCount; ++i)
         {
             const CBaseObject* pChild = GetChild(i);
             dc.DrawLine(pChild->GetParentAttachPointWorldTM().GetTranslation(), pChild->GetWorldPos(), pChild->IsFrozen() ? kLinkColorGray : kLinkColorParent, pChild->IsFrozen() ? kLinkColorGray : kLinkColorChild);
@@ -1375,7 +1375,7 @@ bool CBaseObject::IsHiddenBySpec() const
         return false;
     }
 
-    return (m_nMinSpec != 0 && gSettings.editorConfigSpec != 0 && m_nMinSpec > gSettings.editorConfigSpec);
+    return (m_nMinSpec != 0 && gSettings.editorConfigSpec != 0 && m_nMinSpec > static_cast<uint32>(gSettings.editorConfigSpec));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1893,7 +1893,7 @@ bool CBaseObject::HitTestRectBounds(HitContext& hc, const AABB& box)
 
         std::vector<Vec3> convexHullForRegion1;
         ConvexHull2D(convexHullForRegion1, pointsForRegion1);
-        nEdgeList1Count = convexHullForRegion1.size();
+        nEdgeList1Count = static_cast<int>(convexHullForRegion1.size());
         if (nEdgeList1Count < 3 || nEdgeList1Count > kMaxSizeOfEdgeList1)
         {
             return true;
@@ -2062,7 +2062,7 @@ void CBaseObject::GetAllChildren(TBaseObjects& outAllChildren, CBaseObject* pObj
 {
     const CBaseObject* pBaseObj = pObj ? pObj : this;
 
-    for (int i = 0, iChildCount(pBaseObj->GetChildCount()); i < iChildCount; ++i)
+    for (size_t i = 0, iChildCount(pBaseObj->GetChildCount()); i < iChildCount; ++i)
     {
         CBaseObject* pChild = pBaseObj->GetChild(i);
         if (pChild == nullptr)
@@ -2078,7 +2078,7 @@ void CBaseObject::GetAllChildren(DynArray< _smart_ptr<CBaseObject> >& outAllChil
 {
     const CBaseObject* pBaseObj = pObj ? pObj : this;
 
-    for (int i = 0, iChildCount(pBaseObj->GetChildCount()); i < iChildCount; ++i)
+    for (size_t i = 0, iChildCount(pBaseObj->GetChildCount()); i < iChildCount; ++i)
     {
         CBaseObject* pChild = pBaseObj->GetChild(i);
         if (pChild == nullptr)
@@ -2094,7 +2094,7 @@ void CBaseObject::GetAllChildren(CSelectionGroup& outAllChildren, CBaseObject* p
 {
     const CBaseObject* pBaseObj = pObj ? pObj : this;
 
-    for (int i = 0, iChildCount(pBaseObj->GetChildCount()); i < iChildCount; ++i)
+    for (size_t i = 0, iChildCount(pBaseObj->GetChildCount()); i < iChildCount; ++i)
     {
         CBaseObject* pChild = pBaseObj->GetChild(i);
         if (pChild == nullptr)
@@ -2114,7 +2114,7 @@ void CBaseObject::CloneChildren(CBaseObject* pFromObject)
         return;
     }
 
-    for (int i = 0, nChildCount(pFromObject->GetChildCount()); i < nChildCount; ++i)
+    for (size_t i = 0, nChildCount(pFromObject->GetChildCount()); i < nChildCount; ++i)
     {
         CBaseObject* pFromChildObject = pFromObject->GetChild(i);
 
@@ -2729,7 +2729,7 @@ void CBaseObject::SetMinSpec(uint32 nSpec, bool bSetChildren)
     // Set min spec for all childs.
     if (bSetChildren)
     {
-        for (int i = m_childs.size() - 1; i >= 0; --i)
+        for (size_t i = m_childs.size() - 1; i >= 0; --i)
         {
             m_childs[i]->SetMinSpec(nSpec, true);
         }

@@ -452,7 +452,7 @@ CTrackViewAnimNode* CTrackViewAnimNode::CreateSubNode(
         {
             // Check for a duplicates
             CTrackViewAnimNodeBundle azEntityNodesFound = director2->GetAnimNodesByType(AnimNodeType::AzEntity);
-            for (int x = 0; x < azEntityNodesFound.GetCount(); x++)
+            for (unsigned int x = 0; x < azEntityNodesFound.GetCount(); x++)
             {
                 if (azEntityNodesFound.GetNode(x)->GetAzEntityId() == owner)
                 {

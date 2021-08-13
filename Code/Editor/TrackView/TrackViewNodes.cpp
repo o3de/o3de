@@ -2306,7 +2306,7 @@ bool CTrackViewNodesCtrl::FillAddTrackMenu(STrackMenuTreeNode& menuAddTrack, con
                                                                     &Maestro::EditorSequenceComponentRequestBus::Events::GetAllAnimatablePropertiesForComponent, 
                                                                     animatableProperties, azEntityId, animNode->GetComponentId());
 
-            paramCount = animatableProperties.size();
+            paramCount = static_cast<int>(animatableProperties.size());
         }       
     }
     else

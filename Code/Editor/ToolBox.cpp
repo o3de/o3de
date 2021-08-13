@@ -237,7 +237,7 @@ CToolBoxMacro* CToolBoxManager::NewMacro(const QString& title, bool bToolbox, in
 {
     if (bToolbox)
     {
-        const int macroCount = m_macros.size();
+        const int macroCount = static_cast<int>(m_macros.size());
         if (macroCount > ID_TOOL_LAST - ID_TOOL_FIRST + 1)
         {
             return nullptr;
@@ -261,7 +261,7 @@ CToolBoxMacro* CToolBoxManager::NewMacro(const QString& title, bool bToolbox, in
     }
     else
     {
-        const int shelveMacroCount = m_shelveMacros.size();
+        const int shelveMacroCount = static_cast<int>(m_shelveMacros.size());
         if (shelveMacroCount > ID_TOOL_SHELVE_LAST - ID_TOOL_SHELVE_FIRST + 1)
         {
             return nullptr;

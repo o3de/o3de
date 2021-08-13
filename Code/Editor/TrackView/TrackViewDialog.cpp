@@ -782,7 +782,7 @@ void CTrackViewDialog::UpdateActions()
         }
 
         bool allSelectedTracksUseMute = true;
-        for (int i = 0; i < selectedTrackCount; i++)
+        for (unsigned int i = 0; i < selectedTrackCount; i++)
         {
             CTrackViewTrack* pTrack = selectedTracks.GetTrack(i);
             if (pTrack && !pTrack->UsesMute())
@@ -1121,7 +1121,7 @@ void CTrackViewDialog::ReloadSequencesComboBox()
         CTrackViewSequenceManager* pSequenceManager = GetIEditor()->GetSequenceManager();
         const unsigned int numSequences = pSequenceManager->GetCount();
 
-        for (int k = 0; k < numSequences; ++k)
+        for (unsigned int k = 0; k < numSequences; ++k)
         {
             CTrackViewSequence* sequence = pSequenceManager->GetSequenceByIndex(k);
             QString entityIdString = GetEntityIdAsString(sequence->GetSequenceComponentEntityId());
@@ -1799,7 +1799,7 @@ void CTrackViewDialog::SaveMiscSettings() const
     settings.setValue(s_kFrameSnappingFPSEntry, fps);
     settings.setValue(s_kTickDisplayModeEntry, static_cast<int>(m_wndDopeSheet->GetTickDisplayMode()));
     settings.setValue(s_kDefaultTracksEntry, QByteArray(reinterpret_cast<const char*>(m_defaultTracksForEntityNode.data()),
-        m_defaultTracksForEntityNode.size() * sizeof(AnimParamType)));
+        static_cast<int>(m_defaultTracksForEntityNode.size() * sizeof(AnimParamType))));
 }
 
 //////////////////////////////////////////////////////////////////////////

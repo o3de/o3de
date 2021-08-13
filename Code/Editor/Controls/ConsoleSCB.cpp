@@ -220,7 +220,7 @@ void ConsoleLineEdit::keyPressEvent(QKeyEvent* ev)
             }
 
             // If a history command was reused directly via up arrow enter, do not reset history index
-            if (m_history.size() > 0 && m_historyIndex < m_history.size() && m_history[m_historyIndex] == str)
+            if (m_history.size() > 0 && m_historyIndex < static_cast<unsigned int>(m_history.size()) && m_history[m_historyIndex] == str)
             {
                 m_bReusedHistory = true;
             }

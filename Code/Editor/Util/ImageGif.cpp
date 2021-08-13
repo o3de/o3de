@@ -185,7 +185,7 @@ bool CImageGif::Load(const QString& fileName, CImageEx& outImage)
         CLogFile::FormatLine("File not found %s", fileName.toUtf8().data());
         return false;
     }
-    long filesize = file.GetLength();
+    long filesize = static_cast<long>(file.GetLength());
 
     data.resize(filesize);
     uint8* ptr = &data[0];

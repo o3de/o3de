@@ -119,7 +119,7 @@ bool CImageTIF::Load(const QString& fileName, CImageEx& outImage)
 
     std::vector<uint8> data;
 
-    memImage.size = file.GetLength();
+    memImage.size = static_cast<uint32>(file.GetLength());
 
     data.resize(memImage.size);
     memImage.buffer = &data[0];
@@ -210,7 +210,7 @@ bool CImageTIF::Load(const QString& fileName, CFloatImage& outImage)
 
     std::vector<uint8> data;
 
-    memImage.size = file.GetLength();
+    memImage.size = static_cast<int>(file.GetLength());
 
     data.resize(memImage.size);
     memImage.buffer = &data[0];
@@ -460,7 +460,7 @@ const char* CImageTIF::GetPreset(const QString& fileName)
 
     MemImage memImage;
 
-    memImage.size = file.GetLength();
+    memImage.size = static_cast<uint32>(file.GetLength());
 
     data.resize(memImage.size);
     memImage.buffer = &data[0];

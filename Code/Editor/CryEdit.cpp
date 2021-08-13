@@ -613,7 +613,7 @@ public:
         }
 
         // Get boolean options
-        const int numOptions = options.size();
+        const int numOptions = static_cast<int>(options.size());
         for (int i = 0; i < numOptions; ++i)
         {
             options[i].second = parser.isSet(options[i].first);
@@ -3240,7 +3240,7 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
     {
         QFileInfo info(fullyQualifiedLevelName);
         const AZStd::string rawProjectDirectory = Path::GetEditingGameDataFolder();
-        const QString projectDirectory = QDir::toNativeSeparators(QString::fromUtf8(rawProjectDirectory.data(), rawProjectDirectory.size()));
+        const QString projectDirectory = QDir::toNativeSeparators(QString::fromUtf8(rawProjectDirectory.data(), static_cast<int>(rawProjectDirectory.size())));
         const QString elidedLevelName = QStringLiteral("%1...%2").arg(levelName.left(10)).arg(levelName.right(10));
         const QString elidedLevelFileName = QStringLiteral("%1...%2").arg(info.fileName().left(10)).arg(info.fileName().right(10));
         const QString message = QObject::tr(

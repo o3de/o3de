@@ -455,7 +455,7 @@ void CTrackViewSequence::OnNodeChanged(CTrackViewNode* node, ITrackViewSequenceL
 
             // Make sure to deselect any keys
             CTrackViewKeyBundle keys = node->GetAllKeys();
-            for (int key = 0; key < keys.GetKeyCount(); key++)
+            for (unsigned int key = 0; key < keys.GetKeyCount(); key++)
             {
                 CTrackViewKeyHandle keyHandle = keys.GetKey(key);
                 if (keyHandle.IsSelected())
@@ -1249,7 +1249,7 @@ void CTrackViewSequence::DeselectAllKeys()
     CTrackViewSequenceNotificationContext context(this);
 
     CTrackViewKeyBundle selectedKeys = GetSelectedKeys();
-    for (int i = 0; i < selectedKeys.GetKeyCount(); ++i)
+    for (unsigned int i = 0; i < selectedKeys.GetKeyCount(); ++i)
     {
         CTrackViewKeyHandle keyHandle = selectedKeys.GetKey(i);
         keyHandle.Select(false);

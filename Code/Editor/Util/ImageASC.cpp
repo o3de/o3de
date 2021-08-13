@@ -55,9 +55,9 @@ bool CImageASC::Save(const QString& fileName, const CFloatImage& image)
     fprintf(file, fileHeader.c_str());
 
     // Then print all the pixels.
-    for (int y = 0; y < height; y++)
+    for (uint32 y = 0; y < height; y++)
     {
-        for (int x = 0; x < width; x++)
+        for (uint32 x = 0; x < width; x++)
         {
             fprintf(file, "%.7f ", pixels[x + y * width]);
         }

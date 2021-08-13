@@ -1028,12 +1028,12 @@ void CTrackViewDopeSheetBase::SelectAllKeysWithinTimeFrame(const QRect& rc, cons
     CTrackViewTrackBundle tracks = sequence->GetAllTracks();
 
     CTrackViewSequenceNotificationContext context(sequence);
-    for (int i = 0; i < tracks.GetCount(); ++i)
+    for (unsigned int i = 0; i < tracks.GetCount(); ++i)
     {
         CTrackViewTrack* pTrack = tracks.GetTrack(i);
 
         // Check which keys we intersect.
-        for (int j = 0; j < pTrack->GetKeyCount(); j++)
+        for (unsigned int j = 0; j < pTrack->GetKeyCount(); j++)
         {
             CTrackViewKeyHandle keyHandle = pTrack->GetKey(j);
             const float time = keyHandle.GetTime();
@@ -1429,7 +1429,7 @@ bool CTrackViewDopeSheetBase::IsOkToAddKeyHere(const CTrackViewTrack* pTrack, fl
 {
     const float timeEpsilon = 0.05f;
 
-    for (int i = 0; i < pTrack->GetKeyCount(); ++i)
+    for (unsigned int i = 0; i < pTrack->GetKeyCount(); ++i)
     {
         const CTrackViewKeyConstHandle& keyHandle = pTrack->GetKey(i);
 
@@ -1764,7 +1764,7 @@ float CTrackViewDopeSheetBase::MagnetSnap(float newTime, const CTrackViewAnimNod
         newTime = keys.GetKey(0).GetTime();
         // But if there is an in-range key in a sibling track, use it instead.
         // Here a 'sibling' means a track that belongs to a same node.
-        for (int i = 0; i < keys.GetKeyCount(); ++i)
+        for (unsigned int i = 0; i < keys.GetKeyCount(); ++i)
         {
             CTrackViewKeyHandle keyHandle = keys.GetKey(i);
             if (keyHandle.GetTrack()->GetAnimNode() == pNode)

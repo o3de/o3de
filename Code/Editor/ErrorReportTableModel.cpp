@@ -119,7 +119,7 @@ void CErrorReportTableModel::setErrorReport(CErrorReport* report)
 
 int CErrorReportTableModel::rowCount(const QModelIndex& parent) const
 {
-    return parent.isValid() ? 0 : m_errorRecords.size();
+    return parent.isValid() ? 0 : static_cast<int>(m_errorRecords.size());
 }
 
 int CErrorReportTableModel::columnCount(const QModelIndex& parent) const

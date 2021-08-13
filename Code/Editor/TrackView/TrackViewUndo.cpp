@@ -70,7 +70,7 @@ CTrackViewTrack* CUndoComponentEntityTrackObject::FindTrack(CTrackViewSequence* 
 
     CTrackViewTrack* track = nullptr;
     CTrackViewTrackBundle allTracks = sequence->GetAllTracks();
-    for (int trackIndex = 0; trackIndex < allTracks.GetCount(); trackIndex++)
+    for (unsigned int trackIndex = 0; trackIndex < allTracks.GetCount(); trackIndex++)
     {
         CTrackViewTrack* curTrack = allTracks.GetTrack(trackIndex);
         if (curTrack->GetAnimNode() && curTrack->GetAnimNode()->GetComponentId() == m_trackComponentId)

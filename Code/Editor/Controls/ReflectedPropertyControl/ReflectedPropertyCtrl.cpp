@@ -203,7 +203,7 @@ void ReflectedPropertyControl::CreateItems(XmlNodeRef node, CVarBlockPtr& outBlo
     outBlockPtr = new CVarBlock;
     for (size_t i = 0, iGroupCount(node->getChildCount()); i < iGroupCount; ++i)
     {
-        XmlNodeRef groupNode = node->getChild(i);
+        XmlNodeRef groupNode = node->getChild(static_cast<int>(i));
 
         if (groupNode->haveAttr("hidden"))
         {

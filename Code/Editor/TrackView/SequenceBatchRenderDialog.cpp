@@ -357,7 +357,7 @@ void CSequenceBatchRenderDialog::OnRenderItemSelChange()
     QString cvarsText;
     for (size_t i = 0; i < item.cvars.size(); ++i)
     {
-        cvarsText += item.cvars[i];
+        cvarsText += item.cvars[static_cast<int>(i)];
         cvarsText += "\r\n";
     }
     m_ui->m_cvarsEdit->setPlainText(cvarsText);    
@@ -894,7 +894,7 @@ void CSequenceBatchRenderDialog::CaptureItemStart()
     // Set up the custom config cvars for this item.
     for (size_t i = 0; i < renderItem.cvars.size(); ++i)
     {
-        GetIEditor()->GetSystem()->GetIConsole()->ExecuteString(renderItem.cvars[i].toUtf8().data());
+        GetIEditor()->GetSystem()->GetIConsole()->ExecuteString(renderItem.cvars[static_cast<int>(i)].toUtf8().data());
     }
 
     // Set specific capture options for this item.
@@ -1519,7 +1519,7 @@ void CSequenceBatchRenderDialog::OnSaveBatch()
             // cvars
             for (size_t k = 0; k < item.cvars.size(); ++k)
             {
-                itemNode->newChild("cvar")->setContent(item.cvars[k].toUtf8().data());
+                itemNode->newChild("cvar")->setContent(item.cvars[static_cast<int>(k)].toUtf8().data());
             }
         }
 

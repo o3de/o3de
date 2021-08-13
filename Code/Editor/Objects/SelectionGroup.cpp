@@ -109,7 +109,7 @@ bool CSelectionGroup::SameObjectType()
 //////////////////////////////////////////////////////////////////////////
 int CSelectionGroup::GetCount() const
 {
-    return m_objects.size();
+    return static_cast<int>(m_objects.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -632,7 +632,7 @@ void CSelectionGroup::IndicateSnappingVertex(DisplayContext& dc) const
 void CSelectionGroup::FinishChanges()
 {
     Objects selectedObjects(m_objects);
-    int iObjectSize(selectedObjects.size());
+    int iObjectSize = static_cast<int>(selectedObjects.size());
     for (int i = 0; i < iObjectSize; ++i)
     {
         CBaseObject* pObject = selectedObjects[i];

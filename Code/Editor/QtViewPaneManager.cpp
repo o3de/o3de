@@ -184,7 +184,7 @@ bool QtViewPane::CloseInstance(QDockWidget* dockWidget, CloseModes closeModes)
         const int numTopLevel = topLevelWidgets.size();
         for (size_t i = 0; i < numTopLevel; ++i)
         {
-            QWidget* widget = topLevelWidgets[i];
+            QWidget* widget = topLevelWidgets[static_cast<int>(i)];
             if (widget->isModal() && widget->isVisible())
             {
                 widget->activateWindow();

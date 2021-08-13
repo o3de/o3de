@@ -420,7 +420,7 @@ void CTriMesh::UpdateIndexedMesh(IIndexedMesh* pIndexedMesh) const
 
     pIndexedMesh->SetBBox(bb);
 
-    pIndexedMesh->SetSubSetCount(usedMaterialIds.size());
+    pIndexedMesh->SetSubSetCount(static_cast<int>(usedMaterialIds.size()));
     for (int i = 0; i < usedMaterialIds.size(); i++)
     {
         pIndexedMesh->SetSubsetMaterialId(i, usedMaterialIds[i]);
