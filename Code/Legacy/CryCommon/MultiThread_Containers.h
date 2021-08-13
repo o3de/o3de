@@ -34,7 +34,7 @@ namespace CryMT
     public:
         typedef T   value_type;
         typedef std::vector<T, Alloc>   container_type;
-        typedef CryAutoCriticalSection AutoLock;
+        typedef AZStd::lock_guard<AZStd::recursive_mutex> AutoLock;
 
         //////////////////////////////////////////////////////////////////////////
         // std::queue interface
@@ -46,7 +46,7 @@ namespace CryMT
         // classic pop function of queue should not be used for thread safety, use try_pop instead
         //void  pop()                           { AutoLock lock(m_cs); return v.erase(v.begin()); };
 
-        CryCriticalSection& get_lock() const { return m_cs; }
+        AZStd::recursive_mutex& get_lock() const { return m_cs; }
 
         bool   empty() const { AutoLock lock(m_cs); return v.empty(); }
         int    size() const  { AutoLock lock(m_cs); return v.size(); }
@@ -92,7 +92,7 @@ namespace CryMT
         }
     private:
         container_type v;
-        mutable CryCriticalSection m_cs;
+        mutable AZStd::recursive_mutex m_cs;
     };
 }; // namespace CryMT
 

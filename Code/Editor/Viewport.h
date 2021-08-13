@@ -201,6 +201,7 @@ public:
 
     //! Performs hit testing of 2d point in view to find which object hit.
     virtual bool HitTest(const QPoint& point, HitContext& hitInfo) = 0;
+    virtual AZ::Vector3 GetHitLocation(const QPoint& point) = 0;
 
     virtual void MakeConstructionPlane(int axis) = 0;
 
@@ -436,6 +437,7 @@ public:
 
     //! Performs hit testing of 2d point in view to find which object hit.
     bool HitTest(const QPoint& point, HitContext& hitInfo) override;
+    AZ::Vector3 GetHitLocation(const QPoint& point) override;
 
     //! Do 2D hit testing of line in world space.
     // pToCameraDistance is an optional output parameter in which distance from the camera to the line is returned.

@@ -1452,7 +1452,7 @@ void SandboxIntegrationManager::ContextMenu_NewEntity()
     if (view)
     {
         const QPoint viewPoint(m_contextMenuViewPoint.GetX(), m_contextMenuViewPoint.GetY());
-        worldPosition = LYVec3ToAZVec3(view->SnapToGrid(view->ViewToWorld(viewPoint)));
+        worldPosition = view->GetHitLocation(viewPoint);
     }
 
     CreateNewEntityAtPosition(worldPosition);

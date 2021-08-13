@@ -135,7 +135,6 @@
   #define PRINTF_EMPTY_FORMAT ""
 #endif
 
-
 //default stack size for threads, currently only used on pthread platforms
 #if defined(AZ_RESTRICTED_PLATFORM)
     #define AZ_RESTRICTED_SECTION PLATFORM_H_SECTION_8
@@ -143,14 +142,6 @@
 #endif
 #if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
     #undef AZ_RESTRICTED_SECTION_IMPLEMENTED
-#elif defined(LINUX) || defined(APPLE)
-    #if !defined(_DEBUG)
-        #define SIMPLE_THREAD_STACK_SIZE_KB (256)
-    #else
-        #define SIMPLE_THREAD_STACK_SIZE_KB (256 * 4)
-    #endif
-#else
-    #define SIMPLE_THREAD_STACK_SIZE_KB (32)
 #endif
 
 #include <AzCore/PlatformDef.h>
@@ -199,7 +190,7 @@
     #elif defined(ANDROID)
         #include "AndroidSpecific.h"
     #elif defined(IOS)
-    #include "iOSSpecific.h"
+        #include "iOSSpecific.h"
     #endif
 #endif
 
