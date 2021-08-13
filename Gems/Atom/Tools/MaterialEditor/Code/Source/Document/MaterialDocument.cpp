@@ -182,7 +182,7 @@ namespace MaterialEditor
         return true;
     }
 
-    bool MaterialDocument::Rebuild()
+    bool MaterialDocument::Reopen()
     {
         // Store history and property changes that should be reapplied after reload
         auto undoHistoryToRestore = m_undoHistory;

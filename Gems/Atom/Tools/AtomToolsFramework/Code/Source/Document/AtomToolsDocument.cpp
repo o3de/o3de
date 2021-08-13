@@ -67,7 +67,7 @@ namespace AtomToolsFramework
         return false;
     }
 
-    bool AtomToolsDocument::Rebuild()
+    bool AtomToolsDocument::Reopen()
     {
         AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
         return false;
@@ -100,31 +100,26 @@ namespace AtomToolsFramework
 
     bool AtomToolsDocument::IsOpen() const
     {
-        AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
         return false;
     }
 
     bool AtomToolsDocument::IsModified() const
     {
-        AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
         return false;
     }
 
     bool AtomToolsDocument::IsSavable() const
     {
-        AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
         return false;
     }
 
     bool AtomToolsDocument::CanUndo() const
     {
-        AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
         return false;
     }
 
     bool AtomToolsDocument::CanRedo() const
     {
-        AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
         return false;
     }
 

@@ -79,7 +79,7 @@ namespace AtomToolsFramework
                 ->Event("GetPropertyValue", &AtomToolsDocumentRequestBus::Events::GetPropertyValue)
                 ->Event("SetPropertyValue", &AtomToolsDocumentRequestBus::Events::SetPropertyValue)
                 ->Event("Open", &AtomToolsDocumentRequestBus::Events::Open)
-                ->Event("Rebuild", &AtomToolsDocumentRequestBus::Events::Rebuild)
+                ->Event("Reopen", &AtomToolsDocumentRequestBus::Events::Reopen)
                 ->Event("Close", &AtomToolsDocumentRequestBus::Events::Close)
                 ->Event("Save", &AtomToolsDocumentRequestBus::Events::Save)
                 ->Event("SaveAsChild", &AtomToolsDocumentRequestBus::Events::SaveAsChild)
@@ -168,7 +168,7 @@ namespace AtomToolsFramework
 
     void AtomToolsDocumentSystemComponent::OnDocumentDependencyModified(const AZ::Uuid& documentId)
     {
-        m_documentIdsToRebuild.insert(documentId);
+        m_documentIdsToReopen.insert(documentId);
         if (!AZ::TickBus::Handler::BusIsConnected())
         {
             AZ::TickBus::Handler::BusConnect();
@@ -204,7 +204,7 @@ namespace AtomToolsFramework
             }
         }
 
-        for (const AZ::Uuid& documentId : m_documentIdsToRebuild)
+        for (const AZ::Uuid& documentId : m_documentIdsToReopen)
         {
             AZStd::string documentPath;
             AtomToolsDocumentRequestBus::EventResult(documentPath, documentId, &AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
@@ -221,7 +221,7 @@ namespace AtomToolsFramework
             AtomToolsFramework::TraceRecorder traceRecorder(m_maxMessageBoxLineCount);
 
             bool openResult = false;
-            AtomToolsDocumentRequestBus::EventResult(openResult, documentId, &AtomToolsDocumentRequestBus::Events::Rebuild);
+            AtomToolsDocumentRequestBus::EventResult(openResult, documentId, &AtomToolsDocumentRequestBus::Events::Reopen);
             if (!openResult)
             {
                 QMessageBox::critical(
@@ -231,7 +231,7 @@ namespace AtomToolsFramework
             }
         }
 
-        m_documentIdsToRebuild.clear();
+        m_documentIdsToReopen.clear();
         m_documentIdsToReopen.clear();
         AZ::TickBus::Handler::BusDisconnect();
     }

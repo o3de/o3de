@@ -46,8 +46,8 @@ namespace AtomToolsFramework
         //! @param loadPath absolute path of document to load
         virtual bool Open(AZStd::string_view loadPath) = 0;
 
-        //! Reload document preserving edits
-        virtual bool Rebuild() = 0;
+        //! Reopen document preserving edits
+        virtual bool Reopen() = 0;
 
         //! Save document to file
         virtual bool Save() = 0;

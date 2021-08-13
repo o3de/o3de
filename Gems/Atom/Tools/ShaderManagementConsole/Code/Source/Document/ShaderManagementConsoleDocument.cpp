@@ -112,7 +112,7 @@ namespace ShaderManagementConsole
 
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentOpened, m_id);
 
-        AZ_TracePrintf("ShaderManagementConsoleDocument", "Document loaded: '%s'", m_absolutePath.c_str());
+        AZ_TracePrintf("ShaderManagementConsoleDocument", "Document opened: '%s'\n", m_absolutePath.c_str());
         return true;
     }
 
@@ -126,7 +126,7 @@ namespace ShaderManagementConsole
 
         Clear();
         AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentClosed, m_id);
-        AZ_TracePrintf("ShaderManagementConsoleDocument", "Document was closed");
+        AZ_TracePrintf("ShaderManagementConsoleDocument", "Document closed\n");
         return true;
     }
 

@@ -37,7 +37,7 @@ namespace AtomToolsFramework
         bool IsPropertyGroupVisible(const AZ::Name& propertyGroupFullName) const override;
         void SetPropertyValue(const AZ::Name& propertyFullName, const AZStd::any& value) override;
         bool Open(AZStd::string_view loadPath) override;
-        bool Rebuild() override;
+        bool Reopen() override;
         bool Save() override;
         bool SaveAsCopy(AZStd::string_view savePath) override;
         bool SaveAsChild(AZStd::string_view savePath) override;
