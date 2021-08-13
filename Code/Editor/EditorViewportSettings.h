@@ -118,8 +118,4 @@ namespace SandboxEditor
 
     SANDBOX_API AzFramework::InputChannelId CameraOrbitPanChannelId();
     SANDBOX_API void SetCameraOrbitPanChannelId(AZStd::string_view cameraOrbitPanId);
-
-    //! Return if the new editor camera system is enabled or not.
-    //! @note This is implemented in EditorViewportWidget.cpp
-    SANDBOX_API bool UsingNewCameraSystem();
 } // namespace SandboxEditor

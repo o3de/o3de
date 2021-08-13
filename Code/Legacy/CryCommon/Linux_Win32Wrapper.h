@@ -414,65 +414,10 @@ inline void SetLastError(DWORD dwErrCode) { errno = dwErrCode; }
 extern threadID GetCurrentThreadId();
 
 //////////////////////////////////////////////////////////////////////////
-extern HANDLE CreateEvent(
-    LPSECURITY_ATTRIBUTES lpEventAttributes,
-    BOOL bManualReset,
-    BOOL bInitialState,
-    LPCSTR lpName
-    );
-
-//////////////////////////////////////////////////////////////////////////
 extern DWORD Sleep(DWORD dwMilliseconds);
 
 //////////////////////////////////////////////////////////////////////////
 extern DWORD SleepEx(DWORD dwMilliseconds, BOOL bAlertable);
-
-//////////////////////////////////////////////////////////////////////////
-extern DWORD WaitForSingleObjectEx(
-    HANDLE hHandle,
-    DWORD dwMilliseconds,
-    BOOL bAlertable);
-
-//////////////////////////////////////////////////////////////////////////
-extern DWORD WaitForMultipleObjectsEx(
-    DWORD nCount,
-    const HANDLE* lpHandles,
-    BOOL bWaitAll,
-    DWORD dwMilliseconds,
-    BOOL bAlertable);
-
-//////////////////////////////////////////////////////////////////////////
-extern DWORD WaitForSingleObject(HANDLE hHandle, DWORD dwMilliseconds);
-
-//////////////////////////////////////////////////////////////////////////
-extern BOOL SetEvent(HANDLE hEvent);
-
-//////////////////////////////////////////////////////////////////////////
-extern BOOL ResetEvent(HANDLE hEvent);
-
-//////////////////////////////////////////////////////////////////////////
-extern HANDLE CreateMutex(
-    LPSECURITY_ATTRIBUTES lpMutexAttributes,
-    BOOL bInitialOwner,
-    LPCSTR lpName
-    );
-
-//////////////////////////////////////////////////////////////////////////
-extern BOOL ReleaseMutex(HANDLE hMutex);
-
-//////////////////////////////////////////////////////////////////////////
-typedef DWORD (* PTHREAD_START_ROUTINE)(LPVOID lpThreadParameter);
-typedef PTHREAD_START_ROUTINE LPTHREAD_START_ROUTINE;
-
-//////////////////////////////////////////////////////////////////////////
-extern HANDLE CreateThread(
-    LPSECURITY_ATTRIBUTES lpThreadAttributes,
-    SIZE_T dwStackSize,
-    LPTHREAD_START_ROUTINE lpStartAddress,
-    LPVOID lpParameter,
-    DWORD dwCreationFlags,
-    LPDWORD lpThreadId
-    );
 
 extern BOOL GetComputerName(LPSTR lpBuffer, LPDWORD lpnSize); //required for CryOnline
 extern DWORD GetCurrentProcessId(void);

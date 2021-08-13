@@ -169,7 +169,7 @@ namespace TestImpact
                             WriteFileContents<TestEngineException>(SerializeTestEnumeration(enumeration.value()), jobInfo->GetCache()->m_file);
                         }
                     }
-                    catch (const Exception& e)
+                    catch ([[maybe_unused]] const Exception& e)
                     {
                         AZ_Warning("Enumerate", false, e.what());
                         enumerations[jobId] = AZStd::nullopt;

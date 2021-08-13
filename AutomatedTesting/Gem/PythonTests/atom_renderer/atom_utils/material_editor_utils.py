@@ -13,9 +13,9 @@ import os
 import sys
 import time
 import azlmbr.atom
+import azlmbr.atomtools as atomtools
 import azlmbr.materialeditor as materialeditor
 import azlmbr.bus as bus
-import azlmbr.atomtools.general as general
 
 
 def is_close(actual, expected, buffer=sys.float_info.min):
@@ -125,11 +125,11 @@ def is_pane_visible(pane_name):
     """
     :return: bool
     """
-    return materialeditor.MaterialEditorWindowRequestBus(bus.Broadcast, "IsDockWidgetVisible", pane_name)
+    return atomtools.AtomToolsWindowRequestBus(bus.Broadcast, "IsDockWidgetVisible", pane_name)
 
 
 def set_pane_visibility(pane_name, value):
-    materialeditor.MaterialEditorWindowRequestBus(bus.Broadcast, "SetDockWidgetVisible", pane_name, value)
+    atomtools.AtomToolsWindowRequestBus(bus.Broadcast, "SetDockWidgetVisible", pane_name, value)
 
 
 def select_lighting_config(config_name):
@@ -175,7 +175,7 @@ def wait_for_condition(function, timeout_in_seconds=1.0):
     with Timeout(timeout_in_seconds) as t:
         while True:
             try:
-                general.idle_wait_frames(1)
+                atomtools.general.idle_wait_frames(1)
             except Exception:
                 print("WARNING: Couldn't wait for frame")
 
@@ -269,6 +269,6 @@ class ScreenshotHelper:
 
 
 def capture_screenshot(file_path):
-    return ScreenshotHelper(azlmbr.atomtools.general.idle_wait_frames).capture_screenshot_blocking(
+    return ScreenshotHelper(atomtools.general.idle_wait_frames).capture_screenshot_blocking(
         os.path.join(file_path)
     )
