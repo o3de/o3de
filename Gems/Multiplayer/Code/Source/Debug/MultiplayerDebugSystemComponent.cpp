@@ -13,6 +13,11 @@
 #include <AzNetworking/Framework/INetworkInterface.h>
 #include <Multiplayer/IMultiplayer.h>
 
+void OnDebugEntities_ShowBandwidth_Changed(const bool& showBandwidth);
+
+AZ_CVAR(bool, net_DebugEntities_ShowBandwidth, false, &OnDebugEntities_ShowBandwidth_Changed, AZ::ConsoleFunctorFlags::Null,
+    "If true, prints bandwidth values over entities that use a considerable amount of network traffic");
+
 namespace Multiplayer
 {
     void MultiplayerDebugSystemComponent::Reflect(AZ::ReflectContext* context)
@@ -47,6 +52,17 @@ namespace Multiplayer
         ImGui::ImGuiUpdateListenerBus::Handler::BusDisconnect();
 #endif
     }
+
+    void MultiplayerDebugSystemComponent::ShowEntityBandwidthDebugOverlay()
+    {
+        m_reporter = AZStd::make_unique<MultiplayerDebugPerEntityReporter>();
+    }
+
+    void MultiplayerDebugSystemComponent::HideEntityBandwidthDebugOverlay()
+    {
+        m_reporter.reset();
+    }
+
 #ifdef IMGUI_ENABLED
     void MultiplayerDebugSystemComponent::OnImGuiMainMenuUpdate()
     {
@@ -54,6 +70,7 @@ namespace Multiplayer
         {
             ImGui::Checkbox("Networking Stats", &m_displayNetworkingStats);
             ImGui::Checkbox("Multiplayer Stats", &m_displayMultiplayerStats);
+            ImGui::Checkbox("Multiplayer Entity Stats", &m_displayPerEntityStats);
             ImGui::EndMenu();
         }
     }
@@ -432,6 +449,36 @@ namespace Multiplayer
                 DrawMultiplayerStats();
             }
         }
+
+        if (m_displayPerEntityStats)
+        {
+            if (ImGui::Begin("Multiplayer Per Entity Stats", &m_displayPerEntityStats, ImGuiWindowFlags_AlwaysAutoResize))
+            {
+                // This overrides @net_DebugNetworkEntity_ShowBandwidth value
+                if (m_reporter == nullptr)
+                {
+                    ShowEntityBandwidthDebugOverlay();
+                }
+
+                if (m_reporter)
+                {
+                    m_reporter->OnImGuiUpdate();
+                }
+            }
+        }
     }
 #endif
 }
+
+void OnDebugEntities_ShowBandwidth_Changed(const bool& showBandwidth)
+{
+    if (showBandwidth)
+    {
+        AZ::Interface<Multiplayer::IMultiplayerDebug>::Get()->ShowEntityBandwidthDebugOverlay();
+    }
+    else
+    {
+        AZ::Interface<Multiplayer::IMultiplayerDebug>::Get()->HideEntityBandwidthDebugOverlay();
+    }
+}
+

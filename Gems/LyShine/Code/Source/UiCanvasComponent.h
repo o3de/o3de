@@ -102,7 +102,7 @@ public: // member functions
     LyShine::EntityArray PickElements(const AZ::Vector2& bound0, const AZ::Vector2& bound1) override;
     AZ::EntityId FindInteractableToHandleEvent(AZ::Vector2 point) override;
 
-    bool SaveToXml(const string& assetIdPathname, const string& sourceAssetPathname) override;
+    bool SaveToXml(const AZStd::string& assetIdPathname, const AZStd::string& sourceAssetPathname) override;
     void FixupCreatedEntities(LyShine::EntityArray topLevelEntities, bool makeUniqueNamesAndIds, AZ::Entity* optionalInsertionPoint) override;
     void AddElement(AZ::Entity* element, AZ::Entity* parent, AZ::Entity* insertBefore) override;
     void ReinitializeElements() override;
@@ -320,7 +320,7 @@ public: // static member functions
     static void Shutdown();
 
     static UiCanvasComponent* CreateCanvasInternal(UiEntityContext* entityContext, bool forEditor);
-    static UiCanvasComponent* LoadCanvasInternal(const string& pathToOpen, bool forEditor, const string& assetIdPathname, UiEntityContext* entityContext,
+    static UiCanvasComponent* LoadCanvasInternal(const AZStd::string& pathToOpen, bool forEditor, const AZStd::string& assetIdPathname, UiEntityContext* entityContext,
         const AZ::SliceComponent::EntityIdToEntityIdMap* previousRemapTable = nullptr, AZ::EntityId previousCanvasId = AZ::EntityId());
     static UiCanvasComponent* FixupReloadedCanvasForEditorInternal(AZ::Entity* newCanvasEntity,
         AZ::Entity* rootSliceEntity, UiEntityContext* entityContext,
@@ -416,7 +416,7 @@ private: // member functions
     void DestroyRenderTarget();
     void RenderCanvasToTexture();
 
-    bool SaveCanvasToFile(const string& pathname, AZ::DataStream::StreamType streamType);
+    bool SaveCanvasToFile(const AZStd::string& pathname, AZ::DataStream::StreamType streamType);
     bool SaveCanvasToStream(AZ::IO::GenericStream& stream, AZ::DataStream::StreamType streamType);
 
     //! Notify elements that their canvas space rect has changed since the last update, and recompute invalid layouts

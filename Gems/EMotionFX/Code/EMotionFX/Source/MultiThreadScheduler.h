@@ -50,8 +50,8 @@ namespace EMotionFX
          */
         struct EMFX_API ScheduleStep
         {
-            AZStd::vector<Actor::Dependency>     mDependencies;      /**< The dependencies of this scheduler step. No actor instances with the same dependencies are allowed to be added to this step. */
-            AZStd::vector<ActorInstance*>       mActorInstances;    /**< The actor instances used inside this step. Each array entry will execute in another thread. */
+            AZStd::vector<Actor::Dependency>     m_dependencies;      /**< The dependencies of this scheduler step. No actor instances with the same dependencies are allowed to be added to this step. */
+            AZStd::vector<ActorInstance*>       m_actorInstances;    /**< The actor instances used inside this step. Each array entry will execute in another thread. */
         };
 
         /**
@@ -119,13 +119,13 @@ namespace EMotionFX
         void Lock();
         void Unlock();
 
-        const ScheduleStep& GetScheduleStep(size_t index) const { return mSteps[index]; }
-        size_t GetNumScheduleSteps() const { return mSteps.size(); }
+        const ScheduleStep& GetScheduleStep(size_t index) const { return m_steps[index]; }
+        size_t GetNumScheduleSteps() const { return m_steps.size(); }
 
     protected:
-        AZStd::vector< ScheduleStep >    mSteps;         /**< An array of update steps, that together form the schedule. */
-        float                           mCleanTimer;    /**< The time passed since the last automatic call to the Optimize method. */
-        MCore::MutexRecursive           mMutex;
+        AZStd::vector< ScheduleStep >    m_steps;         /**< An array of update steps, that together form the schedule. */
+        float                           m_cleanTimer;    /**< The time passed since the last automatic call to the Optimize method. */
+        MCore::MutexRecursive           m_mutex;
 
         bool HasActorInstanceInSteps(const ActorInstance* actorInstance) const;
 

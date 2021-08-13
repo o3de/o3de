@@ -68,15 +68,15 @@ namespace EMotionFX
             SubPool();
             ~SubPool();
 
-            uint8*      mData;
-            size_t      mNumInstances;
-            size_t      mNumInUse;
+            uint8*      m_data;
+            size_t      m_numInstances;
+            size_t      m_numInUse;
         };
 
         struct EMFX_API MemLocation
         {
-            void*       mAddress;
-            SubPool*    mSubPool;
+            void*       m_address;
+            SubPool*    m_subPool;
         };
 
         class EMFX_API Pool
@@ -87,17 +87,17 @@ namespace EMotionFX
             Pool();
             ~Pool();
 
-            uint8*                      mData;
-            size_t                      mNumInstances;
-            size_t                      mNumUsedInstances;
-            size_t                      mSubPoolSize;
-            AZStd::vector<MemLocation>   mFreeList;
-            AZStd::vector<SubPool*>      mSubPools;
-            EPoolType                   mPoolType;
+            uint8*                      m_data;
+            size_t                      m_numInstances;
+            size_t                      m_numUsedInstances;
+            size_t                      m_subPoolSize;
+            AZStd::vector<MemLocation>   m_freeList;
+            AZStd::vector<SubPool*>      m_subPools;
+            EPoolType                   m_poolType;
         };
 
-        Pool*           mPool;
-        MCore::Mutex    mLock;
+        Pool*           m_pool;
+        MCore::Mutex    m_lock;
 
         MotionInstancePool();
         ~MotionInstancePool();

@@ -257,7 +257,7 @@ namespace EMotionFX
         MCORE_INLINE void SetStorageTypeKey(size_t keyNr, float time, const StorageType& value);
 
     protected:
-        AZStd::vector<KeyFrame<ReturnType, StorageType>> mKeys;          /**< The collection of keys which form the track. */
+        AZStd::vector<KeyFrame<ReturnType, StorageType>> m_keys;          /**< The collection of keys which form the track. */
     };
 
 

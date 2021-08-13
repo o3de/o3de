@@ -510,15 +510,15 @@ namespace EMotionFX
                 const Node* childNode = skeleton->GetNode(childIndex);
                 const float numSubChildren = static_cast<float>(1 + childNode->GetNumChildNodesRecursive());
                 totalSubChildren += numSubChildren;
-                meanChildPosition += numSubChildren * (bindPose->GetModelSpaceTransform(childIndex).mPosition);
+                meanChildPosition += numSubChildren * (bindPose->GetModelSpaceTransform(childIndex).m_position);
             }
 
-            boneDirection = meanChildPosition / totalSubChildren - nodeBindTransform.mPosition;
+            boneDirection = meanChildPosition / totalSubChildren - nodeBindTransform.m_position;
         }
         // otherwise, point the bone direction away from the parent
         else
         {
-            boneDirection = nodeBindTransform.mPosition - parentBindTransform.mPosition;
+            boneDirection = nodeBindTransform.m_position - parentBindTransform.m_position;
         }
 
         return boneDirection;

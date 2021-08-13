@@ -32,11 +32,11 @@ namespace ExporterLib
 
         // copy over the information to the chunk
         EMotionFX::FileFormat::Actor_MorphTarget morphTargetChunk;
-        morphTargetChunk.mLOD                   = aznumeric_caster(lodLevel);
-        morphTargetChunk.mNumTransformations    = aznumeric_caster(numTransformations);
-        morphTargetChunk.mRangeMin              = morphTarget->GetRangeMin();
-        morphTargetChunk.mRangeMax              = morphTarget->GetRangeMax();
-        morphTargetChunk.mPhonemeSets           = morphTarget->GetPhonemeSets();
+        morphTargetChunk.m_lod                   = aznumeric_caster(lodLevel);
+        morphTargetChunk.m_numTransformations    = aznumeric_caster(numTransformations);
+        morphTargetChunk.m_rangeMin              = morphTarget->GetRangeMin();
+        morphTargetChunk.m_rangeMax              = morphTarget->GetRangeMax();
+        morphTargetChunk.m_phonemeSets           = morphTarget->GetPhonemeSets();
 
         // log it
         MCore::LogDetailedInfo(" - Morph Target: Name='%s'",  morphTarget->GetName());
@@ -47,11 +47,11 @@ namespace ExporterLib
         MCore::LogDetailedInfo("    + PhonemesSets: %s", EMotionFX::MorphTarget::GetPhonemeSetString((EMotionFX::MorphTarget::EPhonemeSet)morphTarget->GetPhonemeSets()).c_str());
 
         // convert endian
-        ConvertFloat(&morphTargetChunk.mRangeMin, targetEndianType);
-        ConvertFloat(&morphTargetChunk.mRangeMax, targetEndianType);
-        ConvertUnsignedInt(&morphTargetChunk.mLOD, targetEndianType);
-        ConvertUnsignedInt(&morphTargetChunk.mNumTransformations, targetEndianType);
-        ConvertUnsignedInt(&morphTargetChunk.mPhonemeSets, targetEndianType);
+        ConvertFloat(&morphTargetChunk.m_rangeMin, targetEndianType);
+        ConvertFloat(&morphTargetChunk.m_rangeMax, targetEndianType);
+        ConvertUnsignedInt(&morphTargetChunk.m_lod, targetEndianType);
+        ConvertUnsignedInt(&morphTargetChunk.m_numTransformations, targetEndianType);
+        ConvertUnsignedInt(&morphTargetChunk.m_phonemeSets, targetEndianType);
 
         // write the bones expression part
         file->Write(&morphTargetChunk, sizeof(EMotionFX::FileFormat::Actor_MorphTarget));
@@ -63,34 +63,34 @@ namespace ExporterLib
         for (size_t i = 0; i < numTransformations; i++)
         {
             EMotionFX::MorphTargetStandard::Transformation transform    = morphTarget->GetTransformation(i);
-            EMotionFX::Node* node                                       = actor->GetSkeleton()->GetNode(transform.mNodeIndex);
+            EMotionFX::Node* node                                       = actor->GetSkeleton()->GetNode(transform.m_nodeIndex);
             if (node == nullptr)
             {
-                MCore::LogError("Can't get node '%i'. File is corrupt!", transform.mNodeIndex);
+                MCore::LogError("Can't get node '%i'. File is corrupt!", transform.m_nodeIndex);
                 continue;
             }
 
             // create and fill the transformation
             EMotionFX::FileFormat::Actor_MorphTargetTransform transformChunk;
 
-            transformChunk.mNodeIndex = aznumeric_caster(transform.mNodeIndex);
-            CopyVector(transformChunk.mPosition, AZ::PackedVector3f(transform.mPosition));
-            CopyVector(transformChunk.mScale, AZ::PackedVector3f(transform.mScale));
-            CopyQuaternion(transformChunk.mRotation, transform.mRotation);
-            CopyQuaternion(transformChunk.mScaleRotation, transform.mScaleRotation);
+            transformChunk.m_nodeIndex = aznumeric_caster(transform.m_nodeIndex);
+            CopyVector(transformChunk.m_position, AZ::PackedVector3f(transform.m_position));
+            CopyVector(transformChunk.m_scale, AZ::PackedVector3f(transform.m_scale));
+            CopyQuaternion(transformChunk.m_rotation, transform.m_rotation);
+            CopyQuaternion(transformChunk.m_scaleRotation, transform.m_scaleRotation);
 
             MCore::LogDetailedInfo("    - EMotionFX::Transform #%i: Node='%s' NodeNr=#%i", i, node->GetName(), node->GetNodeIndex());
-            MCore::LogDetailedInfo("       + Pos:      %f, %f, %f", transformChunk.mPosition.mX, transformChunk.mPosition.mY, transformChunk.mPosition.mZ);
-            MCore::LogDetailedInfo("       + Rotation: %f, %f, %f %f", transformChunk.mRotation.mX, transformChunk.mRotation.mY, transformChunk.mRotation.mZ, transformChunk.mRotation.mW);
-            MCore::LogDetailedInfo("       + Scale:    %f, %f, %f", transformChunk.mScale.mX, transformChunk.mScale.mY, transformChunk.mScale.mZ);
-            MCore::LogDetailedInfo("       + ScaleRot: %f, %f, %f %f", transformChunk.mScaleRotation.mX, transformChunk.mScaleRotation.mY, transformChunk.mScaleRotation.mZ, transformChunk.mScaleRotation.mW);
+            MCore::LogDetailedInfo("       + Pos:      %f, %f, %f", transformChunk.m_position.m_x, transformChunk.m_position.m_y, transformChunk.m_position.m_z);
+            MCore::LogDetailedInfo("       + Rotation: %f, %f, %f %f", transformChunk.m_rotation.m_x, transformChunk.m_rotation.m_y, transformChunk.m_rotation.m_z, transformChunk.m_rotation.m_w);
+            MCore::LogDetailedInfo("       + Scale:    %f, %f, %f", transformChunk.m_scale.m_x, transformChunk.m_scale.m_y, transformChunk.m_scale.m_z);
+            MCore::LogDetailedInfo("       + ScaleRot: %f, %f, %f %f", transformChunk.m_scaleRotation.m_x, transformChunk.m_scaleRotation.m_y, transformChunk.m_scaleRotation.m_z, transformChunk.m_scaleRotation.m_w);
 
             // convert endian and coordinate system
-            ConvertUnsignedInt(&transformChunk.mNodeIndex, targetEndianType);
-            ConvertFileVector3(&transformChunk.mPosition, targetEndianType);
-            ConvertFileVector3(&transformChunk.mScale, targetEndianType);
-            ConvertFileQuaternion(&transformChunk.mRotation, targetEndianType);
-            ConvertFileQuaternion(&transformChunk.mScaleRotation, targetEndianType);
+            ConvertUnsignedInt(&transformChunk.m_nodeIndex, targetEndianType);
+            ConvertFileVector3(&transformChunk.m_position, targetEndianType);
+            ConvertFileVector3(&transformChunk.m_scale, targetEndianType);
+            ConvertFileQuaternion(&transformChunk.m_rotation, targetEndianType);
+            ConvertFileQuaternion(&transformChunk.m_scaleRotation, targetEndianType);
 
             // write the transformation
             file->Write(&transformChunk, sizeof(EMotionFX::FileFormat::Actor_MorphTargetTransform));
@@ -175,9 +175,9 @@ namespace ExporterLib
 
         // fill in the chunk header
         EMotionFX::FileFormat::FileChunk chunkHeader;
-        chunkHeader.mChunkID        = EMotionFX::FileFormat::ACTOR_CHUNK_STDPMORPHTARGETS;
-        chunkHeader.mSizeInBytes    = aznumeric_caster(GetMorphSetupChunkSize(morphSetup));
-        chunkHeader.mVersion        = 2;
+        chunkHeader.m_chunkId        = EMotionFX::FileFormat::ACTOR_CHUNK_STDPMORPHTARGETS;
+        chunkHeader.m_sizeInBytes    = aznumeric_caster(GetMorphSetupChunkSize(morphSetup));
+        chunkHeader.m_version        = 2;
 
         // endian convert the chunk and write it to the file
         ConvertFileChunk(&chunkHeader, targetEndianType);
@@ -185,16 +185,16 @@ namespace ExporterLib
 
         // fill in the chunk header
         EMotionFX::FileFormat::Actor_MorphTargets morphTargetsChunk;
-        morphTargetsChunk.mNumMorphTargets  = aznumeric_caster(numSavedMorphTargets);
-        morphTargetsChunk.mLOD              = aznumeric_caster(lodLevel);
+        morphTargetsChunk.m_numMorphTargets  = aznumeric_caster(numSavedMorphTargets);
+        morphTargetsChunk.m_lod              = aznumeric_caster(lodLevel);
 
         MCore::LogDetailedInfo("============================================================");
-        MCore::LogInfo("Morph Targets (%i, LOD=%d)", morphTargetsChunk.mNumMorphTargets, morphTargetsChunk.mLOD);
+        MCore::LogInfo("Morph Targets (%i, LOD=%d)", morphTargetsChunk.m_numMorphTargets, morphTargetsChunk.m_lod);
         MCore::LogDetailedInfo("============================================================");
 
         // endian convert the chunk and write it to the file
-        ConvertUnsignedInt(&morphTargetsChunk.mNumMorphTargets, targetEndianType);
-        ConvertUnsignedInt(&morphTargetsChunk.mLOD, targetEndianType);
+        ConvertUnsignedInt(&morphTargetsChunk.m_numMorphTargets, targetEndianType);
+        ConvertUnsignedInt(&morphTargetsChunk.m_lod, targetEndianType);
         file->Write(&morphTargetsChunk, sizeof(EMotionFX::FileFormat::Actor_MorphTargets));
 
         // save morph targets

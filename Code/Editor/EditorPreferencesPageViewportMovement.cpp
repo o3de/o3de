@@ -68,45 +68,21 @@ QIcon& CEditorPreferencesPage_ViewportMovement::GetIcon()
 
 void CEditorPreferencesPage_ViewportMovement::OnApply()
 {
-    if (SandboxEditor::UsingNewCameraSystem())
-    {
-        SandboxEditor::SetCameraTranslateSpeed(m_cameraMovementSettings.m_moveSpeed);
-        SandboxEditor::SetCameraRotateSpeed(m_cameraMovementSettings.m_rotateSpeed);
-        SandboxEditor::SetCameraBoostMultiplier(m_cameraMovementSettings.m_fastMoveSpeed);
-        SandboxEditor::SetCameraScrollSpeed(m_cameraMovementSettings.m_wheelZoomSpeed);
-        SandboxEditor::SetCameraOrbitYawRotationInverted(m_cameraMovementSettings.m_invertYRotation);
-        SandboxEditor::SetCameraPanInvertedX(m_cameraMovementSettings.m_invertPan);
-        SandboxEditor::SetCameraPanInvertedY(m_cameraMovementSettings.m_invertPan);
-    }
-    else
-    {
-        gSettings.cameraMoveSpeed = m_cameraMovementSettings.m_moveSpeed;
-        gSettings.cameraRotateSpeed = m_cameraMovementSettings.m_rotateSpeed;
-        gSettings.cameraFastMoveSpeed = m_cameraMovementSettings.m_fastMoveSpeed;
-        gSettings.wheelZoomSpeed = m_cameraMovementSettings.m_wheelZoomSpeed;
-        gSettings.invertYRotation = m_cameraMovementSettings.m_invertYRotation;
-        gSettings.invertPan = m_cameraMovementSettings.m_invertPan;
-    }
+    SandboxEditor::SetCameraTranslateSpeed(m_cameraMovementSettings.m_moveSpeed);
+    SandboxEditor::SetCameraRotateSpeed(m_cameraMovementSettings.m_rotateSpeed);
+    SandboxEditor::SetCameraBoostMultiplier(m_cameraMovementSettings.m_fastMoveSpeed);
+    SandboxEditor::SetCameraScrollSpeed(m_cameraMovementSettings.m_wheelZoomSpeed);
+    SandboxEditor::SetCameraOrbitYawRotationInverted(m_cameraMovementSettings.m_invertYRotation);
+    SandboxEditor::SetCameraPanInvertedX(m_cameraMovementSettings.m_invertPan);
+    SandboxEditor::SetCameraPanInvertedY(m_cameraMovementSettings.m_invertPan);
 }
 
 void CEditorPreferencesPage_ViewportMovement::InitializeSettings()
 {
-    if (SandboxEditor::UsingNewCameraSystem())
-    {
-        m_cameraMovementSettings.m_moveSpeed = SandboxEditor::CameraTranslateSpeed();
-        m_cameraMovementSettings.m_rotateSpeed = SandboxEditor::CameraRotateSpeed();
-        m_cameraMovementSettings.m_fastMoveSpeed = SandboxEditor::CameraBoostMultiplier();
-        m_cameraMovementSettings.m_wheelZoomSpeed = SandboxEditor::CameraScrollSpeed();
-        m_cameraMovementSettings.m_invertYRotation = SandboxEditor::CameraOrbitYawRotationInverted();
-        m_cameraMovementSettings.m_invertPan = SandboxEditor::CameraPanInvertedX() && SandboxEditor::CameraPanInvertedY();
-    }
-    else
-    {
-        m_cameraMovementSettings.m_moveSpeed = gSettings.cameraMoveSpeed;
-        m_cameraMovementSettings.m_rotateSpeed = gSettings.cameraRotateSpeed;
-        m_cameraMovementSettings.m_fastMoveSpeed = gSettings.cameraFastMoveSpeed;
-        m_cameraMovementSettings.m_wheelZoomSpeed = gSettings.wheelZoomSpeed;
-        m_cameraMovementSettings.m_invertYRotation = gSettings.invertYRotation;
-        m_cameraMovementSettings.m_invertPan = gSettings.invertPan;
-    }
+    m_cameraMovementSettings.m_moveSpeed = SandboxEditor::CameraTranslateSpeed();
+    m_cameraMovementSettings.m_rotateSpeed = SandboxEditor::CameraRotateSpeed();
+    m_cameraMovementSettings.m_fastMoveSpeed = SandboxEditor::CameraBoostMultiplier();
+    m_cameraMovementSettings.m_wheelZoomSpeed = SandboxEditor::CameraScrollSpeed();
+    m_cameraMovementSettings.m_invertYRotation = SandboxEditor::CameraOrbitYawRotationInverted();
+    m_cameraMovementSettings.m_invertPan = SandboxEditor::CameraPanInvertedX() && SandboxEditor::CameraPanInvertedY();
 }

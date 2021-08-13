@@ -165,9 +165,9 @@ namespace EMotionFX
         static void Reflect(AZ::ReflectContext* context);
 
     protected:
-        AZStd::vector<AZ::u64>  mNodeIds;          /**< The node ids that are inside this group. */
-        AZStd::string           mName;             /**< The unique identification number for the node group name. */
-        AZ::u32                 mColor;            /**< The color the nodes of the group will be filled with. */
-        bool                    mIsVisible;
+        AZStd::vector<AZ::u64>  m_nodeIds;          /**< The node ids that are inside this group. */
+        AZStd::string           m_name;             /**< The unique identification number for the node group name. */
+        AZ::u32                 m_color;            /**< The color the nodes of the group will be filled with. */
+        bool                    m_isVisible;
     };
 } // namespace EMotionFX

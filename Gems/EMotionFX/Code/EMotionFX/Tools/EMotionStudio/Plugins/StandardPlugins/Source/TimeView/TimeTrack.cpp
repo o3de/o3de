@@ -19,24 +19,22 @@ namespace EMStudio
     // the constructor
     TimeTrack::TimeTrack(TimeViewPlugin* plugin)
     {
-        mPlugin         = plugin;
-        mHeight         = 20;
-        mStartY         = 0;
-        mEnabled        = false;
-        mIsHighlighted  = false;
-        mVisible        = false;
-        mDeletable      = true;
+        m_plugin         = plugin;
+        m_height         = 20;
+        m_startY         = 0;
+        m_enabled        = false;
+        m_isHighlighted  = false;
+        m_visible        = false;
+        m_deletable      = true;
 
         // init font
-        mFont.setPixelSize(14);
-        //mFont.setBold( true );
+        m_font.setPixelSize(14);
 
         // init brushes and pens
-        mBrushDataBG            = QColor(60, 65, 70);
-        //mBrushDataBG          = QColor(50, 50, 50);
-        mBrushDataDisabledBG    = QColor(50, 50, 50);// use the same color //QBrush( QColor(33, 33, 33) );
-        mBrushHeaderBG          = QBrush(QColor(30, 30, 30));
-        mPenText                = QPen(QColor(255, 255, 255));
+        m_brushDataBg            = QColor(60, 65, 70);
+        m_brushDataDisabledBg    = QColor(50, 50, 50);// use the same color //QBrush( QColor(33, 33, 33) );
+        m_brushHeaderBg          = QBrush(QColor(30, 30, 30));
+        m_penText                = QPen(QColor(255, 255, 255));
     }
 
 
@@ -52,14 +50,14 @@ namespace EMStudio
     {
         MCORE_UNUSED(width);
 
-        if (mVisible == false)
+        if (m_visible == false)
         {
             return;
         }
 
-        int32 animEndPixel  = aznumeric_cast<int32>(mPlugin->TimeToPixel(animationLength));
-        int32 clipStartPixel = aznumeric_cast<int32>(mPlugin->TimeToPixel(clipStartTime));
-        int32 clipEndPixel  = aznumeric_cast<int32>(mPlugin->TimeToPixel(clipEndTime));
+        int32 animEndPixel  = aznumeric_cast<int32>(m_plugin->TimeToPixel(animationLength));
+        int32 clipStartPixel = aznumeric_cast<int32>(m_plugin->TimeToPixel(clipStartTime));
+        int32 clipEndPixel  = aznumeric_cast<int32>(m_plugin->TimeToPixel(clipEndTime));
 
         // fill the background
         uint32 height = GetHeight();
@@ -68,17 +66,17 @@ namespace EMStudio
         QRect clipStartRect(0,              startY, clipStartPixel,                 height);
         QRect clipEndRect(clipEndPixel,     startY, animEndPixel - clipEndPixel,      height);
 
-        QColor disabledBGColor  = mBrushDataDisabledBG;
-        QColor bgColor          = mBrushDataBG;
+        QColor disabledBGColor  = m_brushDataDisabledBg;
+        QColor bgColor          = m_brushDataBg;
 
         // make the colors a bit lighter so that we see some highlighting effect
-        if (mIsHighlighted)
+        if (m_isHighlighted)
         {
             disabledBGColor = disabledBGColor.lighter(120);
             bgColor         = bgColor.lighter(120);
         }
 
-        if (mEnabled)
+        if (m_enabled)
         {
             painter.setPen(Qt::NoPen);
             painter.setBrush(disabledBGColor);
@@ -105,10 +103,10 @@ namespace EMStudio
 
         // render all elements
         //uint32 numRenderedElements = 0;
-        const size_t numElems = mElements.size();
+        const size_t numElems = m_elements.size();
         for (size_t i = 0; i < numElems; ++i)
         {
-            TimeTrackElement* element = mElements[i];
+            TimeTrackElement* element = m_elements[i];
 
             // skip rendering the element in case it is not inside the visible area in the widget
             if (element->GetEndTime() < startTime ||
@@ -117,7 +115,7 @@ namespace EMStudio
                 continue;
             }
 
-            bool enabled = mEnabled;
+            bool enabled = m_enabled;
 
             // make sure we render the motion event as disabled as soon as it is in the clipped area
             if (element->GetEndTime() < clipStartTime ||
@@ -137,7 +135,7 @@ namespace EMStudio
     // render the track header
     void TimeTrack::RenderHeader(QPainter& painter, uint32 width, int32 startY)
     {
-        if (mVisible == false)
+        if (m_visible == false)
         {
             return;
         }
@@ -147,14 +145,14 @@ namespace EMStudio
         QRect rect(0, startY, width, height);
 
         painter.setPen(Qt::NoPen);
-        painter.setBrush(mBrushHeaderBG);
+        painter.setBrush(m_brushHeaderBg);
         painter.drawRect(rect);
 
         // render the name
         QTextOption options;
         options.setAlignment(Qt::AlignCenter);
-        painter.setPen(mPenText);
-        painter.drawText(rect, mName.c_str(), options);
+        painter.setPen(m_penText);
+        painter.drawText(rect, m_name.c_str(), options);
     }
 
 
@@ -163,26 +161,26 @@ namespace EMStudio
     {
         if (delFromMem)
         {
-            for (TimeTrackElement* element : mElements)
+            for (TimeTrackElement* element : m_elements)
             {
                 delete element;
             }
         }
 
-        mElements.clear();
+        m_elements.clear();
     }
 
 
     // get the track element at a given pixel
     TimeTrackElement* TimeTrack::GetElementAt(int32 x, int32 y) const
     {
-        if (mVisible == false)
+        if (m_visible == false)
         {
             return nullptr;
         }
 
         // for all elements
-        for (TimeTrackElement* element : mElements)
+        for (TimeTrackElement* element : m_elements)
         {
             // check if its inside
             if (element->GetIsVisible() == false)
@@ -203,12 +201,12 @@ namespace EMStudio
     // calculate the number of selected elements
     size_t TimeTrack::CalcNumSelectedElements() const
     {
-        if (mVisible == false)
+        if (m_visible == false)
         {
             return 0;
         }
 
-        return AZStd::accumulate(begin(mElements), end(mElements), size_t{0}, [](size_t total, const TimeTrackElement* element)
+        return AZStd::accumulate(begin(m_elements), end(m_elements), size_t{0}, [](size_t total, const TimeTrackElement* element)
         {
             return total + element->GetIsSelected();
         });
@@ -218,16 +216,16 @@ namespace EMStudio
     // find and return the first of the selected elements
     TimeTrackElement* TimeTrack::GetFirstSelectedElement() const
     {
-        if (mVisible == false)
+        if (m_visible == false)
         {
             return nullptr;
         }
 
-        const auto foundElement = AZStd::find_if(begin(mElements), end(mElements), [](const TimeTrackElement* element)
+        const auto foundElement = AZStd::find_if(begin(m_elements), end(m_elements), [](const TimeTrackElement* element)
         {
             return element->GetIsSelected();
         });
-        return foundElement != end(mElements) ? *foundElement : nullptr;
+        return foundElement != end(m_elements) ? *foundElement : nullptr;
     }
 
 
@@ -239,11 +237,11 @@ namespace EMStudio
         const size_t endNr      = AZStd::max(elementStartNr, elementEndNr);
 
         // get the number of elements and iterate through them
-        const size_t numElems = mElements.size();
+        const size_t numElems = m_elements.size();
         for (size_t i = 0; i < numElems; ++i)
         {
             const size_t        elementNr   = i;
-            TimeTrackElement*   element     = mElements[i];
+            TimeTrackElement*   element     = m_elements[i];
 
             // check if the current element is in range
             if (elementNr >= startNr && elementNr <= endNr)
@@ -262,7 +260,7 @@ namespace EMStudio
     void TimeTrack::SelectElementsInRect(const QRect& rect, bool overwriteCurSelection, bool select, bool toggleMode)
     {
         // get the number of elements and iterate through them
-        for (TimeTrackElement* element : mElements)
+        for (TimeTrackElement* element : m_elements)
         {
             // get the current element and the corresponding rect
             QRect               elementRect = element->CalcRect();

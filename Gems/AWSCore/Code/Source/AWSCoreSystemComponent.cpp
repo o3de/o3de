@@ -160,7 +160,7 @@ namespace AWSCore
                 // assigned to a specific CPU starting with the specified CPU.
                 AZ::JobManagerDesc jobManagerDesc{};
                 AZ::JobManagerThreadDesc threadDesc(m_firstThreadCPU, m_threadPriority, m_threadStackSize);
-                for (unsigned int i = 0; i < m_threadCount; ++i)
+                for (int i = 0; i < m_threadCount; ++i)
                 {
                     jobManagerDesc.m_workerThreads.push_back(threadDesc);
                     if (threadDesc.m_cpuId > -1)

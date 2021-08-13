@@ -33,7 +33,7 @@ namespace EMStudio
 
         // compute the height of all notification windows with the spacing
         int allNotificationWindowsHeight = 0;
-        for (const NotificationWindow* currentNotificationWindow : mNotificationWindows)
+        for (const NotificationWindow* currentNotificationWindow : m_notificationWindows)
         {
             allNotificationWindowsHeight += currentNotificationWindow->geometry().height() + notificationWindowSpacing;
         }
@@ -44,7 +44,7 @@ namespace EMStudio
         notificationWindow->move(mainWindowBottomRight.x() - notificationWindowGeometry.width() - notificationWindowMainWindowPadding, mainWindowBottomRight.y() - allNotificationWindowsHeight - notificationWindowGeometry.height() - notificationWindowMainWindowPadding);
 
         // add the notification window in the array
-        mNotificationWindows.emplace_back(notificationWindow);
+        m_notificationWindows.emplace_back(notificationWindow);
     }
 
 
@@ -52,24 +52,24 @@ namespace EMStudio
     void NotificationWindowManager::RemoveNotificationWindow(NotificationWindow* notificationWindow)
     {
         // find the notification window
-        auto windowIt = AZStd::find(begin(mNotificationWindows), end(mNotificationWindows), notificationWindow);
+        auto windowIt = AZStd::find(begin(m_notificationWindows), end(m_notificationWindows), notificationWindow);
 
         // if not found, stop here
-        if (windowIt == end(mNotificationWindows))
+        if (windowIt == end(m_notificationWindows))
         {
             return;
         }
 
         // move down each notification window after this one, spacing is added on the height
         const int notificationWindowHeight = notificationWindow->geometry().height() + notificationWindowSpacing;
-        for (auto it = windowIt + 1; it != end(mNotificationWindows); ++it)
+        for (auto it = windowIt + 1; it != end(m_notificationWindows); ++it)
         {
             const QPoint pos = (*it)->pos();
             (*it)->move(pos.x(), pos.y() + notificationWindowHeight);
         }
 
         // remove the notification window
-        mNotificationWindows.erase(windowIt);
+        m_notificationWindows.erase(windowIt);
     }
 
 
@@ -81,7 +81,7 @@ namespace EMStudio
 
         // move each notification window
         int currentNotificationWindowHeight = notificationWindowMainWindowPadding;
-        for (NotificationWindow* notificationWindow : mNotificationWindows)
+        for (NotificationWindow* notificationWindow : m_notificationWindows)
         {
             // add the height of the notification window
             currentNotificationWindowHeight += notificationWindow->geometry().height();

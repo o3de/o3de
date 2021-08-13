@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include "StringUtils.h"
 #include "../Include/SandboxAPI.h"
+#include <set>
 
 #include <QStringList>
 

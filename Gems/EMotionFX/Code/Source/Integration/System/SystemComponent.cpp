@@ -132,7 +132,7 @@ namespace EMotionFX
             /// Dispatch motion events to listeners via ActorNotificationBus::OnMotionEvent.
             void OnEvent(const EMotionFX::EventInfo& emfxInfo) override
             {
-                const ActorInstance* actorInstance = emfxInfo.mActorInstance;
+                const ActorInstance* actorInstance = emfxInfo.m_actorInstance;
                 if (actorInstance)
                 {
                     const AZ::EntityId owningEntityId = actorInstance->GetEntityId();
@@ -140,11 +140,11 @@ namespace EMotionFX
                     // Fill engine-compatible structure to dispatch to game code.
                     MotionEvent motionEvent;
                     motionEvent.m_entityId = owningEntityId;
-                    motionEvent.m_actorInstance = emfxInfo.mActorInstance;
-                    motionEvent.m_motionInstance = emfxInfo.mMotionInstance;
-                    motionEvent.m_time = emfxInfo.mTimeValue;
+                    motionEvent.m_actorInstance = emfxInfo.m_actorInstance;
+                    motionEvent.m_motionInstance = emfxInfo.m_motionInstance;
+                    motionEvent.m_time = emfxInfo.m_timeValue;
                     // TODO
-                    for (const auto& eventData : emfxInfo.mEvent->GetEventDatas())
+                    for (const auto& eventData : emfxInfo.m_event->GetEventDatas())
                     {
                         if (const EMotionFX::TwoStringEventData* twoStringEventData = azrtti_cast<const EMotionFX::TwoStringEventData*>(eventData.get()))
                         {
@@ -153,8 +153,8 @@ namespace EMotionFX
                             break;
                         }
                     }
-                    motionEvent.m_globalWeight = emfxInfo.mGlobalWeight;
-                    motionEvent.m_localWeight = emfxInfo.mLocalWeight;
+                    motionEvent.m_globalWeight = emfxInfo.m_globalWeight;
+                    motionEvent.m_localWeight = emfxInfo.m_localWeight;
                     motionEvent.m_isEventStart = emfxInfo.IsEventStart();
 
                     // Queue the event to flush on the main thread.
@@ -469,9 +469,9 @@ namespace EMotionFX
 
             // Initialize MCore, which is EMotionFX's standard library of containers and systems.
             MCore::Initializer::InitSettings coreSettings;
-            coreSettings.mMemAllocFunction = &EMotionFXAlloc;
-            coreSettings.mMemReallocFunction = &EMotionFXRealloc;
-            coreSettings.mMemFreeFunction = &EMotionFXFree;
+            coreSettings.m_memAllocFunction = &EMotionFXAlloc;
+            coreSettings.m_memReallocFunction = &EMotionFXRealloc;
+            coreSettings.m_memFreeFunction = &EMotionFXFree;
             if (!MCore::Initializer::Init(&coreSettings))
             {
                 AZ_Error("EMotion FX Animation", false, "Failed to initialize EMotion FX SDK Core");
@@ -480,7 +480,7 @@ namespace EMotionFX
 
             // Initialize EMotionFX runtime.
             EMotionFX::Initializer::InitSettings emfxSettings;
-            emfxSettings.mUnitType = MCore::Distance::UNITTYPE_METERS;
+            emfxSettings.m_unitType = MCore::Distance::UNITTYPE_METERS;
 
             if (!EMotionFX::Initializer::Init(&emfxSettings))
             {
@@ -709,7 +709,7 @@ namespace EMotionFX
                             AZ::Transform currentTransform = AZ::Transform::CreateIdentity();
                             AZ::TransformBus::EventResult(currentTransform, entityId, &AZ::TransformBus::Events::GetWorldTM);
 
-                            const AZ::Vector3 actorInstancePosition = actorInstance->GetWorldSpaceTransform().mPosition;
+                            const AZ::Vector3 actorInstancePosition = actorInstance->GetWorldSpaceTransform().m_position;
                             const AZ::Vector3 positionDelta = actorInstancePosition - currentTransform.GetTranslation();
 
                             if (hasPhysicsController)
@@ -724,7 +724,7 @@ namespace EMotionFX
                             }
 
                             // Update the entity rotation.
-                            const AZ::Quaternion actorInstanceRotation = actorInstance->GetWorldSpaceTransform().mRotation;
+                            const AZ::Quaternion actorInstanceRotation = actorInstance->GetWorldSpaceTransform().m_rotation;
                             const AZ::Quaternion currentRotation = currentTransform.GetRotation();
                             if (!currentRotation.IsClose(actorInstanceRotation, AZ::Constants::FloatEpsilon))
                             {

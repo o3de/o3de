@@ -36,7 +36,7 @@ public:
     ELSE_LOAD_PROPERTY(Vec3);                       \
     ELSE_LOAD_PROPERTY(int);                        \
     ELSE_LOAD_PROPERTY(float);                      \
-    ELSE_LOAD_PROPERTY(string);                     \
+    ELSE_LOAD_PROPERTY(AZStd::string);              \
     ELSE_LOAD_PROPERTY(bool);
 
 

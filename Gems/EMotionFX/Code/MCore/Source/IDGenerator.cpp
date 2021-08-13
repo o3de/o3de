@@ -15,7 +15,7 @@ namespace MCore
 {
     // constructor
     IDGenerator::IDGenerator()
-        : mNextID{0}
+        : m_nextId{0}
     {
     }
 
@@ -29,7 +29,7 @@ namespace MCore
     // get a unique id
     size_t IDGenerator::GenerateID()
     {
-        const size_t result = mNextID++;
+        const size_t result = m_nextId++;
         MCORE_ASSERT(result != InvalidIndex); // reached the limit
         return result;
     }

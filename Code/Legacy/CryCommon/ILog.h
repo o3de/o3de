@@ -145,9 +145,7 @@ struct ILog
     virtual void Unindent(class CLogIndenter* indenter) = 0;
 #endif
 
-#if !defined(RESOURCE_COMPILER)
     virtual void FlushAndClose() = 0;
-#endif
 };
 
 #if !defined(SUPPORT_LOG_IDENTER)

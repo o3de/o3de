@@ -135,7 +135,7 @@ private:
         std::vector<int> keySelectionFlags;
         _smart_ptr<ISplineBackup> undo;
         _smart_ptr<ISplineBackup> redo;
-        string id;
+        AZStd::string id;
         ISplineInterpolator* pSpline;
     };
 

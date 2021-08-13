@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/RHI/ObjectCollector.h>
 #include <Atom/RHI.Reflect/DeviceDescriptor.h>
 #include <Atom/RHI.Reflect/DeviceFeatures.h>
 #include <Atom/RHI.Reflect/DeviceLimits.h>
@@ -124,7 +125,6 @@ namespace AZ
             Format GetNearestSupportedFormat(Format requestedFormat, FormatCapabilities requestedCapabilities) const;
 
             //! Small API to support getting supported/working swapchain formats for a window.
-            //! [GFX TODO]ATOM-1125] [RHI] Device::GetValidSwapChainImageFormats()
             //! Returns the set of supported formats for swapchain images.
             virtual AZStd::vector<Format> GetValidSwapChainImageFormats(const WindowHandle& windowHandle) const;
 
@@ -139,6 +139,9 @@ namespace AZ
             virtual ResourceMemoryRequirements GetResourceMemoryRequirements(const ImageDescriptor& descriptor) = 0;
             //! Get the memory requirements for allocating a buffer resource.
             virtual ResourceMemoryRequirements GetResourceMemoryRequirements(const BufferDescriptor& descriptor) = 0;
+
+            //! Notifies after all objects currently in the platform release queue are released
+            virtual void ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction) = 0;
 
         protected:
             DeviceFeatures m_features;

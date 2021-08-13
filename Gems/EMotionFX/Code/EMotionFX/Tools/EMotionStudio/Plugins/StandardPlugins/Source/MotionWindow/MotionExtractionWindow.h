@@ -61,28 +61,28 @@ namespace EMStudio
         MCORE_DEFINECOMMANDCALLBACK(CommandUnselectCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandClearSelectionCallback);
         MCORE_DEFINECOMMANDCALLBACK(CommandAdjustActorCallback);
-        CommandSelectCallback*          mSelectCallback;
-        CommandUnselectCallback*        mUnselectCallback;
-        CommandClearSelectionCallback*  mClearSelectionCallback;
-        CommandAdjustActorCallback*     mAdjustActorCallback;
+        CommandSelectCallback*          m_selectCallback;
+        CommandUnselectCallback*        m_unselectCallback;
+        CommandClearSelectionCallback*  m_clearSelectionCallback;
+        CommandAdjustActorCallback*     m_adjustActorCallback;
 
         // general
-        MotionWindowPlugin*             mMotionWindowPlugin;
-        QCheckBox*                      mAutoMode;
+        MotionWindowPlugin*             m_motionWindowPlugin;
+        QCheckBox*                      m_autoMode;
 
         // flags widget
-        QWidget*                        mFlagsWidget;
-        QCheckBox*                      mCaptureHeight;
+        QWidget*                        m_flagsWidget;
+        QCheckBox*                      m_captureHeight;
 
         //
-        QVBoxLayout*                    mMainVerticalLayout;
-        QVBoxLayout*                    mChildVerticalLayout;
-        QWidget*                        mWarningWidget;
-        bool                            mWarningShowed;
+        QVBoxLayout*                    m_mainVerticalLayout;
+        QVBoxLayout*                    m_childVerticalLayout;
+        QWidget*                        m_warningWidget;
+        bool                            m_warningShowed;
 
         // motion extraction node selection
-        NodeSelectionWindow*            mMotionExtractionNodeSelectionWindow;
-        AzQtComponents::BrowseEdit*     mWarningSelectNodeLink;
+        NodeSelectionWindow*            m_motionExtractionNodeSelectionWindow;
+        AzQtComponents::BrowseEdit*     m_warningSelectNodeLink;
 
         // helper functions
         void CreateFlagsWidget();

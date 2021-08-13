@@ -47,12 +47,12 @@ namespace EMStudio
         }
         EMStudioPlugin* FindActivePlugin(uint32 classID) const;   // find first active plugin, or nullptr when not found
 
-        MCORE_INLINE size_t GetNumPlugins() const                           { return mPlugins.size(); }
-        MCORE_INLINE EMStudioPlugin* GetPlugin(const size_t index)          { return mPlugins[index]; }
+        MCORE_INLINE size_t GetNumPlugins() const                           { return m_plugins.size(); }
+        MCORE_INLINE EMStudioPlugin* GetPlugin(const size_t index)          { return m_plugins[index]; }
 
-        MCORE_INLINE size_t GetNumActivePlugins() const                     { return mActivePlugins.size(); }
-        MCORE_INLINE EMStudioPlugin* GetActivePlugin(const size_t index)    { return mActivePlugins[index]; }
-        MCORE_INLINE const PluginVector& GetActivePlugins() { return mActivePlugins; }
+        MCORE_INLINE size_t GetNumActivePlugins() const                     { return m_activePlugins.size(); }
+        MCORE_INLINE EMStudioPlugin* GetActivePlugin(const size_t index)    { return m_activePlugins[index]; }
+        MCORE_INLINE const PluginVector& GetActivePlugins() { return m_activePlugins; }
 
         size_t GetNumActivePluginsOfType(const char* pluginType) const;
         size_t GetNumActivePluginsOfType(uint32 classID) const;
@@ -61,9 +61,9 @@ namespace EMStudio
         QString GenerateObjectName() const;
 
     private:
-        PluginVector mPlugins;
+        PluginVector m_plugins;
 
-        PluginVector mActivePlugins;
+        PluginVector m_activePlugins;
 
         void UnloadPlugins();
     };

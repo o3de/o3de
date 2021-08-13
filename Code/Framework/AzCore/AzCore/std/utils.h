@@ -23,7 +23,7 @@
 #include <AzCore/std/typetraits/is_lvalue_reference.h>
 #include <AzCore/std/typetraits/void_t.h>
 
-#include <memory>
+#include <utility>
 
 namespace AZStd
 {

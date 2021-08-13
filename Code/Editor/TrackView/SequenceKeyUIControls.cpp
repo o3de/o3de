@@ -91,7 +91,7 @@ bool CSequenceKeyUIControls::OnKeySelectionChange(CTrackViewKeyBundle& selectedK
                 bool bNotParent = !bNotMe || pCurrentSequence->IsAncestorOf(pSequence) == false;
                 if (bNotMe && bNotParent)
                 {
-                    string seqName = pCurrentSequence->GetName();
+                    AZStd::string seqName = pCurrentSequence->GetName();
 
                     QString ownerIdString = CTrackViewDialog::GetEntityIdAsString(pCurrentSequence->GetSequenceComponentEntityId());
                     mv_sequence->AddEnumItem(seqName.c_str(), ownerIdString);

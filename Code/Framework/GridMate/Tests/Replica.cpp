@@ -3687,7 +3687,7 @@ public:
 
         void Touch()
         {
-            string randomStr;
+            AZStd::string randomStr;
             for (unsigned i = 0; i < k_strSize; ++i)
             {
                 randomStr += 'a' + (rand() % 26);
@@ -3698,7 +3698,7 @@ public:
         bool IsReplicaMigratable() override { return false; }
 
         static const unsigned k_strSize = 64;
-        DataSet<string> m_value;
+        DataSet<AZStd::string> m_value;
     };
 
     void run()

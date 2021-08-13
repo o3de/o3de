@@ -438,7 +438,7 @@ void CFileUtil::EditTextureFile(const char* textureFile, [[maybe_unused]] bool b
 //////////////////////////////////////////////////////////////////////////
 bool CFileUtil::EditMayaFile(const char* filepath, const bool bExtractFromPak, const bool bUseGameFolder)
 {
-    QString dosFilepath = QtUtil::ToQString(PathUtil::ToDosPath(filepath));
+    QString dosFilepath = PathUtil::ToDosPath(filepath).c_str();
     if (bExtractFromPak)
     {
         ExtractFile(dosFilepath);
@@ -453,7 +453,7 @@ bool CFileUtil::EditMayaFile(const char* filepath, const bool bExtractFromPak, c
             dosFilepath = sGameFolder + '\\' + filepath;
         }
 
-        dosFilepath = PathUtil::ToDosPath(dosFilepath.toUtf8().data());
+        dosFilepath = PathUtil::ToDosPath(dosFilepath.toUtf8().data()).c_str();
     }
 
     const char* engineRoot;
@@ -1471,7 +1471,7 @@ IFileUtil::ECopyTreeResult CFileUtil::CopyTree(const QString& strSourceDirectory
     // all with the same names and all with the same files names inside. If you would make a depth-first search
     // you could end up with the files from the deepest folder in ALL your folders.
 
-    std::vector<string> ignoredPatterns;
+    std::vector<AZStd::string> ignoredPatterns;
     StringHelpers::Split(ignoreFilesAndFolders, "|", false, ignoredPatterns);
 
     QDirIterator::IteratorFlags flags = QDirIterator::NoIteratorFlags;
@@ -1497,7 +1497,7 @@ IFileUtil::ECopyTreeResult CFileUtil::CopyTree(const QString& strSourceDirectory
         const QString fileName = QFileInfo(filePath).fileName();
 
         bool ignored = false;
-        for (const string& ignoredFile : ignoredPatterns)
+        for (const AZStd::string& ignoredFile : ignoredPatterns)
         {
             if (StringHelpers::CompareIgnoreCase(fileName.toStdString().c_str(), ignoredFile.c_str()) == 0)
             {
@@ -2326,13 +2326,14 @@ uint32 CFileUtil::GetAttributes(const char* filename, bool bUseSourceControl /*=
         return SCC_FILE_ATTRIBUTE_READONLY | SCC_FILE_ATTRIBUTE_INPAK;
     }
 
-    DWORD dwAttrib = ::GetFileAttributes(file.GetAdjustedFilename());
-    if (dwAttrib == INVALID_FILE_ATTRIBUTES)
+    
+    const char* adjustedFile = file.GetAdjustedFilename();
+    if (!AZ::IO::SystemFile::Exists(adjustedFile))
     {
         return SCC_FILE_ATTRIBUTE_INVALID;
     }
 
-    if (dwAttrib & FILE_ATTRIBUTE_READONLY)
+    if (!AZ::IO::SystemFile::IsWritable(adjustedFile))
     {
         return SCC_FILE_ATTRIBUTE_NORMAL | SCC_FILE_ATTRIBUTE_READONLY;
     }

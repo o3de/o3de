@@ -364,7 +364,7 @@ namespace EMotionFX
 
     float AnimGraphSyncTrack::GetDuration() const
     {
-        return mMotion->GetMotionData()->GetDuration();
+        return m_motion->GetMotionData()->GetDuration();
     }
 
 

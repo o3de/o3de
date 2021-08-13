@@ -195,7 +195,7 @@ namespace AssetProcessor
         AZ::IO::Path currentFullFolderPath;
         const AZ::IO::PathView filename = productNamePath.Filename();
         const AZ::IO::PathView fullPathWithoutFilename = productNamePath.RemoveFilename();
-        AZStd::fixed_string<AZ::IO::MaxPathLength> currentPath;
+        AZ::IO::FixedMaxPathString currentPath;
         for (auto pathIt = fullPathWithoutFilename.begin(); pathIt != fullPathWithoutFilename.end(); ++pathIt)
         {
             currentPath = pathIt->FixedMaxPathString();
@@ -236,7 +236,7 @@ namespace AssetProcessor
         }
 
         AZStd::shared_ptr<ProductAssetTreeItemData> productItemData =
-            ProductAssetTreeItemData::MakeShared(&product, product.m_productName, AZStd::fixed_string<AZ::IO::MaxPathLength>(filename.Native()).c_str(), false, sourceId);
+            ProductAssetTreeItemData::MakeShared(&product, product.m_productName, AZ::IO::FixedMaxPathString(filename.Native()).c_str(), false, sourceId);
         m_productToTreeItem[product.m_productName] =
             parentItem->CreateChild(productItemData);
         m_productIdToTreeItem[product.m_productID] = m_productToTreeItem[product.m_productName];

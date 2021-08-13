@@ -17,8 +17,8 @@ namespace MCore
     // constructor
     Command::Callback::Callback(bool executePreUndo, bool executePreCommand)
     {
-        mPreUndoExecute     = executePreUndo;
-        mPreCommandExecute  = executePreCommand;
+        m_preUndoExecute     = executePreUndo;
+        m_preCommandExecute  = executePreCommand;
     }
 
 
@@ -30,8 +30,8 @@ namespace MCore
 
     // constructor
     Command::Command(AZStd::string commandName, Command* originalCommand)
-        : mOrgCommand(originalCommand)
-        , mCommandName(AZStd::move(commandName))
+        : m_orgCommand(originalCommand)
+        , m_commandName(AZStd::move(commandName))
     {
     }
 
@@ -59,13 +59,13 @@ namespace MCore
 
     const char* Command::GetName() const
     {
-        return mCommandName.c_str();
+        return m_commandName.c_str();
     }
 
 
     const AZStd::string& Command::GetNameString() const
     {
-        return mCommandName;
+        return m_commandName;
     }
 
 
@@ -84,25 +84,25 @@ namespace MCore
 
     size_t Command::GetNumCallbacks() const
     {
-        return mCallbacks.size();
+        return m_callbacks.size();
     }
 
 
     void Command::AddCallback(Command::Callback* callback)
     { 
-        mCallbacks.push_back(callback);
+        m_callbacks.push_back(callback);
     }
 
 
     bool Command::CheckIfHasCallback(Command::Callback* callback) const
     {
-        return (AZStd::find(mCallbacks.begin(), mCallbacks.end(), callback) != mCallbacks.end());
+        return (AZStd::find(m_callbacks.begin(), m_callbacks.end(), callback) != m_callbacks.end());
     }
 
 
     void Command::RemoveCallback(Command::Callback* callback, bool delFromMem)
     {
-        mCallbacks.erase(AZStd::remove(mCallbacks.begin(), mCallbacks.end(), callback), mCallbacks.end());
+        m_callbacks.erase(AZStd::remove(m_callbacks.begin(), m_callbacks.end(), callback), m_callbacks.end());
         if (delFromMem)
         {
             delete callback;
@@ -112,21 +112,21 @@ namespace MCore
 
     void Command::RemoveAllCallbacks()
     {
-        const size_t numCallbacks = mCallbacks.size();
+        const size_t numCallbacks = m_callbacks.size();
         for (size_t i = 0; i < numCallbacks; ++i)
         {
             // If it crashes here, you probably created your callback in another dll and didn't remove it from memory there as well.
-            delete mCallbacks[i];
+            delete m_callbacks[i];
         }
 
-        mCallbacks.clear();
+        m_callbacks.clear();
     }
 
 
     // calculate the number of registered pre-execute callbacks
     size_t Command::CalcNumPreCommandCallbacks() const
     {
-        return AZStd::accumulate(begin(mCallbacks), end(mCallbacks), size_t{0}, [](size_t total, const Callback* callback)
+        return AZStd::accumulate(begin(m_callbacks), end(m_callbacks), size_t{0}, [](size_t total, const Callback* callback)
         {
             return callback->GetExecutePreCommand() ? total + 1 : total;
         });
@@ -136,6 +136,6 @@ namespace MCore
     // calculate the number of registered post-execute callbacks
     size_t Command::CalcNumPostCommandCallbacks() const
     {
-        return mCallbacks.size() - CalcNumPreCommandCallbacks();
+        return m_callbacks.size() - CalcNumPreCommandCallbacks();
     }
 } // namespace MCore

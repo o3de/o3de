@@ -9,7 +9,7 @@
 #pragma once
 
 #include <AzCore/std/containers/unordered_map.h>
-#include <MCore/Source/AlignedArray.h>
+#include <AzCore/std/containers/vector.h>
 #include <EMotionFX/Source/PoseData.h>
 #include <EMotionFX/Source/Transform.h>
 
@@ -87,7 +87,7 @@ namespace EMotionFX
          * The difference between using GetWorldSpaceTransform directly from the current pose is that this looks whether the mesh is skinned or not.
          * Right now we handle skinned meshes differently. This will change in the future. Skinned meshes will always return an identity transform and therefore act like they cannot be animated.
          * This requires the pose to be linked to an actor instance. If this is not the case, identity transform is returned.
-         * @param The LOD level, which must be in range of 0..mActor->GetNumLODLevels().
+         * @param The LOD level, which must be in range of 0..m_actor->GetNumLODLevels().
          * @param nodeIndex The index of the node. If this node happens to have no mesh the regular current world space transform is returned.
          */
         Transform GetMeshNodeWorldSpaceTransform(size_t lodLevel, size_t nodeIndex) const;
@@ -98,25 +98,25 @@ namespace EMotionFX
 
         Transform CalcTrajectoryTransform() const;
 
-        MCORE_INLINE const Transform* GetLocalSpaceTransforms() const                               { return mLocalSpaceTransforms.GetReadPtr(); }
-        MCORE_INLINE const Transform* GetModelSpaceTransforms() const                               { return mModelSpaceTransforms.GetReadPtr(); }
-        MCORE_INLINE size_t GetNumTransforms() const                                                { return mLocalSpaceTransforms.GetLength(); }
-        MCORE_INLINE const ActorInstance* GetActorInstance() const                                  { return mActorInstance; }
-        MCORE_INLINE const Actor* GetActor() const                                                  { return mActor; }
-        MCORE_INLINE const Skeleton* GetSkeleton() const                                            { return mSkeleton; }
+        MCORE_INLINE const Transform* GetLocalSpaceTransforms() const                               { return m_localSpaceTransforms.data(); }
+        MCORE_INLINE const Transform* GetModelSpaceTransforms() const                               { return m_modelSpaceTransforms.data(); }
+        MCORE_INLINE size_t GetNumTransforms() const                                                { return m_localSpaceTransforms.size(); }
+        MCORE_INLINE const ActorInstance* GetActorInstance() const                                  { return m_actorInstance; }
+        MCORE_INLINE const Actor* GetActor() const                                                  { return m_actor; }
+        MCORE_INLINE const Skeleton* GetSkeleton() const                                            { return m_skeleton; }
 
-        MCORE_INLINE Transform& GetLocalSpaceTransformDirect(size_t nodeIndex)                      { return mLocalSpaceTransforms[nodeIndex]; }
-        MCORE_INLINE Transform& GetModelSpaceTransformDirect(size_t nodeIndex)                      { return mModelSpaceTransforms[nodeIndex]; }
-        MCORE_INLINE const Transform& GetLocalSpaceTransformDirect(size_t nodeIndex) const          { return mLocalSpaceTransforms[nodeIndex]; }
-        MCORE_INLINE const Transform& GetModelSpaceTransformDirect(size_t nodeIndex) const          { return mModelSpaceTransforms[nodeIndex]; }
-        MCORE_INLINE void SetLocalSpaceTransformDirect(size_t nodeIndex, const Transform& transform){ mLocalSpaceTransforms[nodeIndex]  = transform; mFlags[nodeIndex] |= FLAG_LOCALTRANSFORMREADY; }
-        MCORE_INLINE void SetModelSpaceTransformDirect(size_t nodeIndex, const Transform& transform){ mModelSpaceTransforms[nodeIndex] = transform; mFlags[nodeIndex] |= FLAG_MODELTRANSFORMREADY; }
-        MCORE_INLINE void InvalidateLocalSpaceTransform(size_t nodeIndex)                           { mFlags[nodeIndex] &= ~FLAG_LOCALTRANSFORMREADY; }
-        MCORE_INLINE void InvalidateModelSpaceTransform(size_t nodeIndex)                           { mFlags[nodeIndex] &= ~FLAG_MODELTRANSFORMREADY; }
+        MCORE_INLINE Transform& GetLocalSpaceTransformDirect(size_t nodeIndex)                      { return m_localSpaceTransforms[nodeIndex]; }
+        MCORE_INLINE Transform& GetModelSpaceTransformDirect(size_t nodeIndex)                      { return m_modelSpaceTransforms[nodeIndex]; }
+        MCORE_INLINE const Transform& GetLocalSpaceTransformDirect(size_t nodeIndex) const          { return m_localSpaceTransforms[nodeIndex]; }
+        MCORE_INLINE const Transform& GetModelSpaceTransformDirect(size_t nodeIndex) const          { return m_modelSpaceTransforms[nodeIndex]; }
+        MCORE_INLINE void SetLocalSpaceTransformDirect(size_t nodeIndex, const Transform& transform){ m_localSpaceTransforms[nodeIndex]  = transform; m_flags[nodeIndex] |= FLAG_LOCALTRANSFORMREADY; }
+        MCORE_INLINE void SetModelSpaceTransformDirect(size_t nodeIndex, const Transform& transform){ m_modelSpaceTransforms[nodeIndex] = transform; m_flags[nodeIndex] |= FLAG_MODELTRANSFORMREADY; }
+        MCORE_INLINE void InvalidateLocalSpaceTransform(size_t nodeIndex)                           { m_flags[nodeIndex] &= ~FLAG_LOCALTRANSFORMREADY; }
+        MCORE_INLINE void InvalidateModelSpaceTransform(size_t nodeIndex)                           { m_flags[nodeIndex] &= ~FLAG_MODELTRANSFORMREADY; }
 
-        MCORE_INLINE void SetMorphWeight(size_t index, float weight)                                { mMorphWeights[index] = weight; }
-        MCORE_INLINE float GetMorphWeight(size_t index) const                                       { return mMorphWeights[index]; }
-        MCORE_INLINE size_t GetNumMorphWeights() const                                              { return mMorphWeights.GetLength(); }
+        MCORE_INLINE void SetMorphWeight(size_t index, float weight)                                { m_morphWeights[index] = weight; }
+        MCORE_INLINE float GetMorphWeight(size_t index) const                                       { return m_morphWeights[index]; }
+        MCORE_INLINE size_t GetNumMorphWeights() const                                              { return m_morphWeights.size(); }
         void ResizeNumMorphs(size_t numMorphTargets);
 
         /**
@@ -168,8 +168,8 @@ namespace EMotionFX
 
         Pose& operator=(const Pose& other);
 
-        MCORE_INLINE uint8 GetFlags(size_t nodeIndex) const         { return mFlags[nodeIndex]; }
-        MCORE_INLINE void SetFlags(size_t nodeIndex, uint8 flags)   { mFlags[nodeIndex] = flags; }
+        MCORE_INLINE uint8 GetFlags(size_t nodeIndex) const         { return m_flags[nodeIndex]; }
+        MCORE_INLINE void SetFlags(size_t nodeIndex, uint8 flags)   { m_flags[nodeIndex] = flags; }
 
         bool HasPoseData(const AZ::TypeId& typeId) const;
         PoseData* GetPoseDataByType(const AZ::TypeId& typeId) const;
@@ -193,14 +193,14 @@ namespace EMotionFX
         T* GetAndPreparePoseData(ActorInstance* linkToActorInstance) { return azdynamic_cast<T*>(GetAndPreparePoseData(azrtti_typeid<T>(), linkToActorInstance)); }
 
     private:
-        mutable MCore::AlignedArray<Transform, 16>  mLocalSpaceTransforms;
-        mutable MCore::AlignedArray<Transform, 16>  mModelSpaceTransforms;
-        mutable MCore::AlignedArray<uint8, 16>      mFlags;
+        mutable AZStd::vector<Transform>  m_localSpaceTransforms;
+        mutable AZStd::vector<Transform>  m_modelSpaceTransforms;
+        mutable AZStd::vector<uint8>      m_flags;
         AZStd::unordered_map<AZ::TypeId, AZStd::unique_ptr<PoseData> > m_poseDatas;
-        MCore::AlignedArray<float, 16>              mMorphWeights;      /**< The morph target weights. */
-        const ActorInstance*                        mActorInstance;
-        const Actor*                                mActor;
-        const Skeleton*                             mSkeleton;
+        AZStd::vector<float>              m_morphWeights;      /**< The morph target weights. */
+        const ActorInstance*                        m_actorInstance;
+        const Actor*                                m_actor;
+        const Skeleton*                             m_skeleton;
 
         void RecursiveInvalidateModelSpaceTransforms(const Actor* actor, size_t nodeIndex);
 
