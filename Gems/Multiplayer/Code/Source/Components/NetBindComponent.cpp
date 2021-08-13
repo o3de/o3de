@@ -274,8 +274,8 @@ namespace Multiplayer
 
     void NetBindComponent::CreateInput(NetworkInput& networkInput, float deltaTime)
     {
-        // Only autonomous or authority runs this logic
-        AZ_Assert(m_netEntityRole == NetEntityRole::Autonomous || m_netEntityRole == NetEntityRole::Authority, "Incorrect network role for input creation");
+        // Only autonomous runs this logic
+        AZ_Assert(IsNetEntityRoleAutonomous(), "Incorrect network role for input creation");
         for (MultiplayerComponent* multiplayerComponent : m_multiplayerInputComponentVector)
         {
             multiplayerComponent->GetController()->CreateInput(networkInput, deltaTime);
@@ -284,6 +284,8 @@ namespace Multiplayer
 
     void NetBindComponent::ProcessInput(NetworkInput& networkInput, float deltaTime)
     {
+        AZ_TracePrintf("gathers", "Processing input, inputId=%d", static_cast<int32_t>(networkInput.GetClientInputId()));
+
         m_isProcessingInput = true;
         // Only autonomous and authority runs this logic
         AZ_Assert((NetworkRoleHasController(m_netEntityRole)), "Incorrect network role for input processing");

@@ -66,6 +66,11 @@ namespace Multiplayer
         }
     }
 
+    inline double ConvertTimeMsToSeconds(AZ::TimeMs value)
+    {
+        return static_cast<double>(static_cast<AZ::TimeMs>(value)) / 1000.0;
+    }
+
     void LocalPredictionPlayerInputComponent::LocalPredictionPlayerInputComponent::Reflect(AZ::ReflectContext* context)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
@@ -151,7 +156,7 @@ namespace Multiplayer
         }
 
         const AZ::TimeMs currentTimeMs = AZ::GetElapsedTimeMs();
-        const double clientInputRateSec = static_cast<double>(static_cast<AZ::TimeMs>(cl_InputRateMs)) / 1000.0;
+        const double clientInputRateSec = ConvertTimeMsToSeconds(cl_InputRateMs);
         m_lastInputReceivedTimeMs = currentTimeMs;
 
         // Keep track of last inputs received, also allows us to update frame ids
@@ -176,8 +181,8 @@ namespace Multiplayer
             if (m_clientBankedTime < sv_MaxBankTimeWindowSec)
             {
                 // Client blends from previous frame to target so here we subtract blend factor to get to that state
-                const float blendFactor = AZStd::min(AZStd::max(0.f, input.GetHostBlendFactor()), 1.f);
-                const AZ::TimeMs blendMs = AZ::TimeMs(static_cast<float>(static_cast<AZ::TimeMs>(cl_InputRateMs)) * (1.f - blendFactor));
+                const float blendFactor = AZStd::min(AZStd::max(0.f, input.GetHostBlendFactor()), 1.0f);
+                const AZ::TimeMs blendMs = AZ::TimeMs(static_cast<float>(static_cast<AZ::TimeMs>(cl_InputRateMs)) * (1.0f - blendFactor));
                 m_clientBankedTime = AZStd::min(m_clientBankedTime + clientInputRateSec, (double)sv_MaxBankTimeWindowSec); // clamp to boundary
                 {
                     ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs() - blendMs, input.GetHostBlendFactor(), invokingConnection->GetConnectionId());
@@ -259,7 +264,7 @@ namespace Multiplayer
             return;
         }
 
-        const float clientInputRateSec = static_cast<float>(static_cast<AZ::TimeMs>(cl_InputRateMs)) / 1000.0;
+        const double clientInputRateSec = ConvertTimeMsToSeconds(cl_InputRateMs);
 
         // Copy array so we can modify input ids
         NetworkInputMigrationVector inputArrayCopy = inputArray;
@@ -334,7 +339,7 @@ namespace Multiplayer
         // If this correction is for a move outside our input history window, just start replaying from the oldest move we have available
         const uint32_t startReplayIndex = (inputHistorySize > historicalDelta) ? (inputHistorySize - historicalDelta) : 0;
 
-        const float clientInputRateSec = static_cast<float>(static_cast<AZ::TimeMs>(cl_InputRateMs)) / 1000.0;
+        const double clientInputRateSec = ConvertTimeMsToSeconds(cl_InputRateMs);
         for (uint32_t replayIndex = startReplayIndex; replayIndex < inputHistorySize; ++replayIndex)
         {
             // Reprocess the input for this frame
@@ -405,9 +410,9 @@ namespace Multiplayer
 
     void LocalPredictionPlayerInputComponentController::UpdateAutonomous(AZ::TimeMs deltaTimeMs)
     {
-        const double deltaTime = static_cast<double>(deltaTimeMs) / 1000.0;
-        const double inputRate = static_cast<double>(static_cast<AZ::TimeMs>(cl_InputRateMs)) / 1000.0;
-        const double maxRewindHistory = static_cast<double>(static_cast<AZ::TimeMs>(cl_MaxRewindHistoryMs)) / 1000.0;
+        const double deltaTime = ConvertTimeMsToSeconds(deltaTimeMs);
+        const double clientInputRateSec = ConvertTimeMsToSeconds(cl_InputRateMs);
+        const double maxRewindHistory = ConvertTimeMsToSeconds(cl_MaxRewindHistoryMs);
 
 #ifndef AZ_RELEASE_BUILD
         m_moveAccumulator += deltaTime * cl_DebugHackTimeMultiplier;
@@ -415,13 +420,13 @@ namespace Multiplayer
         m_moveAccumulator += deltaTime;
 #endif
 
-        const uint32_t maxClientInputs = inputRate > 0.0 ? static_cast<uint32_t>(maxRewindHistory / inputRate) : 0;
+        const uint32_t maxClientInputs = clientInputRateSec > 0.0 ? static_cast<uint32_t>(maxRewindHistory / clientInputRateSec) : 0;
 
         IMultiplayer* multiplayer = GetMultiplayer();
         INetworkTime* networkTime = GetNetworkTime();
-        while (m_moveAccumulator >= inputRate)
+        while (m_moveAccumulator >= clientInputRateSec)
         {
-            m_moveAccumulator -= inputRate;
+            m_moveAccumulator -= clientInputRateSec;
             ++m_clientInputId;
 
             NetworkInputArray inputArray(GetEntityHandle());
@@ -433,38 +438,16 @@ namespace Multiplayer
             input.SetHostBlendFactor(multiplayer->GetCurrentBlendFactor());
 
             // Allow components to form the input for this frame
-            GetNetBindComponent()->CreateInput(input, inputRate);
+            GetNetBindComponent()->CreateInput(input, clientInputRateSec);
 
             // Process the input for this frame
-            GetNetBindComponent()->ProcessInput(input, inputRate);
+            GetNetBindComponent()->ProcessInput(input, clientInputRateSec);
 
             AZLOG(NET_Prediction, "Processed InputId=%d", aznumeric_cast<int32_t>(m_clientInputId));
 
             // Generate a hash based on the current client predicted states
             AzNetworking::HashSerializer hashSerializer;
             GetNetBindComponent()->SerializeEntityCorrection(hashSerializer);
-
-            // In debug, send the entire client output state to the server to make it easier to debug desync issues
-            AzNetworking::PacketEncodingBuffer processInputResult;
-#ifndef AZ_RELEASE_BUILD
-            if (cl_EnableDesyncDebugging)
-            {
-                AzNetworking::NetworkInputSerializer processInputResultSerializer(processInputResult.GetBuffer(), processInputResult.GetCapacity());
-                GetNetBindComponent()->SerializeEntityCorrection(processInputResultSerializer);
-                processInputResult.Resize(processInputResultSerializer.GetSize());
-            }
-#endif
-
-            // In debug, send the entire client output state to the server to make it easier to debug desync issues
-            AzNetworking::PacketEncodingBuffer processInputResult;
-#ifndef AZ_RELEASE_BUILD
-            if (cl_EnableDesyncDebugging)
-            {
-                AzNetworking::NetworkInputSerializer processInputResultSerializer(processInputResult.GetBuffer(), static_cast<uint32_t>(processInputResult.GetCapacity()));
-                GetNetBindComponent()->SerializeEntityCorrection(processInputResultSerializer);
-                processInputResult.Resize(processInputResultSerializer.GetSize());
-            }
-#endif
 
             // Save this input and discard move history outside our client rewind window
             m_inputHistory.PushBack(input);
@@ -508,7 +491,7 @@ namespace Multiplayer
     void LocalPredictionPlayerInputComponentController::UpdateBankedTime(AZ::TimeMs deltaTimeMs)
     {
         const double deltaTime = static_cast<double>(deltaTimeMs) / 1000.0;
-        const double inputRate = static_cast<double>(static_cast<AZ::TimeMs>(cl_InputRateMs)) / 1000.0;
+        const double clientInputRateSec = static_cast<double>(static_cast<AZ::TimeMs>(cl_InputRateMs)) / 1000.0;
         const double maxRewindHistory = static_cast<double>(static_cast<AZ::TimeMs>(cl_MaxRewindHistoryMs)) / 1000.0;
 
         // Update banked time accumulator
@@ -522,8 +505,8 @@ namespace Multiplayer
 
             NetworkInput& input = m_lastInputReceived[0];
             {
-                ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs(), DefaultBlendFactor, AzNetworking::InvalidConnectionId);
-                GetNetBindComponent()->ProcessInput(input, inputRate);
+                ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs(), DefaultBlendFactor, GetNetBindComponent()->GetOwningConnectionId());
+                GetNetBindComponent()->ProcessInput(input, clientInputRateSec);
             }
 
             AZLOG(NET_Prediction, "Forced InputId=%d", aznumeric_cast<int32_t>(input.GetClientInputId()));
