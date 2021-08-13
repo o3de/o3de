@@ -107,11 +107,11 @@ void initEntityPropertyEditorResources()
 
 namespace AzToolsFramework
 {
-    static const char* kComponentEditorIndexMimeType = "editor/componentEditorIndices";
-    static const char* kComponentEditorRowWidgetType = "editor/componentEditorRowWidget";
+    constexpr const char*  kComponentEditorIndexMimeType = "editor/componentEditorIndices";
+    constexpr const char*  kComponentEditorRowWidgetType = "editor/componentEditorRowWidget";
 
-    static const QString kPropertyEditorMenuActionMoveUp("editor/propertyEditorMoveUp");
-    static const QString kPropertyEditorMenuActionMoveDown("editor/propertyEditorMoveDown");
+    constexpr const char* kPropertyEditorMenuActionMoveUp("editor/propertyEditorMoveUp");
+    constexpr const char* kPropertyEditorMenuActionMoveDown("editor/propertyEditorMoveDown");
 
     //since component editors are spaced apart to make room for drop indicator,
     //giving drop logic simple buffer so drops between editors don't go to the bottom
