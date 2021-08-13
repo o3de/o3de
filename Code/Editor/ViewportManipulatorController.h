@@ -8,25 +8,26 @@
 
 #pragma once
 
-#include <AzFramework/Viewport/ViewportId.h>
-#include <AzFramework/Viewport/MultiViewportController.h>
 #include <AzFramework/Input/Events/InputChannelEventListener.h>
+#include <AzFramework/Viewport/MultiViewportController.h>
+#include <AzFramework/Viewport/ViewportId.h>
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
 
 namespace SandboxEditor
 {
     class ViewportManipulatorControllerInstance;
-    using ViewportManipulatorController = AzFramework::MultiViewportController<ViewportManipulatorControllerInstance, AzFramework::ViewportControllerPriority::DispatchToAllPriorities>;
+    using ViewportManipulatorController = AzFramework::
+        MultiViewportController<ViewportManipulatorControllerInstance, AzFramework::ViewportControllerPriority::DispatchToAllPriorities>;
 
     class ViewportManipulatorControllerInstance final
         : public AzFramework::MultiViewportControllerInstanceInterface<ViewportManipulatorController>
     {
     public:
-        explicit ViewportManipulatorControllerInstance(AzFramework::ViewportId viewport, ViewportManipulatorController* controller);
+        SANDBOX_API ViewportManipulatorControllerInstance(AzFramework::ViewportId viewport, ViewportManipulatorController* controller);
 
-        bool HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event) override;
-        void ResetInputChannels() override;
-        void UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event) override;
+        SANDBOX_API bool HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event) override;
+        SANDBOX_API void ResetInputChannels() override;
+        SANDBOX_API void UpdateViewport(const AzFramework::ViewportControllerUpdateEvent& event) override;
 
     private:
         bool IsDoubleClick(AzToolsFramework::ViewportInteraction::MouseButton) const;
@@ -39,4 +40,4 @@ namespace SandboxEditor
         AZStd::unordered_map<AzToolsFramework::ViewportInteraction::MouseButton, AZ::ScriptTimePoint> m_pendingDoubleClicks;
         AZ::ScriptTimePoint m_curTime;
     };
-} //namespace SandboxEditor
+} // namespace SandboxEditor

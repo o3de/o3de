@@ -76,8 +76,9 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PRIVATE
                 Tests
         BUILD_DEPENDENCIES
-            PRIVATE
+            PUBLIC
                 AZ::AzTestShared
+            PRIVATE
                 3rdParty::Qt::Test
                 AZ::AzFrameworkTestShared
                 AZ::AzToolsFramework
