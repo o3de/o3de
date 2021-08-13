@@ -284,8 +284,6 @@ namespace Multiplayer
 
     void NetBindComponent::ProcessInput(NetworkInput& networkInput, float deltaTime)
     {
-        AZ_TracePrintf("gathers", "Processing input, inputId=%d", static_cast<int32_t>(networkInput.GetClientInputId()));
-
         m_isProcessingInput = true;
         // Only autonomous and authority runs this logic
         AZ_Assert((NetworkRoleHasController(m_netEntityRole)), "Incorrect network role for input processing");
