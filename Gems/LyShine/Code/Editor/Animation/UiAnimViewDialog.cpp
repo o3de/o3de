@@ -989,7 +989,7 @@ void CUiAnimViewDialog::ReloadSequencesComboBox()
         CUiAnimViewSequenceManager* pSequenceManager = CUiAnimViewSequenceManager::GetSequenceManager();
         const unsigned int numSequences = pSequenceManager->GetCount();
 
-        for (int k = 0; k < numSequences; ++k)
+        for (unsigned int k = 0; k < numSequences; ++k)
         {
             CUiAnimViewSequence* pSequence = pSequenceManager->GetSequenceByIndex(k);
             QString fullname = pSequence->GetName();

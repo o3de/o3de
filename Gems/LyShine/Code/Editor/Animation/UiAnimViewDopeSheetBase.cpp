@@ -925,12 +925,12 @@ void CUiAnimViewDopeSheetBase::SelectAllKeysWithinTimeFrame(const QRect& rc, con
     CUiAnimViewTrackBundle tracks = pSequence->GetAllTracks();
 
     CUiAnimViewSequenceNotificationContext context(pSequence);
-    for (int i = 0; i < tracks.GetCount(); ++i)
+    for (unsigned int i = 0; i < tracks.GetCount(); ++i)
     {
         CUiAnimViewTrack* pTrack = tracks.GetTrack(i);
 
         // Check which keys we intersect.
-        for (int j = 0; j < pTrack->GetKeyCount(); j++)
+        for (unsigned int j = 0; j < pTrack->GetKeyCount(); j++)
         {
             CUiAnimViewKeyHandle keyHandle = pTrack->GetKey(j);
             const float time = keyHandle.GetTime();
@@ -1311,7 +1311,7 @@ bool CUiAnimViewDopeSheetBase::IsOkToAddKeyHere(const CUiAnimViewTrack* pTrack, 
 {
     const float timeEpsilon = 0.05f;
 
-    for (int i = 0; i < pTrack->GetKeyCount(); ++i)
+    for (unsigned int i = 0; i < pTrack->GetKeyCount(); ++i)
     {
         CUiAnimViewKeyHandle keyHandle = const_cast<CUiAnimViewTrack*>(pTrack)->GetKey(i);
 
@@ -1425,10 +1425,10 @@ void CUiAnimViewDopeSheetBase::MouseMoveMove(const QPoint& p, [[maybe_unused]] Q
         const TrackMemento& trackMemento = iter->second;
         pTrack->RestoreFromMemento(trackMemento.m_memento);
 
-        const unsigned int numKeys = trackMemento.m_keySelectionStates.size();
-        for (unsigned int i = 0; i < numKeys; ++i)
+        const size_t numKeys = trackMemento.m_keySelectionStates.size();
+        for (size_t i = 0; i < numKeys; ++i)
         {
-            pTrack->GetKey(i).Select(trackMemento.m_keySelectionStates[i]);
+            pTrack->GetKey(static_cast<unsigned int>(i)).Select(trackMemento.m_keySelectionStates[i]);
         }
     }
 

@@ -63,8 +63,8 @@ namespace AWSCore
     // warning C4250: 'AWSCore::ServiceClientJobConfig<ServiceTraitsType>' : inherits 'AWSCore::AwsApiJobConfig::AWSCore::AwsApiJobConfig::GetJobContext' via dominance
     // Thanks to http://stackoverflow.com/questions/11965596/diamond-inheritance-scenario-compiles-fine-in-g-but-produces-warnings-errors for the explanation
     // This is the expected and desired behavior. The warning is superfluous.
-
-/// Provides service job configuration using settings properties.
+    AZ_PUSH_DISABLE_WARNING(4250, "-Wunknown-warning-option")
+    /// Provides service job configuration using settings properties.
     template<class ServiceTraitsType>
     class ServiceClientJobConfig
         : public ServiceJobConfig
@@ -127,6 +127,8 @@ namespace AWSCore
         }
 
     };
+    AZ_POP_DISABLE_WARNING
+
 } // namespace AWSCore
 
 

@@ -55,7 +55,13 @@ namespace AWSMetrics
         time_t now;
         time(&now);
         char buffer[50];
-        strftime(buffer, sizeof(buffer), "%FT%TZ", gmtime(&now));
+        tm time;
+#if AZ_TRAIT_USE_SECURE_CRT_FUNCTIONS
+        gmtime_s(&time, &now);
+#else
+        time = *gmtime(&now);
+#endif
+        strftime(buffer, sizeof(buffer), "%FT%TZ", &time);
 
         m_currentMetricsEvent.AddAttribute(MetricsAttribute(AwsMetricsAttributeKeyEventTimestamp, AZStd::string(buffer)));
     }
