@@ -10,8 +10,6 @@
 
 #include <ctime>
 
-#pragma warning(disable : 4996)
-
 namespace AWSGameLift
 {
     Aws::GameLift::GenericOutcome GameLiftServerSDKWrapper::AcceptPlayerSession(const std::string& playerSessionId)

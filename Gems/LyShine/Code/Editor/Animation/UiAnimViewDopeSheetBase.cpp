@@ -251,7 +251,7 @@ void CUiAnimViewDopeSheetBase::SetTimeScale(float timeScale, float fAnchorTime)
     while (fPixelsPerTick >= 12.0 && steps < 100);
 
     float fCurrentOffset = -fAnchorTime * m_timeScale;
-    m_scrollOffset.rx() += fOldOffset - fCurrentOffset;
+    m_scrollOffset.rx() += static_cast<int>(fOldOffset - fCurrentOffset);
 
     update();
 

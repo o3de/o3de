@@ -2597,7 +2597,7 @@ void OutlinerItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
                 QString htmlStripped = layerInfoString;
                 htmlStripped.remove(htmlMarkupRegex);
                 const float layerInfoPadding = 1.2f;
-                textWidthAvailable -= fontMetrics.horizontalAdvance(htmlStripped) * layerInfoPadding;
+                textWidthAvailable -= static_cast<int>(fontMetrics.horizontalAdvance(htmlStripped) * layerInfoPadding);
             }
 
             entityNameRichText = fontMetrics.elidedText(optionV4.text, Qt::TextElideMode::ElideRight, textWidthAvailable);

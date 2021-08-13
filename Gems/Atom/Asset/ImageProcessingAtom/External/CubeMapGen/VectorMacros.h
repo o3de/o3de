@@ -18,9 +18,6 @@
 //--------------------------------------------------------------------------------------
 // Modified from original
 
-//disable warning about doubles being converted down to float
-#pragma warning (disable : 4244 )
-
 #define VM_LARGE_FLOAT 3.7e37f
 
 #define VM_MIN(a, b)  (((a) < (b)) ? (a) : (b)) 

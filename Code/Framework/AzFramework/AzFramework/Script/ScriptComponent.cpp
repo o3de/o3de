@@ -357,8 +357,6 @@ namespace AzFramework
             }
         }
 
-        #pragma warning( push )
-        #pragma warning( disable : 4505 )  // StackDump is useful to debug the lua stack. Disable warning about this method being unused. 
         //=========================================================================
         // DebugPrintStack
         // Prints the Lua stack starting from the bottom.
@@ -375,8 +373,6 @@ namespace AzFramework
 
             AZ_Warning("ScriptComponent", false, "Stack Dump: '%s'", dump.c_str());
         }
-        #pragma warning( pop )
-
 
         //=========================================================================
         // Properties__IndexFindSubtable

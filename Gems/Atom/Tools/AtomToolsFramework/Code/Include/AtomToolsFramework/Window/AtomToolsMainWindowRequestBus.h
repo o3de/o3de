@@ -8,9 +8,6 @@
 
 #pragma once
 
-//! Disables "unreferenced formal parameter" warning
-#pragma warning(disable : 4100)
-
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>

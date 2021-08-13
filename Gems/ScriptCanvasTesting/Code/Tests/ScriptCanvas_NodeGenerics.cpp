@@ -13,9 +13,6 @@
 
 #include <ScriptCanvas/Core/NodeFunctionGeneric.h>
 
-#pragma warning( push )
-#pragma warning( disable : 5046) //'function' : Symbol involving type with internal linkage not defined
-
 using namespace ScriptCanvasTests;
 
 namespace 
@@ -163,6 +160,3 @@ TEST_F(ScriptCanvasTestFixture, NodeGenerics)
 
     delete graph->GetEntity();
 }
-
-
-#pragma warning( pop )

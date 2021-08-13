@@ -1978,8 +1978,8 @@ bool CBaseObject::HitHelperAtTest(HitContext& hc, const Vec3& pos)
         {
             float fScreenScale = hc.view->GetScreenScaleFactor(pos);
 
-            iconSizeX *= OBJECT_TEXTURE_ICON_SCALE / fScreenScale;
-            iconSizeY *= OBJECT_TEXTURE_ICON_SCALE / fScreenScale;
+            iconSizeX = static_cast<int>(static_cast<float>(iconSizeX) * OBJECT_TEXTURE_ICON_SCALE / fScreenScale);
+            iconSizeY = static_cast<int>(static_cast<float>(iconSizeY) * OBJECT_TEXTURE_ICON_SCALE / fScreenScale);
         }
 
         // Hit Test icon of this object.

@@ -208,7 +208,7 @@ namespace O3DE::ProjectManager
                     const QPixmap& pixmap = iterator.value();
                     painter->drawPixmap(contentRect.left() + startX, contentRect.bottom() - s_platformIconSize, pixmap);
                     qreal aspectRatio = static_cast<qreal>(pixmap.width()) / pixmap.height();
-                    startX += s_platformIconSize * aspectRatio + s_platformIconSize / 2.5;
+                    startX += static_cast<int>(s_platformIconSize * aspectRatio + s_platformIconSize / 2.5);
                 }
             }
         }

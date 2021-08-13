@@ -21,9 +21,6 @@
 #include "Node.h"
 #include "Attributes.h"
 
-#pragma warning( push )
-#pragma warning( disable : 5046) // 'function' : Symbol involving type with internal linkage not defined
-
 /**
  * NodeFunctionGeneric.h
  * 
@@ -372,5 +369,3 @@ namespace ScriptCanvas
     }
 
 }
-
-#pragma warning( pop )

@@ -60,14 +60,9 @@ namespace AWSCore
             static const char* GetRESTApiStageKeyName() { return RESTAPI_STAGE; } \
         };
 
-#ifdef _MSC_VER
-#pragma warning( push )
-#pragma warning( disable: 4250 )
     // warning C4250: 'AWSCore::ServiceClientJobConfig<ServiceTraitsType>' : inherits 'AWSCore::AwsApiJobConfig::AWSCore::AwsApiJobConfig::GetJobContext' via dominance
     // Thanks to http://stackoverflow.com/questions/11965596/diamond-inheritance-scenario-compiles-fine-in-g-but-produces-warnings-errors for the explanation
     // This is the expected and desired behavior. The warning is superfluous.
-
-#endif
 
 /// Provides service job configuration using settings properties.
     template<class ServiceTraitsType>
@@ -132,11 +127,6 @@ namespace AWSCore
         }
 
     };
-
-#ifdef _MSC_VER 
-#pragma warning( pop ) // C4250
-#endif
-
 } // namespace AWSCore
 
 

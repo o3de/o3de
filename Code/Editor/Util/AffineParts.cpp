@@ -9,8 +9,6 @@
 
 #include "EditorDefs.h"
 
-#pragma warning ( disable : 4244 )  // conversion from 'double' to 'float', possible loss of data.
-
 /**** Decompose.h - Basic declarations ****/
 typedef struct
 {

@@ -61,15 +61,11 @@ QColor ScaleColor(const QColor& c, float aScale)
         aColor = QColor(1, 1, 1);
     }
 
-    int r = aColor.red();
-    int g = aColor.green();
-    int b = aColor.blue();
+    const float r = static_cast<float>(aColor.red()) * aScale;
+    const float g = static_cast<float>(aColor.green()) * aScale;
+    const float b = static_cast<float>(aColor.blue()) * aScale;
 
-    r *= aScale;
-    g *= aScale;
-    b *= aScale;
-
-    return QColor(CLAMP(r, 0, 255), CLAMP(g, 0, 255), CLAMP(b, 0, 255));
+    return QColor(CLAMP(static_cast<int>(r), 0, 255), CLAMP(static_cast<int>(g), 0, 255), CLAMP(static_cast<int>(b), 0, 255));
 }
 
 CAlphaBitmap::CAlphaBitmap()

@@ -560,7 +560,7 @@ void ReflectedPropertyControl::RequestPropertyContextMenu(AzToolsFramework::Inst
 
     // Popup Menu with Event selection.
     QMenu menu;
-    UINT i = 0;
+    unsigned int i = 0;
 
     const int ePPA_CustomItemBase = 10; // reserved from 10 to 99
     const int ePPA_CustomPopupBase = 100; // reserved from 100 to x*100+100 where x is size of m_customPopupMenuPopups
@@ -595,12 +595,12 @@ void ReflectedPropertyControl::RequestPropertyContextMenu(AzToolsFramework::Inst
         action->setData(ePPA_CustomItemBase + i);
     }
 
-    for (UINT j = 0; j < m_customPopupMenuPopups.size(); ++j)
+    for (unsigned int j = 0; j < m_customPopupMenuPopups.size(); ++j)
     {
         SCustomPopupMenu* pMenuInfo = &m_customPopupMenuPopups[j];
         QMenu* pSubMenu = menu.addMenu(pMenuInfo->m_text);
 
-        for (UINT k = 0; k < pMenuInfo->m_subMenuText.size(); ++k)
+        for (UINT k = 0; k < static_cast<UINT>(pMenuInfo->m_subMenuText.size()); ++k)
         {
             const UINT uID = ePPA_CustomPopupBase + ePPA_CustomPopupBase * j + k;
             QAction *action = pSubMenu->addAction(pMenuInfo->m_subMenuText[k]);

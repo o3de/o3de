@@ -15,8 +15,6 @@
 #include <locale>
 #include <codecvt>
 
-#pragma warning(disable : 4996)
-
 namespace O3de
 {
 

@@ -15,9 +15,6 @@
 
 #include <ctime>
 
-#pragma warning(disable : 4996)
-
-
 namespace AWSMetrics
 {
     MetricsEventBuilder::MetricsEventBuilder()

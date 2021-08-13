@@ -12,8 +12,6 @@
 #include <sstream>
 #include <time.h>
 
-#pragma warning(disable : 4996)
-
 namespace AWSCore
 {
     constexpr char AWSAttributionMetricDefaultO3DEVersion[] = "1.1";

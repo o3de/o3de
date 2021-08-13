@@ -60,7 +60,7 @@ libtiffDummyReadProc (thandle_t fd, tdata_t buf, tsize_t size)
 
     memcpy(buf, &memImage->buffer[memImage->offset], size);
 
-    memImage->offset += size;
+    memImage->offset += static_cast<uint32>(size);
 
     // Return the amount of data read
     return size;
@@ -83,7 +83,7 @@ libtiffDummySeekProc (thandle_t fd, toff_t off, int i)
         break;
 
     case SEEK_CUR:
-        memImage->offset += off;
+        memImage->offset += static_cast<uint32>(off);
         break;
 
     case SEEK_END:
