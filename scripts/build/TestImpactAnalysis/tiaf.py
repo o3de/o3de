@@ -235,7 +235,7 @@ class TestImpact:
                 # The above results in TIAF being stuck in a state of generating an empty change list (and thus doing no work until another
                 # commit comes in) which is problematic if the commit needs to be re-run for whatever reason so in these conditions we revert
                 # back to a regular test run until another commit comes in
-                cannot_rerun_with_instrumentation = False
+                can_rerun_with_instrumentation = True
 
                 if persistent_storage.has_historic_data:
                     logger.info("Historic data found.")
@@ -249,7 +249,7 @@ class TestImpact:
                         else:
                             logger.info(f"This sequence is being re-run before any other changes have come in but there is no useful historic data. A regular sequence will be performed instead.")
                             persistent_storage = None
-                            cannot_rerun_with_instrumentation = True
+                            can_rerun_with_instrumentation = False
                     else:
                         self._attempt_to_generate_change_list()
                 else:
@@ -277,7 +277,7 @@ class TestImpact:
                     args.append(f"--changelist={self._change_list_path}")
                     logger.info(f"Change list is set to '{self._change_list_path}'.")
                 else:
-                    if self._is_source_of_truth_branch and not cannot_rerun_with_instrumentation:
+                    if self._is_source_of_truth_branch and can_rerun_with_instrumentation:
                         # Use seed sequence (instrumented all tests) for coverage updating branches so we can generate the coverage bed for future sequences
                         sequence_type = "seed"
                         # We always continue after test failures when seeding to ensure we capture the coverage for all test targets
