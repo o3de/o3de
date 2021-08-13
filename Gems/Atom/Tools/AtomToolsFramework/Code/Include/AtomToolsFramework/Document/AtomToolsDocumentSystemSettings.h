@@ -15,16 +15,16 @@
 #include <AzCore/UserSettings/UserSettings.h>
 #endif
 
-namespace MaterialEditor
+namespace AtomToolsFramework
 {
-    struct MaterialDocumentSettings
+    struct AtomToolsDocumentSystemSettings
         : public AZ::UserSettings
     {
-        AZ_RTTI(MaterialDocumentSettings, "{12E8461F-65AD-4AD2-8A1D-82C3B1183522}", AZ::UserSettings);
-        AZ_CLASS_ALLOCATOR(MaterialDocumentSettings, AZ::SystemAllocator, 0);
+        AZ_RTTI(AtomToolsDocumentSystemSettings, "{9E576D4F-A74A-4326-9135-C07284D0A3B9}", AZ::UserSettings);
+        AZ_CLASS_ALLOCATOR(AtomToolsDocumentSystemSettings, AZ::SystemAllocator, 0);
 
         static void Reflect(AZ::ReflectContext* context);
 
-        AZStd::string m_defaultMaterialTypeName = "StandardPBR";
+        bool m_showReloadDocumentPrompt = true;
     };
-} // namespace MaterialEditor
+} // namespace AtomToolsFramework

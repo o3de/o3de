@@ -1,0 +1,154 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <AtomToolsFramework/Document/AtomToolsDocument.h>
+#include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
+
+namespace AtomToolsFramework
+{
+    AtomToolsDocument::AtomToolsDocument()
+    {
+        AtomToolsDocumentRequestBus::Handler::BusConnect(m_id);
+        AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsDocumentNotificationBus::Events::OnDocumentCreated, m_id);
+    }
+
+    AtomToolsDocument::~AtomToolsDocument()
+    {
+        AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsDocumentNotificationBus::Events::OnDocumentDestroyed, m_id);
+        AtomToolsDocumentRequestBus::Handler::BusDisconnect();
+    }
+
+    const AZ::Uuid& AtomToolsDocument::GetId() const
+    {
+        return m_id;
+    }
+
+    AZStd::string_view AtomToolsDocument::GetAbsolutePath() const
+    {
+        return m_absolutePath;
+    }
+
+    AZStd::string_view AtomToolsDocument::GetRelativePath() const
+    {
+        return m_relativePath;
+    }
+
+    const AZStd::any& AtomToolsDocument::GetPropertyValue(const AZ::Name& propertyFullName) const
+    {
+        AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
+        return m_invalidValue;
+    }
+
+    const AtomToolsFramework::DynamicProperty& AtomToolsDocument::GetProperty(const AZ::Name& propertyFullName) const
+    {
+        AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
+        return m_invalidProperty;
+    }
+    
+    bool AtomToolsDocument::IsPropertyGroupVisible(const AZ::Name& propertyGroupFullName) const
+    {
+        AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
+        return false;
+    }
+
+    void AtomToolsDocument::SetPropertyValue(const AZ::Name& propertyFullName, const AZStd::any& value)
+    {
+        AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
+    }
+
+    bool AtomToolsDocument::Open(AZStd::string_view loadPath)
+    {
+        AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
+        return false;
+    }
+
+    bool AtomToolsDocument::Rebuild()
+    {
+        AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
+        return false;
+    }
+
+    bool AtomToolsDocument::Save()
+    {
+        AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
+        return false;
+    }
+
+    bool AtomToolsDocument::SaveAsCopy(AZStd::string_view savePath)
+    {
+        AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
+        return false;
+    }
+
+
+    bool AtomToolsDocument::SaveAsChild(AZStd::string_view savePath)
+    {
+        AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
+        return false;
+    }
+
+    bool AtomToolsDocument::Close()
+    {
+        AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
+        return false;
+    }
+
+    bool AtomToolsDocument::IsOpen() const
+    {
+        AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
+        return false;
+    }
+
+    bool AtomToolsDocument::IsModified() const
+    {
+        AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
+        return false;
+    }
+
+    bool AtomToolsDocument::IsSavable() const
+    {
+        AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
+        return false;
+    }
+
+    bool AtomToolsDocument::CanUndo() const
+    {
+        AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
+        return false;
+    }
+
+    bool AtomToolsDocument::CanRedo() const
+    {
+        AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
+        return false;
+    }
+
+    bool AtomToolsDocument::Undo()
+    {
+        AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
+        return false;
+    }
+
+    bool AtomToolsDocument::Redo()
+    {
+        AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
+        return false;
+    }
+
+    bool AtomToolsDocument::BeginEdit()
+    {
+        AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
+        return false;
+    }
+
+    bool AtomToolsDocument::EndEdit()
+    {
+        AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
+        return false;
+    }
+} // namespace AtomToolsFramework

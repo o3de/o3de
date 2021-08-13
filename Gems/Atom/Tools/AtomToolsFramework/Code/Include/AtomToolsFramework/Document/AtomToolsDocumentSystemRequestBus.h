@@ -10,18 +10,20 @@
 
 #include <AzCore/EBus/EBus.h>
 
-namespace MaterialEditor
+namespace AtomToolsFramework
 {
-    static const char* MaterialExtension = "material";
-    static const char* MaterialTypeExtension = "materialtype";
+    class AtomToolsDocument;
 
-    //! MaterialDocumentSystemRequestBus provides high level file requests for menus, scripts, etc.
-    class MaterialDocumentSystemRequests
+    //! AtomToolsDocumentSystemRequestBus provides high level requests for menus, scripts, etc.
+    class AtomToolsDocumentSystemRequests
         : public AZ::EBusTraits
     {
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
+
+        //! Register a document factory function used to create specific document types
+        virtual void RegisterDocumentType(AZStd::function<AtomToolsDocument*()> documentCreator) = 0;
 
         //! Create a document object
         //! @return Uuid of new document, or null Uuid if failed
@@ -37,8 +39,6 @@ namespace MaterialEditor
         virtual AZ::Uuid OpenDocument(AZStd::string_view sourcePath) = 0;
 
         //! Create a new document by specifying a source and prompting the user for destination path.
-        //! If the source file is a material type then this results in creating a new material based on that type.
-        //! If the source file is a material this results in creating a child material with the source file as its parent.
         //! @param sourcePath document to open.
         //! @param targetPath location where document is saved.
         //! @return unique id of new document if successful, otherwise null Uuid
@@ -64,7 +64,7 @@ namespace MaterialEditor
         //! @param targetPath location where document is saved.
         virtual bool SaveDocumentAsCopy(const AZ::Uuid& documentId, AZStd::string_view targetPath) = 0;
 
-        //! Save the specified document to a different file, referencing the original material as its parent
+        //! Save the specified document to a different file, referencing the original document as its parent
         //! @param documentId unique id of document to save
         //! @param targetPath location where document is saved.
         virtual bool SaveDocumentAsChild(const AZ::Uuid& documentId, AZStd::string_view targetPath) = 0;
@@ -73,6 +73,6 @@ namespace MaterialEditor
         virtual bool SaveAllDocuments() = 0;
     };
 
-    using MaterialDocumentSystemRequestBus = AZ::EBus<MaterialDocumentSystemRequests>;
+    using AtomToolsDocumentSystemRequestBus = AZ::EBus<AtomToolsDocumentSystemRequests>;
 
-} // namespace MaterialEditor
+} // namespace AtomToolsFramework

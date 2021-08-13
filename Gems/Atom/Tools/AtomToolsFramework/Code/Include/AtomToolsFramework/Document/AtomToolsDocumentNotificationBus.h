@@ -13,9 +13,9 @@
 #include <AtomToolsFramework/DynamicProperty/DynamicProperty.h>
 #include <AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h>
 
-namespace ShaderManagementConsole
+namespace AtomToolsFramework
 {
-    class ShaderManagementConsoleDocumentNotifications
+    class AtomToolsDocumentNotifications
         : public AZ::EBusTraits
     {
     public:
@@ -79,5 +79,5 @@ namespace ShaderManagementConsole
         virtual void OnDocumentPropertyGroupVisibilityChanged([[maybe_unused]] const AZ::Uuid& documentId, [[maybe_unused]] const AZ::Name& groupId, [[maybe_unused]] bool visible) {}
     };
 
-    using ShaderManagementConsoleDocumentNotificationBus = AZ::EBus<ShaderManagementConsoleDocumentNotifications>;
-} // namespace ShaderManagementConsole
+    using AtomToolsDocumentNotificationBus = AZ::EBus<AtomToolsDocumentNotifications>;
+} // namespace AtomToolsFramework
