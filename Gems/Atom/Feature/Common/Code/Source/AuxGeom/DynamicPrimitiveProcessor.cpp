@@ -322,7 +322,7 @@ namespace AZ
         {
             const char* auxGeomWorldShaderFilePath = "Shaders/auxgeom/auxgeomworld.azshader";
 
-            m_shader = RPI::LoadShader(auxGeomWorldShaderFilePath);
+            m_shader = RPI::LoadCriticalShader(auxGeomWorldShaderFilePath);
             if (!m_shader)
             {
                 AZ_Error("DynamicPrimitiveProcessor", false, "Failed to get shader");
