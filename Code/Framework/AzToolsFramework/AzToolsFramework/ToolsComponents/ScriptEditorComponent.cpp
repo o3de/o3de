@@ -1107,17 +1107,7 @@ namespace AzToolsFramework
                             ElementAttribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)->
                             Attribute(AZ::Edit::Attributes::NameLabelOverride, &AZ::ScriptProperty::m_name);
 
-                    ec->Class<AZ::ScriptPropertyAsset>("Script Property Asset(asset)", "A script asset property")->
-                        ClassElement(AZ::Edit::ClassElements::EditorData, "ScriptPropertyEditorAsset's class attributes.")->
-                            Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)->
-                        DataElement("Asset", &AZ::ScriptPropertyAsset::m_value, "m_value", "An object")->
-                            Attribute(AZ::Edit::Attributes::NameLabelOverride, &AZ::ScriptProperty::m_name);
 
-                    ec->Class<AZ::ScriptPropertyEntityRef>("Script Property Entity(EntityRef)", "A script entity reference property")->
-                        ClassElement(AZ::Edit::ClassElements::EditorData, "ScriptPropertyEditorEntityRef's class attributes.")->
-                            Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)->
-                        DataElement("EntityRef", &AZ::ScriptPropertyEntityRef::m_value, "m_entity", "An entity reference")->
-                            Attribute(AZ::Edit::Attributes::NameLabelOverride, &AZ::ScriptProperty::m_name);
                 }
             }
         }

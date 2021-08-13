@@ -172,8 +172,7 @@ void CViewportTitleDlg::SetupCameraDropdownMenu()
     cameraSpeedActionWidget->setDefaultWidget(cameraSpeedContainer);
 
     // Save off the move speed here since setting up the combo box can cause it to update values in the background.
-    const float cameraMoveSpeed = SandboxEditor::UsingNewCameraSystem() ? SandboxEditor::CameraTranslateSpeed() : gSettings.cameraMoveSpeed;
-
+    const float cameraMoveSpeed = SandboxEditor::CameraTranslateSpeed();
     // Populate the presets in the ComboBox
     for (float presetValue : m_speedPresetValues)
     {
@@ -449,21 +448,21 @@ void CViewportTitleDlg::AddFOVMenus(QMenu* menu, std::function<void(float)> call
 
     if (!customPresets.empty())
     {
-        for (size_t i = 0; i < customPresets.size(); ++i)
+        for (const QString& customPreset : customPresets)
         {
-            if (customPresets[i].isEmpty())
+            if (customPreset.isEmpty())
             {
                 break;
             }
 
             float fov = gSettings.viewports.fDefaultFov;
             bool ok;
-            float f = customPresets[i].toDouble(&ok);
+            float f = customPreset.toDouble(&ok);
             if (ok)
             {
                 fov = std::max(1.0f, f);
                 fov = std::min(120.0f, f);
-                QAction* action = menu->addAction(customPresets[i]);
+                QAction* action = menu->addAction(customPreset);
                 connect(action, &QAction::triggered, action, [fov, callback](){ callback(fov); });
             }
         }
@@ -535,15 +534,15 @@ void CViewportTitleDlg::AddAspectRatioMenus(QMenu* menu, std::function<void(int,
 
     menu->addSeparator();
 
-    for (size_t i = 0; i < customPresets.size(); ++i)
+    for (const QString& customPreset : customPresets)
     {
-        if (customPresets[i].isEmpty())
+        if (customPreset.isEmpty())
         {
             break;
         }
 
         static QRegularExpression regex(QStringLiteral("^(\\d+):(\\d+)$"));
-        QRegularExpressionMatch matches = regex.match(customPresets[i]);
+        QRegularExpressionMatch matches = regex.match(customPreset);
         if (matches.hasMatch())
         {
             bool ok;
@@ -551,7 +550,7 @@ void CViewportTitleDlg::AddAspectRatioMenus(QMenu* menu, std::function<void(int,
             Q_ASSERT(ok);
             unsigned int height = matches.captured(2).toInt(&ok);
             Q_ASSERT(ok);
-            QAction* action = menu->addAction(customPresets[i]);
+            QAction* action = menu->addAction(customPreset);
             connect(action, &QAction::triggered, action, [width, height, callback]() {callback(width, height); });
         }
     }
@@ -644,13 +643,31 @@ void CViewportTitleDlg::CreateViewportInformationMenu()
 
 void CViewportTitleDlg::AddResolutionMenus(QMenu* menu, std::function<void(int, int)> callback, const QStringList& customPresets)
 {
-    static const CRenderViewport::SResolution resolutions[] = {
-        CRenderViewport::SResolution(1280, 720),
-        CRenderViewport::SResolution(1920, 1080),
-        CRenderViewport::SResolution(2560, 1440),
-        CRenderViewport::SResolution(2048, 858),
-        CRenderViewport::SResolution(1998, 1080),
-        CRenderViewport::SResolution(3840, 2160)
+    struct SResolution
+    {
+        SResolution()
+            : width(0)
+            , height(0)
+        {
+        }
+
+        SResolution(int w, int h)
+            : width(w)
+            , height(h)
+        {
+        }
+
+        int width;
+        int height;
+    };
+
+    static const SResolution resolutions[] = {
+        SResolution(1280, 720),
+        SResolution(1920, 1080),
+        SResolution(2560, 1440),
+        SResolution(2048, 858),
+        SResolution(1998, 1080),
+        SResolution(3840, 2160)
     };
 
     static const size_t resolutionCount = sizeof(resolutions) / sizeof(resolutions[0]);
@@ -666,15 +683,15 @@ void CViewportTitleDlg::AddResolutionMenus(QMenu* menu, std::function<void(int, 
 
     menu->addSeparator();
 
-    for (size_t i = 0; i < customPresets.size(); ++i)
+    for (const QString& customPreset : customPresets)
     {
-        if (customPresets[i].isEmpty())
+        if (customPreset.isEmpty())
         {
             break;
         }
 
         static QRegularExpression regex(QStringLiteral("^(\\d+) x (\\d+)$"));
-        QRegularExpressionMatch matches = regex.match(customPresets[i]);
+        QRegularExpressionMatch matches = regex.match(customPreset);
         if (matches.hasMatch())
         {
             bool ok;
@@ -682,7 +699,7 @@ void CViewportTitleDlg::AddResolutionMenus(QMenu* menu, std::function<void(int, 
             Q_ASSERT(ok);
             int height = matches.captured(2).toInt(&ok);
             Q_ASSERT(ok);
-            QAction* action = menu->addAction(customPresets[i]);
+            QAction* action = menu->addAction(customPreset);
             connect(action, &QAction::triggered, action, [width, height, callback](){ callback(width, height); });
         }
     }
@@ -929,21 +946,13 @@ void CViewportTitleDlg::OnSpeedComboBoxEnter()
 
 void CViewportTitleDlg::OnUpdateMoveSpeedText(const QString& text)
 {
-    if (SandboxEditor::UsingNewCameraSystem())
-    {
-        SandboxEditor::SetCameraTranslateSpeed(aznumeric_cast<float>(Round(text.toDouble(), m_speedStep)));
-    }
-    else
-    {
-        gSettings.cameraMoveSpeed = aznumeric_cast<float>(Round(text.toDouble(), m_speedStep));
-    }
+    SandboxEditor::SetCameraTranslateSpeed(aznumeric_cast<float>(Round(text.toDouble(), m_speedStep)));
 }
 
 void CViewportTitleDlg::CheckForCameraSpeedUpdate()
 {
-    if (const float currentCameraMoveSpeed =
-            SandboxEditor::UsingNewCameraSystem() ? SandboxEditor::CameraTranslateSpeed() : gSettings.cameraMoveSpeed;
-        currentCameraMoveSpeed != m_prevMoveSpeed && !m_cameraSpeed->lineEdit()->hasFocus())
+    const float currentCameraMoveSpeed = SandboxEditor::CameraTranslateSpeed();
+    if (currentCameraMoveSpeed != m_prevMoveSpeed && !m_cameraSpeed->lineEdit()->hasFocus())
     {
         m_prevMoveSpeed = currentCameraMoveSpeed;
         SetSpeedComboBox(currentCameraMoveSpeed);

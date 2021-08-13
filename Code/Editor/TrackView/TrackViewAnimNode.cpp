@@ -27,13 +27,13 @@
 #include <CryCommon/Maestro/Types/AnimNodeType.h>
 #include <CryCommon/Maestro/Types/AnimValueType.h>
 #include <CryCommon/Maestro/Types/AnimParamType.h>
+#include <CryCommon/MathConversion.h>
 
 // Editor
 #include "AnimationContext.h"
 #include "Clipboard.h"
 #include "CommentNodeAnimator.h"
 #include "DirectorNodeAnimator.h"
-#include "RenderViewport.h"
 #include "ViewManager.h"
 #include "Include/IObjectManager.h"
 #include "Objects/GizmoManager.h"
@@ -1010,13 +1010,13 @@ bool CTrackViewAnimNode::SetName(const char* pName)
         }
     }
 
-    string oldName = GetName();
+    AZStd::string oldName = GetName();
     m_animNode->SetName(pName);
 
     CTrackViewSequence* sequence = GetSequence();
     AZ_Assert(sequence, "Nodes should never have a null sequence.");
 
-    sequence->OnNodeRenamed(this, oldName);
+    sequence->OnNodeRenamed(this, oldName.c_str());
 
     return true;
 }

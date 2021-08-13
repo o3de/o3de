@@ -15,21 +15,15 @@
 #include <math.h>
 #include <map>
 
-typedef string SysConfigKey;
-typedef string SysConfigValue;
+typedef AZStd::string SysConfigKey;
+typedef AZStd::string SysConfigValue;
 
 //////////////////////////////////////////////////////////////////////////
 class CSystemConfiguration
 {
 public:
-    CSystemConfiguration(const string& strSysConfigFilePath, CSystem* pSystem, ILoadConfigurationEntrySink* pSink, bool warnIfMissing = true);
+    CSystemConfiguration(const AZStd::string& strSysConfigFilePath, CSystem* pSystem, ILoadConfigurationEntrySink* pSink, bool warnIfMissing = true);
     ~CSystemConfiguration();
-
-    string RemoveWhiteSpaces(string& s)
-    {
-        s.Trim();
-        return s;
-    }
 
     bool IsError() const { return m_bError; }
 
@@ -39,10 +33,10 @@ private: // ----------------------------------------
     //   success
     bool ParseSystemConfig();
 
-    CSystem*                                               m_pSystem;
-    string                                                  m_strSysConfigFilePath;
-    bool                                                        m_bError;
-    ILoadConfigurationEntrySink*       m_pSink;                                         // never 0
+    CSystem*                           m_pSystem;
+    AZStd::string                      m_strSysConfigFilePath;
+    bool                               m_bError;
+    ILoadConfigurationEntrySink*       m_pSink;  // never 0
     bool m_warnIfMissing;
 };
 

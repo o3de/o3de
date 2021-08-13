@@ -350,7 +350,6 @@ class TestImpact:
         logger.info(f"Args: {unpacked_args}")
         runtime_result = subprocess.run([str(self._tiaf_bin)] + args)
         report = None
-
         # If the sequence completed (with or without failures) we will update the historical meta-data
         if runtime_result.returncode == 0 or runtime_result.returncode == 7:
             logger.info("Test impact analysis runtime returned successfully.")

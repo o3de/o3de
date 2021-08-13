@@ -24,6 +24,10 @@ set(FILES
     Include/AtomToolsFramework/Viewport/RenderViewportWidget.h
     Include/AtomToolsFramework/Viewport/ModularViewportCameraController.h
     Include/AtomToolsFramework/Viewport/ModularViewportCameraControllerRequestBus.h
+    Include/AtomToolsFramework/Window/AtomToolsMainWindow.h
+    Include/AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h
+    Include/AtomToolsFramework/Window/AtomToolsMainWindowFactoryRequestBus.h
+    Include/AtomToolsFramework/Window/AtomToolsMainWindowNotificationBus.h
     Source/Application/AtomToolsApplication.cpp
     Source/Communication/LocalServer.cpp
     Source/Communication/LocalSocket.cpp
@@ -40,4 +44,7 @@ set(FILES
     Source/Util/Util.cpp
     Source/Viewport/RenderViewportWidget.cpp
     Source/Viewport/ModularViewportCameraController.cpp
+    Source/Window/AtomToolsMainWindow.cpp
+    Source/Window/AtomToolsMainWindowSystemComponent.cpp
+    Source/Window/AtomToolsMainWindowSystemComponent.h
 )

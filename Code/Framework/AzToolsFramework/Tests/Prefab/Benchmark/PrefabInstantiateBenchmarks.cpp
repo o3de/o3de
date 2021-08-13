@@ -33,7 +33,7 @@ namespace Benchmark
 
             state.ResumeTiming();
 
-            for (int instanceCounter = 0; instanceCounter < numInstances; ++instanceCounter)
+            for (unsigned int instanceCounter = 0; instanceCounter < numInstances; ++instanceCounter)
             {
                 newInstances[instanceCounter] = m_prefabSystemComponent->InstantiatePrefab(templateToInstantiateId);
             }

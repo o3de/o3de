@@ -49,7 +49,7 @@
 */
 
 #include <stdio.h>
-#include <AzCore/PlatformDef.h>
+#include <AzCore/PlatformIncl.h>
 #include <AzCore/Module/Environment.h>
 
 #define INJECT_ENVIRONMENT_FUNCTION "InjectEnvironment"
@@ -63,7 +63,6 @@ using DetachEnvironmentFunction = void(*)();
     #if !defined(WIN32_LEAN_AND_MEAN)
         #define WIN32_LEAN_AND_MEAN
     #endif
-    #include <CryWindows.h>
 
     HMODULE CryLoadLibrary(const char* libName);
     

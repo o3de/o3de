@@ -375,7 +375,7 @@ namespace TestImpact
         }
     }
 
-    AZStd::pair<AZStd::vector<const TestTarget*>, AZStd::vector<const TestTarget*>> Runtime::SelectCoveringTestTargetsAndUpdateEnumerationCache(
+    AZStd::pair<AZStd::vector<const TestTarget*>, AZStd::vector<const TestTarget*>> Runtime::SelectCoveringTestTargets(
         const ChangeList& changeList,
         Policy::TestPrioritization testPrioritizationPolicy)
     {

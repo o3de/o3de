@@ -79,7 +79,7 @@ namespace AZ
         int Create(int iCacheSize, int glyphBitmapWidth, int glyphBitmapHeight, FontSmoothMethod smoothMethod, FontSmoothAmount smoothAmount, float sizeRatio);
         int Release();
 
-        int LoadFontFromFile(const string& fileName);
+        int LoadFontFromFile(const AZStd::string& fileName);
         int LoadFontFromMemory(unsigned char* fileBuffer, int dataSize);
         int ReleaseFont();
 

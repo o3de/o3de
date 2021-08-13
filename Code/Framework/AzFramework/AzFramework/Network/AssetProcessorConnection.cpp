@@ -136,7 +136,7 @@ namespace AzFramework
             AZStd::array<char, MaxMessageSize> buffer;
             azsnprintf(buffer.data(), buffer.size(), "(%p/%#" PRIxPTR "): %s\n", this, numericThreadId, msg.data());
 
-            Platform::DebugOutput(buffer.data());
+            AZ::Debug::Platform::OutputToDebugger("AssetProcessorConnection", buffer.data());
 #else // ASSETPROCESORCONNECTION_VERBOSE_LOGGING is not defined
             (void)format;
 #endif

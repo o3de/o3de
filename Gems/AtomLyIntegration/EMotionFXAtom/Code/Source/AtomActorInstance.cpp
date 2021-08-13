@@ -131,14 +131,13 @@ namespace AZ
             const EMotionFX::Skeleton* skeleton = m_actorInstance->GetActor()->GetSkeleton();
             const EMotionFX::Pose* pose = transformData->GetCurrentPose();
 
-            const AZ::u32 transformCount = transformData->GetNumTransforms();
-            const AZ::u32 lodLevel = m_actorInstance->GetLODLevel();
-            const AZ::u32 numJoints = skeleton->GetNumNodes();
+            const size_t lodLevel = m_actorInstance->GetLODLevel();
+            const size_t numJoints = skeleton->GetNumNodes();
 
             m_auxVertices.clear();
             m_auxVertices.reserve(numJoints * 2);
 
-            for (AZ::u32 jointIndex = 0; jointIndex < numJoints; ++jointIndex)
+            for (size_t jointIndex = 0; jointIndex < numJoints; ++jointIndex)
             {
                 const EMotionFX::Node* joint = skeleton->GetNode(jointIndex);
                 if (!joint->GetSkeletalLODStatus(lodLevel))
@@ -146,23 +145,23 @@ namespace AZ
                     continue;
                 }
 
-                const AZ::u32 parentIndex = joint->GetParentIndex();
-                if (parentIndex == InvalidIndex32)
+                const size_t parentIndex = joint->GetParentIndex();
+                if (parentIndex == InvalidIndex)
                 {
                     continue;
                 }
 
-                const AZ::Vector3 parentPos = pose->GetWorldSpaceTransform(parentIndex).mPosition;
+                const AZ::Vector3 parentPos = pose->GetWorldSpaceTransform(parentIndex).m_position;
                 m_auxVertices.emplace_back(parentPos);
 
-                const AZ::Vector3 bonePos = pose->GetWorldSpaceTransform(jointIndex).mPosition;
+                const AZ::Vector3 bonePos = pose->GetWorldSpaceTransform(jointIndex).m_position;
                 m_auxVertices.emplace_back(bonePos);
             }
 
             const AZ::Color skeletonColor(0.604f, 0.804f, 0.196f, 1.0f);
             RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
             lineArgs.m_verts = m_auxVertices.data();
-            lineArgs.m_vertCount = static_cast<uint32_t>(m_auxVertices.size());
+            lineArgs.m_vertCount = aznumeric_caster(m_auxVertices.size());
             lineArgs.m_colors = &skeletonColor;
             lineArgs.m_colorCount = 1;
             lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
@@ -203,9 +202,9 @@ namespace AZ
 
             RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
             lineArgs.m_verts = m_auxVertices.data();
-            lineArgs.m_vertCount = static_cast<uint32_t>(m_auxVertices.size());
+            lineArgs.m_vertCount = aznumeric_caster(m_auxVertices.size());
             lineArgs.m_colors = m_auxColors.data();
-            lineArgs.m_colorCount = static_cast<uint32_t>(m_auxColors.size());
+            lineArgs.m_colorCount = aznumeric_caster(m_auxColors.size());
             lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
             auxGeom->DrawLines(lineArgs);
         }
@@ -450,13 +449,13 @@ namespace AZ
 
         AZ::u32 AtomActorInstance::GetJointCount()
         {
-            return m_actorInstance->GetActor()->GetSkeleton()->GetNumNodes();
+            return aznumeric_caster(m_actorInstance->GetActor()->GetSkeleton()->GetNumNodes());
         }
 
         const char* AtomActorInstance::GetJointNameByIndex(AZ::u32 jointIndex)
         {
             EMotionFX::Skeleton* skeleton = m_actorInstance->GetActor()->GetSkeleton();
-            const AZ::u32 numNodes = skeleton->GetNumNodes();
+            const size_t numNodes = skeleton->GetNumNodes();
             if (jointIndex < numNodes)
             {
                 return skeleton->GetNode(jointIndex)->GetName();
@@ -470,12 +469,12 @@ namespace AZ
             if (jointName)
             {
                 EMotionFX::Skeleton* skeleton = m_actorInstance->GetActor()->GetSkeleton();
-                const AZ::u32 numNodes = skeleton->GetNumNodes();
-                for (AZ::u32 nodeIndex = 0; nodeIndex < numNodes; ++nodeIndex)
+                const size_t numNodes = skeleton->GetNumNodes();
+                for (size_t nodeIndex = 0; nodeIndex < numNodes; ++nodeIndex)
                 {
                     if (0 == azstricmp(jointName, skeleton->GetNode(nodeIndex)->GetName()))
                     {
-                        return nodeIndex;
+                        return aznumeric_caster(nodeIndex);
                     }
                 }
             }
@@ -584,7 +583,8 @@ namespace AZ
 
                 // Update the morph weights for every lod. This does not mean they will all be dispatched, but they will all have up to date weights
                 // TODO: once culling is hooked up such that EMotionFX and Atom are always in sync about which lod to update, only update the currently visible lods [ATOM-13564]
-                for (uint32_t lodIndex = 0; lodIndex < m_actorInstance->GetActor()->GetNumLODLevels(); ++lodIndex)
+                const auto lodCount = aznumeric_cast<uint32_t>(m_actorInstance->GetActor()->GetNumLODLevels());
+                for (uint32_t lodIndex = 0; lodIndex < lodCount; ++lodIndex)
                 {
                     EMotionFX::MorphSetup* morphSetup = m_actorInstance->GetActor()->GetMorphSetup(lodIndex);
                     if (morphSetup)
@@ -593,9 +593,9 @@ namespace AZ
                         m_wrinkleMasks.clear();
                         m_wrinkleMaskWeights.clear();
 
-                        uint32_t morphTargetCount = morphSetup->GetNumMorphTargets();
+                        size_t morphTargetCount = morphSetup->GetNumMorphTargets();
                         m_morphTargetWeights.clear();
-                        for (uint32_t morphTargetIndex = 0; morphTargetIndex < morphTargetCount; ++morphTargetIndex)
+                        for (size_t morphTargetIndex = 0; morphTargetIndex < morphTargetCount; ++morphTargetIndex)
                         {
                             EMotionFX::MorphTarget* morphTarget = morphSetup->GetMorphTarget(morphTargetIndex);
                             // check if we are dealing with a standard morph target
@@ -611,11 +611,11 @@ namespace AZ
 
                             // Each morph target is split into several deform datas, all of which share the same weight but have unique min/max delta values
                             // and thus correspond with unique dispatches in the morph target pass
-                            for (uint32_t deformDataIndex = 0; deformDataIndex < morphTargetStandard->GetNumDeformDatas(); ++deformDataIndex)
+                            for (size_t deformDataIndex = 0; deformDataIndex < morphTargetStandard->GetNumDeformDatas(); ++deformDataIndex)
                             {
                                 // Morph targets that don't deform any vertices (e.g. joint-based morph targets) are not registered in the render proxy. Skip adding their weights.
                                 const EMotionFX::MorphTargetStandard::DeformData* deformData = morphTargetStandard->GetDeformData(deformDataIndex);
-                                if (deformData->mNumVerts > 0)
+                                if (deformData->m_numVerts > 0)
                                 {
                                     float weight = morphTargetSetupInstance->GetWeight();
                                     m_morphTargetWeights.push_back(weight);
@@ -816,8 +816,8 @@ namespace AZ
                 {
                     const AZStd::vector<AZ::RPI::MorphTargetMetaAsset::MorphTarget>& metaDatas = actor->GetMorphTargetMetaAsset()->GetMorphTargets();
                     // Loop over all the EMotionFX morph targets
-                    uint32_t numMorphTargets = morphSetup->GetNumMorphTargets();
-                    for (uint32_t morphTargetIndex = 0; morphTargetIndex < numMorphTargets; ++morphTargetIndex)
+                    size_t numMorphTargets = morphSetup->GetNumMorphTargets();
+                    for (size_t morphTargetIndex = 0; morphTargetIndex < numMorphTargets; ++morphTargetIndex)
                     {
                         EMotionFX::MorphTargetStandard* morphTarget = static_cast<EMotionFX::MorphTargetStandard*>(morphSetup->GetMorphTarget(morphTargetIndex));
                         for (const RPI::MorphTargetMetaAsset::MorphTarget& metaData : metaDatas)
@@ -861,7 +861,7 @@ namespace AZ
                             // Set the weights for any active masks
                             for (size_t i = 0; i < m_wrinkleMaskWeights.size(); ++i)
                             {
-                                wrinkleMaskObjectSrg->SetConstant(wrinkleMaskWeightsIndex, m_wrinkleMaskWeights[i], static_cast<uint32_t>(i));
+                                wrinkleMaskObjectSrg->SetConstant(wrinkleMaskWeightsIndex, m_wrinkleMaskWeights[i], aznumeric_caster(i));
                             }
                             AZ_Error("AtomActorInstance", m_wrinkleMaskWeights.size() <= s_maxActiveWrinkleMasks, "The skinning shader supports no more than %d active morph targets with wrinkle masks.", s_maxActiveWrinkleMasks);
                         }

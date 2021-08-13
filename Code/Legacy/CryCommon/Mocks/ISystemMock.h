@@ -100,10 +100,6 @@ public:
         XmlNodeRef(const char*, bool));
     MOCK_METHOD0(GetXmlUtils,
         IXmlUtils * ());
-    MOCK_METHOD1(SetViewCamera,
-        void(CCamera & Camera));
-    MOCK_METHOD0(GetViewCamera,
-        CCamera & ());
     MOCK_METHOD1(IgnoreUpdates,
         void(bool bIgnore));
     MOCK_METHOD1(SetIProcess,
@@ -122,7 +118,7 @@ public:
         const SFileVersion&());
 
     MOCK_METHOD1(AddCVarGroupDirectory,
-        void(const string&));
+        void(const AZStd::string&));
     MOCK_METHOD0(SaveConfiguration,
         void());
     MOCK_METHOD3(LoadConfiguration,

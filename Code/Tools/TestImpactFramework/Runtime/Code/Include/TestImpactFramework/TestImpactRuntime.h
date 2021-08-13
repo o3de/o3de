@@ -187,7 +187,7 @@ namespace TestImpact
         //! @param changeList The change list for which the covering tests and enumeration cache updates will be generated for.
         //! @param testPrioritizationPolicy The test prioritization strategy to use for the selected test targets.
         //! @returns The pair of selected test targets and discarded test targets.
-        AZStd::pair<AZStd::vector<const TestTarget*>, AZStd::vector<const TestTarget*>> SelectCoveringTestTargetsAndUpdateEnumerationCache(
+        AZStd::pair<AZStd::vector<const TestTarget*>, AZStd::vector<const TestTarget*>> SelectCoveringTestTargets(
             const ChangeList& changeList,
             Policy::TestPrioritization testPrioritizationPolicy);
 

@@ -11,6 +11,7 @@ function(ly_apply_platform_properties target)
 
     set_target_properties(${target} PROPERTIES
         BUILD_RPATH "@executable_path/;@executable_path/../Frameworks"
+        INSTALL_RPATH "@executable_path/;@executable_path/../Frameworks"
     )
 
 endfunction()

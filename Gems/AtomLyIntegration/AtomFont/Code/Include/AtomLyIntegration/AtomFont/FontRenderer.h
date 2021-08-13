@@ -60,7 +60,7 @@ namespace AZ
         FontRenderer();
         ~FontRenderer();
 
-        int         LoadFromFile(const string& fileName);
+        int         LoadFromFile(const AZStd::string& fileName);
         int         LoadFromMemory(unsigned char* buffer, int bufferSize);
         int         Release();
 

@@ -9,6 +9,7 @@
 
 #include <AzCore/std/function/function_base.h>
 #include <AzCore/std/function/invoke.h>
+#include <AzCore/std/typetraits/is_integral.h>
 #include <AzCore/std/typetraits/remove_cvref.h>
 #include <AzCore/std/allocator.h>
 

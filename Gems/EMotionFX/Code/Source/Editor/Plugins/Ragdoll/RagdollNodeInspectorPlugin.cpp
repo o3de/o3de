@@ -80,13 +80,13 @@ namespace EMotionFX
             scrollArea->setWidget(m_nodeWidget);
             scrollArea->setWidgetResizable(true);
 
-            mDock->setWidget(scrollArea);
+            m_dock->setWidget(scrollArea);
 
             EMotionFX::SkeletonOutlinerNotificationBus::Handler::BusConnect();
         }
         else
         {
-            mDock->setWidget(CreateErrorContentWidget("Ragdoll editor depends on the PhysX gem. Please enable it in the project configurator."));
+            m_dock->setWidget(CreateErrorContentWidget("Ragdoll editor depends on the PhysX gem. Please enable it in the project configurator."));
         }
 
         return true;
@@ -432,12 +432,12 @@ namespace EMotionFX
             return;
         }
 
-        MCommon::RenderUtil* renderUtil = renderInfo->mRenderUtil;
+        MCommon::RenderUtil* renderUtil = renderInfo->m_renderUtil;
         const bool oldLightingEnabled = renderUtil->GetLightingEnabled();
         renderUtil->EnableLighting(false);
 
-        const AZ::u32 actorInstanceCount = GetActorManager().GetNumActorInstances();
-        for (AZ::u32 i = 0; i < actorInstanceCount; ++i)
+        const size_t actorInstanceCount = GetActorManager().GetNumActorInstances();
+        for (size_t i = 0; i < actorInstanceCount; ++i)
         {
             ActorInstance* actorInstance = GetActorManager().GetActorInstance(i);
             RenderRagdoll(actorInstance, renderColliders, renderJointLimits, renderPlugin, renderInfo);
@@ -451,7 +451,7 @@ namespace EMotionFX
     {
         const Actor* actor = actorInstance->GetActor();
         const Skeleton* skeleton = actor->GetSkeleton();
-        const AZ::u32 numNodes = skeleton->GetNumNodes();
+        const size_t numNodes = skeleton->GetNumNodes();
         const AZStd::shared_ptr<EMotionFX::PhysicsSetup>& physicsSetup = actor->GetPhysicsSetup();
         const Physics::RagdollConfiguration& ragdollConfig = physicsSetup->GetRagdollConfig();
         const AZStd::vector<Physics::RagdollNodeConfiguration>& ragdollNodes = ragdollConfig.m_nodes;
@@ -462,12 +462,12 @@ namespace EMotionFX
         const MCore::RGBAColor defaultColor = renderOptions->GetRagdollColliderColor();
         const MCore::RGBAColor selectedColor = renderOptions->GetSelectedRagdollColliderColor();
 
-        const AZStd::unordered_set<AZ::u32>& selectedJointIndices = EMStudio::GetManager()->GetSelectedJointIndices();
+        const AZStd::unordered_set<size_t>& selectedJointIndices = EMStudio::GetManager()->GetSelectedJointIndices();
 
-        for (AZ::u32 nodeIndex = 0; nodeIndex < numNodes; ++nodeIndex)
+        for (size_t nodeIndex = 0; nodeIndex < numNodes; ++nodeIndex)
         {
             const Node* joint = skeleton->GetNode(nodeIndex);
-            const AZ::u32 jointIndex = joint->GetNodeIndex();
+            const size_t jointIndex = joint->GetNodeIndex();
 
             AZ::Outcome<size_t> ragdollNodeIndex = AZ::Failure();
             if (ragdollInstance)
@@ -535,12 +535,12 @@ namespace EMotionFX
     {
         const EMStudio::RenderOptions* renderOptions = renderPlugin->GetRenderOptions();
         const MCore::RGBAColor violatedColor = renderOptions->GetViolatedJointLimitColor();
-        const AZ::u32 nodeIndex = node->GetNodeIndex();
-        const AZ::u32 parentNodeIndex = parentNode->GetNodeIndex();
+        const size_t nodeIndex = node->GetNodeIndex();
+        const size_t parentNodeIndex = parentNode->GetNodeIndex();
         const Transform& actorInstanceWorldTransform = actorInstance->GetWorldSpaceTransform();
         const Pose* currentPose = actorInstance->GetTransformData()->GetCurrentPose();
-        const AZ::Quaternion& parentOrientation = currentPose->GetModelSpaceTransform(parentNodeIndex).mRotation;
-        const AZ::Quaternion& childOrientation = currentPose->GetModelSpaceTransform(nodeIndex).mRotation;
+        const AZ::Quaternion& parentOrientation = currentPose->GetModelSpaceTransform(parentNodeIndex).m_rotation;
+        const AZ::Quaternion& childOrientation = currentPose->GetModelSpaceTransform(nodeIndex).m_rotation;
 
         m_vertexBuffer.clear();
         m_indexBuffer.clear();
@@ -554,10 +554,10 @@ namespace EMotionFX
         }           
 
         Transform jointModelSpaceTransform = currentPose->GetModelSpaceTransform(parentNodeIndex);
-        jointModelSpaceTransform.mPosition = currentPose->GetModelSpaceTransform(nodeIndex).mPosition;
+        jointModelSpaceTransform.m_position = currentPose->GetModelSpaceTransform(nodeIndex).m_position;
         const Transform jointGlobalTransformNoScale = jointModelSpaceTransform * actorInstanceWorldTransform;
 
-        MCommon::RenderUtil* renderUtil = renderInfo->mRenderUtil;
+        MCommon::RenderUtil* renderUtil = renderInfo->m_renderUtil;
         const size_t numLineBufferEntries = m_lineBuffer.size();
         if (m_lineValidityBuffer.size() * 2 != numLineBufferEntries)
         {
@@ -588,6 +588,6 @@ namespace EMotionFX
         const Transform childModelSpaceTransform = childJointLocalSpaceTransform * currentPose->GetModelSpaceTransform(node->GetNodeIndex());
         const Transform jointChildWorldSpaceTransformNoScale = (childModelSpaceTransform * actorInstanceWorldSpaceTransform);
 
-        renderInfo->mRenderUtil->RenderArrow(0.1f, jointChildWorldSpaceTransformNoScale.mPosition, MCore::GetRight(jointChildWorldSpaceTransformNoScale.ToAZTransform()), color);
+        renderInfo->m_renderUtil->RenderArrow(0.1f, jointChildWorldSpaceTransformNoScale.m_position, MCore::GetRight(jointChildWorldSpaceTransformNoScale.ToAZTransform()), color);
     }
 } // namespace EMotionFX

@@ -224,9 +224,9 @@ namespace
         IDraw2d::Rounding pixelRounding = isPixelAligned ? IDraw2d::Rounding::Nearest : IDraw2d::Rounding::None;
         float z = 1.0f;
         int i = 0;
-        for (int y = 0; y < numY; ++y)
+        for (uint32 y = 0; y < numY; ++y)
         {
-            for (int x = 0; x < numX; x += 1)
+            for (uint32 x = 0; x < numX; x += 1)
             {
                 AZ::Vector3 point3(xValues[x], yValues[y], z);
                 point3 = transform * point3;
@@ -2030,7 +2030,7 @@ void UiImageComponent::ClipValuesForSlicedLinearFill(uint32 numValues, float* xV
     float previousPercentage = 0;
     int previousIndex = startClip;
     int clampIndex = -1; // to clamp all values greater than m_fillAmount in specified direction.
-    for (int arrayPos = 1; arrayPos < numValues; ++arrayPos)
+    for (uint32 arrayPos = 1; arrayPos < numValues; ++arrayPos)
     {
         int currentIndex = startClip + arrayPos * clipInc;
         float thisPercentage = (clipPosition[currentIndex] - clipPosition[startClip]) / totalLength;
@@ -2102,7 +2102,7 @@ void UiImageComponent::ClipAndRenderForSlicedRadialFill(uint32 numVertsPerSide, 
     if (m_fillAmount < 0.5f)
     {
         // Clips against first half line and then rotating line and adds results to render list.
-        for (int currentIndex = 0; currentIndex < totalIndices; currentIndex += 3)
+        for (uint32 currentIndex = 0; currentIndex < totalIndices; currentIndex += 3)
         {
             SVF_P2F_C4B_T2F_F4B intermediateVerts[maxTemporaryVerts];
             uint16 intermediateIndices[maxTemporaryIndices];
@@ -2118,7 +2118,7 @@ void UiImageComponent::ClipAndRenderForSlicedRadialFill(uint32 numVertsPerSide, 
     else
     {
         // Clips against first half line and adds results to render list then clips against the second half line and rotating line and also adds those results to render list.
-        for (int currentIndex = 0; currentIndex < totalIndices; currentIndex += 3)
+        for (uint32 currentIndex = 0; currentIndex < totalIndices; currentIndex += 3)
         {
             SVF_P2F_C4B_T2F_F4B intermediateVerts[maxTemporaryVerts];
             uint16 intermediateIndices[maxTemporaryIndices];
@@ -2201,7 +2201,7 @@ void UiImageComponent::ClipAndRenderForSlicedRadialCornerOrEdgeFill(uint32 numVe
 
     int numIndicesToRender = 0;
     int vertexOffset = 0;
-    for (int ix = 0; ix < totalIndices; ix += 3)
+    for (uint32 ix = 0; ix < totalIndices; ix += 3)
     {
         int indicesUsed = ClipToLine(verts, &indices[ix], renderVerts, renderIndices, vertexOffset, numIndicesToRender, lineOrigin, lineEnd);
         numIndicesToRender += indicesUsed;
@@ -2663,18 +2663,7 @@ bool UiImageComponent::VersionConverter(AZ::SerializeContext& context,
     // conversion from version 1:
     // - Need to convert CryString elements to AZStd::string
     // - Need to convert Color to Color and Alpha
-    if (classElement.GetVersion() <= 1)
-    {
-        if (!LyShine::ConvertSubElementFromCryStringToAzString(context, classElement, "SpritePath"))
-        {
-            return false;
-        }
-
-        if (!LyShine::ConvertSubElementFromColorToColorPlusAlpha(context, classElement, "Color", "Alpha"))
-        {
-            return false;
-        }
-    }
+    AZ_Assert(classElement.GetVersion() > 1, "Unsupported UiImageComponent version: %d", classElement.GetVersion());
 
     // conversion from version 1 or 2 to current:
     // - Need to convert AZStd::string sprites to AzFramework::SimpleAssetReference<LmbrCentral::TextureAsset>
