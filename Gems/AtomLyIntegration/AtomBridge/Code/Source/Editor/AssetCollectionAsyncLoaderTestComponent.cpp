@@ -13,7 +13,7 @@
 
 #include <AzFramework/StringFunc/StringFunc.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzToolsFramework/Serialization/Json/JsonUtils.h>
 
 // Included so we can deduce the asset type from asset paths.
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>

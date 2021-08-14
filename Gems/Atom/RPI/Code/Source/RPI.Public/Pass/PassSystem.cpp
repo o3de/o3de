@@ -17,7 +17,7 @@
 #include <AzCore/std/sort.h>
 #include <AzCore/Interface/Interface.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzToolsFramework/Serialization/Json/JsonUtils.h>
 
 #include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/FrameGraphBuilder.h>

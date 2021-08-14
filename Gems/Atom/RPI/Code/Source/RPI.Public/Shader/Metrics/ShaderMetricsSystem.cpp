@@ -15,7 +15,7 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Utils//Utils.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzToolsFramework/Serialization/Json/JsonUtils.h>
 
 #include <AzFramework/IO/LocalFileIO.h>
 

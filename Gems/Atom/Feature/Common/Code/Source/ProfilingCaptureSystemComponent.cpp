@@ -19,7 +19,7 @@
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Pass/PassFilter.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzToolsFramework/Serialization/Json/JsonUtils.h>
 
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/RTTI/BehaviorContext.h>

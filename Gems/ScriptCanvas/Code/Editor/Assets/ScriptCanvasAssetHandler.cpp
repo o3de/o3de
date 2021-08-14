@@ -17,6 +17,7 @@
 #include <AzCore/std/string/string_view.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/Serialization/Json/JsonUtils.h>
 #include <Core/ScriptCanvasBus.h>
 #include <GraphCanvas/GraphCanvasBus.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
@@ -26,13 +27,6 @@
 #include <ScriptCanvas/Components/EditorGraph.h>
 #include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>
 #include <ScriptCanvas/Components/EditorScriptCanvasComponent.h>
-
-// \todo move out and replace with JsonUtils.h when it can get moved
-#include <AzCore/IO/TextStreamWriters.h>
-#include <AzCore/JSON/error/error.h>
-#include <AzCore/JSON/error/en.h>
-#include <AzCore/JSON/prettywriter.h>
-
 
 namespace ScriptCanvasEditor
 {
@@ -79,23 +73,45 @@ namespace ScriptCanvasEditor
         }
     }
 
-    AZ::Data::AssetHandler::LoadResult ScriptCanvasAssetHandler::LoadAssetData(
-        const AZ::Data::Asset<AZ::Data::AssetData>& asset,
-        AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
-        const AZ::Data::AssetFilterCB& assetLoadFilterCB)
+    AZ::Data::AssetHandler::LoadResult ScriptCanvasAssetHandler::LoadAssetData
+        ( const AZ::Data::Asset<AZ::Data::AssetData>& assetTarget
+        , AZStd::shared_ptr<AZ::Data::AssetDataStream> streamSource
+        , const AZ::Data::AssetFilterCB& assetLoadFilterCB)
     {
-        auto* scriptCanvasAsset = asset.GetAs<ScriptCanvasAsset>();
-        AZ_Assert(scriptCanvasAsset, "This should be a ScriptCanvasAsset, as this is the only type we process!");
+        namespace JSRU = AZ::JsonSerializationUtils;
+        using namespace ScriptCanvas;
 
-        // static_assert(false, "load the json here, and only if it failed, conditionally load the block below");
+        auto* scriptCanvasAssetTarget = assetTarget.GetAs<ScriptCanvasAsset>();
+        AZ_Assert(scriptCanvasAssetTarget, "This should be a ScriptCanvasAsset, as this is the only type we process!");
 
-        if (scriptCanvasAsset && m_serializeContext)
+        if (scriptCanvasAssetTarget && m_serializeContext && streamSource)
         {
-            stream->Seek(0U, AZ::IO::GenericStream::ST_SEEK_BEGIN);
-            // tolerate unknown classes in the editor.  Let the asset processor warn about bad nodes...
-            bool loadSuccess = AZ::Utils::LoadObjectFromStreamInPlace(*stream, scriptCanvasAsset->GetScriptCanvasData(), m_serializeContext, AZ::ObjectStream::FilterDescriptor(assetLoadFilterCB, AZ::ObjectStream::FILTERFLAG_IGNORE_UNKNOWN_CLASSES));
-            return loadSuccess ? AZ::Data::AssetHandler::LoadResult::LoadComplete : AZ::Data::AssetHandler::LoadResult::Error;
+            AZ::JsonDeserializerSettings settings;
+            // more mapping stuff
+            settings.m_serializeContext = m_serializeContext;
+            streamSource->Seek(0U, AZ::IO::GenericStream::ST_SEEK_BEGIN);
+            // presume JSON serialization...
+            if (JSRU::LoadObjectFromStreamByType
+                ( scriptCanvasAssetTarget
+                , azrtti_typeid<ScriptCanvasAsset>()
+                , *streamSource
+                , &settings).IsSuccess())
+            {
+                return AZ::Data::AssetHandler::LoadResult::LoadComplete;
+            }
+            else
+            {
+                // ...if there is a failure, check if it is saved in the old format
+                streamSource->Seek(0U, AZ::IO::GenericStream::ST_SEEK_BEGIN);
+                // tolerate unknown classes in the editor.  Let the asset processor warn about bad nodes...
+                bool loadSuccess = AZ::Utils::LoadObjectFromStreamInPlace(*streamSource, scriptCanvasAssetTarget->GetScriptCanvasData()
+                    , m_serializeContext
+                    , AZ::ObjectStream::FilterDescriptor(assetLoadFilterCB, AZ::ObjectStream::FILTERFLAG_IGNORE_UNKNOWN_CLASSES));
+
+                return loadSuccess ? AZ::Data::AssetHandler::LoadResult::LoadComplete : AZ::Data::AssetHandler::LoadResult::Error;
+            }
         }
+
         return AZ::Data::AssetHandler::LoadResult::Error;
     }
 
@@ -111,25 +127,20 @@ namespace ScriptCanvasEditor
 
     bool ScriptCanvasAssetHandler::SaveAssetData(const ScriptCanvasAsset* assetData, AZ::IO::GenericStream* stream, [[maybe_unused]] AZ::DataStream::StreamType streamType)
     {
-        namespace JSR = AZ::JsonSerializationResult;
- 
-        if (assetData && m_serializeContext)
-        {           
+        namespace JSRU = AZ::JsonSerializationUtils;
+        using namespace ScriptCanvas;
+
+        if (assetData && stream && m_serializeContext)
+        {
             AZ::JsonSerializerSettings settings;
             settings.m_keepDefaults = false;
             settings.m_serializeContext = m_serializeContext;
-            rapidjson::Document document;
- 
-            if (AZ::JsonSerialization::Store(document, document.GetAllocator(), assetData->GetScriptCanvasData(), settings).GetProcessing() != JSR::Processing::Halted)
-            {
-                // \todo replace with with exact function from JsonUtils.cpp once it is moved to AzToolsFramework
-                AZ::IO::RapidJSONStreamWriter jsonStreamWriter(stream);
-                rapidjson::PrettyWriter<AZ::IO::RapidJSONStreamWriter> writer(jsonStreamWriter);
-                return document.Accept(writer);
-            }
+            return JSRU::SaveObjectToStream<ScriptCanvasData>(&assetData->GetScriptCanvasData(), *stream, nullptr, &settings).IsSuccess();
         }
-
-        return false;
+        else
+        {
+            return false;
+        }
     }
 
     void ScriptCanvasAssetHandler::DestroyAsset(AZ::Data::AssetPtr ptr)

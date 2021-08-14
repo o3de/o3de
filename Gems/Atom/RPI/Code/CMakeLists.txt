@@ -40,6 +40,7 @@ ly_add_target(
             AZ::AtomCore
             AZ::AzCore
             AZ::AzFramework
+            AZ::AzToolsFramework
         PUBLIC
             Gem::Atom_RHI.Public
 )
@@ -62,6 +63,7 @@ ly_add_target(
             AZ::AtomCore
             AZ::AzCore
             AZ::AzFramework
+            AZ::AzToolsFramework
             Gem::Atom_RPI.Public
             Gem::Atom_RHI.Public
             Gem::Atom_RHI.Reflect
@@ -107,6 +109,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AtomCore
                 AZ::AzCore
                 AZ::AzFramework
+                AZ::AzToolsFramework
                 Gem::Atom_RPI.Public
                 Gem::Atom_RHI.Public
     )

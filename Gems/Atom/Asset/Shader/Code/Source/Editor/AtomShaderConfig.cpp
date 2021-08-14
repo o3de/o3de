@@ -12,7 +12,7 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzToolsFramework/Serialization/Json/JsonUtils.h>
 
 
 namespace AZ

@@ -34,6 +34,7 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
+            AZ::AzToolsFramework
         PUBLIC
             Gem::Atom_RPI.Public
             Gem::Atom_Utils.Static
@@ -62,6 +63,7 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
+            AZ::AzToolsFramework
         PUBLIC
             Gem::Atom_RPI.Public
             Gem::Atom_Utils.Static
@@ -85,6 +87,7 @@ ly_add_target(
         PRIVATE
             AZ::AzCore
             AZ::AzFramework
+            AZ::AzToolsFramework
             Gem::Atom_Feature_Common.Static
             Gem::Atom_Feature_Common.Public
             3rdParty::lux_core
@@ -161,6 +164,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzFramework
+                AZ::AzToolsFramework
                 AZ::AzTest
                 Gem::Atom_Feature_Common.Static
                 Gem::Atom_Feature_Common.Public

@@ -13,7 +13,7 @@
 
 #include <AzTest/AzTest.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzToolsFramework/Serialization/Json/JsonUtils.h>
 
 namespace UnitTest
 {
