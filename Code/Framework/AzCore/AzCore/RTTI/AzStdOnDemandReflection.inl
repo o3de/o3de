@@ -85,11 +85,11 @@ namespace AZ
         using ContainerType = AZStd::basic_string<Element, Traits, Allocator>;
         using SizeType = typename ContainerType::size_type;
         using ValueType = typename ContainerType::value_type;
-        
+
         static void Reflect(ReflectContext* context)
         {
-            constexpr bool is_string = AZStd::is_same_v<Element,char> && AZStd::is_same_v<Traits,AZStd::char_traits<char>>
-                    && AZStd::is_same_v<Allocator,AZStd::allocator>;
+            constexpr bool is_string = AZStd::is_same_v<Element, char> && AZStd::is_same_v<Traits, AZStd::char_traits<char>>
+                    && AZStd::is_same_v<Allocator, AZStd::allocator>;
             if constexpr(is_string)
             {
                 CommonOnDemandReflections::ReflectCommonString(context);
@@ -120,7 +120,7 @@ namespace AZ
     {
         using ContainerType = AZStd::intrusive_ptr<T>;
 
-        // TODO: Count reflection types for a proper un-reflect 
+        // TODO: Count reflection types for a proper un-reflect
 
         static void CustomConstructor(ContainerType* thisPtr, ScriptDataContext& dc)
         {
@@ -168,7 +168,7 @@ namespace AZ
     {
         using ContainerType = AZStd::shared_ptr<T>;
 
-        // TODO: Count reflection types for a proper un-reflect 
+        // TODO: Count reflection types for a proper un-reflect
 
         static void CustomConstructor(ContainerType* thisPtr, ScriptDataContext& dc)
         {
@@ -327,7 +327,7 @@ namespace AZ
             thisPtr[uindex] = value;
         }
 
-        
+
         static bool EraseCheck_VM(ContainerType& thisPtr, AZ::u64 index)
         {
             if (index < thisPtr.size())
@@ -340,7 +340,7 @@ namespace AZ
                 return false;
             }
         }
-            
+
         static ContainerType& ErasePost_VM(ContainerType& thisPtr, AZ::u64 /*index*/)
         {
             return thisPtr;
@@ -496,7 +496,7 @@ namespace AZ
                 return AZ::Failure(AZStd::string::format("Index out of bounds: %zu (size: %zu)", index, thisContainer.size()));
             }
         }
-        
+
         static AZ::Outcome<void, void> Replace(ContainerType& thisContainer, size_t index, T& value)
         {
             if (index >= 0 && index < thisContainer.size())
@@ -526,7 +526,7 @@ namespace AZ
                         ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::Length)
                         ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
                         ->Attribute(AZ::Script::Attributes::Deprecated, true)
-                    
+
                     ->Method(k_accessElementName, &At, {{ {}, { "Index", "The index to read from", nullptr, BehaviorParameter::Traits::TR_INDEX }}})
                     ->Method(k_sizeName, [](ContainerType*) { return aznumeric_cast<int>(N); })
                         ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::Length)
