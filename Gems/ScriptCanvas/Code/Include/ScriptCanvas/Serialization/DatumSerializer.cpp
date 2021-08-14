@@ -84,7 +84,8 @@ namespace AZ
         AZStd::string label;
         AZ_Assert(azrtti_typeid<decltype(outputDatum->m_datumLabel)>() == azrtti_typeid<decltype(label)>()
             , "m_datumLabel type changed and won't load properly");
-            result.Combine(ContinueLoadingFromJsonObjectField
+
+        result.Combine( ContinueLoadingFromJsonObjectField
             ( &label
             , azrtti_typeid<decltype(outputDatum->m_datumLabel)>()
             , inputValue

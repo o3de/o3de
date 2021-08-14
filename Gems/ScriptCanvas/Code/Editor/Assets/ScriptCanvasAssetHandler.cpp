@@ -6,29 +6,33 @@
  *
  */
 
-
-#include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
-#include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
-
-#include <ScriptCanvas/Asset/RuntimeAsset.h>
-#include <ScriptCanvas/Bus/ScriptCanvasBus.h>
-#include <Core/ScriptCanvasBus.h>
-#include <ScriptCanvas/Components/EditorGraph.h>
-#include <ScriptCanvas/Components/EditorScriptCanvasComponent.h>
-#include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>
-
-#include <GraphCanvas/GraphCanvasBus.h>
-
-#include <AzCore/IO/GenericStreams.h>
-#include <AzCore/IO/FileIO.h>
-#include <AzCore/Serialization/Utils.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
+#include <AzCore/IO/FileIO.h>
+#include <AzCore/IO/GenericStreams.h>
+#include <AzCore/Serialization/Json/JsonSerialization.h>
+#include <AzCore/Serialization/Json/JsonSerializationResult.h>
+#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Serialization/Utils.h>
 #include <AzCore/std/string/string_view.h>
-
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <Core/ScriptCanvasBus.h>
+#include <GraphCanvas/GraphCanvasBus.h>
+#include <ScriptCanvas/Asset/RuntimeAsset.h>
+#include <ScriptCanvas/Assets/ScriptCanvasAsset.h>
+#include <ScriptCanvas/Assets/ScriptCanvasAssetHandler.h>
+#include <ScriptCanvas/Bus/ScriptCanvasBus.h>
+#include <ScriptCanvas/Components/EditorGraph.h>
+#include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>
+#include <ScriptCanvas/Components/EditorScriptCanvasComponent.h>
+
+// \todo move out and replace with JsonUtils.h when it can get moved
+#include <AzCore/IO/TextStreamWriters.h>
+#include <AzCore/JSON/error/error.h>
+#include <AzCore/JSON/error/en.h>
+#include <AzCore/JSON/prettywriter.h>
+
 
 namespace ScriptCanvasEditor
 {
@@ -75,14 +79,16 @@ namespace ScriptCanvasEditor
         }
     }
 
-
     AZ::Data::AssetHandler::LoadResult ScriptCanvasAssetHandler::LoadAssetData(
         const AZ::Data::Asset<AZ::Data::AssetData>& asset,
         AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
         const AZ::Data::AssetFilterCB& assetLoadFilterCB)
     {
         auto* scriptCanvasAsset = asset.GetAs<ScriptCanvasAsset>();
-        AZ_Assert(scriptCanvasAsset, "This should be an scene slice asset, as this is the only type we process!");
+        AZ_Assert(scriptCanvasAsset, "This should be a ScriptCanvasAsset, as this is the only type we process!");
+
+        // static_assert(false, "load the json here, and only if it failed, conditionally load the block below");
+
         if (scriptCanvasAsset && m_serializeContext)
         {
             stream->Seek(0U, AZ::IO::GenericStream::ST_SEEK_BEGIN);
@@ -91,9 +97,7 @@ namespace ScriptCanvasEditor
             return loadSuccess ? AZ::Data::AssetHandler::LoadResult::LoadComplete : AZ::Data::AssetHandler::LoadResult::Error;
         }
         return AZ::Data::AssetHandler::LoadResult::Error;
-
     }
-
 
     bool ScriptCanvasAssetHandler::SaveAssetData(const AZ::Data::Asset<AZ::Data::AssetData>& asset, AZ::IO::GenericStream* stream)
     {
@@ -105,17 +109,24 @@ namespace ScriptCanvasEditor
         return SaveAssetData(assetData, stream, AZ::DataStream::ST_XML);
     }
 
-    bool ScriptCanvasAssetHandler::SaveAssetData(const ScriptCanvasAsset* assetData, AZ::IO::GenericStream* stream, AZ::DataStream::StreamType streamType)
+    bool ScriptCanvasAssetHandler::SaveAssetData(const ScriptCanvasAsset* assetData, AZ::IO::GenericStream* stream, [[maybe_unused]] AZ::DataStream::StreamType streamType)
     {
+        namespace JSR = AZ::JsonSerializationResult;
+ 
         if (assetData && m_serializeContext)
-        {
-            AZStd::vector<char> byteBuffer;
-            AZ::IO::ByteContainerStream<decltype(byteBuffer)> byteStream(&byteBuffer);
-            AZ::ObjectStream* objStream = AZ::ObjectStream::Create(&byteStream, *m_serializeContext, streamType);
-            bool scriptCanvasAssetSaved = objStream->WriteClass(&assetData->GetScriptCanvasData());
-            objStream->Finalize();
-            scriptCanvasAssetSaved = stream->Write(byteBuffer.size(), byteBuffer.data()) == byteBuffer.size() && scriptCanvasAssetSaved;
-            return scriptCanvasAssetSaved;
+        {           
+            AZ::JsonSerializerSettings settings;
+            settings.m_keepDefaults = false;
+            settings.m_serializeContext = m_serializeContext;
+            rapidjson::Document document;
+ 
+            if (AZ::JsonSerialization::Store(document, document.GetAllocator(), assetData->GetScriptCanvasData(), settings).GetProcessing() != JSR::Processing::Halted)
+            {
+                // \todo replace with with exact function from JsonUtils.cpp once it is moved to AzToolsFramework
+                AZ::IO::RapidJSONStreamWriter jsonStreamWriter(stream);
+                rapidjson::PrettyWriter<AZ::IO::RapidJSONStreamWriter> writer(jsonStreamWriter);
+                return document.Accept(writer);
+            }
         }
 
         return false;
@@ -126,17 +137,11 @@ namespace ScriptCanvasEditor
         delete ptr;
     }
 
-    //=========================================================================
-    // GetSerializeContext
-    //=========================================================================.
     AZ::SerializeContext* ScriptCanvasAssetHandler::GetSerializeContext() const
     {
         return m_serializeContext;
     }
 
-    //=========================================================================
-    // SetSerializeContext
-    //=========================================================================.
     void ScriptCanvasAssetHandler::SetSerializeContext(AZ::SerializeContext* context)
     {
         m_serializeContext = context;
@@ -152,17 +157,11 @@ namespace ScriptCanvasEditor
         }
     }
 
-    //=========================================================================
-    // GetHandledAssetTypes
-    //=========================================================================.
     void ScriptCanvasAssetHandler::GetHandledAssetTypes(AZStd::vector<AZ::Data::AssetType>& assetTypes)
     {
         assetTypes.push_back(GetAssetType());
     }
 
-    //=========================================================================
-    // GetAssetType
-    //=========================================================================.
     AZ::Data::AssetType ScriptCanvasAssetHandler::GetAssetType() const
     {
         return ScriptCanvasAssetHandler::GetAssetTypeStatic();
@@ -178,38 +177,24 @@ namespace ScriptCanvasEditor
         return azrtti_typeid<ScriptCanvasAsset>();
     }
 
-    //=========================================================================
-    // GetAssetTypeExtensions
-    //=========================================================================.
     void ScriptCanvasAssetHandler::GetAssetTypeExtensions(AZStd::vector<AZStd::string>& extensions)
     {
         ScriptCanvasAsset::Description description;
         extensions.push_back(description.GetExtensionImpl());
     }
 
-    //=========================================================================
-    // GetComponentTypeId
-    //=========================================================================.
     AZ::Uuid ScriptCanvasAssetHandler::GetComponentTypeId() const
     {
         return azrtti_typeid<EditorScriptCanvasComponent>();
     }
 
-    //=========================================================================
-    // GetGroup
-    //=========================================================================.
     const char* ScriptCanvasAssetHandler::GetGroup() const
     {
         return ScriptCanvas::AssetDescription::GetGroup<ScriptCanvasEditor::ScriptCanvasAsset>();
     }
 
-    //=========================================================================
-    // GetBrowserIcon
-    //=========================================================================.
     const char* ScriptCanvasAssetHandler::GetBrowserIcon() const
     {
         return ScriptCanvas::AssetDescription::GetIconPath<ScriptCanvasEditor::ScriptCanvasAsset>();
     }
-
-
 }
