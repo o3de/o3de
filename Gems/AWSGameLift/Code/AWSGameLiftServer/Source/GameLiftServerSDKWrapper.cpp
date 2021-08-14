@@ -54,7 +54,13 @@ namespace AWSGameLift
         }
 
         char buffer[50];
-        strftime(buffer, sizeof(buffer), "%FT%TZ", gmtime(&terminationTime));
+        tm time;
+#if AZ_TRAIT_USE_SECURE_CRT_FUNCTIONS
+        gmtime_s(&time, &terminationTime);
+#else
+        time = *gmtime(&terminationTime);
+#endif
+        strftime(buffer, sizeof(buffer), "%FT%TZ", &time);
 
         return AZStd::string(buffer);
     }
