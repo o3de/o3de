@@ -64,6 +64,12 @@ namespace AzToolsFramework
                     settings.m_keepDefaults = true;
                 }
 
+                if ((flags & StoreInstanceFlags::StoreLinkIds) != StoreInstanceFlags::None)
+                {
+                    LinkIdMetadata linkIdMetadata;
+                    settings.m_metadata.Add(&linkIdMetadata);
+                }
+
                 AZ::JsonSerializationResult::ResultCode result =
                     AZ::JsonSerialization::Store(prefabDom, prefabDom.GetAllocator(), instance, settings);
 

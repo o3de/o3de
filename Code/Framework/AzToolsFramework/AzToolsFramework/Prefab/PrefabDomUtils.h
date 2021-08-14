@@ -45,7 +45,11 @@ namespace AzToolsFramework
 
                 //! By default an instance will be stored with default values. In cases where we want to store less json without defaults
                 //! such as saving to disk, this flag will control that behavior.
-                StripDefaultValues = 1 << 0
+                StripDefaultValues = 1 << 0,
+
+                //! We do not save linkIds to file. However when loading a level we want to temporarily save
+                //! linkIds to instance dom so any nested prefabs will have linkIds correctly set.
+                StoreLinkIds = 1 << 1
             };
             AZ_DEFINE_ENUM_BITWISE_OPERATORS(StoreInstanceFlags);
 
@@ -138,6 +142,12 @@ namespace AzToolsFramework
                 [[maybe_unused]] const AZStd::string_view printMessage,
                 [[maybe_unused]] const AzToolsFramework::Prefab::PrefabDomValue& prefabDomValue);
 
+            //! An empty struct for passing to JsonSerializerSettings.m_metadata that is consumed by InstanceSerializer::Store.
+            //! If present in metadata, linkIds will be stored to instance dom.
+            struct LinkIdMetadata
+            {
+                AZ_RTTI(LinkIdMetadata, "{8FF7D299-14E3-41D4-90C5-393A240FAE7C}");
+            };
         } // namespace PrefabDomUtils
     } // namespace Prefab
 } // namespace AzToolsFramework

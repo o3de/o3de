@@ -15,6 +15,7 @@
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
+#include <Prefab/PrefabDomUtils.h>
 
 namespace AzToolsFramework
 {
@@ -81,6 +82,8 @@ namespace AzToolsFramework
                 result.Combine(resultInstances);
             }
 
+            PrefabDomUtils::LinkIdMetadata** linkIdMetadata = context.GetMetadata().Find<PrefabDomUtils::LinkIdMetadata*>();
+            if (linkIdMetadata && *linkIdMetadata)
             {
                 AZ::ScopedContextPath subPathSource(context, "m_linkId");
 

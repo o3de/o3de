@@ -300,7 +300,7 @@ namespace AzToolsFramework
             }
 
             PrefabDom storedPrefabDom(&loadedTemplateDom->get().GetAllocator());
-            if (!PrefabDomUtils::StoreInstanceInPrefabDom(loadedPrefabInstance, storedPrefabDom))
+            if (!PrefabDomUtils::StoreInstanceInPrefabDom(loadedPrefabInstance, storedPrefabDom, PrefabDomUtils::StoreInstanceFlags::StoreLinkIds))
             {
                 return false;
             }
