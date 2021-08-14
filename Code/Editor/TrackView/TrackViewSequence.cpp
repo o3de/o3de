@@ -1403,7 +1403,7 @@ float CTrackViewSequence::ClipTimeOffsetForSliding(const float timeOffset)
     for (pTrackIter = tracks.begin(); pTrackIter != tracks.end(); ++pTrackIter)
     {
         CTrackViewTrack* pTrack = *pTrackIter;
-        for (int i = 0; i < pTrack->GetKeyCount(); ++i)
+        for (unsigned int i = 0; i < pTrack->GetKeyCount(); ++i)
         {
             const CTrackViewKeyHandle& keyHandle = pTrack->GetKey(i);
 
@@ -1486,7 +1486,7 @@ void CTrackViewSequence::CloneSelectedKeys()
     std::vector<float> selectedKeyTimes;
     for (size_t k = 0; k < selectedKeys.GetKeyCount(); ++k)
     {
-        CTrackViewKeyHandle skey = selectedKeys.GetKey(k);
+        CTrackViewKeyHandle skey = selectedKeys.GetKey(static_cast<unsigned int>(k));
         if (pTrack != skey.GetTrack())
         {
             pTrack = skey.GetTrack();
@@ -1498,7 +1498,7 @@ void CTrackViewSequence::CloneSelectedKeys()
     // Now, do the actual cloning.
     for (size_t k = 0; k < selectedKeyTimes.size(); ++k)
     {
-        CTrackViewKeyHandle skey = selectedKeys.GetKey(k);
+        CTrackViewKeyHandle skey = selectedKeys.GetKey(static_cast<unsigned int>(k));
         skey = skey.GetTrack()->GetKeyByTime(selectedKeyTimes[k]);
 
         assert(skey.IsValid());

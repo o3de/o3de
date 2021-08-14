@@ -1899,7 +1899,7 @@ void EditorViewportWidget::RenderSelectedRegion()
         // Draw volume
         dc.DepthWriteOff();
         dc.CullOff();
-        dc.pRenderAuxGeom->DrawTriangles(&verts[0], verts.size(), &inds[0], numInds, &colors[0]);
+        dc.pRenderAuxGeom->DrawTriangles(&verts[0], static_cast<uint32>(verts.size()), &inds[0], numInds, &colors[0]);
         dc.CullOn();
         dc.DepthWriteOn();
     }

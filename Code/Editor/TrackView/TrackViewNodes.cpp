@@ -1765,7 +1765,7 @@ void CTrackViewNodesCtrl::ImportFromFBX()
                                 pSpline->SetKeyInTangent(keyIndex, inTangent);
                             }
 
-                            if (keyIndex < (pTrack->GetKeyCount() - 1))
+                            if (keyIndex < static_cast<int>(pTrack->GetKeyCount() - 1))
                             {
                                 CTrackViewKeyHandle nextKey = key.GetNextKey();
                                 if (nextKey.IsValid())
@@ -2352,7 +2352,7 @@ bool CTrackViewNodesCtrl::FillAddTrackMenu(STrackMenuTreeNode& menuAddTrack, con
         QStringList splittedName = name.split("/", Qt::SkipEmptyParts);
 
         STrackMenuTreeNode* pCurrentNode = &menuAddTrack;
-        for (unsigned int j = 0; j < splittedName.size() - 1; ++j)
+        for (int j = 0; j < splittedName.size() - 1; ++j)
         {
             const QString& segment = splittedName[j];
             auto findIter = pCurrentNode->children.find(segment);
@@ -2652,7 +2652,7 @@ void CTrackViewNodesCtrl::CreateSetAnimationLayerPopupMenu(QMenu& menuSetLayer, 
     CTrackViewTrackBundle animationTracks = pTrack->GetAnimNode()->GetTracksByParam(AnimParamType::Animation);
 
     const unsigned int numAnimationTracks = animationTracks.GetCount();
-    for (int i = 0; i < numAnimationTracks; ++i)
+    for (unsigned int i = 0; i < numAnimationTracks; ++i)
     {
         CTrackViewTrack* pAnimationTrack = animationTracks.GetTrack(i);
         if (pAnimationTrack)

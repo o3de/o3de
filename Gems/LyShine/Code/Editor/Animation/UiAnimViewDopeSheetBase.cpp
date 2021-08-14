@@ -1632,7 +1632,7 @@ float CUiAnimViewDopeSheetBase::MagnetSnap(float newTime, const CUiAnimViewAnimN
         newTime = keys.GetKey(0).GetTime();
         // But if there is an in-range key in a sibling track, use it instead.
         // Here a 'sibling' means a track that belongs to a same node.
-        for (int i = 0; i < keys.GetKeyCount(); ++i)
+        for (unsigned int i = 0; i < keys.GetKeyCount(); ++i)
         {
             CUiAnimViewKeyHandle keyHandle = keys.GetKey(i);
             if (keyHandle.GetTrack()->GetAnimNode() == pNode)
@@ -1770,7 +1770,7 @@ bool CUiAnimViewDopeSheetBase::CreateColorKey(CUiAnimViewTrack* pTrack, float ke
         CUiAnimViewSequenceNotificationContext context(pTrack->GetSequence());
 
         const unsigned int numChildNodes = pTrack->GetChildCount();
-        for (int i = 0; i < numChildNodes; ++i)
+        for (unsigned int i = 0; i < numChildNodes; ++i)
         {
             CUiAnimViewTrack* subTrack = static_cast<CUiAnimViewTrack*>(pTrack->GetChild(i));
             if (IsOkToAddKeyHere(subTrack, keyTime))
@@ -1890,7 +1890,7 @@ void CUiAnimViewDopeSheetBase::AddKeys(const QPoint& point, const bool bTryAddKe
                 }
                 else                                                                            // A compound track
                 {
-                    for (int k = 0; k < pCurrTrack->GetChildCount(); ++k)
+                    for (unsigned int k = 0; k < pCurrTrack->GetChildCount(); ++k)
                     {
                         CUiAnimViewTrack* pSubTrack = static_cast<CUiAnimViewTrack*>(pCurrTrack->GetChild(k));
                         if (IsOkToAddKeyHere(pSubTrack, keyTime))
@@ -1921,7 +1921,7 @@ void CUiAnimViewDopeSheetBase::AddKeys(const QPoint& point, const bool bTryAddKe
             else
             {
                 RecordTrackUndo(pTrack);
-                for (int i = 0; i < pTrack->GetChildCount(); ++i)
+                for (unsigned int i = 0; i < pTrack->GetChildCount(); ++i)
                 {
                     CUiAnimViewTrack* pSubTrack = static_cast<CUiAnimViewTrack*>(pTrack->GetChild(i));
                     if (IsOkToAddKeyHere(pSubTrack, keyTime))
@@ -2619,7 +2619,7 @@ void CUiAnimViewDopeSheetBase::SelectKeys(const QRect& rc, const bool bMultiSele
 
     CUiAnimViewTrackBundle tracks = pSequence->GetAllTracks();
 
-    for (int i = 0; i < tracks.GetCount(); ++i)
+    for (unsigned int i = 0; i < tracks.GetCount(); ++i)
     {
         CUiAnimViewTrack* pTrack = tracks.GetTrack(i);
 
@@ -2633,7 +2633,7 @@ void CUiAnimViewDopeSheetBase::SelectKeys(const QRect& rc, const bool bMultiSele
             (rc.bottom() >= trackRect.top() && rc.bottom() <= trackRect.bottom()))
         {
             // Check which keys we intersect.
-            for (int j = 0; j < pTrack->GetKeyCount(); j++)
+            for (unsigned int j = 0; j < pTrack->GetKeyCount(); j++)
             {
                 CUiAnimViewKeyHandle keyHandle = pTrack->GetKey(j);
 
@@ -2700,7 +2700,7 @@ void CUiAnimViewDopeSheetBase::DrawSelectedKeyIndicators(QPainter* painter)
     painter->setPen(Qt::green);
 
     CUiAnimViewKeyBundle keys = pSequence->GetSelectedKeys();
-    for (int i = 0; i < keys.GetKeyCount(); ++i)
+    for (unsigned int i = 0; i < keys.GetKeyCount(); ++i)
     {
         CUiAnimViewKeyHandle keyHandle = keys.GetKey(i);
         int x = TimeToClient(keyHandle.GetTime());
@@ -2951,7 +2951,7 @@ void CUiAnimViewDopeSheetBase::DrawSummary(QPainter* painter, const QRect& rcUpd
 
     // Draw a short thick line at each place where there is a key in any tracks.
     CUiAnimViewKeyBundle keys = pSequence->GetAllKeys();
-    for (int i = 0; i < keys.GetKeyCount(); ++i)
+    for (unsigned int i = 0; i < keys.GetKeyCount(); ++i)
     {
         CUiAnimViewKeyHandle keyHandle = keys.GetKey(i);
         int x = TimeToClient(keyHandle.GetTime());
@@ -3112,7 +3112,7 @@ void CUiAnimViewDopeSheetBase::StoreMementoForTracksWithSelectedKeys()
     std::set<CUiAnimViewTrack*> tracks;
 
     const unsigned int numKeys = selectedKeys.GetKeyCount();
-    for (int keyIndex = 0; keyIndex < numKeys; ++keyIndex)
+    for (unsigned int keyIndex = 0; keyIndex < numKeys; ++keyIndex)
     {
         CUiAnimViewKeyHandle keyHandle = selectedKeys.GetKey(keyIndex);
         tracks.insert(keyHandle.GetTrack());

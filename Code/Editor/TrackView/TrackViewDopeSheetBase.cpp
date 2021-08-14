@@ -1556,7 +1556,7 @@ void CTrackViewDopeSheetBase::MouseMoveMove(const QPoint& p, [[maybe_unused]] Qt
         const TrackMemento& trackMemento = iter->second;
         pTrack->RestoreFromMemento(trackMemento.m_memento);
 
-        const unsigned int numKeys = trackMemento.m_keySelectionStates.size();
+        const unsigned int numKeys = static_cast<unsigned int>(trackMemento.m_keySelectionStates.size());
         for (unsigned int i = 0; i < numKeys; ++i)
         {
             pTrack->GetKey(i).Select(trackMemento.m_keySelectionStates[i]);
@@ -1946,7 +1946,7 @@ void CTrackViewDopeSheetBase::ChangeSequenceTrackSelection(CTrackViewSequence* s
     CTrackViewTrackBundle prevSelectedTracks;
 
     prevSelectedTracks = sequenceWithTrack->GetSelectedTracks();
-    for (int i = 0; i < prevSelectedTracks.GetCount(); i++)
+    for (unsigned int i = 0; i < prevSelectedTracks.GetCount(); i++)
     {
         CTrackViewTrack* prevSelectedTrack = prevSelectedTracks.GetTrack(i);
         if (prevSelectedTrack != trackToSelect)
@@ -2023,7 +2023,7 @@ bool CTrackViewDopeSheetBase::CreateColorKey(CTrackViewTrack* pTrack, float keyT
 
             AzToolsFramework::ScopedUndoBatch undoBatch("Set Key");
             const unsigned int numChildNodes = pTrack->GetChildCount();
-            for (int i = 0; i < numChildNodes; ++i)
+            for (unsigned int i = 0; i < numChildNodes; ++i)
             {
                 CTrackViewTrack* subTrack = static_cast<CTrackViewTrack*>(pTrack->GetChild(i));
                 if (IsOkToAddKeyHere(subTrack, keyTime))
@@ -2083,7 +2083,7 @@ void CTrackViewDopeSheetBase::UpdateColorKey(const QColor& color, bool addToUndo
 void CTrackViewDopeSheetBase::UpdateColorKeyHelper(const ColorF& color)
 {
     const unsigned int numChildNodes = m_colorUpdateTrack->GetChildCount();
-    for (int i = 0; i < numChildNodes; ++i)
+    for (unsigned int i = 0; i < numChildNodes; ++i)
     {
         CTrackViewTrack* subTrack = static_cast<CTrackViewTrack*>(m_colorUpdateTrack->GetChild(i));
         CTrackViewKeyHandle subTrackKey = subTrack->GetKeyByTime(m_colorUpdateKeyTime);
@@ -2258,7 +2258,7 @@ void CTrackViewDopeSheetBase::AddKeys(const QPoint& point, const bool bTryAddKey
                 }
                 else                                                                            // A compound track
                 {
-                    for (int k = 0; k < pCurrTrack->GetChildCount(); ++k)
+                    for (unsigned int k = 0; k < pCurrTrack->GetChildCount(); ++k)
                     {
                         CTrackViewTrack* pSubTrack = static_cast<CTrackViewTrack*>(pCurrTrack->GetChild(k));
                         if (IsOkToAddKeyHere(pSubTrack, keyTime))
@@ -2293,7 +2293,7 @@ void CTrackViewDopeSheetBase::AddKeys(const QPoint& point, const bool bTryAddKey
             else
             {
                 AzToolsFramework::ScopedUndoBatch undoBatch("Create Key");
-                for (int i = 0; i < pTrack->GetChildCount(); ++i)
+                for (unsigned int i = 0; i < pTrack->GetChildCount(); ++i)
                 {
                     CTrackViewTrack* pSubTrack = static_cast<CTrackViewTrack*>(pTrack->GetChild(i));
                     if (IsOkToAddKeyHere(pSubTrack, keyTime))
@@ -3094,7 +3094,7 @@ void CTrackViewDopeSheetBase::SelectKeys(const QRect& rc, const bool bMultiSelec
     // note the tracks to select for the keyHandles selected
     CTrackViewTrackBundle tracksToSelect;
 
-    for (int i = 0; i < tracks.GetCount(); ++i)
+    for (unsigned int i = 0; i < tracks.GetCount(); ++i)
     {
         CTrackViewTrack* pTrack = tracks.GetTrack(i);
 
@@ -3108,7 +3108,7 @@ void CTrackViewDopeSheetBase::SelectKeys(const QRect& rc, const bool bMultiSelec
             (rc.bottom() >= trackRect.top() && rc.bottom() <= trackRect.bottom()))
         {
             // Check which keys we intersect.
-            for (int j = 0; j < pTrack->GetKeyCount(); j++)
+            for (unsigned int j = 0; j < pTrack->GetKeyCount(); j++)
             {
                 CTrackViewKeyHandle keyHandle = pTrack->GetKey(j);
 
@@ -3175,7 +3175,7 @@ void CTrackViewDopeSheetBase::DrawSelectedKeyIndicators(QPainter* painter)
     painter->setPen(Qt::green);
 
     CTrackViewKeyBundle keys = pSequence->GetSelectedKeys();
-    for (int i = 0; i < keys.GetKeyCount(); ++i)
+    for (unsigned int i = 0; i < keys.GetKeyCount(); ++i)
     {
         const CTrackViewKeyHandle& keyHandle = keys.GetKey(i);
         int x = TimeToClient(keyHandle.GetTime());
@@ -3423,7 +3423,7 @@ void CTrackViewDopeSheetBase::DrawSummary(QPainter* painter, const QRect& rcUpda
 
     // Draw a short thick line at each place where there is a key in any tracks.
     CTrackViewKeyBundle keys = pSequence->GetAllKeys();
-    for (int i = 0; i < keys.GetKeyCount(); ++i)
+    for (unsigned int i = 0; i < keys.GetKeyCount(); ++i)
     {
         const CTrackViewKeyHandle& keyHandle = keys.GetKey(i);
         int x = TimeToClient(keyHandle.GetTime());
@@ -3635,7 +3635,7 @@ void CTrackViewDopeSheetBase::StoreMementoForTracksWithSelectedKeys()
     std::set<CTrackViewTrack*> tracks;
 
     const unsigned int numKeys = selectedKeys.GetKeyCount();
-    for (int keyIndex = 0; keyIndex < numKeys; ++keyIndex)
+    for (unsigned int keyIndex = 0; keyIndex < numKeys; ++keyIndex)
     {
         CTrackViewKeyHandle keyHandle = selectedKeys.GetKey(keyIndex);
         tracks.insert(keyHandle.GetTrack());

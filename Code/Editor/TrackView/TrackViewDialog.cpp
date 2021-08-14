@@ -1991,7 +1991,7 @@ void CTrackViewDialog::UpdateTracksToolBar()
                         &Maestro::EditorSequenceComponentRequestBus::Events::GetAllAnimatablePropertiesForComponent,
                         animatableProperties, azEntityId, pAnimNode->GetComponentId());
 
-                    paramCount = animatableProperties.size();
+                    paramCount = static_cast<int>(animatableProperties.size());
                 }
             }
             else
@@ -2317,7 +2317,7 @@ void CTrackViewDialog::SaveCurrentSequenceToFBX()
 
     CTrackViewTrackBundle allTracks = sequence->GetAllTracks();
 
-    for (int trackID = 0; trackID < allTracks.GetCount(); ++trackID)
+    for (unsigned int trackID = 0; trackID < allTracks.GetCount(); ++trackID)
     {
         CTrackViewTrack* pCurrentTrack = allTracks.GetTrack(trackID);
 

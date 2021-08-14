@@ -1856,7 +1856,7 @@ AbstractSplineWidget::EHitCode AbstractSplineWidget::HitTest(const QPoint& point
                 // Check tangent handles first.
                 {
                     QPoint incomingHandlePt, outgoingHandlePt, pt;
-                    if (GetTangentHandlePts(incomingHandlePt, pt, outgoingHandlePt, splineIndex, i, nCurrentDimension))
+                    if (GetTangentHandlePts(incomingHandlePt, pt, outgoingHandlePt, static_cast<int>(splineIndex), static_cast<int>(i), nCurrentDimension))
                     {
                         // For the incoming handle
                         if (abs(incomingHandlePt.x() - point.x()) < 4 && abs(incomingHandlePt.y() - point.y()) < 4)

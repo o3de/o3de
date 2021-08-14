@@ -1540,7 +1540,7 @@ void CEntityObject::OnObjectEvent(CBaseObject* target, int event)
             if (m_eventTargets[i].target == target)
             {
                 RemoveEventTarget(i);
-                numTargets = m_eventTargets.size();
+                numTargets = static_cast<int>(m_eventTargets.size());
                 i--;
             }
         }
@@ -1553,7 +1553,7 @@ void CEntityObject::OnObjectEvent(CBaseObject* target, int event)
             if (m_links[i].target == target)
             {
                 RemoveEntityLink(i);
-                numTargets = m_eventTargets.size();
+                numTargets = static_cast<int>(m_eventTargets.size());
                 i--;
             }
         }

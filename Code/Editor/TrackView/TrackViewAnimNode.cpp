@@ -1477,7 +1477,7 @@ bool CTrackViewAnimNode::PasteNodesFromClipboard(QWidget* context)
 
     AZStd::map<int, IAnimNode*> copiedIdToNodeMap;
     const unsigned int numNodes = animNodesRoot->getChildCount();
-    for (int i = 0; i < numNodes; ++i)
+    for (unsigned int i = 0; i < numNodes; ++i)
     {
         XmlNodeRef xmlNode = animNodesRoot->getChild(i);
 
@@ -2123,7 +2123,7 @@ bool CTrackViewAnimNode::ContainsComponentWithId(AZ::ComponentId componentId) co
     if (GetType() == AnimNodeType::AzEntity)
     {
         // search for a matching componentId on all children
-        for (int i = 0; i < GetChildCount(); i++)
+        for (unsigned int i = 0; i < GetChildCount(); i++)
         {
             CTrackViewNode* childNode = GetChild(i);
             if (childNode->GetNodeType() == eTVNT_AnimNode)
