@@ -335,16 +335,16 @@ namespace AzToolsFramework
 
     QMainWindow* CScriptHelpDialog::GetMainWindowOfCurrentApplication()
     {
-        QWidget* widget = nullptr;
-        EditorWindowRequestBus::BroadcastResult(widget, &EditorWindowRequests::GetAppMainWindow);
-        if (QMainWindow* mainWindow = qobject_cast<QMainWindow*>(widget))
+        QWidget* mainWindowWidget = nullptr;
+        EditorWindowRequestBus::BroadcastResult(mainWindowWidget, &EditorWindowRequests::GetAppMainWindow);
+        if (QMainWindow* mainWindow = qobject_cast<QMainWindow*>(mainWindowWidget))
         {
             return mainWindow;
         }
 
-        for (QWidget* widget : qApp->topLevelWidgets())
+        for (QWidget* topLevelWidget : qApp->topLevelWidgets())
         {
-            if (QMainWindow* mainWindow = qobject_cast<QMainWindow*>(widget))
+            if (QMainWindow* mainWindow = qobject_cast<QMainWindow*>(topLevelWidget))
             {
                 return mainWindow;
             }
