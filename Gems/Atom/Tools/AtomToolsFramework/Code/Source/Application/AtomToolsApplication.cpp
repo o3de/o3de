@@ -7,15 +7,15 @@
 
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
-
-#include <AtomToolsFramework/Util/Util.h>
 #include <AtomToolsFramework/Application/AtomToolsApplication.h>
+#include <AtomToolsFramework/Util/Util.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindowFactoryRequestBus.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h>
 
 #include <AzCore/IO/Path/Path.h>
-#include <AzCore/Utils/Utils.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Utils/Utils.h>
+
 #include <AzFramework/Asset/AssetSystemComponent.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/Network/AssetProcessorConnection.h>
@@ -66,6 +66,9 @@ namespace AtomToolsFramework
             this->PumpSystemEventLoopUntilEmpty();
             this->Tick();
         });
+
+        // Suppress spam from the Source Control system
+        m_traceLogger.AddWindowFilter(AzToolsFramework::SCC_WINDOW);
     }
 
     AtomToolsApplication ::~AtomToolsApplication()
@@ -396,7 +399,7 @@ namespace AtomToolsFramework
 
         AZStd::string fileName = GetBuildTargetName() + ".log";
 
-        m_traceLogger.WriteStartupLog(fileName.c_str());
+        m_traceLogger.PrepareLogFile(fileName.c_str());
 
         if (!LaunchDiscoveryService())
         {

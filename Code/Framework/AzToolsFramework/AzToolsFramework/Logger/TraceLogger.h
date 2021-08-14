@@ -22,8 +22,14 @@ namespace AzToolsFramework
         TraceLogger();
         ~TraceLogger();
 
-        //! Intalize logging for O3DEToolsApplications
-        void WriteStartupLog(const AZStd::string& logFileName);
+        //! Open log file and dump log sink into it
+        void PrepareLogFile(const AZStd::string& logFileName);
+
+        //! Ignore messages sent to windowd with names matching filter
+        void AddWindowFilter(const AZStd::string& filter);
+
+        //! Ignore messages with text matching filter
+        void AddMessageFilter(const AZStd::string& filter);
 
     protected:
         //////////////////////////////////////////////////////////////////////////
@@ -38,6 +44,8 @@ namespace AzToolsFramework
             AZStd::string message;
         };
         AZStd::vector<LogMessage> m_startupLogSink;
+        AZStd::unordered_set<AZStd::string> m_windowFilters;
+        AZStd::unordered_set<AZStd::string> m_messageFilters;
         AZStd::unique_ptr<AzFramework::LogFile> m_logFile;
     };
 } // namespace AzToolsFramework
