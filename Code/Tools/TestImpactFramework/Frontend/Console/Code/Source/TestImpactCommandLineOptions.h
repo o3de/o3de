@@ -37,7 +37,10 @@ namespace TestImpact
         static AZStd::string GetCommandLineUsageString();
 
         //! Returns true if a test impact data file path has been supplied, otherwise false.
-        bool HasDataFilePath() const;
+        bool HasTestImpactDataFilePath() const;
+
+        //! Returns true if a previous run data file path has been supplied, otherwise false.
+        bool HasPreviousRunDataFilePath() const;
 
         //! Returns true if a change list file path has been supplied, otherwise false.
         bool HasChangeListFilePath() const;
@@ -48,11 +51,17 @@ namespace TestImpact
         //! Returns true if the safe mode option has been enabled, otherwise false.
         bool HasSafeMode() const;
 
+        //! Returns true if the draft failing tests option has been enabled, otherwise false.
+        bool HasDraftFailingTests() const;
+
         //! Returns the path to the runtime configuration file.
         const RepoPath& GetConfigurationFilePath() const;
 
-        //! Returns the path to the data file (if any).
-        const AZStd::optional<RepoPath>& GetDataFilePath() const;
+        //! Returns the path to the test impact data file (if any).
+        const AZStd::optional<RepoPath>& GetTestImpactDataFilePath() const;
+
+        //! Returns the path to the previous run data file (if any).
+        const AZStd::optional<RepoPath>& GetPreviousRunDataFilePath() const;
 
         //! Returns the path to the change list file (if any).
         const AZStd::optional<RepoPath>& GetChangeListFilePath() const;
@@ -98,7 +107,8 @@ namespace TestImpact
 
     private:
         RepoPath m_configurationFile;
-        AZStd::optional<RepoPath> m_dataFile;
+        AZStd::optional<RepoPath> m_testImpactDataFile;
+        AZStd::optional<RepoPath> m_previousRunDataFile;
         AZStd::optional<RepoPath> m_changeListFile;
         AZStd::optional<RepoPath> m_sequenceReportFile;
         TestSequenceType m_testSequenceType;
@@ -114,5 +124,6 @@ namespace TestImpact
         AZStd::optional<AZStd::chrono::milliseconds> m_globalTimeout;
         SuiteType m_suiteFilter;
         bool m_safeMode = false;
+        bool m_draftFailingTests = false;
     };
 } // namespace TestImpact

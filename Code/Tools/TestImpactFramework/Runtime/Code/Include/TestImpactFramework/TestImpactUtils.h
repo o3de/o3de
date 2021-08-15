@@ -103,4 +103,30 @@ namespace TestImpact
 
     //! User-friendly names for the client test result types.
     AZStd::string ClientTestResultAsString(Client::TestResult result);
+
+    SuiteType SuiteTypeFromString(const AZStd::string& suiteType);
+
+    Client::SequenceReportType SequenceReportTypeFromString(const AZStd::string& type);
+
+    Client::TestRunResult TestRunResultFromString(const AZStd::string& result);
+
+    Client::TestResult TestResultFromString(const AZStd::string& result);
+
+    TestSequenceResult TestSequenceResultFromString(const AZStd::string& result);
+
+    Policy::ExecutionFailure ExecutionFailurePolicyFromString(const AZStd::string& executionFailurePolicy);
+
+    Policy::FailedTestCoverage FailedTestCoveragePolicyFromString(const AZStd::string& failedTestCoveragePolicy);
+
+    Policy::TestPrioritization TestPrioritizationPolicyFromString(const AZStd::string& testPrioritizationPolicy);
+
+    Policy::TestFailure TestFailurePolicyFromString(const AZStd::string& testFailurePolicy);
+
+    Policy::IntegrityFailure IntegrityFailurePolicyFromString(const AZStd::string& integrityFailurePolicy);
+
+    Policy::DynamicDependencyMap DynamicDependencyMapPolicyFromString(const AZStd::string& dynamicDependencyMapPolicy);
+
+    Policy::TestSharding TestShardingPolicyFromString(const AZStd::string& testShardingPolicy);
+
+    Policy::TargetOutputCapture TargetOutputCapturePolicyFromString(const AZStd::string& targetOutputCapturePolicy);
 } // namespace TestImpact

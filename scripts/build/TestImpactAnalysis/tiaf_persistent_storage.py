@@ -17,15 +17,15 @@ logger = get_logger(__file__)
 class PersistentStorage(ABC):
 
     WORKSPACE_KEY = "workspace"
-    LAST_RUNS_KEY = "last_runs"
+    HISTORIC_SEQUENCES_KEY = "historic_sequences"
     ACTIVE_KEY = "active"
     ROOT_KEY = "root"
     RELATIVE_PATHS_KEY = "relative_paths"
     TEST_IMPACT_DATA_FILE_KEY = "test_impact_data_file"
-    PREVIOUS_TEST_RUNS_FILE_KEY = "previous_test_run_file"
+    PREVIOUS_TEST_RUN_DATA_FILE_KEY = "previous_test_run_data_file"
     LAST_COMMIT_HASH_KEY = "last_commit_hash"
     COVERAGE_DATA_KEY = "coverage_data"
-    PREVIOUS_TEST_RUN_KEY = "previous_test_run"
+    PREVIOUS_TEST_RUNS_KEY = "previous_test_runs"
 
     def __init__(self, config: dict, suite: str, commit: str):
         """
@@ -52,12 +52,12 @@ class PersistentStorage(ABC):
             self._active_workspace = pathlib.Path(config[self.WORKSPACE_KEY][self.ACTIVE_KEY][self.ROOT_KEY])
             self._active_workspace = self._active_workspace.joinpath(pathlib.Path(self._suite))
             unpacked_coverage_data_file = config[self.WORKSPACE_KEY][self.ACTIVE_KEY][self.RELATIVE_PATHS_KEY][self.TEST_IMPACT_DATA_FILE_KEY]
-            previous_test_runs_file = config[self.WORKSPACE_KEY][self.ACTIVE_KEY][self.RELATIVE_PATHS_KEY][self.PREVIOUS_TEST_RUNS_FILE_KEY]
+            previous_test_run_data_file = config[self.WORKSPACE_KEY][self.ACTIVE_KEY][self.RELATIVE_PATHS_KEY][self.PREVIOUS_TEST_RUN_DATA_FILE_KEY]
         except KeyError as e:
             raise SystemError(f"The config does not contain the key {str(e)}.")
 
         self._unpacked_coverage_data_file = self._active_workspace.joinpath(unpacked_coverage_data_file)
-        self._previous_test_runs_file = self._active_workspace.joinpath(previous_test_runs_file)
+        self._previous_test_run_data_file = self._active_workspace.joinpath(previous_test_run_data_file)
         
     def _unpack_historic_data(self, historic_data_json: str):
         """
@@ -77,10 +77,10 @@ class PersistentStorage(ABC):
             logger.info(f"Last commit hash '{self._last_commit_hash}' found.")
 
             # Last commit hash for the sequence that was run for this commit previously (if any)
-            if self.LAST_RUNS_KEY in self._historic_data:
-                if self._this_commit_hash in self._historic_data[self.LAST_RUNS_KEY]:
+            if self.HISTORIC_SEQUENCES_KEY in self._historic_data:
+                if self._this_commit_hash in self._historic_data[self.HISTORIC_SEQUENCES_KEY]:
                     # 'None' is a valid value for the previously used last commit hash if there was no coverage data at that time
-                    self._this_commit_hash_last_commit_hash = self._historic_data[self.LAST_RUNS_KEY][self._this_commit_hash]
+                    self._this_commit_hash_last_commit_hash = self._historic_data[self.HISTORIC_SEQUENCES_KEY][self._this_commit_hash]
                     self._has_previous_last_commit_hash = self._this_commit_hash_last_commit_hash is not None
 
                     if self._has_previous_last_commit_hash:
@@ -93,8 +93,8 @@ class PersistentStorage(ABC):
                 logger.info(f"No prior sequence data found for any commits.")
 
             # Test runs for the previous sequence associated with the last commit hash
-            if self.PREVIOUS_TEST_RUN_KEY in self._historic_data:
-                logger.info(f"Previous test run data for a sequence of '{len(self._historic_data[self.PREVIOUS_TEST_RUN_KEY])}' test targets found.")
+            if self.PREVIOUS_TEST_RUNS_KEY in self._historic_data:
+                logger.info(f"Previous test run data for a sequence of '{len(self._historic_data[self.PREVIOUS_TEST_RUNS_KEY])}' test targets found.")
             else:
                 self._historic_data[self.PREVIOUS_TEST_RUNS_KEY] = {}
                 logger.info("No previous test run data found.")
@@ -103,12 +103,15 @@ class PersistentStorage(ABC):
             self._active_workspace.mkdir(exist_ok=True)
 
             # Coverage file
+            logger.info(f"Writing coverage data to '{self._unpacked_coverage_data_file}'.")
             with open(self._unpacked_coverage_data_file, "w", newline='\n') as coverage_data:
                 coverage_data.write(self._historic_data[self.COVERAGE_DATA_KEY])
 
             # Previous test runs file
-            with open(self._previous_test_runs_file, "w", newline='\n') as previous_test_runs_data:
-                coverage_data.write(self._historic_data[self.PREVIOUS_TEST_RUNS_KEY])
+            logger.info(f"Writing previous test runs data to '{self._previous_test_run_data_file}'.")
+            with open(self._previous_test_run_data_file, "w", newline='\n') as previous_test_runs_data:
+                previous_test_runs_json = json.dumps(self._historic_data[self.PREVIOUS_TEST_RUNS_KEY])
+                previous_test_runs_data.write(previous_test_runs_json)
 
             self._has_historic_data = True
         except json.JSONDecodeError:
@@ -137,12 +140,12 @@ class PersistentStorage(ABC):
                 self._historic_data[self.LAST_COMMIT_HASH_KEY] = self._this_commit_hash
 
                 # Last commit hash for this commit
-                if not self.LAST_RUNS_KEY in self._historic_data:
-                    self._historic_data[self.LAST_RUNS_KEY] = {}
-                self._historic_data[self.LAST_RUNS_KEY][self._this_commit_hash] = self._last_commit_hash
+                if not self.HISTORIC_SEQUENCES_KEY in self._historic_data:
+                    self._historic_data[self.HISTORIC_SEQUENCES_KEY] = {}
+                self._historic_data[self.HISTORIC_SEQUENCES_KEY][self._this_commit_hash] = self._last_commit_hash
 
                 # Test runs for this completed sequence
-                self._historic_data[self.PREVIOUS_TEST_RUN_KEY] = test_runs
+                self._historic_data[self.PREVIOUS_TEST_RUNS_KEY] = test_runs
 
                 # Coverage data for this branch
                 with open(self._unpacked_coverage_data_file, "r") as coverage_data:
