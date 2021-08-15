@@ -23,7 +23,7 @@
       "root": "${active_dir}",
       "relative_paths": {
         "test_impact_data_file": "TestImpactData.spartia",
-        "previous_test_run_file": "PreviousTestRunData.json"
+        "previous_test_run_data_file": "PreviousTestRunData.json"
       }
     },
     "historic": {

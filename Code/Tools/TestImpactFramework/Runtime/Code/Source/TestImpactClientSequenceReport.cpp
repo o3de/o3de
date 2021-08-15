@@ -159,46 +159,6 @@ namespace TestImpact
             return m_totalNumDisabledTests;
         }
 
-        RegularSequenceReport::RegularSequenceReport(
-            size_t maxConcurrency,
-            const AZStd::optional<AZStd::chrono::milliseconds>& testTargetTimeout,
-            const AZStd::optional<AZStd::chrono::milliseconds>& globalTimeout,
-            const SequencePolicyState& policyState,
-            SuiteType suiteType,
-            const TestRunSelection& selectedTestRuns,
-            TestRunReport&& selectedTestRunReport)
-            : SequenceReportBase(
-                  SequenceReportType::RegularSequence,
-                  maxConcurrency,
-                  testTargetTimeout,
-                  globalTimeout,
-                  policyState,
-                  suiteType,
-                  selectedTestRuns,
-                  AZStd::move(selectedTestRunReport))
-        {
-        }
-
-        SeedSequenceReport::SeedSequenceReport(
-            size_t maxConcurrency,
-            const AZStd::optional<AZStd::chrono::milliseconds>& testTargetTimeout,
-            const AZStd::optional<AZStd::chrono::milliseconds>& globalTimeout,
-            const SequencePolicyState& policyState,
-            SuiteType suiteType,
-            const TestRunSelection& selectedTestRuns,
-            TestRunReport&& selectedTestRunReport)
-            : SequenceReportBase(
-                  SequenceReportType::SeedSequence,
-                  maxConcurrency,
-                  testTargetTimeout,
-                  globalTimeout,
-                  policyState,
-                  suiteType,
-                  selectedTestRuns,
-                  AZStd::move(selectedTestRunReport))
-        {
-        }
-
         ImpactAnalysisSequenceReport::ImpactAnalysisSequenceReport(
             size_t maxConcurrency,
             const AZStd::optional<AZStd::chrono::milliseconds>& testTargetTimeout,
@@ -211,7 +171,6 @@ namespace TestImpact
             TestRunReport&& selectedTestRunReport,
             TestRunReport&& draftedTestRunReport)
             : DraftingSequenceReportBase(
-                SequenceReportType::ImpactAnalysisSequence,
                 maxConcurrency,
                 testTargetTimeout,
                 globalTimeout,
@@ -221,6 +180,13 @@ namespace TestImpact
                 draftedTestRuns,
                 AZStd::move(selectedTestRunReport),
                 AZStd::move(draftedTestRunReport))
+            , m_discardedTestRuns(discardedTestRuns)
+        {
+        }
+
+        ImpactAnalysisSequenceReport::ImpactAnalysisSequenceReport(
+            DraftingSequenceReportBase&& report, const AZStd::vector<AZStd::string>& discardedTestRuns)
+            : DraftingSequenceReportBase(AZStd::move(report))
             , m_discardedTestRuns(discardedTestRuns)
         {
         }
@@ -243,7 +209,6 @@ namespace TestImpact
             TestRunReport&& discardedTestRunReport,
             TestRunReport&& draftedTestRunReport)
             : DraftingSequenceReportBase(
-                SequenceReportType::SafeImpactAnalysisSequence,
                 maxConcurrency,
                 testTargetTimeout,
                 globalTimeout,
@@ -253,6 +218,14 @@ namespace TestImpact
                 draftedTestRuns,
                 AZStd::move(selectedTestRunReport),
                 AZStd::move(draftedTestRunReport))
+            , m_discardedTestRuns(discardedTestRuns)
+            , m_discardedTestRunReport(AZStd::move(discardedTestRunReport))
+        {
+        }
+
+        SafeImpactAnalysisSequenceReport::SafeImpactAnalysisSequenceReport(
+            DraftingSequenceReportBase&& report, const TestRunSelection& discardedTestRuns, TestRunReport&& discardedTestRunReport)
+            : DraftingSequenceReportBase(AZStd::move(report))
             , m_discardedTestRuns(discardedTestRuns)
             , m_discardedTestRunReport(AZStd::move(discardedTestRunReport))
         {

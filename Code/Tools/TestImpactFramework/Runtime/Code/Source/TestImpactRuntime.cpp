@@ -243,7 +243,8 @@ namespace TestImpact
 
     Runtime::Runtime(
         RuntimeConfig&& config,
-        AZStd::optional<RepoPath> dataFile,
+        AZStd::optional<RepoPath> testImpactDataFile,
+        AZStd::optional<RepoPath> previousRunDataFile,
         SuiteType suiteFilter,
         Policy::ExecutionFailure executionFailurePolicy,
         Policy::FailedTestCoverage failedTestCoveragePolicy,
@@ -287,9 +288,9 @@ namespace TestImpact
 
         try
         {
-            if (dataFile.has_value())
+            if (testImpactDataFile.has_value())
             {
-                m_sparTiaFile = dataFile.value().String();
+                m_sparTiaFile = testImpactDataFile.value().String();
             }
             else
             {
@@ -621,7 +622,7 @@ namespace TestImpact
         {
             // The test targets that were selected for the change list by the dynamic dependency map and the test targets that were not
             const auto [selectedTestTargets, discardedTestTargets] =
-                SelectCoveringTestTargetsAndUpdateEnumerationCache(changeList, testPrioritizationPolicy);
+                SelectCoveringTestTargets(changeList, testPrioritizationPolicy);
 
             const AZStd::unordered_set<const TestTarget*> draftedTestTargetsSet(draftedTestTargets.begin(), draftedTestTargets.end());
 
@@ -744,7 +745,7 @@ namespace TestImpact
         AZStd::vector<const TestTarget*> draftedTestTargets = m_dynamicDependencyMap->GetNotCoveringTests();
 
         // The test targets that were selected for the change list by the dynamic dependency map and the test targets that were not
-        const auto [selectedTestTargets, discardedTestTargets] = SelectCoveringTestTargetsAndUpdateEnumerationCache(changeList, testPrioritizationPolicy);
+        const auto [selectedTestTargets, discardedTestTargets] = SelectCoveringTestTargets(changeList, testPrioritizationPolicy);
 
         // The subset of selected test targets that are not on the configuration's exclude list and those that are
         const auto [includedSelectedTestTargets, excludedSelectedTestTargets] =

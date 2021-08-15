@@ -167,7 +167,8 @@ namespace TestImpact
                 std::cout << SuiteTypeAsString(options.GetSuiteFilter()).c_str() << ", this may take a moment...\n";
                 Runtime runtime(
                     RuntimeConfigurationFactory(ReadFileContents<CommandLineOptionsException>(options.GetConfigurationFilePath())),
-                    options.GetDataFilePath(),
+                    options.GetTestImpactDataFilePath(),
+                    options.GetPreviousRunDataFilePath(),
                     options.GetSuiteFilter(),
                     options.GetExecutionFailurePolicy(),
                     options.GetFailedTestCoveragePolicy(),

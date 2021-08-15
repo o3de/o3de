@@ -21,7 +21,8 @@ namespace TestImpact
         {
             // Options
             ConfigKey,
-            DataFileKey,
+            TestImpactDataFileKey,
+            PreviousRunDataFileKey,
             ChangeListKey,
             SequenceReportKey,
             SequenceKey,
@@ -37,6 +38,7 @@ namespace TestImpact
             GlobalTimeoutKey,
             SuiteFilterKey,
             SafeModeKey,
+            DraftFailingTestsKey,
             // Values
             None,
             Seed,
@@ -58,7 +60,8 @@ namespace TestImpact
         {
             // Options
             "config",
-            "datafile",
+            "testimpactdatafile",
+            "previousrundatafile",
             "changelist",
             "report",
             "sequence",
@@ -74,6 +77,7 @@ namespace TestImpact
             "gtimeout",
             "suite",
             "safemode",
+            "draftfailingtests",
             // Values
             "none",
             "seed",
@@ -96,9 +100,14 @@ namespace TestImpact
             return ParsePathOption(OptionKeys[ConfigKey], cmd).value_or(LY_TEST_IMPACT_DEFAULT_CONFIG_FILE);
         }
 
-        AZStd::optional<RepoPath> ParseDataFile(const AZ::CommandLine& cmd)
+        AZStd::optional<RepoPath> ParseTestImpactDataFile(const AZ::CommandLine& cmd)
         {
-            return ParsePathOption(OptionKeys[DataFileKey], cmd);
+            return ParsePathOption(OptionKeys[TestImpactDataFileKey], cmd);
+        }
+
+        AZStd::optional<RepoPath> ParsePreviousRunDataFile(const AZ::CommandLine& cmd)
+        {
+            return ParsePathOption(OptionKeys[PreviousRunDataFileKey], cmd);
         }
 
         AZStd::optional<RepoPath> ParseChangeListFile(const AZ::CommandLine& cmd)
@@ -260,6 +269,12 @@ namespace TestImpact
             return ParseOnOffOption(OptionKeys[SafeModeKey], states, cmd).value_or(false);
         }
 
+        bool ParseDraftFailingTests(const AZ::CommandLine& cmd)
+        {
+            const BinaryStateValue<bool> states = { false, true };
+            return ParseOnOffOption(OptionKeys[DraftFailingTestsKey], states, cmd).value_or(false);
+        }
+
         SuiteType ParseSuiteFilter(const AZ::CommandLine& cmd)
         {
             const AZStd::vector<AZStd::pair<AZStd::string, SuiteType>> states =
@@ -279,7 +294,8 @@ namespace TestImpact
         cmd.Parse(argc, argv);
 
         m_configurationFile = ParseConfigurationFile(cmd);
-        m_dataFile = ParseDataFile(cmd);
+        m_testImpactDataFile = ParseTestImpactDataFile(cmd);
+        m_previousRunDataFile = ParsePreviousRunDataFile(cmd);
         m_changeListFile = ParseChangeListFile(cmd);
         m_sequenceReportFile = ParseSequenceReportFile(cmd);
         m_testSequenceType = ParseTestSequenceType(cmd);
@@ -294,12 +310,18 @@ namespace TestImpact
         m_testTargetTimeout = ParseTestTargetTimeout(cmd);
         m_globalTimeout = ParseGlobalTimeout(cmd);
         m_safeMode = ParseSafeMode(cmd);
+        m_draftFailingTests = ParseDraftFailingTests(cmd);
         m_suiteFilter = ParseSuiteFilter(cmd);
     }
 
-    bool CommandLineOptions::HasDataFilePath() const
+    bool CommandLineOptions::HasTestImpactDataFilePath() const
     {
-        return m_dataFile.has_value();
+        return m_testImpactDataFile.has_value();
+    }
+
+    bool CommandLineOptions::HasPreviousRunDataFilePath() const
+    {
+        return m_previousRunDataFile.has_value();
     }
  
     bool CommandLineOptions::HasChangeListFilePath() const
@@ -317,9 +339,19 @@ namespace TestImpact
         return m_safeMode;
     }
 
-    const AZStd::optional<RepoPath>& CommandLineOptions::GetDataFilePath() const
+    bool CommandLineOptions::HasDraftFailingTests() const
     {
-        return m_dataFile;
+        return m_draftFailingTests;
+    }
+
+    const AZStd::optional<RepoPath>& CommandLineOptions::GetTestImpactDataFilePath() const
+    {
+        return m_testImpactDataFile;
+    }
+
+    const AZStd::optional<RepoPath>& CommandLineOptions::GetPreviousRunDataFilePath() const
+    {
+        return m_previousRunDataFile;
     }
 
     const AZStd::optional<RepoPath>& CommandLineOptions::GetChangeListFilePath() const
@@ -404,7 +436,9 @@ namespace TestImpact
             "  options:\n"
             "    -config=<filename>                                          Path to the configuration file for the TIAF runtime (default: \n"
             "                                                                <tiaf binay build dir>.<tiaf binary build type>.json).\n"
-            "    -datafile=<filename>                                        Optional path to a test impact data file that will used instead of that\n"
+            "    -testimpactdatafile=<filename>                              Optional path to a test impact data file that will used instead of that\n"
+            "                                                                specified in the config file.\n"
+            "    -previousrundatafile=<filename>                             Optional path to a test impact data file that will used instead of that\n"
             "                                                                specified in the config file.\n"
             "    -changelist=<filename>                                      Path to the JSON of source file changes to perform test impact \n"
             "                                                                analysis on.\n"

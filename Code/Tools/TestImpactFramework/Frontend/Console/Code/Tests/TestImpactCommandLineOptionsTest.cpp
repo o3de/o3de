@@ -53,11 +53,14 @@ namespace UnitTest
         EXPECT_EQ(m_options->GetTestPrioritizationPolicy(), TestImpact::Policy::TestPrioritization::None);
         EXPECT_EQ(m_options->GetTestSequenceType(), TestImpact::TestSequenceType::None);
         EXPECT_EQ(m_options->GetTestShardingPolicy(), TestImpact::Policy::TestSharding::Never);
-        EXPECT_FALSE(m_options->HasDataFile());
-        EXPECT_FALSE(m_options->GetDataFile().has_value());
+        EXPECT_FALSE(m_options->HasTestImpactDataFile());
+        EXPECT_FALSE(m_options->GetTestImpactDataFile().has_value());
+        EXPECT_FALSE(m_options->HasPreviousRunDataFile());
+        EXPECT_FALSE(m_options->GetPreviousRunDataFile().has_value());
         EXPECT_FALSE(m_options->HasChangeListFile());
         EXPECT_FALSE(m_options->GetChangeListFile().has_value());
         EXPECT_FALSE(m_options->HasSafeMode());
+        EXPECT_FALSE(m_options->HasDraftFailingTests());
         EXPECT_EQ(m_options->GetSuiteFilter(), TestImpact::SuiteType::Main);
     }
 
@@ -118,9 +121,9 @@ namespace UnitTest
 
     //
 
-    TEST_F(CommandLineOptionsTestFixture, DataFileHasEmptyPath_ExpectCommandLineOptionsException)
+    TEST_F(CommandLineOptionsTestFixture, TestImpactDataFileHasEmptyPath_ExpectCommandLineOptionsException)
     {
-        m_args.push_back("-datafile");
+        m_args.push_back("-testimpactdatafile");
 
         try
         {
@@ -141,18 +144,134 @@ namespace UnitTest
         }
     }
 
-    TEST_F(CommandLineOptionsTestFixture, DataFileHasSpecifiedPath_ExpectPath)
+    TEST_F(CommandLineOptionsTestFixture, TestImpactDataFileHasSpecifiedPath_ExpectPath)
     {
-        m_args.push_back("-datafile");
+        m_args.push_back("-testimpactdatafile");
         m_args.push_back("Foo\\Bar");
         InitOptions();
-        EXPECT_TRUE(m_options->HasDataFile());
-        EXPECT_STREQ(m_options->GetDataFile()->c_str(), "Foo\\Bar");
+        EXPECT_TRUE(m_options->HasTestImpactDataFile());
+        EXPECT_STREQ(m_options->GetTestImpactDataFile()->c_str(), "Foo\\Bar");
     }
 
-    TEST_F(CommandLineOptionsTestFixture, DataFileHasMultiplePaths_ExpectCommandLineOptionsException)
+    TEST_F(CommandLineOptionsTestFixture, TestImpactDataFileHasMultiplePaths_ExpectCommandLineOptionsException)
     {
-        m_args.push_back("-datafile");
+        m_args.push_back("-testimpactdatafile");
+        m_args.push_back("value1,value2");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    //
+
+    TEST_F(CommandLineOptionsTestFixture, ChangeListFileHasEmptyPath_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-changelist");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, ChangeListFileHasSpecifiedPath_ExpectPath)
+    {
+        m_args.push_back("-changelist");
+        m_args.push_back("Foo\\Bar");
+        InitOptions();
+        EXPECT_TRUE(m_options->HasChangeListFile());
+        EXPECT_STREQ(m_options->GetChangeListFile()->c_str(), "Foo\\Bar");
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, ChangeListFileHasMultiplePaths_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-changelist");
+        m_args.push_back("value1,value2");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    //
+
+    TEST_F(CommandLineOptionsTestFixture, PreviousRunDataFileHasEmptyPath_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-previousrundatafile");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, PreviousRunDataFileHasSpecifiedPath_ExpectPath)
+    {
+        m_args.push_back("-previousrundatafile");
+        m_args.push_back("Foo\\Bar");
+        InitOptions();
+        EXPECT_TRUE(m_options->HasPreviousRunDataFile());
+        EXPECT_STREQ(m_options->GetPreviousRunDataFile()->c_str(), "Foo\\Bar");
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, PreviousRunDataFileHasMultiplePaths_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-previousrundatafile");
         m_args.push_back("value1,value2");
 
         try
@@ -1429,6 +1548,97 @@ namespace UnitTest
             FAIL();
         }
     }
+
+    //
+
+    TEST_F(CommandLineOptionsTestFixture, DraftFailingTestsHasEmptyOption_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-draftfailingtests");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, DraftFailingTestsHasOnOption_ExpectOnDraftFailingTests)
+    {
+        m_args.push_back("-draftfailingtests");
+        m_args.push_back("on");
+        InitOptions();
+        EXPECT_TRUE(m_options->HasDraftFailingTests());
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, DraftFailingTestsHasOffOption_ExpectOffDraftFailingTests)
+    {
+        m_args.push_back("-draftfailingtests");
+        m_args.push_back("off");
+        InitOptions();
+        EXPECT_FALSE(m_options->HasDraftFailingTests());
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, DraftFailingTestsInvalidOption_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-draftfailingtests");
+        m_args.push_back("foo");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    TEST_F(CommandLineOptionsTestFixture, DraftFailingTestsHasMultipeValues_ExpectCommandLineOptionsException)
+    {
+        m_args.push_back("-draftfailingtests");
+        m_args.push_back("on,off");
+
+        try
+        {
+            InitOptions();
+
+            // Do not expect the command line options construction to succeed
+            FAIL();
+        }
+        catch ([[maybe_unused]] const TestImpact::CommandLineOptionsException& e)
+        {
+            // Expect a command line options to be thrown
+            SUCCEED();
+        }
+        catch (...)
+        {
+            // Do not expect any other exceptions
+            FAIL();
+        }
+    }
+
+    //
 
     TEST_F(CommandLineOptionsTestFixture, SuiteFilterEmptyOption_ExpectCommandLineOptionsException)
     {
