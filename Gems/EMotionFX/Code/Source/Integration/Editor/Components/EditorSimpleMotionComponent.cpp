@@ -51,7 +51,7 @@ namespace EMotionFX
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSimpleMotionComponent::OnEditorPropertyChanged)
                         ->DataElement(0, &EditorSimpleMotionComponent::m_configuration, "Configuration", "Settings for this Simple Motion")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorSimpleMotionComponent::OnEditorPropertyChanged)
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/simple-motion/")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/animation/simple-motion/")
                         ;
                 }
             }
