@@ -43,9 +43,9 @@ class PersistentStorageS3(PersistentStorage):
             # historic_data.json.zip is the file containing the coverage and meta-data of the last TIAF sequence run
             historic_data_file = f"historic_data.{object_extension}"
 
-            # The location of the data is in the form <root_dir>/<branch>/<config> so the build config of each branch gets its own historic data
-            self._historic_data_dir = f'{root_dir}/{branch}/{config[self.META_KEY][self.BUILD_CONFIG_KEY]}'
-            self._historic_data_key = f'{self._historic_data_dir}/{historic_data_file}'
+            # The location of the data is in the form <root_dir>/<branch>/<config>/<suite> so the build config of each branch gets its own historic data
+            self._historic_data_dir = f"{root_dir}/{branch}/{config[self.META_KEY][self.BUILD_CONFIG_KEY]}/{self._suite}"
+            self._historic_data_key = f"{self._historic_data_dir}/{historic_data_file}"
             
             logger.info(f"Attempting to retrieve historic data for branch '{branch}' at location '{self._historic_data_key}' on bucket '{s3_bucket}'...")
             self._s3 = boto3.resource("s3")
