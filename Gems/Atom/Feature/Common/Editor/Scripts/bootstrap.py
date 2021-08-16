@@ -31,6 +31,7 @@ _LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
 _MODULE_PATH = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 _MODULE_PATH = Path(_MODULE_PATH)
 site.addsitedir(_MODULE_PATH.resolve())
+_LOGGER.info(f'site.addsitedir({_MODULE_PATH.resolve()})')
 
 from ColorGrading.initialize import start
 start()

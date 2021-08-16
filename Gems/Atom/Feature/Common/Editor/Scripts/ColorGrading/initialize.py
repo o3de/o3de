@@ -14,12 +14,12 @@ import pathlib
 import site
 from pathlib import Path
 import logging as _logging
-from env_bool import env_bool
+from ColorGrading.env_bool import env_bool
 
 __all__ = ['start']
 
 # ------------------------------------------------------------------------
-_MODULENAME = 'ColorGrading.initialize'
+_MODULENAME = 'Gems.Atom.Feature.Common.ColorGrading.initialize'
 
 # set these true if you want them set globally for debugging
 _DCCSI_GDEBUG = env_bool('DCCSI_GDEBUG', False)
