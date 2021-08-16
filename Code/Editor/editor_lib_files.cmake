@@ -791,8 +791,6 @@ set(FILES
     EditorViewportCamera.h
     ViewportManipulatorController.cpp
     ViewportManipulatorController.h
-    LegacyViewportCameraController.cpp
-    LegacyViewportCameraController.h
     TopRendererWnd.cpp
     TopRendererWnd.h
     ViewManager.cpp

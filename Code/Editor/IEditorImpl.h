@@ -399,7 +399,7 @@ protected:
     IImageUtil* m_pImageUtil;  // Vladimir@conffx
     ILogFile* m_pLogFile;  // Vladimir@conffx
 
-    CryMutex m_pluginMutex; // protect any pointers that come from plugins, such as the source control cached pointer.
+    AZStd::mutex m_pluginMutex; // protect any pointers that come from plugins, such as the source control cached pointer.
     static const char* m_crashLogFileName;
 };
 

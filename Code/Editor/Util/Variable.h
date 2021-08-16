@@ -22,6 +22,8 @@ AZ_PUSH_DISABLE_WARNING(4458, "-Wunknown-warning-option")
 AZ_POP_DISABLE_WARNING
 #include <QVariant>
 
+#include <StlUtils.h>
+
 inline const char* to_c_str(const char* str) { return str; }
 #define MAX_VAR_STRING_LENGTH 4096
 

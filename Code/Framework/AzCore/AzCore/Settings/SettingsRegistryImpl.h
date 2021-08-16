@@ -89,7 +89,7 @@ namespace AZ
         using RegistryFileList = AZStd::fixed_vector<RegistryFile, MaxRegistryFolderEntries>;
 
         template<typename T>
-        bool SetValueInternal(AZStd::string_view path, T value, SettingsRegistryInterface::Type type);
+        bool SetValueInternal(AZStd::string_view path, T value);
         template<typename T>
         bool GetValueInternal(T& result, AZStd::string_view path) const;
         VisitResponse Visit(Visitor& visitor, StackedString& path, AZStd::string_view valueName,
@@ -100,8 +100,11 @@ namespace AZ
             const rapidjson::Pointer& historyPointer, AZStd::string_view folderPath);
         bool ExtractFileDescription(RegistryFile& output, const char* filename, const Specializations& specializations);
         bool MergeSettingsFileInternal(const char* path, Format format, AZStd::string_view rootKey, AZStd::vector<char>& scratchBuffer);
+
+        void SignalNotifier(AZStd::string_view jsonPath, Type type);
         
         mutable AZStd::recursive_mutex m_settingMutex;
+        mutable AZStd::recursive_mutex m_notifierMutex;
         NotifyEvent m_notifiers;
         rapidjson::Document m_settings;
         JsonSerializerSettings m_serializationSettings;

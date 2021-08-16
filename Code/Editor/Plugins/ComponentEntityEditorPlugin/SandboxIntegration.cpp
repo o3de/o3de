@@ -1441,7 +1441,7 @@ void SandboxIntegrationManager::ContextMenu_NewEntity()
     if (view)
     {
         const QPoint viewPoint(m_contextMenuViewPoint.GetX(), m_contextMenuViewPoint.GetY());
-        worldPosition = LYVec3ToAZVec3(view->SnapToGrid(view->ViewToWorld(viewPoint)));
+        worldPosition = view->GetHitLocation(viewPoint);
     }
 
     CreateNewEntityAtPosition(worldPosition);
@@ -1693,74 +1693,44 @@ void SandboxIntegrationManager::GoToEntitiesInViewports(const AzToolsFramework::
         return;
     }
 
-    if (SandboxEditor::UsingNewCameraSystem())
+    const AZ::Aabb aabb = AZStd::accumulate(
+        AZStd::begin(entityIds), AZStd::end(entityIds), AZ::Aabb::CreateNull(), [](AZ::Aabb acc, const AZ::EntityId entityId) {
+            const AZ::Aabb aabb = AzFramework::CalculateEntityWorldBoundsUnion(AzToolsFramework::GetEntityById(entityId));
+            acc.AddAabb(aabb);
+            return acc;
+        });
+
+    float radius;
+    AZ::Vector3 center;
+    aabb.GetAsSphere(center, radius);
+
+    // minimum center size is 40cm
+    const float minSelectionRadius = 0.4f;
+    const float selectionSize = AZ::GetMax(minSelectionRadius, radius);
+
+    auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+
+    const int viewCount = GetIEditor()->GetViewManager()->GetViewCount(); // legacy call
+    for (int viewIndex = 0; viewIndex < viewCount; ++viewIndex)
     {
-        const AZ::Aabb aabb = AZStd::accumulate(
-            AZStd::begin(entityIds), AZStd::end(entityIds), AZ::Aabb::CreateNull(), [](AZ::Aabb acc, const AZ::EntityId entityId) {
-                const AZ::Aabb aabb = AzFramework::CalculateEntityWorldBoundsUnion(AzToolsFramework::GetEntityById(entityId));
-                acc.AddAabb(aabb);
-                return acc;
-            });
-
-        float radius;
-        AZ::Vector3 center;
-        aabb.GetAsSphere(center, radius);
-
-        // minimum center size is 40cm
-        const float minSelectionRadius = 0.4f;
-        const float selectionSize = AZ::GetMax(minSelectionRadius, radius);
-
-        auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
-
-        const int viewCount = GetIEditor()->GetViewManager()->GetViewCount(); // legacy call
-        for (int viewIndex = 0; viewIndex < viewCount; ++viewIndex)
+        if (auto viewportContext = viewportContextManager->GetViewportContextById(viewIndex))
         {
-            if (auto viewportContext = viewportContextManager->GetViewportContextById(viewIndex))
-            {
-                const AZ::Transform cameraTransform = viewportContext->GetCameraTransform();
-                const AZ::Vector3 forward = (center - cameraTransform.GetTranslation()).GetNormalized();
+            const AZ::Transform cameraTransform = viewportContext->GetCameraTransform();
+            const AZ::Vector3 forward = (center - cameraTransform.GetTranslation()).GetNormalized();
 
-                // move camera 25% further back than required
-                const float centerScale = 1.25f;
-                // compute new camera transform
-                const float fov = AzFramework::RetrieveFov(viewportContext->GetCameraProjectionMatrix());
-                const float fovScale = (1.0f / AZStd::tan(fov * 0.5f));
-                const float distanceToLookAt = selectionSize * fovScale * centerScale;
-                const AZ::Transform nextCameraTransform =
-                    AZ::Transform::CreateLookAt(aabb.GetCenter() - (forward * distanceToLookAt), aabb.GetCenter());
+            // move camera 25% further back than required
+            const float centerScale = 1.25f;
+            // compute new camera transform
+            const float fov = AzFramework::RetrieveFov(viewportContext->GetCameraProjectionMatrix());
+            const float fovScale = (1.0f / AZStd::tan(fov * 0.5f));
+            const float distanceToLookAt = selectionSize * fovScale * centerScale;
+            const AZ::Transform nextCameraTransform =
+                AZ::Transform::CreateLookAt(aabb.GetCenter() - (forward * distanceToLookAt), aabb.GetCenter());
 
-                AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
-                    viewportContext->GetId(),
-                    &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform, nextCameraTransform,
-                    distanceToLookAt);
-            }
-        }
-    }
-    else
-    {
-        AABB selectionBounds;
-        selectionBounds.Reset();
-        bool entitiesAvailableForGoTo = false;
-
-        for (const AZ::EntityId& entityId : entityIds)
-        {
-            if (CollectEntityBoundingBoxesForZoom(entityId, selectionBounds))
-            {
-                entitiesAvailableForGoTo = true;
-            }
-        }
-
-        if (entitiesAvailableForGoTo)
-        {
-            int numViews = GetIEditor()->GetViewManager()->GetViewCount();
-            for (int viewIndex = 0; viewIndex < numViews; ++viewIndex)
-            {
-                CViewport* viewport = GetIEditor()->GetViewManager()->GetView(viewIndex);
-                if (viewport)
-                {
-                    viewport->CenterOnAABB(selectionBounds);
-                }
-            }
+            AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+                viewportContext->GetId(),
+                &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::InterpolateToTransform, nextCameraTransform,
+                distanceToLookAt);
         }
     }
 }

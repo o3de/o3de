@@ -139,8 +139,7 @@ namespace AZ
 
                 AssetBuilderSDK::JobDescriptor jobDescriptor;
                 jobDescriptor.m_priority = 2;
-                // [GFX TODO][ATOM-2830] Set 'm_critical' back to 'false' once proper fix for Atom startup issues are in 
-                jobDescriptor.m_critical = true;
+                jobDescriptor.m_critical = false;
                 jobDescriptor.m_jobKey = ShaderAssetBuilderJobKey;
                 jobDescriptor.SetPlatformIdentifier(platformInfo.m_identifier.c_str());
                 jobDescriptor.m_jobParameters.emplace(ShaderAssetBuildTimestampParam, AZStd::to_string(shaderAssetBuildTimestamp));

@@ -20,6 +20,7 @@
 #include <AzCore/std/parallel/shared_mutex.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <map>
+#include <unordered_map>
 
 #include <AzFramework/Font/FontInterface.h>
 #include <AzFramework/Scene/SceneSystemInterface.h>
@@ -96,7 +97,7 @@ namespace AZ
         void UnregisterFont(const char* fontName);
 
     private:
-        using FontMap = std::unordered_map<AzFramework::FontId, FFont*>;
+        using FontMap = AZStd::unordered_map<AzFramework::FontId, FFont*>;
         using FontMapItor = FontMap::iterator;
         using FontMapConstItor = FontMap::const_iterator;
 

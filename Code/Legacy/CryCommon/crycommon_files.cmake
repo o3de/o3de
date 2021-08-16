@@ -68,7 +68,6 @@ set(FILES
     LCGRandom.h
     CryTypeInfo.cpp
     BaseTypes.h
-    CompileTimeAssert.h
     MemoryAccess.h
     AnimKey.h
     BitFiddling.h
@@ -87,8 +86,6 @@ set(FILES
     CryPodArray.h
     CrySizer.h
     CrySystemBus.h
-    CryThread.h
-    CryThreadImpl.h
     CryTypeInfo.h
     CryVersion.h
     FrameProfiler.h
@@ -96,7 +93,6 @@ set(FILES
     LegacyAllocator.h
     MetaUtils.h
     MiniQueue.h
-    MultiThread.h
     MultiThread_Containers.h
     NullAudioSystem.h
     PNoise3.h
@@ -153,12 +149,6 @@ set(FILES
     CryAssert_Mac.h
     CryLibrary.cpp
     CryLibrary.h
-    CryThread_dummy.h
-    CryThread_pthreads.h
-    CryThread_windows.h
-    CryThreadImpl_pthreads.h
-    CryThreadImpl_windows.h
-    CryWindows.h
     Linux32Specific.h
     Linux64Specific.h
     Linux_Win32Wrapper.h

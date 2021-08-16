@@ -27,7 +27,7 @@
 namespace AzToolsFramework
 {
     EntityOutlinerTreeView::EntityOutlinerTreeView(QWidget* pParent)
-        : QTreeView(pParent)
+        : AzQtComponents::StyledTreeView(pParent)
         , m_queuedMouseEvent(nullptr)
         , m_draggingUnselectedItem(false)
     {
@@ -144,16 +144,12 @@ namespace AzToolsFramework
 
             if (!selectionModel()->isSelected(index))
             {
-                startCustomDrag({ index }, supportedActions);
+                StartCustomDrag({ index }, supportedActions);
                 return;
             }
         }
 
-        if (!selectionModel()->selectedIndexes().empty())
-        {
-            startCustomDrag(selectionModel()->selectedIndexes(), supportedActions);
-            return;
-        }
+        StyledTreeView::startDrag(supportedActions);
     }
 
     void EntityOutlinerTreeView::dragMoveEvent(QDragMoveEvent* event)
@@ -243,14 +239,14 @@ namespace AzToolsFramework
         QTreeView::mousePressEvent(&mousePressedEvent);
     }
 
-    void EntityOutlinerTreeView::startCustomDrag(const QModelIndexList& indexList, Qt::DropActions supportedActions)
+    void EntityOutlinerTreeView::StartCustomDrag(const QModelIndexList& indexList, Qt::DropActions supportedActions)
     {
         m_draggingUnselectedItem = true;
 
         //sort by container entity depth and order in hierarchy for proper drag image and drop order
         QModelIndexList indexListSorted = indexList;
         AZStd::unordered_map<AZ::EntityId, AZStd::list<AZ::u64>> locations;
-        for (auto index : indexListSorted)
+        for (const auto& index : indexListSorted)
         {
             AZ::EntityId entityId(index.data(EntityOutlinerListModel::EntityIdRole).value<AZ::u64>());
             AzToolsFramework::GetEntityLocationInHierarchy(entityId, locations[entityId]);
@@ -263,76 +259,8 @@ namespace AzToolsFramework
             return AZStd::lexicographical_compare(locationsE1.begin(), locationsE1.end(), locationsE2.begin(), locationsE2.end());
         });
 
-        //get the data for the unselected item(s)
-        QMimeData* mimeData = model()->mimeData(indexListSorted);
-        if (mimeData)
-        {
-            //initiate drag/drop for the item
-            QDrag* drag = new QDrag(this);
-            drag->setPixmap(QPixmap::fromImage(createDragImage(indexListSorted)));
-            drag->setMimeData(mimeData);
-            Qt::DropAction defDropAction = Qt::IgnoreAction;
-            if (defaultDropAction() != Qt::IgnoreAction && (supportedActions & defaultDropAction()))
-            {
-                defDropAction = defaultDropAction();
-            }
-            else if (supportedActions & Qt::CopyAction && dragDropMode() != QAbstractItemView::InternalMove)
-            {
-                defDropAction = Qt::CopyAction;
-            }
-            drag->exec(supportedActions, defDropAction);
-        }
+        StyledTreeView::StartCustomDrag(indexListSorted, supportedActions);
     }
-
-    QImage EntityOutlinerTreeView::createDragImage(const QModelIndexList& indexList)
-    {
-        //generate a drag image of the item icon and text, normally done internally, and inaccessible 
-        QRect rect(0, 0, 0, 0);
-        for (auto index : indexList)
-        {
-            if (index.column() != 0)
-            {
-                continue;
-            }
-            QRect itemRect = visualRect(index);
-            rect.setHeight(rect.height() + itemRect.height());
-            rect.setWidth(AZStd::GetMax(rect.width(), itemRect.width()));
-        }
-
-        QImage dragImage(rect.size(), QImage::Format_ARGB32_Premultiplied);
-
-        QPainter dragPainter(&dragImage);
-        dragPainter.setCompositionMode(QPainter::CompositionMode_Source);
-        dragPainter.fillRect(dragImage.rect(), Qt::transparent);
-        dragPainter.setCompositionMode(QPainter::CompositionMode_SourceOver);
-        dragPainter.setOpacity(0.35f);
-        dragPainter.fillRect(rect, QColor("#222222"));
-        dragPainter.setOpacity(1.0f);
-
-        int imageY = 0;
-        for (auto index : indexList)
-        {
-            if (index.column() != 0)
-            {
-                continue;
-            }
-
-            QRect itemRect = visualRect(index);
-            dragPainter.drawPixmap(QPoint(0, imageY),
-                model()->data(index, Qt::DecorationRole).value<QIcon>().pixmap(QSize(16, 16)));
-            dragPainter.setPen(
-                model()->data(index, Qt::ForegroundRole).value<QBrush>().color());
-            dragPainter.setFont(
-                font());
-            dragPainter.drawText(QRect(20, imageY, rect.width() - 20, rect.height()),
-                model()->data(index, Qt::DisplayRole).value<QString>());
-            imageY += itemRect.height();
-        }
-
-        dragPainter.end();
-        return dragImage;
-    }
-
 }
 
 #include <UI/Outliner/moc_EntityOutlinerTreeView.cpp>

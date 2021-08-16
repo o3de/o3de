@@ -482,6 +482,7 @@ class TestViewEditController(TestCase):
         mock_json_utils.create_empty_resource_mapping_file.assert_called_once()
         mock_file_utils.find_files_with_suffix_under_directory.assert_called_once()
         self._mocked_view_edit_page.set_config_files.assert_called_with(expected_config_files)
+        self._test_view_edit_controller.set_notification_frame_text_sender.emit.assert_called_once()
 
     @patch("controller.view_edit_controller.file_utils")
     @patch("controller.view_edit_controller.json_utils")
@@ -496,7 +497,7 @@ class TestViewEditController(TestCase):
         mock_file_utils.join_path.assert_called_once()
         mock_json_utils.create_empty_resource_mapping_file.assert_called_once()
         mock_file_utils.find_files_with_suffix_under_directory.assert_not_called()
-        self._test_view_edit_controller.set_notification_frame_text_sender.emit.assert_called_once()
+        assert len(self._test_view_edit_controller.set_notification_frame_text_sender.emit.mock_calls) == 2
 
     @patch("controller.view_edit_controller.file_utils")
     def test_page_rescan_button_post_notification_when_find_files_throw_exception(
