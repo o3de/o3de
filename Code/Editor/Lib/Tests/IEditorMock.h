@@ -178,7 +178,6 @@ public:
     MOCK_CONST_METHOD0(GetEditorConfigSpec, ESystemConfigSpec());
     MOCK_CONST_METHOD0(GetEditorConfigPlatform, ESystemConfigPlatform());
     MOCK_METHOD0(ReloadTemplates, void());
-    MOCK_METHOD0(GetResourceSelectorHost, IResourceSelectorHost* ());
     MOCK_METHOD1(ShowStatusText, void(bool ));
     MOCK_METHOD1(RegisterObjectContextMenuExtension, void(TContextMenuExtensionFunc ));
     MOCK_METHOD0(GetEnv, SSystemGlobalEnvironment* ());
