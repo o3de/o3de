@@ -1135,6 +1135,8 @@ float4 SMAABlendingWeightCalculationPS(float2 texcoord,
         if (!o_enableDiagonalDetectionFeature ||
             weights.r == -weights.g) // weights.r + weights.g == 0.0
         {
+            // NOTE: using separate floats for (dx, dy) and (sqrt_d_x, sqrt_d_y) instead of float2 due to android Mali driver problem crashing the device
+
             // Find the distance to the left:
             float3 coords;
             coords.x = SMAASearchXLeft(SMAATexturePass2D(edgesTex), SMAATexturePass2D(searchTex), offset[0].xy, offset[2].x);
