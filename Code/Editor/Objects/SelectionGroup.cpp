@@ -157,7 +157,7 @@ Vec3    CSelectionGroup::GetCenter() const
     }
     if (GetCount() > 0)
     {
-        c /= GetCount();
+        c /= static_cast<f32>(GetCount());
     }
     return c;
 }

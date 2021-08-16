@@ -455,7 +455,7 @@ bool CFileUtil::ExtractDccFilenameUsingNamingConventions(const QString& assetFil
 //////////////////////////////////////////////////////////////////////////
 void CFileUtil::FormatFilterString(QString& filter)
 {
-    const int numPipeChars = std::count(filter.begin(), filter.end(), '|');
+    const int numPipeChars = static_cast<int>(std::count(filter.begin(), filter.end(), '|'));
     if (numPipeChars == 1)
     {
         filter = QStringLiteral("%1||").arg(filter);

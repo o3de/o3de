@@ -308,7 +308,7 @@ void ReflectedPropertyControl::CreateItems(XmlNodeRef node, CVarBlockPtr& outBlo
                 int nMin(0), nMax(0);
                 if (child->getAttr("min", nMin) && child->getAttr("max", nMax))
                 {
-                    intVar->SetLimits(nMin, nMax);
+                    intVar->SetLimits(static_cast<float>(nMin), static_cast<float>(nMax));
                 }
             }
             else if (!azstricmp(type, "float"))

@@ -15,43 +15,6 @@
 #include <QPainter>
 #include <QMessageBox>
 
-bool ComputeThumbsLayoutInfo(float aContainerWidth, float aThumbWidth, float aMargin, UINT aThumbCount, UINT& rThumbsPerRow, float& rNewMargin)
-{
-    rThumbsPerRow = 0;
-    rNewMargin = 0;
-
-    if (aThumbWidth <= 0 || aMargin <= 0 || (aThumbWidth + aMargin * 2) <= 0)
-    {
-        return false;
-    }
-
-    if (aContainerWidth <= 0)
-    {
-        return true;
-    }
-
-    rThumbsPerRow = (int) aContainerWidth / (aThumbWidth + aMargin * 2);
-
-    if ((aThumbWidth + aMargin * 2) * aThumbCount < aContainerWidth)
-    {
-        rNewMargin = aMargin;
-    }
-    else
-    {
-        if (rThumbsPerRow > 0)
-        {
-            rNewMargin = (aContainerWidth - rThumbsPerRow * aThumbWidth);
-
-            if (rNewMargin > 0)
-            {
-                rNewMargin = (float)rNewMargin / rThumbsPerRow / 2.0f;
-            }
-        }
-    }
-
-    return true;
-}
-
 QColor ScaleColor(const QColor& c, float aScale)
 {
     QColor aColor = c;

@@ -146,8 +146,7 @@ CTrackViewDopeSheetBase::~CTrackViewDopeSheetBase()
 //////////////////////////////////////////////////////////////////////////
 int CTrackViewDopeSheetBase::TimeToClient(float time) const
 {
-    int x = m_leftOffset - m_scrollOffset.x() + (time * m_timeScale);
-    return x;
+    return static_cast<int>(m_leftOffset - m_scrollOffset.x() + (time * m_timeScale));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -193,7 +192,7 @@ void CTrackViewDopeSheetBase::SetTimeRange(float start, float end)
 
     m_timeRange.Set(start, end);
 
-    SetHorizontalExtent(-m_leftOffset, m_timeRange.end * m_timeScale - m_leftOffset);
+    SetHorizontalExtent(-m_leftOffset, static_cast<int>(m_timeRange.end * m_timeScale - m_leftOffset));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -263,7 +262,7 @@ void CTrackViewDopeSheetBase::SetTimeScale(float timeScale, float fAnchorTime)
 
     update();
 
-    SetHorizontalExtent(-m_leftOffset, m_timeRange.end * m_timeScale);
+    SetHorizontalExtent(-m_leftOffset, static_cast<int>(m_timeRange.end * m_timeScale));
 
     ComputeFrameSteps(GetVisibleRange());
 
@@ -353,15 +352,15 @@ float CTrackViewDopeSheetBase::TickSnap(float time) const
     double tickTime = GetTickTime();
     double t = floor(((double)time / tickTime) + 0.5);
     t *= tickTime;
-    return t;
+    return static_cast<float>(t);
 }
 
 //////////////////////////////////////////////////////////////////////////
 float CTrackViewDopeSheetBase::TimeFromPoint(const QPoint& point) const
 {
     int x = point.x() - m_leftOffset + m_scrollOffset.x();
-    double t = (double)x / m_timeScale;
-    return (float)TickSnap(t);
+    float t = static_cast<float>(x) / m_timeScale;
+    return TickSnap(t);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -369,7 +368,7 @@ float CTrackViewDopeSheetBase::TimeFromPointUnsnapped(const QPoint& point) const
 {
     int x = point.x() - m_leftOffset + m_scrollOffset.x();
     double t = (double)x / m_timeScale;
-    return t;
+    return static_cast<float>(t);
 }
 
 void CTrackViewDopeSheetBase::mousePressEvent(QMouseEvent* event)
@@ -1783,7 +1782,7 @@ float CTrackViewDopeSheetBase::FrameSnap(float time) const
 {
     double t = floor((double)time / m_snapFrameTime + 0.5);
     t = t * m_snapFrameTime;
-    return t;
+    return static_cast<float>(t);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2003,9 +2002,10 @@ bool CTrackViewDopeSheetBase::CreateColorKey(CTrackViewTrack* pTrack, float keyT
     Vec3 vColor(0, 0, 0);
     pTrack->GetValue(keyTime, vColor);
 
-    const AZ::Color defaultColor(clamp_tpl<AZ::u8>(FloatToIntRet(vColor.x), 0, 255),
-        clamp_tpl<AZ::u8>(FloatToIntRet(vColor.y), 0, 255),
-        clamp_tpl<AZ::u8>(FloatToIntRet(vColor.z), 0, 255),
+    const AZ::Color defaultColor(
+        clamp_tpl<AZ::u8>(static_cast<AZ::u8>(FloatToIntRet(vColor.x)), 0, 255),
+        clamp_tpl<AZ::u8>(static_cast<AZ::u8>(FloatToIntRet(vColor.y)), 0, 255),
+        clamp_tpl<AZ::u8>(static_cast<AZ::u8>(FloatToIntRet(vColor.z)), 0, 255),
         255);
     AzQtComponents::ColorPicker dlg(AzQtComponents::ColorPicker::Configuration::RGB, QString(), this);
     dlg.setWindowTitle(tr("Select Color"));
@@ -2054,7 +2054,7 @@ void CTrackViewDopeSheetBase::OnCurrentColorChange(const AZ::Color& color)
 
 void CTrackViewDopeSheetBase::UpdateColorKey(const QColor& color, bool addToUndo)
 {
-    ColorF colArray(color.red(), color.green(), color.blue(), color.alpha());
+    ColorF colArray(static_cast<f32>(color.redF()), static_cast<f32>(color.greenF()), static_cast<f32>(color.blueF()), static_cast<f32>(color.alphaF()));
 
     CTrackViewSequence* sequence = m_colorUpdateTrack->GetSequence();
     if (nullptr != sequence)
@@ -2119,9 +2119,10 @@ void CTrackViewDopeSheetBase::EditSelectedColorKey(CTrackViewTrack* pTrack)
             Vec3  color;
             pTrack->GetValue(m_colorUpdateKeyTime, color);
 
-            const AZ::Color defaultColor(clamp_tpl<AZ::u8>(FloatToIntRet(color.x), 0, 255),
-                clamp_tpl<AZ::u8>(FloatToIntRet(color.y), 0, 255),
-                clamp_tpl<AZ::u8>(FloatToIntRet(color.z), 0, 255), 
+            const AZ::Color defaultColor(
+                clamp_tpl(static_cast<AZ::u8>(FloatToIntRet(color.x)), AZ::u8(0), AZ::u8(255)),
+                clamp_tpl(static_cast<AZ::u8>(FloatToIntRet(color.y)), AZ::u8(0), AZ::u8(255)),
+                clamp_tpl(static_cast<AZ::u8>(FloatToIntRet(color.z)), AZ::u8(0), AZ::u8(255)),
                 255);
 
             AzQtComponents::ColorPicker picker(AzQtComponents::ColorPicker::Configuration::RGB);
@@ -2369,12 +2370,12 @@ void CTrackViewDopeSheetBase::DrawTicks(QPainter* painter, const QRect& rc, Rang
         nNumberTicks = 8;
     }
 
-    double start = TickSnap(timeRange.start);
-    double step = 1.0 / m_ticksStep;
+    float start = TickSnap(timeRange.start);
+    float step = 1.0f / static_cast<float>(m_ticksStep);
 
-    for (double t = 0.0f; t <= timeRange.end + step; t += step)
+    for (float t = 0.0f; t <= timeRange.end + step; t += step)
     {
-        double st = TickSnap(t);
+        float st = TickSnap(t);
         if (st > timeRange.end)
         {
             st = timeRange.end;
@@ -2393,7 +2394,7 @@ void CTrackViewDopeSheetBase::DrawTicks(QPainter* painter, const QRect& rc, Rang
             continue;
         }
 
-        int k = RoundFloatToInt(st * m_ticksStep);
+        int k = RoundFloatToInt(st * static_cast<float>(m_ticksStep));
         if (k % nNumberTicks == 0)
         {
             if (st >= start)
@@ -3218,7 +3219,7 @@ void CTrackViewDopeSheetBase::ComputeFrameSteps(const Range& visRange)
     float nBIntermediateTicks = 5;
     m_fFrameLabelStep = fFact * afStepTable[nStepIdx];
 
-    if (TimeToClient(m_fFrameLabelStep) - TimeToClient(0) > 1300)
+    if (TimeToClient(static_cast<float>(m_fFrameLabelStep)) - TimeToClient(0.0f) > 1300)
     {
         nBIntermediateTicks = 10;
     }
@@ -3230,7 +3231,7 @@ void CTrackViewDopeSheetBase::ComputeFrameSteps(const Range& visRange)
 void CTrackViewDopeSheetBase::DrawTimeLineInFrames(QPainter* painter, const QRect& rc, [[maybe_unused]] const QColor& lineCol, const QColor& textCol, [[maybe_unused]] double step)
 {
     float fFramesPerSec = 1.0f / m_snapFrameTime;
-    float fInvFrameLabelStep = 1.0f / m_fFrameLabelStep;
+    float fInvFrameLabelStep = 1.0f / static_cast<float>(m_fFrameLabelStep);
     Range VisRange = GetVisibleRange();
 
     const Range& timeRange = m_timeRange;
@@ -3238,9 +3239,9 @@ void CTrackViewDopeSheetBase::DrawTimeLineInFrames(QPainter* painter, const QRec
     const QPen ltgray(QColor(90, 90, 90));
     const QPen black(textCol);
 
-    for (double t = TickSnap(timeRange.start); t <= timeRange.end + m_fFrameTickStep; t += m_fFrameTickStep)
+    for (float t = TickSnap(timeRange.start); t <= timeRange.end + static_cast<float>(m_fFrameTickStep); t += static_cast<float>(m_fFrameTickStep))
     {
-        double st = t;
+        float st = t;
         if (st > timeRange.end)
         {
             st = timeRange.end;
@@ -3285,9 +3286,9 @@ void CTrackViewDopeSheetBase::DrawTimeLineInSeconds(QPainter* painter, const QRe
     const QPen ltgray(QColor(90, 90, 90));
     const QPen black(textCol);
 
-    for (double t = TickSnap(timeRange.start); t <= timeRange.end + step; t += step)
+    for (float t = TickSnap(timeRange.start); t <= timeRange.end + static_cast<float>(step); t += static_cast<float>(step))
     {
-        double st = TickSnap(t);
+        float st = TickSnap(t);
         if (st > timeRange.end)
         {
             st = timeRange.end;
@@ -3306,7 +3307,7 @@ void CTrackViewDopeSheetBase::DrawTimeLineInSeconds(QPainter* painter, const QRe
         }
         int x = TimeToClient(st);
 
-        int k = RoundFloatToInt(st * m_ticksStep);
+        int k = RoundFloatToInt(st * static_cast<float>(m_ticksStep));
         if (k % nNumberTicks == 0)
         {
             painter->setPen(black);

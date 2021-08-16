@@ -394,7 +394,7 @@ void SEditorSettings::LoadValue(const char* sSection, const char* sKey, float& v
     {
         const SettingsGroup sg(sSection);
         const QString defaultVal = s_editorSettings()->value(sKey, QString::number(value)).toString();
-        value = defaultVal.toDouble();
+        value = defaultVal.toFloat();
 
         if (GetIEditor()->GetSettingsManager())
         {

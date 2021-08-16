@@ -132,7 +132,7 @@ bool CImageASC::Load(const QString& fileName, CFloatImage& image)
     token = azstrtok(nullptr, 0, seps, &nextToken);
     validData = validData && (azstricmp(token, "nodata_value") == 0);
     token = azstrtok(nullptr, 0, seps, &nextToken);
-    nodataValue = atof(token);
+    nodataValue = static_cast<float>(atof(token));
 
     if (!validData)
     {
@@ -157,7 +157,7 @@ bool CImageASC::Load(const QString& fileName, CFloatImage& image)
         if (token != nullptr)
         {
             // Negative heights aren't supported, clamp to 0.
-            pixelValue = max(0.0, atof(token));
+            pixelValue = max<float>(0.0f, static_cast<float>(atof(token)));
 
             // If this is a location we specifically don't have data for, set it to 0.
             if (pixelValue == nodataValue)

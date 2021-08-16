@@ -2091,7 +2091,7 @@ void CCryEditDoc::OnEnvironmentPropertyChanged(IVariable* pVar)
     }
 
     // QVariant will not convert a void * to int, so do it manually.
-    int nKey = reinterpret_cast<intptr_t>(pVar->GetUserData().value<void*>());
+    int nKey = static_cast<int>(reinterpret_cast<intptr_t>(pVar->GetUserData().value<void*>()));
 
     int nGroup = (nKey & 0xFFFF0000) >> 16;
     int nChild = (nKey & 0x0000FFFF);

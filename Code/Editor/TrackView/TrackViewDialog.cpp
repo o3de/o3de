@@ -1765,7 +1765,7 @@ void CTrackViewDialog::OnSnapFPS()
     if (ok)
     {
         m_wndDopeSheet->SetSnapFPS(fps);
-        m_wndCurveEditor->SetFPS(fps);
+        m_wndCurveEditor->SetFPS(static_cast<float>(fps));
 
         SetCursorPosText(GetIEditor()->GetAnimation()->GetTime());
     }
@@ -1828,7 +1828,7 @@ void CTrackViewDialog::ReadMiscSettings()
 
     if (settings.contains(s_kFrameSnappingFPSEntry))
     {
-        float fps = settings.value(s_kFrameSnappingFPSEntry).toDouble();
+        float fps = settings.value(s_kFrameSnappingFPSEntry).toFloat();
         if (fps >= s_kMinimumFrameSnappingFPS && fps <= s_kMaximumFrameSnappingFPS)
         {
             m_wndDopeSheet->SetSnapFPS(FloatToIntRet(fps));

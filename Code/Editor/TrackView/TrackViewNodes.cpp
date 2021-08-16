@@ -1419,7 +1419,7 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
     {
         if (animNode)
         {
-            UINT_PTR menuId = cmd - eMI_AddTrackBase;
+            unsigned int menuId = cmd - eMI_AddTrackBase;
             
             if (animNode->GetType() != AnimNodeType::AzEntity)
             {

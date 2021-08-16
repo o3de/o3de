@@ -1022,10 +1022,10 @@ void CBaseObject::DrawLabel(DisplayContext& dc, const Vec3& pos, const QColor& l
     if (camDist < dc.settings->GetLabelsDistance() || (dc.flags & DISPLAY_SELECTION_HELPERS))
     {
         float range = maxDist / 2.0f;
-        Vec3 c(labelColor.redF(), labelColor.greenF(), labelColor.redF());
+        Vec3 c(static_cast<f32>(labelColor.redF()), static_cast<f32>(labelColor.greenF()), static_cast<f32>(labelColor.redF()));
         if (IsSelected())
         {
-            c = Vec3(dc.GetSelectedColor().redF(), dc.GetSelectedColor().greenF(), dc.GetSelectedColor().blueF());
+            c = Vec3(static_cast<f32>(dc.GetSelectedColor().redF()), static_cast<f32>(dc.GetSelectedColor().greenF()), static_cast<f32>(dc.GetSelectedColor().blueF()));
         }
 
         float col[4] = { c.x, c.y, c.z, 1 };
@@ -1033,7 +1033,7 @@ void CBaseObject::DrawLabel(DisplayContext& dc, const Vec3& pos, const QColor& l
         {
             if (IsHighlighted())
             {
-                c = Vec3(dc.GetSelectedColor().redF(), dc.GetSelectedColor().greenF(), dc.GetSelectedColor().blueF());
+                c = Vec3(static_cast<f32>(dc.GetSelectedColor().redF()), static_cast<f32>(dc.GetSelectedColor().greenF()), static_cast<f32>(dc.GetSelectedColor().blueF()));
             }
             col[0] = c.x;
             col[1] = c.y;
@@ -1263,9 +1263,9 @@ int CBaseObject::MouseCreateCallback(CViewport* view, EMouseEvent event, QPoint&
 
     if (event == eMouseWheel)
     {
-        double angle = 1;
+        float angle = 1;
         Quat rot = GetRotation();
-        rot.SetRotationXYZ(Ang3(0, 0, rot.GetRotZ() + DEG2RAD(flags > 0 ? angle * (-1) : angle)));
+        rot.SetRotationXYZ(Ang3(0.f, 0.f, rot.GetRotZ() + DEG2RAD(flags > 0 ? angle * (-1) : angle)));
         SetRotation(rot);
     }
     return MOUSECREATE_CONTINUE;
@@ -1857,10 +1857,10 @@ bool CBaseObject::HitTestRectBounds(HitContext& hc, const AABB& box)
 
         const int kMaxSizeOfEdgeList0(4);
         Edge2D edgelist0[kMaxSizeOfEdgeList0] = {
-            Edge2D(Vec2(hc.rect.left(), hc.rect.top()), Vec2(hc.rect.right(), hc.rect.top())),
-            Edge2D(Vec2(hc.rect.right(), hc.rect.top()), Vec2(hc.rect.right(), hc.rect.bottom())),
-            Edge2D(Vec2(hc.rect.right(), hc.rect.bottom()), Vec2(hc.rect.left(), hc.rect.bottom())),
-            Edge2D(Vec2(hc.rect.left(), hc.rect.bottom()), Vec2(hc.rect.left(), hc.rect.top()))
+            Edge2D(Vec2(static_cast<f32>(hc.rect.left()),  static_cast<f32>(hc.rect.top())),    Vec2(static_cast<f32>(hc.rect.right()), static_cast<f32>(hc.rect.top()))),
+            Edge2D(Vec2(static_cast<f32>(hc.rect.right()), static_cast<f32>(hc.rect.top())),    Vec2(static_cast<f32>(hc.rect.right()), static_cast<f32>(hc.rect.bottom()))),
+            Edge2D(Vec2(static_cast<f32>(hc.rect.right()), static_cast<f32>(hc.rect.bottom())), Vec2(static_cast<f32>(hc.rect.left()),  static_cast<f32>(hc.rect.bottom()))),
+            Edge2D(Vec2(static_cast<f32>(hc.rect.left()),  static_cast<f32>(hc.rect.bottom())), Vec2(static_cast<f32>(hc.rect.left()),  static_cast<f32>(hc.rect.top())))
         };
 
         const int kMaxSizeOfEdgeList1(8);
@@ -1888,7 +1888,7 @@ bool CBaseObject::HitTestRectBounds(HitContext& hc, const AABB& box)
         pointsForRegion1.reserve(kMaxSizeOfEdgeList1);
         for (int i = 0; i < kMaxSizeOfEdgeList1; ++i)
         {
-            pointsForRegion1.push_back(Vec3(obb_p[i].x(), obb_p[i].y(), 0));
+            pointsForRegion1.push_back(Vec3(static_cast<f32>(obb_p[i].x()), static_cast<f32>(obb_p[i].y()), 0.0f));
         }
 
         std::vector<Vec3> convexHullForRegion1;

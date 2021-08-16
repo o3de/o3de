@@ -60,7 +60,7 @@ void CToolBoxCommand::Execute() const
             // Toggle the variable.
             float val = GetIEditor()->GetConsoleVar(m_text.toUtf8().data());
             bool bOn = val != 0;
-            GetIEditor()->SetConsoleVar(m_text.toUtf8().data(), (bOn) ? 0 : 1);
+            GetIEditor()->SetConsoleVar(m_text.toUtf8().data(), (bOn) ? 0.0f : 1.0f);
         }
         else
         {
@@ -186,7 +186,6 @@ const CToolBoxMacro* CToolBoxManager::GetMacro(int iIndex, bool bToolbox) const
         assert(0 <= iIndex && iIndex < m_shelveMacros.size());
         return m_shelveMacros[iIndex];
     }
-    return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -202,7 +201,6 @@ CToolBoxMacro* CToolBoxManager::GetMacro(int iIndex, bool bToolbox)
         assert(0 <= iIndex && iIndex < m_shelveMacros.size());
         return m_shelveMacros[iIndex];
     }
-    return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -275,7 +273,6 @@ CToolBoxMacro* CToolBoxManager::NewMacro(const QString& title, bool bToolbox, in
         m_shelveMacros.push_back(pNewTool);
         return pNewTool;
     }
-    return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////

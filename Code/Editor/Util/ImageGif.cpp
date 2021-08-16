@@ -411,7 +411,7 @@ bool CImageGif::Load(const QString& fileName, CImageEx& outImage)
             FreeCode = FirstFree;
             CurCode  = OldCode = Code = ReadCode();
             FinChar  = CurCode & BitMask;
-            AddToPixel (FinChar);
+            AddToPixel(static_cast<uint8>(FinChar));
         }
         else
         {
@@ -455,7 +455,7 @@ bool CImageGif::Load(const QString& fileName, CImageEx& outImage)
 
             for (i = OutCount - 1; i >= 0; i--)
             {
-                AddToPixel (OutCode[i]);
+                AddToPixel(static_cast<uint8>(OutCode[i]));
             }
             OutCount = 0;
 

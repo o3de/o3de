@@ -40,15 +40,6 @@
 
 namespace
 {
-    void SetTexture(Export::TPath& outName, IRenderShaderResources* pRes, int nSlot)
-    {
-        SEfResTexture* pTex = pRes->GetTextureResource(nSlot);
-        if (pTex)
-        {
-            azstrcat(outName, AZ_ARRAY_SIZE(outName), Path::GamePathToFullPath(pTex->m_Name.c_str()).toUtf8().data());
-        }
-    }
-
     inline Export::Vector3D Vec3ToVector3D(const Vec3& vec)
     {
         Export::Vector3D ret;
@@ -1164,7 +1155,7 @@ bool CExportManager::Export(const char* defaultName, const char* defaultExt, con
                     // Export the whole sequence with baked keys
                     if (ShowFBXExportDialog())
                     {
-                        m_numberOfExportFrames = pSequence->GetTimeRange().end * m_FBXBakedExportFPS;
+                        m_numberOfExportFrames = static_cast<int>(pSequence->GetTimeRange().end * m_FBXBakedExportFPS);
 
                         if (!m_bExportOnlyPrimaryCamera)
                         {

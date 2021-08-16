@@ -93,7 +93,7 @@ static void UpdateAtomOutputFrameCaptureView(TrackView::AtomOutputFrameCapture& 
     const AZ::EntityId activeCameraEntityId = TrackView::ActiveCameraEntityId();
     atomOutputFrameCapture.UpdateView(
         TrackView::TransformFromEntityId(activeCameraEntityId),
-        TrackView::ProjectionFromCameraEntityId(activeCameraEntityId, width, height));
+        TrackView::ProjectionFromCameraEntityId(activeCameraEntityId, static_cast<float>(width), static_cast<float>(height)));
 }
 
 CSequenceBatchRenderDialog::CSequenceBatchRenderDialog(float fps, QWidget* pParent /* = nullptr */)
@@ -170,10 +170,10 @@ void CSequenceBatchRenderDialog::OnInitDialog()
     connect(m_ui->m_endFrame, editingFinished, this, &CSequenceBatchRenderDialog::OnEndFrameChange);
     connect(m_ui->m_imageFormatCombo, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &CSequenceBatchRenderDialog::OnImageFormatChange);
 
-    const float bigEnoughNumber = 1000000.0f;
-    m_ui->m_startFrame->setRange(0.0f, bigEnoughNumber);
+    const int bigEnoughNumber = 1000000;
+    m_ui->m_startFrame->setRange(0, bigEnoughNumber);
 
-    m_ui->m_endFrame->setRange(0.0f, bigEnoughNumber);
+    m_ui->m_endFrame->setRange(0, bigEnoughNumber);
 
     // Fill the sequence combo box.
     bool activeSequenceWasSet = false;
@@ -301,8 +301,8 @@ void CSequenceBatchRenderDialog::OnRenderItemSelChange()
         }
     }
     // frame range
-    m_ui->m_startFrame->setValue(item.frameRange.start * m_fpsForTimeToFrameConversion);
-    m_ui->m_endFrame->setValue(item.frameRange.end * m_fpsForTimeToFrameConversion);
+    m_ui->m_startFrame->setValue(static_cast<int>(item.frameRange.start * m_fpsForTimeToFrameConversion));
+    m_ui->m_endFrame->setValue(static_cast<int>(item.frameRange.end * m_fpsForTimeToFrameConversion));
     // folder
     m_ui->m_destinationEdit->setText(item.folder);
     // fps
@@ -580,12 +580,12 @@ void CSequenceBatchRenderDialog::OnSequenceSelected()
     // Adjust the frame range.
     float sFrame = pSequence->GetTimeRange().start * m_fpsForTimeToFrameConversion;
     float eFrame = pSequence->GetTimeRange().end * m_fpsForTimeToFrameConversion;
-    m_ui->m_startFrame->setRange(0.0f, eFrame);
-    m_ui->m_endFrame->setRange(0.0f, eFrame);
+    m_ui->m_startFrame->setRange(0, static_cast<int>(eFrame));
+    m_ui->m_endFrame->setRange(0, static_cast<int>(eFrame));
 
     // Set the default start/end frames properly.
-    m_ui->m_startFrame->setValue(sFrame);
-    m_ui->m_endFrame->setValue(eFrame);
+    m_ui->m_startFrame->setValue(static_cast<int>(sFrame));
+    m_ui->m_endFrame->setValue(static_cast<int>(eFrame));
 
     m_ui->m_shotCombo->clear();
     // Fill the shot combo box with the names of director nodes.

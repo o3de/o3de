@@ -661,8 +661,8 @@ bool CComponentEntityObject::HitHelperTest(HitContext& hc)
         if (IsEntityIconVisible())
         {
             const QPoint entityScreenPos = hc.view->WorldToView(GetWorldPos());
-            const float screenPosX = entityScreenPos.x();
-            const float screenPosY = entityScreenPos.y();
+            const float screenPosX = static_cast<float>(entityScreenPos.x());
+            const float screenPosY = static_cast<float>(entityScreenPos.y());
             const float iconRange = static_cast<float>(s_kIconSize / 2);
 
             if ((hc.point2d.x() >= screenPosX - iconRange && hc.point2d.x() <= screenPosX + iconRange)
