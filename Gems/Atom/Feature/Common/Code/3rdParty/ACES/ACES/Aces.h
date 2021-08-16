@@ -159,6 +159,7 @@ namespace AZ
             Log2_4000Nits,
             Log2CustomRange,
             PqSmpteSt2084,
+            NumShaperTypes
         };
 
         enum class ToneMapperType

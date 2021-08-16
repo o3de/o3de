@@ -75,6 +75,8 @@ UNDISCLOSED.
 ////////////////////////////////////////////////////////////////////////////////
 // Constants
 
+#pragma once
+
 #include <Atom/RPI/Math.azsli>
 
 static const float HALF_MAX = 65504.0f;
