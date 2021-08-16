@@ -641,12 +641,12 @@ try {
                         jenkinsParametersToAdd = pipelineJenkinsParameters[pipelineName] ?: [:]
                         jenkinsParametersToAdd.each{ jenkinsParameters ->
                             jenkinsParameters.each { jenkinsParameter ->
+                                defaultValue = jenkinsParameter['default_value']
+                                // Use last run's value as default value so we can save values in different Jenkins environment
+                                if (jenkinsParameter['use_last_run_value']?.toBoolean()) {
+                                    defaultValue = params["$jenkinsParameter['name']"] ?: jenkinsParameter['default_value']
+                                }
                                 switch (jenkinsParameter['parameter_type']) {
-                                    defaultValue = jenkinsParameter['default_value']
-                                    // Use last run's value as default value so we can save values in different Jenkins environment
-                                    if (jenkinsParameter['use_last_run_value']?.toBoolean()) {
-                                        defaultValue = params["$jenkinsParameter['name']"] ?: jenkinsParameter['default_value']
-                                    }
                                     case 'string':
                                         pipelineParameters.add(stringParam(defaultValue: defaultValue,
                                                                        description: jenkinsParameter['description'],
@@ -658,11 +658,13 @@ try {
                                                                        description: jenkinsParameter['description'],
                                                                        name: jenkinsParameter['name']
                                                                        )
+                                        break
                                     case 'password':
                                         pipelineParameters.add(password(defaultValue: defaultValue,
                                                                        description: jenkinsParameter['description'],
                                                                        name: jenkinsParameter['name']
                                                                        )
+                                        break
                                 }
                             }
                         }
