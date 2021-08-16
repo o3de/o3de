@@ -95,7 +95,7 @@ namespace TestImpact
 
                         const auto getResult = [](const AZ::rapidxml::xml_node<>* node)
                         {
-                            for (auto child_node = node->first_node("failure"); child_node; child_node = child_node->next_sibling())
+                            if (auto child_node = node->first_node("failure"))
                             {
                                 return TestRunResult::Failed;
                             }
