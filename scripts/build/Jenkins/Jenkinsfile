@@ -651,19 +651,19 @@ try {
                                         pipelineParameters.add(stringParam(defaultValue: defaultValue,
                                                                        description: jenkinsParameter['description'],
                                                                        name: jenkinsParameter['name']
-                                                                       )
+                                                                       ))
                                         break
                                     case 'boolean':
                                         pipelineParameters.add(booleanParam(defaultValue: defaultValue,
                                                                        description: jenkinsParameter['description'],
                                                                        name: jenkinsParameter['name']
-                                                                       )
+                                                                       ))
                                         break
                                     case 'password':
                                         pipelineParameters.add(password(defaultValue: defaultValue,
                                                                        description: jenkinsParameter['description'],
                                                                        name: jenkinsParameter['name']
-                                                                       )
+                                                                       ))
                                         break
                                 }
                             }
