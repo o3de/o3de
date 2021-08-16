@@ -11,7 +11,7 @@
 #include <AtomLyIntegration/AtomFont/FontTexture.h>
 
 //-------------------------------------------------------------------------------------------------
-int AZ::FontTexture::WriteToFile([[maybe_unused]] const string& fileName)
+int AZ::FontTexture::WriteToFile([[maybe_unused]] const AZStd::string& fileName)
 {
     return 1;
 }

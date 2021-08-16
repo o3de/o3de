@@ -526,7 +526,7 @@ void CBaseLibraryManager::Serialize(XmlNodeRef& node, bool bLoading)
 QString CBaseLibraryManager::MakeUniqueItemName(const QString& srcName, const QString& libName)
 {
     // unlikely we'll ever encounter more than 16
-    std::vector<string> possibleDuplicates;
+    std::vector<AZStd::string> possibleDuplicates;
     possibleDuplicates.reserve(16);
 
     // search for strings in the database that might have a similar name (ignore case)
@@ -550,7 +550,7 @@ QString CBaseLibraryManager::MakeUniqueItemName(const QString& srcName, const QS
         const QString& name = pItem->GetName();
         if (name.startsWith(srcName, Qt::CaseInsensitive))
         {
-            possibleDuplicates.push_back(string(name.toUtf8().data()));
+            possibleDuplicates.push_back(AZStd::string(name.toUtf8().data()));
         }
     }
     pEnum->Release();
@@ -560,7 +560,7 @@ QString CBaseLibraryManager::MakeUniqueItemName(const QString& srcName, const QS
         return srcName;
     }
 
-    std::sort(possibleDuplicates.begin(), possibleDuplicates.end(), [](const string& strOne, const string& strTwo)
+    std::sort(possibleDuplicates.begin(), possibleDuplicates.end(), [](const AZStd::string& strOne, const AZStd::string& strTwo)
         {
             // I can assume size sorting since if the length is different, either one of the two strings doesn't
             // closely match the string we are trying to duplicate, or it's a bigger number (X1 vs X10)

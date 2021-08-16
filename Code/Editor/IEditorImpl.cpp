@@ -26,6 +26,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/JSON/document.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Utils/Utils.h>
 
 // AzFramework
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
@@ -66,7 +67,6 @@ AZ_POP_DISABLE_WARNING
 #include "EditorFileMonitor.h"
 #include "MainStatusBar.h"
 
-#include "ResourceSelectorHost.h"
 #include "Util/FileUtil_impl.h"
 #include "Util/ImageUtil_impl.h"
 #include "LogFileImpl.h"
@@ -186,7 +186,6 @@ CEditorImpl::CEditorImpl()
     m_pAnimationContext = new CAnimationContext;
 
     m_pImageUtil = new CImageUtil_impl();
-    m_pResourceSelectorHost.reset(CreateResourceSelectorHost());
     m_selectedRegion.min = Vec3(0, 0, 0);
     m_selectedRegion.max = Vec3(0, 0, 0);
     DetectVersion();
@@ -251,7 +250,7 @@ void CEditorImpl::Uninitialize()
 
 void CEditorImpl::UnloadPlugins()
 {
-    CryAutoLock<CryMutex> lock(m_pluginMutex);
+    AZStd::scoped_lock lock(m_pluginMutex);
 
     // Flush core buses. We're about to unload DLLs and need to ensure we don't have module-owned functions left behind.
     AZ::Data::AssetBus::ExecuteQueuedEvents();
@@ -272,7 +271,7 @@ void CEditorImpl::UnloadPlugins()
 
 void CEditorImpl::LoadPlugins()
 {
-    CryAutoLock<CryMutex> lock(m_pluginMutex);
+    AZStd::scoped_lock lock(m_pluginMutex);
 
     static const QString editor_plugins_folder("EditorPlugins");
 
@@ -1107,16 +1106,18 @@ void CEditorImpl::DetectVersion()
     DWORD dwHandle;
     UINT len;
 
-    char ver[1024 * 8];
+    wchar_t ver[1024 * 8];
 
-    GetModuleFileName(nullptr, exe, _MAX_PATH);
+    AZ::Utils::GetExecutablePath(exe, _MAX_PATH);
+    AZStd::wstring exeW;
+    AZStd::to_wstring(exeW, exe);
 
-    int verSize = GetFileVersionInfoSize(exe, &dwHandle);
+    int verSize = GetFileVersionInfoSizeW(exeW.c_str(), &dwHandle);
     if (verSize > 0)
     {
-        GetFileVersionInfo(exe, dwHandle, 1024 * 8, ver);
+        GetFileVersionInfoW(exeW.c_str(), dwHandle, 1024 * 8, ver);
         VS_FIXEDFILEINFO* vinfo;
-        VerQueryValue(ver, "\\", (void**)&vinfo, &len);
+        VerQueryValueW(ver, L"\\", (void**)&vinfo, &len);
 
         m_fileVersion.v[0] = vinfo->dwFileVersionLS & 0xFFFF;
         m_fileVersion.v[1] = vinfo->dwFileVersionLS >> 16;
@@ -1457,7 +1458,7 @@ void CEditorImpl::UnregisterNotifyListener(IEditorNotifyListener* listener)
 
 ISourceControl* CEditorImpl::GetSourceControl()
 {
-    CryAutoLock<CryMutex> lock(m_pluginMutex);
+    AZStd::scoped_lock lock(m_pluginMutex);
 
     if (m_pSourceControl)
     {
@@ -1557,31 +1558,31 @@ IExportManager* CEditorImpl::GetExportManager()
 void CEditorImpl::AddUIEnums()
 {
     // Spec settings for shadow casting lights
-    string SpecString[4];
+    AZStd::string SpecString[4];
     QStringList types;
     types.push_back("Never=0");
-    SpecString[0].Format("VeryHigh Spec=%d", CONFIG_VERYHIGH_SPEC);
+    SpecString[0] = AZStd::string::format("VeryHigh Spec=%d", CONFIG_VERYHIGH_SPEC);
     types.push_back(SpecString[0].c_str());
-    SpecString[1].Format("High Spec=%d", CONFIG_HIGH_SPEC);
+    SpecString[1] = AZStd::string::format("High Spec=%d", CONFIG_HIGH_SPEC);
     types.push_back(SpecString[1].c_str());
-    SpecString[2].Format("Medium Spec=%d", CONFIG_MEDIUM_SPEC);
+    SpecString[2] = AZStd::string::format("Medium Spec=%d", CONFIG_MEDIUM_SPEC);
     types.push_back(SpecString[2].c_str());
-    SpecString[3].Format("Low Spec=%d", CONFIG_LOW_SPEC);
+    SpecString[3] = AZStd::string::format("Low Spec=%d", CONFIG_LOW_SPEC);
     types.push_back(SpecString[3].c_str());
     m_pUIEnumsDatabase->SetEnumStrings("CastShadows", types);
 
     // Power-of-two percentages
-    string percentStringPOT[5];
+    AZStd::string percentStringPOT[5];
     types.clear();
-    percentStringPOT[0].Format("Default=%d", 0);
+    percentStringPOT[0] = AZStd::string::format("Default=%d", 0);
     types.push_back(percentStringPOT[0].c_str());
-    percentStringPOT[1].Format("12.5=%d", 1);
+    percentStringPOT[1] = AZStd::string::format("12.5=%d", 1);
     types.push_back(percentStringPOT[1].c_str());
-    percentStringPOT[2].Format("25=%d", 2);
+    percentStringPOT[2] = AZStd::string::format("25=%d", 2);
     types.push_back(percentStringPOT[2].c_str());
-    percentStringPOT[3].Format("50=%d", 3);
+    percentStringPOT[3] = AZStd::string::format("50=%d", 3);
     types.push_back(percentStringPOT[3].c_str());
-    percentStringPOT[4].Format("100=%d", 4);
+    percentStringPOT[4] = AZStd::string::format("100=%d", 4);
     types.push_back(percentStringPOT[4].c_str());
     m_pUIEnumsDatabase->SetEnumStrings("ShadowMinResPercent", types);
 }

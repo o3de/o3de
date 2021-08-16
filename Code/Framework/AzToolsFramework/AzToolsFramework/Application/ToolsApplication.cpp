@@ -1781,5 +1781,4 @@ namespace AzToolsFramework
     { 
         appType.m_maskValue = AZ::ApplicationTypeQuery::Masks::Tool;
     };
-
 } // namespace AzToolsFramework

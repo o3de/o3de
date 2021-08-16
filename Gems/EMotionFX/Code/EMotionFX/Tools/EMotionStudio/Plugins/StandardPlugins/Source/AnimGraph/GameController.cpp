@@ -12,6 +12,7 @@
 #if AZ_TRAIT_EMOTIONFX_HAS_GAME_CONTROLLER
 
 #include <MCore/Source/LogManager.h>
+#include <AzCore/std/string/conversions.h>
 
 
 // joystick enum callback
@@ -20,7 +21,7 @@ BOOL CALLBACK GameController::EnumJoysticksCallback(const DIDEVICEINSTANCE* pdid
     GameController* manager = static_cast<GameController*>(pContext);
 
     // store the name
-    manager->m_deviceInfo.m_name = pdidInstance->tszProductName;
+    AZStd::to_string(manager->m_deviceInfo.m_name, pdidInstance->tszProductName);
 
     // Skip anything other than the perferred Joystick device as defined by the control panel.
     // Instead you could store all the enumerated Joysticks and let the user pick.
@@ -71,7 +72,7 @@ BOOL CALLBACK GameController::EnumObjectsCallback(const DIDEVICEOBJECTINSTANCE* 
 
     if (pdidoi->guidType == GUID_XAxis)
     {
-        manager->m_deviceElements[ ELEM_POS_X ].m_name                = pdidoi->tszName;
+        AZStd::to_string(manager->m_deviceElements[ ELEM_POS_X ].m_name, pdidoi->tszName);
         manager->m_deviceElements[ ELEM_POS_X ].m_present             = true;
         manager->m_deviceElements[ ELEM_POS_X ].m_value               = 0.0f;
         manager->m_deviceElements[ ELEM_POS_X ].m_type                = ELEMTYPE_AXIS;
@@ -80,7 +81,7 @@ BOOL CALLBACK GameController::EnumObjectsCallback(const DIDEVICEOBJECTINSTANCE* 
 
     if (pdidoi->guidType == GUID_YAxis)
     {
-        manager->m_deviceElements[ ELEM_POS_Y ].m_name                = pdidoi->tszName;
+        AZStd::to_string(manager->m_deviceElements[ ELEM_POS_Y ].m_name, pdidoi->tszName);
         manager->m_deviceElements[ ELEM_POS_Y ].m_present             = true;
         manager->m_deviceElements[ ELEM_POS_Y ].m_value               = 0.0f;
         manager->m_deviceElements[ ELEM_POS_Y ].m_type                = ELEMTYPE_AXIS;
@@ -89,7 +90,7 @@ BOOL CALLBACK GameController::EnumObjectsCallback(const DIDEVICEOBJECTINSTANCE* 
 
     if (pdidoi->guidType == GUID_ZAxis)
     {
-        manager->m_deviceElements[ ELEM_POS_Z ].m_name                = pdidoi->tszName;
+        AZStd::to_string(manager->m_deviceElements[ ELEM_POS_Z ].m_name, pdidoi->tszName);
         manager->m_deviceElements[ ELEM_POS_Z ].m_present             = true;
         manager->m_deviceElements[ ELEM_POS_Z ].m_value               = 0.0f;
         manager->m_deviceElements[ ELEM_POS_Z ].m_type                = ELEMTYPE_AXIS;
@@ -98,7 +99,7 @@ BOOL CALLBACK GameController::EnumObjectsCallback(const DIDEVICEOBJECTINSTANCE* 
 
     if (pdidoi->guidType == GUID_RxAxis)
     {
-        manager->m_deviceElements[ ELEM_ROT_X ].m_name                = pdidoi->tszName;
+        AZStd::to_string(manager->m_deviceElements[ ELEM_ROT_X ].m_name, pdidoi->tszName);
         manager->m_deviceElements[ ELEM_ROT_X ].m_present             = true;
         manager->m_deviceElements[ ELEM_ROT_X ].m_value               = 0.0f;
         manager->m_deviceElements[ ELEM_ROT_X ].m_type                = ELEMTYPE_AXIS;
@@ -107,7 +108,7 @@ BOOL CALLBACK GameController::EnumObjectsCallback(const DIDEVICEOBJECTINSTANCE* 
 
     if (pdidoi->guidType == GUID_RyAxis)
     {
-        manager->m_deviceElements[ ELEM_ROT_Y ].m_name                = pdidoi->tszName;
+        AZStd::to_string(manager->m_deviceElements[ ELEM_ROT_Y ].m_name, pdidoi->tszName);
         manager->m_deviceElements[ ELEM_ROT_Y ].m_present             = true;
         manager->m_deviceElements[ ELEM_ROT_Y ].m_value               = 0.0f;
         manager->m_deviceElements[ ELEM_ROT_Y ].m_type                = ELEMTYPE_AXIS;
@@ -116,7 +117,7 @@ BOOL CALLBACK GameController::EnumObjectsCallback(const DIDEVICEOBJECTINSTANCE* 
 
     if (pdidoi->guidType == GUID_RzAxis)
     {
-        manager->m_deviceElements[ ELEM_ROT_Z ].m_name                = pdidoi->tszName;
+        AZStd::to_string(manager->m_deviceElements[ ELEM_ROT_Z ].m_name, pdidoi->tszName);
         manager->m_deviceElements[ ELEM_ROT_Z ].m_present             = true;
         manager->m_deviceElements[ ELEM_ROT_Z ].m_value               = 0.0f;
         manager->m_deviceElements[ ELEM_ROT_Z ].m_type                = ELEMTYPE_AXIS;
@@ -128,14 +129,14 @@ BOOL CALLBACK GameController::EnumObjectsCallback(const DIDEVICEOBJECTINSTANCE* 
     {
         if (manager->m_deviceInfo.m_numSliders == 0)
         {
-            manager->m_deviceElements[ ELEM_SLIDER_1 ].m_name                 = pdidoi->tszName;
+            AZStd::to_string(manager->m_deviceElements[ ELEM_SLIDER_1 ].m_name, pdidoi->tszName);
             manager->m_deviceElements[ ELEM_SLIDER_1 ].m_present              = true;
             manager->m_deviceElements[ ELEM_SLIDER_1 ].m_value                = 0.0f;
             manager->m_deviceElements[ ELEM_SLIDER_1 ].m_type                 = ELEMTYPE_SLIDER;
         }
         else
         {
-            manager->m_deviceElements[ ELEM_SLIDER_2 ].m_name                 = pdidoi->tszName;
+            AZStd::to_string(manager->m_deviceElements[ ELEM_SLIDER_2 ].m_name, pdidoi->tszName);
             manager->m_deviceElements[ ELEM_SLIDER_2 ].m_present              = true;
             manager->m_deviceElements[ ELEM_SLIDER_2 ].m_value                = 0.0f;
             manager->m_deviceElements[ ELEM_SLIDER_2 ].m_type                 = ELEMTYPE_SLIDER;
@@ -148,7 +149,7 @@ BOOL CALLBACK GameController::EnumObjectsCallback(const DIDEVICEOBJECTINSTANCE* 
     if (pdidoi->guidType == GUID_POV)
     {
         const uint32 povIndex = manager->m_deviceInfo.m_numPoVs;
-        manager->m_deviceElements[ ELEM_POV_1 + povIndex ].m_name                 = pdidoi->tszName;
+        AZStd::to_string(manager->m_deviceElements[ ELEM_POV_1 + povIndex ].m_name, pdidoi->tszName);
         manager->m_deviceElements[ ELEM_POV_1 + povIndex ].m_present              = true;
         manager->m_deviceElements[ ELEM_POV_1 + povIndex ].m_value                = 0.0f;
         manager->m_deviceElements[ ELEM_POV_1 + povIndex ].m_type                 = ELEMTYPE_POV;

@@ -28,7 +28,7 @@ namespace EMStudio
         setWindowTitle("Notification");
 
         // window, no border, no focus, stays on top
-        setWindowFlags(Qt::Popup | Qt::FramelessWindowHint | Qt::WindowDoesNotAcceptFocus);
+        setWindowFlags(Qt::Window | Qt::FramelessWindowHint | Qt::WindowDoesNotAcceptFocus | Qt::WindowStaysOnTopHint);
 
         // enable the translucent background
         setAttribute(Qt::WA_TranslucentBackground);

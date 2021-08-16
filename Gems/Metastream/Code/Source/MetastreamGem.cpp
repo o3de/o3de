@@ -323,7 +323,7 @@ namespace Metastream
         {
             // Initialise and start the HTTP server
             m_server = std::unique_ptr<BaseHttpServer>(new CivetHttpServer(m_cache.get()));
-            string serverOptions = m_serverOptionsCVar->GetString();
+            AZStd::string serverOptions = m_serverOptionsCVar->GetString();
             CryLogAlways("Initializing Metastream: Options=\"%s\"", serverOptions.c_str());
 
             bool result = m_server->Start(serverOptions.c_str());

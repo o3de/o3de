@@ -36,7 +36,6 @@ ly_add_target(
             ${additional_dependencies}
     COMPILE_DEFINITIONS 
         PRIVATE
-            UNICODE
             STANDALONETOOLS_ENABLE_LUA_IDE
 )
 
@@ -68,6 +67,5 @@ ly_add_target(
             ${additional_dependencies}
     COMPILE_DEFINITIONS 
         PRIVATE
-            UNICODE
             STANDALONETOOLS_ENABLE_PROFILER
 )

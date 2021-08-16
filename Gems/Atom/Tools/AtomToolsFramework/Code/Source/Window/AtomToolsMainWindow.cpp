@@ -7,6 +7,8 @@
  */
 
 #include <AtomToolsFramework/Window/AtomToolsMainWindow.h>
+#include <QStatusBar>
+#include <QVBoxLayout>
 
 namespace AtomToolsFramework
 {
@@ -21,11 +23,15 @@ namespace AtomToolsFramework
         setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
         setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
 
-        m_statusBar = new QStatusBar(this);
-        m_statusBar->setObjectName("StatusBar");
-        statusBar()->addPermanentWidget(m_statusBar, 1);
+        m_statusMessage = new QLabel(statusBar());
+        statusBar()->addPermanentWidget(m_statusMessage, 1);
 
-        m_centralWidget = new QWidget(this);
+        auto centralWidget = new QWidget(this);
+        auto centralWidgetLayout = new QVBoxLayout(centralWidget);
+        centralWidgetLayout->setMargin(0);
+        centralWidgetLayout->setContentsMargins(0, 0, 0, 0);
+        centralWidget->setLayout(centralWidgetLayout);
+        setCentralWidget(centralWidget);
 
         AtomToolsMainWindowRequestBus::Handler::BusConnect();
     }
@@ -111,7 +117,7 @@ namespace AtomToolsFramework
 
     void AtomToolsMainWindow::CreateTabBar()
     {
-        m_tabWidget = new AzQtComponents::TabWidget(m_centralWidget);
+        m_tabWidget = new AzQtComponents::TabWidget(centralWidget());
         m_tabWidget->setObjectName("TabWidget");
         m_tabWidget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
         m_tabWidget->setContentsMargins(0, 0, 0, 0);
@@ -131,6 +137,8 @@ namespace AtomToolsFramework
             {
                 OpenTabContextMenu();
             });
+
+        centralWidget()->layout()->addWidget(m_tabWidget);
     }
 
     void AtomToolsMainWindow::AddTabForDocumentId(
@@ -191,8 +199,10 @@ namespace AtomToolsFramework
             {
                 if (documentId == GetDocumentIdFromTab(tabIndex))
                 {
-                    // We use an asterisk appended to the file name to denote modified document
-                    const AZStd::string modifiedLabel = isModified ? label + " *" : label;
+                    // We use an asterisk prepended to the file name to denote modified document
+                    // Appending is standard and preferred but the tabs elide from the
+                    // end (instead of middle) and cut it off
+                    const AZStd::string modifiedLabel = isModified ? "* " + label : label;
                     m_tabWidget->setTabText(tabIndex, modifiedLabel.c_str());
                     m_tabWidget->setTabToolTip(tabIndex, toolTip.c_str());
                     m_tabWidget->repaint();

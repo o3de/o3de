@@ -11,7 +11,7 @@
 #include <AtomLyIntegration/AtomFont/FontTexture.h>
 
 //-------------------------------------------------------------------------------------------------
-int AZ::FontTexture::WriteToFile(const string& fileName)
+int AZ::FontTexture::WriteToFile(const AZStd::string& fileName)
 {
     AZ::IO::FileIOStream outputFile(fileName.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeBinary);
 

@@ -286,7 +286,7 @@ bool CCryDocManager::DoPromptFileName(QString& fileName, [[maybe_unused]] UINT n
 
     return false;
 }
-CCryEditDoc* CCryDocManager::OpenDocumentFile(LPCTSTR lpszFileName, bool bAddToMRU)
+CCryEditDoc* CCryDocManager::OpenDocumentFile(const char* lpszFileName, bool bAddToMRU)
 {
     assert(lpszFileName != nullptr);
 
@@ -801,12 +801,12 @@ void CCryEditApp::InitDirectory()
 // Needed to work with custom memory manager.
 //////////////////////////////////////////////////////////////////////////
 
-CCryEditDoc* CCrySingleDocTemplate::OpenDocumentFile(LPCTSTR lpszPathName, bool bMakeVisible /*= true*/)
+CCryEditDoc* CCrySingleDocTemplate::OpenDocumentFile(const char* lpszPathName, bool bMakeVisible /*= true*/)
 {
     return OpenDocumentFile(lpszPathName, true, bMakeVisible);
 }
 
-CCryEditDoc* CCrySingleDocTemplate::OpenDocumentFile(LPCTSTR lpszPathName, bool bAddToMRU, [[maybe_unused]] bool bMakeVisible)
+CCryEditDoc* CCrySingleDocTemplate::OpenDocumentFile(const char* lpszPathName, bool bAddToMRU, [[maybe_unused]] bool bMakeVisible)
 {
     CCryEditDoc* pCurDoc = GetIEditor()->GetDocument();
 
@@ -845,7 +845,7 @@ CCryEditDoc* CCrySingleDocTemplate::OpenDocumentFile(LPCTSTR lpszPathName, bool 
     return pCurDoc;
 }
 
-CCrySingleDocTemplate::Confidence CCrySingleDocTemplate::MatchDocType(LPCTSTR lpszPathName, CCryEditDoc*& rpDocMatch)
+CCrySingleDocTemplate::Confidence CCrySingleDocTemplate::MatchDocType(const char* lpszPathName, CCryEditDoc*& rpDocMatch)
 {
     assert(lpszPathName != nullptr);
     rpDocMatch = nullptr;
@@ -891,8 +891,7 @@ CCrySingleDocTemplate::Confidence CCrySingleDocTemplate::MatchDocType(LPCTSTR lp
 /////////////////////////////////////////////////////////////////////////////
 namespace
 {
-    CryMutex g_splashScreenStateLock;
-    CryConditionVariable g_splashScreenStateChange;
+    AZStd::mutex g_splashScreenStateLock;
     enum ESplashScreenState
     {
         eSplashScreenState_Init, eSplashScreenState_Started, eSplashScreenState_Destroy
@@ -923,7 +922,7 @@ QString FormatRichTextCopyrightNotice()
 /////////////////////////////////////////////////////////////////////////////
 void CCryEditApp::ShowSplashScreen(CCryEditApp* app)
 {
-    g_splashScreenStateLock.Lock();
+    g_splashScreenStateLock.lock();
 
     CStartupLogoDialog* splashScreen = new CStartupLogoDialog(FormatVersion(app->m_pEditor->GetFileVersion()), FormatRichTextCopyrightNotice());
 
@@ -931,8 +930,7 @@ void CCryEditApp::ShowSplashScreen(CCryEditApp* app)
     g_splashScreen = splashScreen;
     g_splashScreenState = eSplashScreenState_Started;
 
-    g_splashScreenStateLock.Unlock();
-    g_splashScreenStateChange.Notify();
+    g_splashScreenStateLock.unlock();
 
     splashScreen->show();
     // Make sure the initial paint of the splash screen occurs so we dont get stuck with a blank window
@@ -940,10 +938,9 @@ void CCryEditApp::ShowSplashScreen(CCryEditApp* app)
 
     QObject::connect(splashScreen, &QObject::destroyed, splashScreen, [=]
     {
-        g_splashScreenStateLock.Lock();
+        AZStd::scoped_lock lock(g_splashScreenStateLock);
         g_pInitializeUIInfo = nullptr;
         g_splashScreen = nullptr;
-        g_splashScreenStateLock.Unlock();
     });
 }
 
@@ -973,9 +970,9 @@ void CCryEditApp::CloseSplashScreen()
     if (CStartupLogoDialog::instance())
     {
         delete CStartupLogoDialog::instance();
-        g_splashScreenStateLock.Lock();
+        g_splashScreenStateLock.lock();
         g_splashScreenState = eSplashScreenState_Destroy;
-        g_splashScreenStateLock.Unlock();
+        g_splashScreenStateLock.unlock();
     }
 
     GetIEditor()->Notify(eNotify_OnSplashScreenDestroyed);
@@ -984,12 +981,12 @@ void CCryEditApp::CloseSplashScreen()
 /////////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OutputStartupMessage(QString str)
 {
-    g_splashScreenStateLock.Lock();
+    g_splashScreenStateLock.lock();
     if (g_pInitializeUIInfo)
     {
         g_pInitializeUIInfo->SetInfoText(str.toUtf8().data());
     }
-    g_splashScreenStateLock.Unlock();
+    g_splashScreenStateLock.unlock();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1864,11 +1861,6 @@ void CCryEditApp::UnregisterEventLoopHook(IEventLoopHook* pHookToRemove)
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::LoadFile(QString fileName)
 {
-    //CEditCommandLineInfo cmdLine;
-    //ProcessCommandLine(cmdinfo);
-
-    //bool bBuilding = false;
-    //CString file = cmdLine.SpanExcluding()
     if (GetIEditor()->GetViewManager()->GetViewCount() == 0)
     {
         return;
@@ -3193,7 +3185,7 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
         GetIEditor()->GetDocument()->DeleteTemporaryLevel();
     }
 
-    if (levelName.length() == 0 || !CryStringUtils::IsValidFileName(levelName.toUtf8().data()))
+    if (levelName.length() == 0 || !AZ::StringFunc::Path::IsValid(levelName.toUtf8().data()))
     {
         QMessageBox::critical(AzToolsFramework::GetActiveWindow(), QString(), QObject::tr("Level name is invalid, please choose another name."));
         return false;
@@ -3226,13 +3218,16 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
         DWORD dw = GetLastError();
 
 #ifdef WIN32
-        FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+        wchar_t windowsErrorMessageW[ERROR_LEN];
+        windowsErrorMessageW[0] = L'\0';
+        FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
             nullptr,
             dw,
             MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-            windowsErrorMessage.data(),
-            windowsErrorMessage.length(), nullptr);
+            windowsErrorMessageW,
+            ERROR_LEN, nullptr);
         _getcwd(cwd.data(), cwd.length());
+        AZStd::to_string(windowsErrorMessage.data(), ERROR_LEN, windowsErrorMessageW);
 #else
         windowsErrorMessage = strerror(dw);
         cwd = QDir::currentPath().toUtf8();
@@ -3306,7 +3301,7 @@ void CCryEditApp::OnOpenSlice()
 }
 
 //////////////////////////////////////////////////////////////////////////
-CCryEditDoc* CCryEditApp::OpenDocumentFile(LPCTSTR lpszFileName)
+CCryEditDoc* CCryEditApp::OpenDocumentFile(const char* lpszFileName)
 {
     if (m_openingLevel)
     {
@@ -4001,15 +3996,12 @@ struct CryAllocatorsRAII
     CryAllocatorsRAII()
     {
         AZ_Assert(!AZ::AllocatorInstance<AZ::LegacyAllocator>::IsReady(), "Expected allocator to not be initialized, hunt down the static that is initializing it");
-        AZ_Assert(!AZ::AllocatorInstance<CryStringAllocator>::IsReady(), "Expected allocator to not be initialized, hunt down the static that is initializing it");
 
         AZ::AllocatorInstance<AZ::LegacyAllocator>::Create();
-        AZ::AllocatorInstance<CryStringAllocator>::Create();
     }
 
     ~CryAllocatorsRAII()
     {
-        AZ::AllocatorInstance<CryStringAllocator>::Destroy();
         AZ::AllocatorInstance<AZ::LegacyAllocator>::Destroy();
     }
 };

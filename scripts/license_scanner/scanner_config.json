@@ -1,0 +1,12 @@
+{
+    "excluded_directories": [
+        ".git",
+        ".venv",
+        "build",
+        "license_scanner"
+    ],
+    "license_patterns": [
+        "LICENSE*",
+        "COPYING*"
+    ]
+}

@@ -446,7 +446,7 @@ namespace AZ
             }
 
             {
-                m_shader = RPI::LoadShader(ImguiShaderFilePath);
+                m_shader = RPI::LoadCriticalShader(ImguiShaderFilePath);
 
                 m_pipelineState = aznew RPI::PipelineStateForDraw;
                 m_pipelineState->Init(m_shader);

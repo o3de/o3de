@@ -530,7 +530,7 @@ namespace TestImpact
             size_t GetTotalNumTimedOutTestRuns() const override;
             size_t GetTotalNumUnexecutedTestRuns() const override;
 
-            //! Returns the report for the discarded test runs.
+            // ImpactAnalysisSequenceReport overrides ...
             const TestRunSelection GetDiscardedTestRuns() const;
 
             //! Returns the report for the discarded test runs.

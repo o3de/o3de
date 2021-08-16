@@ -93,9 +93,9 @@ namespace ScriptCanvas
         return m_runtimeOverrides;
     }
 
-    void RuntimeComponent::SetRuntimeDataOverrides(const RuntimeDataOverrides& overrideData)
+    void RuntimeComponent::TakeRuntimeDataOverrides(RuntimeDataOverrides&& overrideData)
     {
-        m_runtimeOverrides = overrideData;
+        m_runtimeOverrides = AZStd::move(overrideData);
         m_runtimeOverrides.EnforcePreloadBehavior();
     }
 

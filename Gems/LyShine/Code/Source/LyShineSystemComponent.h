@@ -26,9 +26,9 @@
 
 namespace LyShine
 {
-    // LyShine depends on the LegacyAllocator and CryStringAllocator. This will be managed
+    // LyShine depends on the LegacyAllocator. This will be managed
     // by the LyShineSystemComponent
-    using LyShineAllocatorScope = AZ::AllocatorScope<AZ::LegacyAllocator, CryStringAllocator>;
+    using LyShineAllocatorScope = AZ::AllocatorScope<AZ::LegacyAllocator>;
 
     class LyShineSystemComponent
         : public AZ::Component

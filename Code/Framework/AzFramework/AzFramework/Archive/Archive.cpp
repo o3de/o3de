@@ -94,7 +94,7 @@ namespace AZ::IO::ArchiveInternal
             }
             return convertedPath;
         }
-        return AZStd::make_optional<AZStd::fixed_string<AZ::IO::MaxPathLength>>(sourcePath);
+        return AZStd::make_optional<AZ::IO::FixedMaxPathString>(sourcePath);
     }
 
     struct CCachedFileRawData
@@ -614,7 +614,7 @@ namespace AZ::IO
 
     const char* Archive::AdjustFileName(AZStd::string_view src, char* dst, size_t dstSize, uint32_t, bool)
     {
-        AZStd::fixed_string<AZ::IO::MaxPathLength> srcPath{ src };
+        AZ::IO::FixedMaxPathString srcPath{ src };
         return AZ::IO::FileIOBase::GetDirectInstance()->ResolvePath(srcPath.c_str(), dst, dstSize) ? dst : nullptr;
     }
 
@@ -2407,14 +2407,14 @@ namespace AZ::IO
     //////////////////////////////////////////////////////////////////////////
     bool Archive::RemoveFile(AZStd::string_view pName)
     {
-        AZStd::fixed_string<AZ::IO::MaxPathLength> szFullPath{ pName };
+        AZ::IO::FixedMaxPathString szFullPath{ pName };
         return AZ::IO::FileIOBase::GetDirectInstance()->Remove(szFullPath.c_str()) == AZ::IO::ResultCode::Success;
     }
 
     //////////////////////////////////////////////////////////////////////////
     bool Archive::RemoveDir(AZStd::string_view pName)
     {
-        AZStd::fixed_string<AZ::IO::MaxPathLength> szFullPath{ pName };
+        AZ::IO::FixedMaxPathString szFullPath{ pName };
 
         if (AZ::IO::FileIOBase::GetDirectInstance()->IsDirectory(szFullPath.c_str()))
         {
