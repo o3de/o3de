@@ -157,7 +157,7 @@ namespace AZ
 
                     if (animMeshToSceneMeshes.second.m_animMeshAndSceneMeshIndex.size() == 0)
                     {
-                        AZ_Error(Utilities::ErrorWindow, false, "Blend shape nimations were expected but missing on node %s.",
+                        AZ_Error(Utilities::ErrorWindow, false, "Blend shape animations were expected but missing on node %s.",
                             context.m_sourceNode.GetName());
                         return Events::ProcessingResult::Failure;
                     }
