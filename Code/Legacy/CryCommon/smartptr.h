@@ -13,12 +13,14 @@
 
 #include <platform.h>
 #include <type_traits>
-#include <MultiThread.h>
 
 void CryFatalError(const char*, ...) PRINTF_PARAMS(1, 2);
 #if defined(APPLE)
     #include <cstddef>
 #endif
+
+#include <AzCore/std/parallel/atomic.h>
+
 //////////////////////////////////////////////////////////////////
 // SMART POINTER
 //////////////////////////////////////////////////////////////////
@@ -353,38 +355,32 @@ protected:
 class CMultiThreadRefCount
 {
 public:
-    CMultiThreadRefCount()
-        : m_cnt(0) {}
+    CMultiThreadRefCount() {}
     virtual ~CMultiThreadRefCount() {}
 
     inline int AddRef()
     {
-        return CryInterlockedIncrement(&m_cnt);
+        return m_count.fetch_add(1, AZStd::memory_order_acq_rel) + 1; // because we get the original value back
     }
     inline int Release()
     {
-        const int nCount = CryInterlockedDecrement(&m_cnt);
-        assert(nCount >= 0);
+        const int nCount = m_count.fetch_sub(1, AZStd::memory_order_acq_rel) - 1; // because we get the original value back
+        AZ_Assert(nCount >= 0, "Deleting Reference Counted Object Twice");
         if (nCount == 0)
         {
             delete this;
         }
-        else if (nCount < 0)
-        {
-            assert(0);
-            CryFatalError("Deleting Reference Counted Object Twice");
-        }
         return nCount;
     }
 
-    inline int GetRefCount()    const { return m_cnt; }
+    inline int GetRefCount()    const { return m_count.load(AZStd::memory_order_acquire); }
 
 protected:
     // Allows the memory for the object to be deallocated in the dynamic module where it was originally constructed, as it may use different memory manager (Debug/Release configurations)
     virtual void DeleteThis() { delete this; }
 
 private:
-    volatile int m_cnt;
+    AZStd::atomic_int m_count{ 0 };
 };
 
 // base class for interfaces implementing reference counting that needs to be thread-safe
@@ -405,29 +401,24 @@ public:
 
     virtual void AddRef()
     {
-        CryInterlockedIncrement(&m_nRefCounter);
+        m_nRefCounter.fetch_add(1, AZStd::memory_order_acq_rel);
     }
 
     virtual void Release()
     {
-        const int nCount = CryInterlockedDecrement(&m_nRefCounter);
-        assert(nCount >= 0);
+        const int nCount = m_nRefCounter.fetch_sub(1, AZStd::memory_order_acq_rel) - 1; // because we get the original value back
+        AZ_Assert(nCount >= 0, "Deleting Reference Counted Object Twice");
         if (nCount == 0)
         {
             delete this;
         }
-        else if (nCount < 0)
-        {
-            assert(0);
-            CryFatalError("Deleting Reference Counted Object Twice");
-        }
     }
 
-    Counter NumRefs()   const { return m_nRefCounter; }
+    Counter NumRefs()   const { return m_nRefCounter.load(AZStd::memory_order_acquire); }
 
 protected:
 
-    volatile Counter m_nRefCounter;
+    AZStd::atomic<Counter> m_nRefCounter{ 0 };
 };
 
 typedef _i_reference_target<int> _i_reference_target_t;
