@@ -52,6 +52,7 @@ namespace UnitTest
         {
         public:
             AZ_CLASS_ALLOCATOR(Device, AZ::SystemAllocator, 0);
+            Device();
 
         private:
             AZ::RHI::ResultCode InitInternal(AZ::RHI::PhysicalDevice&) override { return AZ::RHI::ResultCode::Success; }
