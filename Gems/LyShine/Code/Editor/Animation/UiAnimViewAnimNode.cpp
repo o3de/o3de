@@ -1482,7 +1482,7 @@ bool CUiAnimViewAnimNode::PasteNodesFromClipboard(QWidget* context)
     const bool bLightAnimationSetActive = GetSequence()->GetFlags() & IUiAnimSequence::eSeqFlags_LightAnimationSet;
 
     const unsigned int numNodes = animNodesRoot->getChildCount();
-    for (int i = 0; i < numNodes; ++i)
+    for (unsigned int i = 0; i < numNodes; ++i)
     {
         XmlNodeRef xmlNode = animNodesRoot->getChild(i);
 

@@ -87,7 +87,7 @@ class TestImpact:
 
             try:
                 # Attempt to generate a diff between the src and dst commits
-                logger.error(f"Source '{self._src_commit}' and destination '{self._dst_commit}' will be diff'd.")
+                logger.info(f"Source '{self._src_commit}' and destination '{self._dst_commit}' will be diff'd.")
                 diff_path = pathlib.Path(pathlib.PurePath(self._temp_workspace).joinpath(f"changelist.{self._instance_id}.diff"))
                 self._repo.create_diff_file(self._src_commit, self._dst_commit, diff_path, multi_branch)
             except RuntimeError as e:
@@ -161,7 +161,7 @@ class TestImpact:
         result["change_list"] = self._change_list
         return result
 
-    def run(self, commit: str, src_branch: str, dst_branch: str, s3_bucket: str, suite: str, test_failure_policy: str, safe_mode: bool, test_timeout: int, global_timeout: int):
+    def run(self, commit: str, src_branch: str, dst_branch: str, s3_bucket: str, s3_top_level_dir: str, suite: str, test_failure_policy: str, safe_mode: bool, test_timeout: int, global_timeout: int):
         """
         Determins the type of sequence to run based on the commit, source branch and test branch before running the
         sequence with the specified values.
@@ -170,6 +170,7 @@ class TestImpact:
         @param src_branch:          If not equal to dst_branch, the branch that is being built.
         @param dst_branch:          If not equal to src_branch, the destination branch for the PR being built.
         @param s3_bucket:           Location of S3 bucket to use for persistent storage, otherwise local disk storage will be used.
+        @param s3_top_level_dir:    Top level directory to use in the S3 bucket.
         @param suite:               Test suite to run.
         @param test_failure_policy: Test failure policy for regular and test impact sequences (ignored when seeding).
         @param safe_mode:           Flag to run impact analysis tests in safe mode (ignored when seeding).
@@ -218,22 +219,37 @@ class TestImpact:
             try:
                 # Persistent storage location
                 if s3_bucket:
-                    persistent_storage = PersistentStorageS3(self._config, suite, s3_bucket, self._source_of_truth_branch)
+                    persistent_storage = PersistentStorageS3(self._config, suite, self._dst_commit, s3_bucket, s3_top_level_dir, self._source_of_truth_branch)
                 else:
-                    persistent_storage = PersistentStorageLocal(self._config, suite)
+                    persistent_storage = PersistentStorageLocal(self._config, suite, self._dst_commit)
             except SystemError as e:
                 logger.warning(f"The persistent storage encountered an irrecoverable error, test impact analysis will be disabled: '{e}'")
                 persistent_storage = None
 
             if persistent_storage:
+                
+                # Flag for corner case where:
+                # 1. TIAF was already run previously for this commit.
+                # 2. There was no last commit hash when TIAF last ran on this commit (due to no coverage data existing yet for this branch)
+                # 3. TIAF has not been run on any other commits between the run for this commit and the last run for this commit.
+                # The above results in TIAF being stuck in a state of generating an empty change list (and thus doing no work until another
+                # commit comes in) which is problematic if the commit needs to be re-run for whatever reason so in these conditions we revert
+                # back to a regular test run until another commit comes in
+                can_rerun_with_instrumentation = True
+
                 if persistent_storage.has_historic_data:
                     logger.info("Historic data found.")
                     self._src_commit = persistent_storage.last_commit_hash
 
-                    # Perform some basic sanity checks on the commit hashes to ensure confidence in the integrity of of the environment
-                    if self._src_commit == self._dst_commit:
-                        logger.error(f"Source commit '{self._src_commit}' and destination commit '{self._dst_commit}', implying the integrity of the historic data is compromised.")
-                        persistent_storage = None
+                    # Check to see if this is a re-run for this commit before any other changes have come in
+                    if persistent_storage.is_repeat_sequence:
+                        if persistent_storage.can_rerun_sequence:
+                            logger.info(f"This sequence is being re-run before any other changes have come in so the last commit '{persistent_storage.this_commit_last_commit_hash}' used for the previous sequence will be used instead.")
+                            self._src_commit = persistent_storage.this_commit_last_commit_hash
+                        else:
+                            logger.info(f"This sequence is being re-run before any other changes have come in but there is no useful historic data. A regular sequence will be performed instead.")
+                            persistent_storage = None
+                            can_rerun_with_instrumentation = False
                     else:
                         self._attempt_to_generate_change_list()
                 else:
@@ -261,7 +277,7 @@ class TestImpact:
                     args.append(f"--changelist={self._change_list_path}")
                     logger.info(f"Change list is set to '{self._change_list_path}'.")
                 else:
-                    if self._is_source_of_truth_branch:
+                    if self._is_source_of_truth_branch and can_rerun_with_instrumentation:
                         # Use seed sequence (instrumented all tests) for coverage updating branches so we can generate the coverage bed for future sequences
                         sequence_type = "seed"
                         # We always continue after test failures when seeding to ensure we capture the coverage for all test targets
@@ -307,14 +323,17 @@ class TestImpact:
         logger.info(f"Args: {unpacked_args}")
         runtime_result = subprocess.run([str(self._tiaf_bin)] + args)
         report = None
-
         # If the sequence completed (with or without failures) we will update the historical meta-data
         if runtime_result.returncode == 0 or runtime_result.returncode == 7:
             logger.info("Test impact analysis runtime returned successfully.")
-            if self._is_source_of_truth_branch and persistent_storage is not None:
-                persistent_storage.update_and_store_historic_data(self._dst_commit)
+
+            # Get the sequence report the runtime generated
             with open(report_file) as json_file:
                 report = json.load(json_file)
+
+            # Attempt to store the historic data for this branch and sequence
+            if self._is_source_of_truth_branch and persistent_storage is not None:
+                persistent_storage.update_and_store_historic_data()
         else:
             logger.error(f"The test impact analysis runtime returned with error: '{runtime_result.returncode}'.")
     

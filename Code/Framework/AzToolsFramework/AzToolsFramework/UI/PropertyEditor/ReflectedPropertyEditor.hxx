@@ -155,9 +155,19 @@ namespace AzToolsFramework
         using VisibilityCallback = AZStd::function<void(InstanceDataNode* node, NodeDisplayVisibility& visibility, bool& checkChildVisibility)>;
         void SetVisibilityCallback(VisibilityCallback callback);
 
+        void MoveNodeToIndex(InstanceDataNode* node, int index);
+        void MoveNodeBefore(InstanceDataNode* nodeToMove, InstanceDataNode* nodeToMoveBefore);
+        void MoveNodeAfter(InstanceDataNode* nodeToMove, InstanceDataNode* nodeToMoveBefore);
+
+        int GetNodeIndexInContainer(InstanceDataNode* node);
+        InstanceDataNode* GetNodeAtIndex(int index);
+        QSet<PropertyRowWidget*> GetTopLevelWidgets();
     signals:
         void OnExpansionContractionDone();
     private:
+        InstanceDataNode* FindContainerNodeForNode(InstanceDataNode* node) const;
+        void ChangeNodeIndex(InstanceDataNode* containerNode, InstanceDataNode* node, int oldIndex, int newIndex);
+
         class Impl;
         std::unique_ptr<Impl> m_impl;
         

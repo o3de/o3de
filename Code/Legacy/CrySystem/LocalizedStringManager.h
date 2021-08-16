@@ -309,8 +309,8 @@ private:
     TLocalizationBitfield m_availableLocalizations;
 
     //Lock for
-    mutable CryCriticalSection m_cs;
-    typedef CryAutoCriticalSection AutoLock;
+    mutable AZStd::mutex m_cs;
+    typedef AZStd::lock_guard<AZStd::mutex> AutoLock;
 };
 
 
