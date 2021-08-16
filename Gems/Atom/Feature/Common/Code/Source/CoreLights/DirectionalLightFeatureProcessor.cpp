@@ -933,9 +933,10 @@ namespace AZ
 
         uint16_t DirectionalLightFeatureProcessor::GetCascadeCount(LightHandle handle) const
         {
-            for (const auto& segmentIt : m_shadowProperties.GetData(handle.GetIndex()).m_segments)
+            const auto& segments = m_shadowProperties.GetData(handle.GetIndex()).m_segments;
+            if (!segments.empty())
             {
-                return aznumeric_cast<uint16_t>(segmentIt.second.size());
+                return aznumeric_cast<uint16_t>(segments.begin()->second.size());
             }
             return 0;
         }

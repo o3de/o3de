@@ -135,7 +135,7 @@ namespace ImageProcessingAtom
         mantissa >>= (23 - 10);
 
         //assemble s10e5 number using logical operations
-        rawf16Data = (signVal << 15) | (exponent << 10) | mantissa;
+        rawf16Data = static_cast<uint16>((signVal << 15) | (exponent << 10) | mantissa);
 
         //return re-assembled raw data as a 32 bit float
         return rawf16Data;
