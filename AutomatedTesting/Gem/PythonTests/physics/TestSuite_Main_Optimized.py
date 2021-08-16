@@ -54,6 +54,7 @@ class EditorSingleTest_WithFileOverrides(EditorSingleTest):
             fm._restore_file(f, file_list[f])
 
 
+@pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarly.")
 @pytest.mark.SUITE_main
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
@@ -62,7 +63,9 @@ class TestAutomation(EditorTestSuite):
     @staticmethod
     def get_number_parallel_editors():
         return 16
-    
+
+    #########################################
+    # Non-atomic tests: These need to be run in a single editor because they have custom setup and teardown
     class C4044459_Material_DynamicFriction(EditorSingleTest_WithFileOverrides):
         from . import C4044459_Material_DynamicFriction as test_module        
         files_to_override = [
@@ -76,6 +79,7 @@ class TestAutomation(EditorTestSuite):
             ('physxsystemconfiguration.setreg', 'C4982593_PhysXCollider_CollisionLayer.setreg_override')
         ]
         base_dir = "AutomatedTesting/Registry"
+    #########################################
 
     class C111111_RigidBody_EnablingGravityWorksUsingNotificationsPoC(EditorSharedTest):
         from . import C111111_RigidBody_EnablingGravityWorksUsingNotificationsPoC as test_module
@@ -107,9 +111,6 @@ class TestAutomation(EditorTestSuite):
     class C24308873_CylinderShapeCollider_CollidesWithPhysXTerrain(EditorSharedTest):
         from . import C24308873_CylinderShapeCollider_CollidesWithPhysXTerrain as test_module
 
-
-    ####
-        
     class C3510642_Terrain_NotCollideWithTerrain(EditorSharedTest):
         from . import C3510642_Terrain_NotCollideWithTerrain as test_module
 
@@ -163,7 +164,8 @@ class TestAutomation(EditorTestSuite):
 
     class C6274125_ScriptCanvas_TriggerEvents(EditorSharedTest):
         from . import C6274125_ScriptCanvas_TriggerEvents as test_module
-        # FIXME: expected_lines = test_module.LogLines.expected_lines
+        # needs to be updated to log for unexpected lines
+        # expected_lines = test_module.LogLines.expected_lines
 
     class C6090554_ForceRegion_PointForceNegative(EditorSharedTest):
         from . import C6090554_ForceRegion_PointForceNegative as test_module
@@ -253,13 +255,13 @@ class TestAutomation(EditorTestSuite):
 
     class C14902098_ScriptCanvas_PostPhysicsUpdate(EditorSharedTest):
         from . import C14902098_ScriptCanvas_PostPhysicsUpdate as test_module
-        # Fixme: unexpected_lines = ["Assert"] + test_module.Lines.unexpected
+        # Note: Test needs to be updated to log for unexpected lines
+        # unexpected_lines = ["Assert"] + test_module.Lines.unexpected
 
     class C5959761_ForceRegion_PhysAssetExertsPointForce(EditorSharedTest):
         from . import C5959761_ForceRegion_PhysAssetExertsPointForce as test_module
         
-
-    # Marking the Test  as expected to fail using the xfail decorator due to sporadic failure on Automated Review: SPEC-3146
+    # Marking the Test as expected to fail using the xfail decorator due to sporadic failure on Automated Review: SPEC-3146
     # The test still runs, but a failure of the test doesn't result in the test run failing
     @pytest.mark.xfail(reason="Test Sporadically fails with message [ NOT FOUND ] Success: Bar1 : Expected angular velocity")
     class C13352089_RigidBodies_MaxAngularVelocity(EditorSharedTest):
