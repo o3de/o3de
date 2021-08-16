@@ -347,17 +347,12 @@ namespace AZ::IO::ArchiveInternal
             return EOF;
         }
         int c = EOF;
-        int i;
-        for (i = 0; i < 1; i++)
+        if (m_nCurSeek == GetFileSize())
         {
-            if (i + m_nCurSeek == GetFileSize())
-            {
-                return c;
-            }
-            c = pData[i + m_nCurSeek];
-            break;
+            return c;
         }
-        m_nCurSeek += i + 1;
+        c = pData[m_nCurSeek];
+        m_nCurSeek += 1;
         return c;
     }
 }
