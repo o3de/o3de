@@ -32,10 +32,12 @@ class PersistentStorageLocal(PersistentStorage):
         try:
             # Attempt to obtain the local persistent data location specified in the runtime config file
             self._historic_workspace = pathlib.Path(config[self.WORKSPACE_KEY][self.HISTORIC_KEY][self.ROOT_KEY])
+            self._historic_workspace = self._historic_workspace.joinpath(pathlib.Path(self._suite))
             historic_data_file = pathlib.Path(config[self.WORKSPACE_KEY][self.HISTORIC_KEY][self.RELATIVE_PATHS_KEY][self.DATA_KEY])
             
             # Attempt to unpack the local historic data file
             self._historic_data_file = self._historic_workspace.joinpath(historic_data_file)
+            logger.info(f"Attempting to retrieve historic data at location '{self._historic_data_file}'...")
             if self._historic_data_file.is_file():
                 with open(self._historic_data_file, "r") as historic_data_raw:
                     historic_data_json = historic_data_raw.read()

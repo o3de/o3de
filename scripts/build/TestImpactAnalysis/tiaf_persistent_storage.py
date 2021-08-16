@@ -17,11 +17,11 @@ logger = get_logger(__file__)
 class PersistentStorage(ABC):
 
     WORKSPACE_KEY = "workspace"
-    LAST_RUNS_KEY = "last_runs"
+    HISTORIC_SEQUENCES_KEY = "historic_sequences"
     ACTIVE_KEY = "active"
     ROOT_KEY = "root"
     RELATIVE_PATHS_KEY = "relative_paths"
-    TEST_IMPACT_DATA_FILES_KEY = "test_impact_data_files"
+    TEST_IMPACT_DATA_FILE_KEY = "test_impact_data_file"
     LAST_COMMIT_HASH_KEY = "last_commit_hash"
     COVERAGE_DATA_KEY = "coverage_data"
 
@@ -35,19 +35,21 @@ class PersistentStorage(ABC):
         """
 
         # Work on the assumption that there is no historic meta-data (a valid state to be in, should none exist)
+        self._suite = suite
         self._last_commit_hash = None
         self._has_historic_data = False
         self._has_previous_last_commit_hash = False
         self._this_commit_hash = commit
         self._this_commit_hash_last_commit_hash = None
         self._historic_data = None
-        logger.info(f"Attempting to access persistent storage for the commit {self._this_commit_hash}")
+        logger.info(f"Attempting to access persistent storage for the commit '{self._this_commit_hash}' for suite '{self._suite}'")
 
         try:
             # The runtime expects the coverage data to be in the location specified in the config file (unless overridden with 
             # the --datafile command line argument, which the TIAF scripts do not do)
             self._active_workspace = pathlib.Path(config[self.WORKSPACE_KEY][self.ACTIVE_KEY][self.ROOT_KEY])
-            unpacked_coverage_data_file = config[self.WORKSPACE_KEY][self.ACTIVE_KEY][self.RELATIVE_PATHS_KEY][self.TEST_IMPACT_DATA_FILES_KEY][suite]
+            self._active_workspace = self._active_workspace.joinpath(pathlib.Path(self._suite))
+            unpacked_coverage_data_file = config[self.WORKSPACE_KEY][self.ACTIVE_KEY][self.RELATIVE_PATHS_KEY][self.TEST_IMPACT_DATA_FILE_KEY]
         except KeyError as e:
             raise SystemError(f"The config does not contain the key {str(e)}.")
 
@@ -70,25 +72,27 @@ class PersistentStorage(ABC):
             self._last_commit_hash = self._historic_data[self.LAST_COMMIT_HASH_KEY]
             logger.info(f"Last commit hash '{self._last_commit_hash}' found.")
 
-            if self.LAST_RUNS_KEY in self._historic_data:
-                # Last commit hash for the sequence that was run for this commit previously (if any)
-                if self._this_commit_hash in self._historic_data[self.LAST_RUNS_KEY]:
+            # Last commit hash for the sequence that was run for this commit previously (if any)
+            if self.HISTORIC_SEQUENCES_KEY in self._historic_data:
+                if self._this_commit_hash in self._historic_data[self.HISTORIC_SEQUENCES_KEY]:
                     # 'None' is a valid value for the previously used last commit hash if there was no coverage data at that time
-                    self._this_commit_hash_last_commit_hash = self._historic_data[self.LAST_RUNS_KEY][self._this_commit_hash]
+                    self._this_commit_hash_last_commit_hash = self._historic_data[self.HISTORIC_SEQUENCES_KEY][self._this_commit_hash]
                     self._has_previous_last_commit_hash = self._this_commit_hash_last_commit_hash is not None
 
                     if self._has_previous_last_commit_hash:
                         logger.info(f"Last commit hash '{self._this_commit_hash_last_commit_hash}' was used previously for this commit.")
                     else:
-                        logger.info(f"Prior sequence data found for this commit but it is empty (there was no coverage data vailable at that time).")
+                        logger.info(f"Prior sequence data found for this commit but it is empty (there was no coverage data available at that time).")
                 else:
                     logger.info(f"No prior sequence data found for commit '{self._this_commit_hash}', this is the first sequence for this commit.")
             else:
                 logger.info(f"No prior sequence data found for any commits.")
 
-            # Create the active workspace directory where the coverage data file will be placed and unpack the coverage data so 
-            # it is accessible by the runtime
+            # Create the active workspace directory for the unpacked historic data files so they are accessible by the runtime
             self._active_workspace.mkdir(exist_ok=True)
+
+            # Coverage file
+            logger.info(f"Writing coverage data to '{self._unpacked_coverage_data_file}'.")
             with open(self._unpacked_coverage_data_file, "w", newline='\n') as coverage_data:
                 coverage_data.write(self._historic_data[self.COVERAGE_DATA_KEY])
 
@@ -117,9 +121,9 @@ class PersistentStorage(ABC):
                 self._historic_data[self.LAST_COMMIT_HASH_KEY] = self._this_commit_hash
 
                 # Last commit hash for this commit
-                if not self.LAST_RUNS_KEY in self._historic_data:
-                    self._historic_data[self.LAST_RUNS_KEY] = {}
-                self._historic_data[self.LAST_RUNS_KEY][self._this_commit_hash] = self._last_commit_hash
+                if not self.HISTORIC_SEQUENCES_KEY in self._historic_data:
+                    self._historic_data[self.HISTORIC_SEQUENCES_KEY] = {}
+                self._historic_data[self.HISTORIC_SEQUENCES_KEY][self._this_commit_hash] = self._last_commit_hash
 
                 # Coverage data for this branch
                 with open(self._unpacked_coverage_data_file, "r") as coverage_data:
