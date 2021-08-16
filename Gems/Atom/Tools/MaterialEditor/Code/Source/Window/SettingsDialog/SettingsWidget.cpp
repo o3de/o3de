@@ -52,7 +52,8 @@ namespace MaterialEditor
         const AZStd::string groupDisplayName = "Document System Settings";
         const AZStd::string groupDescription = "Document System Settings";
 
-        const AZ::Crc32 saveStateKey(AZStd::string::format("SettingsWidget::DocumentSystemSettingsGroup"));        AddGroup(
+        const AZ::Crc32 saveStateKey(AZStd::string::format("SettingsWidget::DocumentSystemSettingsGroup"));
+        AddGroup(
             groupNameId, groupDisplayName, groupDescription,
             new AtomToolsFramework::InspectorPropertyGroupWidget(
                 m_documentSystemSettings.get(), nullptr, m_documentSystemSettings->TYPEINFO_Uuid(), this, this, saveStateKey));
