@@ -143,8 +143,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         NAME AutomatedTesting::LandscapeCanvasTests_Periodic
         TEST_SERIAL
         TEST_SUITE periodic
-        PATH ${CMAKE_CURRENT_LIST_DIR}/landscape_canvas
-        PYTEST_MARKS "SUITE_periodic"
+        PATH ${CMAKE_CURRENT_LIST_DIR}/landscape_canvas/test_LandscapeCanvas_Periodic.py
         RUNTIME_DEPENDENCIES
            AZ::AssetProcessor
            Legacy::Editor
