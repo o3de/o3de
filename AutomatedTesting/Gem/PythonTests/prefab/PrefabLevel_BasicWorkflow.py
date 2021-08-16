@@ -12,6 +12,7 @@ class Tests():
     instantiate_prefab =      ("Prefab: 'InstantiatePrefab' passed",                         "Prefab: 'InstantiatePrefab' failed")
     new_prefab_position =     ("Prefab: new prefab's position is at the expected position",  "Prefab: new prefab's position is *not* at the expected position")
     delete_prefab =           ("Prefab: 'DeleteEntitiesAndAllDescendantsInInstance' passed", "Prefab: 'DeleteEntitiesAndAllDescendantsInInstance' failed")
+    new_prefab_removed =      ("Prefab: new prefab's container entity has been removed",     "Prefab: new prefab's container entity has *not* been removed")
 # fmt:on
 
 def PrefabLevel_BasicWorkflow():
@@ -38,22 +39,45 @@ def PrefabLevel_BasicWorkflow():
     import azlmbr.legacy.general as general
 
     EXPECTED_NEW_PREFAB_POSITION = Vector3(10.00, 20.0, 30.0)
+    NEW_PREFAB_NAME = "new_prefab"
+    NEW_PREFAB_FILE_NAME = NEW_PREFAB_NAME + ".prefab"
+    NEW_PREFAB_FILE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), NEW_PREFAB_FILE_NAME)
+    INSTANTIATED_PREFAB_NAME = "instantiated_prefab"
+    TEST_LEVEL_FOLDER = "Prefab"
+    TEST_LEVEL_NAME = "Base"
 
+    def find_entity_by_name(entity_name):
+        searchFilter = entity.SearchFilter()
+        searchFilter.names = [entity_name]
+        entityIds = entity.SearchBus(bus.Broadcast, 'SearchEntities', searchFilter)
+        if entityIds and entityIds[0].IsValid():
+            return entityIds[0]
+        return None
+
+    def print_error_if_failed(prefab_operation_result):
+        if not prefab_operation_result.IsSuccess():
+            Report.info(f'Error message: {prefab_operation_result.GetError()}')
+
+
+# Open the test level
     helper.init_idle()
-    helper.open_level("Prefab", "Base")
+    helper.open_level(TEST_LEVEL_FOLDER, TEST_LEVEL_NAME)
 
 # Create a new Entity at the root level
     new_entity_id = editor.ToolsApplicationRequestBus(bus.Broadcast, 'CreateNewEntity', EntityId())
     Report.result(Tests.create_new_entity, new_entity_id.IsValid())
 
 # Checks for prefab creation passed or not 
-    new_prefab_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'new_prefab.prefab')
-    create_prefab_result = prefab.PrefabPublicRequestBus(bus.Broadcast, 'CreatePrefabInMemory', [new_entity_id], new_prefab_file_path)
-    Report.result(Tests.create_prefab, create_prefab_result)
+    create_prefab_result = prefab.PrefabPublicRequestBus(bus.Broadcast, 'CreatePrefabInMemory', [new_entity_id], NEW_PREFAB_FILE_PATH)
+    Report.result(Tests.create_prefab, create_prefab_result.IsSuccess())
+    print_error_if_failed(create_prefab_result)
 
 # Checks for prefab instantiation passed or not 
-    container_entity_id = prefab.PrefabPublicRequestBus(bus.Broadcast, 'InstantiatePrefab', new_prefab_file_path, EntityId(), EXPECTED_NEW_PREFAB_POSITION)
-    Report.result(Tests.instantiate_prefab, container_entity_id.IsValid())
+    instantiate_prefab_result = prefab.PrefabPublicRequestBus(bus.Broadcast, 'InstantiatePrefab', NEW_PREFAB_FILE_PATH, EntityId(), EXPECTED_NEW_PREFAB_POSITION)
+    Report.result(Tests.instantiate_prefab, instantiate_prefab_result.IsSuccess() and instantiate_prefab_result.GetValue().IsValid())
+    print_error_if_failed(instantiate_prefab_result)
+    container_entity_id = instantiate_prefab_result.GetValue()
+    editor.EditorEntityAPIBus(bus.Event, 'SetName', container_entity_id, INSTANTIATED_PREFAB_NAME)
 
 # Checks if the new prefab is at the correct position and if it fails, it will provide the expected postion and the actual postion of the entity in the Editor log
     new_prefab_position = azlmbr.components.TransformBus(azlmbr.bus.Event, "GetWorldTranslation", container_entity_id)
@@ -64,7 +88,9 @@ def PrefabLevel_BasicWorkflow():
 
 # Checks for prefab deletion passed or not 
     delete_prefab_result = prefab.PrefabPublicRequestBus(bus.Broadcast, 'DeleteEntitiesAndAllDescendantsInInstance', [container_entity_id])
-    Report.result(Tests.delete_prefab, delete_prefab_result)
+    Report.result(Tests.delete_prefab, delete_prefab_result.IsSuccess())
+    print_error_if_failed(delete_prefab_result)
+    Report.result(Tests.new_prefab_removed, find_entity_by_name(INSTANTIATED_PREFAB_NAME) is None)
 
 
 if __name__ == "__main__":

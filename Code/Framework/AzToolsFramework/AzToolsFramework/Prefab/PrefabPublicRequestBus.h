@@ -11,7 +11,9 @@
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Vector3.h>
+#include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
 
 namespace AzToolsFramework
@@ -20,6 +22,9 @@ namespace AzToolsFramework
 
     namespace Prefab
     {
+        using PrefabOperationResult = AZ::Outcome<void, AZStd::string>;
+        using InstantiatePrefabResult = AZ::Outcome<AZ::EntityId, AZStd::string>;
+
         /**
         * The primary purpose of this bus is to facilitate writing automated tests for prefabs.
         * It calls PrefabPublicInterface internally to talk to the prefab system.
@@ -42,20 +47,24 @@ namespace AzToolsFramework
             /**
              * Create a prefab out of the entities provided, at the path provided, and keep it in memory.
              * Automatically detects descendants of entities, and discerns between entities and child instances.
+             * Return whether the creation succeeded or not.
              */
-            virtual bool CreatePrefabInMemory(
+            virtual PrefabOperationResult CreatePrefabInMemory(
                 const EntityIdList& entityIds, AZStd::string_view filePath) = 0;
 
             /**
              * Instantiate a prefab from a prefab file.
+             * Return the container entity id of the prefab instantiated. The id is invalid if instantiation failed.
              */
-            virtual AZ::EntityId InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position) = 0;
+            virtual InstantiatePrefabResult InstantiatePrefab(
+                AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position) = 0;
 
             /**
              * Deletes all entities and their descendants from the owning instance. Bails if the entities don't
              * all belong to the same instance.
+             * Return whether the deletion succeeded or not.
              */
-            virtual bool DeleteEntitiesAndAllDescendantsInInstance(const EntityIdList& entityIds) = 0;
+            virtual PrefabOperationResult DeleteEntitiesAndAllDescendantsInInstance(const EntityIdList& entityIds) = 0;
 
         };
 

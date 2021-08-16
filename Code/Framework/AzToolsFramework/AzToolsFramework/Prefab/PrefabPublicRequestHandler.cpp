@@ -45,51 +45,19 @@ namespace AzToolsFramework
             m_prefabPublicInterface = nullptr;
         }
 
-        bool PrefabPublicRequestHandler::CreatePrefabInMemory(const EntityIdList& entityIds, AZStd::string_view filePath)
+        PrefabOperationResult PrefabPublicRequestHandler::CreatePrefabInMemory(const EntityIdList& entityIds, AZStd::string_view filePath)
         {
-            auto createPrefabOutcome = m_prefabPublicInterface->CreatePrefabInMemory(entityIds, filePath);
-            if (!createPrefabOutcome.IsSuccess())
-            {
-                AZ_Error("CreatePrefabInMemory", false,
-                    "Failed to create Prefab on file path '%.*s'. Error message: %s.",
-                    AZ_STRING_ARG(filePath),
-                    createPrefabOutcome.GetError().c_str());
-
-                return false;
-            }
-
-            return true;
+            return m_prefabPublicInterface->CreatePrefabInMemory(entityIds, filePath);
         }
 
-        AZ::EntityId PrefabPublicRequestHandler::InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position)
+        InstantiatePrefabResult PrefabPublicRequestHandler::InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position)
         {
-            auto instantiatePrefabOutcome = m_prefabPublicInterface->InstantiatePrefab(filePath, parent, position);
-            if (!instantiatePrefabOutcome.IsSuccess())
-            {
-                AZ_Error("InstantiatePrefab", false,
-                    "Failed to instantiate Prefab on file path '%.*s'. Error message: %s.",
-                    AZ_STRING_ARG(filePath),
-                    instantiatePrefabOutcome.GetError().c_str());
-
-                return AZ::EntityId();
-            }
-
-            return instantiatePrefabOutcome.GetValue();
+            return m_prefabPublicInterface->InstantiatePrefab(filePath, parent, position);
         }
 
-        bool PrefabPublicRequestHandler::DeleteEntitiesAndAllDescendantsInInstance(const EntityIdList& entityIds)
+        PrefabOperationResult PrefabPublicRequestHandler::DeleteEntitiesAndAllDescendantsInInstance(const EntityIdList& entityIds)
         {
-            auto deleteOutcome = m_prefabPublicInterface->DeleteEntitiesAndAllDescendantsInInstance(entityIds);
-            if (!deleteOutcome.IsSuccess())
-            {
-                AZ_Error("DeleteEntitiesAndAllDescendantsInInstance", false,
-                    "Failed to delete entities and all their descendants in prefab instance. Error message: %s.",
-                    deleteOutcome.GetError().c_str());
-
-                return false;
-            }
-
-            return true;
+            return m_prefabPublicInterface->DeleteEntitiesAndAllDescendantsInInstance(entityIds);
         }
 
     } // namespace Prefab
