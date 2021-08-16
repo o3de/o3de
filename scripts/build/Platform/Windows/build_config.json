@@ -379,6 +379,7 @@
   },
   "awsi_deployment": {
     "TAGS": ["awsi-deployment"],
-    "COMMAND": "deploy_cdk_applications.cmd"
+    "COMMAND": "deploy_cdk_applications.cmd",
+    "PARAMETERS": {}
   }
 }
