@@ -380,9 +380,9 @@ namespace AWSCore
                     responseContent.c_str()
                 );
 
-                // This is determined by AZ::g_maxMessageLength defined in in dev\Code\Framework\AzCore\AzCore\Debug\Trace.cpp.
-                // It has the value 4096, but there is the timestamp, etc., to account for so we reduce it by a few characters.
-                const int MAX_MESSAGE_LENGTH = 4096 - 128;
+                // This is determined by the SLogMsg struct defined in Code\Legacy\CrySystem\Log.h.
+                // The maximum size of a log message is 512 characters, but there is the timestamp, etc., to account for so we reduce it by a few characters.
+                const int MAX_MESSAGE_LENGTH = 512 - 128;
 
                 // Replace the character "%" with "%%" to prevent the error when printing the string that contains the percentage sign
                 message = EscapePercentCharsInString(message);
