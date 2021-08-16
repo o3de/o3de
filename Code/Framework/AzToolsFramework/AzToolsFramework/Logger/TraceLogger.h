@@ -25,11 +25,23 @@ namespace AzToolsFramework
         //! Open log file and dump log sink into it
         void PrepareLogFile(const AZStd::string& logFileName);
 
-        //! Ignore messages sent to windowd with names matching filter
+        //! Add filter to ignore messages for windows with matching names
         void AddWindowFilter(const AZStd::string& filter);
 
-        //! Ignore messages with text matching filter
+        //! Remove window filter
+        void RemoveWindowFilter(const AZStd::string& filter);
+
+        //! Clear window filters
+        void ClearWindowFilter();
+
+        //! Add filter to ignore messages with matching names
         void AddMessageFilter(const AZStd::string& filter);
+
+        //! Remove message filter
+        void RemoveMessageFilter(const AZStd::string& filter);
+
+        //! Clear message filters
+        void ClearMessageFilter();
 
     protected:
         //////////////////////////////////////////////////////////////////////////

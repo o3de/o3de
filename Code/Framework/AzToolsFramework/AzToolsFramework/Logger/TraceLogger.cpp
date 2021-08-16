@@ -91,8 +91,28 @@ namespace AzToolsFramework
         m_windowFilters.insert(filter);
     }
 
+    void TraceLogger::RemoveWindowFilter(const AZStd::string& filter)
+    {
+        m_windowFilters.erase(filter);
+    }
+
+    void TraceLogger::ClearWindowFilter()
+    {
+        m_windowFilters.clear();
+    }
+
     void TraceLogger::AddMessageFilter(const AZStd::string& filter)
     {
         m_messageFilters.insert(filter);
+    }
+
+    void TraceLogger::RemoveMessageFilter(const AZStd::string& filter)
+    {
+        m_messageFilters.erase(filter);
+    }
+
+    void TraceLogger::ClearMessageFilter()
+    {
+        m_messageFilters.clear();
     }
 } // namespace AzToolsFramework
