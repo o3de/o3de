@@ -16,6 +16,8 @@
 
 namespace AzToolsFramework
 {
+    using EntityIdList = AZStd::vector<AZ::EntityId>;
+
     namespace Prefab
     {
         /**
@@ -42,12 +44,19 @@ namespace AzToolsFramework
              * Automatically detects descendants of entities, and discerns between entities and child instances.
              */
             virtual bool CreatePrefabInMemory(
-                const AZStd::vector<AZ::EntityId>& entityIds, AZStd::string_view filePath) = 0;
+                const EntityIdList& entityIds, AZStd::string_view filePath) = 0;
 
             /**
              * Instantiate a prefab from a prefab file.
              */
             virtual AZ::EntityId InstantiatePrefab(AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position) = 0;
+
+            /**
+             * Deletes all entities and their descendants from the owning instance. Bails if the entities don't
+             * all belong to the same instance.
+             */
+            virtual bool DeleteEntitiesAndAllDescendantsInInstance(const EntityIdList& entityIds) = 0;
+
         };
 
         using PrefabPublicRequestBus = AZ::EBus<PrefabPublicRequests>;

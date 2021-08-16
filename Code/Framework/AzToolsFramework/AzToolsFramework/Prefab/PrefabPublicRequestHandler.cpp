@@ -25,6 +25,7 @@ namespace AzToolsFramework
                     ->Attribute(AZ::Script::Attributes::Module, "prefab")
                     ->Event("CreatePrefabInMemory", &PrefabPublicRequests::CreatePrefabInMemory)
                     ->Event("InstantiatePrefab", &PrefabPublicRequests::InstantiatePrefab)
+                    ->Event("DeleteEntitiesAndAllDescendantsInInstance", &PrefabPublicRequests::DeleteEntitiesAndAllDescendantsInInstance)
                     ;
             }
         }
@@ -44,7 +45,7 @@ namespace AzToolsFramework
             m_prefabPublicInterface = nullptr;
         }
 
-        bool PrefabPublicRequestHandler::CreatePrefabInMemory(const AZStd::vector<AZ::EntityId>& entityIds, AZStd::string_view filePath)
+        bool PrefabPublicRequestHandler::CreatePrefabInMemory(const EntityIdList& entityIds, AZStd::string_view filePath)
         {
             auto createPrefabOutcome = m_prefabPublicInterface->CreatePrefabInMemory(entityIds, filePath);
             if (!createPrefabOutcome.IsSuccess())
@@ -75,5 +76,21 @@ namespace AzToolsFramework
 
             return instantiatePrefabOutcome.GetValue();
         }
+
+        bool PrefabPublicRequestHandler::DeleteEntitiesAndAllDescendantsInInstance(const EntityIdList& entityIds)
+        {
+            auto deleteOutcome = m_prefabPublicInterface->DeleteEntitiesAndAllDescendantsInInstance(entityIds);
+            if (!deleteOutcome.IsSuccess())
+            {
+                AZ_Error("DeleteEntitiesAndAllDescendantsInInstance", false,
+                    "Failed to delete entities and all their descendants in prefab instance. Error message: %s.",
+                    deleteOutcome.GetError().c_str());
+
+                return false;
+            }
+
+            return true;
+        }
+
     } // namespace Prefab
 } // namespace AzToolsFramework

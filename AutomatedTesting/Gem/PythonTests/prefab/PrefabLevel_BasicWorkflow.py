@@ -7,10 +7,11 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 # fmt:off
 class Tests():
-    create_new_entity =       ("Entity: 'CreateNewEntity' passed",                          "Entity: 'CreateNewEntity' failed")
-    create_prefab =           ("Prefab: 'CreatePrefab' passed",                             "Prefab: 'CreatePrefab' failed")
-    instantiate_prefab =      ("Prefab: 'InstantiatePrefab' passed",                        "Prefab: 'InstantiatePrefab' failed")
-    new_prefab_position =     ("Prefab: new prefab's position is at the expected position", "Prefab: new prefab's position is *not* at the expected position")
+    create_new_entity =       ("Entity: 'CreateNewEntity' passed",                           "Entity: 'CreateNewEntity' failed")
+    create_prefab =           ("Prefab: 'CreatePrefab' passed",                              "Prefab: 'CreatePrefab' failed")
+    instantiate_prefab =      ("Prefab: 'InstantiatePrefab' passed",                         "Prefab: 'InstantiatePrefab' failed")
+    new_prefab_position =     ("Prefab: new prefab's position is at the expected position",  "Prefab: new prefab's position is *not* at the expected position")
+    delete_prefab =           ("Prefab: 'DeleteEntitiesAndAllDescendantsInInstance' passed", "Prefab: 'DeleteEntitiesAndAllDescendantsInInstance' failed")
 # fmt:on
 
 def PrefabLevel_BasicWorkflow():
@@ -18,6 +19,7 @@ def PrefabLevel_BasicWorkflow():
     This test will help verify if the following functions related to Prefab work as expected: 
     - CreatePrefab
     - InstantiatePrefab
+    - DeleteEntitiesAndAllDescendantsInInstance
     """
 
     import os
@@ -59,7 +61,11 @@ def PrefabLevel_BasicWorkflow():
     Report.result(Tests.new_prefab_position, is_at_position)
     if not is_at_position:
         Report.info(f'Expected position: {EXPECTED_NEW_PREFAB_POSITION.ToString()}, actual position: {new_prefab_position.ToString()}')
-    
+
+# Checks for prefab deletion passed or not 
+    delete_prefab_result = prefab.PrefabPublicRequestBus(bus.Broadcast, 'DeleteEntitiesAndAllDescendantsInInstance', [container_entity_id])
+    Report.result(Tests.delete_prefab, delete_prefab_result)
+
 
 if __name__ == "__main__":
     from editor_python_test_tools.utils import Report
