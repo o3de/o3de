@@ -30,6 +30,8 @@ namespace AudioControls
         : QDialog(pParent)
         , m_eType(eType)
     {
+        AZ_Assert(CAudioControlsEditorPlugin::GetATLModel() != nullptr, "ATLControlsDialog - ATL Model is null!");
+
         setWindowTitle(GetWindowTitle(m_eType));
         setWindowModality(Qt::ApplicationModal);
 
