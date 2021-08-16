@@ -891,8 +891,7 @@ CCrySingleDocTemplate::Confidence CCrySingleDocTemplate::MatchDocType(const char
 /////////////////////////////////////////////////////////////////////////////
 namespace
 {
-    CryMutex g_splashScreenStateLock;
-    CryConditionVariable g_splashScreenStateChange;
+    AZStd::mutex g_splashScreenStateLock;
     enum ESplashScreenState
     {
         eSplashScreenState_Init, eSplashScreenState_Started, eSplashScreenState_Destroy
@@ -923,7 +922,7 @@ QString FormatRichTextCopyrightNotice()
 /////////////////////////////////////////////////////////////////////////////
 void CCryEditApp::ShowSplashScreen(CCryEditApp* app)
 {
-    g_splashScreenStateLock.Lock();
+    g_splashScreenStateLock.lock();
 
     CStartupLogoDialog* splashScreen = new CStartupLogoDialog(FormatVersion(app->m_pEditor->GetFileVersion()), FormatRichTextCopyrightNotice());
 
@@ -931,8 +930,7 @@ void CCryEditApp::ShowSplashScreen(CCryEditApp* app)
     g_splashScreen = splashScreen;
     g_splashScreenState = eSplashScreenState_Started;
 
-    g_splashScreenStateLock.Unlock();
-    g_splashScreenStateChange.Notify();
+    g_splashScreenStateLock.unlock();
 
     splashScreen->show();
     // Make sure the initial paint of the splash screen occurs so we dont get stuck with a blank window
@@ -940,10 +938,9 @@ void CCryEditApp::ShowSplashScreen(CCryEditApp* app)
 
     QObject::connect(splashScreen, &QObject::destroyed, splashScreen, [=]
     {
-        g_splashScreenStateLock.Lock();
+        AZStd::scoped_lock lock(g_splashScreenStateLock);
         g_pInitializeUIInfo = nullptr;
         g_splashScreen = nullptr;
-        g_splashScreenStateLock.Unlock();
     });
 }
 
@@ -973,9 +970,9 @@ void CCryEditApp::CloseSplashScreen()
     if (CStartupLogoDialog::instance())
     {
         delete CStartupLogoDialog::instance();
-        g_splashScreenStateLock.Lock();
+        g_splashScreenStateLock.lock();
         g_splashScreenState = eSplashScreenState_Destroy;
-        g_splashScreenStateLock.Unlock();
+        g_splashScreenStateLock.unlock();
     }
 
     GetIEditor()->Notify(eNotify_OnSplashScreenDestroyed);
@@ -984,12 +981,12 @@ void CCryEditApp::CloseSplashScreen()
 /////////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OutputStartupMessage(QString str)
 {
-    g_splashScreenStateLock.Lock();
+    g_splashScreenStateLock.lock();
     if (g_pInitializeUIInfo)
     {
         g_pInitializeUIInfo->SetInfoText(str.toUtf8().data());
     }
-    g_splashScreenStateLock.Unlock();
+    g_splashScreenStateLock.unlock();
 }
 
 //////////////////////////////////////////////////////////////////////////

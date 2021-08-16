@@ -226,6 +226,21 @@ typedef uint64 __uint64;
 
 #define _PTRDIFF_T_DEFINED 1
 
+typedef union _LARGE_INTEGER
+{
+    struct
+    {
+        DWORD LowPart;
+        LONG HighPart;
+    };
+    struct
+    {
+        DWORD LowPart;
+        LONG HighPart;
+    } u;
+    long long QuadPart;
+} LARGE_INTEGER;
+
 #define _A_RDONLY       (0x01)    /* Read only file */
 #define _A_HIDDEN (0x02)    /* Hidden file */
 #define _A_SUBDIR       (0x10)    /* Subdirectory */

@@ -6,13 +6,6 @@
  *
  */
 
-
-// In Mac, including ISystem without including platform.h first fails because platform.h
-// includes CryThread.h which includes CryThread_pthreads.h which uses ISystem (gEnv).
-// So plaform.h needs the contents of ISystem.h.
-// By including platform.h outside of the guard, we give platform.h the right include order
-#include <platform.h> // Needed for LARGE_INTEGER (for consoles).
-
 #ifndef CRYINCLUDE_CRYCOMMON_ISYSTEM_H
 #define CRYINCLUDE_CRYCOMMON_ISYSTEM_H
 #pragma once

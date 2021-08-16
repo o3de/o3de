@@ -9,7 +9,6 @@
 #include "ComponentEntityEditorPlugin.h"
 
 #include <LyViewPaneNames.h>
-#include "IResourceSelectorHost.h"
 
 #include "UI/QComponentEntityEditorMainWindow.h"
 #include "UI/QComponentEntityEditorOutlinerWindow.h"
@@ -179,8 +178,6 @@ ComponentEntityEditorPlugin::ComponentEntityEditorPlugin([[maybe_unused]] IEdito
         options.preferedDockingArea = Qt::NoDockWidgetArea;
         RegisterViewPane<SliceRelationshipWidget>(LyViewPane::SliceRelationships, LyViewPane::CategoryTools, options);
     }
-
-    RegisterModuleResourceSelectors(GetIEditor()->GetResourceSelectorHost());
 
     ComponentEntityEditorPluginInternal::RegisterSandboxObjects();
 

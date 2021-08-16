@@ -74,6 +74,20 @@ namespace AZ
         {
         }
 
+        AZStd::size_t CachedTimeRegion::GroupRegionName::Hash::operator()(const CachedTimeRegion::GroupRegionName& name) const
+        {
+            AZStd::size_t seed = 0;
+            AZStd::hash_combine(seed, name.m_groupName);
+            AZStd::hash_combine(seed, name.m_regionName);
+            return seed;
+        }
+
+        bool CachedTimeRegion::GroupRegionName::operator==(const GroupRegionName& other) const
+        {
+            return (m_groupName == other.m_groupName) && (m_regionName == other.m_regionName);
+        }
+
+
         // --- CpuProfilerImpl ---
 
         void CpuProfilerImpl::Init()
@@ -216,6 +230,19 @@ namespace AZ
         bool CpuProfilerImpl::IsProfilerEnabled() const
         {
             return m_enabled;
+        }
+
+        const CachedTimeRegion::GroupRegionName& CpuProfilerImpl::InsertDynamicName(const char* groupName, const AZStd::string& regionName)
+        {
+            AZStd::scoped_lock lock(m_dynamicNameMutex);
+            AZ_Warning("CpuProfiler", m_regionNameStringPool.size() < MaxRegionStringPoolSize,
+                "Stored dynamic region names are accumulating. Consider removing a AZ_ATOM_PROFILE_DYNAMIC invocation.");
+            auto [regionNameItr, wasRegionInserted] =  m_regionNameStringPool.insert(regionName);
+
+            CachedTimeRegion::GroupRegionName newGroupRegionName(groupName, regionNameItr->c_str());
+            auto [groupRegionNameItr, wasGroupRegionInserted] = m_dynamicGroupRegionNamePool.insert(newGroupRegionName);
+
+            return *groupRegionNameItr;
         }
 
         void CpuProfilerImpl::OnSystemTick()

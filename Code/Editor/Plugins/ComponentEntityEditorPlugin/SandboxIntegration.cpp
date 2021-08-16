@@ -82,7 +82,6 @@
 #include <Editor/QtViewPaneManager.h>
 #include <Editor/EditorViewportSettings.h>
 #include <Editor/Util/PathUtil.h>
-#include <IResourceSelectorHost.h>
 #include "CryEdit.h"
 #include "Undo/Undo.h"
 
@@ -1387,16 +1386,6 @@ AZStd::string SandboxIntegrationManager::GetLevelName()
     return AZStd::string(GetIEditor()->GetGameEngine()->GetLevelName().toUtf8().constData());
 }
 
-AZStd::string SandboxIntegrationManager::SelectResource(const AZStd::string& resourceType, const AZStd::string& previousValue)
-{
-    SResourceSelectorContext context;
-    context.parentWidget = GetMainWindow();
-    context.typeName = resourceType.c_str();
-
-    QString resource = GetEditor()->GetResourceSelectorHost()->SelectResource(context, previousValue.c_str());
-    return AZStd::string(resource.toUtf8().constData());
-}
-
 void SandboxIntegrationManager::OnContextReset()
 {
     // Deselect everything.
@@ -1452,7 +1441,7 @@ void SandboxIntegrationManager::ContextMenu_NewEntity()
     if (view)
     {
         const QPoint viewPoint(m_contextMenuViewPoint.GetX(), m_contextMenuViewPoint.GetY());
-        worldPosition = LYVec3ToAZVec3(view->SnapToGrid(view->ViewToWorld(viewPoint)));
+        worldPosition = view->GetHitLocation(viewPoint);
     }
 
     CreateNewEntityAtPosition(worldPosition);

@@ -199,8 +199,10 @@ namespace AtomToolsFramework
             {
                 if (documentId == GetDocumentIdFromTab(tabIndex))
                 {
-                    // We use an asterisk appended to the file name to denote modified document
-                    const AZStd::string modifiedLabel = isModified ? label + " *" : label;
+                    // We use an asterisk prepended to the file name to denote modified document
+                    // Appending is standard and preferred but the tabs elide from the
+                    // end (instead of middle) and cut it off
+                    const AZStd::string modifiedLabel = isModified ? "* " + label : label;
                     m_tabWidget->setTabText(tabIndex, modifiedLabel.c_str());
                     m_tabWidget->setTabToolTip(tabIndex, toolTip.c_str());
                     m_tabWidget->repaint();
