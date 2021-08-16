@@ -113,8 +113,6 @@ endif()
 ly_set(LY_CXX_SYSTEM_INCLUDE_CONFIGURATION_FLAG 
     /experimental:external # Turns on "external" headers feature for MSVC compilers
     /external:W0 # Set warning level in external headers to 0. This is used to suppress warnings 3rdParty libraries which uses the "system_includes" option in their json configuration
-    /wd4193 # Temporary workaround for the /experiment:external feature generating warning C4193: #pragma warning(pop): no matching '#pragma warning(push)'
-    /wd4702 # Despite we set it to W0, we found that 3rdParty::OpenMesh was issuing these warnings while using some template functions. Disabling it here does the trick
 )
 if(NOT CMAKE_INCLUDE_SYSTEM_FLAG_CXX)
     ly_set(CMAKE_INCLUDE_SYSTEM_FLAG_CXX /external:I)
