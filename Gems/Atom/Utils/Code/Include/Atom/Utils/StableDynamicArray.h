@@ -10,6 +10,7 @@
 #include <AzCore/Math/MathIntrinsics.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzCore/std/typetraits/aligned_storage.h>
 #include <AzCore/base.h>
 #include <stdint.h>
 
