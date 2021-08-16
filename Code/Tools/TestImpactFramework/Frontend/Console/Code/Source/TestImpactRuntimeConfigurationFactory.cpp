@@ -72,7 +72,7 @@ namespace TestImpact
             RelativePaths,
             ArtifactDir,
             EnumerationCacheDir,
-            TestImpactDataFiles,
+            TestImpactDataFile,
             TempWorkspace,
             ActiveWorkspace,
             TargetSources,
