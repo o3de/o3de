@@ -7,12 +7,12 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 # fmt:off
 class Tests():
-    create_new_entity =       ("Entity: 'CreateNewEntity' passed",                           "Entity: 'CreateNewEntity' failed")
-    create_prefab =           ("Prefab: 'CreatePrefab' passed",                              "Prefab: 'CreatePrefab' failed")
-    instantiate_prefab =      ("Prefab: 'InstantiatePrefab' passed",                         "Prefab: 'InstantiatePrefab' failed")
-    new_prefab_position =     ("Prefab: new prefab's position is at the expected position",  "Prefab: new prefab's position is *not* at the expected position")
-    delete_prefab =           ("Prefab: 'DeleteEntitiesAndAllDescendantsInInstance' passed", "Prefab: 'DeleteEntitiesAndAllDescendantsInInstance' failed")
-    new_prefab_removed =      ("Prefab: new prefab's container entity has been removed",     "Prefab: new prefab's container entity has *not* been removed")
+    create_new_entity =           ("Entity: 'CreateNewEntity' passed",                                "Entity: 'CreateNewEntity' failed")
+    create_prefab =               ("Prefab: 'CreatePrefab' passed",                                   "Prefab: 'CreatePrefab' failed")
+    instantiate_prefab =          ("Prefab: 'InstantiatePrefab' passed",                              "Prefab: 'InstantiatePrefab' failed")
+    new_prefab_position =         ("Prefab: new prefab's position is at the expected position",       "Prefab: new prefab's position is *not* at the expected position")
+    delete_prefab =               ("Prefab: 'DeleteEntitiesAndAllDescendantsInInstance' passed",      "Prefab: 'DeleteEntitiesAndAllDescendantsInInstance' failed")
+    instantiated_prefab_removed = ("Prefab: instantiated prefab's container entity has been removed", "Prefab: instantiated prefab's container entity has *not* been removed")
 # fmt:on
 
 def PrefabLevel_BasicWorkflow():
@@ -90,7 +90,7 @@ def PrefabLevel_BasicWorkflow():
     delete_prefab_result = prefab.PrefabPublicRequestBus(bus.Broadcast, 'DeleteEntitiesAndAllDescendantsInInstance', [container_entity_id])
     Report.result(Tests.delete_prefab, delete_prefab_result.IsSuccess())
     print_error_if_failed(delete_prefab_result)
-    Report.result(Tests.new_prefab_removed, find_entity_by_name(INSTANTIATED_PREFAB_NAME) is None)
+    Report.result(Tests.instantiated_prefab_removed, find_entity_by_name(INSTANTIATED_PREFAB_NAME) is None)
 
 
 if __name__ == "__main__":

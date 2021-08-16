@@ -54,7 +54,7 @@ namespace AzToolsFramework
 
             /**
              * Instantiate a prefab from a prefab file.
-             * Return the container entity id of the prefab instantiated. The id is invalid if instantiation failed.
+             * Return the container entity id of the prefab instantiated if instantiation succeeded.
              */
             virtual InstantiatePrefabResult InstantiatePrefab(
                 AZStd::string_view filePath, AZ::EntityId parent, const AZ::Vector3& position) = 0;
