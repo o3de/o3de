@@ -35,3 +35,9 @@ class TestAutomation(EditorTestSuite):
 
     class test_LandscapeCanvas_NewGraph_CreatedSuccessfully(EditorSharedTest):
         from .EditorScripts import NewGraph_CreatedSuccessfully as test_module
+
+    class test_LandscapeCanvas_Component_AddedRemoved(EditorSharedTest):
+        from .EditorScripts import Component_AddedRemoved as test_module
+
+    class test_LandscapeCanvas_GraphClosed_OnLevelChange(EditorSharedTest):
+        from .EditorScripts import GraphClosed_OnLevelChange as test_module
