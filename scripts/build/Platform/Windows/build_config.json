@@ -89,7 +89,7 @@
       "CONFIGURATION": "profile",
       "SCRIPT_PATH": "scripts/build/TestImpactAnalysis/tiaf_driver.py",
       "SCRIPT_PARAMETERS": 
-      "--config=\"!OUTPUT_DIRECTORY!/bin/TestImpactFramework/profile/Persistent/tiaf.json\" --src-branch=!BRANCH_NAME! --dst-branch=!BRANCH_NAME! --commit=!CHANGE_ID! --s3-bucket=!TEST_IMPACT_S3_BUCKET! --mars-index-prefix=jonawals --suite=main --test-failure-policy=continue"
+      "--config=\"!OUTPUT_DIRECTORY!/bin/TestImpactFramework/profile/Persistent/tiaf.json\" --src-branch=!BRANCH_NAME! --dst-branch=!CHANGE_TARGET! --commit=!CHANGE_ID! --s3-bucket=!TEST_IMPACT_S3_BUCKET! --mars-index-prefix=jonawals --s3-top-level-dir=!REPOSITORY_NAME! --build-number=!BUILD_NUMBER! --suite=main --test-failure-policy=continue"
     }
   },
   "debug_vs2019": {

@@ -278,8 +278,8 @@ const AZ::SerializeContext::ClassElement* CUiAnimAzEntityNode::ComputeOffsetFrom
 
         if (mismatch)
         {
-            string warnMsg = "Data mismatch reading animation data for type ";
-            warnMsg += classData->m_typeId.ToString<string>();
+            AZStd::string warnMsg = "Data mismatch reading animation data for type ";
+            warnMsg += classData->m_typeId.ToString<AZStd::string>();
             warnMsg += ". The field \"";
             warnMsg += paramData.GetName();
             if (!element)

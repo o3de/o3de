@@ -41,7 +41,7 @@ void LoadPSApi()
 {
     if (!g_hPSAPI)
     {
-        g_hPSAPI = LoadLibraryA("psapi.dll");
+        g_hPSAPI = LoadLibraryW(L"psapi.dll");
 
         if (g_hPSAPI)
         {

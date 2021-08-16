@@ -8,8 +8,9 @@
 #pragma once
 
 #include <AzCore/std/base.h>
-#include <AzCore/std/utils.h>
 #include <AzCore/std/typetraits/integral_constant.h>
+#include <AzCore/std/typetraits/void_t.h>
+#include <AzCore/std/typetraits/is_convertible.h>
 
 #include <AzCore/std/typetraits/is_base_of.h> // use by ConstIteratorCast
 #include <AzCore/std/typetraits/remove_cv.h>

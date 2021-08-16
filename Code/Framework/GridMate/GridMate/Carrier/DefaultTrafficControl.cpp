@@ -12,6 +12,7 @@
 
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Math/MathUtils.h>
+#include <AzCore/std/string/string.h>
 
 using namespace GridMate;
 

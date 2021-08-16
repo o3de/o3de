@@ -9,7 +9,7 @@
 #pragma once
 
 #include <AzCore/std/containers/unordered_map.h>
-#include <MCore/Source/AlignedArray.h>
+#include <AzCore/std/containers/vector.h>
 #include <EMotionFX/Source/PoseData.h>
 #include <EMotionFX/Source/Transform.h>
 
@@ -98,9 +98,9 @@ namespace EMotionFX
 
         Transform CalcTrajectoryTransform() const;
 
-        MCORE_INLINE const Transform* GetLocalSpaceTransforms() const                               { return m_localSpaceTransforms.GetReadPtr(); }
-        MCORE_INLINE const Transform* GetModelSpaceTransforms() const                               { return m_modelSpaceTransforms.GetReadPtr(); }
-        MCORE_INLINE size_t GetNumTransforms() const                                                { return m_localSpaceTransforms.GetLength(); }
+        MCORE_INLINE const Transform* GetLocalSpaceTransforms() const                               { return m_localSpaceTransforms.data(); }
+        MCORE_INLINE const Transform* GetModelSpaceTransforms() const                               { return m_modelSpaceTransforms.data(); }
+        MCORE_INLINE size_t GetNumTransforms() const                                                { return m_localSpaceTransforms.size(); }
         MCORE_INLINE const ActorInstance* GetActorInstance() const                                  { return m_actorInstance; }
         MCORE_INLINE const Actor* GetActor() const                                                  { return m_actor; }
         MCORE_INLINE const Skeleton* GetSkeleton() const                                            { return m_skeleton; }
@@ -116,7 +116,7 @@ namespace EMotionFX
 
         MCORE_INLINE void SetMorphWeight(size_t index, float weight)                                { m_morphWeights[index] = weight; }
         MCORE_INLINE float GetMorphWeight(size_t index) const                                       { return m_morphWeights[index]; }
-        MCORE_INLINE size_t GetNumMorphWeights() const                                              { return m_morphWeights.GetLength(); }
+        MCORE_INLINE size_t GetNumMorphWeights() const                                              { return m_morphWeights.size(); }
         void ResizeNumMorphs(size_t numMorphTargets);
 
         /**
@@ -193,11 +193,11 @@ namespace EMotionFX
         T* GetAndPreparePoseData(ActorInstance* linkToActorInstance) { return azdynamic_cast<T*>(GetAndPreparePoseData(azrtti_typeid<T>(), linkToActorInstance)); }
 
     private:
-        mutable MCore::AlignedArray<Transform, 16>  m_localSpaceTransforms;
-        mutable MCore::AlignedArray<Transform, 16>  m_modelSpaceTransforms;
-        mutable MCore::AlignedArray<uint8, 16>      m_flags;
+        mutable AZStd::vector<Transform>  m_localSpaceTransforms;
+        mutable AZStd::vector<Transform>  m_modelSpaceTransforms;
+        mutable AZStd::vector<uint8>      m_flags;
         AZStd::unordered_map<AZ::TypeId, AZStd::unique_ptr<PoseData> > m_poseDatas;
-        MCore::AlignedArray<float, 16>              m_morphWeights;      /**< The morph target weights. */
+        AZStd::vector<float>              m_morphWeights;      /**< The morph target weights. */
         const ActorInstance*                        m_actorInstance;
         const Actor*                                m_actor;
         const Skeleton*                             m_skeleton;

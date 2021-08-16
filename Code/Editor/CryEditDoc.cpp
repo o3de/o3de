@@ -418,8 +418,8 @@ void CCryEditDoc::Load(TDocMultiArchive& arrXmlAr, const QString& szFilename)
         Audio::AudioSystemRequestBus::BroadcastResult(controlsPath, &Audio::AudioSystemRequestBus::Events::GetControlsPath);
         QString sAudioLevelPath(controlsPath);
         sAudioLevelPath += "levels/";
-        string const sLevelNameOnly = PathUtil::GetFileName(fileName.toUtf8().data());
-        sAudioLevelPath += sLevelNameOnly;
+        AZStd::string const sLevelNameOnly = PathUtil::GetFileName(fileName.toUtf8().data());
+        sAudioLevelPath += sLevelNameOnly.c_str();
         QByteArray path = sAudioLevelPath.toUtf8();
         Audio::SAudioManagerRequestData<Audio::eAMRT_PARSE_CONTROLS_DATA> oAMData(path, Audio::eADS_LEVEL_SPECIFIC);
         Audio::SAudioRequest oAudioRequestData;
@@ -1909,7 +1909,7 @@ void CCryEditDoc::LogLoadTime(int time) const
 
     CLogFile::FormatLine("[LevelLoadTime] Level %s loaded in %d seconds", level.toUtf8().data(), time / 1000);
 #if defined(AZ_PLATFORM_WINDOWS)
-    SetFileAttributes(filename.toUtf8().data(), FILE_ATTRIBUTE_ARCHIVE);
+    SetFileAttributesW(filename.toStdWString().c_str(), FILE_ATTRIBUTE_ARCHIVE);
 #endif
 
     QFile file(filename);
@@ -2134,7 +2134,7 @@ void CCryEditDoc::OnEnvironmentPropertyChanged(IVariable* pVar)
     childNode->setAttr("value", childValue.toUtf8().data());
 }
 
-QString CCryEditDoc::GetCryIndexPath(const LPCTSTR levelFilePath) const
+QString CCryEditDoc::GetCryIndexPath(const char* levelFilePath) const
 {
     QString levelPath = Path::GetPath(levelFilePath);
     QString levelName = Path::GetFileName(levelFilePath);
