@@ -20,6 +20,7 @@
 namespace AZ
 {
     class ReflectContext;
+    class DatumSerializer;
 }
 
 namespace ScriptCanvas
@@ -33,6 +34,8 @@ namespace ScriptCanvas
     /// in the editor, regardless of their actual ScriptCanvas or BehaviorContext type.
     class Datum final
     {
+        friend class AZ::DatumSerializer;
+
     public:
         AZ_TYPE_INFO(Datum, "{8B836FC0-98A8-4A81-8651-35C7CA125451}");
         AZ_CLASS_ALLOCATOR(Datum, AZ::SystemAllocator, 0);
