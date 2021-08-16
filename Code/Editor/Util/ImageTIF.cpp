@@ -79,7 +79,7 @@ libtiffDummySeekProc (thandle_t fd, toff_t off, int i)
     switch (i)
     {
     case SEEK_SET:
-        memImage->offset = off;
+        memImage->offset = static_cast<uint32>(off);
         break;
 
     case SEEK_CUR:
@@ -87,11 +87,11 @@ libtiffDummySeekProc (thandle_t fd, toff_t off, int i)
         break;
 
     case SEEK_END:
-        memImage->offset = memImage->size - off;
+        memImage->offset = static_cast<uint32>(memImage->size - off);
         break;
 
     default:
-        memImage->offset = off;
+        memImage->offset = static_cast<uint32>(off);
         break;
     }
 
@@ -262,7 +262,7 @@ bool CImageTIF::Load(const QString& fileName, CFloatImage& outImage)
             }
         }
 
-        uint32 linesize = TIFFScanlineSize(tif);
+        uint32 linesize = static_cast<uint32>(TIFFScanlineSize(tif));
         uint8* linebuf = static_cast<uint8*>(_TIFFmalloc(linesize));
 
         // We assume that a scanline has all of the samples in it.  Validate the assumption.
