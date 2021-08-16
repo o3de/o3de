@@ -104,7 +104,7 @@ namespace AZ
                 //! to load.
                 //! @param loadingComponentUuid The UUID assigned to the loading component.
                 static AZStd::shared_ptr<Containers::Scene> LoadSceneFromVerifiedPath(const AZStd::string& assetFilePath,
-                    const Uuid&sourceGuid, RequestingApplication requester, const Uuid&loadingComponentUuid);
+                    const Uuid& sourceGuid, RequestingApplication requester, const Uuid& loadingComponentUuid);
 
                 //! Utility function to determine if a given file path points to a scene manifest file (.assetinfo).
                 //! @param filePath A relative or absolute path to the file to check.
