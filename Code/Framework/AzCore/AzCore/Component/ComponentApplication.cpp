@@ -728,6 +728,7 @@ namespace AZ
         DestroyReflectionManager();
 
         static_cast<SettingsRegistryImpl*>(m_settingsRegistry.get())->ClearNotifiers();
+        static_cast<SettingsRegistryImpl*>(m_settingsRegistry.get())->ClearMergeEvents();
 
         // Uninit and unload any dynamic modules.
         m_moduleManager->UnloadModules();

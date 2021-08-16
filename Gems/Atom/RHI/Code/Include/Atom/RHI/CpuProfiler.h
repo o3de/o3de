@@ -30,6 +30,12 @@ namespace AZ
                 
                 const char* const m_groupName = nullptr;
                 const char* const m_regionName = nullptr;
+
+                struct Hash
+                {
+                    AZStd::size_t operator()(const GroupRegionName& name) const;
+                };
+                bool operator==(const GroupRegionName& other) const;
             };
 
             CachedTimeRegion() = default;
@@ -95,6 +101,9 @@ namespace AZ
             virtual void SetProfilerEnabled(bool enabled) = 0;
 
             virtual bool IsProfilerEnabled() const = 0 ;
+
+            //! Used by AZ_ATOM_PROFILE_DYNAMIC to create GroupRegionNames with known lifetimes.
+            virtual const CachedTimeRegion::GroupRegionName& InsertDynamicName(const char* groupName, const AZStd::string& regionName) = 0;
         };
 
     } // namespace RPI
@@ -120,3 +129,10 @@ namespace AZ
 #define AZ_ATOM_PROFILE_FUNCTION(groupName, regionName) \
     AZ_TRACE_METHOD(); \
     AZ_ATOM_PROFILE_TIME_GROUP_REGION(groupName, regionName) \
+
+//! Macro that allows for region names to be submitted at runtime. Use sparingly - this acquires a lock and allocates new objects within a map.
+#define AZ_ATOM_PROFILE_DYNAMIC(groupName, regionName) \
+    static_assert(AZStd::is_convertible_v<decltype(groupName), const char*>, "Runtime group names are not allowed, use a static string literal instead."); \
+    const AZ::RHI::CachedTimeRegion::GroupRegionName& AZ_JOIN(groupRegionName, __LINE__) =                                                                 \
+        AZ::RHI::CpuProfiler::Get()->InsertDynamicName(groupName, regionName);                                                                             \
+    AZ::RHI::TimeRegion AZ_JOIN(timeRegion, __LINE__)(&AZ_JOIN(groupRegionName, __LINE__));

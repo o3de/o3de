@@ -189,7 +189,7 @@ namespace O3DE::ProjectManager
 
                     const QString copiedFileSizeString = locale.formattedDataSize(outCopiedFileSize);
                     const QString totalFileSizeString = locale.formattedDataSize(totalSizeToCopy);
-                    progressDialog->setLabelText(QString("Coping file %1 of %2 (%3 of %4) ...").arg(QString::number(outNumCopiedFiles),
+                    progressDialog->setLabelText(QString("Copying file %1 of %2 (%3 of %4) ...").arg(QString::number(outNumCopiedFiles),
                         QString::number(filesToCopyCount),
                         copiedFileSizeString,
                         totalFileSizeString));
