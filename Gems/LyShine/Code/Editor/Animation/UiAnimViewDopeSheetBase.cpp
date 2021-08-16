@@ -139,8 +139,7 @@ CUiAnimViewDopeSheetBase::~CUiAnimViewDopeSheetBase()
 //////////////////////////////////////////////////////////////////////////
 int CUiAnimViewDopeSheetBase::TimeToClient(float time) const
 {
-    int x = m_leftOffset - m_scrollOffset.x() + (time * m_timeScale);
-    return x;
+    return static_cast<int>(m_leftOffset - m_scrollOffset.x() + (time * m_timeScale));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -186,7 +185,7 @@ void CUiAnimViewDopeSheetBase::SetTimeRange(float start, float end)
 
     m_timeRange.Set(start, end);
 
-    SetHorizontalExtent(-m_leftOffset, m_timeRange.end * m_timeScale - m_leftOffset);
+    SetHorizontalExtent(-m_leftOffset, static_cast<int>(m_timeRange.end * m_timeScale - m_leftOffset));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -255,7 +254,7 @@ void CUiAnimViewDopeSheetBase::SetTimeScale(float timeScale, float fAnchorTime)
 
     update();
 
-    SetHorizontalExtent(-m_leftOffset, m_timeRange.end * m_timeScale);
+    SetHorizontalExtent(-m_leftOffset, static_cast<int>(m_timeRange.end * m_timeScale));
 
     ComputeFrameSteps(GetVisibleRange());
 }
@@ -346,15 +345,15 @@ float CUiAnimViewDopeSheetBase::TickSnap(float time) const
     double tickTime = GetTickTime();
     double t = floor(((double)time / tickTime) + 0.5);
     t *= tickTime;
-    return t;
+    return static_cast<float>(t);
 }
 
 //////////////////////////////////////////////////////////////////////////
 float CUiAnimViewDopeSheetBase::TimeFromPoint(const QPoint& point) const
 {
     int x = point.x() - m_leftOffset + m_scrollOffset.x();
-    double t = (double)x / m_timeScale;
-    return (float)TickSnap(t);
+    float t = static_cast<float>(x) / m_timeScale;
+    return TickSnap(t);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -362,7 +361,7 @@ float CUiAnimViewDopeSheetBase::TimeFromPointUnsnapped(const QPoint& point) cons
 {
     int x = point.x() - m_leftOffset + m_scrollOffset.x();
     double t = (double)x / m_timeScale;
-    return t;
+    return static_cast<float>(t);
 }
 
 void CUiAnimViewDopeSheetBase::mousePressEvent(QMouseEvent* event)
@@ -1651,7 +1650,7 @@ float CUiAnimViewDopeSheetBase::FrameSnap(float time) const
 {
     double t = floor((double)time / m_snapFrameTime + 0.5);
     t = t * m_snapFrameTime;
-    return t;
+    return static_cast<float>(t);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1755,9 +1754,10 @@ bool CUiAnimViewDopeSheetBase::CreateColorKey(CUiAnimViewTrack* pTrack, float ke
     Vec3 vColor(0, 0, 0);
     pTrack->GetValue(keyTime, vColor);
 
-    const AZ::Color defaultColor = AZ::Color::CreateFromRgba(clamp_tpl(FloatToIntRet(vColor.x), 0, 255),
-        clamp_tpl(FloatToIntRet(vColor.y), 0, 255),
-        clamp_tpl(FloatToIntRet(vColor.z), 0, 255), 255);
+    const AZ::Color defaultColor = AZ::Color::CreateFromRgba(
+        clamp_tpl(static_cast<AZ::u8>(FloatToIntRet(vColor.x)), AZ::u8(0), AZ::u8(255)),
+        clamp_tpl(static_cast<AZ::u8>(FloatToIntRet(vColor.y)), AZ::u8(0), AZ::u8(255)),
+        clamp_tpl(static_cast<AZ::u8>(FloatToIntRet(vColor.z)), AZ::u8(0), AZ::u8(255)), 255);
     AzQtComponents::ColorPicker dlg(AzQtComponents::ColorPicker::Configuration::RGB, tr("Select Color"), this);
     dlg.setCurrentColor(defaultColor);
     dlg.setSelectedColor(defaultColor);
@@ -1997,12 +1997,12 @@ void CUiAnimViewDopeSheetBase::DrawTicks(QPainter* painter, const QRect& rc, Ran
         nNumberTicks = 8;
     }
 
-    double start = TickSnap(timeRange.start);
-    double step = 1.0 / m_ticksStep;
+    float start = TickSnap(timeRange.start);
+    float step = 1.0f / static_cast<float>(m_ticksStep);
 
-    for (double t = 0.0f; t <= timeRange.end + step; t += step)
+    for (float t = 0.0f; t <= timeRange.end + step; t += step)
     {
-        double st = TickSnap(t);
+        float st = TickSnap(t);
         if (st > timeRange.end)
         {
             st = timeRange.end;
@@ -2021,7 +2021,7 @@ void CUiAnimViewDopeSheetBase::DrawTicks(QPainter* painter, const QRect& rc, Ran
             continue;
         }
 
-        int k = RoundFloatToInt(st * m_ticksStep);
+        int k = RoundFloatToInt(st * static_cast<float>(m_ticksStep));
         if (k % nNumberTicks == 0)
         {
             if (st >= start)
@@ -2743,7 +2743,7 @@ void CUiAnimViewDopeSheetBase::ComputeFrameSteps(const Range& visRange)
     float nBIntermediateTicks = 5;
     m_fFrameLabelStep = fFact * afStepTable[nStepIdx];
 
-    if (TimeToClient(m_fFrameLabelStep) - TimeToClient(0) > 1300)
+    if (TimeToClient(static_cast<float>(m_fFrameLabelStep)) - TimeToClient(0) > 1300)
     {
         nBIntermediateTicks = 10;
     }
@@ -2755,7 +2755,7 @@ void CUiAnimViewDopeSheetBase::ComputeFrameSteps(const Range& visRange)
 void CUiAnimViewDopeSheetBase::DrawTimeLineInFrames(QPainter* painter, const QRect& rc, [[maybe_unused]] const QColor& lineCol, const QColor& textCol, [[maybe_unused]] double step)
 {
     float fFramesPerSec = 1.0f / m_snapFrameTime;
-    float fInvFrameLabelStep = 1.0f / m_fFrameLabelStep;
+    float fInvFrameLabelStep = 1.0f / static_cast<float>(m_fFrameLabelStep);
     Range VisRange = GetVisibleRange();
 
     const Range& timeRange = m_timeRange;
@@ -2763,9 +2763,9 @@ void CUiAnimViewDopeSheetBase::DrawTimeLineInFrames(QPainter* painter, const QRe
     const QPen ltgray(QColor(90, 90, 90));
     const QPen black(textCol);
 
-    for (double t = TickSnap(timeRange.start); t <= timeRange.end + m_fFrameTickStep; t += m_fFrameTickStep)
+    for (float t = TickSnap(timeRange.start); t <= timeRange.end + static_cast<float>(m_fFrameTickStep); t += static_cast<float>(m_fFrameTickStep))
     {
-        double st = t;
+        float st = t;
         if (st > timeRange.end)
         {
             st = timeRange.end;
@@ -2810,9 +2810,9 @@ void CUiAnimViewDopeSheetBase::DrawTimeLineInSeconds(QPainter* painter, const QR
     const QPen ltgray(QColor(90, 90, 90));
     const QPen black(textCol);
 
-    for (double t = TickSnap(timeRange.start); t <= timeRange.end + step; t += step)
+    for (float t = TickSnap(timeRange.start); t <= timeRange.end + static_cast<float>(step); t += static_cast<float>(step))
     {
-        double st = TickSnap(t);
+        float st = TickSnap(t);
         if (st > timeRange.end)
         {
             st = timeRange.end;
@@ -2831,7 +2831,7 @@ void CUiAnimViewDopeSheetBase::DrawTimeLineInSeconds(QPainter* painter, const QR
         }
         int x = TimeToClient(st);
 
-        int k = RoundFloatToInt(st * m_ticksStep);
+        int k = RoundFloatToInt(st * static_cast<float>(m_ticksStep));
         if (k % nNumberTicks == 0)
         {
             painter->setPen(black);

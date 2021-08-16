@@ -320,7 +320,7 @@ bool CUiAVCustomizeTrackColorsDlg::Import(const QString& fullPath)
                 {
                     return entry.paramType == paramType;
                 });
-        int entryIndex = pEntry - g_trackEntries;
+        int entryIndex = static_cast<int>(pEntry - g_trackEntries);
         if (entryIndex >= arraysize(g_trackEntries)) // If not found, skip this.
         {
             continue;

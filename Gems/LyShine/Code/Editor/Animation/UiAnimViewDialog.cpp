@@ -1470,7 +1470,7 @@ void CUiAnimViewDialog::OnSnapFPS()
     if (ok)
     {
         m_wndDopeSheet->SetSnapFPS(fps);
-        m_wndCurveEditor->SetFPS(fps);
+        m_wndCurveEditor->SetFPS(static_cast<float>(fps));
 
         SetCursorPosText(m_animationContext->GetTime());
     }
@@ -1541,7 +1541,7 @@ void CUiAnimViewDialog::ReadMiscSettings()
 
     if (settings.contains(s_kFrameSnappingFPSEntry))
     {
-        float fps = settings.value(s_kFrameSnappingFPSEntry).toDouble();
+        float fps = settings.value(s_kFrameSnappingFPSEntry).toFloat();
         m_wndDopeSheet->SetSnapFPS(FloatToIntRet(fps));
         m_wndCurveEditor->SetFPS(fps);
     }
