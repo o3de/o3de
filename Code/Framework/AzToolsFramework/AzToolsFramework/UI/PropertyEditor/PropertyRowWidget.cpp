@@ -1755,7 +1755,7 @@ namespace AzToolsFramework
             return -1;
         }
 
-        for (int index = 0; index < GetParentRow()->GetChildRowCount(); index++)
+        for (AZ::u32 index = 0; index < GetParentRow()->GetChildRowCount(); index++)
         {
             if (GetParentRow()->GetChildrenRows()[index] == this)
             {
