@@ -90,8 +90,7 @@ namespace AzToolsFramework
 
                 if ((flags & StoreFlags::StoreLinkIds) != StoreFlags::None)
                 {
-                    LinkIdMetadata linkIdMetadata;
-                    settings.m_metadata.Add(&linkIdMetadata);
+                    settings.m_metadata.Create<LinkIdMetadata>();
                 }
 
                 AZStd::string scratchBuffer;

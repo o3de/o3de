@@ -82,13 +82,13 @@ namespace AzToolsFramework
                 result.Combine(resultInstances);
             }
 
-            PrefabDomUtils::LinkIdMetadata** linkIdMetadata = context.GetMetadata().Find<PrefabDomUtils::LinkIdMetadata*>();
-            if (linkIdMetadata && *linkIdMetadata)
+            PrefabDomUtils::LinkIdMetadata* subPathLinkId = context.GetMetadata().Find<PrefabDomUtils::LinkIdMetadata>();
+            if (subPathLinkId)
             {
                 AZ::ScopedContextPath subPathSource(context, "m_linkId");
 
                 result = ContinueStoringToJsonObjectField(
-                    outputValue, "LinkId", &(instance->m_linkId), &InvalidLinkId, azrtti_typeid<AZ::u64>(), context);
+                    outputValue, "LinkId", &(instance->m_linkId), &InvalidLinkId, azrtti_typeid<decltype(instance->m_linkId)>(), context);
             }
 
             return context.Report(result,
