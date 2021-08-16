@@ -111,13 +111,15 @@ def Edit_DisabledNodeDuplication():
 
         # First make sure we can duplicate a node with a dependent component that is disabled
         editor.EditorComponentAPIBus(bus.Broadcast, 'DisableComponents', [component])
-        general.idle_wait(1.0)
+        helper.wait_for_condition(lambda: not editor.EditorComponentAPIBus(bus.Broadcast, 'IsComponentEnabled',
+                                                                           [component]), 1.0)
         graph.SceneRequestBus(bus.Event, 'DuplicateSelection', newGraphId) # This duplication would cause a crash without the fix
         Report.info("{node} duplicated with disabled component".format(node=nodeName))
 
         # Then, make sure we can duplicate the node with a dependent component that is deleted
         editor.EditorComponentAPIBus(bus.Broadcast, 'RemoveComponents', [component])
-        general.idle_wait(1.0)
+        helper.wait_for_condition(lambda: not editor.EditorComponentAPIBus(bus.Broadcast, 'HasComponentOfType',
+                                                                           componentTypeIds[dependentComponentName]), 1.0)
         graph.SceneRequestBus(bus.Event, 'DuplicateSelection', newGraphId) # This duplication would cause a crash without the fix
         Report.info("{node} duplicated with deleted component".format(node=nodeName))
 
