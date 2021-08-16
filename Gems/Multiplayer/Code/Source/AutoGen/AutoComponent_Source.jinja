@@ -1568,8 +1568,7 @@ namespace {{ Component.attrib['Namespace'] }}
         return s_netComponentId;
     }
 
-#pragma warning(push)
-#pragma warning(disable: 4065) // switch statement contains 'default' but no 'case' labels 
+    AZ_PUSH_DISABLE_WARNING(4065, "-Wunknown-warning-option") // switch statement contains 'default' but no 'case' labels 
     bool {{ ComponentBaseName }}::HandleRpcMessage
     (
         [[maybe_unused]] AzNetworking::IConnection* invokingConnection, 
@@ -1590,7 +1589,7 @@ namespace {{ Component.attrib['Namespace'] }}
         AZ_Assert(0, "Got unhandled RpcType %d in {{ ComponentBaseName }}", static_cast<int32_t>(rpcType));
         return false;
     }
-#pragma warning(pop)
+    AZ_POP_DISABLE_WARNING
 
     bool {{ ComponentBaseName }}::SerializeStateDeltaMessage(Multiplayer::ReplicationRecord& replicationRecord, AzNetworking::ISerializer& serializer)
     {
