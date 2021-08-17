@@ -28,6 +28,8 @@ namespace SandboxEditor
     {
     }
 
+    ViewportManipulatorControllerInstance::~ViewportManipulatorControllerInstance() = default;
+
     AzToolsFramework::ViewportInteraction::MouseButton ViewportManipulatorControllerInstance::GetMouseButton(
         const AzFramework::InputChannel& inputChannel)
     {

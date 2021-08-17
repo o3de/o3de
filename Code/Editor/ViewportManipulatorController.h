@@ -26,7 +26,7 @@ namespace SandboxEditor
     {
     public:
         SANDBOX_API ViewportManipulatorControllerInstance(AzFramework::ViewportId viewport, ViewportManipulatorController* controller);
-        SANDBOX_API ~ViewportManipulatorControllerInstance() = default;
+        SANDBOX_API ~ViewportManipulatorControllerInstance();
 
         SANDBOX_API bool HandleInputChannelEvent(const AzFramework::ViewportControllerInputEvent& event) override;
         SANDBOX_API void ResetInputChannels() override;
