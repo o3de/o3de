@@ -43,6 +43,8 @@
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 
+#include <LmbrCentral/Audio/AudioSystemComponentBus.h>
+
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include "ui_ViewportTitleDlg.h"
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
@@ -119,17 +121,20 @@ CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
     LoadCustomPresets("AspectRatioPresets", "AspectRatioPreset", m_customAspectRatioPresets);
     LoadCustomPresets("ResPresets", "ResPreset", m_customResPresets);
 
-    // audio request setup
-    m_oMuteAudioRequest.pData = &m_oMuteAudioRequestData;
-    m_oUnmuteAudioRequest.pData = &m_oUnmuteAudioRequestData;
-
     SetupCameraDropdownMenu();
     SetupResolutionDropdownMenu();
     SetupViewportInformationMenu();
     SetupHelpersButton();
     SetupOverflowMenu();
 
-    Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequest, gSettings.bMuteAudio ? m_oMuteAudioRequest : m_oUnmuteAudioRequest);
+    if (gSettings.bMuteAudio)
+    {
+        LmbrCentral::AudioSystemComponentRequestBus::Broadcast(&LmbrCentral::AudioSystemComponentRequestBus::Events::GlobalMuteAudio);
+    }
+    else
+    {
+        LmbrCentral::AudioSystemComponentRequestBus::Broadcast(&LmbrCentral::AudioSystemComponentRequestBus::Events::GlobalUnmuteAudio);
+    }
 
     connect(this, &CViewportTitleDlg::ActionTriggered, MainWindow::instance()->GetActionManager(), &ActionManager::ActionTriggered);
 
@@ -877,24 +882,32 @@ void CViewportTitleDlg::OnBnClickedGotoPosition()
 void CViewportTitleDlg::OnBnClickedMuteAudio()
 {
     gSettings.bMuteAudio = !gSettings.bMuteAudio;
-
-    Audio::AudioSystemRequestBus::Broadcast(
-        &Audio::AudioSystemRequestBus::Events::PushRequest, gSettings.bMuteAudio ? m_oMuteAudioRequest : m_oUnmuteAudioRequest);
+    if (gSettings.bMuteAudio)
+    {
+        LmbrCentral::AudioSystemComponentRequestBus::Broadcast(&LmbrCentral::AudioSystemComponentRequestBus::Events::GlobalMuteAudio);
+    }
+    else
+    {
+        LmbrCentral::AudioSystemComponentRequestBus::Broadcast(&LmbrCentral::AudioSystemComponentRequestBus::Events::GlobalUnmuteAudio);
+    }
 
     UpdateMuteActionText();
 }
 
 void CViewportTitleDlg::UpdateMuteActionText()
 {
-    if (!Audio::AudioSystemRequestBus::HasHandlers())
-    {
-        m_audioMuteAction->setEnabled(false);
-        m_audioMuteAction->setText(tr("Mute Audio: Enable Audio Gem"));
-    }
-    else
+    bool audioSystemConnected = false;
+    LmbrCentral::AudioSystemComponentRequestBus::BroadcastResult(
+        audioSystemConnected, &LmbrCentral::AudioSystemComponentRequestBus::Events::IsAudioSystemInitialized);
+    if (audioSystemConnected)
     {
         m_audioMuteAction->setEnabled(true);
         m_audioMuteAction->setText(gSettings.bMuteAudio ? tr("Un-mute Audio") : tr("Mute Audio"));
+    }
+    else
+    {
+        m_audioMuteAction->setEnabled(false);
+        m_audioMuteAction->setText(tr("Mute Audio: Enable Audio Gem"));
     }
 }
 
