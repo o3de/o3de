@@ -201,8 +201,8 @@ void FastNoise::SetSeed(int seed)
 
     std::mt19937_64 gen(seed);
 
-    for (unsigned char i = 0; i < 256; i++)
-        m_perm[i] = i;
+    for (int i = 0; i < 256; i++)
+        m_perm[i] = static_cast<unsigned char>(i);
 
     for (int j = 0; j < 256; j++)
     {
