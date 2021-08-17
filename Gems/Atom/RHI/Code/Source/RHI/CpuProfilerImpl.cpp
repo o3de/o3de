@@ -74,6 +74,20 @@ namespace AZ
         {
         }
 
+        AZStd::size_t CachedTimeRegion::GroupRegionName::Hash::operator()(const CachedTimeRegion::GroupRegionName& name) const
+        {
+            AZStd::size_t seed = 0;
+            AZStd::hash_combine(seed, name.m_groupName);
+            AZStd::hash_combine(seed, name.m_regionName);
+            return seed;
+        }
+
+        bool CachedTimeRegion::GroupRegionName::operator==(const GroupRegionName& other) const
+        {
+            return (m_groupName == other.m_groupName) && (m_regionName == other.m_regionName);
+        }
+
+
         // --- CpuProfilerImpl ---
 
         void CpuProfilerImpl::Init()
@@ -216,6 +230,19 @@ namespace AZ
         bool CpuProfilerImpl::IsProfilerEnabled() const
         {
             return m_enabled;
+        }
+
+        const CachedTimeRegion::GroupRegionName& CpuProfilerImpl::InsertDynamicName(const char* groupName, const AZStd::string& regionName)
+        {
+            AZStd::scoped_lock lock(m_dynamicNameMutex);
+            AZ_Warning("CpuProfiler", m_regionNameStringPool.size() < MaxRegionStringPoolSize,
+                "Stored dynamic region names are accumulating. Consider removing a AZ_ATOM_PROFILE_DYNAMIC invocation.");
+            auto [regionNameItr, wasRegionInserted] =  m_regionNameStringPool.insert(regionName);
+
+            CachedTimeRegion::GroupRegionName newGroupRegionName(groupName, regionNameItr->c_str());
+            auto [groupRegionNameItr, wasGroupRegionInserted] = m_dynamicGroupRegionNamePool.insert(newGroupRegionName);
+
+            return *groupRegionNameItr;
         }
 
         void CpuProfilerImpl::OnSystemTick()
@@ -382,5 +409,64 @@ namespace AZ
                 m_cachedTimeRegionMutex.unlock();
             }
         }
-    }
-}
+
+        // --- CpuProfilingStatisticsSerializer ---
+
+        CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializer(const AZStd::ring_buffer<RHI::CpuProfiler::TimeRegionMap>& continuousData)
+        {
+            // Create serializable entries
+            for (const auto& timeRegionMap : continuousData)
+            {
+                for (const auto& threadEntry : timeRegionMap)
+                {
+                    for (const auto& cachedRegionEntry : threadEntry.second)
+                    {
+                        m_cpuProfilingStatisticsSerializerEntries.insert(
+                            m_cpuProfilingStatisticsSerializerEntries.end(),
+                            cachedRegionEntry.second.begin(),
+                            cachedRegionEntry.second.end());
+                    }
+                }
+            }
+        }
+
+        void CpuProfilingStatisticsSerializer::Reflect(AZ::ReflectContext* context)
+        {
+            if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+            {
+                serializeContext->Class<CpuProfilingStatisticsSerializer>()
+                    ->Version(1)
+                    ->Field("cpuProfilingStatisticsSerializerEntries", &CpuProfilingStatisticsSerializer::m_cpuProfilingStatisticsSerializerEntries)
+                    ;
+            }
+
+            CpuProfilingStatisticsSerializerEntry::Reflect(context);
+        }
+
+        // --- CpuProfilingStatisticsSerializerEntry ---
+
+        CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializerEntry::CpuProfilingStatisticsSerializerEntry(const RHI::CachedTimeRegion& cachedTimeRegion)
+        {
+            m_groupName = cachedTimeRegion.m_groupRegionName->m_groupName;
+            m_regionName = cachedTimeRegion.m_groupRegionName->m_regionName;
+            m_stackDepth = cachedTimeRegion.m_stackDepth;
+            m_startTick = cachedTimeRegion.m_startTick;
+            m_endTick = cachedTimeRegion.m_endTick;
+        }
+
+        void CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializerEntry::Reflect(AZ::ReflectContext* context)
+        {
+            if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+            {
+                serializeContext->Class<CpuProfilingStatisticsSerializerEntry>()
+                    ->Version(1)
+                    ->Field("groupName", &CpuProfilingStatisticsSerializerEntry::m_groupName)
+                    ->Field("regionName", &CpuProfilingStatisticsSerializerEntry::m_regionName)
+                    ->Field("stackDepth", &CpuProfilingStatisticsSerializerEntry::m_stackDepth)
+                    ->Field("startTick", &CpuProfilingStatisticsSerializerEntry::m_startTick)
+                    ->Field("endTick", &CpuProfilingStatisticsSerializerEntry::m_endTick)
+                    ;
+            }
+        }
+    } // namespace RHI
+} // namespace AZ

@@ -51,7 +51,7 @@ namespace AZ
         {
             // load shader
             // Note: the shader may not be available on all platforms
-            shader = RPI::LoadShader(shaderFilePath);
+            shader = RPI::LoadCriticalShader(shaderFilePath);
             if (shader == nullptr)
             {
                 return;

@@ -31,6 +31,7 @@ namespace Multiplayer
         , m_scaleEventHandler([this](float scale) { OnScaleChangedEvent(scale); })
         , m_resetCountEventHandler([this](const uint8_t&) { OnResetCountChangedEvent(); })
         , m_entityPreRenderEventHandler([this](float deltaTime, float blendFactor) { OnPreRender(deltaTime, blendFactor); })
+        , m_entityCorrectionEventHandler([this]() { OnCorrection(); })
     {
         ;
     }
@@ -47,6 +48,7 @@ namespace Multiplayer
         ScaleAddEvent(m_scaleEventHandler);
         ResetCountAddEvent(m_resetCountEventHandler);
         GetNetBindComponent()->AddEntityPreRenderEventHandler(m_entityPreRenderEventHandler);
+        GetNetBindComponent()->AddEntityCorrectionEventHandler(m_entityCorrectionEventHandler);
 
         // When coming into relevance, reset all blending factors so we don't interpolate to our start position
         OnResetCountChangedEvent();
@@ -116,6 +118,18 @@ namespace Multiplayer
             {
                 GetTransformComponent()->SetWorldTM(blendTransform);
             }
+        }
+    }
+
+    void NetworkTransformComponent::OnCorrection()
+    {
+        // Snap to latest
+        OnResetCountChangedEvent();
+
+        // Hard set the entities transform
+        if (!GetTransformComponent()->GetWorldTM().IsClose(m_targetTransform))
+        {
+            GetTransformComponent()->SetWorldTM(m_targetTransform);
         }
     }
 

@@ -67,7 +67,6 @@ AZ_POP_DISABLE_WARNING
 #include "EditorFileMonitor.h"
 #include "MainStatusBar.h"
 
-#include "ResourceSelectorHost.h"
 #include "Util/FileUtil_impl.h"
 #include "Util/ImageUtil_impl.h"
 #include "LogFileImpl.h"
@@ -187,7 +186,6 @@ CEditorImpl::CEditorImpl()
     m_pAnimationContext = new CAnimationContext;
 
     m_pImageUtil = new CImageUtil_impl();
-    m_pResourceSelectorHost.reset(CreateResourceSelectorHost());
     m_selectedRegion.min = Vec3(0, 0, 0);
     m_selectedRegion.max = Vec3(0, 0, 0);
     DetectVersion();
@@ -252,7 +250,7 @@ void CEditorImpl::Uninitialize()
 
 void CEditorImpl::UnloadPlugins()
 {
-    CryAutoLock<CryMutex> lock(m_pluginMutex);
+    AZStd::scoped_lock lock(m_pluginMutex);
 
     // Flush core buses. We're about to unload DLLs and need to ensure we don't have module-owned functions left behind.
     AZ::Data::AssetBus::ExecuteQueuedEvents();
@@ -273,7 +271,7 @@ void CEditorImpl::UnloadPlugins()
 
 void CEditorImpl::LoadPlugins()
 {
-    CryAutoLock<CryMutex> lock(m_pluginMutex);
+    AZStd::scoped_lock lock(m_pluginMutex);
 
     static const QString editor_plugins_folder("EditorPlugins");
 
@@ -1460,7 +1458,7 @@ void CEditorImpl::UnregisterNotifyListener(IEditorNotifyListener* listener)
 
 ISourceControl* CEditorImpl::GetSourceControl()
 {
-    CryAutoLock<CryMutex> lock(m_pluginMutex);
+    AZStd::scoped_lock lock(m_pluginMutex);
 
     if (m_pSourceControl)
     {

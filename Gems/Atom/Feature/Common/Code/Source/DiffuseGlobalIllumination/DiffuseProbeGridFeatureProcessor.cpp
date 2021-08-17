@@ -74,7 +74,7 @@ namespace AZ
 
             // load shader
             // Note: the shader may not be available on all platforms
-            Data::Instance<RPI::Shader> shader = RPI::LoadShader("Shaders/DiffuseGlobalIllumination/DiffuseProbeGridRender.azshader");
+            Data::Instance<RPI::Shader> shader = RPI::LoadCriticalShader("Shaders/DiffuseGlobalIllumination/DiffuseProbeGridRender.azshader");
             if (shader)
             {
                 m_probeGridRenderData.m_drawListTag = shader->GetDrawListTag();

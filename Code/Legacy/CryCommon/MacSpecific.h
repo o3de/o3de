@@ -26,4 +26,6 @@
 
 typedef uint64_t threadID;
 
+#define VK_CONTROL  0
+
 #endif // CRYINCLUDE_CRYCOMMON_MACSPECIFIC_H

@@ -10,8 +10,6 @@
 #include "StringHelpers.h"
 #include "Util.h"
 
-#include <AzCore/std/string/string.h>
-
 int StringHelpers::CompareIgnoreCase(const AZStd::string& str0, const AZStd::string& str1)
 {
     const size_t minLength = Util::getMin(str0.length(), str1.length());
