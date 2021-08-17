@@ -462,7 +462,7 @@ void CViewportTitleDlg::AddFOVMenus(QMenu* menu, std::function<void(float)> call
             {
                 fov = std::max(1.0f, f);
                 fov = std::min(120.0f, f);
-                QAction* action = menu->addAction(customPresets[i]);
+                QAction* action = menu->addAction(customPreset);
                 connect(action, &QAction::triggered, action, [fov, callback](){ callback(fov); });
             }
         }
@@ -536,7 +536,7 @@ void CViewportTitleDlg::AddAspectRatioMenus(QMenu* menu, std::function<void(int,
 
     for (const QString& customPreset : customPresets)
     {
-        if (customPresets[i].isEmpty())
+        if (customPreset.isEmpty())
         {
             break;
         }
@@ -550,7 +550,7 @@ void CViewportTitleDlg::AddAspectRatioMenus(QMenu* menu, std::function<void(int,
             Q_ASSERT(ok);
             unsigned int height = matches.captured(2).toInt(&ok);
             Q_ASSERT(ok);
-            QAction* action = menu->addAction(customPresets[i]);
+            QAction* action = menu->addAction(customPreset);
             connect(action, &QAction::triggered, action, [width, height, callback]() {callback(width, height); });
         }
     }

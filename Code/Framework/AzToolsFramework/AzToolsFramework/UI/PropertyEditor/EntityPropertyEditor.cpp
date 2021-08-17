@@ -254,8 +254,8 @@ namespace AzToolsFramework
             QRect globalRect = m_editor->GetWidgetAndVisibleChildrenGlobalRect(dragRowWidget);
 
             int top = mapFromGlobal(globalRect.topLeft()).y();
-            int imageHeight = dragImage.height() / dragImage.devicePixelRatioF();
-            int imageWidth = dragImage.width() / dragImage.devicePixelRatioF();
+            int imageHeight = static_cast<int>(dragImage.height() / dragImage.devicePixelRatioF());
+            int imageWidth = static_cast<int>(dragImage.width() / dragImage.devicePixelRatioF());
             QRect currRect = QRect(QPoint(LeftMargin + 1, top), QPoint(LeftMargin + 1 + imageWidth, top + imageHeight));
 
             painter.setOpacity(alpha);
