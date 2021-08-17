@@ -19,7 +19,7 @@
 
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroupLayout.h>
 
-#include <AzToolsFramework/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/IO/FileOperations.h> // [GFX TODO] Remove when [ATOM-15472]

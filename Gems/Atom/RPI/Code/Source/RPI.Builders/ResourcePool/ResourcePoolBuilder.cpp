@@ -16,7 +16,7 @@
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
-#include <AzToolsFramework/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <Atom/RHI.Reflect/BufferPoolDescriptor.h>
 #include <Atom/RHI.Reflect/ImagePoolDescriptor.h>

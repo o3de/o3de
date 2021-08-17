@@ -21,7 +21,7 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 
-#include <AzToolsFramework/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <Atom/RPI.Edit/Common/JsonReportingHelper.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>

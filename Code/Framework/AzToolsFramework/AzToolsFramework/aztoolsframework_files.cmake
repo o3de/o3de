@@ -205,8 +205,6 @@ set(FILES
     PropertyTreeEditor/PropertyTreeEditorComponent.h
     Render/EditorIntersectorComponent.cpp
     Render/EditorIntersectorComponent.h
-    Serialization/Json/JsonUtils.h
-    Serialization/Json/JsonUtils.cpp
     Slice/SliceDataFlagsCommand.h
     Slice/SliceDataFlagsCommand.cpp
     Slice/SliceUtilities.h

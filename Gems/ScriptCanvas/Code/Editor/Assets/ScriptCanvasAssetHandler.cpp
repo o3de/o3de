@@ -17,7 +17,7 @@
 #include <AzCore/std/string/string_view.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-#include <AzToolsFramework/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <Core/ScriptCanvasBus.h>
 #include <GraphCanvas/GraphCanvasBus.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>

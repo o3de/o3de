@@ -8,7 +8,7 @@
 
 #include <Atom/RHI.Edit/Utils.h>
 
-#include <AzToolsFramework/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <AzFramework/Process/ProcessCommunicator.h>
 #include <AzFramework/Process/ProcessWatcher.h>

@@ -11,7 +11,7 @@
 
 #include <AzCore/Asset/AssetManagerBus.h>
 
-#include <AzToolsFramework/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <Atom/RPI.Reflect/Asset/AssetReference.h>
 #include <Atom/RPI.Reflect/Pass/PassAsset.h>

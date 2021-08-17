@@ -531,6 +531,8 @@ set(FILES
     Serialization/Json/JsonStringConversionUtils.h
     Serialization/Json/JsonSystemComponent.h
     Serialization/Json/JsonSystemComponent.cpp
+    Serialization/Json/JsonUtils.h
+    Serialization/Json/JsonUtils.cpp
     Serialization/Json/MapSerializer.h
     Serialization/Json/MapSerializer.cpp
     Serialization/Json/RegistrationContext.h

@@ -18,7 +18,7 @@
 #include <Atom/RPI.Edit/Shader/ShaderVariantTreeAssetCreator.h>
 #include <Atom/RPI.Edit/Common/JsonUtils.h>
 
-#include <AzToolsFramework/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <Atom/RPI.Reflect/Shader/ShaderVariantKey.h>
 
 #include <Atom/RHI.Edit/Utils.h>
