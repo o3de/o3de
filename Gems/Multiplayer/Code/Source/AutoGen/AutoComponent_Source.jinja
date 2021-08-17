@@ -1465,10 +1465,10 @@ namespace {{ Component.attrib['Namespace'] }}
 {% call(ComponentService) ParseComponentServiceNames(Component, ClassType, 'Required') %}
         required.push_back(AZ_CRC_CE("{{ ComponentService }}"));
 {% endcall %}
-
 {% if NetworkInputCount > 0 %}
-        // This component uses NetworkInputs so it requires LocalPredictionPlayerInputComponent which is responsible for calling CreateInput and ProcessInput
-        required.push_back(AZ_CRC_CE("LocalPredictionPlayerInputComponent"));
+
+        // This component uses NetworkInputs so it requires a MultiplayerInputDriver service which is responsible for calling CreateInput and ProcessInput
+        required.push_back(AZ_CRC_CE("MultiplayerInputDriver"));
 {% endif %}
     }
 
