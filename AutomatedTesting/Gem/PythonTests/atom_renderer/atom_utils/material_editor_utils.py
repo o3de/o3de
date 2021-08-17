@@ -47,28 +47,28 @@ def open_material(file_path):
     """
     :return: uuid of material document opened
     """
-    return materialeditor.MaterialDocumentSystemRequestBus(bus.Broadcast, "OpenDocument", file_path)
+    return azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(bus.Broadcast, "OpenDocument", file_path)
 
 
 def is_open(document_id):
     """
     :return: bool
     """
-    return materialeditor.MaterialDocumentRequestBus(bus.Event, "IsOpen", document_id)
+    return azlmbr.atomtools.AtomToolsDocumentRequestBus(bus.Event, "IsOpen", document_id)
 
 
 def save_document(document_id):
     """
     :return: bool success
     """
-    return materialeditor.MaterialDocumentSystemRequestBus(bus.Broadcast, "SaveDocument", document_id)
+    return azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(bus.Broadcast, "SaveDocument", document_id)
 
 
 def save_document_as_copy(document_id, target_path):
     """
     :return: bool success
     """
-    return materialeditor.MaterialDocumentSystemRequestBus(
+    return azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(
         bus.Broadcast, "SaveDocumentAsCopy", document_id, target_path
     )
 
@@ -77,7 +77,7 @@ def save_document_as_child(document_id, target_path):
     """
     :return: bool success
     """
-    return materialeditor.MaterialDocumentSystemRequestBus(
+    return azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(
         bus.Broadcast, "SaveDocumentAsChild", document_id, target_path
     )
 
@@ -86,39 +86,39 @@ def save_all():
     """
     :return: bool success
     """
-    return materialeditor.MaterialDocumentSystemRequestBus(bus.Broadcast, "SaveAllDocuments")
+    return azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(bus.Broadcast, "SaveAllDocuments")
 
 
 def close_document(document_id):
     """
     :return: bool success
     """
-    return materialeditor.MaterialDocumentSystemRequestBus(bus.Broadcast, "CloseDocument", document_id)
+    return azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(bus.Broadcast, "CloseDocument", document_id)
 
 
 def close_all_documents():
     """
     :return: bool success
     """
-    return materialeditor.MaterialDocumentSystemRequestBus(bus.Broadcast, "CloseAllDocuments")
+    return azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(bus.Broadcast, "CloseAllDocuments")
 
 
 def close_all_except_selected(document_id):
     """
     :return: bool success
     """
-    return materialeditor.MaterialDocumentSystemRequestBus(bus.Broadcast, "CloseAllDocumentsExcept", document_id)
+    return azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(bus.Broadcast, "CloseAllDocumentsExcept", document_id)
 
 
 def get_property(document_id, property_name):
     """
     :return: property value or invalid value if the document is not open or the property_name can't be found
     """
-    return materialeditor.MaterialDocumentRequestBus(bus.Event, "GetPropertyValue", document_id, property_name)
+    return azlmbr.atomtools.AtomToolsDocumentRequestBus(bus.Event, "GetPropertyValue", document_id, property_name)
 
 
 def set_property(document_id, property_name, value):
-    materialeditor.MaterialDocumentRequestBus(bus.Event, "SetPropertyValue", document_id, property_name, value)
+    azlmbr.atomtools.AtomToolsDocumentRequestBus(bus.Event, "SetPropertyValue", document_id, property_name, value)
 
 
 def is_pane_visible(pane_name):
@@ -175,7 +175,7 @@ def wait_for_condition(function, timeout_in_seconds=1.0):
     with Timeout(timeout_in_seconds) as t:
         while True:
             try:
-                atomtools.general.idle_wait_frames(1)
+                azlmbr.atomtools.general.idle_wait_frames(1)
             except Exception:
                 print("WARNING: Couldn't wait for frame")
 
@@ -269,6 +269,6 @@ class ScreenshotHelper:
 
 
 def capture_screenshot(file_path):
-    return ScreenshotHelper(atomtools.general.idle_wait_frames).capture_screenshot_blocking(
+    return ScreenshotHelper(azlmbr.atomtools.general.idle_wait_frames).capture_screenshot_blocking(
         os.path.join(file_path)
     )

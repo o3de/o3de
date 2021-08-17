@@ -9,14 +9,12 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <AzCore/std/containers/unordered_map.h>
-#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
-
+#include <Atom/Window/MaterialEditorWindowSettings.h>
+#include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
 #include <AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h>
 #include <AtomToolsFramework/Inspector/InspectorWidget.h>
-
-#include <Atom/Document/MaterialDocumentNotificationBus.h>
-#include <Atom/Window/MaterialEditorWindowSettings.h>
+#include <AzCore/std/containers/unordered_map.h>
+#include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI_Internals.h>
 #endif
 
 namespace MaterialEditor
@@ -25,7 +23,7 @@ namespace MaterialEditor
     //! The settings can be divided into cards, with each one showing a subset of properties.
     class MaterialInspector
         : public AtomToolsFramework::InspectorWidget
-        , public MaterialDocumentNotificationBus::Handler
+        , public AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler
         , public AzToolsFramework::IPropertyEditorNotify
     {
         Q_OBJECT
@@ -52,7 +50,7 @@ namespace MaterialEditor
         void AddUvNamesGroup();
         void AddPropertiesGroup();
 
-        // MaterialDocumentNotificationBus::Handler implementation
+        // AtomToolsDocumentNotificationBus::Handler implementation
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
         void OnDocumentPropertyValueModified(const AZ::Uuid& documentId, const AtomToolsFramework::DynamicProperty& property) override;
         void OnDocumentPropertyConfigModified(const AZ::Uuid& documentId, const AtomToolsFramework::DynamicProperty& property) override;

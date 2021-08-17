@@ -13,6 +13,7 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
 #include <SceneAPI/SceneCore/Events/AssetImportRequest.h>
+#include <SceneAPI/SceneCore/Components/LoadingComponent.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 #include <SceneSerializationHandler.h>
 
@@ -96,7 +97,7 @@ namespace AZ
         }
 
         AZStd::shared_ptr<SceneAPI::Containers::Scene> scene = 
-            AssetImportRequest::LoadSceneFromVerifiedPath(cleanPath, sceneSourceGuid, AssetImportRequest::RequestingApplication::Editor);
+            AssetImportRequest::LoadSceneFromVerifiedPath(cleanPath, sceneSourceGuid, AssetImportRequest::RequestingApplication::Editor, SceneAPI::SceneCore::LoadingComponent::TYPEINFO_Uuid());
         if (!scene)
         {
             AZ_TracePrintf(Utilities::ErrorWindow, "Failed to load the requested scene.");
