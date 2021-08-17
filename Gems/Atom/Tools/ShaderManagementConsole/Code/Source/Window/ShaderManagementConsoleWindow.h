@@ -9,9 +9,9 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <Atom/Document/ShaderManagementConsoleDocumentNotificationBus.h>
 #include <Atom/RPI.Edit/Shader/ShaderVariantListSourceData.h>
 #include <Atom/RPI.Public/Shader/Shader.h>
+#include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindow.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
@@ -31,7 +31,7 @@ namespace ShaderManagementConsole
      */
     class ShaderManagementConsoleWindow
         : public AtomToolsFramework::AtomToolsMainWindow
-        , private ShaderManagementConsoleDocumentNotificationBus::Handler
+        , private AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler
     {
         Q_OBJECT
     public:
@@ -43,7 +43,7 @@ namespace ShaderManagementConsole
         ~ShaderManagementConsoleWindow();
 
     private:
-        // ShaderManagementConsoleDocumentNotificationBus::Handler overrides...
+        // AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler overrides...
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
         void OnDocumentClosed(const AZ::Uuid& documentId) override;
         void OnDocumentModified(const AZ::Uuid& documentId) override;
@@ -56,10 +56,6 @@ namespace ShaderManagementConsole
         QString GetDocumentPath(const AZ::Uuid& documentId) const;
 
         void OpenTabContextMenu() override;
-
-        void SelectDocumentForTab(const int tabIndex);
-        void CloseDocumentForTab(const int tabIndex);
-        void CloseAllExceptDocumentForTab(const int tabIndex);
 
         void closeEvent(QCloseEvent* closeEvent) override;
 

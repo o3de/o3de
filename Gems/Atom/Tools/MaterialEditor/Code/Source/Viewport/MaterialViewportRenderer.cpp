@@ -243,7 +243,7 @@ namespace MaterialEditor
         OnFieldOfViewChanged(viewportSettings->m_fieldOfView);
         OnDisplayMapperOperationTypeChanged(viewportSettings->m_displayMapperOperationType);
 
-        MaterialDocumentNotificationBus::Handler::BusConnect();
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect();
         MaterialViewportNotificationBus::Handler::BusConnect();
         AZ::TickBus::Handler::BusConnect();
         AZ::TransformNotificationBus::MultiHandler::BusConnect(m_cameraEntity->GetId());
@@ -255,7 +255,7 @@ namespace MaterialEditor
         AzFramework::WindowSystemRequestBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::MultiHandler::BusDisconnect();
         AZ::TickBus::Handler::BusDisconnect();
-        MaterialDocumentNotificationBus::Handler::BusDisconnect();
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
         MaterialViewportNotificationBus::Handler::BusDisconnect();
         AZ::Data::AssetBus::Handler::BusDisconnect();
 
