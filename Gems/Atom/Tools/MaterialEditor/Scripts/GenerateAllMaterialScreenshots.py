@@ -93,11 +93,11 @@ def ToRadians(degrees):
     return 3.14159 * degrees / 180.0;
 
 def OpenMaterial(filename):
-    documentId = azlmbr.materialeditor.MaterialDocumentSystemRequestBus(azlmbr.bus.Broadcast, 'OpenDocument', os.path.join(g_materialTestFolder, filename))
+    documentId = azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(azlmbr.bus.Broadcast, 'OpenDocument', os.path.join(g_materialTestFolder, filename))
     return documentId
     
 def CloseMaterial(documentId):
-    azlmbr.materialeditor.MaterialDocumentSystemRequestBus(azlmbr.bus.Broadcast, 'CloseDocument', documentId)
+    azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(azlmbr.bus.Broadcast, 'CloseDocument', documentId)
 
 def SelectLightingPreset(presetName):
     azlmbr.materialeditor.MaterialViewportRequestBus(azlmbr.bus.Broadcast, 'SelectLightingPresetByName', presetName)

@@ -851,7 +851,8 @@ bool CLog::LogToMainThread(const char* szString, ELogType logType, bool bAdd, SL
     {
         // When logging from other thread then main, push all log strings to queue.
         SLogMsg msg;
-        azstrcpy(msg.msg, AZ_ARRAY_SIZE(msg.msg), szString);
+        constexpr size_t maxArraySize = AZ_ARRAY_SIZE(msg.msg);
+        azstrncpy(msg.msg, maxArraySize, szString, maxArraySize - 1);
         msg.bAdd = bAdd;
         msg.destination = destination;
         msg.logType = logType;

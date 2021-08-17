@@ -10,7 +10,9 @@
 
 #include <AzCore/JSON/document.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
+
 #include <AtomCore/Serialization/Json/JsonUtils.h>
+
 #include <Atom/RPI.Edit/Common/JsonFileLoadContext.h>
 #include <Atom/RPI.Edit/Common/JsonReportingHelper.h>
 
@@ -118,7 +120,6 @@ namespace AZ
                 AZ_Error("AZ::RPI::JsonUtils", false, "Failed to load object from json string: %s", loadResult.GetError().c_str());
                 return false;
             }
-
         } // namespace JsonUtils
     } // namespace RPI
 } // namespace AZ

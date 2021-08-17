@@ -6,7 +6,11 @@
  *
  */
 
+#include <Atom/Document/MaterialDocumentRequestBus.h>
 #include <Atom/RHI/Factory.h>
+#include <Atom/Window/MaterialEditorWindowSettings.h>
+#include <AtomToolsFramework/Document/AtomToolsDocumentRequestBus.h>
+#include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AtomToolsFramework/Util/Util.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindowNotificationBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>
@@ -15,11 +19,6 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 #include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
-
-#include <Atom/Document/MaterialDocumentRequestBus.h>
-#include <Atom/Document/MaterialDocumentSystemRequestBus.h>
-#include <Atom/Window/MaterialEditorWindowSettings.h>
-
 #include <Viewport/MaterialViewportWidget.h>
 #include <Window/CreateMaterialDialog/CreateMaterialDialog.h>
 #include <Window/HelpDialog/HelpDialog.h>
@@ -106,13 +105,13 @@ namespace MaterialEditor
             m_advancedDockManager->restoreState(windowState);
         }
 
-        MaterialDocumentNotificationBus::Handler::BusConnect();
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect();
         OnDocumentOpened(AZ::Uuid::CreateNull());
     }
 
     MaterialEditorWindow::~MaterialEditorWindow()
     {
-        MaterialDocumentNotificationBus::Handler::BusDisconnect();
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
     }
 
     
@@ -150,7 +149,7 @@ namespace MaterialEditor
     void MaterialEditorWindow::closeEvent(QCloseEvent* closeEvent)
     {
         bool didClose = true;
-        MaterialDocumentSystemRequestBus::BroadcastResult(didClose, &MaterialDocumentSystemRequestBus::Events::CloseAllDocuments);
+        AtomToolsFramework::AtomToolsDocumentSystemRequestBus::BroadcastResult(didClose, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::CloseAllDocuments);
         if (!didClose)
         {
             closeEvent->ignore();
@@ -171,17 +170,17 @@ namespace MaterialEditor
     void MaterialEditorWindow::OnDocumentOpened(const AZ::Uuid& documentId)
     {
         bool isOpen = false;
-        MaterialDocumentRequestBus::EventResult(isOpen, documentId, &MaterialDocumentRequestBus::Events::IsOpen);
+        AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(isOpen, documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::IsOpen);
         bool isSavable = false;
-        MaterialDocumentRequestBus::EventResult(isSavable, documentId, &MaterialDocumentRequestBus::Events::IsSavable);
+        AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(isSavable, documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::IsSavable);
         bool isModified = false;
-        MaterialDocumentRequestBus::EventResult(isModified, documentId, &MaterialDocumentRequestBus::Events::IsModified);
+        AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(isModified, documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::IsModified);
         bool canUndo = false;
-        MaterialDocumentRequestBus::EventResult(canUndo, documentId, &MaterialDocumentRequestBus::Events::CanUndo);
+        AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(canUndo, documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::CanUndo);
         bool canRedo = false;
-        MaterialDocumentRequestBus::EventResult(canRedo, documentId, &MaterialDocumentRequestBus::Events::CanRedo);
+        AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(canRedo, documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::CanRedo);
         AZStd::string absolutePath;
-        MaterialDocumentRequestBus::EventResult(absolutePath, documentId, &MaterialDocumentRequestBus::Events::GetAbsolutePath);
+        AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(absolutePath, documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
         AZStd::string filename;
         AzFramework::StringFunc::Path::GetFullFileName(absolutePath.c_str(), filename);
 
@@ -238,7 +237,7 @@ namespace MaterialEditor
         const QString documentPath = GetDocumentPath(documentId);
         if (!documentPath.isEmpty())
         {
-            const QString status = QString("Document closed: %1").arg(documentPath);
+            const QString status = QString("Document opened: %1").arg(documentPath);
             m_statusMessage->setText(QString("<font color=\"White\">%1</font>").arg(status));
         }
     }
@@ -255,9 +254,9 @@ namespace MaterialEditor
     void MaterialEditorWindow::OnDocumentModified(const AZ::Uuid& documentId)
     {
         bool isModified = false;
-        MaterialDocumentRequestBus::EventResult(isModified, documentId, &MaterialDocumentRequestBus::Events::IsModified);
+        AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(isModified, documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::IsModified);
         AZStd::string absolutePath;
-        MaterialDocumentRequestBus::EventResult(absolutePath, documentId, &MaterialDocumentRequestBus::Events::GetAbsolutePath);
+        AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(absolutePath, documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
         AZStd::string filename;
         AzFramework::StringFunc::Path::GetFullFileName(absolutePath.c_str(), filename);
         UpdateTabForDocumentId(documentId, filename, absolutePath, isModified);
@@ -268,9 +267,9 @@ namespace MaterialEditor
         if (documentId == GetDocumentIdFromTab(m_tabWidget->currentIndex()))
         {
             bool canUndo = false;
-            MaterialDocumentRequestBus::EventResult(canUndo, documentId, &MaterialDocumentRequestBus::Events::CanUndo);
+            AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(canUndo, documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::CanUndo);
             bool canRedo = false;
-            MaterialDocumentRequestBus::EventResult(canRedo, documentId, &MaterialDocumentRequestBus::Events::CanRedo);
+            AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(canRedo, documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::CanRedo);
             m_actionUndo->setEnabled(canUndo);
             m_actionRedo->setEnabled(canRedo);
         }
@@ -279,15 +278,15 @@ namespace MaterialEditor
     void MaterialEditorWindow::OnDocumentSaved(const AZ::Uuid& documentId)
     {
         bool isModified = false;
-        MaterialDocumentRequestBus::EventResult(isModified, documentId, &MaterialDocumentRequestBus::Events::IsModified);
+        AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(isModified, documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::IsModified);
         AZStd::string absolutePath;
-        MaterialDocumentRequestBus::EventResult(absolutePath, documentId, &MaterialDocumentRequestBus::Events::GetAbsolutePath);
+        AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(absolutePath, documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
         AZStd::string filename;
         AzFramework::StringFunc::Path::GetFullFileName(absolutePath.c_str(), filename);
         UpdateTabForDocumentId(documentId, filename, absolutePath, isModified);
 
         const QString documentPath = GetDocumentPath(documentId);
-        const QString status = QString("Document closed: %1").arg(documentPath);
+        const QString status = QString("Document saved: %1").arg(documentPath);
         m_statusMessage->setText(QString("<font color=\"White\">%1</font>").arg(status));
     }
 
@@ -306,7 +305,7 @@ namespace MaterialEditor
                 !createDialog.m_materialFileInfo.absoluteFilePath().isEmpty() &&
                 !createDialog.m_materialTypeFileInfo.absoluteFilePath().isEmpty())
             {
-                MaterialDocumentSystemRequestBus::Broadcast(&MaterialDocumentSystemRequestBus::Events::CreateDocumentFromFile,
+                AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::CreateDocumentFromFile,
                     createDialog.m_materialTypeFileInfo.absoluteFilePath().toUtf8().constData(),
                     createDialog.m_materialFileInfo.absoluteFilePath().toUtf8().constData());
             }
@@ -317,7 +316,7 @@ namespace MaterialEditor
             const AZStd::string filePath = AtomToolsFramework::GetOpenFileInfo(assetTypes).absoluteFilePath().toUtf8().constData();
             if (!filePath.empty())
             {
-                MaterialDocumentSystemRequestBus::Broadcast(&MaterialDocumentSystemRequestBus::Events::OpenDocument, filePath);
+                AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::OpenDocument, filePath);
             }
         }, QKeySequence::Open);
 
@@ -328,11 +327,11 @@ namespace MaterialEditor
         m_actionSave = m_menuFile->addAction("&Save", [this]() {
             const AZ::Uuid documentId = GetDocumentIdFromTab(m_tabWidget->currentIndex());
             bool result = false;
-            MaterialDocumentSystemRequestBus::BroadcastResult(result, &MaterialDocumentSystemRequestBus::Events::SaveDocument, documentId);
+            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::BroadcastResult(result, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::SaveDocument, documentId);
             if (!result)
             {
                 const QString documentPath = GetDocumentPath(documentId);
-                const QString status = QString("Failed to save document: %1").arg(documentPath);
+                const QString status = QString("Document save failed: %1").arg(documentPath);
                 m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(status));
             }
         }, QKeySequence::Save);
@@ -342,11 +341,11 @@ namespace MaterialEditor
             const QString documentPath = GetDocumentPath(documentId);
 
             bool result = false;
-            MaterialDocumentSystemRequestBus::BroadcastResult(result, &MaterialDocumentSystemRequestBus::Events::SaveDocumentAsCopy,
+            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::BroadcastResult(result, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::SaveDocumentAsCopy,
                 documentId, AtomToolsFramework::GetSaveFileInfo(documentPath).absoluteFilePath().toUtf8().constData());
             if (!result)
             {
-                const QString status = QString("Failed to save document: %1").arg(documentPath);
+                const QString status = QString("Document save failed: %1").arg(documentPath);
                 m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(status));
             }
         }, QKeySequence::SaveAs);
@@ -356,21 +355,21 @@ namespace MaterialEditor
             const QString documentPath = GetDocumentPath(documentId);
 
             bool result = false;
-            MaterialDocumentSystemRequestBus::BroadcastResult(result, &MaterialDocumentSystemRequestBus::Events::SaveDocumentAsChild,
+            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::BroadcastResult(result, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::SaveDocumentAsChild,
                 documentId, AtomToolsFramework::GetSaveFileInfo(documentPath).absoluteFilePath().toUtf8().constData());
             if (!result)
             {
-                const QString status = QString("Failed to save document: %1").arg(documentPath);
+                const QString status = QString("Document save failed: %1").arg(documentPath);
                 m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(status));
             }
         });
 
         m_actionSaveAll = m_menuFile->addAction("Save A&ll", [this]() {
             bool result = false;
-            MaterialDocumentSystemRequestBus::BroadcastResult(result, &MaterialDocumentSystemRequestBus::Events::SaveAllDocuments);
+            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::BroadcastResult(result, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::SaveAllDocuments);
             if (!result)
             {
-                const QString status = QString("Failed to save documents.");
+                const QString status = QString("Document save all failed.");
                 m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(status));
             }
         });
@@ -379,16 +378,16 @@ namespace MaterialEditor
 
         m_actionClose = m_menuFile->addAction("&Close", [this]() {
             const AZ::Uuid documentId = GetDocumentIdFromTab(m_tabWidget->currentIndex());
-            MaterialDocumentSystemRequestBus::Broadcast(&MaterialDocumentSystemRequestBus::Events::CloseDocument, documentId);
+            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::CloseDocument, documentId);
         }, QKeySequence::Close);
 
         m_actionCloseAll = m_menuFile->addAction("Close All", [this]() {
-            MaterialDocumentSystemRequestBus::Broadcast(&MaterialDocumentSystemRequestBus::Events::CloseAllDocuments);
+            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::CloseAllDocuments);
         });
 
         m_actionCloseOthers = m_menuFile->addAction("Close Others", [this]() {
             const AZ::Uuid documentId = GetDocumentIdFromTab(m_tabWidget->currentIndex());
-            MaterialDocumentSystemRequestBus::Broadcast(&MaterialDocumentSystemRequestBus::Events::CloseAllDocumentsExcept, documentId);
+            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::CloseAllDocumentsExcept, documentId);
         });
 
         m_menuFile->addSeparator();
@@ -412,11 +411,11 @@ namespace MaterialEditor
         m_actionUndo = m_menuEdit->addAction("&Undo", [this]() {
             const AZ::Uuid documentId = GetDocumentIdFromTab(m_tabWidget->currentIndex());
             bool result = false;
-            MaterialDocumentRequestBus::EventResult(result, documentId, &MaterialDocumentRequestBus::Events::Undo);
+            AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(result, documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::Undo);
             if (!result)
             {
                 const QString documentPath = GetDocumentPath(documentId);
-                const QString status = QString("Failed to perform undo on document: %1").arg(documentPath);
+                const QString status = QString("Document undo failed: %1").arg(documentPath);
                 m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(status));
             }
         }, QKeySequence::Undo);
@@ -424,11 +423,11 @@ namespace MaterialEditor
         m_actionRedo = m_menuEdit->addAction("&Redo", [this]() {
             const AZ::Uuid documentId = GetDocumentIdFromTab(m_tabWidget->currentIndex());
             bool result = false;
-            MaterialDocumentRequestBus::EventResult(result, documentId, &MaterialDocumentRequestBus::Events::Redo);
+            AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(result, documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::Redo);
             if (!result)
             {
                 const QString documentPath = GetDocumentPath(documentId);
-                const QString status = QString("Failed to perform redo on document: %1").arg(documentPath);
+                const QString status = QString("Document redo failed: %1").arg(documentPath);
                 m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(status));
             }
         }, QKeySequence::Redo);
@@ -501,19 +500,19 @@ namespace MaterialEditor
         // This should automatically clear the active document
         connect(m_tabWidget, &QTabWidget::currentChanged, this, [this](int tabIndex) {
             const AZ::Uuid documentId = GetDocumentIdFromTab(tabIndex);
-            MaterialDocumentNotificationBus::Broadcast(&MaterialDocumentNotificationBus::Events::OnDocumentOpened, documentId);
+            AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentOpened, documentId);
         });
 
         connect(m_tabWidget, &QTabWidget::tabCloseRequested, this, [this](int tabIndex) {
             const AZ::Uuid documentId = GetDocumentIdFromTab(tabIndex);
-            MaterialDocumentSystemRequestBus::Broadcast(&MaterialDocumentSystemRequestBus::Events::CloseDocument, documentId);
+            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::CloseDocument, documentId);
         });
     }
 
     QString MaterialEditorWindow::GetDocumentPath(const AZ::Uuid& documentId) const
     {
         AZStd::string absolutePath;
-        MaterialDocumentRequestBus::EventResult(absolutePath, documentId, &MaterialDocumentRequestBus::Handler::GetAbsolutePath);
+        AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(absolutePath, documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Handler::GetAbsolutePath);
         return absolutePath.c_str();
     }
 
@@ -529,15 +528,15 @@ namespace MaterialEditor
             const QString selectActionName = (currentTabIndex == clickedTabIndex) ? "Select in Browser" : "Select";
             tabMenu.addAction(selectActionName, [this, clickedTabIndex]() {
                 const AZ::Uuid documentId = GetDocumentIdFromTab(clickedTabIndex);
-                MaterialDocumentNotificationBus::Broadcast(&MaterialDocumentNotificationBus::Events::OnDocumentOpened, documentId);
+                AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentOpened, documentId);
             });
             tabMenu.addAction("Close", [this, clickedTabIndex]() {
                 const AZ::Uuid documentId = GetDocumentIdFromTab(clickedTabIndex);
-                MaterialDocumentSystemRequestBus::Broadcast(&MaterialDocumentSystemRequestBus::Events::CloseDocument, documentId);
+                AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::CloseDocument, documentId);
             });
             auto closeOthersAction = tabMenu.addAction("Close Others", [this, clickedTabIndex]() {
                 const AZ::Uuid documentId = GetDocumentIdFromTab(clickedTabIndex);
-                MaterialDocumentSystemRequestBus::Broadcast(&MaterialDocumentSystemRequestBus::Events::CloseAllDocumentsExcept, documentId);
+                AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::CloseAllDocumentsExcept, documentId);
             });
             closeOthersAction->setEnabled(tabBar->count() > 1);
             tabMenu.exec(QCursor::pos());
