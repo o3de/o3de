@@ -141,7 +141,7 @@ namespace AZ::SceneAPI::Utilities
         AZStd::string debugSceneFile;
 
         AzFramework::StringFunc::Path::ConstructFull(outputFolder, productName.c_str(), debugSceneFile);
-        AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "zoutputFolder %s, name %s.\n", outputFolder, productName.c_str());
+        AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "outputFolder %s, name %s.\n", outputFolder, productName.c_str());
         
         AZ::IO::SystemFile dbgFile;
         if (dbgFile.Open(debugSceneFile.c_str(), AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY))
