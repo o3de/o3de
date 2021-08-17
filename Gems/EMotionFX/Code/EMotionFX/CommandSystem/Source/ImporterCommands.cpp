@@ -111,7 +111,7 @@ namespace CommandSystem
         AZStd::to_string(outResult, actor->GetID());
 
         // Register actor asset.
-        EMotionFX::GetActorManager().RegisterActor(actorAsset);
+        EMotionFX::GetActorManager().RegisterActor(AZStd::move(actorAsset));
 
         return true;
     }

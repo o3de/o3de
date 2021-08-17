@@ -121,7 +121,7 @@ namespace EMotionFX
             MCore::LogWarning(
                 "EMotionFX::ActorManager::RegisterActor() - The actor at location 0x%x has already been registered as actor, most likely "
                 "already by the LoadActor of the importer.",
-                actorAsset.GetAs<Integration::ActorAsset>()->GetActor());
+                actorAsset->GetActor());
             UnlockActors();
             return;
         }
@@ -153,10 +153,10 @@ namespace EMotionFX
             m_actorAssets.begin(), m_actorAssets.end(),
             [actorName](const ActorAssetData& a)
         {
-                return a.GetAs<Integration::ActorAsset>()->GetActor()->GetNameString() == actorName;
+                return a->GetActor()->GetNameString() == actorName;
         });
 
-        return (found != m_actorAssets.end()) ? found->GetAs<Integration::ActorAsset>()->GetActor() : nullptr;
+        return (found != m_actorAssets.end()) ? (*found)->GetActor() : nullptr;
     }
 
 
@@ -168,10 +168,10 @@ namespace EMotionFX
             [fileName](const ActorAssetData& a)
         {
                 return AzFramework::StringFunc::Equal(
-                    a.GetAs<Integration::ActorAsset>()->GetActor()->GetFileNameString().c_str(), fileName, false /* no case */);
+                    a->GetActor()->GetFileNameString().c_str(), fileName, false /* no case */);
         });
 
-        return (found != m_actorAssets.end()) ? found->GetAs<Integration::ActorAsset>()->GetActor() : nullptr;
+        return (found != m_actorAssets.end()) ? (*found)->GetActor() : nullptr;
     }
 
 
@@ -194,7 +194,7 @@ namespace EMotionFX
             m_actorAssets.begin(), m_actorAssets.end(),
             [actor](const ActorAssetData& a)
             {
-                return a.GetAs<Integration::ActorAsset>()->GetActor() == actor;
+                return a->GetActor() == actor;
             });
 
         return (found != m_actorAssets.end()) ? AZStd::distance(m_actorAssets.begin(), found) : InvalidIndex;
@@ -207,7 +207,7 @@ namespace EMotionFX
             m_actorAssets.begin(), m_actorAssets.end(),
             [actorName](const ActorAssetData& a)
         {
-                return a.GetAs<Integration::ActorAsset>()->GetActor()->GetNameString() == actorName;
+                return a->GetActor()->GetNameString() == actorName;
         });
 
         return (found != m_actorAssets.end()) ? AZStd::distance(m_actorAssets.begin(), found) : InvalidIndex;
@@ -221,7 +221,7 @@ namespace EMotionFX
             m_actorAssets.begin(), m_actorAssets.end(),
             [filename](const ActorAssetData& a)
         {
-                return a.GetAs<Integration::ActorAsset>()->GetActor()->GetFileNameString() == filename;
+                return a->GetActor()->GetFileNameString() == filename;
         });
 
         return (found != m_actorAssets.end()) ? AZStd::distance(m_actorAssets.begin(), found) : InvalidIndex;
@@ -266,10 +266,10 @@ namespace EMotionFX
             m_actorAssets.begin(), m_actorAssets.end(),
             [id](const ActorAssetData& a)
         {
-                return a.GetAs<Integration::ActorAsset>()->GetActor()->GetID() == id;
+                return a->GetActor()->GetID() == id;
         });
 
-        return (found != m_actorAssets.end()) ? found->GetAs<Integration::ActorAsset>()->GetActor() : nullptr;
+        return (found != m_actorAssets.end()) ? (*found)->GetActor() : nullptr;
     }
 
     AZ::Data::AssetId ActorManager::FindAssetIdByActorId(uint32 id) const
@@ -278,7 +278,7 @@ namespace EMotionFX
             m_actorAssets.begin(), m_actorAssets.end(),
             [id](const ActorAssetData& a)
         {
-            return a.GetAs<Integration::ActorAsset>()->GetActor()->GetID() == id;
+            return a->GetActor()->GetID() == id;
         });
 
         return (found != m_actorAssets.end()) ? found->GetId() : AZ::Data::AssetId();
@@ -425,7 +425,7 @@ namespace EMotionFX
 
     Actor* ActorManager::GetActor(size_t nr) const
     {
-        return m_actorAssets[nr].GetAs<Integration::ActorAsset>()->GetActor();
+        return m_actorAssets[nr]->GetActor();
     }
 
 
