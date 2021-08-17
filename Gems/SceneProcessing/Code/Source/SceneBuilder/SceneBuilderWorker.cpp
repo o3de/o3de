@@ -10,9 +10,7 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/Serialization/Utils.h>
-#include <SceneAPI/SceneCore/Containers/Views/PairIterator.h>
 #include <SceneAPI/SceneCore/DataTypes/IGraphObject.h>
-#include <SceneAPI/SceneCore/Containers/Views/SceneGraphDownwardsIterator.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/containers/set.h>
 #include <AzFramework/Application/Application.h>
