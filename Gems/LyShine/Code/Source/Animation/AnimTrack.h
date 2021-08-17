@@ -221,6 +221,8 @@ protected:
     float m_lastTime;
     int m_flags;
 
+    constexpr unsigned int InvalidKey = 0x7FFFFFFF;
+
     UiAnimParamData m_componentParamData;
 
 #ifdef UI_ANIMATION_SYSTEM_SUPPORT_EDITING
@@ -521,7 +523,7 @@ inline int TUiAnimTrack<KeyType>::GetActiveKey(float time, KeyType* key)
     if (nkeys == 0)
     {
         m_lastTime = time;
-        m_currKey = std::numeric_limits<unsigned int>::max();
+        m_currKey = InvalidKey;
         return m_currKey;
     }
 
@@ -554,7 +556,7 @@ inline int TUiAnimTrack<KeyType>::GetActiveKey(float time, KeyType* key)
         }
         else
         {
-            m_currKey = std::numeric_limits<unsigned int>::max();
+            m_currKey = InvalidKey;
         }
         return m_currKey;
     }
@@ -600,6 +602,6 @@ inline int TUiAnimTrack<KeyType>::GetActiveKey(float time, KeyType* key)
             break;
         }
     }
-    m_currKey = std::numeric_limits<unsigned int>::max();
+    m_currKey = InvalidKey;
     return m_currKey;
 }

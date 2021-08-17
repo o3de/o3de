@@ -837,11 +837,11 @@ static void SetEditorRange(EditorType* editor, IVariable* var)
     static const float defaultMax = 100.0f;
     if (var->HasCustomLimits())
     {
-        editor->setRange(static_cast<EditorType::value_type>(min), static_cast<EditorType::value_type>(max));
+        editor->setRange(static_cast<typename EditorType::value_type>(min), static_cast<typename EditorType::value_type>(max));
     }
     else
     {
-        editor->setSoftRange(static_cast<EditorType::value_type>(defaultMin), static_cast<EditorType::value_type>(defaultMax));
+        editor->setSoftRange(static_cast<typename EditorType::value_type>(defaultMin), static_cast<typename EditorType::value_type>(defaultMax));
     }
 
     // Set the step size. The default variable step is 0, so if it's
