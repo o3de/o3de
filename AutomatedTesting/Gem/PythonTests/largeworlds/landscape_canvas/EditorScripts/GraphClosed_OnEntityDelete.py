@@ -5,99 +5,100 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
+import os
+import sys
 
-class Tests:
-    lc_tool_opened = (
-        "Landscape Canvas tool opened",
-        "Failed to open Landscape Canvas tool"
-    )
-    graph_registered = (
-        "Graph registered with Landscape Canvas",
-        "Failed to register graph"
-    )
-    graph_closed = (
-        "Graph closed on entity delete",
-        "Graph is still open after entity delete"
-    )
+import azlmbr.bus as bus
+import azlmbr.editor as editor
+import azlmbr.editor.graph as graph
+import azlmbr.legacy.general as general
+import azlmbr.paths
 
+sys.path.append(os.path.join(azlmbr.paths.devroot, 'AutomatedTesting', 'Gem', 'PythonTests'))
+from editor_python_test_tools.editor_test_helper import EditorTestHelper
 
+editorId = azlmbr.globals.property.LANDSCAPE_CANVAS_EDITOR_ID
 newRootEntityId = None
 
 
-def GraphClosed_OnEntityDelete():
-    """
-    Summary:
-    This test verifies that Landscape Canvas graphs are auto-closed when the corresponding entity is deleted.
+class TestGraphClosedOnEntityDelete(EditorTestHelper):
 
-    Expected Behavior:
-    When a Landscape Canvas root entity is deleted, the corresponding graph automatically closes.
+    def __init__(self):
+        EditorTestHelper.__init__(self, log_prefix="GraphClosedOnEntityDelete", args=["level"])
 
-    Test Steps:
-     1) Open a simple level
-     2) Open Landscape Canvas and create a new graph
-     3) Delete the automatically created entity
-     4) Verify the open graph is closed
+    def run_test(self):
+        """
+        Summary:
+        This test verifies that Landscape Canvas graphs are auto-closed when the corresponding entity is deleted.
 
-    Note:
-    - This test file must be called from the Open 3D Engine Editor command terminal
-    - Any passed and failed tests are written to the Editor.log file.
-            Parsing the file or running a log_monitor are required to observe the test results.
+        Expected Behavior:
+        When a Landscape Canvas root entity is deleted, the corresponding graph automatically closes.
 
-    :return: None
-    """
+        Test Steps:
+         1) Create a new level
+         2) Open Landscape Canvas and create a new graph
+         3) Delete the automatically created entity
+         4) Verify the open graph is closed
 
-    import azlmbr.bus as bus
-    import azlmbr.editor as editor
-    import azlmbr.editor.graph as graph
-    import azlmbr.legacy.general as general
+        Note:
+        - This test file must be called from the Open 3D Engine Editor command terminal
+        - Any passed and failed tests are written to the Editor.log file.
+                Parsing the file or running a log_monitor are required to observe the test results.
 
-    from editor_python_test_tools.utils import Report
-    from editor_python_test_tools.utils import TestHelper as helper
+        :return: None
+        """
 
-    editorId = azlmbr.globals.property.LANDSCAPE_CANVAS_EDITOR_ID
+        def onEntityCreated(parameters):
+            global newRootEntityId
+            newRootEntityId = parameters[0]
 
-    def onEntityCreated(parameters):
-        global newRootEntityId
-        newRootEntityId = parameters[0]
+        # Create a new empty level
+        self.test_success = self.create_level(
+            self.args["level"],
+            heightmap_resolution=128,
+            heightmap_meters_per_pixel=1,
+            terrain_texture_resolution=128,
+            use_terrain=False,
+        )
 
-    # Open an existing simple level
-    helper.init_idle()
-    helper.open_level("Physics", "Base")
+        # Open Landscape Canvas tool and verify
+        general.open_pane('Landscape Canvas')
+        self.test_success = self.test_success and general.is_pane_visible('Landscape Canvas')
+        if general.is_pane_visible('Landscape Canvas'):
+            self.log('Landscape Canvas pane is open')
 
-    # Open Landscape Canvas tool and verify
-    general.open_pane('Landscape Canvas')
-    Report.critical_result(Tests.lc_tool_opened, general.is_pane_visible('Landscape Canvas'))
+        # Listen for entity creation notifications so we can store the top-level Entity created
+        # when a new graph is created, and then delete it to test if the graph is closed
+        handler = editor.EditorEntityContextNotificationBusHandler()
+        handler.connect()
+        handler.add_callback('OnEditorEntityCreated', onEntityCreated)
 
-    # Listen for entity creation notifications so we can store the top-level Entity created
-    # when a new graph is created, and then delete it to test if the graph is closed
-    handler = editor.EditorEntityContextNotificationBusHandler()
-    handler.connect()
-    handler.add_callback('OnEditorEntityCreated', onEntityCreated)
+        # Create a new graph in Landscape Canvas and verify
+        newGraphId = graph.AssetEditorRequestBus(bus.Event, 'CreateNewGraph', editorId)
+        graphIsOpen = graph.AssetEditorRequestBus(bus.Event, 'ContainsGraph', editorId, newGraphId)
+        self.test_success = self.test_success and graphIsOpen
+        if graphIsOpen:
+            self.log("Graph registered with Landscape Canvas")
 
-    # Create a new graph in Landscape Canvas and verify
-    newGraphId = graph.AssetEditorRequestBus(bus.Event, 'CreateNewGraph', editorId)
-    graphIsOpen = graph.AssetEditorRequestBus(bus.Event, 'ContainsGraph', editorId, newGraphId)
-    Report.result(Tests.graph_registered, graphIsOpen)
+        # Delete the top-level Entity created by the new graph
+        editor.ToolsApplicationRequestBus(bus.Broadcast, 'DeleteEntityById', newRootEntityId)
 
-    # Delete the top-level Entity created by the new graph
-    editor.ToolsApplicationRequestBus(bus.Broadcast, 'DeleteEntityById', newRootEntityId)
+        # We need to delay here because the closing of the graph due to Entity deletion
+        # is actually queued in order to workaround an undo/redo issue
+        # Alternatively, we could add a notifications bus for AssetEditorRequests
+        # that could trigger when graphs are opened/closed and then do the check there
+        general.idle_enable(True)
+        general.idle_wait(1.0)
 
-    # We need to delay here because the closing of the graph due to Entity deletion
-    # is actually queued in order to workaround an undo/redo issue
-    # Alternatively, we could add a notifications bus for AssetEditorRequests
-    # that could trigger when graphs are opened/closed and then do the check there
-    general.idle_enable(True)
-    general.idle_wait(1.0)
+        # Verify that the corresponding graph is no longer open
+        graphIsClosed = not graph.AssetEditorRequestBus(bus.Event, 'ContainsGraph', editorId, newGraphId)
+        self.test_success = self.test_success and graphIsClosed
+        if graphIsClosed:
+            self.log("The graph is no longer open after deleting the Entity")
 
-    # Verify that the corresponding graph is no longer open
-    graphIsClosed = not graph.AssetEditorRequestBus(bus.Event, 'ContainsGraph', editorId, newGraphId)
-    Report.result(Tests.graph_closed, graphIsClosed)
-
-    # Stop listening for entity creation notifications
-    handler.disconnect()
+        # Stop listening for entity creation notifications
+        handler.disconnect()
 
 
-if __name__ == "__main__":
-
-    from editor_python_test_tools.utils import Report
-    Report.start_test(GraphClosed_OnEntityDelete)
+test = TestGraphClosedOnEntityDelete()
+test.run()

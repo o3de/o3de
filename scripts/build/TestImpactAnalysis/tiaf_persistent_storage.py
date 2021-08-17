@@ -125,9 +125,6 @@ class PersistentStorage(ABC):
                     self._historic_data[self.HISTORIC_SEQUENCES_KEY] = {}
                 self._historic_data[self.HISTORIC_SEQUENCES_KEY][self._this_commit_hash] = self._last_commit_hash
 
-                # Test runs for this completed sequence
-                self._historic_data[self.PREVIOUS_TEST_RUNS_KEY] = test_runs
-
                 # Coverage data for this branch
                 with open(self._unpacked_coverage_data_file, "r") as coverage_data:
                     self._historic_data[self.COVERAGE_DATA_KEY] = coverage_data.read()
