@@ -52,7 +52,7 @@ namespace UnitTest
         // work - please see the links above for more context.
         QTest::mouseMove(widget, nextPosition);
         QMouseEvent mouseMoveEvent(
-            QEvent::MouseMove, QPointF(nextPosition), QPointF(nextPosition), mouseButton, Qt::NoButton, Qt::NoModifier);
+            QEvent::MouseMove, QPointF(nextPosition), QPointF(nextPosition), Qt::NoButton, mouseButton, Qt::NoModifier);
         QApplication::sendEvent(widget, &mouseMoveEvent);
     }
 
