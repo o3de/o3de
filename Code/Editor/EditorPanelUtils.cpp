@@ -130,7 +130,7 @@ public:
             HotKey_BuildDefaults();
             for (QPair<QString, QString> key : keys)
             {
-                for (unsigned int j = 0; j < hotkeys.count(); j++)
+                for (int j = 0; j < hotkeys.count(); j++)
                 {
                     if (hotkeys[j].path.compare(key.first, Qt::CaseInsensitive) == 0)
                     {
@@ -256,7 +256,7 @@ public:
             hotkey.second = settings.value("keySequence").toString();
             if (!hotkey.first.isEmpty())
             {
-                for (unsigned int j = 0; j < hotkeys.count(); j++)
+                for (int j = 0; j < hotkeys.count(); j++)
                 {
                     if (hotkeys[j].path.compare(hotkey.first, Qt::CaseInsensitive) == 0)
                     {

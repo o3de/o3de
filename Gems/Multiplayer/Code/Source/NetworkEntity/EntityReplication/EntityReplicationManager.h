@@ -136,6 +136,7 @@ namespace Multiplayer
 
         bool HandlePropertyChangeMessage
         (
+            AzNetworking::IConnection* invokingConnection,
             EntityReplicator* entityReplicator,
             AzNetworking::PacketId packetId,
             NetEntityId netEntityId,

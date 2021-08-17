@@ -112,9 +112,6 @@ namespace UnitTest
         EXPECT_TRUE(response.m_resultCode == AssetBuilderSDK::ProcessJobResult_Success);
         EXPECT_TRUE(response.m_outputProducts.size() == 1);
 
-        // Verify the dependency was registered
-        EXPECT_TRUE(response.m_outputProducts[0].m_dependencies.size() == 1);
-
         // Verify input and output names are the same
         Data::Asset<Data::AssetData> readAsset = LoadAssetFromFile(response.m_outputProducts[0].m_productFileName.c_str());
         RPI::PassAsset* readPassAsset = static_cast<RPI::PassAsset*>(readAsset.GetData());

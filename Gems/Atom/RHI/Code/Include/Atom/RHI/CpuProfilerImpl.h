@@ -13,6 +13,7 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/std/containers/map.h>
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/shared_mutex.h>
 #include <AzCore/std/smart_ptr/intrusive_refcount.h>
@@ -114,9 +115,11 @@ namespace AZ
             bool IsContinuousCaptureInProgress() const final override;
             void SetProfilerEnabled(bool enabled) final override;
             bool IsProfilerEnabled() const final override;
+            const CachedTimeRegion::GroupRegionName& InsertDynamicName(const char* groupName, const AZStd::string& regionName) final override;
 
         private:
             static constexpr AZStd::size_t MaxFramesToSave = 2 * 60 * 120; // 2 minutes of 120fps
+            static constexpr AZStd::size_t MaxRegionStringPoolSize = 16384; // Max amount of unique strings to save in the pool before throwing warnings.
 
             // Lazily create and register the local thread data
             void RegisterThreadStorage();
@@ -128,6 +131,15 @@ namespace AZ
             // Set of registered threads when created
             AZStd::vector<RHI::Ptr<CpuTimingLocalStorage>, AZ::OSStdAllocator> m_registeredThreads;
             AZStd::mutex m_threadRegisterMutex;
+
+            // Pool for GroupRegionNames that are generated at runtime through AZ_ATOM_PROFILE_DYNAMIC. Each unique
+            // combination of group name and region name submitted will be stored in this pool to emulate static lifetime.
+            AZStd::unordered_set<CachedTimeRegion::GroupRegionName, CachedTimeRegion::GroupRegionName::Hash> m_dynamicGroupRegionNamePool;
+
+            // String pool for storing region names submitted at runtime. Each call to AZ_ATOM_PROFILE_DYNAMIC will either construct
+            // a string in this pool or use an already-existing entry.
+            AZStd::unordered_set<AZStd::string> m_regionNameStringPool;
+            AZStd::mutex m_dynamicNameMutex;
 
             // Thread local storage, gets lazily allocated when a thread is created
             static thread_local CpuTimingLocalStorage* ms_threadLocalStorage;

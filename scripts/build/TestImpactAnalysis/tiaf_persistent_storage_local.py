@@ -15,22 +15,29 @@ logger = get_logger(__file__)
 
 # Implementation of local persistent storage
 class PersistentStorageLocal(PersistentStorage):
-    def __init__(self, config: str, suite: str):
+
+    HISTORIC_KEY = "historic"
+    DATA_KEY = "data"
+
+    def __init__(self, config: str, suite: str, commit: str):
         """
         Initializes the persistent storage with any local historic data available.
 
         @param config: The runtime config file to obtain the data file paths from.
         @param suite:  The test suite for which the historic data will be obtained for.
+        @param commit: The commit hash for this build.
         """
 
-        super().__init__(config, suite)
+        super().__init__(config, suite, commit)
         try:
             # Attempt to obtain the local persistent data location specified in the runtime config file
-            self._historic_workspace = pathlib.Path(config["workspace"]["historic"]["root"])
-            historic_data_file = pathlib.Path(config["workspace"]["historic"]["relative_paths"]["data"])
+            self._historic_workspace = pathlib.Path(config[self.WORKSPACE_KEY][self.HISTORIC_KEY][self.ROOT_KEY])
+            self._historic_workspace = self._historic_workspace.joinpath(pathlib.Path(self._suite))
+            historic_data_file = pathlib.Path(config[self.WORKSPACE_KEY][self.HISTORIC_KEY][self.RELATIVE_PATHS_KEY][self.DATA_KEY])
             
             # Attempt to unpack the local historic data file
             self._historic_data_file = self._historic_workspace.joinpath(historic_data_file)
+            logger.info(f"Attempting to retrieve historic data at location '{self._historic_data_file}'...")
             if self._historic_data_file.is_file():
                 with open(self._historic_data_file, "r") as historic_data_raw:
                     historic_data_json = historic_data_raw.read()

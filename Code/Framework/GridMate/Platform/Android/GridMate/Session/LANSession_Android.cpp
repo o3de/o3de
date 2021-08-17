@@ -7,6 +7,7 @@
  */
 
 #include <unistd.h>
+#include <AzCore/std/string/string.h>
 
 namespace GridMate
 {

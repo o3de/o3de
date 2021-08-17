@@ -351,7 +351,7 @@ void CVarBlock::EnableUpdateCallbacks(bool boEnable)
 void CVarBlock::GatherUsedResourcesInVar(IVariable* pVar, CUsedResources& resources)
 {
     int type = pVar->GetDataType();
-    if (type == IVariable::DT_FILE || type == IVariable::DT_OBJECT || type == IVariable::DT_TEXTURE)
+    if (type == IVariable::DT_TEXTURE)
     {
         // this is file.
         QString filename;

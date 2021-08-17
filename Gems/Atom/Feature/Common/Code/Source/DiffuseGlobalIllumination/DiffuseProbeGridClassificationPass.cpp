@@ -42,7 +42,7 @@ namespace AZ
             // load shader
             // Note: the shader may not be available on all platforms
             AZStd::string shaderFilePath = "Shaders/DiffuseGlobalIllumination/DiffuseProbeGridClassification.azshader";
-            m_shader = RPI::LoadShader(shaderFilePath);
+            m_shader = RPI::LoadCriticalShader(shaderFilePath);
             if (m_shader == nullptr)
             {
                 return;

@@ -37,7 +37,6 @@ struct IRenderMesh;
 #include <IXml.h>
 #include <smartptr.h>
 #include <AzCore/EBus/EBus.h>
-#include <CryThread.h>
 
 #ifdef MAX_SUB_MATERIALS
 // This checks that the values are in sync in the different files.
@@ -432,8 +431,6 @@ struct IMaterial
 
     virtual uint32 GetDccMaterialHash() const = 0;
     virtual void SetDccMaterialHash(uint32 hash) = 0;
-
-    virtual CryCriticalSection& GetSubMaterialResizeLock() = 0;
 
     virtual void UpdateShaderItems() = 0;
 
