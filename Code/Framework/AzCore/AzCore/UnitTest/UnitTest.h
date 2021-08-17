@@ -132,7 +132,7 @@ namespace UnitTest
     //  use AZ_TEST_START_TRACE_SUPPRESSION and AZ_TEST_STOP_TRACE_SUPPRESSION(numExpectedAsserts) macros to perform AZ_Assert and AZ_Error suppression
     class TraceBusRedirector
         : public AZ::Debug::TraceMessageBus::Handler
-        , public AZ::Interface<ITraceBusRedirectorControl>::Registrar
+        , public ITraceBusRedirectorControl
     {
     public:
         void Enable() override
@@ -227,6 +227,8 @@ namespace UnitTest
 #endif
             BusConnect();
 
+            AZ::Interface<ITraceBusRedirectorControl>::Register(this);
+
             m_environmentSetup = true;
         }
 
@@ -234,6 +236,7 @@ namespace UnitTest
         {
             if (m_environmentSetup)
             {
+                AZ::Interface<ITraceBusRedirectorControl>::Unregister(this);
                 BusDisconnect();
 
                 if (m_createdAllocator)
