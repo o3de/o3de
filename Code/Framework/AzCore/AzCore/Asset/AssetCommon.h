@@ -325,13 +325,21 @@ namespace AZ
 
             T& operator*() const
             {
-                AZ_Assert(m_assetData, "Asset %s (%s) is not loaded", m_assetId.ToString<AZStd::string>().c_str(), m_assetHint.c_str());
+                if (!m_assetData)
+                {
+                    AZ::Debug::Trace::PrintCallstack("AssetCommon");
+                }
+                AZ_Assert(m_assetData, "operator* Asset %s (%s) is not loaded", m_assetId.ToString<AZStd::string>().c_str(), m_assetHint.c_str());
                 return *Get();
             }
 
             T* operator->() const
             {
-                AZ_Assert(m_assetData, "Asset %s (%s) is not loaded", m_assetId.ToString<AZStd::string>().c_str(), m_assetHint.c_str());
+                if (!m_assetData)
+                {
+                    AZ::Debug::Trace::PrintCallstack("AssetCommon");
+                }
+                AZ_Assert(m_assetData, "operator-> Asset %s (%s) is not loaded", m_assetId.ToString<AZStd::string>().c_str(), m_assetHint.c_str());
                 return Get();
             }
 
