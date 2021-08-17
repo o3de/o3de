@@ -6,6 +6,8 @@ set(FILES
     Source/EditorComponents/EditorTerrainLayerSpawnerComponent.h
     Source/EditorComponents/EditorTerrainWorldComponent.cpp
     Source/EditorComponents/EditorTerrainWorldComponent.h
+    Source/EditorComponents/EditorTerrainWorldDebuggerComponent.cpp
+    Source/EditorComponents/EditorTerrainWorldDebuggerComponent.h
     Source/EditorComponents/EditorTerrainSystemComponent.cpp
     Source/EditorComponents/EditorTerrainSystemComponent.h
     Source/EditorTerrainModule.cpp

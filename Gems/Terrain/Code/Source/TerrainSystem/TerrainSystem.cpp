@@ -19,48 +19,75 @@ using namespace Terrain;
 
 TerrainSystem::TerrainSystem()
 {
-    m_dirtyRegion = AZ::Aabb::CreateNull();
-    m_worldBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.0f, 0.0f, 0.0f), AZ::Vector3(4096.0f, 4096.0f, 2048.0f));
-
-    AzFramework::Terrain::TerrainDataRequestBus::Handler::BusConnect();
-
     Terrain::TerrainSystemServiceRequestBus::Handler::BusConnect();
     AZ::TickBus::Handler::BusConnect();
 
-    TerrainAreaRequestBus::Broadcast(&TerrainAreaRequestBus::Events::RegisterArea);
+    m_currentSettings.m_systemActive = false;
+    m_currentSettings.m_worldBounds = AZ::Aabb::CreateNull();
 
+    m_requestedSettings = m_currentSettings;
+    m_requestedSettings.m_worldBounds = AZ::Aabb::CreateFromMinMax(AZ::Vector3(0.0f, 0.0f, 0.0f), AZ::Vector3(4096.0f, 4096.0f, 2048.0f));
 }
 
 TerrainSystem::~TerrainSystem()
 {
     AZ::TickBus::Handler::BusDisconnect();
-
     Terrain::TerrainSystemServiceRequestBus::Handler::BusDisconnect();
 
-    AzFramework::Terrain::TerrainDataRequestBus::Handler::BusDisconnect();
-
-    const AZ::RPI::Scene* scene = AZ::RPI::RPISystemInterface::Get()->GetDefaultScene().get();
-    auto terrainFeatureProcessor = scene->GetFeatureProcessor<TerrainFeatureProcessor>();
-    if (terrainFeatureProcessor)
-    {
-        terrainFeatureProcessor->RemoveTerrainData();
-    }
+    Deactivate();
 }
+
+void TerrainSystem::Activate()
+{
+    m_requestedSettings.m_systemActive = true;
+    m_terrainSettingsDirty = true;
+}
+
+void TerrainSystem::Deactivate()
+{
+    m_requestedSettings.m_systemActive = false;
+    m_terrainSettingsDirty = true;
+}
+
+void TerrainSystem::SetWorldMin(AZ::Vector3 worldOrigin)
+{
+    m_requestedSettings.m_worldBounds.SetMin(worldOrigin);
+    m_terrainSettingsDirty = true;
+}
+
+void TerrainSystem::SetWorldMax(AZ::Vector3 worldBounds)
+{
+    m_requestedSettings.m_worldBounds.SetMax(worldBounds);
+    m_terrainSettingsDirty = true;
+}
+
+void TerrainSystem::SetHeightQueryResolution(AZ::Vector2 queryResolution)
+{
+    m_requestedSettings.m_heightQueryResolution = queryResolution;
+    m_terrainSettingsDirty = true;
+}
+
+void TerrainSystem::SetDebugWireframe(bool wireframeEnabled)
+{
+    m_requestedSettings.m_debugWireframeEnabled = wireframeEnabled;
+    m_terrainSettingsDirty = true;
+}
+
 
 AZ::Aabb TerrainSystem::GetTerrainAabb() const
 {
-    return m_worldBounds;
+    return m_currentSettings.m_worldBounds;
 }
 
 AZ::Vector2 TerrainSystem::GetTerrainGridResolution() const
 {
-    return m_heightQueryResolution;
+    return m_currentSettings.m_heightQueryResolution;
 }
 
 float TerrainSystem::GetHeightSynchronous(float x, float y) const
 {
-    AZ::Vector3 inPosition((float)x, (float)y, m_worldBounds.GetMin().GetZ());
-    AZ::Vector3 outPosition((float)x, (float)y, m_worldBounds.GetMin().GetZ());
+    AZ::Vector3 inPosition((float)x, (float)y, m_currentSettings.m_worldBounds.GetMin().GetZ());
+    AZ::Vector3 outPosition((float)x, (float)y, m_currentSettings.m_worldBounds.GetMin().GetZ());
 
     AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
 
@@ -78,7 +105,8 @@ float TerrainSystem::GetHeightSynchronous(float x, float y) const
         }
     }
 
-    return AZ::GetClamp(outPosition.GetZ(), m_worldBounds.GetMin().GetZ(), m_worldBounds.GetMax().GetZ());
+    return AZ::GetClamp(
+        outPosition.GetZ(), m_currentSettings.m_worldBounds.GetMin().GetZ(), m_currentSettings.m_worldBounds.GetMax().GetZ());
 }
 
 float TerrainSystem::GetHeight(AZ::Vector3 position, [[maybe_unused]] Sampler sampler, [[maybe_unused]] bool* terrainExistsPtr) const
@@ -259,6 +287,35 @@ void TerrainSystem::ProcessSurfacePointsFromRegion(const AZ::Aabb& inRegion, con
 }
 */
 
+void TerrainSystem::SystemActivate()
+{
+    {
+        AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
+        m_registeredAreas.clear();
+    }
+
+    AzFramework::Terrain::TerrainDataRequestBus::Handler::BusConnect();
+
+    TerrainAreaRequestBus::Broadcast(&TerrainAreaRequestBus::Events::RegisterArea);
+}
+
+void TerrainSystem::SystemDeactivate()
+{
+    AzFramework::Terrain::TerrainDataRequestBus::Handler::BusDisconnect();
+
+    {
+        AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
+        m_registeredAreas.clear();
+    }
+
+    const AZ::RPI::Scene* scene = AZ::RPI::RPISystemInterface::Get()->GetDefaultScene().get();
+    auto terrainFeatureProcessor = scene->GetFeatureProcessor<TerrainFeatureProcessor>();
+    if (terrainFeatureProcessor)
+    {
+        terrainFeatureProcessor->RemoveTerrainData();
+    }
+}
+
 void TerrainSystem::RegisterArea(AZ::EntityId areaId)
 {
     {
@@ -304,22 +361,61 @@ void TerrainSystem::RefreshArea(AZ::EntityId areaId)
 
 void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
 {
-    if (m_terrainVersionDirty)
-    {
-        m_terrainVersionDirty = false;
+    bool terrainSettingsChanged = false;
 
-        // Null dirty region will be interpreted as updating everything
-        m_dirtyRegion = AZ::Aabb::CreateNull();
-        m_terrainHeightDirty = true;
+    if (m_terrainSettingsDirty)
+    {
+        m_terrainSettingsDirty = false;
+
+        // This needs to happen before the "system active" check below, because activating the system will cause the various
+        // terrain layer areas to request the current world bounds.
+        if (m_requestedSettings.m_worldBounds != m_currentSettings.m_worldBounds)
+        {
+            m_dirtyRegion = m_currentSettings.m_worldBounds;
+            m_dirtyRegion.AddAabb(m_requestedSettings.m_worldBounds);
+            m_terrainHeightDirty = true;
+            m_currentSettings.m_worldBounds = m_requestedSettings.m_worldBounds;
+            terrainSettingsChanged = true;
+        }
+
+        if (m_requestedSettings.m_debugWireframeEnabled != m_currentSettings.m_debugWireframeEnabled)
+        {
+            m_dirtyRegion = AZ::Aabb::CreateNull();
+            m_terrainHeightDirty = true;
+            terrainSettingsChanged = true;
+        }
+
+        if (m_requestedSettings.m_heightQueryResolution != m_currentSettings.m_heightQueryResolution)
+        {
+            m_dirtyRegion = AZ::Aabb::CreateNull();
+            m_terrainHeightDirty = true;
+            terrainSettingsChanged = true;
+        }
+
+        if (m_requestedSettings.m_systemActive != m_currentSettings.m_systemActive)
+        {
+            m_requestedSettings.m_systemActive ? SystemActivate() : SystemDeactivate();
+
+            // Null dirty region will be interpreted as updating everything
+            m_dirtyRegion = AZ::Aabb::CreateNull();
+            m_terrainHeightDirty = true;
+            terrainSettingsChanged = true;
+        }
+
+        m_currentSettings = m_requestedSettings;
     }
 
-    if (m_terrainHeightDirty)
+    if (m_currentSettings.m_systemActive && m_terrainHeightDirty)
     {
-        AZ::EntityId entityId(0);
-        AZ::Transform transform = AZ::Transform::CreateTranslation(m_worldBounds.GetCenter());
+        AZStd::shared_lock<AZStd::shared_mutex> lock(m_areaMutex);
 
-        uint32_t width = aznumeric_cast<uint32_t>((float)m_worldBounds.GetXExtent() / m_heightQueryResolution.GetX());
-        uint32_t height = aznumeric_cast<uint32_t>((float)m_worldBounds.GetYExtent() / m_heightQueryResolution.GetY());
+        AZ::EntityId entityId(0);
+        AZ::Transform transform = AZ::Transform::CreateTranslation(m_currentSettings.m_worldBounds.GetCenter());
+
+        uint32_t width = aznumeric_cast<uint32_t>(
+            (float)m_currentSettings.m_worldBounds.GetXExtent() / m_currentSettings.m_heightQueryResolution.GetX());
+        uint32_t height = aznumeric_cast<uint32_t>(
+            (float)m_currentSettings.m_worldBounds.GetYExtent() / m_currentSettings.m_heightQueryResolution.GetY());
         AZStd::vector<float> pixels;
         pixels.resize(width * height);
         const uint32_t pixelDataSize = width * height * sizeof(float);
@@ -332,8 +428,8 @@ void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
                 for (uint32_t x = 0; x < width; x++)
                 {
                     AZ::Vector3 inPosition(
-                        (x * m_heightQueryResolution.GetX()) + m_worldBounds.GetMin().GetX(),
-                        (y * m_heightQueryResolution.GetY()) + m_worldBounds.GetMin().GetY(),
+                        (x * m_currentSettings.m_heightQueryResolution.GetX()) + m_currentSettings.m_worldBounds.GetMin().GetX(),
+                        (y * m_currentSettings.m_heightQueryResolution.GetY()) + m_currentSettings.m_worldBounds.GetMin().GetY(),
                         areaBounds.GetMin().GetZ());
                     if (areaBounds.Contains(inPosition))
                     {
@@ -344,7 +440,8 @@ void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
                         Terrain::TerrainAreaHeightRequestBus::Event(
                             areaId, &Terrain::TerrainAreaHeightRequestBus::Events::GetHeight, inPosition, outPosition, sampleFilter);
 
-                        pixels[(y * width) + x] = (outPosition.GetZ() - m_worldBounds.GetMin().GetZ()) / m_worldBounds.GetExtents().GetZ();
+                        pixels[(y * width) + x] = (outPosition.GetZ() - m_currentSettings.m_worldBounds.GetMin().GetZ()) /
+                            m_currentSettings.m_worldBounds.GetExtents().GetZ();
                     }
                 }
             }
@@ -356,16 +453,36 @@ void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
         AZ_Assert(terrainFeatureProcessor, "Unable to find a TerrainFeatureProcessor.");
         if (terrainFeatureProcessor)
         {
-            terrainFeatureProcessor->UpdateTerrainData(entityId, transform, m_worldBounds, m_heightQueryResolution.GetX(), width, height, pixels);
-            terrainFeatureProcessor->SetDebugDrawWireframe(entityId, m_debugWireframeEnabled);
+            terrainFeatureProcessor->UpdateTerrainData(
+                entityId, transform, m_currentSettings.m_worldBounds, m_currentSettings.m_heightQueryResolution.GetX(), width, height,
+                pixels);
+            terrainFeatureProcessor->SetDebugDrawWireframe(entityId, m_currentSettings.m_debugWireframeEnabled);
+        }
+    }
+
+    if (terrainSettingsChanged || m_terrainHeightDirty)
+    {
+        AZ::Aabb dirtyRegion = m_dirtyRegion;
+        m_terrainHeightDirty = false;
+        m_dirtyRegion = AZ::Aabb::CreateNull();
+
+        AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask changeMask =
+            AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::None;
+
+        if (terrainSettingsChanged)
+        {
+            changeMask = static_cast<AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask>(
+                changeMask | AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::Settings);
+        }
+        if (m_terrainHeightDirty)
+        {
+            changeMask = static_cast<AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask>(
+                changeMask | AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::HeightData);
         }
 
         AzFramework::Terrain::TerrainDataNotificationBus::Broadcast(
-            &AzFramework::Terrain::TerrainDataNotificationBus::Events::OnTerrainDataChanged, m_dirtyRegion,
-            AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::HeightData);
-
-        m_terrainHeightDirty = false;
-        m_dirtyRegion = AZ::Aabb::CreateNull();
+            &AzFramework::Terrain::TerrainDataNotificationBus::Events::OnTerrainDataChanged, dirtyRegion,
+            changeMask);
     }
 
 }

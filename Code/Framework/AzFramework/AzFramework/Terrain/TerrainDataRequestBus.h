@@ -102,14 +102,14 @@ namespace AzFramework
             static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
             //////////////////////////////////////////////////////////////////////////
 
-            enum class TerrainDataChangedMask
+            enum TerrainDataChangedMask : uint8_t
             {
+                None = 0x00,
                 Settings = 0x01,
                 HeightData = 0x02,
                 ColorData = 0x04,
                 SurfaceData = 0x08
             };
-
 
             virtual void OnTerrainDataCreateBegin() {}
             virtual void OnTerrainDataCreateEnd() {}

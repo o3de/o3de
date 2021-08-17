@@ -36,6 +36,14 @@ namespace Terrain
 
         virtual ~TerrainSystemServiceRequests() = default;
 
+        virtual void Activate() = 0;
+        virtual void Deactivate() = 0;
+
+        virtual void SetWorldMin(AZ::Vector3 worldOrigin) = 0;
+        virtual void SetWorldMax(AZ::Vector3 worldBounds) = 0;
+        virtual void SetHeightQueryResolution(AZ::Vector2 queryResolution) = 0;
+        virtual void SetDebugWireframe(bool wireframeEnabled) = 0;
+
         // register an area to override terrain
         virtual void RegisterArea(AZ::EntityId areaId) = 0;
         virtual void UnregisterArea(AZ::EntityId areaId) = 0;

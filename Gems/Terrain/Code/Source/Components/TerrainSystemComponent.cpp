@@ -62,11 +62,15 @@ namespace Terrain
 
     void TerrainSystemComponent::Activate()
     {
+        m_terrainSystem = new TerrainSystem();
         AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessor<Terrain::TerrainFeatureProcessor>();
     }
 
     void TerrainSystemComponent::Deactivate()
     {
+        delete m_terrainSystem;
+        m_terrainSystem = nullptr;
+
         AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<Terrain::TerrainFeatureProcessor>();
     }
 }

@@ -49,6 +49,7 @@ namespace Terrain
         : public AZ::Component
         , private Terrain::TerrainAreaHeightRequestBus::Handler
         , private LmbrCentral::DependencyNotificationBus::Handler
+        , private AzFramework::Terrain::TerrainDataNotificationBus::Handler
     {
     public:
         template<typename, typename>
@@ -77,6 +78,10 @@ namespace Terrain
         // LmbrCentral::DependencyNotificationBus
         void OnCompositionChanged() override;
 
+        //////////////////////////////////////////////////////////////////////////
+        // AzFramework::Terrain::TerrainDataNotificationBus
+        void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
+
     private:
         TerrainHeightGradientListConfig m_configuration;
 
@@ -87,8 +92,8 @@ namespace Terrain
         void RefreshMinMaxHeights();
         float GetHeight(float x, float y);
 
-        float m_cachedMinHeight{ 0.0f };
-        float m_cachedMaxHeight{ 0.0f };
+        float m_cachedMinWorldHeight{ 0.0f };
+        float m_cachedMaxWorldHeight{ 0.0f };
         AZ::Vector2 m_cachedHeightQueryResolution{ 1.0f, 1.0f };
         AZ::Aabb m_cachedShapeBounds;
 

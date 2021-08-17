@@ -6,7 +6,7 @@
  *
  */
 
-#include "TerrainWorldComponent.h"
+#include <Components/TerrainWorldComponent.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Asset/AssetManager.h>
@@ -26,7 +26,6 @@ namespace Terrain
                 ->Field("WorldMin", &TerrainWorldConfig::m_worldMin)
                 ->Field("WorldMax", &TerrainWorldConfig::m_worldMax)
                 ->Field("HeightQueryResolution", &TerrainWorldConfig::m_heightQueryResolution)
-                ->Field("DebugWireframe", &TerrainWorldConfig::m_debugWireframeEnabled)
             ;
 
             AZ::EditContext* edit = serialize->GetEditContext();
@@ -42,7 +41,6 @@ namespace Terrain
                     ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldConfig::m_worldMin, "World Bounds (Min)", "")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldConfig::m_worldMax, "World Bounds (Max)", "")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldConfig::m_heightQueryResolution, "Height Query Resolution (m)", "")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldConfig::m_debugWireframeEnabled, "Enable Wireframe", "")
                 ;
             }
         }
@@ -83,23 +81,20 @@ namespace Terrain
 
     TerrainWorldComponent::~TerrainWorldComponent()
     {
-        delete m_terrainSystem;
     }
 
     void TerrainWorldComponent::Activate()
     {
-        m_terrainSystem = new TerrainSystem();
-
-        m_terrainSystem->SetWorldMin(m_configuration.m_worldMin);
-        m_terrainSystem->SetWorldMax(m_configuration.m_worldMax);
-        m_terrainSystem->SetHeightQueryResolution(m_configuration.m_heightQueryResolution);
-        m_terrainSystem->SetDebugWireframe(m_configuration.m_debugWireframeEnabled);
+        TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::SetWorldMin, m_configuration.m_worldMin);
+        TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::SetWorldMax, m_configuration.m_worldMax);
+        TerrainSystemServiceRequestBus::Broadcast(
+            &TerrainSystemServiceRequestBus::Events::SetHeightQueryResolution, m_configuration.m_heightQueryResolution);
+        TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::Activate);
     }
 
     void TerrainWorldComponent::Deactivate()
     {
-        delete m_terrainSystem;
-        m_terrainSystem = nullptr;
+        TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::Deactivate);
     }
 
     bool TerrainWorldComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)

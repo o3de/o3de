@@ -21,35 +21,33 @@ namespace LmbrCentral
 
 namespace Terrain
 {
-    class TerrainWorldConfig
+    class TerrainWorldDebuggerConfig
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(TerrainWorldConfig, AZ::SystemAllocator, 0);
-        AZ_RTTI(TerrainWorldConfig, "{295844DB-20DD-45B2-94DB-4245D5AE9AFF}", AZ::ComponentConfig);
+        AZ_CLASS_ALLOCATOR(TerrainWorldDebuggerConfig, AZ::SystemAllocator, 0);
+        AZ_RTTI(TerrainWorldDebuggerConfig, "{92686FA9-2C0B-47F1-8E2D-F2F302CDE5AA}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 
-        AZ::Vector3 m_worldMin{ 0.0f, 0.0f, 0.0f };
-        AZ::Vector3 m_worldMax{ 1024.0f, 1024.0f, 1024.0f };
-        AZ::Vector2 m_heightQueryResolution{ 1.0f, 1.0f };
+        bool m_debugWireframeEnabled{true};
     };
 
 
-    class TerrainWorldComponent
+    class TerrainWorldDebuggerComponent
         : public AZ::Component
     {
     public:
         template<typename, typename>
         friend class LmbrCentral::EditorWrappedComponentBase;
-        AZ_COMPONENT(TerrainWorldComponent, "{4734EFDC-135D-4BF5-BE57-4F9AD03ADF78}");
+        AZ_COMPONENT(TerrainWorldDebuggerComponent, "{ECA1F4CB-5395-41FD-B6ED-FFD2C80096E2}");
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services);
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services);
         static void Reflect(AZ::ReflectContext* context);
 
-        TerrainWorldComponent(const TerrainWorldConfig& configuration);
-        TerrainWorldComponent() = default;
-        ~TerrainWorldComponent() override;
+        TerrainWorldDebuggerComponent(const TerrainWorldDebuggerConfig& configuration);
+        TerrainWorldDebuggerComponent() = default;
+        ~TerrainWorldDebuggerComponent() override;
 
         //////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation
@@ -59,6 +57,6 @@ namespace Terrain
         bool WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const override;
 
     private:
-        TerrainWorldConfig m_configuration;
+        TerrainWorldDebuggerConfig m_configuration;
     };
 }

@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <TerrainSystem/TerrainSystem.h>
 
 namespace Terrain
 {
@@ -31,5 +32,7 @@ namespace Terrain
         void Activate() override;
         void Deactivate() override;
         ////////////////////////////////////////////////////////////////////////
+
+        TerrainSystem* m_terrainSystem{ nullptr };
     };
 }

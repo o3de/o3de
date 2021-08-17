@@ -9,6 +9,7 @@
 #include <EditorComponents/EditorTerrainHeightGradientListComponent.h>
 #include <EditorComponents/EditorTerrainLayerSpawnerComponent.h>
 #include <EditorComponents/EditorTerrainWorldComponent.h>
+#include <EditorComponents/EditorTerrainWorldDebuggerComponent.h>
 
 namespace Terrain
 {
@@ -20,6 +21,7 @@ namespace Terrain
                 Terrain::EditorTerrainHeightGradientListComponent::CreateDescriptor(),
                 Terrain::EditorTerrainLayerSpawnerComponent::CreateDescriptor(),
                 Terrain::EditorTerrainWorldComponent::CreateDescriptor(),
+                Terrain::EditorTerrainWorldDebuggerComponent::CreateDescriptor(),
 
             });
     }

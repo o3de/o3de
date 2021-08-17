@@ -10,6 +10,8 @@ set(FILES
     Source/Components/TerrainSystemComponent.h
     Source/Components/TerrainWorldComponent.cpp
     Source/Components/TerrainWorldComponent.h
+    Source/Components/TerrainWorldDebuggerComponent.cpp
+    Source/Components/TerrainWorldDebuggerComponent.h
     Source/TerrainRenderer/TerrainFeatureProcessor.cpp
     Source/TerrainRenderer/TerrainFeatureProcessor.h
     Source/TerrainSystem/TerrainSystem.cpp

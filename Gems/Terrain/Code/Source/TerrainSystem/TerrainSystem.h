@@ -33,6 +33,21 @@ public:
     ~TerrainSystem();
 
     ///////////////////////////////////////////
+    // TerrainSystemServiceRequestBus::Handler Impl
+
+    void SetWorldMin(AZ::Vector3 worldOrigin) override;
+    void SetWorldMax(AZ::Vector3 worldBounds) override;
+    void SetHeightQueryResolution(AZ::Vector2 queryResolution) override;
+    void SetDebugWireframe(bool wireframeEnabled) override;
+
+    void Activate() override;
+    void Deactivate() override;
+
+    void RegisterArea(AZ::EntityId areaId) override;
+    void UnregisterArea(AZ::EntityId areaId) override;
+    void RefreshArea(AZ::EntityId areaId) override;
+
+    ///////////////////////////////////////////
     // TerrainDataRequestBus::Handler Impl
     AZ::Vector2 GetTerrainGridResolution() const override;
     AZ::Aabb GetTerrainAabb() const override;
@@ -82,30 +97,28 @@ public:
     AZ::Vector3 GetNormalFromFloats(
         float x, float y, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const override;
 
-
-
-    ///////////////////////////////////////////
-
-    void SetWorldMin(AZ::Vector3 worldOrigin) { m_worldBounds.SetMin(worldOrigin); m_terrainVersionDirty = true; }
-    void SetWorldMax(AZ::Vector3 worldBounds) { m_worldBounds.SetMax(worldBounds); m_terrainVersionDirty = true; }
-    void SetHeightQueryResolution(AZ::Vector2 queryResolution) { m_heightQueryResolution = queryResolution;  m_terrainVersionDirty = true; }
-    void SetDebugWireframe(bool wireframeEnabled) { m_debugWireframeEnabled = wireframeEnabled; }
-
-    void RegisterArea(AZ::EntityId areaId) override;
-    void UnregisterArea(AZ::EntityId areaId) override;
-    void RefreshArea(AZ::EntityId areaId) override;
-
 private:
     // AZ::TickBus::Handler overrides ...
     void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
-    bool m_terrainVersionDirty = true;
+    void SystemActivate();
+    void SystemDeactivate();
+
+    struct TerrainSystemSettings
+    {
+        AZ::Aabb m_worldBounds;
+        AZ::Vector2 m_heightQueryResolution{ 1.0f };
+        bool m_debugWireframeEnabled{ false };
+        bool m_systemActive{ false };
+    };
+
+    TerrainSystemSettings m_currentSettings;
+    TerrainSystemSettings m_requestedSettings;
+
+    bool m_terrainSettingsDirty = true;
     bool m_terrainHeightDirty = false;
     AZ::Aabb m_dirtyRegion;
 
-    AZ::Aabb m_worldBounds;
-    AZ::Vector2 m_heightQueryResolution{ 1.0f };
-    bool m_debugWireframeEnabled{ true };
 
     mutable AZStd::shared_mutex m_areaMutex;
     AZStd::unordered_map<AZ::EntityId, AZ::Aabb> m_registeredAreas;
