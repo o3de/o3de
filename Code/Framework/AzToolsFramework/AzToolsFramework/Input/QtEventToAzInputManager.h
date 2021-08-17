@@ -138,8 +138,6 @@ namespace AzToolsFramework
 
         // The current keyboard modifier state used by our synthetic key input channels.
         AZStd::shared_ptr<AzFramework::ModifierKeyStates> m_keyboardModifiers;
-        // The current normalized cursor position used by our synthetic system cursor event.
-        AZStd::shared_ptr<AzFramework::InputChannel::PositionData2D> m_cursorPosition;
         // A lookup table for Qt key -> AZ input channel.
         AZStd::unordered_map<Qt::Key, AzFramework::InputChannelId> m_keyMappings;
         // A lookup table for Qt mouse button -> AZ input channel.
@@ -152,8 +150,6 @@ namespace AzToolsFramework
         AZStd::unordered_map<AzFramework::InputChannelId, AzFramework::InputChannel*> m_channels;
         // The source widget to map events from, used to calculate the relative mouse position within the widget bounds.
         QWidget* m_sourceWidget;
-        // Flags when mouse movement channels have been opened and may need to be closed (as there are no movement ended events).
-        bool m_mouseChannelsNeedUpdate = false;
         // Flags whether or not Qt events should currently be processed.
         bool m_enabled = true;
         // Flags whether or not the cursor is being constrained to the source widget (for invisible mouse movement).
