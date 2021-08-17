@@ -111,3 +111,11 @@ class TestAutomation(TestAutomationBase):
     def test_LandscapeCanvas_LayerBlender_NodeConstruction(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import LayerBlender_NodeConstruction as test_module
         self._run_test(request, workspace, editor, test_module)
+
+    def test_LandscapeCanvas_ShapeNodes_EntityCreatedOnNodeAdd(self, request, workspace, editor, launcher_platform):
+        from .EditorScripts import ShapeNodes_EntityCreatedOnNodeAdd as test_module
+        self._run_test(request, workspace, editor, test_module)
+
+    def test_LandscapeCanvas_ShapeNodes_EntityRemovedOnNodeDelete(self, request, workspace, editor, launcher_platform):
+        from .EditorScripts import ShapeNodes_EntityRemovedOnNodeDelete as test_module
+        self._run_test(request, workspace, editor, test_module)

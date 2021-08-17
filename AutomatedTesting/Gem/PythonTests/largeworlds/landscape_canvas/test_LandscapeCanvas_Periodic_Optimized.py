@@ -81,3 +81,9 @@ class TestAutomation(EditorTestSuite):
 
     class test_LandscapeCanvas_LayerBlender_NodeConstruction(EditorSharedTest):
         from .EditorScripts import LayerBlender_NodeConstruction as test_module
+
+    class test_LandscapeCanvas_ShapeNodes_EntityCreatedOnNodeAdd(EditorSharedTest):
+        from .EditorScripts import ShapeNodes_EntityCreatedOnNodeAdd as test_module
+
+    class test_LandscapeCanvas_ShapeNodes_EntityRemovedOnNodeDelete(EditorSharedTest):
+        from .EditorScripts import ShapeNodes_EntityRemovedOnNodeDelete as test_module
