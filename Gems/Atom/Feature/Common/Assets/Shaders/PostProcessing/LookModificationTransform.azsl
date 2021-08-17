@@ -72,9 +72,9 @@ float4 SampleBSpline3D(Texture3D<float4> texture, SamplerState linearSampler, fl
     float3 OneMinusF3 = OneMinusF2 * OneMinusF;
     float3 w0 = OneMinusF3;
     float3 w1 = 4.0 + 3.0 * f * f * f - 6.0 * f * f;
-    float3 w2 = 4.0 + 3 * OneMinusF3 - 6.0 * OneMinusF2;
+    float3 w2 = 4.0 + 3.0 * OneMinusF3 - 6.0 * OneMinusF2;
     float3 w3 = f * f * f;
-    
+
     float3 w12 = w1 + w2;
 
     // Compute uv coordinates for sampling the texture
