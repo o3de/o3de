@@ -19,6 +19,7 @@
 namespace AZ
 {
     class ReflectContext;
+    class SerializeContext;
 }
 
 namespace AzToolsFramework

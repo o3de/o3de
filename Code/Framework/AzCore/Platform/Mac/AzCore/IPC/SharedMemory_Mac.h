@@ -29,7 +29,6 @@ namespace AZ
 
         static int GetLastError();
 
-        void ComposeMutexName(char* dest, size_t length, const char* name);
         CreateResult Create(const char* name, unsigned int size, bool openIfCreated);
         bool Open(const char* name);
         void Close();

@@ -17,13 +17,12 @@
 #include <platform.h>
 #include "CryArray.h"
 #include "Options.h"
-#include "CryString.h"
 #include "TypeInfo_decl.h"
 
 class ICrySizer;
 
 class CCryName;
-string ToString(CCryName const& val);
+AZStd::string ToString(CCryName const& val);
 bool FromString(CCryName& val, const char* s);
 
 //---------------------------------------------------------------------------
@@ -85,7 +84,7 @@ struct CTypeInfo
     //
 
     // Convert value to string.
-    virtual string ToString([[maybe_unused]] const void* data, [[maybe_unused]] FToString flags = 0, [[maybe_unused]] const void* def_data = 0) const
+    virtual AZStd::string ToString([[maybe_unused]] const void* data, [[maybe_unused]] FToString flags = 0, [[maybe_unused]] const void* def_data = 0) const
     { return ""; }
 
     // Write value from string, return success.
@@ -180,7 +179,7 @@ struct CTypeInfo
             assert(!bBitfield);
             return Type.FromString((char*)base + Offset, str, flags);
         }
-        string ToString(const void* base, FToString flags = 0, const void* def_base = 0) const
+        AZStd::string ToString(const void* base, FToString flags = 0, const void* def_base = 0) const
         {
             assert(!bBitfield);
             return Type.ToString((const char*)base + Offset, flags, def_base ? (const char*)def_base + Offset : 0);
@@ -189,7 +188,7 @@ struct CTypeInfo
         // Attribute access. Not fast.
         bool GetAttr(cstr name) const;
         bool GetAttr(cstr name, float& val) const;
-        bool GetAttr(cstr name, string& val) const;
+        bool GetAttr(cstr name, AZStd::string& val) const;
 
         // Comment, excluding attributes.
         cstr GetComment() const;

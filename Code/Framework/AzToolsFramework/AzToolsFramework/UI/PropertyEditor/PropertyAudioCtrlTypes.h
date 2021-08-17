@@ -18,15 +18,15 @@
 namespace AzToolsFramework
 {
     //=========================================================================
-    enum class AudioPropertyType
+    enum class AudioPropertyType : AZ::u32
     {
-        Invalid = 0,
-        Trigger,
+        Trigger = 0,
+        Rtpc,
         Switch,
         SwitchState,
-        Rtpc,
         Environment,
         Preload,
+        NumTypes,
     };
 
     //=========================================================================
@@ -40,7 +40,7 @@ namespace AzToolsFramework
         virtual ~CReflectedVarAudioControl() = default;
 
         AZStd::string m_controlName;
-        AudioPropertyType m_propertyType = AudioPropertyType::Invalid;
+        AudioPropertyType m_propertyType = AudioPropertyType::NumTypes;
 
         static void Reflect(AZ::ReflectContext* context)
         {

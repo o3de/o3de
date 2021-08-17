@@ -28,7 +28,7 @@ namespace AssetProcessor
     //! Amount of time in seconds to wait for a builder to start up and connect
     // sometimes, builders take a long time to start because of things like virus scanners scanning each
     // builder DLL, so we give them a large margin.
-    static const int s_StartupConnectionWaitTimeS = 120;
+    static const int s_StartupConnectionWaitTimeS = 300;
 
     static const int s_MillisecondsInASecond = 1000;
 

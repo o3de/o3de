@@ -121,7 +121,7 @@ namespace AZ
 
             // Load shader and srg
             const char* ShaderPath = "shader/decomposemsimage.azshader";
-            m_decomposeShader = LoadShader(ShaderPath);
+            m_decomposeShader = LoadCriticalShader(ShaderPath);
 
             if (m_decomposeShader == nullptr)
             {

@@ -121,12 +121,6 @@ namespace AzTestRunner
         {
             const char* cwd = AzTestRunner::get_current_working_directory();
             std::cout << "cwd = " << cwd << std::endl;
-
-            for (int i = 0; i < argc; i++)
-            {
-                std::cout << "arg[" << i << "] " << argv[i] << std::endl;
-            }
-
             std::cout << "LIB: " << lib << std::endl;
         }
 
@@ -225,6 +219,12 @@ namespace AzTestRunner
             result = (*testMainFunction)(argc, argv);
             std::cout << "OKAY " << symbol << "() returned " << result << std::endl;
             testMainFunction.reset();
+        }
+
+        // Construct a retry command if the test fails
+        if (result != 0)
+        {
+            std::cout << "Retry command: " << std::endl << argv[0] << " " << lib << " " << symbol << std::endl;
         }
 
         // unload and reset the module here, because it needs to release resources that were used / activated in

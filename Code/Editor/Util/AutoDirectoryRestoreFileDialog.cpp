@@ -45,7 +45,7 @@ int CAutoDirectoryRestoreFileDialog::exec()
         foreach(const QString&fileName, selectedFiles())
         {
             QFileInfo info(fileName);
-            if (!CryStringUtils::IsValidFileName(info.fileName().toStdString().c_str()))
+            if (!AZ::StringFunc::Path::IsValid(info.fileName().toStdString().c_str()))
             {
                 QMessageBox::warning(this, tr("Error"), tr("Please select a valid file name (standard English alphanumeric characters only)"));
                 problem = true;

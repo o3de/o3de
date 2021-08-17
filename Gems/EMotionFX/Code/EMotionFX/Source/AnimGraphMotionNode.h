@@ -72,10 +72,10 @@ namespace EMotionFX
             void Update() override;
 
         public:
-            uint32 mMotionSetID = InvalidIndex32;
-            uint32 mActiveMotionIndex = InvalidIndex32;
-            MotionInstance* mMotionInstance = nullptr;
-            bool mReload = false;
+            uint32 m_motionSetId = InvalidIndex32;
+            uint32 m_activeMotionIndex = InvalidIndex32;
+            MotionInstance* m_motionInstance = nullptr;
+            bool m_reload = false;
         };
 
         AnimGraphMotionNode();

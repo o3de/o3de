@@ -180,7 +180,7 @@ bool ConsoleLineEdit::event(QEvent* ev)
 
         if (newStr.isEmpty())
         {
-            newStr = GetIEditor()->GetCommandManager()->AutoComplete(cstring.toUtf8().data());
+            newStr = GetIEditor()->GetCommandManager()->AutoComplete(cstring.toUtf8().data()).c_str();
         }
     }
 
@@ -211,7 +211,7 @@ void ConsoleLineEdit::keyPressEvent(QKeyEvent* ev)
         {
             if (commandManager->IsRegistered(str.toUtf8().data()))
             {
-                commandManager->Execute(QtUtil::ToString(str));
+                commandManager->Execute(str.toUtf8().data());
             }
             else
             {
@@ -566,15 +566,15 @@ static void OnVariableUpdated([[maybe_unused]] int row, ICVar* pCVar)
 static CVarBlock* VarBlockFromConsoleVars()
 {
     IConsole* console = GetIEditor()->GetSystem()->GetIConsole();
-    std::vector<const char*> cmds;
+    AZStd::vector<AZStd::string_view> cmds;
     cmds.resize(console->GetNumVars());
-    size_t cmdCount = console->GetSortedVars(&cmds[0], cmds.size());
+    size_t cmdCount = console->GetSortedVars(cmds);
 
     CVarBlock* vb = new CVarBlock;
     IVariable* pVariable = nullptr;
     for (int i = 0; i < cmdCount; i++)
     {
-        ICVar* pCVar = console->GetCVar(cmds[i]);
+        ICVar* pCVar = console->GetCVar(cmds[i].data());
         if (!pCVar)
         {
             continue;
@@ -606,7 +606,7 @@ static CVarBlock* VarBlockFromConsoleVars()
         pCVar->AddOnChangeFunctor(onChange);
 
         pVariable->SetDescription(pCVar->GetHelp());
-        pVariable->SetName(cmds[i]);
+        pVariable->SetName(cmds[i].data());
 
         // Transfer the custom limits have they have been set for this variable
         if (pCVar->HasCustomLimits())

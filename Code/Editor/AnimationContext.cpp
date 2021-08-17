@@ -28,7 +28,7 @@ class CMovieCallback
     : public IMovieCallback
 {
 protected:
-    virtual void OnMovieCallback(ECallbackReason reason, [[maybe_unused]] IAnimNode* pNode)
+    void OnMovieCallback(ECallbackReason reason, [[maybe_unused]] IAnimNode* pNode) override
     {
         switch (reason)
         {
@@ -48,7 +48,7 @@ protected:
         }
     }
 
-    void OnSetCamera(const SCameraParams& Params)
+    void OnSetCamera(const SCameraParams& Params) override
     {
         // Only switch camera when in Play mode.
         GUID camObjId = GUID_NULL;
@@ -69,14 +69,14 @@ protected:
         }
     };
 
-    bool IsSequenceCamUsed() const
+    bool IsSequenceCamUsed() const override
     {
         if (gEnv->IsEditorGameMode() == true)
         {
             return true;
         }
 
-        if (GetIEditor()->GetViewManager() == NULL)
+        if (GetIEditor()->GetViewManager() == nullptr)
         {
             return false;
         }
@@ -103,7 +103,7 @@ public:
     CAnimationContextPostRender(CAnimationContext* pAC)
         : m_pAC(pAC){}
 
-    void OnPostRender() const { assert(m_pAC); m_pAC->OnPostRender(); }
+    void OnPostRender() const override { assert(m_pAC); m_pAC->OnPostRender(); }
 
 protected:
     CAnimationContext* m_pAC;
@@ -221,7 +221,7 @@ void CAnimationContext::SetSequence(CTrackViewSequence* sequence, bool force, bo
         m_pSequence->UnBindFromEditorObjects();
     }
     m_pSequence = sequence;
-    
+
     // Notify a new sequence was just selected.
     Maestro::EditorSequenceNotificationBus::Broadcast(&Maestro::EditorSequenceNotificationBus::Events::OnSequenceSelected, m_pSequence ? m_pSequence->GetSequenceComponentEntityId() : AZ::EntityId());
 
@@ -337,7 +337,7 @@ void CAnimationContext::OnSequenceActivated(AZ::EntityId entityId)
                     {
                         // Hang onto this because SetSequence() will reset it.
                         float lastTime = m_mostRecentSequenceTime;
-                        
+
                         SetSequence(sequence, false, false);
 
                         // Restore the current time.

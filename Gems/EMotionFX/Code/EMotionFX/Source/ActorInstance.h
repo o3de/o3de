@@ -75,7 +75,7 @@ namespace EMotionFX
          * Get the unique identification number for the actor instance.
          * @return The unique identification number.
          */
-        MCORE_INLINE uint32 GetID() const                                       { return mID; }
+        MCORE_INLINE uint32 GetID() const                                       { return m_id; }
 
         /**
          * Set the unique identification number for the actor instance.
@@ -104,7 +104,7 @@ namespace EMotionFX
          * This can return nullptr, in which case the motion system as returned by GetMotionSystem() will be used.
          * @result The anim graph instance.
          */
-        MCORE_INLINE AnimGraphInstance* GetAnimGraphInstance() const          { return mAnimGraphInstance; }
+        MCORE_INLINE AnimGraphInstance* GetAnimGraphInstance() const          { return m_animGraphInstance; }
 
         /**
          * Set the anim graph instance.
@@ -119,7 +119,7 @@ namespace EMotionFX
          * So if you wish to get or set any transformations, you can do it with the object returned by this method.
          * @result A pointer to the transformation data object.
          */
-        MCORE_INLINE TransformData* GetTransformData() const                    { return mTransformData; }
+        MCORE_INLINE TransformData* GetTransformData() const                    { return m_transformData; }
 
         /**
          * Enable or disable this actor instance.
@@ -136,7 +136,7 @@ namespace EMotionFX
          * Disabled actor instances are not updated and processed.
          * @result Returns true when enabled, or false when disabled.
          */
-        MCORE_INLINE bool GetIsEnabled() const                                  { return (mBoolFlags & BOOL_ENABLED) != 0; }
+        MCORE_INLINE bool GetIsEnabled() const                                  { return (m_boolFlags & BOOL_ENABLED) != 0; }
 
         /**
          * Check the visibility flag.
@@ -144,7 +144,7 @@ namespace EMotionFX
          * This is used internally by the schedulers, so that heavy calculations can be skipped on invisible characters.
          * @result Returns true when the actor instance is marked as visible, otherwise false is returned.
          */
-        MCORE_INLINE bool GetIsVisible() const                                  { return (mBoolFlags & BOOL_ISVISIBLE) != 0; }
+        MCORE_INLINE bool GetIsVisible() const                                  { return (m_boolFlags & BOOL_ISVISIBLE) != 0; }
 
         /**
          * Change the visibility state.
@@ -181,7 +181,7 @@ namespace EMotionFX
          * @param[in] skeletalLODLevel The skeletal LOD level to calculate the number of disabled nodes for.
          * @return  The number of disabled nodes for the given skeletal LOD level.
          */
-        uint32 CalcNumDisabledNodes(uint32 skeletalLODLevel) const;
+        size_t CalcNumDisabledNodes(size_t skeletalLODLevel) const;
 
         /**
          * Calculate the number of used skeletal LOD levels. Each actor instance alsways has 32 skeletal LOD levels while in most cases
@@ -189,7 +189,7 @@ namespace EMotionFX
          * relative to the previous LOD level.
          * @return The number of actually used skeletal LOD levels.
          */
-        uint32 CalcNumSkeletalLODLevels() const;
+        size_t CalcNumSkeletalLODLevels() const;
 
         /**
          * Get the current used geometry and skeletal detail level.
@@ -199,13 +199,13 @@ namespace EMotionFX
          * are needed.
          * @result The current LOD level.
          */
-        uint32 GetLODLevel() const;
+        size_t GetLODLevel() const;
 
         /**
          * Set the current geometry and skeletal detail level, where 0 is the highest detail.
          * @param level The LOD level. Values higher than [GetNumGeometryLODLevels()-1] will be clamped to the maximum LOD.
          */
-        void SetLODLevel(uint32 level);
+        void SetLODLevel(size_t level);
 
         //--------------------------------
 
@@ -423,7 +423,7 @@ namespace EMotionFX
          *                      4th vertex will be included in the bounds calculation, so only processing 25% of the total number of vertices. The same goes for
          *                      node based bounds, but then it will process every 4th node. Of course higher values produce less accurate results, but are faster to process.
          */
-        void UpdateBounds(uint32 geomLODLevel, EBoundsType boundsType = BOUNDS_NODE_BASED, uint32 itemFrequency = 1);
+        void UpdateBounds(size_t geomLODLevel, EBoundsType boundsType = BOUNDS_NODE_BASED, uint32 itemFrequency = 1);
 
         /**
          * Update the base static axis aligned bounding box shape.
@@ -465,7 +465,7 @@ namespace EMotionFX
          * @param vertexFrequency This includes every "vertexFrequency"-th vertex. So for example a value of 2 would skip every second vertex and
          *                        so will process half of the vertices. A value of 4 would process only each 4th vertex, etc.
          */
-        void CalcMeshBasedAabb(uint32 geomLODLevel, AZ::Aabb* outResult, uint32 vertexFrequency = 1);
+        void CalcMeshBasedAabb(size_t geomLODLevel, AZ::Aabb* outResult, uint32 vertexFrequency = 1);
 
         /**
          * Get the axis aligned bounding box.
@@ -489,14 +489,14 @@ namespace EMotionFX
          * This is relative to its parent (if it is attached ot something). Otherwise it is in world space.
          * @param position The position/translation to use.
          */
-        MCORE_INLINE void SetLocalSpacePosition(const AZ::Vector3& position)          { mLocalTransform.mPosition = position; }
+        MCORE_INLINE void SetLocalSpacePosition(const AZ::Vector3& position)          { m_localTransform.m_position = position; }
 
         /**
          * Set the local rotation of this actor instance.
          * This is relative to its parent (if it is attached ot something). Otherwise it is in world space.
          * @param rotation The rotation to use.
          */
-        MCORE_INLINE void SetLocalSpaceRotation(const AZ::Quaternion& rotation)    { mLocalTransform.mRotation = rotation; }
+        MCORE_INLINE void SetLocalSpaceRotation(const AZ::Quaternion& rotation)    { m_localTransform.m_rotation = rotation; }
 
         EMFX_SCALECODE
         (
@@ -505,14 +505,14 @@ namespace EMotionFX
              * This is relative to its parent (if it is attached ot something). Otherwise it is in world space.
              * @param scale The scale to use.
              */
-            MCORE_INLINE void SetLocalSpaceScale(const AZ::Vector3& scale)           { mLocalTransform.mScale = scale; }
+            MCORE_INLINE void SetLocalSpaceScale(const AZ::Vector3& scale)           { m_localTransform.m_scale = scale; }
 
             /**
              * Get the local space scale.
              * This is relative to its parent (if it is attached ot something). Otherwise it is in world space.
              * @result The local space scale factor for each axis.
              */
-            MCORE_INLINE const AZ::Vector3& GetLocalSpaceScale() const              { return mLocalTransform.mScale; }
+            MCORE_INLINE const AZ::Vector3& GetLocalSpaceScale() const              { return m_localTransform.m_scale; }
         )
 
         /**
@@ -520,20 +520,20 @@ namespace EMotionFX
          * This is relative to its parent (if it is attached ot something). Otherwise it is in world space.
          * @result The local space position.
          */
-        MCORE_INLINE const AZ::Vector3& GetLocalSpacePosition() const               { return mLocalTransform.mPosition; }
+        MCORE_INLINE const AZ::Vector3& GetLocalSpacePosition() const               { return m_localTransform.m_position; }
 
         /**
          * Get the local space rotation of this actor instance.
          * This is relative to its parent (if it is attached ot something). Otherwise it is in world space.
          * @result The local space rotation.
          */
-        MCORE_INLINE const AZ::Quaternion& GetLocalSpaceRotation() const         { return mLocalTransform.mRotation; }
+        MCORE_INLINE const AZ::Quaternion& GetLocalSpaceRotation() const         { return m_localTransform.m_rotation; }
 
-        MCORE_INLINE void SetLocalSpaceTransform(const Transform& transform)        { mLocalTransform = transform; }
+        MCORE_INLINE void SetLocalSpaceTransform(const Transform& transform)        { m_localTransform = transform; }
 
-        MCORE_INLINE const Transform& GetLocalSpaceTransform() const                { return mLocalTransform; }
-        MCORE_INLINE const Transform& GetWorldSpaceTransform() const                { return mWorldTransform; }
-        MCORE_INLINE const Transform& GetWorldSpaceTransformInversed() const        { return mWorldTransformInv; }
+        MCORE_INLINE const Transform& GetLocalSpaceTransform() const                { return m_localTransform; }
+        MCORE_INLINE const Transform& GetWorldSpaceTransform() const                { return m_worldTransform; }
+        MCORE_INLINE const Transform& GetWorldSpaceTransformInversed() const        { return m_worldTransformInv; }
 
         //-------------------------------------------------------------------------------------------
 
@@ -568,7 +568,7 @@ namespace EMotionFX
          *                   When you set this to false, it will not be deleted from memory, but only removed from the array of attachments
          *                   that is stored locally inside this actor instance.
          */
-        void RemoveAttachment(uint32 nr, bool delFromMem = true);
+        void RemoveAttachment(size_t nr, bool delFromMem = true);
 
         /**
          * Remove all attachments from this actor instance.
@@ -593,20 +593,20 @@ namespace EMotionFX
          * @result Returns the attachment number, in range of [0..GetNumAttachments()-1], or MCORE_INVALIDINDEX32 when no attachment
          *         using the specified actor instance can be found.
          */
-        uint32 FindAttachmentNr(ActorInstance* actorInstance);
+        size_t FindAttachmentNr(ActorInstance* actorInstance);
 
         /**
          * Get the number of attachments that have been added to this actor instance.
          * @result The number of attachments added to this actor instance.
          */
-        uint32 GetNumAttachments() const;
+        size_t GetNumAttachments() const;
 
         /**
          * Get a specific attachment.
          * @param nr The attachment number, which must be in range of [0..GetNumAttachments()-1].
          * @result A pointer to the attachment.
          */
-        Attachment* GetAttachment(uint32 nr) const;
+        Attachment* GetAttachment(size_t nr) const;
 
         /**
          * Check whether this actor instance also is an attachment or not.
@@ -664,14 +664,14 @@ namespace EMotionFX
          * Get the number of dependencies that this actor instance has on other actors.
          * @result The number of dependencies.
          */
-        uint32 GetNumDependencies() const;
+        size_t GetNumDependencies() const;
 
         /**
          * Get a given dependency.
          * @param nr The dependency number to get, which must be in range of [0..GetNumDependencies()].
          * @result A pointer to the dependency.
          */
-        Actor::Dependency* GetDependency(uint32 nr);
+        Actor::Dependency* GetDependency(size_t nr);
 
         /**
          * Get the morph setup instance.
@@ -692,7 +692,7 @@ namespace EMotionFX
          * @param ray The ray to check.
          * @return A pointer to the node we detected the first intersection with (doesn't have to be the closest), or nullptr when no intersection found.
          */
-        Node* IntersectsCollisionMesh(uint32 lodLevel, const MCore::Ray& ray) const;
+        Node* IntersectsCollisionMesh(size_t lodLevel, const MCore::Ray& ray) const;
 
         /**
          * Check for an intersection between the collision mesh of this actor and a given ray, and calculate the closest intersection point.
@@ -711,7 +711,7 @@ namespace EMotionFX
          *                   A value of nullptr is allowed, which will skip storing the resulting triangle indices.
          * @return A pointer to the node we detected the closest intersection with, or nullptr when no intersection found.
          */
-        Node* IntersectsCollisionMesh(uint32 lodLevel, const MCore::Ray& ray, AZ::Vector3* outIntersect, AZ::Vector3* outNormal = nullptr, AZ::Vector2* outUV = nullptr, float* outBaryU = nullptr, float* outBaryV = nullptr, uint32* outIndices = nullptr) const;
+        Node* IntersectsCollisionMesh(size_t lodLevel, const MCore::Ray& ray, AZ::Vector3* outIntersect, AZ::Vector3* outNormal = nullptr, AZ::Vector2* outUV = nullptr, float* outBaryU = nullptr, float* outBaryV = nullptr, uint32* outIndices = nullptr) const;
 
         /**
          * Check for an intersection between the real mesh (if present) of this actor and a given ray.
@@ -721,7 +721,7 @@ namespace EMotionFX
          * @param ray The ray to test with.
          * @return Returns a pointer to itself when an intersection occurred, or nullptr when no intersection found.
          */
-        Node* IntersectsMesh(uint32 lodLevel, const MCore::Ray& ray) const;
+        Node* IntersectsMesh(size_t lodLevel, const MCore::Ray& ray) const;
 
         /**
          * Checks for an intersection between the real mesh (if present) of this actor and a given ray.
@@ -741,7 +741,7 @@ namespace EMotionFX
          *                   A value of nullptr is allowed, which will skip storing the resulting triangle indices.
          * @return A pointer to the node we detected the closest intersection with, or nullptr when no intersection found.
          */
-        Node* IntersectsMesh(uint32 lodLevel, const MCore::Ray& ray, AZ::Vector3* outIntersect, AZ::Vector3* outNormal = nullptr, AZ::Vector2* outUV = nullptr, float* outBaryU = nullptr, float* outBaryV = nullptr, uint32* outStartIndex = nullptr) const;
+        Node* IntersectsMesh(size_t lodLevel, const MCore::Ray& ray, AZ::Vector3* outIntersect, AZ::Vector3* outNormal = nullptr, AZ::Vector2* outUV = nullptr, float* outBaryU = nullptr, float* outBaryV = nullptr, uint32* outStartIndex = nullptr) const;
 
         void SetRagdoll(Physics::Ragdoll* ragdoll);
         RagdollInstance* GetRagdollInstance() const;
@@ -788,20 +788,20 @@ namespace EMotionFX
          * Get direct access to the array of enabled nodes.
          * @result A read only reference to the array of enabled nodes. The values inside of this array are the node numbers of the enabled nodes.
          */
-        MCORE_INLINE const MCore::Array<uint16>& GetEnabledNodes() const        { return mEnabledNodes; }
+        MCORE_INLINE const AZStd::vector<uint16>& GetEnabledNodes() const        { return m_enabledNodes; }
 
         /**
          * Get the number of enabled nodes inside this actor instance.
          * @result The number of nodes that have been enabled and are being updated.
          */
-        MCORE_INLINE uint32 GetNumEnabledNodes() const                          { return mEnabledNodes.GetLength(); }
+        MCORE_INLINE size_t GetNumEnabledNodes() const                          { return m_enabledNodes.size(); }
 
         /**
          * Get the node number of a given enabled node.
          * @param index An index in the array of enabled nodes. This must be in range of [0..GetNumEnabledNodes()-1].
          * @result The node number, which relates to Actor::GetNode( returnValue ).
          */
-        MCORE_INLINE uint16 GetEnabledNode(uint32 index) const                  { return mEnabledNodes[index]; }
+        MCORE_INLINE uint16 GetEnabledNode(size_t index) const                  { return m_enabledNodes[index]; }
 
         /**
          * Enable all nodes inside the actor instance.
@@ -856,51 +856,51 @@ namespace EMotionFX
         float GetMotionSamplingTimer() const;
         float GetMotionSamplingRate() const;
 
-        MCORE_INLINE uint32 GetNumNodes() const         { return mActor->GetSkeleton()->GetNumNodes(); }
+        MCORE_INLINE size_t GetNumNodes() const         { return m_actor->GetSkeleton()->GetNumNodes(); }
 
         void UpdateVisualizeScale();                    // not automatically called on creation for performance reasons (this method relatively is slow as it updates all meshes)
         float GetVisualizeScale() const;
         void SetVisualizeScale(float factor);
 
     private:
-        TransformData*          mTransformData;         /**< The transformation data for this instance. */
+        TransformData*          m_transformData;         /**< The transformation data for this instance. */
         AZ::Aabb                m_aabb;                  /**< The axis aligned bounding box. */
         AZ::Aabb                m_staticAabb;           /**< A static pre-calculated bounding box, which we can move along with the position of the actor instance, and use for visibility checks. */
 
-        Transform               mLocalTransform = Transform::CreateIdentity();
-        Transform               mWorldTransform = Transform::CreateIdentity();
-        Transform               mWorldTransformInv = Transform::CreateIdentity();
-        Transform               mParentWorldTransform = Transform::CreateIdentity();
-        Transform               mTrajectoryDelta = Transform::CreateIdentityWithZeroScale();
+        Transform               m_localTransform = Transform::CreateIdentity();
+        Transform               m_worldTransform = Transform::CreateIdentity();
+        Transform               m_worldTransformInv = Transform::CreateIdentity();
+        Transform               m_parentWorldTransform = Transform::CreateIdentity();
+        Transform               m_trajectoryDelta = Transform::CreateIdentityWithZeroScale();
 
-        MCore::Array<Attachment*>               mAttachments;       /**< The attachments linked to this actor instance. */
-        MCore::Array<Actor::Dependency>         mDependencies;      /**< The actor dependencies, which specify which Actor objects this instance is dependent on. */
-        MorphSetupInstance*                     mMorphSetup;        /**< The  morph setup instance. */
-        MCore::Array<uint16>                    mEnabledNodes;      /**< The list of nodes that are enabled. */
+        AZStd::vector<Attachment*>               m_attachments;       /**< The attachments linked to this actor instance. */
+        AZStd::vector<Actor::Dependency>         m_dependencies;      /**< The actor dependencies, which specify which Actor objects this instance is dependent on. */
+        MorphSetupInstance*                     m_morphSetup;        /**< The  morph setup instance. */
+        AZStd::vector<uint16>                    m_enabledNodes;      /**< The list of nodes that are enabled. */
 
-        Actor*                  mActor;                 /**< A pointer to the parent actor where this is an instance from. */
-        ActorInstance*          mAttachedTo;            /**< Specifies the actor where this actor is attached to, or nullptr when it is no attachment. */
-        Attachment*             mSelfAttachment;        /**< The attachment it is itself inside the mAttachedTo actor instance, or nullptr when this isn't an attachment. */
-        MotionSystem*           mMotionSystem;          /**< The motion system, that handles all motion playback and blending etc. */
-        AnimGraphInstance*      mAnimGraphInstance;     /**< A pointer to the anim graph instance, which can be nullptr when there is no anim graph instance. */
+        Actor*                  m_actor;                 /**< A pointer to the parent actor where this is an instance from. */
+        ActorInstance*          m_attachedTo;            /**< Specifies the actor where this actor is attached to, or nullptr when it is no attachment. */
+        Attachment*             m_selfAttachment;        /**< The attachment it is itself inside the m_attachedTo actor instance, or nullptr when this isn't an attachment. */
+        MotionSystem*           m_motionSystem;          /**< The motion system, that handles all motion playback and blending etc. */
+        AnimGraphInstance*      m_animGraphInstance;     /**< A pointer to the anim graph instance, which can be nullptr when there is no anim graph instance. */
         AZStd::unique_ptr<RagdollInstance> m_ragdollInstance;
-        MCore::Mutex            mLock;                  /**< The multi-thread lock. */
-        void*                   mCustomData;            /**< A pointer to custom data for this actor. This could be a pointer to your engine or game object for example. */
+        MCore::Mutex            m_lock;                  /**< The multi-thread lock. */
+        void*                   m_customData;            /**< A pointer to custom data for this actor. This could be a pointer to your engine or game object for example. */
         AZ::Entity*             m_entity;               /**< The entity to which the actor instance belongs to. */
-        float                   mBoundsUpdateFrequency; /**< The bounds update frequency. Which is a time value in seconds. */
-        float                   mBoundsUpdatePassedTime;/**< The time passed since the last bounds update. */
-        float                   mMotionSamplingRate;    /**< The motion sampling rate in seconds, where 0.1 would mean to update 10 times per second. A value of 0 or lower means to update every frame. */
-        float                   mMotionSamplingTimer;   /**< The time passed since the last time we sampled motions/anim graphs. */
-        float                   mVisualizeScale;        /**< Some visualization scale factor when rendering for example normals, to be at a nice size, relative to the character. */
-        uint32                  mLODLevel;              /**< The current LOD level, where 0 is the highest detail. */
-        uint32                  m_requestedLODLevel;    /**< Requested LOD level. The actual LOD level will be updated as soon as all transforms for the requested LOD level are ready. */
-        uint32                  mBoundsUpdateItemFreq;  /**< The bounds update item counter step size. A value of 1 means every vertex/node, a value of 2 means every second vertex/node, etc. */
-        uint32                  mID;                    /**< The unique identification number for the actor instance. */
-        uint32                  mThreadIndex;           /**< The thread index. This specifies the thread number this actor instance is being processed in. */
-        EBoundsType             mBoundsUpdateType;      /**< The bounds update type (node based, mesh based or collision mesh based). */
+        float                   m_boundsUpdateFrequency; /**< The bounds update frequency. Which is a time value in seconds. */
+        float                   m_boundsUpdatePassedTime;/**< The time passed since the last bounds update. */
+        float                   m_motionSamplingRate;    /**< The motion sampling rate in seconds, where 0.1 would mean to update 10 times per second. A value of 0 or lower means to update every frame. */
+        float                   m_motionSamplingTimer;   /**< The time passed since the last time we sampled motions/anim graphs. */
+        float                   m_visualizeScale;        /**< Some visualization scale factor when rendering for example normals, to be at a nice size, relative to the character. */
+        size_t                  m_lodLevel;              /**< The current LOD level, where 0 is the highest detail. */
+        size_t                  m_requestedLODLevel;    /**< Requested LOD level. The actual LOD level will be updated as soon as all transforms for the requested LOD level are ready. */
+        uint32                  m_boundsUpdateItemFreq;  /**< The bounds update item counter step size. A value of 1 means every vertex/node, a value of 2 means every second vertex/node, etc. */
+        uint32                  m_id;                    /**< The unique identification number for the actor instance. */
+        uint32                  m_threadIndex;           /**< The thread index. This specifies the thread number this actor instance is being processed in. */
+        EBoundsType             m_boundsUpdateType;      /**< The bounds update type (node based, mesh based or collision mesh based). */
         float m_boundsExpandBy = 0.25f; /**< Expand bounding box by normalized percentage. (Default: 25% greater than the calculated bounding box) */
-        uint8                   mNumAttachmentRefs;     /**< Specifies how many actor instances use this actor instance as attachment. */
-        uint8                   mBoolFlags;             /**< Boolean flags. */
+        uint8                   m_numAttachmentRefs;     /**< Specifies how many actor instances use this actor instance as attachment. */
+        uint8                   m_boolFlags;             /**< Boolean flags. */
 
         /**
          * Boolean masks, as replacement for having several bools as members.
@@ -1002,7 +1002,7 @@ namespace EMotionFX
          * are needed.
          * @param level The skeletal detail LOD level. Values higher than 31 will be automatically clamped to 31.
          */
-        void SetSkeletalLODLevelNodeFlags(uint32 level);
+        void SetSkeletalLODLevelNodeFlags(size_t level);
 
         /*
          * Update the LOD level in case a change was requested.

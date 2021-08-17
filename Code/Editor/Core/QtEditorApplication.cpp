@@ -206,11 +206,8 @@ namespace
 
     static void LogToDebug([[maybe_unused]] QtMsgType Type, [[maybe_unused]] const QMessageLogContext& Context, const QString& message)
     {
-#if defined(WIN32) || defined(WIN64)
-        OutputDebugStringW(L"Qt: ");
-        OutputDebugStringW(reinterpret_cast<const wchar_t*>(message.utf16()));
-        OutputDebugStringW(L"\n");
-#endif
+        AZ::Debug::Platform::OutputToDebugger("Qt", message.toUtf8().data());
+        AZ::Debug::Platform::OutputToDebugger(nullptr, "\n");
     }
 }
 

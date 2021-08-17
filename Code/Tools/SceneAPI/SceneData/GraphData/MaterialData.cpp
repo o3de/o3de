@@ -18,11 +18,6 @@ namespace AZ
         {
             namespace DataTypes = AZ::SceneAPI::DataTypes;
 
-            const AZStd::string MaterialData::s_DiffuseMapName = "Diffuse";
-            const AZStd::string MaterialData::s_SpecularMapName = "Specular";
-            const AZStd::string MaterialData::s_BumpMapName = "Bump";
-            const AZStd::string MaterialData::s_emptyString = "";
-
             MaterialData::MaterialData()
                 : m_isNoDraw(false)
                 , m_diffuseColor(AZ::Vector3::CreateOne())
@@ -72,7 +67,7 @@ namespace AZ
                     return result->second;
                 }
 
-                return s_emptyString;
+                return m_emptyString;
             }
 
             void MaterialData::SetNoDraw(bool isNoDraw)

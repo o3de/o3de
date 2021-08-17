@@ -110,15 +110,15 @@ namespace EMotionFX
     {
         const Skeleton* skeleton = m_actorInstance->GetActor()->GetSkeleton();
 
-        const AZ::u32 numNodes = m_actorInstance->GetNumEnabledNodes();
-        for (AZ::u32 i = 0; i < numNodes; ++i)
+        const size_t numNodes = m_actorInstance->GetNumEnabledNodes();
+        for (size_t i = 0; i < numNodes; ++i)
         {
-            const AZ::u32 nodeIndex = m_actorInstance->GetEnabledNode(i);
-            const AZ::u32 parentIndex = skeleton->GetNode(nodeIndex)->GetParentIndex();
-            if (parentIndex != MCORE_INVALIDINDEX32)
+            const size_t nodeIndex = m_actorInstance->GetEnabledNode(i);
+            const size_t parentIndex = skeleton->GetNode(nodeIndex)->GetParentIndex();
+            if (parentIndex != InvalidIndex)
             {
-                const AZ::Vector3& startPos = pose.GetWorldSpaceTransform(nodeIndex).mPosition;
-                const AZ::Vector3& endPos = pose.GetWorldSpaceTransform(parentIndex).mPosition;
+                const AZ::Vector3& startPos = pose.GetWorldSpaceTransform(nodeIndex).m_position;
+                const AZ::Vector3& endPos = pose.GetWorldSpaceTransform(parentIndex).m_position;
                 DrawLine(offset + startPos, offset + endPos, color);
             }
         }

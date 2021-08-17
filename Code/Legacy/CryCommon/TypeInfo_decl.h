@@ -15,6 +15,7 @@
 #pragma once
 
 #include <AzCore/Math/Uuid.h>
+#include <AzCore/std/string/string.h>
 
 //////////////////////////////////////////////////////////////////////////
 // Meta-type support.
@@ -55,7 +56,7 @@ inline const CTypeInfo& TypeInfo(const T* t)
 
 // Type info declaration, with additional prototypes for string conversions.
 #define BASIC_TYPE_INFO(Type)                   \
-    string ToString(Type const & val);          \
+    AZStd::string ToString(Type const & val);   \
     bool FromString(Type & val, const char* s); \
     DECLARE_TYPE_INFO(Type)
 
@@ -105,7 +106,7 @@ BASIC_TYPE_INFO(double)
 
 BASIC_TYPE_INFO(AZ::Uuid)
 
-DECLARE_TYPE_INFO(string)
+DECLARE_TYPE_INFO(AZStd::string)
 
 // All pointers share same TypeInfo.
 const CTypeInfo&PtrTypeInfo();

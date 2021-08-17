@@ -40,7 +40,7 @@ struct IRenderMesh;
 
 #ifdef MAX_SUB_MATERIALS
 // This checks that the values are in sync in the different files.
-COMPILE_TIME_ASSERT(MAX_SUB_MATERIALS == 128);
+static_assert(MAX_SUB_MATERIALS == 128);
 #else
 #define MAX_SUB_MATERIALS 128
 #endif
@@ -431,8 +431,6 @@ struct IMaterial
 
     virtual uint32 GetDccMaterialHash() const = 0;
     virtual void SetDccMaterialHash(uint32 hash) = 0;
-
-    virtual CryCriticalSection& GetSubMaterialResizeLock() = 0;
 
     virtual void UpdateShaderItems() = 0;
 

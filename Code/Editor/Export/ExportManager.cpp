@@ -45,7 +45,7 @@ namespace
         SEfResTexture* pTex = pRes->GetTextureResource(nSlot);
         if (pTex)
         {
-            cry_strcat(outName, Path::GamePathToFullPath(pTex->m_Name.c_str()).toUtf8().data());
+            azstrcat(outName, AZ_ARRAY_SIZE(outName), Path::GamePathToFullPath(pTex->m_Name.c_str()).toUtf8().data());
         }
     }
 
@@ -87,7 +87,7 @@ Export::CObject::CObject(const char* pName)
 
     nParent = -1;
 
-    cry_strcpy(name, pName);
+    azstrcpy(name, AZ_ARRAY_SIZE(name), pName);
 
     materialName[0] = '\0';
 
@@ -101,7 +101,7 @@ Export::CObject::CObject(const char* pName)
 
 void Export::CObject::SetMaterialName(const char* pName)
 {
-    cry_strcpy(materialName, pName);
+    azstrcpy(materialName, AZ_ARRAY_SIZE(materialName), pName);
 }
 
 

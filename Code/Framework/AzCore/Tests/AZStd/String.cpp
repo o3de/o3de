@@ -628,10 +628,6 @@ namespace UnitTest
         }
     }
 
-#if defined(AZ_COMPILER_MSVC)
-#   pragma warning(push)
-#   pragma warning( disable: 4428 )   // universal-character-name encountered in source
-#endif // AZ_COMPILER_MSVC
     TEST_F(String, Algorithms)
     {
         string str = string::format("%s %d", "BlaBla", 5);
@@ -678,6 +674,7 @@ namespace UnitTest
         string str1;
         to_string(str1, wstr);
         AZ_TEST_ASSERT(str1 == "BlaBla 5");
+        EXPECT_EQ(8, to_string_length(wstr));
 
         str1 = string::format("%ls", wstr.c_str());
         AZ_TEST_ASSERT(str1 == "BlaBla 5");
@@ -689,6 +686,32 @@ namespace UnitTest
 
         wstr1 = wstring::format(L"%hs", str.c_str());
         AZ_TEST_ASSERT(wstr1 == L"BLABLA 5");
+
+        // wstring to char buffer
+        char strBuffer[9];
+        to_string(strBuffer, 9, wstr1.c_str());
+        AZ_TEST_ASSERT(0 == azstricmp(strBuffer, "BLABLA 5"));
+        EXPECT_EQ(8, to_string_length(wstr1));
+
+        // wstring to char with unicode
+        wstring ws1InfinityEscaped = L"Infinity: \u221E"; // escaped
+        EXPECT_EQ(13, to_string_length(ws1InfinityEscaped));
+
+        // wchar_t buffer to char buffer
+        wchar_t wstrBuffer[9] = L"BLABLA 5";
+        memset(strBuffer, 0, AZ_ARRAY_SIZE(strBuffer));
+        to_string(strBuffer, 9, wstrBuffer);
+        AZ_TEST_ASSERT(0 == azstricmp(strBuffer, "BLABLA 5"));
+
+        // string to wchar_t buffer
+        memset(wstrBuffer, 0, AZ_ARRAY_SIZE(wstrBuffer));
+        to_wstring(wstrBuffer, 9, str1.c_str());
+        AZ_TEST_ASSERT(0 == azwcsicmp(wstrBuffer, L"BlaBla 5"));
+
+        // char buffer to wchar_t buffer
+        memset(wstrBuffer, L' ', AZ_ARRAY_SIZE(wstrBuffer)); // to check that the null terminator is properly placed
+        to_wstring(wstrBuffer, 9, strBuffer);
+        AZ_TEST_ASSERT(0 == azwcsicmp(wstrBuffer, L"BLABLA 5"));
 
         // wchar UTF16/UTF32 to/from Utf8
         wstr1 = L"this is a \u20AC \u00A3 test"; // that's a euro and a pound sterling
@@ -1113,11 +1136,6 @@ namespace UnitTest
         EXPECT_FALSE(other.Valid());
         EXPECT_FALSE(other2.Valid());
     }
-
-    // StringAlgorithmTest-End
-#if defined(AZ_COMPILER_MSVC)
-#   pragma warning(pop)
-#endif // AZ_COMPILER_MSVC
 
     TEST_F(String, ConstString)
     {
