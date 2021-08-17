@@ -221,7 +221,7 @@ protected:
     float m_lastTime;
     int m_flags;
 
-    constexpr unsigned int InvalidKey = 0x7FFFFFFF;
+    static constexpr unsigned int InvalidKey = 0x7FFFFFFF;
 
     UiAnimParamData m_componentParamData;
 
