@@ -81,9 +81,13 @@ namespace AZ
             // Register Shader Asset Builder
             AssetBuilderSDK::AssetBuilderDesc shaderAssetBuilderDescriptor;
             shaderAssetBuilderDescriptor.m_name = "Shader Asset Builder";
-            shaderAssetBuilderDescriptor.m_version = 102; // ATOM-15472
-            // .shader file changes trigger rebuilds
-            shaderAssetBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern( AZStd::string::format("*.%s", RPI::ShaderSourceData::Extension), AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
+            shaderAssetBuilderDescriptor.m_version = 103; // ATOM-5441
+            // *.azsl, *.azsli, *.srgi are used to track source dependencies.
+            shaderAssetBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern(AZStd::string::format("*.%s", ShaderAssetBuilder::azslExtension), AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
+            shaderAssetBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern(AZStd::string::format("*.%s", ShaderAssetBuilder::azsliExtension), AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
+            shaderAssetBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern(AZStd::string::format("*.%s", ShaderAssetBuilder::srgiExtension), AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
+            // *.shader file changes trigger rebuilds
+            shaderAssetBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern(AZStd::string::format("*.%s", RPI::ShaderSourceData::Extension), AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             shaderAssetBuilderDescriptor.m_busId = azrtti_typeid<ShaderAssetBuilder>();
             shaderAssetBuilderDescriptor.m_createJobFunction = AZStd::bind(&ShaderAssetBuilder::CreateJobs, &m_shaderAssetBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
             shaderAssetBuilderDescriptor.m_processJobFunction = AZStd::bind(&ShaderAssetBuilder::ProcessJob, &m_shaderAssetBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
