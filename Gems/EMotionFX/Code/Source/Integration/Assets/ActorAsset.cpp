@@ -63,6 +63,7 @@ namespace EMotionFX
                 &actorSettings,
                 "");
 
+            assetData->m_emfxActor->SetFileName(asset.GetHint().c_str());
             assetData->m_emfxActor->Finalize();
 
             // Clear out the EMFX raw asset data.
