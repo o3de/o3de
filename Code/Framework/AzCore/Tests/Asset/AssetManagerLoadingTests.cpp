@@ -2201,10 +2201,12 @@ namespace UnitTest
 
         void ParallelDeepAssetReferences()
         {
+            AZ::Interface<ITraceBusRedirectorControl>::Get()->Disable();
+
             SerializeContext context;
             AssetWithSerializedData::Reflect(context);
             AssetWithAssetReference::Reflect(context);
-
+            
             AssetManager::Descriptor desc;
             AssetManager::Create(desc);
 
@@ -2316,6 +2318,7 @@ namespace UnitTest
             keepDispatching = false;
             dispatchThread.join();
 
+            AZ::Interface<ITraceBusRedirectorControl>::Get()->Enable();
             AssetManager::Destroy();
         }
 

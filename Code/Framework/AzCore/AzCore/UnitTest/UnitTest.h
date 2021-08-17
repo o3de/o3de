@@ -20,6 +20,7 @@
 #include <AzCore/std/typetraits/has_member_function.h>
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/Debug/TraceMessageBus.h>
+#include <AzCore/Interface/Interface.h>
 
 namespace UnitTest
 {
@@ -112,13 +113,38 @@ namespace UnitTest
         }
     };
 
+    struct ITraceBusRedirectorControl
+    {
+        AZ_RTTI(ITraceBusRedirectorControl, "{785450BF-7FD2-4648-980E-1AD69BDB22BA}");
+
+        virtual void Enable() = 0;
+        virtual void Disable() = 0;
+
+        ITraceBusRedirectorControl() = default;
+        virtual ~ITraceBusRedirectorControl() = default;
+
+        AZ_DISABLE_COPY_MOVE(ITraceBusRedirectorControl);
+    };
+
     // utility classes that you can derive from or contain, which suppress AZ_Asserts
     // and AZ_Errors to the below macros (processAssert, etc)
     // If TraceBusHook or TraceBusRedirector have been started in your unit tests, 
     //  use AZ_TEST_START_TRACE_SUPPRESSION and AZ_TEST_STOP_TRACE_SUPPRESSION(numExpectedAsserts) macros to perform AZ_Assert and AZ_Error suppression
     class TraceBusRedirector
         : public AZ::Debug::TraceMessageBus::Handler
+        , public AZ::Interface<ITraceBusRedirectorControl>::Registrar
     {
+    public:
+        void Enable() override
+        {
+            BusConnect();
+        }
+        void Disable() override
+        {
+            BusDisconnect();
+        }
+    private:
+
         bool OnPreAssert(const char* file, int line, const char* /* func */, const char* message) override
         {
             if (UnitTest::TestRunner::Instance().m_isAssertTest)
