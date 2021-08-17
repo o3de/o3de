@@ -46,7 +46,7 @@
                 "default_value": "",
                 "use_last_run_value": true,
                 "description": ""
-            },
+            }
         ]
     }
 }
