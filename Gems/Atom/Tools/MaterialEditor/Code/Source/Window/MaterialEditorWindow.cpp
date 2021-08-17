@@ -237,18 +237,14 @@ namespace MaterialEditor
         const QString documentPath = GetDocumentPath(documentId);
         if (!documentPath.isEmpty())
         {
-            const QString status = QString("Document opened: %1").arg(documentPath);
-            m_statusMessage->setText(QString("<font color=\"White\">%1</font>").arg(status));
+            SetStatusMessage(tr("Document opened: %1").arg(documentPath));
         }
     }
 
     void MaterialEditorWindow::OnDocumentClosed(const AZ::Uuid& documentId)
     {
         RemoveTabForDocumentId(documentId);
-
-        const QString documentPath = GetDocumentPath(documentId);
-        const QString status = QString("Document closed: %1").arg(documentPath);
-        m_statusMessage->setText(QString("<font color=\"White\">%1</font>").arg(status));
+        SetStatusMessage(tr("Document closed: %1").arg(GetDocumentPath(documentId)));
     }
 
     void MaterialEditorWindow::OnDocumentModified(const AZ::Uuid& documentId)
@@ -284,10 +280,7 @@ namespace MaterialEditor
         AZStd::string filename;
         AzFramework::StringFunc::Path::GetFullFileName(absolutePath.c_str(), filename);
         UpdateTabForDocumentId(documentId, filename, absolutePath, isModified);
-
-        const QString documentPath = GetDocumentPath(documentId);
-        const QString status = QString("Document saved: %1").arg(documentPath);
-        m_statusMessage->setText(QString("<font color=\"White\">%1</font>").arg(status));
+        SetStatusMessage(tr("Document saved: %1").arg(GetDocumentPath(documentId)));
     }
 
     void MaterialEditorWindow::CreateMenu()
@@ -295,7 +288,7 @@ namespace MaterialEditor
         Base::CreateMenu();
 
         // Generating the main menu manually because it's easier and we will have some dynamic or data driven entries
-        m_menuFile = m_menuBar->addMenu("&File");
+        m_menuFile = menuBar()->addMenu("&File");
 
         m_actionNew = m_menuFile->addAction("&New...", [this]() {
             CreateMaterialDialog createDialog(this);
@@ -330,9 +323,7 @@ namespace MaterialEditor
             AtomToolsFramework::AtomToolsDocumentSystemRequestBus::BroadcastResult(result, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::SaveDocument, documentId);
             if (!result)
             {
-                const QString documentPath = GetDocumentPath(documentId);
-                const QString status = QString("Document save failed: %1").arg(documentPath);
-                m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(status));
+                SetStatusError(tr("Document save failed: %1").arg(GetDocumentPath(documentId)));
             }
         }, QKeySequence::Save);
 
@@ -345,8 +336,7 @@ namespace MaterialEditor
                 documentId, AtomToolsFramework::GetSaveFileInfo(documentPath).absoluteFilePath().toUtf8().constData());
             if (!result)
             {
-                const QString status = QString("Document save failed: %1").arg(documentPath);
-                m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(status));
+                SetStatusError(tr("Document save failed: %1").arg(GetDocumentPath(documentId)));
             }
         }, QKeySequence::SaveAs);
 
@@ -359,8 +349,7 @@ namespace MaterialEditor
                 documentId, AtomToolsFramework::GetSaveFileInfo(documentPath).absoluteFilePath().toUtf8().constData());
             if (!result)
             {
-                const QString status = QString("Document save failed: %1").arg(documentPath);
-                m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(status));
+                SetStatusError(tr("Document save failed: %1").arg(GetDocumentPath(documentId)));
             }
         });
 
@@ -369,8 +358,7 @@ namespace MaterialEditor
             AtomToolsFramework::AtomToolsDocumentSystemRequestBus::BroadcastResult(result, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::SaveAllDocuments);
             if (!result)
             {
-                const QString status = QString("Document save all failed.");
-                m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(status));
+                SetStatusError(tr("Document save all failed"));
             }
         });
 
@@ -406,7 +394,7 @@ namespace MaterialEditor
             close();
         }, QKeySequence::Quit);
 
-        m_menuEdit = m_menuBar->addMenu("&Edit");
+        m_menuEdit = menuBar()->addMenu("&Edit");
 
         m_actionUndo = m_menuEdit->addAction("&Undo", [this]() {
             const AZ::Uuid documentId = GetDocumentIdFromTab(m_tabWidget->currentIndex());
@@ -414,9 +402,7 @@ namespace MaterialEditor
             AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(result, documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::Undo);
             if (!result)
             {
-                const QString documentPath = GetDocumentPath(documentId);
-                const QString status = QString("Document undo failed: %1").arg(documentPath);
-                m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(status));
+                SetStatusError(tr("Document undo failed: %1").arg(GetDocumentPath(documentId)));
             }
         }, QKeySequence::Undo);
 
@@ -426,9 +412,7 @@ namespace MaterialEditor
             AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(result, documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::Redo);
             if (!result)
             {
-                const QString documentPath = GetDocumentPath(documentId);
-                const QString status = QString("Document redo failed: %1").arg(documentPath);
-                m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(status));
+                SetStatusError(tr("Document redo failed: %1").arg(GetDocumentPath(documentId)));
             }
         }, QKeySequence::Redo);
 
@@ -440,7 +424,7 @@ namespace MaterialEditor
         }, QKeySequence::Preferences);
         m_actionSettings->setEnabled(true);
 
-        m_menuView = m_menuBar->addMenu("&View");
+        m_menuView = menuBar()->addMenu("&View");
 
         m_actionAssetBrowser = m_menuView->addAction("&Asset Browser", [this]() {
             const AZStd::string label = "Asset Browser";
@@ -480,7 +464,7 @@ namespace MaterialEditor
             SelectNextTab();
         }, Qt::CTRL | Qt::Key_Tab); //QKeySequence::NextChild works as expected but mirroring Previous
 
-        m_menuHelp = m_menuBar->addMenu("&Help");
+        m_menuHelp = menuBar()->addMenu("&Help");
 
         m_actionHelp = m_menuHelp->addAction("&Help...", [this]() {
             HelpDialog dialog(this);
