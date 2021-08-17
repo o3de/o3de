@@ -1792,11 +1792,6 @@ namespace EMStudio
         {
             EMotionFX::Actor* actor = selectionList.GetActorInstance(i)->GetActor();
 
-            if (actor->GetIsOwnedByRuntime())
-            {
-                continue;
-            }
-
             if (AZStd::find(savingActors.begin(), savingActors.end(), actor) == savingActors.end())
             {
                 savingActors.push_back(actor);
