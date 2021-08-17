@@ -342,7 +342,9 @@ namespace AZ::IO::ZipDir
                 AZ::u64 fileSize = 0;
                 if (!m_fileIOBase->Size(realFileHandle, fileSize))
                 {
-                    goto error;
+                    // Error
+                    m_nSize = 0;
+                    return;
                 }
                 const size_t nFileSize = static_cast<size_t>(fileSize);
 
@@ -352,16 +354,18 @@ namespace AZ::IO::ZipDir
 
                 if (!m_fileIOBase->Seek(realFileHandle, 0, AZ::IO::SeekType::SeekFromStart))
                 {
-                    goto error;
+                    // Error
+                    m_nSize = 0;
+                    return;
                 }
                 if (!m_fileIOBase->Read(realFileHandle, m_pInMemoryData->m_address.get(), nFileSize, true))
                 {
-                    goto error;
+                    // Error
+                    m_nSize = 0;
+                    return;
                 }
 
                 return;
-            error:
-                m_nSize = 0;
             }
         }
     }
