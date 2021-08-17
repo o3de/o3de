@@ -146,9 +146,9 @@ namespace AzFramework
         {
             m_cursorState.SetCurrentPosition(cursor->m_position);
         }
-        else if (const auto& horizonalMotion = AZStd::get_if<HorizontalMotionEvent>(&event))
+        else if (const auto& horizontalMotion = AZStd::get_if<HorizontalMotionEvent>(&event))
         {
-            m_motionDelta.m_x = horizonalMotion->m_delta;
+            m_motionDelta.m_x = horizontalMotion->m_delta;
         }
         else if (const auto& verticalMotion = AZStd::get_if<VerticalMotionEvent>(&event))
         {
@@ -786,31 +786,25 @@ namespace AzFramework
         // accept active mouse channel updates, inactive movement channels will just have a 0 delta
         if (inputChannel.IsActive())
         {
-            if (ed_cameraSystemUseCursor)
+            if (inputChannelId == InputDeviceMouse::SystemCursorPosition)
             {
-                if (inputChannelId == InputDeviceMouse::Movement::X || inputChannelId == InputDeviceMouse::Movement::Y)
-                {
-                    const auto* position = inputChannel.GetCustomData<AzFramework::InputChannel::PositionData2D>();
-                    AZ_Assert(position, "Expected PositionData2D but found nullptr");
+                const auto* position = inputChannel.GetCustomData<AzFramework::InputChannel::PositionData2D>();
+                AZ_Assert(position, "Expected PositionData2D but found nullptr");
 
-                    return CursorEvent{ ScreenPoint(
-                        position->m_normalizedPosition.GetX() * windowSize.m_width,
-                        position->m_normalizedPosition.GetY() * windowSize.m_height) };
-                }
+                return CursorEvent{ ScreenPoint(
+                    position->m_normalizedPosition.GetX() * windowSize.m_width,
+                    position->m_normalizedPosition.GetY() * windowSize.m_height) };
             }
-            else
+            else if (inputChannelId == InputDeviceMouse::Movement::X)
             {
-                if (inputChannelId == InputDeviceMouse::Movement::X)
-                {
-                    return HorizontalMotionEvent{ aznumeric_cast<int>(inputChannel.GetValue()) };
-                }
-                else if (inputChannelId == InputDeviceMouse::Movement::Y)
-                {
-                    return VerticalMotionEvent{ aznumeric_cast<int>(inputChannel.GetValue()) };
-                }
+                return HorizontalMotionEvent{ aznumeric_cast<int>(inputChannel.GetValue()) };
+            }
+            else if (inputChannelId == InputDeviceMouse::Movement::Y)
+            {
+                return VerticalMotionEvent{ aznumeric_cast<int>(inputChannel.GetValue()) };
             }
 
-            if (inputChannelId == InputDeviceMouse::Movement::Z)
+            else if (inputChannelId == InputDeviceMouse::Movement::Z)
             {
                 return ScrollEvent{ inputChannel.GetValue() };
             }
