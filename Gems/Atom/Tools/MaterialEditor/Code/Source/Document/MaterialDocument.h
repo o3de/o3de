@@ -18,8 +18,7 @@
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Public/Material/Material.h>
 #include <Atom/Document/MaterialDocumentRequestBus.h>
-
-#include <AtomToolsFramework/DynamicProperty/DynamicProperty.h>
+#include <AtomToolsFramework/Document/AtomToolsDocument.h>
 
 namespace MaterialEditor
 {
@@ -27,7 +26,8 @@ namespace MaterialEditor
      * MaterialDocument provides an API for modifying and saving material document properties.
      */
     class MaterialDocument
-        : public MaterialDocumentRequestBus::Handler
+        : public AtomToolsFramework::AtomToolsDocument
+        , public MaterialDocumentRequestBus::Handler
         , private AZ::TickBus::Handler
         , private AZ::Data::AssetBus::MultiHandler
         , private AzToolsFramework::AssetSystemBus::Handler
@@ -40,22 +40,15 @@ namespace MaterialEditor
         MaterialDocument();
         virtual ~MaterialDocument();
 
-        const AZ::Uuid& GetId() const;
-
         ////////////////////////////////////////////////////////////////////////
-        // MaterialDocumentRequestBus::Handler implementation
-        AZStd::string_view GetAbsolutePath() const override;
-        AZStd::string_view GetRelativePath() const override;
-        AZ::Data::Asset<AZ::RPI::MaterialAsset> GetAsset() const override;
-        AZ::Data::Instance<AZ::RPI::Material> GetInstance() const override;
-        const AZ::RPI::MaterialSourceData* GetMaterialSourceData() const override;
-        const AZ::RPI::MaterialTypeSourceData* GetMaterialTypeSourceData() const override;
+        // AtomToolsFramework::AtomToolsDocument
+        ////////////////////////////////////////////////////////////////////////
         const AZStd::any& GetPropertyValue(const AZ::Name& propertyFullName) const override;
         const AtomToolsFramework::DynamicProperty& GetProperty(const AZ::Name& propertyFullName) const override;
         bool IsPropertyGroupVisible(const AZ::Name& propertyGroupFullName) const override;
         void SetPropertyValue(const AZ::Name& propertyFullName, const AZStd::any& value) override;
         bool Open(AZStd::string_view loadPath) override;
-        bool Rebuild() override;
+        bool Reopen() override;
         bool Save() override;
         bool SaveAsCopy(AZStd::string_view savePath) override;
         bool SaveAsChild(AZStd::string_view savePath) override;
@@ -69,6 +62,14 @@ namespace MaterialEditor
         bool Redo() override;
         bool BeginEdit() override;
         bool EndEdit() override;
+        ////////////////////////////////////////////////////////////////////////
+
+        ////////////////////////////////////////////////////////////////////////
+        // MaterialDocumentRequestBus::Handler implementation
+        AZ::Data::Asset<AZ::RPI::MaterialAsset> GetAsset() const override;
+        AZ::Data::Instance<AZ::RPI::Material> GetInstance() const override;
+        const AZ::RPI::MaterialSourceData* GetMaterialSourceData() const override;
+        const AZ::RPI::MaterialTypeSourceData* GetMaterialTypeSourceData() const override;
         ////////////////////////////////////////////////////////////////////////
 
     private:
@@ -130,20 +131,11 @@ namespace MaterialEditor
         // @return names for the set of properties and groups that have been changed or need update.
         EditorMaterialFunctorResult RunEditorMaterialFunctors(AZ::RPI::MaterialPropertyFlags dirtyFlags);
 
-        // Unique id of this material document
-        AZ::Uuid m_id = AZ::Uuid::CreateRandom();
-
         // Underlying material asset
         AZ::Data::Asset<AZ::RPI::MaterialAsset> m_materialAsset;
 
         // Material instance being edited
         AZ::Data::Instance<AZ::RPI::Material> m_materialInstance;
-
-        // Relative path to the material source file
-        AZStd::string m_relativePath;
-
-        // Absolute path to the material source file
-        AZStd::string m_absolutePath;
 
         // Asset used to open document
         AZ::Data::AssetId m_sourceAssetId;
