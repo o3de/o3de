@@ -1586,8 +1586,6 @@ namespace {{ Component.attrib['Namespace'] }}
         default:
             return false;
         }
-        AZ_Assert(0, "Got unhandled RpcType %d in {{ ComponentBaseName }}", static_cast<int32_t>(rpcType));
-        return false;
     }
     AZ_POP_DISABLE_WARNING
 
