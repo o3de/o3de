@@ -86,7 +86,6 @@ namespace Terrain
         TerrainHeightGradientListConfig m_configuration;
 
         ///////////////////////////////////////////
-        void GetHeightSynchronous(float x, float y, float& height);
         void GetNormalSynchronous(float x, float y, AZ::Vector3& normal);
 
         void RefreshMinMaxHeights();

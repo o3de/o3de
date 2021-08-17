@@ -246,7 +246,8 @@ namespace Terrain
 
     }
 
-    void TerrainSurfaceDataSystemComponent::OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, [[maybe_unused]] TerrainDataChangedMask dataChangedMask)
+    void TerrainSurfaceDataSystemComponent::OnTerrainDataChanged(
+        const AZ::Aabb& dirtyRegion, [[maybe_unused]] TerrainDataChangedMask dataChangedMask)
     {
         UpdateTerrainData(dirtyRegion);
     }

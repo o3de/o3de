@@ -160,34 +160,24 @@ namespace Terrain
             maxSample = AZ::GetMax(maxSample, sample);
         }
 
-        float height = AZ::Lerp(m_cachedShapeBounds.GetMin().GetZ(), m_cachedShapeBounds.GetMax().GetZ(), maxSample);
+        const float height = AZ::Lerp(m_cachedShapeBounds.GetMin().GetZ(), m_cachedShapeBounds.GetMax().GetZ(), maxSample);
 
         return AZ::GetClamp(height, m_cachedMinWorldHeight, m_cachedMaxWorldHeight);
     }
 
-    void TerrainHeightGradientListComponent::GetHeight(const AZ::Vector3& inPosition, AZ::Vector3& outPosition, [[maybe_unused]] Sampler sampleFilter = Sampler::DEFAULT)
+    void TerrainHeightGradientListComponent::GetHeight(
+        const AZ::Vector3& inPosition, AZ::Vector3& outPosition, [[maybe_unused]] Sampler sampleFilter = Sampler::DEFAULT)
     {
-        float height = GetHeight(inPosition.GetX(), inPosition.GetY());
+        const float height = GetHeight(inPosition.GetX(), inPosition.GetY());
         outPosition.SetZ(height);
     }
 
-    void TerrainHeightGradientListComponent::GetNormal(const AZ::Vector3& inPosition, AZ::Vector3& outNormal, [[maybe_unused]] Sampler sampleFilter = Sampler::DEFAULT)
+    void TerrainHeightGradientListComponent::GetNormal(
+        const AZ::Vector3& inPosition, AZ::Vector3& outNormal, [[maybe_unused]] Sampler sampleFilter = Sampler::DEFAULT)
     {
-        GetNormalSynchronous(inPosition.GetX(), inPosition.GetY(), outNormal);
-    }
+        const float x = inPosition.GetX();
+        const float y = inPosition.GetY();
 
-
-    void TerrainHeightGradientListComponent::GetHeightSynchronous(float x, float y, float& height)
-    {
-        if ((x >= m_cachedShapeBounds.GetMin().GetX()) && (x <= m_cachedShapeBounds.GetMax().GetX()) &&
-            (y >= m_cachedShapeBounds.GetMin().GetY()) && (y <= m_cachedShapeBounds.GetMax().GetY()))
-        {
-            height = GetHeight(x, y);
-        }
-    }
-
-    void TerrainHeightGradientListComponent::GetNormalSynchronous(float x, float y, AZ::Vector3& normal)
-    {
         if ((x >= m_cachedShapeBounds.GetMin().GetX()) && (x <= m_cachedShapeBounds.GetMax().GetX()) &&
             (y >= m_cachedShapeBounds.GetMin().GetY()) && (y <= m_cachedShapeBounds.GetMax().GetY()))
         {
@@ -197,9 +187,10 @@ namespace Terrain
             AZ::Vector3 v2(x - fRange.GetX(), y + fRange.GetY(), GetHeight(x - fRange.GetX(), y + fRange.GetY()));
             AZ::Vector3 v3(x + fRange.GetX(), y - fRange.GetY(), GetHeight(x + fRange.GetX(), y - fRange.GetY()));
             AZ::Vector3 v4(x + fRange.GetX(), y + fRange.GetY(), GetHeight(x + fRange.GetX(), y + fRange.GetY()));
-            normal = (v3 - v2).Cross(v4 - v1).GetNormalized();
+            outNormal = (v3 - v2).Cross(v4 - v1).GetNormalized();
         }
     }
+
 
     void TerrainHeightGradientListComponent::OnCompositionChanged()
     {

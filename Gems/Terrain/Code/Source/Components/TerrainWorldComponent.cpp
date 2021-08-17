@@ -89,6 +89,10 @@ namespace Terrain
         TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::SetWorldMax, m_configuration.m_worldMax);
         TerrainSystemServiceRequestBus::Broadcast(
             &TerrainSystemServiceRequestBus::Events::SetHeightQueryResolution, m_configuration.m_heightQueryResolution);
+
+        // Currently, the Terrain System Component owns the Terrain System instance because the Terrain World component gets recreated
+        // every time an entity is added or removed to a level.  If this ever changes, the Terrain System ownership could move into
+        // the level component.
         TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::Activate);
     }
 

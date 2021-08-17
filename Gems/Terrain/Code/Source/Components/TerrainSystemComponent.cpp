@@ -62,6 +62,9 @@ namespace Terrain
 
     void TerrainSystemComponent::Activate()
     {
+        // Currently, the Terrain System Component owns the Terrain System instance because the Terrain World component gets recreated
+        // every time an entity is added or removed to a level.  If this ever changes, the Terrain System ownership could move into
+        // the level component.
         m_terrainSystem = new TerrainSystem();
         AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessor<Terrain::TerrainFeatureProcessor>();
     }
