@@ -82,7 +82,6 @@
 #include <Editor/QtViewPaneManager.h>
 #include <Editor/EditorViewportSettings.h>
 #include <Editor/Util/PathUtil.h>
-#include <IResourceSelectorHost.h>
 #include "CryEdit.h"
 #include "Undo/Undo.h"
 
@@ -1385,16 +1384,6 @@ bool SandboxIntegrationManager::IsLevelDocumentOpen()
 AZStd::string SandboxIntegrationManager::GetLevelName()
 {
     return AZStd::string(GetIEditor()->GetGameEngine()->GetLevelName().toUtf8().constData());
-}
-
-AZStd::string SandboxIntegrationManager::SelectResource(const AZStd::string& resourceType, const AZStd::string& previousValue)
-{
-    SResourceSelectorContext context;
-    context.parentWidget = GetMainWindow();
-    context.typeName = resourceType.c_str();
-
-    QString resource = GetEditor()->GetResourceSelectorHost()->SelectResource(context, previousValue.c_str());
-    return AZStd::string(resource.toUtf8().constData());
 }
 
 void SandboxIntegrationManager::OnContextReset()

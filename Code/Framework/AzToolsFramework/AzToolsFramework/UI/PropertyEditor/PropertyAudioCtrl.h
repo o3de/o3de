@@ -30,6 +30,27 @@ class QMimeData;
 namespace AzToolsFramework
 {
     //=============================================================================
+    // Audio Control Selector Request Bus
+    // For connecting UI proper
+    //=============================================================================
+    class AudioControlSelectorRequests
+        : public AZ::EBusTraits
+    {
+    public:
+        // EBusTraits
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+        using BusIdType = AudioPropertyType;
+
+        virtual AZStd::string SelectResource(AZStd::string_view previousValue)
+        {
+            return previousValue;
+        }
+    };
+
+    using AudioControlSelectorRequestBus = AZ::EBus<AudioControlSelectorRequests>;
+
+    //=============================================================================
     // Audio Control Selector Widget
     //=============================================================================
     class AudioControlSelectorWidget

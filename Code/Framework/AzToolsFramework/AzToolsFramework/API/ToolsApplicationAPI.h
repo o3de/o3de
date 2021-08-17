@@ -841,9 +841,6 @@ namespace AzToolsFramework
          */
         virtual AZStd::string GetComponentIconPath(const AZ::Uuid& /*componentType*/, AZ::Crc32 /*componentIconAttrib*/, AZ::Component* /*component*/) { return AZStd::string(); }
 
-        /// Resource Selector hook, returns a path for a resource.
-        virtual AZStd::string SelectResource(const AZStd::string& /*resourceType*/, const AZStd::string& /*previousValue*/) { return AZStd::string(); }
-
         /**
          * Calculate the navigation 2D radius in units of an agent given its Navigation Type Name
          * @param angentTypeName         the name that identifies the agent navigation type
