@@ -17,7 +17,7 @@ namespace AZ
         /**
          * @brief Specialization useful for data generated with AZ::Debug::FrameProfileComponent
          *
-         * Timer based data collection using AZ_PROFILE_TIMER(...), available in
+         * Timer based data collection using AZ_PROFILE_SCOPE(...), available in
          * AzCore/Debug/Profiler.h can be collected when using AZ::Debug::FrameProfilerComponent
          * and AZ::Debug::FrameProfilerBus. The method PushTimeDataSample(...) is a convenience
          * to convert those Timer registers into a RunningStatistic.

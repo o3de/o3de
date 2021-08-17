@@ -42,11 +42,11 @@ namespace AZ
 #   define AZ_TRACE_METHOD_NAME_CATEGORY(name, category) AZ::Debug::EventTrace::ScopedSlice AZ_JOIN(ScopedSlice__, __LINE__)(name, category);
 #   define AZ_TRACE_METHOD_NAME(name) \
         AZ_TRACE_METHOD_NAME_CATEGORY(name, "") \
-        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzTrace, name)
+        AZ_PROFILE_SCOPE(AzTrace, name)
 
 #   define AZ_TRACE_METHOD() \
         AZ_TRACE_METHOD_NAME_CATEGORY(AZ_FUNCTION_SIGNATURE, "") \
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzTrace)
+        AZ_PROFILE_FUNCTION(AzTrace)
 #else
 #   define AZ_TRACE_METHOD_NAME_CATEGORY(name, category)
 #   define AZ_TRACE_METHOD_NAME(name) AZ_TRACE_METHOD_NAME_CATEGORY(name, "")

@@ -145,7 +145,7 @@ namespace AZ
 
         void DecalTextureArrayFeatureProcessor::Simulate(const RPI::FeatureProcessor::SimulatePacket& packet)
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender)
+            AZ_PROFILE_FUNCTION(AzRender);
             AZ_UNUSED(packet);
 
             if (m_deviceBufferNeedsUpdate)
@@ -159,7 +159,7 @@ namespace AZ
         void DecalTextureArrayFeatureProcessor::Render(const RPI::FeatureProcessor::RenderPacket& packet)
         {
             // Note that decals are rendered as part of the forward shading pipeline. We only need to bind the decal buffers/textures in here.
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender)
+            AZ_PROFILE_FUNCTION(AzRender);
 
             for (const RPI::ViewPtr& view : packet.m_views)
             {
@@ -295,7 +295,7 @@ namespace AZ
 
         void DecalTextureArrayFeatureProcessor::SetDecalMaterial(const DecalHandle handle, const AZ::Data::AssetId material)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Renderer);
+            AZ_PROFILE_FUNCTION(Renderer);
             if (handle.IsNull())
             {
                 AZ_Warning("DecalTextureArrayFeatureProcessor", false, "Invalid handle passed to DecalTextureArrayFeatureProcessor::SetDecalMaterial().");
@@ -365,7 +365,7 @@ namespace AZ
 
         void DecalTextureArrayFeatureProcessor::OnAssetReady(const Data::Asset<Data::AssetData> asset)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Renderer);
+            AZ_PROFILE_FUNCTION(Renderer);
             const Data::AssetId& assetId = asset->GetId();
             
             const RPI::MaterialAsset* materialAsset = asset.GetAs<AZ::RPI::MaterialAsset>();

@@ -317,7 +317,7 @@ namespace UnitTest
         AZ::Statistics::StatisticalProfilerProxy::TimedScope::ClearCachedProxy();
         AZ::Statistics::StatisticalProfilerProxy profilerProxy;
         AZ::Statistics::StatisticalProfilerProxy* proxy = AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get();
-        AZ::Statistics::StatisticalProfilerProxy::StatisticalProfilerType& profiler = proxy->GetProfiler(AZ::Debug::ProfileCategory::Terrain);
+        AZ::Statistics::StatisticalProfilerProxy::StatisticalProfilerType& profiler = proxy->GetProfiler(Terrain);
 
         const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdPerformance = "PerformanceResult";
         const AZStd::string statNamePerformance("PerformanceResult");
@@ -328,15 +328,15 @@ namespace UnitTest
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdPerformance, statNamePerformance, "us") != nullptr);
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdBlock, statNameBlock, "us") != nullptr);
 
-        proxy->ActivateProfiler(AZ::Debug::ProfileCategory::Terrain, true);
+        proxy->ActivateProfiler(Terrain, true);
 
         const int iter_count = 10;
         {
-            CODE_PROFILER_PROXY_PUSH_TIME(AZ::Debug::ProfileCategory::Terrain, statIdPerformance)
+            CODE_PROFILER_PROXY_PUSH_TIME(Terrain, statIdPerformance)
             int counter = 0;
             for (int i = 0; i < iter_count; i++)
             {
-                CODE_PROFILER_PROXY_PUSH_TIME(AZ::Debug::ProfileCategory::Terrain, statIdBlock)
+                CODE_PROFILER_PROXY_PUSH_TIME(Terrain, statIdBlock)
                     counter++;
             }
         }
@@ -348,7 +348,7 @@ namespace UnitTest
         EXPECT_EQ(profiler.GetStatistic(statIdBlock)->GetNumSamples(), iter_count);
 
         //Clean Up
-        proxy->ActivateProfiler(AZ::Debug::ProfileCategory::Terrain, false);
+        proxy->ActivateProfiler(Terrain, false);
 
 #undef CODE_PROFILER_PROXY_PUSH_TIME
 
@@ -362,12 +362,12 @@ namespace UnitTest
         const AZ::Statistics::StatisticalProfilerProxy::StatIdType simple_thread1("simple_thread1");
         const AZ::Statistics::StatisticalProfilerProxy::StatIdType simple_thread1_loop("simple_thread1_loop");
 
-        CODE_PROFILER_PROXY_PUSH_TIME(AZ::Debug::ProfileCategory::Terrain, simple_thread1);
+        CODE_PROFILER_PROXY_PUSH_TIME(Terrain, simple_thread1);
 
         static int counter = 0;
         for (int i = 0; i < loop_cnt; i++)
         {
-            CODE_PROFILER_PROXY_PUSH_TIME(AZ::Debug::ProfileCategory::Terrain, simple_thread1_loop);
+            CODE_PROFILER_PROXY_PUSH_TIME(Terrain, simple_thread1_loop);
             counter++;
         }
     }
@@ -377,12 +377,12 @@ namespace UnitTest
         const AZ::Statistics::StatisticalProfilerProxy::StatIdType simple_thread2("simple_thread2");
         const AZ::Statistics::StatisticalProfilerProxy::StatIdType simple_thread2_loop("simple_thread2_loop");
 
-        CODE_PROFILER_PROXY_PUSH_TIME(AZ::Debug::ProfileCategory::Terrain, simple_thread2);
+        CODE_PROFILER_PROXY_PUSH_TIME(Terrain, simple_thread2);
 
         static int counter = 0;
         for (int i = 0; i < loop_cnt; i++)
         {
-            CODE_PROFILER_PROXY_PUSH_TIME(AZ::Debug::ProfileCategory::Terrain, simple_thread2_loop);
+            CODE_PROFILER_PROXY_PUSH_TIME(Terrain, simple_thread2_loop);
             counter++;
         }
     }
@@ -392,12 +392,12 @@ namespace UnitTest
         const AZ::Statistics::StatisticalProfilerProxy::StatIdType simple_thread3("simple_thread3");
         const AZ::Statistics::StatisticalProfilerProxy::StatIdType simple_thread3_loop("simple_thread3_loop");
 
-        CODE_PROFILER_PROXY_PUSH_TIME(AZ::Debug::ProfileCategory::Terrain, simple_thread3);
+        CODE_PROFILER_PROXY_PUSH_TIME(Terrain, simple_thread3);
 
         static int counter = 0;
         for (int i = 0; i < loop_cnt; i++)
         {
-            CODE_PROFILER_PROXY_PUSH_TIME(AZ::Debug::ProfileCategory::Terrain, simple_thread3_loop);
+            CODE_PROFILER_PROXY_PUSH_TIME(Terrain, simple_thread3_loop);
         }
     }
 
@@ -408,7 +408,7 @@ namespace UnitTest
         AZ::Statistics::StatisticalProfilerProxy::TimedScope::ClearCachedProxy();
         AZ::Statistics::StatisticalProfilerProxy profilerProxy;
         AZ::Statistics::StatisticalProfilerProxy* proxy = AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get();
-        AZ::Statistics::StatisticalProfilerProxy::StatisticalProfilerType& profiler = proxy->GetProfiler(AZ::Debug::ProfileCategory::Terrain);
+        AZ::Statistics::StatisticalProfilerProxy::StatisticalProfilerType& profiler = proxy->GetProfiler(Terrain);
 
         const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdThread1 = "simple_thread1";
         const AZStd::string statNameThread1("simple_thread1");
@@ -432,7 +432,7 @@ namespace UnitTest
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdThread3, statNameThread3, "us"));
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdThread3Loop, statNameThread3Loop, "us"));
 
-        proxy->ActivateProfiler(AZ::Debug::ProfileCategory::Terrain, true);
+        proxy->ActivateProfiler(Terrain, true);
 
         //Let's kickoff the threads to see how much contention affects the profiler's performance.
         const int iter_count = 10;
@@ -459,7 +459,7 @@ namespace UnitTest
         EXPECT_EQ(profiler.GetStatistic(statIdThread3Loop)->GetNumSamples(), iter_count);
 
         //Clean Up
-        proxy->ActivateProfiler(AZ::Debug::ProfileCategory::Terrain, false);
+        proxy->ActivateProfiler(Terrain, false);
     }
 
     /** Trace message handler to track messages during tests
@@ -745,7 +745,7 @@ namespace UnitTest
         AZ::Statistics::StatisticalProfilerProxy::TimedScope::ClearCachedProxy();
         AZ::Statistics::StatisticalProfilerProxy profilerProxy;
         AZ::Statistics::StatisticalProfilerProxy* proxy = AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get();
-        AZ::Statistics::StatisticalProfilerProxy::StatisticalProfilerType& profiler = proxy->GetProfiler(AZ::Debug::ProfileCategory::Terrain);
+        AZ::Statistics::StatisticalProfilerProxy::StatisticalProfilerType& profiler = proxy->GetProfiler(Terrain);
 
         const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdPerformance = "PerformanceResult";
         const AZStd::string statNamePerformance("PerformanceResult");
@@ -756,15 +756,15 @@ namespace UnitTest
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdPerformance, statNamePerformance, "us") != nullptr);
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdBlock, statNameBlock, "us") != nullptr);
 
-        proxy->ActivateProfiler(AZ::Debug::ProfileCategory::Terrain, true);
+        proxy->ActivateProfiler(Terrain, true);
 
         const int iter_count = 1000000;
         {
-            CODE_PROFILER_PROXY_PUSH_TIME(AZ::Debug::ProfileCategory::Terrain, statIdPerformance)
+            CODE_PROFILER_PROXY_PUSH_TIME(Terrain, statIdPerformance)
                 int counter = 0;
             for (int i = 0; i < iter_count; i++)
             {
-                CODE_PROFILER_PROXY_PUSH_TIME(AZ::Debug::ProfileCategory::Terrain, statIdBlock)
+                CODE_PROFILER_PROXY_PUSH_TIME(Terrain, statIdBlock)
                     counter++;
             }
         }
@@ -778,7 +778,7 @@ namespace UnitTest
         profiler.LogAndResetStats("StatisticalProfilerProxy");
 
         //Clean Up
-        proxy->ActivateProfiler(AZ::Debug::ProfileCategory::Terrain, false);
+        proxy->ActivateProfiler(Terrain, false);
     }
 
 #undef CODE_PROFILER_PROXY_PUSH_TIME
@@ -788,7 +788,7 @@ namespace UnitTest
         AZ::Statistics::StatisticalProfilerProxy::TimedScope::ClearCachedProxy();
         AZ::Statistics::StatisticalProfilerProxy profilerProxy;
         AZ::Statistics::StatisticalProfilerProxy* proxy = AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get();
-        AZ::Statistics::StatisticalProfilerProxy::StatisticalProfilerType& profiler = proxy->GetProfiler(AZ::Debug::ProfileCategory::Terrain);
+        AZ::Statistics::StatisticalProfilerProxy::StatisticalProfilerType& profiler = proxy->GetProfiler(Terrain);
 
         const AZ::Statistics::StatisticalProfilerProxy::StatIdType statIdThread1 = "simple_thread1";
         const AZStd::string statNameThread1("simple_thread1");
@@ -812,7 +812,7 @@ namespace UnitTest
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdThread3, statNameThread3, "us"));
         ASSERT_TRUE(profiler.GetStatsManager().AddStatistic(statIdThread3Loop, statNameThread3Loop, "us"));
 
-        proxy->ActivateProfiler(AZ::Debug::ProfileCategory::Terrain, true);
+        proxy->ActivateProfiler(Terrain, true);
 
         //Let's kickoff the threads to see how much contention affects the profiler's performance.
         const int iter_count = 1000000;
@@ -841,7 +841,7 @@ namespace UnitTest
         profiler.LogAndResetStats("3_Threads_StatisticalProfilerProxy");
 
         //Clean Up
-        proxy->ActivateProfiler(AZ::Debug::ProfileCategory::Terrain, false);
+        proxy->ActivateProfiler(Terrain, false);
     }
 
 }//namespace UnitTest

@@ -312,7 +312,7 @@ namespace RADTelemetry
         using MaskType = AZ::Debug::ProfileCategoryPrimitiveType;
 
         // Set all the category bits "below" FirstDetailedCategory and do not enable memory capture by default
-        return (static_cast<MaskType>(1) << static_cast<MaskType>(AZ::Debug::ProfileCategory::FirstDetailedCategory)) - 1;
+        return (static_cast<MaskType>(1) << static_cast<MaskType>(FirstDetailedCategory)) - 1;
     }
 
     AZ::Debug::ProfileCategoryPrimitiveType ProfileTelemetryComponent::GetDefaultCaptureMask()

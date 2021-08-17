@@ -399,7 +399,7 @@ namespace AZ
             AZ_ATOM_PROFILE_FUNCTION("RPI", "Scene: PrepareRender");
 
             {
-                AZ_PROFILE_SCOPE(Debug::ProfileCategory::AzRender, "WaitForSimulationCompletion");
+                AZ_PROFILE_SCOPE(AzRender, "WaitForSimulationCompletion");
                 AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "WaitForSimulationCompletion");
                 WaitAndCleanCompletionJob(m_simulationCompletion);
             }
@@ -407,7 +407,7 @@ namespace AZ
             SceneNotificationBus::Event(GetId(), &SceneNotification::OnBeginPrepareRender);
 
             {
-                AZ_PROFILE_SCOPE(Debug::ProfileCategory::AzRender, "m_srgCallback");
+                AZ_PROFILE_SCOPE(AzRender, "m_srgCallback");
                 AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "ShaderResourceGroupCallback: SrgCallback");
                 // Set values for scene srg
                 if (m_srg && m_srgCallback)
@@ -483,7 +483,7 @@ namespace AZ
             }
 
             {
-                AZ_PROFILE_SCOPE(Debug::ProfileCategory::AzRender, "CollectDrawPackets");                
+                AZ_PROFILE_SCOPE(AzRender, "CollectDrawPackets");                
                 AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "CollectDrawPackets");
                 AZ::JobCompletion* collectDrawPacketsCompletion = aznew AZ::JobCompletion();
 
@@ -533,7 +533,7 @@ namespace AZ
             }
 
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "FinalizeDrawLists");
+                AZ_PROFILE_BEGIN(AzRender, "FinalizeDrawLists");
                 AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "FinalizeDrawLists");
                 if (jobPolicy == RHI::JobPolicy::Serial)
                 {
@@ -556,7 +556,7 @@ namespace AZ
                         finalizeDrawListsJob->SetDependent(finalizeDrawListsCompletion);
                         finalizeDrawListsJob->Start();
                     }
-                    AZ_PROFILE_EVENT_END(Debug::ProfileCategory::AzRender);
+                    AZ_PROFILE_END();
                     WaitAndCleanCompletionJob(finalizeDrawListsCompletion);
                 }
             }

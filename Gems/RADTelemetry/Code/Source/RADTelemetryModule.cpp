@@ -48,7 +48,7 @@ namespace RADTelemetry
         }
 
         // Mask off the memory capture flag and add it back if memory capture is enabled
-        const MaskType fullCaptureMask = (maskCvarValue & ~AZ_PROFILE_CAT_TO_RAD_CAPFLAGS(AZ::Debug::ProfileCategory::MemoryReserved)) | (s_memCaptureEnabled ? AZ_PROFILE_CAT_TO_RAD_CAPFLAGS(AZ::Debug::ProfileCategory::MemoryReserved) : 0);
+        const MaskType fullCaptureMask = (maskCvarValue & ~AZ_PROFILE_CAT_TO_RAD_CAPFLAGS(MemoryReserved)) | (s_memCaptureEnabled ? AZ_PROFILE_CAT_TO_RAD_CAPFLAGS(MemoryReserved) : 0);
         TelemetryRequestBus::Broadcast(&TelemetryRequests::SetCaptureMask, fullCaptureMask);
     }
 

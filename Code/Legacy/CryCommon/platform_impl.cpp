@@ -203,7 +203,7 @@ void __stl_debug_message(const char* format_str, ...)
 //////////////////////////////////////////////////////////////////////////
 void CrySleep(unsigned int dwMilliseconds)
 {
-    AZ_PROFILE_FUNCTION_IDLE(AZ::Debug::ProfileCategory::System);
+    AZ_PROFILE_FUNCTION(System);
     Sleep(dwMilliseconds);
 }
 

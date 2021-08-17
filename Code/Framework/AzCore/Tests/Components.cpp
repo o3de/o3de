@@ -1244,19 +1244,18 @@ namespace UnitTest
 
         int ChildFunction(int input)
         {
-            AZ_PROFILE_TIMER("UnitTest", nullptr, NamedRegister);
+            AZ_PROFILE_FUNCTION(System);
             int result = 5;
             for (int i = 0; i < 10000; ++i)
             {
                 result += i % (input + 3);
             }
-            AZ_PROFILE_TIMER_END(NamedRegister);
             return result;
         }
 
         int ChildFunction1(int input)
         {
-            AZ_PROFILE_TIMER("UnitTest", "Child1");
+            AZ_PROFILE_SCOPE(System, "Child1");
             int result = 5;
             for (int i = 0; i < 10000; ++i)
             {
@@ -1267,7 +1266,7 @@ namespace UnitTest
 
         int Profile1(int numIterations)
         {
-            AZ_PROFILE_TIMER("UnitTest", "Custom name");
+            AZ_PROFILE_SCOPE(System, "Custom name");
             int result = 0;
             for (int i = 0; i < numIterations; ++i)
             {

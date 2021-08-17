@@ -7,12 +7,13 @@
  */
 #pragma once
 
+#include <RHI/DX12.h>
+
 #include <Atom/RHI/Fence.h>
 #include <Atom/RHI/Scope.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
-#include <RHI/DX12.h>
 
 namespace AZ
 {

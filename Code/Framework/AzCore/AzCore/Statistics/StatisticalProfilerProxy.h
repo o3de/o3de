@@ -24,7 +24,7 @@
 #endif // #if defined(AZ_PROFILE_SCOPE)
 
 #define AZ_PROFILE_SCOPE(profiler, scopeNameId) \
-    static_assert(profiler < AZ::Debug::ProfileCategory::Count, "Invalid profiler category"); \
+    static_assert(profiler < Count, "Invalid profiler category"); \
     static const AZStd::string AZ_JOIN(blockName, __LINE__)(scopeNameId); \
     AZ::Statistics::StatisticalProfilerProxy::TimedScope AZ_JOIN(scope, __LINE__)(profiler, AZ_JOIN(blockName, __LINE__));
 
@@ -34,7 +34,7 @@ namespace AZ
 {
     namespace Statistics
     {
-        using StatisticalProfilerId = AZ::Debug::ProfileCategory;
+        using StatisticalProfilerId = AZ::Name;
 
         //! This AZ::Interface<> (Yes, it is an application wide singleton) owns an array of StatisticalProfilers.
         //! When is this useful?
@@ -124,8 +124,8 @@ namespace AZ
 
             StatisticalProfilerProxy()
             {
-                m_profilers.reserve(static_cast<AZStd::size_t>(AZ::Debug::ProfileCategory::Count));
-                for (AZStd::size_t i = 0; i < static_cast<AZStd::size_t>(AZ::Debug::ProfileCategory::Count); i++)
+                m_profilers.reserve(static_cast<AZStd::size_t>(Count));
+                for (AZStd::size_t i = 0; i < static_cast<AZStd::size_t>(Count); i++)
                 {
                     m_profilers.emplace_back(StatisticalProfilerType());
                 }
@@ -162,7 +162,7 @@ namespace AZ
             }
 
         private:
-            AZStd::bitset<static_cast<AZStd::size_t>(AZ::Debug::ProfileCategory::Count)> m_activeProfilersFlag;
+            AZStd::bitset<static_cast<AZStd::size_t>(Count)> m_activeProfilersFlag;
             AZStd::vector<StatisticalProfilerType> m_profilers;
         }; //class StatisticalProfilerProxy
 

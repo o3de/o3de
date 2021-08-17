@@ -99,6 +99,7 @@ set(FILES
     Debug/FrameProfilerComponent.cpp
     Debug/FrameProfilerComponent.h
     Debug/IEventLogger.h
+    Debug/MemoryProfiler.h
     Debug/ProfileModuleInit.cpp
     Debug/ProfileModuleInit.h
     Debug/Profiler.cpp
@@ -565,10 +566,6 @@ set(FILES
     Statistics/NamedRunningStatistic.h
     Statistics/RunningStatistic.cpp
     Statistics/RunningStatistic.h
-    Statistics/StatisticalProfiler.h
-    Statistics/StatisticalProfilerProxy.h
-    Statistics/StatisticalProfilerProxySystemComponent.cpp
-    Statistics/StatisticalProfilerProxySystemComponent.h
     Statistics/StatisticsManager.h
     Statistics/TimeDataStatisticsManager.cpp
     Statistics/TimeDataStatisticsManager.h

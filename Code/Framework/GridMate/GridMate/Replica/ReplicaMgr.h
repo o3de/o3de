@@ -302,7 +302,7 @@ namespace GridMate
             // this could allow for changing on the fly but it would need to ensure that if it were in the middle of a second, that the new rate would result in landing on the
         }
 
-        AZ::u64 GetCurrentTime() const
+        AZ::u64 CurrentTime() const
         {
             return m_currentTime;
         }

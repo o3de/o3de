@@ -458,7 +458,7 @@ namespace AzToolsFramework
 
     void PropertyRowWidget::OnValuesUpdated()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (m_sourceNode)
         {

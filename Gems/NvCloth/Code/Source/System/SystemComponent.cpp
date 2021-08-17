@@ -106,11 +106,11 @@ namespace NvCloth
             {
                 if (detached)
                 {
-                    AZ_PROFILE_INTERVAL_START(AZ::Debug::ProfileCategory::Cloth, AZ::Crc32(eventName), eventName);
+                    AZ_PROFILE_INTERVAL_START(Cloth, AZ::Crc32(eventName), eventName);
                 }
                 else
                 {
-                    AZ_PROFILE_EVENT_BEGIN(AZ::Debug::ProfileCategory::Cloth, eventName);
+                    AZ_PROFILE_BEGIN(Cloth, eventName);
                 }
                 return nullptr;
             }
@@ -121,11 +121,11 @@ namespace NvCloth
             {
                 if (detached)
                 {
-                    AZ_PROFILE_INTERVAL_END(AZ::Debug::ProfileCategory::Cloth, AZ::Crc32(eventName));
+                    AZ_PROFILE_INTERVAL_END(Cloth, AZ::Crc32(eventName));
                 }
                 else
                 {
-                    AZ_PROFILE_EVENT_END(AZ::Debug::ProfileCategory::Cloth);
+                    AZ_PROFILE_END();
                 }
             }
         };
@@ -309,7 +309,7 @@ namespace NvCloth
         const AZStd::vector<SimParticleFormat>& initialParticles,
         const FabricCookedData& fabricCookedData)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+        AZ_PROFILE_FUNCTION(Cloth);
 
         FabricId fabricId = FindOrCreateFabric(fabricCookedData);
         if (!fabricId.IsValid())
@@ -403,7 +403,7 @@ namespace NvCloth
         float deltaTime,
         [[maybe_unused]] AZ::ScriptTimePoint time)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+        AZ_PROFILE_FUNCTION(Cloth);
 
         for (auto& solverIt : m_solvers)
         {

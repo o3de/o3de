@@ -35,21 +35,17 @@ namespace ProfileTelemetryInternal
     }
 }
 
-#define  AZ_PROFILE_CAT_TO_RAD_CAPFLAGS(category) (static_cast<AZ::Debug::ProfileCategoryPrimitiveType>(1) << static_cast<AZ::Debug::ProfileCategoryPrimitiveType>(category))
+#define  AZ_PROFILE_CAT_TO_RAD_CAPFLAGS(category) (static_cast<uint32_t>(1) << static_cast<uint32_t>(category))
 // Helpers
-#define AZ_INTERNAL_PROF_VERIFY_CAT(category) static_assert(category < AZ::Debug::ProfileCategory::Count, "Invalid profile category")
-
 #define AZ_INTERNAL_PROF_MEMORY_CAT_TO_FLAGS(category) (AZ_PROFILE_CAT_TO_RAD_CAPFLAGS(category) | \
         AZ_PROFILE_CAT_TO_RAD_CAPFLAGS(AZ::Debug::ProfileCategory::MemoryReserved))
 
 #define AZ_INTERNAL_PROF_VERIFY_INTERVAL_ID(id) static_assert(sizeof(id) <= sizeof(tm_uint64), "Interval id must be a unique value no larger than 64-bits")
 
 #define AZ_INTERNAL_PROF_TM_FUNC_VERIFY_CAT(category, flags) \
-    AZ_INTERNAL_PROF_VERIFY_CAT(category); \
     tmFunction(AZ_PROFILE_CAT_TO_RAD_CAPFLAGS(category), flags)
 
 #define AZ_INTERNAL_PROF_TM_ZONE_VERIFY_CAT(category, flags, ...) \
-    AZ_INTERNAL_PROF_VERIFY_CAT(category); \
     tmZone(AZ_PROFILE_CAT_TO_RAD_CAPFLAGS(category), flags, __VA_ARGS__)    
 
 // AZ_PROFILE_FUNCTION
@@ -91,28 +87,23 @@ namespace ProfileTelemetryInternal
 // For profiling events that do not start and stop in the same scope (they MUST start/stop on the same thread)
 // ALWAYS favor using scoped events (AZ_PROFILE_FUNCTION, AZ_PROFILE_SCOPE) as debugging an unmatched begin/end can be challenging
 #define AZ_PROFILE_EVENT_BEGIN(category, name) \
-    AZ_INTERNAL_PROF_VERIFY_CAT(category); \
     tmEnter(AZ_PROFILE_CAT_TO_RAD_CAPFLAGS(category), TMZF_NONE, name)
 
 #define AZ_PROFILE_EVENT_END(category) \
-    AZ_INTERNAL_PROF_VERIFY_CAT(category); \
     tmLeave(AZ_PROFILE_CAT_TO_RAD_CAPFLAGS(category))
 
 
 // AZ_PROFILE_INTERVAL (mapped to Telemetry Timespan APIs)
 // Note: using C-style casting as we allow either pointers or integral types as IDs
 #define AZ_PROFILE_INTERVAL_START(category, id, ...) \
-    AZ_INTERNAL_PROF_VERIFY_CAT(category); \
     AZ_INTERNAL_PROF_VERIFY_INTERVAL_ID(id); \
     tmBeginTimeSpan(AZ_PROFILE_CAT_TO_RAD_CAPFLAGS(category), (tm_uint64)(id), TMZF_NONE, __VA_ARGS__)
 
 #define AZ_PROFILE_INTERVAL_START_COLORED(category, id, color, ...) \
-    AZ_INTERNAL_PROF_VERIFY_CAT(category); \
     AZ_INTERNAL_PROF_VERIFY_INTERVAL_ID(id); \
     tmBeginColoredTimeSpan(AZ_PROFILE_CAT_TO_RAD_CAPFLAGS(category), (tm_uint64)(id), 0, ProfileTelemetryInternal::ConvertColor(color), TMZF_NONE, __VA_ARGS__)
 
 #define AZ_PROFILE_INTERVAL_END(category, id) \
-    AZ_INTERNAL_PROF_VERIFY_CAT(category); \
     AZ_INTERNAL_PROF_VERIFY_INTERVAL_ID(id); \
     tmEndTimeSpan(AZ_PROFILE_CAT_TO_RAD_CAPFLAGS(category), (tm_uint64)(id))
 
@@ -122,7 +113,6 @@ namespace ProfileTelemetryInternal
 // Note: the first variable argument must be a const format string
 // Usage: AZ_PROFILE_INTERVAL_SCOPED(AZ::Debug::ProfileCategory, <unique interval id>, <printf style const format string>, format args...)
 #define AZ_PROFILE_INTERVAL_SCOPED(category, id,  ...) \
-    AZ_INTERNAL_PROF_VERIFY_CAT(category); \
     AZ_INTERNAL_PROF_VERIFY_INTERVAL_ID(id); \
     tmTimeSpan(AZ_PROFILE_CAT_TO_RAD_CAPFLAGS(category), (tm_uint64)(id), TM_MIN_TIME_SPAN_TRACK_ID + static_cast<AZ::Debug::ProfileCategoryPrimitiveType>(category), 0, TMZF_NONE, __VA_ARGS__)
 
@@ -131,29 +121,23 @@ namespace ProfileTelemetryInternal
 // Note: data points can have static or dynamic names, if using a dynamic name the first variable argument must be a const format string
 // Usage: AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory, <printf style const format string>, format args...)
 #define AZ_PROFILE_DATAPOINT(category, value, ...) \
-    AZ_INTERNAL_PROF_VERIFY_CAT(category); \
     tmPlot(AZ_PROFILE_CAT_TO_RAD_CAPFLAGS(category), TM_PLOT_UNITS_REAL, TM_PLOT_DRAW_LINE, static_cast<double>(value), __VA_ARGS__)
 
 #define AZ_PROFILE_DATAPOINT_PERCENT(category, value, ...) \
-    AZ_INTERNAL_PROF_VERIFY_CAT(category); \
     tmPlot(AZ_PROFILE_CAT_TO_RAD_CAPFLAGS(category), TM_PLOT_UNITS_PERCENTAGE_DIRECT, TM_PLOT_DRAW_LINE, static_cast<double>(value), __VA_ARGS__)
 
 
 // AZ_PROFILE_MEMORY_ALLOC
 #define AZ_PROFILE_MEMORY_ALLOC(category, address, size, context) \
-    AZ_INTERNAL_PROF_VERIFY_CAT(category); \
     tmAlloc(AZ_INTERNAL_PROF_MEMORY_CAT_TO_FLAGS(category), address, size, context)
 
 #define AZ_PROFILE_MEMORY_ALLOC_EX(category, filename, lineNumber, address, size, context) \
-    AZ_INTERNAL_PROF_VERIFY_CAT(category); \
     tmAllocEx(AZ_INTERNAL_PROF_MEMORY_CAT_TO_FLAGS(category), filename, lineNumber, address, size, context)
 
 #define AZ_PROFILE_MEMORY_FREE(category, address) \
-    AZ_INTERNAL_PROF_VERIFY_CAT(category); \
     tmFree(AZ_INTERNAL_PROF_MEMORY_CAT_TO_FLAGS(category), address)
 
 #define AZ_PROFILE_MEMORY_FREE_EX(category, filename, lineNumber, address) \
-    AZ_INTERNAL_PROF_VERIFY_CAT(category); \
     tmFreeEx(AZ_INTERNAL_PROF_MEMORY_CAT_TO_FLAGS(category), filename, lineNumber, address)
 
 #endif
