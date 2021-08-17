@@ -148,7 +148,7 @@ namespace AZ
             void UnregisterModel();
             void RefreshModelRegistration();
 
-            RPI::Cullable::LodConfiguration MeshComponentController::GetMeshLodConfiguration() const;
+            RPI::Cullable::LodConfiguration GetMeshLodConfiguration() const;
 
             void HandleNonUniformScaleChange(const AZ::Vector3& nonUniformScale);
 
