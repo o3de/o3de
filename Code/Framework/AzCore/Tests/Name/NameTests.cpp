@@ -604,7 +604,8 @@ namespace UnitTest
         AZ::NameDictionary::Create();
 
         // 3 threads per name effectively makes two readers and one writer (the first to run will write in the dictionary)
-        RunConcurrencyTest<ThreadCreatesOneName>(AZ_TRAIT_UNIT_TEST_NAME_COUNT, 3);
+        // Using AZ_TRAIT_UNIT_TEST_NAME_COUNT / 2 since the following line generates 3000 threads and that triggers ASan failures
+        RunConcurrencyTest<ThreadCreatesOneName>(AZ_TRAIT_UNIT_TEST_NAME_COUNT / 2, 3);
     }
 
     TEST_F(NameTest, ConcurrencyDataTest_EachThreadCreatesOneName_HighCollisions)
@@ -614,7 +615,8 @@ namespace UnitTest
         AZ::NameDictionary::Create();
 
         // 3 threads per name effectively makes two readers and one writer (the first to run will write in the dictionary)
-        RunConcurrencyTest<ThreadCreatesOneName>(AZ_TRAIT_UNIT_TEST_NAME_COUNT, 3);
+        // Using AZ_TRAIT_UNIT_TEST_NAME_COUNT / 2 since the following line generates 3000 threads and that triggers ASan failures
+        RunConcurrencyTest<ThreadCreatesOneName>(AZ_TRAIT_UNIT_TEST_NAME_COUNT / 2, 3);
     }
 
     TEST_F(NameTest, ConcurrencyDataTest_EachThreadRepeatedlyCreatesAndReleasesOneName_NoCollision)
