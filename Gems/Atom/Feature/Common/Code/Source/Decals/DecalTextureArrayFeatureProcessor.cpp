@@ -295,7 +295,7 @@ namespace AZ
 
         void DecalTextureArrayFeatureProcessor::SetDecalMaterial(const DecalHandle handle, const AZ::Data::AssetId material)
         {
-            AZ_PROFILE_FUNCTION(Renderer);
+            AZ_PROFILE_FUNCTION(AzRender);
             if (handle.IsNull())
             {
                 AZ_Warning("DecalTextureArrayFeatureProcessor", false, "Invalid handle passed to DecalTextureArrayFeatureProcessor::SetDecalMaterial().");
@@ -365,7 +365,7 @@ namespace AZ
 
         void DecalTextureArrayFeatureProcessor::OnAssetReady(const Data::Asset<Data::AssetData> asset)
         {
-            AZ_PROFILE_FUNCTION(Renderer);
+            AZ_PROFILE_FUNCTION(AzRender);
             const Data::AssetId& assetId = asset->GetId();
             
             const RPI::MaterialAsset* materialAsset = asset.GetAs<AZ::RPI::MaterialAsset>();

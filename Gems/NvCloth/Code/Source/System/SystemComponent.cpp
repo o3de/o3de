@@ -116,7 +116,7 @@ namespace NvCloth
             }
 
             void zoneEnd([[maybe_unused]] void* profilerData,
-                const char* eventName, bool detached,
+                [[maybe_unused]] const char* eventName, bool detached,
                 [[maybe_unused]] uint64_t contextId) override
             {
                 if (detached)

@@ -73,4 +73,3 @@ namespace ImageProcessingAtom
 
     using ImageBuilderRequestBus = AZ::EBus<ImageBuilderRequests>;
 } // namespace ImageProcessingAtom
-

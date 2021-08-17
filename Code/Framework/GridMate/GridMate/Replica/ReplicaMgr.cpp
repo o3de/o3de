@@ -700,7 +700,7 @@ namespace GridMate
     {
         if (IsUsingFixedTimeStep())
         {
-            return static_cast<AZ::u32>(m_fixedTimeStep.CurrentTime());
+            return static_cast<AZ::u32>(m_fixedTimeStep.GetCurrentTime());
         }
         else
         {

@@ -13,9 +13,6 @@
 #ifdef USE_PIX
 #include <AzCore/PlatformIncl.h>
 #include <WinPixEventRuntime/pix3.h>
-// The pix3 header unfortunately brings in other Windows macros we need to undef
-#undef DeleteFile
-#undef LoadImage
 #endif
 
 #ifdef AZ_PROFILE_TELEMETRY
@@ -32,11 +29,11 @@
  * Macro to declare a profile section for the current scope { }.
  * format is: AZ_PROFILE_SCOPE(categoryName, const char* formatStr, ...)
  */
-#   define AZ_PROFILE_SCOPE(category, formatStr, ...) ::AZ::ProfileScope AZ_JOIN(azProfileScope, __LINE__){ #category, formatStr, __VA_ARGS__ }
+#   define AZ_PROFILE_SCOPE(category, ...) ::AZ::ProfileScope AZ_JOIN(azProfileScope, __LINE__){ #category, __VA_ARGS__ }
 #   define AZ_PROFILE_FUNCTION(category) AZ_PROFILE_SCOPE(category, AZ_FUNCTION_SIGNATURE)
 
 // Prefer using the scoped macros which automatically end the event (AZ_PROFILE_SCOPE/AZ_PROFILE_FUNCTION)
-#   define AZ_PROFILE_BEGIN(category, name, ...) ::AZ::ProfileScope::BeginRegion(#category, name, __VA_ARGS__)
+#   define AZ_PROFILE_BEGIN(category, ...) ::AZ::ProfileScope::BeginRegion(#category, __VA_ARGS__)
 #   define AZ_PROFILE_END() ::AZ::ProfileScope::EndRegion()
 #endif // AZ_PROFILER_MACRO_DISABLE
 
@@ -67,14 +64,11 @@ namespace AZ
         static uint32_t GetSystemID(const char* system);
 
         template<typename... T>
-        static void BeginRegion(const char* system, char const* eventName, [[maybe_unused]] T const&... args)
+        static void BeginRegion([[maybe_unused]] const char* system, [[maybe_unused]] char const* eventName, [[maybe_unused]] T const&... args)
         {
             // TODO: Verification that the supplied system name corresponds to a known budget
 #if defined(USE_PIX)
             PIXBeginEvent(PIX_COLOR_INDEX(GetSystemID(system) & 0xff), eventName, args...);
-#else
-            (void)system;
-            (void)eventName;
 #endif
             // TODO: injecting instrumentation for other profilers
         }
@@ -395,3 +389,9 @@ namespace AZ
     }
 } // namespace AZ
 
+#ifdef USE_PIX
+// The pix3 header unfortunately brings in other Windows macros we need to undef
+#undef DeleteFile
+#undef LoadImage
+#undef GetCurrentTime
+#endif

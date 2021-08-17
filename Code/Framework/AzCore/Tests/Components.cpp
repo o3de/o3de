@@ -1255,7 +1255,7 @@ namespace UnitTest
 
         int ChildFunction1(int input)
         {
-            AZ_PROFILE_SCOPE(System, "Child1");
+            AZ_PROFILE_SCOPE(AzCore, "Child1");
             int result = 5;
             for (int i = 0; i < 10000; ++i)
             {
@@ -1266,7 +1266,7 @@ namespace UnitTest
 
         int Profile1(int numIterations)
         {
-            AZ_PROFILE_SCOPE(System, "Custom name");
+            AZ_PROFILE_SCOPE(AzCore, "Custom name");
             int result = 0;
             for (int i = 0; i < numIterations; ++i)
             {

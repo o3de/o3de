@@ -8,7 +8,7 @@
 
 if(LY_PIX_ENABLED)
     file(TO_CMAKE_PATH "${LY_PIX_PATH}" PIX_PATH)
-    message(STATUS "PIX PATH ${PIX_PATH}")
+    message(STATUS "PIX found: ${PIX_PATH}")
 
     ly_add_external_target(
         NAME pix
