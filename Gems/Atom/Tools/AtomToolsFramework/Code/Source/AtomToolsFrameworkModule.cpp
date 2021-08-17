@@ -8,6 +8,7 @@
 
 #include <AtomToolsFrameworkModule.h>
 #include <AtomToolsFrameworkSystemComponent.h>
+#include <Document/AtomToolsDocumentSystemComponent.h>
 #include <Window/AtomToolsMainWindowSystemComponent.h>
 
 namespace AtomToolsFramework
@@ -16,6 +17,7 @@ namespace AtomToolsFramework
     {
         m_descriptors.insert(m_descriptors.end(), {
                 AtomToolsFrameworkSystemComponent::CreateDescriptor(),
+                AtomToolsDocumentSystemComponent::CreateDescriptor(),
                 AtomToolsMainWindowSystemComponent::CreateDescriptor(),
             });
     }
@@ -24,6 +26,7 @@ namespace AtomToolsFramework
     {
         return AZ::ComponentTypeList{
             azrtti_typeid<AtomToolsFrameworkSystemComponent>(),
+            azrtti_typeid<AtomToolsDocumentSystemComponent>(),
             azrtti_typeid<AtomToolsMainWindowSystemComponent>(),
         };
     }

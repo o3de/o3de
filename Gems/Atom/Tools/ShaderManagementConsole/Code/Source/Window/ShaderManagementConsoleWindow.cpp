@@ -13,12 +13,11 @@
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
-
 #include <AtomToolsFramework/Util/Util.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindowNotificationBus.h>
-
 #include <Atom/Document/ShaderManagementConsoleDocumentRequestBus.h>
-#include <Atom/Document/ShaderManagementConsoleDocumentSystemRequestBus.h>
+#include <AtomToolsFramework/Document/AtomToolsDocumentRequestBus.h>
+#include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <Window/ShaderManagementConsoleWindow.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
@@ -62,19 +61,19 @@ namespace ShaderManagementConsole
         // Restore geometry and show the window
         mainWindowWrapper->showFromSettings();
 
-        ShaderManagementConsoleDocumentNotificationBus::Handler::BusConnect();
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect();
         OnDocumentOpened(AZ::Uuid::CreateNull());
     }
 
     ShaderManagementConsoleWindow::~ShaderManagementConsoleWindow()
     {
-        ShaderManagementConsoleDocumentNotificationBus::Handler::BusDisconnect();
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
     }
 
     void ShaderManagementConsoleWindow::closeEvent(QCloseEvent* closeEvent)
     {
         bool didClose = true;
-        ShaderManagementConsoleDocumentSystemRequestBus::BroadcastResult(didClose, &ShaderManagementConsoleDocumentSystemRequestBus::Events::CloseAllDocuments);
+        AtomToolsFramework::AtomToolsDocumentSystemRequestBus::BroadcastResult(didClose, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::CloseAllDocuments);
         if (!didClose)
         {
             closeEvent->ignore();
@@ -88,17 +87,17 @@ namespace ShaderManagementConsole
     void ShaderManagementConsoleWindow::OnDocumentOpened(const AZ::Uuid& documentId)
     {
         bool isOpen = false;
-        ShaderManagementConsoleDocumentRequestBus::EventResult(isOpen, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::IsOpen);
+        AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(isOpen, documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::IsOpen);
         bool isSavable = false;
-        ShaderManagementConsoleDocumentRequestBus::EventResult(isSavable, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::IsSavable);
+        AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(isSavable, documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::IsSavable);
         bool isModified = false;
-        ShaderManagementConsoleDocumentRequestBus::EventResult(isModified, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::IsModified);
+        AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(isModified, documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::IsModified);
         bool canUndo = false;
-        ShaderManagementConsoleDocumentRequestBus::EventResult(canUndo, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::CanUndo);
+        AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(canUndo, documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::CanUndo);
         bool canRedo = false;
-        ShaderManagementConsoleDocumentRequestBus::EventResult(canRedo, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::CanRedo);
+        AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(canRedo, documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::CanRedo);
         AZStd::string absolutePath;
-        ShaderManagementConsoleDocumentRequestBus::EventResult(absolutePath, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::GetAbsolutePath);
+        AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(absolutePath, documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
         AZStd::string filename;
         AzFramework::StringFunc::Path::GetFullFileName(absolutePath.c_str(), filename);
 
@@ -150,7 +149,7 @@ namespace ShaderManagementConsole
         const QString documentPath = GetDocumentPath(documentId);
         if (!documentPath.isEmpty())
         {
-            const QString status = QString("Document closed: %1").arg(documentPath);
+            const QString status = QString("Document opened: %1").arg(documentPath);
             m_statusMessage->setText(QString("<font color=\"White\">%1</font>").arg(status));
         }
     }
@@ -167,9 +166,9 @@ namespace ShaderManagementConsole
     void ShaderManagementConsoleWindow::OnDocumentModified(const AZ::Uuid& documentId)
     {
         bool isModified = false;
-        ShaderManagementConsoleDocumentRequestBus::EventResult(isModified, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::IsModified);
+        AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(isModified, documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::IsModified);
         AZStd::string absolutePath;
-        ShaderManagementConsoleDocumentRequestBus::EventResult(absolutePath, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::GetAbsolutePath);
+        AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(absolutePath, documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
         AZStd::string filename;
         AzFramework::StringFunc::Path::GetFullFileName(absolutePath.c_str(), filename);
         UpdateTabForDocumentId(documentId, filename, absolutePath, isModified);
@@ -180,9 +179,9 @@ namespace ShaderManagementConsole
         if (documentId == GetDocumentIdFromTab(m_tabWidget->currentIndex()))
         {
             bool canUndo = false;
-            ShaderManagementConsoleDocumentRequestBus::EventResult(canUndo, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::CanUndo);
+            AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(canUndo, documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::CanUndo);
             bool canRedo = false;
-            ShaderManagementConsoleDocumentRequestBus::EventResult(canRedo, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::CanRedo);
+            AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(canRedo, documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::CanRedo);
             m_actionUndo->setEnabled(canUndo);
             m_actionRedo->setEnabled(canRedo);
         }
@@ -191,15 +190,15 @@ namespace ShaderManagementConsole
     void ShaderManagementConsoleWindow::OnDocumentSaved(const AZ::Uuid& documentId)
     {
         bool isModified = false;
-        ShaderManagementConsoleDocumentRequestBus::EventResult(isModified, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::IsModified);
+        AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(isModified, documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::IsModified);
         AZStd::string absolutePath;
-        ShaderManagementConsoleDocumentRequestBus::EventResult(absolutePath, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::GetAbsolutePath);
+        AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(absolutePath, documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
         AZStd::string filename;
         AzFramework::StringFunc::Path::GetFullFileName(absolutePath.c_str(), filename);
         UpdateTabForDocumentId(documentId, filename, absolutePath, isModified);
 
         const QString documentPath = GetDocumentPath(documentId);
-        const QString status = QString("Document closed: %1").arg(documentPath);
+        const QString status = QString("Document saved: %1").arg(documentPath);
         m_statusMessage->setText(QString("<font color=\"White\">%1</font>").arg(status));
     }
 
@@ -217,7 +216,7 @@ namespace ShaderManagementConsole
             const AZStd::string filePath = AtomToolsFramework::GetOpenFileInfo(assetTypes).absoluteFilePath().toUtf8().constData();
             if (!filePath.empty())
             {
-                ShaderManagementConsoleDocumentSystemRequestBus::Broadcast(&ShaderManagementConsoleDocumentSystemRequestBus::Events::OpenDocument, filePath);
+                AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::OpenDocument, filePath);
             }
         }, QKeySequence::Open);
 
@@ -225,32 +224,56 @@ namespace ShaderManagementConsole
 
         m_menuFile->addSeparator();
 
-        m_actionClose = m_menuFile->addAction("&Close", [this]() {
-            CloseDocumentForTab(m_tabWidget->currentIndex());
-        }, QKeySequence::Close);
-
-        m_actionCloseAll = m_menuFile->addAction("Close All", [this]() {
-            ShaderManagementConsoleDocumentSystemRequestBus::Broadcast(&ShaderManagementConsoleDocumentSystemRequestBus::Events::CloseAllDocuments);
-        });
-
-        m_actionCloseOthers = m_menuFile->addAction("Close Others", [this]() {
-            CloseAllExceptDocumentForTab(m_tabWidget->currentIndex());
-        });
-
-        m_menuFile->addSeparator();
-
         m_actionSave = m_menuFile->addAction("&Save", [this]() {
             const AZ::Uuid documentId = GetDocumentIdFromTab(m_tabWidget->currentIndex());
-            ShaderManagementConsoleDocumentSystemRequestBus::Broadcast(&ShaderManagementConsoleDocumentSystemRequestBus::Events::SaveDocument, documentId);
+            bool result = false;
+            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::BroadcastResult(result, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::SaveDocument, documentId);
+            if (!result)
+            {
+                const QString documentPath = GetDocumentPath(documentId);
+                const QString status = QString("Document save failed: %1").arg(documentPath);
+                m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(status));
+            }
         }, QKeySequence::Save);
 
         m_actionSaveAsCopy = m_menuFile->addAction("Save &As...", [this]() {
             const AZ::Uuid documentId = GetDocumentIdFromTab(m_tabWidget->currentIndex());
-            ShaderManagementConsoleDocumentSystemRequestBus::Broadcast(&ShaderManagementConsoleDocumentSystemRequestBus::Events::SaveDocumentAsCopy, documentId);
+            const QString documentPath = GetDocumentPath(documentId);
+
+            bool result = false;
+            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::BroadcastResult(result, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::SaveDocumentAsCopy,
+                documentId, AtomToolsFramework::GetSaveFileInfo(documentPath).absoluteFilePath().toUtf8().constData());
+            if (!result)
+            {
+                const QString status = QString("Document save failed: %1").arg(documentPath);
+                m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(status));
+            }
         }, QKeySequence::SaveAs);
 
         m_actionSaveAll = m_menuFile->addAction("Save A&ll", [this]() {
-            ShaderManagementConsoleDocumentSystemRequestBus::Broadcast(&ShaderManagementConsoleDocumentSystemRequestBus::Events::SaveAllDocuments);
+            bool result = false;
+            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::BroadcastResult(result, &AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::SaveAllDocuments);
+            if (!result)
+            {
+                const QString status = QString("Document save all failed.");
+                m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(status));
+            }
+        });
+
+        m_menuFile->addSeparator();
+
+        m_actionClose = m_menuFile->addAction("&Close", [this]() {
+            const AZ::Uuid documentId = GetDocumentIdFromTab(m_tabWidget->currentIndex());
+            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::CloseDocument, documentId);
+        }, QKeySequence::Close);
+
+        m_actionCloseAll = m_menuFile->addAction("Close All", [this]() {
+            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::CloseAllDocuments);
+        });
+
+        m_actionCloseOthers = m_menuFile->addAction("Close Others", [this]() {
+            const AZ::Uuid documentId = GetDocumentIdFromTab(m_tabWidget->currentIndex());
+            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::CloseAllDocumentsExcept, documentId);
         });
 
         m_menuFile->addSeparator();
@@ -274,11 +297,11 @@ namespace ShaderManagementConsole
         m_actionUndo = m_menuEdit->addAction("&Undo", [this]() {
             const AZ::Uuid documentId = GetDocumentIdFromTab(m_tabWidget->currentIndex());
             bool result = false;
-            ShaderManagementConsoleDocumentRequestBus::EventResult(result, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::Undo);
+            AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(result, documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::Undo);
             if (!result)
             {
                 const QString documentPath = GetDocumentPath(documentId);
-                const QString status = QString("Failed to perform undo on document: %1").arg(documentPath);
+                const QString status = QString("Document undo failed: %1").arg(documentPath);
                 m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(status));
             }
         }, QKeySequence::Undo);
@@ -286,30 +309,27 @@ namespace ShaderManagementConsole
         m_actionRedo = m_menuEdit->addAction("&Redo", [this]() {
             const AZ::Uuid documentId = GetDocumentIdFromTab(m_tabWidget->currentIndex());
             bool result = false;
-            ShaderManagementConsoleDocumentRequestBus::EventResult(result, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::Redo);
+            AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(result, documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::Redo);
             if (!result)
             {
                 const QString documentPath = GetDocumentPath(documentId);
-                const QString status = QString("Failed to perform redo on document: %1").arg(documentPath);
+                const QString status = QString("Document redo failed: %1").arg(documentPath);
                 m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(status));
             }
         }, QKeySequence::Redo);
 
         m_menuEdit->addSeparator();
 
-        m_actionSettings = m_menuEdit->addAction("&Preferences...", [this]() {
+        m_actionSettings = m_menuEdit->addAction("&Settings...", [this]() {
         }, QKeySequence::Preferences);
         m_actionSettings->setEnabled(false);
 
         m_menuView = m_menuBar->addMenu("&View");
 
-        m_actionAssetBrowser = m_menuView->addAction(
-            "&Asset Browser",
-            [this]()
-            {
-                const AZStd::string label = "Asset Browser";
-                SetDockWidgetVisible(label, !IsDockWidgetVisible(label));
-            });
+        m_actionAssetBrowser = m_menuView->addAction("&Asset Browser", [this]() {
+            const AZStd::string label = "Asset Browser";
+            SetDockWidgetVisible(label, !IsDockWidgetVisible(label));
+        });
 
         m_actionPythonTerminal = m_menuView->addAction("Python &Terminal", [this]() {
             const AZStd::string label = "Python Terminal";
@@ -344,18 +364,20 @@ namespace ShaderManagementConsole
         // When the last tab is removed tabIndex will be -1 and the document ID will be null
         // This should automatically clear the active document
         connect(m_tabWidget, &QTabWidget::currentChanged, this, [this](int tabIndex) {
-            SelectDocumentForTab(tabIndex);
+            const AZ::Uuid documentId = GetDocumentIdFromTab(tabIndex);
+            AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentOpened, documentId);
         });
 
         connect(m_tabWidget, &QTabWidget::tabCloseRequested, this, [this](int tabIndex) {
-            CloseDocumentForTab(tabIndex);
+            const AZ::Uuid documentId = GetDocumentIdFromTab(tabIndex);
+            AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::CloseDocument, documentId);
         });
     }
 
     QString ShaderManagementConsoleWindow::GetDocumentPath(const AZ::Uuid& documentId) const
     {
         AZStd::string absolutePath;
-        ShaderManagementConsoleDocumentRequestBus::EventResult(absolutePath, documentId, &ShaderManagementConsoleDocumentRequestBus::Handler::GetAbsolutePath);
+        AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(absolutePath, documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Handler::GetAbsolutePath);
         return absolutePath.c_str();
     }
 
@@ -370,48 +392,19 @@ namespace ShaderManagementConsole
             QMenu tabMenu;
             const QString selectActionName = (currentTabIndex == clickedTabIndex) ? "Select in Browser" : "Select";
             tabMenu.addAction(selectActionName, [this, clickedTabIndex]() {
-                SelectDocumentForTab(clickedTabIndex);
+                const AZ::Uuid documentId = GetDocumentIdFromTab(clickedTabIndex);
+                AtomToolsFramework::AtomToolsDocumentNotificationBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentNotificationBus::Events::OnDocumentOpened, documentId);
             });
             tabMenu.addAction("Close", [this, clickedTabIndex]() {
-                CloseDocumentForTab(clickedTabIndex);
+                const AZ::Uuid documentId = GetDocumentIdFromTab(clickedTabIndex);
+                AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::CloseDocument, documentId);
             });
             auto closeOthersAction = tabMenu.addAction("Close Others", [this, clickedTabIndex]() {
-                CloseAllExceptDocumentForTab(clickedTabIndex);
+                const AZ::Uuid documentId = GetDocumentIdFromTab(clickedTabIndex);
+                AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::CloseAllDocumentsExcept, documentId);
             });
             closeOthersAction->setEnabled(tabBar->count() > 1);
             tabMenu.exec(QCursor::pos());
-        }
-    }
-
-    void ShaderManagementConsoleWindow::SelectDocumentForTab(const int tabIndex)
-    {
-        const AZ::Uuid documentId = GetDocumentIdFromTab(tabIndex);
-        ShaderManagementConsoleDocumentNotificationBus::Broadcast(&ShaderManagementConsoleDocumentNotificationBus::Events::OnDocumentOpened, documentId);
-    }
-
-    void ShaderManagementConsoleWindow::CloseDocumentForTab(const int tabIndex)
-    {
-        const AZ::Uuid documentId = GetDocumentIdFromTab(tabIndex);
-        ShaderManagementConsoleDocumentSystemRequestBus::Broadcast(&ShaderManagementConsoleDocumentSystemRequestBus::Events::CloseDocument, documentId);
-    }
-
-    void ShaderManagementConsoleWindow::CloseAllExceptDocumentForTab(const int tabIndex)
-    {
-        AZStd::vector<AZ::Uuid> documentIdsToClose;
-        documentIdsToClose.reserve(m_tabWidget->count());
-        const AZ::Uuid documentIdToKeepOpen = GetDocumentIdFromTab(tabIndex);
-        for (int tabI = 0; tabI < m_tabWidget->count(); ++tabI)
-        {
-            const AZ::Uuid documentId = GetDocumentIdFromTab(tabI);
-            if (documentId != documentIdToKeepOpen)
-            {
-                documentIdsToClose.push_back(documentId);
-            }
-        }
-
-        for (const AZ::Uuid& documentId : documentIdsToClose)
-        {
-            ShaderManagementConsoleDocumentSystemRequestBus::Broadcast(&ShaderManagementConsoleDocumentSystemRequestBus::Events::CloseDocument, documentId);
         }
     }
 
