@@ -2041,7 +2041,27 @@ namespace ScriptCanvas
         }
     }
 
-    void Datum::OnWriteEnd()
+    void Datum::OnSerializeBegin()
+    {
+        if (m_type.GetType() == Data::eType::BehaviorContextObject)
+        {
+            if (BehaviorContextObjectPtr ptr = (*AZStd::any_cast<BehaviorContextObjectPtr>(&m_storage.value)))
+            {
+                ptr->OnSerializeBegin();
+            }
+            else
+            {
+                AZ_Error("ScriptCanvas", false, AZStd::string::format("Datum type (%s) failed to serialized, did not store BehaviorContextObjectPtr properly", m_type.GetAZType().ToString<AZStd::string>().c_str()).c_str());
+            }
+        }
+    }
+
+    void Datum::OnReadBegin()
+    {
+        OnSerializeBegin();
+    }
+
+    void Datum::OnDeserialize()
     {
         if (m_type.GetType() == Data::eType::BehaviorContextObject)
         {
@@ -2059,9 +2079,14 @@ namespace ScriptCanvas
             }
             else
             {
-                AZ_Error("Script Canvas", false, AZStd::string::format("Datum type (%s) de-serialized, but no such class found in the behavior context", m_type.GetAZType().ToString<AZStd::string>().c_str()).c_str());
+                AZ_Error("ScriptCanvas", false, AZStd::string::format("Datum type (%s) de-serialized, but no such class found in the behavior context", m_type.GetAZType().ToString<AZStd::string>().c_str()).c_str());
             }
         }
+    }
+
+    void Datum::OnWriteEnd()
+    {
+        OnSerializeEnd();
     }
 
     void Datum::Reflect(AZ::ReflectContext* reflection)

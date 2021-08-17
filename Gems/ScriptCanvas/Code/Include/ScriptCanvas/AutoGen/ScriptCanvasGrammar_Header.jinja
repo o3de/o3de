@@ -43,9 +43,19 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 namespace {{attribute_Namespace}}
 {
 {% endif %}
-
 {% set className = Class.attrib['Name'] %}
-{% set baseClass = Class.attrib['Base'] %}
+{% if Class.attrib['Base'] is defined %}
+{%      if Class.attrib['Base'].split(';')|length > 1 %}
+{%          set baseClass = Class.attrib['Base'].split(';')[0] %}
+{%          set baseClasses = ", ".join(Class.attrib['Base'].split(';')) %}
+{%      else %}
+{%          set baseClass = Class.attrib['Base'] %}
+{%          set baseClasses = Class.attrib['Base'] %}
+{%      endif %}
+{% else %}
+{%      set baseClass = "ScriptCanvas::Node" %}
+{%      set baseClasses = "ScriptCanvas::Node" %}
+{% endif %}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -66,7 +76,7 @@ namespace {{attribute_Namespace}}
 // You must #include the generated header into the source header
 #define SCRIPTCANVAS_NODE_{{ className }} \
 public: \
-    AZ_COMPONENT({{ className }}, "{{ classUuid }}"{% if baseClass is defined %}, {{ baseClass }}{% endif %}); \
+    AZ_COMPONENT({{ className }}, "{{ classUuid }}", {{ baseClasses}} ); \
     static void Reflect(AZ::ReflectContext* reflection); \
     void ConfigureSlots() override; \
     bool RequiresDynamicSlotOrdering() const override; \

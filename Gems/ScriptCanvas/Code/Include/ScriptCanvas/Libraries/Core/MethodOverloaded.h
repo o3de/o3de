@@ -92,12 +92,13 @@ namespace ScriptCanvas
                 Grammar::FunctionPrototype GetInputSignature() const;
 
                 // SerializeContextReadWriteHandler
-                void OnReadBegin();
-                void OnReadEnd();
+                void OnReadBegin() {}
+                void OnReadEnd() {}
 
                 void OnWriteBegin();
                 void OnWriteEnd();
-                ////
+
+                void OnDeserialize() override;
 
                 void SetupMethodData(const AZ::BehaviorMethod* lookupMethod, const AZ::BehaviorClass* lookupClass);
                 void ConfigureContracts();

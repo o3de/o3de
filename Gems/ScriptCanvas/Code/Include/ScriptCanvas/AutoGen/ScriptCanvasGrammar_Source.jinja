@@ -26,12 +26,22 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 #include "{{ xml.attrib['Include'] }}"
 
 {%     for Class in xml.iter('Class') %}
+{% if Class.attrib['Base'] is defined %}
+{%      if Class.attrib['Base'].split(';')|length > 1 %}
+{%          set baseClass = Class.attrib['Base'].split(';')[0] %}
+{%          set baseClasses = ", ".join(Class.attrib['Base'].split(';')) %}
+{%      else %}
+{%          set baseClass = Class.attrib['Base'] %}
+{%          set baseClasses = Class.attrib['Base'] %}
+{%      endif %}
+{% else %}
+{%      set baseClass = "ScriptCanvas::Node" %}
+{%      set baseClasses = "ScriptCanvas::Node" %}
+{% endif %}
 void {{ Class.attrib['QualifiedName'] }}::ConfigureSlots()
 {
-{% if Class.attrib['Base'] is defined %}
-    {{ Class.attrib['Base'] }}::ConfigureSlots();
+    {{ baseClass }}::ConfigureSlots();
 
-{% endif %}
 {% for Property in Class.iter('Property') %}
     {% if Property.attrib['IsInput'] | booleanTrue %}
     // {{ Property.attrib['Name'] }}
@@ -194,13 +204,11 @@ void {{ Class.attrib['QualifiedName'] }}::Reflect(AZ::ReflectContext* context)
 {% endfor %}    
 
 {% endif %}
-{% if Class.attrib['Base'] is defined %}
-    static_assert((std::is_base_of<ScriptCanvas::Node, {{ Class.attrib['Base'] }}>::value), "Script Canvas nodes require the first base class to be derived from ScriptCanvas::Node");
+    static_assert((std::is_base_of<ScriptCanvas::Node, {{ baseClass }}>::value), "Script Canvas nodes require the first base class to be derived from ScriptCanvas::Node");
 
-{% endif %}
     if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
     {
-        serializeContext->Class<{{ Class.attrib['QualifiedName'] }}{% if Class.attrib['Base'] is defined %}, {{ Class.attrib['Base'] }}{% endif %}>()
+        serializeContext->Class<{{ Class.attrib['QualifiedName'] }}, {{ baseClass }}>()
 {% if Class.attrib['EventHandler'] is defined %}
             ->EventHandler<{{ Class.attrib['EventHandler'] }}>()
 {% endif %}

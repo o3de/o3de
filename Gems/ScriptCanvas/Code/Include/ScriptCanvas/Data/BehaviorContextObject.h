@@ -29,6 +29,7 @@ namespace ScriptCanvas
     class BehaviorContextObject final
     {
         friend struct AZStd::IntrusivePtrCountPolicy<BehaviorContextObject>;
+        friend class Datum;
 
     public:
         AZ_TYPE_INFO(BehaviorContextObject, "{B735214D-5182-4536-B748-61EC83C1F007}");
@@ -67,16 +68,6 @@ namespace ScriptCanvas
             Owned = 1 << 1,
             Pointer = 1 << 2,
             Reference = 1 << 3,
-        };
-
-        class SerializeContextEventHandler : public AZ::SerializeContext::IEventHandler
-        {
-        public:
-            /// Called right before we start reading from the instance pointed by classPtr.
-            void OnReadBegin(void* classPtr) override;
-
-            /// Called after we are done writing to the instance pointed by classPtr.
-            void OnWriteEnd(void* classPtr) override;
         };
 
         template<typename... Args>
@@ -128,9 +119,7 @@ namespace ScriptCanvas
 
         AZ_FORCE_INLINE bool IsOwned() const;
 
-        void OnReadBegin();
-
-        void OnWriteEnd();
+        void OnSerializeBegin();
 
         AZ_FORCE_INLINE void add_ref();
 

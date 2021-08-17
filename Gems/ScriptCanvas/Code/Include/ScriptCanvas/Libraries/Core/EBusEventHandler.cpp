@@ -602,13 +602,21 @@ namespace ScriptCanvas
                 }
             }
 
-            void EBusEventHandler::OnWriteEnd()
+            void EBusEventHandler::OnDeserialize()
             {
                 AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
                 if (!m_ebus)
                 {
                     CreateHandler(m_ebusName);
                 }
+
+                /// \note Call super() anti-pattern https://en.wikipedia.org/wiki/Call_super
+                Node::OnDeserialize();
+            }
+
+            void EBusEventHandler::OnWriteEnd()
+            {
+                OnDeserialize();
             }
 
             NodeTypeIdentifier EBusEventHandler::GetOutputNodeType(const SlotId& slotId) const

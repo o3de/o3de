@@ -397,20 +397,16 @@ namespace ScriptCanvas
                 return signature;
             }
 
-            void MethodOverloaded::OnReadBegin()
-            {
-            }
-
-            void MethodOverloaded::OnReadEnd()
-            {
-            }
-
             void MethodOverloaded::OnWriteBegin()
             {
-                SetWarnOnMissingFunction(false);
             }
 
             void MethodOverloaded::OnWriteEnd()
+            {
+                OnDeserialize();
+            }
+
+            void MethodOverloaded::OnDeserialize()
             {
                 AZStd::lock_guard<AZStd::recursive_mutex> lock(GetMutex());
 
@@ -462,6 +458,9 @@ namespace ScriptCanvas
                 }
 
                 SetWarnOnMissingFunction(true);
+
+                /// \note Call super() anti-pattern https://en.wikipedia.org/wiki/Call_super
+                Node::OnDeserialize();
             }
 
             void MethodOverloaded::SetupMethodData(const AZ::BehaviorMethod* behaviorMethod, const AZ::BehaviorClass* behaviorClass)

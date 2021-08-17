@@ -25,9 +25,7 @@ namespace ScriptCanvas
         /// Called to rebuild the Endpoint map
         void OnWriteEnd(void* classPtr) override
         {
-            auto* graphData = reinterpret_cast<GraphData*>(classPtr);
-            graphData->BuildEndpointMap();
-            graphData->LoadDependentAssets();
+            reinterpret_cast<GraphData*>(classPtr)->OnDeserialized();
         }
     };
 
@@ -214,5 +212,11 @@ namespace ScriptCanvas
         }
 
         m_dependentAssets.clear();
+    }
+
+    void GraphData::OnDeserialized()
+    {
+        BuildEndpointMap();
+        LoadDependentAssets();
     }
 }

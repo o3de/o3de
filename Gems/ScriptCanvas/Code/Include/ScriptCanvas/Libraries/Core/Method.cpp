@@ -313,6 +313,7 @@ namespace ScriptCanvas
                 }
 
                 PopulateNodeType();
+                m_warnOnMissingFunction = true;
             }
 
             bool Method::InitializeOverloaded([[maybe_unused]] const NamespacePath& namespaces, AZStd::string_view className, AZStd::string_view methodName)
@@ -739,10 +740,11 @@ namespace ScriptCanvas
                 return TupleType{ nullptr, MethodType::Count, EventType::Count, nullptr };
             }
 
-            void Method::OnWriteEnd()
+            void Method::OnDeserialize()
             {
                 AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
 
+                m_warnOnMissingFunction = true;
                 const AZ::BehaviorClass* bcClass{};
                 const AZ::BehaviorMethod* method{};
                 EventType eventType;
@@ -758,13 +760,20 @@ namespace ScriptCanvas
                     {
                         AZ_Warning("ScriptCanvas", !m_warnOnMissingFunction, "method node failed to deserialize properly");
                     }
-
                 }
 
                 if (m_resultSlotIDs.empty())
                 {
                     m_resultSlotIDs.emplace_back(SlotId{});
                 }
+
+                /// \note Call super() anti-pattern https://en.wikipedia.org/wiki/Call_super
+                Node::OnDeserialize();
+            }
+
+            void Method::OnWriteEnd()
+            {
+                OnDeserialize();
             }
 
             bool Method::BranchesOnResult() const

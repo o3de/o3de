@@ -76,7 +76,7 @@ namespace ScriptCanvasEditor
     AZ::Data::AssetHandler::LoadResult ScriptCanvasAssetHandler::LoadAssetData
         ( const AZ::Data::Asset<AZ::Data::AssetData>& assetTarget
         , AZStd::shared_ptr<AZ::Data::AssetDataStream> streamSource
-        , const AZ::Data::AssetFilterCB& assetLoadFilterCB)
+        , [[maybe_unused]] const AZ::Data::AssetFilterCB& assetLoadFilterCB)
     {
         namespace JSRU = AZ::JsonSerializationUtils;
         using namespace ScriptCanvas;
@@ -86,30 +86,43 @@ namespace ScriptCanvasEditor
 
         if (scriptCanvasAssetTarget && m_serializeContext && streamSource)
         {
-            AZ::JsonDeserializerSettings settings;
-            // more mapping stuff
-            settings.m_serializeContext = m_serializeContext;
             streamSource->Seek(0U, AZ::IO::GenericStream::ST_SEEK_BEGIN);
-            // presume JSON serialization...
-            if (JSRU::LoadObjectFromStreamByType
-                ( scriptCanvasAssetTarget
-                , azrtti_typeid<ScriptCanvasAsset>()
-                , *streamSource
-                , &settings).IsSuccess())
-            {
-                return AZ::Data::AssetHandler::LoadResult::LoadComplete;
-            }
-            else
-            {
-                // ...if there is a failure, check if it is saved in the old format
-                streamSource->Seek(0U, AZ::IO::GenericStream::ST_SEEK_BEGIN);
-                // tolerate unknown classes in the editor.  Let the asset processor warn about bad nodes...
-                bool loadSuccess = AZ::Utils::LoadObjectFromStreamInPlace(*streamSource, scriptCanvasAssetTarget->GetScriptCanvasData()
-                    , m_serializeContext
-                    , AZ::ObjectStream::FilterDescriptor(assetLoadFilterCB, AZ::ObjectStream::FILTERFLAG_IGNORE_UNKNOWN_CLASSES));
+            auto& scriptCanvasDataTarget = scriptCanvasAssetTarget->GetScriptCanvasData();
+            AZStd::vector<AZ::u8> byteBuffer(streamSource->GetLength());
+            AZ::IO::ByteContainerStream<decltype(byteBuffer)> byteStreamSource(&byteBuffer);
+            const size_t bytesRead = streamSource->Read(byteBuffer.size(), byteBuffer.data());
 
-                return loadSuccess ? AZ::Data::AssetHandler::LoadResult::LoadComplete : AZ::Data::AssetHandler::LoadResult::Error;
+            if (bytesRead == streamSource->GetLength())
+            {
+                byteStreamSource.Seek(0U, AZ::IO::GenericStream::ST_SEEK_BEGIN);
+                AZ::JsonDeserializerSettings settings;
+                // \todo more mapping stuff needs to go in the settings
+                settings.m_serializeContext = m_serializeContext;
+                byteStreamSource.Seek(0U, AZ::IO::GenericStream::ST_SEEK_BEGIN);
+                // attempt JSON deserialization...
+                if (JSRU::LoadObjectFromStreamByType
+                    ( &scriptCanvasDataTarget
+                    , azrtti_typeid<ScriptCanvasData>()
+                    , byteStreamSource
+                    , &settings).IsSuccess())
+                {
+                    return AZ::Data::AssetHandler::LoadResult::LoadComplete;
+                }
+#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
+                else
+                {
+                    // ...if there is a failure, check if it is saved in the old format
+                    byteStreamSource.Seek(0U, AZ::IO::GenericStream::ST_SEEK_BEGIN);
+                    // tolerate unknown classes in the editor.  Let the asset processor warn about bad nodes...
+                    if (AZ::Utils::LoadObjectFromStreamInPlace(byteStreamSource, scriptCanvasAssetTarget->GetScriptCanvasData()
+                        , m_serializeContext
+                        , AZ::ObjectStream::FilterDescriptor(assetLoadFilterCB, AZ::ObjectStream::FILTERFLAG_IGNORE_UNKNOWN_CLASSES)))
+                    {
+                        return AZ::Data::AssetHandler::LoadResult::LoadComplete;
+                    }
+                }
             }
+#endif
         }
 
         return AZ::Data::AssetHandler::LoadResult::Error;

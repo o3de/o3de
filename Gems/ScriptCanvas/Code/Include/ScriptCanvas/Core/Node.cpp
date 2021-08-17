@@ -67,7 +67,7 @@ namespace ScriptCanvas
         void OnWriteEnd(void* objectPtr) override
         {
             auto node = reinterpret_cast<Node*>(objectPtr);
-            node->RebuildInternalState();
+            node->OnDeserialize();
         }
     };
 
@@ -2614,6 +2614,11 @@ namespace ScriptCanvas
         {
             NodeNotificationsBus::Event((GetEntity() != nullptr) ? GetEntityId() : AZ::EntityId(), &NodeNotifications::OnSlotInputChanged, slotId);
         }        
+    }
+
+    void Node::OnDeserialize()
+    {
+        RebuildInternalState();
     }
 
     void Node::OnEndpointConnected(const Endpoint& endpoint)

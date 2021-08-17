@@ -85,7 +85,7 @@ namespace AZ
         AZ_Assert(azrtti_typeid<decltype(outputDatum->m_datumLabel)>() == azrtti_typeid<decltype(label)>()
             , "m_datumLabel type changed and won't load properly");
 
-        result.Combine( ContinueLoadingFromJsonObjectField
+        result.Combine(ContinueLoadingFromJsonObjectField
             ( &label
             , azrtti_typeid<decltype(outputDatum->m_datumLabel)>()
             , inputValue
@@ -95,6 +95,7 @@ namespace AZ
         Datum copy(scType, Datum::eOriginality::Original, AZStd::any_cast<void>(&storage), scType.GetAZType());
         copy.SetLabel(label);
         *outputDatum = copy;
+        outputDatum->OnDeserialize();
 
         return context.Report(result, result.GetProcessing() != JSR::Processing::Halted
             ? "DatumSerializer Load finished loading Datum"
@@ -124,7 +125,9 @@ namespace AZ
                     ( JSR::Tasks::WriteValue, JSR::Outcomes::DefaultsUsed, "DatumSerializer Store used defaults for Datum");
             }
         }
-        
+
+        const_cast<Datum*>(inputScriptDataPtr)->OnSerializeBegin();
+
         JSR::ResultCode result(JSR::Tasks::WriteValue);
         outputValue.SetObject();
 
@@ -162,7 +165,7 @@ namespace AZ
                 , inputScriptDataPtr->GetType().GetAZType()
                 , context));
         } // datum storage end       
-        
+
         result.Combine(ContinueStoringToJsonObjectField
             ( outputValue
             , "label"
@@ -171,9 +174,9 @@ namespace AZ
             , azrtti_typeid<decltype(inputScriptDataPtr->m_datumLabel)>()
             , context));
 
+        const_cast<Datum*>(inputScriptDataPtr)->OnSerializeEnd();
         return context.Report(result, result.GetProcessing() != JSR::Processing::Halted
             ? "DatumSerializer Store finished saving Datum"
             : "DatumSerializer Store failed to save Datum");
     }
-
 }

@@ -8,14 +8,15 @@
 
 #pragma once
 
+#include <AzCore/Outcome/Outcome.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/string/string_view.h>
 #include <ScriptCanvas/Core/Core.h>
+#include <ScriptCanvas/Core/SerializationListener.h>
+#include <ScriptCanvas/Data/BehaviorContextObject.h>
 #include <ScriptCanvas/Data/Data.h>
 #include <ScriptCanvas/Data/DataTrait.h>
-#include <ScriptCanvas/Data/BehaviorContextObject.h>
-#include <AzCore/Outcome/Outcome.h>
 
 namespace AZ
 {
@@ -33,11 +34,12 @@ namespace ScriptCanvas
     /// A Datum is used to provide generic storage for all data types in ScriptCanvas, and provide a common interface to accessing, modifying, and displaying them 
     /// in the editor, regardless of their actual ScriptCanvas or BehaviorContext type.
     class Datum final
+        : public SerializationListener
     {
         friend class AZ::DatumSerializer;
 
     public:
-        AZ_TYPE_INFO(Datum, "{8B836FC0-98A8-4A81-8651-35C7CA125451}");
+        AZ_RTTI(Datum, "{8B836FC0-98A8-4A81-8651-35C7CA125451}", SerializationListener);
         AZ_CLASS_ALLOCATOR(Datum, AZ::SystemAllocator, 0);
 
         enum class eOriginality : int
@@ -238,6 +240,13 @@ namespace ScriptCanvas
         {
         public:
             /// Called after we are done writing to the instance pointed by classPtr.
+            void OnReadBegin(void* classPtr) override
+            {
+                Datum* datum = reinterpret_cast<Datum*>(classPtr);
+                datum->OnReadBegin();
+            }
+
+            /// Called after we are done writing to the instance pointed by classPtr.
             void OnWriteEnd(void* classPtr) override
             {
                 Datum* datum = reinterpret_cast<Datum*>(classPtr);
@@ -340,6 +349,10 @@ namespace ScriptCanvas
         void* ModValueAddress() const;
 
         void OnDatumEdited();
+
+        void OnSerializeBegin() override;
+
+        void OnDeserialize() override;
 
         void OnReadBegin();
 

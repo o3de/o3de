@@ -138,6 +138,8 @@ namespace ScriptCanvas
 
                 void SetAutoConnectToGraphOwner(bool enabled);
 
+                void OnDeserialize();
+
                 void OnWriteEnd();
 
                 AZStd::string GetNodeName() const override

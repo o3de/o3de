@@ -114,11 +114,13 @@ namespace ScriptCanvasEditor
 
     ScriptCanvas::ScriptCanvasData& ScriptCanvasAsset::GetScriptCanvasData()
     {
+        AZ_Assert(m_data != nullptr, "data not initialized");
         return *m_data;
     }
 
     const ScriptCanvas::ScriptCanvasData& ScriptCanvasAsset::GetScriptCanvasData() const
     {
+        AZ_Assert(m_data != nullptr, "data not initialized");
         return *m_data;
     }
 }
