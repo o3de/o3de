@@ -13,6 +13,8 @@
 #include <AzFramework/Viewport/ViewportId.h>
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
 
+#include <SandboxAPI.h>
+
 namespace SandboxEditor
 {
     class ViewportManipulatorControllerInstance;
