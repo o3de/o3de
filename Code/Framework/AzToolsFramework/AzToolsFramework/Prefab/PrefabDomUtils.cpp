@@ -88,6 +88,11 @@ namespace AzToolsFramework
                     settings.m_keepDefaults = true;
                 }
 
+                if ((flags & StoreFlags::StoreLinkIds) != StoreFlags::None)
+                {
+                    settings.m_metadata.Create<LinkIdMetadata>();
+                }
+
                 AZStd::string scratchBuffer;
                 auto issueReportingCallback = [&scratchBuffer]
                 (AZStd::string_view message, AZ::JsonSerializationResult::ResultCode result,
