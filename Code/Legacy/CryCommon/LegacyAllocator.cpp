@@ -6,8 +6,6 @@
  *
  */
 
-#pragma once
-
 #include <CryCommon/LegacyAllocator.h>
 
 namespace AZ
