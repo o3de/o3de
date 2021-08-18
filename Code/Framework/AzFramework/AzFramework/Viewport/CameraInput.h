@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/std/containers/variant.h>
@@ -20,6 +21,8 @@
 
 namespace AzFramework
 {
+    AZ_CVAR_EXTERNED(bool, ed_cameraSystemUseCursor);
+
     struct WindowSize;
 
     //! Returns Euler angles (pitch, roll, yaw) for the incoming orientation.

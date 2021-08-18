@@ -8,7 +8,6 @@
 
 #include "CameraInput.h"
 
-#include <AzCore/Console/IConsole.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Math/Plane.h>
 #include <AzCore/std/numeric.h>
