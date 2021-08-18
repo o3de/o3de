@@ -667,6 +667,10 @@ namespace AZ
         m_settingsRegistry->Get(platformCachePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder);
         m_console->ExecuteConfigFile((platformCachePath / "user.cfg").Native());
 
+        // Execute any deferred console commands after the module has loaded to account for the scenario
+        // when CVars are added by loaded dynamic modules
+        m_console->ExecuteDeferredConsoleCommands();
+
         // Parse the command line parameters for console commands after modules have loaded
         m_console->ExecuteCommandLine(m_commandLine);
     }

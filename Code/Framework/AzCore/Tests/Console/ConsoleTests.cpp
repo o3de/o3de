@@ -507,6 +507,68 @@ namespace ConsoleSettingsRegistryTests
         AZ::Interface<AZ::IConsole>::Unregister(&testConsole);
     }
 
+    TEST_P(ConsoleSettingsRegistryFixture, Console_RecordsUnregisteredCommands_And_IsAbleToDeferDispatchCommand_Successfully)
+    {
+        AZ::Console testConsole(*m_registry);
+        AZ::Interface<AZ::IConsole>::Register(&testConsole);
+        // GetDeferredHead is invoked for the side effect of to set the s_deferredHeadInvoked value to true
+        // This allows scoped console variables to be attached immediately
+        [[maybe_unused]] auto deferredHead =  AZ::ConsoleFunctorBase::GetDeferredHead();
+
+        AZ_CVAR_SCOPED(int32_t, testInit, 0, nullptr, AZ::ConsoleFunctorFlags::Null, "");
+        AZ_CVAR_SCOPED(char, testChar, {}, nullptr, AZ::ConsoleFunctorFlags::Null, "");
+        AZ_CVAR_SCOPED(bool, testBool, {}, nullptr, AZ::ConsoleFunctorFlags::Null, "");
+        s_consoleFreeFunctionInvoked = false;
+        testInit = {};
+        testChar = {};
+        testBool = {};
+
+        // Invoke the Commands for Scoped CVar variables above
+        auto configFileParams = GetParam();
+        auto testFilePath = m_testFolder / configFileParams.m_testConfigFileName;
+        EXPECT_TRUE(AZ::IO::SystemFile::Exists(testFilePath.c_str()));
+        testConsole.ExecuteConfigFile(testFilePath.Native());
+
+        EXPECT_EQ(3, testInit);
+        EXPECT_TRUE(static_cast<bool>(testBool));
+        EXPECT_EQ('Q', AZ::testChar);
+
+        // The following commands from the config files should have been deferred
+        AZ_CVAR_SCOPED(int8_t, testInt8, {}, nullptr, AZ::ConsoleFunctorFlags::Null, "");
+        AZ_CVAR_SCOPED(int16_t, testInt16, {}, nullptr, AZ::ConsoleFunctorFlags::Null, "");
+        AZ_CVAR_SCOPED(int32_t, testInt32, {}, nullptr, AZ::ConsoleFunctorFlags::Null, "");
+        AZ_CVAR_SCOPED(int64_t, testInt64, {}, nullptr, AZ::ConsoleFunctorFlags::Null, "");
+        AZ_CVAR_SCOPED(uint8_t, testUInt8, {}, nullptr, AZ::ConsoleFunctorFlags::Null, "");
+        AZ_CVAR_SCOPED(uint16_t, testUInt16, {}, nullptr, AZ::ConsoleFunctorFlags::Null, "");
+        AZ_CVAR_SCOPED(uint32_t, testUInt32, {}, nullptr, AZ::ConsoleFunctorFlags::Null, "");
+        AZ_CVAR_SCOPED(uint64_t, testUInt64, {}, nullptr, AZ::ConsoleFunctorFlags::Null, "");
+        AZ_CVAR_SCOPED(float, testFloat, {}, nullptr, AZ::ConsoleFunctorFlags::Null, "");
+        AZ_CVAR_SCOPED(double, testDouble, {}, nullptr, AZ::ConsoleFunctorFlags::Null, "");
+        AZ_CVAR_SCOPED(AZ::CVarFixedString, testString, {}, nullptr, AZ::ConsoleFunctorFlags::Null, "");
+
+        // The scoped cvars just above should have all been deferred for execution
+        // Each of them should have executed resulting in the expected return value
+        EXPECT_TRUE(testConsole.ExecuteDeferredConsoleCommands());
+
+        EXPECT_EQ(24, testInt8);
+        EXPECT_EQ(-32, testInt16);
+        EXPECT_EQ(41, testInt32);
+        EXPECT_EQ(-51, testInt64);
+        EXPECT_EQ(3, testUInt8);
+        EXPECT_EQ(5, testUInt16);
+        EXPECT_EQ(6, testUInt32);
+        EXPECT_EQ(0xFFFF'FFFF'FFFF'FFFF, testUInt64);
+        EXPECT_FLOAT_EQ(1.0f, testFloat);
+        EXPECT_DOUBLE_EQ(2, testDouble);
+        EXPECT_STREQ("Stable", static_cast<AZ::CVarFixedString>(AZ::testString).c_str());
+
+        // All of the deferred console commands should have executed at this point
+        // Therefore this invocation should return false
+        EXPECT_FALSE(testConsole.ExecuteDeferredConsoleCommands());
+
+        AZ::Interface<AZ::IConsole>::Unregister(&testConsole);
+    }
+
 
     static constexpr AZStd::string_view UserINIStyleContent =
         R"(
