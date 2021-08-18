@@ -32,9 +32,6 @@
 #include <AzToolsFramework/API/EditorLevelNotificationBus.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 
-// CryCommon
-#include <CryCommon/IAudioSystem.h>
-
 // Editor
 #include "Settings.h"
 
@@ -60,6 +57,7 @@
 #include <Atom/RPI.Public/ViewportContextBus.h>
 
 // LmbrCentral
+#include <LmbrCentral/Audio/AudioSystemComponentBus.h>
 #include <LmbrCentral/Rendering/EditorLightComponentBus.h> // for LmbrCentral::EditorLightComponentRequestBus
 
 //#define PROFILE_LOADING_WITH_VTUNE
@@ -269,20 +267,7 @@ void CCryEditDoc::DeleteContents()
     CErrorReportDialog::Clear();
 
     // Unload level specific audio binary data.
-    Audio::SAudioManagerRequestData<Audio::eAMRT_UNLOAD_AFCM_DATA_BY_SCOPE> oAMData(Audio::eADS_LEVEL_SPECIFIC);
-    Audio::SAudioRequest oAudioRequestData;
-    oAudioRequestData.nFlags = (Audio::eARF_PRIORITY_HIGH | Audio::eARF_EXECUTE_BLOCKING);
-    oAudioRequestData.pData = &oAMData;
-    Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
-
-    // Now unload level specific audio config data.
-    Audio::SAudioManagerRequestData<Audio::eAMRT_CLEAR_CONTROLS_DATA> oAMData2(Audio::eADS_LEVEL_SPECIFIC);
-    oAudioRequestData.pData = &oAMData2;
-    Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
-
-    Audio::SAudioManagerRequestData<Audio::eAMRT_CLEAR_PRELOADS_DATA> oAMData3(Audio::eADS_LEVEL_SPECIFIC);
-    oAudioRequestData.pData = &oAMData3;
-    Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
+    LmbrCentral::AudioSystemComponentRequestBus::Broadcast(&LmbrCentral::AudioSystemComponentRequestBus::Events::LevelUnloadAudio);
 
     GetIEditor()->Notify(eNotify_OnSceneClosed);
     CrySystemEventBus::Broadcast(&CrySystemEventBus::Events::OnCryEditorSceneClosed);
@@ -413,32 +398,11 @@ void CCryEditDoc::Load(TDocMultiArchive& arrXmlAr, const QString& szFilename)
 #ifdef PROFILE_LOADING_WITH_VTUNE
         VTResume();
 #endif
-        // Parse level specific config data.
-        const char* controlsPath = nullptr;
-        Audio::AudioSystemRequestBus::BroadcastResult(controlsPath, &Audio::AudioSystemRequestBus::Events::GetControlsPath);
-        QString sAudioLevelPath(controlsPath);
-        sAudioLevelPath += "levels/";
-        AZStd::string const sLevelNameOnly = PathUtil::GetFileName(fileName.toUtf8().data());
-        sAudioLevelPath += sLevelNameOnly.c_str();
-        QByteArray path = sAudioLevelPath.toUtf8();
-        Audio::SAudioManagerRequestData<Audio::eAMRT_PARSE_CONTROLS_DATA> oAMData(path, Audio::eADS_LEVEL_SPECIFIC);
-        Audio::SAudioRequest oAudioRequestData;
-        oAudioRequestData.nFlags = (Audio::eARF_PRIORITY_HIGH | Audio::eARF_EXECUTE_BLOCKING); // Needs to be blocking so data is available for next preloading request!
-        oAudioRequestData.pData = &oAMData;
-        Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
-
-        Audio::SAudioManagerRequestData<Audio::eAMRT_PARSE_PRELOADS_DATA> oAMData2(path, Audio::eADS_LEVEL_SPECIFIC);
-        oAudioRequestData.pData = &oAMData2;
-        Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
-
-        Audio::TAudioPreloadRequestID nPreloadRequestID = INVALID_AUDIO_PRELOAD_REQUEST_ID;
-        Audio::AudioSystemRequestBus::BroadcastResult(nPreloadRequestID, &Audio::AudioSystemRequestBus::Events::GetAudioPreloadRequestID, sLevelNameOnly.c_str());
-        if (nPreloadRequestID != INVALID_AUDIO_PRELOAD_REQUEST_ID)
-        {
-            Audio::SAudioManagerRequestData<Audio::eAMRT_PRELOAD_SINGLE_REQUEST> oAMData3(nPreloadRequestID);
-            oAudioRequestData.pData = &oAMData3;
-            Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
-        }
+        // Load level-specific audio data.
+        AZStd::string levelFileName{ fileName.toUtf8().constData() };
+        AZStd::to_lower(levelFileName.begin(), levelFileName.end());
+        LmbrCentral::AudioSystemComponentRequestBus::Broadcast(
+            &LmbrCentral::AudioSystemComponentRequestBus::Events::LevelLoadAudio, AZStd::string_view{ levelFileName });
 
         {
             CAutoLogTime logtime("Game Engine level load");

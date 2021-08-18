@@ -40,29 +40,35 @@ namespace AtomToolsFramework
 
     const AZStd::any& AtomToolsDocument::GetPropertyValue([[maybe_unused]] const AZ::Name& propertyFullName) const
     {
+        AZ_UNUSED(propertyFullName);
         AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
         return m_invalidValue;
     }
 
     const AtomToolsFramework::DynamicProperty& AtomToolsDocument::GetProperty([[maybe_unused]] const AZ::Name& propertyFullName) const
     {
+        AZ_UNUSED(propertyFullName);
         AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
         return m_invalidProperty;
     }
     
     bool AtomToolsDocument::IsPropertyGroupVisible([[maybe_unused]] const AZ::Name& propertyGroupFullName) const
     {
+        AZ_UNUSED(propertyGroupFullName);
         AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
         return false;
     }
 
     void AtomToolsDocument::SetPropertyValue([[maybe_unused]] const AZ::Name& propertyFullName, [[maybe_unused]] const AZStd::any& value)
     {
+        AZ_UNUSED(propertyFullName);
+        AZ_UNUSED(value);
         AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
     }
 
     bool AtomToolsDocument::Open([[maybe_unused]] AZStd::string_view loadPath)
     {
+        AZ_UNUSED(loadPath);
         AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
         return false;
     }
@@ -81,6 +87,7 @@ namespace AtomToolsFramework
 
     bool AtomToolsDocument::SaveAsCopy([[maybe_unused]] AZStd::string_view savePath)
     {
+        AZ_UNUSED(savePath);
         AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
         return false;
     }
@@ -88,6 +95,7 @@ namespace AtomToolsFramework
 
     bool AtomToolsDocument::SaveAsChild([[maybe_unused]] AZStd::string_view savePath)
     {
+        AZ_UNUSED(savePath);
         AZ_Error("AtomToolsDocument", false, "%s not implemented.", __FUNCTION__);
         return false;
     }
