@@ -772,12 +772,24 @@ namespace PhysX
             }
 
             //We grab the first shape to check if it is a triangle mesh.
-            auto shape = AZStd::rtti_pointer_cast<PhysX::Shape>(shapes[0]);
+            bool shapeIsTM = false;
+            size_t size = shapes.size();
 
-            if (shape &&
-                shape->GetPxShape()->getGeometryType() == physx::PxGeometryType::eTRIANGLEMESH &&
-                entityRigidbody->GetRigidBody() &&
-                entityRigidbody->GetRigidBody()->IsKinematic() == false)
+            for (size_t i = 0; i < size; i++)
+            {
+                auto shape = AZStd::rtti_pointer_cast<PhysX::Shape>(shapes[i]);
+                if (shape &&
+                    shape->GetPxShape()->getGeometryType() == physx::PxGeometryType::eTRIANGLEMESH &&
+                    entityRigidbody->GetRigidBody() &&
+                    entityRigidbody->GetRigidBody()->IsKinematic() == false)
+                {
+                    shapeIsTM = true;
+                    break;
+                }
+            }
+
+
+            if (shapeIsTM)
             {
                 AZStd::string assetPath = m_shapeConfiguration.m_physicsAsset.m_configuration.m_asset.GetHint().c_str();
                 const uint lastSlash = static_cast<uint>(assetPath.rfind('/'));
