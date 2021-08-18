@@ -34,6 +34,7 @@
 #include <EMotionFX/Source/MotionEventTrack.h>
 #include <EMotionFX/Source/AnimGraphSyncTrack.h>
 #include <EMotionFX/Source/AnimGraph.h>
+#include <EMotionFX/Source/ActorManager.h>
 
 #include <EMotionFX/Source/PhysicsSetup.h>
 #include <EMotionFX/Source/SimulatedObjectSetup.h>
