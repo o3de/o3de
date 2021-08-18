@@ -77,7 +77,7 @@ public: \
 {% if Class.attrib['GraphEntryPoint'] is defined %}    bool IsEntryPoint() const override { return {%if Class.attrib['GraphEntryPoint'] == "True" %}true{%else%}false{%endif%}; } \
 {% endif %}
 public: \
-    friend struct ::{{ className | replace(' ','') }}Property;
+    friend struct {% if attribute_Namespace is not defined %}::{% endif %}{{ className | replace(' ','') }}Property;
 
 // Helpers for easily accessing properties and slots
 struct {{ className | replace(' ','') }}Property
