@@ -456,16 +456,11 @@ void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
             terrainFeatureProcessor->UpdateTerrainData(
                 entityId, transform, m_currentSettings.m_worldBounds, m_currentSettings.m_heightQueryResolution.GetX(), width, height,
                 pixels);
-            terrainFeatureProcessor->SetDebugDrawWireframe(entityId, m_currentSettings.m_debugWireframeEnabled);
         }
     }
 
     if (terrainSettingsChanged || m_terrainHeightDirty)
     {
-        AZ::Aabb dirtyRegion = m_dirtyRegion;
-        m_terrainHeightDirty = false;
-        m_dirtyRegion = AZ::Aabb::CreateNull();
-
         AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask changeMask =
             AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::None;
 
@@ -479,6 +474,12 @@ void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
             changeMask = static_cast<AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask>(
                 changeMask | AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask::HeightData);
         }
+
+        // Make sure to set these *before* calling OnTerrainDataChanged, since it's possible that subsystems reacting to that call will
+        // cause the data to become dirty again.
+        AZ::Aabb dirtyRegion = m_dirtyRegion;
+        m_terrainHeightDirty = false;
+        m_dirtyRegion = AZ::Aabb::CreateNull();
 
         AzFramework::Terrain::TerrainDataNotificationBus::Broadcast(
             &AzFramework::Terrain::TerrainDataNotificationBus::Events::OnTerrainDataChanged, dirtyRegion,

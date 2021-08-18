@@ -28,8 +28,6 @@
 #include <Atom/RHI.Reflect/InputStreamLayout.h>
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
 
-#include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
-
 
 namespace Terrain
 {
@@ -224,95 +222,14 @@ namespace Terrain
 
     void TerrainFeatureProcessor::Render(const AZ::RPI::FeatureProcessor::RenderPacket& packet)
     {
-        if (m_enableWireframeCode)
-        {
-            auto defaultScene = AZ::RPI::RPISystemInterface::Get()->GetDefaultScene();
-            if (auto auxGeom = AZ::RPI::AuxGeomFeatureProcessorInterface::GetDrawQueueForScene(defaultScene))
-            {
-                const AZ::Color primaryColor = AZ::Color(0.25f, 0.25f, 0.25f, 1.0f);
-                const AZ::u8 lineWidth = 1;
-
-                for (auto& [areaId, areaData] : m_areaData)
-                {
-                    if (areaData.m_debugDrawWireframe)
-                    {
-                        AZ::RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments args;
-                        args.m_verts = areaData.m_debugWireframeGridPoints.data();
-                        args.m_size = lineWidth;
-                        args.m_colors = &primaryColor;
-                        args.m_colorCount = 1;
-                        args.m_vertCount = aznumeric_cast<uint32_t>(areaData.m_debugWireframeGridPoints.size());
-
-                        auxGeom->DrawLines(args);
-                    }
-                }
-            }
-        }
-
-        {
-            ProcessSurfaces(packet);
-        }
-    }
-
-    void TerrainFeatureProcessor::UpdateDebugWireframeData(
-        AZ::EntityId areaId, const AZ::Aabb& worldBounds, float sampleSpacing,
-        uint32_t width, uint32_t height, const AZStd::vector<float>& heightData)
-    {
-        auto& areaData = m_areaData[areaId];
-
-        areaData.m_debugWireframeGridPoints.clear();
-
-        if (m_enableWireframeCode && !heightData.empty())
-        {
-            areaData.m_debugWireframeGridPoints.reserve(
-                8 * aznumeric_cast<size_t>((float)(worldBounds.GetXExtent() * worldBounds.GetYExtent()) / (sampleSpacing * sampleSpacing)));
-
-            const float minX = worldBounds.GetMin().GetX();
-            const float minY = worldBounds.GetMin().GetY();
-            const float minZ = worldBounds.GetMin().GetZ();
-            const float maxZ = worldBounds.GetMax().GetZ();
-
-            for (uint32_t y = 0; y < (height - 1); y++)
-            {
-                for (uint32_t x = 0; x < (width - 1); x++)
-                {
-                    float x0 = minX + (x * sampleSpacing);
-                    float x1 = x0 + sampleSpacing;
-                    float y0 = minY + (y * sampleSpacing);
-                    float y1 = y0 + sampleSpacing;
-
-                    auto getHeight = [&](int x, int y)
-                    {
-                        float rawHeight = heightData[(y * width) + x];
-                        return AZ::Lerp(minZ, maxZ, rawHeight);
-                    };
-
-                    float z00 = getHeight(x + 0, y + 0);
-                    float z01 = getHeight(x + 0, y + 1);
-                    float z10 = getHeight(x + 1, y + 0);
-                    float z11 = getHeight(x + 1, y + 1);
-
-                    areaData.m_debugWireframeGridPoints.push_back(AZ::Vector3(x0, y0, z00));
-                    areaData.m_debugWireframeGridPoints.push_back(AZ::Vector3(x1, y0, z10));
-
-                    areaData.m_debugWireframeGridPoints.push_back(AZ::Vector3(x0, y1, z01));
-                    areaData.m_debugWireframeGridPoints.push_back(AZ::Vector3(x1, y1, z11));
-
-                    areaData.m_debugWireframeGridPoints.push_back(AZ::Vector3(x0, y0, z00));
-                    areaData.m_debugWireframeGridPoints.push_back(AZ::Vector3(x0, y1, z01));
-
-                    areaData.m_debugWireframeGridPoints.push_back(AZ::Vector3(x1, y0, z10));
-                    areaData.m_debugWireframeGridPoints.push_back(AZ::Vector3(x1, y1, z11));
-                }
-            }
-        }
+        ProcessSurfaces(packet);
     }
 
     void TerrainFeatureProcessor::UpdateTerrainData(
         AZ::EntityId areaId,
         const AZ::Transform& transform,
         const AZ::Aabb& worldBounds,
-        float sampleSpacing,
+        [[maybe_unused]] float sampleSpacing,
         uint32_t width, uint32_t height, const AZStd::vector<float>& heightData)
     {
         if (!worldBounds.IsValid())
@@ -348,8 +265,6 @@ namespace Terrain
         }
 
         m_areaData.insert_or_assign(areaId, areaData);
-
-        UpdateDebugWireframeData(areaId, worldBounds, sampleSpacing, width, height, heightData);
     }
 
     void TerrainFeatureProcessor::ProcessSurfaces(const FeatureProcessor::RenderPacket& process)

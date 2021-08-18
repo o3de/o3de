@@ -11,6 +11,9 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Math/Vector3.h>
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#include <AzFramework/Terrain/TerrainDataRequestBus.h>
+#include <AzFramework/Visibility/BoundsBus.h>
 #include <TerrainSystem/TerrainSystem.h>
 
 namespace LmbrCentral
@@ -29,12 +32,16 @@ namespace Terrain
         AZ_RTTI(TerrainWorldDebuggerConfig, "{92686FA9-2C0B-47F1-8E2D-F2F302CDE5AA}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 
-        bool m_debugWireframeEnabled{true};
+        bool m_drawWireframe{ true };
+        bool m_drawWorldBounds{ true };
     };
 
 
     class TerrainWorldDebuggerComponent
         : public AZ::Component
+        , private AzFramework::EntityDebugDisplayEventBus::Handler
+        , private AzFramework::BoundsRequestBus::Handler
+        , private AzFramework::Terrain::TerrainDataNotificationBus::Handler
     {
     public:
         template<typename, typename>
@@ -56,7 +63,25 @@ namespace Terrain
         bool ReadInConfig(const AZ::ComponentConfig* baseConfig) override;
         bool WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const override;
 
+        //////////////////////////////////////////////////////////////////////////
+        // EntityDebugDisplayEventBus
+
+        // Ideally this would use ViewportDebugDisplayEventBus::DisplayViewport, but that doesn't currently work in game mode,
+        // so instead we use this plus the BoundsRequestBus with a large AABB to get ourselves rendered.
+        void DisplayEntityViewport(
+            const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay) override;
+
+        //////////////////////////////////////////////////////////////////////////
+        // BoundsRequestBus
+        AZ::Aabb GetWorldBounds() override;
+        AZ::Aabb GetLocalBounds() override;
+
+        //////////////////////////////////////////////////////////////////////////
+        // AzFramework::Terrain::TerrainDataNotificationBus
+        void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
+
     private:
         TerrainWorldDebuggerConfig m_configuration;
+        AZStd::vector<AZ::Vector3> m_wireframeGridPoints;
     };
 }

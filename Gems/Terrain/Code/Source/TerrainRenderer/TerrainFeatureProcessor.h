@@ -50,11 +50,6 @@ namespace Terrain
         void UpdateTerrainData(AZ::EntityId areaId, const AZ::Transform& transform, const AZ::Aabb& worldBounds, float sampleSpacing,
                                uint32_t width, uint32_t height, const AZStd::vector<float>& heightData);
 
-        void SetDebugDrawWireframe(AZ::EntityId areaId, bool enable)
-        {
-            AZ_Assert(m_areaData.contains(areaId), "Could not find area Id %s", areaId.ToString().c_str());
-            m_areaData[areaId].m_debugDrawWireframe = enable;
-        }
         void RemoveTerrainData(AZ::EntityId areaId)
         {
             m_areaData.erase(areaId);
@@ -77,16 +72,9 @@ namespace Terrain
         bool InitializeRenderBuffers();
         void DestroyRenderBuffers();
 
-        void UpdateDebugWireframeData(
-            AZ::EntityId areaId,
-            const AZ::Aabb& worldBounds,
-            float sampleSpacing,
-            uint32_t width, uint32_t height, const AZStd::vector<float>& heightData);
-
         void ProcessSurfaces(const FeatureProcessor::RenderPacket& process);
 
         // System-level parameters
-        const bool m_enableWireframeCode{ true };
         const float m_gridSpacing{ 1.0f };
         const float m_gridMeters{ 32.0f };
 
@@ -139,14 +127,12 @@ namespace Terrain
         // Per-area data
         struct TerrainAreaData
         {
-            AZStd::vector<AZ::Vector3> m_debugWireframeGridPoints;
             AZ::Transform m_transform;
             AZ::Aabb m_terrainBounds;
             float m_heightScale;
             AZ::Data::Instance<AZ::RPI::StreamingImage> m_heightmapImage;
             uint32_t m_heightmapImageWidth;
             uint32_t m_heightmapImageHeight;
-            bool m_debugDrawWireframe{ false };
             bool m_propertiesDirty{ true };
         };
 
