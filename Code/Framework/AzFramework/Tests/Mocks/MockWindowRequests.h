@@ -35,5 +35,7 @@ namespace UnitTest
         MOCK_CONST_METHOD0(CanToggleFullScreenState, bool());
         MOCK_METHOD0(ToggleFullScreenState, void());
         MOCK_CONST_METHOD0(GetDpiScaleFactor, float());
+        MOCK_CONST_METHOD0(GetSyncInterval, uint32_t());
+        MOCK_CONST_METHOD0(GetDisplayRefreshRate, uint32_t());
     };
 } // namespace UnitTest

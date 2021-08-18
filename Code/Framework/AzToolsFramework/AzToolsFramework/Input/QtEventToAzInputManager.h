@@ -21,6 +21,7 @@
 
 #include <QEvent>
 #include <QObject>
+#include <QPoint>
 #endif //! defined(Q_MOC_RUN)
 
 class QWidget;

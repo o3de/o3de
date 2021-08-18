@@ -22,7 +22,7 @@ namespace UnitTest
     class ModularViewportCameraControllerFixture : public AllocatorsTestFixture
     {
     public:
-        static const AzFramework::ViewportId TestViewportId = AzFramework::ViewportId(0);
+        static const AzFramework::ViewportId TestViewportId;
 
         void SetUp() override
         {
@@ -53,6 +53,8 @@ namespace UnitTest
         AZStd::unique_ptr<AzToolsFramework::QtEventToAzInputMapper> m_inputChannelMapper;
     };
 
+    const AzFramework::ViewportId ModularViewportCameraControllerFixture::TestViewportId = AzFramework::ViewportId(0);
+
     class TestModularCameraViewportContextImpl : public AtomToolsFramework::ModularCameraViewportContext
     {
     public:
@@ -78,6 +80,8 @@ namespace UnitTest
     TEST_F(ModularViewportCameraControllerFixture, Mouse_movement_does_not_accumulate_excessive_drift_in_modular_viewport_camera)
     {
         AzFramework::NativeWindowHandle nativeWindowHandle = nullptr;
+
+        const float deltaTime = 1.0f / 60.0f; // mimic 60fps
 
         // Given
         // listen for events signaled from QtEventToAzInputMapper and forward to the controller list
@@ -130,19 +134,20 @@ namespace UnitTest
         // move to the center of the screen
         auto start = QPoint(WidgetSize.width() / 2, WidgetSize.height() / 2);
         MouseMove(m_rootWidget.get(), start, QPoint(0, 0));
-        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(0.01666f), AZ::ScriptTimePoint() });
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
 
         // When
         // move mouse diagonally to top right, then to bottom left and back repeatedly
         auto current = start;
         auto halfDelta = QPoint(200, -200);
+        const int iterationsPerDiagonal = 50;
         for (int diagonals = 0; diagonals < 80; ++diagonals)
         {
-            for (int i = 0; i < 50; ++i)
+            for (int i = 0; i < iterationsPerDiagonal; ++i)
             {
-                MousePressAndMove(m_rootWidget.get(), current, halfDelta / 50, Qt::MouseButton::RightButton);
-                m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(0.01666f), AZ::ScriptTimePoint() });
-                current += halfDelta / 50;
+                MousePressAndMove(m_rootWidget.get(), current, halfDelta / iterationsPerDiagonal, Qt::MouseButton::RightButton);
+                m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
+                current += halfDelta / iterationsPerDiagonal;
             }
 
             if (diagonals % 2 == 0)
@@ -153,10 +158,10 @@ namespace UnitTest
         }
 
         QTest::mouseRelease(m_rootWidget.get(), Qt::MouseButton::RightButton, Qt::KeyboardModifier::NoModifier, current);
-        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(0.01666f), AZ::ScriptTimePoint() });
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
 
         // Then
-        // ensure the camera rotation is the identity (no significant dift has occurred as we moved the mouse)
+        // ensure the camera rotation is the identity (no significant drift has occurred as we moved the mouse)
         const AZ::Transform cameraRotation = cameraViewportContextView->GetCameraTransform();
         EXPECT_THAT(cameraRotation.GetRotation(), IsClose(AZ::Quaternion::CreateIdentity()));
 
