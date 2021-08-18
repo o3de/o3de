@@ -16,6 +16,22 @@
 #include <AzCore/std/optional.h>
 #include <cinttypes>
 
+namespace AZ
+{
+    namespace SceneAPI
+    {
+        namespace Containers
+        {
+            class Scene;
+        }
+        namespace Events
+        {
+            struct ExportProduct;
+            class ExportProductList;
+        }
+    }
+}
+
 namespace AZ::SceneAPI::Utilities
 {
     class DebugOutput
@@ -41,6 +57,8 @@ namespace AZ::SceneAPI::Utilities
         SCENE_CORE_API void Write(const char* name, AZStd::optional<AZ::Vector3> data);
 
         SCENE_CORE_API const AZStd::string& GetOutput() const;
+
+        SCENE_CORE_API static void BuildDebugSceneGraph(const char* outputFolder, AZ::SceneAPI::Events::ExportProductList& productList, const AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene>& scene, AZStd::string productName);
 
     protected:
         AZStd::string m_output;
