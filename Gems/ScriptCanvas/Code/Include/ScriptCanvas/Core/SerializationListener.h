@@ -14,7 +14,7 @@ namespace ScriptCanvas
     {
     public:
         AZ_RTTI(SerializationListener, "{CA4EE281-30B3-4928-BCD8-9305CE75E463}");
-        virtual ~SerializationListener() = 0 {}
+        virtual ~SerializationListener() {}
 
         virtual void OnSerializeBegin() {}
         virtual void OnSerializeEnd() {}
