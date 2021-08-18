@@ -13,7 +13,6 @@
 #include <IConsole.h>
 
 #include <AzCore/Debug/Profiler.h>
-#include <AzCore/Debug/ProfileModuleInit.h>
 #include <AzCore/Memory/AllocatorManager.h>
 #include <AzCore/Module/Environment.h>
 #include <AzCore/std/string/conversions.h>
@@ -94,7 +93,6 @@ extern "C" AZ_DLL_EXPORT void ModuleInitISystem(ISystem* pSystem, [[maybe_unused
             AZ::Environment::Attach(gEnv->pSharedEnvironment);
             AZ::AllocatorManager::Instance();  // Force the AllocatorManager to instantiate and register any allocators defined in data sections
         }
-        AZ::Debug::ProfileModuleInit();
     } // if pSystem
 }
 

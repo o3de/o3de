@@ -173,7 +173,7 @@
 
 #if defined(ENABLE_PROFILING_CODE)
     #define USE_DISK_PROFILER
-    #define ENABLE_LOADING_PROFILER  // requires AZ_PROFILE_TELEMETRY to also be defined
+    #define ENABLE_LOADING_PROFILER
 #endif
 
 // The maximum number of joints in an animation

@@ -17,7 +17,7 @@
 #include <AzCore/Debug/Profiler.h>
 
 
-#if !defined(AZ_PROFILE_TELEMETRY) && defined(AZ_STATISTICAL_PROFILING_ENABLED)
+#if defined(AZ_STATISTICAL_PROFILING_ENABLED)
 
 #if defined(AZ_PROFILE_SCOPE)
 #undef AZ_PROFILE_SCOPE
@@ -27,7 +27,7 @@
     static const AZStd::string AZ_JOIN(blockName, __LINE__)(scopeNameId); \
     AZ::Statistics::StatisticalProfilerProxy::TimedScope AZ_JOIN(scope, __LINE__)(profiler, AZ_JOIN(blockName, __LINE__));
 
-#endif //#if !defined(AZ_PROFILE_TELEMETRY)
+#endif //#if defined(AZ_STATISTICAL_PROFILING_ENABLED)
 
 namespace AZ::Statistics
 {

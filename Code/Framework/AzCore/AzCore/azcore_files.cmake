@@ -100,8 +100,6 @@ set(FILES
     Debug/FrameProfilerComponent.h
     Debug/IEventLogger.h
     Debug/MemoryProfiler.h
-    Debug/ProfileModuleInit.cpp
-    Debug/ProfileModuleInit.h
     Debug/Profiler.cpp
     Debug/Profiler.h
     Debug/ProfilerBus.h

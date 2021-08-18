@@ -1149,21 +1149,10 @@ struct DiskOperationInfo
 
 #endif
 
-#if defined(ENABLE_LOADING_PROFILER) && AZ_PROFILE_TELEMETRY
-
-#define LOADING_TIME_PROFILE_SECTION AZ_PROFILE_FUNCTION(AzCore)
-#define LOADING_TIME_PROFILE_SECTION_ARGS(...) AZ_PROFILE_SCOPE(AzCore, __VA_ARGS__)
-#define LOADING_TIME_PROFILE_SECTION_NAMED(sectionName) AZ_PROFILE_SCOPE(AzCore, sectionName)
-#define LOADING_TIME_PROFILE_SECTION_NAMED_ARGS(sectionName, ...) AZ_PROFILE_SCOPE(AzCore, sectionName, __VA_ARGS__)
-
-#else
-
 #define LOADING_TIME_PROFILE_SECTION
 #define LOADING_TIME_PROFILE_SECTION_ARGS(...)
 #define LOADING_TIME_PROFILE_SECTION_NAMED(sectionName)
 #define LOADING_TIME_PROFILE_SECTION_NAMED_ARGS(sectionName, ...)
-
-#endif
 
 //////////////////////////////////////////////////////////////////////////
 // CrySystem DLL Exports.

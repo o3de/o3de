@@ -11,7 +11,6 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TickBus.h>
-#include <AzCore/Debug/ProfileModuleInit.h>
 #include <AzCore/Memory/AllocationRecords.h>
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Module/DynamicModuleHandle.h>

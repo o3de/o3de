@@ -15,10 +15,6 @@
 #include <WinPixEventRuntime/pix3.h>
 #endif
 
-#ifdef AZ_PROFILE_TELEMETRY
-#   include <RADTelemetry/ProfileTelemetry.h>
-#endif
-
 #if defined(AZ_PROFILER_MACRO_DISABLE) // by default we never disable the profiler registers as their overhead should be minimal, you can still do that for your code though.
 #   define AZ_PROFILE_SCOPE(...)
 #   define AZ_PROFILE_FUNCTION(...)
@@ -38,7 +34,6 @@
 #endif // AZ_PROFILER_MACRO_DISABLE
 
 #ifndef AZ_PROFILE_INTERVAL_START
-// No other profiler has defined the performance markers AZ_PROFILE_INTERVAL_START/END, fallback to a Driller implementation (currently empty)
 #   define AZ_PROFILE_INTERVAL_START(...)
 #   define AZ_PROFILE_INTERVAL_START_COLORED(...)
 #   define AZ_PROFILE_INTERVAL_END(...)
@@ -46,7 +41,6 @@
 #endif
 
 #ifndef AZ_PROFILE_DATAPOINT
-// No other profiler has defined the performance markers AZ_PROFILE_DATAPOINT, fallback to a Driller implementation (currently empty)
 #   define AZ_PROFILE_DATAPOINT(...)
 #   define AZ_PROFILE_DATAPOINT_PERCENT(...)
 #endif
