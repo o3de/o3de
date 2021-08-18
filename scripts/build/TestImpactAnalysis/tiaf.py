@@ -230,7 +230,7 @@ class TestImpact:
                 
                 # Flag for corner case where:
                 # 1. TIAF was already run previously for this commit.
-                # 2. There was no last commit hash when TIAF last ran on this commit (due to no coverage data existing get for this branch)
+                # 2. There was no last commit hash when TIAF last ran on this commit (due to no coverage data existing yet for this branch)
                 # 3. TIAF has not been run on any other commits between the run for this commit and the last run for this commit.
                 # The above results in TIAF being stuck in a state of generating an empty change list (and thus doing no work until another
                 # commit comes in) which is problematic if the commit needs to be re-run for whatever reason so in these conditions we revert
@@ -323,7 +323,6 @@ class TestImpact:
         logger.info(f"Args: {unpacked_args}")
         runtime_result = subprocess.run([str(self._tiaf_bin)] + args)
         report = None
-        
         # If the sequence completed (with or without failures) we will update the historical meta-data
         if runtime_result.returncode == 0 or runtime_result.returncode == 7:
             logger.info("Test impact analysis runtime returned successfully.")

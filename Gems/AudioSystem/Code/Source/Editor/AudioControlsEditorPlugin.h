@@ -13,6 +13,7 @@
 #include <AzCore/std/string/string_view.h>
 
 #include <ATLControlsModel.h>
+#include <AudioResourceSelectors.h>
 #include <IAudioInterfacesCommonData.h>
 #include <IAudioSystemEditor.h>
 #include <QATLControlsTreeModel.h>
@@ -68,6 +69,7 @@ private:
     static AudioControls::FilepathSet ms_currentFilenames;
     static Audio::IAudioProxy* ms_pIAudioProxy;
     static Audio::TAudioControlID ms_nAudioTriggerID;
-
     static CImplementationManager ms_implementationManager;
+
+    AudioControls::AudioControlSelectorHandler m_controlSelector;
 };

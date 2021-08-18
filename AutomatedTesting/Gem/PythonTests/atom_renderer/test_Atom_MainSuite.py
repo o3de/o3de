@@ -32,7 +32,7 @@ class TestAtomEditorComponentsMain(object):
         Tests the following Atom components and verifies all "expected_lines" appear in Editor.log:
         1. Display Mapper
         2. Light
-        3. Radius Weight Modifier
+        3. PostFX Radius Weight Modifier
         4. PostFX Layer
         5. Physical Sky
         6. Global Skylight (IBL)
@@ -126,18 +126,18 @@ class TestAtomEditorComponentsMain(object):
             "PostFX Layer_test: Entity deleted: True",
             "PostFX Layer_test: UNDO entity deletion works: True",
             "PostFX Layer_test: REDO entity deletion works: True",
-            # Radius Weight Modifier Component
-            "Radius Weight Modifier Entity successfully created",
-            "Radius Weight Modifier_test: Component added to the entity: True",
-            "Radius Weight Modifier_test: Component removed after UNDO: True",
-            "Radius Weight Modifier_test: Component added after REDO: True",
-            "Radius Weight Modifier_test: Entered game mode: True",
-            "Radius Weight Modifier_test: Exit game mode: True",
-            "Radius Weight Modifier_test: Entity is hidden: True",
-            "Radius Weight Modifier_test: Entity is shown: True",
-            "Radius Weight Modifier_test: Entity deleted: True",
-            "Radius Weight Modifier_test: UNDO entity deletion works: True",
-            "Radius Weight Modifier_test: REDO entity deletion works: True",
+            # PostFX Radius Weight Modifier Component
+            "PostFX Radius Weight Modifier Entity successfully created",
+            "PostFX Radius Weight Modifier_test: Component added to the entity: True",
+            "PostFX Radius Weight Modifier_test: Component removed after UNDO: True",
+            "PostFX Radius Weight Modifier_test: Component added after REDO: True",
+            "PostFX Radius Weight Modifier_test: Entered game mode: True",
+            "PostFX Radius Weight Modifier_test: Exit game mode: True",
+            "PostFX Radius Weight Modifier_test: Entity is hidden: True",
+            "PostFX Radius Weight Modifier_test: Entity is shown: True",
+            "PostFX Radius Weight Modifier_test: Entity deleted: True",
+            "PostFX Radius Weight Modifier_test: UNDO entity deletion works: True",
+            "PostFX Radius Weight Modifier_test: REDO entity deletion works: True",
             # Light Component
             "Light Entity successfully created",
             "Light_test: Component added to the entity: True",

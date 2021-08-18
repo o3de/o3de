@@ -9,7 +9,7 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <Atom/Document/MaterialDocumentNotificationBus.h>
+#include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindow.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
@@ -30,7 +30,7 @@ namespace MaterialEditor
      */
     class MaterialEditorWindow
         : public AtomToolsFramework::AtomToolsMainWindow
-        , private MaterialDocumentNotificationBus::Handler
+        , private AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler
     {
         Q_OBJECT
     public:
@@ -46,7 +46,7 @@ namespace MaterialEditor
         void LockViewportRenderTargetSize(uint32_t width, uint32_t height) override;
         void UnlockViewportRenderTargetSize() override;
 
-        // MaterialDocumentNotificationBus::Handler overrides...
+        // AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler overrides...
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
         void OnDocumentClosed(const AZ::Uuid& documentId) override;
         void OnDocumentModified(const AZ::Uuid& documentId) override;
