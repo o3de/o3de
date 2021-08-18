@@ -67,14 +67,9 @@ namespace AZ
             m_descriptorContext = AZStd::make_shared<DescriptorContext>();
 
             RHI::ConstPtr<RHI::PlatformLimitsDescriptor> rhiDescriptor = m_descriptor.m_platformLimitsDescriptor;
-            if (RHI::ConstPtr<PlatformLimitsDescriptor> platLimitsDesc = azrtti_cast<const PlatformLimitsDescriptor*>(rhiDescriptor))
-            {
-                m_descriptorContext->Init(m_dx12Device.get(), platLimitsDesc);
-            }
-            else
-            {
-                AZ_Assert(false, "Missing PlatformLimits config file for DX12 backend");
-            }
+            RHI::ConstPtr<PlatformLimitsDescriptor> platLimitsDesc = azrtti_cast<const PlatformLimitsDescriptor*>(rhiDescriptor);
+            AZ_Assert(platLimitsDesc != nullptr, "Missing PlatformLimits config file for DX12 backend");
+            m_descriptorContext->Init(m_dx12Device.get(), platLimitsDesc);
 
             {
                 CommandListAllocator::Descriptor commandListAllocatorDescriptor;
@@ -88,8 +83,8 @@ namespace AZ
                 StagingMemoryAllocator::Descriptor allocatorDesc;
                 allocatorDesc.m_device = this;
 
-                allocatorDesc.m_mediumPageSizeInBytes = RHI::RHISystemInterface::Get()->GetPlatformLimitsDescriptor()->m_platformDefaultValues.m_mediumStagingBufferPageSizeInBytes;
-                allocatorDesc.m_largePageSizeInBytes = RHI::RHISystemInterface::Get()->GetPlatformLimitsDescriptor()->m_platformDefaultValues.m_largestStagingBufferPageSizeInBytes;
+                allocatorDesc.m_mediumPageSizeInBytes = platLimitsDesc->m_platformDefaultValues.m_mediumStagingBufferPageSizeInBytes;
+                allocatorDesc.m_largePageSizeInBytes = platLimitsDesc->m_platformDefaultValues.m_largestStagingBufferPageSizeInBytes;
                 allocatorDesc.m_collectLatency = m_descriptor.m_frameCountMax;
                 m_stagingMemoryAllocator.Init(allocatorDesc);
             }
@@ -98,7 +93,7 @@ namespace AZ
 
             m_commandQueueContext.Init(*this);
 
-            m_asyncUploadQueue.Init(*this, AsyncUploadQueue::Descriptor(RHI::RHISystemInterface::Get()->GetPlatformLimitsDescriptor()->m_platformDefaultValues.m_asyncQueueStagingBufferSizeInBytes));
+            m_asyncUploadQueue.Init(*this, AsyncUploadQueue::Descriptor(platLimitsDesc->m_platformDefaultValues.m_asyncQueueStagingBufferSizeInBytes));
 
             m_samplerCache.SetCapacity(SamplerCacheCapacity);
 

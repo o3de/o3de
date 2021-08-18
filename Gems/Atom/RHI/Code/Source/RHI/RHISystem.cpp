@@ -30,8 +30,8 @@ namespace AZ
 
         void RHISystem::InitDevice()
         {
-            m_device = InitInternalDevice();
             Interface<RHISystemInterface>::Register(this);
+            m_device = InitInternalDevice();
         }
     
         void RHISystem::Init(const RHISystemDescriptor& descriptor)

@@ -25,7 +25,7 @@ namespace AZ
             static RHI::Ptr<Device> Create();
 
         private:
-            Device() = default;
+            Device();
             
             //////////////////////////////////////////////////////////////////////////
             // RHI::Device
