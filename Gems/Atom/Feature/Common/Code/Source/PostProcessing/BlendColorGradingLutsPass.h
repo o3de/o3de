@@ -47,7 +47,7 @@ namespace AZ
             static RPI::Ptr<BlendColorGradingLutsPass> Create(const RPI::PassDescriptor& descriptor);
 
             void SetShaperParameters(const ShaperParams& shaperParams);
-            bool GetCommonShaperParams(ShaperParams& shaperParams);
+            AZStd::optional<ShaperParams> GetCommonShaperParams() const;
 
         private:
             explicit BlendColorGradingLutsPass(const RPI::PassDescriptor& descriptor);
@@ -67,7 +67,7 @@ namespace AZ
             void ReleaseLutImage();
 
             void CheckLutBlendSettings();
-            LookModificationSettings* GetLookModificationSettings();
+            LookModificationSettings* GetLookModificationSettings() const;
 
             bool m_resourcesInitialized = false;
 

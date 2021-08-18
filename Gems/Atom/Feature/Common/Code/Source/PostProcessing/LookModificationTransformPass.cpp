@@ -51,7 +51,12 @@ namespace AZ
             RPI::Ptr<BlendColorGradingLutsPass> blendPass = FindChildPass<BlendColorGradingLutsPass>();
             if (blendPass)
             {
-                if (!blendPass->GetCommonShaperParams(m_shaperParams))
+                auto commonShaperParams = blendPass->GetCommonShaperParams();
+                if (commonShaperParams)
+                {
+                    m_shaperParams = *commonShaperParams;
+                }
+                else
                 {
                     // Mix of shapers used, so shape them based on the output transform type.
                     m_displayBufferFormat = swapChainFormat;

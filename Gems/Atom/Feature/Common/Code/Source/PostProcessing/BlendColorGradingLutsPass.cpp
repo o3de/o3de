@@ -245,7 +245,7 @@ namespace AZ
         }
 
         
-        bool BlendColorGradingLutsPass::GetCommonShaperParams(ShaperParams& shaperParams)
+        AZStd::optional<ShaperParams> BlendColorGradingLutsPass::GetCommonShaperParams() const
         {
             LookModificationSettings* settings = GetLookModificationSettings();
             if (settings)
@@ -268,8 +268,8 @@ namespace AZ
                     }
                     else if (type != lutBlendItem.m_shaperPreset)
                     {
-                        // Shapers are different, return false.
-                        return false;
+                        // Shapers are different
+                        return AZStd::nullopt;
                     }
                     else if (type == ShaperPresetType::LinearCustomRange || type == ShaperPresetType::Log2CustomRange)
                     {
@@ -277,7 +277,7 @@ namespace AZ
                             lutBlendItem.m_customMaxExposure != customMaxExposure)
                         {
                             // Shapers are same, but custom exposure for custom type is different.
-                            return false;
+                            return AZStd::nullopt;
                         }
                     }
                 }
@@ -285,12 +285,10 @@ namespace AZ
                 // Only calculate shaper params when there's at least one lut blend.
                 if (settings->GetLutBlendStackSize() > 0)
                 {
-                    shaperParams = AcesDisplayMapperFeatureProcessor::GetShaperParameters(type, customMinExposure, customMaxExposure);
+                    return AcesDisplayMapperFeatureProcessor::GetShaperParameters(type, customMinExposure, customMaxExposure);
                 }
-
-                return true;
             }
-            return false;
+            return AZStd::nullopt;
         }
 
         void BlendColorGradingLutsPass::CheckLutBlendSettings()
@@ -409,7 +407,7 @@ namespace AZ
             }
         }
 
-        LookModificationSettings* BlendColorGradingLutsPass::GetLookModificationSettings()
+        LookModificationSettings* BlendColorGradingLutsPass::GetLookModificationSettings() const
         {
             AZ::RPI::Scene* scene = GetScene();
             if (scene)

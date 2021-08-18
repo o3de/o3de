@@ -22,7 +22,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     {
         MinFilter = Linear;
         MagFilter = Linear;
-        MipFilter = Point;
+        MipFilter = Linear;
         AddressU = Clamp;
         AddressV = Clamp;
         AddressW = Clamp;
@@ -147,7 +147,7 @@ PSOutput MainPS(VSOutput IN)
     PSOutput OUT;
 
     // Fetch the pixel color from the input texture
-    float3 color = PassSrg::m_framebuffer.Sample(PassSrg::LinearSampler, IN.m_texCoord).rgb;
+    float3 color = PassSrg::m_framebuffer.SampleLevel(PassSrg::LinearSampler, IN.m_texCoord, 0.0).rgb;
 
     if (o_enableExposureControlFeature)
     {
