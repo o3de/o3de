@@ -21,6 +21,8 @@ namespace AzToolsFramework
             , public EditorEntitySortRequestBus::Handler
             , public EditorEntityContextNotificationBus::Handler
         {
+            friend class JsonEditorEntitySortComponentSerializer;
+
         public:
             AZ_COMPONENT(EditorEntitySortComponent, "{6EA1E03D-68B2-466D-97F7-83998C8C27F0}", EditorComponentBase);
 

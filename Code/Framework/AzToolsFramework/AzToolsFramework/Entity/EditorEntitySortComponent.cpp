@@ -10,7 +10,10 @@
 #include "EditorEntityHelpers.h"
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/std/sort.h>
+
+#include <AzToolsFramework/Entity/EditorEntitySortComponentSerializer.h>
 
 static_assert(sizeof(AZ::u64) == sizeof(AZ::EntityId), "We use AZ::EntityId for Persistent ID, which is a u64 under the hood. These must be the same size otherwise the persistent id will have to be rewritten");
 
@@ -48,6 +51,13 @@ namespace AzToolsFramework
                         ->Attribute(AZ::Edit::Attributes::SliceFlags, AZ::Edit::SliceFlags::HideOnAdd | AZ::Edit::SliceFlags::PushWhenHidden | AZ::Edit::SliceFlags::DontGatherReference)
                         ;
                 }
+            }
+
+            AZ::JsonRegistrationContext* jsonRegistration = azrtti_cast<AZ::JsonRegistrationContext*>(context);
+
+            if (jsonRegistration)
+            {
+                jsonRegistration->Serializer<JsonEditorEntitySortComponentSerializer>()->HandlesType<EditorEntitySortComponent>();
             }
         }
 
