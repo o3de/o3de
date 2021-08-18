@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Atom/RHI/Factory.h>
 #include <Atom/RHI.Reflect/PlatformLimitsDescriptor.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
@@ -73,20 +72,6 @@ namespace AZ
         RHI::Ptr<PlatformLimitsDescriptor> PlatformLimitsDescriptor::Create()
         {
             return aznew PlatformLimitsDescriptor;
-        }
-
-        void PlatformLimitsDescriptor::LoadPlatformLimitsDescriptor()
-        {
-            auto settingsRegistry = AZ::SettingsRegistry::Get();
-            AZStd::string platformLimitsRegPath =
-                AZStd::string::format("/Amazon/Atom/RHI/PlatformLimits/%s", RHI::Factory::Get().GetName().GetCStr());
-            if (!(settingsRegistry &&
-                  settingsRegistry->GetObject(this, azrtti_typeid(this), platformLimitsRegPath.c_str())))
-            {
-                AZ_Warning(
-                    "Device", false, "Platform limits for %s %s is not loaded correctly. Will use default values.",
-                    AZ_TRAIT_OS_PLATFORM_NAME, RHI::Factory::Get().GetName().GetCStr());
-            }
         }
     }
 }
