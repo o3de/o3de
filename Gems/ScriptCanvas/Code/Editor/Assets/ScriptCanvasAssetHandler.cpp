@@ -98,7 +98,6 @@ namespace ScriptCanvasEditor
             {
                 byteStreamSource.Seek(0U, AZ::IO::GenericStream::ST_SEEK_BEGIN);
                 AZ::JsonDeserializerSettings settings;
-                // \todo more mapping stuff needs to go in the settings
                 settings.m_serializeContext = m_serializeContext;
                 // attempt JSON deserialization...
                 if (JSRU::LoadObjectFromStreamByType
@@ -139,7 +138,10 @@ namespace ScriptCanvasEditor
         return SaveAssetData(assetData, stream, AZ::DataStream::ST_XML);
     }
 
-    bool ScriptCanvasAssetHandler::SaveAssetData(const ScriptCanvasAsset* assetData, AZ::IO::GenericStream* stream, [[maybe_unused]] AZ::DataStream::StreamType streamType)
+    bool ScriptCanvasAssetHandler::SaveAssetData
+        ( const ScriptCanvasAsset* assetData
+        , AZ::IO::GenericStream* stream
+        , [[maybe_unused]] AZ::DataStream::StreamType streamType)
     {
         namespace JSRU = AZ::JsonSerializationUtils;
         using namespace ScriptCanvas;
@@ -153,6 +155,8 @@ namespace ScriptCanvasEditor
         }
         else
         {
+            AZ_Error("ScriptCanvas", false, "Saving ScriptCavas assets in the handler requires a valid IO stream, "
+                "asset pointer, and serialize context");
             return false;
         }
     }
@@ -177,7 +181,8 @@ namespace ScriptCanvasEditor
             EBUS_EVENT_RESULT(m_serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
             if (!m_serializeContext)
             {
-                AZ_Error("Script Canvas", false, "ScriptCanvasAssetHandler: No serialize context provided! We will not be able to process Graph Asset type");
+                AZ_Error("Script Canvas", false, "ScriptCanvasAssetHandler: No serialize context provided! "
+                    "We will not be able to process Graph Asset type");
             }
         }
     }

@@ -333,7 +333,12 @@ namespace AZ
 
             // validate class name 
             auto classData = loadSettings.m_serializeContext->FindClassData(classId);
-            if (!classData || azstricmp(classData->m_name, className) != 0)
+            if (!classData)
+            {
+                return AZ::Failure(AZStd::string::format("Try to load class from Id %s", classId.ToString<AZStd::string>().c_str()));
+            }
+
+            if (azstricmp(classData->m_name, className) != 0)
             {
                 return AZ::Failure(AZStd::string::format("Try to load class %s from class %s data", classData->m_name, className));
             }

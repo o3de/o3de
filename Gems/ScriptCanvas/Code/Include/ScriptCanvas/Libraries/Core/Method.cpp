@@ -767,7 +767,6 @@ namespace ScriptCanvas
                     m_resultSlotIDs.emplace_back(SlotId{});
                 }
 
-                /// \note Call super() anti-pattern https://en.wikipedia.org/wiki/Call_super
                 Node::OnDeserialize();
             }
 

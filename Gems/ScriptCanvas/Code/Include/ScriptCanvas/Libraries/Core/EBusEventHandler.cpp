@@ -610,7 +610,6 @@ namespace ScriptCanvas
                     CreateHandler(m_ebusName);
                 }
 
-                /// \note Call super() anti-pattern https://en.wikipedia.org/wiki/Call_super
                 Node::OnDeserialize();
             }
 

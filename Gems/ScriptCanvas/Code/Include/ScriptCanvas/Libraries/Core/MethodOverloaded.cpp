@@ -462,8 +462,6 @@ namespace ScriptCanvas
                 }
 
                 SetWarnOnMissingFunction(true);
-
-                /// \note Call super() anti-pattern https://en.wikipedia.org/wiki/Call_super
                 Node::OnDeserialize();
             }
 
