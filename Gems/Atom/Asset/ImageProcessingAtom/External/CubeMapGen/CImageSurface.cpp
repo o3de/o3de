@@ -386,7 +386,7 @@ namespace ImageProcessingAtom
                     if (k < 3)  //only apply gamma and scale to RGB channels
                     {
                         //degamma texel val, by raising to the power gamma 
-                        texelVal = pow(texelVal, a_Gamma);
+                        texelVal = static_cast<CP_ITYPE>(pow(texelVal, a_Gamma));
 
                         //scale texel val in linear space (after degamma)
                         texelVal *= a_Scale;
@@ -514,7 +514,7 @@ namespace ImageProcessingAtom
                         texelVal *= a_Scale;
 
                         //apply gamma to texel val by raising the texelVal to the power of (1/gamma)
-                        texelVal = pow(texelVal, 1.0f / a_Gamma);
+                        texelVal = static_cast<CP_ITYPE>(pow(texelVal, 1.0f / a_Gamma));
                     }
 
                     //write out texture value
