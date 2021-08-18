@@ -45,7 +45,7 @@ struct INameTable
         const char* GetStr() { return (char*)(this + 1); }
         void  AddRef() { nRefCount++; /*InterlockedIncrement(&_header()->nRefCount);*/};
         int   Release() { return --nRefCount; };
-        int   GetMemoryUsage() { return sizeof(SNameEntry) + strlen(GetStr()); }
+        int   GetMemoryUsage() { return static_cast<int>(sizeof(SNameEntry) + strlen(GetStr())); }
         int     GetLength(){return nLength; }
     };
 
@@ -102,14 +102,14 @@ public:
         if (!pEntry)
         {
             // Create a new entry.
-            unsigned int nLen = strlen(str);
-            unsigned int allocLen = sizeof(SNameEntry) + (nLen + 1) * sizeof(char);
+            size_t nLen = strlen(str);
+            size_t allocLen = sizeof(SNameEntry) + (nLen + 1) * sizeof(char);
             pEntry = (SNameEntry*)CryModuleMalloc(allocLen);
             assert(pEntry != NULL);
             pEntry->nTag = SNameEntry::TAG;
             pEntry->nRefCount = 0;
-            pEntry->nLength = nLen;
-            pEntry->nAllocSize = allocLen;
+            pEntry->nLength = static_cast<int>(nLen);
+            pEntry->nAllocSize = static_cast<int>(allocLen);
             // Copy string to the end of name entry.
             char* pEntryStr = const_cast<char*>(pEntry->GetStr());
             memcpy(pEntryStr, str, nLen + 1);
@@ -134,7 +134,7 @@ public:
         int n = 0;
         for (it = m_nameMap.begin(); it != m_nameMap.end(); it++)
         {
-            nSize += strlen(it->first);
+            nSize += static_cast<int>(strlen(it->first));
             nSize += it->second->GetMemoryUsage();
             n++;
         }
@@ -149,7 +149,7 @@ public:
     }
     virtual int GetNumberOfEntries()
     {
-        return m_nameMap.size();
+        return static_cast<int>(m_nameMap.size());
     }
 
     // Log all names inside CryName table.
@@ -395,13 +395,13 @@ inline bool CCryName::operator>(const CCryName& n) const
     return m_str > n.m_str;
 }
 
-inline bool operator==(const string& s, const CCryName& n)
+inline bool operator==(const AZStd::string& s, const CCryName& n)
 {
-    return n == s;
+    return s == n.c_str();
 }
-inline bool operator!=(const string& s, const CCryName& n)
+inline bool operator!=(const AZStd::string& s, const CCryName& n)
 {
-    return n != s;
+    return s != n.c_str();
 }
 
 inline bool operator==(const char* s, const CCryName& n)
@@ -543,13 +543,13 @@ inline bool CCryNameCRC::operator>(const CCryNameCRC& n) const
     return m_nID > n.m_nID;
 }
 
-inline bool operator==(const string& s, const CCryNameCRC& n)
+inline bool operator==(const AZStd::string& s, const CCryNameCRC& n)
 {
-    return n == s;
+    return n == s.c_str();
 }
-inline bool operator!=(const string& s, const CCryNameCRC& n)
+inline bool operator!=(const AZStd::string& s, const CCryNameCRC& n)
 {
-    return n != s;
+    return n != s.c_str();
 }
 
 inline bool operator==(const char* s, const CCryNameCRC& n)

@@ -156,8 +156,8 @@ namespace SimulatedObjectSetupTests
 
     struct AddSimulatedJointAndChildrenParams
     {
-        AZ::u32 jointIndex;
-        size_t expectedSimulatedJointCount;
+        AZ::u32 m_jointIndex;
+        size_t m_expectedSimulatedJointCount;
     };
 
     class AddSimulatedJointAndChildrenFixture
@@ -177,8 +177,8 @@ namespace SimulatedObjectSetupTests
         SimulatedObjectSetup setup(&actor);
         SimulatedObject* object = setup.AddSimulatedObject();
 
-        object->AddSimulatedJointAndChildren(GetParam().jointIndex);
-        EXPECT_EQ(object->GetSimulatedJoints().size(), GetParam().expectedSimulatedJointCount);
+        object->AddSimulatedJointAndChildren(GetParam().m_jointIndex);
+        EXPECT_EQ(object->GetSimulatedJoints().size(), GetParam().m_expectedSimulatedJointCount);
     }
 
     INSTANTIATE_TEST_CASE_P(Test, AddSimulatedJointAndChildrenFixture,

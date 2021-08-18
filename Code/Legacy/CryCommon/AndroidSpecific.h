@@ -30,27 +30,6 @@
 #define MOBILE
 #endif
 
-#if (defined(__clang__) && NDK_REV_MAJOR >= 14) || (defined(_CPU_ARM) && defined(PLATFORM_64BIT))
-    // The version of clang that NDK r14+ ships with is seemingly generating different (for better or worse) code for the atomic operations
-    // used in the LocklessLinkedList.  In either case, this is causing deadlocks in the job system and crashes from memory stomps in
-    // the bucket allocator.  By defining INTERLOCKED_COMPARE_EXCHANGE_128_NOT_SUPPORTED it will disable the Cry job system as well as
-    // change the implementation of the LocklessLinkedList to use a mutex in it's operations instead, essentially use the same behaviour
-    // as iOS.  While not ideal to use this as a band-aid on the problem, it does fix it with a negligible performance impact.
-    //
-    // Additionally, arm64 processors do not provide a cmpxchg16b (or equivalent) instruction required for _InterlockedCompareExchange128
-    #define INTERLOCKED_COMPARE_EXCHANGE_128_NOT_SUPPORTED
-#endif
-
-// Force all allocations to be aligned to TARGET_DEFAULT_ALIGN.
-// This is because malloc on Android 32 bit returns memory that is not aligned
-// to what some structs/classes need.
-#define CRY_FORCE_MALLOC_NEW_ALIGN
-
-#define DEBUG_BREAK raise(SIGTRAP)
-#define RC_EXECUTABLE "rc"
-#define USE_CRT 1
-#define SIZEOF_PTR 4
-
 //////////////////////////////////////////////////////////////////////////
 // Standard includes.
 //////////////////////////////////////////////////////////////////////////
@@ -132,10 +111,6 @@ typedef unsigned char               byte;
 
 #define DEFINE_ALIGNED_DATA(type, name, alignment) \
     type __attribute__ ((aligned(alignment))) name;
-#define DEFINE_ALIGNED_DATA_STATIC(type, name, alignment) \
-    static type __attribute__ ((aligned(alignment))) name;
-#define DEFINE_ALIGNED_DATA_CONST(type, name, alignment) \
-    const type __attribute__ ((aligned(alignment))) name;
 
 #include "LinuxSpecific.h"
 // these functions do not exist int the wchar.h header

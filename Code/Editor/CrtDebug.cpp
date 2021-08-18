@@ -62,7 +62,7 @@ int crtAllocHook(int nAllocType, void* pvData,
 {
     if (nBlockUse == _CRT_BLOCK)
     {
-        return(TRUE);
+        return TRUE;
     }
 
     static int total_cnt = 0;

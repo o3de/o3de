@@ -443,7 +443,7 @@ namespace AWSCore
             msg += AZStd::string::format(" at character %zu: ", result.Offset());
 
             const int snippet_size = 40;
-            int start = result.Offset() - snippet_size / 2;
+            int start = static_cast<int>(result.Offset() - snippet_size / 2);
             int length = snippet_size;
             int offset = snippet_size / 2;
             if (start < 0) {

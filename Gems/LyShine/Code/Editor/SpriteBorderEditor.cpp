@@ -191,9 +191,9 @@ void SpriteBorderEditor::UpdateSpriteSheetCellInfo(int newNumRows, int newNumCol
 
     // Calculate uniformly sized sprite-sheet cell UVs based on the given
     // row and column cell configuration.
-    for (int row = 0; row < m_numRows; ++row)
+    for (unsigned int row = 0; row < m_numRows; ++row)
     {
-        for (int col = 0; col < m_numCols; ++col)
+        for (unsigned int col = 0; col < m_numCols; ++col)
         {
             AZ::Vector2 min(col / floatNumCols, row / floatNumRows);
             AZ::Vector2 max((col + 1) / floatNumCols, (row + 1) / floatNumRows);
@@ -286,8 +286,8 @@ void SpriteBorderEditor::AddConfigureSection(QGridLayout* gridLayout, int& rowNu
 
     // Count the number of unique entries along each axis to determine number
     // of rows/cols contained within the spritesheet.
-    m_numRows = vSet.size() > 1 ? vSet.size() - 1 : 1;
-    m_numCols = uSet.size() > 1 ? uSet.size() - 1 : 1;
+    m_numRows = static_cast<uint>(vSet.size() > 1 ? vSet.size() - 1 : 1);
+    m_numCols = static_cast<uint>(uSet.size() > 1 ? uSet.size() - 1 : 1);
 
     // Text input fields displaying row/col information for auto-extracting 
     // spritesheet cells
@@ -921,7 +921,7 @@ void SpriteBorderEditor::AddButtonsSection(QGridLayout* gridLayout, int& rowNum)
                 // The texture is guaranteed to exist so use that to get the full path.
                 QString fullTexturePath = Path::GamePathToFullPath(m_sprite->GetTexturePathname().c_str());
                 const char* const spriteExtension = "sprite";
-                string fullSpritePath = PathUtil::ReplaceExtension(fullTexturePath.toUtf8().data(), spriteExtension);
+                AZStd::string fullSpritePath = PathUtil::ReplaceExtension(fullTexturePath.toUtf8().data(), spriteExtension);
 
                 FileHelpers::SourceControlAddOrEdit(fullSpritePath.c_str(), QApplication::activeWindow());
 

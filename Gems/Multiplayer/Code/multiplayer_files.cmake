@@ -8,6 +8,7 @@
 
 set(FILES
     Include/Multiplayer/IMultiplayer.h
+    Include/Multiplayer/IMultiplayerDebug.h
     Include/Multiplayer/IMultiplayerTools.h
     Include/Multiplayer/MultiplayerConstants.h
     Include/Multiplayer/MultiplayerStats.h

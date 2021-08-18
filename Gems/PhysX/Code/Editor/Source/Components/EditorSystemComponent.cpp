@@ -24,7 +24,7 @@
 
 namespace PhysX
 {
-    constexpr const char* DefaultAssetFilename = "SurfaceTypeMaterialLibrary";
+    constexpr const char* DefaultAssetFilePath = "Physics/SurfaceTypeMaterialLibrary";
     constexpr const char* TemplateAssetFilename = "PhysX/TemplateMaterialLibrary";
 
     static AZStd::optional<AZ::Data::Asset<AZ::Data::AssetData>> GetMaterialLibraryTemplate()
@@ -227,7 +227,7 @@ namespace PhysX
             const AZStd::string& assetExtension = assetTypeExtensions[0];
 
             // Use the path relative to the asset root to avoid hardcoding full path in the configuration
-            AZStd::string relativePath = DefaultAssetFilename;
+            AZStd::string relativePath = DefaultAssetFilePath;
             AzFramework::StringFunc::Path::ReplaceExtension(relativePath, assetExtension.c_str());
 
             // Try to find an already existing material library
@@ -237,9 +237,9 @@ namespace PhysX
             if (!resultAssetId.IsValid())
             {
                 // No file for the default material library, create it
-                const char* assetRoot = AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@");
+                const char* assetRoot = AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectsourceassets@");
                 AZStd::string fullPath;
-                AzFramework::StringFunc::Path::ConstructFull(assetRoot, DefaultAssetFilename, assetExtension.c_str(), fullPath);
+                AzFramework::StringFunc::Path::ConstructFull(assetRoot, DefaultAssetFilePath, assetExtension.c_str(), fullPath);
 
                 if (auto materialLibraryOpt = CreateMaterialLibrary(fullPath, relativePath))
                 {

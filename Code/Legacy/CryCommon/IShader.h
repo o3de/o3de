@@ -25,7 +25,6 @@
 #include "Cry_Matrix33.h"
 #include "Cry_Color.h"
 #include "smartptr.h"
-#include "StringUtils.h"
 #include <IXml.h> // <> required for Interfuscator
 #include "smartptr.h"
 #include "VertexFormats.h"
@@ -1394,12 +1393,12 @@ struct IRenderTarget
 struct STexSamplerFX
 {
 #if SHADER_REFLECT_TEXTURE_SLOTS
-    string      m_szUIName;
-    string      m_szUIDescription;
+    AZStd::string      m_szUIName;
+    AZStd::string      m_szUIDescription;
 #endif
 
-    string      m_szName;
-    string      m_szTexture;
+    AZStd::string      m_szName;
+    AZStd::string      m_szTexture;
 
     union
     {
@@ -1426,9 +1425,9 @@ struct STexSamplerFX
         SAFE_RELEASE(m_pITarget);
     }
 
-    int Size()
+    size_t Size()
     {
-        int nSize = sizeof(*this);
+        size_t nSize = sizeof(*this);
         nSize += m_szName.capacity();
         nSize += m_szTexture.capacity();
 #if SHADER_REFLECT_TEXTURE_SLOTS
@@ -1708,7 +1707,7 @@ struct SEfResTextureExt
 //------------------------------------------------------------------------------
 struct SEfResTexture
 {
-    string              m_Name;
+    AZStd::string       m_Name;
     bool                m_bUTile;
     bool                m_bVTile;
     signed char         m_Filter;
@@ -1805,9 +1804,9 @@ struct SEfResTexture
         return m_Ext.m_pTexModifier;
     }
 
-    int Size() const
+    size_t Size() const
     {
-        int nSize = sizeof(SEfResTexture) - sizeof(STexSamplerRT) - sizeof(SEfResTextureExt);
+        size_t nSize = sizeof(SEfResTexture) - sizeof(STexSamplerRT) - sizeof(SEfResTextureExt);
         nSize += m_Name.size();
         nSize += m_Sampler.Size();
         nSize += m_Ext.Size();
@@ -1890,7 +1889,7 @@ struct SEfResTexture
 struct SBaseShaderResources
 {
     AZStd::vector<SShaderParam>  m_ShaderParams;
-    string                  m_TexturePath;
+    AZStd::string           m_TexturePath;
     const char*             m_szMaterialName;
 
     float                   m_AlphaRef;
@@ -1900,9 +1899,9 @@ struct SBaseShaderResources
 
     uint8                   m_VoxelCoverage;
 
-    int Size() const
+    size_t Size() const
     {
-        int nSize = sizeof(SBaseShaderResources) + m_ShaderParams.size() * sizeof(SShaderParam);
+        size_t nSize = sizeof(SBaseShaderResources) + m_ShaderParams.size() * sizeof(SShaderParam);
         return nSize;
     }
 
@@ -2032,9 +2031,9 @@ struct SInputShaderResources
     TexturesResourcesMap                m_TexturesResourcesMap;      // a map of all textures resources used by the shader by name
     SDeformInfo                         m_DeformInfo;
 
-    int Size() const
+    size_t Size() const
     {
-        int nSize = SBaseShaderResources::Size();// -sizeof(SEfResTexture) * m_TexturesResourcesMap.size();
+        size_t nSize = SBaseShaderResources::Size();// -sizeof(SEfResTexture) * m_TexturesResourcesMap.size();
         nSize += m_TexturePath.size();
         nSize += sizeof(SDeformInfo);
 
@@ -2146,8 +2145,8 @@ struct SShaderTextureSlot
         m_TexType = eTT_MaxTexType;
     }
 
-    string  m_Name;
-    string  m_Description;
+    AZStd::string  m_Name;
+    AZStd::string  m_Description;
     byte    m_TexType;      // 2D, 3D, Cube etc..
 
     void GetMemoryUsage(ICrySizer* pSizer) const
@@ -2726,7 +2725,7 @@ protected:
     virtual ~ILightAnimWrapper() {}
 
 protected:
-    string m_name;
+    AZStd::string m_name;
     IAnimNode* m_pNode;
 };
 
@@ -3256,12 +3255,12 @@ enum EGrNodeIOSemantic
 
 struct SShaderGraphFunction
 {
-    string m_Data;
-    string m_Name;
-    std::vector<string> inParams;
-    std::vector<string> outParams;
-    std::vector<string> szInTypes;
-    std::vector<string> szOutTypes;
+    AZStd::string m_Data;
+    AZStd::string m_Name;
+    std::vector<AZStd::string> inParams;
+    std::vector<AZStd::string> outParams;
+    std::vector<AZStd::string> szInTypes;
+    std::vector<AZStd::string> szOutTypes;
 };
 
 struct SShaderGraphNode
@@ -3269,8 +3268,8 @@ struct SShaderGraphNode
     EGrNodeType m_eType;
     EGrNodeFormat m_eFormat;
     EGrNodeIOSemantic m_eSemantic;
-    string m_CustomSemantics;
-    string m_Name;
+    AZStd::string m_CustomSemantics;
+    AZStd::string m_Name;
     bool m_bEditable;
     bool m_bWasAdded;
     SShaderGraphFunction* m_pFunction;
@@ -3296,7 +3295,7 @@ struct SShaderGraphBlock
 {
     EGrBlockType m_eType;
     EGrBlockSamplerType m_eSamplerType;
-    string m_ClassName;
+    AZStd::string m_ClassName;
     FXShaderGraphNodes  m_Nodes;
 
     ~SShaderGraphBlock();

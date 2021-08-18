@@ -15,8 +15,8 @@ namespace MCore
 {
     // constructor
     IDGenerator::IDGenerator()
+        : m_nextId{0}
     {
-        mNextID.SetValue(0);
     }
 
 
@@ -27,10 +27,10 @@ namespace MCore
 
 
     // get a unique id
-    uint32 IDGenerator::GenerateID()
+    size_t IDGenerator::GenerateID()
     {
-        const uint32 result = mNextID.Increment();
-        MCORE_ASSERT(result != MCORE_INVALIDINDEX32); // reached the limit
+        const size_t result = m_nextId++;
+        MCORE_ASSERT(result != InvalidIndex); // reached the limit
         return result;
     }
 } // namespace MCore

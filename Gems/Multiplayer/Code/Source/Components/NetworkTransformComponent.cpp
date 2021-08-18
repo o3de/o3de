@@ -31,6 +31,7 @@ namespace Multiplayer
         , m_scaleEventHandler([this](float scale) { OnScaleChangedEvent(scale); })
         , m_resetCountEventHandler([this](const uint8_t&) { OnResetCountChangedEvent(); })
         , m_entityPreRenderEventHandler([this](float deltaTime, float blendFactor) { OnPreRender(deltaTime, blendFactor); })
+        , m_entityCorrectionEventHandler([this]() { OnCorrection(); })
     {
         ;
     }
@@ -47,6 +48,7 @@ namespace Multiplayer
         ScaleAddEvent(m_scaleEventHandler);
         ResetCountAddEvent(m_resetCountEventHandler);
         GetNetBindComponent()->AddEntityPreRenderEventHandler(m_entityPreRenderEventHandler);
+        GetNetBindComponent()->AddEntityCorrectionEventHandler(m_entityCorrectionEventHandler);
 
         // When coming into relevance, reset all blending factors so we don't interpolate to our start position
         OnResetCountChangedEvent();
@@ -61,18 +63,21 @@ namespace Multiplayer
     {
         m_previousTransform.SetRotation(m_targetTransform.GetRotation());
         m_targetTransform.SetRotation(rotation);
+        UpdateTargetHostFrameId();
     }
 
     void NetworkTransformComponent::OnTranslationChangedEvent(const AZ::Vector3& translation)
     {
         m_previousTransform.SetTranslation(m_targetTransform.GetTranslation());
         m_targetTransform.SetTranslation(translation);
+        UpdateTargetHostFrameId();
     }
 
     void NetworkTransformComponent::OnScaleChangedEvent(float scale)
     {
         m_previousTransform.SetUniformScale(m_targetTransform.GetUniformScale());
         m_targetTransform.SetUniformScale(scale);
+        UpdateTargetHostFrameId();
     }
 
     void NetworkTransformComponent::OnResetCountChangedEvent()
@@ -83,19 +88,48 @@ namespace Multiplayer
         m_previousTransform = m_targetTransform;
     }
 
+    void NetworkTransformComponent::UpdateTargetHostFrameId()
+    {
+        HostFrameId currentHostFrameId = Multiplayer::GetNetworkTime()->GetHostFrameId();
+        if (currentHostFrameId > m_targetHostFrameId)
+        {
+            m_targetHostFrameId = currentHostFrameId;
+        }
+    }
+
     void NetworkTransformComponent::OnPreRender([[maybe_unused]] float deltaTime, float blendFactor)
     {
         if (!HasController())
         {
             AZ::Transform blendTransform;
-            blendTransform.SetRotation(m_previousTransform.GetRotation().Slerp(m_targetTransform.GetRotation(), blendFactor));
-            blendTransform.SetTranslation(m_previousTransform.GetTranslation().Lerp(m_targetTransform.GetTranslation(), blendFactor));
-            blendTransform.SetUniformScale(AZ::Lerp(m_previousTransform.GetUniformScale(), m_targetTransform.GetUniformScale(), blendFactor));
+            if (Multiplayer::GetNetworkTime() && Multiplayer::GetNetworkTime()->GetHostFrameId() > m_targetHostFrameId)
+            {
+                m_previousTransform = m_targetTransform;
+                blendTransform = m_targetTransform;
+            }
+            else
+            {
+                blendTransform.SetRotation(m_previousTransform.GetRotation().Slerp(m_targetTransform.GetRotation(), blendFactor));
+                blendTransform.SetTranslation(m_previousTransform.GetTranslation().Lerp(m_targetTransform.GetTranslation(), blendFactor));
+                blendTransform.SetUniformScale(AZ::Lerp(m_previousTransform.GetUniformScale(), m_targetTransform.GetUniformScale(), blendFactor));
+            }
 
             if (!GetTransformComponent()->GetWorldTM().IsClose(blendTransform))
             {
                 GetTransformComponent()->SetWorldTM(blendTransform);
             }
+        }
+    }
+
+    void NetworkTransformComponent::OnCorrection()
+    {
+        // Snap to latest
+        OnResetCountChangedEvent();
+
+        // Hard set the entities transform
+        if (!GetTransformComponent()->GetWorldTM().IsClose(m_targetTransform))
+        {
+            GetTransformComponent()->SetWorldTM(m_targetTransform);
         }
     }
 

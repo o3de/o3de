@@ -283,7 +283,7 @@ public:
     MOCK_METHOD0(EF_GetShaderMissLogPath,
         const char*());
     MOCK_METHOD1(EF_GetShaderNames,
-        string * (int& nNumShaders));
+        AZStd::string * (int& nNumShaders));
     MOCK_METHOD1(EF_ReloadFile,
         bool(const char* szFileName));
     MOCK_METHOD1(EF_ReloadFile_Request,

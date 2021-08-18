@@ -69,8 +69,7 @@ namespace AZStd
         int             m_priority{ -100000 };
 
         //! The CPU ids (as a bitfield) that this thread will be running on, see \ref AZStd::thread_desc::m_cpuId.
-        //! Windows: This parameter is ignored.
-        //! On other platforms, each bit maps directly to the core numbers [0-n], default is 0
+        //! Each bit maps directly to the core numbers [0-n], default is 0
         int             m_cpuId{ AFFINITY_MASK_ALL };
 
         //! If we can join the thread.

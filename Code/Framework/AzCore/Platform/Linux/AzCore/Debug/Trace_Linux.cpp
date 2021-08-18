@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Debug/Trace.h>
+#include <iostream>
 
 namespace AZ
 {
@@ -14,8 +15,9 @@ namespace AZ
     {
         namespace Platform
         {
-            void OutputToDebugger(const char*, const char*)
+            void OutputToDebugger([[maybe_unused]] const char* title, [[maybe_unused]] const char* message)
             {
+                // std::cout << title << ": " << message;
             }
         }
     }

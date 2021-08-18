@@ -46,24 +46,7 @@ void QtViewport::BuildDragDropContext(AzQtComponents::ViewportDragContext& conte
 
     PreWidgetRendering(); // required so that the current render cam is set.
 
-    Vec3 pos = Vec3(ZERO);
-    HitContext hit;
-    if (HitTest(pt, hit))
-    {
-        pos = hit.raySrc + hit.rayDir * hit.dist;
-        pos = SnapToGrid(pos);
-    }
-    else
-    {
-        bool hitTerrain;
-        pos = ViewToWorld(pt, &hitTerrain);
-        if (hitTerrain)
-        {
-            pos.z = GetIEditor()->GetTerrainElevation(pos.x, pos.y);
-        }
-        pos = SnapToGrid(pos);
-    }
-    context.m_hitLocation = AZ::Vector3(pos.x, pos.y, pos.z);
+    context.m_hitLocation = GetHitLocation(pt);
 
     PostWidgetRendering();
 }
@@ -189,10 +172,9 @@ QtViewport::QtViewport(QWidget* parent)
     {
         m_constructionMatrix[i].SetIdentity();
     }
-    m_viewTM.SetIdentity();
     m_screenTM.SetIdentity();
 
-    m_pMouseOverObject = 0;
+    m_pMouseOverObject = nullptr;
 
     m_bAdvancedSelectMode = false;
 
@@ -398,7 +380,7 @@ void QtViewport::OnDeactivate()
 //////////////////////////////////////////////////////////////////////////
 void QtViewport::ResetContent()
 {
-    m_pMouseOverObject = 0;
+    m_pMouseOverObject = nullptr;
 
     // Need to clear visual object cache.
     // Right after loading new level, some code(e.g. OnMouseMove) access invalid
@@ -1153,6 +1135,29 @@ bool QtViewport::HitTest(const QPoint& point, HitContext& hitInfo)
     }
 
     return false;
+}
+
+AZ::Vector3 QtViewport::GetHitLocation(const QPoint& point)
+{
+    Vec3 pos = Vec3(ZERO);
+    HitContext hit;
+    if (HitTest(point, hit))
+    {
+        pos = hit.raySrc + hit.rayDir * hit.dist;
+        pos = SnapToGrid(pos);
+    }
+    else
+    {
+        bool hitTerrain;
+        pos = ViewToWorld(point, &hitTerrain);
+        if (hitTerrain)
+        {
+            pos.z = GetIEditor()->GetTerrainElevation(pos.x, pos.y);
+        }
+        pos = SnapToGrid(pos);
+    }
+
+    return AZ::Vector3(pos.x, pos.y, pos.z);
 }
 
 //////////////////////////////////////////////////////////////////////////

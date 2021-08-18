@@ -142,7 +142,7 @@ bool CImageTIF::Load(const QString& fileName, CImageEx& outImage)
         uint32 dwWidth, dwHeight;
         size_t npixels;
         uint32* raster;
-        char* dccfilename = NULL;
+        char* dccfilename = nullptr;
 
         TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &dwWidth);
         TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &dwHeight);
@@ -232,7 +232,7 @@ bool CImageTIF::Load(const QString& fileName, CFloatImage& outImage)
     {
         uint32 width = 0, height = 0;
         uint16 spp = 0, bpp = 0, format = 0;
-        char* dccfilename = NULL;
+        char* dccfilename = nullptr;
 
         TIFFGetField(tif, TIFFTAG_IMAGEDESCRIPTION, &dccfilename);
 
@@ -252,11 +252,11 @@ bool CImageTIF::Load(const QString& fileName, CFloatImage& outImage)
 
         // Check to see if it's a GeoTIFF, and if so, whether or not it has the ZScale parameter.
         uint32 tagCount = 0;
-        double *pixelScales = NULL;
+        double *pixelScales = nullptr;
         if (TIFFGetField(tif, GEOTIFF_MODELPIXELSCALE_TAG, &tagCount, &pixelScales) == 1)
         {
             // if there's an xyz scale, and the Z scale isn't 0, let's use it.
-            if ((tagCount == 3) && (pixelScales != NULL) && (pixelScales[2] != 0.0f))
+            if ((tagCount == 3) && (pixelScales != nullptr) && (pixelScales[2] != 0.0f))
             {
                 pixelValueScale = static_cast<float>(pixelScales[2]);
             }
@@ -399,8 +399,8 @@ bool CImageTIF::SaveRAW(const QString& fileName, const void* pData, int width, i
 
         if (preset && preset[0])
         {
-            string tiffphotoshopdata, valueheader;
-            string presetkeyvalue = string("/preset=") + string(preset);
+            AZStd::string tiffphotoshopdata, valueheader;
+            AZStd::string presetkeyvalue = AZStd::string("/preset=") + AZStd::string(preset);
 
             valueheader.push_back('\x1C');
             valueheader.push_back('\x02');
@@ -455,7 +455,7 @@ const char* CImageTIF::GetPreset(const QString& fileName)
     if (!file.Open(fileName.toUtf8().data(), "rb"))
     {
         CLogFile::FormatLine("File not found %s", fileName.toUtf8().data());
-        return NULL;
+        return nullptr;
     }
 
     MemImage memImage;
@@ -472,8 +472,8 @@ const char* CImageTIF::GetPreset(const QString& fileName)
             libtiffDummyWriteProc, libtiffDummySeekProc,
             libtiffDummyCloseProc, libtiffDummySizeProc, libtiffDummyMapFileProc, libtiffDummyUnmapFileProc);
 
-    string strReturn;
-    char* preset = NULL;
+    AZStd::string strReturn;
+    char* preset = nullptr;
     int size;
     if (tif)
     {

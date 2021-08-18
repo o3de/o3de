@@ -17,7 +17,6 @@ set(FILES
     AzFramework/Process/ProcessCommon.h
     AzFramework/Process/ProcessCommunicator_Linux.cpp
     ../Common/UnixLike/AzFramework/IO/LocalFileIO_UnixLike.cpp
-    ../Common/Default/AzFramework/Network/AssetProcessorConnection_Default.cpp
     ../Common/Unimplemented/AzFramework/StreamingInstall/StreamingInstall_Unimplemented.cpp
     ../Common/Default/AzFramework/TargetManagement/TargetManagementComponent_Default.cpp
     AzFramework/Windowing/NativeWindow_Linux.cpp

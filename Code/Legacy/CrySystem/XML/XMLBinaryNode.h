@@ -189,8 +189,6 @@ public:
     bool getAttr(const char* key, Vec3d& value) const;
     bool getAttr(const char* key, Quat& value) const;
     bool getAttr(const char* key, ColorB& value) const;
-    //  bool getAttr( const char *key,CString &value ) const { XmlString v; if (getAttr(key,v)) { value = (const char*)v; return true; } else return false; }
-
 
 private:
     //////////////////////////////////////////////////////////////////////////

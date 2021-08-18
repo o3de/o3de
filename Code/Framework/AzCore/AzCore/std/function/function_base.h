@@ -16,6 +16,7 @@
 #include <AzCore/std/typetraits/type_id.h>
 #include <AzCore/std/typetraits/alignment_of.h>
 #include <AzCore/std/typetraits/is_member_pointer.h>
+#include <AzCore/std/typetraits/is_const.h>
 #include <AzCore/std/typetraits/remove_cvref.h>
 #include <AzCore/std/createdestroy.h>
 

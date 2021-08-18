@@ -38,13 +38,13 @@ namespace AZStd
 
         binary_semaphore(bool initialState = false)
         {
-            m_event = CreateEvent(nullptr, false, initialState, nullptr);
+            m_event = CreateEventW(nullptr, false, initialState, nullptr);
             AZ_Assert(m_event != NULL, "CreateEvent error: %d\n", GetLastError());
         }
         binary_semaphore(const char* name, bool initialState = false)
         {
             (void)name; // name is used only for debug, if we pass it to the semaphore it will become named semaphore
-            m_event = CreateEvent(nullptr, false, initialState, nullptr);
+            m_event = CreateEventW(nullptr, false, initialState, nullptr);
             AZ_Assert(m_event != NULL, "CreateEvent error: %d\n", GetLastError());
         }
 

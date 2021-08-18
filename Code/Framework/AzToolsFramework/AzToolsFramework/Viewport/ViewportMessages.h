@@ -313,7 +313,7 @@ namespace AzToolsFramework
     //! Utility function to return EntityContextId.
     inline AzFramework::EntityContextId GetEntityContextId()
     {
-        AzFramework::EntityContextId entityContextId;
+        auto entityContextId = AzFramework::EntityContextId::CreateNull();
         EditorEntityContextRequestBus::BroadcastResult(entityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
 
         return entityContextId;

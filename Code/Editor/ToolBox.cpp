@@ -186,7 +186,7 @@ const CToolBoxMacro* CToolBoxManager::GetMacro(int iIndex, bool bToolbox) const
         assert(0 <= iIndex && iIndex < m_shelveMacros.size());
         return m_shelveMacros[iIndex];
     }
-    return NULL;
+    return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -202,7 +202,7 @@ CToolBoxMacro* CToolBoxManager::GetMacro(int iIndex, bool bToolbox)
         assert(0 <= iIndex && iIndex < m_shelveMacros.size());
         return m_shelveMacros[iIndex];
     }
-    return NULL;
+    return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -240,14 +240,14 @@ CToolBoxMacro* CToolBoxManager::NewMacro(const QString& title, bool bToolbox, in
         const int macroCount = m_macros.size();
         if (macroCount > ID_TOOL_LAST - ID_TOOL_FIRST + 1)
         {
-            return NULL;
+            return nullptr;
         }
 
         for (size_t i = 0; i < macroCount; ++i)
         {
             if (QString::compare(m_macros[i]->GetTitle(), title, Qt::CaseInsensitive) == 0)
             {
-                return NULL;
+                return nullptr;
             }
         }
 
@@ -264,7 +264,7 @@ CToolBoxMacro* CToolBoxManager::NewMacro(const QString& title, bool bToolbox, in
         const int shelveMacroCount = m_shelveMacros.size();
         if (shelveMacroCount > ID_TOOL_SHELVE_LAST - ID_TOOL_SHELVE_FIRST + 1)
         {
-            return NULL;
+            return nullptr;
         }
 
         CToolBoxMacro* pNewTool = new CToolBoxMacro(title);
@@ -275,7 +275,7 @@ CToolBoxMacro* CToolBoxManager::NewMacro(const QString& title, bool bToolbox, in
         m_shelveMacros.push_back(pNewTool);
         return pNewTool;
     }
-    return NULL;
+    return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -321,48 +321,19 @@ bool CToolBoxManager::SetMacroTitle(int index, const QString& title, bool bToolb
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CToolBoxManager::Load(ActionManager* actionManager)
+void CToolBoxManager::Load([[maybe_unused]] ActionManager* actionManager)
 {
     Clear();
 
     QString path;
     GetSaveFilePath(path);
     Load(path, nullptr, true, nullptr);
-
-    if (actionManager)
-    {
-        auto engineSourceAssetPath = AZ::IO::FixedMaxPath(AZ::Utils::GetEnginePath()) / "Assets";
-        LoadShelves((engineSourceAssetPath / "Editor" / "Scripts").c_str(),
-            (engineSourceAssetPath / "Editor" / "Scripts" / "Shelves").c_str(), actionManager);
-    }
-}
-
-void CToolBoxManager::LoadShelves(QString scriptPath, QString shelvesPath, ActionManager* actionManager)
-{
-    IFileUtil::FileArray files;
-    CFileUtil::ScanDirectory(shelvesPath, "*.xml", files);
-
-    const int shelfCount = files.size();
-    for (int idx = 0; idx < shelfCount; ++idx)
-    {
-        if (Path::GetExt(files[idx].filename) != "xml")
-        {
-            continue;
-        }
-
-        QString shelfName(PathUtil::GetFileName(files[idx].filename.toUtf8().data()));
-
-        AmazonToolbar toolbar(shelfName, shelfName);
-        Load(shelvesPath + QString("/") + files[idx].filename, &toolbar, false, actionManager);
-
-        m_toolbars.push_back(toolbar);
-    }
 }
 
 void CToolBoxManager::Load(QString xmlpath, AmazonToolbar* pToolbar, bool bToolbox, ActionManager* actionManager)
 {
     XmlNodeRef toolBoxNode = XmlHelpers::LoadXmlFromFile(xmlpath.toUtf8().data());
-    if (toolBoxNode == NULL)
+    if (toolBoxNode == nullptr)
     {
         return;
     }
@@ -408,7 +379,7 @@ void CToolBoxManager::Load(QString xmlpath, AmazonToolbar* pToolbar, bool bToolb
     AZ::IO::FixedMaxPathString engineRoot = AZ::Utils::GetEnginePath();
     QDir engineDir = !engineRoot.empty() ? QDir(QString(engineRoot.c_str())) : QDir::current();
 
-    string enginePath = PathUtil::AddSlash(engineDir.absolutePath().toUtf8().data());
+    AZStd::string enginePath = PathUtil::AddSlash(engineDir.absolutePath().toUtf8().data());
 
     for (int i = 0; i < toolBoxNode->getChildCount(); ++i)
     {
@@ -434,11 +405,11 @@ void CToolBoxManager::Load(QString xmlpath, AmazonToolbar* pToolbar, bool bToolb
             continue;
         }
 
-        string shelfPath = PathUtil::GetParentDirectory(xmlpath.toUtf8().data());
-        string fullIconPath = enginePath + PathUtil::AddSlash(shelfPath.c_str());
+        AZStd::string shelfPath = PathUtil::GetParentDirectory(xmlpath.toUtf8().data());
+        AZStd::string fullIconPath = enginePath + PathUtil::AddSlash(shelfPath.c_str());
         fullIconPath.append(iconPath.toUtf8().data());
 
-        pMacro->SetIconPath(fullIconPath);
+        pMacro->SetIconPath(fullIconPath.c_str());
 
         QString toolTip(macroNode->getAttr("tooltip"));
         pMacro->action()->setToolTip(toolTip);

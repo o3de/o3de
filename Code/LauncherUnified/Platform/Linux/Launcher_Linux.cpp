@@ -10,6 +10,7 @@
 
 #include <AzCore/Debug/StackTracer.h>
 #include <AzCore/IO/SystemFile.h> // for AZ_MAX_PATH_LEN
+#include <AzCore/Math/Vector2.h>
 
 #include <CryLibrary.h>
 

@@ -392,25 +392,6 @@ void ReflectedVarColorAdapter::SyncIVarToReflectedVar(IVariable *pVariable)
 
 
 
-void ReflectedVarAnimationAdapter::SetVariable(IVariable *pVariable)
-{
-    m_reflectedVar.reset(new CReflectedVarAnimation(pVariable->GetHumanName().toUtf8().data()));
-    m_reflectedVar->m_description = pVariable->GetDescription().toUtf8().data();
-}
-
-void ReflectedVarAnimationAdapter::SyncReflectedVarToIVar(IVariable *pVariable)
-{
-    m_reflectedVar->m_entityID = static_cast<AZ::EntityId>(pVariable->GetUserData().value<AZ::u64>());
-    m_reflectedVar->m_animation = pVariable->GetDisplayValue().toUtf8().data();
-}
-
-void ReflectedVarAnimationAdapter::SyncIVarToReflectedVar(IVariable *pVariable)
-{
-    pVariable->SetUserData(static_cast<AZ::u64>(m_reflectedVar->m_entityID));
-    pVariable->SetDisplayValue(m_reflectedVar->m_animation.c_str());
-
-}
-
 void ReflectedVarResourceAdapter::SetVariable(IVariable *pVariable)
 {
     m_reflectedVar.reset(new CReflectedVarResource(pVariable->GetHumanName().toUtf8().data()));
@@ -429,7 +410,7 @@ void ReflectedVarResourceAdapter::SyncReflectedVarToIVar(IVariable *pVariable)
 
 void ReflectedVarResourceAdapter::SyncIVarToReflectedVar(IVariable *pVariable)
 {
-    const bool bForceModified = (m_reflectedVar->m_propertyType == ePropertyGeomCache);
+    const bool bForceModified = false;
     pVariable->SetForceModified(bForceModified);
     pVariable->SetDisplayValue(m_reflectedVar->m_path.c_str());
 
@@ -473,7 +454,7 @@ void ReflectedVarUserAdapter::SyncReflectedVarToIVar(IVariable *pVariable)
 
     //extract the list of custom items from the IVariable user data
     IVariable::IGetCustomItems* pGetCustomItems = static_cast<IVariable::IGetCustomItems*> (pVariable->GetUserData().value<void *>());
-    if (pGetCustomItems != 0)
+    if (pGetCustomItems != nullptr)
     {
         std::vector<IVariable::IGetCustomItems::SItem> items;
         QString dlgTitle;

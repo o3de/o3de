@@ -302,6 +302,17 @@ void UiCanvasManager::OnFontTextureUpdated([[maybe_unused]] IFFont* font)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+void UiCanvasManager::GetRenderTargets(LyShine::AttachmentImagesAndDependencies& attachmentImagesAndDependencies)
+{
+    for (auto canvas : m_loadedCanvases)
+    {
+        LyShine::AttachmentImagesAndDependencies canvasTargets;
+        canvas->GetRenderTargets(canvasTargets);
+        attachmentImagesAndDependencies.insert(attachmentImagesAndDependencies.end(), canvasTargets.begin(), canvasTargets.end());
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiCanvasManager::OnCatalogAssetChanged(const AZ::Data::AssetId& assetId)
 {
     // get AssetInfo from asset id
@@ -342,7 +353,7 @@ void UiCanvasManager::OnCatalogAssetChanged(const AZ::Data::AssetId& assetId)
 
             // reload canvas with the same entity IDs (except for new entities, deleted entities etc)
             UiGameEntityContext* entityContext = new UiGameEntityContext();
-            string pathname(assetPath.c_str());
+            AZStd::string pathname(assetPath.c_str());
             UiCanvasComponent* newCanvasComponent = UiCanvasComponent::LoadCanvasInternal(pathname, false, "", entityContext, &existingRemapTable, existingCanvasEntityId);
 
             if (!newCanvasComponent)
@@ -393,7 +404,7 @@ AZ::EntityId UiCanvasManager::CreateCanvasInEditor(UiEntityContext* entityContex
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-AZ::EntityId UiCanvasManager::LoadCanvasInEditor(const string& assetIdPathname, const string& sourceAssetPathname, UiEntityContext* entityContext)
+AZ::EntityId UiCanvasManager::LoadCanvasInEditor(const AZStd::string& assetIdPathname, const AZStd::string& sourceAssetPathname, UiEntityContext* entityContext)
 {
     return LoadCanvasInternal(assetIdPathname.c_str(), true, sourceAssetPathname.c_str(), entityContext);
 }
@@ -605,13 +616,6 @@ void UiCanvasManager::RenderLoadedCanvases()
 
         m_fontTextureHasChanged = false;
     }
-
-#ifdef LYSHINE_ATOM_TODO // render target conversion to Atom
-    // clear the stencil buffer before rendering the loaded canvases - required for masking
-    // NOTE: We want to use ClearTargetsImmediately instead of ClearTargetsLater since we will not be setting the render target
-    ColorF viewportBackgroundColor(0, 0, 0, 0); // if clearing color we want to set alpha to zero also
-    gEnv->pRenderer->ClearTargetsImmediately(FRT_CLEAR_STENCIL, viewportBackgroundColor);
-#endif
 
     for (auto canvas : m_loadedCanvases)
     {
@@ -1064,10 +1068,10 @@ void UiCanvasManager::DebugDisplayCanvasData(int setting) const
     for (auto canvas : m_loadedCanvases)
     {
         // Name
-        const string pathname = canvas->GetPathname().c_str();
+        const AZStd::string pathname = canvas->GetPathname().c_str();
         size_t lastDot = pathname.find_last_of(".");
         size_t lastSlash = pathname.find_last_of("/");
-        string leafName = pathname;
+        AZStd::string leafName = pathname;
         if (lastDot > lastSlash)
         {
             leafName = pathname.substr(lastSlash+1, lastDot-lastSlash-1);
@@ -1209,10 +1213,10 @@ void UiCanvasManager::DebugDisplayDrawCallData() const
     for (auto canvas : m_loadedCanvases)
     {
         // Name
-        const string pathname = canvas->GetPathname().c_str();
+        const AZStd::string pathname = canvas->GetPathname().c_str();
         size_t lastDot = pathname.find_last_of(".");
         size_t lastSlash = pathname.find_last_of("/");
-        string leafName = pathname;
+        AZStd::string leafName = pathname;
         if (lastDot > lastSlash)
         {
             leafName = pathname.substr(lastSlash+1, lastDot-lastSlash-1);
@@ -1373,7 +1377,7 @@ void UiCanvasManager::DebugReportDrawCalls(const AZStd::string& name) const
         }
 
         // Name of canvas
-        const string pathname = canvas->GetPathname().c_str();
+        const AZStd::string pathname = canvas->GetPathname().c_str();
         logLine = "\r\n=====================================================================================\r\n";
         AZ::IO::LocalFileIO::GetInstance()->Write(logHandle, logLine.c_str(), logLine.size());
         logLine = AZStd::string::format("Canvas: %s\r\n", pathname.c_str());
@@ -1461,7 +1465,7 @@ void UiCanvasManager::DebugReportDrawCalls(const AZStd::string& name) const
                 {
                     if (!loggedCanvasHeader)
                     {
-                        const string pathname = canvas->GetPathname().c_str();
+                        const AZStd::string pathname = canvas->GetPathname().c_str();
                         logLine = AZStd::string::format("\r\nCanvas: %s\r\n\r\n", pathname.c_str());
                         AZ::IO::LocalFileIO::GetInstance()->Write(logHandle, logLine.c_str(), logLine.size());
                         loggedCanvasHeader = true;

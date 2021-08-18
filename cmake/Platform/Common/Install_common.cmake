@@ -45,7 +45,6 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
     # we need to set the PUBLIC_HEADER property of the target for all the headers we are exporting. After doing that, installing the
     # headers end up in one folder instead of duplicating the folder structure of the public/interface include directory.
     # Instead, we install them with install(DIRECTORY)
-    set(include_location "include")
     get_target_property(include_directories ${TARGET_NAME} INTERFACE_INCLUDE_DIRECTORIES)
     if (include_directories)
         unset(public_headers)
@@ -63,9 +62,10 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
                     continue()
                 endif()
 
+                unset(rel_include_dir)
                 cmake_path(RELATIVE_PATH include_directory BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE rel_include_dir)
-                cmake_path(APPEND include_location "${rel_include_dir}" ".." OUTPUT_VARIABLE destination_dir)
-                cmake_path(NORMAL_PATH destination_dir)
+                cmake_path(APPEND rel_include_dir "..")
+                cmake_path(NORMAL_PATH rel_include_dir OUTPUT_VARIABLE destination_dir)
 
                 install(DIRECTORY ${include_directory}
                     DESTINATION ${destination_dir}
@@ -75,6 +75,7 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
                         PATTERN *.hpp
                         PATTERN *.inl
                         PATTERN *.hxx
+                        PATTERN *.jinja # LyAutoGen files
                 )
             endif()
         endforeach()
@@ -156,10 +157,9 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
         foreach(include ${include_directories})
             string(GENEX_STRIP ${include} include_genex_expr)
             if(include_genex_expr STREQUAL include) # only for cases where there are no generation expressions
-                cmake_path(RELATIVE_PATH include BASE_DIRECTORY ${LY_ROOT_FOLDER} OUTPUT_VARIABLE target_include)
-                cmake_path(NORMAL_PATH target_include)
-                # Escape the LY_ROOT_FOLDER variable so that it isn't resolved during the install step
-                string(APPEND INCLUDE_DIRECTORIES_PLACEHOLDER "\${LY_ROOT_FOLDER}/${include_location}/${target_include}\n")
+                # Make the include path relative to the source dir where the target will be declared
+                cmake_path(RELATIVE_PATH include BASE_DIRECTORY ${absolute_target_source_dir} OUTPUT_VARIABLE target_include)
+                string(APPEND INCLUDE_DIRECTORIES_PLACEHOLDER "${target_include}\n")
             endif()
         endforeach()
     endif()
@@ -204,7 +204,7 @@ function(ly_setup_target OUTPUT_CONFIGURED_TARGET ALIAS_TARGET_NAME absolute_tar
         set(TARGET_RUN_HELPER
 "add_custom_target(${RUN_TARGET_NAME})
 set_target_properties(${RUN_TARGET_NAME} PROPERTIES 
-    FOLDER \"CMakePredefinedTargets/SDK\"
+    FOLDER \"O3DE_SDK\"
     VS_DEBUGGER_COMMAND \$<GENEX_EVAL:\$<TARGET_PROPERTY:${NAME_PLACEHOLDER},IMPORTED_LOCATION>>
     VS_DEBUGGER_COMMAND_ARGUMENTS \"--project-path=\${LY_DEFAULT_PROJECT_PATH}\"
 )"
@@ -448,11 +448,15 @@ endfunction()
 function(ly_setup_runtime_dependencies)
 
     # Common functions used by the bellow code
-    install(CODE
+    if(COMMAND ly_install_code_function_override)
+        ly_install_code_function_override()
+    else()
+        install(CODE
 "function(ly_copy source_file target_directory)
     file(COPY \"\${source_file}\" DESTINATION \"\${target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS})
 endfunction()"
-    )
+        )
+    endif()
 
     unset(runtime_commands)
     get_property(all_targets GLOBAL PROPERTY LY_ALL_TARGETS)

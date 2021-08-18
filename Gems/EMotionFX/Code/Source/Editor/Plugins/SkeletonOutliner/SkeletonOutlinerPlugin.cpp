@@ -42,7 +42,7 @@ namespace EMotionFX
 
     bool SkeletonOutlinerPlugin::Init()
     {
-        m_mainWidget = new QWidget(mDock);
+        m_mainWidget = new QWidget(m_dock);
 
         QVBoxLayout* mainLayout = new QVBoxLayout();
         m_mainWidget->setLayout(mainLayout);
@@ -112,7 +112,7 @@ namespace EMotionFX
         connect(m_searchWidget, &AzQtComponents::FilteredSearchWidget::TypeFilterChanged, this, &SkeletonOutlinerPlugin::OnTypeFilterChanged);
 
         mainLayout->addWidget(m_treeView);
-        mDock->setWidget(m_mainWidget);
+        m_dock->setWidget(m_mainWidget);
 
         EMotionFX::SkeletonOutlinerRequestBus::Handler::BusConnect();
         Reinit();

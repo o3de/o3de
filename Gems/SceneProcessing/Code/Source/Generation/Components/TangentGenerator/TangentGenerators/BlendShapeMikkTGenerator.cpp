@@ -55,7 +55,7 @@ namespace AZ::TangentGeneration::BlendShape::MikkT
     {
         MikktCustomData* customData = static_cast<MikktCustomData*>(context->m_pUserData);
         const AZ::u32 vertexIndex = customData->m_blendShapeData->GetFaceVertexIndex(face, vert);
-        const AZ::Vector2& uv = customData->m_blendShapeData->GetUV(vertexIndex, customData->m_uvSetIndex);
+        const AZ::Vector2& uv = customData->m_blendShapeData->GetUV(vertexIndex, static_cast<unsigned int>(customData->m_uvSetIndex));
         texOut[0] = uv.GetX();
         texOut[1] = uv.GetY();
     }
@@ -105,7 +105,7 @@ namespace AZ::TangentGeneration::BlendShape::MikkT
         AZ::SceneAPI::DataTypes::MikkTSpaceMethod tSpaceMethod)
     {
         // Create tangent and bitangent data sets and relate them to the given UV set.
-        const AZStd::vector<AZ::Vector2>& uvSet = blendShapeData->GetUVs(uvSetIndex);
+        const AZStd::vector<AZ::Vector2>& uvSet = blendShapeData->GetUVs(static_cast<AZ::u8>(uvSetIndex));
         if (uvSet.empty())
         {
             AZ_Error(AZ::SceneAPI::Utilities::ErrorWindow, false,

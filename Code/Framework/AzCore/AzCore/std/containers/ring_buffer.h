@@ -12,7 +12,6 @@
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/createdestroy.h>
 #include <AzCore/std/utils.h>
-//#include <AzCore/std/containers/deque.h>
 
 namespace AZStd
 {
@@ -1056,7 +1055,7 @@ namespace AZStd
         inline void insert(const iterator& pos, ForwardIterator first, ForwardIterator last, const AZStd::forward_iterator_tag&)
         {
             size_type size = AZStd::distance(first, last);
-            AZSTD_CONTAINER_ASSERT(size >= 0, "AZStd::ring_buffer::insert - there are no elements to insert!");
+            AZSTD_CONTAINER_ASSERT(first > last, "AZStd::ring_buffer::insert - there are no elements to insert!");
             if (size == 0)
             {
                 return;

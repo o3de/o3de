@@ -6,26 +6,21 @@
  *
  */
 
-#include <AzQtComponents/Utilities/DesktopUtilities.h>
-
-#include <AzFramework/StringFunc/StringFunc.h>
-
-#include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
-#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
-#include <AzToolsFramework/AssetBrowser/Search/Filter.h>
-#include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
-
-#include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
-
-#include <Atom/Document/ShaderManagementConsoleDocumentSystemRequestBus.h>
 #include <Atom/Document/ShaderManagementConsoleDocumentRequestBus.h>
-
-#include <Source/Window/ShaderManagementConsoleBrowserWidget.h>
-
-#include <Source/Window/ui_ShaderManagementConsoleBrowserWidget.h>
+#include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
+#include <AtomToolsFramework/Document/AtomToolsDocumentRequestBus.h>
+#include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
+#include <AzFramework/StringFunc/StringFunc.h>
+#include <AzQtComponents/Utilities/DesktopUtilities.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
+#include <AzToolsFramework/AssetBrowser/Search/Filter.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
+#include <Window/ShaderManagementConsoleBrowserWidget.h>
+#include <Window/ui_ShaderManagementConsoleBrowserWidget.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QDesktopServices>
@@ -85,14 +80,14 @@ namespace ShaderManagementConsole
         });
 
         AssetBrowserModelNotificationBus::Handler::BusConnect();
-        ShaderManagementConsoleDocumentNotificationBus::Handler::BusConnect();
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusConnect();
     }
 
     ShaderManagementConsoleBrowserWidget::~ShaderManagementConsoleBrowserWidget()
     {
         // Maintains the tree expansion state between runs
         m_ui->m_assetBrowserTreeViewWidget->SaveState();
-        ShaderManagementConsoleDocumentNotificationBus::Handler::BusDisconnect();
+        AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler::BusDisconnect();
         AssetBrowserModelNotificationBus::Handler::BusDisconnect();
     }
 
@@ -150,7 +145,7 @@ namespace ShaderManagementConsole
             {
                 if (AzFramework::StringFunc::Path::IsExtension(sourceEntry->GetFullPath().c_str(), AZ::RPI::ShaderVariantListSourceData::Extension))
                 {
-                    ShaderManagementConsoleDocumentSystemRequestBus::Broadcast(&ShaderManagementConsoleDocumentSystemRequestBus::Events::OpenDocument, sourceEntry->GetFullPath());
+                    AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::OpenDocument, sourceEntry->GetFullPath());
                 }
                 else
                 {
@@ -192,7 +187,7 @@ namespace ShaderManagementConsole
     void ShaderManagementConsoleBrowserWidget::OnDocumentOpened(const AZ::Uuid& documentId)
     {
         AZStd::string absolutePath;
-        ShaderManagementConsoleDocumentRequestBus::EventResult(absolutePath, documentId, &ShaderManagementConsoleDocumentRequestBus::Events::GetAbsolutePath);
+        AtomToolsFramework::AtomToolsDocumentRequestBus::EventResult(absolutePath, documentId, &AtomToolsFramework::AtomToolsDocumentRequestBus::Events::GetAbsolutePath);
         if (!absolutePath.empty())
         {
             m_pathToSelect = absolutePath;
@@ -203,4 +198,4 @@ namespace ShaderManagementConsole
 
 } // namespace ShaderManagementConsole
 
-#include <Source/Window/moc_ShaderManagementConsoleBrowserWidget.cpp>
+#include <Window/moc_ShaderManagementConsoleBrowserWidget.cpp>

@@ -111,9 +111,9 @@ namespace EMStudio
         m_treeWidget->clear();
 
         // iterate trough all actors and add them to the tree including their instances
-        const uint32 numActors = EMotionFX::GetActorManager().GetNumActors();
-        const uint32 numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
-        for (uint32 i = 0; i < numActors; ++i)
+        const size_t numActors = EMotionFX::GetActorManager().GetNumActors();
+        const size_t numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
+        for (size_t i = 0; i < numActors; ++i)
         {
             EMotionFX::Actor* actor = EMotionFX::GetActorManager().GetActor(i);
 
@@ -153,7 +153,7 @@ namespace EMStudio
             // add as top level item
             m_treeWidget->addTopLevelItem(newItem);
 
-            for (uint32 k = 0; k < numActorInstances; ++k)
+            for (size_t k = 0; k < numActorInstances; ++k)
             {
                 EMotionFX::ActorInstance* actorInstance = EMotionFX::GetActorManager().GetActorInstance(k);
                 if (actorInstance->GetActor() == actor && !actorInstance->GetIsOwnedByRuntime())
@@ -188,8 +188,8 @@ namespace EMStudio
         // disable signals
         m_treeWidget->blockSignals(true);
 
-        const uint32 numTopLevelItems = m_treeWidget->topLevelItemCount();
-        for (uint32 i = 0; i < numTopLevelItems; ++i)
+        const int numTopLevelItems = m_treeWidget->topLevelItemCount();
+        for (int i = 0; i < numTopLevelItems; ++i)
         {
             bool                atLeastOneInstanceVisible   = false;
             QTreeWidgetItem*    item                        = m_treeWidget->topLevelItem(i);
@@ -199,8 +199,8 @@ namespace EMStudio
 
             item->setSelected(actorSelected);
 
-            const uint32 numChildren = item->childCount();
-            for (uint32 j = 0; j < numChildren; ++j)
+            const int numChildren = item->childCount();
+            for (int j = 0; j < numChildren; ++j)
             {
                 QTreeWidgetItem* child = item->child(j);
                 EMotionFX::ActorInstance* actorInstance = EMotionFX::GetActorManager().FindActorInstanceByID(GetIDFromTreeItem(child));
@@ -236,10 +236,8 @@ namespace EMStudio
         AZStd::vector<EMotionFX::Actor*> toBeRemovedActors;
 
         const QList<QTreeWidgetItem*> items = m_treeWidget->selectedItems();
-        const uint32 numItems = items.length();
-        for (uint32 i = 0; i < numItems; ++i)
+        for (const QTreeWidgetItem* item : items)
         {
-            QTreeWidgetItem* item = items[i];
             if (!item)
             {
                 continue;
@@ -254,8 +252,8 @@ namespace EMStudio
                 if (actor)
                 {
                     // remove actor instances
-                    const uint32 numChildren = item->childCount();
-                    for (uint32 j = 0; j < numChildren; ++j)
+                    const int numChildren = item->childCount();
+                    for (int j = 0; j < numChildren; ++j)
                     {
                         QTreeWidgetItem* child = item->child(j);
 
@@ -326,11 +324,9 @@ namespace EMStudio
 
         // filter the list to keep the actor items only
         const QList<QTreeWidgetItem*> items = m_treeWidget->selectedItems();
-        const uint32 numItems = items.length();
-        for (uint32 i = 0; i < numItems; ++i)
+        for (const QTreeWidgetItem* item : items)
         {
             // get the item and check if the item is valid
-            QTreeWidgetItem* item = items[i];
             if (item == nullptr)
             {
                 continue;
@@ -384,8 +380,8 @@ namespace EMStudio
 
         if (!item->parent())
         {
-            const uint32 numChildren = item->childCount();
-            for (uint32 i = 0; i < numChildren; ++i)
+            const int numChildren = item->childCount();
+            for (int i = 0; i < numChildren; ++i)
             {
                 QTreeWidgetItem* child = item->child(i);
 
@@ -422,8 +418,8 @@ namespace EMStudio
         }
 
         // get the selected items
-        const uint32 numTopItems = m_treeWidget->topLevelItemCount();
-        for (uint32 i = 0; i < numTopItems; ++i)
+        const int numTopItems = m_treeWidget->topLevelItemCount();
+        for (int i = 0; i < numTopItems; ++i)
         {
             // selection of the topLevelItems
             QTreeWidgetItem* topLevelItem = m_treeWidget->topLevelItem(i);
@@ -439,8 +435,8 @@ namespace EMStudio
             }
 
             // loop trough the children and adjust selection there
-            uint32 numChilds = topLevelItem->childCount();
-            for (uint32 j = 0; j < numChilds; ++j)
+            int numChilds = topLevelItem->childCount();
+            for (int j = 0; j < numChilds; ++j)
             {
                 QTreeWidgetItem* child = topLevelItem->child(j);
                 if (child->isSelected())
@@ -486,20 +482,15 @@ namespace EMStudio
 
     void ActorsWindow::contextMenuEvent(QContextMenuEvent* event)
     {
-        const QList<QTreeWidgetItem*> items = m_treeWidget->selectedItems();
-
-        // get number of selected items and top level items
-        const uint32 numSelected = items.size();
-        const uint32 numTopItems = m_treeWidget->topLevelItemCount();
+        const QList<QTreeWidgetItem*> items = m_treeWidget->selectedItems(); 
 
         // create the context menu
         QMenu menu(this);
         menu.setToolTipsVisible(true);
 
         bool actorSelected = false;
-        for (uint32 i = 0; i < numSelected; ++i)
+        for (const QTreeWidgetItem* item : items)
         {
-            QTreeWidgetItem* item = items[i];
             if (item->parent() == nullptr)
             {
                 actorSelected = true;
@@ -518,7 +509,7 @@ namespace EMStudio
             }
         }
 
-        if (numSelected > 0)
+        if (!items.empty())
         {
             if (instanceSelected)
             {
@@ -546,7 +537,7 @@ namespace EMStudio
             connect(removeAction, &QAction::triggered, this, &ActorsWindow::OnRemoveButtonClicked);
         }
 
-        if (numTopItems > 0)
+        if (m_treeWidget->topLevelItemCount() > 0)
         {
             QAction* clearAction = menu.addAction("Remove all");
             connect(clearAction, &QAction::triggered, this, &ActorsWindow::OnClearButtonClicked);
@@ -596,24 +587,16 @@ namespace EMStudio
 
         // get number of selected items and top level items
         const QList<QTreeWidgetItem*> items = m_treeWidget->selectedItems();
-        const uint32 numSelected = items.size();
-        const uint32 numTopItems = m_treeWidget->topLevelItemCount();
 
         // check if at least one actor selected
-        bool actorSelected = false;
-        for (uint32 i = 0; i < numSelected; ++i)
+        const bool actorSelected = AZStd::any_of(items.begin(), items.end(), [](const QTreeWidgetItem* item)
         {
-            QTreeWidgetItem* item = items[i];
-            if (item->parent() == nullptr)
-            {
-                actorSelected = true;
-                break;
-            }
-        }
+            return item->parent() == nullptr;
+        });
 
         // set the enabled state of the buttons
         m_createInstanceAction->setEnabled(actorSelected);
-        m_saveAction->setEnabled(numSelected != 0);
+        m_saveAction->setEnabled(!items.empty());
     }
 
 
@@ -623,11 +606,9 @@ namespace EMStudio
 
         // create the instances of the selected actors
         const QList<QTreeWidgetItem*> items = m_treeWidget->selectedItems();
-        const uint32 numItems = items.length();
-        for (uint32 i = 0; i < numItems; ++i)
+        for (const QTreeWidgetItem* item : items)
         {
             // check if parent or child item
-            QTreeWidgetItem* item = items[i];
             if (item == nullptr || item->parent() == nullptr)
             {
                 continue;
@@ -652,7 +633,7 @@ namespace EMStudio
     }
 
 
-    uint32 ActorsWindow::GetIDFromTreeItem(QTreeWidgetItem* item)
+    uint32 ActorsWindow::GetIDFromTreeItem(const QTreeWidgetItem* item)
     {
         if (item == nullptr)
         {

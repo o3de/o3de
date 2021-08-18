@@ -524,6 +524,7 @@ namespace Multiplayer
 
     bool EntityReplicationManager::HandlePropertyChangeMessage
     (
+        AzNetworking::IConnection* invokingConnection, 
         EntityReplicator* entityReplicator,
         AzNetworking::PacketId packetId,
         NetEntityId netEntityId,
@@ -557,6 +558,12 @@ namespace Multiplayer
 
         NetBindComponent* netBindComponent = replicatorEntity.GetNetBindComponent();
         AZ_Assert(netBindComponent != nullptr, "No NetBindComponent");
+
+        if (createEntity)
+        {
+            // Always set our invoking connectionId for any newly created entities, since this connection now 'owns' them from a rewind perspective
+            netBindComponent->SetOwningConnectionId(invokingConnection->GetConnectionId());
+        }
 
         const bool changeNetworkRole = (netBindComponent->GetNetEntityRole() != localNetworkRole);
         if (changeNetworkRole)
@@ -744,7 +751,7 @@ namespace Multiplayer
 
     bool EntityReplicationManager::HandleEntityUpdateMessage
     (
-        [[maybe_unused]] AzNetworking::IConnection* invokingConnection,
+        AzNetworking::IConnection* invokingConnection,
         const AzNetworking::IPacketHeader& packetHeader,
         const NetworkEntityUpdateMessage& updateMessage
     )
@@ -769,7 +776,7 @@ namespace Multiplayer
             return HandleEntityDeleteMessage(entityReplicator, packetHeader, updateMessage);
         }
 
-        AzNetworking::TrackChangedSerializer<AzNetworking::NetworkOutputSerializer> outputSerializer(updateMessage.GetData()->GetBuffer(), updateMessage.GetData()->GetSize());
+        AzNetworking::TrackChangedSerializer<AzNetworking::NetworkOutputSerializer> outputSerializer(updateMessage.GetData()->GetBuffer(), static_cast<uint32_t>(updateMessage.GetData()->GetSize()));
 
         PrefabEntityId prefabEntityId;
         if (updateMessage.GetHasValidPrefabId())
@@ -794,7 +801,7 @@ namespace Multiplayer
         }
 
         // This may implicitly create a replicator for us
-        bool handled = HandlePropertyChangeMessage(entityReplicator, packetHeader.GetPacketId(), updateMessage.GetEntityId(), updateMessage.GetNetworkRole(), outputSerializer, prefabEntityId);
+        bool handled = HandlePropertyChangeMessage(invokingConnection, entityReplicator, packetHeader.GetPacketId(), updateMessage.GetEntityId(), updateMessage.GetNetworkRole(), outputSerializer, prefabEntityId);
         AZ_Assert(handled, "Failed to handle NetworkEntityUpdateMessage message");
 
         return handled;
@@ -1102,7 +1109,7 @@ namespace Multiplayer
                 // Send an update packet if it needs one
                 propPublisher->GenerateRecord();
                 bool needsNetworkPropertyUpdate = propPublisher->PrepareSerialization();
-                AzNetworking::NetworkInputSerializer inputSerializer(message.m_propertyUpdateData.GetBuffer(), message.m_propertyUpdateData.GetCapacity());
+                AzNetworking::NetworkInputSerializer inputSerializer(message.m_propertyUpdateData.GetBuffer(), static_cast<uint32_t>(message.m_propertyUpdateData.GetCapacity()));
                 if (needsNetworkPropertyUpdate)
                 {
                     // Write out entity state into the buffer
@@ -1121,15 +1128,16 @@ namespace Multiplayer
         }
     }
 
-    bool EntityReplicationManager::HandleEntityMigration([[maybe_unused]] AzNetworking::IConnection* invokingConnection, EntityMigrationMessage& message)
+    bool EntityReplicationManager::HandleEntityMigration(AzNetworking::IConnection* invokingConnection, EntityMigrationMessage& message)
     {
         EntityReplicator* replicator = GetEntityReplicator(message.m_entityId);
         {
             if (message.m_propertyUpdateData.GetSize() > 0)
             {
-                AzNetworking::TrackChangedSerializer<AzNetworking::NetworkOutputSerializer> outputSerializer(message.m_propertyUpdateData.GetBuffer(), message.m_propertyUpdateData.GetSize());
+                AzNetworking::TrackChangedSerializer<AzNetworking::NetworkOutputSerializer> outputSerializer(message.m_propertyUpdateData.GetBuffer(), static_cast<uint32_t>(message.m_propertyUpdateData.GetSize()));
                 if (!HandlePropertyChangeMessage
                 (
+                    invokingConnection, 
                     replicator,
                     AzNetworking::InvalidPacketId,
                     message.m_entityId,

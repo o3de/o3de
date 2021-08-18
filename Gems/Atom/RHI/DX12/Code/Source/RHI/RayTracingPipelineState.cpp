@@ -84,15 +84,15 @@ namespace AZ
             for (const RHI::RayTracingHitGroup& hitGroup : descriptor->GetHitGroups())
             {
                 AZStd::wstring hitGroupNameWstring;
-                AZStd::to_wstring(hitGroupNameWstring, hitGroup.m_hitGroupName.GetStringView().data(), hitGroup.m_hitGroupName.GetStringView().size());
+                AZStd::to_wstring(hitGroupNameWstring, hitGroup.m_hitGroupName.GetStringView());
                 hitGroupNameWstrings.push_back(hitGroupNameWstring);
 
                 AZStd::wstring closestHitShaderNameWstring;
-                AZStd::to_wstring(closestHitShaderNameWstring, hitGroup.m_closestHitShaderName.GetStringView().data(), hitGroup.m_closestHitShaderName.GetStringView().size());
+                AZStd::to_wstring(closestHitShaderNameWstring, hitGroup.m_closestHitShaderName.GetStringView());
                 closestHitShaderNameWstrings.push_back(closestHitShaderNameWstring);
 
                 AZStd::wstring anyHitShaderNameWstring;
-                AZStd::to_wstring(anyHitShaderNameWstring, hitGroup.m_anyHitShaderName.GetStringView().data(), hitGroup.m_anyHitShaderName.GetStringView().size());
+                AZStd::to_wstring(anyHitShaderNameWstring, hitGroup.m_anyHitShaderName.GetStringView());
                 anyHitShaderNameWstrings.push_back(anyHitShaderNameWstring);
 
                 D3D12_HIT_GROUP_DESC hitGroupDesc = {};

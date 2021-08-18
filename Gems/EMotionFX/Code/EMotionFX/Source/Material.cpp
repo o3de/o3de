@@ -40,21 +40,21 @@ namespace EMotionFX
     void Material::SetName(const char* name)
     {
         // calculate the ID
-        mNameID = MCore::GetStringIdPool().GenerateIdForString(name);
+        m_nameId = MCore::GetStringIdPool().GenerateIdForString(name);
     }
 
 
     // return the material name
     const char* Material::GetName() const
     {
-        return MCore::GetStringIdPool().GetName(mNameID).c_str();
+        return MCore::GetStringIdPool().GetName(m_nameId).c_str();
     }
 
 
     // return the material name as a string
     const AZStd::string& Material::GetNameString() const
     {
-        return MCore::GetStringIdPool().GetName(mNameID);
+        return MCore::GetStringIdPool().GetName(m_nameId);
     }
 
 

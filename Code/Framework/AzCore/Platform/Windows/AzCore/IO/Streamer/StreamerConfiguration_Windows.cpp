@@ -290,7 +290,7 @@ namespace AZ::IO
     static bool CollectHardwareInfo(HardwareInformation& hardwareInfo, bool addAllDrives, bool reportHardware)
     {
         char drives[512];
-        if (::GetLogicalDriveStrings(sizeof(drives) - 1, drives))
+        if (::GetLogicalDriveStringsA(sizeof(drives) - 1, drives))
         {
             AZStd::unordered_map<DWORD, DriveInformation> driveMappings;
             char* driveIt = drives;
@@ -318,7 +318,7 @@ namespace AZ::IO
                     deviceName += driveIt;
                     deviceName.erase(deviceName.length() - 1); // Erase the slash.
 
-                    HANDLE deviceHandle = ::CreateFile(
+                    HANDLE deviceHandle = ::CreateFileA(
                         deviceName.c_str(), 0, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr);
                     if (deviceHandle != INVALID_HANDLE_VALUE)
                     {
