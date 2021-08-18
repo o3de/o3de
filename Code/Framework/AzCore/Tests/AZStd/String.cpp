@@ -1462,12 +1462,12 @@ namespace UnitTest
 
         // This shouldn't give a compile error
         AZStd::string::format(
-           "%i  %c %uc  %hc %lc %i  %i  %u   %i   %lu  %li  %llu  %lli  %f   %f   %hs   %ls  %p",
+           "%i %c %uc " AZ_TRAIT_FORMAT_STRING_PRINTF_CHAR AZ_TRAIT_FORMAT_STRING_PRINTF_WCHAR " %i %i %u %i %lu %li %llu %lli %f %f " AZ_TRAIT_FORMAT_STRING_PRINTF_STRING AZ_TRAIT_FORMAT_STRING_PRINTF_WSTRING " %p",
             v1, v2, v3, v4, v5, v6, v7, v8,  v9,  v10, v11, v12,  v13,  v14, v15, v16, v17, v18);
 
         // This shouldn't give a compile error
         AZStd::wstring::format(
-          L"%i  %c %uc  %hc %lc %i  %i  %u   %i   %lu  %li  %llu  %lli  %f   %f   %hs   %ls  %p",
+          L"%i %c %uc " AZ_TRAIT_FORMAT_STRING_WPRINTF_CHAR AZ_TRAIT_FORMAT_STRING_WPRINTF_WCHAR " %i %i %u %i %lu %li %llu %lli %f %f " AZ_TRAIT_FORMAT_STRING_WPRINTF_STRING AZ_TRAIT_FORMAT_STRING_WPRINTF_WSTRING " %p",
             v1, v2, v3, v4, v5, v6, v7, v8, v9, v10, v11, v12, v13, v14, v15, v16, v17, v18);
 
         class WrappedInt

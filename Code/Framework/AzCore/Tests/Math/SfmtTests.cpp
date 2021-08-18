@@ -8,6 +8,7 @@
 
 #include <AzCore/Math/Sfmt.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AzCore/Math/Vector4.h>
 
 using namespace AZ;
 

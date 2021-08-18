@@ -14,7 +14,7 @@ namespace AZ
     {
         if (alignment == 0)
         {
-            // Some STL containers, like std::vector, are assuming a specific minimum alignment. seems to have a requirement
+            // Some STL containers, like std::vector, seem to have a requirement where a specific minimum alignment will be chosen when the alignment is set to 0
             // Take a look at _Allocate_manually_vector_aligned in xmemory0
             alignment = sizeof(void*) * 2; 
         }
@@ -39,7 +39,7 @@ namespace AZ
     {
         if (newAlignment == 0)
         {
-            // Some STL containers, like std::vector, are assuming a specific minimum alignment. seems to have a requirement
+            // Some STL containers, like std::vector, seem to have a requirement where a specific minimum alignment will be chosen when the alignment is set to 0
             // Take a look at _Allocate_manually_vector_aligned in xmemory0
             newAlignment = sizeof(void*) * 2;
         }
@@ -63,7 +63,7 @@ namespace AZ
     {
         if (newAlignment == 0)
         {
-            // Some STL containers, like std::vector, are assuming a specific minimum alignment. seems to have a requirement
+            // Some STL containers, like std::vector, seem to have a requirement where a specific minimum alignment will be chosen when the alignment is set to 0
             // Take a look at _Allocate_manually_vector_aligned in xmemory0
             newAlignment = sizeof(void*) * 2;
         }
