@@ -99,8 +99,7 @@ namespace AZ
         //! @return boolean true if any deferred console commands have executed, false otherwise
         virtual bool ExecuteDeferredConsoleCommands() = 0;
 
-        //! Clear out any deffered console commands that have failed to execute from
-        //! the deferred queue
+        //! Clear out any deferred console commands queue
         virtual void ClearDeferredConsoleCommands() = 0;
 
         //! HasCommand is used to determine if the console knows about a command.
