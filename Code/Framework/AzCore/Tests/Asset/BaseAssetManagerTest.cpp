@@ -364,7 +364,7 @@ namespace UnitTest
         IO::FileIOBase::SetInstance(nullptr);
         IO::FileIOBase::SetInstance(&m_fileIO);
         
-        ASSERT_EQ(AssetBus::QueuedEventCount(), 0);
+        ASSERT_EQ(AssetBus::GetOrCreateContext().m_queue.Count(), 0);
     }
 
     void DisklessAssetManagerBase::TearDown()
