@@ -52,16 +52,6 @@ public:
     AZ::Vector2 GetTerrainGridResolution() const override;
     AZ::Aabb GetTerrainAabb() const override;
 
-    float GetHeightSynchronous(float x, float y) const;
-    AZ::Vector3 GetNormalSynchronous(float x, float y) const;
-
-    /*
-    void GetSurfaceWeights(const AZ::Vector3& inPosition, Sampler sampleFilter, SurfaceData::SurfaceTagWeightMap& outSurfaceWeights) override;
-    void GetSurfacePoint(const AZ::Vector3& inPosition, Sampler sampleFilter, SurfaceData::SurfacePoint& outSurfacePoint) override;
-    void ProcessHeightsFromRegion(const AZ::Aabb& inRegion, const AZ::Vector2 stepSize, Sampler sampleFilter, SurfacePointRegionFillCallback perPositionCallback, TerrainDataReadyCallback onComplete = nullptr) override;
-    void ProcessSurfacePointsFromRegion(const AZ::Aabb& inRegion, const AZ::Vector2 stepSize, Sampler sampleFilter, SurfacePointRegionFillCallback perPositionCallback, TerrainDataReadyCallback onComplete = nullptr) override;
-    */
-
     //! Returns terrains height in meters at location x,y.
     //! @terrainExistsPtr: Can be nullptr. If != nullptr then, if there's no terrain at location x,y or location x,y is inside a terrain
     //! HOLE then *terrainExistsPtr will become false,
@@ -98,6 +88,18 @@ public:
         float x, float y, Sampler sampleFilter = Sampler::BILINEAR, bool* terrainExistsPtr = nullptr) const override;
 
 private:
+    float GetHeightSynchronous(float x, float y) const;
+    AZ::Vector3 GetNormalSynchronous(float x, float y) const;
+
+    /*
+    void GetSurfaceWeights(const AZ::Vector3& inPosition, Sampler sampleFilter, SurfaceData::SurfaceTagWeightMap& outSurfaceWeights)
+    override; void GetSurfacePoint(const AZ::Vector3& inPosition, Sampler sampleFilter, SurfaceData::SurfacePoint& outSurfacePoint)
+    override; void ProcessHeightsFromRegion(const AZ::Aabb& inRegion, const AZ::Vector2 stepSize, Sampler sampleFilter,
+    SurfacePointRegionFillCallback perPositionCallback, TerrainDataReadyCallback onComplete = nullptr) override; void
+    ProcessSurfacePointsFromRegion(const AZ::Aabb& inRegion, const AZ::Vector2 stepSize, Sampler sampleFilter,
+    SurfacePointRegionFillCallback perPositionCallback, TerrainDataReadyCallback onComplete = nullptr) override;
+    */
+
     // AZ::TickBus::Handler overrides ...
     void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
