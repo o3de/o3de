@@ -19,6 +19,7 @@ namespace AZ
 
 namespace ScriptCanvas
 {
+#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
     class GraphDataEventHandler : public AZ::SerializeContext::IEventHandler
     {
     public:
@@ -28,6 +29,7 @@ namespace ScriptCanvas
             reinterpret_cast<GraphData*>(classPtr)->OnDeserialized();
         }
     };
+#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
 
     void GraphData::Reflect(AZ::ReflectContext* context)
     {
@@ -40,7 +42,9 @@ namespace ScriptCanvas
 
             serializeContext->Class<GraphData>()
                 ->Version(4, &GraphData::VersionConverter)
+#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
                 ->EventHandler<GraphDataEventHandler>()
+#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
                 ->Field("m_nodes", &GraphData::m_nodes)
                 ->Field("m_connections", &GraphData::m_connections)
                 ->Field("m_dependentAssets", &GraphData::m_dependentAssets)

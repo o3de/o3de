@@ -210,7 +210,9 @@ void {{ Class.attrib['QualifiedName'] }}::Reflect(AZ::ReflectContext* context)
     {
         serializeContext->Class<{{ Class.attrib['QualifiedName'] }}, {{ baseClass }}>()
 {% if Class.attrib['EventHandler'] is defined %}
+#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
             ->EventHandler<{{ Class.attrib['EventHandler'] }}>()
+#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
 {% endif %}
 {% if Class.attrib['Version'] is defined %}
             ->Version({{ Class.attrib['Version'] }}{% if Class.attrib['VersionConverter'] is defined %}, &{{ Class.attrib['VersionConverter'] }}{% endif %})

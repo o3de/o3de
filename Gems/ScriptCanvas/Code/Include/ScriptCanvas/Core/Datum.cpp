@@ -2056,11 +2056,6 @@ namespace ScriptCanvas
         }
     }
 
-    void Datum::OnReadBegin()
-    {
-        OnSerializeBegin();
-    }
-
     void Datum::OnDeserialize()
     {
         if (m_type.GetType() == Data::eType::BehaviorContextObject)
@@ -2084,10 +2079,17 @@ namespace ScriptCanvas
         }
     }
 
+#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
+    void Datum::OnReadBegin()
+    {
+        OnSerializeBegin();
+    }
+
     void Datum::OnWriteEnd()
     {
         OnSerializeEnd();
     }
+#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
 
     void Datum::Reflect(AZ::ReflectContext* reflection)
     {
@@ -2095,7 +2097,9 @@ namespace ScriptCanvas
         {
             serializeContext->Class<Datum>()
                 ->Version(DatumHelpers::Version::Current, &DatumHelpers::VersionConverter)
+#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
                 ->EventHandler<SerializeContextEventHandler>()
+#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
                 ->Field("m_isUntypedStorage", &Datum::m_isOverloadedStorage)
                 ->Field("m_type", &Datum::m_type)
                 ->Field("m_originality", &Datum::m_originality)

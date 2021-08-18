@@ -771,10 +771,12 @@ namespace ScriptCanvas
                 Node::OnDeserialize();
             }
 
+#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
             void Method::OnWriteEnd()
             {
                 OnDeserialize();
             }
+#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
 
             bool Method::BranchesOnResult() const
             {
@@ -838,7 +840,9 @@ namespace ScriptCanvas
                 {
                     serializeContext->Class<Method, Node>()
                         ->Version(MethodCPP::eVersion::Current, &MethodCPP::MethodVersionConverter)
+#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
                         ->EventHandler<SerializeContextOnWriteEndHandler<Method>>()
+#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
                         ->Field("methodType", &Method::m_methodType)
                         ->Field("methodName", &Method::m_lookupName)
                         ->Field("className", &Method::m_className)

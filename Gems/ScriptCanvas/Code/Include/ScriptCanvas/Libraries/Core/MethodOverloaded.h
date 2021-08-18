@@ -33,7 +33,9 @@ namespace ScriptCanvas
                 , public OverloadContractInterface
             {
             private:
+#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
                 friend class SerializeContextReadWriteHandler<MethodOverloaded>;
+#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
 
             public:
                 static void Reflect(AZ::ReflectContext* reflectContext);
@@ -91,12 +93,14 @@ namespace ScriptCanvas
                 // \todo make execution thread sensitive, which can then support generic programming
                 Grammar::FunctionPrototype GetInputSignature() const;
 
+#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
                 // SerializeContextReadWriteHandler
                 void OnReadBegin() {}
                 void OnReadEnd() {}
 
                 void OnWriteBegin();
                 void OnWriteEnd();
+#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
 
                 void OnDeserialize() override;
 

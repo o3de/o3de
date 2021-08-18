@@ -236,6 +236,7 @@ namespace ScriptCanvas
             }
         };
 
+#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
         class SerializeContextEventHandler : public AZ::SerializeContext::IEventHandler
         {
         public:
@@ -253,6 +254,7 @@ namespace ScriptCanvas
                 datum->OnWriteEnd();
             }
         };
+#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
 
         friend class SerializeContextEventHandler;
 
@@ -353,10 +355,12 @@ namespace ScriptCanvas
         void OnSerializeBegin() override;
 
         void OnDeserialize() override;
-
+               
+#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
         void OnReadBegin();
 
         void OnWriteEnd();
+#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
 
         AZ_INLINE bool SatisfiesTraits(AZ::u8 behaviorValueTraits) const;
 

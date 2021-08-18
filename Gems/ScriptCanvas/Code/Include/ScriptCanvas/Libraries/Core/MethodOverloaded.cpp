@@ -60,7 +60,9 @@ namespace ScriptCanvas
                 {
                     serializeContext->Class<MethodOverloaded, Method>()
                         ->Version(MethodOverloadedCpp::Version::Current, &MethodOverloadedVersionConverter)
+#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
                         ->EventHandler<SerializeContextReadWriteHandler<MethodOverloaded>>()
+#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
                         ->Field("orderedInputSlotIds", &MethodOverloaded::m_orderedInputSlotIds)
                         ->Field("outputSlotIds", &MethodOverloaded::m_outputSlotIds)
                         ;
@@ -397,6 +399,7 @@ namespace ScriptCanvas
                 return signature;
             }
 
+#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
             void MethodOverloaded::OnWriteBegin()
             {
             }
@@ -405,6 +408,7 @@ namespace ScriptCanvas
             {
                 OnDeserialize();
             }
+#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
 
             void MethodOverloaded::OnDeserialize()
             {

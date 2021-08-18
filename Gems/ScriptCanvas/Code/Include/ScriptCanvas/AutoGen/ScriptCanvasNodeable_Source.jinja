@@ -160,7 +160,9 @@ void {{attribute_QualifiedName}}::Reflect(AZ::ReflectContext* context)
     {
 {% if ExtendReflectionSerialize is defined %}   auto {{preSerialize}} = {% else %}   {% endif %}serializeContext->Class<{{ attribute_Name }}{% if attribute_Base is defined %}, {{ attribute_Base }}{% endif %}>(){{postSerialize}}
 {% if attribute_EventHandler is defined %}
+#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
             {{preSerialize}}->EventHandler<{{ attribute_EventHandler }}>(){{postSerialize}}
+#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
 {% endif %}
 
 {# Serialized Properties #}

@@ -109,7 +109,9 @@ namespace ScriptCanvas
 
                 void OnDeserialize();
 
+#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
                 void OnWriteEnd();
+#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
 
                 virtual bool IsMethodOverloaded() const { return false; }
 

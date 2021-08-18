@@ -63,6 +63,7 @@ namespace ScriptCanvas
 
     struct BehaviorContextMethodHelper;
 
+#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
     template<typename t_Class>
     class SerializeContextReadWriteHandler : public AZ::SerializeContext::IEventHandler
     {
@@ -126,6 +127,7 @@ namespace ScriptCanvas
             deserializedObject->OnWriteEnd();
         }
     };
+#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
 
     // List of slots that will be create visual only slots on the nodes.
     // Useful for special configurations or editor only concepts.
