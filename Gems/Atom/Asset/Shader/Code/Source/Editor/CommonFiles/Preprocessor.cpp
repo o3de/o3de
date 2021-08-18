@@ -8,11 +8,6 @@
 
 #include <AzCore/PlatformDef.h>
 
-#define MCPP_DLL_IMPORT 1
-#define MCPP_DONT_USE_SHORT_NAMES 1
-#include <mcpp_lib.h>
-#undef MCPP_DLL_IMPORT
-
 #include <CommonFiles/Preprocessor.h>
 
 #include <AzCore/std/string/string.h>
@@ -30,8 +25,6 @@
 #include <AzToolsFramework/Debug/TraceContext.h>
 
 #include <AtomCore/Serialization/Json/JsonUtils.h>
-
-#include <sstream>
 
 namespace AZ
 {
@@ -83,123 +76,124 @@ namespace AZ
             }
         }
 
-        //! Binder helper to Matsui C-Pre-Processor library
-        class McppBinder
+        ///////////////////////////////////////////////////////////////////////
+        // McppBinder starts
+        bool McppBinder::StartPreprocessWithCommandLine(int argc, const char* argv[])
         {
-        public:
-            McppBinder(PreprocessorData& out, bool plugERR)
-                : m_outputData(out),
-                  m_plugERR(plugERR)
+            int errorCode = mcpp_lib_main(argc, argv);
+            // convert from std::ostringstring to AZStd::string
+            m_outputData.code = m_outStream.str().c_str();
+            m_outputData.diagnostics = m_errStream.str().c_str();
+            return errorCode == 0;
+        }
+
+        int McppBinder::Putc_StaticHinge(int c, MCPP_OUTDEST od)
+        {
+            char asString[2] = { aznumeric_cast<char>(c), 0 };
+            return Fputs_StaticHinge(asString, od);
+        }
+
+        int McppBinder::Fputs_StaticHinge(const char* s, MCPP_OUTDEST od)
+        {
+            if (!OkToLog(od))
             {
-                // single live instance
-                s_mcppExclusiveProtection.lock();
-                s_currentInstance = this;
-                SetupMcppCallbacks();
+                return 0;
             }
-            ~McppBinder()
+            // chose the proper stream
+            auto& selectedStream = od == MCPP_OUT ? s_currentInstance->m_outStream : s_currentInstance->m_errStream;
+            auto tellBefore = selectedStream.tellp();
+            // append that message to it
+            selectedStream << s;
+            return aznumeric_cast<int>(selectedStream.tellp() - tellBefore);
+        }
+
+        int McppBinder::Fprintf_StaticHinge(MCPP_OUTDEST od, const char* format, ...)
+        {
+            if (!OkToLog(od))
             {
-                s_currentInstance = nullptr;
-                s_mcppExclusiveProtection.unlock();
+                return 0;
             }
+            // run the formatting on stack memory first, in case it's enough
+            char localBuffer[DefaultFprintfBufferSize];
 
-            bool StartPreprocessWithCommandLine(int argc, const char* argv[])
+            va_list args;
+            
+            va_start(args, format);
+            int count = azvsnprintf(localBuffer, DefaultFprintfBufferSize, format, args);
+            va_end(args);
+            
+            char* result = localBuffer;
+
+            // @result will be bound to @biggerData in case @localBuffer is not big enough.
+            std::unique_ptr<char[]> biggerData;
+            // ">=" is the right comparison because in case count == bufferSize
+            // We will need an extra byte to accomodate the '\0' ending character.
+            if (count >= DefaultFprintfBufferSize)
             {
-                int errorCode = mcpp_lib_main(argc, argv);
-                // convert from std::ostringstring to AZStd::string
-                m_outputData.code = m_outStream.str().c_str();
-                m_outputData.diagnostics = m_errStream.str().c_str();
-                return errorCode == 0;
-            }
-
-        private:
-
-            // ====== C-API compatible "Static Hinges" (plain free functions) ======
-            // : capturing-lambdas, function-objects, bind-expression; can't be decayed to function pointers,
-            // because they hold runtime-dynamic type-erased states. So we need intermediates
-
-            // entry point from mcpp. hijacking its output
-            static int Putc_StaticHinge(int c, MCPP_OUTDEST od)
-            {
-                char asString[2] = { aznumeric_cast<char>(c), 0 };
-                return Fputs_StaticHinge(asString, od);
-            }
-
-            // entry point from mcpp. hijacking its output
-            static int Fputs_StaticHinge(const char* s, MCPP_OUTDEST od)
-            {
-                if (!OkToLog(od))
-                {
-                    return 0;
-                }
-                // chose the proper stream
-                auto& selectedStream = od == MCPP_OUT ? s_currentInstance->m_outStream : s_currentInstance->m_errStream;
-                auto tellBefore = selectedStream.tellp();
-                // append that message to it
-                selectedStream << s;
-                return aznumeric_cast<int>(selectedStream.tellp() - tellBefore);
-            }
-
-            // entry point from mcpp. hijacking its output
-            static int Fprintf_StaticHinge(MCPP_OUTDEST od, const char* format, ...)
-            {
-                if (!OkToLog(od))
-                {
-                    return 0;
-                }
-                // run the formatting on stack memory first, in case it's enough
-                constexpr int bufferSize = 256;
-                char localBuffer[bufferSize];
-                va_list args;
+                // There wasn't enough space in the local store.
+                count++; // vsnprintf returns a size that doesn't include the null character.
+                biggerData.reset(new char[count]);
+                result = &biggerData[0];
+                
+                // Remark: for MacOS & Linux it is important to call va_start again before
+                // each call to azvsnprintf. Not required for Windows.
                 va_start(args, format);
-                int count = azvsnprintf(localBuffer, 256, format, args);
-                AZStd::unique_ptr<char[]> biggerData;  // will be bound to a bigger array if necessary.
-                char* result = localBuffer;
-                if (count > bufferSize)
-                {   // there wasn't enough space in the local store.
-                    biggerData.reset(new char[count]);
-                    result = &biggerData[0];  // change `result`'s pointee
-                    count = azvsnprintf(result, count, format, args);
-                }
-                AZ_Error("Preprocessor", count >= 0, "String formatting of pre-precessor output failed");
+                count = azvsnprintf(result, count, format, args);
                 va_end(args);
-                return Fputs_StaticHinge(result, od);
             }
-
-            static void IncludeReport_StaticHinge(FILE*, const char*, const char*, const char* path)
+            else if (count == -1)
             {
-                s_currentInstance->m_outputData.includedPaths.insert(path);
+                // In Windows azvsnprintf will always return -1 if  @localBuffer is not big enough,
+                // But it will write in @localBuffer what it could.
+                // See:
+                // https://docs.microsoft.com/en-us/cpp/c-runtime-library/reference/vsnprintf-vsnprintf-vsnprintf-l-vsnwprintf-vsnwprintf-l?view=msvc-160
+                // In particular: "If the number of characters to write is greater than count,
+                // these functions return -1 indicating that output has been truncated."
+                
+                // There wasn't enough space in the local store.
+                // Remark: for MacOS & Linux it is important to call va_start again before
+                // each call to azvsnprintf. Not required for Windows.
+                va_start(args, format);
+                count = azvscprintf(format, args) + 1; // vscprintf returns a size that doesn't include the null character.
+                va_end(args);
+                
+                biggerData.reset(new char[count]);
+                result = &biggerData[0];
+                
+                va_start(args, format);
+                count = azvsnprintf(result, count, format, args);
+                va_end(args);
             }
 
-            // ====== utility methods =====
+            AZ_Error("Preprocessor", count >= 0, "String formatting of pre-precessor output failed");
+            return Fputs_StaticHinge(result, od);
+        }
 
-            static bool OkToLog(MCPP_OUTDEST od)
-            {
-                bool isErrButOk = od == MCPP_ERR && s_currentInstance->m_plugERR;
-                return od == MCPP_OUT || isErrButOk;
-            }
+        void McppBinder::IncludeReport_StaticHinge(FILE*, const char*, const char*, const char* path)
+        {
+            s_currentInstance->m_outputData.includedPaths.insert(path);
+        }
 
-            static void SetupMcppCallbacks()
-            {
-                // callback for header included notification
-                mcpp_set_report_include_callback(IncludeReport_StaticHinge);
-                // callback for output redirection
-                mcpp_set_out_func(Putc_StaticHinge, Fputs_StaticHinge, Fprintf_StaticHinge);
-            }
+        bool McppBinder::OkToLog(MCPP_OUTDEST od)
+        {
+            bool isErrButOk = od == MCPP_ERR && s_currentInstance->m_plugERR;
+            return od == MCPP_OUT || isErrButOk;
+        }
 
-            // ====== instance data ======
-            PreprocessorData& m_outputData;
-            std::ostringstream m_outStream, m_errStream;
-            bool m_plugERR;
-
-            // ======  shared data  ======
-            // MCPP is a library with tons of non TLS global states, it can only be accessed by one client at a time.
-            static AZStd::mutex s_mcppExclusiveProtection;
-            static McppBinder* s_currentInstance;
-        };
+        void McppBinder::SetupMcppCallbacks()
+        {
+            // callback for header included notification
+            mcpp_set_report_include_callback(IncludeReport_StaticHinge);
+            // callback for output redirection
+            mcpp_set_out_func(Putc_StaticHinge, Fputs_StaticHinge, Fprintf_StaticHinge);
+        }
 
         // definitions for the linker
         AZStd::mutex McppBinder::s_mcppExclusiveProtection;
         McppBinder*  McppBinder::s_currentInstance = nullptr;
+
+        // McppBinder ends
+        ///////////////////////////////////////////////////////////////////////
 
         bool PreprocessFile(const AZStd::string& fullPath, PreprocessorData& outputData, const PreprocessorOptions& options
             , bool collectDiagnostics, bool preprocessIncludedFiles)

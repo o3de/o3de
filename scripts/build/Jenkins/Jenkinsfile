@@ -634,6 +634,40 @@ try {
                             pipelineParameters.add(booleanParam(defaultValue: true, description: '', name: platform.key))
                         }
                     }
+                    // Add additional Jenkins parameters
+                    pipelineConfig.platforms.each { platform ->
+                        platformEnv = platform.value.PIPELINE_ENV
+                        pipelineJenkinsParameters = platformEnv['PIPELINE_JENKINS_PARAMETERS'] ?: [:]
+                        jenkinsParametersToAdd = pipelineJenkinsParameters[pipelineName] ?: [:]
+                        jenkinsParametersToAdd.each{ jenkinsParameter ->
+                            defaultValue = jenkinsParameter['default_value']
+                            // Use last run's value as default value so we can save values in different Jenkins environment
+                            if (jenkinsParameter['use_last_run_value']?.toBoolean()) {
+                                defaultValue = params."$jenkinsParameter['parameter_name']" ?: jenkinsParameter['default_value']
+                            }
+                            switch (jenkinsParameter['parameter_type']) {
+                                case 'string':
+                                    pipelineParameters.add(stringParam(defaultValue: defaultValue,
+                                                                   description: jenkinsParameter['description'],
+                                                                   name: jenkinsParameter['parameter_name']
+                                                                   ))
+                                    break
+                                case 'boolean':
+                                    pipelineParameters.add(booleanParam(defaultValue: defaultValue,
+                                                                   description: jenkinsParameter['description'],
+                                                                   name: jenkinsParameter['parameter_name']
+                                                                   ))
+                                    break
+                                case 'password':
+                                    pipelineParameters.add(password(defaultValue: defaultValue,
+                                                                   description: jenkinsParameter['description'],
+                                                                   name: jenkinsParameter['parameter_name']
+                                                                   ))
+                                    break
+                            }
+                        }
+                    }
+
                     pipelineProperties.add(parameters(pipelineParameters))
                     properties(pipelineProperties)
 
