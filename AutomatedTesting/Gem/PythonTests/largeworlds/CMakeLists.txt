@@ -159,7 +159,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         NAME AutomatedTesting::GradientSignalTests_Periodic
         TEST_SERIAL
         TEST_SUITE periodic
-        PATH ${CMAKE_CURRENT_LIST_DIR}/gradient_signal
+        PATH ${CMAKE_CURRENT_LIST_DIR}/gradient_signal/test_GradientSignal_Periodic.py
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             Legacy::Editor
