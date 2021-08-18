@@ -73,5 +73,18 @@ namespace AZ
         {
             return aznew PlatformLimitsDescriptor;
         }
+
+        void PlatformLimitsDescriptor::LoadPlatformLimitsDescriptor(const char* rhiName)
+        {
+            auto settingsRegistry = AZ::SettingsRegistry::Get();
+            AZStd::string platformLimitsRegPath = AZStd::string::format("/Amazon/Atom/RHI/PlatformLimits/%s", rhiName);
+            if (!(settingsRegistry &&
+                  settingsRegistry->GetObject(this, azrtti_typeid(this), platformLimitsRegPath.c_str())))
+            {
+                AZ_Warning(
+                    "Device", false, "Platform limits for %s %s is not loaded correctly. Will use default values.",
+                    AZ_TRAIT_OS_PLATFORM_NAME, rhiName);
+            }
+        }
     }
 }

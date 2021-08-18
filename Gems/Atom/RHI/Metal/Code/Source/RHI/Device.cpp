@@ -9,7 +9,6 @@
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI.Reflect/Metal/PlatformLimitsDescriptor.h>
 #include <AzCore/Debug/EventTrace.h>
-#include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
@@ -33,16 +32,7 @@ namespace AZ
         Device::Device()
         {
             RHI::Ptr<PlatformLimitsDescriptor> platformLimitsDescriptor = aznew PlatformLimitsDescriptor();
-            auto settingsRegistry = AZ::SettingsRegistry::Get();
-            AZStd::string platformLimitsRegPath =
-                AZStd::string::format("/Amazon/Atom/RHI/PlatformLimits/%s", RHI::Factory::Get().GetName().GetCStr());
-            if (!(settingsRegistry
-                && settingsRegistry->GetObject(platformLimitsDescriptor.get(), azrtti_typeid(platformLimitsDescriptor.get()), platformLimitsRegPath.c_str())))
-            {
-                AZ_Warning(
-                    "Device", false, "Platform limits for %s %s is not loaded correctly. Will use default values.",
-                    AZ_TRAIT_OS_PLATFORM_NAME, RHI::Factory::Get().GetName().GetCStr());
-            }
+            platformLimitsDescriptor->LoadPlatformLimitsDescriptor(RHI::Factory::Get().GetName().GetCStr());
             m_descriptor.m_platformLimitsDescriptor = RHI::Ptr<RHI::PlatformLimitsDescriptor>(platformLimitsDescriptor);
         }
 
