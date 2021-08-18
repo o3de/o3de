@@ -367,17 +367,17 @@ namespace AzToolsFramework
                 AZ::EntityId parentId;
                 AZ::Vector3 position = AZ::Vector3::CreateZero();
 
-                // if one entity is selected, set it as parent
                 EntityIdList selectedEntities;
                 ToolsApplicationRequestBus::BroadcastResult(selectedEntities, &ToolsApplicationRequests::GetSelectedEntities);
+                // if one entity is selected, instantiate prefab as its child and place it at same position as parent
                 if (selectedEntities.size() == 1)
                 {
                     parentId = selectedEntities.front();
                     AZ::TransformBus::EventResult(position, parentId, &AZ::TransformInterface::GetWorldTranslation);
                 }
+                // otherwise instantiate it at root level and center of viewport
                 else
                 {
-                    // Get position (center of viewport). If no viewport is available, (0,0,0) will be used.
                     EditorRequestBus::BroadcastResult(position, &EditorRequestBus::Events::GetWorldPositionAtViewportCenter);
                 }
 
