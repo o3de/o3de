@@ -60,11 +60,13 @@ set(FILES
     SerializeContextFixture.h
     Slice.cpp
     State.cpp
+    Statistics.cpp
     StreamerTests.cpp
     StringFunc.cpp
     SystemFile.cpp
     TaskTests.cpp
     TickBusTest.cpp
+    TimeDataStatistics.cpp
     UUIDTests.cpp
     XML.cpp
     Debug/AssetTracking.cpp

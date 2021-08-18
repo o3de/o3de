@@ -130,7 +130,6 @@ namespace AZ
     template<typename T, size_t ElementsPerPage, class Allocator>
     struct StableDynamicArray<T, ElementsPerPage, Allocator>::Page
     {
-        static constexpr size_t PageSize = ElementsPerPage * sizeof(T);
         static constexpr size_t InvalidPage = -1;
         static constexpr uint64_t FullBits = 0xFFFFFFFFFFFFFFFFull;
         static constexpr size_t NumUint64_t = ElementsPerPage / 64;
