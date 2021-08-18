@@ -177,6 +177,10 @@ namespace AZ
 
                 // Shadow filter method of the light
                 ShadowFilterMethod m_shadowFilterMethod = ShadowFilterMethod::None;
+
+                // If true, this will reduce the shadow acne introduced by large pcf kernels by estimating the angle of the triangle being shaded
+                // with the ddx/ddy functions. 
+                bool m_isReceiverPlaneBiasEnabled = true;
             };
 
             static void Reflect(ReflectContext* context);
@@ -218,6 +222,7 @@ namespace AZ
             void SetFilteringSampleCount(LightHandle handle, uint16_t count) override;
             void SetShadowBoundaryWidth(LightHandle handle, float boundaryWidth) override;
             void SetPcfMethod(LightHandle handle, PcfMethod method) override;
+            void SetShadowReceiverPlaneBiasEnable(LightHandle handle, bool enable) override;
 
             const Data::Instance<RPI::Buffer> GetLightBuffer() const;
             uint32_t GetLightCount() const;
@@ -371,6 +376,7 @@ namespace AZ
 
             Name m_lightTypeName = Name("directional");
             Name m_directionalShadowFilteringMethodName = Name("o_directional_shadow_filtering_method");
+            Name m_directionalShadowReceiverPlaneBiasEnableName = Name("o_directional_shadow_receiver_plane_bias_enable");
             static constexpr const char* FeatureProcessorName = "DirectionalLightFeatureProcessor";
         };
     } // namespace Render

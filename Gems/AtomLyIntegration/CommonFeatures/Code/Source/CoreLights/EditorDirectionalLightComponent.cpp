@@ -164,9 +164,13 @@ namespace AZ
                             ->EnumAttribute(PcfMethod::Bicubic, "Bicubic")
                             ->EnumAttribute(PcfMethod::BoundarySearch, "Boundary search")
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
-                            ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowPcfDisabled);
-                            ;
-
+                            ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowPcfDisabled)
+                        ->DataElement(
+                            Edit::UIHandlers::CheckBox, &DirectionalLightComponentConfig::m_receiverPlaneBiasEnabled,
+                            "Shadow Receiver Plane Bias Enable",
+                            "This reduces shadow acne when using large pcf kernels.")
+                          ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
+                          ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsShadowPcfDisabled);
                 }
             }
 

@@ -21,7 +21,7 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<DirectionalLightComponentConfig, ComponentConfig>()
-                    ->Version(7)
+                    ->Version(8)
                     ->Field("Color", &DirectionalLightComponentConfig::m_color)
                     ->Field("IntensityMode", &DirectionalLightComponentConfig::m_intensityMode)
                     ->Field("Intensity", &DirectionalLightComponentConfig::m_intensity)
@@ -41,7 +41,7 @@ namespace AZ
                     ->Field("PcfPredictionSampleCount", &DirectionalLightComponentConfig::m_predictionSampleCount)
                     ->Field("PcfFilteringSampleCount", &DirectionalLightComponentConfig::m_filteringSampleCount)
                     ->Field("Pcf Method", &DirectionalLightComponentConfig::m_pcfMethod)
-                ;
+                    ->Field("ShadowReceiverPlaneBiasEnabled", &DirectionalLightComponentConfig::m_receiverPlaneBiasEnabled);
             }
         }
 

@@ -168,6 +168,10 @@ namespace AZ
 
             //! Sets the shadowmap Pcf method.
             virtual void SetPcfMethod(LightHandle handle, PcfMethod method) = 0;
+
+            //! Sets whether the directional shadowmap should use receiver plane bias.
+            //! This attempts to reduce shadow acne when using large pcf filters.
+            virtual void SetShadowReceiverPlaneBiasEnable(LightHandle handle, bool enable) = 0;
         };
     } // namespace Render
 } // namespace AZ
