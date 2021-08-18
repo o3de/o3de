@@ -15,8 +15,6 @@
 #include <AzCore/JSON/writer.h>
 #include <AzCore/Serialization/Json/JsonSerializationResult.h>
 
-// hello?
-
 namespace AZ
 {
     namespace IO
