@@ -61,7 +61,7 @@ namespace AzToolsFramework
             m_prefabUndoCache.Destroy();
         }
 
-        PrefabOperationResult PrefabPublicHandler::CreatePrefabInMemory(const AZStd::vector<AZ::EntityId>& entityIds, AZ::IO::PathView filePath)
+        PrefabOperationResult PrefabPublicHandler::CreatePrefabInMemory(const EntityIdList& entityIds, AZ::IO::PathView filePath)
         {
             EntityList inputEntityList, topLevelEntities;
             AZ::EntityId commonRootEntityId;
@@ -264,7 +264,7 @@ namespace AzToolsFramework
             return AZ::Success();
         }
 
-        PrefabOperationResult PrefabPublicHandler::CreatePrefabInDisk(const AZStd::vector<AZ::EntityId>& entityIds, AZ::IO::PathView filePath)
+        PrefabOperationResult PrefabPublicHandler::CreatePrefabInDisk(const EntityIdList& entityIds, AZ::IO::PathView filePath)
         {
             auto result = CreatePrefabInMemory(entityIds, filePath);
             if (result.IsSuccess())
