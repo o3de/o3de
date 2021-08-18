@@ -77,7 +77,7 @@ namespace UnitTest
     class ViewportManipulatorControllerFixture : public AllocatorsTestFixture
     {
     public:
-        static const AzFramework::ViewportId TestViewportId = AzFramework::ViewportId(0);
+        static const AzFramework::ViewportId TestViewportId;
 
         void SetUp() override
         {
@@ -107,6 +107,8 @@ namespace UnitTest
         AzFramework::ViewportControllerListPtr m_controllerList;
         AZStd::unique_ptr<AzToolsFramework::QtEventToAzInputMapper> m_inputChannelMapper;
     };
+
+    const AzFramework::ViewportId ViewportManipulatorControllerFixture::TestViewportId = AzFramework::ViewportId(0);
 
     TEST_F(ViewportManipulatorControllerFixture, An_event_is_not_propagated_to_the_viewport_when_a_manipulator_handles_it_first)
     {
