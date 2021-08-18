@@ -8,10 +8,14 @@
 #include "EditorEntitySortComponent.h"
 #include "EditorEntityInfoBus.h"
 #include "EditorEntityHelpers.h"
+
+#include <AzCore/Component/TransformBus.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/std/sort.h>
+
+#include <AzFramework/API/ApplicationAPI.h>
 
 #include <AzToolsFramework/Entity/EditorEntitySortComponentSerializer.h>
 
@@ -278,6 +282,55 @@ namespace AzToolsFramework
 
         void EditorEntitySortComponent::Activate()
         {
+            bool isPrefabEnabled = false;
+            AzFramework::ApplicationRequests::Bus::BroadcastResult(
+                isPrefabEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+
+            if (isPrefabEnabled)
+            {
+                // In Prefab mode, ensure the sort array loaded from json is valid.
+
+                AzToolsFramework::EntityIdList children;
+                AZ::TransformBus::EventResult(children, GetEntityId(), &AZ::TransformBus::Events::GetChildren);
+
+                EntityOrderArray newChildEntityOrderArray;
+                newChildEntityOrderArray.reserve(children.size());
+
+                // Remove all entities from the array that aren't children of this entity.
+                for (AZ::EntityId entityId : m_childEntityOrderArray)
+                {
+                    if (AZStd::find(children.begin(), children.end(), entityId) != children.end())
+                    {
+                        newChildEntityOrderArray.push_back(entityId);
+                    }
+                }
+
+                // Add children to the new array if they weren't in the array we loaded.
+                for (AZ::EntityId childId : children)
+                {
+                    if (AZStd::find(m_childEntityOrderArray.begin(), m_childEntityOrderArray.end(), childId) ==
+                        m_childEntityOrderArray.end())
+                    {
+                        newChildEntityOrderArray.push_back(childId);
+                    }
+                }
+
+                if (m_childEntityOrderArray != newChildEntityOrderArray)
+                {
+                    m_childEntityOrderArray.swap(newChildEntityOrderArray);
+                    RebuildEntityOrderCache();
+                    m_entityOrderIsDirty = true;
+
+                    AzToolsFramework::ScopedUndoBatch undoBatch("Store Child Entity Order to Prefab");
+                    undoBatch.MarkEntityDirty(GetEntityId());
+
+                    AZ_Warning(
+                        "Entity Sort Order", false,
+                        "Entity '%s' was loaded with an invalid sorting array. A new one was generated and the prefab template was "
+                        "updated.");
+                }
+            }
+
             // Send out that the order for our entity is now updated
             EditorEntitySortNotificationBus::Event(GetEntityId(), &EditorEntitySortNotificationBus::Events::ChildEntityOrderArrayUpdated);
         }
