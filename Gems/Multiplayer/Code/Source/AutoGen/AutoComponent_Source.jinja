@@ -1544,8 +1544,8 @@ namespace {{ Component.attrib['Namespace'] }}
 {{ DefineNetworkPropertyGets(Component, 'Authority', 'Client', true, ComponentBaseName)|indent(4) }}
 {{ DefineNetworkPropertyGets(Component, 'Autonomous', 'Authority', true, ComponentBaseName)|indent(4) }}
 {{ DefineArchetypePropertyGets(Component, ClassType, ComponentBaseName)|indent(4) -}}
-{{ DefineRpcInvocations(Component, ComponentBaseName, 'Server', 'Authority', false)|indent(4) -}}
-{{ DefineRpcInvocations(Component, ComponentBaseName, 'Server', 'Authority', true)|indent(4) }}
+{{ DefineRpcInvocations(Component, ControllerBaseName, 'Server', 'Authority', false)|indent(4) -}}
+{{ DefineRpcInvocations(Component, ControllerBaseName, 'Server', 'Authority', true)|indent(4) }}
 
     void {{ ComponentBaseName }}::SetOwningConnectionId([[maybe_unused]] AzNetworking::ConnectionId connectionId)
     {
