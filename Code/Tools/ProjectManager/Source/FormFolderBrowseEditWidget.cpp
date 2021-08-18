@@ -12,7 +12,6 @@
 #include <QFileDialog>
 #include <QLineEdit>
 #include <QStandardPaths>
-#include <QKeyEvent>
 
 namespace O3DE::ProjectManager
 {
