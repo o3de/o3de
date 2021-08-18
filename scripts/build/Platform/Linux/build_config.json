@@ -92,7 +92,7 @@
     "PARAMETERS": {
       "CONFIGURATION": "profile",
       "OUTPUT_DIRECTORY": "build/linux",
-      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=FALSE -DLY_PARALLEL_LINK_JOBS=4",
+      "CMAKE_OPTIONS": "-G 'Ninja Multi-Config' -DCMAKE_C_COMPILER=clang-6.0 -DCMAKE_CXX_COMPILER=clang++-6.0 -DLY_UNITY_BUILD=FALSE -DLY_PARALLEL_LINK_JOBS=4 -DLY_GOOGLETEST_EXTRA_PARAMS=*aral*",
       "CMAKE_LY_PROJECTS": "AutomatedTesting",
       "CMAKE_TARGET": "all",
       "CTEST_OPTIONS": "-E Gem::EMotionFX.Editor.Tests -LE SUITE_sandbox -L FRAMEWORK_googletest -R AZ::AzCore.Tests.main --output-on-failure --stop-on-failure --repeat-until-fail 100"
