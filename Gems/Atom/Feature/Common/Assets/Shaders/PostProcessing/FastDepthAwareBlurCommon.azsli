@@ -109,7 +109,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         // The higher this value, the sharper edges will appear
         float m_depthFalloffStrength;
 
-        uint PADDING;
+        uint m_padding;
     };
     FastDepthAwareBlurPassConstants m_constants;
 
