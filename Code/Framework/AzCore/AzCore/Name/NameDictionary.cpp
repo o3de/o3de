@@ -166,7 +166,7 @@ namespace AZ
         }
     }
 
-    void NameDictionary::TryReleaseName(Internal::NameData* nameData)
+    void NameDictionary::TryReleaseName(Name::Hash hash)
     {
         // Note that we don't remove NameData from the dictionary if it has been involved in a collision.
         // This avoids specific edge cases where a Name object could get an incorrect hash value. Consider
@@ -179,14 +179,6 @@ namespace AZ
         //      the dictionary *again*, this time with hash value 1000. Name objects pointing to the original
         //      entry and Name objects pointing to the new entry will fail comparison operations.
 
-        // Early exit to avoid locking the mutex unnecessarily.
-        if (nameData->m_hashCollision)
-        {
-            return;
-        }
-
-        // Get the hash before locking since another thread could be deleting the object within the lock
-        Internal::NameData::Hash hash = nameData->GetHash();
 
         AZStd::unique_lock<AZStd::shared_mutex> lock(m_sharedMutex);
 
@@ -202,7 +194,7 @@ namespace AZ
             return;
         }
 
-        nameData = dictIt->second; // restore the pointer in case the intrusive ptr was already assigned by other thread
+        Internal::NameData* nameData = dictIt->second; // restore the pointer in case the intrusive ptr was already assigned by other thread
 
         // Check m_hashCollision again inside the m_sharedMutex because a new collision could have happened
         // on another thread before taking the lock.
