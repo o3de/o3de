@@ -11,13 +11,6 @@ ly_get_list_relative_pal_filename(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Sourc
 
 include(${pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake) # PAL_TRAIT_ATOM_RHI_DX12_SUPPORTED
 
-if(PAL_TRAIT_PIX_AVAILABLE)
-    set(PIX_BUILD_DEPENDENCY "3rdParty::pix")
-else()
-    set(PIX_BUILD_DEPENDENCY "")
-endif()
-
-
 if(PAL_TRAIT_AFTERMATH_AVAILABLE)
     set(USE_NSIGHT_AFTERMATH_DEFINE $<IF:$<CONFIG:release>,"","USE_NSIGHT_AFTERMATH">)
     set(AFTERMATH_BUILD_DEPENDENCY "3rdParty::Aftermath")
@@ -90,7 +83,6 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
-            ${PIX_BUILD_DEPENDENCY}
             Gem::Atom_RHI.Reflect
 )
 
@@ -116,7 +108,6 @@ ly_add_target(
             Gem::Atom_RHI_DX12.Reflect
             3rdParty::d3dx12
             ${AFTERMATH_BUILD_DEPENDENCY}           
-            ${PIX_BUILD_DEPENDENCY}
     COMPILE_DEFINITIONS 
         PRIVATE
             ${USE_NSIGHT_AFTERMATH_DEFINE}
@@ -142,7 +133,6 @@ ly_add_target(
             Gem::Atom_RHI.Public
             Gem::Atom_RHI_DX12.Reflect
             Gem::Atom_RHI_DX12.Private.Static
-            ${PIX_BUILD_DEPENDENCY}
 )
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)

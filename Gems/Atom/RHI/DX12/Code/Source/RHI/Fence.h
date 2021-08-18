@@ -7,6 +7,8 @@
  */
 #pragma once
 
+// NOTE: We are careful to include platform headers *before* we include AzCore/Debug/Profiler.h to ensure that d3d12 symbols
+// are defined prior to the inclusion of the pix3 runtime.
 #include <RHI/DX12.h>
 
 #include <Atom/RHI/Fence.h>
