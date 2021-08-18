@@ -192,8 +192,9 @@ namespace UnitTest
             return true;
         }
 
-        bool OnOutput(const char* /*window*/, const char* /*message*/) override
+        bool OnOutput(const char* /*window*/, const char* message) override
         {
+            ColoredPrintf(COLOR_YELLOW, message);
             return true;
         }
 

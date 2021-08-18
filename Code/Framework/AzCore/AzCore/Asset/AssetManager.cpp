@@ -42,6 +42,29 @@ namespace AZ
 
         static constexpr char kAssetDBInstanceVarName[] = "AssetDatabaseInstance";
 
+        void DebugQueue()
+        {
+            AZ::Debug::Trace::Output("AssetManager", AZStd::string::format("Queue event on ebus.  %zu items in queue\n", AssetBus::QueuedEventCount()).c_str());
+        }
+
+        struct ExecuteQueueCounter
+        {
+            ExecuteQueueCounter()
+            {
+                m_count = AssetBus::QueuedEventCount();
+            }
+
+            ~ExecuteQueueCounter()
+            {
+                if (m_count > 0)
+                {
+                    AZ::Debug::Trace::Output("AssetManager", AZStd::string::format("Queue executed, %zu remaining\n", AssetBus::QueuedEventCount()).c_str());
+                }
+            }
+
+            size_t m_count = 0;
+        };
+
         /*
          * This is the base class for Async AssetDatabase jobs
          */
@@ -414,6 +437,7 @@ namespace AZ
                 }
                 // queue broadcast message for delivery on game thread
                 AssetBus::QueueEvent(asset.GetId(), &AssetBus::Events::OnAssetSaved, asset, isSaved);
+                DebugQueue();
             }
         };
 
@@ -570,6 +594,7 @@ namespace AZ
         void AssetManager::DispatchEvents()
         {
             AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+            ExecuteQueueCounter counter;
             AssetManagerNotificationBus::Broadcast(&AssetManagerNotificationBus::Events::OnAssetEventsDispatchBegin);
             AssetBus::ExecuteQueuedEvents();
             AssetManagerNotificationBus::Broadcast(&AssetManagerNotificationBus::Events::OnAssetEventsDispatchEnd);
@@ -1250,6 +1275,7 @@ namespace AZ
                         if (wasInAssetsHash)
                         {
                             AssetBus::QueueEvent(assetId, &AssetBus::Events::OnAssetUnloaded, assetId, assetType);
+                            DebugQueue();
                         }
                     }
                 }
@@ -1369,11 +1395,13 @@ namespace AZ
                 // Reloading an "instance asset" is basically a no-op.
                 // We'll simply notify users to reload the asset.
                 AssetBus::QueueFunction(&AssetManager::NotifyAssetReloaded, this, currentAsset);
+                DebugQueue();
                 return;
             }
             else
             {
                 AssetBus::QueueFunction(&AssetManager::NotifyAssetPreReload, this, currentAsset);
+                DebugQueue();
             }
 
             // Current AssetData has requested not to be auto reloaded
@@ -1948,6 +1976,7 @@ namespace AZ
 
             // Queue broadcast message for delivery on game thread.
             AssetBus::QueueFunction(&AssetManager::NotifyAssetReady, this, Asset<AssetData>(asset));
+            DebugQueue();
         }
 
         //=========================================================================
@@ -1961,12 +1990,14 @@ namespace AZ
 
             // Queue broadcast message for delivery on game thread.
             AssetBus::QueueFunction(&AssetManager::NotifyAssetError, this, Asset<AssetData>(asset));
+            DebugQueue();
         }
 
         void AssetManager::OnAssetCanceled(AssetId assetId)
         {
             // Queue broadcast message for delivery on game thread.
             AssetBus::QueueFunction(&AssetManager::NotifyAssetCanceled, this, assetId);
+            DebugQueue();
         }
 
         void AssetManager::ReleaseOwnedAssetContainer(AssetContainer* assetContainer)
@@ -1994,6 +2025,7 @@ namespace AZ
                 NotifyAssetContainerReady(asset);
                 ReleaseOwnedAssetContainer(assetContainer);
             });
+            DebugQueue();
         }
 
         void AssetManager::OnAssetContainerCanceled(AssetContainer* assetContainer)
@@ -2002,6 +2034,7 @@ namespace AZ
             {
                 ReleaseOwnedAssetContainer(assetContainer);
             });
+            DebugQueue();
         }
 
         //=========================================================================
@@ -2011,6 +2044,7 @@ namespace AZ
         {
             // Queue broadcast message for delivery on game thread.
             AssetBus::QueueFunction(&AssetManager::NotifyAssetReloaded, this, Asset<AssetData>(asset));
+            DebugQueue();
         }
 
         //=========================================================================
@@ -2020,6 +2054,7 @@ namespace AZ
         {
             // Queue broadcast message for delivery on game thread.
             AssetBus::QueueFunction(&AssetManager::NotifyAssetReloadError, this, Asset<AssetData>(asset));
+            DebugQueue();
         }
 
 
