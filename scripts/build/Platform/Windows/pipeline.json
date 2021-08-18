@@ -22,30 +22,30 @@
             {
                 "parameter_name": "O3DE_AWS_PROJECT_NAME",
                 "parameter_type": "string",
-                "default_value": "",
+                "default_value": "AWSAUTO",
                 "use_last_run_value": true,
-                "description": ""
+                "description": "The name of the O3DE project that stacks should be deployed for."
             },
             {
                 "parameter_name": "O3DE_AWS_DEPLOY_REGION",
                 "parameter_type": "string",
-                "default_value": "",
+                "default_value": "us-west-2",
                 "use_last_run_value": true,
-                "description": ""
+                "description": "The region to deploy the stacks into."
             },
             {
                 "parameter_name": "ASSUME_ROLE_ARN",
                 "parameter_type": "string",
-                "default_value": "",
+                "default_value": "arn:aws:iam::645075835648:role/o3de-automation-tests",
                 "use_last_run_value": true,
-                "description": ""
+                "description": "The ARN of the IAM role to assume to retrieve temporary AWS credentials."
             },
             {
                 "parameter_name": "COMMIT_ID",
                 "parameter_type": "string",
-                "default_value": "",
+                "default_value": "HEAD",
                 "use_last_run_value": true,
-                "description": ""
+                "description": "The commit ID for locking the version of CDK applications to deploy."
             }
         ]
     }
