@@ -14,6 +14,7 @@
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/RTTI/AttributeReader.h>
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzToolsFramework/Commands/EntityStateCommand.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
@@ -308,14 +309,22 @@ namespace AzToolsFramework
         AZ::EntityId sortEntityId = parentId;
         if (!sortEntityId.IsValid())
         {
-            AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
-            EditorEntityContextRequestBus::BroadcastResult(editorEntityContextId, &EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
-            AZ::SliceComponent* rootSliceComponent = nullptr;
-            AzFramework::SliceEntityOwnershipServiceRequestBus::EventResult(rootSliceComponent, editorEntityContextId,
-                &AzFramework::SliceEntityOwnershipServiceRequestBus::Events::GetRootSlice);
-            if (rootSliceComponent)
+            bool isPrefabEnabled = false;
+            AzFramework::ApplicationRequests::Bus::BroadcastResult(
+                isPrefabEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+
+            if (!isPrefabEnabled)
             {
-                return rootSliceComponent->GetMetadataEntity()->GetId();
+                AzFramework::EntityContextId editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+                EditorEntityContextRequestBus::BroadcastResult(
+                    editorEntityContextId, &EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
+                AZ::SliceComponent* rootSliceComponent = nullptr;
+                AzFramework::SliceEntityOwnershipServiceRequestBus::EventResult(
+                    rootSliceComponent, editorEntityContextId, &AzFramework::SliceEntityOwnershipServiceRequestBus::Events::GetRootSlice);
+                if (rootSliceComponent)
+                {
+                    return rootSliceComponent->GetMetadataEntity()->GetId();
+                }
             }
         }
         return sortEntityId;

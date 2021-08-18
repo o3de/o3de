@@ -117,7 +117,10 @@ namespace
         AzToolsFramework::EntityOrderArray entityOrderArray;
         SortEntityChildren(entityId, comparer, &entityOrderArray);
 
-        for (const AZ::EntityId& childId : entityOrderArray)
+        AzToolsFramework::EntityIdList children;
+        AzToolsFramework::EditorEntityInfoRequestBus::EventResult(children, entityId, &AzToolsFramework::EditorEntityInfoRequestBus::Events::GetChildren);
+
+        for (const AZ::EntityId& childId : children)
         {
             SortEntityChildrenRecursively(childId, comparer);
         }
