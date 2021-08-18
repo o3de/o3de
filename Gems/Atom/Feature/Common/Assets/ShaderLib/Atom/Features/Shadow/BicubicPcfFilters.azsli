@@ -155,7 +155,7 @@ float SampleShadowMapBicubic_16Tap(SampleShadowMapBicubicParameters param)
     float shadow = 0;
 
     [unroll]
-    for(int i =  0 ; i < 16 ; ++i)
+    for(int i = 0 ; i < 16 ; ++i)
     {
         const float2 texCoordOffset = uvOffsets[i] * param.invShadowMapSize;
         const float fragmentDistance = param.comparisonValue + ApplyReceiverPlaneDepthBias(param.receiverPlaneDepthBias, texCoordOffset);
