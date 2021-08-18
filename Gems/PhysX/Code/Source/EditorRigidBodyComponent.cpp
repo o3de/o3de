@@ -19,6 +19,7 @@
 #include <Editor/EditorClassConverters.h>
 #include <Source/NameConstants.h>
 #include <Source/Utils.h>
+#include <EditorColliderComponent.h>
 
 namespace PhysX
 {
@@ -285,6 +286,12 @@ namespace PhysX
             UpdateDebugDrawSettings(physXDebug->GetDebugDisplayData());
         }
         CreateEditorWorldRigidBody();
+
+        PhysX::EditorColliderComponent* entityColliderComponent = m_entity->FindComponent<PhysX::EditorColliderComponent>();
+        if (entityColliderComponent != nullptr)
+        {
+            entityColliderComponent->ValidateRigidBodyMeshGeometryType();
+        }
 
         AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(GetEntityId());
     }

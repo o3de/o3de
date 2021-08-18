@@ -771,7 +771,7 @@ namespace PhysX
                 return;
             }
 
-            //We grab the first shape to check if it is a triangle mesh.
+            //We check if the shapes are triangle meshes, if any mesh is a triangle mesh we activate the warning.
             bool shapeIsTM = false;
             size_t size = shapes.size();
 
@@ -788,9 +788,10 @@ namespace PhysX
                 }
             }
 
-
             if (shapeIsTM)
             {
+                m_componentWarnings.clear();
+
                 AZStd::string assetPath = m_shapeConfiguration.m_physicsAsset.m_configuration.m_asset.GetHint().c_str();
                 const uint lastSlash = static_cast<uint>(assetPath.rfind('/'));
                 if (lastSlash != AZStd::string::npos)

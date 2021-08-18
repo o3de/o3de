@@ -130,6 +130,8 @@ namespace PhysX
 
         void BuildGameEntity(AZ::Entity* gameEntity) override;
 
+        void ValidateRigidBodyMeshGeometryType(); 
+
     private:
         AZ_DISABLE_COPY_MOVE(EditorColliderComponent)
         // AZ::Component
@@ -219,8 +221,6 @@ namespace PhysX
         void ClearStaticEditorCollider();
 
         void BuildDebugDrawMesh() const;
-
-        void ValidateRigidBodyMeshGeometryType();
 
         AZ::ComponentDescriptor::StringWarningArray GetComponentWarnings() const { return m_componentWarnings; };
 
