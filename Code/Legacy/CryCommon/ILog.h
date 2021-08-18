@@ -6,13 +6,6 @@
  *
  */
 
-
-// In Mac, including ILog without including platform.h first fails because platform.h 
-// includes CryThread.h which includes CryThread_pthreads.h which uses ILog. 
-// So plaform.h needs the contents of ILog.h.
-// By including platform.h outside of the guard, we give platform.h the right include order
-#include <platform.h>
-
 #ifndef CRYINCLUDE_CRYCOMMON_ILOG_H
 #define CRYINCLUDE_CRYCOMMON_ILOG_H
 #pragma once
@@ -145,9 +138,7 @@ struct ILog
     virtual void Unindent(class CLogIndenter* indenter) = 0;
 #endif
 
-#if !defined(RESOURCE_COMPILER)
     virtual void FlushAndClose() = 0;
-#endif
 };
 
 #if !defined(SUPPORT_LOG_IDENTER)

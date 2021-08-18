@@ -8,8 +8,8 @@
 
 #pragma once
 
-#include "StringUtils.h"
 #include "../Include/SandboxAPI.h"
+#include <set>
 
 class QWidget;
 
@@ -186,8 +186,15 @@ struct IFileUtil
     virtual ECopyTreeResult CopyTree(const QString& strSourceDirectory, const QString& strTargetDirectory, bool boRecurse = true, bool boConfirmOverwrite = false) = 0;
 
     //////////////////////////////////////////////////////////////////////////
-    // @param LPPROGRESS_ROUTINE pfnProgress - called by the system to notify of file copy progress
-    // @param LPBOOL pbCancel - when the contents of this BOOL are set to TRUE, the system cancels the copy operation
+    /**
+     * @brief CopyFile
+     * @param strSourceFile
+     * @param strTargetFile
+     * @param boConfirmOverwrite
+     * @param pfnProgress - called by the system to notify of file copy progress
+     * @param pbCancel - when the contents of this bool are set to true, the system cancels the copy operation
+     * @return
+     */
     virtual ECopyTreeResult CopyFile(const QString& strSourceFile, const QString& strTargetFile, bool boConfirmOverwrite = false, ProgressRoutine pfnProgress = nullptr, bool* pbCancel = nullptr) = 0;
 
     // As we don't have a FileUtil interface here, we have to duplicate some code :-( in order to keep

@@ -33,7 +33,7 @@ namespace EMotionFX
             static void Reflect(AZ::ReflectContext* context);
 
         private:
-            bool                                                m_EMotionFXInited;
+            bool                                                m_eMotionFxInited;
             AZStd::unique_ptr<CommandSystem::CommandManager>    m_commandManager;
 
             // Creates a static shared pointer using the AZ EnvironmentVariable system.

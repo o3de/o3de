@@ -6,25 +6,20 @@
  *
  */
 
-#include <Atom/RPI.Edit/Common/JsonUtils.h>
-
-#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
-#include <Atom/RPI.Edit/Common/AssetUtils.h>
-#include <Atom/RPI.Public/Material/Material.h>
-
 #include <AssetDatabase/AssetDatabaseConnection.h>
-
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/EditContext.h>
+#include <Atom/RPI.Edit/Common/AssetUtils.h>
+#include <Atom/RPI.Edit/Common/JsonUtils.h>
+#include <Atom/RPI.Public/Material/Material.h>
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
+#include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
-
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/UI/UICore/QWidgetSavedState.h>
-
-#include <Atom/Document/ShaderManagementConsoleDocumentSystemRequestBus.h>
-#include <Source/Window/ShaderManagementConsoleWindowComponent.h>
-#include <Source/Window/ShaderManagementConsoleWindow.h>
+#include <Window/ShaderManagementConsoleWindow.h>
+#include <Window/ShaderManagementConsoleWindowComponent.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QFile>
@@ -44,14 +39,6 @@ namespace ShaderManagementConsole
 
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->EBus<ShaderManagementConsoleWindowRequestBus>("ShaderManagementConsoleWindowRequestBus")
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
-                ->Attribute(AZ::Script::Attributes::Category, "Editor")
-                ->Attribute(AZ::Script::Attributes::Module, "shadermanagementconsole")
-                ->Event("CreateShaderManagementConsoleWindow", &ShaderManagementConsoleWindowRequestBus::Events::CreateShaderManagementConsoleWindow)
-                ->Event("DestroyShaderManagementConsoleWindow", &ShaderManagementConsoleWindowRequestBus::Events::DestroyShaderManagementConsoleWindow)
-                ;
-
             behaviorContext->EBus<ShaderManagementConsoleRequestBus>("ShaderManagementConsoleRequestBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                 ->Attribute(AZ::Script::Attributes::Category, "Editor")
@@ -65,19 +52,20 @@ namespace ShaderManagementConsole
 
     void ShaderManagementConsoleWindowComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("AssetBrowserService", 0x1e54fffb));
-        required.push_back(AZ_CRC("PropertyManagerService", 0x63a3d7ad));
-        required.push_back(AZ_CRC("SourceControlService", 0x67f338fd));
+        required.push_back(AZ_CRC_CE("AssetBrowserService"));
+        required.push_back(AZ_CRC_CE("PropertyManagerService"));
+        required.push_back(AZ_CRC_CE("SourceControlService"));
+        required.push_back(AZ_CRC_CE("AtomToolsMainWindowSystemService"));
     }
 
     void ShaderManagementConsoleWindowComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("ShaderManagementConsoleWindowService", 0xb6e7d922));
+        provided.push_back(AZ_CRC_CE("ShaderManagementConsoleWindowService"));
     }
 
     void ShaderManagementConsoleWindowComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("ShaderManagementConsoleWindowService", 0xb6e7d922));
+        incompatible.push_back(AZ_CRC_CE("ShaderManagementConsoleWindowService"));
     }
 
     void ShaderManagementConsoleWindowComponent::Init()
@@ -87,7 +75,7 @@ namespace ShaderManagementConsole
     void ShaderManagementConsoleWindowComponent::Activate()
     {
         AzToolsFramework::EditorWindowRequestBus::Handler::BusConnect();
-        ShaderManagementConsoleWindowRequestBus::Handler::BusConnect();
+        AtomToolsFramework::AtomToolsMainWindowFactoryRequestBus::Handler::BusConnect();
         ShaderManagementConsoleRequestBus::Handler::BusConnect();
         AzToolsFramework::SourceControlConnectionRequestBus::Broadcast(&AzToolsFramework::SourceControlConnectionRequests::EnableSourceControl, true);
     }
@@ -95,7 +83,7 @@ namespace ShaderManagementConsole
     void ShaderManagementConsoleWindowComponent::Deactivate()
     {
         ShaderManagementConsoleRequestBus::Handler::BusDisconnect();
-        ShaderManagementConsoleWindowRequestBus::Handler::BusDisconnect();
+        AtomToolsFramework::AtomToolsMainWindowFactoryRequestBus::Handler::BusDisconnect();
         AzToolsFramework::EditorWindowRequestBus::Handler::BusDisconnect();
 
         m_window.reset();
@@ -106,7 +94,7 @@ namespace ShaderManagementConsole
         return m_window.get();
     }
 
-    void ShaderManagementConsoleWindowComponent::CreateShaderManagementConsoleWindow()
+    void ShaderManagementConsoleWindowComponent::CreateMainWindow()
     {
         m_assetBrowserInteractions.reset(aznew ShaderManagementConsoleBrowserInteractions);
 
@@ -114,7 +102,7 @@ namespace ShaderManagementConsole
         m_window->show();
     }
 
-    void ShaderManagementConsoleWindowComponent::DestroyShaderManagementConsoleWindow()
+    void ShaderManagementConsoleWindowComponent::DestroyMainWindow()
     {
         m_window.reset();
     }

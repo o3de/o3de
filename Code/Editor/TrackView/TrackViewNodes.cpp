@@ -69,7 +69,7 @@ public:
         : QStyledItemDelegate(parent)
     {}
 
-    void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+    void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override
     {
         bool enabled = index.data(CTrackViewNodesCtrl::CRecord::EnableRole).toBool();
         QStyleOptionViewItem opt = option;
@@ -106,7 +106,7 @@ protected:
         return Qt::CopyAction | Qt::MoveAction;
     }
 
-    void dragMoveEvent(QDragMoveEvent* event)
+    void dragMoveEvent(QDragMoveEvent* event) override
     {
         CTrackViewNodesCtrl::CRecord* record = (CTrackViewNodesCtrl::CRecord*) itemAt(event->pos());
         if (!record)
@@ -144,7 +144,7 @@ protected:
         }
     }
 
-    void dropEvent(QDropEvent* event)
+    void dropEvent(QDropEvent* event) override
     {
         CTrackViewNodesCtrl::CRecord* record = (CTrackViewNodesCtrl::CRecord*) itemAt(event->pos());
         if (!record)
@@ -200,7 +200,7 @@ protected:
         }
     }
 
-    void keyPressEvent(QKeyEvent* event)
+    void keyPressEvent(QKeyEvent* event) override
     {
         // HAVE TO INCLUDE CASES FOR THESE IN THE ShortcutOverride handler in ::event() below
         switch (event->key())
@@ -242,7 +242,7 @@ protected:
     }
 
 
-    bool focusNextPrevChild([[maybe_unused]] bool next)
+    bool focusNextPrevChild([[maybe_unused]] bool next) override
     {
         return false;   // so we get the tab key
     }
@@ -361,7 +361,7 @@ CTrackViewNodesCtrl::CTrackViewNodesCtrl(QWidget* hParentWnd, CTrackViewDialog* 
     , m_pTrackViewDialog(parent)
 {
     ui->setupUi(this);
-    m_pDopeSheet = 0;
+    m_pDopeSheet = nullptr;
     m_currentMatchIndex = 0;
     m_matchCount = 0;
 
@@ -954,7 +954,7 @@ void CTrackViewNodesCtrl::OnSelectionChanged()
 //////////////////////////////////////////////////////////////////////////
 void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
 {
-    CRecord* record = 0;
+    CRecord* record = nullptr;
     bool isOnAzEntity = false;
     CTrackViewSequence* sequence = GetIEditor()->GetAnimation()->GetSequence();
     if (!sequence)
@@ -1605,7 +1605,7 @@ CTrackViewTrack* CTrackViewNodesCtrl::GetTrackViewTrack(const Export::EntityAnim
         }
     }
 
-    return 0;
+    return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2516,7 +2516,7 @@ int CTrackViewNodesCtrl::GetMatNameAndSubMtlIndexFromName(QString& matName, cons
     if (const char* pCh = strstr(nodeName, ".["))
     {
         char matPath[MAX_PATH];
-        cry_strcpy(matPath, nodeName, (size_t)(pCh - nodeName));
+        azstrncpy(matPath, AZ_ARRAY_SIZE(matPath), nodeName, (size_t)(pCh - nodeName));
         matName = matPath;
         pCh += 2;
         if ((*pCh) != 0)

@@ -16,6 +16,7 @@ from ly_test_tools import LAUNCHERS
 
 sys.path.append (os.path.dirname (os.path.abspath (__file__)) + '/../automatedtesting_shared')
 
+import ly_test_tools.environment.file_system as file_system
 from base import TestAutomationBase
 
 @pytest.mark.SUITE_main
@@ -29,3 +30,8 @@ class TestAutomation(TestAutomationBase):
     def test_PrefabLevel_OpensLevelWithEntities(self, request, workspace, editor, launcher_platform):
         from . import PrefabLevel_OpensLevelWithEntities as test_module
         self._run_prefab_test(request, workspace, editor, test_module)
+
+    def test_PrefabLevel_BasicWorkflow(self, request, workspace, editor, launcher_platform):       
+        from . import PrefabLevel_BasicWorkflow as test_module
+        self._run_prefab_test(request, workspace, editor, test_module)
+

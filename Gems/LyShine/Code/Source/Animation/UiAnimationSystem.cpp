@@ -26,20 +26,20 @@
 //////////////////////////////////////////////////////////////////////////
 // Serialization for anim nodes & param types
 #define REGISTER_NODE_TYPE(name) assert(g_animNodeEnumToStringMap.find(eUiAnimNodeType_ ## name) == g_animNodeEnumToStringMap.end()); \
-    g_animNodeEnumToStringMap[eUiAnimNodeType_ ## name] = STRINGIFY(name);                                                            \
-    g_animNodeStringToEnumMap[string(STRINGIFY(name))] = eUiAnimNodeType_ ## name;
+    g_animNodeEnumToStringMap[eUiAnimNodeType_ ## name] = AZ_STRINGIZE(name);                                                            \
+    g_animNodeStringToEnumMap[AZStd::string(AZ_STRINGIZE(name))] = eUiAnimNodeType_ ## name;
 
 #define REGISTER_PARAM_TYPE(name) assert(g_animParamEnumToStringMap.find(eUiAnimParamType_ ## name) == g_animParamEnumToStringMap.end()); \
-    g_animParamEnumToStringMap[eUiAnimParamType_ ## name] = STRINGIFY(name);                                                              \
-    g_animParamStringToEnumMap[string(STRINGIFY(name))] = eUiAnimParamType_ ## name;
+    g_animParamEnumToStringMap[eUiAnimParamType_ ## name] = AZ_STRINGIZE(name);                                                              \
+    g_animParamStringToEnumMap[AZStd::string(AZ_STRINGIZE(name))] = eUiAnimParamType_ ## name;
 
 namespace
 {
-    AZStd::unordered_map<int, string> g_animNodeEnumToStringMap;
-    StaticInstance<std::map<string, EUiAnimNodeType, stl::less_stricmp<string> >> g_animNodeStringToEnumMap;
+    AZStd::unordered_map<int, AZStd::string> g_animNodeEnumToStringMap;
+    StaticInstance<std::map<AZStd::string, EUiAnimNodeType, stl::less_stricmp<AZStd::string> >> g_animNodeStringToEnumMap;
 
-    AZStd::unordered_map<int, string> g_animParamEnumToStringMap;
-    StaticInstance<std::map<string, EUiAnimParamType, stl::less_stricmp<string> >> g_animParamStringToEnumMap;
+    AZStd::unordered_map<int, AZStd::string> g_animParamEnumToStringMap;
+    StaticInstance<std::map<AZStd::string, EUiAnimParamType, stl::less_stricmp<AZStd::string> >> g_animParamStringToEnumMap;
 
     // If you get an assert in this function, it means two node types have the same enum value.
     void RegisterNodeTypes()
@@ -296,7 +296,7 @@ IUiAnimSequence* UiAnimationSystem::GetSequence(int i) const
 //////////////////////////////////////////////////////////////////////////
 int UiAnimationSystem::GetNumSequences() const
 {
-    return m_sequences.size();
+    return static_cast<int>(m_sequences.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -315,7 +315,7 @@ IUiAnimSequence* UiAnimationSystem::GetPlayingSequence(int i) const
 //////////////////////////////////////////////////////////////////////////
 int UiAnimationSystem::GetNumPlayingSequences() const
 {
-    return m_playingSequences.size();
+    return static_cast<int>(m_playingSequences.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -327,7 +327,7 @@ void UiAnimationSystem::AddSequence(IUiAnimSequence* pSequence)
 //////////////////////////////////////////////////////////////////////////
 bool UiAnimationSystem::IsCutScenePlaying() const
 {
-    const uint numPlayingSequences = m_playingSequences.size();
+    const uint numPlayingSequences = static_cast<uint>(m_playingSequences.size());
     for (uint i = 0; i < numPlayingSequences; ++i)
     {
         const IUiAnimSequence* pAnimSequence = m_playingSequences[i].sequence.get();
@@ -1189,7 +1189,7 @@ void UiAnimationSystem::SerializeNodeType(EUiAnimNodeType& animNodeType, XmlNode
     {
         const char* pTypeString = "Invalid";
         assert(g_animNodeEnumToStringMap.find(animNodeType) != g_animNodeEnumToStringMap.end());
-        pTypeString = g_animNodeEnumToStringMap[animNodeType];
+        pTypeString = g_animNodeEnumToStringMap[animNodeType].c_str();
         xmlNode->setAttr(kType, pTypeString);
     }
 }
@@ -1273,7 +1273,7 @@ void UiAnimationSystem::SerializeParamType(CUiAnimParamType& animParamType, XmlN
         else
         {
             assert(g_animParamEnumToStringMap.find(animParamType.m_type) != g_animParamEnumToStringMap.end());
-            pTypeString = g_animParamEnumToStringMap[animParamType.m_type];
+            pTypeString = g_animParamEnumToStringMap[animParamType.m_type].c_str();
         }
 
         xmlNode->setAttr(kParamType, pTypeString);
@@ -1341,7 +1341,7 @@ const char* UiAnimationSystem::GetParamTypeName(const CUiAnimParamType& animPara
     {
         if (g_animParamEnumToStringMap.find(animParamType.m_type) != g_animParamEnumToStringMap.end())
         {
-            return g_animParamEnumToStringMap[animParamType.m_type];
+            return g_animParamEnumToStringMap[animParamType.m_type].c_str();
         }
     }
 

@@ -409,7 +409,7 @@ void ImGuiManager::Render()
             break;
 
         case ImGuiResolutionMode::MatchToMaxRenderResolution:
-            if (backBufferWidth <= static_cast<int>(m_renderResolution.x))
+            if (backBufferWidth <= static_cast<AZ::u32>(m_renderResolution.x))
             {
                 renderRes[0] = backBufferWidth;
                 renderRes[1] = backBufferHeight;

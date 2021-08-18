@@ -16,6 +16,7 @@
 #include "SFunctor.h"
 
 class CXConsole;
+typedef AZStd::fixed_string<512> stack_string;
 
 inline int64 TextToInt64(const char* s, int64 nCurrent, bool bBitfield)
 {
@@ -178,19 +179,22 @@ public:
     CXConsoleVariableString(CXConsole* pConsole, const char* sName, const char* szDefault, int nFlags, const char* help)
         : CXConsoleVariableBase(pConsole, sName, nFlags, help)
     {
-        m_sValue = szDefault;
-        m_sDefault = szDefault;
+        if (szDefault)
+        {
+            m_sValue = szDefault;
+            m_sDefault = szDefault;
+        }
     }
 
     // interface ICVar --------------------------------------------------------------------------------------
 
-    virtual int GetIVal() const { return atoi(m_sValue); }
-    virtual int64 GetI64Val() const { return _atoi64(m_sValue); }
-    virtual float GetFVal() const { return (float)atof(m_sValue); }
-    virtual const char* GetString() const { return m_sValue; }
+    virtual int GetIVal() const { return atoi(m_sValue.c_str()); }
+    virtual int64 GetI64Val() const { return _atoi64(m_sValue.c_str()); }
+    virtual float GetFVal() const { return (float)atof(m_sValue.c_str()); }
+    virtual const char* GetString() const { return m_sValue.c_str(); }
     virtual void ResetImpl()
     {
-        Set(m_sDefault);
+        Set(m_sDefault.c_str());
     }
     virtual void Set(const char* s)
     {
@@ -219,8 +223,7 @@ public:
 
     virtual void Set(float f)
     {
-        stack_string s;
-        s.Format("%g", f);
+        stack_string s = stack_string::format("%g", f);
 
         if ((m_sValue == s.c_str()) && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
         {
@@ -233,8 +236,7 @@ public:
 
     virtual void Set(int i)
     {
-        stack_string s;
-        s.Format("%d", i);
+        stack_string s = stack_string::format("%d", i);
 
         if ((m_sValue == s.c_str()) && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
         {
@@ -248,8 +250,8 @@ public:
 
     virtual void GetMemoryUsage(class ICrySizer* pSizer) const { pSizer->AddObject(this, sizeof(*this)); }
 private: // --------------------------------------------------------------------------------------------
-    string m_sValue;                                            
-    string m_sDefault;                                                                              //!<
+    AZStd::string m_sValue;                                            
+    AZStd::string m_sDefault;                                                                              //!<
 };
 
 
@@ -296,8 +298,7 @@ public:
             return;
         }
 
-        stack_string s;
-        s.Format("%d", i);
+        stack_string s = stack_string::format("%d", i);
 
         if (m_pConsole->OnBeforeVarChange(this, s.c_str()))
         {
@@ -364,8 +365,7 @@ public:
             return;
         }
 
-        stack_string s;
-        s.Format("%lld", i);
+        stack_string s = stack_string::format("%lld", i);
 
         if (m_pConsole->OnBeforeVarChange(this, s.c_str()))
         {
@@ -442,8 +442,7 @@ public:
             return;
         }
 
-        stack_string s;
-        s.Format("%g", f);
+        stack_string s = stack_string::format("%g", f);
 
         if (m_pConsole->OnBeforeVarChange(this, s.c_str()))
         {
@@ -718,7 +717,7 @@ public:
     {
         return m_sValue.c_str();
     }
-    virtual void ResetImpl() { Set(m_sDefault); }
+    virtual void ResetImpl() { Set(m_sDefault.c_str()); }
     virtual void Set(const char* s)
     {
         if ((m_sValue == s) && (m_nFlags & VF_ALWAYSONCHANGE) == 0)
@@ -740,14 +739,12 @@ public:
     }
     virtual void Set(float f)
     {
-        stack_string s;
-        s.Format("%g", f);
+        stack_string s = stack_string::format("%g", f);
         Set(s.c_str());
     }
     virtual void Set(int i)
     {
-        stack_string s;
-        s.Format("%d", i);
+        stack_string s = stack_string::format("%d", i);
         Set(s.c_str());
     }
     virtual int GetType() { return CVAR_STRING; }
@@ -755,8 +752,8 @@ public:
     virtual void GetMemoryUsage(class ICrySizer* pSizer) const { pSizer->AddObject(this, sizeof(*this)); }
 private: // --------------------------------------------------------------------------------------------
 
-    string m_sValue;
-    string m_sDefault;
+    AZStd::string m_sValue;
+    AZStd::string m_sDefault;
     const char*& m_userPtr;                                         //!<
 };
 
@@ -778,7 +775,7 @@ public:
 
     // Returns:
     //   part of the help string - useful to log out detailed description without additional help text
-    string GetDetailedInfo() const;
+    AZStd::string GetDetailedInfo() const;
 
     // interface ICVar -----------------------------------------------------------------------------------
 
@@ -809,7 +806,7 @@ private: // --------------------------------------------------------------------
 
     struct SCVarGroup
     {
-        std::map<string, string>                         m_KeyValuePair;                 // e.g. m_KeyValuePair["r_fullscreen"]="0"
+        std::map<AZStd::string, AZStd::string>                      m_KeyValuePair;                 // e.g. m_KeyValuePair["r_fullscreen"]="0"
         void GetMemoryUsage(class ICrySizer* pSizer) const
         {
             pSizer->AddObject(m_KeyValuePair);
@@ -818,15 +815,15 @@ private: // --------------------------------------------------------------------
 
     SCVarGroup                                                      m_CVarGroupDefault;
     typedef std::map<int, SCVarGroup*>      TCVarGroupStateMap;
-    TCVarGroupStateMap                                      m_CVarGroupStates;
-    string                                                              m_sDefaultValue;                // used by OnLoadConfigurationEntry_End()
+    TCVarGroupStateMap                                              m_CVarGroupStates;
+    AZStd::string                                                   m_sDefaultValue;                // used by OnLoadConfigurationEntry_End()
 
     void ApplyCVars(const SCVarGroup& rGroup, const SCVarGroup* pExclude = 0);
 
     // Arguments:
     //   sKey - must exist, at least in default
     //   pSpec - can be 0
-    string GetValueSpec(const string& sKey, const int* pSpec = 0) const;
+    AZStd::string GetValueSpec(const AZStd::string& sKey, const int* pSpec = 0) const;
 
     // should only be used by TestCVars()
     // Returns:

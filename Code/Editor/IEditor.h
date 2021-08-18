@@ -68,7 +68,6 @@ class CDisplaySettings;
 struct SGizmoParameters;
 class CLevelIndependentFileMan;
 class CSelectionTreeManager;
-struct IResourceSelectorHost;
 struct SEditorSettings;
 class CGameExporter;
 class IAWSResourceManager;
@@ -570,7 +569,7 @@ struct IEditor
     //////////////////////////////////////////////////////////////////////////
     virtual class CLevelIndependentFileMan* GetLevelIndependentFileMan() = 0;
     //! Notify all views that data is changed.
-    virtual void UpdateViews(int flags = 0xFFFFFFFF, const AABB* updateRegion = NULL) = 0;
+    virtual void UpdateViews(int flags = 0xFFFFFFFF, const AABB* updateRegion = nullptr) = 0;
     virtual void ResetViews() = 0;
     //! Update information in track view dialog.
     virtual void ReloadTrackView() = 0;
@@ -589,7 +588,7 @@ struct IEditor
     //! if bShow is true also returns a valid ITransformManipulator pointer.
     virtual ITransformManipulator* ShowTransformManipulator(bool bShow) = 0;
     //! Return a pointer to a ITransformManipulator pointer if shown.
-    //! NULL is manipulator is not shown.
+    //! nullptr if manipulator is not shown.
     virtual ITransformManipulator* GetTransformManipulator() = 0;
     //! Set constrain on specified axis for objects construction and modifications.
     //! @param axis one of AxisConstrains enumerations.
@@ -714,7 +713,6 @@ struct IEditor
     virtual ESystemConfigSpec GetEditorConfigSpec() const = 0;
     virtual ESystemConfigPlatform GetEditorConfigPlatform() const = 0;
     virtual void ReloadTemplates() = 0;
-    virtual IResourceSelectorHost* GetResourceSelectorHost() = 0;
     virtual void ShowStatusText(bool bEnable) = 0;
 
     // Provides a way to extend the context menu of an object. The function gets called every time the menu is opened.

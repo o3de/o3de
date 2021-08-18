@@ -110,8 +110,8 @@ public:
 
     //////////////////////////////////////////////////////////////////////////
     // @param LPPROGRESS_ROUTINE pfnProgress - called by the system to notify of file copy progress
-    // @param LPBOOL pbCancel - when the contents of this BOOL are set to TRUE, the system cancels the copy operation
-    ECopyTreeResult CopyFile(const QString& strSourceFile, const QString& strTargetFile, bool boConfirmOverwrite = false, ProgressRoutine pfnProgress = NULL, bool* pbCancel = NULL) override;
+    // @param LPBOOL pbCancel - when the contents of this BOOL are set to true, the system cancels the copy operation
+    ECopyTreeResult CopyFile(const QString& strSourceFile, const QString& strTargetFile, bool boConfirmOverwrite = false, ProgressRoutine pfnProgress = nullptr, bool* pbCancel = nullptr) override;
 
     // As we don't have a FileUtil interface here, we have to duplicate some code :-( in order to keep
     // function calls clean.

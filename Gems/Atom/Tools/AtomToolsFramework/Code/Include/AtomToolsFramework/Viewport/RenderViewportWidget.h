@@ -121,6 +121,8 @@ namespace AtomToolsFramework
         bool CanToggleFullScreenState() const override;
         void ToggleFullScreenState() override;
         float GetDpiScaleFactor() const override;
+        uint32_t GetSyncInterval() const override;
+        uint32_t GetDisplayRefreshRate() const;
 
     protected:
         // AzFramework::InputChannelEventListener ...

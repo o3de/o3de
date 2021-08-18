@@ -394,7 +394,7 @@ namespace EditorPythonBindings
 
                     // log the bus symbol
                     AZStd::string subModuleName = pybind11::cast<AZStd::string>(thisBusModule.attr("__name__"));
-                    PythonSymbolEventBus::Broadcast(&PythonSymbolEventBus::Events::LogBus, subModuleName, ebusName, behaviorEBus);
+                    PythonSymbolEventBus::QueueBroadcast(&PythonSymbolEventBus::Events::LogBus, subModuleName, ebusName, behaviorEBus);
                 }
             }
 

@@ -1010,7 +1010,7 @@ namespace Vegetation
 
         if (m_debugData)
         {
-            m_debugData->m_areaTaskQueueCount.store(m_vegetationThreadTasks.size(), AZStd::memory_order_relaxed);
+            m_debugData->m_areaTaskQueueCount.store(static_cast<int>(m_vegetationThreadTasks.size()), AZStd::memory_order_relaxed);
         }
     }
 
@@ -1025,8 +1025,8 @@ namespace Vegetation
 
             if (m_debugData)
             {
-                m_debugData->m_areaTaskQueueCount.store(m_vegetationThreadTasks.size(), AZStd::memory_order_relaxed);
-                m_debugData->m_areaTaskActiveCount.store(tasks.size(), AZStd::memory_order_relaxed);
+                m_debugData->m_areaTaskQueueCount.store(static_cast<int>(m_vegetationThreadTasks.size()), AZStd::memory_order_relaxed);
+                m_debugData->m_areaTaskActiveCount.store(static_cast<int>(tasks.size()), AZStd::memory_order_relaxed);
             }
         }
 

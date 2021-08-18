@@ -56,10 +56,10 @@ protected:
         }
     }
 
-    virtual int GetSize() { return sizeof(*this); }
-    virtual QString GetDescription() { return "UndoTrackViewSplineCtrl"; };
+    int GetSize() override { return sizeof(*this); }
+    QString GetDescription() override { return "UndoTrackViewSplineCtrl"; };
 
-    virtual void Undo(bool bUndo)
+    void Undo(bool bUndo) override
     {
         CTrackViewSplineCtrl* pCtrl = FindControl(m_pCtrl);
         if (pCtrl)
@@ -103,7 +103,7 @@ protected:
         }
     }
 
-    virtual void Redo()
+    void Redo() override
     {
         const CTrackViewSequenceManager* pSequenceManager = GetIEditor()->GetSequenceManager();
         CTrackViewSequence* sequence = pSequenceManager->GetSequenceByEntityId(m_sequenceEntityId);
@@ -136,7 +136,7 @@ protected:
         sequence->OnKeySelectionChanged();
     }
 
-    virtual bool IsSelectionChanged() const
+    bool IsSelectionChanged() const override
     {
         const CTrackViewSequenceManager* sequenceManager = GetIEditor()->GetSequenceManager();
         CTrackViewSequence* sequence = sequenceManager->GetSequenceByEntityId(m_sequenceEntityId);
@@ -151,19 +151,19 @@ protected:
     }
 
 public:
-    typedef std::list<CTrackViewSplineCtrl*> CTrackViewSplineCtrls;
+    using CTrackViewSplineCtrls = std::list<CTrackViewSplineCtrl*>;
 
     static CTrackViewSplineCtrl* FindControl(CTrackViewSplineCtrl* pCtrl)
     {
         if (!pCtrl)
         {
-            return 0;
+            return nullptr;
         }
 
         auto iter = std::find(s_activeCtrls.begin(), s_activeCtrls.end(), pCtrl);
         if (iter == s_activeCtrls.end())
         {
-            return 0;
+            return nullptr;
         }
 
         return *iter;
@@ -449,7 +449,7 @@ void CTrackViewSplineCtrl::AddSpline(ISplineInterpolator* pSpline, CTrackViewTra
     }
 
     si.pSpline = pSpline;
-    si.pDetailSpline = NULL;
+    si.pDetailSpline = nullptr;
     m_splines.push_back(si);
     m_tracks.push_back(pTrack);
     m_bKeyTimesDirty = true;
@@ -896,7 +896,7 @@ bool CTrackViewSplineCtrl::IsUnifiedKeyCurrentlySelected() const
     {
         ISplineInterpolator* pSpline = m_splines[splineIndex].pSpline;
 
-        if (pSpline == NULL)
+        if (pSpline == nullptr)
         {
             continue;
         }
@@ -960,7 +960,7 @@ void CTrackViewSplineCtrl::mouseReleaseEvent(QMouseEvent* event)
     if (GetIEditor()->GetAnimation()->GetSequence())
     {
         bool restoreRecordModeToTrue = (m_editMode == TimeMarkerMode && m_stashedRecordModeWhenDraggingTime);
-        
+
         SplineWidget::mouseReleaseEvent(event);
 
         if (restoreRecordModeToTrue)

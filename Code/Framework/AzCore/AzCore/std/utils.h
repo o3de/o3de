@@ -23,7 +23,7 @@
 #include <AzCore/std/typetraits/is_lvalue_reference.h>
 #include <AzCore/std/typetraits/void_t.h>
 
-#include <memory>
+#include <utility>
 
 namespace AZStd
 {
@@ -294,7 +294,7 @@ namespace AZStd
             T& m_v;
             constexpr addr_impl_ref(T& v)
                 : m_v(v) {}
-            constexpr addr_impl_ref& operator=(const addr_impl_ref& v) { m_v = v; }
+            constexpr addr_impl_ref& operator=(const addr_impl_ref& v) { m_v = v; return *this; }
             constexpr operator T& () const { return m_v; }
         };
 

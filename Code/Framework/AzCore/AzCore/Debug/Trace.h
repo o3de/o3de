@@ -15,6 +15,11 @@ namespace AZ
 {
     namespace Debug
     {
+        namespace Platform
+        {
+            void OutputToDebugger(const char* window, const char* message);
+        }
+    
         /// Global instance to the tracer.
         extern class Trace      g_tracer;
 

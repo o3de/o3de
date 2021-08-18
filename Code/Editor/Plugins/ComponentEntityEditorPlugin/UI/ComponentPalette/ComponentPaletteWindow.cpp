@@ -42,7 +42,7 @@ void ComponentPaletteWindow::Init()
     layout->setContentsMargins(0, 0, 0, 0);
     layout->setSpacing(0);
 
-    QHBoxLayout* gridLayout = new QHBoxLayout(NULL);
+    QHBoxLayout* gridLayout = new QHBoxLayout(nullptr);
     gridLayout->setSizeConstraint(QLayout::SetMaximumSize);
     gridLayout->setContentsMargins(0, 0, 0, 0);
     gridLayout->setSpacing(0);

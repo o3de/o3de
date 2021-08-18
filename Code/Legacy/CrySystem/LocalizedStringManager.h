@@ -25,7 +25,7 @@ class CLocalizedStringsManager
     , public ISystemEventListener
 {
 public:
-    typedef std::vector<string> TLocalizationTagVec;
+    typedef std::vector<AZStd::string> TLocalizationTagVec;
 
     constexpr const static size_t LOADING_FIXED_STRING_LENGTH = 2048;
     constexpr const static size_t COMPRESSION_FIXED_BUFFER_LENGTH = 6144;
@@ -56,11 +56,11 @@ public:
     void ReloadData() override;
     void FreeData();
 
-    bool LocalizeString_s(const string& sString, string& outLocalizedString, bool bEnglish = false) override;
-    bool LocalizeString_ch(const char* sString, string& outLocalizedString, bool bEnglish = false) override;
+    bool LocalizeString_s(const AZStd::string& sString, AZStd::string& outLocalizedString, bool bEnglish = false) override;
+    bool LocalizeString_ch(const char* sString, AZStd::string& outLocalizedString, bool bEnglish = false) override;
 
     void LocalizeAndSubstituteInternal(AZStd::string& locString, const AZStd::vector<AZStd::string>& keys, const AZStd::vector<AZStd::string>& values) override;
-    bool LocalizeLabel(const char* sLabel, string& outLocalizedString, bool bEnglish = false) override;
+    bool LocalizeLabel(const char* sLabel, AZStd::string& outLocalizedString, bool bEnglish = false) override;
     bool IsLocalizedInfoFound(const char* sKey);
     bool GetLocalizedInfoByKey(const char* sKey, SLocalizedInfoGame& outGameInfo);
     bool GetLocalizedInfoByKey(const char* sKey, SLocalizedSoundInfoGame* pOutSoundInfoGame);
@@ -68,17 +68,17 @@ public:
     bool GetLocalizedInfoByIndex(int nIndex, SLocalizedInfoGame& outGameInfo);
     bool GetLocalizedInfoByIndex(int nIndex, SLocalizedInfoEditor& outEditorInfo);
 
-    bool GetEnglishString(const char* sKey, string& sLocalizedString) override;
-    bool GetSubtitle(const char* sKeyOrLabel, string& outSubtitle, bool bForceSubtitle = false) override;
+    bool GetEnglishString(const char* sKey, AZStd::string& sLocalizedString) override;
+    bool GetSubtitle(const char* sKeyOrLabel, AZStd::string& outSubtitle, bool bForceSubtitle = false) override;
 
-    void FormatStringMessage_List(string& outString, const string& sString, const char** sParams, int nParams) override;
-    void FormatStringMessage(string& outString, const string& sString, const char* param1, const char* param2 = 0, const char* param3 = 0, const char* param4 = 0) override;
+    void FormatStringMessage_List(AZStd::string& outString, const AZStd::string& sString, const char** sParams, int nParams) override;
+    void FormatStringMessage(AZStd::string& outString, const AZStd::string& sString, const char* param1, const char* param2 = 0, const char* param3 = 0, const char* param4 = 0) override;
 
-    void LocalizeTime(time_t t, bool bMakeLocalTime, bool bShowSeconds, string& outTimeString) override;
-    void LocalizeDate(time_t t, bool bMakeLocalTime, bool bShort, bool bIncludeWeekday, string& outDateString) override;
-    void LocalizeDuration(int seconds, string& outDurationString) override;
-    void LocalizeNumber(int number, string& outNumberString) override;
-    void LocalizeNumber_Decimal(float number, int decimals, string& outNumberString) override;
+    void LocalizeTime(time_t t, bool bMakeLocalTime, bool bShowSeconds, AZStd::string& outTimeString) override;
+    void LocalizeDate(time_t t, bool bMakeLocalTime, bool bShort, bool bIncludeWeekday, AZStd::string& outDateString) override;
+    void LocalizeDuration(int seconds, AZStd::string& outDurationString) override;
+    void LocalizeNumber(int number, AZStd::string& outNumberString) override;
+    void LocalizeNumber_Decimal(float number, int decimals, AZStd::string& outNumberString) override;
 
     bool ProjectUsesLocalization() const override;
     // ~ILocalizationManager
@@ -95,7 +95,7 @@ public:
 private:
     void SetAvailableLocalizationsBitfield(const ILocalizationManager::TLocalizationBitfield availableLocalizations);
 
-    bool LocalizeStringInternal(const char* pStr, size_t len, string& outLocalizedString, bool bEnglish);
+    bool LocalizeStringInternal(const char* pStr, size_t len, AZStd::string& outLocalizedString, bool bEnglish);
 
     bool DoLoadExcelXmlSpreadsheet(const char* sFileName, uint8 tagID, bool bReload);
     typedef bool(CLocalizedStringsManager::*LoadFunc)(const char*, uint8, bool);
@@ -104,11 +104,11 @@ private:
 
     struct SLocalizedStringEntryEditorExtension
     {
-        string  sKey;                                           // Map key text equivalent (without @)
-        string  sOriginalActorLine;             // english text
-        string  sUtf8TranslatedActorLine;       // localized text
-        string  sOriginalText;                      // subtitle. if empty, uses English text
-        string  sOriginalCharacterName;     // english character name speaking via XML asset
+        AZStd::string  sKey;                                           // Map key text equivalent (without @)
+        AZStd::string  sOriginalActorLine;             // english text
+        AZStd::string  sUtf8TranslatedActorLine;       // localized text
+        AZStd::string  sOriginalText;                      // subtitle. if empty, uses English text
+        AZStd::string  sOriginalCharacterName;     // english character name speaking via XML asset
 
         unsigned int nRow;                              // Number of row in XML file
 
@@ -141,15 +141,15 @@ private:
 
         union trans_text
         {
-            string*     psUtf8Uncompressed;
+            AZStd::string*     psUtf8Uncompressed;
             uint8*      szCompressed;       // Note that no size information is stored. This is for struct size optimization and unfortunately renders the size info inaccurate.
         };
 
-        string sCharacterName;  // character name speaking via XML asset
+        AZStd::string sCharacterName;  // character name speaking via XML asset
         trans_text TranslatedText;  // Subtitle of this line
 
         // audio specific part
-        string      sPrototypeSoundEvent;           // associated sound event prototype (radio, ...)
+        AZStd::string      sPrototypeSoundEvent;           // associated sound event prototype (radio, ...)
         CryHalf     fVolume;
         CryHalf     fRadioRatio;
         // SoundMoods
@@ -191,7 +191,7 @@ private:
             }
         };
 
-        string GetTranslatedText(const SLanguage* pLanguage) const;
+        AZStd::string GetTranslatedText(const SLanguage* pLanguage) const;
 
         void GetMemoryUsage(ICrySizer* pSizer) const
         {
@@ -224,7 +224,7 @@ private:
         typedef std::vector<SLocalizedStringEntry*> TLocalizedStringEntries;
         typedef std::vector<HuffmanCoder*> THuffmanCoders;
 
-        string sLanguage;
+        AZStd::string sLanguage;
         StringsKeyMap m_keysMap;
         TLocalizedStringEntries m_vLocalizedStrings;
         THuffmanCoders m_vEncoders;
@@ -246,7 +246,7 @@ private:
     };
 
 #ifndef _RELEASE
-    std::map<string, bool> m_warnedAboutLabels;
+    std::map<AZStd::string, bool> m_warnedAboutLabels;
     bool m_haveWarnedAboutAtLeastOneLabel;
 
     void LocalizedStringsManagerWarning(const char* label, const char* message);
@@ -259,45 +259,45 @@ private:
     void AddLocalizedString(SLanguage* pLanguage, SLocalizedStringEntry* pEntry, const uint32 keyCRC32);
     void AddControl(int nKey);
     //////////////////////////////////////////////////////////////////////////
-    void ParseFirstLine(IXmlTableReader* pXmlTableReader, char* nCellIndexToType, std::map<int, string>& SoundMoodIndex, std::map<int, string>& EventParameterIndex);
+    void ParseFirstLine(IXmlTableReader* pXmlTableReader, char* nCellIndexToType, std::map<int, AZStd::string>& SoundMoodIndex, std::map<int, AZStd::string>& EventParameterIndex);
     void InternalSetCurrentLanguage(SLanguage* pLanguage);
     ISystem* m_pSystem;
     // Pointer to the current language.
     SLanguage* m_pLanguage;
 
     // all loaded Localization Files
-    typedef std::pair<string, SFileInfo> pairFileName;
-    typedef std::map<string, SFileInfo> tmapFilenames;
+    typedef std::pair<AZStd::string, SFileInfo> pairFileName;
+    typedef std::map<AZStd::string, SFileInfo> tmapFilenames;
     tmapFilenames m_loadedTables;
 
 
     // filenames per tag
-    typedef std::vector<string> TStringVec;
+    typedef std::vector<AZStd::string> TStringVec;
     struct STag
     {
         TStringVec  filenames;
         uint8               id;
         bool                loaded;
     };
-    typedef std::map<string, STag> TTagFileNames;
+    typedef std::map<AZStd::string, STag> TTagFileNames;
     TTagFileNames m_tagFileNames;
     TStringVec m_tagLoadRequests;
 
     // Array of loaded languages.
     std::vector<SLanguage*> m_languages;
 
-    typedef std::set<string> PrototypeSoundEvents;
+    typedef std::set<AZStd::string> PrototypeSoundEvents;
     PrototypeSoundEvents m_prototypeEvents;  // this set is purely used for clever string/string assigning to save memory
 
     struct less_strcmp
     {
-        bool operator()(const string& left, const string& right) const
+        bool operator()(const AZStd::string& left, const AZStd::string& right) const
         {
             return strcmp(left.c_str(), right.c_str()) < 0;
         }
     };
 
-    typedef std::set<string, less_strcmp> CharacterNameSet;
+    typedef std::set<AZStd::string, less_strcmp> CharacterNameSet;
     CharacterNameSet m_characterNameSet; // this set is purely used for clever string/string assigning to save memory
 
     // CVARs
@@ -309,8 +309,8 @@ private:
     TLocalizationBitfield m_availableLocalizations;
 
     //Lock for
-    mutable CryCriticalSection m_cs;
-    typedef CryAutoCriticalSection AutoLock;
+    mutable AZStd::mutex m_cs;
+    typedef AZStd::lock_guard<AZStd::mutex> AutoLock;
 };
 
 

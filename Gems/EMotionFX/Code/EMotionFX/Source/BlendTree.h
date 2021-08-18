@@ -64,7 +64,7 @@ namespace EMotionFX
         bool GetHasOutputPose() const override                          { return true; }
 
         void SetVirtualFinalNode(AnimGraphNode* node);
-        MCORE_INLINE AnimGraphNode* GetVirtualFinalNode() const         { return mVirtualFinalNode; }
+        MCORE_INLINE AnimGraphNode* GetVirtualFinalNode() const         { return m_virtualFinalNode; }
 
         void SetFinalNodeId(const AnimGraphNodeId finalNodeId);
         AZ_FORCE_INLINE AnimGraphNodeId GetFinalNodeId() const          { return m_finalNodeId; }
@@ -100,7 +100,7 @@ namespace EMotionFX
     private:
         AZ::u64                 m_finalNodeId;      /**< Id of the final node that gets serialized. The final node represents the output of the blend tree. */
         BlendTreeFinalNode*     m_finalNode;        /**< The cached final node pointer based on the final node id. */
-        AnimGraphNode*          mVirtualFinalNode;  /**< The virtual final node, which is the node who's output is used as final output. A value of nullptr means it will use the real mFinalNode. */
+        AnimGraphNode*          m_virtualFinalNode;  /**< The virtual final node, which is the node who's output is used as final output. A value of nullptr means it will use the real m_finalNode. */
 
         /**
         * Helper function that recursively (through incoming connections) detect cycles. The function performs a DFS to find back edges (connections to itself or to one of its ancestors).

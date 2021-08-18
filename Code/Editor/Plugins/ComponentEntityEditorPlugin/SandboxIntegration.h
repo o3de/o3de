@@ -158,7 +158,6 @@ private:
     void LaunchLuaEditor(const char* files) override;
     bool IsLevelDocumentOpen() override;
     AZStd::string GetLevelName() override;
-    AZStd::string SelectResource(const AZStd::string& resourceType, const AZStd::string& previousValue) override;
     void OpenPinnedInspector(const AzToolsFramework::EntityIdSet& entities) override;
     void ClosePinnedInspector(AzToolsFramework::EntityPropertyEditor* editor) override;
     void GoToSelectedOrHighlightedEntitiesInViewports() override;

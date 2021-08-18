@@ -181,11 +181,11 @@ namespace
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // test if the given text file starts with the given text string
-    bool TestFileStartString(const string& pathname, const char* expectedStart)
+    bool TestFileStartString(const AZStd::string& pathname, const char* expectedStart)
     {
         // Open the file using CCryFile, this supports it being in the pak file or a standalone file
         CCryFile file;
-        if (!file.Open(pathname, "r"))
+        if (!file.Open(pathname.c_str(), "r"))
         {
             return false;
         }
@@ -212,7 +212,7 @@ namespace
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     // Check if the given file was saved using AZ serialization
-    bool IsValidAzSerializedFile(const string& pathname)
+    bool IsValidAzSerializedFile(const AZStd::string& pathname)
     {
         return TestFileStartString(pathname, "<ObjectStream");
     }
@@ -585,7 +585,7 @@ AZ::EntityId UiCanvasComponent::FindInteractableToHandleEvent(AZ::Vector2 point)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-bool UiCanvasComponent::SaveToXml(const string& assetIdPathname, const string& sourceAssetPathname)
+bool UiCanvasComponent::SaveToXml(const AZStd::string& assetIdPathname, const AZStd::string& sourceAssetPathname)
 {
     PrepareAnimationSystemForCanvasSave();
 
@@ -717,7 +717,7 @@ AZStd::string UiCanvasComponent::GetUniqueChildName(AZ::EntityId parentEntityId,
 
     // Count trailing digits in base name
     int i;
-    for (i = baseName.length() - 1; i >= 0; i--)
+    for (i = static_cast<int>(baseName.length() - 1); i >= 0; i--)
     {
         if (!isdigit(baseName[i]))
         {
@@ -725,7 +725,7 @@ AZStd::string UiCanvasComponent::GetUniqueChildName(AZ::EntityId parentEntityId,
         }
     }
     int startDigitIndex = i + 1;
-    int numDigits = baseName.length() - startDigitIndex;
+    int numDigits = static_cast<int>(baseName.length() - startDigitIndex);
 
     int suffix = 1;
     if (numDigits > 0)
@@ -749,7 +749,7 @@ AZStd::string UiCanvasComponent::GetUniqueChildName(AZ::EntityId parentEntityId,
         AZStd::string suffixString = AZStd::string::format("%d", suffix);
 
         // Append leading zeros
-        int numLeadingZeros = (suffixString.length() < numDigits) ? numDigits - suffixString.length() : 0;
+        int numLeadingZeros = static_cast<int>((suffixString.length() < numDigits) ? numDigits - suffixString.length() : 0);
         for (int zeroes = 0; zeroes < numLeadingZeros; zeroes++)
         {
             proposedChildName.push_back('0');
@@ -2049,7 +2049,7 @@ void UiCanvasComponent::GetDebugInfoNumElements(DebugInfoNumElements& info) cons
     info.m_numMaskElements = 0;
     info.m_numFaderElements = 0;
     info.m_numInteractableElements = 0;
-    info.m_numUpdateElements = UiCanvasUpdateNotificationBus::GetNumOfEventHandlers(GetEntityId());
+    info.m_numUpdateElements = static_cast<int>(UiCanvasUpdateNotificationBus::GetNumOfEventHandlers(GetEntityId()));
 
     DebugInfoCountChildren(m_rootElement, true, info);
 }
@@ -3680,7 +3680,7 @@ void UiCanvasComponent::RenderCanvasToTexture()
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-bool UiCanvasComponent::SaveCanvasToFile(const string& pathname, AZ::DataStream::StreamType streamType)
+bool UiCanvasComponent::SaveCanvasToFile(const AZStd::string& pathname, AZ::DataStream::StreamType streamType)
 {
     // Note: This is ok for saving in tools, but we should use the streamer to write objects directly (no memory store)
     AZStd::vector<AZ::u8> dstData;
@@ -3963,7 +3963,7 @@ UiCanvasComponent* UiCanvasComponent::CreateCanvasInternal(UiEntityContext* enti
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-UiCanvasComponent*  UiCanvasComponent::LoadCanvasInternal(const string& pathnameToOpen, bool forEditor, const string& assetIdPathname, UiEntityContext* entityContext,
+UiCanvasComponent*  UiCanvasComponent::LoadCanvasInternal(const AZStd::string& pathnameToOpen, bool forEditor, const AZStd::string& assetIdPathname, UiEntityContext* entityContext,
     const AZ::SliceComponent::EntityIdToEntityIdMap* previousRemapTable, AZ::EntityId previousCanvasId)
 {
     UiCanvasComponent* canvasComponent = nullptr;

@@ -136,11 +136,11 @@ void CErrorReport::ReportError(CErrorRecord& err)
     }
     else
     {
-        if (err.pObject == NULL && m_pObject != NULL)
+        if (err.pObject == nullptr && m_pObject != nullptr)
         {
             err.pObject = m_pObject;
         }
-        else if (err.pItem == NULL && m_pItem != NULL)
+        else if (err.pItem == nullptr && m_pItem != nullptr)
         {
             err.pItem = m_pItem;
         }

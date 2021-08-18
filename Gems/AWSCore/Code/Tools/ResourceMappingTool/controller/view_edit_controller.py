@@ -105,6 +105,8 @@ class ViewEditController(QObject):
 
     def _create_new_config_file(self) -> None:
         configuration: Configuration = self._configuration_manager.configuration
+        self._set_default_region(configuration)
+
         try:
             new_config_file_path: str = file_utils.join_path(
                 configuration.config_directory, constants.RESOURCE_MAPPING_DEFAULT_CONFIG_FILE_NAME)
@@ -116,6 +118,15 @@ class ViewEditController(QObject):
             return
 
         self._rescan_config_directory()
+
+    def _set_default_region(self, configuration: Configuration):
+        default_region = configuration.region
+        if not default_region or default_region == 'aws-global':
+            self.set_notification_frame_text_sender.emit(
+                notification_label_text.VIEW_EDIT_PAGE_CREATE_NEW_CONFIG_FILE_NO_DEFAULT_REGION_MESSAGE)
+            logger.warning(notification_label_text.VIEW_EDIT_PAGE_CREATE_NEW_CONFIG_FILE_NO_DEFAULT_REGION_MESSAGE)
+
+            configuration.region = constants.RESOURCE_MAPPING_DEFAULT_CONFIG_FILE_REGION
 
     def _delete_table_row(self) -> None:
         indices: List[QModelIndex] = self._table_view.selectedIndexes()

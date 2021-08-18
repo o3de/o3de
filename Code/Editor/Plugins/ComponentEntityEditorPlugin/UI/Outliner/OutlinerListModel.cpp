@@ -259,7 +259,7 @@ QVariant OutlinerListModel::dataForName(const QModelIndex& index, int role) cons
                 if (highlightTextIndex >= 0)
                 {
                     const QString BACKGROUND_COLOR{ "#707070" };
-                    label.insert(highlightTextIndex + m_filterString.length(), "</span>");
+                    label.insert(static_cast<int>(highlightTextIndex + m_filterString.length()), "</span>");
                     label.insert(highlightTextIndex, "<span style=\"background-color: " + BACKGROUND_COLOR + "\">");
                 }
             } while(highlightTextIndex > 0);

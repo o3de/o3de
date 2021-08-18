@@ -72,15 +72,8 @@ namespace AzToolsFramework
 
         if (m_rootInstance != nullptr)
         {
-            // Need to save off the template id to remove the template after the instance is deleted.
-            Prefab::TemplateId templateId = m_rootInstance->GetTemplateId();
             m_rootInstance.reset();
-            if (templateId != Prefab::InvalidTemplateId)
-            {
-                // Remove the template here so that if we're in a Deactivate/Activate cycle, it can recreate the template/rootInstance
-                // correctly
-                m_prefabSystemComponent->RemoveTemplate(templateId);
-            }
+            m_prefabSystemComponent->RemoveAllTemplates();
         }
     }
 
@@ -95,7 +88,7 @@ namespace AzToolsFramework
             if (templateId != Prefab::InvalidTemplateId)
             {
                 m_rootInstance->SetTemplateId(Prefab::InvalidTemplateId);
-                m_prefabSystemComponent->RemoveTemplate(templateId);
+                m_prefabSystemComponent->RemoveAllTemplates();
             }
             m_rootInstance->SetContainerEntityName("Level");
         }
@@ -226,42 +219,10 @@ namespace AzToolsFramework
     bool PrefabEditorEntityOwnershipService::SaveToStream(AZ::IO::GenericStream& stream, AZStd::string_view filename)
     {
         AZ::IO::Path relativePath = m_loaderInterface->GenerateRelativePath(filename);
-        AzToolsFramework::Prefab::TemplateId templateId = m_prefabSystemComponent->GetTemplateIdFromFilePath(relativePath);
 
         m_rootInstance->SetTemplateSourcePath(relativePath);
-
-        if (templateId == AzToolsFramework::Prefab::InvalidTemplateId)
-        {
-            m_rootInstance->m_containerEntity->AddComponent(aznew Prefab::EditorPrefabComponent());
-            HandleEntitiesAdded({ m_rootInstance->m_containerEntity.get() });
-
-            AzToolsFramework::Prefab::PrefabDom dom;
-            bool success = AzToolsFramework::Prefab::PrefabDomUtils::StoreInstanceInPrefabDom(*m_rootInstance, dom);
-            if (!success)
-            {
-                AZ_Error("Prefab", false, "Failed to convert current root instance into a DOM when saving file '%.*s'", AZ_STRING_ARG(filename));
-                return false;
-            }
-            templateId = m_prefabSystemComponent->AddTemplate(relativePath, AZStd::move(dom));
-
-            if (templateId == AzToolsFramework::Prefab::InvalidTemplateId)
-            {
-                AZ_Error("Prefab", false, "Couldn't add new template id '%i' when saving file '%.*s'", templateId, AZ_STRING_ARG(filename));
-                return false;
-            }
-        }
-
-        Prefab::TemplateId prevTemplateId = m_rootInstance->GetTemplateId();
-        m_rootInstance->SetTemplateId(templateId);
-
-        if (prevTemplateId != Prefab::InvalidTemplateId && templateId != prevTemplateId)
-        {
-            // Make sure we only have one level template loaded at a time
-            m_prefabSystemComponent->RemoveTemplate(prevTemplateId);
-        }
-
+        
         AZStd::string out;
-
         if (!m_loaderInterface->SaveTemplateToString(m_rootInstance->GetTemplateId(), out))
         {
             return false;
@@ -273,7 +234,7 @@ namespace AzToolsFramework
         {
             return false;
         }
-        m_prefabSystemComponent->SetTemplateDirtyFlag(templateId, false);
+        m_prefabSystemComponent->SetTemplateDirtyFlag(m_rootInstance->GetTemplateId(), false);
         return true;
     }
 

@@ -254,7 +254,7 @@ void CAnimSceneNode::CreateDefaultTracks()
 //////////////////////////////////////////////////////////////////////////
 unsigned int CAnimSceneNode::GetParamCount() const
 {
-    return s_nodeParams.size();
+    return static_cast<unsigned int>(s_nodeParams.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -661,7 +661,7 @@ void CAnimSceneNode::OnStop()
 //////////////////////////////////////////////////////////////////////////
 void CAnimSceneNode::ResetSounds()
 {
-    for (int i = m_SoundInfo.size(); --i >= 0; )
+    for (int i = static_cast<int>(m_SoundInfo.size()); --i >= 0; )
     {
         m_SoundInfo[i].Reset();
     }
@@ -916,8 +916,8 @@ void CAnimSceneNode::ApplyCameraKey(ISelectKey& key, SAnimContext& ec)
 void CAnimSceneNode::ApplyEventKey(IEventKey& key, [[maybe_unused]] SAnimContext& ec)
 {
     char funcName[1024];
-    cry_strcpy(funcName, "Event_");
-    cry_strcat(funcName, key.event.c_str());
+    azstrcpy(funcName, AZ_ARRAY_SIZE(funcName), "Event_");
+    azstrcat(funcName, AZ_ARRAY_SIZE(funcName), key.event.c_str());
     gEnv->pMovieSystem->SendGlobalEvent(funcName);
 }
 
@@ -1003,7 +1003,7 @@ void CAnimSceneNode::ApplyGotoKey(CGotoTrack*   poGotoTrack, SAnimContext& ec)
         {
             if (stDiscreteFloadKey.m_fValue >= 0)
             {
-                string fullname = m_pSequence->GetName();
+                AZStd::string fullname = m_pSequence->GetName();
                 GetMovieSystem()->GoToFrame(fullname.c_str(), stDiscreteFloadKey.m_fValue);
             }
         }

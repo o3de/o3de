@@ -50,6 +50,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
         NAME AzToolsFrameworkTestCommon STATIC
         NAMESPACE AZ
+        AUTOMOC
         FILES_CMAKE
             AzToolsFramework/aztoolsframeworktestcommon_files.cmake
         INCLUDE_DIRECTORIES
@@ -59,6 +60,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PUBLIC
                 AZ::AzTestShared
             PRIVATE
+                3rdParty::Qt::Test
                 3rdParty::googletest::GMock
                 3rdParty::GoogleBenchmark
                 AZ::AzToolsFramework
@@ -68,14 +70,16 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_target(
         NAME AzToolsFramework.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE AZ
+        AUTOMOC
         FILES_CMAKE
             Tests/aztoolsframeworktests_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
                 Tests
         BUILD_DEPENDENCIES
-            PRIVATE
+            PUBLIC
                 AZ::AzTestShared
+            PRIVATE
                 3rdParty::Qt::Test
                 AZ::AzFrameworkTestShared
                 AZ::AzToolsFramework

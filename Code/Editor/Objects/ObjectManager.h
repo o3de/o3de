@@ -58,7 +58,7 @@ public:
 class CBaseObjectsCache
 {
 public:
-    int GetObjectCount() const { return m_objects.size(); }
+    int GetObjectCount() const { return static_cast<int>(m_objects.size()); }
     CBaseObject* GetObject(int nIndex) const { return m_objects[nIndex]; }
     void AddObject(CBaseObject* object);
 

@@ -487,7 +487,7 @@ namespace AZ
             RHI::DrawListTag& drawListTag)
         {
             // load shader
-            shader = RPI::LoadShader(filePath);
+            shader = RPI::LoadCriticalShader(filePath);
             AZ_Error("ReflectionProbeFeatureProcessor", shader, "Failed to find asset for shader [%s]", filePath);
 
             // store drawlist tag

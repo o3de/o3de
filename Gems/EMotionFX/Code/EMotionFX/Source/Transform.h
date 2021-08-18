@@ -137,10 +137,10 @@ namespace EMotionFX
         bool        operator != (const Transform& right) const;
 
     public:
-        AZ::Quaternion   mRotation;             /**< The rotation. */
-        AZ::Vector3      mPosition;             /**< The position. */
+        AZ::Quaternion   m_rotation;             /**< The rotation. */
+        AZ::Vector3      m_position;             /**< The position. */
         #ifndef EMFX_SCALE_DISABLED
-            AZ::Vector3  mScale;                /**< The scale. */
+            AZ::Vector3  m_scale;                /**< The scale. */
         #endif
     }
     MCORE_ALIGN_POST(16);

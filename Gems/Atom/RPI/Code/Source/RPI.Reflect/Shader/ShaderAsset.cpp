@@ -516,7 +516,7 @@ namespace AZ
         SupervariantIndex ShaderAsset::GetSupervariantIndexInternal(AZ::Name supervariantName) const
         {
             const auto& supervariants = GetCurrentShaderApiData().m_supervariants;
-            const uint32_t supervariantCount = supervariants.size();
+            const uint32_t supervariantCount = static_cast<uint32_t>(supervariants.size());
             for (uint32_t index = 0; index < supervariantCount; ++index)
             {
                 if (supervariants[index].m_name == supervariantName)
