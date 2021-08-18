@@ -11,6 +11,7 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/Component/TransformBus.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
@@ -363,12 +364,25 @@ namespace AzToolsFramework
 
             if (hasUserSelectedValidSourceFile)
             {
-                // Get position (center of viewport). If no viewport is available, (0,0,0) will be used.
-                AZ::Vector3 viewportCenterPosition = AZ::Vector3::CreateZero();
-                EditorRequestBus::BroadcastResult(viewportCenterPosition, &EditorRequestBus::Events::GetWorldPositionAtViewportCenter);
+                AZ::EntityId parentId;
+                AZ::Vector3 position = AZ::Vector3::CreateZero();
+
+                EntityIdList selectedEntities;
+                ToolsApplicationRequestBus::BroadcastResult(selectedEntities, &ToolsApplicationRequests::GetSelectedEntities);
+                // if one entity is selected, instantiate prefab as its child and place it at same position as parent
+                if (selectedEntities.size() == 1)
+                {
+                    parentId = selectedEntities.front();
+                    AZ::TransformBus::EventResult(position, parentId, &AZ::TransformInterface::GetWorldTranslation);
+                }
+                // otherwise instantiate it at root level and center of viewport
+                else
+                {
+                    EditorRequestBus::BroadcastResult(position, &EditorRequestBus::Events::GetWorldPositionAtViewportCenter);
+                }
 
                 // Instantiating from context menu always puts the instance at the root level
-                auto createPrefabOutcome = s_prefabPublicInterface->InstantiatePrefab(prefabFilePath, AZ::EntityId(), viewportCenterPosition);
+                auto createPrefabOutcome = s_prefabPublicInterface->InstantiatePrefab(prefabFilePath, parentId, position);
 
                 if (!createPrefabOutcome.IsSuccess())
                 {
