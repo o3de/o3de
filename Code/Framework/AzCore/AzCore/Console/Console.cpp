@@ -512,7 +512,8 @@ namespace AZ
 
             AZ::IO::PathView consoleRootCommandKey{ IConsole::ConsoleRootCommandKey, AZ::IO::PosixPathSeparator };
             AZ::IO::PathView inputKey{ path, AZ::IO::PosixPathSeparator };
-            if (inputKey.IsRelativeTo(consoleRootCommandKey))
+            // The ConsoleRootComamndKey is not a command itself so strictly children keys are being examined
+            if (inputKey.IsRelativeTo(consoleRootCommandKey) && inputKey != consoleRootCommandKey)
             {
                 FixedValueString command = inputKey.LexicallyRelative(consoleRootCommandKey).Native();
                 ConsoleCommandContainer commandArgs;
