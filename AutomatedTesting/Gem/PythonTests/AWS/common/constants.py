@@ -10,7 +10,7 @@ ASSUME_ROLE_ARN = 'arn:aws:iam::645075835648:role/o3de-automation-tests'
 # Name of the AWS project deployed by the CDK applications
 AWS_PROJECT_NAME = 'AWSAUTO'
 # Region for the existing CloudFormation stacks used by the automation tests
-AWS_REGION = 'us-west-2'
+AWS_REGION = 'us-east-1'
 # Name of the default resource mapping config file used by the automation tests
 AWS_RESOURCE_MAPPING_FILE_NAME = 'default_aws_resource_mappings.json'
 # Name of the game launcher log

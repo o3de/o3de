@@ -8,6 +8,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import os
 import json
 import logging
+from AWS.common import constants
 
 logger = logging.getLogger(__name__)
 
@@ -86,7 +87,7 @@ class ResourceMappings:
             resource_mappings = json.load(file_content)
 
         resource_mappings[AWS_RESOURCE_MAPPINGS_ACCOUNT_ID_KEY] = ''
-        resource_mappings[AWS_RESOURCE_MAPPINGS_REGION_KEY] = 'us-west-2'
+        resource_mappings[AWS_RESOURCE_MAPPINGS_REGION_KEY] = constants.AWS_REGION
 
         # Append new mappings.
         resource_mappings[AWS_RESOURCE_MAPPINGS_KEY] = resource_mappings.get(AWS_RESOURCE_MAPPINGS_KEY, {})

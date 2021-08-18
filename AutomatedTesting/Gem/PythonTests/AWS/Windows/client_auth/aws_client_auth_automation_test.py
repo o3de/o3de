@@ -3,20 +3,6 @@ Copyright (c) Contributors to the Open 3D Engine Project.
 For complete copyright and license terms please see the LICENSE at the root of this distribution.
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
-
-
-Prerequisites for running AWS automation tests on your local Windows machine:
-1) Go to the AWS IAM console and create an IAM role called o3de-automation-tests which adds your own AWS account as
-   a trusted entity and has the admin permissions
-2) Copy o3de\scripts\build\Platform\Windows\deploy_cdk_applications.cmd to your engine root folder
-3) Open a Command Prompt window and set the following environment variables:
-   Set O3DE_AWS_PROJECT_NAME=AWSAUTO
-   Set O3DE_AWS_DEPLOY_REGION=us-west-2
-   Set ASSUME_ROLE_ARN="arn:aws:iam::{your_aws_account_id}:role/o3de-automation-tests"
-   Set COMMIT_ID=HEAD
-4) Deploy the CDK applications for AWS gems by running deploy_cdk_applications.cmd in the same Command Prompt window
-5) Edit AWS/common/constants.py to replace the assume role ARN with your own:
-   arn:aws:iam::{your_aws_account_id}:role/o3de-automation-tests
 """
 
 import logging
