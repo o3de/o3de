@@ -68,7 +68,6 @@ class CDisplaySettings;
 struct SGizmoParameters;
 class CLevelIndependentFileMan;
 class CSelectionTreeManager;
-struct IResourceSelectorHost;
 struct SEditorSettings;
 class CGameExporter;
 class IAWSResourceManager;
@@ -714,7 +713,6 @@ struct IEditor
     virtual ESystemConfigSpec GetEditorConfigSpec() const = 0;
     virtual ESystemConfigPlatform GetEditorConfigPlatform() const = 0;
     virtual void ReloadTemplates() = 0;
-    virtual IResourceSelectorHost* GetResourceSelectorHost() = 0;
     virtual void ShowStatusText(bool bEnable) = 0;
 
     // Provides a way to extend the context menu of an object. The function gets called every time the menu is opened.

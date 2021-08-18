@@ -65,8 +65,6 @@ public:
     {
         return m_cutsceneCount > 0;
     }
-    virtual void UpdateSoundListeners();
-
     virtual void SetDeferredViewSystemUpdate(bool const bDeferred){ m_useDeferredViewSystemUpdate = bDeferred; }
     virtual bool UseDeferredViewSystemUpdate() const { return m_useDeferredViewSystemUpdate; }
     virtual void SetControlAudioListeners(bool const bActive);

@@ -58,7 +58,7 @@ void UiRenderer::OnBootstrapSceneReady([[maybe_unused]] AZ::RPI::Scene* bootstra
 
     // Load the UI shader
     const char* uiShaderFilepath = "Shaders/LyShineUI.azshader";
-    AZ::Data::Instance<AZ::RPI::Shader> uiShader = AZ::RPI::LoadShader(uiShaderFilepath);
+    AZ::Data::Instance<AZ::RPI::Shader> uiShader = AZ::RPI::LoadCriticalShader(uiShaderFilepath);
 
     // Create scene to be used by the dynamic draw context
     if (m_viewportContext)

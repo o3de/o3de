@@ -207,7 +207,10 @@ namespace AzFramework
     // Handles Win32 Window Event callbacks
     LRESULT CALLBACK NativeWindowImpl_Win32::WindowCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
-        NativeWindowImpl_Win32* nativeWindowImpl = reinterpret_cast<NativeWindowImpl_Win32*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));      
+        NativeWindowImpl_Win32* nativeWindowImpl = reinterpret_cast<NativeWindowImpl_Win32*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
+
+        // If set to true, call DefWindowProc to ensure the default Windows behavior occurs
+        bool shouldBubbleEventUp = false;
 
         switch (message)
         {
@@ -276,14 +279,19 @@ namespace AzFramework
             uint32_t refreshRate = DisplayConfig.dmDisplayFrequency;
             WindowNotificationBus::Event(
                 nativeWindowImpl->GetWindowHandle(), &WindowNotificationBus::Events::OnRefreshRateChanged, refreshRate);
+            shouldBubbleEventUp = true;
             break;
         }
         default:
-            return DefWindowProc(hWnd, message, wParam, lParam);
+            shouldBubbleEventUp = true;
             break;
         }
 
-        return 0;
+        if (!shouldBubbleEventUp)
+        {
+            return 0;
+        }
+        return DefWindowProc(hWnd, message, wParam, lParam);
     }
 
     void NativeWindowImpl_Win32::WindowSizeChanged(const uint32_t width, const uint32_t height)
