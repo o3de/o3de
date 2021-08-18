@@ -2210,6 +2210,10 @@ namespace UnitTest
             AssetManager::Descriptor desc;
             AssetManager::Create(desc);
 
+            EBus<AssetEvents>::Context* ebusContext = AssetBus::GetContext();
+            size_t count = ebusContext->m_queue.Count();
+            ASSERT_EQ(count, 0) << "AssetBus has events left in its queue from a previous test.  This may cause random bugs or crashes.";
+
             auto& db = AssetManager::Instance();
 
             auto* assetHandlerAndCatalog = aznew DataDrivenHandlerAndCatalog;

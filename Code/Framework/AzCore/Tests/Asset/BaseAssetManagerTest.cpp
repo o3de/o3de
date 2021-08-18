@@ -340,7 +340,7 @@ namespace UnitTest
         using ::testing::Return;
 
         BaseAssetManagerTest::SetUp();
-
+        
         ON_CALL(m_fileIO, Size(::testing::Matcher<const char*>(::testing::_), _))
             .WillByDefault(
             [this](const char* path, u64& size)
@@ -363,6 +363,8 @@ namespace UnitTest
         m_prevFileIO = IO::FileIOBase::GetInstance();
         IO::FileIOBase::SetInstance(nullptr);
         IO::FileIOBase::SetInstance(&m_fileIO);
+        
+        ASSERT_EQ(AssetBus::QueuedEventCount(), 0);
     }
 
     void DisklessAssetManagerBase::TearDown()

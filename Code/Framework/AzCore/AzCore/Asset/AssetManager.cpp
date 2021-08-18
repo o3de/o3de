@@ -465,6 +465,8 @@ namespace AZ
                 s_assetDB.Set(aznew AssetManager(desc));
             }
 
+            AZ_Assert(AssetBus::QueuedEventCount() == 0, "Ebus already has events queued");
+
             return true;
         }
 
@@ -555,6 +557,8 @@ namespace AZ
                 UnregisterHandler(handler);
                 delete handler;
             }
+
+            AZ_Assert(AssetBus::QueuedEventCount() == 0, "AssetBus still has events queued after AssetManager shutdown");
 
             AssetManagerBus::Handler::BusDisconnect();
         }
