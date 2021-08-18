@@ -16,7 +16,6 @@
 #include "PNoise3.h"
 #include "AnimSequence.h"
 
-#include <IAudioSystem.h>
 #include <Cry_Camera.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
