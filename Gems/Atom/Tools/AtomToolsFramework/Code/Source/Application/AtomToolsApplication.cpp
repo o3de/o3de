@@ -152,7 +152,33 @@ namespace AtomToolsFramework
 
         Base::StartCommon(systemEntity);
 
-        StartInternal();
+        m_traceLogger.PrepareLogFile(GetBuildTargetName() + ".log");
+
+        AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusConnect();
+        AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotificationBus::Broadcast(
+            &AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotifications::OnDatabaseInitialized);
+
+        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::LoadCatalog, "@assets@/assetcatalog.xml");
+
+        AZ::RPI::RPISystemInterface::Get()->InitializeSystemAssets();
+
+        LoadSettings();
+
+        AtomToolsMainWindowNotificationBus::Handler::BusConnect();
+
+        AtomToolsMainWindowFactoryRequestBus::Broadcast(&AtomToolsMainWindowFactoryRequestBus::Handler::CreateMainWindow);
+
+        auto editorPythonEventsInterface = AZ::Interface<AzToolsFramework::EditorPythonEventsInterface>::Get();
+        if (editorPythonEventsInterface)
+        {
+            // The PythonSystemComponent does not call StartPython to allow for lazy python initialization, so start it here
+            // The PythonSystemComponent will call StopPython when it deactivates, so we do not need our own corresponding call to
+            // StopPython
+            editorPythonEventsInterface->StartPython();
+        }
+
+        // Delay execution of commands and scripts post initialization
+        QTimer::singleShot(0, [this]() { ProcessCommandLine(m_commandLine); });
 
         m_timer.start();
     }
@@ -334,7 +360,7 @@ namespace AtomToolsFramework
         }
     }
     
-    bool AtomToolsApplication::LaunchDiscoveryService()
+    bool AtomToolsApplication::LaunchLocalServer()
     {
         // Determine if this is the first launch of the tool by attempting to connect to a running server
         if (m_socket.Connect(QApplication::applicationName()))
@@ -376,7 +402,7 @@ namespace AtomToolsFramework
                     {
                         AZ::CommandLine commandLine;
                         commandLine.Parse(tokens);
-                        ProcessCommandLine(commandLine);
+                        QTimer::singleShot(0, [this, commandLine]() { ProcessCommandLine(commandLine); });
                     }
                 }
             });
@@ -388,55 +414,6 @@ namespace AtomToolsFramework
         }
 
         return true;
-    }
-
-    void AtomToolsApplication::StartInternal()
-    {
-        if (WasExitMainLoopRequested())
-        {
-            return;
-        }
-
-        AZStd::string fileName = GetBuildTargetName() + ".log";
-
-        m_traceLogger.PrepareLogFile(fileName.c_str());
-
-        if (!LaunchDiscoveryService())
-        {
-            ExitMainLoop();
-            return;
-        }
-
-        AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusConnect();
-        AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotificationBus::Broadcast(
-            &AzToolsFramework::AssetBrowser::AssetDatabaseLocationNotifications::OnDatabaseInitialized);
-
-        AZ::Data::AssetCatalogRequestBus::Broadcast(&AZ::Data::AssetCatalogRequestBus::Events::LoadCatalog, "@assets@/assetcatalog.xml");
-
-        AZ::RPI::RPISystemInterface::Get()->InitializeSystemAssets();
-
-        LoadSettings();
-
-        AtomToolsMainWindowNotificationBus::Handler::BusConnect();
-
-        AtomToolsMainWindowFactoryRequestBus::Broadcast(&AtomToolsMainWindowFactoryRequestBus::Handler::CreateMainWindow);
-
-        auto editorPythonEventsInterface = AZ::Interface<AzToolsFramework::EditorPythonEventsInterface>::Get();
-        if (editorPythonEventsInterface)
-        {
-            // The PythonSystemComponent does not call StartPython to allow for lazy python initialization, so start it here
-            // The PythonSystemComponent will call StopPython when it deactivates, so we do not need our own corresponding call to
-            // StopPython
-            editorPythonEventsInterface->StartPython();
-        }
-
-        // Delay execution of commands and scripts post initialization
-        QTimer::singleShot(
-            0,
-            [this]()
-            {
-                ProcessCommandLine(m_commandLine);
-            });
     }
 
     bool AtomToolsApplication::GetAssetDatabaseLocation(AZStd::string& result)
