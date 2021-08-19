@@ -194,9 +194,9 @@ namespace AZ
             return;
         }
 
-        Internal::NameData* nameData = dictIt->second; // restore the pointer in case the intrusive ptr was already assigned by other thread
+        Internal::NameData* nameData = dictIt->second;
 
-        // Check m_hashCollision again inside the m_sharedMutex because a new collision could have happened
+        // Check m_hashCollision inside the m_sharedMutex because a new collision could have happened
         // on another thread before taking the lock.
         if (nameData->m_hashCollision)
         {

@@ -604,9 +604,7 @@ namespace UnitTest
         AZ::NameDictionary::Create();
 
         // 3 threads per name effectively makes two readers and one writer (the first to run will write in the dictionary)
-        // Using AZ_TRAIT_UNIT_TEST_NAME_COUNT / 2 since the following line generates 3000 threads and that triggers ASan failures,
-        // likely because of https://devblogs.microsoft.com/oldnewthing/20050729-14/?p=34773
-        RunConcurrencyTest<ThreadCreatesOneName>(AZ_TRAIT_UNIT_TEST_NAME_COUNT / 2, 3);
+        RunConcurrencyTest<ThreadCreatesOneName>(AZStd::thread::hardware_concurrency(), 3);
     }
 
     TEST_F(NameTest, ConcurrencyDataTest_EachThreadCreatesOneName_HighCollisions)
@@ -616,9 +614,7 @@ namespace UnitTest
         AZ::NameDictionary::Create();
 
         // 3 threads per name effectively makes two readers and one writer (the first to run will write in the dictionary)
-        // Using AZ_TRAIT_UNIT_TEST_NAME_COUNT / 2 since the following line generates 3000 threads and that triggers ASan failures,
-        // likely because of https://devblogs.microsoft.com/oldnewthing/20050729-14/?p=34773
-        RunConcurrencyTest<ThreadCreatesOneName>(AZ_TRAIT_UNIT_TEST_NAME_COUNT / 2, 3);
+        RunConcurrencyTest<ThreadCreatesOneName>(AZStd::thread::hardware_concurrency() / 2, 3);
     }
 
     TEST_F(NameTest, ConcurrencyDataTest_EachThreadRepeatedlyCreatesAndReleasesOneName_NoCollision)
@@ -645,7 +641,7 @@ namespace UnitTest
 
     TEST_F(NameTest, DISABLED_NameVsStringPerf_Creation)
     {
-        constexpr int CreateCount = AZ_TRAIT_UNIT_TEST_NAME_COUNT;
+        constexpr int CreateCount = 1000;
 
         char buffer[RandomStringBufferSize];
 
@@ -654,7 +650,7 @@ namespace UnitTest
         AZStd::sys_time_t stringTime;
 
         {
-            const size_t dictionaryNoiseSize = AZ_TRAIT_UNIT_TEST_NAME_COUNT;
+            const size_t dictionaryNoiseSize = 1000;
 
             AZStd::vector<AZ::Name> existingNames;
             existingNames.reserve(dictionaryNoiseSize);
