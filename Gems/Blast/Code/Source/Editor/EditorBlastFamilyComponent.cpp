@@ -96,7 +96,7 @@ namespace Blast
 
     void EditorBlastFamilyComponent::Activate()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::System);
+        AZ_PROFILE_FUNCTION(System);
 
         if (m_blastAsset.GetId().IsValid())
         {
@@ -107,7 +107,7 @@ namespace Blast
 
     void EditorBlastFamilyComponent::Deactivate()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::System);
+        AZ_PROFILE_FUNCTION(System);
 
         AZ::Data::AssetBus::MultiHandler::BusDisconnect();
     }

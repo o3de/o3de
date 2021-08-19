@@ -44,7 +44,7 @@ bool CSerializeXMLReaderImpl::Value(const char* name, int8& value)
     }
     else
     {
-        value = temp;
+        value = static_cast<int8>(temp);
     }
     return bResult;
 }

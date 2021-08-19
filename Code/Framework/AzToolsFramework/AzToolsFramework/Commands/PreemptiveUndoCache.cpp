@@ -86,7 +86,7 @@ namespace AzToolsFramework
 
     void PreemptiveUndoCache::UpdateCache(const AZ::EntityId& entityId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         // capture it
 

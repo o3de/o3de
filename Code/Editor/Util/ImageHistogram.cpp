@@ -220,5 +220,5 @@ void CImageHistogram::ComputeStatisticsForChannel(int aIndex)
         }
     }
 
-    m_median[aIndex] = median;
+    m_median[aIndex] = static_cast<float>(median);
 }

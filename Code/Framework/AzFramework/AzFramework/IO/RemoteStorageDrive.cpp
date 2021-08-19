@@ -80,7 +80,7 @@ namespace AzFramework
     {
         using namespace AZ::IO;
 
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
         AZ_Assert(request, "PrepareRequest was provided a null request.");
 
         if (AZStd::holds_alternative<FileRequest::ReadRequestData>(request->GetCommand()))
@@ -278,7 +278,7 @@ namespace AzFramework
     {
         using namespace AZ::IO;
 
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
             
         auto data = AZStd::get_if<FileRequest::ReadData>(&request->GetCommand());
         AZ_Assert(data, "Request doing reading in the RemoteStorageDrive didn't contain read data.")
@@ -424,7 +424,7 @@ namespace AzFramework
     {
         using namespace AZ::IO;
 
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
         TIMED_AVERAGE_WINDOW_SCOPE(m_getFileMetaDataTimeAverage);
 
         AZ::u64 fileSize = 0;

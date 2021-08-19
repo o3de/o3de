@@ -98,7 +98,7 @@ namespace AzToolsFramework
     //-----------------------------------------------------------------------------
     NodeDisplayVisibility CalculateNodeDisplayVisibility(const InstanceDataNode& node, bool isSlicePushUI)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         NodeDisplayVisibility visibility = NodeDisplayVisibility::NotVisible;
 

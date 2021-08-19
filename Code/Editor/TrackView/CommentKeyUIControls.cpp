@@ -122,7 +122,7 @@ void CCommentKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& sel
 
     for (size_t keyIndex = 0, num = selectedKeys.GetKeyCount(); keyIndex < num; keyIndex++)
     {
-        CTrackViewKeyHandle keyHandle = selectedKeys.GetKey(keyIndex);
+        CTrackViewKeyHandle keyHandle = selectedKeys.GetKey(static_cast<unsigned int>(keyIndex));
 
         CAnimParamType paramType = keyHandle.GetTrack()->GetParameterType();
         if (paramType == AnimParamType::CommentText)

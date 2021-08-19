@@ -115,7 +115,7 @@ namespace ScriptCanvas
     void EBusHandler::OnEventGenericHook(void* userData, const char* eventName, int eventIndex, AZ::BehaviorValueParameter* result, int numParameters, AZ::BehaviorValueParameter* parameters)
     {
         AZ_UNUSED(eventName);
-        AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::ScriptCanvas, "EBusEventHandler::OnEvent %s", eventName);
+        AZ_PROFILE_SCOPE(ScriptCanvas, "EBusEventHandler::OnEvent %s", eventName);
         auto handler = reinterpret_cast<EBusHandler*>(userData);
         SCRIPT_CANVAS_PERFORMANCE_SCOPE_LATENT(handler->GetScriptCanvasId(), handler->GetAssetId());
         handler->OnEvent(nullptr, eventIndex, result, numParameters, parameters);

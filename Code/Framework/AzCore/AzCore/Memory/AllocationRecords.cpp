@@ -11,6 +11,7 @@
 #include <AzCore/Memory/AllocatorManager.h>
 #include <AzCore/Driller/DrillerBus.h>
 
+#include <AzCore/std/time.h>
 #include <AzCore/std/parallel/mutex.h>
 
 #include <AzCore/Debug/StackTracer.h>

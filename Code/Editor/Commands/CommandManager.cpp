@@ -529,8 +529,8 @@ QString CEditorCommandManager::ExecuteAndLogReturn(CCommand* pCommand, const CCo
 void CEditorCommandManager::GetArgsFromString(const AZStd::string& argsTxt, CCommand::CArgs& argList)
 {
     const char quoteSymbol = '\'';
-    int curPos = 0;
-    int prevPos = 0;
+    size_t curPos = 0;
+    size_t prevPos = 0;
     AZStd::vector<AZStd::string> tokens;
     AZ::StringFunc::Tokenize(argsTxt, tokens, ' ');
     for(AZStd::string& arg : tokens)

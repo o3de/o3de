@@ -814,7 +814,7 @@ public:
 
         AssetRecognizer     good;
         good.m_name = "Good";
-        good.m_version = versionNumber;
+        good.m_version = static_cast<char>(versionNumber);
         good.m_patternMatcher = AssetBuilderSDK::FilePatternMatcher("*.foo", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard);
         good.m_platformSpecs["pc"] = good_spec;
         good.m_productAssetType = builderProductType;

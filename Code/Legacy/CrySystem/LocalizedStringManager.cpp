@@ -473,7 +473,7 @@ void CLocalizedStringsManager::ParseFirstLine(IXmlTableReader* pXmlTableReader, 
             const char* pFind = strstr(sCellContent.c_str(), sLocalizedColumnNames[i]);
             if (pFind != 0)
             {
-                nCellIndexToType[nCellIndex] = i;
+                nCellIndexToType[nCellIndex] = static_cast<char>(i);
 
                 // find SoundMood
                 if (i == ELOCALIZED_COLUMN_SOUNDMOOD)
