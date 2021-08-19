@@ -6,8 +6,9 @@
 #
 #
 
-add_subdirectory(bundler)
-add_subdirectory(detect_file_changes)
-add_subdirectory(commit_validation)
-add_subdirectory(o3de)
-add_subdirectory(ctest)
+# SPEC-1417 will investigate and fix this
+if(NOT PAL_PLATFORM_NAME STREQUAL "Mac")
+    add_subdirectory(ly_remote_console/tests)
+endif()
+
+ly_install_directory(DIRECTORY .)

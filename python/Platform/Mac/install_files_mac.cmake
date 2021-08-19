@@ -6,8 +6,8 @@
 #
 #
 
-add_subdirectory(bundler)
-add_subdirectory(detect_file_changes)
-add_subdirectory(commit_validation)
-add_subdirectory(o3de)
-add_subdirectory(ctest)
+set(install_files
+    get_python.sh
+    pip.sh
+    python.sh
+)

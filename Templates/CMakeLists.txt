@@ -6,8 +6,4 @@
 #
 #
 
-add_subdirectory(bundler)
-add_subdirectory(detect_file_changes)
-add_subdirectory(commit_validation)
-add_subdirectory(o3de)
-add_subdirectory(ctest)
+ly_install_directory(DIRECTORY .)

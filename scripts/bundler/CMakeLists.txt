@@ -6,17 +6,8 @@
 #
 #
 
-add_subdirectory(tests)
-
-file(GLOB o3de_scripts "${LY_ROOT_FOLDER}/scripts/o3de.*")
-ly_install_files(FILES ${o3de_scripts}
-PROGRAMS
-    DESTINATION ./scripts
-)
-
 ly_install_directory(DIRECTORY .
-    EXCLUDE_PATTERNS
+    EXCLUDE_PATTERNS 
         __pycache__
         CMakeLists.txt
-        tests
 )
