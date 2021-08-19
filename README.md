@@ -81,7 +81,7 @@ To set up a project-centric source engine, complete the following steps. For oth
         1.  **Type:** STRING
         1.  **Value:** `<3rdParty package path>`
     1.  Click **Configure**.
-    1.  Wait for the key values to populate. Fill in any additional fields that are needed for your project.
+    1.  Wait for the key values to populate. Update or add any additional fields that are needed for your project.
     1.  Click **Generate**.
     
 1.  Register the engine with this command:
