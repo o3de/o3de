@@ -1628,7 +1628,7 @@ namespace Driller
 
     void ReplicaDataView::ParseFrameData(FrameNumberType frameId)
     {
-        AZ_PROFILE_TIMER("Standalone Tools", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         if (frameId < 0 || frameId >= m_aggregator->GetFrameCount() || m_parsedFrames.find(frameId) != m_parsedFrames.end())
         {
             return;

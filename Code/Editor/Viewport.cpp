@@ -969,7 +969,7 @@ void QtViewport::MakeConstructionPlane(int axis)
 //////////////////////////////////////////////////////////////////////////
 Vec3 QtViewport::MapViewToCP(const QPoint& point, int axis)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
 
     if (axis == AXIS_TERRAIN)
     {
@@ -1336,7 +1336,7 @@ bool QtViewport::GetAdvancedSelectModeFlag()
 //////////////////////////////////////////////////////////////////////////
 bool QtViewport::MouseCallback(EMouseEvent event, const QPoint& point, Qt::KeyboardModifiers modifiers, Qt::MouseButtons buttons)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
 
     // Ignore any mouse events in game mode.
     if (GetIEditor()->IsInGameMode())

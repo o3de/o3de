@@ -1038,12 +1038,12 @@ namespace AzToolsFramework
 
     void ReflectedPropertyEditor::InvalidateValues()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         m_releasePrompt = true;
 
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "ReflectedPropertyEditor::InvalidateValues:InstancesRefreshDataCompare");
+            AZ_PROFILE_SCOPE(AzToolsFramework, "ReflectedPropertyEditor::InvalidateValues:InstancesRefreshDataCompare");
             for (InstanceDataHierarchy& instance : m_impl->m_instances)
             {
                 const bool dataIdentical = instance.RefreshComparisonData(
@@ -1057,7 +1057,7 @@ namespace AzToolsFramework
         }
 
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "ReflectedPropertyEditor::InvalidateValues:RowWidgetGuiUpdate");
+            AZ_PROFILE_SCOPE(AzToolsFramework, "ReflectedPropertyEditor::InvalidateValues:RowWidgetGuiUpdate");
             for (auto it = m_impl->m_userWidgetsToData.begin(); it != m_impl->m_userWidgetsToData.end(); ++it)
             {
                 auto rowWidget = m_impl->m_widgets.find(it->second);
@@ -2294,7 +2294,7 @@ namespace AzToolsFramework
 
     void ReflectedPropertyEditor::DoRefresh()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (m_impl->m_preventRefresh || (m_impl->m_queuedRefreshLevel == Refresh_None))
         {

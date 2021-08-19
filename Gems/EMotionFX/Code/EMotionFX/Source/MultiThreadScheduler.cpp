@@ -165,7 +165,7 @@ namespace EMotionFX
                 AZ::JobContext* jobContext = nullptr;
                 AZ::Job* job = AZ::CreateJobFunction([this, timePassedInSeconds, actorInstance]()
                 {
-                    AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Animation, "MultiThreadScheduler::Execute::ActorInstanceUpdateJob");
+                    AZ_PROFILE_SCOPE(Animation, "MultiThreadScheduler::Execute::ActorInstanceUpdateJob");
 
                     const AZ::u32 threadIndex = AZ::JobContext::GetGlobalContext()->GetJobManager().GetWorkerThreadId();                    
                     actorInstance->SetThreadIndex(threadIndex);

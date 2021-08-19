@@ -130,7 +130,7 @@ namespace AzToolsFramework
 
     void ComponentPaletteWidget::UpdateContent()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         m_componentModel->clear();
 
         bool applyRegExFilter = !m_searchRegExp.isEmpty();
@@ -321,7 +321,7 @@ namespace AzToolsFramework
 
     void ComponentPaletteWidget::UpdateSearch()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         m_searchRegExp = QRegExp(m_searchText->text(), Qt::CaseInsensitive, QRegExp::RegExp);
         m_searchText->setFocus();
         UpdateContent();

@@ -64,7 +64,7 @@ namespace AzToolsFramework
     // note: this is mostly likely distance from the camera
     static float GetIconScale(const float distSq)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         return s_iconMinScale +
             (s_iconMaxScale - s_iconMinScale) *
@@ -74,7 +74,7 @@ namespace AzToolsFramework
     static void DisplayComponents(
         const AZ::EntityId entityId, const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         const AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(entityId);
         AzFramework::EntityDebugDisplayEventBus::Event(
@@ -114,7 +114,7 @@ namespace AzToolsFramework
     AZ::EntityId EditorHelpers::HandleMouseInteraction(
         const AzFramework::CameraState& cameraState, const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         const int viewportId = mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId;
 
@@ -185,7 +185,7 @@ namespace AzToolsFramework
         AzFramework::DebugDisplayRequests& debugDisplay,
         const AZStd::function<bool(AZ::EntityId)>& showIconCheck)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (HelpersVisible())
         {

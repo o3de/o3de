@@ -209,11 +209,11 @@ namespace AZ
 
         void RHISystem::FrameUpdate(FrameGraphCallback frameGraphCallback)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
             AZ_ATOM_PROFILE_FUNCTION("RHI", "RHISystem: FrameUpdate");
 
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "main per-frame work");
+                AZ_PROFILE_SCOPE(AzRender, "main per-frame work");
                 m_frameScheduler.BeginFrame();
 
                 frameGraphCallback(m_frameScheduler);
