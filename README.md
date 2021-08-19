@@ -3,7 +3,7 @@
 O3DE (Open 3D Engine) is an open-source, real-time, multi-platform 3D engine that enables developers and content creators to build AAA games, cinema-quality 3D worlds, and high-fidelity simulations without any fees or commercial obligations.
 
 ## Contribute
-For information about contributing to Open 3D Engine, visit https://o3de.org/docs/contributing/.
+For information about contributing to Open 3D Engine, visit [https://o3de.org/docs/contributing/](https://o3de.org/docs/contributing/).
 
 ## Download and Install
 
@@ -14,7 +14,7 @@ Verify you have Git LFS installed by running the following command to print the 
 git lfs --version 
 ```
 
-If Git LFS is not installed, download and run the installer from: https://git-lfs.github.com/.
+If Git LFS is not installed, download and run the installer from: [https://git-lfs.github.com/](https://git-lfs.github.com/).
 
 ### Install Git LFS hooks 
 ```
@@ -36,12 +36,13 @@ For the latest details and system requirements, refer to [System Requirements](h
 
 #### Windows
 
-*   Visual Studio 2019 16.9.2 minimum (All versions supported, including Community): [https://visualstudio.microsoft.com/downloads/](https://visualstudio.microsoft.com/downloads/)
+*   Visual Studio 2019 16.9.2 minimum (All editions supported, including Community): [https://visualstudio.microsoft.com/downloads/](https://visualstudio.microsoft.com/downloads/)
+    *   Check [System Requirements](https://o3de.org/docs/welcome-guide/requirements/) for other supported versions.
     *   Install the following workloads:
         *   Game Development with C++
         *   MSVC v142 - VS 2019 C++ x64/x86
         *   C++ 2019 redistributable update
-*   CMake 3.20 minimum: [https://cmake.org/download/](https://cmake.org/download/)
+*   CMake 3.20.5 minimum: [https://cmake.org/download/](https://cmake.org/download/)
 
 #### Optional
 
@@ -52,15 +53,15 @@ For the latest details and system requirements, refer to [System Requirements](h
 
 To set up a project-centric source engine, complete the following steps. For other build options, refer to [Setting up O3DE from GitHub](https://o3de.org/docs/welcome-guide/setup/setup-from-github/) in the documentation.
 
-1.  Create a writable folder to cache downloadable packages. You can also use this to store other redistributable SDKs.
+1.  Create a writable folder to cache downloadable third-party packages. You can also use this to store other redistributable SDKs.
     
 1.  Install the following redistributables:
     - Visual Studio and VC++ redistributable can be installed to any location.
     - CMake can be installed to any location, as long as it's available in the system path.
 
-1.  Configure the engine source into a solution using this command line, replacing `<your build path>`, `<your source path>`, and `<3rdParty cache path>` with the paths you've created:
+1.  Configure the engine source into a solution using this command line, replacing `<your build path>`, `<your source path>`, and `<3rdParty package path>` with the paths you've created:
     ```
-    cmake -B <your build path> -S <your source path> -G "Visual Studio 16" -DLY_3RDPARTY_PATH=<3rdParty cache path>
+    cmake -B <your build path> -S <your source path> -G "Visual Studio 16" -DLY_3RDPARTY_PATH=<3rdParty package path>
     ```
     
     Example:
@@ -68,15 +69,19 @@ To set up a project-centric source engine, complete the following steps. For oth
     cmake -B C:\o3de\build\windows_vs2019 -S C:\o3de -G "Visual Studio 16" -DLY_3RDPARTY_PATH=C:\o3de-packages
     ```
     
-    > Note:  Do not use trailing slashes for the <3rdParty cache path>.
+    > Note:  Do not use trailing slashes for the <3rdParty package path>.
 
 1.  Alternatively, you can do this through the CMake GUI:
     
     1.  Start `cmake-gui.exe`.
     1.  Select the local path of the repo under "Where is the source code".
     1.  Select a path where to build binaries under "Where to build the binaries".
+    1.  Click **Add Entry** and add a cache entry for the <3rdParty package path> folder you created, using the following values:
+        1.  **Name:** LY_3RDPARTY_PATH
+        1.  **Type:** STRING
+        1.  **Value:** `<3rdParty package path>`
     1.  Click **Configure**.
-    1.  Wait for the key values to populate. Fill in the fields that are relevant, including `LY_3RDPARTY_PATH`.
+    1.  Wait for the key values to populate. Fill in any additional fields that are needed for your project.
     1.  Click **Generate**.
     
 1.  Register the engine with this command:
