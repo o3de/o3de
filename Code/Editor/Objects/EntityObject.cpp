@@ -497,7 +497,7 @@ bool CEntityObject::HitTestRect(HitContext& hc)
 //////////////////////////////////////////////////////////////////////////
 int CEntityObject::MouseCreateCallback(CViewport* view, EMouseEvent event, QPoint& point, int flags)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
 
     if (event == eMouseMove || event == eMouseLDown)
     {

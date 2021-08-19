@@ -23,7 +23,7 @@ namespace AzToolsFramework
 {
     void EditorContextMenuUpdate(EditorContextMenu& contextMenu, const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         // could potentially show the context menu
         if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Right() &&

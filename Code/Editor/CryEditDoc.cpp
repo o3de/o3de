@@ -1047,7 +1047,7 @@ static bool TryRenameFile(const QString& oldPath, const QString& newPath, int re
 
 bool CCryEditDoc::SaveLevel(const QString& filename)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+    AZ_PROFILE_FUNCTION(AzToolsFramework);
     QWaitCursor wait;
 
     CAutoCheckOutDialogEnableForAll enableForAll;
@@ -1067,7 +1067,7 @@ bool CCryEditDoc::SaveLevel(const QString& filename)
 
     {
 
-        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "CCryEditDoc::SaveLevel BackupBeforeSave");
+        AZ_PROFILE_SCOPE(AzToolsFramework, "CCryEditDoc::SaveLevel BackupBeforeSave");
         BackupBeforeSave();
     }
 
@@ -1178,7 +1178,7 @@ bool CCryEditDoc::SaveLevel(const QString& filename)
         CPakFile pakFile;
 
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "CCryEditDoc::SaveLevel Open PakFile");
+            AZ_PROFILE_SCOPE(AzToolsFramework, "CCryEditDoc::SaveLevel Open PakFile");
             if (!pakFile.Open(tempSaveFile.toUtf8().data(), false))
             {
                 gEnv->pLog->LogWarning("Unable to open pack file %s for writing", tempSaveFile.toUtf8().data());
@@ -1209,7 +1209,7 @@ bool CCryEditDoc::SaveLevel(const QString& filename)
 
         AZ::IO::ByteContainerStream<AZStd::vector<char>> entitySaveStream(&entitySaveBuffer);
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "CCryEditDoc::SaveLevel Save Entities To Stream");
+            AZ_PROFILE_SCOPE(AzToolsFramework, "CCryEditDoc::SaveLevel Save Entities To Stream");
             EBUS_EVENT_RESULT(
                 savedEntities, AzToolsFramework::EditorEntityContextRequestBus, SaveToStreamForEditor, entitySaveStream, layerEntities,
                 instancesInLayers);
@@ -1223,7 +1223,7 @@ bool CCryEditDoc::SaveLevel(const QString& filename)
 
         if (savedEntities)
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "CCryEditDoc::SaveLevel Updated PakFile levelEntities.editor_xml");
+            AZ_PROFILE_SCOPE(AzToolsFramework, "CCryEditDoc::SaveLevel Updated PakFile levelEntities.editor_xml");
             pakFile.UpdateFile("LevelEntities.editor_xml", entitySaveBuffer.begin(), static_cast<int>(entitySaveBuffer.size()));
 
             // Save XML archive to pak file.

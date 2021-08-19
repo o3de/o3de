@@ -157,7 +157,7 @@ namespace AzToolsFramework
 
     void EditorVisibleEntityDataCache::CalculateVisibleEntityDatas(const AzFramework::ViewportInfo& viewportInfo)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         // request list of visible entities from authoritative system
         EntityIdList nextVisibleEntityIds;
@@ -288,7 +288,7 @@ namespace AzToolsFramework
 
     void EditorVisibleEntityDataCache::OnEntityVisibilityChanged(const bool visibility)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         const AZ::EntityId entityId = *EditorEntityVisibilityNotificationBus::GetCurrentBusId();
 
@@ -300,7 +300,7 @@ namespace AzToolsFramework
 
     void EditorVisibleEntityDataCache::OnEntityLockChanged(const bool locked)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         const AZ::EntityId entityId = *EditorEntityLockComponentNotificationBus::GetCurrentBusId();
 
@@ -312,7 +312,7 @@ namespace AzToolsFramework
 
     void EditorVisibleEntityDataCache::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         const AZ::EntityId entityId = *AZ::TransformNotificationBus::GetCurrentBusId();
 
@@ -324,7 +324,7 @@ namespace AzToolsFramework
 
     void EditorVisibleEntityDataCache::OnAccentTypeChanged(const EntityAccentType accent)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         const AZ::EntityId entityId = *EditorComponentSelectionNotificationsBus::GetCurrentBusId();
 
@@ -336,7 +336,7 @@ namespace AzToolsFramework
 
     void EditorVisibleEntityDataCache::OnSelected()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         const AZ::EntityId entityId = *EntitySelectionEvents::Bus::GetCurrentBusId();
 
@@ -348,7 +348,7 @@ namespace AzToolsFramework
 
     void EditorVisibleEntityDataCache::OnDeselected()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         const AZ::EntityId entityId = *EntitySelectionEvents::Bus::GetCurrentBusId();
 
@@ -360,7 +360,7 @@ namespace AzToolsFramework
 
     void EditorVisibleEntityDataCache::OnEntityIconChanged(const AZ::Data::AssetId& /*entityIconAssetId*/)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         const AZ::EntityId entityId = *EditorEntityIconComponentNotificationBus::GetCurrentBusId();
 

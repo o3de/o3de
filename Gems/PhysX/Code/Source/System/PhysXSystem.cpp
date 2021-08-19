@@ -130,7 +130,7 @@ namespace PhysX
 
     void PhysXSystem::Simulate(float deltaTime)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
+        AZ_PROFILE_FUNCTION(Physics);
 
         if (m_state != State::Initialized)
         {

@@ -132,12 +132,11 @@ namespace AZ::ViewportHelpers
 {
     static const char TextCantCreateCameraNoLevel[] = "Cannot create camera when no level is loaded.";
 
-    class EditorEntityNotifications
-        : public AzToolsFramework::EditorEntityContextNotificationBus::Handler
+    class EditorEntityNotifications : public AzToolsFramework::EditorEntityContextNotificationBus::Handler
     {
     public:
-        EditorEntityNotifications(EditorViewportWidget& renderViewport)
-            : m_renderViewport(renderViewport)
+        EditorEntityNotifications(EditorViewportWidget& editorViewportWidget)
+            : m_editorViewportWidget(editorViewportWidget)
         {
             AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
         }
@@ -147,22 +146,24 @@ namespace AZ::ViewportHelpers
             AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
         }
 
-        // AzToolsFramework::EditorEntityContextNotificationBus
+        // AzToolsFramework::EditorEntityContextNotificationBus overrides ...
         void OnStartPlayInEditor() override
         {
-            m_renderViewport.OnStartPlayInEditor();
+            m_editorViewportWidget.OnStartPlayInEditor();
         }
+
         void OnStopPlayInEditor() override
         {
-            m_renderViewport.OnStopPlayInEditor();
+            m_editorViewportWidget.OnStopPlayInEditor();
         }
+
         void OnStartPlayInEditorBegin() override
         {
-            m_renderViewport.OnStartPlayInEditorBegin();
+            m_editorViewportWidget.OnStartPlayInEditorBegin();
         }
 
     private:
-        EditorViewportWidget& m_renderViewport;
+        EditorViewportWidget& m_editorViewportWidget;
     };
 } // namespace AZ::ViewportHelpers
 
@@ -1033,9 +1034,15 @@ bool EditorViewportWidget::ShowingWorldSpace()
 }
 
 AZStd::shared_ptr<AtomToolsFramework::ModularViewportCameraController> CreateModularViewportCameraController(
-    AzFramework::ViewportId viewportId)
+    const AzFramework::ViewportId viewportId)
 {
     auto controller = AZStd::make_shared<AtomToolsFramework::ModularViewportCameraController>();
+
+    controller->SetCameraViewportContextBuilderCallback(
+        [viewportId](AZStd::unique_ptr<AtomToolsFramework::ModularCameraViewportContext>& cameraViewportContext)
+        {
+            cameraViewportContext = AZStd::make_unique<AtomToolsFramework::ModularCameraViewportContextImpl>(viewportId);
+        });
 
     controller->SetCameraPriorityBuilderCallback(
         [](AtomToolsFramework::CameraControllerPriorityFn& cameraControllerPriorityFn)
@@ -1054,6 +1061,16 @@ AZStd::shared_ptr<AtomToolsFramework::ModularViewportCameraController> CreateMod
             cameraProps.m_translateSmoothnessFn = []
             {
                 return SandboxEditor::CameraTranslateSmoothness();
+            };
+
+            cameraProps.m_rotateSmoothingEnabledFn = []
+            {
+                return SandboxEditor::CameraRotateSmoothingEnabled();
+            };
+
+            cameraProps.m_translateSmoothingEnabledFn = []
+            {
+                return SandboxEditor::CameraTranslateSmoothingEnabled();
             };
         });
 
@@ -1956,7 +1973,7 @@ QPoint EditorViewportWidget::WorldToViewParticleEditor(const Vec3& wp, int width
 Vec3 EditorViewportWidget::ViewToWorld(
     const QPoint& vp, bool* collideWithTerrain, bool onlyTerrain, bool bSkipVegetation, bool bTestRenderMesh, bool* collideWithObject) const
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
 
     AZ_UNUSED(collideWithTerrain)
     AZ_UNUSED(onlyTerrain)
@@ -1991,7 +2008,7 @@ Vec3 EditorViewportWidget::ViewToWorldNormal(const QPoint& vp, bool onlyTerrain,
     AZ_UNUSED(onlyTerrain)
     AZ_UNUSED(bTestRenderMesh)
 
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
 
     return Vec3(0, 0, 1);
 }

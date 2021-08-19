@@ -113,7 +113,7 @@ namespace AZ
                 return;
             }
 
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
 
             AZStd::lock_guard<AZStd::mutex> lock(m_metricsMutex);
 

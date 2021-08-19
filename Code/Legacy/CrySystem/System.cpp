@@ -701,7 +701,7 @@ void CSystem::SleepIfNeeded()
     int sleepMS = (int)(1000.0f * sleepTime + 0.5f);
     if (sleepMS > 0)
     {
-        AZ_PROFILE_FUNCTION_IDLE(AZ::Debug::ProfileCategory::System);
+        AZ_PROFILE_FUNCTION(System);
         Sleep(sleepMS);
     }
 

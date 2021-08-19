@@ -127,7 +127,7 @@ namespace AZ
 
         void FixedShapeProcessor::ProcessObjects(const AuxGeomBufferData* bufferData, const RPI::FeatureProcessor::RenderPacket& fpPacket)
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
             AZ_ATOM_PROFILE_FUNCTION("AuxGeom", "FixedShapeProcessor: ProcessObjects");
 
             RHI::DrawPacketBuilder drawPacketBuilder;

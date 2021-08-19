@@ -242,6 +242,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 Legacy::CryCommon
                 AZ::AzToolsFramework
                 AZ::AzToolsFramework.Tests
+                AZ::AzFrameworkTestShared
                 AZ::AzToolsFrameworkTestCommon
                 Legacy::EditorLib
                 Gem::AtomToolsFramework.Static

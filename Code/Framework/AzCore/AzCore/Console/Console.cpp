@@ -174,12 +174,28 @@ namespace AZ
         }
     }
 
-    bool Console::HasCommand(const char* command)
+    bool Console::ExecuteDeferredConsoleCommands()
+    {
+        auto DeferredCommandCallable = [this](const DeferredCommand& deferredCommand)
+        {
+            return this->DispatchCommand(deferredCommand.m_command, deferredCommand.m_arguments, deferredCommand.m_silentMode,
+                deferredCommand.m_invokedFrom, deferredCommand.m_requiredSet, deferredCommand.m_requiredClear);
+        };
+        // Attempt to invoke the deferred command and remove it from the queue if successful
+        return AZStd::erase_if(m_deferredCommands, DeferredCommandCallable) != 0;
+    }
+
+    void Console::ClearDeferredConsoleCommands()
+    {
+        m_deferredCommands = {};
+    }
+
+    bool Console::HasCommand(AZStd::string_view command)
     {
         return FindCommand(command) != nullptr;
     }
 
-    ConsoleFunctorBase* Console::FindCommand(const char* command)
+    ConsoleFunctorBase* Console::FindCommand(AZStd::string_view command)
     {
         CVarFixedString lowerName(command);
         AZStd::to_lower(lowerName.begin(), lowerName.end());
@@ -200,11 +216,9 @@ namespace AZ
         return nullptr;
     }
 
-    AZStd::string Console::AutoCompleteCommand(const char* command, AZStd::vector<AZStd::string>* matches)
+    AZStd::string Console::AutoCompleteCommand(AZStd::string_view command, AZStd::vector<AZStd::string>* matches)
     {
-        const size_t commandLength = strlen(command);
-
-        if (commandLength <= 0)
+        if (command.empty())
         {
             return command;
         }
@@ -219,7 +233,7 @@ namespace AZ
                 continue;
             }
 
-            if (StringFunc::Equal(curr->m_name, command, false, commandLength))
+            if (StringFunc::StartsWith(curr->m_name, command, false))
             {
                 AZLOG_INFO("- %s : %s\n", curr->m_name, curr->m_desc);
                 commandSubset.push_back(curr->m_name);
@@ -498,7 +512,8 @@ namespace AZ
 
             AZ::IO::PathView consoleRootCommandKey{ IConsole::ConsoleRootCommandKey, AZ::IO::PosixPathSeparator };
             AZ::IO::PathView inputKey{ path, AZ::IO::PosixPathSeparator };
-            if (inputKey.IsRelativeTo(consoleRootCommandKey))
+            // The ConsoleRootComamndKey is not a command itself so strictly children keys are being examined
+            if (inputKey.IsRelativeTo(consoleRootCommandKey) && inputKey != consoleRootCommandKey)
             {
                 FixedValueString command = inputKey.LexicallyRelative(consoleRootCommandKey).Native();
                 ConsoleCommandContainer commandArgs;
@@ -560,7 +575,24 @@ namespace AZ
                     commandTrace += commandArg;
                 }
 
-                m_console.PerformCommand(command, commandArgs, ConsoleSilentMode::NotSilent, ConsoleInvokedFrom::AzConsole, ConsoleFunctorFlags::Null, ConsoleFunctorFlags::Null);
+                if (!m_console.PerformCommand(command, commandArgs, ConsoleSilentMode::NotSilent,
+                    ConsoleInvokedFrom::AzConsole, ConsoleFunctorFlags::Null, ConsoleFunctorFlags::Null))
+                {
+                    // If the command could not be dispatched at this time add it to the
+                    // deferred commands queue
+                    using DeferredCommand = Console::DeferredCommand;
+                    DeferredCommand deferredCommand
+                    {
+                        AZStd::string_view{command},
+                        DeferredCommand::DeferredArguments{commandArgs.begin(), commandArgs.end()},
+                        ConsoleSilentMode::NotSilent,
+                        ConsoleInvokedFrom::AzConsole,
+                        ConsoleFunctorFlags::Null,
+                        ConsoleFunctorFlags::Null
+                    };
+
+                    m_console.m_deferredCommands.emplace_back(AZStd::move(deferredCommand));
+                }
             }
         }
 

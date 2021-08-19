@@ -13,6 +13,7 @@
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Console/IConsole.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/IO/FileIO.h>
@@ -206,7 +207,7 @@ namespace AZ::IO::ArchiveInternal
     //////////////////////////////////////////////////////////////////////////
     size_t ArchiveInternal::CZipPseudoFile::FRead(void* pDest, size_t nSize, size_t nCount, [[maybe_unused]] AZ::IO::HandleType fileHandle)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         if (!GetFile())
         {
@@ -271,7 +272,7 @@ namespace AZ::IO::ArchiveInternal
     //////////////////////////////////////////////////////////////////////////
     void* ArchiveInternal::CZipPseudoFile::GetFileData(size_t& nFileSize, [[maybe_unused]] AZ::IO::HandleType fileHandle)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         if (!GetFile())
         {
@@ -680,7 +681,7 @@ namespace AZ::IO
     //////////////////////////////////////////////////////////////////////////
     AZ::IO::HandleType Archive::FOpen(AZStd::string_view pName, const char* szMode, uint32_t nInputFlags)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         const size_t pathLen = pName.size();
         if (pathLen == 0 || pathLen >= MaxPath)
@@ -688,7 +689,7 @@ namespace AZ::IO
             return AZ::IO::InvalidHandle;
         }
 
-        AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::Game, "File: %.*s Archive: %p",
+        AZ_PROFILE_SCOPE(Game, "File: %.*s Archive: %p",
             aznumeric_cast<int>(pName.size()), pName.data(), this);
 
         SAutoCollectFileAccessTime accessTime(this);
@@ -711,7 +712,7 @@ namespace AZ::IO
         }
 
         const bool fileWritable = (nOSFlags & (AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeAppend | AZ::IO::OpenMode::ModeUpdate)) != AZ::IO::OpenMode::Invalid;
-        AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::Game, "File: %s Archive: %p", szFullPath->c_str(), this);
+        AZ_PROFILE_SCOPE(Game, "File: %s Archive: %p", szFullPath->c_str(), this);
         if (fileWritable)
         {
             // we need to open the file for writing, but we failed to do so.
@@ -1089,8 +1090,8 @@ namespace AZ::IO
     //////////////////////////////////////////////////////////////////////////
     size_t Archive::FReadRaw(void* pData, size_t nSize, size_t nCount, AZ::IO::HandleType fileHandle)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
-        AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::Game, "Size: %d Archive: %p", nSize, this);
+        AZ_PROFILE_FUNCTION(AzCore);
+        AZ_PROFILE_SCOPE(Game, "Size: %d Archive: %p", nSize, this);
         SAutoCollectFileAccessTime accessTime(this);
 
         ArchiveInternal::CZipPseudoFile* pseudoFile = GetPseudoFile(fileHandle);
@@ -1107,7 +1108,7 @@ namespace AZ::IO
     //////////////////////////////////////////////////////////////////////////
     size_t Archive::FReadRawAll(void* pData, size_t nFileSize, AZ::IO::HandleType fileHandle)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         SAutoCollectFileAccessTime accessTime(this);
         ArchiveInternal::CZipPseudoFile* pseudoFile = GetPseudoFile(fileHandle);
@@ -1125,7 +1126,7 @@ namespace AZ::IO
     //////////////////////////////////////////////////////////////////////////
     void* Archive::FGetCachedFileData(AZ::IO::HandleType fileHandle, size_t& nFileSize)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         SAutoCollectFileAccessTime accessTime(this);
         ArchiveInternal::CZipPseudoFile* pseudoFile = GetPseudoFile(fileHandle);
