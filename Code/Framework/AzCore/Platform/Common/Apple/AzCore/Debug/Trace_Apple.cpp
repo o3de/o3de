@@ -72,6 +72,7 @@ namespace AZ
 
             void OutputToDebugger(const char*, const char*)
             {
+                // std::cout << title << ": " << message;
             }
         }
     }

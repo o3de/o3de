@@ -27,7 +27,7 @@ public:
     CSmartVariable<float> mv_startTime;
     CSmartVariable<float> mv_endTime;
 
-    virtual void OnCreateVars()
+    void OnCreateVars() override
     {
         AddVariable(mv_table, "Key Properties");
         AddVariable(mv_table, mv_sequence, "Sequence");
@@ -35,14 +35,14 @@ public:
         AddVariable(mv_table, mv_startTime, "Start Time");
         AddVariable(mv_table, mv_endTime, "End Time");
     }
-    bool SupportTrackType(const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, [[maybe_unused]] AnimValueType valueType) const
+    bool SupportTrackType(const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, [[maybe_unused]] AnimValueType valueType) const override
     {
         return paramType == AnimParamType::Sequence;
     }
-    virtual bool OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys);
-    virtual void OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys);
+    bool OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys) override;
+    void OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys) override;
 
-    virtual unsigned int GetPriority() const { return 1; }
+    unsigned int GetPriority() const override { return 1; }
 
     static const GUID& GetClassID()
     {
@@ -78,7 +78,7 @@ bool CSequenceKeyUIControls::OnKeySelectionChange(CTrackViewKeyBundle& selectedK
 
             /////////////////////////////////////////////////////////////////////////////////
             // fill sequence comboBox with available sequences
-            mv_sequence.SetEnumList(NULL);
+            mv_sequence.SetEnumList(nullptr);
 
             // Insert '<None>' empty enum
             mv_sequence->AddEnumItem(QObject::tr("<None>"), CTrackViewDialog::GetEntityIdAsString(AZ::EntityId(AZ::EntityId::InvalidEntityId)));
@@ -91,7 +91,7 @@ bool CSequenceKeyUIControls::OnKeySelectionChange(CTrackViewKeyBundle& selectedK
                 bool bNotParent = !bNotMe || pCurrentSequence->IsAncestorOf(pSequence) == false;
                 if (bNotMe && bNotParent)
                 {
-                    string seqName = pCurrentSequence->GetName();
+                    AZStd::string seqName = pCurrentSequence->GetName();
 
                     QString ownerIdString = CTrackViewDialog::GetEntityIdAsString(pCurrentSequence->GetSequenceComponentEntityId());
                     mv_sequence->AddEnumItem(seqName.c_str(), ownerIdString);
@@ -193,7 +193,7 @@ void CSequenceKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& se
 
             IMovieSystem* pMovieSystem = GetIEditor()->GetSystem()->GetIMovieSystem();
 
-            if (pMovieSystem != NULL)
+            if (pMovieSystem != nullptr)
             {
                 pMovieSystem->SetStartEndTime(pSequence, sequenceKey.fStartTime, sequenceKey.fEndTime);
             }

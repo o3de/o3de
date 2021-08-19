@@ -127,7 +127,7 @@ namespace AZ
 
         void FixedShapeProcessor::ProcessObjects(const AuxGeomBufferData* bufferData, const RPI::FeatureProcessor::RenderPacket& fpPacket)
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
             AZ_ATOM_PROFILE_FUNCTION("AuxGeom", "FixedShapeProcessor: ProcessObjects");
 
             RHI::DrawPacketBuilder drawPacketBuilder;
@@ -1385,9 +1385,9 @@ namespace AZ
             const char* litObjectShaderFilePath = "Shaders/auxgeom/auxgeomobjectlit.azshader";
 
             // constant color shader
-            m_unlitShader = RPI::LoadShader(unlitObjectShaderFilePath);
+            m_unlitShader = RPI::LoadCriticalShader(unlitObjectShaderFilePath);
             // direction light shader
-            m_litShader = RPI::LoadShader(litObjectShaderFilePath);
+            m_litShader = RPI::LoadCriticalShader(litObjectShaderFilePath);
 
             if (m_unlitShader.get() == nullptr || m_litShader == nullptr)
             {

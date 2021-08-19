@@ -22,6 +22,8 @@ AZ_PUSH_DISABLE_WARNING(4458, "-Wunknown-warning-option")
 AZ_POP_DISABLE_WARNING
 #include <QVariant>
 
+#include <StlUtils.h>
+
 inline const char* to_c_str(const char* str) { return str; }
 #define MAX_VAR_STRING_LENGTH 4096
 
@@ -140,15 +142,10 @@ struct IVariable
         DT_PERCENT,     //!< Percent data type, (Same as simple but value is from 0-1 and UI will be from 0-100).
         DT_COLOR,
         DT_ANGLE,
-        DT_FILE,
         DT_TEXTURE,
-        DT_ANIMATION,
-        DT_OBJECT,
         DT_SHADER,
         DT_LOCAL_STRING,
         DT_EQUIP,
-        DT_REVERBPRESET,
-        DT_DEPRECATED0, // formerly DT_MATERIAL
         DT_MATERIALLOOKUP,
         DT_EXTARRAY,    // Extendable Array
         DT_SEQUENCE,    // Movie Sequence (DEPRECATED, use DT_SEQUENCE_ID, instead.)
@@ -158,7 +155,6 @@ struct IVariable
         DT_SEQUENCE_ID, // Movie Sequence
         DT_LIGHT_ANIMATION, // Light Animation Node in the global Light Animation Set
         DT_PARTICLE_EFFECT,
-        DT_GEOM_CACHE, // Geometry cache
         DT_DEPRECATED, // formerly DT_FLARE
         DT_AUDIO_TRIGGER,
         DT_AUDIO_SWITCH,
@@ -1411,7 +1407,7 @@ protected:
 struct IVarEnumList
     : public CRefCountBase
 {
-    //! Get the name of specified value in enumeration, or NULL if out of range.
+    //! Get the name of specified value in enumeration, or empty string if out of range.
     virtual QString GetItemName(uint index) = 0;
 };
 typedef _smart_ptr<IVarEnumList> IVarEnumListPtr;
@@ -1498,7 +1494,7 @@ public:
     {
         if (index >= m_items.size())
         {
-            return NULL;
+            return QString();
         }
         return m_items[index].name;
     };
@@ -1869,9 +1865,9 @@ public:
     void Serialize(XmlNodeRef node, bool load);
     CVarBlock* GetVarBlock() const { return m_vars; };
 
-    void AddVariable(CVariableBase& var, const QString& varName, VarOnSetCallback* cb = NULL, unsigned char dataType = IVariable::DT_SIMPLE);
-    void AddVariable(CVariableBase& var, const QString& varName, const QString& varHumanName, VarOnSetCallback* cb = NULL, unsigned char dataType = IVariable::DT_SIMPLE);
-    void AddVariable(CVariableArray& table, CVariableBase& var, const QString& varName, const QString& varHumanName, VarOnSetCallback* cb = NULL, unsigned char dataType = IVariable::DT_SIMPLE);
+    void AddVariable(CVariableBase& var, const QString& varName, VarOnSetCallback* cb = nullptr, unsigned char dataType = IVariable::DT_SIMPLE);
+    void AddVariable(CVariableBase& var, const QString& varName, const QString& varHumanName, VarOnSetCallback* cb = nullptr, unsigned char dataType = IVariable::DT_SIMPLE);
+    void AddVariable(CVariableArray& table, CVariableBase& var, const QString& varName, const QString& varHumanName, VarOnSetCallback* cb = nullptr, unsigned char dataType = IVariable::DT_SIMPLE);
     void ReserveNumVariables(int numVars);
     void RemoveVariable(IVariable* var);
 

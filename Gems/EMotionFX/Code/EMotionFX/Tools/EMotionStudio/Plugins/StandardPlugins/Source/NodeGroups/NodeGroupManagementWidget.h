@@ -39,10 +39,10 @@ namespace EMStudio
         void Accepted();
 
     private:
-        EMotionFX::Actor*   mActor;
-        AZStd::string       mNodeGroupName;
-        QLineEdit*          mLineEdit;
-        QPushButton*        mOKButton;
+        EMotionFX::Actor*   m_actor;
+        AZStd::string       m_nodeGroupName;
+        QLineEdit*          m_lineEdit;
+        QPushButton*        m_okButton;
     };
 
 
@@ -91,21 +91,21 @@ namespace EMStudio
 
     private:
         // pointer to the nodegroup widget
-        NodeGroupWidget*    mNodeGroupWidget;
+        NodeGroupWidget*    m_nodeGroupWidget;
 
         // searches for the given text in the table
         int SearchTableForString(QTableWidget* tableWidget, const QString& text, bool ignoreCurrentSelection = false);
 
         // the actor
-        EMotionFX::Actor*   mActor;
+        EMotionFX::Actor*   m_actor;
 
         // the listbox
-        QTableWidget*       mNodeGroupsTable;
-        uint32              mSelectedRow;
+        QTableWidget*       m_nodeGroupsTable;
+        uint32              m_selectedRow;
 
         // the buttons
-        QPushButton*        mAddButton;
-        QPushButton*        mRemoveButton;
-        QPushButton*        mClearButton;
+        QPushButton*        m_addButton;
+        QPushButton*        m_removeButton;
+        QPushButton*        m_clearButton;
     };
 } // namespace EMStudio

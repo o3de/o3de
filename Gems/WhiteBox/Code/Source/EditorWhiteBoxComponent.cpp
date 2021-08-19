@@ -61,7 +61,7 @@ namespace WhiteBox
     // to be used to generate concrete render mesh
     static WhiteBoxRenderData CreateWhiteBoxRenderData(const WhiteBoxMesh& whiteBox, const WhiteBoxMaterial& material)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         WhiteBoxRenderData renderData;
         WhiteBoxFaces& faceData = renderData.m_faces;
@@ -196,7 +196,7 @@ namespace WhiteBox
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/WhiteBox.svg")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                     ->Attribute(
-                        AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/white-box/")
+                        AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/shape/white-box/")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
                         AZ::Edit::UIHandlers::ComboBox, &EditorWhiteBoxComponent::m_defaultShape, "Default Shape",
@@ -407,7 +407,7 @@ namespace WhiteBox
 
     void EditorWhiteBoxComponent::RebuildRenderMesh()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         // reset caches when the mesh changes
         m_worldAabb.reset();
@@ -474,7 +474,7 @@ namespace WhiteBox
     void EditorWhiteBoxComponent::OnTransformChanged(
         [[maybe_unused]] const AZ::Transform& local, const AZ::Transform& world)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         m_worldAabb.reset();
         m_localAabb.reset();
@@ -490,7 +490,7 @@ namespace WhiteBox
 
     void EditorWhiteBoxComponent::RebuildPhysicsMesh()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         EditorWhiteBoxColliderRequestBus::Event(
             GetEntityId(), &EditorWhiteBoxColliderRequests::CreatePhysics, *GetWhiteBoxMesh());
@@ -673,7 +673,7 @@ namespace WhiteBox
 
     AZ::Aabb EditorWhiteBoxComponent::GetWorldBounds()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (!m_worldAabb.has_value())
         {
@@ -686,7 +686,7 @@ namespace WhiteBox
 
     AZ::Aabb EditorWhiteBoxComponent::GetLocalBounds()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (!m_localAabb.has_value())
         {
@@ -708,7 +708,7 @@ namespace WhiteBox
         [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo, const AZ::Vector3& src, const AZ::Vector3& dir,
         float& distance)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (!m_faces.has_value())
         {
@@ -905,7 +905,7 @@ namespace WhiteBox
     void EditorWhiteBoxComponent::DisplayEntityViewport(
         [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (DebugDrawingEnabled())
         {

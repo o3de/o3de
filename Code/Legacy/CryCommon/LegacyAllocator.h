@@ -69,7 +69,7 @@ namespace AZ
             }
 
             pointer_type ptr = m_schema->Allocate(byteSize, alignment, flags, name, fileName, lineNum, suppressStackRecord);
-            AZ_PROFILE_MEMORY_ALLOC_EX(AZ::Debug::ProfileCategory::MemoryReserved, fileName, lineNum, ptr, byteSize, name ? name : GetName());
+            AZ_PROFILE_MEMORY_ALLOC_EX(MemoryReserved, fileName, lineNum, ptr, byteSize, name ? name : GetName());
             AZ_MEMORY_PROFILE(ProfileAllocation(ptr, byteSize, alignment, name, fileName, lineNum, suppressStackRecord));
             AZ_Assert(ptr || byteSize == 0, "OOM - Failed to allocate %zu bytes from LegacyAllocator", byteSize);
             return ptr;
@@ -78,7 +78,7 @@ namespace AZ
         // DeAllocate with file/line, to track when allocs were freed from Cry
         void DeAllocate(pointer_type ptr, [[maybe_unused]] const char* file, [[maybe_unused]] const int line, size_type byteSize = 0, size_type alignment = 0)
         {
-            AZ_PROFILE_MEMORY_FREE_EX(AZ::Debug::ProfileCategory::MemoryReserved, file, line, ptr);
+            AZ_PROFILE_MEMORY_FREE_EX(MemoryReserved, file, line, ptr);
             AZ_MEMORY_PROFILE(ProfileDeallocation(ptr, byteSize, alignment, nullptr));
             m_schema->DeAllocate(ptr, byteSize, alignment);
         }
@@ -94,9 +94,9 @@ namespace AZ
             }
 
             AZ_MEMORY_PROFILE(ProfileReallocationBegin(ptr, newSize));
-            AZ_PROFILE_MEMORY_FREE_EX(AZ::Debug::ProfileCategory::MemoryReserved, file, line, ptr);
+            AZ_PROFILE_MEMORY_FREE_EX(MemoryReserved, file, line, ptr);
             pointer_type newPtr = m_schema->ReAllocate(ptr, newSize, newAlignment);
-            AZ_PROFILE_MEMORY_ALLOC_EX(AZ::Debug::ProfileCategory::MemoryReserved, file, line, newPtr, newSize, "LegacyAllocator Realloc");
+            AZ_PROFILE_MEMORY_ALLOC_EX(MemoryReserved, file, line, newPtr, newSize, "LegacyAllocator Realloc");
             AZ_MEMORY_PROFILE(ProfileReallocationEnd(ptr, newPtr, newSize, newAlignment));
             AZ_Assert(newPtr || newSize == 0, "OOM - Failed to reallocate %zu bytes from LegacyAllocator", newSize);
             return newPtr;

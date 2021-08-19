@@ -706,7 +706,7 @@ namespace ScriptCanvasEditor
 
                 bool savedSuccess;
                 {
-                    AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "ScriptCanvasAssetHandler::SaveAssetData");
+                    AZ_PROFILE_SCOPE(ScriptCanvas, "ScriptCanvasAssetHandler::SaveAssetData");
 
                     ScriptCanvasMemoryAsset cloneAsset;
                     m_sourceAsset->CloneTo(cloneAsset);
@@ -716,14 +716,14 @@ namespace ScriptCanvasEditor
                 stream.Close();
                 if (savedSuccess)
                 {
-                    AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "AssetTracker::SaveAssetPostSourceControl : TempToTargetFileReplacement");
+                    AZ_PROFILE_SCOPE(ScriptCanvas, "AssetTracker::SaveAssetPostSourceControl : TempToTargetFileReplacement");
 
                     AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
                     const bool targetFileExists = fileIO->Exists(m_saveInfo.m_streamName.data());
 
                     bool removedTargetFile;
                     {
-                        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "AssetTracker::SaveAssetPostSourceControl : TempToTargetFileReplacement : RemoveTarget");
+                        AZ_PROFILE_SCOPE(ScriptCanvas, "AssetTracker::SaveAssetPostSourceControl : TempToTargetFileReplacement : RemoveTarget");
                         removedTargetFile = fileIO->Remove(m_saveInfo.m_streamName.data());
                     }
 
@@ -733,7 +733,7 @@ namespace ScriptCanvasEditor
                     }
                     else
                     {
-                        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "AssetTracker::SaveAssetPostSourceControl : TempToTargetFileReplacement : RenameTempFile");
+                        AZ_PROFILE_SCOPE(ScriptCanvas, "AssetTracker::SaveAssetPostSourceControl : TempToTargetFileReplacement : RenameTempFile");
                         AZ::IO::Result renameResult = fileIO->Rename(tempPath.data(), m_saveInfo.m_streamName.data());
                         if (!renameResult)
                         {

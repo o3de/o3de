@@ -88,7 +88,7 @@ namespace PhysX
                         ->EnumAttribute(Physics::ShapeType::Box, "Box")
                         ->EnumAttribute(Physics::ShapeType::Capsule, "Capsule")
                         ->EnumAttribute(Physics::ShapeType::PhysicsAsset, "PhysicsAsset")
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyShapeConfig::OnShapeTypeChanged)
                         // note: we do not want the user to be able to change shape types while in ComponentMode (there will
                         // potentially be different ComponentModes for different shape types)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &AzToolsFramework::ComponentModeFramework::InComponentMode)
@@ -114,6 +114,19 @@ namespace PhysX
                     ;
             }
         }
+    }
+
+    AZ::u32 EditorProxyShapeConfig::OnShapeTypeChanged()
+    {
+        //reset the physics asset if the shape type was Physics Asset
+        if (m_shapeType != Physics::ShapeType::PhysicsAsset &&
+            m_lastShapeType == Physics::ShapeType::PhysicsAsset)
+        {
+            m_physicsAsset.m_pxAsset.Reset();
+            m_physicsAsset.m_configuration = Physics::PhysicsAssetShapeConfiguration();
+        }
+        m_lastShapeType = m_shapeType;
+        return AZ::Edit::PropertyRefreshLevels::EntireTree;
     }
 
     AZ::u32 EditorProxyShapeConfig::OnConfigurationChanged()
@@ -188,7 +201,7 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXCollider.svg")
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/PhysXCollider.svg")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
-                    ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx-collider/")
+                    ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx/collider/")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorColliderComponent::m_configuration, "Collider Configuration", "Configuration of the collider")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
@@ -780,7 +793,7 @@ namespace PhysX
                 entityRigidbody->GetRigidBody()->IsKinematic() == false)
             {
                 AZStd::string assetPath = m_shapeConfiguration.m_physicsAsset.m_configuration.m_asset.GetHint().c_str();
-                const uint lastSlash = assetPath.rfind('/');
+                const uint lastSlash = static_cast<uint>(assetPath.rfind('/'));
                 if (lastSlash != AZStd::string::npos)
                 {
                     assetPath = assetPath.substr(lastSlash + 1);
@@ -831,7 +844,7 @@ namespace PhysX
 
                 if (shapeConfiguration)
                 {
-                    m_colliderDebugDraw.BuildMeshes(*shapeConfiguration, shapeIndex);
+                    m_colliderDebugDraw.BuildMeshes(*shapeConfiguration, static_cast<AZ::u32>(shapeIndex));
                 }
             }
         }
@@ -917,7 +930,7 @@ namespace PhysX
                 const AZ::Vector3 overallScale = Utils::GetTransformScale(GetEntityId()) * m_cachedNonUniformScale * assetScale;
 
                 m_colliderDebugDraw.DrawMesh(debugDisplay, *colliderConfiguration, *cookedMeshShapeConfiguration,
-                    overallScale, shapeIndex);
+                    overallScale, static_cast<AZ::u32>(shapeIndex));
                 break;
             }
             case Physics::ShapeType::Sphere:

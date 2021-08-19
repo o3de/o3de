@@ -643,16 +643,15 @@ bool {{ ClassName }}::Serialize{{ AutoComponentMacros.GetNetPropertiesSetName(Re
         const uint32_t lastBit = static_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesQualifiedPropertyDirtyEnum(Component.attrib['Name'], ReplicateFrom, ReplicateTo, Property, 'End') }});
 {%         endif %}
         
-{% if Property.attrib['IsRewindable']|booleanTrue %}
         AzNetworking::FixedSizeBitsetView deltaRecord(replicationRecord.m_{{ LowerFirst(AutoComponentMacros.GetNetPropertiesSetName(ReplicateFrom, ReplicateTo)) }}, firstBit, lastBit - firstBit + 1);
-        m_{{ LowerFirst(Property.attrib['Name']) }}.Serialize(serializer, deltaRecord);
-{% else %}
+        if (deltaRecord.AnySet())
+        {
 {%       if Property.attrib['Container'] == 'Vector' %}
-        serializer.Serialize<AZStd::fixed_vector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>>(m_{{ LowerFirst(Property.attrib['Name']) }}, "{{ LowerFirst(Property.attrib['Name']) }}");
+            serializer.Serialize<AZStd::fixed_vector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>>(m_{{ LowerFirst(Property.attrib['Name']) }}, "{{ LowerFirst(Property.attrib['Name']) }}");
 {%       elif Property.attrib['Container'] == 'Array' %}
-        serializer.Serialize<AZStd::array<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>>(m_{{ LowerFirst(Property.attrib['Name']) }}, "{{ LowerFirst(Property.attrib['Name']) }}");
+            serializer.Serialize<AZStd::array<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>>(m_{{ LowerFirst(Property.attrib['Name']) }}, "{{ LowerFirst(Property.attrib['Name']) }}");
 {%       endif %}
-{% endif %}
+        }
     }
 {%     else %}
     Multiplayer::SerializeNetworkPropertyHelper

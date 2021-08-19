@@ -7,13 +7,15 @@
 
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
-
-#include <AtomToolsFramework/Util/Util.h>
 #include <AtomToolsFramework/Application/AtomToolsApplication.h>
+#include <AtomToolsFramework/Util/Util.h>
+#include <AtomToolsFramework/Window/AtomToolsMainWindowFactoryRequestBus.h>
+#include <AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h>
 
 #include <AzCore/IO/Path/Path.h>
-#include <AzCore/Utils/Utils.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Utils/Utils.h>
+
 #include <AzFramework/Asset/AssetSystemComponent.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/Network/AssetProcessorConnection.h>
@@ -64,6 +66,16 @@ namespace AtomToolsFramework
             this->PumpSystemEventLoopUntilEmpty();
             this->Tick();
         });
+
+        // Suppress spam from the Source Control system
+        m_traceLogger.AddWindowFilter(AzToolsFramework::SCC_WINDOW);
+    }
+
+    AtomToolsApplication ::~AtomToolsApplication()
+    {
+        AtomToolsMainWindowNotificationBus::Handler::BusDisconnect();
+        AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusDisconnect();
+        AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusDisconnect();
     }
 
     void AtomToolsApplication::CreateReflectionManager()
@@ -87,14 +99,12 @@ namespace AtomToolsFramework
 
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            auto targetName = GetBuildTargetName();
-
             // this will put these methods into the 'azlmbr.AtomTools.general' module
-            auto addGeneral = [targetName](AZ::BehaviorContext::GlobalMethodBuilder methodBuilder)
+            auto addGeneral = [](AZ::BehaviorContext::GlobalMethodBuilder methodBuilder)
             {
                 methodBuilder->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                     ->Attribute(AZ::Script::Attributes::Category, "Editor")
-                    ->Attribute(AZ::Script::Attributes::Module, targetName);
+                    ->Attribute(AZ::Script::Attributes::Module, "atomtools.general");
             };
             // The reflection here is based on patterns in CryEditPythonHandler::Reflect
             addGeneral(behaviorContext->Method(
@@ -147,12 +157,21 @@ namespace AtomToolsFramework
         m_timer.start();
     }
 
+    void AtomToolsApplication::OnMainWindowClosing()
+    {
+        ExitMainLoop();
+    }
+
     void AtomToolsApplication::Destroy()
     {
+        // before modules are unloaded, destroy UI to free up any assets it cached
+        AtomToolsMainWindowFactoryRequestBus::Broadcast(&AtomToolsMainWindowFactoryRequestBus::Handler::DestroyMainWindow);
+
         AzToolsFramework::EditorPythonConsoleNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::AssetDatabase::AssetDatabaseRequestsBus::Handler::BusDisconnect();
-
+        AtomToolsMainWindowNotificationBus::Handler::BusDisconnect();
         AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::StartDisconnectingAssetProcessor);
+
         Base::Destroy();
     }
 
@@ -273,6 +292,13 @@ namespace AtomToolsFramework
 
     void AtomToolsApplication::ProcessCommandLine(const AZ::CommandLine& commandLine)
     {
+        const AZStd::string activateWindowSwitchName = "activatewindow";
+        if (commandLine.HasSwitch(activateWindowSwitchName))
+        {
+            AtomToolsFramework::AtomToolsMainWindowRequestBus::Broadcast(
+                &AtomToolsFramework::AtomToolsMainWindowRequestBus::Handler::ActivateWindow);
+        }
+
         const AZStd::string timeoputSwitchName = "timeout";
         if (commandLine.HasSwitch(timeoputSwitchName))
         {
@@ -373,7 +399,7 @@ namespace AtomToolsFramework
 
         AZStd::string fileName = GetBuildTargetName() + ".log";
 
-        m_traceLogger.WriteStartupLog(fileName.c_str());
+        m_traceLogger.PrepareLogFile(fileName.c_str());
 
         if (!LaunchDiscoveryService())
         {
@@ -390,6 +416,10 @@ namespace AtomToolsFramework
         AZ::RPI::RPISystemInterface::Get()->InitializeSystemAssets();
 
         LoadSettings();
+
+        AtomToolsMainWindowNotificationBus::Handler::BusConnect();
+
+        AtomToolsMainWindowFactoryRequestBus::Broadcast(&AtomToolsMainWindowFactoryRequestBus::Handler::CreateMainWindow);
 
         auto editorPythonEventsInterface = AZ::Interface<AzToolsFramework::EditorPythonEventsInterface>::Get();
         if (editorPythonEventsInterface)
@@ -438,6 +468,8 @@ namespace AtomToolsFramework
 
     void AtomToolsApplication::Stop()
     {
+        AtomToolsMainWindowFactoryRequestBus::Broadcast(&AtomToolsMainWindowFactoryRequestBus::Handler::DestroyMainWindow);
+
         UnloadSettings();
         Base::Stop();
     }
@@ -447,7 +479,7 @@ namespace AtomToolsFramework
         appType.m_maskValue = AZ::ApplicationTypeQuery::Masks::Game;
     }
 
-        void AtomToolsApplication::OnTraceMessage([[maybe_unused]] AZStd::string_view message)
+    void AtomToolsApplication::OnTraceMessage([[maybe_unused]] AZStd::string_view message)
     {
 #if defined(AZ_ENABLE_TRACING)
         AZStd::vector<AZStd::string> lines;

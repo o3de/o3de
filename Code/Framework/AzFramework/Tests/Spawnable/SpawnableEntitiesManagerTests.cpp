@@ -366,6 +366,24 @@ namespace UnitTest
         }
     }
 
+    TEST_F(SpawnableEntitiesManagerTest, EntitySpawnTicket_Move_Works)
+    {
+        AzFramework::EntitySpawnTicket ticket1(*m_spawnableAsset);
+        AzFramework::EntitySpawnTicket ticket2(*m_spawnableAsset);
+
+        const AzFramework::EntitySpawnTicket::Id ticket1Id = ticket1.GetId();
+        const AzFramework::EntitySpawnTicket::Id ticket2Id = ticket2.GetId();
+
+        AzFramework::EntitySpawnTicket ticketMoveConstructor(AZStd::move(ticket1));
+        EXPECT_TRUE(ticketMoveConstructor.IsValid());
+        EXPECT_EQ(ticketMoveConstructor.GetId(), ticket1Id);
+
+        AzFramework::EntitySpawnTicket ticketMoveOperator;
+        ticketMoveOperator = AZStd::move(ticket2);
+        EXPECT_TRUE(ticketMoveOperator.IsValid());
+        EXPECT_EQ(ticketMoveOperator.GetId(), ticket2Id);
+    }
+
     TEST_F(SpawnableEntitiesManagerTest, SpawnAllEntities_DeleteTicketBeforeCall_NoCrash)
     {
         {

@@ -196,13 +196,13 @@ namespace AZ
         {
             const size_t sourceByteSize = source.size() * sizeof(AuxGeomIndex);
             
-            RHI::Ptr<RPI::DynamicBuffer> dynamicBuffer = RPI::DynamicDrawInterface::Get()->GetDynamicBuffer(sourceByteSize);
+            RHI::Ptr<RPI::DynamicBuffer> dynamicBuffer = RPI::DynamicDrawInterface::Get()->GetDynamicBuffer(static_cast<uint32_t>(sourceByteSize), RHI::Alignment::InputAssembly);
             if (!dynamicBuffer)
             {
                 AZ_WarningOnce("AuxGeom", false, "Failed to allocate dynamic buffer of size %d.", sourceByteSize);
                 return false;
-            }            
-            dynamicBuffer->Write(source.data(), sourceByteSize);
+            }
+            dynamicBuffer->Write(source.data(), static_cast<uint32_t>(sourceByteSize));
             group.m_indexBufferView = dynamicBuffer->GetIndexBufferView(RHI::IndexFormat::Uint32);
             return true;
         }
@@ -211,13 +211,13 @@ namespace AZ
         {
             const size_t sourceByteSize = source.size() * sizeof(AuxGeomDynamicVertex);
 
-            RHI::Ptr<RPI::DynamicBuffer> dynamicBuffer = RPI::DynamicDrawInterface::Get()->GetDynamicBuffer(sourceByteSize);
+            RHI::Ptr<RPI::DynamicBuffer> dynamicBuffer = RPI::DynamicDrawInterface::Get()->GetDynamicBuffer(static_cast<uint32_t>(sourceByteSize), RHI::Alignment::InputAssembly);
             if (!dynamicBuffer)
             {
                 AZ_WarningOnce("AuxGeom", false, "Failed to allocate dynamic buffer of size %d.", sourceByteSize);
                 return false;
-            }            
-            dynamicBuffer->Write(source.data(), sourceByteSize);
+            }
+            dynamicBuffer->Write(source.data(), static_cast<uint32_t>(sourceByteSize));
             group.m_streamBufferViews[0] = dynamicBuffer->GetStreamBufferView(sizeof(AuxGeomDynamicVertex));
             return true;
         }
@@ -322,7 +322,7 @@ namespace AZ
         {
             const char* auxGeomWorldShaderFilePath = "Shaders/auxgeom/auxgeomworld.azshader";
 
-            m_shader = RPI::LoadShader(auxGeomWorldShaderFilePath);
+            m_shader = RPI::LoadCriticalShader(auxGeomWorldShaderFilePath);
             if (!m_shader)
             {
                 AZ_Error("DynamicPrimitiveProcessor", false, "Failed to get shader");

@@ -66,10 +66,10 @@ namespace ExporterLib
 
         // the motion event table chunk header
         EMotionFX::FileFormat::FileChunk chunkHeader;
-        chunkHeader.mChunkID = EMotionFX::FileFormat::SHARED_CHUNK_MOTIONEVENTTABLE;
-        chunkHeader.mVersion = 3;
+        chunkHeader.m_chunkId = EMotionFX::FileFormat::SHARED_CHUNK_MOTIONEVENTTABLE;
+        chunkHeader.m_version = 3;
 
-        chunkHeader.mSizeInBytes = static_cast<uint32>(serializedTableSizeInBytes + sizeof(EMotionFX::FileFormat::FileMotionEventTableSerialized));
+        chunkHeader.m_sizeInBytes = static_cast<uint32>(serializedTableSizeInBytes + sizeof(EMotionFX::FileFormat::FileMotionEventTableSerialized));
 
         EMotionFX::FileFormat::FileMotionEventTableSerialized tableHeader;
         tableHeader.m_size = serializedTableSizeInBytes;

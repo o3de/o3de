@@ -39,7 +39,7 @@ public:
         virtual void GetDefault(bool& val) const = 0;
         virtual void GetDefault(Vec4& val) const = 0;
 
-        string m_name;
+        AZStd::string m_name;
 
     protected:
         virtual ~CControlParamBase(){}
@@ -288,7 +288,7 @@ void CAnimPostFXNode::SerializeAnims(XmlNodeRef& xmlNode, bool bLoading, bool bL
 //-----------------------------------------------------------------------------
 unsigned int CAnimPostFXNode::GetParamCount() const
 {
-    return m_pDescription->m_nodeParams.size();
+    return static_cast<unsigned int>(m_pDescription->m_nodeParams.size());
 }
 
 //-----------------------------------------------------------------------------

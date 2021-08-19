@@ -22,7 +22,6 @@
 #include "OBJExporter.h"
 #include "OCMExporter.h"
 #include "FBXExporterDialog.h"
-#include "RenderViewport.h"
 #include "TrackViewExportKeyTimeDlg.h"
 #include "AnimationContext.h"
 #include "TrackView/DirectorNodeAnimator.h"
@@ -46,7 +45,7 @@ namespace
         SEfResTexture* pTex = pRes->GetTextureResource(nSlot);
         if (pTex)
         {
-            cry_strcat(outName, Path::GamePathToFullPath(pTex->m_Name.c_str()).toUtf8().data());
+            azstrcat(outName, AZ_ARRAY_SIZE(outName), Path::GamePathToFullPath(pTex->m_Name.c_str()).toUtf8().data());
         }
     }
 
@@ -88,7 +87,7 @@ Export::CObject::CObject(const char* pName)
 
     nParent = -1;
 
-    cry_strcpy(name, pName);
+    azstrcpy(name, AZ_ARRAY_SIZE(name), pName);
 
     materialName[0] = '\0';
 
@@ -96,13 +95,13 @@ Export::CObject::CObject(const char* pName)
 
     cameraTargetNodeName[0] = '\0';
 
-    m_pLastObject = 0;
+    m_pLastObject = nullptr;
 }
 
 
 void Export::CObject::SetMaterialName(const char* pName)
 {
-    cry_strcpy(materialName, pName);
+    azstrcpy(materialName, AZ_ARRAY_SIZE(materialName), pName);
 }
 
 
@@ -116,14 +115,14 @@ void Export::CData::Clear()
 // CExportManager
 CExportManager::CExportManager()
     : m_isPrecaching(false)
-    , m_pBaseObj(0)
+    , m_pBaseObj(nullptr)
     , m_FBXBakedExportFPS(0.0f)
     , m_fScale(100.0f)
     ,                 // this scale is used by CryEngine RC
     m_bAnimationExport(false)
     , m_bExportLocalCoords(false)
     , m_numberOfExportFrames(0)
-    , m_pivotEntityObject(0)
+    , m_pivotEntityObject(nullptr)
     , m_bBakedKeysSequenceExport(true)
     , m_animTimeExportPrimarySequenceCurrentTime(0.0f)
     , m_animKeyTimeExport(true)
@@ -290,7 +289,7 @@ void CExportManager::ProcessEntityAnimationTrack(
     const AZ::EntityId entityId, Export::CObject* pObj, AnimParamType entityTrackParamType)
 {
     CTrackViewAnimNode* pEntityNode = GetIEditor()->GetSequenceManager()->GetActiveAnimNode(entityId);
-    CTrackViewTrack* pEntityTrack = (pEntityNode ? pEntityNode->GetTrackForParameter(entityTrackParamType) : 0);
+    CTrackViewTrack* pEntityTrack = (pEntityNode ? pEntityNode->GetTrackForParameter(entityTrackParamType) : nullptr);
 
     if (!pEntityTrack)
     {
@@ -397,7 +396,7 @@ void CExportManager::AddMesh(Export::CObject* pObj, const IIndexedMesh* pIndMesh
     else
     {
         Export::CMesh* pMesh = new Export::CMesh();
-        if (meshDesc.m_nFaceCount == 0 && meshDesc.m_nIndexCount != 0 && meshDesc.m_pIndices != 0)
+        if (meshDesc.m_nFaceCount == 0 && meshDesc.m_nIndexCount != 0 && meshDesc.m_pIndices != nullptr)
         {
             const vtx_idx* pIndices = &meshDesc.m_pIndices[0];
             int nTris = meshDesc.m_nIndexCount / 3;
@@ -431,7 +430,7 @@ void CExportManager::AddMesh(Export::CObject* pObj, const IIndexedMesh* pIndMesh
 
 bool CExportManager::AddStatObj(Export::CObject* pObj, IStatObj* pStatObj, Matrix34A* pTm)
 {
-    IIndexedMesh* pIndMesh = 0;
+    IIndexedMesh* pIndMesh = nullptr;
 
     if (pStatObj->GetSubObjectCount())
     {
@@ -440,7 +439,7 @@ bool CExportManager::AddStatObj(Export::CObject* pObj, IStatObj* pStatObj, Matri
             IStatObj::SSubObject* pSubObj = pStatObj->GetSubObject(i);
             if (pSubObj && pSubObj->nType == STATIC_SUB_OBJECT_MESH && pSubObj->pStatObj)
             {
-                pIndMesh = 0;
+                pIndMesh = nullptr;
                 if (m_isOccluder)
                 {
                     if (pSubObj->pStatObj->GetLodObject(2))
@@ -542,7 +541,7 @@ bool CExportManager::AddObject(CBaseObject* pBaseObj)
 
     if (m_isPrecaching)
     {
-        AddMeshes(0);
+        AddMeshes(nullptr);
         return true;
     }
 
@@ -554,7 +553,7 @@ bool CExportManager::AddObject(CBaseObject* pBaseObj)
     m_objectMap[pBaseObj] = int(m_data.m_objects.size() - 1);
 
     AddMeshes(pObj);
-    m_pBaseObj = 0;
+    m_pBaseObj = nullptr;
 
     return true;
 }
@@ -662,12 +661,6 @@ bool CExportManager::ProcessObjectsForExport()
     GetIEditor()->GetAnimation()->SetRecording(false);
     GetIEditor()->GetAnimation()->SetPlaying(false);
 
-    CViewport* vp = GetIEditor()->GetViewManager()->GetSelectedViewport();
-    if (CRenderViewport* rvp = viewport_cast<CRenderViewport*>(vp))
-    {
-        rvp->SetSequenceCamera();
-    }
-
     int startFrame = 0;
     timeValue = startFrame * fpsTimeInterval;
 
@@ -678,7 +671,7 @@ bool CExportManager::ProcessObjectsForExport()
         for (size_t objectID = 0; objectID < m_data.m_objects.size(); ++objectID)
         {
             Export::CObject* pObj2 =  m_data.m_objects[objectID];
-            CBaseObject* pObject = 0;
+            CBaseObject* pObject = nullptr;
 
             if (QString::compare(pObj2->name, kPrimaryCameraName) == 0)
             {
@@ -983,7 +976,7 @@ bool CExportManager::AddObjectsFromSequence(CTrackViewSequence* pSequence, XmlNo
             {
                 if (pSubSequence && !pSubSequence->IsDisabled())
                 {
-                    XmlNodeRef subSeqNode = 0;
+                    XmlNodeRef subSeqNode = nullptr;
 
                     if (!seqNode)
                     {

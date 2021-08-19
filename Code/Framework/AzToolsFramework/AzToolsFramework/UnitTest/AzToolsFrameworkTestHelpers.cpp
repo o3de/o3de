@@ -27,6 +27,35 @@ using namespace AzToolsFramework;
 
 namespace UnitTest
 {
+    void MousePressAndMove(
+        QWidget* widget, const QPoint& initialPositionWidget, const QPoint& mouseDelta, const Qt::MouseButton mouseButton)
+    {
+        QPoint position = widget->mapToGlobal(initialPositionWidget);
+        QTest::mousePress(widget, mouseButton, Qt::NoModifier, position);
+
+        MouseMove(widget, initialPositionWidget, mouseDelta, mouseButton);
+    }
+
+    // Note: There are a series of bugs in Qt that appear to be preventing mouseMove events
+    // firing when sent through the QTest framework. This is a work around for our version
+    // of Qt. In future this can hopefully be simplified. See ^1 for workaround.
+    // More info: Issues with mouse move in Qt
+    // - https://bugreports.qt.io/browse/QTBUG-5232
+    // - https://bugreports.qt.io/browse/QTBUG-69414
+    // - https://lists.qt-project.org/pipermail/development/2019-July/036873.html
+    void MouseMove(QWidget* widget, const QPoint& initialPositionWidget, const QPoint& mouseDelta, const Qt::MouseButton mouseButton)
+    {
+        QPoint nextPosition = widget->mapToGlobal(initialPositionWidget + mouseDelta);
+
+        // ^1 To ensure a mouse move event is fired we must call the test mouse move function
+        // and also send a mouse move event that matches. Each on their own do not appear to
+        // work - please see the links above for more context.
+        QTest::mouseMove(widget, nextPosition);
+        QMouseEvent mouseMoveEvent(
+            QEvent::MouseMove, QPointF(nextPosition), QPointF(nextPosition), Qt::NoButton, mouseButton, Qt::NoModifier);
+        QApplication::sendEvent(widget, &mouseMoveEvent);
+    }
+
     bool TestWidget::eventFilter(QObject* watched, QEvent* event)
     {
         AZ_UNUSED(watched);
@@ -63,6 +92,35 @@ namespace UnitTest
         default:
             return false;
         }
+    }
+
+    bool FocusInteractionWidget::event(QEvent* event)
+    {
+        using AzToolsFramework::EditorInteractionSystemViewportSelectionRequestBus;
+
+        auto eventType = event->type();
+
+        switch (eventType)
+        {
+        case QEvent::MouseButtonPress:
+            EditorInteractionSystemViewportSelectionRequestBus::Event(
+                AzToolsFramework::GetEntityContextId(), &EditorInteractionSystemViewportSelectionRequestBus::Events::SetDefaultHandler);
+            return true;
+        case QEvent::FocusIn:
+        case QEvent::FocusOut:
+            {
+                bool handled = false;
+                AzToolsFramework::ViewportInteraction::MouseInteraction mouseInteraction;
+                EditorInteractionSystemViewportSelectionRequestBus::EventResult(
+                    handled, AzToolsFramework::GetEntityContextId(),
+                    &EditorInteractionSystemViewportSelectionRequestBus::Events::InternalHandleMouseViewportInteraction,
+                    AzToolsFramework::ViewportInteraction::MouseInteractionEvent(
+                        mouseInteraction, AzToolsFramework::ViewportInteraction::MouseEvent::Down));
+                return handled;
+            }
+        }
+
+        return QWidget::event(event);
     }
 
     void TestEditorActions::Connect()
@@ -352,7 +410,19 @@ namespace UnitTest
         AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
             entityId, &AzToolsFramework::EditorEntityContextRequestBus::Events::CreateNewEditorEntity, name);
 
+        if (!entityId.IsValid())
+        {
+            AZ_Error("CreateDefaultEditorEntity", false, "Failed to create editor entity '%s'", name);
+            return AZ::EntityId();
+        }
+
         AZ::Entity* entity = GetEntityById(entityId);
+
+        if (!entity)
+        {
+            AZ_Error("CreateDefaultEditorEntity", false, "Invalid entity obtained from Id %s", entityId.ToString().c_str());
+            return AZ::EntityId();
+        }
 
         entity->Deactivate();
 

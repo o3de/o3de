@@ -374,7 +374,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CAudioSystemImpl_wwise::Update([[maybe_unused]] const float updateIntervalMS)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Audio);
+        AZ_PROFILE_FUNCTION(Audio);
 
         if (AK::SoundEngine::IsInitialized())
         {
@@ -731,7 +731,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     EAudioRequestStatus CAudioSystemImpl_wwise::UpdateAudioObject(IATLAudioObjectData* const audioObjectData)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Audio);
+        AZ_PROFILE_FUNCTION(Audio);
 
         EAudioRequestStatus result = eARS_FAILURE;
 
@@ -2173,16 +2173,7 @@ namespace Audio
     {
         if (language)
         {
-            AZStd::string languageSubfolder;
-
-            if (azstricmp(language, "english") == 0)
-            {
-                languageSubfolder = "english(us)";
-            }
-            else
-            {
-                languageSubfolder = language;
-            }
+            AZStd::string languageSubfolder(language);
 
             languageSubfolder += "/";
 

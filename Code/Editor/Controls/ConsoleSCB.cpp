@@ -62,14 +62,14 @@ public:
     }
 
 protected:
-    void highlightBlock(const QString &text)
+    void highlightBlock(const QString &text) override
     {
         auto pos = -1;
         QTextCharFormat myClassFormat;
         myClassFormat.setFontWeight(QFont::Bold);
         myClassFormat.setBackground(Qt::yellow);
 
-        while (1)
+        while (true)
         {
             pos = text.indexOf(m_searchTerm, pos+1, Qt::CaseInsensitive);
 
@@ -180,7 +180,7 @@ bool ConsoleLineEdit::event(QEvent* ev)
 
         if (newStr.isEmpty())
         {
-            newStr = GetIEditor()->GetCommandManager()->AutoComplete(cstring.toUtf8().data());
+            newStr = GetIEditor()->GetCommandManager()->AutoComplete(cstring.toUtf8().data()).c_str();
         }
     }
 
@@ -211,7 +211,7 @@ void ConsoleLineEdit::keyPressEvent(QKeyEvent* ev)
         {
             if (commandManager->IsRegistered(str.toUtf8().data()))
             {
-                commandManager->Execute(QtUtil::ToString(str));
+                commandManager->Execute(str.toUtf8().data());
             }
             else
             {
@@ -338,6 +338,8 @@ CConsoleSCB::CConsoleSCB(QWidget* parent)
     connect(findPreviousAction, &QAction::triggered, this, &CConsoleSCB::findPrevious);
     ui->findPrevButton->addAction(findPreviousAction);
 
+    GetIEditor()->RegisterNotifyListener(this);
+
     connect(ui->button, &QPushButton::clicked, this, &CConsoleSCB::showVariableEditor);
     connect(ui->findButton, &QPushButton::clicked, this, &CConsoleSCB::toggleConsoleSearch);
     connect(ui->textEdit, &ConsoleTextEdit::searchBarRequested, this, [this]
@@ -375,6 +377,8 @@ CConsoleSCB::CConsoleSCB(QWidget* parent)
 CConsoleSCB::~CConsoleSCB()
 {
     AzToolsFramework::EditorPreferencesNotificationBus::Handler::BusDisconnect();
+
+    GetIEditor()->UnregisterNotifyListener(this);
 
     s_consoleSCB = nullptr;
     CLogFile::AttachEditBox(nullptr);
@@ -562,15 +566,15 @@ static void OnVariableUpdated([[maybe_unused]] int row, ICVar* pCVar)
 static CVarBlock* VarBlockFromConsoleVars()
 {
     IConsole* console = GetIEditor()->GetSystem()->GetIConsole();
-    std::vector<const char*> cmds;
+    AZStd::vector<AZStd::string_view> cmds;
     cmds.resize(console->GetNumVars());
-    size_t cmdCount = console->GetSortedVars(&cmds[0], cmds.size());
+    size_t cmdCount = console->GetSortedVars(cmds);
 
     CVarBlock* vb = new CVarBlock;
-    IVariable* pVariable = 0;
+    IVariable* pVariable = nullptr;
     for (int i = 0; i < cmdCount; i++)
     {
-        ICVar* pCVar = console->GetCVar(cmds[i]);
+        ICVar* pCVar = console->GetCVar(cmds[i].data());
         if (!pCVar)
         {
             continue;
@@ -602,7 +606,7 @@ static CVarBlock* VarBlockFromConsoleVars()
         pCVar->AddOnChangeFunctor(onChange);
 
         pVariable->SetDescription(pCVar->GetHelp());
-        pVariable->SetName(cmds[i]);
+        pVariable->SetName(cmds[i].data());
 
         // Transfer the custom limits have they have been set for this variable
         if (pCVar->HasCustomLimits())
@@ -1350,6 +1354,21 @@ void CConsoleSCB::findNext()
 CConsoleSCB* CConsoleSCB::GetCreatedInstance()
 {
     return s_consoleSCB;
+}
+
+void CConsoleSCB::OnEditorNotifyEvent(EEditorNotifyEvent event)
+{
+    switch (event)
+    {
+    case eNotify_OnBeginGameMode:
+        if (gSettings.clearConsoleOnGameModeStart)
+        {
+            ui->textEdit->clear();
+        }
+        break;
+    default:
+        break;
+    }
 }
 
 #include <Controls/moc_ConsoleSCB.cpp>

@@ -58,7 +58,7 @@ CDynamicArray2D::~CDynamicArray2D()
     }
 
     delete [] m_Array;
-    m_Array = 0;
+    m_Array = nullptr;
 }
 
 

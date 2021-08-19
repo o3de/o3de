@@ -58,7 +58,7 @@ namespace AWSMetrics
 
     int MetricsEvent::GetNumAttributes() const
     {
-        return m_attributes.size();
+        return static_cast<int>(m_attributes.size());
     }
 
     size_t MetricsEvent::GetSizeInBytes() const

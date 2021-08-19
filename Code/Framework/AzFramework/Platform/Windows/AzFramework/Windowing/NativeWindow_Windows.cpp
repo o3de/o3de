@@ -11,6 +11,7 @@
 
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/PlatformIncl.h>
+#include <AzCore/std/string/conversions.h>
 
 namespace AzFramework
 {
@@ -36,12 +37,13 @@ namespace AzFramework
         void SetFullScreenState(bool fullScreenState) override;
         bool CanToggleFullScreenState() const override { return true; }
         float GetDpiScaleFactor() const override;
+        uint32_t GetDisplayRefreshRate() const override;
 
     private:
         static DWORD ConvertToWin32WindowStyleMask(const WindowStyleMasks& styleMasks);
         static LRESULT CALLBACK WindowCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-        static const char* s_defaultClassName;
+        static const wchar_t* s_defaultClassName;
 
         void WindowSizeChanged(const uint32_t width, const uint32_t height);
 
@@ -55,9 +57,10 @@ namespace AzFramework
 
         using GetDpiForWindowType = UINT(HWND hwnd);
         GetDpiForWindowType* m_getDpiFunction = nullptr;
+        uint32_t m_mainDisplayRefreshRate = 0;
     };
 
-    const char* NativeWindowImpl_Win32::s_defaultClassName = "O3DEWin32Class";
+    const wchar_t* NativeWindowImpl_Win32::s_defaultClassName = L"O3DEWin32Class";
 
     NativeWindow::Implementation* NativeWindow::Implementation::Create()
     {
@@ -88,7 +91,7 @@ namespace AzFramework
 
         // register window class if it does not exist
         WNDCLASSEX windowClass;
-        if (GetClassInfoEx(hInstance, s_defaultClassName, &windowClass) == false)
+        if (GetClassInfoExW(hInstance, s_defaultClassName, &windowClass) == false)
         {
             windowClass.cbSize = sizeof(WNDCLASSEX);
             windowClass.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
@@ -127,8 +130,10 @@ namespace AzFramework
         m_height = geometry.m_height;
 
         // create main window
-        m_win32Handle = CreateWindow(
-            s_defaultClassName, title.c_str(),
+        AZStd::wstring titleW;
+        AZStd::to_wstring(titleW, title);
+        m_win32Handle = CreateWindowW(
+            s_defaultClassName, titleW.c_str(),
             windowStyle,
             geometry.m_posX, geometry.m_posY, windowRect.right - windowRect.left, windowRect.bottom - windowRect.top,
             NULL, NULL, hInstance, NULL);
@@ -141,6 +146,10 @@ namespace AzFramework
         {
             SetWindowLongPtr(m_win32Handle, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
         }
+
+        DEVMODE DisplayConfig;
+        EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &DisplayConfig);
+        m_mainDisplayRefreshRate = DisplayConfig.dmDisplayFrequency;
     }
 
     void NativeWindowImpl_Win32::Activate()
@@ -175,7 +184,9 @@ namespace AzFramework
 
     void NativeWindowImpl_Win32::SetWindowTitle(const AZStd::string& title)
     {
-        SetWindowText(m_win32Handle, title.c_str());
+        AZStd::wstring titleW;
+        AZStd::to_wstring(titleW, title);
+        SetWindowTextW(m_win32Handle, titleW.c_str());
     }
 
     DWORD NativeWindowImpl_Win32::ConvertToWin32WindowStyleMask(const WindowStyleMasks& styleMasks)
@@ -196,7 +207,10 @@ namespace AzFramework
     // Handles Win32 Window Event callbacks
     LRESULT CALLBACK NativeWindowImpl_Win32::WindowCallback(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
-        NativeWindowImpl_Win32* nativeWindowImpl = reinterpret_cast<NativeWindowImpl_Win32*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));      
+        NativeWindowImpl_Win32* nativeWindowImpl = reinterpret_cast<NativeWindowImpl_Win32*>(GetWindowLongPtr(hWnd, GWLP_USERDATA));
+
+        // If set to true, call DefWindowProc to ensure the default Windows behavior occurs
+        bool shouldBubbleEventUp = false;
 
         switch (message)
         {
@@ -258,12 +272,26 @@ namespace AzFramework
             WindowNotificationBus::Event(nativeWindowImpl->GetWindowHandle(), &WindowNotificationBus::Events::OnDpiScaleFactorChanged, newScaleFactor);
             break;
         }
+        case WM_WINDOWPOSCHANGED:
+        {
+            DEVMODE DisplayConfig;
+            EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &DisplayConfig);
+            uint32_t refreshRate = DisplayConfig.dmDisplayFrequency;
+            WindowNotificationBus::Event(
+                nativeWindowImpl->GetWindowHandle(), &WindowNotificationBus::Events::OnRefreshRateChanged, refreshRate);
+            shouldBubbleEventUp = true;
+            break;
+        }
         default:
-            return DefWindowProc(hWnd, message, wParam, lParam);
+            shouldBubbleEventUp = true;
             break;
         }
 
-        return 0;
+        if (!shouldBubbleEventUp)
+        {
+            return 0;
+        }
+        return DefWindowProc(hWnd, message, wParam, lParam);
     }
 
     void NativeWindowImpl_Win32::WindowSizeChanged(const uint32_t width, const uint32_t height)
@@ -360,6 +388,11 @@ namespace AzFramework
             dotsPerInch = m_getDpiFunction(m_win32Handle);
         }
         return aznumeric_cast<float>(dotsPerInch) / aznumeric_cast<float>(defaultDotsPerInch);
+    }
+
+    uint32_t NativeWindowImpl_Win32::GetDisplayRefreshRate() const
+    {
+        return m_mainDisplayRefreshRate;
     }
 
     void NativeWindowImpl_Win32::EnterBorderlessWindowFullScreen()

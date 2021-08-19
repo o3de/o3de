@@ -69,7 +69,7 @@ namespace Audio
 
         AkDeviceSettings deviceSettings;
         AK::StreamMgr::GetDefaultDeviceSettings(deviceSettings);
-        deviceSettings.uIOMemorySize = poolSize;
+        deviceSettings.uIOMemorySize = aznumeric_cast<AkUInt32>(poolSize);
         deviceSettings.uSchedulerTypeFlags = AK_SCHEDULER_BLOCKING;
         Platform::SetThreadProperties(deviceSettings.threadProperties);
 
@@ -198,7 +198,7 @@ namespace Audio
         deviceDesc.bCanWrite = true;
         deviceDesc.deviceID = m_deviceID;
         AK_CHAR_TO_UTF16(deviceDesc.szDeviceName, "IO::IArchive", AZ_ARRAY_SIZE(deviceDesc.szDeviceName));
-        deviceDesc.uStringSize = AKPLATFORM::AkUtf16StrLen(deviceDesc.szDeviceName);
+        deviceDesc.uStringSize = aznumeric_cast<AkUInt32>(AKPLATFORM::AkUtf16StrLen(deviceDesc.szDeviceName));
     }
     
     AkUInt32 CBlockingDevice_wwise::GetDeviceData()
@@ -219,7 +219,7 @@ namespace Audio
 
         AkDeviceSettings deviceSettings;
         AK::StreamMgr::GetDefaultDeviceSettings(deviceSettings);
-        deviceSettings.uIOMemorySize = poolSize;
+        deviceSettings.uIOMemorySize = aznumeric_cast<AkUInt32>(poolSize);
         deviceSettings.uSchedulerTypeFlags = AK_SCHEDULER_DEFERRED_LINED_UP;
         Platform::SetThreadProperties(deviceSettings.threadProperties);
 
@@ -265,7 +265,7 @@ namespace Audio
 
         auto callback = [&transferInfo](AZ::IO::FileRequestHandle request)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Audio);
+            AZ_PROFILE_FUNCTION(Audio);
             AZ::IO::IStreamerTypes::RequestStatus status = AZ::Interface<AZ::IO::IStreamer>::Get()->GetRequestStatus(request);
             switch (status)
             {
@@ -336,7 +336,7 @@ namespace Audio
         deviceDesc.bCanWrite = false;
         deviceDesc.deviceID = m_deviceID;
         AK_CHAR_TO_UTF16(deviceDesc.szDeviceName, "IO::IStreamer", AZ_ARRAY_SIZE(deviceDesc.szDeviceName));
-        deviceDesc.uStringSize = AKPLATFORM::AkUtf16StrLen(deviceDesc.szDeviceName);
+        deviceDesc.uStringSize = aznumeric_cast<AkUInt32>(AKPLATFORM::AkUtf16StrLen(deviceDesc.szDeviceName));
     }
 
     AkUInt32 CStreamingDevice_wwise::GetDeviceData()

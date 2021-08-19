@@ -19,8 +19,8 @@ namespace AZ
             {
                 serializeContext->Class<PlatformLimitsDescriptor, Base>()
                     ->Version(0)
-                    ->Field("m_descriptorHeapLimits", &PlatformLimitsDescriptor::m_descriptorHeapLimits)
-                    ->Field("m_frameGraphExecuterData", &PlatformLimitsDescriptor::m_frameGraphExecuterData)
+                    ->Field("DescriptorHeapLimits", &PlatformLimitsDescriptor::m_descriptorHeapLimits)
+                    ->Field("FrameGraphExecuterData", &PlatformLimitsDescriptor::m_frameGraphExecuterData)
                     ;
             }
         }
@@ -31,11 +31,11 @@ namespace AZ
             {
                 serializeContext->Class<FrameGraphExecuterData>()
                     ->Version(0)
-                    ->Field("m_itemCost", &FrameGraphExecuterData::m_itemCost)
-                    ->Field("m_attachmentCost", &FrameGraphExecuterData::m_attachmentCost)
-                    ->Field("m_swapChainsPerCommandList", &FrameGraphExecuterData::m_swapChainsPerCommandList)
-                    ->Field("m_commandListCostThresholdMin", &FrameGraphExecuterData::m_commandListCostThresholdMin)
-                    ->Field("m_commandListsPerScopeMax", &FrameGraphExecuterData::m_commandListsPerScopeMax)
+                    ->Field("ItemCost", &FrameGraphExecuterData::m_itemCost)
+                    ->Field("AttachmentCost", &FrameGraphExecuterData::m_attachmentCost)
+                    ->Field("SwapChainsPerCommandList", &FrameGraphExecuterData::m_swapChainsPerCommandList)
+                    ->Field("CommandListCostThresholdMin", &FrameGraphExecuterData::m_commandListCostThresholdMin)
+                    ->Field("CommandListsPerScopeMax", &FrameGraphExecuterData::m_commandListsPerScopeMax)
                     ;
             }
         }

@@ -8,16 +8,15 @@
 
 
 #include <platform.h>
-#include <StringUtils.h>
 #include <ISystem.h>
 #include <Random.h>
-#include <UnicodeFunctions.h>
 #include <IConsole.h>
 
 #include <AzCore/Debug/Profiler.h>
-#include <AzCore/Debug/ProfileModuleInit.h>
 #include <AzCore/Memory/AllocatorManager.h>
 #include <AzCore/Module/Environment.h>
+#include <AzCore/std/string/conversions.h>
+#include <AzCore/Utils/Utils.h>
 
 // Section dictionary
 #if defined(AZ_RESTRICTED_PLATFORM)
@@ -37,10 +36,6 @@ struct SSystemGlobalEnvironment* gEnv = nullptr;
     #define AZ_RESTRICTED_SECTION PLATFORM_IMPL_H_SECTION_TRAITS
     #include AZ_RESTRICTED_FILE(platform_impl_h)
 #endif
-
-//////////////////////////////////////////////////////////////////////////
-// If not in static library.
-#include <CryThreadImpl.h>
 
 #if defined(WIN32) || defined(WIN64)
 void CryPureCallHandler()
@@ -98,7 +93,6 @@ extern "C" AZ_DLL_EXPORT void ModuleInitISystem(ISystem* pSystem, [[maybe_unused
             AZ::Environment::Attach(gEnv->pSharedEnvironment);
             AZ::AllocatorManager::Instance();  // Force the AllocatorManager to instantiate and register any allocators defined in data sections
         }
-        AZ::Debug::ProfileModuleInit();
     } // if pSystem
 }
 
@@ -205,64 +199,38 @@ void __stl_debug_message(const char* format_str, ...)
 #include "CryAssert_impl.h"
 
 //////////////////////////////////////////////////////////////////////////
-void CryDebugBreak()
-{
-#if defined(WIN32) && !defined(RELEASE)
-    if (IsDebuggerPresent())
-#endif
-    {
-        DebugBreak();
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CrySleep(unsigned int dwMilliseconds)
 {
-    AZ_PROFILE_FUNCTION_IDLE(AZ::Debug::ProfileCategory::System);
+    AZ_PROFILE_FUNCTION(System);
     Sleep(dwMilliseconds);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CryLowLatencySleep(unsigned int dwMilliseconds)
-{
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::System);
-#if defined(AZ_RESTRICTED_PLATFORM)
-    #define AZ_RESTRICTED_SECTION PLATFORM_IMPL_H_SECTION_CRYLOWLATENCYSLEEP
-    #include AZ_RESTRICTED_FILE(platform_impl_h)
-#endif
-#if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
-#undef AZ_RESTRICTED_SECTION_IMPLEMENTED
-#else
-    CrySleep(dwMilliseconds);
-#endif
 }
 
 //////////////////////////////////////////////////////////////////////////
 int CryMessageBox([[maybe_unused]] const char* lpText, [[maybe_unused]] const char* lpCaption, [[maybe_unused]] unsigned int uType)
 {
 #ifdef WIN32
-#if !defined(RESOURCE_COMPILER)
     ICVar* const pCVar = gEnv && gEnv->pConsole ? gEnv->pConsole->GetCVar("sys_no_crash_dialog") : NULL;
     if ((pCVar && pCVar->GetIVal() != 0) || (gEnv && gEnv->bNoAssertDialog))
     {
         return 0;
     }
-#endif
-    wstring wideText, wideCaption;
-    Unicode::Convert(wideText, lpText);
-    Unicode::Convert(wideCaption, lpCaption);
-    return MessageBoxW(NULL, wideText.c_str(), wideCaption.c_str(), uType);
+    AZStd::wstring lpTextW;
+    AZStd::to_wstring(lpTextW, lpText);
+    AZStd::wstring lpCaptionW;
+    AZStd::to_wstring(lpCaptionW, lpCaption);
+    return MessageBoxW(NULL, lpTextW.c_str(), lpCaptionW.c_str(), uType);
 #else
     return 0;
 #endif
 }
 
 // Initializes root folder of the game, optionally returns exe and path name.
-void InitRootDir(char szExeFileName[], uint nExeSize, char szExeRootName[], [[maybe_unused]] uint nRootSize)
+void InitRootDir(char szExeFileName[], uint nExeSize, char szExeRootName[], uint nRootSize)
 {
-    WCHAR szPath[_MAX_PATH];
-    size_t nLen = GetModuleFileNameW(GetModuleHandle(NULL), szPath, _MAX_PATH);
-    assert(nLen < _MAX_PATH && "The path to the current executable exceeds the expected length");
+    char szPath[_MAX_PATH];
+    AZ::Utils::GetExecutablePathReturnType ret = AZ::Utils::GetExecutablePath(szPath, _MAX_PATH);
+    AZ_Assert(ret.m_pathStored == AZ::Utils::ExecutablePathResult::Success, "The path to the current executable exceeds the expected length");
+    const size_t nLen = strnlen(szPath, _MAX_PATH);
 
     // Find path above exe name and deepest folder.
     bool firstIteration = true;
@@ -277,161 +245,31 @@ void InitRootDir(char szExeFileName[], uint nExeSize, char szExeRootName[], [[ma
                 // Return exe path
                 if (szExeRootName)
                 {
-                    Unicode::Convert(szExeRootName, n+1, szPath);
+                    azstrncpy(szExeRootName, nRootSize, szPath + n + 1, nLen - n - 1);
                 }
 
                 // Return exe name
                 if (szExeFileName)
                 {
-                    Unicode::Convert(szExeFileName, nExeSize, szPath + n);
+                    azstrncpy(szExeFileName, nExeSize, szPath + n, nLen - n);
                 }
                 firstIteration = false;
             }
             // Check if the engineroot exists
-            wcscat_s(szPath, L"\\engine.json");
+            azstrcat(szPath, AZ_ARRAY_SIZE(szPath), "\\engine.json");
             WIN32_FILE_ATTRIBUTE_DATA data;
-            BOOL res = GetFileAttributesExW(szPath, GetFileExInfoStandard, &data);
+            wchar_t szPathW[_MAX_PATH];
+            AZStd::to_wstring(szPathW, _MAX_PATH, szPath);
+            BOOL res = GetFileAttributesExW(szPathW, GetFileExInfoStandard, &data);
             if (res != 0 && data.dwFileAttributes != INVALID_FILE_ATTRIBUTES)
             {
                 // Found file
                 szPath[n] = 0;
-                SetCurrentDirectoryW(szPath);
+                SetCurrentDirectoryW(szPathW);
                 break;
             }
         }
     }
-}
-
-//////////////////////////////////////////////////////////////////////////
-short CryGetAsyncKeyState([[maybe_unused]] int vKey)
-{
-#ifdef WIN32
-    return GetAsyncKeyState(vKey);
-#else
-    return 0;
-#endif
-}
-
-//////////////////////////////////////////////////////////////////////////
-LONG  CryInterlockedIncrement(int volatile* lpAddend)
-{
-    return InterlockedIncrement((volatile LONG*)lpAddend);
-}
-
-//////////////////////////////////////////////////////////////////////////
-LONG  CryInterlockedDecrement(int volatile* lpAddend)
-{
-    return InterlockedDecrement((volatile LONG*)lpAddend);
-}
-
-//////////////////////////////////////////////////////////////////////////
-LONG  CryInterlockedExchangeAdd(LONG volatile* lpAddend, LONG Value)
-{
-    return InterlockedExchangeAdd(lpAddend, Value);
-}
-
-LONG  CryInterlockedOr(LONG volatile* Destination, LONG Value)
-{
-    return InterlockedOr(Destination, Value);
-}
-
-LONG  CryInterlockedCompareExchange(LONG volatile* dst, LONG exchange, LONG comperand)
-{
-    return InterlockedCompareExchange(dst, exchange, comperand);
-}
-
-void* CryInterlockedCompareExchangePointer(void* volatile* dst, void* exchange, void* comperand)
-{
-    return InterlockedCompareExchangePointer(dst, exchange, comperand);
-}
-
-void* CryInterlockedExchangePointer(void* volatile* dst, void* exchange)
-{
-    return InterlockedExchangePointer(dst, exchange);
-}
-
-void CryInterlockedAdd(volatile size_t* pVal, ptrdiff_t iAdd)
-{
-#if defined (PLATFORM_64BIT)
-#if !defined(NDEBUG)
-    size_t v = (size_t)
-#endif
-        InterlockedAdd64((volatile int64*)pVal, iAdd);
-#else
-    size_t v = (size_t)CryInterlockedExchangeAdd((volatile long*)pVal, (long)iAdd);
-    v += iAdd;
-#endif
-    assert((iAdd == 0) || (iAdd < 0 && v < v - (size_t)iAdd) || (iAdd > 0 && v > v - (size_t)iAdd));
-}
-
-//////////////////////////////////////////////////////////////////////////
-void* CryCreateCriticalSection()
-{
-    CRITICAL_SECTION* pCS = new CRITICAL_SECTION;
-    InitializeCriticalSection(pCS);
-    return pCS;
-}
-
-void  CryCreateCriticalSectionInplace(void* pCS)
-{
-    InitializeCriticalSection((CRITICAL_SECTION*)pCS);
-}
-//////////////////////////////////////////////////////////////////////////
-void  CryDeleteCriticalSection(void* cs)
-{
-    CRITICAL_SECTION* pCS = (CRITICAL_SECTION*)cs;
-    if (pCS->LockCount >= 0)
-    {
-        CryFatalError("Critical Section hanging lock");
-    }
-    DeleteCriticalSection(pCS);
-    delete pCS;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void  CryDeleteCriticalSectionInplace(void* cs)
-{
-    CRITICAL_SECTION* pCS = (CRITICAL_SECTION*)cs;
-    if (pCS->LockCount >= 0)
-    {
-        CryFatalError("Critical Section hanging lock");
-    }
-    DeleteCriticalSection(pCS);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void  CryEnterCriticalSection(void* cs)
-{
-    EnterCriticalSection((CRITICAL_SECTION*)cs);
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool  CryTryCriticalSection(void* cs)
-{
-    return TryEnterCriticalSection((CRITICAL_SECTION*)cs) != 0;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void  CryLeaveCriticalSection(void* cs)
-{
-    LeaveCriticalSection((CRITICAL_SECTION*)cs);
-}
-
-//////////////////////////////////////////////////////////////////////////
-uint32 CryGetFileAttributes(const char* lpFileName)
-{
-    WIN32_FILE_ATTRIBUTE_DATA data;
-    BOOL res;
-#if defined(AZ_RESTRICTED_PLATFORM)
-    #define AZ_RESTRICTED_SECTION PLATFORM_IMPL_H_SECTION_CRYGETFILEATTRIBUTES
-    #include AZ_RESTRICTED_FILE(platform_impl_h)
-#endif
-#if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
-#undef AZ_RESTRICTED_SECTION_IMPLEMENTED
-#else
-    res = GetFileAttributesEx(lpFileName, GetFileExInfoStandard, &data);
-#endif
-    return res ? data.dwFileAttributes : -1;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -444,7 +282,9 @@ bool CrySetFileAttributes(const char* lpFileName, uint32 dwFileAttributes)
 #if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
 #undef AZ_RESTRICTED_SECTION_IMPLEMENTED
 #else
-    return SetFileAttributes(lpFileName, dwFileAttributes) != 0;
+    AZStd::wstring lpFileNameW;
+    AZStd::to_wstring(lpFileNameW, lpFileName);
+    return SetFileAttributes(lpFileNameW.c_str(), dwFileAttributes) != 0;
 #endif
 }
 
@@ -493,7 +333,7 @@ inline void CryDebugStr([[maybe_unused]] const char* format, ...)
      va_start(ArgList, format);
      azvsnprintf(szBuffer,sizeof(szBuffer)-1, format, ArgList);
      va_end(ArgList);
-     cry_strcat(szBuffer,"\n");
+     azstrcat(szBuffer,"\n");
      OutputDebugString(szBuffer);
      #endif
      */

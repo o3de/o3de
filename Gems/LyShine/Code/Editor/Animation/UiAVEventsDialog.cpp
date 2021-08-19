@@ -352,7 +352,7 @@ int UiAVEventsModel::GetNumberOfUsageAndFirstTimeUsed(const char* eventName, flo
         {
             CUiAnimViewTrack* pTrack = tracks.GetTrack(currentTrack);
 
-            for (int currentKey = 0; currentKey < pTrack->GetKeyCount(); ++currentKey)
+            for (unsigned int currentKey = 0; currentKey < pTrack->GetKeyCount(); ++currentKey)
             {
                 CUiAnimViewKeyHandle keyHandle = pTrack->GetKey(currentKey);
 

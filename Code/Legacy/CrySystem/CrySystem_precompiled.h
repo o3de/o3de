@@ -68,7 +68,7 @@
 #endif
 
 #ifdef WIN32
-#include <CryWindows.h>
+#include <AzCore/PlatformIncl.h>
 #include <tlhelp32.h>
 #undef GetCharWidth
 #undef GetUserName

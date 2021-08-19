@@ -205,7 +205,7 @@ struct IRenderNode
     // Debug info about object.
     virtual const char* GetName() const = 0;
     virtual const char* GetEntityClassName() const = 0;
-    virtual string GetDebugString([[maybe_unused]] char type = 0) const { return ""; }
+    virtual AZStd::string GetDebugString([[maybe_unused]] char type = 0) const { return ""; }
     virtual float GetImportance() const   { return 1.f; }
 
     // Description:

@@ -289,7 +289,6 @@ set(FILES
     Include/IPlugin.h
     Include/IPreferencesPage.h
     Include/IRenderListener.h
-    Include/IResourceSelectorHost.h
     Include/ISourceControl.h
     Include/ISubObjectSelectionReferenceFrameCalculator.h
     Include/ITextureDatabaseUpdater.h
@@ -360,8 +359,6 @@ set(FILES
     Controls/TimelineCtrl.cpp
     Controls/TimelineCtrl.h
     Controls/WndGridHelper.h
-    Controls/ReflectedPropertyControl/PropertyAnimationCtrl.cpp
-    Controls/ReflectedPropertyControl/PropertyAnimationCtrl.h
     Controls/ReflectedPropertyControl/PropertyGenericCtrl.cpp
     Controls/ReflectedPropertyControl/PropertyGenericCtrl.h
     Controls/ReflectedPropertyControl/PropertyMiscCtrl.cpp
@@ -372,8 +369,6 @@ set(FILES
     Controls/ReflectedPropertyControl/PropertyResourceCtrl.h
     Controls/ReflectedPropertyControl/PropertyCtrl.cpp
     Controls/ReflectedPropertyControl/PropertyCtrl.h
-    Controls/ReflectedPropertyControl/ReflectedPropertiesPanel.cpp
-    Controls/ReflectedPropertyControl/ReflectedPropertiesPanel.h
     MainStatusBar.cpp
     MainStatusBar.h
     MainStatusBarItems.h
@@ -498,9 +493,7 @@ set(FILES
     UndoViewPosition.h
     UndoViewRotation.h
     Util/GeometryUtil.h
-    Util/IXmlHistoryManager.h
     Util/KDTree.h
-    Util/XmlHistoryManager.h
     WipFeaturesDlg.h
     WipFeaturesDlg.ui
     WipFeaturesDlg.qrc
@@ -592,8 +585,6 @@ set(FILES
     FBXExporterDialog.ui
     FileTypeUtils.cpp
     LightmapCompiler/SimpleTriangleRasterizer.cpp
-    ResourceSelectorHost.cpp
-    ResourceSelectorHost.h
     ToolBox.cpp
     TrackViewNewSequenceDialog.cpp
     TrackViewNewSequenceDialog.ui
@@ -670,7 +661,6 @@ set(FILES
     TrackView/2DBezierKeyUIControls.cpp
     TrackView/AssetBlendKeyUIControls.cpp
     TrackView/CaptureKeyUIControls.cpp
-    TrackView/CharacterKeyUIControls.cpp
     TrackView/ConsoleKeyUIControls.cpp
     TrackView/EventKeyUIControls.cpp
     TrackView/GotoKeyUIControls.cpp
@@ -724,8 +714,6 @@ set(FILES
     Util/GuidUtil.cpp
     Util/GuidUtil.h
     Util/IObservable.h
-    Util/IndexedFiles.cpp
-    Util/IndexedFiles.h
     Util/KDTree.cpp
     Util/Mailer.h
     Util/NamedData.cpp
@@ -737,14 +725,12 @@ set(FILES
     Util/PredefinedAspectRatios.h
     Util/StringHelpers.cpp
     Util/StringHelpers.h
-    Util/StringNoCasePredicate.h
     Util/TRefCountBase.h
     Util/Triangulate.cpp
     Util/Triangulate.h
     Util/Util.h
     Util/XmlArchive.cpp
     Util/XmlArchive.h
-    Util/XmlHistoryManager.cpp
     Util/XmlTemplate.cpp
     Util/XmlTemplate.h
     Util/bitarray.h
@@ -805,10 +791,6 @@ set(FILES
     EditorViewportCamera.h
     ViewportManipulatorController.cpp
     ViewportManipulatorController.h
-    LegacyViewportCameraController.cpp
-    LegacyViewportCameraController.h
-    RenderViewport.cpp
-    RenderViewport.h
     TopRendererWnd.cpp
     TopRendererWnd.h
     ViewManager.cpp

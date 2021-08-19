@@ -123,6 +123,36 @@ namespace AZ
         using NotifyEvent = AZ::Event<AZStd::string_view, Type>;
         using NotifyEventHandler = typename NotifyEvent::Handler;
 
+        using PreMergeEventCallback = AZStd::function<void(AZStd::string_view path, AZStd::string_view rootKey)>;
+        using PostMergeEventCallback = AZStd::function<void(AZStd::string_view path, AZStd::string_view rootKey)>;
+        using PreMergeEvent = AZ::Event<AZStd::string_view, AZStd::string_view>;
+        using PostMergeEvent = AZ::Event<AZStd::string_view, AZStd::string_view>;
+        using PreMergeEventHandler = typename PreMergeEvent::Handler;
+        using PostMergeEventHandler = typename PostMergeEvent::Handler;
+
+        struct ScopedMergeEvent
+        {
+            ScopedMergeEvent(
+                PreMergeEvent& preMergeEvent, PostMergeEvent& postMergeEvent, AZStd::string_view filePath, AZStd::string_view rootKey)
+                : m_preMergeEvent{ preMergeEvent }
+                , m_postMergeEvent{ postMergeEvent }
+                , m_filePath{ filePath }
+                , m_rootKey{ rootKey }
+            {
+                preMergeEvent.Signal(m_filePath, m_rootKey);
+            }
+
+            ~ScopedMergeEvent()
+            {
+                m_postMergeEvent.Signal(m_filePath, m_rootKey);
+            }
+
+            PreMergeEvent& m_preMergeEvent;
+            PostMergeEvent& m_postMergeEvent;
+            AZStd::string_view m_filePath;
+            AZStd::string_view m_rootKey;
+        };
+
         using VisitorCallback =
             AZStd::function<VisitResponse(AZStd::string_view path, AZStd::string_view valueName, VisitAction action, Type type)>;
         //! Base class for the visitor class during traversal over the Settings Registry. The type-agnostic function is always
@@ -168,6 +198,20 @@ namespace AZ
         //! Register a callback that will be called whenever an entry gets a new/updated value.
         //! @callback The function to call when an entry gets a new/updated value.
         [[nodiscard]] virtual NotifyEventHandler RegisterNotifier(NotifyCallback&& callback) = 0;
+
+        //! Register a function that will be called before a file is merged.
+        //! @callback The function to call before a file is merged.
+        [[nodiscard]] virtual PreMergeEventHandler RegisterPreMergeEvent(const PreMergeEventCallback& callback) = 0;
+        //! Register a function that will be called before a file is merged.
+        //! @callback The function to call before a file is merged.
+        [[nodiscard]] virtual PreMergeEventHandler RegisterPreMergeEvent (PreMergeEventCallback&& callback) = 0;
+
+        //! Register a function that will be called after a file is merged.
+        //! @callback The function to call after a file is merged.
+        [[nodiscard]] virtual PostMergeEventHandler RegisterPostMergeEvent(const PostMergeEventCallback& callback) = 0;
+        //! Register a function that will be called after a file is merged.
+        //! @callback The function to call after a file is merged.
+        [[nodiscard]] virtual PostMergeEventHandler RegisterPostMergeEvent (PostMergeEventCallback&& callback) = 0;
 
         //! Gets the boolean value at the provided path.
         //! @param result The target to write the result to.

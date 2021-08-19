@@ -231,14 +231,14 @@ namespace AreaChart
     
     void AreaChart::AddPoint(size_t seriesId, int position, unsigned int value)
     {
-        AZ_PROFILE_TIMER("Standalone Tools", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         LinePoint linePoint(position,value);
         AddPoint(seriesId,linePoint);
     }
     
     void AreaChart::AddPoint(size_t seriesId, const LinePoint& linePoint)
     {
-        AZ_PROFILE_TIMER("Standalone Tools", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         if (!IsValidSeriesId(seriesId))
         {
             AZ_Error("AreaChart", false, "Invalid SeriesId given.");
@@ -419,7 +419,7 @@ namespace AreaChart
     
     void AreaChart::paintEvent(QPaintEvent* event)
     {
-        AZ_PROFILE_TIMER("Standalone Tools", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         (void)event;
         
         if (m_sizingDirty)
@@ -435,7 +435,7 @@ namespace AreaChart
 
         if (m_regenGraph)
         {
-            AZ_PROFILE_TIMER("Standalone Tools", "Generating Graph Data");
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
             m_regenGraph = false;
 
             if (m_verticalAxis)
