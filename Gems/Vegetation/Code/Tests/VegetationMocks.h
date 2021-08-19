@@ -555,7 +555,7 @@ namespace UnitTest
         }
 
         AZ::RPI::Cullable::LodType m_lodTypeOutput;
-        void SetLodOverride(AZ::RPI::Cullable::LodType lodType) override
+        void SetLodType(AZ::RPI::Cullable::LodType lodType) override
         {
             m_lodTypeOutput = lodType;
         }
