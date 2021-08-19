@@ -15,30 +15,19 @@ import site
 import pathlib
 from pathlib import Path
 import logging as _logging
-from env_bool import env_bool
 import numpy as np
+
+# local imports
+from ColorGrading import initialize_logger
 
 # ------------------------------------------------------------------------
 _MODULENAME = 'ColorGrading.exr_to_3dl_azasset'
 
-# set these true if you want them set globally for debugging
-_DCCSI_GDEBUG = env_bool('DCCSI_GDEBUG', False)
-_DCCSI_DEV_MODE = env_bool('DCCSI_DEV_MODE', False)
-_DCCSI_GDEBUGGER = env_bool('DCCSI_GDEBUGGER', False)
-_DCCSI_LOGLEVEL = env_bool('DCCSI_LOGLEVEL', int(20))
-
-if _DCCSI_GDEBUG:
-    _DCCSI_LOGLEVEL = int(10)
-
-FRMT_LOG_LONG = "[%(name)s][%(levelname)s] >> %(message)s (%(asctime)s; %(filename)s:%(lineno)d)"
-_logging.basicConfig(level=_DCCSI_LOGLEVEL,
-                     format=FRMT_LOG_LONG,
-                     datefmt='%m-%d %H:%M')
-_LOGGER = _logging.getLogger(_MODULENAME)
-_LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
-
 import ColorGrading.initialize
 ColorGrading.initialize.start()
+
+_LOGGER = _logging.getLogger(_MODULENAME)
+_LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 
 try:
     import OpenImageIO as oiio
@@ -49,51 +38,42 @@ except ImportError as e:
 # ------------------------------------------------------------------------
 
 
+# ------------------------------------------------------------------------
 # Transform from high dynamic range to normalized
-def ShaperInv(bias, scale, v):
+def inv_shaper_transform(bias, scale, v):
     return math.pow(2.0, (v - bias) / scale)
 
 # Transform from normalized range to high dynamic range
-def Shaper(bias, scale, v):
+def shaper_transform(bias, scale, v):
     return math.log(v, 2.0) * scale + bias
 
-def GetUvCoord(size, r, g, b):
-    u = g * lutSize + r
+def get_uv_coord(size, r, g, b):
+    u = g * lut_size + r
     v = b
     return (u, v)
 
 def clamp(v):
     return max(0.0, min(1.0, v))
 
-parser = argparse.ArgumentParser()
-parser.add_argument('--i', type=str, required=True, help='input file')
-parser.add_argument('--o', type=str, required=True, help='output file')
-args = parser.parse_args()
-
-# Read input image
-#buf = oiio.ImageBuf("linear_lut.exr")
-buf = oiio.ImageBuf(args.i)
-inSpec = buf.spec()
-print("Resolution is ", buf.spec().width, " x ", buf.spec().height)
-if inSpec.width != inSpec.height*inSpec.height:
-    print("invalid input file dimensions. Expect lengthwise LUT with dimension W: s*s  X  H: s, where s is the size of the LUT")
-    sys.exit(1)
-lutSize = inSpec.height
-
-lutIntervals = []
-lutValues = []
-if True:
+def generate_lut_values(image_spec):
+    lut_size = image_spec.height
+    
+    lut_intervals = []
+    lut_values = []
+    
     # First line contains the vertex intervals
-    dv = 1023.0 / float(lutSize-1)
-    for i in range(lutSize):
-        lutIntervals.append(np.uint64(dv * i))
+    dv = 1023.0 / float(lut_size-1)
+    for i in range(lut_size):
+        lut_intervals.append(np.uint64(dv * i))
     # Texels are in R G B per line with indices increasing first with blue, then green, and then red.
-    for r in range(lutSize):
-        for g in range(lutSize):
-            for b in range(lutSize):
-                uv = GetUvCoord(lutSize, r, g, b)
-                px = buf.getpixel(uv[0], uv[1])
-                lutValues.append((np.uint64(px[0] * 4095), np.uint64(px[1] * 4095), np.uint64(px[2] * 4095)))
+    for r in range(lut_size):
+        for g in range(lut_size):
+            for b in range(lut_size):
+                uv = get_uv_coord(lut_size, r, g, b)
+                px = image_buffer.getpixel(uv[0], uv[1])
+                lut_values.append((np.uint64(px[0] * 4095), np.uint64(px[1] * 4095), np.uint64(px[2] * 4095)))
+
+    return lut_values
 
 # To Do: add some input file validation
 # If the input file doesn't exist, you'll get a LUT with res of 0 x 0 and result in a math error
@@ -102,43 +82,78 @@ if True:
 #Traceback (most recent call last):
     #File "..\..\Editor\Scripts\ColorGrading\exr_to_3dl_azasset.py", line 103, in <module>
         #dv = 1023.0 / float(lutSize)
-#ZeroDivisionError: float division by zero
-if True:
-    lutFileName = "%s.3dl" % (args.o)
-    print("writing %s..." % (lutFileName))
-    lutFile = open(lutFileName, 'w')
-    # First line contains the vertex intervals
-    dv = 1023.0 / float(lutSize)
-    for i in range(lutSize):
-        lutFile.write("%d " % (lutIntervals[i]))
-    lutFile.write("\n")
-    for px in lutValues:
-        lutFile.write("%d %d %d\n" % (px[0], px[1], px[2]))
-    lutFile.close()
+# ZeroDivisionError: float division by zero
 
-if True:
-    assetFileName = "%s.azasset" % (args.o)
-    print("writing %s...", (assetFileName))
-    assetFile = open(assetFileName, 'w')
-    assetFile.write("{\n")
-    assetFile.write("    \"Type\": \"JsonSerialization\",\n")
-    assetFile.write("    \"Version\": 1,\n")
-    assetFile.write("    \"ClassName\": \"LookupTableAsset\",\n")
-    assetFile.write("    \"ClassData\": {\n")
-    assetFile.write("        \"Name\": \"LookupTable\",\n")
-    assetFile.write("        \"Intervals\": [\n")
-    for i in range(lutSize):
-        assetFile.write(" %d" % (lutIntervals[i]))
-        if i < (lutSize-1):
-            assetFile.write(", ")
-    assetFile.write("],\n")
-    assetFile.write("        \"Values\": [\n")
-    for idx, px in enumerate(lutValues):
-        assetFile.write(" %d, %d, %d" % (px[0], px[1], px[2]))
-        if idx < (len(lutValues) - 1):
-            assetFile.write(",")
-        assetFile.write("\n")
-    assetFile.write("]\n")
-    assetFile.write("    }\n")
-    assetFile.write("}\n")
-    assetFile.close()
+def write_3DL(file_path=args.o):
+    lut_file_path = f'{file_path}.3dl'
+    _LOGGER.info(f"Writing {lut_file_path}...")
+    lut_file = open(lut_file_path, 'w')
+    # First line contains the vertex intervals
+    dv = 1023.0 / float(lut_size)
+    for i in range(lut_size):
+        lut_file.write("%d " % (lut_intervals[i]))
+    lut_file.write("\n")
+    for px in lut_values:
+        lut_file.write("%d %d %d\n" % (px[0], px[1], px[2]))
+    lut_file.close()
+
+
+DEFAULT_AZASSET_HEADER = """\
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "LookupTableAsset",
+    ...
+}
+"""
+
+def write_azasset(file_path=args.o, header=DEFAULT_AZASSET_HEADER):
+    asset_file_path = f"{file_path}.azasset"
+    _LOGGER.info(f"Writting {asset_file_path}...")
+    asset_file = open(asset_file_path, 'w')
+    f.write(header)
+    for i in range(lut_size):
+        asset_file.write(" %d" % (lut_intervals[i]))
+        if i < (lut_size-1):
+            asset_file.write(", ")
+    asset_file.write("],\n")
+    asset_file.write("        \"Values\": [\n")
+    for idx, px in enumerate(lut_values):
+        asset_file.write(" %d, %d, %d" % (px[0], px[1], px[2]))
+        if idx < (len(lut_values) - 1):
+            asset_file.write(",")
+        asset_file.write("\n")
+    asset_file.write("]\n")
+    asset_file.write("    }\n")
+    asset_file.write("}\n")
+    asset_file.close()
+
+
+###########################################################################
+# Main Code Block, runs this script as main (testing)
+# -------------------------------------------------------------------------
+if __name__ == '__main__':
+    """Run this file as main"""
+    
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--i', type=str, required=True, help='input file')
+    parser.add_argument('--o', type=str, required=True, help='output file')
+    args = parser.parse_args()
+    
+    # Read input image
+    #image_buffer = oiio.ImageBuf("linear_lut.exr")
+    image_buffer = oiio.ImageBuf(args.i)
+    image_spec = image_buffer.spec()
+    _LOGGER.info(f"Resolution is, x: {image_buffer.spec().width} and y: {image_buffer.spec().height}")
+    
+    if image_spec.width != image_spec.height * image_spec.height:
+        _LOGGER.info(f"invalid input file dimensions. Expect lengthwise LUT with dimension W: s*s  X  H: s, where s is the size of the LUT")
+        sys.exit(1)
+    
+    lut_values = generate_lut_values(image_spec)
+
+    write_3DL(args.o)
+    write_azasset(args.o)
+    
+    # example from command line
+    # python % DCCSI_COLORGRADING_SCRIPTS %\lut_helper.py - -i C: \Depot\o3de\Gems\Atom\Feature\Common\Tools\ColorGrading\Resources\LUTs\linear_32_LUT.exr - -op pre - grading - -shaper Log2 - 48nits - -o C: \Depot\o3de\Gems\Atom\Feature\Common\Tools\ColorGrading\Resources\LUTs\base_Log2 - 48nits_32_LUT.exr
