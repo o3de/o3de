@@ -110,7 +110,7 @@ namespace AZ
         {
             QueueCommand([this, &fence](void* commandQueue)
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "SignalFence");
+                AZ_PROFILE_SCOPE(AzRender, "SignalFence");
                 ID3D12CommandQueue* dx12CommandQueue = static_cast<ID3D12CommandQueue*>(commandQueue);
                 dx12CommandQueue->Signal(fence.Get(), fence.GetPendingValue());
             });
@@ -138,7 +138,7 @@ namespace AZ
 
             QueueCommand([=](void* commandQueue)
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "ExecuteWork");
+                AZ_PROFILE_SCOPE(AzRender, "ExecuteWork");
                 AZ_PROFILE_RHI_VARIABLE(m_lastExecuteDuration);
 
                 static const uint32_t CommandListCountMax = 128;
@@ -195,7 +195,7 @@ namespace AZ
 
         void CommandQueue::UpdateTileMappings(CommandList& commandList)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
             for (const CommandList::TileMapRequest& request : commandList.GetTileMapRequests())
             {
                 const uint32_t tileCount = request.m_sourceRegionSize.NumTiles;
@@ -229,7 +229,7 @@ namespace AZ
         
         void CommandQueue::WaitForIdle()
         {
-            AZ_PROFILE_FUNCTION_IDLE(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
 
             Fence fence;
             fence.Init(m_device.get(), RHI::FenceState::Reset);

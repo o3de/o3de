@@ -16,5 +16,37 @@
         "nightly-clean": {
             "CLEAN_WORKSPACE": true
         }
+    },
+    "PIPELINE_JENKINS_PARAMETERS": {
+        "awsi-deployment": [
+            {
+                "parameter_name": "O3DE_AWS_PROJECT_NAME",
+                "parameter_type": "string",
+                "default_value": "",
+                "use_last_run_value": true,
+                "description": ""
+            },
+            {
+                "parameter_name": "O3DE_AWS_DEPLOY_REGION",
+                "parameter_type": "string",
+                "default_value": "",
+                "use_last_run_value": true,
+                "description": ""
+            },
+            {
+                "parameter_name": "ASSUME_ROLE_ARN",
+                "parameter_type": "string",
+                "default_value": "",
+                "use_last_run_value": true,
+                "description": ""
+            },
+            {
+                "parameter_name": "COMMIT_ID",
+                "parameter_type": "string",
+                "default_value": "",
+                "use_last_run_value": true,
+                "description": ""
+            }
+        ]
     }
 }

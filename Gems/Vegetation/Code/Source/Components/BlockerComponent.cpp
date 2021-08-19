@@ -185,7 +185,7 @@ namespace Vegetation
 
     bool BlockerComponent::ClaimPosition(EntityIdStack& processedIds, const ClaimPoint& point, InstanceData& instanceData)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
 #if VEG_BLOCKER_ENABLE_CACHING
         {
@@ -245,7 +245,7 @@ namespace Vegetation
 
     void BlockerComponent::ClaimPositions(EntityIdStack& stackIds, ClaimContext& context)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         //adding entity id to the stack of entity ids affecting vegetation
         EntityIdStack emptyIds;
@@ -285,7 +285,7 @@ namespace Vegetation
 
     AZ::Aabb BlockerComponent::GetEncompassingAabb() const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         AZ::Aabb bounds = AZ::Aabb::CreateNull();
         LmbrCentral::ShapeComponentRequestsBus::EventResult(bounds, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);

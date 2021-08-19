@@ -47,7 +47,7 @@ namespace AzToolsFramework
              * @return An outcome object; on failure, it comes with an error message detailing the cause of the error.
              */
             virtual PrefabOperationResult CreatePrefabInDisk(
-                const AZStd::vector<AZ::EntityId>& entityIds, AZ::IO::PathView filePath) = 0;
+                const EntityIdList& entityIds, AZ::IO::PathView filePath) = 0;
 
             /**
              * Create a prefab out of the entities provided, at the path provided, and keep it in memory.
@@ -57,7 +57,7 @@ namespace AzToolsFramework
              * @return An outcome object; on failure, it comes with an error message detailing the cause of the error.
              */
             virtual PrefabOperationResult CreatePrefabInMemory(
-                const AZStd::vector<AZ::EntityId>& entityIds, AZ::IO::PathView filePath) = 0;
+                const EntityIdList& entityIds, AZ::IO::PathView filePath) = 0;
 
             /**
              * Instantiate a prefab from a prefab file.

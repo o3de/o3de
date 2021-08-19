@@ -191,7 +191,7 @@ namespace ScriptCanvas
 
             AZStd::string StringFormatted::ProcessFormat()
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "ScriptCanvas::StringFormatted::ProcessFormat");
+                AZ_PROFILE_SCOPE(ScriptCanvas, "ScriptCanvas::StringFormatted::ProcessFormat");
 
                 AZStd::string text;
 

@@ -6,7 +6,7 @@
 #
 #
 
-set(LY_UNITY_BUILD OFF CACHE BOOL "UNITY builds")
+set(LY_UNITY_BUILD ON CACHE BOOL "UNITY builds")
 
 include(CMakeFindDependencyMacro)
 include(cmake/LyAutoGen.cmake)
