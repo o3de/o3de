@@ -130,9 +130,9 @@ void {{ PropertyName }}({{ ', '.join(paramDefines) }});
 {#
 
 #}
-{% macro DeclareRpcInvocations(Component, Section, HandleOn, ProctectedSection) %}
+{% macro DeclareRpcInvocations(Component, Section, HandleOn, IsProtected) %}
 {% call(Property) AutoComponentMacros.ParseRemoteProcedures(Component, Section, HandleOn) %}
-{%    if Property.attrib['IsPublic']|booleanTrue != ProctectedSection %}
+{%    if Property.attrib['IsPublic']|booleanTrue != IsProtected %}
 {{ DeclareRpcInvocation(Property, HandleOn) -}}
 {%    endif %}
 {% endcall %}
