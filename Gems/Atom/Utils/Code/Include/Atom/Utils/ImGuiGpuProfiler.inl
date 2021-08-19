@@ -1271,6 +1271,7 @@ namespace AZ
                 m_nameFilter.Draw("Search");
                 DrawTable();
             }
+            ImGui::End();
         }
 
         // --- ImGuiGpuProfiler ---
