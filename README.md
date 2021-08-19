@@ -3,7 +3,7 @@
 O3DE (Open 3D Engine) is an open-source, real-time, multi-platform 3D engine that enables developers and content creators to build AAA games, cinema-quality 3D worlds, and high-fidelity simulations without any fees or commercial obligations.
 
 ## Contribute
-For information about contributing to Open 3D Engine, visit https://o3de.org/docs/contributing/
+For information about contributing to Open 3D Engine, visit https://o3de.org/docs/contributing/.
 
 ## Download and Install
 
@@ -55,7 +55,7 @@ For more details and the latest requirements, refer to [System Requirements](htt
 
 ### Quick start engine setup
 
-To build a project-centric source engine, complete the following steps. For other build options, refer to [Setting up O3DE from GitHub](https://o3de.org/docs/welcome-guide/setup/setup-from-github/) in the documentation.
+To set up a project-centric source engine, complete the following steps. For other build options, refer to [Setting up O3DE from GitHub](https://o3de.org/docs/welcome-guide/setup/setup-from-github/) in the documentation.
 
 1.  Create a writable folder to cache downloadable packages. You can also use this to store other redistributable SDKs.
     
@@ -65,7 +65,7 @@ To build a project-centric source engine, complete the following steps. For othe
 
 1.  Configure the engine source into a solution using this command line, replacing `<your build path>`, `<your source path>`, and `<3rdParty cache path>` with the paths you've created:
     ```
-    cmake -B <your build path> -S <your source path> -G "Visual Studio 16" -DLY_3RDPARTY_PATH=<3rdParty cache path> -DLY_UNITY_BUILD=ON -DLY_PROJECTS=AutomatedTesting 
+    cmake -B <your build path> -S <your source path> -G "Visual Studio 16" -DLY_3RDPARTY_PATH=<3rdParty cache path> -DLY_UNITY_BUILD=ON
     ```
     
     Example:
@@ -91,7 +91,7 @@ To build a project-centric source engine, complete the following steps. For othe
 
 1.  The configuration of the solution is complete. You are now ready to create a project and build the engine.
 
-For more details, refer to [Setting up O3DE from GitHub](https://o3de.org/docs/welcome-guide/setup/setup-from-github/) in the documentation.
+For more details on the steps above, refer to [Setting up O3DE from GitHub](https://o3de.org/docs/welcome-guide/setup/setup-from-github/) in the documentation.
 
 ### Setting up new projects and building the engine
 
