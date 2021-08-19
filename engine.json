@@ -62,7 +62,6 @@
         "Gems/PrimitiveAssets",
         "Gems/PythonAssetBuilder",
         "Gems/QtForPython",
-        "Gems/RADTelemetry",
         "Gems/SaveData",
         "Gems/SceneLoggingExample",
         "Gems/SceneProcessing",

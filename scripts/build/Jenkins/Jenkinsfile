@@ -643,7 +643,7 @@ try {
                             defaultValue = jenkinsParameter['default_value']
                             // Use last run's value as default value so we can save values in different Jenkins environment
                             if (jenkinsParameter['use_last_run_value']?.toBoolean()) {
-                                defaultValue = params."$jenkinsParameter['parameter_name']" ?: jenkinsParameter['default_value']
+                                defaultValue = params."${jenkinsParameter['parameter_name']}" ?: jenkinsParameter['default_value']
                             }
                             switch (jenkinsParameter['parameter_type']) {
                                 case 'string':

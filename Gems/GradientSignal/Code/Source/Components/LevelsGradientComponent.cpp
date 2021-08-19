@@ -172,7 +172,7 @@ namespace GradientSignal
 
     float LevelsGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         float output = 0.0f;
 

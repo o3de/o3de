@@ -448,8 +448,9 @@ function(ly_test_impact_post_step)
     # Directory for binaries built for this profile
     set(bin_dir "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>")
 
-    # Erase any existing non-persistent data to avoid getting test impact framework out of sync with current repo state
+    # Erase any existing artifact and non-persistent data to avoid getting test impact framework out of sync with current repo state
     file(REMOVE_RECURSE "${LY_TEST_IMPACT_TEMP_DIR}")
+    file(REMOVE_RECURSE "${LY_TEST_IMPACT_ARTIFACT_DIR}")
 
     # Export the soruce to target mapping files
     ly_test_impact_export_source_target_mappings(

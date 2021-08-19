@@ -9,6 +9,7 @@
 #pragma once
 
 #include <SurfaceData/SurfaceDataTypes.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Math/IntersectSegment.h>
 #include <AzCore/Math/Transform.h>
@@ -32,7 +33,7 @@ namespace SurfaceData
         AZ::Vector3& outPosition,
         AZ::Vector3& outNormal)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         const size_t vertexCount = vertices.size();
         if (vertexCount > 0 && vertexCount % 4 == 0)

@@ -224,7 +224,7 @@ namespace GradientSignal
 
     float DitherGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         const AZ::Vector3& coordinate = sampleParams.m_position;
 

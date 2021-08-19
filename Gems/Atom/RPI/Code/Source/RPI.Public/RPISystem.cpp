@@ -270,7 +270,7 @@ namespace AZ
                 return;
             }
 
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
             AZ_ATOM_PROFILE_FUNCTION("RPI", "RPISystem: RenderTick");
 
             // Query system update is to increment the frame count
@@ -347,19 +347,6 @@ namespace AZ
             {
                 AZ_Warning("RPISystem", false , "InitializeSystemAssets should only be called once'");
                 return;
-            }
-
-            //[GFX TODO][ATOM-5867] - Move file loading code within RHI to reduce coupling with RPI
-            AZStd::string platformLimitsFilePath = AZStd::string::format("config/platform/%s/%s/platformlimits.azasset", AZ_TRAIT_OS_PLATFORM_NAME, GetRenderApiName().GetCStr());
-            AZStd::to_lower(platformLimitsFilePath.begin(), platformLimitsFilePath.end());
-            
-            Data::Asset<AnyAsset> platformLimitsAsset;
-            platformLimitsAsset = RPI::AssetUtils::LoadCriticalAsset<AnyAsset>(platformLimitsFilePath.c_str(), RPI::AssetUtils::TraceLevel::None);
-            // Only read the m_platformLimits if the platformLimitsAsset is ready.
-            // The platformLimitsAsset may not exist for null renderer which is allowed
-            if (platformLimitsAsset.IsReady())
-            {
-                m_descriptor.m_rhiSystemDescriptor.m_platformLimits = RPI::GetDataFromAnyAsset<RHI::PlatformLimits>(platformLimitsAsset);
             }
 
             m_commonShaderAssetForSrgs = AssetUtils::LoadCriticalAsset<ShaderAsset>( m_descriptor.m_commonSrgsShaderAssetPath.c_str());

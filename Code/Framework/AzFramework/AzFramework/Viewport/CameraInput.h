@@ -8,17 +8,23 @@
 
 #pragma once
 
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/Math/Matrix3x3.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/std/optional.h>
 #include <AzFramework/Input/Channels/InputChannel.h>
 #include <AzFramework/Viewport/ClickDetector.h>
+#include <AzFramework/Viewport/CursorState.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
 #include <AzFramework/Viewport/ViewportId.h>
 
 namespace AzFramework
 {
+    AZ_CVAR_EXTERNED(bool, ed_cameraSystemUseCursor);
+
+    struct WindowSize;
+
     //! Returns Euler angles (pitch, roll, yaw) for the incoming orientation.
     //! @note Order of rotation is Z, Y, X.
     AZ::Vector3 EulerAngles(const AZ::Matrix3x3& orientation);
@@ -79,6 +85,11 @@ namespace AzFramework
     using HorizontalMotionEvent = MotionEvent<struct HorizontalMotionTag>;
     using VerticalMotionEvent = MotionEvent<struct VerticalMotionTag>;
 
+    struct CursorEvent
+    {
+        ScreenPoint m_position;
+    };
+
     struct ScrollEvent
     {
         float m_delta;
@@ -93,7 +104,8 @@ namespace AzFramework
     };
 
     //! Represents a type-safe union of input events that are handled by the camera system.
-    using InputEvent = AZStd::variant<AZStd::monostate, HorizontalMotionEvent, VerticalMotionEvent, ScrollEvent, DiscreteInputEvent>;
+    using InputEvent =
+        AZStd::variant<AZStd::monostate, HorizontalMotionEvent, VerticalMotionEvent, CursorEvent, ScrollEvent, DiscreteInputEvent>;
 
     //! Base class for all camera behaviors.
     //! The core interface consists of:
@@ -219,10 +231,14 @@ namespace AzFramework
     //! Properties to use to configure behavior across all types of camera.
     struct CameraProps
     {
-        AZStd::function<float()>
-            m_rotateSmoothnessFn; //!< Rotate smoothing value (useful approx range 3-6, higher values give sharper feel).
-        AZStd::function<float()>
-            m_translateSmoothnessFn; //!< Translate smoothing value (useful approx range 3-6, higher values give sharper feel).
+        //! Rotate smoothing value (useful approx range 3-6, higher values give sharper feel).
+        AZStd::function<float()> m_rotateSmoothnessFn;
+        //! Translate smoothing value (useful approx range 3-6, higher values give sharper feel).
+        AZStd::function<float()> m_translateSmoothnessFn;
+        //! Enable/disable rotation smoothing.
+        AZStd::function<bool()> m_rotateSmoothingEnabledFn;
+        //! Enable/disable translation smoothing.
+        AZStd::function<bool()> m_translateSmoothingEnabledFn;
     };
 
     //! An interpolation function to smoothly interpolate all camera properties from currentCamera to targetCamera.
@@ -262,12 +278,16 @@ namespace AzFramework
     public:
         bool HandleEvents(const InputEvent& event);
         Camera StepCamera(const Camera& targetCamera, float deltaTime);
-        bool HandlingEvents() const { return m_handlingEvents; }
+        bool HandlingEvents() const
+        {
+            return m_handlingEvents;
+        }
 
         Cameras m_cameras; //!< Represents a collection of camera inputs that together provide a camera controller.
 
     private:
         ScreenVector m_motionDelta; //!< The delta used for look/orbit/pan (rotation + translation) - two dimensional.
+        CursorState m_cursorState; //!< The current and previous position of the cursor (used to calculate movement delta).
         float m_scrollDelta = 0.0f; //!< The delta used for dolly/movement (translation) - one dimensional.
         bool m_handlingEvents = false; //!< Is the camera system currently handling events (events are consumed and not propagated).
     };
@@ -548,5 +568,5 @@ namespace AzFramework
     }
 
     //! Map from a generic InputChannel event to a camera specific InputEvent.
-    InputEvent BuildInputEvent(const InputChannel& inputChannel);
+    InputEvent BuildInputEvent(const InputChannel& inputChannel, const WindowSize& windowSize);
 } // namespace AzFramework
