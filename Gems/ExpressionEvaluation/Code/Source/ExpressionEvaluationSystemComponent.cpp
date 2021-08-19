@@ -514,7 +514,7 @@ namespace ExpressionEvaluation
 
     ExpressionResult ExpressionEvaluationSystemComponent::Evaluate(const ExpressionTree& expressionTree) const
     {
-        AZ_PROFILE_SCOPE("ExpressionEvaluation", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(ExpressionEvaluation);
 
         ExpressionResultStack resultStack;
 

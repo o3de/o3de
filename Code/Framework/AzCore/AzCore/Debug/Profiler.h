@@ -58,13 +58,15 @@ namespace AZ
         static uint32_t GetSystemID(const char* system);
 
         template<typename... T>
-        static void BeginRegion([[maybe_unused]] const char* system, [[maybe_unused]] char const* eventName, [[maybe_unused]] T const&... args)
+        static void BeginRegion([[maybe_unused]] const char* system, [[maybe_unused]] const char* eventName, [[maybe_unused]] T const&... args)
         {
             // TODO: Verification that the supplied system name corresponds to a known budget
 #if defined(USE_PIX)
             PIXBeginEvent(PIX_COLOR_INDEX(GetSystemID(system) & 0xff), eventName, args...);
 #endif
             // TODO: injecting instrumentation for other profilers
+            // NOTE: external profiler registration won't occur inline in a header necessarily in this manner, but the exact mechanism
+            //       will be introduced in a future PR
         }
 
         static void EndRegion()
