@@ -178,7 +178,7 @@ namespace AZ
     {
         auto DeferredCommandCallable = [this](const DeferredCommand& deferredCommand)
         {
-            return DispatchCommand(deferredCommand.m_command, deferredCommand.m_arguments, deferredCommand.m_silentMode,
+            return this->DispatchCommand(deferredCommand.m_command, deferredCommand.m_arguments, deferredCommand.m_silentMode,
                 deferredCommand.m_invokedFrom, deferredCommand.m_requiredSet, deferredCommand.m_requiredClear);
         };
         // Attempt to invoke the deferred command and remove it from the queue if successful
@@ -355,12 +355,6 @@ namespace AZ
         }
 
         deferredHead = nullptr;
-
-        // Execute any deferred console commands after linking any new deferred functors
-        // LinkDeferredFunctors is invoked after a module has loaded
-        // So this allows console commands dispatched before a module is loaded
-        // to now execute each time a module loads and registers new functors
-        ExecuteDeferredConsoleCommands();
     }
 
     void Console::MoveFunctorsToDeferredHead(ConsoleFunctorBase*& deferredHead)
