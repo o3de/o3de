@@ -165,7 +165,7 @@ namespace EMotionFX
 
                 for (const auto& activeObjects : activeObjectsAtFrame)
                 {
-                    if (activeObjects.m_frameNr == frame)
+                    if (activeObjects.m_frameNr == static_cast<AZ::u32>(frame))
                     {
                         // Check which states and transitions are active and compare it to the expected ones.
                         EXPECT_EQ(activeObjects.m_stateA, compareAgainst.m_stateA)

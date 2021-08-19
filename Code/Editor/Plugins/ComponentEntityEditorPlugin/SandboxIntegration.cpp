@@ -626,7 +626,7 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, con
         {
             view->GetDimensions(&width, &height);
         }
-        m_contextMenuViewPoint.Set(width / 2, height / 2);
+        m_contextMenuViewPoint.Set(static_cast<float>(width / 2), static_cast<float>(height / 2));
     }
     else
     {
@@ -1009,7 +1009,7 @@ void SandboxIntegrationManager::HandleObjectModeSelection(const AZ::Vector2& poi
     if (m_inObjectPickMode)
     {
         CViewport* view = GetIEditor()->GetViewManager()->GetGameViewport();
-        const QPoint viewPoint(point.GetX(), point.GetY());
+        const QPoint viewPoint(static_cast<int>(point.GetX()), static_cast<int>(point.GetY()));
 
         HitContext hitInfo;
         hitInfo.view = view;
@@ -1451,7 +1451,7 @@ void SandboxIntegrationManager::ContextMenu_NewEntity()
     // will be created at the origin.
     if (view)
     {
-        const QPoint viewPoint(m_contextMenuViewPoint.GetX(), m_contextMenuViewPoint.GetY());
+        const QPoint viewPoint(static_cast<int>(m_contextMenuViewPoint.GetX()), static_cast<int>(m_contextMenuViewPoint.GetY()));
         worldPosition = view->GetHitLocation(viewPoint);
     }
 
@@ -1641,7 +1641,7 @@ void SandboxIntegrationManager::InstantiateSliceFromAssetId(const AZ::Data::Asse
     // will be instantiated at the origin.
     if (view)
     {
-        const QPoint viewPoint(m_contextMenuViewPoint.GetX(), m_contextMenuViewPoint.GetY());
+        const QPoint viewPoint(static_cast<int>(m_contextMenuViewPoint.GetX()), static_cast<int>(m_contextMenuViewPoint.GetY()));
         sliceWorldTransform = AZ::Transform::CreateTranslation(LYVec3ToAZVec3(view->SnapToGrid(view->ViewToWorld(viewPoint))));
     }
 

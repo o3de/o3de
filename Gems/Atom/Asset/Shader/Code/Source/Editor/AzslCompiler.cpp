@@ -211,11 +211,11 @@ namespace AZ
                             case rapidjson::kNumberType:
                                 if (name == "cols")
                                 {
-                                    inputStructParams.m_variable.m_cols = itr2->value.GetInt();
+                                    inputStructParams.m_variable.m_cols = static_cast<uint8_t>(itr2->value.GetInt());
                                 }
                                 else if (name == "rows")
                                 {
-                                    inputStructParams.m_variable.m_rows = itr2->value.GetInt();
+                                    inputStructParams.m_variable.m_rows = static_cast<uint8_t>(itr2->value.GetInt());
                                 }
                                 else if (name == "semanticIndex")
                                 {
@@ -304,7 +304,7 @@ namespace AZ
                             case rapidjson::kNumberType:
                                 if (name == "cols")
                                 {
-                                    outputStructParams.m_variable.m_cols = itr2->value.GetInt();
+                                    outputStructParams.m_variable.m_cols = static_cast<uint8_t>(itr2->value.GetInt());
                                 }
                                 else if (name == "semanticIndex")
                                 {

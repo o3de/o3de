@@ -75,7 +75,7 @@ namespace AZ::IO::ZipDir
                 for (i = 0; i < AZ_ARRAY_SIZE(szBuf) - 1; ++i)
                 {
                     int r = distrib(gen);
-                    szBuf[i] = r > 9 ? (r - 10) + 'a' : '0' + r;
+                    szBuf[i] = static_cast<char>(r > 9 ? (r - 10) + 'a' : '0' + r);
                 }
                 szBuf[i] = '\0';
                 return szBuf;

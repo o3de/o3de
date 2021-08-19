@@ -791,8 +791,8 @@ namespace AzFramework
                 AZ_Assert(position, "Expected PositionData2D but found nullptr");
 
                 return CursorEvent{ ScreenPoint(
-                    position->m_normalizedPosition.GetX() * windowSize.m_width,
-                    position->m_normalizedPosition.GetY() * windowSize.m_height) };
+                    static_cast<int>(position->m_normalizedPosition.GetX() * windowSize.m_width),
+                    static_cast<int>(position->m_normalizedPosition.GetY() * windowSize.m_height)) };
             }
             else if (inputChannelId == InputDeviceMouse::Movement::X)
             {

@@ -1666,7 +1666,7 @@ void UiImageComponent::RenderRadialFilledQuad(const AZ::Vector2* positions, cons
 
     const int numIndices = 15;
     uint16 indices[numIndices];
-    for (int ix = 0; ix < 5; ++ix)
+    for (uint16 ix = 0; ix < 5; ++ix)
     {
         indices[ix * 3 + firstIndexOffset] = ix + 1;
         indices[ix * 3 + secondIndexOffset] = ix + 2;
@@ -2268,20 +2268,20 @@ int UiImageComponent::ClipToLine(const SVF_P2F_C4B_T2F_F4B* vertices, const uint
     int indicesAdded = 0;
     if (verticesAdded == 3)
     {
-        renderIndices[renderIndexOffset] = vertexOffset - 3;
-        renderIndices[renderIndexOffset + 1] = vertexOffset - 2;
-        renderIndices[renderIndexOffset + 2] = vertexOffset - 1;
+        renderIndices[renderIndexOffset] = static_cast<uint16>(vertexOffset - 3);
+        renderIndices[renderIndexOffset + 1] = static_cast<uint16>(vertexOffset - 2);
+        renderIndices[renderIndexOffset + 2] = static_cast<uint16>(vertexOffset - 1);
         indicesAdded = 3;
     }
     else if (verticesAdded == 4)
     {
-        renderIndices[renderIndexOffset] = vertexOffset - 4;
-        renderIndices[renderIndexOffset + 1] = vertexOffset - 3;
-        renderIndices[renderIndexOffset + 2] = vertexOffset - 2;
+        renderIndices[renderIndexOffset] = static_cast<uint16>(vertexOffset - 4);
+        renderIndices[renderIndexOffset + 1] = static_cast<uint16>(vertexOffset - 3);
+        renderIndices[renderIndexOffset + 2] = static_cast<uint16>(vertexOffset - 2);
 
-        renderIndices[renderIndexOffset + 3] = vertexOffset - 4;
-        renderIndices[renderIndexOffset + 4] = vertexOffset - 2;
-        renderIndices[renderIndexOffset + 5] = vertexOffset - 1;
+        renderIndices[renderIndexOffset + 3] = static_cast<uint16>(vertexOffset - 4);
+        renderIndices[renderIndexOffset + 4] = static_cast<uint16>(vertexOffset - 2);
+        renderIndices[renderIndexOffset + 5] = static_cast<uint16>(vertexOffset - 1);
         indicesAdded = 6;
     }
 

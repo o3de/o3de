@@ -297,8 +297,8 @@ namespace AzToolsFramework
             GetInputChannel<AzFramework::InputChannelDeltaWithSharedPosition2D>(AzFramework::InputDeviceMouse::Movement::Z);
 
         systemCursorChannel->ProcessRawInputEvent(m_mouseDevice->m_cursorPositionData2D->m_normalizedPositionDelta.GetLength());
-        movementXChannel->ProcessRawInputEvent(cursorDelta.x());
-        movementYChannel->ProcessRawInputEvent(cursorDelta.y());
+        movementXChannel->ProcessRawInputEvent(static_cast<float>(cursorDelta.x()));
+        movementYChannel->ProcessRawInputEvent(static_cast<float>(cursorDelta.y()));
         mouseWheelChannel->ProcessRawInputEvent(0.0f);
 
         NotifyUpdateChannelIfNotIdle(systemCursorChannel, nullptr);

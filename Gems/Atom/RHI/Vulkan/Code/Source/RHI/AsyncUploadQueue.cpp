@@ -173,7 +173,7 @@ namespace AZ
             auto* image = static_cast<Image*>(request.m_image);
             auto& device = static_cast<Device&>(GetDevice());
 
-            const uint16_t startMip = residentMip - 1;
+            const uint16_t startMip = static_cast<uint16_t>(residentMip - 1);
             const uint16_t endMip = static_cast<uint16_t>(residentMip - request.m_mipSlices.size());
 
             RHI::Ptr<Fence> uploadFence = Fence::Create();
@@ -277,7 +277,7 @@ namespace AZ
                                 copyDescriptor.m_sourceSize.m_depth = 1;
                                 copyDescriptor.m_destinationImage = image;
                                 copyDescriptor.m_destinationSubresource.m_mipSlice = curMip;
-                                copyDescriptor.m_destinationSubresource.m_arraySlice = arraySlice;
+                                copyDescriptor.m_destinationSubresource.m_arraySlice = static_cast<uint16_t>(arraySlice);
                                 copyDescriptor.m_destinationOrigin.m_left = 0;
                                 copyDescriptor.m_destinationOrigin.m_top = 0;
                                 copyDescriptor.m_destinationOrigin.m_front = depth;
@@ -309,7 +309,7 @@ namespace AZ
                                 copyDescriptor.m_sourceSize.m_depth = 1;
                                 copyDescriptor.m_destinationImage = image;
                                 copyDescriptor.m_destinationSubresource.m_mipSlice = curMip;
-                                copyDescriptor.m_destinationSubresource.m_arraySlice = arraySlice;
+                                copyDescriptor.m_destinationSubresource.m_arraySlice = static_cast<uint16_t>(arraySlice);
                                 copyDescriptor.m_destinationOrigin.m_left = 0;
                                 copyDescriptor.m_destinationOrigin.m_top = 0;
                                 copyDescriptor.m_destinationOrigin.m_front = depth;

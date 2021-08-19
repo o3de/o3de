@@ -39,7 +39,7 @@ namespace AZ
         void Reset()
         {
             m_slotUsage = 0;
-            m_currentCharacter = ~0;
+            m_currentCharacter = std::numeric_limits<uint32_t>::max();
             m_horizontalAdvance = 0;
             m_characterWidth = 0;
             m_characterHeight = 0;

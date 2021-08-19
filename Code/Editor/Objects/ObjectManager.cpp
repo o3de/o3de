@@ -746,7 +746,7 @@ void CObjectManager::ChangeObjectName(CBaseObject* obj, const QString& newName)
 //////////////////////////////////////////////////////////////////////////
 int CObjectManager::GetObjectCount() const
 {
-    return m_objects.size();
+    return static_cast<int>(m_objects.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -765,7 +765,7 @@ void CObjectManager::GetObjects(DynArray<CBaseObject*>& objects) const
     CBaseObjectsArray objectArray;
     GetObjects(objectArray);
     objects.clear();
-    for (int i = 0, iCount(objectArray.size()); i < iCount; ++i)
+    for (size_t i = 0, iCount(objectArray.size()); i < iCount; ++i)
     {
         objects.push_back(objectArray[i]);
     }
@@ -1336,11 +1336,11 @@ void CObjectManager::FindDisplayableObjects(DisplayContext& dc, [[maybe_unused]]
     bbox.max.zero();
 
     pDispayedViewObjects->ClearObjects();
-    pDispayedViewObjects->Reserve(m_visibleObjects.size());
+    pDispayedViewObjects->Reserve(static_cast<int>(m_visibleObjects.size()));
 
     if (dc.flags & DISPLAY_2D)
     {
-        int numVis = m_visibleObjects.size();
+        int numVis = static_cast<int>(m_visibleObjects.size());
         for (int i = 0; i < numVis; i++)
         {
             CBaseObject* obj = m_visibleObjects[i];
@@ -1374,7 +1374,7 @@ void CObjectManager::FindDisplayableObjects(DisplayContext& dc, [[maybe_unused]]
             pSelection->GetObject(0)->CBaseObject::DrawDimensions(dc, &mergedAABB);
         }
 
-        int numVis = m_visibleObjects.size();
+        int numVis = static_cast<int>(m_visibleObjects.size());
         for (int i = 0; i < numVis; i++)
         {
             CBaseObject* obj = m_visibleObjects[i];
@@ -2016,7 +2016,7 @@ void CObjectManager::GetClassCategories(QStringList& categories)
         }
     }
     categories.clear();
-    categories.reserve(cset.size());
+    categories.reserve(static_cast<int>(cset.size()));
     for (std::set<QString>::iterator cit = cset.begin(); cit != cset.end(); ++cit)
     {
         categories.push_back(*cit);
@@ -2629,7 +2629,7 @@ void CObjectManager::EnteredComponentMode(const AZStd::vector<AZ::Uuid>& /*compo
     const size_t gizmoCount = static_cast<size_t>(gizmoManager->GetGizmoCount());
     for (size_t i = 0; i < gizmoCount; ++i)
     {
-        gizmoManager->RemoveGizmo(gizmoManager->GetGizmoByIndex(i));
+        gizmoManager->RemoveGizmo(gizmoManager->GetGizmoByIndex(static_cast<int>(i)));
     }
 }
 

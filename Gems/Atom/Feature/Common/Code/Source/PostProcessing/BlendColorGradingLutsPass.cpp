@@ -326,7 +326,7 @@ namespace AZ
                     one_over[curLutIndex] = 1.f;
                 }
 
-                int current = 0;
+                uint32_t current = 0;
                 for (size_t lutIndex = 0; lutIndex < numLuts; lutIndex++)
                 {
                     LutBlendItem& lutBlendItem = settings->GetLutBlendItem(lutIndex);
@@ -378,7 +378,7 @@ namespace AZ
                 {
                     // Compute all the weights
                     // First compute the weight of the ungraded color value
-                    for (int lutIndex = 0; lutIndex < current; lutIndex++)
+                    for (uint32_t lutIndex = 0; lutIndex < current; lutIndex++)
                     {
                         float weight = one_intensity[lutIndex] * over[lutIndex];
                         for (int overrideLutIndex = lutIndex + 1; overrideLutIndex < LookModificationSettings::MaxBlendLuts; overrideLutIndex++)
@@ -388,7 +388,7 @@ namespace AZ
                         m_weights[0] += weight;
                     }
                     // Then compute the weights for the LUTs
-                    for (int weightIndex = 0; weightIndex < current; weightIndex++)
+                    for (uint32_t weightIndex = 0; weightIndex < current; weightIndex++)
                     {
                         m_weights[weightIndex + 1] = intensity[weightIndex] * over[weightIndex];
                         for (int lutIndex = weightIndex + 1; lutIndex < LookModificationSettings::MaxBlendLuts; lutIndex++)

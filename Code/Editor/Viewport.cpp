@@ -419,7 +419,7 @@ void QtViewport::Update()
 //////////////////////////////////////////////////////////////////////////
 QPoint QtViewport::WorldToView(const Vec3& wp) const
 {
-    return QPoint(wp.x, wp.y);
+    return QPoint(static_cast<int>(wp.x), static_cast<int>(wp.y));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -427,8 +427,8 @@ Vec3 QtViewport::WorldToView3D(const Vec3& wp, [[maybe_unused]] int nFlags) cons
 {
     QPoint p = WorldToView(wp);
     Vec3 out;
-    out.x = p.x();
-    out.y = p.y();
+    out.x = static_cast<f32>(p.x());
+    out.y = static_cast<f32>(p.y());
     out.z = wp.z;
     return out;
 }
@@ -437,8 +437,8 @@ Vec3 QtViewport::WorldToView3D(const Vec3& wp, [[maybe_unused]] int nFlags) cons
 Vec3    QtViewport::ViewToWorld(const QPoint& vp, bool* pCollideWithTerrain, [[maybe_unused]] bool onlyTerrain, [[maybe_unused]] bool bSkipVegetation, [[maybe_unused]] bool bTestRenderMesh, [[maybe_unused]] bool* collideWithObject) const
 {
     Vec3 wp;
-    wp.x = vp.x();
-    wp.y = vp.y();
+    wp.x = static_cast<f32>(vp.x());
+    wp.y = static_cast<f32>(vp.y());
     wp.z = 0;
     if (pCollideWithTerrain)
     {
@@ -520,7 +520,7 @@ void QtViewport::mouseMoveEvent(QMouseEvent* event)
 
 void QtViewport::wheelEvent(QWheelEvent* event)
 {
-    OnMouseWheel(event->modifiers(), event->angleDelta().y(), event->position().toPoint());
+    OnMouseWheel(event->modifiers(), static_cast<short>(event->angleDelta().y()), event->position().toPoint());
     event->accept();
 }
 
@@ -1276,9 +1276,9 @@ float QtViewport::GetDistanceToLine(const Vec3& lineP1, const Vec3& lineP2, cons
     QPoint p2 = WorldToView(lineP2);
 
     return PointToLineDistance2D(
-        Vec3(p1.x(), p1.y(), 0), 
-        Vec3(p2.x(), p2.y(), 0), 
-        Vec3(point.x(), point.y(), 0));
+        Vec3(static_cast<f32>(p1.x()), static_cast<f32>(p1.y()), 0.0f),
+        Vec3(static_cast<f32>(p2.x()), static_cast<f32>(p2.y()), 0.0f),
+        Vec3(static_cast<f32>(point.x()), static_cast<f32>(point.y()), 0.0f));
 }
 
 //////////////////////////////////////////////////////////////////////////
