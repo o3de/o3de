@@ -318,7 +318,7 @@ void {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(par
     constexpr AzNetworking::ReliabilityType isReliable = Multiplayer::ReliabilityType::Unreliable;
 {% endif %}
 
-{%     if (InvokeFrom == 'Server' or InvokeFrom =="Client") and HandleOn == 'Authority' %}
+{%     if InvokeFrom == 'Server' or InvokeFrom =='Client' %}
     const Multiplayer::NetComponentId netComponentId = GetNetComponentId();
 {%     else %}
     const Multiplayer::NetComponentId netComponentId = GetParent().GetNetComponentId();
