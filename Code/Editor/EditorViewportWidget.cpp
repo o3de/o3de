@@ -2634,7 +2634,6 @@ void EditorViewportWidget::ShowCursor()
 //////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::PushDisableRendering()
 {
-    assert(m_disableRenderingCount >= 0);
     ++m_disableRenderingCount;
 }
 

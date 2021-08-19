@@ -79,7 +79,7 @@ namespace AWSGameLift
             auto gameliftCreateSessionOnQueueRequest =
                 azrtti_cast<const AWSGameLiftCreateSessionOnQueueRequest*>(&createSessionRequest);
 
-            return gameliftCreateSessionOnQueueRequest && gameliftCreateSessionOnQueueRequest->m_maxPlayer >= 0 &&
+            return gameliftCreateSessionOnQueueRequest &&
                 !gameliftCreateSessionOnQueueRequest->m_queueName.empty() && !gameliftCreateSessionOnQueueRequest->m_placementId.empty();
         }
     } // namespace CreateSessionOnQueueActivity

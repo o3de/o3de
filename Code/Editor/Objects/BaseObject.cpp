@@ -2038,7 +2038,7 @@ bool CBaseObject::HitHelperAtTest(HitContext& hc, const Vec3& pos)
 //////////////////////////////////////////////////////////////////////////
 CBaseObject* CBaseObject::GetChild(size_t const i) const
 {
-    assert(i >= 0 && i < m_childs.size());
+    assert(i < m_childs.size());
     return m_childs[i];
 }
 
@@ -2729,7 +2729,7 @@ void CBaseObject::SetMinSpec(uint32 nSpec, bool bSetChildren)
     // Set min spec for all childs.
     if (bSetChildren)
     {
-        for (size_t i = m_childs.size() - 1; i >= 0; --i)
+        for (int i = static_cast<int>(m_childs.size()) - 1; i >= 0; --i)
         {
             m_childs[i]->SetMinSpec(nSpec, true);
         }
