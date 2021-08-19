@@ -349,9 +349,9 @@ void {{ ClassName }}::Signal{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.jo
 {#
 
 #}
-{% macro DefineRpcInvocations(Component, ClassName, InvokeFrom, HandleOn, ProctectedSection) %}
+{% macro DefineRpcInvocations(Component, ClassName, InvokeFrom, HandleOn, IsProtected) %}
 {% call(Property) AutoComponentMacros.ParseRemoteProcedures(Component, InvokeFrom, HandleOn) %}
-{%    if Property.attrib['IsPublic']|booleanTrue == ProctectedSection %}
+{%    if Property.attrib['IsPublic']|booleanTrue == IsProtected %}
 {{ DefineRpcInvocation(Component, ClassName, Property, InvokeFrom, HandleOn) -}}
 {%    if Property.attrib['GenerateEventBindings']|booleanTrue == true %}
 {{ DefineRpcSignal(Component, ClassName, Property, InvokeFrom) -}}
