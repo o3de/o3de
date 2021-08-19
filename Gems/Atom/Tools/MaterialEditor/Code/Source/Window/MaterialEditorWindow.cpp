@@ -131,7 +131,7 @@ namespace MaterialEditor
 
         QSize newDeviceSize = m_materialViewport->size();
         AZ_Warning(
-            "Material Editor", newDeviceSize.width() == width && newDeviceSize.height() == height,
+            "Material Editor", static_cast<uint32_t>(newDeviceSize.width()) == width && static_cast<uint32_t>(newDeviceSize.height()) == height,
             "Resizing the window did not give the expected frame size. Requested %d x %d but got %d x %d.", width, height,
             newDeviceSize.width(), newDeviceSize.height());
     }

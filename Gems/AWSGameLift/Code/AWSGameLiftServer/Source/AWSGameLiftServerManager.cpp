@@ -70,7 +70,7 @@ namespace AWSGameLift
         sessionConfig.m_ipAddress = gameSession.GetIpAddress().c_str();
         sessionConfig.m_maxPlayer = gameSession.GetMaximumPlayerSessionCount();
         sessionConfig.m_sessionName = gameSession.GetName().c_str();
-        sessionConfig.m_port = gameSession.GetPort();
+        sessionConfig.m_port = static_cast<uint16_t>(gameSession.GetPort());
         sessionConfig.m_status = AWSGameLiftSessionStatusNames[(int)gameSession.GetStatus()];
 
         AZ_TracePrintf(AWSGameLiftServerManagerName,

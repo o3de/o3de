@@ -1006,7 +1006,7 @@ namespace Multiplayer
             const char* addressStr = mutableAddress;
             const char* portStr = &(mutableAddress[portSeparator + 1]);
             int32_t portNumber = atol(portStr);
-            AZ::Interface<IMultiplayer>::Get()->Connect(addressStr, portNumber);
+            AZ::Interface<IMultiplayer>::Get()->Connect(addressStr, static_cast<uint16_t>(portNumber));
         }
     }
     AZ_CONSOLEFREEFUNC(connect, AZ::ConsoleFunctorFlags::DontReplicate, "Opens a multiplayer connection to a remote host");

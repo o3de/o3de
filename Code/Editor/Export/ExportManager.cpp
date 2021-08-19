@@ -40,15 +40,6 @@
 
 namespace
 {
-    void SetTexture(Export::TPath& outName, IRenderShaderResources* pRes, int nSlot)
-    {
-        SEfResTexture* pTex = pRes->GetTextureResource(nSlot);
-        if (pTex)
-        {
-            azstrcat(outName, AZ_ARRAY_SIZE(outName), Path::GamePathToFullPath(pTex->m_Name.c_str()).toUtf8().data());
-        }
-    }
-
     inline Export::Vector3D Vec3ToVector3D(const Vec3& vec)
     {
         Export::Vector3D ret;
@@ -302,7 +293,7 @@ void CExportManager::ProcessEntityAnimationTrack(
         return;
     }
 
-    for (int trackNumber = 0; trackNumber < pEntityTrack->GetChildCount(); ++trackNumber)
+    for (unsigned int trackNumber = 0; trackNumber < pEntityTrack->GetChildCount(); ++trackNumber)
     {
         CTrackViewTrack* pSubTrack = static_cast<CTrackViewTrack*>(pEntityTrack->GetChild(trackNumber));
 
@@ -964,7 +955,7 @@ bool CExportManager::AddObjectsFromSequence(CTrackViewSequence* pSequence, XmlNo
         }
 
         const uint numKeys = pSequenceTrack->GetKeyCount();
-        for (int keyIndex = 0; keyIndex < numKeys; ++keyIndex)
+        for (uint keyIndex = 0; keyIndex < numKeys; ++keyIndex)
         {
             const CTrackViewKeyHandle& keyHandle = pSequenceTrack->GetKey(keyIndex);
             ISequenceKey sequenceKey;
@@ -1043,7 +1034,7 @@ bool CExportManager::AddSelectedRegionObjects()
     std::vector<CBaseObject*> objects;
     GetIEditor()->GetObjectManager()->FindObjectsInAABB(box, objects);
 
-    int numObjects = objects.size();
+    const size_t numObjects = objects.size();
     if (numObjects > m_data.m_objects.size())
     {
         m_data.m_objects.reserve(numObjects + 1); // +1 for terrain
@@ -1164,7 +1155,7 @@ bool CExportManager::Export(const char* defaultName, const char* defaultExt, con
                     // Export the whole sequence with baked keys
                     if (ShowFBXExportDialog())
                     {
-                        m_numberOfExportFrames = pSequence->GetTimeRange().end * m_FBXBakedExportFPS;
+                        m_numberOfExportFrames = static_cast<int>(pSequence->GetTimeRange().end * m_FBXBakedExportFPS);
 
                         if (!m_bExportOnlyPrimaryCamera)
                         {

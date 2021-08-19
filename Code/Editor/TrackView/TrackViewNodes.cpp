@@ -1113,7 +1113,7 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
                     selectedEntitiesCount, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntitiesCount);
 
                 // check to make sure all nodes were added and notify user if they weren't
-                if (addedNodes.GetCount() != selectedEntitiesCount)
+                if (addedNodes.GetCount() != static_cast<unsigned int>(selectedEntitiesCount))
                 {
                     IMovieSystem* movieSystem = GetIEditor()->GetMovieSystem();
 
@@ -1419,7 +1419,7 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
     {
         if (animNode)
         {
-            UINT_PTR menuId = cmd - eMI_AddTrackBase;
+            unsigned int menuId = cmd - eMI_AddTrackBase;
             
             if (animNode->GetType() != AnimNodeType::AzEntity)
             {
@@ -1765,7 +1765,7 @@ void CTrackViewNodesCtrl::ImportFromFBX()
                                 pSpline->SetKeyInTangent(keyIndex, inTangent);
                             }
 
-                            if (keyIndex < (pTrack->GetKeyCount() - 1))
+                            if (keyIndex < static_cast<int>(pTrack->GetKeyCount() - 1))
                             {
                                 CTrackViewKeyHandle nextKey = key.GetNextKey();
                                 if (nextKey.IsValid())
@@ -2306,7 +2306,7 @@ bool CTrackViewNodesCtrl::FillAddTrackMenu(STrackMenuTreeNode& menuAddTrack, con
                                                                     &Maestro::EditorSequenceComponentRequestBus::Events::GetAllAnimatablePropertiesForComponent, 
                                                                     animatableProperties, azEntityId, animNode->GetComponentId());
 
-            paramCount = animatableProperties.size();
+            paramCount = static_cast<int>(animatableProperties.size());
         }       
     }
     else
@@ -2352,7 +2352,7 @@ bool CTrackViewNodesCtrl::FillAddTrackMenu(STrackMenuTreeNode& menuAddTrack, con
         QStringList splittedName = name.split("/", Qt::SkipEmptyParts);
 
         STrackMenuTreeNode* pCurrentNode = &menuAddTrack;
-        for (unsigned int j = 0; j < splittedName.size() - 1; ++j)
+        for (int j = 0; j < splittedName.size() - 1; ++j)
         {
             const QString& segment = splittedName[j];
             auto findIter = pCurrentNode->children.find(segment);
@@ -2652,7 +2652,7 @@ void CTrackViewNodesCtrl::CreateSetAnimationLayerPopupMenu(QMenu& menuSetLayer, 
     CTrackViewTrackBundle animationTracks = pTrack->GetAnimNode()->GetTracksByParam(AnimParamType::Animation);
 
     const unsigned int numAnimationTracks = animationTracks.GetCount();
-    for (int i = 0; i < numAnimationTracks; ++i)
+    for (unsigned int i = 0; i < numAnimationTracks; ++i)
     {
         CTrackViewTrack* pAnimationTrack = animationTracks.GetTrack(i);
         if (pAnimationTrack)

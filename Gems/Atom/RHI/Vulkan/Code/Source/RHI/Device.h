@@ -152,7 +152,7 @@ namespace AZ
 
             VkDevice m_nativeDevice = VK_NULL_HANDLE;
             VkPhysicalDeviceFeatures m_enabledDeviceFeatures{};
-            VkPipelineStageFlags m_supportedPipelineStageFlagsMask = ~0;
+            VkPipelineStageFlags m_supportedPipelineStageFlagsMask = std::numeric_limits<VkPipelineStageFlags>::max();
 
             AZStd::vector<VkQueueFamilyProperties> m_queueFamilyProperties;
             RHI::Ptr<AsyncUploadQueue> m_asyncUploadQueue;

@@ -47,7 +47,7 @@ namespace ScriptCanvas
             void DurationNodeable::Start(Data::NumberType duration)
             {
                 m_elapsedTime = 0.0f;
-                m_duration = duration;
+                m_duration = static_cast<float>(duration);
                 AZ::TickBus::Handler::BusConnect();
             }
         }

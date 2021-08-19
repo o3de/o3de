@@ -244,7 +244,7 @@ bool XMLBinary::CXMLBinaryWriter::CompileTablesForNode(XmlNodeRef node, int nPar
         nd.nContentStringOffset = nContentStringOffset;
         nd.nParentIndex = nParentIndex;
         nd.nFirstAttributeIndex = nFirstAttributeIndex;
-        nd.nAttributeCount = nAttributeCount;
+        nd.nAttributeCount = static_cast<uint16>(nAttributeCount);
 
         m_nodes.push_back(nd);
     }
@@ -271,7 +271,7 @@ bool XMLBinary::CXMLBinaryWriter::CompileTablesForNode(XmlNodeRef node, int nPar
         }
     }
 
-    m_nodes[nIndex].nChildCount = nChildCount;
+    m_nodes[nIndex].nChildCount = static_cast<uint16>(nChildCount);
 
     return true;
 }

@@ -30,6 +30,7 @@
 #include <WhiteBox/WhiteBoxToolApi.h>
 
 // OpenMesh includes
+AZ_PUSH_DISABLE_WARNING(4702, "-Wunknown-warning-option") // OpenMesh\Core\Utils\Property.hh has unreachable code
 #include <OpenMesh/Core/IO/MeshIO.hh>
 #include <OpenMesh/Core/IO/SR_binary.hh>
 #include <OpenMesh/Core/IO/importer/ImporterT.hh>
@@ -37,6 +38,7 @@
 #include <OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh>
 #include <OpenMesh/Core/Utils/GenProg.hh>
 #include <OpenMesh/Core/Utils/vector_traits.hh>
+AZ_POP_DISABLE_WARNING
 
 namespace OpenMesh
 {

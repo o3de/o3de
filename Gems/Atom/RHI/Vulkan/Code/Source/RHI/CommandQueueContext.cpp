@@ -304,7 +304,7 @@ namespace AZ
             {
                 uint32_t m_familyIndex = InvalidFamilyIndex;
                 bool m_newQueue = false;
-                uint32_t m_remainingFlags = ~0;
+                uint32_t m_remainingFlags = std::numeric_limits<uint32_t>::max();
 
                 bool operator>(const QueueSelection& other) const
                 {
