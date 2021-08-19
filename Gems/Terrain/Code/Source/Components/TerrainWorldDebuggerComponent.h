@@ -81,10 +81,34 @@ namespace Terrain
         void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
 
     private:
-        void RefreshCachedWireframeGrid();
+
+        // Cache our debug wireframe representation in "sectors" of data so that we can easily control how far out we draw
+        // the wireframe representation in each direction.
+        struct WireframeSector
+        {
+            AZ::Aabb m_aabb;
+            AZStd::vector<AZ::Vector3> m_lineVertices;
+        };
+
+        // Each sector contains an N x N grid of squares that it will draw.  Since this is a count of the number of terrain grid points
+        // in each direction, the actual world size will depend on the terrain grid resolution in each direction.
+        static constexpr int32_t SectorSizeInGridPoints = 10;
+
+        // For each grid point we will draw half a square (left-right, top-down), so we need 4 vertices for the two lines.
+        static constexpr int32_t VerticesPerGridPoint = 4;
+
+        // Pre-calculate the total number of vertices per sector.
+        static constexpr int32_t VerticesPerSector =
+            (SectorSizeInGridPoints * VerticesPerGridPoint) * (SectorSizeInGridPoints * VerticesPerGridPoint);
+
+        // AuxGeom has limits to the number of lines it can draw in a frame, so we'll cap how many total sectors to draw.
+        static constexpr int32_t MaxVerticesToDraw = 500000;
+        static constexpr int32_t MaxSectorsToDraw = MaxVerticesToDraw / VerticesPerSector;
+
+        void RefreshCachedWireframeGrid(const AZ::Aabb& dirtyRegion);
 
         TerrainWorldDebuggerConfig m_configuration;
-        AZStd::vector<AZ::Vector3> m_wireframeGridPoints;
-        AZ::Vector3 m_lastCameraPosition{ 0.0f };
+        AZStd::vector<WireframeSector> m_wireframeSectors;
+        AZ::Aabb m_wireframeBounds;
     };
 }
