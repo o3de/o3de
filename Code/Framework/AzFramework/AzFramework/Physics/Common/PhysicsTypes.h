@@ -57,7 +57,7 @@ namespace AzPhysics
     //! A handle to a Scene within the physics simulation.
     //! A SceneHandle is a tuple of a Crc of the scenes name and the index in the Scene list.
     using SceneHandle = AZStd::tuple<AZ::Crc32, SceneIndex>;
-    static constexpr SceneHandle InvalidSceneHandle = { AZ::Crc32(), -1 };
+    static constexpr SceneHandle InvalidSceneHandle = { AZ::Crc32(), SceneIndex(-1) };
 
     //! Ease of use type for referencing a List of SceneHandle objects.
     using SceneHandleList = AZStd::vector<SceneHandle>;

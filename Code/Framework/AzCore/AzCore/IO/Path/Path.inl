@@ -222,7 +222,7 @@ namespace AZ::IO::Internal
             ? strncmp(left.data(), right.data(), maxCharsToCompare)
             : azstrnicmp(left.data(), right.data(), maxCharsToCompare);
         return charCompareResult == 0
-            ? aznumeric_cast<ptrdiff_t>(left.size()) - aznumeric_cast<ptrdiff_t>(right.size())
+            ? static_cast<int>(aznumeric_cast<ptrdiff_t>(left.size()) - aznumeric_cast<ptrdiff_t>(right.size()))
             : charCompareResult;
     }
 }

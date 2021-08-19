@@ -106,7 +106,7 @@ bool CPakFile::UpdateFile(const char* filename, CCryMemFile& file, bool bCompres
 {
     if (m_pArchive)
     {
-        int nSize = file.GetLength();
+        int nSize = static_cast<int>(file.GetLength());
 
         UpdateFile(filename, file.GetMemPtr(), nSize, bCompress);
         file.Close();

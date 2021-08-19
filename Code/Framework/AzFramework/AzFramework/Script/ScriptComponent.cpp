@@ -357,26 +357,23 @@ namespace AzFramework
             }
         }
 
-        #pragma warning( push )
-        #pragma warning( disable : 4505 )  // StackDump is useful to debug the lua stack. Disable warning about this method being unused. 
         //=========================================================================
         // DebugPrintStack
         // Prints the Lua stack starting from the bottom.
         //=========================================================================
-        static void DebugPrintStack(lua_State* lua, const AZStd::string& prefix = "")
-        {
-            AZStd::string dump = prefix;
-            const int stackSize = lua_gettop(lua);
-            for (int stackIdx = 1; stackIdx <= stackSize; ++stackIdx)
-            {
-                dump += PrintLuaValue(lua, stackIdx);
-                dump += " "; // add separator
-            }
-
-            AZ_Warning("ScriptComponent", false, "Stack Dump: '%s'", dump.c_str());
-        }
-        #pragma warning( pop )
-
+        // DO NOT DELETE StackDump is useful to debug the lua stack.
+        //static void DebugPrintStack(lua_State* lua, const AZStd::string& prefix = "")
+        //{
+        //    AZStd::string dump = prefix;
+        //    const int stackSize = lua_gettop(lua);
+        //    for (int stackIdx = 1; stackIdx <= stackSize; ++stackIdx)
+        //    {
+        //        dump += PrintLuaValue(lua, stackIdx);
+        //        dump += " "; // add separator
+        //    }
+        //
+        //    AZ_Warning("ScriptComponent", false, "Stack Dump: '%s'", dump.c_str());
+        //}
 
         //=========================================================================
         // Properties__IndexFindSubtable

@@ -197,7 +197,7 @@ namespace AssetProcessor
         }
         else if (valueName == "order")
         {
-            scanFolderEntry.m_scanOrder = value;
+            scanFolderEntry.m_scanOrder = static_cast<int>(value);
         }
     }
 
@@ -475,7 +475,7 @@ namespace AssetProcessor
         RCAssetRecognizer& assetRecognizer = *assetRecognizerEntryIt;
         if (valueName == "priority")
         {
-            assetRecognizer.m_recognizer.m_priority = value;
+            assetRecognizer.m_recognizer.m_priority = static_cast<int>(value);
         }
     }
 

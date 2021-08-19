@@ -67,7 +67,7 @@ namespace TestImpact
                     const auto getDuration = [&Keys](const AZ::rapidxml::xml_node<>* node)
                     {
                         const AZStd::string duration = node->first_attribute(Keys[DurationKey])->value();
-                        return AZStd::chrono::milliseconds(AZStd::stof(duration) * 1000.f);
+                        return AZStd::chrono::milliseconds(static_cast<AZStd::sys_time_t>(AZStd::stof(duration) * 1000.f));
                     };
 
                     TestRunSuite testSuite;
@@ -95,7 +95,7 @@ namespace TestImpact
 
                         const auto getResult = [](const AZ::rapidxml::xml_node<>* node)
                         {
-                            for (auto child_node = node->first_node("failure"); child_node; child_node = child_node->next_sibling())
+                            if (auto child_node = node->first_node("failure"))
                             {
                                 return TestRunResult::Failed;
                             }

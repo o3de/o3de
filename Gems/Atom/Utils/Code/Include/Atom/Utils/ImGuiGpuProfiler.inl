@@ -1092,8 +1092,8 @@ namespace AZ
                 AZStd::sort(m_tableRows.begin(), m_tableRows.end(),
                     [ascending](const TableRow& lhs, const TableRow& rhs)
                     {
-                        const float lhsSize = lhs.m_sizeInBytes;
-                        const float rhsSize = rhs.m_sizeInBytes;
+                        const float lhsSize = static_cast<float>(lhs.m_sizeInBytes);
+                        const float rhsSize = static_cast<float>(rhs.m_sizeInBytes);
                         return ascending ? lhsSize < rhsSize : lhsSize > rhsSize;
                     });
                 break;

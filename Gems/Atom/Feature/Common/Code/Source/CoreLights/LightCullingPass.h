@@ -94,7 +94,7 @@ namespace AZ
 
             Data::Instance<RPI::Buffer> m_lightList;
 
-            uint32_t m_tileDataIndex = -1;
+            uint32_t m_tileDataIndex = std::numeric_limits<uint32_t>::max();
         };
     }   // namespace Render
 }   // namespace AZ
