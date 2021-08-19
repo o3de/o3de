@@ -1305,13 +1305,8 @@ const bool GetFilenameNoCase
     char* slash;
     const char* dirname;
     char* name;
-    FS_ERRNO_TYPE fsErr = 0;
-    FS_DIRENT_TYPE dirent;
-    uint64_t direntSize = 0;
-    FS_DIR_TYPE fd = FS_DIR_NULL;
 
-    if (
-        (pAdjustedFilename) == (char*)-1)
+    if ((pAdjustedFilename) == (char*)-1)
     {
         return false;
     }
@@ -1343,9 +1338,6 @@ const bool GetFilenameNoCase
 #endif
 
     // Scan for the file.
-    bool found = false;
-    bool skipScan = false;
-
     if (slash)
     {
         *slash = '/';

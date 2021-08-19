@@ -866,7 +866,9 @@ namespace AZStd
     constexpr size_t hash_string(RandomAccessIterator first, size_t length)
     {
         size_t hash = 14695981039346656037ULL;
+#if AZ_COMPILER_MSVC >= 1924
         constexpr size_t fnvPrime = 1099511628211ULL;
+#endif
 
         const RandomAccessIterator last(first + length);
         for (; first != last; ++first)

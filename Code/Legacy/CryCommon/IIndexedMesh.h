@@ -1520,7 +1520,6 @@ public:
 
         const int oldVertexCount = GetVertexCount();
         const int oldFaceCount = GetFaceCount();
-        const int nOldCoorCount = GetTexCoordCount();
 
         if (GetTexCoordCount() != 0 && GetTexCoordCount() != oldVertexCount)
         {
