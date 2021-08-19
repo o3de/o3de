@@ -48,6 +48,7 @@ namespace Multiplayer
     inline void NetworkEntityTracker::clear()
     {
         m_entityMap.clear();
+        m_netEntityIdMap.clear();
     }
 
     inline uint32_t NetworkEntityTracker::GetChangeDirty(const AZ::Entity* entity) const

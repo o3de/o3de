@@ -41,6 +41,7 @@ namespace Multiplayer
         MultiplayerComponentRegistry* GetMultiplayerComponentRegistry() override;
         HostId GetHostId() const override;
         ConstNetworkEntityHandle GetEntity(NetEntityId netEntityId) const override;
+        NetEntityId GetNetEntityIdById(const AZ::EntityId& entityId) const override;
 
         EntityList CreateEntitiesImmediate(const AzFramework::Spawnable& spawnable, NetEntityRole netEntityRole);
         EntityList CreateEntitiesImmediate
