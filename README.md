@@ -65,12 +65,12 @@ To set up a project-centric source engine, complete the following steps. For oth
 
 1.  Configure the engine source into a solution using this command line, replacing `<your build path>`, `<your source path>`, and `<3rdParty cache path>` with the paths you've created:
     ```
-    cmake -B <your build path> -S <your source path> -G "Visual Studio 16" -DLY_3RDPARTY_PATH=<3rdParty cache path> -DLY_UNITY_BUILD=ON
+    cmake -B <your build path> -S <your source path> -G "Visual Studio 16" -DLY_3RDPARTY_PATH=<3rdParty cache path>
     ```
     
     Example:
     ```
-    cmake -B C:\o3de\build\windows_vs2019 -S C:\o3de -G "Visual Studio 16" -DLY_3RDPARTY_PATH=C:\o3de-packages -DLY_UNITY_BUILD=ON
+    cmake -B C:\o3de\build\windows_vs2019 -S C:\o3de -G "Visual Studio 16" -DLY_3RDPARTY_PATH=C:\o3de-packages
     ```
     
     > Note:  Do not use trailing slashes for the <3rdParty cache path>.
@@ -102,12 +102,12 @@ For more details on the steps above, refer to [Setting up O3DE from GitHub](http
 
 1. Configure a solution for your project.
     ```
-    cmake -B <your project build path> -S <your new project source path> -G "Visual Studio 16" -DLY_3RDPARTY_PATH=<3rdParty cache path> -DLY_UNITY_BUILD=ON
+    cmake -B <your project build path> -S <your new project source path> -G "Visual Studio 16" -DLY_3RDPARTY_PATH=<3rdParty cache path>
     ```
 
     Example:
     ```
-    cmake -B C:\my-project\build\windows_vs2019 -S C:\my-project -G "Visual Studio 16" -DLY_3RDPARTY_PATH=C:\o3de-packages -DLY_UNITY_BUILD=ON
+    cmake -B C:\my-project\build\windows_vs2019 -S C:\my-project -G "Visual Studio 16" -DLY_3RDPARTY_PATH=C:\o3de-packages
     ```
     
     > Note:  Do not use trailing slashes for the <3rdParty cache path>.
@@ -116,6 +116,8 @@ For more details on the steps above, refer to [Setting up O3DE from GitHub](http
     ```
     cmake --build <your project build path> --target <New Project Name>.GameLauncher Editor --config profile -- /m
     ```
+    
+    > Note: Your project name used in the build target is the same as the directory name of your project.
 
 This will compile after some time and binaries will be available in the project build path you've specified, under `bin/profile`.
 
