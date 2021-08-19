@@ -646,16 +646,27 @@ void SandboxIntegrationManager::PopulateEditorGlobalContextMenu(QMenu* menu, con
 
     QAction* action = nullptr;
 
-    action = menu->addAction(QObject::tr("Create entity"));
-    QObject::connect(action, &QAction::triggered, action, [this] { ContextMenu_NewEntity(); });
-
-    if (selected.size() == 1)
+    // when nothing is selected, entity is created at root level
+    if (selected.size() == 0)
     {
-        action = menu->addAction(QObject::tr("Create child entity"));
-        QObject::connect(action, &QAction::triggered, action, [selected]
-        {
-            EBUS_EVENT(AzToolsFramework::EditorRequests::Bus, CreateNewEntityAsChild, selected.front());
-        });
+        action = menu->addAction(QObject::tr("Create entity"));
+        QObject::connect(
+            action, &QAction::triggered, action,
+            [this]
+            {
+                ContextMenu_NewEntity();
+            });
+    }
+    // when a single entity is selected, entity is created as its child
+    else if (selected.size() == 1)
+    {
+        action = menu->addAction(QObject::tr("Create entity"));
+        QObject::connect(
+            action, &QAction::triggered, action,
+            [selected]
+            {
+                EBUS_EVENT(AzToolsFramework::EditorRequests::Bus, CreateNewEntityAsChild, selected.front());
+            });
     }
 
     bool prefabSystemEnabled = false;
