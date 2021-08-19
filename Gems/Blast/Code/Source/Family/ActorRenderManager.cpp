@@ -33,7 +33,7 @@ namespace Blast
 
     void ActorRenderManager::OnActorCreated(const BlastActor& actor)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
+        AZ_PROFILE_FUNCTION(Physics);
 
         const AZStd::vector<uint32_t>& chunkIndices = actor.GetChunkIndices();
 
@@ -47,7 +47,7 @@ namespace Blast
 
     void ActorRenderManager::OnActorDestroyed(const BlastActor& actor)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
+        AZ_PROFILE_FUNCTION(Physics);
 
         const AZStd::vector<uint32_t>& chunkIndices = actor.GetChunkIndices();
 
@@ -62,7 +62,7 @@ namespace Blast
     {
         // It is more natural to have chunk entities be transform children of rigid body entity,
         // however having them separate and manually synchronizing transform is more efficient.
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
+        AZ_PROFILE_FUNCTION(Physics);
 
         for (auto chunkId = 0u; chunkId < m_chunkCount; ++chunkId)
         {

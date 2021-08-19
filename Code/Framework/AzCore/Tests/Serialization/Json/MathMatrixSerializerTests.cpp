@@ -225,7 +225,6 @@ namespace JsonSerializationTests
                 static_assert((RowCount >= 3 && RowCount <= 4) && (ColumnCount >= 3 && ColumnCount <= 4),
                     "Only matrix 3x3, 3x4 or 4x4 are supported by this test.");
             }
-            return "{}";
         }
 
         void ConfigureFeatures(JsonSerializerConformityTestDescriptorFeatures& features) override

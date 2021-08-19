@@ -132,12 +132,11 @@ namespace AZ::ViewportHelpers
 {
     static const char TextCantCreateCameraNoLevel[] = "Cannot create camera when no level is loaded.";
 
-    class EditorEntityNotifications
-        : public AzToolsFramework::EditorEntityContextNotificationBus::Handler
+    class EditorEntityNotifications : public AzToolsFramework::EditorEntityContextNotificationBus::Handler
     {
     public:
-        EditorEntityNotifications(EditorViewportWidget& renderViewport)
-            : m_renderViewport(renderViewport)
+        EditorEntityNotifications(EditorViewportWidget& editorViewportWidget)
+            : m_editorViewportWidget(editorViewportWidget)
         {
             AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
         }
@@ -147,22 +146,24 @@ namespace AZ::ViewportHelpers
             AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
         }
 
-        // AzToolsFramework::EditorEntityContextNotificationBus
+        // AzToolsFramework::EditorEntityContextNotificationBus overrides ...
         void OnStartPlayInEditor() override
         {
-            m_renderViewport.OnStartPlayInEditor();
+            m_editorViewportWidget.OnStartPlayInEditor();
         }
+
         void OnStopPlayInEditor() override
         {
-            m_renderViewport.OnStopPlayInEditor();
+            m_editorViewportWidget.OnStopPlayInEditor();
         }
+
         void OnStartPlayInEditorBegin() override
         {
-            m_renderViewport.OnStartPlayInEditorBegin();
+            m_editorViewportWidget.OnStartPlayInEditorBegin();
         }
 
     private:
-        EditorViewportWidget& m_renderViewport;
+        EditorViewportWidget& m_editorViewportWidget;
     };
 } // namespace AZ::ViewportHelpers
 
@@ -284,7 +285,7 @@ void EditorViewportWidget::paintEvent([[maybe_unused]] QPaintEvent* event)
             const char* kFontName = "Arial";
             const QColor kTextColor(255, 255, 255);
             const QColor kTextShadowColor(0, 0, 0);
-            const QFont font(kFontName, kFontSize / 10.0);
+            const QFont font(kFontName, static_cast<int>(kFontSize / 10.0f));
             painter.setFont(font);
 
             QString friendlyName = QFileInfo(GetIEditor()->GetLevelName()).fileName();
@@ -815,29 +816,35 @@ void EditorViewportWidget::UpdateSafeFrame()
         float maxSafeFrameWidth = m_safeFrame.height() * targetAspectRatio;
         float widthDifference = m_safeFrame.width() - maxSafeFrameWidth;
 
-        m_safeFrame.setLeft(m_safeFrame.left() + widthDifference * 0.5);
-        m_safeFrame.setRight(m_safeFrame.right() - widthDifference * 0.5);
+        m_safeFrame.setLeft(static_cast<int>(m_safeFrame.left() + widthDifference * 0.5f));
+        m_safeFrame.setRight(static_cast<int>(m_safeFrame.right() - widthDifference * 0.5f));
     }
     else
     {
         float maxSafeFrameHeight = m_safeFrame.width() / targetAspectRatio;
         float heightDifference = m_safeFrame.height() - maxSafeFrameHeight;
 
-        m_safeFrame.setTop(m_safeFrame.top() + heightDifference * 0.5);
-        m_safeFrame.setBottom(m_safeFrame.bottom() - heightDifference * 0.5);
+        m_safeFrame.setTop(static_cast<int>(m_safeFrame.top() + heightDifference * 0.5f));
+        m_safeFrame.setBottom(static_cast<int>(m_safeFrame.bottom() - heightDifference * 0.5f));
     }
 
     m_safeFrame.adjust(0, 0, -1, -1); // <-- aesthetic improvement.
 
     const float SAFE_ACTION_SCALE_FACTOR = 0.05f;
     m_safeAction = m_safeFrame;
-    m_safeAction.adjust(m_safeFrame.width() * SAFE_ACTION_SCALE_FACTOR, m_safeFrame.height() * SAFE_ACTION_SCALE_FACTOR,
-        -m_safeFrame.width() * SAFE_ACTION_SCALE_FACTOR, -m_safeFrame.height() * SAFE_ACTION_SCALE_FACTOR);
+    m_safeAction.adjust(
+        static_cast<int>(m_safeFrame.width() * SAFE_ACTION_SCALE_FACTOR),
+        static_cast<int>(m_safeFrame.height() * SAFE_ACTION_SCALE_FACTOR),
+        static_cast<int>(-m_safeFrame.width() * SAFE_ACTION_SCALE_FACTOR),
+        static_cast<int>(-m_safeFrame.height() * SAFE_ACTION_SCALE_FACTOR));
 
     const float SAFE_TITLE_SCALE_FACTOR = 0.1f;
     m_safeTitle = m_safeFrame;
-    m_safeTitle.adjust(m_safeFrame.width() * SAFE_TITLE_SCALE_FACTOR, m_safeFrame.height() * SAFE_TITLE_SCALE_FACTOR,
-        -m_safeFrame.width() * SAFE_TITLE_SCALE_FACTOR, -m_safeFrame.height() * SAFE_TITLE_SCALE_FACTOR);
+    m_safeTitle.adjust(
+        static_cast<int>(m_safeFrame.width() * SAFE_TITLE_SCALE_FACTOR),
+        static_cast<int>(m_safeFrame.height() * SAFE_TITLE_SCALE_FACTOR),
+        static_cast<int>(-m_safeFrame.width() * SAFE_TITLE_SCALE_FACTOR),
+        static_cast<int>(-m_safeFrame.height() * SAFE_TITLE_SCALE_FACTOR));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -856,8 +863,8 @@ void EditorViewportWidget::RenderSafeFrame(const QRect& frame, float r, float g,
     const int LINE_WIDTH = 2;
     for (int i = 0; i < LINE_WIDTH; i++)
     {
-        AZ::Vector3 topLeft(frame.left() + i, frame.top() + i, 0);
-        AZ::Vector3 bottomRight(frame.right() - i, frame.bottom() - i, 0);
+        AZ::Vector3 topLeft(static_cast<float>(frame.left() + i), static_cast<float>(frame.top() + i), 0.0f);
+        AZ::Vector3 bottomRight(static_cast<float>(frame.right() - i), static_cast<float>(frame.bottom() - i), 0.0f);
         m_debugDisplay->DrawWireBox(topLeft, bottomRight);
     }
 }
@@ -1027,9 +1034,15 @@ bool EditorViewportWidget::ShowingWorldSpace()
 }
 
 AZStd::shared_ptr<AtomToolsFramework::ModularViewportCameraController> CreateModularViewportCameraController(
-    AzFramework::ViewportId viewportId)
+    const AzFramework::ViewportId viewportId)
 {
     auto controller = AZStd::make_shared<AtomToolsFramework::ModularViewportCameraController>();
+
+    controller->SetCameraViewportContextBuilderCallback(
+        [viewportId](AZStd::unique_ptr<AtomToolsFramework::ModularCameraViewportContext>& cameraViewportContext)
+        {
+            cameraViewportContext = AZStd::make_unique<AtomToolsFramework::ModularCameraViewportContextImpl>(viewportId);
+        });
 
     controller->SetCameraPriorityBuilderCallback(
         [](AtomToolsFramework::CameraControllerPriorityFn& cameraControllerPriorityFn)
@@ -1048,6 +1061,16 @@ AZStd::shared_ptr<AtomToolsFramework::ModularViewportCameraController> CreateMod
             cameraProps.m_translateSmoothnessFn = []
             {
                 return SandboxEditor::CameraTranslateSmoothness();
+            };
+
+            cameraProps.m_rotateSmoothingEnabledFn = []
+            {
+                return SandboxEditor::CameraRotateSmoothingEnabled();
+            };
+
+            cameraProps.m_translateSmoothingEnabledFn = []
+            {
+                return SandboxEditor::CameraTranslateSmoothingEnabled();
             };
         });
 
@@ -1477,7 +1500,7 @@ bool EditorViewportWidget::AddCameraMenuItems(QMenu* menu)
     Camera::CameraBus::BroadcastResult(getCameraResults, &Camera::CameraRequests::GetCameras);
 
     QVector<QAction*> additionalCameras;
-    additionalCameras.reserve(getCameraResults.values.size());
+    additionalCameras.reserve(static_cast<int>(getCameraResults.values.size()));
 
     for (const AZ::EntityId& entityId : getCameraResults.values)
     {
@@ -1899,7 +1922,7 @@ void EditorViewportWidget::RenderSelectedRegion()
         // Draw volume
         dc.DepthWriteOff();
         dc.CullOff();
-        dc.pRenderAuxGeom->DrawTriangles(&verts[0], verts.size(), &inds[0], numInds, &colors[0]);
+        dc.pRenderAuxGeom->DrawTriangles(&verts[0], static_cast<uint32>(verts.size()), &inds[0], numInds, &colors[0]);
         dc.CullOn();
         dc.DepthWriteOn();
     }
@@ -1915,8 +1938,8 @@ Vec3 EditorViewportWidget::WorldToView3D(const Vec3& wp, [[maybe_unused]] int nF
     {
         out.x = (x / 100) * m_rcClient.width();
         out.y = (y / 100) * m_rcClient.height();
-        out.x /= QHighDpiScaling::factor(windowHandle()->screen());
-        out.y /= QHighDpiScaling::factor(windowHandle()->screen());
+        out.x /= static_cast<float>(QHighDpiScaling::factor(windowHandle()->screen()));
+        out.y /= static_cast<float>(QHighDpiScaling::factor(windowHandle()->screen()));
         out.z = z;
     }
     return out;
@@ -1936,8 +1959,8 @@ QPoint EditorViewportWidget::WorldToViewParticleEditor(const Vec3& wp, int width
     ProjectToScreen(wp.x, wp.y, wp.z, &x, &y, &z);
     if (_finite(x) || _finite(y))
     {
-        p.rx() = (x / 100) * width;
-        p.ry() = (y / 100) * height;
+        p.rx() = static_cast<int>((x / 100) * width);
+        p.ry() = static_cast<int>((y / 100) * height);
     }
     else
     {
@@ -1950,7 +1973,7 @@ QPoint EditorViewportWidget::WorldToViewParticleEditor(const Vec3& wp, int width
 Vec3 EditorViewportWidget::ViewToWorld(
     const QPoint& vp, bool* collideWithTerrain, bool onlyTerrain, bool bSkipVegetation, bool bTestRenderMesh, bool* collideWithObject) const
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
 
     AZ_UNUSED(collideWithTerrain)
     AZ_UNUSED(onlyTerrain)
@@ -1985,7 +2008,7 @@ Vec3 EditorViewportWidget::ViewToWorldNormal(const QPoint& vp, bool onlyTerrain,
     AZ_UNUSED(onlyTerrain)
     AZ_UNUSED(bTestRenderMesh)
 
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
 
     return Vec3(0, 0, 1);
 }
@@ -2091,8 +2114,8 @@ void EditorViewportWidget::UnProjectFromScreen(float sx, float sy, float sz, flo
 void EditorViewportWidget::ProjectToScreen(float ptx, float pty, float ptz, float* sx, float* sy, float* sz) const
 {
     AzFramework::ScreenPoint screenPosition = m_renderViewport->ViewportWorldToScreen(AZ::Vector3{ptx, pty, ptz});
-    *sx = screenPosition.m_x;
-    *sy = screenPosition.m_y;
+    *sx = static_cast<float>(screenPosition.m_x);
+    *sy = static_cast<float>(screenPosition.m_y);
     *sz = 0.f;
 }
 
@@ -2103,7 +2126,7 @@ void EditorViewportWidget::ViewToWorldRay(const QPoint& vp, Vec3& raySrc, Vec3& 
 
     Vec3 pos0, pos1;
     float wx, wy, wz;
-    UnProjectFromScreen(vp.x(), rc.bottom() - vp.y(), 0, &wx, &wy, &wz);
+    UnProjectFromScreen(static_cast<float>(vp.x()), static_cast<float>(rc.bottom() - vp.y()), 0.0f, &wx, &wy, &wz);
     if (!_finite(wx) || !_finite(wy) || !_finite(wz))
     {
         return;
@@ -2113,7 +2136,7 @@ void EditorViewportWidget::ViewToWorldRay(const QPoint& vp, Vec3& raySrc, Vec3& 
         return;
     }
     pos0(wx, wy, wz);
-    UnProjectFromScreen(vp.x(), rc.bottom() - vp.y(), 1, &wx, &wy, &wz);
+    UnProjectFromScreen(static_cast<float>(vp.x()), static_cast<float>(rc.bottom() - vp.y()), 1.0f, &wx, &wy, &wz);
     if (!_finite(wx) || !_finite(wy) || !_finite(wz))
     {
         return;

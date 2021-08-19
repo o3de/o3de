@@ -106,8 +106,8 @@ void CTVSequenceProps::MoveScaleKeys()
     // Move/Rescale the sequence to a new time range.
     Range timeRangeOld = m_pSequence->GetTimeRange();
     Range timeRangeNew;
-    timeRangeNew.start = ui->START_TIME->value();
-    timeRangeNew.end = ui->END_TIME->value();
+    timeRangeNew.start = static_cast<float>(ui->START_TIME->value());
+    timeRangeNew.end = static_cast<float>(ui->END_TIME->value());
 
     if (!(timeRangeNew == timeRangeOld))
     {
@@ -123,14 +123,14 @@ void CTVSequenceProps::UpdateSequenceProps(const QString& name)
     }
 
     Range timeRange;
-    timeRange.start = ui->START_TIME->value();
-    timeRange.end = ui->END_TIME->value();
+    timeRange.start = static_cast<float>(ui->START_TIME->value());
+    timeRange.end = static_cast<float>(ui->END_TIME->value());
 
     if (m_timeUnit == Frames)
     {
         float invFPS = 1.0f / m_FPS;
-        timeRange.start = ui->START_TIME->value() * invFPS;
-        timeRange.end = ui->END_TIME->value() * invFPS;
+        timeRange.start = static_cast<float>(ui->START_TIME->value()) * invFPS;
+        timeRange.end = static_cast<float>(ui->END_TIME->value()) * invFPS;
     }
 
     m_pSequence->SetTimeRange(timeRange);

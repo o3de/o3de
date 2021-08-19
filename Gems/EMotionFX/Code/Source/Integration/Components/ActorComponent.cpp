@@ -542,7 +542,7 @@ namespace EMotionFX
         //////////////////////////////////////////////////////////////////////////
         void ActorComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Animation);
+            AZ_PROFILE_FUNCTION(Animation);
 
             if (!m_actorInstance || !m_actorInstance->GetIsEnabled())
             {

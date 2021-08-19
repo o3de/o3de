@@ -1672,7 +1672,7 @@ void MainWindow::OnUpdateConnectionStatus()
         tooltip += m_connectionListener->LastAssetProcessorTask().c_str();
         tooltip += "\n";
         AZStd::set<AZStd::string> failedJobs = m_connectionListener->FailedJobsList();
-        int failureCount = failedJobs.size();
+        int failureCount = static_cast<int>(failedJobs.size());
         if (failureCount)
         {
             tooltip += "\n Failed Jobs\n";

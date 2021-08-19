@@ -11,6 +11,7 @@
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/NonUniformScaleBus.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/Slice/SliceSystemComponent.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
@@ -540,7 +541,7 @@ namespace AzFramework
         const AZStd::function<void()>& workForNewThread,
         const char* newThreadName)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzFramework);
+        AZ_PROFILE_FUNCTION(AzFramework);
 
         AZStd::thread_desc newThreadDesc;
         newThreadDesc.m_cpuId = AFFINITY_MASK_USERTHREADS;
@@ -548,7 +549,7 @@ namespace AzFramework
         AZStd::binary_semaphore binarySemaphore;
         AZStd::thread newThread([&workForNewThread, &binarySemaphore, &newThreadName]
         {
-            AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::AzFramework,
+            AZ_PROFILE_SCOPE(AzFramework,
                 "Application::PumpSystemEventLoopWhileDoingWorkInNewThread:ThreadWorker %s", newThreadName);
 
             workForNewThread();
@@ -559,7 +560,7 @@ namespace AzFramework
             PumpSystemEventLoopUntilEmpty();
         }
         {
-            AZ_PROFILE_SCOPE_STALL_DYNAMIC(AZ::Debug::ProfileCategory::AzFramework,
+            AZ_PROFILE_SCOPE(AzFramework,
                 "Application::PumpSystemEventLoopWhileDoingWorkInNewThread:WaitOnThread %s", newThreadName);
             newThread.join();
         }
@@ -571,10 +572,14 @@ namespace AzFramework
     ////////////////////////////////////////////////////////////////////////////
     void Application::RunMainLoop()
     {
+        uint32_t frameCounter = 0;
         while (!m_exitMainLoopRequested)
         {
             PumpSystemEventLoopUntilEmpty();
+
+            AZ_PROFILE_SCOPE(AzCore, "Frame %i", frameCounter);
             Tick();
+            ++frameCounter;
         }
     }
 

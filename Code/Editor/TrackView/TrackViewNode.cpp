@@ -86,7 +86,7 @@ void CTrackViewKeyHandle::SetTime(float time, bool notifyListeners)
     if (!m_pTrack->IsSortMarkerKey(m_keyIndex))
     {
         CTrackViewKeyBundle allKeys = m_pTrack->GetAllKeys();
-        for (int x = 0; x < allKeys.GetKeyCount(); x++)
+        for (unsigned int x = 0; x < allKeys.GetKeyCount(); x++)
         {
             unsigned int curIndex = allKeys.GetKey(x).GetIndex();
             if (m_pTrack->IsSortMarkerKey(curIndex))

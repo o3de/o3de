@@ -395,7 +395,7 @@ struct MotionParams905
     MotionParams905()
     {
         m_nAssetFlags = 0;
-        m_nCompression = -1;
+        m_nCompression = std::numeric_limits<uint32>::max();
         m_nTicksPerFrame = 0;
         m_fSecsPerTick = 0;
         m_nStart = 0;

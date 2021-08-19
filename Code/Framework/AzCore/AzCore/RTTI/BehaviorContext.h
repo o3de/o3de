@@ -24,11 +24,6 @@
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Script/ScriptContextAttributes.h>
 
-#if defined(AZ_COMPILER_MSVC)
-#   pragma warning(push)
-#   pragma warning(disable: 4127) // conditional expression is constant
-#endif
-
 namespace AZStd
 {
     template <typename T>
@@ -4507,7 +4502,7 @@ namespace AZ
             params.resize(sizeof...(Args) + eBehaviorBusForwarderEventIndices::ParameterFirst);
             SetParameters<R>(&params[eBehaviorBusForwarderEventIndices::Result], nullptr);
             SetParameters<void*>(&params[eBehaviorBusForwarderEventIndices::UserData], nullptr);
-            if (sizeof...(Args) > 0)
+            if constexpr (sizeof...(Args) > 0)
             {
                 SetParameters<Args...>(&params[eBehaviorBusForwarderEventIndices::ParameterFirst], nullptr);
             }
@@ -4871,10 +4866,6 @@ namespace AZ
 
     } // namespace Internal
 } // namespace AZ
-
-#if defined(AZ_COMPILER_MSVC)
-#   pragma warning(pop)
-#endif
 
 // pull AzStd on demand reflection
 #include <AzCore/RTTI/AzStdOnDemandPrettyName.inl>
