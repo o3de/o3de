@@ -625,7 +625,7 @@ namespace AzFramework
             return;
         }
 
-        AZ_PROFILE_TIMER("TargetManager");
+        AZ_PROFILE_SCOPE(AzFramework, "TargetManager::SendTmMessage");
         AZStd::vector<char, AZ::OSStdAllocator> msgBuffer;
         AZ::IO::ByteContainerStream<AZStd::vector<char, AZ::OSStdAllocator> > outMsg(&msgBuffer);
 
@@ -651,7 +651,7 @@ namespace AzFramework
 
     void TargetManagementComponent::DispatchMessages(MsgSlotId id)
     {
-        AZ_PROFILE_TIMER("TargetManager");
+        AZ_PROFILE_SCOPE(AzFramework, "TargetManager::DispatchMessages");
         AZStd::lock_guard<AZStd::mutex> lock(m_inboxMutex);
         size_t maxMsgsToProcess = m_inbox.size();
         TmMsgQueue::iterator itMsg = m_inbox.begin();
@@ -684,7 +684,7 @@ namespace AzFramework
         {
             if (m_networkImpl->m_gridMate)
             {
-                AZ_PROFILE_TIMER("TargetManager");
+                AZ_PROFILE_SCOPE(AzFramework, "TargetManager::Tick");
                 if (!m_networkImpl->m_session && !m_networkImpl->m_gridSearch)
                 {
                     if (AZStd::chrono::system_clock::now() > m_reconnectionTime)
@@ -694,7 +694,7 @@ namespace AzFramework
                 }
 
                 {
-                    AZ_PROFILE_TIMER("TargetManager", "Tick Gridmate");
+                    AZ_PROFILE_SCOPE(AzFramework, "TargetManager::Tick Gridmate");
                     m_networkImpl->m_gridMate->Update();
                     if (m_networkImpl->m_session && m_networkImpl->m_session->GetReplicaMgr())
                     {
@@ -707,7 +707,7 @@ namespace AzFramework
 
                 if (m_networkImpl->m_session)
                 {
-                    AZ_PROFILE_TIMER("TargetManager", "Send/Receive TmMsgs");
+                    AZ_PROFILE_SCOPE(AzFramework, "TargetManager::Tick Send/Receive TmMsgs");
 
                     // Receive
                     for (unsigned int i = 0; i < m_networkImpl->m_session->GetNumberOfMembers(); ++i)

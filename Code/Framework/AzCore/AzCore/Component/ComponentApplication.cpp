@@ -1394,8 +1394,7 @@ namespace AZ
     void ComponentApplication::Tick(float deltaOverride /*= -1.f*/)
     {
         {
-            AZ_PROFILE_TIMER("System", "Component application simulation tick function");
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+            AZ_PROFILE_SCOPE(System, "Component application simulation tick");
 
             AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
 
@@ -1408,12 +1407,12 @@ namespace AZ
             }
 
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzCore, "ComponentApplication::Tick:ExecuteQueuedEvents");
+                AZ_PROFILE_SCOPE(AzCore, "ComponentApplication::Tick:ExecuteQueuedEvents");
                 TickBus::ExecuteQueuedEvents();
             }
             m_currentTime = now;
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzCore, "ComponentApplication::Tick:OnTick");
+                AZ_PROFILE_SCOPE(AzCore, "ComponentApplication::Tick:OnTick");
                 EBUS_EVENT(TickBus, OnTick, m_deltaTime, ScriptTimePoint(now));
             }
         }
@@ -1428,8 +1427,7 @@ namespace AZ
     //=========================================================================
     void ComponentApplication::TickSystem()
     {
-        AZ_PROFILE_TIMER("System", "Component application system tick function");
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_SCOPE(System, "Component application tick");
 
         SystemTickBus::ExecuteQueuedEvents();
         EBUS_EVENT(SystemTickBus, OnSystemTick);

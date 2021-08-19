@@ -701,7 +701,7 @@ void CSystem::SleepIfNeeded()
     int sleepMS = (int)(1000.0f * sleepTime + 0.5f);
     if (sleepMS > 0)
     {
-        AZ_PROFILE_FUNCTION_IDLE(AZ::Debug::ProfileCategory::System);
+        AZ_PROFILE_FUNCTION(System);
         Sleep(sleepMS);
     }
 
@@ -890,24 +890,6 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
     {
         Quit();
         return false;
-    }
-
-       //////////////////////////////////////////////////////////////////////
-       //update sound system Part 1 if in Editor / in Game Mode Viewsystem updates the Listeners
-    if (!m_env.IsEditorGameMode())
-    {
-        if ((updateFlags & ESYSUPDATE_EDITOR) != 0 && !bNoUpdate && nPauseMode != 1)
-        {
-            // updating the Listener Position in a first separate step.
-            // Updating all views here is a bit of a workaround, since we need
-            // to ensure that sound listeners owned by inactive views are also
-            // marked as inactive. Ideally that should happen when exiting game mode.
-            if (GetIViewSystem())
-            {
-                FRAME_PROFILER("SysUpdate:UpdateSoundListeners", this, PROFILE_SYSTEM);
-                GetIViewSystem()->UpdateSoundListeners();
-            }
-        }
     }
 
     // Use UI timer for CryMovie, because it should not be affected by pausing game time

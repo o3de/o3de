@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/IO/Streamer/BlockCache.h>
 #include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/IO/Streamer/StreamerContext.h>
@@ -245,7 +246,7 @@ namespace AZ
 
             auto continueReadFile = [this, request](FileRequest& fileSizeRequest)
             {
-                AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+                AZ_PROFILE_FUNCTION(AzCore);
                 AZ_Assert(m_numMetaDataRetrievalInProgress > 0,
                     "More requests have completed meta data retrieval in the Block Cache than were requested.");
                 m_numMetaDataRetrievalInProgress--;
@@ -454,7 +455,7 @@ namespace AZ
                         section.m_readSize, sharedRead);
                     readRequest->SetCompletionCallback([this](FileRequest& request)
                         {
-                            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+                            AZ_PROFILE_FUNCTION(AzCore);
                             CompleteRead(request);
                         });
                     section.m_cacheBlockIndex = cacheLocation;

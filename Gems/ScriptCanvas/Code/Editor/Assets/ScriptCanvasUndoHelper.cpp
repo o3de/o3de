@@ -103,7 +103,7 @@ namespace ScriptCanvasEditor
 
     void UndoHelper::Undo()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::ScriptCanvas);
+        AZ_PROFILE_FUNCTION(ScriptCanvas);
 
         SceneUndoState* sceneUndoState = m_memoryAsset.GetUndoState();
         if (sceneUndoState)
@@ -123,7 +123,7 @@ namespace ScriptCanvasEditor
 
     void UndoHelper::Redo()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::ScriptCanvas);
+        AZ_PROFILE_FUNCTION(ScriptCanvas);
 
         SceneUndoState* sceneUndoState = m_memoryAsset.GetUndoState();
         if (sceneUndoState)

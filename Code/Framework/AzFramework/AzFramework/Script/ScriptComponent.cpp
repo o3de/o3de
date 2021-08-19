@@ -619,7 +619,7 @@ namespace AzFramework
     //=========================================================================
     void ScriptComponent::LoadScript()
     {
-        AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::Script, "Load: %s", m_script.GetHint().c_str());
+        AZ_PROFILE_SCOPE(Script, "Load: %s", m_script.GetHint().c_str());
 
         // Load the script, find the base table, create the entity table
         // find the Activate/Deactivate functions in the script and call them
@@ -634,7 +634,7 @@ namespace AzFramework
     //=========================================================================
     void ScriptComponent::UnloadScript()
     {
-        AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::Script, "Unload: %s", m_script.GetHint().c_str());
+        AZ_PROFILE_SCOPE(Script, "Unload: %s", m_script.GetHint().c_str());
 
         DestroyEntityTable();
     }
@@ -822,7 +822,7 @@ namespace AzFramework
         lua_rawget(lua, baseStackIndex); // ScriptTable[OnActivate]
         if (lua_isfunction(lua, -1))
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Script, "OnActivate");
+            AZ_PROFILE_SCOPE(Script, "OnActivate");
             lua_rawgeti(lua, LUA_REGISTRYINDEX, m_table); // push the entity table as the only argument
             AZ::Internal::LuaSafeCall(lua, 1, 0); // Call OnActivate
         }
@@ -856,7 +856,7 @@ namespace AzFramework
             lua_rawget(lua, -2); // ScriptTable[OnDeactivte]
             if (lua_isfunction(lua, -1))
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Script, "OnDeactivate");
+                AZ_PROFILE_SCOPE(Script, "OnDeactivate");
 
                 lua_pushvalue(lua, -3); // push the entity table as the only argument
                 AZ::Internal::LuaSafeCall(lua, 1, 0); // Call OnDeactivate

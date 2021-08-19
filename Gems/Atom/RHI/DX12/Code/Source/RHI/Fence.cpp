@@ -60,7 +60,7 @@ namespace AZ
         {
             if (fenceValue > GetCompletedValue())
             {
-                AZ_PROFILE_SCOPE_IDLE_DYNAMIC(AZ::Debug::ProfileCategory::AzRender, "Fence Wait: %s", fenceEvent.GetName());
+                AZ_PROFILE_SCOPE(AzRender, "Fence Wait: %s", fenceEvent.GetName());
                 m_fence->SetEventOnCompletion(fenceValue, fenceEvent.m_EventHandle);
                 WaitForSingleObject(fenceEvent.m_EventHandle, INFINITE);
             }

@@ -34,7 +34,6 @@ namespace O3DE::ProjectManager
         {
             setText(directory);
         }
-
     }
 
     void FormFolderBrowseEditWidget::setText(const QString& text)
@@ -42,4 +41,5 @@ namespace O3DE::ProjectManager
         QString path = QDir::toNativeSeparators(text);
         FormBrowseEditWidget::setText(path);
     }
+
 } // namespace O3DE::ProjectManager

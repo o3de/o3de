@@ -260,7 +260,7 @@ SystemAllocator::Allocate(size_type byteSize, size_type alignment, int flags, co
 
     AZ_Assert(address != 0, "SystemAllocator: Failed to allocate %d bytes aligned on %d (flags: 0x%08x) %s : %s (%d)!", byteSize, alignment, flags, name ? name : "(no name)", fileName ? fileName : "(no file name)", lineNum);
 
-    AZ_PROFILE_MEMORY_ALLOC_EX(AZ::Debug::ProfileCategory::MemoryReserved, fileName, lineNum, address, byteSize, name);
+    AZ_PROFILE_MEMORY_ALLOC_EX(MemoryReserved, fileName, lineNum, address, byteSize, name);
     AZ_MEMORY_PROFILE(ProfileAllocation(address, byteSize, alignment, name, fileName, lineNum, suppressStackRecord + 1));
 
     return address;
@@ -274,7 +274,7 @@ void
 SystemAllocator::DeAllocate(pointer_type ptr, size_type byteSize, size_type alignment)
 {
     byteSize = MemorySizeAdjustedUp(byteSize);
-    AZ_PROFILE_MEMORY_FREE(AZ::Debug::ProfileCategory::MemoryReserved, ptr);
+    AZ_PROFILE_MEMORY_FREE(MemoryReserved, ptr);
     AZ_MEMORY_PROFILE(ProfileDeallocation(ptr, byteSize, alignment, nullptr));
     m_allocator->DeAllocate(ptr, byteSize, alignment);
 }
@@ -289,9 +289,9 @@ SystemAllocator::ReAllocate(pointer_type ptr, size_type newSize, size_type newAl
     newSize = MemorySizeAdjustedUp(newSize);
 
     AZ_MEMORY_PROFILE(ProfileReallocationBegin(ptr, newSize));
-    AZ_PROFILE_MEMORY_FREE(AZ::Debug::ProfileCategory::MemoryReserved, ptr);
+    AZ_PROFILE_MEMORY_FREE(MemoryReserved, ptr);
     pointer_type newAddress = m_allocator->ReAllocate(ptr, newSize, newAlignment);
-    AZ_PROFILE_MEMORY_ALLOC(AZ::Debug::ProfileCategory::MemoryReserved, newAddress, newSize, "SystemAllocator realloc");
+    AZ_PROFILE_MEMORY_ALLOC(MemoryReserved, newAddress, newSize, "SystemAllocator realloc");
     AZ_MEMORY_PROFILE(ProfileReallocationEnd(ptr, newAddress, newSize, newAlignment));
 
     return newAddress;
