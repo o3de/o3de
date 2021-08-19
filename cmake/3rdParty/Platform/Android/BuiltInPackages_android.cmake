@@ -8,7 +8,7 @@
 
 # shared by other platforms:
 ly_associate_package(PACKAGE_NAME md5-2.0-multiplatform              TARGETS md5       PACKAGE_HASH 29e52ad22c78051551f78a40c2709594f0378762ae03b417adca3f4b700affdf)
-ly_associate_package(PACKAGE_NAME RapidJSON-1.1.0-multiplatform      TARGETS RapidJSON PACKAGE_HASH 18b0aef4e6e849389916ff6de6682ab9c591ebe15af6ea6017014453c1119ea1)
+ly_associate_package(PACKAGE_NAME RapidJSON-1.1.0-multiplatform      TARGETS RapidJSON PACKAGE_HASH e8909dd5b523028831f33cfb257c2db0b1ce7e5fbdd1c95d425968d6f1acefee)
 ly_associate_package(PACKAGE_NAME RapidXML-1.13-multiplatform        TARGETS RapidXML  PACKAGE_HASH 510b3c12f8872c54b34733e34f2f69dd21837feafa55bfefa445c98318d96ebf)
 ly_associate_package(PACKAGE_NAME cityhash-1.1-multiplatform         TARGETS cityhash  PACKAGE_HASH 0ace9e6f0b2438c5837510032d2d4109125845c0efd7d807f4561ec905512dd2)
 ly_associate_package(PACKAGE_NAME lz4-r128-multiplatform             TARGETS lz4       PACKAGE_HASH d7b1d5651191db2c339827ad24f669d9d37754143e9173abc986184532f57c9d)
