@@ -81,7 +81,10 @@ namespace Terrain
         void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
 
     private:
+        void RefreshCachedWireframeGrid();
+
         TerrainWorldDebuggerConfig m_configuration;
         AZStd::vector<AZ::Vector3> m_wireframeGridPoints;
+        AZ::Vector3 m_lastCameraPosition{ 0.0f };
     };
 }

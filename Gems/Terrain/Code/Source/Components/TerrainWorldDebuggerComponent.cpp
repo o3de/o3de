@@ -7,12 +7,19 @@
  */
 
 #include <Components/TerrainWorldDebuggerComponent.h>
+
+#include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/Entity.h>
-#include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Math/Frustum.h>
+#include <AzCore/Math/ShapeIntersection.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+
+#include <Atom/RPI.Public/View.h>
+#include <Atom/RPI.Public/ViewportContext.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
 
 namespace Terrain
 {
@@ -139,15 +146,6 @@ namespace Terrain
     void TerrainWorldDebuggerComponent::DisplayEntityViewport(
         [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
-        /*
-        AZ::Vector3 cameraPos(0.0f);
-        if (auto viewportContextRequests = AZ::RPI::ViewportContextRequests::Get(); viewportContextRequests)
-        {
-            AZ::RPI::ViewportContextPtr viewportContext = viewportContextRequests->GetViewportContextById(viewportInfo.m_viewportId);
-            cameraPos = viewportContext->GetCameraTransform().GetTranslation();
-        }
-        */
-
         // Draw a wireframe box around the entire terrain world bounds
         if (m_configuration.m_drawWorldBounds)
         {
@@ -160,8 +158,125 @@ namespace Terrain
 
         if (m_configuration.m_drawWireframe && !m_wireframeGridPoints.empty())
         {
+            // Get the camera position and viewable AABB.
+            AZ::Vector3 cameraPos(0.0f);
+            //AZ::Aabb viewAabb = AZ::Aabb::CreateNull();
+            if (auto viewportContextRequests = AZ::RPI::ViewportContextRequests::Get(); viewportContextRequests)
+            {
+                AZ::Vector2 queryResolution = AZ::Vector2(1.0f);
+                AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
+                    queryResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainGridResolution);
+
+                AZ::RPI::ViewportContextPtr viewportContext = viewportContextRequests->GetViewportContextById(viewportInfo.m_viewportId);
+                cameraPos = viewportContext->GetCameraTransform().GetTranslation();
+                if (!cameraPos.IsClose(m_lastCameraPosition, AZ::GetMin(queryResolution.GetX(), queryResolution.GetY())))
+                {
+                    m_lastCameraPosition = cameraPos;
+                    RefreshCachedWireframeGrid();
+                }
+                /*
+                const AZ::Matrix4x4& worldToClip = viewportContext->GetDefaultView()->GetWorldToClipMatrix();
+                AZ::Frustum frustum = AZ::Frustum::CreateFromMatrixColumnMajor(worldToClip, AZ::Frustum::ReverseDepth::True);
+
+                const auto frustumCornerFn =
+                    [&frustum](
+                        const AZ::Frustum::PlaneId planeId1, const AZ::Frustum::PlaneId planeId2, const AZ::Frustum::PlaneId planeId3)
+                {
+                    AZ::Vector3 corner = AZ::Vector3::CreateZero();
+                    const auto intersectionOkay = AZ::ShapeIntersection::IntersectThreePlanes(
+                        frustum.GetPlane(planeId1), frustum.GetPlane(planeId2), frustum.GetPlane(planeId3), corner);
+                    AZ_Assert(intersectionOkay, "Plane intersection of Frustum failed");
+
+                    return corner;
+                };
+
+                viewAabb.AddPoint(frustumCornerFn(AZ::Frustum::Far, AZ::Frustum::Top, AZ::Frustum::Left));
+                viewAabb.AddPoint(frustumCornerFn(AZ::Frustum::Far, AZ::Frustum::Top, AZ::Frustum::Right));
+                viewAabb.AddPoint(frustumCornerFn(AZ::Frustum::Far, AZ::Frustum::Bottom, AZ::Frustum::Left));
+                viewAabb.AddPoint(frustumCornerFn(AZ::Frustum::Far, AZ::Frustum::Bottom, AZ::Frustum::Right));
+                viewAabb.AddPoint(frustumCornerFn(AZ::Frustum::Near, AZ::Frustum::Top, AZ::Frustum::Left));
+                viewAabb.AddPoint(frustumCornerFn(AZ::Frustum::Near, AZ::Frustum::Top, AZ::Frustum::Right));
+                viewAabb.AddPoint(frustumCornerFn(AZ::Frustum::Near, AZ::Frustum::Bottom, AZ::Frustum::Left));
+                viewAabb.AddPoint(frustumCornerFn(AZ::Frustum::Near, AZ::Frustum::Bottom, AZ::Frustum::Right));
+                */
+                //AZ_Printf(
+                //    "Debug", "camera AABB: (%.2f, %.2f, %.2f) - (%.2f, %.2f, %.2f)\n",
+                //    viewAabb.GetMin().GetX(), viewAabb.GetMin().GetY(), viewAabb.GetMin().GetZ(),
+                //    viewAabb.GetMax().GetX(), viewAabb.GetMax().GetY(), viewAabb.GetMax().GetZ());
+            }
+
+
             const AZ::Color primaryColor = AZ::Color(0.25f, 0.25f, 0.25f, 1.0f);
             debugDisplay.DrawLines(m_wireframeGridPoints, primaryColor);
+        }
+    }
+
+    void TerrainWorldDebuggerComponent::RefreshCachedWireframeGrid()
+    {
+        // The AuxGeom system has some hard limits on the max number of lines we can draw, so pick a range that keeps us within the limits.
+        constexpr int maxDrawableGridSquares = 300;
+
+        m_wireframeGridPoints.clear();
+        AZ::Aabb worldBounds = GetWorldBounds();
+
+        AZ::Vector2 queryResolution = AZ::Vector2(1.0f);
+        AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
+            queryResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainGridResolution);
+
+        AZ::Vector3 cameraSquares(
+            queryResolution.GetX() * (maxDrawableGridSquares / 2), queryResolution.GetY() * (maxDrawableGridSquares / 2), 0.0f);
+        AZ::Aabb cameraBounds = AZ::Aabb::CreateFromPoint(m_lastCameraPosition - cameraSquares);
+        cameraBounds.AddPoint(m_lastCameraPosition + cameraSquares);
+
+        worldBounds.Clamp(cameraBounds);
+
+        m_wireframeGridPoints.reserve(
+            8 *
+            aznumeric_cast<size_t>(
+                (worldBounds.GetXExtent() / queryResolution.GetX()) * (worldBounds.GetYExtent() / queryResolution.GetY())));
+
+        const float minX = worldBounds.GetMin().GetX();
+        const float minY = worldBounds.GetMin().GetY();
+
+        for (float y = worldBounds.GetMin().GetY(); y < (worldBounds.GetMax().GetY() - queryResolution.GetY()); y += queryResolution.GetY())
+        {
+            for (float x = worldBounds.GetMin().GetX(); x < (worldBounds.GetMax().GetX() - queryResolution.GetX());
+                 x += queryResolution.GetX())
+            {
+                float x1 = x + queryResolution.GetX();
+                float y1 = y + queryResolution.GetY();
+
+                float z00 = 0.0f;
+                float z01 = 0.0f;
+                float z10 = 0.0f;
+                float z11 = 0.0f;
+                bool terrainExists;
+
+                AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
+                    z00, &AzFramework::Terrain::TerrainDataRequests::GetHeightFromFloats, x, y,
+                    AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT, &terrainExists);
+                AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
+                    z01, &AzFramework::Terrain::TerrainDataRequests::GetHeightFromFloats, x, y1,
+                    AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT, &terrainExists);
+                AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
+                    z10, &AzFramework::Terrain::TerrainDataRequests::GetHeightFromFloats, x1, y,
+                    AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT, &terrainExists);
+                AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
+                    z11, &AzFramework::Terrain::TerrainDataRequests::GetHeightFromFloats, x1, y1,
+                    AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT, &terrainExists);
+
+                m_wireframeGridPoints.push_back(AZ::Vector3(x, y, z00));
+                m_wireframeGridPoints.push_back(AZ::Vector3(x1, y, z10));
+
+                m_wireframeGridPoints.push_back(AZ::Vector3(x, y, z00));
+                m_wireframeGridPoints.push_back(AZ::Vector3(x, y1, z01));
+
+                // m_wireframeGridPoints.push_back(AZ::Vector3(x, y1, z01));
+                //m_wireframeGridPoints.push_back(AZ::Vector3(x1, y1, z11));
+
+                //m_wireframeGridPoints.push_back(AZ::Vector3(x1, y, z10));
+                //m_wireframeGridPoints.push_back(AZ::Vector3(x1, y1, z11));
+            }
         }
     }
 
@@ -170,65 +285,7 @@ namespace Terrain
     {
         if (dataChangedMask & (TerrainDataChangedMask::Settings | TerrainDataChangedMask::HeightData))
         {
-            m_wireframeGridPoints.clear();
-            AZ::Aabb worldBounds = GetWorldBounds();
-
-            AZ::Vector2 queryResolution = AZ::Vector2(1.0f);
-            AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-                queryResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainGridResolution);
-
-            m_wireframeGridPoints.reserve(
-                8 * aznumeric_cast<size_t>(
-                    (worldBounds.GetXExtent() / queryResolution.GetX()) *
-                    (worldBounds.GetYExtent() / queryResolution.GetY())
-                    ));
-
-            const float minX = worldBounds.GetMin().GetX();
-            const float minY = worldBounds.GetMin().GetY();
-
-            for (float y = worldBounds.GetMin().GetY(); y < (worldBounds.GetMax().GetY() - queryResolution.GetY());
-                 y += queryResolution.GetY())
-            {
-                for (float x = worldBounds.GetMin().GetX(); x < (worldBounds.GetMax().GetX() - queryResolution.GetX());
-                     x += queryResolution.GetX())
-                {
-                    float x1 = x + queryResolution.GetX();
-                    float y1 = y + queryResolution.GetY();
-
-                    float z00 = 0.0f;
-                    float z01 = 0.0f;
-                    float z10 = 0.0f;
-                    float z11 = 0.0f;
-                    bool terrainExists;
-
-                    AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-                        z00, &AzFramework::Terrain::TerrainDataRequests::GetHeightFromFloats, x, y,
-                        AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT,
-                        &terrainExists);
-                    AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-                        z01, &AzFramework::Terrain::TerrainDataRequests::GetHeightFromFloats, x, y1,
-                        AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT, &terrainExists);
-                    AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-                        z10, &AzFramework::Terrain::TerrainDataRequests::GetHeightFromFloats, x1, y,
-                        AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT, &terrainExists);
-                    AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-                        z11, &AzFramework::Terrain::TerrainDataRequests::GetHeightFromFloats, x1, y1,
-                        AzFramework::Terrain::TerrainDataRequests::Sampler::DEFAULT, &terrainExists);
-
-                    m_wireframeGridPoints.push_back(AZ::Vector3(x , y , z00));
-                    m_wireframeGridPoints.push_back(AZ::Vector3(x1, y , z10));
-
-                    m_wireframeGridPoints.push_back(AZ::Vector3(x , y1, z01));
-                    m_wireframeGridPoints.push_back(AZ::Vector3(x1, y1, z11));
-
-                    m_wireframeGridPoints.push_back(AZ::Vector3(x , y , z00));
-                    m_wireframeGridPoints.push_back(AZ::Vector3(x , y1, z01));
-
-                    m_wireframeGridPoints.push_back(AZ::Vector3(x1, y , z10));
-                    m_wireframeGridPoints.push_back(AZ::Vector3(x1, y1, z11));
-                }
-            }
-
+            RefreshCachedWireframeGrid();
         }
     }
 
