@@ -32,6 +32,8 @@ git clone https://github.com/o3de/o3de.git
 
 ### Build requirements and redistributables
 
+For the latest details and system requirements, refer to [System Requirements](https://o3de.org/docs/welcome-guide/requirements/) in the documentation.
+
 #### Windows
 
 *   Visual Studio 2019 16.9.2 minimum (All versions supported, including Community): [https://visualstudio.microsoft.com/downloads/](https://visualstudio.microsoft.com/downloads/)
@@ -43,15 +45,8 @@ git clone https://github.com/o3de/o3de.git
 
 #### Optional
 
-*   Wwise version 2021.1.1.7601 minimum: [https://www.audiokinetic.com/download/](https://www.audiokinetic.com/download/)
-    *   Note: This requires registration and installation of a client application to download
-    *   Note: It is generally okay to use a more recent version of Wwise, but some SDK updates will require code changes
-    *   Make sure to select the `SDK(C++)` component during installation of Wwise
-    *   CMake can find the Wwise install location in two ways:
-        *   The `LY_WWISE_INSTALL_PATH` CMake cache variable -- this is checked first
-        *   The `WWISEROOT` environment variable which is set when installing Wwise SDK
-
-For more details and the latest requirements, refer to [System Requirements](https://o3de.org/docs/welcome-guide/requirements/) in the documentation.
+*   Wwise audio SDK
+    *   For the latest version requirements and setup instructions, refer to the [Wwise Audio Engine Gem](https://o3de.org/docs/user-guide/gems/reference/audio/wwise/audio-engine-wwise/) reference in the documentation.
 
 ### Quick start engine setup
 
