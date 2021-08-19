@@ -70,6 +70,9 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PRIVATE
                 AZ::AzCore
                 AZ::AzFramework
+            PUBLIC
+                AZ::AzTest
+                AZ::AzTestShared
     )
 
     if(PAL_TRAIT_BUILD_HOST_TOOLS)
