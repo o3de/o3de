@@ -86,7 +86,7 @@ namespace Blast
 
     void EditorBlastMeshDataComponent::Activate()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::System);
+        AZ_PROFILE_FUNCTION(System);
         OnMeshAssetsChanged();
 
         m_meshFeatureProcessor =
@@ -100,7 +100,7 @@ namespace Blast
 
     void EditorBlastMeshDataComponent::Deactivate()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::System);
+        AZ_PROFILE_FUNCTION(System);
         EditorComponentBase::Deactivate();
         AZ::Render::MaterialComponentNotificationBus::Handler::BusDisconnect(GetEntityId());
         AZ::TransformNotificationBus::Handler::BusDisconnect(GetEntityId());

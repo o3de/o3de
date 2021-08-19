@@ -253,7 +253,7 @@ namespace OpenMesh::IO
         // return binary size of the value
         static size_t size_of(const value_type& _v)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             if (_v.empty())
             {
@@ -274,7 +274,7 @@ namespace OpenMesh::IO
 
         static size_t store(std::ostream& _os, const value_type& _v, bool _swap = false)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             size_t bytes = 0;
             const auto count = static_cast<uint32_t>(_v.size());
@@ -291,7 +291,7 @@ namespace OpenMesh::IO
 
         static size_t restore(std::istream& _is, value_type& _v, bool _swap = false)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             size_t bytes = 0;
             uint32_t count = 0;
@@ -325,7 +325,7 @@ namespace OpenMesh::IO
         // return binary size of the value
         static size_t size_of(const value_type& _v)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             if (_v.empty())
             {
@@ -347,7 +347,7 @@ namespace OpenMesh::IO
 
         static size_t store(std::ostream& _os, const value_type& _v, bool _swap = false)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             size_t bytes = 0;
             const auto count = static_cast<uint32_t>(_v.size());
@@ -365,7 +365,7 @@ namespace OpenMesh::IO
 
         static size_t restore(std::istream& _is, value_type& _v, bool _swap = false)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             size_t bytes = 0;
             uint32_t count = 0;
@@ -483,7 +483,7 @@ namespace WhiteBox
 
     FaceHandlesInternal InternalFaceHandlesFromPolygon(const Api::PolygonHandle& polygonHandle)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         FaceHandlesInternal faceHandlesInternal;
         faceHandlesInternal.reserve(polygonHandle.m_faceHandles.size());
@@ -586,7 +586,7 @@ namespace WhiteBox
 
         VertexHandles MeshVertexHandles(const WhiteBoxMesh& whiteBox)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             VertexHandles vertexHandles;
             vertexHandles.reserve(whiteBox.mesh.n_vertices());
@@ -600,7 +600,7 @@ namespace WhiteBox
 
         FaceHandles MeshFaceHandles(const WhiteBoxMesh& whiteBox)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             FaceHandles faceHandles;
             faceHandles.reserve(whiteBox.mesh.n_faces());
@@ -614,7 +614,7 @@ namespace WhiteBox
 
         PolygonHandles MeshPolygonHandles(const WhiteBoxMesh& whiteBox)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             PolygonPropertyHandle polygonPropsHandle;
             whiteBox.mesh.get_property_handle(polygonPropsHandle, PolygonProps);
@@ -637,7 +637,7 @@ namespace WhiteBox
 
         EdgeHandlesCollection PolygonBorderEdgeHandles(const WhiteBoxMesh& whiteBox, const PolygonHandle& polygonHandle)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             const HalfedgeHandlesCollection halfedgeHandlesCollection =
                 PolygonBorderHalfedgeHandles(whiteBox, polygonHandle);
@@ -663,7 +663,7 @@ namespace WhiteBox
 
         EdgeHandles PolygonBorderEdgeHandlesFlattened(const WhiteBoxMesh& whiteBox, const PolygonHandle& polygonHandle)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             const EdgeHandlesCollection borderEdgeHandlesCollection = PolygonBorderEdgeHandles(whiteBox, polygonHandle);
 
@@ -679,7 +679,7 @@ namespace WhiteBox
 
         EdgeHandles MeshPolygonEdgeHandles(const WhiteBoxMesh& whiteBox)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             auto polygonHandles = MeshPolygonHandles(whiteBox);
 
@@ -698,7 +698,7 @@ namespace WhiteBox
 
         EdgeHandles MeshEdgeHandles(const WhiteBoxMesh& whiteBox)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             EdgeHandles edgeHandles;
             edgeHandles.reserve(whiteBox.mesh.n_edges());
@@ -712,7 +712,7 @@ namespace WhiteBox
 
         EdgeTypes MeshUserEdgeHandles(const WhiteBoxMesh& whiteBox)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             EdgeHandles userEdgeHandles = MeshPolygonEdgeHandles(whiteBox);
             AZStd::sort(userEdgeHandles.begin(), userEdgeHandles.end());
@@ -732,7 +732,7 @@ namespace WhiteBox
 
         AZStd::vector<AZ::Vector3> MeshVertexPositions(const WhiteBoxMesh& whiteBox)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             return VertexPositions(whiteBox, MeshVertexHandles(whiteBox));
         }
@@ -794,7 +794,7 @@ namespace WhiteBox
 
         AZStd::vector<AZ::Vector3> FacesPositions(const WhiteBoxMesh& whiteBox, const FaceHandles& faceHandles)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             AZStd::vector<AZ::Vector3> triangles;
             triangles.reserve(faceHandles.size() * 3);
@@ -866,7 +866,7 @@ namespace WhiteBox
 
         HalfedgeHandles VertexHalfedgeHandles(const WhiteBoxMesh& whiteBox, const VertexHandle vertexHandle)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             HalfedgeHandles outgoingHandles = VertexOutgoingHalfedgeHandles(whiteBox, vertexHandle);
             HalfedgeHandles incomingHandles = VertexIncomingHalfedgeHandles(whiteBox, vertexHandle);
@@ -881,7 +881,7 @@ namespace WhiteBox
 
         EdgeHandles VertexEdgeHandles(const WhiteBoxMesh& whiteBox, const VertexHandle vertexHandle)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             const auto omVertexHandle = om_vh(vertexHandle);
 
@@ -898,7 +898,7 @@ namespace WhiteBox
             const WhiteBoxMesh& whiteBox, const FaceHandle faceHandle, FaceHandles& faceHandles,
             const AZ::Vector3& normal)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             const auto* const found_fh = AZStd::find(faceHandles.cbegin(), faceHandles.cend(), faceHandle);
 
@@ -917,7 +917,7 @@ namespace WhiteBox
 
         static FaceHandle OppositeFaceHandle(const WhiteBoxMesh& whiteBox, const HalfedgeHandle halfedgeHandle)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             const HalfedgeHandle oppositeHalfedgeHandle = HalfedgeOppositeHalfedgeHandle(whiteBox, halfedgeHandle);
 
@@ -936,7 +936,7 @@ namespace WhiteBox
             const WhiteBoxMesh& whiteBox, const FaceHandle faceHandle, FaceHandles& faceHandles,
             const AZ::Vector3& normal)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             if (BuildFaceHandles(whiteBox, faceHandle, faceHandles, normal))
             {
@@ -957,7 +957,7 @@ namespace WhiteBox
 
         FaceHandles SideFaceHandles(const WhiteBoxMesh& whiteBox, const FaceHandle faceHandle)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             FaceHandles faceHandles;
             SideFaceHandlesInternal(
@@ -969,7 +969,7 @@ namespace WhiteBox
         static HalfedgeHandlesCollection BorderHalfedgeHandles(
             const WhiteBoxMesh& whiteBox, const FaceHandles& faceHandles)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             // build all possible halfedge handles
             HalfedgeHandles halfedgeHandles;
@@ -1069,7 +1069,7 @@ namespace WhiteBox
 
         HalfedgeHandlesCollection SideBorderHalfedgeHandles(const WhiteBoxMesh& whiteBox, const FaceHandle faceHandle)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             // find all face handles for a side
             return BorderHalfedgeHandles(whiteBox, SideFaceHandles(whiteBox, faceHandle));
@@ -1078,7 +1078,7 @@ namespace WhiteBox
         static VertexHandlesCollection BorderVertexHandles(
             const WhiteBoxMesh& whiteBox, const HalfedgeHandlesCollection& halfedgeHandlesCollection)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             VertexHandlesCollection orderedVertexHandlesCollection;
             orderedVertexHandlesCollection.reserve(halfedgeHandlesCollection.size());
@@ -1101,14 +1101,14 @@ namespace WhiteBox
 
         VertexHandlesCollection SideBorderVertexHandles(const WhiteBoxMesh& whiteBox, const FaceHandle faceHandle)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             return BorderVertexHandles(whiteBox, SideBorderHalfedgeHandles(whiteBox, faceHandle));
         }
 
         static VertexHandles FacesVertexHandles(const WhiteBoxMesh& whiteBox, const FaceHandles& faceHandles)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             VertexHandles vertexHandles;
             for (const FaceHandle faceHandle : faceHandles)
@@ -1132,7 +1132,7 @@ namespace WhiteBox
 
         VertexHandles SideVertexHandles(const WhiteBoxMesh& whiteBox, const FaceHandle faceHandle)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             return FacesVertexHandles(whiteBox, SideFaceHandles(whiteBox, faceHandle));
         }
@@ -1252,7 +1252,7 @@ namespace WhiteBox
         static bool EdgeIsUser(
             const WhiteBoxMesh& whiteBox, const HalfedgeHandle halfedgeHandle, const EdgeHandle edgeHandle)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             const auto polygonEdgeHandles = PolygonBorderEdgeHandlesFlattened(
                 whiteBox, FacePolygonHandle(whiteBox, HalfedgeFaceHandle(whiteBox, halfedgeHandle)));
@@ -1276,7 +1276,7 @@ namespace WhiteBox
 
         EdgeHandles EdgeGrouping(const WhiteBoxMesh& whiteBox, const EdgeHandle edgeHandle)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             // a non-user ('mesh') edge is never part of a grouping so if one is passed
             // in ensure we return an empty group
@@ -1349,7 +1349,7 @@ namespace WhiteBox
 
         bool EdgeIsHidden(const WhiteBoxMesh& whiteBox, const EdgeHandle edgeHandle)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             const EdgeHandles userEdgeHandles = MeshPolygonEdgeHandles(whiteBox);
             return AZStd::find(userEdgeHandles.cbegin(), userEdgeHandles.cend(), edgeHandle) == userEdgeHandles.cend();
@@ -1357,7 +1357,7 @@ namespace WhiteBox
 
         AZStd::vector<FaceHandle> EdgeFaceHandles(const WhiteBoxMesh& whiteBox, const EdgeHandle edgeHandle)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             const auto openMeshEdgeHandle = om_eh(edgeHandle);
             const auto firstHalfedgeHandle = whiteBox.mesh.halfedge_handle(openMeshEdgeHandle, 0);
@@ -1405,7 +1405,7 @@ namespace WhiteBox
 
         HalfedgeHandles EdgeHalfedgeHandles(const WhiteBoxMesh& whiteBox, EdgeHandle edgeHandle)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             const AZStd::array<HalfedgeHandle, 2> halfedgeHandles = {
                 EdgeHalfedgeHandle(whiteBox, edgeHandle, EdgeHalfedge::First),
@@ -1429,7 +1429,7 @@ namespace WhiteBox
             WHITEBOX_LOG(
                 "White Box", "TranslateEdge eh(%s) %s", ToString(edgeHandle).c_str(),
                 AZ::ToString(displacement).c_str());
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             const auto vertexHandles = EdgeVertexHandles(whiteBox, edgeHandle);
             for (const auto& vertexHandle : vertexHandles)
@@ -1450,7 +1450,7 @@ namespace WhiteBox
         static HalfedgeHandle FindBestFitHalfedge(
             WhiteBoxMesh& whiteBox, const EdgeHandle edgeHandle, const AZ::Vector3& displacement)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             // get both halfedge handles for the edge (0 and 1 just correspond to each halfedge)
             const HalfedgeHandle firstHalfedgeHandle = EdgeHalfedgeHandle(whiteBox, edgeHandle, EdgeHalfedge::First);
@@ -1495,7 +1495,7 @@ namespace WhiteBox
         static Internal::EdgeAppendVertexHandles CalculateEdgeAppendVertexHandles(
             WhiteBoxMesh& whiteBox, const EdgeHandle edgeHandle, const AZ::Vector3& displacement)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             // based on the displacement find which halfedge is a better fit (which direction did we move in)
             const HalfedgeHandle halfedgeHandle = FindBestFitHalfedge(whiteBox, edgeHandle, displacement);
@@ -1575,7 +1575,7 @@ namespace WhiteBox
         static Internal::EdgeAppendPolygonHandles AddNewPolygonsForEdgeAppend(
             WhiteBoxMesh& whiteBox, const Internal::EdgeAppendVertexHandles& edgeAppendVertexHandles)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             Internal::EdgeAppendPolygonHandles edgeAppendPolygonHandles;
 
@@ -1636,7 +1636,7 @@ namespace WhiteBox
         static EdgeHandle FindSelectedEdgeHandle(
             const WhiteBoxMesh& whiteBox, const PolygonHandle& nearPolygonHandle, const PolygonHandle& farPolygonHandle)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             // actually find the new edge we created
             const EdgeHandles nearEdgeHandles = PolygonBorderEdgeHandlesFlattened(whiteBox, nearPolygonHandle);
@@ -1670,7 +1670,7 @@ namespace WhiteBox
             WHITEBOX_LOG(
                 "White Box", "TranslateEdgeAppend eh(%s) %s", ToString(edgeHandle).c_str(),
                 AZ::ToString(displacement).c_str());
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             // the new and existing handles required for an edge append
             const Internal::EdgeAppendVertexHandles edgeAppendVertexHandles =
@@ -1698,7 +1698,7 @@ namespace WhiteBox
 
         AZ::Vector3 PolygonNormal(const WhiteBoxMesh& whiteBox, const PolygonHandle& polygonHandle)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             return AZStd::accumulate(
                        polygonHandle.m_faceHandles.cbegin(), polygonHandle.m_faceHandles.cend(),
@@ -1712,7 +1712,7 @@ namespace WhiteBox
 
         PolygonHandle FacePolygonHandle(const WhiteBoxMesh& whiteBox, const FaceHandle faceHandle)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             PolygonPropertyHandle polygonPropsHandle;
             whiteBox.mesh.get_property_handle(polygonPropsHandle, PolygonProps);
@@ -1730,7 +1730,7 @@ namespace WhiteBox
 
         VertexHandles PolygonVertexHandles(const WhiteBoxMesh& whiteBox, const PolygonHandle& polygonHandle)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             return FacesVertexHandles(whiteBox, polygonHandle.m_faceHandles);
         }
@@ -1738,7 +1738,7 @@ namespace WhiteBox
         VertexHandlesCollection PolygonBorderVertexHandles(
             const WhiteBoxMesh& whiteBox, const PolygonHandle& polygonHandle)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             return BorderVertexHandles(whiteBox, PolygonBorderHalfedgeHandles(whiteBox, polygonHandle));
         }
@@ -1746,7 +1746,7 @@ namespace WhiteBox
         VertexHandles PolygonBorderVertexHandlesFlattened(
             const WhiteBoxMesh& whiteBox, const PolygonHandle& polygonHandle)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             const VertexHandlesCollection borderVertexHandlesCollection =
                 BorderVertexHandles(whiteBox, PolygonBorderHalfedgeHandles(whiteBox, polygonHandle));
@@ -1764,7 +1764,7 @@ namespace WhiteBox
         HalfedgeHandles PolygonBorderHalfedgeHandlesFlattened(
             const WhiteBoxMesh& whiteBox, const PolygonHandle& polygonHandle)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             const HalfedgeHandlesCollection borderHalfedgeHandlesCollection =
                 PolygonBorderHalfedgeHandles(whiteBox, polygonHandle);
@@ -1781,7 +1781,7 @@ namespace WhiteBox
 
         HalfedgeHandles PolygonHalfedgeHandles(const WhiteBoxMesh& whiteBox, const PolygonHandle& polygonHandle)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             return AZStd::accumulate(
                 polygonHandle.m_faceHandles.cbegin(), polygonHandle.m_faceHandles.cend(), HalfedgeHandles{},
@@ -1802,7 +1802,7 @@ namespace WhiteBox
         AZStd::vector<AZ::Vector3> PolygonVertexPositions(
             const WhiteBoxMesh& whiteBox, const PolygonHandle& polygonHandle)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             return VertexPositions(whiteBox, PolygonVertexHandles(whiteBox, polygonHandle));
         }
@@ -1810,7 +1810,7 @@ namespace WhiteBox
         VertexPositionsCollection PolygonBorderVertexPositions(
             const WhiteBoxMesh& whiteBox, const PolygonHandle& polygonHandle)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             const auto polygonBorderVertexHandlesCollection = PolygonBorderVertexHandles(whiteBox, polygonHandle);
             VertexPositionsCollection polygonBorderVertexPositionsCollection;
@@ -1827,7 +1827,7 @@ namespace WhiteBox
         AZStd::vector<AZ::Vector3> PolygonFacesPositions(
             const WhiteBoxMesh& whiteBox, const PolygonHandle& polygonHandle)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             return FacesPositions(whiteBox, polygonHandle.m_faceHandles);
         }
@@ -1854,7 +1854,7 @@ namespace WhiteBox
 
         EdgeHandles VertexUserEdgeHandles(const WhiteBoxMesh& whiteBox, const VertexHandle vertexHandle)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             auto vertexEdgeHandles = VertexEdgeHandles(whiteBox, vertexHandle);
 
@@ -1874,7 +1874,7 @@ namespace WhiteBox
         static AZStd::vector<AZ::Vector3> VertexUserEdges(
             const WhiteBoxMesh& whiteBox, const VertexHandle vertexHandle, EdgeFn&& edgeFn)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             const auto vertexEdgeHandles = VertexUserEdgeHandles(whiteBox, vertexHandle);
 
@@ -1931,13 +1931,13 @@ namespace WhiteBox
 
         AZ::Vector3 FaceNormal(const WhiteBoxMesh& whiteBox, const FaceHandle faceHandle)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
             return whiteBox.mesh.normal(om_fh(faceHandle));
         }
 
         AZ::Vector2 HalfedgeUV(const WhiteBoxMesh& whiteBox, const HalfedgeHandle halfedgeHandle)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
             return whiteBox.mesh.texcoord2D(om_heh(halfedgeHandle));
         }
 
@@ -1964,7 +1964,7 @@ namespace WhiteBox
 
         Faces MeshFaces(const WhiteBoxMesh& whiteBox)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             Faces faces;
             faces.reserve(MeshFaceCount(whiteBox));
@@ -1989,7 +1989,7 @@ namespace WhiteBox
 
         void CalculatePlanarUVs(WhiteBoxMesh& whiteBox, const FaceHandles& faceHandles)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             auto& mesh = whiteBox.mesh;
             for (const auto faceHandle : faceHandles)
@@ -2012,7 +2012,7 @@ namespace WhiteBox
 
         void CalculatePlanarUVs(WhiteBoxMesh& whiteBox)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             CalculatePlanarUVs(whiteBox, MeshFaceHandles(whiteBox));
         }
@@ -2022,7 +2022,7 @@ namespace WhiteBox
             const HalfedgeHandle oppositeHalfedgeHandle, const HalfedgeHandles& borderHalfedgeHandles,
             const EdgeHandles& buildingEdgeHandles)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             // the polygon handle to build
             PolygonHandle polygonHandle;
@@ -2119,7 +2119,7 @@ namespace WhiteBox
             WhiteBoxMesh& whiteBox, const EdgeHandle edgeHandle, EdgeHandles& restoringEdgeHandles)
         {
             WHITEBOX_LOG("White Box", "RestoreEdge eh(%s)", ToString(edgeHandle).c_str());
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             // check we're not selecting an existing user edge
             if (!EdgeIsHidden(whiteBox, edgeHandle))
@@ -2231,7 +2231,7 @@ namespace WhiteBox
         PolygonHandle HideEdge(WhiteBoxMesh& whiteBox, const EdgeHandle edgeHandle)
         {
             WHITEBOX_LOG("White Box", "HideEdge eh(%s)", ToString(edgeHandle).c_str());
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             if (MeshHalfedgeCount(whiteBox) == 0)
             {
@@ -2296,7 +2296,7 @@ namespace WhiteBox
         VertexHandle SplitFace(WhiteBoxMesh& whiteBox, const FaceHandle faceHandle, const AZ::Vector3& position)
         {
             WHITEBOX_LOG("White Box", "SplitFace fh(%s)", ToString(faceHandle).c_str());
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             const auto omFaceHandle = om_fh(faceHandle);
             const auto omVertexHandle = whiteBox.mesh.split_copy(omFaceHandle, position);
@@ -2340,7 +2340,7 @@ namespace WhiteBox
         VertexHandle SplitEdge(WhiteBoxMesh& whiteBox, const EdgeHandle edgeHandle, const AZ::Vector3& position)
         {
             WHITEBOX_LOG("White Box", "SplitEdge eh(%s)", ToString(edgeHandle).c_str());
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             const HalfedgeHandle halfedgeHandle = EdgeHalfedgeHandle(whiteBox, edgeHandle, EdgeHalfedge::First);
             const VertexHandle tailVertexHandle = HalfedgeVertexHandleAtTail(whiteBox, halfedgeHandle);
@@ -2441,7 +2441,7 @@ namespace WhiteBox
 
         void Clear(WhiteBoxMesh& whiteBox)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             PolygonPropertyHandle polygonPropsHandle;
             whiteBox.mesh.get_property_handle(polygonPropsHandle, PolygonProps);
@@ -2462,7 +2462,7 @@ namespace WhiteBox
             WHITEBOX_LOG(
                 "White Box", "AddTriPolygon vh(%s), vh(%s), vh(%s)", ToString(vh0).c_str(), ToString(vh1).c_str(),
                 ToString(vh2).c_str());
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             return AddPolygon(whiteBox, AZStd::vector<FaceVertHandles>{{vh0, vh1, vh2}});
         }
@@ -2474,7 +2474,7 @@ namespace WhiteBox
             WHITEBOX_LOG(
                 "White Box", "AddQuadPolygon vh(%s), vh(%s), vh(%s), vh(%s)", ToString(vh0).c_str(),
                 ToString(vh1).c_str(), ToString(vh2).c_str(), ToString(vh3).c_str());
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             return AddPolygon(whiteBox, AZStd::vector<FaceVertHandles>{{vh0, vh1, vh2}, {vh0, vh2, vh3}});
         }
@@ -2482,7 +2482,7 @@ namespace WhiteBox
         PolygonHandle AddPolygon(WhiteBoxMesh& whiteBox, const FaceVertHandlesList& faceVertHandles)
         {
             WHITEBOX_LOG("White Box", "AddPolygon [%s]", ToString(faceVertHandles).c_str());
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             PolygonPropertyHandle polygonPropsHandle;
             whiteBox.mesh.get_property_handle(polygonPropsHandle, PolygonProps);
@@ -2510,7 +2510,7 @@ namespace WhiteBox
 
         PolygonHandles InitializeAsUnitCube(WhiteBoxMesh& whiteBox)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             // generate vertices
             VertexHandle vertexHandles[8];
@@ -2550,7 +2550,7 @@ namespace WhiteBox
 
         PolygonHandle InitializeAsUnitQuad(WhiteBoxMesh& whiteBox)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             // generate vertices
             VertexHandle vertexHandles[4];
@@ -2573,7 +2573,7 @@ namespace WhiteBox
 
         PolygonHandle InitializeAsUnitTriangle(WhiteBoxMesh& whiteBox)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             // generate vertices
             VertexHandle vertexHandles[3];
@@ -2602,7 +2602,7 @@ namespace WhiteBox
             WHITEBOX_LOG(
                 "White Box", "SetVertexPosition vh(%s) %s", ToString(vertexHandle).c_str(),
                 AZ::ToString(position).c_str());
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             whiteBox.mesh.set_point(om_vh(vertexHandle), position);
         }
@@ -2613,7 +2613,7 @@ namespace WhiteBox
             WHITEBOX_LOG(
                 "White Box", "SetVertexPositionAndUpdateUVs vh(%s) %s", ToString(vertexHandle).c_str(),
                 AZ::ToString(position).c_str());
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             SetVertexPosition(whiteBox, vertexHandle, position);
             CalculatePlanarUVs(whiteBox);
@@ -2622,7 +2622,7 @@ namespace WhiteBox
         VertexHandle AddVertex(WhiteBoxMesh& whiteBox, const AZ::Vector3& vertex)
         {
             WHITEBOX_LOG("White Box", "AddVertex %s", AZ::ToString(vertex).c_str());
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             return wb_vh(whiteBox.mesh.add_vertex(vertex));
         }
@@ -2632,21 +2632,21 @@ namespace WhiteBox
             WHITEBOX_LOG(
                 "White Box", "AddFace vh(%s), vh(%s), vh(%s)", ToString(v0).c_str(), ToString(v1).c_str(),
                 ToString(v2).c_str());
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             return wb_fh(whiteBox.mesh.add_face(om_vh(v0), om_vh(v1), om_vh(v2)));
         }
 
         void CalculateNormals(WhiteBoxMesh& whiteBox)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             whiteBox.mesh.update_normals();
         }
 
         void ZeroUVs(WhiteBoxMesh& whiteBox)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             for (const Mesh::FaceHandle faceHandle : whiteBox.mesh.faces())
             {
@@ -2692,7 +2692,7 @@ namespace WhiteBox
 
         AZ::Vector3 VerticesMidpoint(const WhiteBoxMesh& whiteBox, const VertexHandles& vertexHandles)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             AzToolsFramework::MidpointCalculator midpointCalculator;
             for (const auto vertexHandle : vertexHandles)
@@ -2707,7 +2707,7 @@ namespace WhiteBox
             const WhiteBoxMesh& whiteBox, const Internal::VertexHandlePair vertexHandlePair,
             const PolygonHandle& selectedPolygonHandle, const PolygonHandle& adjacentPolygonHandle)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             const auto selectedPolygonEdgeHandles = PolygonBorderEdgeHandlesFlattened(whiteBox, selectedPolygonHandle);
             const auto adjacentPolygonEdgeHandles = PolygonBorderEdgeHandlesFlattened(whiteBox, adjacentPolygonHandle);
@@ -2744,7 +2744,7 @@ namespace WhiteBox
             const PolygonHandle& selectedPolygonHandle, const PolygonHandle& adjacentPolygonHandle,
             FaceVertHandlesCollection& vertsForLinkingAdjacentPolygons)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             // if we found a valid halfedge
             if (const HalfedgeHandle foundHalfedgeHandle = FindHalfedgeInAdjacentPolygon(
@@ -2851,7 +2851,7 @@ namespace WhiteBox
             FaceVertHandlesCollection& vertsForExistingAdjacentPolygons,
             FaceVertHandlesCollection& vertsForLinkingAdjacentPolygons)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             // adjacent faces
             for (size_t index = 0; index < borderVertexHandles.size(); ++index)
@@ -2912,7 +2912,7 @@ namespace WhiteBox
         // during garbage_collect
         void RemoveFaces(WhiteBoxMesh& whiteBox, const FaceHandles& faceHandles)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             whiteBox.mesh.request_face_status();
             whiteBox.mesh.request_edge_status();
@@ -3014,7 +3014,7 @@ namespace WhiteBox
         AZStd::vector<FaceVertHandles> BuildNewVertexFaceHandles(
             WhiteBoxMesh& whiteBox, const Internal::AppendedVerts& appendedVerts, const FaceHandles& existingFaces)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             AZStd::vector<FaceVertHandles> faces;
             faces.reserve(existingFaces.size());
@@ -3068,7 +3068,7 @@ namespace WhiteBox
             WhiteBoxMesh& whiteBox, const VertexHandles& existingVertexHandles, const PolygonHandle& polygonHandle,
             AppendVertFn&& appendFn)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             const AZ::Vector3 polygonNormal = PolygonNormal(whiteBox, polygonHandle);
             const auto polygonHalfedgeHandles = PolygonHalfedgeHandles(whiteBox, polygonHandle);
@@ -3146,7 +3146,7 @@ namespace WhiteBox
         static AppendedPolygonHandles Extrude(
             WhiteBoxMesh& whiteBox, const PolygonHandle& polygonHandle, AppendVertexFn&& appendFn)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             // find border vertex handles for polygon
             const auto polygonBorderVertexHandlesCollection = PolygonBorderVertexHandles(whiteBox, polygonHandle);
@@ -3261,7 +3261,7 @@ namespace WhiteBox
             WhiteBoxMesh& whiteBox, const PolygonHandle& polygonHandle, const float distance)
         {
             WHITEBOX_LOG("White Box", "TranslatePolygonAppend ph(%s) %f", ToString(polygonHandle).c_str(), distance)
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             return TranslatePolygonAppendAdvanced(whiteBox, polygonHandle, distance).m_appendedPolygonHandle;
         }
@@ -3271,7 +3271,7 @@ namespace WhiteBox
         {
             WHITEBOX_LOG(
                 "White Box", "TranslatePolygonAppendAdvanced ph(%s) %f", ToString(polygonHandle).c_str(), distance)
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             // check mesh has faces
             if (whiteBox.mesh.n_faces() == 0)
@@ -3288,7 +3288,7 @@ namespace WhiteBox
         void TranslatePolygon(WhiteBoxMesh& whiteBox, const PolygonHandle& polygonHandle, const float distance)
         {
             WHITEBOX_LOG("White Box", "TranslatePolygon ph(%s) %d", ToString(polygonHandle).c_str(), distance)
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             const auto vertexHandles = PolygonVertexHandles(whiteBox, polygonHandle);
             const auto vertexPositions = VertexPositions(whiteBox, vertexHandles);
@@ -3306,7 +3306,7 @@ namespace WhiteBox
             WhiteBoxMesh& whiteBox, const PolygonHandle& polygonHandle, const float scale)
         {
             WHITEBOX_LOG("White Box", "ScalePolygonAppendRelative ph(%s) %f", ToString(polygonHandle).c_str(), scale);
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             // check mesh has faces
             if (whiteBox.mesh.n_faces() == 0)
@@ -3329,7 +3329,7 @@ namespace WhiteBox
 
         static AZ::Transform BuildSpace(const AZ::Vector3& normal, const AZ::Vector3& pivot)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             AZ::Vector3 axis1;
             AZ::Vector3 axis2;
@@ -3359,7 +3359,7 @@ namespace WhiteBox
             WHITEBOX_LOG(
                 "White Box", "ScalePolygonRelative ph(%s) pivot %s scale: %f", ToString(polygonHandle).c_str(),
                 AZ::ToString(pivot).c_str(), scaleDelta);
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             const AZ::Transform polygonSpace = PolygonSpace(whiteBox, polygonHandle, pivot);
             for (const auto vertexHandle : PolygonVertexHandles(whiteBox, polygonHandle))
@@ -3375,7 +3375,7 @@ namespace WhiteBox
 
         bool WriteMesh(const WhiteBoxMesh& whiteBox, WhiteBoxMeshStream& output)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             AZStd::lock_guard lg(g_omSerializationLock);
 
@@ -3399,7 +3399,7 @@ namespace WhiteBox
 
         ReadResult ReadMesh(WhiteBoxMesh& whiteBox, const WhiteBoxMeshStream& input)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             if (input.empty())
             {
@@ -3434,7 +3434,7 @@ namespace WhiteBox
 
         WhiteBoxMeshPtr CloneMesh(const WhiteBoxMesh& whiteBox)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             WhiteBoxMeshStream clonedData;
             if (!WriteMesh(whiteBox, clonedData))

@@ -270,7 +270,7 @@ namespace AZ
                 return;
             }
 
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
             AZ_ATOM_PROFILE_FUNCTION("RPI", "RPISystem: RenderTick");
 
             // Query system update is to increment the frame count

@@ -1022,7 +1022,7 @@ namespace ScriptCanvas
 
     void Node::SetToDefaultValueOfType(const SlotId& slotId)
     {
-        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "ScriptCanvas::Node::SetToDefaultValueOfType");
+        AZ_PROFILE_SCOPE(ScriptCanvas, "ScriptCanvas::Node::SetToDefaultValueOfType");
 
         Slot* slot = GetSlot(slotId);
 
@@ -1616,7 +1616,7 @@ namespace ScriptCanvas
 
     Data::Type Node::GetSlotDataType(const SlotId& slotId) const
     {
-        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "ScriptCanvas::Node::GetSlotDataType");
+        AZ_PROFILE_SCOPE(ScriptCanvas, "ScriptCanvas::Node::GetSlotDataType");
 
         const auto* slot = GetSlot(slotId);
 
@@ -1631,7 +1631,7 @@ namespace ScriptCanvas
 
     VariableId Node::GetSlotVariableId(const SlotId& slotId) const
     {
-        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "ScriptCanvas::Node::GetSlotVariableId");
+        AZ_PROFILE_SCOPE(ScriptCanvas, "ScriptCanvas::Node::GetSlotVariableId");
 
         Slot* slot = GetSlot(slotId);
 
@@ -1645,7 +1645,7 @@ namespace ScriptCanvas
 
     void Node::SetSlotVariableId(const SlotId& slotId, const VariableId& variableId)
     {
-        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "ScriptCanvas::Node::SetSlotVariableId");
+        AZ_PROFILE_SCOPE(ScriptCanvas, "ScriptCanvas::Node::SetSlotVariableId");
 
         Slot* slot = GetSlot(slotId);
 
@@ -1664,7 +1664,7 @@ namespace ScriptCanvas
 
     void Node::ClearSlotVariableId(const SlotId& slotId)
     {
-        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "ScriptCanvas::Node::ResetSlotVariableId");
+        AZ_PROFILE_SCOPE(ScriptCanvas, "ScriptCanvas::Node::ResetSlotVariableId");
 
         SetSlotVariableId(slotId, VariableId());
     }
@@ -1861,7 +1861,7 @@ namespace ScriptCanvas
 
     AZStd::vector<const Slot*> Node::GetAllSlotsByDescriptor(const SlotDescriptor& slotDescriptor, bool allowLatentSlots) const
     {
-        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "ScriptCanvas::Node::GetSlotsByType");
+        AZ_PROFILE_SCOPE(ScriptCanvas, "ScriptCanvas::Node::GetSlotsByType");
 
         AZStd::vector<const Slot*> slots;
 
@@ -1879,7 +1879,7 @@ namespace ScriptCanvas
 
     AZStd::vector<Endpoint> Node::GetAllEndpointsByDescriptor(const SlotDescriptor& slotDescriptor, bool allowLatentSlots) const
     {
-        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "ScriptCanvas::Node::GetEndpointsByType");
+        AZ_PROFILE_SCOPE(ScriptCanvas, "ScriptCanvas::Node::GetEndpointsByType");
 
         AZStd::vector<Endpoint> endpoints;
 
@@ -1898,7 +1898,7 @@ namespace ScriptCanvas
 
     AZStd::vector<SlotId> Node::GetSlotIds(AZStd::string_view slotName) const
     {
-        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "ScriptCanvas::Node::GetSlotIds");
+        AZ_PROFILE_SCOPE(ScriptCanvas, "ScriptCanvas::Node::GetSlotIds");
 
         auto nameSlotRange = m_slotNameMap.equal_range(slotName);
         AZStd::vector<SlotId> result;
@@ -1911,7 +1911,7 @@ namespace ScriptCanvas
 
     Slot* Node::GetSlot(const SlotId& slotId) const
     {
-        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "ScriptCanvas::Node::GetSlot");
+        AZ_PROFILE_SCOPE(ScriptCanvas, "ScriptCanvas::Node::GetSlot");
 
         if (slotId.IsValid())
         {
@@ -1994,7 +1994,7 @@ namespace ScriptCanvas
 
     AZStd::vector<const Slot*> Node::GetAllSlots() const
     {
-        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "ScriptCanvas::Node::GetAllSlots");
+        AZ_PROFILE_SCOPE(ScriptCanvas, "ScriptCanvas::Node::GetAllSlots");
 
         const SlotList& slots = GetSlots();
 
@@ -2011,7 +2011,7 @@ namespace ScriptCanvas
 
     AZStd::vector<Slot*> Node::ModAllSlots()
     {
-        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "ScriptCanvas::Node::ModAllSlots");
+        AZ_PROFILE_SCOPE(ScriptCanvas, "ScriptCanvas::Node::ModAllSlots");
 
         SlotList& slots = GetSlots();
 
@@ -2408,7 +2408,7 @@ namespace ScriptCanvas
 
     NodePtrConstList Node::FindConnectedNodesByDescriptor(const SlotDescriptor& slotDescriptor, bool followLatentConnections) const
     {
-        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "ScriptCanvas::Node::GetConnectedNodesByType");
+        AZ_PROFILE_SCOPE(ScriptCanvas, "ScriptCanvas::Node::GetConnectedNodesByType");
 
         NodePtrConstList connectedNodes;
 
@@ -2427,7 +2427,7 @@ namespace ScriptCanvas
 
     AZStd::vector<AZStd::pair<const Node*, SlotId>> Node::FindConnectedNodesAndSlotsByDescriptor(const SlotDescriptor& slotDescriptor, bool followLatentConnections) const
     {
-        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "ScriptCanvas::Node::GetConnectedNodesAndSlotsByType");
+        AZ_PROFILE_SCOPE(ScriptCanvas, "ScriptCanvas::Node::GetConnectedNodesAndSlotsByType");
 
         AZStd::vector<AZStd::pair<const Node*, SlotId>> connectedNodes;
 
@@ -2593,7 +2593,7 @@ namespace ScriptCanvas
 
     void Node::OnDatumEdited(const Datum* datum)
     {
-        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "ScriptCanvas::Node::OnDatumChanged");
+        AZ_PROFILE_SCOPE(ScriptCanvas, "ScriptCanvas::Node::OnDatumChanged");
 
         SlotId slotId;
 
@@ -2788,7 +2788,7 @@ namespace ScriptCanvas
 
     SlotId Node::FindSlotIdForDescriptor(AZStd::string_view slotName, const SlotDescriptor& descriptor) const
     {
-        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "ScriptCanvas::Node::FindSlotIdForDescriptor");
+        AZ_PROFILE_SCOPE(ScriptCanvas, "ScriptCanvas::Node::FindSlotIdForDescriptor");
 
         auto slotNameRange = m_slotNameMap.equal_range(slotName);
         auto nameSlotIt = AZStd::find_if(slotNameRange.first, slotNameRange.second, [descriptor](const AZStd::pair<AZStd::string, SlotIterator>& nameSlotPair)
@@ -2801,7 +2801,7 @@ namespace ScriptCanvas
 
     int Node::FindSlotIndex(const SlotId& slotId) const
     {
-        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "ScriptCanvas::Node::FindSlotIndex");
+        AZ_PROFILE_SCOPE(ScriptCanvas, "ScriptCanvas::Node::FindSlotIndex");
 
         auto slotIdIter = m_slotIdIteratorCache.find(slotId);
 
@@ -2816,7 +2816,7 @@ namespace ScriptCanvas
 
     bool Node::IsConnected(const Slot& slot) const
     {
-        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "ScriptCanvas::Node::IsConnected");
+        AZ_PROFILE_SCOPE(ScriptCanvas, "ScriptCanvas::Node::IsConnected");
         return slot.IsVariableReference() || m_graphRequestBus->IsEndpointConnected(slot.GetEndpoint());
     }
 
@@ -2862,7 +2862,7 @@ namespace ScriptCanvas
     
     EndpointsResolved Node::GetConnectedNodes(const Slot& slot) const
     {
-        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "ScriptCanvas::Node::GetConnectedNodes");
+        AZ_PROFILE_SCOPE(ScriptCanvas, "ScriptCanvas::Node::GetConnectedNodes");
 
         EndpointsResolved connectedNodes;
 
@@ -2906,7 +2906,7 @@ namespace ScriptCanvas
 
     AZStd::vector<AZStd::pair<Node*, const SlotId>> Node::ModConnectedNodes(const Slot& slot) const
     {
-        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "ScriptCanvas::Node::ModConnectedNodes");
+        AZ_PROFILE_SCOPE(ScriptCanvas, "ScriptCanvas::Node::ModConnectedNodes");
         AZStd::vector<AZStd::pair<Node*, const SlotId>> connectedNodes;
         ModConnectedNodes(slot, connectedNodes);
         return connectedNodes;
@@ -3481,7 +3481,7 @@ namespace ScriptCanvas
 
     AZStd::vector<const Slot*> Node::GetSlotsByType(CombinedSlotType slotType) const
     {
-        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::ScriptCanvas, "ScriptCanvas::Node::GetSlotsByType");
+        AZ_PROFILE_SCOPE(ScriptCanvas, "ScriptCanvas::Node::GetSlotsByType");
 
         AZStd::vector<const Slot*> slots;
 

@@ -1967,7 +1967,7 @@ QPoint EditorViewportWidget::WorldToViewParticleEditor(const Vec3& wp, int width
 Vec3 EditorViewportWidget::ViewToWorld(
     const QPoint& vp, bool* collideWithTerrain, bool onlyTerrain, bool bSkipVegetation, bool bTestRenderMesh, bool* collideWithObject) const
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
 
     AZ_UNUSED(collideWithTerrain)
     AZ_UNUSED(onlyTerrain)
@@ -2002,7 +2002,7 @@ Vec3 EditorViewportWidget::ViewToWorldNormal(const QPoint& vp, bool onlyTerrain,
     AZ_UNUSED(onlyTerrain)
     AZ_UNUSED(bTestRenderMesh)
 
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
 
     return Vec3(0, 0, 1);
 }

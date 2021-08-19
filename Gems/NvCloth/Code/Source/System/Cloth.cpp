@@ -165,7 +165,7 @@ namespace NvCloth
 
     void Cloth::Update()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+        AZ_PROFILE_FUNCTION(Cloth);
 
         ResolveStaticParticles();
 
