@@ -67,8 +67,8 @@ namespace AZ
 
         ImGuiPass::ImGuiPass(const RPI::PassDescriptor& descriptor)
             : Base(descriptor)
-            , AzFramework::InputChannelEventListener(AzFramework::InputChannelEventListener::GetPriorityUI())
-            , AzFramework::InputTextEventListener(AzFramework::InputTextEventListener::GetPriorityUI())
+            , AzFramework::InputChannelEventListener(AzFramework::InputChannelEventListener::GetPriorityUI() + 1) // Prioritize ImGui input over in-game UI such as LyShine
+            , AzFramework::InputTextEventListener(AzFramework::InputTextEventListener::GetPriorityUI() + 1) // Prioritize ImGui input over in-game UI such as LyShine
         {
 
             const ImGuiPassData* imguiPassData = RPI::PassUtils::GetPassData<ImGuiPassData>(descriptor);
@@ -155,11 +155,6 @@ namespace AZ
             auto& io = ImGui::GetIO();
             io.AddInputCharactersUTF8(textUTF8.c_str());
             return io.WantTextInput;
-        }
-
-        AZ::s32 ImGuiPass::GetPriority() const
-        {
-            return AzFramework::InputChannelEventListener::GetPriorityUI();
         }
 
         bool ImGuiPass::OnInputChannelEventFiltered(const AzFramework::InputChannel& inputChannel)
