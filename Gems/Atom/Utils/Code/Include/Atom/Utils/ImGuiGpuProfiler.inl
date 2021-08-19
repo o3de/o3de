@@ -1107,7 +1107,7 @@ namespace AZ
             {
                 ImGui::TableSetupColumn("Parent pool");
                 ImGui::TableSetupColumn("Name");
-                ImGui::TableSetupColumn("Size (MB)", 0, 100.0f);
+                ImGui::TableSetupColumn("Size (MB)");
                 ImGui::TableSetupColumn("BindFlags", ImGuiTableColumnFlags_NoSort);
                 ImGui::TableHeadersRow();
                 ImGui::TableNextColumn();
