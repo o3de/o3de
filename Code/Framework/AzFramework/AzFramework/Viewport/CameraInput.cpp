@@ -802,7 +802,6 @@ namespace AzFramework
             {
                 return VerticalMotionEvent{ aznumeric_cast<int>(inputChannel.GetValue()) };
             }
-
             else if (inputChannelId == InputDeviceMouse::Movement::Z)
             {
                 return ScrollEvent{ inputChannel.GetValue() };

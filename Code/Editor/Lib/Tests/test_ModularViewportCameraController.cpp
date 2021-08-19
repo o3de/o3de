@@ -19,6 +19,66 @@ namespace UnitTest
 
     using AzToolsFramework::ViewportInteraction::MouseInteractionEvent;
 
+    class ViewportMouseCursorRequestImpl : public AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Handler
+    {
+    public:
+        void Connect(const AzFramework::ViewportId viewportId, AzToolsFramework::QtEventToAzInputMapper* inputChannelMapper)
+        {
+            AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Handler::BusConnect(viewportId);
+            m_inputChannelMapper = inputChannelMapper;
+        }
+
+        void Disconnect()
+        {
+            AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Handler::BusDisconnect();
+        }
+
+        // ViewportMouseCursorRequestBus overrides ...
+        void BeginCursorCapture() override;
+        void EndCursorCapture() override;
+        bool IsMouseOver() const override;
+
+    private:
+        AzToolsFramework::QtEventToAzInputMapper* m_inputChannelMapper = nullptr;
+    };
+
+    void ViewportMouseCursorRequestImpl::BeginCursorCapture()
+    {
+        m_inputChannelMapper->SetCursorCaptureEnabled(true);
+    }
+
+    void ViewportMouseCursorRequestImpl::EndCursorCapture()
+    {
+        m_inputChannelMapper->SetCursorCaptureEnabled(false);
+    }
+
+    bool ViewportMouseCursorRequestImpl::IsMouseOver() const
+    {
+        return true;
+    }
+
+    class TestModularCameraViewportContextImpl : public AtomToolsFramework::ModularCameraViewportContext
+    {
+    public:
+        AZ::Transform GetCameraTransform() const override
+        {
+            return m_cameraTransform;
+        }
+
+        void SetCameraTransform(const AZ::Transform& transform) override
+        {
+            m_cameraTransform = transform;
+        }
+
+        void ConnectViewMatrixChangedHandler(AZ::RPI::ViewportContext::MatrixChangedEvent::Handler&) override
+        {
+            // noop
+        }
+
+    private:
+        AZ::Transform m_cameraTransform = AZ::Transform::CreateIdentity();
+    };
+
     class ModularViewportCameraControllerFixture : public AllocatorsTestFixture
     {
     public:
@@ -48,88 +108,89 @@ namespace UnitTest
             AllocatorsTestFixture::TearDown();
         }
 
+        void PrepareCollaborators()
+        {
+            AzFramework::NativeWindowHandle nativeWindowHandle = nullptr;
+
+            // Given
+            // listen for events signaled from QtEventToAzInputMapper and forward to the controller list
+            QObject::connect(
+                m_inputChannelMapper.get(), &AzToolsFramework::QtEventToAzInputMapper::InputChannelUpdated, m_rootWidget.get(),
+                [this, nativeWindowHandle](const AzFramework::InputChannel* inputChannel, [[maybe_unused]] QEvent* event)
+                {
+                    m_controllerList->HandleInputChannelEvent(
+                        AzFramework::ViewportControllerInputEvent{ TestViewportId, nativeWindowHandle, *inputChannel });
+                });
+
+            m_mockWindowRequests.Connect(nativeWindowHandle);
+
+            using ::testing::Return;
+            // note: WindowRequests is used internally by ModularViewportCameraController, this ensures it returns the viewport size we want
+            ON_CALL(m_mockWindowRequests, GetClientAreaSize())
+                .WillByDefault(Return(AzFramework::WindowSize(WidgetSize.width(), WidgetSize.height())));
+
+            // respond to begin/end cursor capture events
+            m_viewportMouseCursorRequests.Connect(TestViewportId, m_inputChannelMapper.get());
+
+            // create editor modular camera
+            auto controller = CreateModularViewportCameraController(TestViewportId);
+
+            // set some overrides for the test
+            controller->SetCameraViewportContextBuilderCallback(
+                [this](AZStd::unique_ptr<AtomToolsFramework::ModularCameraViewportContext>& cameraViewportContext)
+                {
+                    cameraViewportContext = AZStd::make_unique<TestModularCameraViewportContextImpl>();
+                    m_cameraViewportContextView = cameraViewportContext.get();
+                });
+
+            // disable smoothing in the test
+            controller->SetCameraPropsBuilderCallback(
+                [](AzFramework::CameraProps& cameraProps)
+                {
+                    cameraProps.m_rotateSmoothingEnabledFn = []
+                    {
+                        return false;
+                    };
+
+                    cameraProps.m_translateSmoothingEnabledFn = []
+                    {
+                        return false;
+                    };
+                });
+
+            m_controllerList->Add(controller);
+        }
+
+        void HaltCollaborators()
+        {
+            m_mockWindowRequests.Disconnect();
+            m_viewportMouseCursorRequests.Disconnect();
+            m_cameraViewportContextView = nullptr;
+        }
+
         AZStd::unique_ptr<QWidget> m_rootWidget;
         AzFramework::ViewportControllerListPtr m_controllerList;
         AZStd::unique_ptr<AzToolsFramework::QtEventToAzInputMapper> m_inputChannelMapper;
+        ::testing::NiceMock<MockWindowRequests> m_mockWindowRequests;
+        ViewportMouseCursorRequestImpl m_viewportMouseCursorRequests;
+        AtomToolsFramework::ModularCameraViewportContext* m_cameraViewportContextView = nullptr;
     };
 
     const AzFramework::ViewportId ModularViewportCameraControllerFixture::TestViewportId = AzFramework::ViewportId(0);
 
-    class TestModularCameraViewportContextImpl : public AtomToolsFramework::ModularCameraViewportContext
+    class ModularViewportCameraControllerDeltaTimeParamFixture
+        : public ModularViewportCameraControllerFixture
+        , public ::testing::WithParamInterface<float> // delta time
     {
-    public:
-        AZ::Transform GetCameraTransform() const override
-        {
-            return m_cameraTransform;
-        }
-
-        void SetCameraTransform(const AZ::Transform& transform) override
-        {
-            m_cameraTransform = transform;
-        }
-
-        void ConnectViewMatrixChangedHandler(AZ::RPI::ViewportContext::MatrixChangedEvent::Handler&) override
-        {
-            // noop
-        }
-
-    private:
-        AZ::Transform m_cameraTransform = AZ::Transform::CreateIdentity();
     };
 
-    TEST_F(ModularViewportCameraControllerFixture, Mouse_movement_does_not_accumulate_excessive_drift_in_modular_viewport_camera)
+    TEST_P(
+        ModularViewportCameraControllerDeltaTimeParamFixture, Mouse_movement_does_not_accumulate_excessive_drift_in_modular_viewport_camera)
     {
-        AzFramework::NativeWindowHandle nativeWindowHandle = nullptr;
-
-        const float deltaTime = 1.0f / 60.0f; // mimic 60fps
-
         // Given
-        // listen for events signaled from QtEventToAzInputMapper and forward to the controller list
-        QObject::connect(
-            m_inputChannelMapper.get(), &AzToolsFramework::QtEventToAzInputMapper::InputChannelUpdated, m_rootWidget.get(),
-            [this, nativeWindowHandle](const AzFramework::InputChannel* inputChannel, [[maybe_unused]] QEvent* event)
-            {
-                m_controllerList->HandleInputChannelEvent(
-                    AzFramework::ViewportControllerInputEvent{ TestViewportId, nativeWindowHandle, *inputChannel });
-            });
+        PrepareCollaborators();
 
-        using ::testing::NiceMock;
-        using ::testing::Return;
-
-        NiceMock<MockWindowRequests> mockWindowRequests;
-        mockWindowRequests.Connect(nativeWindowHandle);
-
-        // note: WindowRequests is used internally by ModularViewportCameraController, this ensures it returns the viewport size we want
-        ON_CALL(mockWindowRequests, GetClientAreaSize())
-            .WillByDefault(Return(AzFramework::WindowSize(WidgetSize.width(), WidgetSize.height())));
-
-        // create editor modular camera
-        auto controller = CreateModularViewportCameraController(TestViewportId);
-
-        // set some overrides for the test
-        AtomToolsFramework::ModularCameraViewportContext* cameraViewportContextView = nullptr;
-        controller->SetCameraViewportContextBuilderCallback(
-            [&cameraViewportContextView](AZStd::unique_ptr<AtomToolsFramework::ModularCameraViewportContext>& cameraViewportContext)
-            {
-                cameraViewportContext = AZStd::make_unique<TestModularCameraViewportContextImpl>();
-                cameraViewportContextView = cameraViewportContext.get();
-            });
-
-        controller->SetCameraPropsBuilderCallback(
-            [](AzFramework::CameraProps& cameraProps)
-            {
-                cameraProps.m_rotateSmoothingEnabledFn = []
-                {
-                    return false;
-                };
-
-                cameraProps.m_translateSmoothingEnabledFn = []
-                {
-                    return false;
-                };
-            });
-
-        m_controllerList->Add(controller);
+        const float deltaTime = GetParam();
 
         // move to the center of the screen
         auto start = QPoint(WidgetSize.width() / 2, WidgetSize.height() / 2);
@@ -162,9 +223,13 @@ namespace UnitTest
 
         // Then
         // ensure the camera rotation is the identity (no significant drift has occurred as we moved the mouse)
-        const AZ::Transform cameraRotation = cameraViewportContextView->GetCameraTransform();
+        const AZ::Transform cameraRotation = m_cameraViewportContextView->GetCameraTransform();
         EXPECT_THAT(cameraRotation.GetRotation(), IsClose(AZ::Quaternion::CreateIdentity()));
 
-        mockWindowRequests.Disconnect();
+        // Clean-up
+        HaltCollaborators();
     }
+
+    INSTANTIATE_TEST_CASE_P(
+        All, ModularViewportCameraControllerDeltaTimeParamFixture, testing::Values(1.0f / 60.0f, 1.0f / 50.0f, 1.0f / 30.0f));
 } // namespace UnitTest
