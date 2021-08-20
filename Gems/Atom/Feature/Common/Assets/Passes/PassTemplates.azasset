@@ -245,6 +245,42 @@
                 "Path": "Passes/DepthToLinearDepth.pass"
             },
             {
+                "Name": "HairParentPassTemplate",
+                "Path": "Passes/HairParentPass.pass"
+            },
+            {
+                "Name": "HairGlobalShapeConstraintsComputePassTemplate",
+                "Path": "Passes/HairGlobalShapeConstraintsCompute.pass"
+            },
+            {
+                "Name": "HairCalculateStrandLevelDataComputePassTemplate",
+                "Path": "Passes/HairCalculateStrandLevelDataCompute.pass"
+            },
+            {
+                "Name": "HairVelocityShockPropagationComputePassTemplate",
+                "Path": "Passes/HairVelocityShockPropagationCompute.pass"
+            },
+            {
+                "Name": "HairLocalShapeConstraintsComputePassTemplate",
+                "Path": "Passes/HairLocalShapeConstraintsCompute.pass"
+            },
+            {
+                "Name": "HairLengthConstraintsWindAndCollisionComputePassTemplate",
+                "Path": "Passes/HairLengthConstraintsWindAndCollisionCompute.pass"
+            },
+            {
+                "Name": "HairUpdateFollowHairComputePassTemplate",
+                "Path": "Passes/HairUpdateFollowHairCompute.pass"
+            },
+            {
+                "Name": "HairPPLLRasterPassTemplate",
+                "Path": "Passes/HairFillPPLL.pass"
+            },
+            {
+                "Name": "HairPPLLResolvePassTemplate",
+                "Path": "Passes/HairResolvePPLL.pass"
+            },
+            {
                 "Name": "DeferredFogPassTemplate",
                 "Path": "Passes/DeferredFog.pass"
             },
@@ -475,6 +511,14 @@
             {
                 "Name": "OpaqueParentTemplate",
                 "Path": "Passes/OpaqueParent.pass"
+            },
+            {
+                "Name": "ThumbnailPipeline",
+                "Path": "Passes/ThumbnailPipeline.pass"
+            },
+            {
+                "Name": "ThumbnailPipelineRenderToTexture",
+                "Path": "Passes/ThumbnailPipelineRenderToTexture.pass"
             },
             {
                 "Name": "TransparentParentTemplate",

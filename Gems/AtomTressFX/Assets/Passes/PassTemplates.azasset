@@ -5,8 +5,8 @@
     "ClassData": {
         "AssetPaths": [
             {
-                "Name": "HairSkinningComputePassTemplate",
-                "Path": "Passes/HairSkinningCompute.pass"
+                "Name": "HairParentPassTemplate",
+                "Path": "Passes/HairParentPass.pass"
             },
             {
                 "Name": "HairGlobalShapeConstraintsComputePassTemplate",
