@@ -1490,6 +1490,10 @@ namespace {{ Component.attrib['Namespace'] }}
 {% endif %}
     }
 
+    {{ ComponentBaseName }}::{{ ComponentBaseName }}() = default;
+
+    {{ ComponentBaseName }}::~{{ ComponentBaseName }}() = default;
+
     void {{ ComponentBaseName }}::Init()
     {
         if (m_netBindComponent == nullptr)
