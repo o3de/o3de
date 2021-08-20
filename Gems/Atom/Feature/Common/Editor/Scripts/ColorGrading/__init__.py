@@ -6,10 +6,174 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
-__all__ = ['exr_to_3dl_azasset',
+# -------------------------------------------------------------------------
+import sys
+import os
+import site
+import inspect
+import logging as _logging
+import pathlib
+from pathlib import Path
+
+
+# -------------------------------------------------------------------------
+__copyright__ = "Copyright 2021, Amazon"
+__credits__ = ["Jonny Galloway", "Ben Black"]
+__license__ = "EULA"
+__version__ = "0.0.1"
+__status__ = "Prototype"
+
+__all__ = ['from_3dl_to_azasset',
            'capture_displaymapperpassthrough',
            'env_bool',
            'exr_to_3dl_azasset',
            'initialize',
            'lut_compositor',
            'lut_helper']
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+# _ROOT_LOGGER = _logging.getLogger()  # only use this if debugging
+# https://stackoverflow.com/questions/56733085/how-to-know-the-current-file-path-after-being-frozen-into-an-executable-using-cx/56748839
+#os.chdir(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))))
+# -------------------------------------------------------------------------
+#  global space
+# we need to set up basic access to the DCCsi
+_MODULE_PATH = Path(os.path.abspath(__file__))
+site.addsitedir(_MODULE_PATH.parent.absolute())
+
+from env_bool import env_bool
+
+_PACKAGENAME = 'ColorGrading'
+_MODULEENAME = 'ColorGrading.init'
+
+FRMT_LOG_LONG = "[%(name)s][%(levelname)s] >> %(message)s (%(asctime)s; %(filename)s:%(lineno)d)"
+
+# set these true if you want them set globally for debugging
+DCCSI_GDEBUG = env_bool('DCCSI_GDEBUG', False)
+DCCSI_DEV_MODE = env_bool('DCCSI_DEV_MODE', False)
+DCCSI_GDEBUGGER = env_bool('DCCSI_GDEBUGGER', False)
+DCCSI_LOGLEVEL = env_bool('DCCSI_LOGLEVEL', int(20))
+
+if DCCSI_GDEBUG:
+    DCCSI_LOGLEVEL = int(10)
+
+# project cache log dir path
+DCCSI_LOG_PATH = Path(_MODULE_PATH.parent.absolute(), '.tmp', 'logs')
+
+# -------------------------------------------------------------------------
+def makedirs(folder, *args, **kwargs):
+    """a makedirs for py2.7 support"""
+    try:
+        return os.makedirs(folder, exist_ok=True, *args, **kwargs)
+    except TypeError: 
+        # Unexpected arguments encountered 
+        pass
+
+    try:
+        # Should work is TypeError was caused by exist_ok, eg., Py2
+        return os.makedirs(folder, *args, **kwargs)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
+
+        if os.path.isfile(folder):
+            # folder is a file, raise OSError just like os.makedirs() in Py3
+            raise
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+class FileExistsError(Exception):
+    """Implements a stand-in Exception for py2.7"""
+    def __init__(self, message, errors):
+
+        # Call the base class constructor with the parameters it needs
+        super(FileExistsError, self).__init__(message)
+
+        # Now for your custom code...
+        self.errors = errors
+
+if sys.version_info.major < 3:
+    FileExistsError = FileExistsError
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
+def initialize_logger(name,
+                      log_to_file=False,
+                      default_log_level=_logging.NOTSET):
+    """Start a azpy logger"""
+    _logger = _logging.getLogger(name)
+    _logger.propagate = False
+    if not _logger.handlers:
+
+        # default log level
+        _log_level = int(os.getenv('DCCSI_LOGLEVEL', default_log_level))
+        
+        if DCCSI_GDEBUG:
+            _log_level = int(10)  # force when debugging
+
+        if _log_level:
+            ch = _logging.StreamHandler(sys.stdout)
+            ch.setLevel(_log_level)
+            formatter = _logging.Formatter(FRMT_LOG_LONG)
+            ch.setFormatter(formatter)
+            _logger.addHandler(ch)
+            _logger.setLevel(_log_level)
+        else:
+            _logger.addHandler(_logging.NullHandler())
+
+        _logger.debug('_log_level: {}'.format(_log_level))
+
+    # optionally add the log file handler (off by default)
+    if log_to_file:
+        _logger.info('DCCSI_LOG_PATH: {}'.format(DCCSI_LOG_PATH))
+        try:
+            # exist_ok, isn't available in py2.7 pathlib
+            # because it doesn't exist for os.makedirs
+            # pathlib2 backport used instead (see above)
+            if sys.version_info.major >= 3:
+                DCCSI_LOG_PATH.mkdir(parents=True, exist_ok=True)
+            else:
+                makedirs(str(DCCSI_LOG_PATH.resolve())) # py2.7
+        except FileExistsError:
+            # except FileExistsError: doesn't exist in py2.7
+            _logger.debug("Folder is already there")
+        else:
+            _logger.debug("Folder was created")
+
+        _log_filepath = Path(DCCSI_LOG_PATH, '{}.log'.format(name))
+        try:
+            _log_filepath.touch(mode=0o666, exist_ok=True)
+        except FileExistsError:
+            _logger.debug("Log file is already there: {}".format(_log_filepath))
+        else:
+            _logger.debug("Log file was created: {}".format(_log_filepath))
+
+        if _log_filepath.exists():
+            file_formatter = _logging.Formatter(FRMT_LOG_LONG)
+            file_handler = _logging.FileHandler(str(_log_filepath))
+            file_handler.setLevel(_logging.DEBUG)
+            file_handler.setFormatter(file_formatter)
+            _logger.addHandler(file_handler)
+
+    return _logger
+# -------------------------------------------------------------------------
+
+
+###########################################################################
+# Main Code Block, runs this script as main (testing)
+# -------------------------------------------------------------------------
+if __name__ == '__main__':
+    # -------------------------------------------------------------------------
+    # set up logger with both console and file _logging
+    if DCCSI_GDEBUG:
+        _LOGGER = initialize_logger(_MODULEENAME, log_to_file=True)
+    else:
+        _LOGGER = initialize_logger(_MODULEENAME, log_to_file=False)
+    
+    _LOGGER.debug('Invoking __init__.py for {0}.'.format({_PACKAGENAME}))
+
+    del _LOGGER

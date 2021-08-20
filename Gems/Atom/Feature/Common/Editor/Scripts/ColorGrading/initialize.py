@@ -14,31 +14,35 @@ import pathlib
 import site
 from pathlib import Path
 import logging as _logging
+
+# local imports
 from ColorGrading.env_bool import env_bool
+from ColorGrading import initialize_logger
+from ColorGrading import DCCSI_GDEBUG
+from ColorGrading import DCCSI_DEV_MODE
+from ColorGrading import DCCSI_GDEBUGGER
+from ColorGrading import DCCSI_LOGLEVEL
+from ColorGrading import FRMT_LOG_LONG
 
 __all__ = ['start']
 
 # ------------------------------------------------------------------------
-_MODULENAME = 'Gems.Atom.Feature.Common.ColorGrading.initialize'
+_PACKAGENAME = 'ColorGrading'
+_MODULENAME = 'ColorGrading.initialize'
 
-# set these true if you want them set globally for debugging
-_DCCSI_GDEBUG = env_bool('DCCSI_GDEBUG', False)
-_DCCSI_DEV_MODE = env_bool('DCCSI_DEV_MODE', False)
-_DCCSI_GDEBUGGER = env_bool('DCCSI_GDEBUGGER', False)
-_DCCSI_LOGLEVEL = env_bool('DCCSI_LOGLEVEL', int(20))
+if DCCSI_GDEBUG:
+    DCCSI_LOGLEVEL = int(10)
 
-if _DCCSI_GDEBUG:
-    _DCCSI_LOGLEVEL = int(10)
-
-FRMT_LOG_LONG = "[%(name)s][%(levelname)s] >> %(message)s (%(asctime)s; %(filename)s:%(lineno)d)"
-_logging.basicConfig(level=_DCCSI_LOGLEVEL,
-                     format=FRMT_LOG_LONG,
-                     datefmt='%m-%d %H:%M')
-_LOGGER = _logging.getLogger(_MODULENAME)
+# set up logger with both console and file _logging
+if DCCSI_GDEBUG:
+    _LOGGER = initialize_logger(_PACKAGENAME, log_to_file=True, default_log_level=DCCSI_LOGLEVEL)
+else:
+    _LOGGER = initialize_logger(_PACKAGENAME, log_to_file=False, default_log_level=DCCSI_LOGLEVEL)
+        
 _LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 
 # connect to the debugger
-if _DCCSI_DEV_MODE:
+if DCCSI_DEV_MODE:
     APP_DATA_WING = Path('C:/Users/gallowj/AppData/Roaming/Wing Pro 7')
     APP_DATA_WING.resolve()
     site.addsitedir(pathlib.PureWindowsPath(APP_DATA_WING).as_posix())
@@ -53,22 +57,19 @@ if _DCCSI_DEV_MODE:
 
 # ------------------------------------------------------------------------
 def start():
-    
+    """set up access to OpenImageIO, within o3de or without"""
     # ------------------------------------------------------------------------
-    # set up access to OpenImageIO, within o3de or without
     try:
         # running in o3de
         import azlmbr
         
-        # this one is less optional and if not set bootstrapping azpy will fail
-        _O3DE_DEV = Path(os.getenv('O3DE_DEV', Path(azlmbr.paths.engroot)))  # assume usually not set
+        _O3DE_DEV = Path(os.getenv('O3DE_DEV', Path(azlmbr.paths.engroot)))
         os.environ['O3DE_DEV'] = pathlib.PureWindowsPath(_O3DE_DEV).as_posix()
         _LOGGER.debug(_O3DE_DEV)
     
         _O3DE_BIN_PATH = Path(str(_O3DE_DEV),Path(azlmbr.paths.executableFolder))
     
-        # this one is less optional and if not set bootstrapping azpy will fail
-        _O3DE_BIN = Path(os.getenv('O3DE_BIN', _O3DE_BIN_PATH.resolve()))  # assume usually not set
+        _O3DE_BIN = Path(os.getenv('O3DE_BIN', _O3DE_BIN_PATH.resolve()))
         os.environ['O3DE_BIN'] = pathlib.PureWindowsPath(_O3DE_BIN).as_posix()
     
         _LOGGER.debug(_O3DE_BIN)
@@ -77,7 +78,7 @@ def start():
     
     except Exception as e:
         # running external, start this module from:
-        # Gems\AtomLyIntegration\CommonFeatures\Editor\Scripts\ColorGrading\cmdline\O3DE_py_cmd.bat
+        # "C:\Depot\o3de-engine\Gems\Atom\Feature\Common\Tools\ColorGrading\cmdline\CMD_ColorGradinTools.bat"
         pass
     
         try:

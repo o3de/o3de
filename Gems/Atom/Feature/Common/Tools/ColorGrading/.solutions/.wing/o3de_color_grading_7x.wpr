@@ -13,9 +13,9 @@ proj.directory-list = [{'dirloc': loc('../../../..'),
 proj.file-type = 'shared'
 proj.launch-config = {loc('../../../../Editor/Scripts/ColorGrading/exr_to_3dl_azasset.py'): ('p'\
         'roject',
-        (u'--i "C:\\Depot\\o3de-engine\\Gems\\AtomLyIntegration\\CommonFeatures\\Tools\\ColorGrading\\TestData\\Photoshop\\HDR_in_LDR_Log2-48nits\\Hue-Sat_LUT_32.exr" --o "C:\\Depot\\o3de-engine\\Gems\\AtomLyIntegration\\CommonFeatures\\Tools\\ColorGrading\\TestData\\Photoshop\\HDR_in_LDR_Log2-48nits\\Hue-Sat_LUT_32',
+        (u'--i "C:\\Depot\\o3de-engine\\Gems\\Atom\\Feature\\Common\\Tools\\ColorGrading\\Resources\\TestData\\Photoshop\\HDR_in_LDR_Log2-48nits\\LUT_PreShaped_Composite\\hue-sat_inv-Log2-48nits_32_LUT.exr" --o "C:\\Depot\\o3de-engine\\Gems\\Atom\\Feature\\Common\\Tools\\ColorGrading\\Resources\\TestData\\Photoshop\\HDR_in_LDR_Log2-48nits\\LUT_PreShaped_Composite\\hue-sat_inv-Log2-48nits_32_LUT"',
          '')),
                       loc('../../../../Editor/Scripts/ColorGrading/lut_helper.py'): ('p'\
         'roject',
-        (u'--i "C:\\Depot\\o3de-engine\\Gems\\AtomLyIntegration\\CommonFeatures\\Resources\\ColorGrading\\TestData\\Photoshop\\HDR_in_LDR_Log2-48nits\\TensionGreen_LUT_32.exr" --op post-grading --shaper Log2-48nits --o "C:\\Depot\\o3de-engine\\Gems\\AtomLyIntegration\\CommonFeatures\\Resources\\ColorGrading\\TestData\\Photoshop\\HDR_in_LDR_Log2-48nits\\TensionGreen_LUT_32" -l -a',
+        (u'--i "C:\\Depot\\o3de-engine\\Gems\\Atom\\Feature\\Common\\Tools\\ColorGrading\\Resources\\TestData\\Photoshop\\HDR_in_LDR_Log2-48nits\\TensionGreen_LUT_32.exr" --op post-grading --shaper Log2-48nits --o "C:\\Depot\\o3de-engine\\Gems\\Atom\\Feature\\Common\\Tools\\ColorGrading\\Resources\\TestData\\Photoshop\\HDR_in_LDR_Log2-48nits\\TensionGreen_LUT_32" -l -a',
          ''))}
