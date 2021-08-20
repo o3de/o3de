@@ -55,6 +55,11 @@ namespace AZ
 
             RPISystem m_rpiSystem;
 
+            // Timestamp of the last tick
+            AZStd::chrono::system_clock::time_point m_lastTime;
+            // Map of viewport => time since last render
+            AZStd::unordered_map<AzFramework::ViewportId, AZStd::chrono::duration<float>> m_renderUpdates;
+
             RPISystemDescriptor m_rpiDescriptor;
 
             MaterialFunctorSourceDataRegistration* m_materialFunctorRegistration = nullptr;

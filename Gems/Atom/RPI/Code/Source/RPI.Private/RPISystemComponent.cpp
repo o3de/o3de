@@ -14,6 +14,9 @@
 #include <RPI.Private/RPISystemComponent.h>
 
 #include <Atom/RHI/Factory.h>
+#include <Atom/RPI.Public/ViewportContextBus.h>
+#include <Atom/RPI.Public/ViewportContext.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
 
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/IO/IOUtils.h>
@@ -105,7 +108,46 @@ namespace AZ
         void RPISystemComponent::OnSystemTick()
         {
             m_rpiSystem.SimulationTick();
+
+            AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
+            AZStd::chrono::duration<float> deltaTime = now - m_lastTime;
+
+            // WIP - this is a working example of per-pipeline frame limiting
+            // pipelines will be told to present this render tick if the target framerate
+            // (currently the display refresh rate / vblank interval) exceeds the time
+            // since the last tick, plus the stride between ticks.
+
+            // In local tests this reduces the wall clock frame presentation time in game mode / the launcher
+            // in an empty scene from 15ms to 5ms, holding steady regardless of the current vsync setting
+            if (auto viewportContextRequests = ViewportContextRequests::Get())
+            {
+                viewportContextRequests->EnumerateViewportContexts([this, &deltaTime](ViewportContextPtr viewportContext)
+                {
+                    auto pipeline = viewportContext->GetCurrentPipeline();
+                    if (!pipeline)
+                    {
+                        return;
+                    }
+
+                    AZStd::chrono::duration<float>& duration = m_renderUpdates[viewportContext->GetId()];
+                    duration += deltaTime;
+                    uint32_t vblank = viewportContext->GetVsyncInterval();
+                    float n = vblank == 0 ? 1.f : static_cast<float>(vblank);
+                    auto cadence = AZStd::chrono::duration<float>(n / static_cast<float>(viewportContext->GetRefreshRate()));
+                    if (duration + deltaTime >= cadence)
+                    {
+                        pipeline->AddToRenderTickOnce();
+                        duration = {};
+                    }
+                    else
+                    {
+                        pipeline->RemoveFromRenderTick();
+                    }
+                });
+            }
+
             m_rpiSystem.RenderTick();
+            m_lastTime = now;
         }
 
     } // namespace RPI
