@@ -31,7 +31,7 @@
 #include <MaskedOcclusionCulling/MaskedOcclusionCulling.h>
 #endif
 
-//Enables more inner-loop profiling scopes (can create high overhead in RadTelemetry if there are many-many objects in a scene)
+//Enables more inner-loop profiling scopes (can create high overhead in telemetry if there are many-many objects in a scene)
 //#define AZ_CULL_PROFILE_DETAILED
 
 //Enables more detailed profiling descriptions within the culling system, but adds some performance overhead.

@@ -230,25 +230,25 @@ CEntityObject::CEntityObject()
     m_attachmentType = eAT_Pivot;
 
     // cache all the variable callbacks, must match order of enum defined in header
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnAreaHeightChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnAreaLightChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnAreaLightSizeChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnAreaWidthChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnBoxHeightChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnBoxLengthChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnBoxProjectionChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnBoxSizeXChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnBoxSizeYChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnBoxSizeZChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnBoxWidthChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnColorChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnInnerRadiusChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnOuterRadiusChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnProjectInAllDirsChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnProjectorFOVChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnProjectorTextureChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnPropertyChange, this, AZStd::placeholders::_1));
-    m_onSetCallbacksCache.push_back(AZStd::bind(&CEntityObject::OnRadiusChange, this, AZStd::placeholders::_1));
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnAreaHeightChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnAreaLightChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnAreaLightSizeChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnAreaWidthChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnBoxHeightChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnBoxLengthChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnBoxProjectionChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnBoxSizeXChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnBoxSizeYChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnBoxSizeZChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnBoxWidthChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnColorChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnInnerRadiusChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnOuterRadiusChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnProjectInAllDirsChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnProjectorFOVChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnProjectorTextureChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnPropertyChange(var); });
+    m_onSetCallbacksCache.emplace_back([this](IVariable* var) { OnRadiusChange(var); });
 }
 
 CEntityObject::~CEntityObject()
@@ -938,11 +938,14 @@ void CEntityObject::Serialize(CObjectArchive& ar)
                 eventTarget->getAttr("TargetId", targetId);
                 eventTarget->getAttr("Event", et.event);
                 eventTarget->getAttr("SourceEvent", et.sourceEvent);
-                m_eventTargets.push_back(et);
+                m_eventTargets.emplace_back(AZStd::move(et));
                 if (targetId != GUID_NULL)
                 {
                     using namespace AZStd::placeholders;
-                    ar.SetResolveCallback(this, targetId, AZStd::bind(&CEntityObject::ResolveEventTarget, this, _1, _2), i);
+                    ar.SetResolveCallback(
+                        this, targetId,
+                        [this](CBaseObject* object, unsigned int index) { ResolveEventTarget(object, index); },
+                        i);
                 }
             }
         }
@@ -1413,7 +1416,7 @@ void CEntityObject::PostClone(CBaseObject* pFromObject, CObjectCloneContext& ctx
 void CEntityObject::ResolveEventTarget(CBaseObject* object, unsigned int index)
 {
     // Find target id.
-    assert(index >= 0 && index < m_eventTargets.size());
+    assert(index < m_eventTargets.size());
     if (object)
     {
         object->AddEventListener(this);

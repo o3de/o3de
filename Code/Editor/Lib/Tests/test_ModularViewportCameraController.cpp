@@ -37,7 +37,7 @@ namespace UnitTest
             m_inputChannelMapper = AZStd::make_unique<AzToolsFramework::QtEventToAzInputMapper>(m_rootWidget.get(), TestViewportId);
         }
 
-        void TearDown()
+        void TearDown() override
         {
             m_inputChannelMapper.reset();
 

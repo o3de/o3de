@@ -12,6 +12,7 @@
 
 #include <platform.h>
 #include <AzCore/AzCore_Traits_Platform.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/StringFunc/StringFunc.h>

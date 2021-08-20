@@ -6,9 +6,7 @@
 #
 #
 
-ly_add_external_target(
-    NAME RadTelemetry
-    3RDPARTY_ROOT_DIRECTORY "${LY_RAD_TELEMETRY_INSTALL_ROOT}"
-    VERSION 3.5.0.17
-    INCLUDE_DIRECTORIES Include
+set(FILES
+    BootstrapSystemComponent_Traits_Platform.h
 )
+

@@ -104,7 +104,9 @@ namespace ScriptCanvas
     private:\
         static AZStd::string_view GetName(size_t i)\
         {\
+            AZ_PUSH_DISABLE_WARNING(4296, "-Wunknown-warning-option")\
             static_assert(s_numArgs <= s_numNames, "Number of arguments is greater than number of names in " #NODE_NAME );\
+            AZ_POP_DISABLE_WARNING\
             /*static_assert(s_numResults <= s_numNames, "Number of results is greater than number of names in " #NODE_NAME );*/\
             /*static_assert((s_numResults + s_numArgs) == s_numNames, "Argument name count + result name count != name count in " #NODE_NAME );*/\
             static const AZStd::array<AZStd::string_view, s_numNames> s_names = {{ __VA_ARGS__ }};\

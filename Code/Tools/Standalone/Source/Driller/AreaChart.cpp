@@ -173,10 +173,7 @@ namespace AreaChart
 
     void AreaChart::ConfigureVerticalAxis(QString label, unsigned int minimumHeight)
     {
-        if (minimumHeight >= 0)
-        {
-            SetMinimumValueRange(minimumHeight);
-        }
+        SetMinimumValueRange(minimumHeight);
 
         if (m_verticalAxis == nullptr)
         {
@@ -323,7 +320,7 @@ namespace AreaChart
                 // Need to handle the areas right at the edge of the polygons
                 for (int i = -1; i <= 1; ++i)
                 {
-                    if ((counter+i) < 0 || (counter + i) >= m_hitAreas.size())
+                    if ((counter + i) >= m_hitAreas.size())
                     {
                         continue;
                     }
