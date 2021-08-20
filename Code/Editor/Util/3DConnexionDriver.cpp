@@ -58,11 +58,6 @@ bool C3DConnexionDriver::InitDevice()
         //Doc says RIM_TYPEHID: Data comes from an HID that is not a keyboard or a mouse.
         if (m_pRawInputDeviceList[i].dwType == RIM_TYPEHID)
         {
-            UINT nchars = 300;
-            TCHAR deviceName[300];
-            GetRawInputDeviceInfo(m_pRawInputDeviceList[i].hDevice,
-                RIDI_DEVICENAME, deviceName, &nchars);
-
             RID_DEVICE_INFO dinfo;
             UINT sizeofdinfo = sizeof(dinfo);
             dinfo.cbSize = sizeofdinfo;
