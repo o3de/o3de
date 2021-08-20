@@ -148,7 +148,7 @@ namespace ScriptCanvas
         {
             static int indices[] = { inputDatumIndices... };
             static_assert(sizeof...(Is) == AZ_ARRAY_SIZE(indices), "size of default values doesn't match input datum indices for them");
-            std::initializer_list<int> { (MoreHelp(node, indices[Is], AZStd::forward<t_Args>(args)), 0)... };
+            [[maybe_unused]] std::initializer_list<int> dummy = { (MoreHelp(node, indices[Is], AZStd::forward<t_Args>(args)), 0)... };
         }
 
         template<typename ArgType>

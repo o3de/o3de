@@ -42,7 +42,7 @@ namespace AWSCore
 
         // This will run the code fed to the macro, and then assign 0 to a static int (note the ,0 at the end)
 #define AWS_CORE_ONCE_PASTE(x) (x)
-#define AWS_CORE_ONCE(x) static [[maybe_unused]] int AZ_JOIN(init, __LINE__)((AWS_CORE_ONCE_PASTE(x), 0))
+#define AWS_CORE_ONCE(x) [[maybe_unused]] static int AZ_JOIN(init, __LINE__)((AWS_CORE_ONCE_PASTE(x), 0))
 
 #define AWS_CORE_HTTP_METHOD_ENTRY(x)   { HttpRequestJob::HttpMethod::HTTP_##x, HttpMethodInfo{ Aws::Http::HttpMethod::HTTP_##x, #x } }
 

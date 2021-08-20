@@ -105,7 +105,6 @@ void UiImageSequenceComponent::Render(LyShine::IRenderGraph* renderGraph)
 
     if (m_isRenderCacheDirty)
     {
-        const int defaultIndex = 0;
         uint32 packedColor = 0xffffffff;
         switch (m_imageType)
         {
@@ -542,7 +541,6 @@ void UiImageSequenceComponent::RenderSingleQuad(const AZ::Vector2* positions, co
     IDraw2d::Rounding pixelRounding = IsPixelAligned() ? IDraw2d::Rounding::Nearest : IDraw2d::Rounding::None;
     const uint32 numVertices = 4;
     SVF_P2F_C4B_T2F_F4B vertices[numVertices];
-    const float z = 1.0f;   // depth test disabled, if writing Z this will write at far plane
     for (int i = 0; i < numVertices; ++i)
     {
         AZ::Vector2 roundedPoint = Draw2dHelper::RoundXY(positions[i], pixelRounding);

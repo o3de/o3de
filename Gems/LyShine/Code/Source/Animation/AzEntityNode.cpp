@@ -56,16 +56,7 @@ namespace
         param.flags = (IUiAnimNode::ESupportedParamFlags)flags;
         nodeParams.push_back(param);
     }
-
-    // Quat::IsEquivalent has numerical problems with very similar values
-    bool CompareRotation(const Quat& q1, const Quat& q2, float epsilon)
-    {
-        return (fabs_tpl(q1.v.x - q2.v.x) <= epsilon)
-               && (fabs_tpl(q1.v.y - q2.v.y) <= epsilon)
-               && (fabs_tpl(q1.v.z - q2.v.z) <= epsilon)
-               && (fabs_tpl(q1.w - q2.w) <= epsilon);
-    }
-};
+}
 
 //////////////////////////////////////////////////////////////////////////
 CUiAnimAzEntityNode::CUiAnimAzEntityNode(const int id)

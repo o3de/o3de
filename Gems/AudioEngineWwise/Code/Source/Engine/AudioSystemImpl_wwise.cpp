@@ -1779,8 +1779,8 @@ namespace Audio
             AK::MemoryMgr::CategoryStats categoryStats;
             AK::MemoryMgr::GetCategoryStats(memInfo.m_poolId, categoryStats);
 
-            memInfo.m_memoryUsed = categoryStats.uUsed;
-            memInfo.m_peakUsed = categoryStats.uPeakUsed;
+            memInfo.m_memoryUsed = static_cast<AZ::u32>(categoryStats.uUsed);
+            memInfo.m_peakUsed = static_cast<AZ::u32>(categoryStats.uPeakUsed);
             memInfo.m_numAllocs = categoryStats.uAllocs;
             memInfo.m_numFrees = categoryStats.uFrees;
         }
@@ -1789,9 +1789,9 @@ namespace Audio
         AK::MemoryMgr::GetGlobalStats(globalStats);
 
         auto& memInfo = m_debugMemoryInfo.back();
-        memInfo.m_memoryReserved = globalStats.uReserved;
-        memInfo.m_memoryUsed = globalStats.uUsed;
-        memInfo.m_peakUsed = globalStats.uMax;
+        memInfo.m_memoryReserved = static_cast<AZ::u32>(globalStats.uReserved);
+        memInfo.m_memoryUsed = static_cast<AZ::u32>(globalStats.uUsed);
+        memInfo.m_peakUsed = static_cast<AZ::u32>(globalStats.uMax);
 
         // return the memory infos...
         return m_debugMemoryInfo;

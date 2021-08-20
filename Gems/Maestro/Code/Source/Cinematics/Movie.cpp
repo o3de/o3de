@@ -973,9 +973,6 @@ void CMovieSystem::StillUpdate()
 //////////////////////////////////////////////////////////////////////////
 void CMovieSystem::ShowPlayedSequencesDebug()
 {
-    f32 green[4] = {0, 1, 0, 1};
-    f32 purple[4] = {1, 0, 1, 1};
-    f32 white[4] = {1, 1, 1, 1};
     float y = 10.0f;
     std::vector<const char*> names;
 
