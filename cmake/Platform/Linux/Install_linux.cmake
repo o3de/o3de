@@ -17,9 +17,8 @@ function(ly_copy source_file target_directory)
     endif()
 endfunction()]])
 
-string(CONFIGURE "${ly_copy_template}" ly_copy_function_linux @ONLY)
-
 function(ly_install_code_function_override)
+    string(CONFIGURE "${ly_copy_template}" ly_copy_function_linux @ONLY)
     install(CODE "${ly_copy_function_linux}")
 endfunction()
 
