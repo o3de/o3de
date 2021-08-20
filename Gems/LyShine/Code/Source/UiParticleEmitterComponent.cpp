@@ -1825,8 +1825,8 @@ void UiParticleEmitterComponent::ResetParticleBuffers()
     }
     m_cachedPrimitive.m_indices = new uint16[numIndices];
 
-    const int verticesPerParticle = 4;
-    int baseIndex = 0;
+    const uint16 verticesPerParticle = 4;
+    uint16 baseIndex = 0;
     for (AZ::u32 i = 0; i < numIndices; i += indicesPerParticle)
     {
         m_cachedPrimitive.m_indices[i + 0] = 0 + baseIndex;

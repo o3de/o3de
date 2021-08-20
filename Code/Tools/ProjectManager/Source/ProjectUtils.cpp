@@ -117,7 +117,7 @@ namespace O3DE::ProjectManager
                     const int updateStatusEvery = 64;
                     if (outFileCount % updateStatusEvery == 0)
                     {
-                        statusCallback(outFileCount, outTotalSizeInBytes);
+                        statusCallback(outFileCount, static_cast<int>(outTotalSizeInBytes));
                     }
                 }
             }
@@ -163,7 +163,7 @@ namespace O3DE::ProjectManager
             }
 
             QLocale locale;
-            const float progressDialogRangeHalf = qFabs(progressDialog->maximum() - progressDialog->minimum()) * 0.5f;
+            const float progressDialogRangeHalf = static_cast<float>(qFabs(progressDialog->maximum() - progressDialog->minimum()) * 0.5f);
             for (const QString& file : original.entryList(QDir::Files))
             {
                 if (progressDialog->wasCanceled())
@@ -184,7 +184,7 @@ namespace O3DE::ProjectManager
                     // for cases combining many small files and some really large files.
                     const float normalizedNumFiles = static_cast<float>(outNumCopiedFiles) / filesToCopyCount;
                     const float normalizedFileSize = static_cast<float>(outCopiedFileSize) / totalSizeToCopy;
-                    const int progress = normalizedNumFiles * progressDialogRangeHalf + normalizedFileSize * progressDialogRangeHalf;
+                    const int progress = static_cast<int>(normalizedNumFiles * progressDialogRangeHalf + normalizedFileSize * progressDialogRangeHalf);
                     progressDialog->setValue(progress);
 
                     const QString copiedFileSizeString = locale.formattedDataSize(outCopiedFileSize);

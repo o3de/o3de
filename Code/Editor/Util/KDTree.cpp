@@ -190,7 +190,7 @@ bool SearchForBestSplitPos(CKDTree::ESplitAxis axis, const std::vector<CKDTree::
 
     outBestSplitPos = 0;
 
-    int nSizeOfIndices(indices.size());
+    int nSizeOfIndices = static_cast<int>(indices.size());
 
     for (int i = 0; i < nSizeOfIndices; ++i)
     {
@@ -329,7 +329,7 @@ bool CKDTree::Build(IStatObj* pStatObj)
     entireBoundBox.Reset();
 
     std::vector<uint32> indices;
-    for (int i = 0, iStatObjSize(m_StatObjectList.size()); i < iStatObjSize; ++i)
+    for (int i = 0, iStatObjSize = static_cast<uint32>(m_StatObjectList.size()); i < iStatObjSize; ++i)
     {
         IIndexedMesh* pMesh = m_StatObjectList[i].pStatObj->GetIndexedMesh(true);
         if (pMesh == nullptr)

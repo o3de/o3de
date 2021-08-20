@@ -204,12 +204,11 @@ namespace AzToolsFramework
             }
         }
 
-        for (const auto& categoryPair : componentDataTable)
+        for (const auto& [categoryName, componentMap] : componentDataTable)
         {
-            auto categoryItemItr = categoryItemMap.find(categoryPair.first + "/");
+            auto categoryItemItr = categoryItemMap.find(categoryName + "/");
             auto parentItem = categoryItemItr != categoryItemMap.end() ? categoryItemItr->second : m_componentModel->invisibleRootItem();
 
-            const auto& componentMap = categoryPair.second;
             for (const auto& componentPair : componentMap)
             {
                 auto componentClass = componentPair.second;
@@ -217,7 +216,8 @@ namespace AzToolsFramework
                 const QString& componentIconName = componentIconTable[componentClass];
                 auto deprecatedInfo = deprecatedList.find(componentClass->m_typeId);
                 bool componentIsDeprecated = deprecatedInfo != deprecatedList.end();
-                if ((!applyRegExFilter || componentName.contains(m_searchRegExp)) && (!componentIsDeprecated || !deprecatedInfo->second.m_hideComponent))
+                if ((!applyRegExFilter || categoryName.contains(m_searchRegExp) || componentName.contains(m_searchRegExp))
+                    && (!componentIsDeprecated || !deprecatedInfo->second.m_hideComponent))
                 {
                     //count the number of components on selected entities that match this type
                     auto componentCount = AZStd::count_if(allComponentsOnSelectedEntities.begin(), allComponentsOnSelectedEntities.end(), [componentClass](const AZ::Component* component) {

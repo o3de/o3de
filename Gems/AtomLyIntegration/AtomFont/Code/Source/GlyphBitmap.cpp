@@ -118,7 +118,7 @@ int AZ::GlyphBitmap::Blur(AZ::FontSmoothAmount smoothAmount)
                     colorSum += m_buffer[yOffset + x];
                 }
 
-                m_buffer[yOffset + x] = colorSum >> 2;
+                m_buffer[yOffset + x] = static_cast<uint8_t>(colorSum >> 2);
             }
         }
     }

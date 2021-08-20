@@ -646,7 +646,7 @@ namespace
         if (viewPane && viewPane->GetViewport())
         {
             const QRect rcViewport = viewPane->GetViewport()->rect();
-            return AZ::Vector2(rcViewport.width(), rcViewport.height());
+            return AZ::Vector2(static_cast<float>(rcViewport.width()), static_cast<float>(rcViewport.height()));
         }
         else
         {

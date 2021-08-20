@@ -73,8 +73,8 @@ void CVar_OnViewportPosition(const AZ::Vector2& value)
     if (HWND windowHandle = GetActiveWindow())
     {
         SetWindowPos(windowHandle, nullptr,
-            value.GetX(),
-            value.GetY(),
+            static_cast<int>(value.GetX()),
+            static_cast<int>(value.GetY()),
             0, 0, SWP_NOOWNERZORDER | SWP_NOSIZE);
     }
 }

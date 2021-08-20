@@ -182,7 +182,7 @@ class RealTimeDataProcessing:
         Generate the analytics processing lambda to send processed data to CloudWatch for visualization.
         """
         analytics_processing_function_name = resource_name_sanitizer.sanitize_resource_name(
-            f'{self._stack.stack_name}-AnalyticsProcessingLambdaName', 'lambda_function')
+            f'{self._stack.stack_name}-AnalyticsProcessingLambda', 'lambda_function')
         self._analytics_processing_lambda_role = self._create_analytics_processing_lambda_role(
             analytics_processing_function_name
         )

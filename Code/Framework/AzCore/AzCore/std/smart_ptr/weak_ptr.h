@@ -192,9 +192,5 @@ namespace AZStd
     }
 } // namespace AZStd
 
-/*#ifdef AZ_COMPILER_MSVC
-# pragma warning(pop)
-#endif */
-
 #endif  // #ifndef AZSTD_SMART_PTR_WEAK_PTR_H
 #pragma once

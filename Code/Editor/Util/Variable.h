@@ -405,7 +405,7 @@ public:
     unsigned char   GetDataType() const { return m_dataType; };
     void SetDataType(unsigned char dataType) { m_dataType = dataType; }
 
-    void SetFlags(int flags) { m_flags = flags; }
+    void SetFlags(int flags) { m_flags = static_cast<uint16>(flags); }
     int  GetFlags() const { return m_flags; }
     void  SetFlagRecursive(EFlags flag) { m_flags |= flag; }
 

@@ -110,9 +110,9 @@ namespace AtomToolsFramework
 
     void AtomToolsMainWindow::CreateMenu()
     {
-        m_menuBar = new QMenuBar(this);
-        m_menuBar->setObjectName("MenuBar");
-        setMenuBar(m_menuBar);
+        auto menuBar = new QMenuBar(this);
+        menuBar->setObjectName("MenuBar");
+        setMenuBar(menuBar);
     }
 
     void AtomToolsMainWindow::CreateTabBar()
@@ -245,5 +245,20 @@ namespace AtomToolsFramework
         {
             m_tabWidget->setCurrentIndex((m_tabWidget->currentIndex() + 1) % m_tabWidget->count());
         }
+    }
+
+    void AtomToolsMainWindow::SetStatusMessage(const QString& message)
+    {
+        m_statusMessage->setText(QString("<font color=\"White\">%1</font>").arg(message));
+    }
+
+    void AtomToolsMainWindow::SetStatusWarning(const QString& message)
+    {
+        m_statusMessage->setText(QString("<font color=\"Yellow\">%1</font>").arg(message));
+    }
+
+    void AtomToolsMainWindow::SetStatusError(const QString& message)
+    {
+        m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(message));
     }
 } // namespace AtomToolsFramework

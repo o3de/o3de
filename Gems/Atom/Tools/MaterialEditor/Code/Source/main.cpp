@@ -28,9 +28,12 @@ int main(int argc, char** argv)
     AzQtComponents::AzQtApplication::InitializeDpiScaling();
 
     MaterialEditor::MaterialEditorApplication app(&argc, &argv);
+    if (!app.LaunchLocalServer())
+    {
+        return 0;
+    }
 
-    auto globalEventFilter = new AzQtComponents::GlobalEventFilter(&app);
-    app.installEventFilter(globalEventFilter);
+    app.installEventFilter(new AzQtComponents::GlobalEventFilter(&app));
 
     AZ::IO::FixedMaxPath engineRootPath;
     if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)

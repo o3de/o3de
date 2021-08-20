@@ -20,7 +20,7 @@ AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 namespace
 {
-    const uint kDefaultFPS = 30.0f;
+    const uint kDefaultFPS = 30u;
 }
 
 CFBXExporterDialog::CFBXExporterDialog(bool bDisplayOnlyFPSSetting, QWidget* pParent)
@@ -43,7 +43,7 @@ CFBXExporterDialog::~CFBXExporterDialog()
 
 float CFBXExporterDialog::GetFPS() const
 {
-    return m_ui->m_fpsCombo->currentText().toDouble();
+    return m_ui->m_fpsCombo->currentText().toFloat();
 }
 
 bool CFBXExporterDialog::GetExportCoordsLocalToTheSelectedObject() const

@@ -368,7 +368,7 @@ AZ::Vector2 CSprite::GetSize()
         }
 
         AZ::RHI::Size size = image->GetRHIImage()->GetDescriptor().m_size;
-        return AZ::Vector2(size.m_width, size.m_height);
+        return AZ::Vector2(static_cast<float>(size.m_width), static_cast<float>(size.m_height));
     }
     else
     {

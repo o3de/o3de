@@ -21,9 +21,6 @@
 #include "Node.h"
 #include "Attributes.h"
 
-#pragma warning( push )
-#pragma warning( disable : 5046) // 'function' : Symbol involving type with internal linkage not defined
-
 /**
  * NodeFunctionGeneric.h
  * 
@@ -184,9 +181,12 @@ namespace ScriptCanvas
         : public Node
     {
     public:
+    AZ_PUSH_DISABLE_WARNING(5046, "-Wunknown-warning-option") // 'function' : Symbol involving type with internal linkage not defined
         AZ_RTTI(((NodeFunctionGenericMultiReturn<t_Func, t_Traits, function>), "{DC5B1799-6C5B-4190-8D90-EF0C2D1BCE4E}", t_Func, t_Traits), Node);
         AZ_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(NodeFunctionGenericMultiReturn);
         AZ_COMPONENT_BASE(NodeFunctionGenericMultiReturn, Node);
+    AZ_POP_DISABLE_WARNING
+
 
         static const char* GetNodeFunctionName()
         {
@@ -372,5 +372,3 @@ namespace ScriptCanvas
     }
 
 }
-
-#pragma warning( pop )
