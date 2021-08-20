@@ -1374,6 +1374,8 @@ AZ_POP_DISABLE_WARNING
             // Register any AZ CVar commands created above with the AZ Console system.
             AZ::ConsoleFunctorBase*& deferredHead = AZ::ConsoleFunctorBase::GetDeferredHead();
             AZ::Interface<AZ::IConsole>::Get()->LinkDeferredFunctors(deferredHead);
+            // Execute any deferred commands that uses the CVar commands that were just registered
+            AZ::Interface<AZ::IConsole>::Get()->ExecuteDeferredConsoleCommands();
 
             // Callback
             if (m_pUserCallback && m_env.pConsole)
