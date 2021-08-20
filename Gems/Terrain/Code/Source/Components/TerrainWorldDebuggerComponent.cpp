@@ -15,6 +15,8 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
+#include <AzFramework/Visibility/EntityBoundsUnionBus.h>
+
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
@@ -231,9 +233,9 @@ namespace Terrain
         const int32_t numSectorsX = aznumeric_cast<int32_t>((worldBounds.GetXExtent() + xSectorSize) / xSectorSize);
         const int32_t numSectorsY = aznumeric_cast<int32_t>((worldBounds.GetYExtent() + ySectorSize) / ySectorSize);
 
-        // If we haven't cached anything before, or if the dirty region falls outside of what we've previously cached, clear our cache
-        // structure and repopulate it with WireframeSector entries with the proper AABB sizes.
-        if (!m_wireframeBounds.IsValid() || !dirtyRegion.IsValid() || !m_wireframeBounds.Contains(dirtyRegion))
+        // If we haven't cached anything before, or if the world bounds has changed, clear our cache structure and repopulate it
+        // with WireframeSector entries with the proper AABB sizes.
+        if (!m_wireframeBounds.IsValid() || !dirtyRegion.IsValid() || !m_wireframeBounds.IsClose(worldBounds))
         {
             m_wireframeBounds = worldBounds;
 
@@ -261,6 +263,9 @@ namespace Terrain
                 }
             }
 
+            // Notify the visibility system that our bounds have changed.
+            AzFramework::IEntityBoundsUnionRequestBus::Broadcast(
+                &AzFramework::IEntityBoundsUnionRequestBus::Events::RefreshEntityLocalBoundsUnion, GetEntityId());
         }
 
         // For each sector, if it overlaps with the dirty region, clear it out and recache the wireframe line data.
