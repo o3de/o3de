@@ -44,15 +44,16 @@ AZASSET_LUT = """\
 }"""
 
 def write_azasset(file_path, lut_size, lut_intervals, lut_values, azasset_json=AZASSET_LUT):
-
     values_str = ''
     for idx, px in enumerate(lut_values):
-        values_str += "{0}, {1}, {2}\n".format(px[0], px[1], px[2])
+        values_str += f"{px[0]}, {px[1]}, {px[2]}"
+        if idx < (len(lut_values) - 1):
+            values_str += ",\n"
 
     intervals_str = ', '.join(map(str, lut_intervals))
-    
+
     azasset_json = azasset_json % (intervals_str, values_str)
-    
+
     asset_file_path = f"{file_path}.azasset"
     _LOGGER.info(f"Writting {asset_file_path}...")
     asset_file = open(asset_file_path, 'w')
@@ -66,17 +67,17 @@ def convert_3dl_to_azasset(input_file, output_file):
     with open(input_file) as lut_file:
         alist = [line.rstrip().lstrip() for line in lut_file]
         for idx, ln in enumerate(alist):
-            if type(ln[0]) == int:  # skip lines that don't start with number
-                if idx == 0:
-                    values = ln.split(" ")
-                    for v in values:
-                        lut_intervals.append(v)
-                else:
-                    values = ln.split(" ")
-                    if values is None or len(values) < 3:
-                        continue
-                    lut_values.append(values)
-                
+            # if type(ln[0]) == int:  # skip lines that don't start with number
+            if idx == 0:
+                values = ln.split(" ")
+                for v in values:
+                    lut_intervals.append(v)
+            else:
+                values = ln.split(" ")
+                if values is None or len(values) < 3:
+                    continue
+                lut_values.append(values)
+
     write_azasset(output_file)
 
 

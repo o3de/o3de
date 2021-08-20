@@ -87,13 +87,11 @@ def write_3DL(file_path, lut_size, lut_intervals, lut_values):
     lut_file_path = f'{file_path}.3dl'
     _LOGGER.info(f"Writing {lut_file_path}...")
     lut_file = open(lut_file_path, 'w')
-    # First line contains the vertex intervals
-    dv = 1023.0 / float(lut_size)
     for i in range(lut_size):
-        lut_file.write("%d " % (lut_intervals[i]))
+        lut_file.write(f"{lut_intervals[i]} ")
     lut_file.write("\n")
     for px in lut_values:
-        lut_file.write("%d %d %d\n" % (px[0], px[1], px[2]))
+        lut_file.write(f"{px[0]} {px[1]} {px[2]}\n")
     lut_file.close()
 
 
@@ -102,26 +100,26 @@ def write_3DL(file_path, lut_size, lut_intervals, lut_values):
 # -------------------------------------------------------------------------
 if __name__ == '__main__':
     """Run this file as main"""
-    
-    parser = argparse.ArgumentParser()
+
+    parser=argparse.ArgumentParser()
     parser.add_argument('--i', type=str, required=True, help='input file')
     parser.add_argument('--o', type=str, required=True, help='output file')
-    args = parser.parse_args()
-    
+    args=parser.parse_args()
+
     # Read input image
-    #image_buffer = oiio.ImageBuf("linear_lut.exr")
-    image_buffer = oiio.ImageBuf(args.i)
-    image_spec = image_buffer.spec()
+    # image_buffer = oiio.ImageBuf("linear_lut.exr")
+    image_buffer=oiio.ImageBuf(args.i)
+    image_spec=image_buffer.spec()
     _LOGGER.info(f"Resolution is, x: {image_buffer.spec().width} and y: {image_buffer.spec().height}")
-    
+
     if image_spec.width != image_spec.height * image_spec.height:
         _LOGGER.info(f"invalid input file dimensions. Expect lengthwise LUT with dimension W: s*s  X  H: s, where s is the size of the LUT")
         sys.exit(1)
-    
-    lut_intervals, lut_values = generate_lut_values(image_spec)
+
+    lut_intervals, lut_values=generate_lut_values(image_spec)
 
     write_3DL(args.o, image_spec.height, lut_intervals, lut_values)
     write_azasset(args.o, image_spec.height, lut_intervals, lut_values)
-    
+
     # example from command line
     # python % DCCSI_COLORGRADING_SCRIPTS %\lut_helper.py - -i C: \Depot\o3de\Gems\Atom\Feature\Common\Tools\ColorGrading\Resources\LUTs\linear_32_LUT.exr - -op pre - grading - -shaper Log2 - 48nits - -o C: \Depot\o3de\Gems\Atom\Feature\Common\Tools\ColorGrading\Resources\LUTs\base_Log2 - 48nits_32_LUT.exr
