@@ -64,7 +64,7 @@ namespace AzNetworking
     {
         --m_listenPortCount;
 
-        auto visitor = [this, &tcpNetworkInterface](ListenPort& listenPort)
+        auto visitor = [&tcpNetworkInterface](ListenPort& listenPort)
         {
             if (listenPort.m_tcpNetworkInterface == &tcpNetworkInterface)
             {
@@ -120,7 +120,7 @@ namespace AzNetworking
 
         auto readCallback = [this, newConnection, connectionLength](SocketFd socketFd)
         {
-            auto visitor = [this, newConnection, connectionLength, socketFd](ListenPort& listenPort)
+            auto visitor = [this, newConnection, socketFd](ListenPort& listenPort)
             {
                 if (listenPort.m_listenSocket.GetSocketFd() == socketFd)
                 {
@@ -132,7 +132,7 @@ namespace AzNetworking
         auto writeCallback = [](SocketFd) {};
         m_tcpSocketManager.ProcessEvents(updateRateMs, readCallback, writeCallback);
 
-        auto cleanupUnused = [this](AZ::ThreadSafeDeque<ListenPort>::DequeType& deque)
+        auto cleanupUnused = [](AZ::ThreadSafeDeque<ListenPort>::DequeType& deque)
         {
             AZStd::remove_if(deque.begin(), deque.end(), [](ListenPort& listenPort) { return listenPort.m_tcpNetworkInterface == nullptr; });
         };

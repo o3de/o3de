@@ -63,7 +63,6 @@ namespace AZ
 
             const uint8_t* sourceData = reinterpret_cast<const uint8_t*>(request.m_sourceData);
             const size_t byteCount = request.m_byteCount;
-            const size_t byteOffset = request.m_byteOffset;
             auto* buffer = static_cast<Buffer*>(request.m_buffer);
             RHI::BufferPool* bufferPool = static_cast<RHI::BufferPool*>(buffer->GetPool());
 
@@ -189,8 +188,6 @@ namespace AZ
                 // Set pipeline barriers before copy.
                 EmmitPrologueMemoryBarrier(request, residentMip);
 
-                const uint16_t arraySize = image->GetDescriptor().m_arraySize;
-                const uint16_t imageMipLevels = image->GetDescriptor().m_mipLevels;
                 const static uint32_t bufferOffsetAlign = 4; // refer VkBufferImageCopy in the spec.
 
                 // Variables for split subresource slice. 
@@ -213,11 +210,7 @@ namespace AZ
 
                     // ImageHeight must be bigger than or equal to the Image's row count. Images with a RowCount that is less than the ImageHeight indicates a block compression.
                     // Images with a RowCount which is higher than the ImageHeight indicates a planar image, which is not supported for streaming images.
-                    if (subresourceLayout.m_size.m_height < subresourceLayout.m_rowCount)
-                    {
-                        AZ_Error("StreamingImage", false, "AsyncUploadQueue::QueueUpload expects ImageHeight '%d' to be bigger than or equal to the image's RowCount '%d'.", subresourceLayout.m_size.m_height, subresourceLayout.m_rowCount);
-                        RHI::AsyncWorkHandle::Null;
-                    }
+                    AZ_Error("StreamingImage", subresourceLayout.m_size.m_height < subresourceLayout.m_rowCount, "AsyncUploadQueue::QueueUpload expects ImageHeight '%d' to be bigger than or equal to the image's RowCount '%d'.", subresourceLayout.m_size.m_height, subresourceLayout.m_rowCount);
 
                     // The final staging size for each CopyTextureRegion command
                     uint32_t stagingSize = stagingSlicePitch;
@@ -596,7 +589,6 @@ namespace AZ
             uint32_t residentMip)
         {
             const auto& image = static_cast<const Image&>(*request.m_image);
-            const RHI::ImageBindFlags bindFlags = image.GetDescriptor().m_bindFlags;
             const VkImageLayout layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             const uint32_t beforeMip = residentMip;
             const uint32_t afterMip = beforeMip - static_cast<uint32_t>(request.m_mipSlices.size());

@@ -109,7 +109,7 @@ namespace AZ
         {
             // The queue doesn't have an explicit way to signal a fence, so
             // we submit an empty work batch with only a fence to signal.
-            QueueCommand([this, &fence](void* queue)
+            QueueCommand([&fence](void* queue)
             {
                 Queue* vulkanQueue = static_cast<Queue*>(queue);
                 vulkanQueue->SubmitCommandBuffers(

@@ -21,7 +21,7 @@ namespace AZ
 
         //! Provides a view into a buffer, to be used as an indirect buffer. The content of the view is a contiguous
         //! list of commands sequences. It is provided to the RHI back-end at draw time.
-        class IndirectBufferView
+        class alignas(8) IndirectBufferView
         {
         public:
             IndirectBufferView() = default;
@@ -59,8 +59,6 @@ namespace AZ
             uint32_t m_byteOffset = 0;
             uint32_t m_byteCount = 0;
             uint32_t m_byteStride = 0;
-            // Padding the size so it's 8 bytes aligned
-            uint32_t m_pad = 0;
         };
 
         AZ_ASSERT_NO_ALIGNMENT_PADDING_END

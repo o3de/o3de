@@ -89,12 +89,9 @@ namespace AZ
             result.Combine(componentLoadResult);
         }
 
-        {
-            JSR::ResultCode runtimeActiveLoadResult =
-                ContinueLoadingFromJsonObjectField(&entityInstance->m_isRuntimeActiveByDefault,
-                    azrtti_typeid<decltype(entityInstance->m_isRuntimeActiveByDefault)>(),
-                    inputValue, "IsRuntimeActive", context);
-        }
+        ContinueLoadingFromJsonObjectField(&entityInstance->m_isRuntimeActiveByDefault,
+            azrtti_typeid<decltype(entityInstance->m_isRuntimeActiveByDefault)>(),
+            inputValue, "IsRuntimeActive", context);
 
         return context.Report(
             result,

@@ -177,7 +177,7 @@ namespace AZ
              */
 
             AZStd::vector<const PipelineLibrary*> threadLibraries;
-            m_threadLibrarySet.ForEach([this, handle, &threadLibraries](const ThreadLibrarySet& threadLibrarySet)
+            m_threadLibrarySet.ForEach([handle, &threadLibraries](const ThreadLibrarySet& threadLibrarySet)
             {
                 const ThreadLibraryEntry& threadLibraryEntry = threadLibrarySet[handle.GetIndex()];
 

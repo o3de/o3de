@@ -121,7 +121,6 @@ namespace AZ
         char** SplitCommandLine(int& size, char* const cmdLine)
         {
             std::vector<char*> tokens;
-            char* next_token = nullptr;
             char* tok = azstrtok(cmdLine, 0, " ", &next_token);
             while (tok != NULL)
             {

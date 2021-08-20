@@ -54,9 +54,6 @@ namespace AzFramework
         if (auto instance_it = m_entityVisibilityBoundsUnionInstanceMapping.find(entity);
             instance_it == m_entityVisibilityBoundsUnionInstanceMapping.end())
         {
-            AZ::TransformInterface* transformInterface = entity->GetTransform();
-            const AZ::Vector3 entityPosition = transformInterface->GetWorldTranslation();
-
             EntityVisibilityBoundsUnionInstance instance;
             instance.m_localEntityBoundsUnion = CalculateEntityLocalBoundsUnion(entity);
             instance.m_visibilityEntry.m_typeFlags = VisibilityEntry::TYPE_Entity;

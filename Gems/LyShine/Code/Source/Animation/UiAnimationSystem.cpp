@@ -106,7 +106,6 @@ void UiAnimationSystem::DoNodeStaticInitialisation()
 bool UiAnimationSystem::Load(const char* pszFile, const char* pszMission)
 {
     INDENT_LOG_DURING_SCOPE (true, "UI Animation system is loading the file '%s' (mission='%s')", pszFile, pszMission);
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
 
     XmlNodeRef rootNode = m_pSystem->LoadXmlFromFile(pszFile);
     if (!rootNode)
