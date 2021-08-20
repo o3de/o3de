@@ -58,7 +58,7 @@ namespace Terrain
                 editContext->Class<TerrainSurfaceDataSystemComponent>("Terrain Surface Data System", "Manages surface data requests against legacy terrain")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Surface Data")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(0, &TerrainSurfaceDataSystemComponent::m_configuration, "Configuration", "")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
@@ -78,18 +78,18 @@ namespace Terrain
 
     void TerrainSurfaceDataSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("SurfaceDataProviderService", 0xfe9fb95e));
-        services.push_back(AZ_CRC("TerrainSurfaceDataProviderService", 0xa1ac7717));
+        services.push_back(AZ_CRC_CE("SurfaceDataProviderService"));
+        services.push_back(AZ_CRC_CE("TerrainSurfaceDataProviderService"));
     }
 
     void TerrainSurfaceDataSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("TerrainSurfaceDataProviderService", 0xa1ac7717));
+        services.push_back(AZ_CRC_CE("TerrainSurfaceDataProviderService"));
     }
 
     void TerrainSurfaceDataSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("SurfaceDataSystemService", 0x1d44d25f));
+        services.push_back(AZ_CRC_CE("SurfaceDataSystemService"));
     }
 
     void TerrainSurfaceDataSystemComponent::Activate()

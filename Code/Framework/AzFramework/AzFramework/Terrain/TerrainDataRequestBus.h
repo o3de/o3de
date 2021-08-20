@@ -104,11 +104,11 @@ namespace AzFramework
 
             enum TerrainDataChangedMask : uint8_t
             {
-                None = 0x00,
-                Settings = 0x01,
-                HeightData = 0x02,
-                ColorData = 0x04,
-                SurfaceData = 0x08
+                None        = 0b00000000,
+                Settings    = 0b00000001,
+                HeightData  = 0b00000010,
+                ColorData   = 0b00000100,
+                SurfaceData = 0b00001000
             };
 
             virtual void OnTerrainDataCreateBegin() {}

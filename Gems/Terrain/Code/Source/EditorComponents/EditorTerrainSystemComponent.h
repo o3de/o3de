@@ -1,6 +1,6 @@
 /*
- * Copyright (c) Contributors to the Open 3D Engine Project. For complete copyright and license terms please see the LICENSE at the root of
- * this distribution.
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
  *
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
@@ -20,7 +20,7 @@ namespace Terrain
         , private AzToolsFramework::EditorEvents::Bus::Handler
     {
     public:
-        AZ_COMPONENT(EditorTerrainSystemComponent, "{5e9f2200-9099-4325-babd-6a533a1abea8}");
+        AZ_COMPONENT(EditorTerrainSystemComponent, "{5E9f2200-9099-4325-BABD-6A533A1ABEA8}");
         static void Reflect(AZ::ReflectContext* context);
 
         EditorTerrainSystemComponent() = default;
@@ -28,12 +28,12 @@ namespace Terrain
     private:
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("TerrainEditorService"));
+            provided.push_back(AZ_CRC_CE("TerrainEditorService"));
         }
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("TerrainService"));
+            required.push_back(AZ_CRC_CE("TerrainService"));
         }
 
         // AZ::Component

@@ -393,11 +393,11 @@ namespace Terrain
                 m_gridVertices.emplace_back(x1, y1, x1 / m_gridMeters, y1 / m_gridMeters);
 
                 m_gridIndices.emplace_back(startIndex);
-                m_gridIndices.emplace_back(startIndex + 1);
-                m_gridIndices.emplace_back(startIndex + 2);
-                m_gridIndices.emplace_back(startIndex + 1);
-                m_gridIndices.emplace_back(startIndex + 2);
-                m_gridIndices.emplace_back(startIndex + 3);
+                m_gridIndices.emplace_back(aznumeric_cast<uint16_t>(startIndex + 1));
+                m_gridIndices.emplace_back(aznumeric_cast<uint16_t>(startIndex + 2));
+                m_gridIndices.emplace_back(aznumeric_cast<uint16_t>(startIndex + 1));
+                m_gridIndices.emplace_back(aznumeric_cast<uint16_t>(startIndex + 2));
+                m_gridIndices.emplace_back(aznumeric_cast<uint16_t>(startIndex + 3));
             }
         }
     }

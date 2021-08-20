@@ -178,8 +178,8 @@ namespace Terrain
                 AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
                     queryResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainGridResolution);
                 AZ::Vector3 viewDistance(
-                    queryResolution.GetX() * SectorSizeInGridPoints * sqrt(MaxSectorsToDraw),
-                    queryResolution.GetY() * SectorSizeInGridPoints * sqrt(MaxSectorsToDraw),
+                    queryResolution.GetX() * SectorSizeInGridPoints * sqrtf(MaxSectorsToDraw),
+                    queryResolution.GetY() * SectorSizeInGridPoints * sqrtf(MaxSectorsToDraw),
                     0.0f);
 
                 // Create an AABB around the camera based on how far we want to be able to draw in each direction and clamp the
@@ -228,8 +228,8 @@ namespace Terrain
 
         // Calculate the total number of sectors to cache.  The world bounds might not be evenly divisible by sector bounds, so we add
         // an extra sector's worth of size in each direction so that clamping down to an integer still accounts for that fractional sector.
-        const int32_t numSectorsX = (worldBounds.GetXExtent() + xSectorSize) / xSectorSize;
-        const int32_t numSectorsY = (worldBounds.GetYExtent() + ySectorSize) / ySectorSize;
+        const int32_t numSectorsX = aznumeric_cast<int32_t>((worldBounds.GetXExtent() + xSectorSize) / xSectorSize);
+        const int32_t numSectorsY = aznumeric_cast<int32_t>((worldBounds.GetYExtent() + ySectorSize) / ySectorSize);
 
         // If we haven't cached anything before, or if the dirty region falls outside of what we've previously cached, clear our cache
         // structure and repopulate it with WireframeSector entries with the proper AABB sizes.

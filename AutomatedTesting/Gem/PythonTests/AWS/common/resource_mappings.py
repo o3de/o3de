@@ -6,9 +6,9 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 import os
-import pytest
 import json
 import logging
+from AWS.common import constants
 
 logger = logging.getLogger(__name__)
 
@@ -22,18 +22,14 @@ class ResourceMappings:
     ResourceMappings class that handles writing Cloud formation outputs to resource mappings json file in a project.
     """
 
-    def __init__(self, file_path: str, region: str, feature_name: str, account_id: str, workspace: pytest.fixture,
-                 cloud_formation_client):
+    def __init__(self, file_path: str, region: str, feature_name: str, account_id: str, cloud_formation_client):
         """
         :param file_path: Path for the resource mapping file.
         :param region: Region value for the resource mapping file.
         :param feature_name: Feature gem name to use to append name to mappings key.
         :param account_id: AWS account id value for the resource mapping file.
-        :param workspace: ly_test_tools workspace fixture.
         :param cloud_formation_client: AWS cloud formation client.
         """
-        self._cdk_env = os.environ.copy()
-        self._cdk_env['PATH'] = f'{workspace.paths.engine_root()}\\python;' + self._cdk_env['PATH']
         self._resource_mapping_file_path = file_path
         self._region = region
         self._feature_name = feature_name
@@ -44,7 +40,7 @@ class ResourceMappings:
             f'Invalid resource mapping file path {self._resource_mapping_file_path}'
         self._client = cloud_formation_client
 
-    def populate_output_keys(self, stacks=[]) -> None:
+    def populate_output_keys(self, stacks=None) -> None:
         """
         Calls describe stacks on cloud formation service and persists outputs to resource mappings file.
         :param stacks List of stack arns to describe and populate resource mappings with.
@@ -58,7 +54,7 @@ class ResourceMappings:
 
             self._write_resource_mappings(stacks[0].get('Outputs', []))
 
-    def _write_resource_mappings(self, outputs, append_feature_name = True) -> None:
+    def _write_resource_mappings(self, outputs, append_feature_name=True) -> None:
         with open(self._resource_mapping_file_path) as file_content:
             resource_mappings = json.load(file_content)
 
@@ -91,7 +87,7 @@ class ResourceMappings:
             resource_mappings = json.load(file_content)
 
         resource_mappings[AWS_RESOURCE_MAPPINGS_ACCOUNT_ID_KEY] = ''
-        resource_mappings[AWS_RESOURCE_MAPPINGS_REGION_KEY] = 'us-west-2'
+        resource_mappings[AWS_RESOURCE_MAPPINGS_REGION_KEY] = constants.AWS_REGION
 
         # Append new mappings.
         resource_mappings[AWS_RESOURCE_MAPPINGS_KEY] = resource_mappings.get(AWS_RESOURCE_MAPPINGS_KEY, {})
