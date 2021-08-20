@@ -67,8 +67,8 @@ namespace AZ
 
         ImGuiPass::ImGuiPass(const RPI::PassDescriptor& descriptor)
             : Base(descriptor)
-            , AzFramework::InputChannelEventListener(AzFramework::InputChannelEventListener::GetPriorityUI() + 1) // Prioritize ImGui input over in-game UI such as LyShine
-            , AzFramework::InputTextEventListener(AzFramework::InputTextEventListener::GetPriorityUI() + 1) // Prioritize ImGui input over in-game UI such as LyShine
+            , AzFramework::InputChannelEventListener(AzFramework::InputChannelEventListener::GetPriorityDebugUI() - 1) // Give ImGui manager priority over the pass
+            , AzFramework::InputTextEventListener(AzFramework::InputTextEventListener::GetPriorityDebugUI() - 1) // Give ImGui manager priority over the pass
         {
 
             const ImGuiPassData* imguiPassData = RPI::PassUtils::GetPassData<ImGuiPassData>(descriptor);
