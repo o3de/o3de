@@ -34,7 +34,7 @@ except ImportError as e:
     sys.exit(1)
 # ------------------------------------------------------------------------
 
-from ColorGrading.from_3dl_to_azasset import DEFAULT_AZASSET_HEADER
+from ColorGrading.from_3dl_to_azasset import AZASSET_LUT
 from ColorGrading.from_3dl_to_azasset import write_azasset
 
 # ------------------------------------------------------------------------

@@ -31,37 +31,33 @@ except ImportError as e:
     sys.exit(1)
 # ------------------------------------------------------------------------
 
-DEFAULT_AZASSET_HEADER = """\
+AZASSET_LUT = """\
 {
     "Type": "JsonSerialization",
     "Version": 1,
     "ClassName": "LookupTableAsset",
     "ClassData": {
         "Name": "LookupTable",
-        "Intervals": [
-}
-"""
+        "Intervals": %s,
+        "Values": %s
+    }
+}"""
 
-def write_azasset(file_path, lut_size, lut_intervals, lut_values, header=DEFAULT_AZASSET_HEADER):
+def write_azasset(file_path, lut_size, lut_intervals, lut_values, azasset_json=AZASSET_LUT):
+    intervals = ''
+    for i in range(lut_size):
+        intervals + f" {lut_intervals[i]}"
+
+    values = ''
+    for idx, px in enumerate(lut_values):
+        values + f" {px[0]}, {px[1]}, {px[2]}"
+        
+    azasset_json % (intervals, values)
+    
     asset_file_path = f"{file_path}.azasset"
     _LOGGER.info(f"Writting {asset_file_path}...")
     asset_file = open(asset_file_path, 'w')
-    asset_file.write(header)
-    for i in range(lut_size):
-        asset_file.write(" %d" % (lut_intervals[i]))
-        if i < (lut_size - 1):
-            asset_file.write(", ")
-    asset_file.write("],\n")
-    asset_file.write("        \"Values\": [\n")
-    for idx, px in enumerate(lut_values):
-        asset_file.write(" %d, %d, %d" % (px[0], px[1], px[2]))
-        if idx < (len(lut_values) - 1):
-            asset_file.write(",")
-        asset_file.write("\n")
-    asset_file.write("]\n")
-    asset_file.write("    }\n")
-    asset_file.write("}\n")
-    asset_file.close()
+    asset_file.write(azasset_json)
 
 
 # ------------------------------------------------------------------------
