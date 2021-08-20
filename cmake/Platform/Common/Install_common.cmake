@@ -491,6 +491,10 @@ endfunction()"
     install(CODE "${runtime_commands_str}"
     )
 
+    if(COMMAND ly_post_install_steps)
+        ly_post_install_steps()
+    endif()
+
 endfunction()
 
 #! ly_setup_others: install directories required by the engine

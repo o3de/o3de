@@ -94,8 +94,27 @@ function(ly_install_code_function_override)
         get_filename_component(target_filename \"\${source_file}\" NAME)
 
     endif()
-    file(COPY \"\${source_file}\" DESTINATION \"\${target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS})
+    file(COPY \"\${source_file}\" DESTINATION \"\${target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS} FOLLOW_SYMLINK_CHAIN)
 endfunction()")
+
+endfunction()
+
+#! ly_post_install_steps: Any additional platform specific post install steps
+function(ly_post_install_steps)
+
+    # On Mac, after CMake is done installing, the code signatures on all our built binaries will be invalid.
+    # We need to now codesign each dynamic library, executable, and app bundle. It's specific to each target
+    # because there could potentially be different entitlements for different targets.
+    get_property(all_targets GLOBAL PROPERTY LY_ALL_TARGETS)
+    foreach(alias_target IN LISTS all_targets)
+        ly_de_alias_target(${alias_target} target)
+        # Exclude targets that dont produce runtime outputs
+        get_target_property(target_type ${target} TYPE)
+        if(NOT target_type IN_LIST LY_TARGET_TYPES_WITH_RUNTIME_OUTPUTS)
+            continue()
+        endif()
+        install(SCRIPT ${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/${target}.cmake)
+    endforeach()
 
 endfunction()
 

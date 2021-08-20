@@ -74,7 +74,7 @@ function(ly_copy source_file target_directory)
             endif()
 
             # fixup the destination so it ends up in Contents/Plugins
-            string(REGEX REPLACE "(.*\\.app/Contents)/MacOS" "\\1/plugins" target_directory "${target_directory}")
+            string(REGEX REPLACE "(.*\\.app/Contents)/MacOS" "\\1/PlugIns" target_directory "${target_directory}")
 
             set(local_plugin_dirs ${plugin_dirs})
             list(APPEND local_plugin_dirs "${target_directory}")
@@ -212,8 +212,9 @@ if(@target_file_dir@ MATCHES ".app/Contents/MacOS")
             file(REMOVE_RECURSE ${remove_file_list})
         endif()
 
-
     endif()
+
+    cmake_path(SET exec_path "${bundle_path}")
 
 else() # Non-bundle case
 
@@ -222,4 +223,13 @@ else() # Non-bundle case
         execute_process(COMMAND ${LY_INSTALL_NAME_TOOL} -change @rpath/Python @rpath/Python.framework/Versions/Current/Python @target_file@)
     endif()
 
+    cmake_path(SET exec_path "@target_file@")
+
 endif()
+
+set(CODE_SIGN_IDENTITY @LY_CODE_SIGN_IDENTITY@)
+cmake_path(GET exec_path FILENAME runtime_output_filename)
+cmake_path(SET entitlement_file "$ENV{TARGET_TEMP_DIR}/${runtime_output_filename}.xcent")
+foreach(config @CMAKE_CONFIGURATION_TYPES@)
+    configure_file(@LY_ROOT_FOLDER@/cmake/Platform/Mac/runtime_install_mac.cmake.in @CMAKE_BINARY_DIR@/runtime_install/${config}/$ENV{TARGET_NAME}.cmake @ONLY)
+endforeach()

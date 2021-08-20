@@ -31,10 +31,14 @@ endif()
 # Signing
 # The "-o linker-signed" flag is required as a work-around for the following CMake issue:
 # https://gitlab.kitware.com/cmake/cmake/-/issues/21854
-ly_set(CMAKE_XCODE_ATTRIBUTE_OTHER_CODE_SIGN_FLAGS "--deep -o linker-signed")
+ly_set(CMAKE_XCODE_ATTRIBUTE_OTHER_CODE_SIGN_FLAGS "--deep")
 
 # Generate scheme files for Xcode
 ly_set(CMAKE_XCODE_GENERATE_SCHEME TRUE)
+
+ly_set(CMAKE_OSX_ARCHITECTURES "x86_64")
+
+ly_set(CMAKE_INSTALL_DO_STRIP FALSE)
 
 # Make modules have the dylib extension
 ly_set(CMAKE_SHARED_MODULE_SUFFIX .dylib)

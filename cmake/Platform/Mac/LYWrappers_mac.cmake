@@ -6,6 +6,7 @@
 #
 #
 
+set(LY_ENABLE_HARDENED_RUNTIME OFF CACHE BOOL "Enable hardened runtime capability for Mac builds. This should be ON when building the engine for notarization/distribution.")
 
 function(ly_apply_platform_properties target)
 
@@ -13,6 +14,16 @@ function(ly_apply_platform_properties target)
         BUILD_RPATH "@executable_path/;@executable_path/../Frameworks"
         INSTALL_RPATH "@executable_path/;@executable_path/../Frameworks"
     )
+
+    if((NOT INSTALLED_ENGINE) AND (LY_ENABLE_HARDENED_RUNTIME))
+        get_property(target_type TARGET ${target} PROPERTY TYPE)
+        if ((${target_type} STREQUAL "MODULE_LIBRARY") OR (${target_type} STREQUAL "SHARED_LIBRARY") OR (${target_type} STREQUAL "EXECUTABLE"))
+            set_target_properties(${target} PROPERTIES
+                XCODE_ATTRIBUTE_ENABLE_HARDENED_RUNTIME YES
+                XCODE_ATTRIBUTE_CODE_SIGN_ENTITLEMENTS cmake/Platform/Mac/O3DE.entitlements
+                XCODE_ATTRIBUTE_CODE_SIGN_INJECT_BASE_ENTITLEMENTS NO)
+        endif()
+    endif()
 
 endfunction()
 
