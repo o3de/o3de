@@ -10,6 +10,7 @@
 
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/string/wildcard.h>
+#include <AzCore/Casting/numeric_cast.h>
 
 // extern instantiations of Path templates to prevent implicit instantiations
 namespace AZ::IO

@@ -59,9 +59,6 @@ ly_append_configurations_options(
                         # It also causes the compiler to place the library name MSVCRTD.lib into the .obj file.
         /Ob0            # Disables inline expansions
         /Od             # Disables optimization
-        /RTCsu          # Run-Time Error Checks: c Reports when a value is assigned to a smaller data type and results in a data loss (Not supoported by the STL)
-                        #                        s Enables stack frame run-time error checking
-                        #                        u Reports when a variable is used without having been initialized
     COMPILATION_PROFILE
         /GF             # Enable string pooling   
         /Gy             # Function level linking
@@ -90,6 +87,26 @@ ly_append_configurations_options(
         /OPT:ICF # Perform identical COMDAT folding. Redundant COMDATs can be removed from the linker output
         /INCREMENTAL:NO
 )
+
+set(LY_BUILD_WITH_ADDRESS_SANITIZER FALSE CACHE BOOL "Builds using AddressSanitizer (ASan). Will disable Edit/Continue, Incremental building and Run-Time checks (default = FALSE)")
+if(LY_BUILD_WITH_ADDRESS_SANITIZER)
+    set(LY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG FALSE) 
+    ly_append_configurations_options(
+        COMPILATION_DEBUG
+            /fsanitize=address
+    )
+    get_filename_component(link_tools_dir ${CMAKE_LINKER} DIRECTORY)
+    file(COPY
+        ${link_tools_dir}/clang_rt.asan_dbg_dynamic-x86_64.dll
+        DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY_DEBUG})
+else()
+    ly_append_configurations_options(
+        COMPILATION_DEBUG
+            /RTCsu  # Run-Time Error Checks: c Reports when a value is assigned to a smaller data type and results in a data loss (Not supoported by the STL)
+                    #                        s Enables stack frame run-time error checking
+                    #                        u Reports when a variable is used without having been initialized
+    )
+endif()
 
 set(LY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG FALSE CACHE BOOL "Indicates if incremental linking is used in debug configurations (default = FALSE)")
 if(LY_BUILD_WITH_INCREMENTAL_LINKING_DEBUG)

@@ -53,6 +53,15 @@ ly_add_source_properties(
     VALUES ${LY_PAL_TOOLS_DEFINES}
 )
 
+if(LY_BUILD_WITH_ADDRESS_SANITIZER)
+    # Default to use Malloc schema so ASan works well
+    ly_add_source_properties(
+        SOURCES AzCore/Memory/SystemAllocator.cpp
+        PROPERTY COMPILE_DEFINITIONS
+        VALUES AZCORE_SYSTEM_ALLOCATOR=AZCORE_SYSTEM_ALLOCATOR_MALLOC
+    )
+endif()
+
 ################################################################################
 # Tests
 ################################################################################

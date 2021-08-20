@@ -25,6 +25,7 @@ set(FILES
     Asset/AssetJsonSerializer.h
     Asset/AssetManager.cpp
     Asset/AssetManager.h
+    Asset/AssetManager_private.h
     Asset/AssetManagerBus.h
     Asset/AssetManagerComponent.cpp
     Asset/AssetManagerComponent.h
