@@ -346,7 +346,7 @@ namespace AZ
             }
         }
 
-        RHI::DrawItemSortKey MeshFeatureProcessor::GetSortKey(const MeshHandle& meshHandle)
+        RHI::DrawItemSortKey MeshFeatureProcessor::GetSortKey(const MeshHandle& meshHandle) const
         {
             if (meshHandle.IsValid())
             {
@@ -359,7 +359,7 @@ namespace AZ
             }
         }
 
-        void MeshFeatureProcessor::SetMeshLodConfiguration(const MeshHandle& meshHandle, const RPI::Cullable::LodConfiguration meshLodConfig)
+        void MeshFeatureProcessor::SetMeshLodConfiguration(const MeshHandle& meshHandle, const RPI::Cullable::LodConfiguration& meshLodConfig)
         {
             if (meshHandle.IsValid())
             {

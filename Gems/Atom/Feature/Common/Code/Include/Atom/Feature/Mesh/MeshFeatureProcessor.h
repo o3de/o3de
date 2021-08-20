@@ -153,10 +153,10 @@ namespace AZ
             AZ::Aabb GetLocalAabb(const MeshHandle& meshHandle) const override;
 
             void SetSortKey(const MeshHandle& meshHandle, RHI::DrawItemSortKey sortKey) override;
-            RHI::DrawItemSortKey GetSortKey(const MeshHandle& meshHandle) override;
+            RHI::DrawItemSortKey GetSortKey(const MeshHandle& meshHandle) const override;
 
-            void SetMeshLodConfiguration(const MeshHandle& meshHandle, const RPI::Cullable::LodConfiguration meshLodConfig);
-            RPI::Cullable::LodConfiguration GetMeshLodConfiguration(const MeshHandle& meshHandle) const;
+            void SetMeshLodConfiguration(const MeshHandle& meshHandle, const RPI::Cullable::LodConfiguration& meshLodConfig) override;
+            RPI::Cullable::LodConfiguration GetMeshLodConfiguration(const MeshHandle& meshHandle) const override;
 
             void SetExcludeFromReflectionCubeMaps(const MeshHandle& meshHandle, bool excludeFromReflectionCubeMaps) override;
             void SetRayTracingEnabled(const MeshHandle& meshHandle, bool rayTracingEnabled) override;
