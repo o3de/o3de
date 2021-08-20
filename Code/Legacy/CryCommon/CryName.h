@@ -196,9 +196,7 @@ public:
     {
         return (m_str) ? m_str : "";
     }
-    int length() const { return _length(); };
 
-    static bool find(const char* str) { return GetNameTable()->FindEntry(str) != 0; }
     void GetMemoryUsage(ICrySizer* pSizer) const
     {
         //pSizer->AddObject(m_str);

@@ -11,7 +11,7 @@
 #define CRYINCLUDE_CRYCOMMON_ISPLINES_H
 #pragma once
 
-#include <CrySizer.h>
+//#include <CrySizer.h>
 #include <IXml.h>
 
 //////////////////////////////////////////////////////////////////////////

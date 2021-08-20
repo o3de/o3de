@@ -21,7 +21,7 @@
 #include <IAudioSystemImplementation.h>
 
 #include <ISystem.h>
-#include <IPhysics.h>
+#include <algorithm>
 #include <IRenderAuxGeom.h>
 
 namespace Audio

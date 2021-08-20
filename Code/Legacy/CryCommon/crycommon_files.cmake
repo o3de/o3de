@@ -80,7 +80,7 @@ set(FILES
     CryHeaders_info.cpp
     CryListenerSet.h
     CryLegacyAllocator.h
-    CryName.h
+#    CryName.h
     CryPath.h
     CryPodArray.h
     CrySizer.h

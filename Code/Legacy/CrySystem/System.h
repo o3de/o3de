@@ -11,13 +11,12 @@
 
 #include <ISystem.h>
 #include <IRenderer.h>
-#include <IPhysics.h>
 #include <IWindowMessageHandler.h>
 
 #include "Timer.h"
 #include <CryVersion.h>
 #include "CmdLine.h"
-#include "CryName.h"
+//#include "CryName.h"
 
 #include <AzFramework/Archive/ArchiveVars.h>
 #include "RenderBus.h"
@@ -25,6 +24,7 @@
 #include <LoadScreenBus.h>
 
 #include <AzCore/Module/DynamicModuleHandle.h>
+#include <AzCore/Math/Crc.h>
 
 namespace AzFramework
 {
@@ -330,7 +330,6 @@ public:
     ICryFont* GetICryFont(){ return m_env.pCryFont; }
     ILog* GetILog(){ return m_env.pLog; }
     ICmdLine* GetICmdLine(){ return m_pCmdLine; }
-    INameTable* GetINameTable() { return m_env.pNameTable; };
     IViewSystem* GetIViewSystem();
     ILevelSystem* GetILevelSystem();
     ISystemEventDispatcher* GetISystemEventDispatcher() { return m_pSystemEventDispatcher; }
@@ -490,27 +489,27 @@ private: // ------------------------------------------------------
     // System environment.
     SSystemGlobalEnvironment m_env;
 
-    CTimer                              m_Time;                             //!<
-    bool                                    m_bInitializedSuccessfully;     //!< true if the system completed all initialization steps
-    bool                                    m_bRelaunch;                    //!< relaunching the app or not (true beforerelaunch)
-    int                                     m_iLoadingMode;             //!< Game is loading w/o changing context (0 not, 1 quickloading, 2 full loading)
-    bool                                    m_bTestMode;                    //!< If running in testing mode.
-    bool                                    m_bEditor;                      //!< If running in Editor.
-    bool                                    m_bNoCrashDialog;
-    bool                                    m_bNoErrorReportWindow;
+    CTimer                m_Time;                       //!<
+    bool                  m_bInitializedSuccessfully;   //!< true if the system completed all initialization steps
+    bool                  m_bRelaunch;                  //!< relaunching the app or not (true beforerelaunch)
+    int                   m_iLoadingMode;               //!< Game is loading w/o changing context (0 not, 1 quickloading, 2 full loading)
+    bool                  m_bTestMode;                    //!< If running in testing mode.
+    bool                  m_bEditor;                      //!< If running in Editor.
+    bool                  m_bNoCrashDialog;
+    bool                  m_bNoErrorReportWindow;
     bool                  m_bPreviewMode;       //!< If running in Preview mode.
-    bool                                    m_bDedicatedServer;     //!< If running as Dedicated server.
-    bool                                    m_bIgnoreUpdates;           //!< When set to true will ignore Update and Render calls,
-    bool                                    m_bForceNonDevMode;     //!< true when running on a cheat protected server or a client that is connected to it (not used in singlplayer)
-    bool                                    m_bWasInDevMode;            //!< Set to true if was in dev mode.
-    bool                                    m_bInDevMode;                   //!< Set to true if was in dev mode.
+    bool                  m_bDedicatedServer;     //!< If running as Dedicated server.
+    bool                  m_bIgnoreUpdates;           //!< When set to true will ignore Update and Render calls,
+    bool                  m_bForceNonDevMode;     //!< true when running on a cheat protected server or a client that is connected to it (not used in singlplayer)
+    bool                  m_bWasInDevMode;            //!< Set to true if was in dev mode.
+    bool                  m_bInDevMode;                   //!< Set to true if was in dev mode.
     bool                  m_bGameFolderWritable;//!< True when verified that current game folder have write access.
-    int                                     m_ttMemStatSS;              //!< Time to memstat screenshot
-    bool                                    m_bDrawConsole;              //!< Set to true if OK to draw the console.
-    bool                                    m_bDrawUI;                   //!< Set to true if OK to draw UI.
+    int                   m_ttMemStatSS;              //!< Time to memstat screenshot
+    bool                  m_bDrawConsole;              //!< Set to true if OK to draw the console.
+    bool                  m_bDrawUI;                   //!< Set to true if OK to draw UI.
 
 
-    std::map<CCryNameCRC, AZStd::unique_ptr<AZ::DynamicModuleHandle> > m_moduleDLLHandles;
+    std::map<AZ::Crc32, AZStd::unique_ptr<AZ::DynamicModuleHandle> > m_moduleDLLHandles;
 
     //! current active process
     IProcess* m_pProcess;

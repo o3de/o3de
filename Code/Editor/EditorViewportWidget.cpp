@@ -99,7 +99,7 @@
 #include <QtGui/private/qhighdpiscaling_p.h>
 
 #include <IEntityRenderState.h>
-#include <IPhysics.h>
+//#include <IPhysics.h>
 #include <IStatObj.h>
 
 AZ_CVAR(

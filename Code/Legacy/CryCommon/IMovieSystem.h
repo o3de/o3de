@@ -23,7 +23,7 @@
 #include <IRenderer.h>
 #include <IRenderAuxGeom.h>
 #include <VectorSet.h>
-#include <CryName.h>
+//#include <CryName.h>
 
 // forward declaration.
 struct IAnimTrack;

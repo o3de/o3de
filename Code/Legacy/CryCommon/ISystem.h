@@ -852,7 +852,6 @@ struct ISystem
     //
     virtual IViewSystem* GetIViewSystem() = 0;
     virtual ILevelSystem* GetILevelSystem() = 0;
-    virtual INameTable* GetINameTable() = 0;
     virtual ICmdLine* GetICmdLine() = 0;
     virtual ILog* GetILog() = 0;
     virtual AZ::IO::IArchive* GetIPak() = 0;
