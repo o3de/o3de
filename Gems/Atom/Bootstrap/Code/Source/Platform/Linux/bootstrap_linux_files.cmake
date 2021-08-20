@@ -7,6 +7,6 @@
 #
 
 set(FILES
-    RadTelemetry/ProfileTelemetry.h
-    RadTelemetry/ProfileTelemetryBus.h
+    BootstrapSystemComponent_Traits_Platform.h
 )
+

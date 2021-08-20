@@ -37,7 +37,7 @@ namespace SubgraphInterfaceCpp
 
     AZ_INLINE const char* GetTabs(size_t tabs)
     {
-        AZ_Assert(tabs >= 0 && tabs <= k_maxTabs, "invalid argument to GetTabs");
+        AZ_Assert(tabs <= k_maxTabs, "invalid argument to GetTabs");
 
         static const char* const k_tabs[] =
         {
