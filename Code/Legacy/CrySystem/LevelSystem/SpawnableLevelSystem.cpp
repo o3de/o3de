@@ -55,7 +55,7 @@ namespace LegacyLevelSystem
     AZ_CONSOLEFREEFUNC(UnloadLevel, AZ::ConsoleFunctorFlags::Null, "Unloads the current level");
 
     //------------------------------------------------------------------------
-    SpawnableLevelSystem::SpawnableLevelSystem(ISystem* pSystem)
+    SpawnableLevelSystem::SpawnableLevelSystem([[maybe_unused]] ISystem* pSystem)
     {
         CRY_ASSERT(pSystem);
 

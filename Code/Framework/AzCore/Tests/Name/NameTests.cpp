@@ -582,7 +582,6 @@ namespace UnitTest
 
     TEST_F(NameTest, ConcurrencyDataTest_EachThreadCreatesOneName_NoCollision)
     {
-        const uint32_t maxUniqueHashes = std::numeric_limits<uint32_t>::max();
         AZ::NameDictionary::Destroy();
         AZ::NameDictionary::Create();
 
@@ -592,7 +591,6 @@ namespace UnitTest
 
     TEST_F(NameTest, ConcurrencyDataTest_EachThreadCreatesOneName_HighCollisions)
     {
-        const uint32_t maxUniqueHashes = 25;
         AZ::NameDictionary::Destroy();
         AZ::NameDictionary::Create();
 
@@ -602,7 +600,6 @@ namespace UnitTest
 
     TEST_F(NameTest, ConcurrencyDataTest_EachThreadRepeatedlyCreatesAndReleasesOneName_NoCollision)
     {
-        const uint32_t maxUniqueHashes = std::numeric_limits<uint32_t>::max();
         AZ::NameDictionary::Destroy();
         AZ::NameDictionary::Create();
 
@@ -613,7 +610,6 @@ namespace UnitTest
 
     TEST_F(NameTest, ConcurrencyDataTest_EachThreadRepeatedlyCreatesAndReleasesOneName_HighCollisions)
     {
-        const uint32_t maxUniqueHashes = 25;
         AZ::NameDictionary::Destroy();
         AZ::NameDictionary::Create();
 

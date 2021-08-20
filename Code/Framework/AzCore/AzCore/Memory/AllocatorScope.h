@@ -22,7 +22,7 @@ namespace AZ
         {
             // Note the parameter pack expansion, this creates the equivalent of a fold expression
             // For each type, call InitAllocator<T>(), then put 0 in the initializer list
-            std::initializer_list<int> init{(InitAllocator<Allocators>(), 0)...};
+            [[maybe_unused]] std::initializer_list<int> init{(InitAllocator<Allocators>(), 0)...};
         }
 
         void DeactivateAllocators()

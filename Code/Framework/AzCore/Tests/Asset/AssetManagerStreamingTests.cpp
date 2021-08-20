@@ -72,7 +72,7 @@ namespace UnitTest
                     });
 
             ON_CALL(m_mockStreamer, GetRequestStatus(_))
-                .WillByDefault([this]([[maybe_unused]] FileRequestHandle request)
+                .WillByDefault([]([[maybe_unused]] FileRequestHandle request)
                     {
                         // Return whatever request status has been set in this class
                         return IO::IStreamerTypes::RequestStatus::Completed;

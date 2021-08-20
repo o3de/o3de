@@ -2491,7 +2491,7 @@ namespace AzToolsFramework
             QAction* revertAction = revertMenu->addAction(QObject::tr("Entity"));
             revertAction->setToolTip(QObject::tr("This will revert all component properties on this entity to the last saved."));
 
-            QObject::connect(revertAction, &QAction::triggered, [this, relevantEntities]
+            QObject::connect(revertAction, &QAction::triggered, [relevantEntities]
             {
                 SliceEditorEntityOwnershipServiceRequestBus::Broadcast(
                     &SliceEditorEntityOwnershipServiceRequests::ResetEntitiesToSliceDefaults, relevantEntities);
@@ -4394,7 +4394,6 @@ namespace AzToolsFramework
     {
         ResetDrag(event);
 
-        Qt::MouseButtons realButtons = QApplication::mouseButtons();
         if (QApplication::overrideCursor() && !(event->buttons() & Qt::LeftButton))
         {
             QApplication::restoreOverrideCursor();
@@ -4606,7 +4605,6 @@ namespace AzToolsFramework
     bool EntityPropertyEditor::GetComponentsAtDropEventPosition(QDropEvent* event, AZ::Entity::ComponentArrayType& targetComponents)
     {
         const QPoint globalPos(mapToGlobal(event->pos()));
-        const QRect globalRect(GetInflatedRectFromPoint(globalPos, kComponentEditorDropTargetPrecision));
 
         //get component editor(s) where drop will occur
         ComponentEditor* targetComponentEditor = GetReorderDropTarget(

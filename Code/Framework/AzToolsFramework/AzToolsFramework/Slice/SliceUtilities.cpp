@@ -461,7 +461,7 @@ namespace AzToolsFramework
                     msgBox.setStandardButtons(QMessageBox::Cancel);
                     msgBox.setDefaultButton(QMessageBox::Yes);
                     msgBox.setDetailedText(message.c_str());
-                    const int response = msgBox.exec();
+                    msgBox.exec();
 
                     if (msgBox.clickedButton() == moveButton)
                     {
@@ -2043,7 +2043,7 @@ namespace AzToolsFramework
                     QAction* confirmSelected = new QAction(detachMenu);
                     confirmationMessageBox->addAction(confirmSelected);
 
-                    QObject::connect(reassignToAction, &QAction::triggered, [reassignToAction, confirmationMessageBox, selectedEntity, ancestors, currentAncestorIndex]() mutable
+                    QObject::connect(reassignToAction, &QAction::triggered, [confirmationMessageBox, ancestors, currentAncestorIndex]() mutable
                     {
                         if (confirmationMessageBox->exec() == QDialog::Accepted)
                         {
@@ -4200,8 +4200,6 @@ namespace AzToolsFramework
 
                     if (canPush)
                     {
-                        AZ::Data::AssetId targetSliceAssetId = sliceAncestryToPushTo.at(0).m_sliceAddress.GetReference()->GetSliceAsset().GetId();
-
                         //remember we're trying to push to this root, so we don't try to push to any others
                         size_t ancestrySize = sliceAncestryToPushTo.size();
                         rootAncestorPushList.push_back(sliceAncestryToPushTo[ancestrySize-1].m_sliceAddress.GetReference()->GetSliceAsset().GetId());

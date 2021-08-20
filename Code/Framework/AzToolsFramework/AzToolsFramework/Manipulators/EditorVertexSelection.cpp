@@ -895,7 +895,7 @@ namespace AzToolsFramework
             // calculate average position of selected vertices for translation manipulator
             MidpointCalculator midpointCalculator;
             m_translationManipulator->Process(
-                [this, &midpointCalculator, fixedVertices](typename IndexedTranslationManipulator<Vertex>::VertexLookup& vertex)
+                [&midpointCalculator, fixedVertices](typename IndexedTranslationManipulator<Vertex>::VertexLookup& vertex)
                 {
                     Vertex v;
                     bool found = false;

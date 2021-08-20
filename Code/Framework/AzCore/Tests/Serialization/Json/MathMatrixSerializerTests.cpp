@@ -469,6 +469,7 @@ namespace JsonSerializationTests
             *this->m_jsonDocument,
             *this->m_jsonDeserializationContext);
 
+        ASSERT_EQ(Outcomes::Success, result.GetOutcome());
         EXPECT_TRUE(defaultValue == output);
     }
 
@@ -503,7 +504,6 @@ namespace JsonSerializationTests
         using namespace AZ::JsonSerializationResult;
         using Descriptor = typename JsonMathMatrixSerializerTests<TypeParam>::Descriptor;
 
-        const auto defaultValue = Descriptor::MatrixType::CreateIdentity();
         rapidjson::Value& objectValue = this->m_jsonDocument->SetObject();
         auto input = Descriptor::MatrixType::CreateIdentity();
         DataHelper::AddData(objectValue, input, this->m_jsonDocument->GetAllocator());
