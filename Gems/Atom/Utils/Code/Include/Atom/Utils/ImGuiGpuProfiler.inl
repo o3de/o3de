@@ -1107,7 +1107,7 @@ namespace AZ
             {
                 ImGui::TableSetupColumn("Parent pool");
                 ImGui::TableSetupColumn("Name");
-                ImGui::TableSetupColumn("Size (MB)", 0, 100.0f);
+                ImGui::TableSetupColumn("Size (MB)");
                 ImGui::TableSetupColumn("BindFlags", ImGuiTableColumnFlags_NoSort);
                 ImGui::TableHeadersRow();
                 ImGui::TableNextColumn();
@@ -1133,7 +1133,7 @@ namespace AZ
                     ImGui::TableNextColumn();
                     ImGui::Text(tableRow.m_bufImgName.GetCStr());
                     ImGui::TableNextColumn();
-                    ImGui::Text("%.2f", 1.0f * tableRow.m_sizeInBytes / GpuProfilerImGuiHelper::MB);
+                    ImGui::Text("%.4f", 1.0f * tableRow.m_sizeInBytes / GpuProfilerImGuiHelper::MB);
                     ImGui::TableNextColumn();
                     ImGui::Text(tableRow.m_bindFlags.c_str());
                     ImGui::TableNextColumn();
@@ -1271,6 +1271,7 @@ namespace AZ
                 m_nameFilter.Draw("Search");
                 DrawTable();
             }
+            ImGui::End();
         }
 
         // --- ImGuiGpuProfiler ---
