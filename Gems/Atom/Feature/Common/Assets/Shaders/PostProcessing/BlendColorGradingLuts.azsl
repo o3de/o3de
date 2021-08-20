@@ -50,13 +50,13 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     float m_weight3;
     float m_weight4;
 
-    int m_blendedLutShaperType;
-    float m_blendedLutShaperBias;
-    float m_blendedLutShaperScale;
-
     // Destination LUT
     RWTexture3D<float4> m_blendedLut;
     uint3 m_blendedLutDimensions;
+    
+    int m_blendedLutShaperType;
+    float m_blendedLutShaperBias;
+    float m_blendedLutShaperScale;
 }
 
 // Option shader variable to select number of source LUTs.
