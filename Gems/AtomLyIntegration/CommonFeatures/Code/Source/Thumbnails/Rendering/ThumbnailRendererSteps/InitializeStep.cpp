@@ -114,7 +114,7 @@ namespace AZ
                 RPI::RenderPipelineDescriptor pipelineDesc;
                 pipelineDesc.m_mainViewTagName = "MainCamera";
                 pipelineDesc.m_name = data->m_pipelineName;
-                pipelineDesc.m_rootPassTemplate = "MainPipelineRenderToTexture";
+                pipelineDesc.m_rootPassTemplate = "ThumbnailPipelineRenderToTexture";
                 // We have to set the samples to 4 to match the pipeline passes' setting, otherwise it may lead to device lost issue
                 // [GFX TODO] [ATOM-13551] Default value sand validation required to prevent pipeline crash and device lost
                 pipelineDesc.m_renderSettings.m_multisampleState.m_samples = 4;
