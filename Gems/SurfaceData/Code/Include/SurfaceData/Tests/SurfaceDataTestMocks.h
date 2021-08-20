@@ -265,7 +265,7 @@ namespace UnitTest
         {
             // Keep a list of registered entries.  Use the "list index + 1" as the handle.  (We add +1 because 0 is used to mean "invalid handle")
             entryList.emplace_back(entry);
-            return entryList.size();
+            return static_cast<SurfaceData::SurfaceDataRegistryHandle>(entryList.size());
         }
 
         void UnregisterEntry(const SurfaceData::SurfaceDataRegistryHandle& handle, AZStd::vector<SurfaceData::SurfaceDataRegistryEntry>& entryList)

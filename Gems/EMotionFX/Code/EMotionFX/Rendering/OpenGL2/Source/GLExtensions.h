@@ -21,7 +21,7 @@ namespace RenderGL
     {
         bool resolve(const QOpenGLContext* context);
 
-        _glMapBuffer glMapBuffer;
+        _glMapBuffer m_glMapBuffer;
     };
 
 } // namespace RenderGL

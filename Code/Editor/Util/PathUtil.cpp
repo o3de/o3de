@@ -15,24 +15,21 @@
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h> // for ebus events
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/API/ApplicationAPI.h>
+#include <AzCore/std/string/conversions.h>
+#include <AzFramework/IO/LocalFileIO.h>
 
 #include <QRegularExpression>
-
-namespace
-{
-    string g_currentModName; // folder name only!
-}
 
 namespace Path
 {
     //////////////////////////////////////////////////////////////////////////
     void SplitPath(const QString& rstrFullPathFilename, QString& rstrDriveLetter, QString& rstrDirectory, QString& rstrFilename, QString& rstrExtension)
     {
-        string          strFullPathString(rstrFullPathFilename.toUtf8().data());
-        string          strDriveLetter;
-        string          strDirectory;
-        string          strFilename;
-        string          strExtension;
+        AZStd::string   strFullPathString(rstrFullPathFilename.toUtf8().data());
+        AZStd::string   strDriveLetter;
+        AZStd::string   strDirectory;
+        AZStd::string   strFilename;
+        AZStd::string   strExtension;
 
         char*           szPath((char*)strFullPathString.c_str());
         char*           pchLastPosition(szPath);
@@ -42,7 +39,7 @@ namespace Path
         // Directory named filenames containing ":" are invalid, so we can assume if there is a :
         // it will be the drive name.
         pchCurrentPosition = strchr(pchLastPosition, ':');
-        if (pchCurrentPosition == NULL)
+        if (pchCurrentPosition == nullptr)
         {
             rstrDriveLetter = "";
         }
@@ -54,7 +51,7 @@ namespace Path
 
         pchCurrentPosition = strrchr(pchLastPosition, '\\');
         pchAuxPosition = strrchr(pchLastPosition, '/');
-        if ((pchCurrentPosition == NULL) && (pchAuxPosition == NULL))
+        if ((pchCurrentPosition == nullptr) && (pchAuxPosition == nullptr))
         {
             rstrDirectory = "";
         }
@@ -70,7 +67,7 @@ namespace Path
         }
 
         pchCurrentPosition = strrchr(pchLastPosition, '.');
-        if (pchCurrentPosition == NULL)
+        if (pchCurrentPosition == nullptr)
         {
             rstrExtension = "";
             strFilename.assign(pchLastPosition);
@@ -81,16 +78,16 @@ namespace Path
             strFilename.assign(pchLastPosition, pchCurrentPosition);
         }
 
-        rstrDriveLetter = strDriveLetter;
-        rstrDirectory = strDirectory;
-        rstrFilename = strFilename;
-        rstrExtension = strExtension;
+        rstrDriveLetter = strDriveLetter.c_str();
+        rstrDirectory = strDirectory.c_str();
+        rstrFilename = strFilename.c_str();
+        rstrExtension = strExtension.c_str();
     }
     //////////////////////////////////////////////////////////////////////////
     void GetDirectoryQueue(const QString& rstrSourceDirectory, QStringList& rcstrDirectoryTree)
     {
-        string                      strCurrentDirectoryName;
-        string                      strSourceDirectory(rstrSourceDirectory.toUtf8().data());
+        AZStd::string           strCurrentDirectoryName;
+        AZStd::string           strSourceDirectory(rstrSourceDirectory.toUtf8().data());
         const char*             szSourceDirectory(strSourceDirectory.c_str());
         const char*             pchCurrentPosition(szSourceDirectory);
         const char*             pchLastPosition(szSourceDirectory);
@@ -114,7 +111,7 @@ namespace Path
         do
         {
             pchCurrentPosition = strpbrk(pchLastPosition, "\\/");
-            if (pchCurrentPosition == NULL)
+            if (pchCurrentPosition == nullptr)
             {
                 break;
             }
@@ -207,14 +204,7 @@ namespace Path
 
     bool IsFolder(const char* pPath)
     {
-        DWORD attrs = GetFileAttributes(pPath);
-
-        if (attrs == FILE_ATTRIBUTE_DIRECTORY)
-        {
-            return true;
-        }
-
-        return false;
+        return AZ::IO::FileIOBase::GetInstance()->IsDirectory(pPath);
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -255,16 +245,16 @@ namespace Path
     /// Get the data folder
     AZStd::string GetEditingGameDataFolder()
     {
-        // query the editor root.  The bus exists in case we want tools to be able to override this.
+        // Define here the mod name
+        static AZ::IO::FixedMaxPathString s_currentModName;
 
-
-        if (g_currentModName.empty())
+        if (s_currentModName.empty())
         {
             return GetGameAssetsFolder();
         }
         AZStd::string str(GetGameAssetsFolder());
         str += "Mods\\";
-        str += g_currentModName;
+        str += s_currentModName.c_str();
         return str;
     }
 

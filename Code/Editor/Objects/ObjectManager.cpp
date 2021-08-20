@@ -32,7 +32,11 @@
 #include <AzCore/Console/Console.h>
 
 AZ_CVAR_EXTERNED(bool, ed_visibility_logTiming);
-AZ_CVAR_EXTERNED(bool, ed_visibility_use);
+
+AZ_CVAR(
+    bool, ed_visibility_use, true, nullptr, AZ::ConsoleFunctorFlags::Null,
+    "Enable/disable using the new IVisibilitySystem for Entity visibility determination");
+
 
 /*!
  *  Class Description used for object templates.
@@ -49,16 +53,16 @@ public:
     GUID guid;
 
 public:
-    REFGUID ClassID()
+    REFGUID ClassID() override
     {
         return guid;
     }
-    ObjectType GetObjectType() { return superType->GetObjectType(); };
-    QString ClassName() { return type; };
-    QString Category() { return category; };
+    ObjectType GetObjectType() override { return superType->GetObjectType(); };
+    QString ClassName() override { return type; };
+    QString Category() override { return category; };
     QObject* CreateQObject() const override { return superType->CreateQObject(); }
-    QString GetTextureIcon() { return superType->GetTextureIcon(); };
-    QString GetFileSpec()
+    QString GetTextureIcon() override { return superType->GetTextureIcon(); };
+    QString GetFileSpec() override
     {
         if (!fileSpec.isEmpty())
         {
@@ -69,7 +73,7 @@ public:
             return superType->GetFileSpec();
         }
     };
-    virtual int GameCreationOrder() { return superType->GameCreationOrder(); };
+    int GameCreationOrder() override { return superType->GameCreationOrder(); };
 };
 
 void CBaseObjectsCache::AddObject(CBaseObject* object)
@@ -86,7 +90,7 @@ void CBaseObjectsCache::AddObject(CBaseObject* object)
 //////////////////////////////////////////////////////////////////////////
 // CObjectManager implementation.
 //////////////////////////////////////////////////////////////////////////
-CObjectManager* g_pObjectManager = 0;
+CObjectManager* g_pObjectManager = nullptr;
 
 //////////////////////////////////////////////////////////////////////////
 CObjectManager::CObjectManager()
@@ -182,19 +186,19 @@ CBaseObject* CObjectManager::NewObject(CObjectClassDesc* cls, CBaseObject* prev,
 
             if (!AddObject(obj))
             {
-                obj = 0;
+                obj = nullptr;
             }
         }
         else
         {
-            obj = 0;
+            obj = nullptr;
         }
-        GetIEditor()->GetErrorReport()->SetCurrentValidatorObject(NULL);
+        GetIEditor()->GetErrorReport()->SetCurrentValidatorObject(nullptr);
     }
 
     GetIEditor()->ResumeUndo();
 
-    if (obj != 0 && GetIEditor()->IsUndoRecording())
+    if (obj != nullptr && GetIEditor()->IsUndoRecording())
     {
         // AZ entity creations are handled through the AZ undo system.
         if (obj->GetType() != OBJTYPE_AZENTITY)
@@ -228,7 +232,7 @@ CBaseObject* CObjectManager::NewObject(CObjectArchive& ar, CBaseObject* pUndoObj
 
     if (!objNode->getAttr("Type", typeName))
     {
-        return 0;
+        return nullptr;
     }
 
     if (!objNode->getAttr("Id", id))
@@ -268,7 +272,7 @@ CBaseObject* CObjectManager::NewObject(CObjectArchive& ar, CBaseObject* pUndoObj
         if (!cls)
         {
             CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_ERROR, "RuntimeClass %s not registered", typeName.toUtf8().data());
-            return 0;
+            return nullptr;
         }
 
         pObject = qobject_cast<CBaseObject*>(cls->CreateQObject());
@@ -301,29 +305,29 @@ CBaseObject* CObjectManager::NewObject(CObjectArchive& ar, CBaseObject* pUndoObj
                 GetIEditor()->GetErrorReport()->ReportError(errorRecord);
             }
 
-            return 0;
+            return nullptr;
             //CoCreateGuid( &pObject->m_guid ); // generate uniq GUID for this object.
         }
     }
 
     GetIEditor()->GetErrorReport()->SetCurrentValidatorObject(pObject);
-    if (!pObject->Init(GetIEditor(), 0, ""))
+    if (!pObject->Init(GetIEditor(), nullptr, ""))
     {
-        GetIEditor()->GetErrorReport()->SetCurrentValidatorObject(NULL);
-        return 0;
+        GetIEditor()->GetErrorReport()->SetCurrentValidatorObject(nullptr);
+        return nullptr;
     }
 
     if (!AddObject(pObject))
     {
-        GetIEditor()->GetErrorReport()->SetCurrentValidatorObject(NULL);
-        return 0;
+        GetIEditor()->GetErrorReport()->SetCurrentValidatorObject(nullptr);
+        return nullptr;
     }
 
     //pObject->Serialize( ar );
 
-    GetIEditor()->GetErrorReport()->SetCurrentValidatorObject(NULL);
+    GetIEditor()->GetErrorReport()->SetCurrentValidatorObject(nullptr);
 
-    if (pObject != 0 && pUndoObject == 0)
+    if (pObject != nullptr && pUndoObject == nullptr)
     {
         // If new object with no undo, record it.
         if (CUndo::IsRecording())
@@ -355,7 +359,7 @@ CBaseObject* CObjectManager::NewObject(const QString& typeName, CBaseObject* pre
     if (!cls)
     {
         GetIEditor()->GetSystem()->GetILog()->Log("Warning: RuntimeClass %s (as well as %s) not registered", typeName.toUtf8().data(), fullName.toUtf8().data());
-        return 0;
+        return nullptr;
     }
     CBaseObject* pObject = NewObject(cls, prev, file, newObjectName);
     return pObject;
@@ -364,7 +368,7 @@ CBaseObject* CObjectManager::NewObject(const QString& typeName, CBaseObject* pre
 //////////////////////////////////////////////////////////////////////////
 void    CObjectManager::DeleteObject(CBaseObject* obj)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
     if (m_currEditObject == obj)
     {
         EndEditParams();
@@ -410,8 +414,8 @@ void    CObjectManager::DeleteObject(CBaseObject* obj)
 //////////////////////////////////////////////////////////////////////////
 void CObjectManager::DeleteSelection(CSelectionGroup* pSelection)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
-    if (pSelection == NULL)
+    AZ_PROFILE_FUNCTION(Editor);
+    if (pSelection == nullptr)
     {
         return;
     }
@@ -474,7 +478,7 @@ void CObjectManager::DeleteSelection(CSelectionGroup* pSelection)
 //////////////////////////////////////////////////////////////////////////
 void CObjectManager::DeleteAllObjects()
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
 
     EndEditParams();
 
@@ -515,7 +519,7 @@ void CObjectManager::DeleteAllObjects()
 
 CBaseObject* CObjectManager::CloneObject(CBaseObject* obj)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
     assert(obj);
     //CRuntimeClass *cls = obj->GetRuntimeClass();
     //CBaseObject *clone = (CBaseObject*)cls->CreateObject();
@@ -527,7 +531,7 @@ CBaseObject* CObjectManager::CloneObject(CBaseObject* obj)
 //////////////////////////////////////////////////////////////////////////
 CBaseObject* CObjectManager::FindObject(REFGUID guid) const
 {
-    CBaseObject* result = stl::find_in_map(m_objects, guid, (CBaseObject*)0);
+    CBaseObject* result = stl::find_in_map(m_objects, guid, (CBaseObject*)nullptr);
     return result;
 }
 
@@ -603,7 +607,7 @@ void CObjectManager::FindObjectsInAABB(const AABB& aabb, std::vector<CBaseObject
 //////////////////////////////////////////////////////////////////////////
 bool CObjectManager::AddObject(CBaseObject* obj)
 {
-    CBaseObjectPtr p = stl::find_in_map(m_objects, obj->GetId(), 0);
+    CBaseObjectPtr p = stl::find_in_map(m_objects, obj->GetId(), nullptr);
     if (p)
     {
         CErrorRecord err;
@@ -742,7 +746,7 @@ void CObjectManager::ChangeObjectName(CBaseObject* obj, const QString& newName)
 //////////////////////////////////////////////////////////////////////////
 int CObjectManager::GetObjectCount() const
 {
-    return m_objects.size();
+    return static_cast<int>(m_objects.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -761,7 +765,7 @@ void CObjectManager::GetObjects(DynArray<CBaseObject*>& objects) const
     CBaseObjectsArray objectArray;
     GetObjects(objectArray);
     objects.clear();
-    for (int i = 0, iCount(objectArray.size()); i < iCount; ++i)
+    for (size_t i = 0, iCount(objectArray.size()); i < iCount; ++i)
     {
         objects.push_back(objectArray[i]);
     }
@@ -908,7 +912,7 @@ void CObjectManager::UnfreezeAll()
 bool CObjectManager::SelectObject(CBaseObject* obj, bool bUseMask)
 {
     assert(obj);
-    if (obj == NULL)
+    if (obj == nullptr)
     {
         return false;
     }
@@ -974,7 +978,7 @@ void CObjectManager::UnselectObject(CBaseObject* obj)
 
 CSelectionGroup* CObjectManager::GetSelection(const QString& name) const
 {
-    CSelectionGroup* selection = stl::find_in_map(m_selections, name, (CSelectionGroup*)0);
+    CSelectionGroup* selection = stl::find_in_map(m_selections, name, (CSelectionGroup*)nullptr);
     return selection;
 }
 
@@ -993,7 +997,7 @@ void CObjectManager::NameSelection(const QString& name)
         return;
     }
 
-    CSelectionGroup* selection = stl::find_in_map(m_selections, name, (CSelectionGroup*)0);
+    CSelectionGroup* selection = stl::find_in_map(m_selections, name, (CSelectionGroup*)nullptr);
     if (selection)
     {
         assert(selection != 0);
@@ -1020,7 +1024,7 @@ void CObjectManager::SerializeNameSelection(XmlNodeRef& rootNode, bool bLoading)
         return;
     }
 
-    _smart_ptr<CSelectionGroup> tmpGroup(0);
+    _smart_ptr<CSelectionGroup> tmpGroup(nullptr);
 
     QString selRootStr("NameSelection");
     QString selNodeStr("NameSelectionNode");
@@ -1075,7 +1079,7 @@ void CObjectManager::SerializeNameSelection(XmlNodeRef& rootNode, bool bLoading)
     else
     {
         startNode = rootNode->newChild(selRootStr.toUtf8().data());
-        CSelectionGroup* objSelection = 0;
+        CSelectionGroup* objSelection = nullptr;
 
         for (TNameSelectionMap::iterator it = m_selections.begin(); it != m_selections.end(); ++it)
         {
@@ -1108,7 +1112,7 @@ void CObjectManager::SerializeNameSelection(XmlNodeRef& rootNode, bool bLoading)
 //////////////////////////////////////////////////////////////////////////
 int CObjectManager::ClearSelection()
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
 
     // Make sure to unlock selection.
     GetIEditor()->LockSelection(false);
@@ -1161,7 +1165,7 @@ int CObjectManager::ClearSelection()
 //////////////////////////////////////////////////////////////////////////
 int CObjectManager::InvertSelection()
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
 
     int selCount = 0;
     // iterate all objects.
@@ -1185,8 +1189,8 @@ int CObjectManager::InvertSelection()
 
 void CObjectManager::SetSelection(const QString& name)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
-    CSelectionGroup* selection = stl::find_in_map(m_selections, name, (CSelectionGroup*)0);
+    AZ_PROFILE_FUNCTION(Editor);
+    CSelectionGroup* selection = stl::find_in_map(m_selections, name, (CSelectionGroup*)nullptr);
     if (selection)
     {
         UnselectCurrent();
@@ -1198,10 +1202,10 @@ void CObjectManager::SetSelection(const QString& name)
 
 void CObjectManager::RemoveSelection(const QString& name)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
 
     QString selName = name;
-    CSelectionGroup* selection = stl::find_in_map(m_selections, name, (CSelectionGroup*)0);
+    CSelectionGroup* selection = stl::find_in_map(m_selections, name, (CSelectionGroup*)nullptr);
     if (selection)
     {
         if (selection == m_currSelection)
@@ -1217,7 +1221,7 @@ void CObjectManager::RemoveSelection(const QString& name)
 
 void CObjectManager::SelectCurrent()
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
     for (int i = 0; i < m_currSelection->GetCount(); i++)
     {
         CBaseObject* obj = m_currSelection->GetObject(i);
@@ -1232,7 +1236,7 @@ void CObjectManager::SelectCurrent()
 
 void CObjectManager::UnselectCurrent()
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
 
     // Make sure to unlock selection.
     GetIEditor()->LockSelection(false);
@@ -1256,7 +1260,7 @@ void CObjectManager::UnselectCurrent()
 //////////////////////////////////////////////////////////////////////////
 void CObjectManager::Display(DisplayContext& dc)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
 
     int currentHideMask = GetIEditor()->GetDisplaySettings()->GetObjectHideMask();
     if (m_lastHideMask != currentHideMask)
@@ -1316,7 +1320,7 @@ void CObjectManager::FindDisplayableObjects(DisplayContext& dc, [[maybe_unused]]
         return;
     }
 
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
 
     auto start = std::chrono::steady_clock::now();
     CBaseObjectsCache* pDispayedViewObjects = dc.view->GetVisibleObjectsCache();
@@ -1327,17 +1331,16 @@ void CObjectManager::FindDisplayableObjects(DisplayContext& dc, [[maybe_unused]]
 
     pDispayedViewObjects->SetSerialNumber(m_visibilitySerialNumber); // update viewport to be latest serial number
 
-    const CCamera& camera = GetIEditor()->GetSystem()->GetViewCamera();
     AABB bbox;
     bbox.min.zero();
     bbox.max.zero();
 
     pDispayedViewObjects->ClearObjects();
-    pDispayedViewObjects->Reserve(m_visibleObjects.size());
+    pDispayedViewObjects->Reserve(static_cast<int>(m_visibleObjects.size()));
 
     if (dc.flags & DISPLAY_2D)
     {
-        int numVis = m_visibleObjects.size();
+        int numVis = static_cast<int>(m_visibleObjects.size());
         for (int i = 0; i < numVis; i++)
         {
             CBaseObject* obj = m_visibleObjects[i];
@@ -1359,7 +1362,7 @@ void CObjectManager::FindDisplayableObjects(DisplayContext& dc, [[maybe_unused]]
             for (int i = 0, iCount(pSelection->GetCount()); i < iCount; ++i)
             {
                 CBaseObject* pObj(pSelection->GetObject(i));
-                if (pObj == NULL)
+                if (pObj == nullptr)
                 {
                     continue;
                 }
@@ -1371,16 +1374,14 @@ void CObjectManager::FindDisplayableObjects(DisplayContext& dc, [[maybe_unused]]
             pSelection->GetObject(0)->CBaseObject::DrawDimensions(dc, &mergedAABB);
         }
 
-        int numVis = m_visibleObjects.size();
+        int numVis = static_cast<int>(m_visibleObjects.size());
         for (int i = 0; i < numVis; i++)
         {
             CBaseObject* obj = m_visibleObjects[i];
 
-            if (obj && obj->IsInCameraView(camera))
+            if (obj)
             {
-                // Check if object is too far.
-                float visRatio = obj->GetCameraVisRatio(camera);
-                if (visRatio > m_maxObjectViewDistRatio || (dc.flags & DISPLAY_SELECTION_HELPERS) || obj->IsSelected())
+                if ((dc.flags & DISPLAY_SELECTION_HELPERS) || obj->IsSelected())
                 {
                     pDispayedViewObjects->AddObject(obj);
                 }
@@ -1443,14 +1444,14 @@ void CObjectManager::BeginEditParams(CBaseObject* obj, int flags)
 void CObjectManager::EndEditParams([[maybe_unused]] int flags)
 {
     m_bSingleSelection = false;
-    m_currEditObject = 0;
+    m_currEditObject = nullptr;
     //m_bSelectionChanged = false; // don't need to clear for ungroup
 }
 
 //! Select objects within specified distance from given position.
 int CObjectManager::SelectObjects(const AABB& box, bool bUnselect)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
     int numSel = 0;
 
     AABB objBounds;
@@ -1550,7 +1551,7 @@ bool CObjectManager::IsObjectDeletionAllowed(CBaseObject* pObject)
 //////////////////////////////////////////////////////////////////////////
 void CObjectManager::DeleteSelection()
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
 
     // Make sure to unlock selection.
     GetIEditor()->LockSelection(false);
@@ -1580,7 +1581,7 @@ void CObjectManager::DeleteSelection()
 //////////////////////////////////////////////////////////////////////////
 bool CObjectManager::HitTestObject(CBaseObject* obj, HitContext& hc)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
 
     if (obj->IsFrozen())
     {
@@ -1647,7 +1648,7 @@ bool CObjectManager::HitTestObject(CBaseObject* obj, HitContext& hc)
 //////////////////////////////////////////////////////////////////////////
 bool CObjectManager::HitTest(HitContext& hitInfo)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
 
     hitInfo.object = nullptr;
     hitInfo.dist = FLT_MAX;
@@ -1657,7 +1658,7 @@ bool CObjectManager::HitTest(HitContext& hitInfo)
     HitContext hcOrg = hitInfo;
     if (hcOrg.view)
     {
-        hcOrg.view->GetPerpendicularAxis(0, &hcOrg.b2DViewport);
+        hcOrg.view->GetPerpendicularAxis(nullptr, &hcOrg.b2DViewport);
     }
     hcOrg.rayDir = hcOrg.rayDir.GetNormalized();
 
@@ -1692,7 +1693,7 @@ bool CObjectManager::HitTest(HitContext& hitInfo)
 
     const bool iconsPrioritized = true; // Force icons to always be prioritized over other things you hit. Can change to be a configurable option in the future.
 
-    CBaseObject* selected = 0;
+    CBaseObject* selected = nullptr;
     const char* name = nullptr;
     bool iconHit = false;
     int numVis = pDispayedViewObjects->GetObjectCount();
@@ -1765,7 +1766,7 @@ bool CObjectManager::HitTest(HitContext& hitInfo)
 }
 void CObjectManager::FindObjectsInRect(CViewport* view, const QRect& rect, std::vector<GUID>& guids)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
 
     if (rect.width() < 1 || rect.height() < 1)
     {
@@ -1794,7 +1795,7 @@ void CObjectManager::FindObjectsInRect(CViewport* view, const QRect& rect, std::
 //////////////////////////////////////////////////////////////////////////
 void CObjectManager::SelectObjectsInRect(CViewport* view, const QRect& rect, bool bSelect)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
 
     // Ignore too small rectangles.
     if (rect.width() < 1 || rect.height() < 1)
@@ -1993,11 +1994,11 @@ bool CObjectManager::EnableUniqObjectNames(bool bEnable)
 CObjectClassDesc* CObjectManager::FindClass(const QString& className)
 {
     IClassDesc* cls = CClassFactory::Instance()->FindClass(className.toUtf8().data());
-    if (cls != NULL && cls->SystemClassID() == ESYSTEM_CLASS_OBJECT)
+    if (cls != nullptr && cls->SystemClassID() == ESYSTEM_CLASS_OBJECT)
     {
         return (CObjectClassDesc*)cls;
     }
-    return 0;
+    return nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2015,7 +2016,7 @@ void CObjectManager::GetClassCategories(QStringList& categories)
         }
     }
     categories.clear();
-    categories.reserve(cset.size());
+    categories.reserve(static_cast<int>(cset.size()));
     for (std::set<QString>::iterator cit = cset.begin(); cit != cset.end(); ++cit)
     {
         categories.push_back(*cit);
@@ -2101,7 +2102,7 @@ void CObjectManager::LoadClassTemplates(const QString& path)
     {
         // Construct the full filepath of the current file
         XmlNodeRef node = XmlHelpers::LoadXmlFromFile((dir + files[k].filename).toUtf8().data());
-        if (node != 0 && node->isTag("ObjectTemplates"))
+        if (node != nullptr && node->isTag("ObjectTemplates"))
         {
             QString name;
             for (int i = 0; i < node->getChildCount(); i++)
@@ -2362,7 +2363,7 @@ bool CObjectManager::ConvertToType(CBaseObject* pObject, const QString& typeName
 //////////////////////////////////////////////////////////////////////////
 void CObjectManager::SetObjectSelected(CBaseObject* pObject, bool bSelect)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
     // Only select/unselect once.
     if ((pObject->IsSelected() && bSelect) || (!pObject->IsSelected() && !bSelect))
     {
@@ -2449,7 +2450,7 @@ void CObjectManager::EndObjectsLoading()
     {
         delete m_pLoadProgress;
     }
-    m_pLoadProgress = 0;
+    m_pLoadProgress = nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2481,20 +2482,20 @@ bool CObjectManager::IsLightClass(CBaseObject* pObject)
         {
             if (pEntity->GetEntityClass().compare(CLASS_LIGHT) == 0)
             {
-                return TRUE;
+                return true;
             }
             if (pEntity->GetEntityClass().compare(CLASS_RIGIDBODY_LIGHT) == 0)
             {
-                return TRUE;
+                return true;
             }
             if (pEntity->GetEntityClass().compare(CLASS_DESTROYABLE_LIGHT) == 0)
             {
-                return TRUE;
+                return true;
             }
         }
     }
 
-    return FALSE;
+    return false;
 }
 
 void CObjectManager::FindAndRenameProperty2(const char* property2Name, const QString& oldValue, const QString& newValue)
@@ -2628,7 +2629,7 @@ void CObjectManager::EnteredComponentMode(const AZStd::vector<AZ::Uuid>& /*compo
     const size_t gizmoCount = static_cast<size_t>(gizmoManager->GetGizmoCount());
     for (size_t i = 0; i < gizmoCount; ++i)
     {
-        gizmoManager->RemoveGizmo(gizmoManager->GetGizmoByIndex(i));
+        gizmoManager->RemoveGizmo(gizmoManager->GetGizmoByIndex(static_cast<int>(i)));
     }
 }
 

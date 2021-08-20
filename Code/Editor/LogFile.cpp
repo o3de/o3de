@@ -180,14 +180,14 @@ void CLogFile::FormatLineV(const char * format, va_list argList)
 void CLogFile::AboutSystem()
 {
     char szBuffer[MAX_LOGBUFFER_SIZE];
+    wchar_t szBufferW[MAX_LOGBUFFER_SIZE];
 #if defined(AZ_PLATFORM_WINDOWS) || defined(AZ_PLATFORM_LINUX)
     //////////////////////////////////////////////////////////////////////
     // Write the system informations to the log
     //////////////////////////////////////////////////////////////////////
 
-    char szProfileBuffer[128];
-    char szLanguageBuffer[64];
-    //char szCPUModel[64];
+    wchar_t szLanguageBufferW[64];
+    //wchar_t szCPUModel[64];
     MEMORYSTATUS MemoryStatus;
 #endif // defined(AZ_PLATFORM_WINDOWS) || defined(AZ_PLATFORM_LINUX)
 
@@ -201,11 +201,13 @@ void CLogFile::AboutSystem()
     //////////////////////////////////////////////////////////////////////
 
     // Get system language
-    GetLocaleInfo(LOCALE_SYSTEM_DEFAULT, LOCALE_SENGLANGUAGE,
-        szLanguageBuffer, sizeof(szLanguageBuffer));
+    GetLocaleInfoW(LOCALE_SYSTEM_DEFAULT, LOCALE_SENGLANGUAGE,
+        szLanguageBufferW, sizeof(szLanguageBufferW));
+    AZStd::string szLanguageBuffer;
+    AZStd::to_string(szLanguageBuffer, szLanguageBufferW);
 
     // Format and send OS information line
-    azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, "Current Language: %s ", szLanguageBuffer);
+    azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, "Current Language: %s ", szLanguageBuffer.c_str());
     CryLog("%s", szBuffer);
 #else
     QLocale locale;
@@ -294,7 +296,8 @@ AZ_POP_DISABLE_WARNING
     //////////////////////////////////////////////////////////////////////
 
     str += " (";
-    GetWindowsDirectory(szBuffer, sizeof(szBuffer));
+    GetWindowsDirectoryW(szBufferW, sizeof(szBufferW));
+    AZStd::to_string(szBuffer, MAX_LOGBUFFER_SIZE, szBufferW);
     str += szBuffer;
     str += ")";
     CryLog("%s", str.toUtf8().data());
@@ -380,13 +383,14 @@ AZ_POP_DISABLE_WARNING
     //////////////////////////////////////////////////////////////////////
 
 #if defined(AZ_PLATFORM_WINDOWS)
-    EnumDisplaySettings(NULL, ENUM_CURRENT_SETTINGS, &DisplayConfig);
-    GetPrivateProfileString("boot.description", "display.drv",
-        "(Unknown graphics card)", szProfileBuffer, sizeof(szProfileBuffer),
-        "system.ini");
+    EnumDisplaySettings(nullptr, ENUM_CURRENT_SETTINGS, &DisplayConfig);
+    GetPrivateProfileStringW(L"boot.description", L"display.drv",
+        L"(Unknown graphics card)", szLanguageBufferW, sizeof(szLanguageBufferW),
+        L"system.ini");
+    AZStd::to_string(szLanguageBuffer, szLanguageBufferW);
     azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, "Current display mode is %dx%dx%d, %s",
         DisplayConfig.dmPelsWidth, DisplayConfig.dmPelsHeight,
-        DisplayConfig.dmBitsPerPel, szProfileBuffer);
+        DisplayConfig.dmBitsPerPel, szLanguageBuffer.c_str());
     CryLog("%s", szBuffer);
 #else
     auto screen = QGuiApplication::primaryScreen();
@@ -500,7 +504,7 @@ static inline QString CopyAndRemoveColorCode(const char* sText)
         *d++ = *s++;
     }
 
-    ret.resize(d - ret.data());
+    ret.resize(static_cast<int>(d - ret.data()));
 
     return QString::fromLatin1(ret);
 }
@@ -568,9 +572,6 @@ void CLogFile::OnWriteToConsole(const char* sText, bool bNewLine)
             }
             if (bNewLine)
             {
-                //str = CString("\r\n") + str.TrimLeft();
-                //str = CString("\r\n") + str;
-                //str = CString("\r") + str;
                 str = QString("\r\n") + str;
                 str = str.trimmed();
             }

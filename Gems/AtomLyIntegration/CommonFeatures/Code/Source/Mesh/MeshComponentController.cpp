@@ -95,7 +95,7 @@ namespace AZ
             {
                 if (m_modelAsset.IsReady())
                 {
-                    lodCount = m_modelAsset->GetLodCount();
+                    lodCount = static_cast<uint32_t>(m_modelAsset->GetLodCount());
                 }
                 else
                 {
@@ -103,7 +103,7 @@ namespace AZ
                     Data::Instance<RPI::Model> model = Data::InstanceDatabase<RPI::Model>::Instance().Find(Data::InstanceId::CreateFromAssetId(m_modelAsset.GetId()));
                     if (model)
                     {
-                        lodCount = model->GetLodCount();
+                        lodCount = static_cast<uint32_t>(model->GetLodCount());
                     }
                 }
             }

@@ -21,14 +21,14 @@
 
 //////////////////////////////////////////////////////////////////////////
 CPakFile::CPakFile()
-    : m_pArchive(NULL)
-    , m_pCryPak(NULL)
+    : m_pArchive(nullptr)
+    , m_pCryPak(nullptr)
 {
 }
 
 //////////////////////////////////////////////////////////////////////////
 CPakFile::CPakFile(AZ::IO::IArchive* pCryPak)
-    : m_pArchive(NULL)
+    : m_pArchive(nullptr)
     , m_pCryPak(pCryPak)
 {
 }
@@ -42,14 +42,14 @@ CPakFile::~CPakFile()
 //////////////////////////////////////////////////////////////////////////
 CPakFile::CPakFile(const char* filename)
 {
-    m_pArchive = NULL;
+    m_pArchive = nullptr;
     Open(filename);
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CPakFile::Close()
 {
-    m_pArchive = NULL;
+    m_pArchive = nullptr;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -61,7 +61,7 @@ bool CPakFile::Open(const char* filename, bool bAbsolutePath)
     }
 
     auto pCryPak = m_pCryPak ? m_pCryPak : GetIEditor()->GetSystem()->GetIPak();
-    if (pCryPak == NULL)
+    if (pCryPak == nullptr)
     {
         return false;
     }
@@ -89,7 +89,7 @@ bool CPakFile::OpenForRead(const char* filename)
         Close();
     }
     auto pCryPak = m_pCryPak ? m_pCryPak : GetIEditor()->GetSystem()->GetIPak();
-    if (pCryPak == NULL)
+    if (pCryPak == nullptr)
     {
         return false;
     }
@@ -106,7 +106,7 @@ bool CPakFile::UpdateFile(const char* filename, CCryMemFile& file, bool bCompres
 {
     if (m_pArchive)
     {
-        int nSize = file.GetLength();
+        int nSize = static_cast<int>(file.GetLength());
 
         UpdateFile(filename, file.GetMemPtr(), nSize, bCompress);
         file.Close();

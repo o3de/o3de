@@ -6,28 +6,24 @@
  *
  */
 
-#include <QApplication>
-#include <QMenu>
-#include <QInputDialog>
-#include <QMessageBox>
-#include <QFileDialog>
-#include <QDesktopServices>
-
-#include <AzQtComponents/Utilities/DesktopUtilities.h>
-
+#include <Atom/RPI.Edit/Shader/ShaderVariantListSourceData.h>
+#include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
+#include <AtomToolsFramework/Util/Util.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-
+#include <AzQtComponents/Utilities/DesktopUtilities.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
-#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/Thumbnails/SourceControlThumbnail.h>
-#include <AtomToolsFramework/Util/Util.h>
+#include <Window/ShaderManagementConsoleBrowserInteractions.h>
 
-#include <Atom/RPI.Edit/Shader/ShaderVariantListSourceData.h>
-#include <Atom/Document/ShaderManagementConsoleDocumentSystemRequestBus.h>
-
-#include <Source/Window/ShaderManagementConsoleBrowserInteractions.h>
+#include <QApplication>
+#include <QDesktopServices>
+#include <QFileDialog>
+#include <QInputDialog>
+#include <QMenu>
+#include <QMessageBox>
 
 namespace ShaderManagementConsole
 {
@@ -80,7 +76,7 @@ namespace ShaderManagementConsole
         {
             if (AzFramework::StringFunc::Path::IsExtension(entry->GetFullPath().c_str(), AZ::RPI::ShaderVariantListSourceData::Extension))
             {
-                ShaderManagementConsoleDocumentSystemRequestBus::Broadcast(&ShaderManagementConsoleDocumentSystemRequestBus::Events::OpenDocument, entry->GetFullPath().c_str());
+                AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::OpenDocument, entry->GetFullPath().c_str());
             }
             else
             {

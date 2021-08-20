@@ -9,5 +9,16 @@
         "DisableOptimizations" : false
     },
 
+    "ProgramSettings" : 
+    {
+        "EntryPoints":
+        [
+            {
+                "name": "DepthPassVS",
+                "type" : "Vertex"
+            }
+        ] 
+    },
+
     "DrawList" : "depth"
 }

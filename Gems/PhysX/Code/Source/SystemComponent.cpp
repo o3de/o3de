@@ -396,7 +396,7 @@ namespace PhysX
 
     void SystemComponent::SetCollisionLayerName(int index, const AZStd::string& layerName)
     {
-        m_physXSystem->SetCollisionLayerName(aznumeric_cast<AZ::u64>(index), layerName);
+        m_physXSystem->SetCollisionLayerName(aznumeric_cast<int>(index), layerName);
     }
 
     void SystemComponent::CreateCollisionGroup(const AZStd::string& groupName, const AzPhysics::CollisionGroup& group)

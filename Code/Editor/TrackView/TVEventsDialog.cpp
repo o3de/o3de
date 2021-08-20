@@ -211,7 +211,7 @@ public:
     int GetNumberOfUsageAndFirstTimeUsed(const char* eventName, float& timeFirstUsed) const;
 };
 
-CTVEventsDialog::CTVEventsDialog(QWidget* pParent /*=NULL*/)
+CTVEventsDialog::CTVEventsDialog(QWidget* pParent /*=nullptr*/)
     : QDialog(pParent)
     , m_ui(new Ui::TVEventsDialog)
 {
@@ -363,7 +363,7 @@ int TVEventsModel::GetNumberOfUsageAndFirstTimeUsed(const char* eventName, float
         {
             CTrackViewTrack* pTrack = tracks.GetTrack(currentTrack);
 
-            for (int currentKey = 0; currentKey < pTrack->GetKeyCount(); ++currentKey)
+            for (unsigned int currentKey = 0; currentKey < pTrack->GetKeyCount(); ++currentKey)
             {
                 CTrackViewKeyHandle keyHandle = pTrack->GetKey(currentKey);
 

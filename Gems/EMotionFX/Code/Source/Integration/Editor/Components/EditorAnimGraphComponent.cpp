@@ -117,15 +117,15 @@ namespace EMotionFX
 
         void EditorAnimGraphComponent::LaunchAnimationEditor(const AZ::Data::AssetId& assetId, [[maybe_unused]] const AZ::Data::AssetType& assetType)
         {
+            // call to open must be done before LoadCharacter
+            const char* panelName = EMStudio::MainWindow::GetEMotionFXPaneName();
+            EBUS_EVENT(AzToolsFramework::EditorRequests::Bus, OpenViewPane, panelName);
+
             if (assetId.IsValid())
             {
                 AZ::Data::AssetId actorAssetId;
                 actorAssetId.SetInvalid();
                 EditorActorComponentRequestBus::EventResult(actorAssetId, GetEntityId(), &EditorActorComponentRequestBus::Events::GetActorAssetId);
-
-                // call to open must be done before LoadCharacter
-                const char* panelName = EMStudio::MainWindow::GetEMotionFXPaneName();
-                EBUS_EVENT(AzToolsFramework::EditorRequests::Bus, OpenViewPane, panelName);
 
                 EMStudio::MainWindow* mainWindow = EMStudio::GetMainWindow();
                 if (mainWindow)

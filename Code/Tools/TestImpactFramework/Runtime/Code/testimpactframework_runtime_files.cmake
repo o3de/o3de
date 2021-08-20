@@ -16,11 +16,14 @@ set(FILES
     Include/TestImpactFramework/TestImpactChangelist.h
     Include/TestImpactFramework/TestImpactChangelistSerializer.h
     Include/TestImpactFramework/TestImpactChangelistException.h
+    Include/TestImpactFramework/TestImpactPolicy.h
     Include/TestImpactFramework/TestImpactTestSequence.h
     Include/TestImpactFramework/TestImpactClientTestSelection.h
     Include/TestImpactFramework/TestImpactClientTestRun.h
-    Include/TestImpactFramework/TestImpactClientFailureReport.h
-    Include/TestImpactFramework/TestImpactFileUtils.h
+    Include/TestImpactFramework/TestImpactClientSequenceReport.h
+    Include/TestImpactFramework/TestImpactUtils.h
+    Include/TestImpactFramework/TestImpactClientSequenceReportSerializer.h
+    Include/TestImpactFramework/TestImpactSequenceReportException.h
     Source/Artifact/TestImpactArtifactException.h
     Source/Artifact/Factory/TestImpactBuildTargetDescriptorFactory.cpp
     Source/Artifact/Factory/TestImpactBuildTargetDescriptorFactory.h
@@ -123,7 +126,9 @@ set(FILES
     Source/TestImpactRuntimeUtils.h
     Source/TestImpactClientTestSelection.cpp
     Source/TestImpactClientTestRun.cpp
-    Source/TestImpactClientFailureReport.cpp
+    Source/TestImpactClientSequenceReport.cpp
     Source/TestImpactChangeListSerializer.cpp
+    Source/TestImpactClientSequenceReportSerializer.cpp
     Source/TestImpactRepoPath.cpp
+    Source/TestImpactUtils.cpp
 )

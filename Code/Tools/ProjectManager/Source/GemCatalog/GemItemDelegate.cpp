@@ -29,7 +29,7 @@ namespace O3DE::ProjectManager
     {
         QPixmap pixmap(iconPath);
         qreal aspectRatio = static_cast<qreal>(pixmap.width()) / pixmap.height();
-        m_platformIcons.insert(platform, QIcon(iconPath).pixmap(s_platformIconSize * aspectRatio, s_platformIconSize));
+        m_platformIcons.insert(platform, QIcon(iconPath).pixmap(static_cast<int>(static_cast<qreal>(s_platformIconSize) * aspectRatio), s_platformIconSize));
     }
 
     void GemItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& modelIndex) const
@@ -48,7 +48,7 @@ namespace O3DE::ProjectManager
         CalcRects(options, fullRect, itemRect, contentRect);
 
         QFont standardFont(options.font);
-        standardFont.setPixelSize(s_fontSize);
+        standardFont.setPixelSize(static_cast<int>(s_fontSize));
         QFontMetrics standardFontMetrics(standardFont);
 
         painter->save();
@@ -78,7 +78,7 @@ namespace O3DE::ProjectManager
         QString gemName = GemModel::GetName(modelIndex);
         QFont gemNameFont(options.font);
         const int firstColumnMaxTextWidth = s_summaryStartX - 30;
-        gemNameFont.setPixelSize(s_gemNameFontSize);
+        gemNameFont.setPixelSize(static_cast<int>(s_gemNameFontSize));
         gemNameFont.setBold(true);
         gemName = QFontMetrics(gemNameFont).elidedText(gemName, Qt::TextElideMode::ElideRight, firstColumnMaxTextWidth);
         QRect gemNameRect = GetTextRect(gemNameFont, gemName, s_gemNameFontSize);
@@ -95,7 +95,6 @@ namespace O3DE::ProjectManager
         gemCreatorRect.moveTo(contentRect.left(), contentRect.top() + gemNameRect.height());
 
         painter->setFont(standardFont);
-        painter->setPen(m_linkColor);
         gemCreatorRect = painter->boundingRect(gemCreatorRect, Qt::TextSingleLine, gemCreator);
         painter->drawText(gemCreatorRect, Qt::TextSingleLine, gemCreator);
 
@@ -179,7 +178,7 @@ namespace O3DE::ProjectManager
 
     QRect GemItemDelegate::GetTextRect(QFont& font, const QString& text, qreal fontSize) const
     {
-        font.setPixelSize(fontSize);
+        font.setPixelSize(static_cast<int>(fontSize));
         return QFontMetrics(font).boundingRect(text);
     }
 
@@ -209,7 +208,7 @@ namespace O3DE::ProjectManager
                     const QPixmap& pixmap = iterator.value();
                     painter->drawPixmap(contentRect.left() + startX, contentRect.bottom() - s_platformIconSize, pixmap);
                     qreal aspectRatio = static_cast<qreal>(pixmap.width()) / pixmap.height();
-                    startX += s_platformIconSize * aspectRatio + s_platformIconSize / 2.5;
+                    startX += static_cast<int>(s_platformIconSize * aspectRatio + s_platformIconSize / 2.5);
                 }
             }
         }

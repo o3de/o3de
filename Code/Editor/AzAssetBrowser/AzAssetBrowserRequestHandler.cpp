@@ -260,9 +260,7 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
         return;
     }
 
-    AZStd::string fullFileDirectory;
     AZStd::string fullFilePath;
-    AZStd::string fileName;
     AZStd::string extension;
 
     switch (entry->GetEntryType())
@@ -281,8 +279,6 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
     {
         AZ::Uuid sourceID = azrtti_cast<SourceAssetBrowserEntry*>(entry)->GetSourceUuid();
         fullFilePath = entry->GetFullPath();
-        fullFileDirectory = fullFilePath.substr(0, fullFilePath.find_last_of(AZ_CORRECT_DATABASE_SEPARATOR));
-        fileName = entry->GetName();
         AzFramework::StringFunc::Path::GetExtension(fullFilePath.c_str(), extension);
 
         // Add the "Open" menu item.
@@ -369,19 +365,19 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
         {
             if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
             {
-                CFileUtil::PopulateQMenu(caller, menu, fileName.c_str(), fullFileDirectory.c_str());
+                CFileUtil::PopulateQMenu(caller, menu, fullFilePath);
             }
             return;
         }
       
-        CFileUtil::PopulateQMenu(caller, menu, fileName.c_str(), fullFileDirectory.c_str());
+        CFileUtil::PopulateQMenu(caller, menu, fullFilePath);
     }
     break;
     case AssetBrowserEntry::AssetEntryType::Folder:
     {
-        fullFileDirectory = entry->GetFullPath();
-        // we are sending an empty filename to indicate that it is a folder and not a file
-        CFileUtil::PopulateQMenu(caller, menu, fileName.c_str(), fullFileDirectory.c_str());
+        fullFilePath = entry->GetFullPath();
+
+        CFileUtil::PopulateQMenu(caller, menu, fullFilePath);
     }
     break;
     default:
@@ -679,14 +675,14 @@ void AzAssetBrowserRequestHandler::OpenAssetInAssociatedEditor(const AZ::Data::A
                     firstValidOpener = &openerDetails;
                 }
                 // bind a callback such that when the menu item is clicked, it sets that as the opener to use.
-                menu.addAction(openerDetails.m_iconToUse, QObject::tr(openerDetails.m_displayText.c_str()), mainWindow, AZStd::bind(switchToOpener, &openerDetails));
+                menu.addAction(openerDetails.m_iconToUse, QObject::tr(openerDetails.m_displayText.c_str()), mainWindow, [switchToOpener, details = &openerDetails] { return switchToOpener(details); });
             }
         }
 
         if (numValidOpeners > 1) // more than one option was added
         {
             menu.addSeparator();
-            menu.addAction(QObject::tr("Cancel"), AZStd::bind(switchToOpener, nullptr)); // just something to click on to avoid doing anything.
+            menu.addAction(QObject::tr("Cancel"), [switchToOpener] { return switchToOpener(nullptr); }); // just something to click on to avoid doing anything.
             menu.exec(QCursor::pos());
         }
         else if (numValidOpeners == 1)

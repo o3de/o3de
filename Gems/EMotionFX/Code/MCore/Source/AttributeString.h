@@ -35,16 +35,16 @@ namespace MCore
         static AttributeString* Create(const AZStd::string& value);
         static AttributeString* Create(const char* value = "");
 
-        MCORE_INLINE uint8* GetRawDataPointer()                     { return reinterpret_cast<uint8*>(mValue.data()); }
-        MCORE_INLINE uint32 GetRawDataSize() const                  { return static_cast<uint32>(mValue.size()); }
+        MCORE_INLINE uint8* GetRawDataPointer()                     { return reinterpret_cast<uint8*>(m_value.data()); }
+        MCORE_INLINE size_t GetRawDataSize() const                  { return m_value.size(); }
 
         // adjust values
-        MCORE_INLINE const char* AsChar() const                     { return mValue.c_str(); }
-        MCORE_INLINE const AZStd::string& GetValue() const          { return mValue; }
-        MCORE_INLINE void SetValue(const AZStd::string& value)      { mValue = value; }
+        MCORE_INLINE const char* AsChar() const                     { return m_value.c_str(); }
+        MCORE_INLINE const AZStd::string& GetValue() const          { return m_value; }
+        MCORE_INLINE void SetValue(const AZStd::string& value)      { m_value = value; }
 
         // overloaded from the attribute base class
-        Attribute* Clone() const override                           { return AttributeString::Create(mValue); }
+        Attribute* Clone() const override                           { return AttributeString::Create(m_value); }
         const char* GetTypeString() const override                  { return "AttributeString"; }
         bool InitFrom(const Attribute* other) override
         {
@@ -52,25 +52,25 @@ namespace MCore
             {
                 return false;
             }
-            mValue = static_cast<const AttributeString*>(other)->GetValue();
+            m_value = static_cast<const AttributeString*>(other)->GetValue();
             return true;
         }
-        bool InitFromString(const AZStd::string& valueString) override     { mValue = valueString; return true; }
-        bool ConvertToString(AZStd::string& outString) const override      { outString = mValue; return true; }
-        uint32 GetClassSize() const override                        { return sizeof(AttributeString); }
+        bool InitFromString(const AZStd::string& valueString) override     { m_value = valueString; return true; }
+        bool ConvertToString(AZStd::string& outString) const override      { outString = m_value; return true; }
+        size_t GetClassSize() const override                        { return sizeof(AttributeString); }
         uint32 GetDefaultInterfaceType() const override             { return ATTRIBUTE_INTERFACETYPE_STRING; }
 
     private:
-        AZStd::string   mValue;     /**< The string value. */
+        AZStd::string   m_value;     /**< The string value. */
 
         AttributeString()
             : Attribute(TYPE_ID)  { }
         AttributeString(const AZStd::string& value)
             : Attribute(TYPE_ID)
-            , mValue(value) { }
+            , m_value(value) { }
         AttributeString(const char* value)
             : Attribute(TYPE_ID)
-            , mValue(value) { }
-        ~AttributeString()                              { mValue.clear(); }
+            , m_value(value) { }
+        ~AttributeString()                              { m_value.clear(); }
     };
 }   // namespace MCore

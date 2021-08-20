@@ -474,10 +474,10 @@ namespace AZ
             // Get dynamic buffers for vertex and index buffer. Skip draw if failed to allocate buffers
             uint32_t vertexDataSize = vertexCount * m_perVertexDataSize;
             RHI::Ptr<DynamicBuffer> vertexBuffer;
-            vertexBuffer = DynamicDrawInterface::Get()->GetDynamicBuffer(vertexDataSize);
+            vertexBuffer = DynamicDrawInterface::Get()->GetDynamicBuffer(vertexDataSize, RHI::Alignment::InputAssembly);
 
             uint32_t indexDataSize = indexCount * RHI::GetIndexFormatSize(indexFormat);
-            RHI::Ptr<DynamicBuffer> indexBuffer = DynamicDrawInterface::Get()->GetDynamicBuffer(indexDataSize);
+            RHI::Ptr<DynamicBuffer> indexBuffer = DynamicDrawInterface::Get()->GetDynamicBuffer(indexDataSize, RHI::Alignment::InputAssembly);
 
             if (indexBuffer == nullptr || vertexBuffer == nullptr)
             {
@@ -572,7 +572,7 @@ namespace AZ
             // Get dynamic buffers for vertex and index buffer. Skip draw if failed to allocate buffers
             uint32_t vertexDataSize = vertexCount * m_perVertexDataSize;
             RHI::Ptr<DynamicBuffer> vertexBuffer;
-            vertexBuffer = DynamicDrawInterface::Get()->GetDynamicBuffer(vertexDataSize);
+            vertexBuffer = DynamicDrawInterface::Get()->GetDynamicBuffer(vertexDataSize, RHI::Alignment::InputAssembly);
 
             if (vertexBuffer == nullptr)
             {

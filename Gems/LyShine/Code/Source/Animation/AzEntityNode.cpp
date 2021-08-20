@@ -16,7 +16,6 @@
 #include "PNoise3.h"
 #include "AnimSequence.h"
 
-#include <IAudioSystem.h>
 #include <Cry_Camera.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
@@ -163,7 +162,7 @@ CUiAnimAzEntityNode::~CUiAnimAzEntityNode()
 //////////////////////////////////////////////////////////////////////////
 unsigned int CUiAnimAzEntityNode::GetParamCount() const
 {
-    return CUiAnimAzEntityNode::GetParamCountStatic() + m_entityScriptPropertiesParamInfos.size();
+    return static_cast<unsigned int>(CUiAnimAzEntityNode::GetParamCountStatic() + m_entityScriptPropertiesParamInfos.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -190,7 +189,7 @@ CUiAnimParamType CUiAnimAzEntityNode::GetParamType(unsigned int nIndex) const
 //////////////////////////////////////////////////////////////////////////
 int CUiAnimAzEntityNode::GetParamCountStatic()
 {
-    return s_nodeParams.size();
+    return static_cast<int>(s_nodeParams.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -278,8 +277,8 @@ const AZ::SerializeContext::ClassElement* CUiAnimAzEntityNode::ComputeOffsetFrom
 
         if (mismatch)
         {
-            string warnMsg = "Data mismatch reading animation data for type ";
-            warnMsg += classData->m_typeId.ToString<string>();
+            AZStd::string warnMsg = "Data mismatch reading animation data for type ";
+            warnMsg += classData->m_typeId.ToString<AZStd::string>();
             warnMsg += ". The field \"";
             warnMsg += paramData.GetName();
             if (!element)
@@ -680,7 +679,7 @@ IUiAnimTrack* CUiAnimAzEntityNode::CreateTrackForAzField(const UiAnimParamData& 
         // this is a compound type, create a compound track
 
         // We only support compound tracks with 2, 3 or 4 subtracks
-        int numElements = classData->m_elements.size();
+        int numElements = static_cast<int>(classData->m_elements.size());
         if (numElements < 2 || numElements > 4)
         {
             return nullptr;

@@ -174,8 +174,8 @@ namespace ScriptCanvasDeveloper
         osInput.type = INPUT_MOUSE;
         osInput.mi.mouseData = 0;
         osInput.mi.time = 0;
-        osInput.mi.dx = targetPoint.x() - currentPosition.x();
-        osInput.mi.dy = targetPoint.y() - currentPosition.y();
+        osInput.mi.dx = static_cast<LONG>(targetPoint.x() - currentPosition.x());
+        osInput.mi.dy = static_cast<LONG>(targetPoint.y() - currentPosition.y());
         osInput.mi.dwFlags = MOUSEEVENTF_MOVE;
 
         ::SendInput(1, &osInput, sizeof(osInput));

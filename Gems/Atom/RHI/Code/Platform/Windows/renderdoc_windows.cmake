@@ -9,7 +9,7 @@
 # Prevent bundling the renderdoc dll with a packaged title
 if(NOT LY_MONOLITHIC_GAME)
     # Common installation path for renderdoc path
-    set(RENDERDOC_PATH "C:/Program Files/RenderDoc")
+    set(RENDERDOC_PATH "$ENV{PROGRAMFILES}/RenderDoc")
     if(DEFINED ENV{"ATOM_RENDERDOC_PATH"})
         set(RENDERDOC_PATH ENV{"ATOM_RENDERDOC_PATH"})
     endif()
@@ -25,13 +25,6 @@ if(NOT LY_MONOLITHIC_GAME)
                 3RDPARTY_ROOT_DIRECTORY ${RENDERDOC_PATH}
                 INCLUDE_DIRECTORIES "."
                 RUNTIME_DEPENDENCIES "${RENDERDOC_PATH}/renderdoc.dll"
-            )
-
-            ly_add_external_target(
-                NAME renderdoc_api
-                VERSION
-                3RDPARTY_ROOT_DIRECTORY ${RENDERDOC_PATH}
-                INCLUDE_DIRECTORIES "."
             )
         endif()
     endif()

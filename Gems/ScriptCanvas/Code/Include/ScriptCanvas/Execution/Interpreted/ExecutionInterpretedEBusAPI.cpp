@@ -116,7 +116,7 @@ namespace ScriptCanvas
 
             auto nodeable = AZ::ScriptValue<EBusHandler*>::StackRead(lua, k_nodeableIndex);
             AZ_Assert(nodeable, "Failed to read EBusHandler");
-            const int eventIndex = lua_tointeger(lua, k_eventNameIndex);
+            const int eventIndex = static_cast<int>(lua_tointeger(lua, k_eventNameIndex));
             AZ_Assert(eventIndex != -1, "Event index was not found for %s", nodeable->GetEBusName().data());
             // install the generic hook for the event
             nodeable->HandleEvent(eventIndex);
@@ -143,7 +143,7 @@ namespace ScriptCanvas
 
             auto nodeable = AZ::ScriptValue<EBusHandler*>::StackRead(lua, k_nodeableIndex);
             AZ_Assert(nodeable, "Failed to read EBusHandler");
-            const int eventIndex = lua_tointeger(lua, k_eventNameIndex);
+            const int eventIndex = static_cast<int>(lua_tointeger(lua, k_eventNameIndex));
             AZ_Assert(eventIndex != -1, "Event index was not found for %s", nodeable->GetEBusName().data());
             // install the generic hook for the event
             nodeable->HandleEvent(eventIndex);

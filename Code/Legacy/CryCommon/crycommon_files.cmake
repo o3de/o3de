@@ -53,7 +53,6 @@ set(FILES
     HMDBus.h
     VRCommon.h
     StereoRendererBus.h
-    HeightmapUpdateNotificationBus.h
     INavigationSystem.h
     IMNM.h
     SFunctor.h
@@ -68,7 +67,6 @@ set(FILES
     LCGRandom.h
     CryTypeInfo.cpp
     BaseTypes.h
-    CompileTimeAssert.h
     MemoryAccess.h
     AnimKey.h
     BitFiddling.h
@@ -78,7 +76,6 @@ set(FILES
     CryCrc32.h
     CryCustomTypes.h
     CryFile.h
-    CryFixedString.h
     CryHeaders.h
     CryHeaders_info.cpp
     CryListenerSet.h
@@ -87,18 +84,15 @@ set(FILES
     CryPath.h
     CryPodArray.h
     CrySizer.h
-    CryString.h
     CrySystemBus.h
-    CryThread.h
-    CryThreadImpl.h
     CryTypeInfo.h
     CryVersion.h
     FrameProfiler.h
     HeapAllocator.h
+    LegacyAllocator.cpp
     LegacyAllocator.h
     MetaUtils.h
     MiniQueue.h
-    MultiThread.h
     MultiThread_Containers.h
     NullAudioSystem.h
     PNoise3.h
@@ -111,7 +105,6 @@ set(FILES
     SimpleSerialize.h
     smartptr.h
     StlUtils.h
-    StringUtils.h
     Synchronization.h
     Tarray.h
     Timer.h
@@ -119,10 +112,6 @@ set(FILES
     TimeValue_info.h
     TypeInfo_decl.h
     TypeInfo_impl.h
-    UnicodeBinding.h
-    UnicodeEncoding.h
-    UnicodeFunctions.h
-    UnicodeIterator.h
     VectorMap.h
     VectorSet.h
     VertexFormats.h
@@ -160,12 +149,6 @@ set(FILES
     CryAssert_Mac.h
     CryLibrary.cpp
     CryLibrary.h
-    CryThread_dummy.h
-    CryThread_pthreads.h
-    CryThread_windows.h
-    CryThreadImpl_pthreads.h
-    CryThreadImpl_windows.h
-    CryWindows.h
     Linux32Specific.h
     Linux64Specific.h
     Linux_Win32Wrapper.h

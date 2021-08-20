@@ -26,8 +26,7 @@ namespace EMotionFX
     RepositioningLayerPass::RepositioningLayerPass(MotionLayerSystem* motionLayerSystem)
         : LayerPass(motionLayerSystem)
     {
-        mHierarchyPath.SetMemoryCategory(EMFX_MEMCATEGORY_MOTIONS_MOTIONSYSTEMS);
-        mLastReposNode = MCORE_INVALIDINDEX32;
+        m_lastReposNode = InvalidIndex;
     }
 
 
@@ -54,7 +53,7 @@ namespace EMotionFX
     // The main function that processes the pass.
     void RepositioningLayerPass::Process()
     {
-        ActorInstance* actorInstance = mMotionSystem->GetActorInstance();
+        ActorInstance* actorInstance = m_motionSystem->GetActorInstance();
         if (!actorInstance->GetMotionExtractionEnabled())
         {
             actorInstance->SetTrajectoryDeltaTransform(Transform::CreateIdentityWithZeroScale());
@@ -64,7 +63,7 @@ namespace EMotionFX
         // Get the motion extraction node and check if we are actually playing any motions.
         Actor* actor = actorInstance->GetActor();
         Node* motionExtractNode = actor->GetMotionExtractionNode();
-        if (!motionExtractNode || mMotionSystem->GetNumMotionInstances() == 0)
+        if (!motionExtractNode || m_motionSystem->GetNumMotionInstances() == 0)
         {
             actorInstance->SetTrajectoryDeltaTransform(Transform::CreateIdentityWithZeroScale());
             return;
@@ -78,10 +77,10 @@ namespace EMotionFX
 
         // Bottom up traversal of the layers.
         bool firstBlend = true;
-        const uint32 numMotionInstances = mMotionSystem->GetNumMotionInstances();
-        for (uint32 i = numMotionInstances - 1; i != MCORE_INVALIDINDEX32; --i)
+        const size_t numMotionInstances = m_motionSystem->GetNumMotionInstances();
+        for (size_t i = numMotionInstances - 1; i != InvalidIndex; --i)
         {
-            MotionInstance* motionInstance = mMotionSystem->GetMotionInstance(i);
+            MotionInstance* motionInstance = m_motionSystem->GetMotionInstance(i);
             if (!motionInstance->GetMotionExtractionEnabled())
             {
                 continue;

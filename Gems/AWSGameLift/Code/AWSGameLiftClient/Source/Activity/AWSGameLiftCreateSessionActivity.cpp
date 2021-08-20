@@ -48,7 +48,7 @@ namespace AWSGameLift
             {
                 request.SetFleetId(createSessionRequest.m_fleetId.c_str());
             }
-            request.SetMaximumPlayerSessionCount(createSessionRequest.m_maxPlayer);
+            request.SetMaximumPlayerSessionCount(static_cast<int>(createSessionRequest.m_maxPlayer));
 
             AZ_TracePrintf(AWSGameLiftCreateSessionActivityName,
                 "Built CreateGameSessionRequest with CreatorId=%s, Name=%s, IdempotencyToken=%s, GameProperties=%s, AliasId=%s, FleetId=%s and MaximumPlayerSessionCount=%d",

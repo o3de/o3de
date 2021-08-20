@@ -76,7 +76,7 @@ namespace
         }
         else if (pCVar->GetType() == CVAR_FLOAT)
         {
-            PySetCVarFromFloat(pName, std::stod(pValue));
+            PySetCVarFromFloat(pName, static_cast<float>(std::stod(pValue)));
         }
         else if (pCVar->GetType() != CVAR_STRING)
         {
@@ -152,11 +152,11 @@ namespace
         }
         else if (pCVar->GetType() == CVAR_INT)
         {
-            PySetCVarFromInt(pName, AZStd::any_cast<AZ::s64>(value));
+            PySetCVarFromInt(pName, static_cast<int>(AZStd::any_cast<AZ::s64>(value)));
         }
         else if (pCVar->GetType() == CVAR_FLOAT)
         {
-            PySetCVarFromFloat(pName, AZStd::any_cast<double>(value));
+            PySetCVarFromFloat(pName, static_cast<float>(AZStd::any_cast<double>(value)));
         }
         else if (pCVar->GetType() == CVAR_STRING)
         {
@@ -323,7 +323,7 @@ namespace
     //////////////////////////////////////////////////////////////////////////
     void GetPythonArgumentsVector(const char* pArguments, QStringList& inputArguments)
     {
-        if (pArguments == NULL)
+        if (pArguments == nullptr)
         {
             return;
         }
@@ -548,13 +548,11 @@ namespace
         if (title.empty())
         {
             throw std::runtime_error("Incorrect title argument passed in. ");
-            return result;
         }
 
         if (values.size() == 0)
         {
             throw std::runtime_error("Empty value list passed in. ");
-            return result;
         }
 
         QStringList list;

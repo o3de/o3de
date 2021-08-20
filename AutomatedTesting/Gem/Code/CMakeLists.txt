@@ -57,6 +57,12 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
         TARGETS Editor
         VARIANTS Tools)
 
+    # The Material Editor needs the Lyshine "Tools" gem variant for the custom LyShine pass
+    ly_enable_gems(
+        PROJECT_NAME AutomatedTesting GEMS LyShine
+        TARGETS MaterialEditor
+        VARIANTS Tools)
+
     # The pipeline tools use "Builders" gem variants:
     ly_enable_gems(
         PROJECT_NAME AutomatedTesting GEM_FILE enabled_gems.cmake

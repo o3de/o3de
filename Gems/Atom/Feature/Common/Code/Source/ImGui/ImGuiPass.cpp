@@ -396,12 +396,12 @@ namespace AZ
         {
             auto imguiContextScope = ImguiContextScope(m_imguiContext);
 
-            m_viewportWidth = params.m_viewportState.m_maxX - params.m_viewportState.m_minX;
-            m_viewportHeight = params.m_viewportState.m_maxY - params.m_viewportState.m_minY;
+            m_viewportWidth = static_cast<uint32_t>(params.m_viewportState.m_maxX - params.m_viewportState.m_minX);
+            m_viewportHeight = static_cast<uint32_t>(params.m_viewportState.m_maxY - params.m_viewportState.m_minY);
 
             auto& io = ImGui::GetIO();
-            io.DisplaySize.x = AZStd::max<float>(1.0f, m_viewportWidth);
-            io.DisplaySize.y = AZStd::max<float>(1.0f, m_viewportHeight);
+            io.DisplaySize.x = AZStd::max<float>(1.0f, static_cast<float>(m_viewportWidth));
+            io.DisplaySize.y = AZStd::max<float>(1.0f, static_cast<float>(m_viewportHeight));
 
             Matrix4x4 projectionMatrix =
                 Matrix4x4::CreateFromRows(
@@ -446,7 +446,7 @@ namespace AZ
             }
 
             {
-                m_shader = RPI::LoadShader(ImguiShaderFilePath);
+                m_shader = RPI::LoadCriticalShader(ImguiShaderFilePath);
 
                 m_pipelineState = aznew RPI::PipelineStateForDraw;
                 m_pipelineState->Init(m_shader);
@@ -547,8 +547,8 @@ namespace AZ
                     for (const ImDrawCmd& drawCmd : drawList->CmdBuffer)
                     {
                         AZ_Assert(drawCmd.UserCallback == nullptr, "ImGui UserCallbacks are not supported by the ImGui Pass");
-                        uint32_t scissorMaxX = drawCmd.ClipRect.z;
-                        uint32_t scissorMaxY = drawCmd.ClipRect.w;
+                        uint32_t scissorMaxX = static_cast<uint32_t>(drawCmd.ClipRect.z);
+                        uint32_t scissorMaxY = static_cast<uint32_t>(drawCmd.ClipRect.w);
                         
                         //scissorMaxX/scissorMaxY can be a frame stale from imgui (ImGui::NewFrame runs after this) hence we clamp it to viewport bounds
                         //otherwise it is possible to have a frame where scissor bounds can be bigger than window's bounds if we resize the window
@@ -559,8 +559,8 @@ namespace AZ
                             {
                                 RHI::DrawIndexed(1, 0, vertexOffset, drawCmd.ElemCount, indexOffset),
                                 RHI::Scissor(
-                                    (drawCmd.ClipRect.x),
-                                    (drawCmd.ClipRect.y),
+                                    static_cast<int32_t>(drawCmd.ClipRect.x),
+                                    static_cast<int32_t>(drawCmd.ClipRect.y),
                                              scissorMaxX,
                                              scissorMaxY
                                 )
@@ -582,7 +582,7 @@ namespace AZ
 
         void ImGuiPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
             AZ_ATOM_PROFILE_FUNCTION("Pass", "ImGuiPass: Execute");
 
             context.GetCommandList()->SetViewport(m_viewportState);
@@ -612,7 +612,7 @@ namespace AZ
 
         uint32_t ImGuiPass::UpdateImGuiResources()
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
             AZ_ATOM_PROFILE_FUNCTION("Pass", "ImGuiPass: UpdateImGuiResources");
 
             auto imguiContextScope = ImguiContextScope(m_imguiContext);

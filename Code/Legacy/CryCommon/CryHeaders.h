@@ -17,7 +17,7 @@
 
 #ifdef MAX_SUB_MATERIALS
 // This checks that the values are in sync in the different files.
-COMPILE_TIME_ASSERT(MAX_SUB_MATERIALS == 128);
+static_assert(MAX_SUB_MATERIALS == 128);
 #else
     #define MAX_SUB_MATERIALS 128
 #endif
@@ -395,7 +395,7 @@ struct MotionParams905
     MotionParams905()
     {
         m_nAssetFlags = 0;
-        m_nCompression = -1;
+        m_nCompression = std::numeric_limits<uint32>::max();
         m_nTicksPerFrame = 0;
         m_fSecsPerTick = 0;
         m_nStart = 0;

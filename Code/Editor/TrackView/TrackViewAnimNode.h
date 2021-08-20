@@ -27,7 +27,7 @@ class QWidget;
 class CTrackViewAnimNodeBundle
 {
 public:
-    unsigned int GetCount() const { return m_animNodes.size(); }
+    unsigned int GetCount() const { return static_cast<unsigned int>(m_animNodes.size()); }
     CTrackViewAnimNode* GetNode(const unsigned int index) { return m_animNodes[index]; }
     const CTrackViewAnimNode* GetNode(const unsigned int index) const { return m_animNodes[index]; }
 

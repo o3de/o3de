@@ -25,7 +25,7 @@
 #include <EMotionFX/Source/Parameter/Vector3Parameter.h>
 #include <EMotionFX/Source/Parameter/ValueParameter.h>
 #include <EMotionFX/Source/BlendTreeParameterNode.h>
-#include <MCore/Source/Array.h>
+#include <AzCore/std/containers/vector.h>
 
 namespace EMotionFX
 {
@@ -46,8 +46,8 @@ namespace EMotionFX
             m_blendTree->AddChildNode(finalNode);
             finalNode->AddUnitializedConnection(m_blendNNode, BlendTreeBlendNNode::PORTID_OUTPUT_POSE, BlendTreeFinalNode::PORTID_INPUT_POSE);
 
-            const int motionNodeCount = 3;
-            for (int i = 0; i < motionNodeCount; ++i)
+            const uint16 motionNodeCount = 3;
+            for (uint16 i = 0; i < motionNodeCount; ++i)
             {
                 AnimGraphMotionNode* motionNode = aznew AnimGraphMotionNode();
                 m_blendTree->AddChildNode(motionNode);

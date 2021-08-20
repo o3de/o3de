@@ -497,7 +497,7 @@ namespace AZ::Render
         const ShadowmapAtlas& atlas = m_projectedShadowmapsPasses.front()->GetShadowmapAtlas();
         const Data::Instance<RPI::Buffer> indexTableBuffer = atlas.CreateShadowmapIndexTableBuffer(indexTableBufferName);
 
-        m_filterParamBufferHandler.UpdateBuffer(m_shadowData.GetRawData<FilterParamIndex>(), m_shadowData.GetSize());
+        m_filterParamBufferHandler.UpdateBuffer(m_shadowData.GetRawData<FilterParamIndex>(), static_cast<uint32_t>(m_shadowData.GetSize()));
 
         // Set index table buffer and ESM parameter buffer to ESM pass.
         for (EsmShadowmapsPass* esmPass : m_esmShadowmapsPasses)
@@ -539,9 +539,10 @@ namespace AZ::Render
             {
                 esmPass->QueueForBuildAndInitialization();
             }
-            
-            for (ProjectedShadowmapsPass* shadowPass : m_projectedShadowmapsPasses)
+
+            if (!m_projectedShadowmapsPasses.empty())
             {
+                const ProjectedShadowmapsPass* shadowPass = m_projectedShadowmapsPasses.front();
                 for (const auto& shadowProperty : shadowProperties)
                 {
                     const int16_t shadowIndexInSrg = shadowProperty.m_shadowId.GetIndex();
@@ -553,7 +554,6 @@ namespace AZ::Render
                     filterData.m_shadowmapOriginInSlice = origin.m_originInSlice;
                     m_deviceBufferNeedsUpdate = true;
                 }
-                break;
             }
 
             m_shadowmapPassNeedsUpdate = false;
@@ -564,15 +564,16 @@ namespace AZ::Render
 
         if (m_deviceBufferNeedsUpdate)
         {
-            m_shadowBufferHandler.UpdateBuffer(m_shadowData.GetRawData<ShadowDataIndex>(), m_shadowData.GetSize());
+            m_shadowBufferHandler.UpdateBuffer(m_shadowData.GetRawData<ShadowDataIndex>(), static_cast<uint32_t>(m_shadowData.GetSize()));
             m_deviceBufferNeedsUpdate = false;
         }
     }
     
     void ProjectedShadowFeatureProcessor::PrepareViews(const PrepareViewsPacket&, AZStd::vector<AZStd::pair<RPI::PipelineViewTag, RPI::ViewPtr>>& outViews)
     {
-        for (ProjectedShadowmapsPass* pass : m_projectedShadowmapsPasses)
+        if (!m_projectedShadowmapsPasses.empty())
         {
+            ProjectedShadowmapsPass* pass = m_projectedShadowmapsPasses.front();
             RPI::RenderPipeline* renderPipeline = pass->GetRenderPipeline();
             if (renderPipeline)
             {
@@ -598,7 +599,6 @@ namespace AZ::Render
                     outViews.emplace_back(AZStd::make_pair(viewTag, shadowProperty.m_shadowmapView));
                 }
             }
-            break;
         }
     }
     
@@ -606,8 +606,9 @@ namespace AZ::Render
     {
         AZ_ATOM_PROFILE_FUNCTION("RPI", "ProjectedShadowFeatureProcessor: Render");
 
-        for (const ProjectedShadowmapsPass* pass : m_projectedShadowmapsPasses)
+        if (!m_projectedShadowmapsPasses.empty())
         {
+            const ProjectedShadowmapsPass* pass = m_projectedShadowmapsPasses.front();
             for (const RPI::ViewPtr& view : packet.m_views)
             {
                 if (view->GetUsageFlags() & RPI::View::UsageFlags::UsageCamera)
@@ -622,7 +623,6 @@ namespace AZ::Render
                     m_filterParamBufferHandler.UpdateSrg(srg);
                 }
             }
-            break;
         }
     }
 

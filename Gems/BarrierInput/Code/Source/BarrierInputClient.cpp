@@ -54,12 +54,36 @@ namespace BarrierInput
         int ReadU8() { int ret = data[0]; data += 1; return ret; }
         void Eat(int len) { data += len; }
 
-        void InsertString(const char* str) { int len = strlen(str); memcpy(end, str, len); end += len; }
-        void InsertU32(int a) { end[0] = a >> 24; end[1] = a >> 16; end[2] = a >> 8; end[3] = a; end += 4; }
-        void InsertU16(int a) { end[0] = a >> 8; end[1] = a; end += 2; }
-        void InsertU8(int a) { end[0] = a; end += 1; }
+        void InsertString(const char* str) { int len = static_cast<int>(strlen(str)); memcpy(end, str, len); end += len; }
+        void InsertU32(int a)
+        {
+            end[0] = static_cast<AZ::u8>(a >> 24);
+            end[1] = static_cast<AZ::u8>(a >> 16);
+            end[2] = static_cast<AZ::u8>(a >> 8);
+            end[3] = static_cast<AZ::u8>(a);
+            end += 4;
+        }
+        void InsertU16(int a)
+        {
+            end[0] = static_cast<AZ::u8>(a >> 8);
+            end[1] = static_cast<AZ::u8>(a);
+            end += 2;
+        }
+        void InsertU8(int a)
+        {
+            end[0] = static_cast<AZ::u8>(a);
+            end += 1;
+        }
         void OpenPacket() { packet = end; end += 4; }
-        void ClosePacket() { int len = GetLength() - sizeof(AZ::u32); packet[0] = len >> 24; packet[1] = len >> 16; packet[2] = len >> 8; packet[3] = len; packet = NULL; }
+        void ClosePacket()
+        {
+            int len = GetLength() - sizeof(AZ::u32);
+            packet[0] = static_cast<AZ::u8>(len >> 24);
+            packet[1] = static_cast<AZ::u8>(len >> 16);
+            packet[2] = static_cast<AZ::u8>(len >> 8);
+            packet[3] = static_cast<AZ::u8>(len);
+            packet = nullptr;
+        }
     };
 
     enum ArgType
@@ -93,7 +117,7 @@ namespace BarrierInput
         stream.InsertString("Barrier");
         stream.InsertU16(1);
         stream.InsertU16(4);
-        stream.InsertU32(pContext->GetClientScreenName().length());
+        stream.InsertU32(static_cast<int>(pContext->GetClientScreenName().length()));
         stream.InsertString(pContext->GetClientScreenName().c_str());
         stream.ClosePacket();
         return barrierSendFunc(pContext, stream.GetBuffer(), stream.GetLength());
@@ -268,7 +292,7 @@ namespace BarrierInput
             int i;
             for (i = 0; i < numPackets; ++i)
             {
-                const int len = strlen(s_packets[i].pattern);
+                const int len = static_cast<int>(strlen(s_packets[i].pattern));
                 if (packetLength >= len && memcmp(stream.GetData(), s_packets[i].pattern, len) == 0)
                 {
                     bool bDone = false;
@@ -381,7 +405,7 @@ namespace BarrierInput
         if (AZ::AzSock::IsAzSocketValid(m_socket))
         {
             AZ::AzSock::AzSocketAddress socketAddress;
-            if (socketAddress.SetAddress(m_serverHostName.c_str(), m_connectionPort))
+            if (socketAddress.SetAddress(m_serverHostName.c_str(), static_cast<AZ::u16>(m_connectionPort)))
             {
                 const int result = AZ::AzSock::Connect(m_socket, socketAddress);
                 if (!AZ::AzSock::SocketErrorOccured(result))

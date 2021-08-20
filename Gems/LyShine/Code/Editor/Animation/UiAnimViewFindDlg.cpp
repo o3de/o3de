@@ -13,7 +13,6 @@
 #include "UiAnimViewSequenceManager.h"
 
 #include <LyShine/Animation/IUiAnimation.h>
-#include <StringUtils.h>
 #include <QtUtilWin.h>
 
 #include <QListWidgetItem>
@@ -64,7 +63,7 @@ void CUiAnimViewFindDlg::FillData()
             ObjName obj;
             obj.m_objName = pNode->GetName();
             obj.m_directorName = pNode->HasDirectorAsParent() ? pNode->HasDirectorAsParent()->GetName() : "";
-            string fullname = seq->GetName();
+            AZStd::string fullname = seq->GetName();
             obj.m_seqName = fullname.c_str();
             m_objs.push_back(obj);
         }

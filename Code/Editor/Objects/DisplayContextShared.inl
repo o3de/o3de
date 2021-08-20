@@ -63,7 +63,7 @@ void DisplayContext::InternalDrawLine(const Vec3& v0, const ColorB& colV0, const
 //////////////////////////////////////////////////////////////////////////
 void DisplayContext::DrawPoint(const Vec3& p, int nSize)
 {
-    pRenderAuxGeom->DrawPoint(ToWorldSpacePosition(p), m_color4b, nSize);
+    pRenderAuxGeom->DrawPoint(ToWorldSpacePosition(p), m_color4b, static_cast<uint8>(nSize));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -74,12 +74,12 @@ void DisplayContext::DrawTri(const Vec3& p1, const Vec3& p2, const Vec3& p3)
 
 void DisplayContext::DrawTriangles(const AZStd::vector<Vec3>& vertices, const ColorB& color)
 {
-    pRenderAuxGeom->DrawTriangles(vertices.begin(), vertices.size(), color);
+    pRenderAuxGeom->DrawTriangles(vertices.begin(), static_cast<uint32>(vertices.size()), color);
 }
 
 void DisplayContext::DrawTrianglesIndexed(const AZStd::vector<Vec3>& vertices, const AZStd::vector<vtx_idx>& indices, const ColorB& color)
 {
-    pRenderAuxGeom->DrawTriangles(vertices.begin(), vertices.size(), indices.begin(), indices.size(), color);
+    pRenderAuxGeom->DrawTriangles(vertices.begin(), static_cast<uint32>(vertices.size()), indices.begin(), static_cast<uint32_t>(indices.size()), color);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -856,13 +856,16 @@ void DisplayContext::DrawLine(const Vec3& p1, const Vec3& p2, const ColorF& col1
 //////////////////////////////////////////////////////////////////////////
 void DisplayContext::DrawLine(const Vec3& p1, const Vec3& p2, const QColor& rgb1, const QColor& rgb2)
 {
-    InternalDrawLine(ToWorldSpacePosition(p1), ColorB(rgb1.red(), rgb1.green(), rgb1.blue(), 255), ToWorldSpacePosition(p2), ColorB(rgb2.red(), rgb2.green(), rgb2.blue(), 255));
+    InternalDrawLine(ToWorldSpacePosition(p1), 
+        ColorB(static_cast<uint8>(rgb1.red()), static_cast<uint8>(rgb1.green()), static_cast<uint8>(rgb1.blue()), 255), 
+        ToWorldSpacePosition(p2), 
+        ColorB(static_cast<uint8>(rgb2.red()), static_cast<uint8>(rgb2.green()), static_cast<uint8>(rgb2.blue()), 255));
 }
 
 //////////////////////////////////////////////////////////////////////////
 void DisplayContext::DrawLines(const AZStd::vector<Vec3>& points, const ColorF& color)
 {
-    pRenderAuxGeom->DrawLines(points.begin(), points.size(), color, m_thickness);
+    pRenderAuxGeom->DrawLines(points.begin(), static_cast<uint32>(points.size()), color, m_thickness);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1287,8 +1290,8 @@ void DisplayContext::Flush2D()
     uvs[3] = 0;
     uvt[3] = 0;
 
-    int nLabels = m_textureLabels.size();
-    for (int i = 0; i < nLabels; i++)
+    const size_t nLabels = m_textureLabels.size();
+    for (size_t i = 0; i < nLabels; i++)
     {
         STextureLabel& t = m_textureLabels[i];
         float w2 = t.w * 0.5f;

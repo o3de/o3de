@@ -56,7 +56,7 @@ public:
         m_manager.AddListener(this);
     }
 
-    virtual ~UndoDropDownListModel()
+    ~UndoDropDownListModel() override
     {
         m_manager.RemoveListener(this);
     }
@@ -68,7 +68,7 @@ public:
             return 0;
         }
 
-        return m_stackNames.size();
+        return static_cast<int>(m_stackNames.size());
     }
 
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override
@@ -81,7 +81,7 @@ public:
         return m_stackNames[index.row()];
     }
 
-    void SignalNumUndoRedo(const unsigned int& numUndo, const unsigned int& numRedo)
+    void SignalNumUndoRedo(const unsigned int& numUndo, const unsigned int& numRedo) override
     {
         std::vector<QString> fresh;
         if (UndoRedoDirection::Undo == m_direction && m_stackNames.size() != numUndo)
@@ -101,13 +101,13 @@ public:
 
         if (fresh.size() < m_stackNames.size())
         {
-            beginRemoveRows(createIndex(-1, -1), fresh.size(), m_stackNames.size() - 1);
+            beginRemoveRows(createIndex(-1, -1), static_cast<int>(fresh.size()), static_cast<int>(m_stackNames.size() - 1));
             m_stackNames = fresh;
             endRemoveRows();
         }
         else
         {
-            beginInsertRows(createIndex(-1, -1), m_stackNames.size(), fresh.size() - 1);
+            beginInsertRows(createIndex(-1, -1), static_cast<int>(m_stackNames.size()), static_cast<int>(fresh.size() - 1));
             m_stackNames = fresh;
             endInsertRows();
         }

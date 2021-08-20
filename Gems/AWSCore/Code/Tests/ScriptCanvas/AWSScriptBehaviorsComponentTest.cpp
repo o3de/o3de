@@ -51,7 +51,7 @@ protected:
 
 TEST_F(AWSScriptBehaviorsComponentTest, Reflect)
 {
-    int oldEBusNum = m_behaviorContext->m_ebuses.size();
+    int oldEBusNum = static_cast<int>(m_behaviorContext->m_ebuses.size());
     m_componentDescriptor.reset(AWSScriptBehaviorsComponent::CreateDescriptor());
     m_componentDescriptor->Reflect(m_serializeContext.get());
     m_componentDescriptor->Reflect(m_behaviorContext.get());

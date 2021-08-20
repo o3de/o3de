@@ -136,7 +136,10 @@ namespace UnitTest
 
         PrefabDomValueReference wheelEntityComponentBoolPropertyValue =
             PrefabDomUtils::FindPrefabDomValue(wheelEntityComponentValue->get(), PrefabTestDomUtils::BoolPropertyName);
-        ASSERT_FALSE(wheelEntityComponentBoolPropertyValue.has_value());
+
+        ASSERT_TRUE(wheelEntityComponentBoolPropertyValue.has_value());
+        ASSERT_TRUE(wheelEntityComponentBoolPropertyValue->get().IsBool());
+        ASSERT_FALSE(wheelEntityComponentBoolPropertyValue->get().GetBool());
 
         // Validate that the axles under the car have the same DOM as the axle template.
         PrefabTestDomUtils::ValidatePrefabDomInstances(axleInstanceAliasesUnderCar, carTemplateDom, axleTemplateDom);

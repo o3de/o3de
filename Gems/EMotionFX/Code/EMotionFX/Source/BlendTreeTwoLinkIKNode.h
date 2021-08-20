@@ -27,7 +27,7 @@ namespace EMotionFX
         AZ_RTTI(BlendTreeTwoLinkIKNode, "{0C3E8B7F-F810-47A6-B1A9-27BD4E4B5500}", AnimGraphNode)
         AZ_CLASS_ALLOCATOR_DECL
 
-        enum
+        enum : uint16
         {
             INPUTPORT_POSE      = 0,
             INPUTPORT_GOALPOS   = 1,
@@ -37,7 +37,7 @@ namespace EMotionFX
             OUTPUTPORT_POSE     = 0
         };
 
-        enum
+        enum : uint16
         {
             PORTID_INPUT_POSE       = 0,
             PORTID_INPUT_GOALPOS    = 1,
@@ -60,12 +60,12 @@ namespace EMotionFX
             void Update() override;
 
         public:
-            uint32 mNodeIndexA = InvalidIndex32;
-            uint32 mNodeIndexB = InvalidIndex32;
-            uint32 mNodeIndexC = InvalidIndex32;
-            uint32 mEndEffectorNodeIndex = InvalidIndex32;
-            uint32 mAlignNodeIndex = InvalidIndex32;
-            uint32 mBendDirNodeIndex = InvalidIndex32;
+            size_t m_nodeIndexA = InvalidIndex;
+            size_t m_nodeIndexB = InvalidIndex;
+            size_t m_nodeIndexC = InvalidIndex;
+            size_t m_endEffectorNodeIndex = InvalidIndex;
+            size_t m_alignNodeIndex = InvalidIndex;
+            size_t m_bendDirNodeIndex = InvalidIndex;
         };
 
         BlendTreeTwoLinkIKNode();

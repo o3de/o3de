@@ -110,7 +110,6 @@ public:
     void PostSerialize() override;
     CCamera& GetCamera() override { return m_camera; }
     const CCamera& GetCamera() const override { return m_camera; }
-    void UpdateAudioListener(const Matrix34& rMatrix) override;
 
     void GetMemoryUsage(ICrySizer* s) const;
 

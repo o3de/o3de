@@ -134,7 +134,7 @@ namespace AWSMetrics
 
     int MetricsQueue::GetNumMetrics() const
     {
-        return m_metrics.size();
+        return static_cast<int>(m_metrics.size());
     }
 
     size_t MetricsQueue::GetSizeInBytes() const
@@ -175,7 +175,7 @@ namespace AWSMetrics
             MetricsEvent& curEvent = m_metrics.front();
 
             curNum += 1;
-            curSizeInBytes += curEvent.GetSizeInBytes();
+            curSizeInBytes += static_cast<int>(curEvent.GetSizeInBytes());
             if (curNum <= maxBatchedRecordsCount && curSizeInBytes <= maxPayloadSizeInBytes)
             {
                 m_sizeSerializedToJson -= curEvent.GetSizeInBytes();
@@ -216,7 +216,7 @@ namespace AWSMetrics
             return false;
         }
 
-        for (int metricsIndex = 0; metricsIndex < doc.Size(); metricsIndex++)
+        for (rapidjson::SizeType metricsIndex = 0; metricsIndex < doc.Size(); metricsIndex++)
         {
             MetricsEvent metrics;
             if (!metrics.ReadFromJson(doc[metricsIndex]))

@@ -84,7 +84,7 @@ namespace MCore
          * The number of elements stored at the float pointer location that is used as parameter must be at least 16 floats in size.
          * @param elementData A pointer to the matrix float data, which must be 16 floats in size, or more, although only the first 16 floats are used.
          */
-        MCORE_INLINE explicit Matrix(const float* elementData)                                          { MCore::MemCopy(m16, elementData, sizeof(float) * 16); }
+        MCORE_INLINE explicit Matrix(const float* elementData)                                          { MCore::MemCopy(m_m16, elementData, sizeof(float) * 16); }
 
         /**
          * Copy constructor.
@@ -779,7 +779,7 @@ namespace MCore
         AZ::Matrix4x4 ToAzMatrix() const
         {
 #ifdef MCORE_MATRIX_ROWMAJOR
-            return AZ::Matrix4x4::CreateFromRowMajorFloat16(m16);
+            return AZ::Matrix4x4::CreateFromRowMajorFloat16(m_m16);
 #else
             return AZ::Matrix4x4::CreateFromColumnMajorFloat16(m16);
 #endif
@@ -907,7 +907,7 @@ namespace MCore
         // attributes
         union
         {
-            float   m16[16];        // 16 floats as 1D array
+            float   m_m16[16];        // 16 floats as 1D array
             float   m44[4][4];      // as 2D array
         };
     } MCORE_ALIGN_POST(16);

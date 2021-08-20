@@ -386,7 +386,7 @@ namespace LyShine
             curBaseState.m_stencilState.m_backFace = stencilOpState;
 
             // set up for stencil write
-            dynamicDraw->SetStencilReference(uiRenderer->GetStencilRef());
+            dynamicDraw->SetStencilReference(static_cast<uint8_t>(uiRenderer->GetStencilRef()));
             curBaseState.m_stencilState.m_enable = true;
             curBaseState.m_stencilState.m_writeMask = 0xFF;
         }
@@ -420,7 +420,7 @@ namespace LyShine
                 uiRenderer->DecrementStencilRef();
             }
 
-            dynamicDraw->SetStencilReference(uiRenderer->GetStencilRef());
+            dynamicDraw->SetStencilReference(static_cast<uint8_t>(uiRenderer->GetStencilRef()));
 
             if (firstPass)
             {
@@ -790,7 +790,7 @@ namespace LyShine
             {
                 for (int i = 0; i < primitive->m_numVertices; ++i)
                 {
-                    primitive->m_vertices[i].texIndex = texUnit;
+                    primitive->m_vertices[i].texIndex = static_cast<uint8>(texUnit);
                 }
             }
 
@@ -881,8 +881,8 @@ namespace LyShine
             {
                 for (int i = 0; i < primitive->m_numVertices; ++i)
                 {
-                    primitive->m_vertices[i].texIndex = texUnit0;
-                    primitive->m_vertices[i].texIndex2 = texUnit1;
+                    primitive->m_vertices[i].texIndex = aznumeric_cast<uint8>(texUnit0);
+                    primitive->m_vertices[i].texIndex2 = aznumeric_cast<uint8>(texUnit1);
                 }
             }
 
@@ -1127,7 +1127,7 @@ namespace LyShine
         // walk the graph recursively to add up all of the data
         GetDebugInfoRenderNodeList(m_renderNodes, info, uniqueTextures);
 
-        info.m_numUniqueTextures = uniqueTextures.size();
+        info.m_numUniqueTextures = static_cast<int>(uniqueTextures.size());
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1182,7 +1182,7 @@ namespace LyShine
                 const PrimitiveListRenderNode* primListRenderNode = static_cast<const PrimitiveListRenderNode*>(renderNode);
                 
                 IRenderer::DynUiPrimitiveList& primitives = primListRenderNode->GetPrimitives();
-                info.m_numPrimitives += primitives.size();
+                info.m_numPrimitives += static_cast<int>(primitives.size());
                 {
                     for (const IRenderer::DynUiPrimitive& primitive : primitives)
                     {
@@ -1366,7 +1366,7 @@ namespace LyShine
                 }
 
                 IRenderer::DynUiPrimitiveList& primitives = primListRenderNode->GetPrimitives();
-                int numPrimitives = primitives.size();
+                int numPrimitives = static_cast<int>(primitives.size());
                 int numTriangles = 0;
                 for (const IRenderer::DynUiPrimitive& primitive : primitives)
                 {
