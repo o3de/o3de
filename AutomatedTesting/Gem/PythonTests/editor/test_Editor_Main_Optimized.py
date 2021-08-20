@@ -20,6 +20,7 @@ class TestAutomation(EditorTestSuite):
     class test_BasicEditorWorkflows_LevelEntityComponentCRUD(EditorSingleTest):
         # Disable -BatchMode and -autotest_mode
         EditorTestSuite.global_extra_cmdline_args = []
+
         # Custom teardown to remove slice asset created during test
         def teardown(self, request, workspace, editor, editor_test_results, launcher_platform):
             file_system.delete([os.path.join(workspace.paths.engine_root(), "AutomatedTesting", "Levels", "tmp_level")],
@@ -30,7 +31,8 @@ class TestAutomation(EditorTestSuite):
     class test_BasicEditorWorkflows_GPU_LevelEntityComponentCRUD(EditorSingleTest):
         # Disable -BatchMode, -autotest_mode, and null renderer
         EditorTestSuite.global_extra_cmdline_args = []
-        use_null_renderer = False
+        EditorTestSuite.use_null_renderer = False
+
         # Custom teardown to remove slice asset created during test
         def teardown(self, request, workspace, editor, editor_test_results, launcher_platform):
             file_system.delete([os.path.join(workspace.paths.engine_root(), "AutomatedTesting", "Levels", "tmp_level")],

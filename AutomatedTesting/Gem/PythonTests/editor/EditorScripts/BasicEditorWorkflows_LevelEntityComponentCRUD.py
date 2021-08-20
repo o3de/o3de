@@ -37,12 +37,12 @@ class Tests:
     )
 
 
-def RunTest():
+def BasicEditorWorkflows_LevelEntityComponentCRUD():
 
     import editor_python_test_tools.pyside_utils as pyside_utils
 
     @pyside_utils.wrap_async
-    async def BasicEditorWorkflows_LevelEntityComponentCRUD():
+    async def run_test():
         """
         Summary:
         Open O3DE editor and check if basic Editor workflows are completable.
@@ -139,7 +139,8 @@ def RunTest():
         # Update the component
         dimensions_to_set = math.Vector3(16.0, 16.0, 16.0)
         child_entity.get_set_test(0, "Box Shape|Box Configuration|Dimensions", dimensions_to_set)
-        box_shape_dimensions = hydra.get_component_property_value(child_entity.components[0], "Box Shape|Box Configuration|Dimensions")
+        box_shape_dimensions = hydra.get_component_property_value(child_entity.components[0],
+                                                                  "Box Shape|Box Configuration|Dimensions")
         Report.result(Tests.component_updated, box_shape_dimensions == dimensions_to_set)
 
         # Remove the component
@@ -161,10 +162,10 @@ def RunTest():
         export_success = await pyside_utils.wait_for_condition(lambda: os.path.exists(level_pak_file), 5.0)
         Report.result(Tests.level_saved_and_exported, export_success)
 
-    BasicEditorWorkflows_LevelEntityComponentCRUD()
+    run_test()
 
 
 if __name__ == "__main__":
 
     from editor_python_test_tools.utils import Report
-    Report.start_test(RunTest)
+    Report.start_test(BasicEditorWorkflows_LevelEntityComponentCRUD)
