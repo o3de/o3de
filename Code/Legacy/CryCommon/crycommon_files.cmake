@@ -90,6 +90,7 @@ set(FILES
     CryVersion.h
     FrameProfiler.h
     HeapAllocator.h
+    LegacyAllocator.cpp
     LegacyAllocator.h
     MetaUtils.h
     MiniQueue.h

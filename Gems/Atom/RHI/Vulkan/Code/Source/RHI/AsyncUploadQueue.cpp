@@ -96,7 +96,7 @@ namespace AZ
             uploadFence->Init(device, RHI::FenceState::Reset);
             CommandQueue::Command command = [=, &device](void* queue)
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "Upload Buffer");
+                AZ_PROFILE_SCOPE(AzRender, "Upload Buffer");
                 size_t pendingByteOffset = 0;
                 size_t pendingByteCount = byteCount;
                 FramePacket* framePacket = nullptr;
@@ -110,7 +110,7 @@ namespace AZ
 
                 while (pendingByteCount > 0)
                 {
-                    AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "Upload Buffer Chunk");
+                    AZ_PROFILE_SCOPE(AzRender, "Upload Buffer Chunk");
 
                     framePacket = BeginFramePacket(vulkanQueue);
                     const size_t bytesToCopy = AZStd::min(pendingByteCount, m_descriptor.m_stagingSizeInBytes);
@@ -173,7 +173,7 @@ namespace AZ
             auto* image = static_cast<Image*>(request.m_image);
             auto& device = static_cast<Device&>(GetDevice());
 
-            const uint16_t startMip = residentMip - 1;
+            const uint16_t startMip = static_cast<uint16_t>(residentMip - 1);
             const uint16_t endMip = static_cast<uint16_t>(residentMip - request.m_mipSlices.size());
 
             RHI::Ptr<Fence> uploadFence = Fence::Create();
@@ -181,7 +181,7 @@ namespace AZ
 
             CommandQueue::Command command = [=, &device](void* queue)
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "Upload Image");
+                AZ_PROFILE_SCOPE(AzRender, "Upload Image");
 
                 Queue* vulkanQueue = static_cast<Queue*>(queue);
                 FramePacket* framePacket = BeginFramePacket(vulkanQueue);
@@ -257,7 +257,7 @@ namespace AZ
 
                                 // Copy subresource data to staging memory.
                                 {
-                                    AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "Copy CPU image");
+                                    AZ_PROFILE_SCOPE(AzRender, "Copy CPU image");
                                     uint8_t* stagingDataStart = reinterpret_cast<uint8_t*>(framePacket->m_stagingBuffer->GetBufferMemoryView()->Map(RHI::HostMemoryAccess::Write)) + framePacket->m_dataOffset;
                                     for (uint32_t row = 0; row < subresourceLayout.m_rowCount; ++row)
                                     {
@@ -277,7 +277,7 @@ namespace AZ
                                 copyDescriptor.m_sourceSize.m_depth = 1;
                                 copyDescriptor.m_destinationImage = image;
                                 copyDescriptor.m_destinationSubresource.m_mipSlice = curMip;
-                                copyDescriptor.m_destinationSubresource.m_arraySlice = arraySlice;
+                                copyDescriptor.m_destinationSubresource.m_arraySlice = static_cast<uint16_t>(arraySlice);
                                 copyDescriptor.m_destinationOrigin.m_left = 0;
                                 copyDescriptor.m_destinationOrigin.m_top = 0;
                                 copyDescriptor.m_destinationOrigin.m_front = depth;
@@ -309,7 +309,7 @@ namespace AZ
                                 copyDescriptor.m_sourceSize.m_depth = 1;
                                 copyDescriptor.m_destinationImage = image;
                                 copyDescriptor.m_destinationSubresource.m_mipSlice = curMip;
-                                copyDescriptor.m_destinationSubresource.m_arraySlice = arraySlice;
+                                copyDescriptor.m_destinationSubresource.m_arraySlice = static_cast<uint16_t>(arraySlice);
                                 copyDescriptor.m_destinationOrigin.m_left = 0;
                                 copyDescriptor.m_destinationOrigin.m_top = 0;
                                 copyDescriptor.m_destinationOrigin.m_front = depth;
@@ -332,7 +332,7 @@ namespace AZ
 
                                     // Copy subresource data to staging memory.
                                     {
-                                        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "Copy CPU image");
+                                        AZ_PROFILE_SCOPE(AzRender, "Copy CPU image");
 
                                         uint8_t* stagingDataStart = reinterpret_cast<uint8_t*>(framePacket->m_stagingBuffer->GetBufferMemoryView()->Map(RHI::HostMemoryAccess::Write));
                                         stagingDataStart += framePacket->m_dataOffset;
@@ -458,7 +458,7 @@ namespace AZ
 
         AsyncUploadQueue::FramePacket* AsyncUploadQueue::BeginFramePacket(Queue* queue)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
             AZ_Assert(!m_recordingFrame, "The previous frame packet isn't ended.");
             auto& device = static_cast<Device&>(GetDevice());
 
@@ -478,7 +478,7 @@ namespace AZ
 
         void AsyncUploadQueue::EndFramePacket(Queue* queue, Semaphore* semaphoreToSignal /*=nullptr*/)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
             AZ_Assert(m_recordingFrame, "The frame packet wasn't started. You need to call StartFramePacket first.");
 
             m_commandList->EndCommandBuffer();
@@ -644,7 +644,7 @@ namespace AZ
 
         void AsyncUploadQueue::ProcessCallback(const RHI::AsyncWorkHandle& handle)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
             AZStd::unique_lock<AZStd::mutex> lock(m_callbackListMutex);
             auto findIter = m_callbackList.find(handle);
             if (findIter != m_callbackList.end())

@@ -8,7 +8,6 @@
 
 # shared by other platforms:
 ly_associate_package(PACKAGE_NAME ilmbase-2.3.0-rev4-multiplatform                  TARGETS ilmbase                     PACKAGE_HASH 97547fdf1fbc4d81b8ccf382261f8c25514ed3b3c4f8fd493f0a4fa873bba348)
-ly_associate_package(PACKAGE_NAME hdf5-1.0.11-rev2-multiplatform                    TARGETS hdf5                        PACKAGE_HASH 11d5e04df8a93f8c52a5684a4cacbf0d9003056360983ce34f8d7b601082c6bd)
 ly_associate_package(PACKAGE_NAME assimp-5.0.1-rev11-multiplatform                  TARGETS assimplib                   PACKAGE_HASH 1a9113788b893ef4a2ee63ac01eb71b981a92894a5a51175703fa225f5804dec)
 ly_associate_package(PACKAGE_NAME squish-ccr-20150601-rev3-multiplatform            TARGETS squish-ccr                  PACKAGE_HASH c878c6c0c705e78403c397d03f5aa7bc87e5978298710e14d09c9daf951a83b3)
 ly_associate_package(PACKAGE_NAME ASTCEncoder-2017_11_14-rev2-multiplatform         TARGETS ASTCEncoder                 PACKAGE_HASH c240ffc12083ee39a5ce9dc241de44d116e513e1e3e4cc1d05305e7aa3bdc326)
@@ -28,11 +27,11 @@ ly_associate_package(PACKAGE_NAME xxhash-0.7.4-rev1-multiplatform               
 ly_associate_package(PACKAGE_NAME PVRTexTool-4.24.0-rev4-multiplatform              TARGETS PVRTexTool                  PACKAGE_HASH d0d6da61c7557de0d2c71fc35ba56c3be49555b703f0e853d4c58225537acf1e)
 
 # platform-specific:
-ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxc-1.6.2104-o3de-rev2-mac   TARGETS DirectXShaderCompilerDxc    PACKAGE_HASH 2bede9a7ef3573027c005e38139237559eebf845c13ffb54c33c5b8675f962e2)
+ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxc-1.6.2104-o3de-rev3-mac   TARGETS DirectXShaderCompilerDxc    PACKAGE_HASH 3f77367dbb0342136ec4ebbd44bc1fedf7198089a0f83c5631248530769b2be6)
 ly_associate_package(PACKAGE_NAME SPIRVCross-2021.04.29-rev1-mac                    TARGETS SPIRVCross                  PACKAGE_HASH 78c6376ed2fd195b9b1f5fb2b56e5267a32c3aa21fb399e905308de470eb4515)
 ly_associate_package(PACKAGE_NAME freetype-2.10.4.14-mac-ios                        TARGETS freetype                    PACKAGE_HASH 67b4f57aed92082d3fd7c16aa244a7d908d90122c296b0a63f73e0a0b8761977)
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-mac-ios                             TARGETS tiff                        PACKAGE_HASH a23ae1f8991a29f8e5df09d6d5b00d7768a740f90752cef465558c1768343709)
-ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev3-mac                     TARGETS AWSNativeSDK                PACKAGE_HASH 21920372e90355407578b45ac19580df1463a39a25a867bcd0ffd8b385c8254a)
+ly_associate_package(PACKAGE_NAME AWSNativeSDK-1.7.167-rev4-mac                     TARGETS AWSNativeSDK                PACKAGE_HASH 89e1651cde6b4e6bd80cdb96ed6b624accad9f9688ff38bfca226777f4fcb678)
 ly_associate_package(PACKAGE_NAME Lua-5.3.5-rev6-mac                                TARGETS Lua                         PACKAGE_HASH b9079fd35634774c9269028447562c6b712dbc83b9c64975c095fd423ff04c08)
 ly_associate_package(PACKAGE_NAME PhysX-4.1.2.29882248-rev3-mac                     TARGETS PhysX                       PACKAGE_HASH 5e092a11d5c0a50c4dd99bb681a04b566a4f6f29aa08443d9bffc8dc12c27c8e)
 ly_associate_package(PACKAGE_NAME etc2comp-9cd0f9cae0-rev1-mac                      TARGETS etc2comp                    PACKAGE_HASH 1966ab101c89db7ecf30984917e0a48c0d02ee0e4d65b798743842b9469c0818)

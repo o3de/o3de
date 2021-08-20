@@ -63,7 +63,7 @@ protected:
 
     void Undo([[maybe_unused]] bool bUndo) override
     {
-        for (int i = 0, iLinkSize(m_Links.size()); i < iLinkSize; ++i)
+        for (int i = 0, iLinkSize = static_cast<int>(m_Links.size()); i < iLinkSize; ++i)
         {
             SLink& link = m_Links[i];
             CBaseObject* pObj = GetIEditor()->GetObjectManager()->FindObject(link.entityID);
@@ -497,7 +497,7 @@ bool CEntityObject::HitTestRect(HitContext& hc)
 //////////////////////////////////////////////////////////////////////////
 int CEntityObject::MouseCreateCallback(CViewport* view, EMouseEvent event, QPoint& point, int flags)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
 
     if (event == eMouseMove || event == eMouseLDown)
     {
@@ -1217,7 +1217,7 @@ XmlNodeRef CEntityObject::Export([[maybe_unused]] const QString& levelPath, XmlN
     if (!m_links.empty())
     {
         XmlNodeRef linksNode = objNode->newChild("EntityLinks");
-        for (int i = 0, num = m_links.size(); i < num; i++)
+        for (size_t i = 0, num = m_links.size(); i < num; i++)
         {
             if (m_links[i].target)
             {
@@ -1283,7 +1283,7 @@ void CEntityObject::UpdateVisibility(bool bVisible)
     CBaseObject::UpdateVisibility(bVisible);
 
     bool bVisibleWithSpec = bVisible && !IsHiddenBySpec();
-    if (bVisibleWithSpec != m_bVisible)
+    if (bVisibleWithSpec != static_cast<bool>(m_bVisible))
     {
         m_bVisible = bVisibleWithSpec;
     }
@@ -1368,8 +1368,8 @@ void CEntityObject::PostClone(CBaseObject* pFromObject, CObjectCloneContext& ctx
     // Clone event targets.
     if (!pFromEntity->m_eventTargets.empty())
     {
-        int numTargets = pFromEntity->m_eventTargets.size();
-        for (int i = 0; i < numTargets; i++)
+        size_t numTargets = pFromEntity->m_eventTargets.size();
+        for (size_t i = 0; i < numTargets; i++)
         {
             CEntityEventTarget& et = pFromEntity->m_eventTargets[i];
             CBaseObject* pClonedTarget = ctx.FindClone(et.target);
@@ -1386,7 +1386,7 @@ void CEntityObject::PostClone(CBaseObject* pFromObject, CObjectCloneContext& ctx
     // Clone links.
     if (!pFromEntity->m_links.empty())
     {
-        int numTargets = pFromEntity->m_links.size();
+        int numTargets = static_cast<int>(pFromEntity->m_links.size());
         for (int i = 0; i < numTargets; i++)
         {
             CEntityLink& et = pFromEntity->m_links[i];
@@ -1437,7 +1437,7 @@ void CEntityObject::RemoveAllEntityLinks()
 {
     while (!m_links.empty())
     {
-        RemoveEntityLink(m_links.size() - 1);
+        RemoveEntityLink(static_cast<int>(m_links.size() - 1));
     }
     m_links.clear();
     SetModified(false);
@@ -1448,7 +1448,7 @@ void CEntityObject::ReleaseEventTargets()
 {
     while (!m_eventTargets.empty())
     {
-        RemoveEventTarget(m_eventTargets.size() - 1, false);
+        RemoveEventTarget(static_cast<int>(m_eventTargets.size() - 1), false);
     }
     m_eventTargets.clear();
     SetModified(false);
@@ -1518,7 +1518,7 @@ void CEntityObject::SaveLink(XmlNodeRef xmlNode)
     }
 
     XmlNodeRef linksNode = xmlNode->newChild("EntityLinks");
-    for (int i = 0, num = m_links.size(); i < num; i++)
+    for (size_t i = 0, num = m_links.size(); i < num; i++)
     {
         XmlNodeRef linkNode = linksNode->newChild("Link");
         linkNode->setAttr("TargetId", m_links[i].targetId);
@@ -1534,26 +1534,26 @@ void CEntityObject::OnObjectEvent(CBaseObject* target, int event)
     if (event == CBaseObject::ON_DELETE)
     {
         // Find this target in events list and remove.
-        int numTargets = m_eventTargets.size();
+        int numTargets = static_cast<int>(m_eventTargets.size());
         for (int i = 0; i < numTargets; i++)
         {
             if (m_eventTargets[i].target == target)
             {
                 RemoveEventTarget(i);
-                numTargets = m_eventTargets.size();
+                numTargets = static_cast<int>(m_eventTargets.size());
                 i--;
             }
         }
     }
     else if (event == CBaseObject::ON_PREDELETE)
     {
-        int numTargets = m_links.size();
+        int numTargets = static_cast<int>(m_links.size());
         for (int i = 0; i < numTargets; i++)
         {
             if (m_links[i].target == target)
             {
                 RemoveEntityLink(i);
-                numTargets = m_eventTargets.size();
+                numTargets = static_cast<int>(m_eventTargets.size());
                 i--;
             }
         }
@@ -1589,7 +1589,7 @@ int CEntityObject::AddEventTarget(CBaseObject* target, const QString& event, con
     m_eventTargets.push_back(et);
 
     SetModified(false);
-    return m_eventTargets.size() - 1;
+    return static_cast<int>(m_eventTargets.size() - 1);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1659,13 +1659,13 @@ int CEntityObject::AddEntityLink(const QString& name, GUID targetEntityId)
 
     SetModified(false);
 
-    return m_links.size() - 1;
+    return static_cast<int>(m_links.size() - 1);
 }
 
 //////////////////////////////////////////////////////////////////////////
 bool CEntityObject::EntityLinkExists(const QString& name, GUID targetEntityId)
 {
-    for (int i = 0, num = m_links.size(); i < num; ++i)
+    for (size_t i = 0, num = m_links.size(); i < num; ++i)
     {
         if (m_links[i].targetId == targetEntityId && name.compare(m_links[i].name, Qt::CaseInsensitive) == 0)
         {

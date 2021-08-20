@@ -29,7 +29,7 @@ namespace Maestro
 {
     /*static*/ AZ::ScriptTimePoint EditorSequenceComponent::s_lastPropertyRefreshTime;
     /*static*/ const double        EditorSequenceComponent::s_refreshPeriodMilliseconds = 200.0;  // 5 Hz refresh rate
-    /*static*/ const int           EditorSequenceComponent::s_invalidSequenceId = -1;
+    /*static*/ const uint32        EditorSequenceComponent::s_invalidSequenceId = std::numeric_limits<uint32>::max();
 
     namespace ClassConverters
     {

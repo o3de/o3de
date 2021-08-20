@@ -46,6 +46,8 @@ namespace AtomToolsFramework
         AtomToolsApplication(int* argc, char*** argv);
         ~AtomToolsApplication();
 
+        virtual bool LaunchLocalServer();
+
         //////////////////////////////////////////////////////////////////////////
         // AzFramework::Application
         void CreateReflectionManager() override;
@@ -106,8 +108,6 @@ namespace AtomToolsFramework
         virtual void UnloadSettings();
         virtual void CompileCriticalAssets();
         virtual void ProcessCommandLine(const AZ::CommandLine& commandLine);
-        virtual bool LaunchDiscoveryService();
-        virtual void StartInternal();
 
         static void PyIdleWaitFrames(uint32_t frames);
 

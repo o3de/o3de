@@ -1228,7 +1228,7 @@ void CLog::CreateBackupFile() const
 
         while (!fileSystem->Eof(inFileHandle))
         {
-            uint8 c = AZ::IO::GetC(inFileHandle);
+            uint8 c = static_cast<uint8>(AZ::IO::GetC(inFileHandle));
 
             if (c == '\"')
             {

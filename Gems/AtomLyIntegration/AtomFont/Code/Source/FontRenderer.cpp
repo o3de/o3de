@@ -235,12 +235,12 @@ int AZ::FontRenderer::GetGlyph(GlyphBitmap* glyphBitmap, int* horizontalAdvance,
 
     if (glyphWidth)
     {
-        *glyphWidth = m_glyph->bitmap.width;
+        *glyphWidth = static_cast<uint8_t>(m_glyph->bitmap.width);
     }
 
     if (glyphHeight)
     {
-        *glyphHeight = m_glyph->bitmap.rows;
+        *glyphHeight = static_cast<uint8_t>(m_glyph->bitmap.rows);
     }
 
     unsigned char* buffer = glyphBitmap->GetBuffer();

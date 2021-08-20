@@ -89,8 +89,9 @@ namespace EMotionFX
             AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(&AzToolsFramework::PropertyTypeRegistrationMessages::RegisterPropertyType, handler);
         }
         return propertyHandlers;
-#endif
+#else
         return AZStd::vector<AzToolsFramework::PropertyHandlerBase*> {};
+#endif
     }
 
 

@@ -87,9 +87,6 @@
 #define AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING AZ_POP_DISABLE_WARNING
 
 #   define AZ_FORCE_INLINE  __forceinline
-#if !defined(_DEBUG)
-#   pragma warning(disable:4714) //warning C4714 marked as __forceinline not inlined. Sadly this happens when LTCG during linking. We tried to NOT use force inline but VC 2012 is bad at inlining.
-#endif
 
 /// Aligns a declaration.
 #   define AZ_ALIGN(_decl, _alignment) \

@@ -7,6 +7,8 @@
  */
 #include <Atom/RHI/AsyncWorkQueue.h>
 
+#include <AzCore/Debug/Profiler.h>
+
 namespace AZ
 {
     namespace RHI
@@ -124,7 +126,7 @@ namespace AZ
                 return;
             }
 
-            AZ_PROFILE_FUNCTION_IDLE(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
 
             AZStd::unique_lock<AZStd::mutex> lock(m_waitWorkItemMutex);
             m_waitWorkItemCondition.wait(lock, [&]() {return HasFinishedWork(workHandle); });

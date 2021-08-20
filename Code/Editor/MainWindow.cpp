@@ -97,6 +97,7 @@ AZ_POP_DISABLE_WARNING
 #include "ActionManager.h"
 
 #include <ImGuiBus.h>
+#include <LmbrCentral/Audio/AudioSystemComponentBus.h>
 
 using namespace AZ;
 using namespace AzQtComponents;
@@ -1474,25 +1475,22 @@ int MainWindow::ViewPaneVersion() const
 
 void MainWindow::OnStopAllSounds()
 {
-    Audio::SAudioRequest oStopAllSoundsRequest;
-    Audio::SAudioManagerRequestData<Audio::eAMRT_STOP_ALL_SOUNDS>   oStopAllSoundsRequestData;
-    oStopAllSoundsRequest.pData = &oStopAllSoundsRequestData;
-
-    CryLogAlways("<Audio> Executed \"Stop All Sounds\" command.");
-    Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequest, oStopAllSoundsRequest);
+    LmbrCentral::AudioSystemComponentRequestBus::Broadcast(&LmbrCentral::AudioSystemComponentRequestBus::Events::GlobalStopAllSounds);
 }
 
 void MainWindow::OnRefreshAudioSystem()
 {
-    QString sLevelName = GetIEditor()->GetGameEngine()->GetLevelName();
+    AZStd::string levelName;
+    AzToolsFramework::EditorRequestBus::BroadcastResult(levelName, &AzToolsFramework::EditorRequestBus::Events::GetLevelName);
+    AZStd::to_lower(levelName.begin(), levelName.end());
 
-    if (QString::compare(sLevelName, "Untitled", Qt::CaseInsensitive) == 0)
+    if (levelName == "untitled")
     {
-        // Rather pass nullptr to indicate that no level is loaded!
-        sLevelName = QString();
+        levelName.clear();
     }
 
-    Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::RefreshAudioSystem, sLevelName.toUtf8().data());
+    LmbrCentral::AudioSystemComponentRequestBus::Broadcast(
+        &LmbrCentral::AudioSystemComponentRequestBus::Events::GlobalRefreshAudio, AZStd::string_view{ levelName });
 }
 
 void MainWindow::SaveLayout()
@@ -1674,7 +1672,7 @@ void MainWindow::OnUpdateConnectionStatus()
         tooltip += m_connectionListener->LastAssetProcessorTask().c_str();
         tooltip += "\n";
         AZStd::set<AZStd::string> failedJobs = m_connectionListener->FailedJobsList();
-        int failureCount = failedJobs.size();
+        int failureCount = static_cast<int>(failedJobs.size());
         if (failureCount)
         {
             tooltip += "\n Failed Jobs\n";

@@ -28,6 +28,12 @@ int main(int argc, char** argv)
     AzQtComponents::AzQtApplication::InitializeDpiScaling();
 
     ShaderManagementConsole::ShaderManagementConsoleApplication app(&argc, &argv);
+    if (!app.LaunchLocalServer())
+    {
+        return 0;
+    }
+
+    app.installEventFilter(new AzQtComponents::GlobalEventFilter(&app));
 
     AZ::IO::FixedMaxPath engineRootPath;
     if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
@@ -35,13 +41,10 @@ int main(int argc, char** argv)
         settingsRegistry->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
     }
 
-    auto globalEventFilter = new AzQtComponents::GlobalEventFilter(&app);
-    app.installEventFilter(globalEventFilter);
-
     AzQtComponents::StyleManager styleManager(&app);
     styleManager.initialize(&app, engineRootPath);
 
-    app.Start({});
+    app.Start(AZ::ComponentApplication::Descriptor{});
     app.exec();
     app.Stop();
     return 0;
