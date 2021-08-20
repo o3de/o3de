@@ -24,7 +24,6 @@
                     "ShaderInputName": "m_frameBuffer"
                 },
                 { // Used to get the transform from screen space to world space.
-                    // If DepthLinear is not availbale - connect to another viewport (non MSAA) image.
                     "Name": "DepthLinear",
                     "SlotType": "Input",
                     "ShaderInputName": "m_linearDepth",

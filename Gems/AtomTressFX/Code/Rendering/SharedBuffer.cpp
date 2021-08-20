@@ -67,7 +67,7 @@ namespace AZ
         {
             SrgBufferDescriptor  descriptor = SrgBufferDescriptor(
                 RPI::CommonBufferPoolType::ReadWrite, RHI::Format::Unknown,
-                sizeof(float), m_sizeInBytes / sizeof(float),
+                sizeof(float), uint32_t(m_sizeInBytes / sizeof(float)),
                 Name{ "HairSharedDynamicBuffer" }, Name{ "m_skinnedHairSharedBuffer" }, 0, 0
             );
             m_buffer = Hair::UtilityClass::CreateBuffer("Hair Gem", descriptor, nullptr);

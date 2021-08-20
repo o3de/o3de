@@ -325,7 +325,8 @@
                 {
                     // This pass copies the updated depth buffer (now contains hair depth) to linear depth texture
                     // for downstream passes to use. This can be optimized even further by writing into the stencil 
-                    // buffer pixels that were touched by HairPPLLResolvePass.
+                    // buffer pixels that were touched by HairPPLLResolvePass hence preventing depth update unless
+                    // it is hair.
                     "Name": "DepthToDepthLinearPass",
                     "TemplateName": "DepthToLinearTemplate",
                     "Enabled": true,

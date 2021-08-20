@@ -215,9 +215,6 @@ namespace AZ
                     }
                 }
 
-                // Optional - move this to be done by the feature processor
- //               m_renderObject->SetFrameDeltaTime(deltaTime);
-
                 // Update the enable flag for hair render object
                 // The enable flag depends on the visibility of render actor instance and the flag of hair configuration.
                 bool actorVisible = false;
@@ -288,9 +285,9 @@ namespace AZ
                     return false;
                 }
 
-                const u32 numBones = skeleton->GetNumNodes();
+                const uint32_t numBones = uint32_t(skeleton->GetNumNodes());
                 globalNameToIndexMap.reserve(numBones);
-                for (u32 i = 0; i < numBones; ++i)
+                for (uint32_t i = 0; i < numBones; ++i)
                 {
                     const char* boneName = skeleton->GetNode(i)->GetName();
                     globalNameToIndexMap[boneName] = i;
