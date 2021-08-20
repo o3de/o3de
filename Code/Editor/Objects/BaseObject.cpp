@@ -1515,8 +1515,8 @@ void CBaseObject::Serialize(CObjectArchive& ar)
         SetFrozen(bFrozen);
         SetHidden(bHidden);
 
-        ar.SetResolveCallback(this, parentId, AZStd::bind(&CBaseObject::ResolveParent, this, AZStd::placeholders::_1 ));
-        ar.SetResolveCallback(this, lookatId, AZStd::bind(&CBaseObject::SetLookAt, this, AZStd::placeholders::_1));
+        ar.SetResolveCallback(this, parentId, [this](CBaseObject* parent) { ResolveParent(parent); });
+        ar.SetResolveCallback(this, lookatId, [this](CBaseObject* target) { SetLookAt(target); });
 
         InvalidateTM(0);
         SetModified(false);
