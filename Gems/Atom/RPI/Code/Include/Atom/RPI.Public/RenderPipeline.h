@@ -185,6 +185,12 @@ namespace AZ
             //! Get draw filter mask
             RHI::DrawFilterMask GetDrawFilterMask() const;
 
+            using NotificationEvent = AZ::Event<>;
+            //! Notifies a listener when a frame is about to be prepared for render, before SRGs are bound.
+            void ConnectPrepareFrameHandler(NotificationEvent::Handler& handler);
+            //! Notifies a listener when the rendering of a frame has finished
+            void ConnectEndFrameHandler(NotificationEvent::Handler& handler);
+
         private:
             RenderPipeline() = default;
 
@@ -201,6 +207,9 @@ namespace AZ
             
             void OnAddedToScene(Scene* scene);
             void OnRemovedFromScene(Scene* scene);
+
+            // Called before this pipeline is about to be rendered and before SRGs are bound.
+            void OnPrepareFrame();
 
             // Called when this pipeline is about to be rendered
             void OnStartFrame(const TickTimeInfo& tick);
@@ -259,7 +268,11 @@ namespace AZ
             RHI::DrawFilterTag m_drawFilterTag;
             // A mask to filter draw items submitted by passes of this render pipeline.
             // This mask is created from the value of m_drawFilterTag.
-            RHI::DrawFilterMask m_drawFilterMask = 0; 
+            RHI::DrawFilterMask m_drawFilterMask = 0;
+
+            // Events for notification on render state
+            NotificationEvent m_prepareFrameEvent;
+            NotificationEvent m_endFrameEvent;
         };
 
     } // namespace RPI

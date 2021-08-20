@@ -301,6 +301,11 @@ namespace AZ
             m_drawFilterMask = 0;
         }
 
+        void RenderPipeline::OnPrepareFrame()
+        {
+            m_prepareFrameEvent.Signal();
+        }
+
         void RenderPipeline::OnPassModified()
         {
             if (m_needsPassRecreate)
@@ -407,6 +412,7 @@ namespace AZ
             {
                 RemoveFromRenderTick();
             }
+            m_endFrameEvent.Signal();
         }
 
         void RenderPipeline::CollectPersistentViews(AZStd::map<ViewPtr, RHI::DrawListMask>& outViewMasks) const
@@ -513,6 +519,16 @@ namespace AZ
         RHI::DrawFilterMask RenderPipeline::GetDrawFilterMask() const
         {
             return m_drawFilterMask;
+        }
+
+        void RenderPipeline::ConnectPrepareFrameHandler(NotificationEvent::Handler& handler)
+        {
+            handler.Connect(m_prepareFrameEvent);
+        }
+
+        void RenderPipeline::ConnectEndFrameHandler(NotificationEvent::Handler& handler)
+        {
+            handler.Connect(m_endFrameEvent);
         }
 
         void RenderPipeline::SetDrawFilterTag(RHI::DrawFilterTag tag)

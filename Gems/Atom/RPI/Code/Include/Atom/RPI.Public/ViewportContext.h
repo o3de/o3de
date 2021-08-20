@@ -74,21 +74,28 @@ namespace AZ
             //! \see AzFramework::WindowRequests::GetDpiScaleFactor
             float GetDpiScalingFactor() const;
 
+            //! Gets the current vsync interval, as a divisor of the current refresh rate.
+            //! A value of 0 indicates that vsync is disabled.
+            uint32_t GetVsyncInterval() const;
+
+            //! Gets the current display refresh rate, in frames per second.
+            uint32_t GetRefreshRate() const;
+
             // SceneNotificationBus interface overrides...
             //! Ensures our default view remains set when our scene's render pipelines are modified.
             void OnRenderPipelineAdded(RenderPipelinePtr pipeline) override;
             //! Ensures our default view remains set when our scene's render pipelines are modified.
             void OnRenderPipelineRemoved(RenderPipeline* pipeline) override;
-            //! OnBeginPrepareRender is forwarded to our RenderTick notification to allow subscribers to do rendering.
-            void OnBeginPrepareRender() override;
-            //! OnFrameEnd is forwarded to our OnFrameEnd notification to allow subscribers to measure frame timing.
-            void OnFrameEnd() override;
 
             // WindowNotificationBus interface overrides...
             //! Used to fire a notification when our window resizes.
             void OnWindowResized(uint32_t width, uint32_t height) override;
             //! Used to fire a notification when our window DPI changes.
             void OnDpiScaleFactorChanged(float dpiScaleFactor) override;
+            //! Used to fire a notification when our vsync interval changes.
+            void OnVsyncIntervalChanged(uint32_t interval) override;
+            //! Used to fire a notification when our refresh rate changes.
+            void OnRefreshRateChanged(uint32_t refreshRate) override;
 
             using SizeChangedEvent = AZ::Event<AzFramework::WindowSize>;
             //! Notifies consumers when the viewport size has changed.
@@ -99,6 +106,12 @@ namespace AZ
             //! Notifies consumers when the viewport DPI scaling ratio has changed.
             //! Alternatively, connect to ViewportContextNotificationsBus and listen to ViewportContextNotifications::OnViewportDpiScalingChanged.
             void ConnectDpiScalingFactorChangedHandler(ScalarChangedEvent::Handler& handler);
+
+            using UintChangedEvent = AZ::Event<uint32_t>;
+            //! Notifies consumers when the vsync interval has changed.
+            void ConnectVsyncIntervalChangedHandler(UintChangedEvent::Handler& handler);
+            //! Notifies consumers when the refresh rate has changed.
+            void ConnectRefreshRateChangedHandler(UintChangedEvent::Handler& handler);
 
             using MatrixChangedEvent = AZ::Event<const AZ::Matrix4x4&>;
             //! Notifies consumers when the view matrix has changed.
@@ -141,15 +154,21 @@ namespace AZ
             void SetDefaultView(ViewPtr view);
             // Ensures our render pipeline's default camera matches ours.
             void UpdatePipelineView();
+            // Resets the current pipeline reference and ensures pipeline events are disconnected.
+            void ResetCurrentPipeline();
 
             ScenePtr m_rootScene;
             WindowContextSharedPtr m_windowContext;
             ViewPtr m_defaultView;
             AzFramework::WindowSize m_viewportSize;
             float m_viewportDpiScaleFactor = 1.0f;
+            uint32_t m_vsyncInterval = 1;
+            uint32_t m_refreshRate = 60;
 
             SizeChangedEvent m_sizeChangedEvent;
             ScalarChangedEvent m_dpiScalingFactorChangedEvent;
+            UintChangedEvent m_vsyncIntervalChangedEvent;
+            UintChangedEvent m_refreshRateChangedEvent;
             MatrixChangedEvent m_viewMatrixChangedEvent;
             MatrixChangedEvent::Handler m_onViewMatrixChangedHandler;
             MatrixChangedEvent m_projectionMatrixChangedEvent;
@@ -158,6 +177,9 @@ namespace AZ
             PipelineChangedEvent m_currentPipelineChangedEvent;
             ViewChangedEvent m_defaultViewChangedEvent;
             ViewportIdEvent m_aboutToBeDestroyedEvent;
+
+            AZ::Event<>::Handler m_prepareFrameHandler;
+            AZ::Event<>::Handler m_endFrameHandler;
 
             ViewportContextManager* m_manager;
             RenderPipelinePtr m_currentPipeline;

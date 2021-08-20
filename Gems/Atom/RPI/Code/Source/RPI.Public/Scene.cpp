@@ -407,6 +407,21 @@ namespace AZ
 
             SceneNotificationBus::Event(GetId(), &SceneNotification::OnBeginPrepareRender);
 
+            // Get active pipelines which need to be rendered and notify them of an impending frame.
+            AZStd::vector<RenderPipelinePtr> activePipelines;
+            {
+                // FIXME: this crashes the CPU profiler, need to figure out why
+                //AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "Scene: OnPrepareFrame");
+                for (auto& pipeline : m_pipelines)
+                {
+                    if (pipeline->NeedsRender())
+                    {
+                        activePipelines.push_back(pipeline);
+                        pipeline->OnPrepareFrame();
+                    }
+                }
+            }
+
             {
                 AZ_PROFILE_SCOPE(RPI, "m_srgCallback");
                 AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "ShaderResourceGroupCallback: SrgCallback");
@@ -418,17 +433,10 @@ namespace AZ
             }
 
             // Get active pipelines which need to be rendered and notify them frame started
-            AZStd::vector<RenderPipelinePtr> activePipelines;
+            for (const auto& pipeline : activePipelines)
             {
                 AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "Scene: OnStartFrame");
-                for (auto& pipeline : m_pipelines)
-                {
-                    if (pipeline->NeedsRender())
-                    {
-                        activePipelines.push_back(pipeline);
-                        pipeline->OnStartFrame(tickInfo);
-                    }
-                }
+                pipeline->OnStartFrame(tickInfo);
             }
 
             // Return if there is no active render pipeline
@@ -572,10 +580,12 @@ namespace AZ
         void Scene::OnFrameEnd()
         {
             AZ_ATOM_PROFILE_FUNCTION("RPI", "Scene: OnFrameEnd");
+            bool didRender = false;
             for (auto& pipeline : m_pipelines)
             {
                 if (pipeline->NeedsRender())
                 {
+                    didRender = true;
                     pipeline->OnFrameEnd();
                 }
             }
@@ -583,7 +593,10 @@ namespace AZ
             {
                 fp->OnRenderEnd();
             }
-            SceneNotificationBus::Event(GetId(), &SceneNotification::OnFrameEnd);
+            if (didRender)
+            {
+                SceneNotificationBus::Event(GetId(), &SceneNotification::OnFrameEnd);
+            }
         }
 
         void Scene::UpdateSrgs()

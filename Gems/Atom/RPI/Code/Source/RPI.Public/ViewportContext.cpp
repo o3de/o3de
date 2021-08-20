@@ -25,14 +25,13 @@ namespace AZ
             , m_viewportSize(1, 1)
         {
             m_windowContext->Initialize(device, nativeWindow);
-            AzFramework::WindowRequestBus::EventResult(
-                m_viewportSize,
-                nativeWindow,
-                &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
-            AzFramework::WindowRequestBus::EventResult(
-                m_viewportDpiScaleFactor,
-                nativeWindow,
-                &AzFramework::WindowRequestBus::Events::GetDpiScaleFactor);
+            AzFramework::WindowRequestBus::Event(nativeWindow, [this](AzFramework::WindowRequestBus::Events* window)
+            {
+                m_viewportSize = window->GetClientAreaSize();
+                m_viewportDpiScaleFactor = window->GetDpiScaleFactor();
+                m_vsyncInterval = window->GetSyncInterval();
+                m_refreshRate = window->GetDisplayRefreshRate();
+            });
             AzFramework::WindowNotificationBus::Handler::BusConnect(nativeWindow);
             AzFramework::ViewportRequestBus::Handler::BusConnect(id);
 
@@ -44,6 +43,18 @@ namespace AZ
             m_onViewMatrixChangedHandler = ViewportContext::MatrixChangedEvent::Handler([this](const AZ::Matrix4x4& matrix)
             {
                 m_viewMatrixChangedEvent.Signal(matrix);
+            });
+
+            m_prepareFrameHandler = RenderPipeline::NotificationEvent::Handler([this]()
+            {
+                ViewportContextNotificationBus::Event(GetName(), &ViewportContextNotificationBus::Events::OnRenderTick);
+                ViewportContextIdNotificationBus::Event(GetId(), &ViewportContextIdNotificationBus::Events::OnRenderTick);
+            });
+
+            m_endFrameHandler = RenderPipeline::NotificationEvent::Handler([this]()
+            {
+                ViewportContextNotificationBus::Event(GetName(), &ViewportContextNotificationBus::Events::OnFrameEnd);
+                ViewportContextIdNotificationBus::Event(GetId(), &ViewportContextIdNotificationBus::Events::OnFrameEnd);
             });
 
             SetRenderScene(renderScene);
@@ -111,7 +122,7 @@ namespace AZ
                 {
                     SceneNotificationBus::Handler::BusConnect(m_rootScene->GetId());
                 }
-                m_currentPipeline.reset();
+                ResetCurrentPipeline();
                 UpdatePipelineView();
             }
 
@@ -125,18 +136,6 @@ namespace AZ
             {
                 m_currentPipeline->AddToRenderTickOnce();
             }
-        }
-
-        void ViewportContext::OnBeginPrepareRender()
-        {
-            ViewportContextNotificationBus::Event(GetName(), &ViewportContextNotificationBus::Events::OnRenderTick);
-            ViewportContextIdNotificationBus::Event(GetId(), &ViewportContextIdNotificationBus::Events::OnRenderTick);
-        }
-
-        void ViewportContext::OnFrameEnd()
-        {
-            ViewportContextNotificationBus::Event(GetName(), &ViewportContextNotificationBus::Events::OnFrameEnd);
-            ViewportContextIdNotificationBus::Event(GetId(), &ViewportContextIdNotificationBus::Events::OnFrameEnd);
         }
 
         AZ::Name ViewportContext::GetName() const
@@ -164,6 +163,16 @@ namespace AZ
             return m_viewportDpiScaleFactor;
         }
 
+        uint32_t ViewportContext::GetVsyncInterval() const
+        {
+            return m_vsyncInterval;
+        }
+
+        uint32_t ViewportContext::GetRefreshRate() const
+        {
+            return m_refreshRate;
+        }
+
         void ViewportContext::ConnectSizeChangedHandler(SizeChangedEvent::Handler& handler)
         {
             handler.Connect(m_sizeChangedEvent);
@@ -172,6 +181,16 @@ namespace AZ
         void ViewportContext::ConnectDpiScalingFactorChangedHandler(ScalarChangedEvent::Handler& handler)
         {
             handler.Connect(m_dpiScalingFactorChangedEvent);
+        }
+
+        void ViewportContext::ConnectVsyncIntervalChangedHandler(UintChangedEvent::Handler& handler)
+        {
+            handler.Connect(m_vsyncIntervalChangedEvent);
+        }
+
+        void ViewportContext::ConnectRefreshRateChangedHandler(UintChangedEvent::Handler& handler)
+        {
+            handler.Connect(m_refreshRateChangedEvent);
         }
 
         void ViewportContext::ConnectViewMatrixChangedHandler(MatrixChangedEvent::Handler& handler)
@@ -269,10 +288,22 @@ namespace AZ
                 m_currentPipelineChangedEvent.Signal(m_currentPipeline);
             }
 
-            if (auto pipeline = GetCurrentPipeline())
+            if (m_currentPipeline)
             {
-                pipeline->SetDefaultView(m_defaultView);
+                if (!m_prepareFrameHandler.IsConnected())
+                {
+                    m_currentPipeline->ConnectPrepareFrameHandler(m_prepareFrameHandler);
+                    m_currentPipeline->ConnectEndFrameHandler(m_endFrameHandler);
+                }
+                m_currentPipeline->SetDefaultView(m_defaultView);
             }
+        }
+
+        void ViewportContext::ResetCurrentPipeline()
+        {
+            m_prepareFrameHandler.Disconnect();
+            m_endFrameHandler.Disconnect();
+            m_currentPipeline.reset();
         }
 
         RenderPipelinePtr ViewportContext::GetCurrentPipeline()
@@ -287,7 +318,7 @@ namespace AZ
             // in the event prioritization is added later
             if (pipeline->GetWindowHandle() == m_windowContext->GetWindowHandle())
             {
-                m_currentPipeline.reset();
+                ResetCurrentPipeline();
                 UpdatePipelineView();
             }
         }
@@ -296,7 +327,7 @@ namespace AZ
         {
             if (m_currentPipeline.get() == pipeline)
             {
-                m_currentPipeline.reset();
+                ResetCurrentPipeline();
                 UpdatePipelineView();
             }
         }
@@ -311,10 +342,28 @@ namespace AZ
             }
         }
 
+        void ViewportContext::OnRefreshRateChanged(uint32_t refreshRate)
+        {
+            if (m_refreshRate != refreshRate)
+            {
+                m_refreshRate = refreshRate;
+                m_refreshRateChangedEvent.Signal(m_refreshRate);
+            }
+        }
+
         void ViewportContext::OnDpiScaleFactorChanged(float dpiScaleFactor)
         {
             m_viewportDpiScaleFactor = dpiScaleFactor;
             m_dpiScalingFactorChangedEvent.Signal(dpiScaleFactor);
+        }
+
+        void ViewportContext::OnVsyncIntervalChanged(uint32_t interval)
+        {
+            if (m_vsyncInterval != interval)
+            {
+                m_vsyncInterval = interval;
+                m_vsyncIntervalChangedEvent.Signal(m_vsyncInterval);
+            }
         }
     } // namespace RPI
 } // namespace AZ
