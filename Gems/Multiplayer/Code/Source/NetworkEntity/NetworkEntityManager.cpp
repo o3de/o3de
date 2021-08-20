@@ -73,6 +73,11 @@ namespace Multiplayer
         return m_networkEntityTracker.Get(netEntityId);
     }
 
+    NetEntityId NetworkEntityManager::GetNetEntityIdById(const AZ::EntityId& entityId) const
+    {
+        return m_networkEntityTracker.Get(entityId);
+    }
+
     uint32_t NetworkEntityManager::GetEntityCount() const
     {
         return static_cast<uint32_t>(m_networkEntityTracker.size());
