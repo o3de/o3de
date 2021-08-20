@@ -290,7 +290,9 @@ namespace AZ
                         RHI::Ptr<Memory> nullMtlBufferMemPtr = nullDescriptorManager.GetNullBuffer().GetMemory();
                         mtlBuffers[bufferArrayLen] = nullMtlBufferMemPtr->GetGpuAddress<id<MTLBuffer>>();
                         mtlBufferOffsets[bufferArrayLen] = nullDescriptorManager.GetNullBuffer().GetOffset();
-                        m_resourceBindings[shaderInputBuffer.m_name].insert(ResourceBindingData{nullMtlBufferMemPtr, .m_bufferAccess = shaderInputBuffer.m_access});
+                        m_resourceBindings[shaderInputBuffer.m_name].insert(
+                            ResourceBindingData{nullMtlBufferMemPtr, .m_bufferAccess = shaderInputBuffer.m_access}
+                        );
                     }
                 }
 

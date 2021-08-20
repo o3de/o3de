@@ -307,7 +307,8 @@ namespace AZ
                                 mtlVertexArgBufferOffsets[slotIndex] = argBufferOffset;
                                 bufferVertexRegisterIdMin = AZStd::min(slotIndex, bufferVertexRegisterIdMin);
                                 bufferVertexRegisterIdMax = AZStd::max(slotIndex, bufferVertexRegisterIdMax);                                
-                                mtlRenderStagesForNullDescHeap = shaderResourceGroup->IsNullHeapNeededForVertexStage(srgResourcesVisInfo) ? mtlRenderStagesForNullDescHeap | MTLRenderStageVertex : mtlRenderStagesForNullDescHeap;
+                                mtlRenderStagesForNullDescHeap = shaderResourceGroup->IsNullHeapNeededForVertexStage(srgResourcesVisInfo) ?
+                                                    mtlRenderStagesForNullDescHeap | MTLRenderStageVertex : mtlRenderStagesForNullDescHeap;
                             }
                             
                             if( numBitsSet > 1 || srgVisInfo == RHI::ShaderStageMask::Fragment)

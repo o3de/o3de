@@ -6,4 +6,4 @@
  *
  */
 
-#define BOOTSTRAPSYSTEMCOMPONENT_PIPELINE_NAME     "passes/LowEndRenderPipeline.azasset"
+#define AZ_TRAIT_BOOTSTRAPSYSTEMCOMPONENT_PIPELINE_NAME     "passes/LowEndRenderPipeline.azasset"
