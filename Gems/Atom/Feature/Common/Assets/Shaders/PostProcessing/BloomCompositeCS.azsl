@@ -15,18 +15,17 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     Texture2D<float4>     m_inputTexture;
     RWTexture2D<float4>   m_outputTexture;
 
-    float3 m_tint;
     float  m_intensity;
-
     float2 m_sourceImageSize;
 
     // 1.0 / m_sourceImageSize
     float2 m_sourceImageTexelSize;
     float2 m_targetImageSize;
-    
+    float3 m_tint;
+
     uint m_enableBicubic;
     uint m_sourceMipLevel;
-
+    
     Sampler LinearSampler
     {
         AddressU = Clamp;
