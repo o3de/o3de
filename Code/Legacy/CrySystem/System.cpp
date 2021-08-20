@@ -1044,15 +1044,12 @@ IXmlUtils* CSystem::GetXmlUtils()
 //////////////////////////////////////////////////////////////////////////
 XmlNodeRef CSystem::LoadXmlFromFile(const char* sFilename, bool bReuseStrings)
 {
-    LOADING_TIME_PROFILE_SECTION_ARGS(sFilename);
-
     return m_pXMLUtils->LoadXmlFromFile(sFilename, bReuseStrings);
 }
 
 //////////////////////////////////////////////////////////////////////////
 XmlNodeRef CSystem::LoadXmlFromBuffer(const char* buffer, size_t size, bool bReuseStrings, bool bSuppressWarnings)
 {
-    LOADING_TIME_PROFILE_SECTION
     return m_pXMLUtils->LoadXmlFromBuffer(buffer, size, bReuseStrings, bSuppressWarnings);
 }
 

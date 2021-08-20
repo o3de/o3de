@@ -342,7 +342,7 @@ void CCryEditDoc::Load(TDocMultiArchive& arrXmlAr, const QString& szFilename)
     // Register this level and its content hash as version
     GetIEditor()->GetSettingsManager()->AddToolVersion(fileName, levelHash);
     GetIEditor()->GetSettingsManager()->RegisterEvent(loadEvent);
-    LOADING_TIME_PROFILE_SECTION(gEnv->pSystem);
+
     CAutoDocNotReady autoDocNotReady;
 
     HEAP_CHECK

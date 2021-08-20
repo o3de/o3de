@@ -397,7 +397,6 @@ void CLog::LogV(const ELogType type, [[maybe_unused]]int flags, const char* szFo
     }
 
     FUNCTION_PROFILER(GetISystem(), PROFILE_SYSTEM);
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
 
     bool bfile = false, bconsole = false;
     const char* szCommand = szFormat;
@@ -572,8 +571,6 @@ void CLog::LogPlus(const char* szFormat, ...)
     { // Vlad: SpamDelay does not work correctly with LogPlus
         return;
     }
-
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
 
     if (!szFormat)
     {
@@ -1187,7 +1184,6 @@ void CLog::LogToFile(const char* szFormat, ...)
 //////////////////////////////////////////////////////////////////////
 void CLog::CreateBackupFile() const
 {
-    LOADING_TIME_PROFILE_SECTION;
     if (!m_backupLogs)
     {
         return;

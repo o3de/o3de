@@ -432,8 +432,6 @@ AZStd::unique_ptr<AZ::DynamicModuleHandle> CSystem::LoadDynamiclibrary(const cha
 //////////////////////////////////////////////////////////////////////////
 AZStd::unique_ptr<AZ::DynamicModuleHandle> CSystem::LoadDLL(const char* dllName)
 {
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
-
     AZ_TracePrintf(AZ_TRACE_SYSTEM_WINDOW, "Loading DLL: %s", dllName);
 
     AZStd::unique_ptr<AZ::DynamicModuleHandle> handle = LoadDynamiclibrary(dllName);
@@ -612,8 +610,6 @@ AZStd::wstring GetErrorStringUnsupportedGPU(const char* gpuName, unsigned int gp
 /////////////////////////////////////////////////////////////////////////////////
 bool CSystem::InitConsole()
 {
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
-
     if (m_env.pConsole)
     {
         m_env.pConsole->Init(this);
@@ -662,7 +658,6 @@ ICVar* CSystem::attachVariable (const char* szVarName, int* pContainer, const ch
 /////////////////////////////////////////////////////////////////////////////////
 bool CSystem::InitFileSystem()
 {
-    LOADING_TIME_PROFILE_SECTION;
     using namespace AzFramework::AssetSystem;
 
     if (m_pUserCallback)
@@ -748,11 +743,8 @@ void CSystem::ShutdownFileSystem()
 /////////////////////////////////////////////////////////////////////////////////
 bool CSystem::InitFileSystem_LoadEngineFolders(const SSystemInitParams&)
 {
-    LOADING_TIME_PROFILE_SECTION;
-    {
-        LoadConfiguration(m_systemConfigName.c_str());
-        AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Loading system configuration from %s...", m_systemConfigName.c_str());
-    }
+    LoadConfiguration(m_systemConfigName.c_str());
+    AZ_Printf(AZ_TRACE_SYSTEM_WINDOW, "Loading system configuration from %s...", m_systemConfigName.c_str());
 
 #if defined(AZ_PLATFORM_ANDROID)
     AZ::Android::Utils::SetLoadFilesToMemory(m_sys_load_files_to_memory->GetString());
@@ -783,8 +775,6 @@ bool CSystem::InitFileSystem_LoadEngineFolders(const SSystemInitParams&)
 //////////////////////////////////////////////////////////////////////////
 bool CSystem::InitAudioSystem(const SSystemInitParams& initParams)
 {
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
-
     if (!Audio::Gem::AudioSystemGemRequestBus::HasHandlers())
     {
         // AudioSystem Gem has not been enabled for this project.
@@ -826,8 +816,6 @@ bool CSystem::InitAudioSystem(const SSystemInitParams& initParams)
 //////////////////////////////////////////////////////////////////////////
 bool CSystem::InitVTuneProfiler()
 {
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
-
 #ifdef PROFILE_WITH_VTUNE
 
     WIN_HMODULE hModule = LoadDLL("VTuneApi.dll");
@@ -855,7 +843,6 @@ bool CSystem::InitVTuneProfiler()
 //////////////////////////////////////////////////////////////////////////
 void CSystem::InitLocalization()
 {
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
     // Set the localization folder
     ICVar* pCVar = m_env.pConsole != 0 ? m_env.pConsole->GetCVar("sys_localization_folder") : 0;
     if (pCVar)
@@ -916,8 +903,6 @@ void CSystem::OpenBasicPaks()
         return;
     }
     bBasicPaksLoaded = true;
-
-    LOADING_TIME_PROFILE_SECTION;
 
     // open pak files
     constexpr AZStd::string_view paksFolder = "@assets@/*.pak"; // (@assets@ assumed)
@@ -1152,8 +1137,6 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
     {
         gEnv = &m_env;
     }
-
-    LOADING_TIME_PROFILE_SECTION;
 
     SetSystemGlobalState(ESYSTEM_GLOBAL_STATE_INIT);
     gEnv->mMainThreadId = GetCurrentThreadId();         //Set this ASAP on startup

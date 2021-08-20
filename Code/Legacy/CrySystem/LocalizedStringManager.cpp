@@ -872,7 +872,6 @@ inline YesNoType ToYesNoType(const char* szString)
 // Loads a string-table from a Excel XML Spreadsheet file.
 bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, uint8 nTagID, bool bReload)
 {
-    LOADING_TIME_PROFILE_SECTION_ARGS(sFileName)
     if (!m_pLanguage)
     {
         return false;

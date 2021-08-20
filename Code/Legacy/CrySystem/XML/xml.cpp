@@ -1675,8 +1675,6 @@ XmlNodeRef XmlParserImp::ParseBuffer(const char* buffer, size_t bufLen, XmlStrin
 //////////////////////////////////////////////////////////////////////////
 XmlNodeRef XmlParserImp::ParseFile(const char* filename, XmlString& errorString, bool bCleanPools)
 {
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
-
     if (!filename)
     {
         return 0;
@@ -1739,8 +1737,6 @@ XmlNodeRef XmlParserImp::ParseFile(const char* filename, XmlString& errorString,
 
     if (g_bEnableBinaryXmlLoading)
     {
-        LOADING_TIME_PROFILE_SECTION_NAMED("XMLBinaryReader::Parse");
-
         XMLBinary::XMLBinaryReader reader;
         XMLBinary::XMLBinaryReader::EResult result;
         root = reader.LoadFromBuffer(XMLBinary::XMLBinaryReader::eBufferMemoryHandling_TakeOwnership, pFileContents, fileSize, result);

@@ -58,7 +58,6 @@ namespace LegacyLevelSystem
     SpawnableLevelSystem::SpawnableLevelSystem(ISystem* pSystem)
         : m_pSystem(pSystem)
     {
-        LOADING_TIME_PROFILE_SECTION;
         CRY_ASSERT(pSystem);
 
         m_fLastLevelLoadTime = 0;
@@ -248,8 +247,6 @@ namespace LegacyLevelSystem
 
         // This scope is specifically used for marking a loading time profile section
         {
-            LOADING_TIME_PROFILE_SECTION;
-
             m_bLevelLoaded = false;
             m_lastLevelName = levelName;
             gEnv->pConsole->SetScrollMax(600);
@@ -387,8 +384,6 @@ namespace LegacyLevelSystem
         m_fLastTime = gEnv->pTimer->GetAsyncCurTime();
 
         GetISystem()->GetISystemEventDispatcher()->OnSystemEvent(ESYSTEM_EVENT_LEVEL_LOAD_START, 0, 0);
-
-        LOADING_TIME_PROFILE_SECTION(gEnv->pSystem);
 
         for (auto& listener : m_listeners)
         {
