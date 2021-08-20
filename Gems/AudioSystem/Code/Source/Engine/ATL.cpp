@@ -1155,7 +1155,6 @@ namespace Audio
         EAudioRequestStatus eResult = eARS_FAILURE;
 
         const TAudioObjectID nATLObjectID = pAudioObject->GetID();
-        const TAudioControlID nATLTriggerID = pTrigger->GetID();
         const TObjectTriggerImplStates& rTriggerImplStates = pAudioObject->GetTriggerImpls();
 
         for (auto const triggerImpl : pTrigger->m_cImplPtrs)
@@ -1357,7 +1356,6 @@ namespace Audio
     {
         EAudioRequestStatus eResult = eARS_FAILURE;
 
-        const TAudioObjectID nATLObjectID = pAudioObject->GetID();
         const TAudioControlID nATLTriggerID = pTrigger->GetID();
 
         TObjectEventSet rEvents = pAudioObject->GetActiveEvents();

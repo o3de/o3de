@@ -1858,19 +1858,6 @@ void CSystem::CreateSystemVars()
             "Usage: e_EntitySuppressionLevel [0-infinity]\n"
             "Default is 0 (off)");
 
-#if defined(WIN32) || defined(WIN64)
-    const uint32 nJobSystemDefaultCoreNumber = 8;
-#define AZ_RESTRICTED_SECTION_IMPLEMENTED
-#elif defined(AZ_RESTRICTED_PLATFORM)
-#define AZ_RESTRICTED_SECTION SYSTEMINIT_CPP_SECTION_11
-#include AZ_RESTRICTED_FILE(SystemInit_cpp)
-#endif
-#if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
-#undef AZ_RESTRICTED_SECTION_IMPLEMENTED
-#else
-    const uint32 nJobSystemDefaultCoreNumber = 4;
-#endif
-
     m_sys_firstlaunch = REGISTER_INT("sys_firstlaunch", 0, 0,
             "Indicates that the game was run for the first time.");
 

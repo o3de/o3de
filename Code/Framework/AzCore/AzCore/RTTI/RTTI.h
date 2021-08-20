@@ -517,7 +517,7 @@ namespace AZ
                 bool result = GetTypeId() == id;
 
                 using dummy = bool[];
-                dummy{ true, (IsTypeOfInternal<TArgs>(result, id), true)... };
+                [[maybe_unused]] dummy d = { true, (IsTypeOfInternal<TArgs>(result, id), true)... };
 
                 return result;
             }

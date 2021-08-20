@@ -367,14 +367,12 @@ namespace AZ
 
             const AZ::RHI::CpuTimingStatistics& cpuTimingStatistics = m_cpuTimingStatisticsWhenPause;
 
-            const AZStd::sys_time_t ticksPerSecond = AZStd::GetTimeTicksPerSecond();
-
-            const auto ShowTimeInMs = [ticksPerSecond](AZStd::sys_time_t duration)
+            const auto ShowTimeInMs = [](AZStd::sys_time_t duration)
             {
                 ImGui::Text("%.2f ms", CpuProfilerImGuiHelper::TicksToMs(duration));
             };
 
-            const auto ShowRow = [ticksPerSecond, &ShowTimeInMs](const char* regionLabel, AZStd::sys_time_t duration)
+            const auto ShowRow = [&ShowTimeInMs](const char* regionLabel, AZStd::sys_time_t duration)
             {
                 ImGui::Text(regionLabel);
                 ImGui::NextColumn();
@@ -591,7 +589,6 @@ namespace AZ
                     else if (io.MouseWheel != 0 && io.KeyCtrl) // Zooming
                     {
                         // We want zooming to be relative to the mouse's current position
-                        const float mouseVel = io.MouseWheel;
                         const float mouseX = ImGui::GetMousePos().x;
 
                         // Find the normalized position of the cursor relative to the window

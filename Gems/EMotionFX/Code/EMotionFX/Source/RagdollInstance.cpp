@@ -500,7 +500,6 @@ namespace EMotionFX
 
                     const Physics::RagdollNodeState& targetJointPose = ragdollTargetPose[ragdollJointIndex.GetValue()];
                     const Physics::RagdollNodeState& targetParentJointPose = ragdollTargetPose[ragdollParentJointIndex.GetValue()];
-                    const float strength = targetJointPose.m_strength;
 
                     if (targetParentJointPose.m_simulationType == Physics::SimulationType::Dynamic)
                     {

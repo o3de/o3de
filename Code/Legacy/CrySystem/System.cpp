@@ -1259,9 +1259,6 @@ ILocalizationManager* CSystem::GetLocalizationManager()
 //////////////////////////////////////////////////////////////////////////
 void CSystem::debug_GetCallStackRaw(void** callstack, uint32& callstackLength)
 {
-    uint32 callstackCapacity = callstackLength;
-    uint32 nNumStackFramesToSkip = 1;
-
     memset(callstack, 0, sizeof(void*) * callstackLength);
 
 #if !defined(ANDROID)
@@ -1269,6 +1266,8 @@ void CSystem::debug_GetCallStackRaw(void** callstack, uint32& callstackLength)
 #endif
 
 #if AZ_LEGACY_CRYSYSTEM_TRAIT_CAPTURESTACK
+    uint32 nNumStackFramesToSkip = 1;
+    uint32 callstackCapacity = callstackLength;
     if (callstackCapacity > 0x40)
     {
         callstackCapacity = 0x40;

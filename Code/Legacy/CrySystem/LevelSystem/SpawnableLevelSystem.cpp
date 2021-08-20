@@ -56,7 +56,6 @@ namespace LegacyLevelSystem
 
     //------------------------------------------------------------------------
     SpawnableLevelSystem::SpawnableLevelSystem(ISystem* pSystem)
-        : m_pSystem(pSystem)
     {
         CRY_ASSERT(pSystem);
 

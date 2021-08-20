@@ -290,7 +290,7 @@ namespace AzFramework
     namespace Internal
     {
         
-        static AZStd::string PrintLuaValue(lua_State* lua, int stackIdx, int depth = 0)
+        AZStd::string PrintLuaValue(lua_State* lua, int stackIdx, int depth = 0)
         {
             constexpr int MaxDepth = 4;
             if (depth > MaxDepth)

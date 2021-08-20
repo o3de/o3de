@@ -118,7 +118,7 @@ namespace AzNetworking
         const int32_t connectionLength = aznumeric_cast<int32_t>(sizeof(newConnection));
         memset(&newConnection, 0, connectionLength);
 
-        auto readCallback = [this, newConnection, connectionLength](SocketFd socketFd)
+        auto readCallback = [this, newConnection](SocketFd socketFd)
         {
             auto visitor = [this, newConnection, socketFd](ListenPort& listenPort)
             {
