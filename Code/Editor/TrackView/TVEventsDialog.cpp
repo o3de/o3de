@@ -363,7 +363,7 @@ int TVEventsModel::GetNumberOfUsageAndFirstTimeUsed(const char* eventName, float
         {
             CTrackViewTrack* pTrack = tracks.GetTrack(currentTrack);
 
-            for (int currentKey = 0; currentKey < pTrack->GetKeyCount(); ++currentKey)
+            for (unsigned int currentKey = 0; currentKey < pTrack->GetKeyCount(); ++currentKey)
             {
                 CTrackViewKeyHandle keyHandle = pTrack->GetKey(currentKey);
 

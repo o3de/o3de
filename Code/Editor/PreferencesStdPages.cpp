@@ -89,7 +89,7 @@ REFGUID CStdPreferencesClassDesc::ClassID()
 //////////////////////////////////////////////////////////////////////////
 int CStdPreferencesClassDesc::GetPagesCount()
 {
-    return m_pageCreators.size();
+    return static_cast<int>(m_pageCreators.size());
 }
 
 IPreferencesPage* CStdPreferencesClassDesc::CreateEditorPreferencesPage(int index)

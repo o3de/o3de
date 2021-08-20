@@ -32,12 +32,12 @@ namespace JsonSerializationTests
 
         AZStd::shared_ptr<NumberType> CreateDefaultInstance() override
         {
-            return AZStd::make_shared<NumberType>(0);
+            return AZStd::make_shared<NumberType>(NumberType(0));
         }
 
         AZStd::shared_ptr<NumberType> CreateFullySetInstance() override
         {
-            return AZStd::make_shared<NumberType>(4);
+            return AZStd::make_shared<NumberType>(NumberType(4));
         }
 
         AZStd::string_view GetJsonForFullySetInstance() override

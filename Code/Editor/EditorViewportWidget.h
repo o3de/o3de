@@ -54,7 +54,8 @@ namespace AZ::ViewportHelpers
 namespace AtomToolsFramework
 {
     class RenderViewportWidget;
-}
+    class ModularViewportCameraController;
+} // namespace AtomToolsFramework
 
 namespace AzToolsFramework
 {
@@ -389,3 +390,7 @@ private:
 
     AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 };
+
+//! Creates a modular camera controller in the configuration used by the editor viewport.
+SANDBOX_API AZStd::shared_ptr<AtomToolsFramework::ModularViewportCameraController> CreateModularViewportCameraController(
+    const AzFramework::ViewportId viewportId);

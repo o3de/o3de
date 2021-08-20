@@ -78,7 +78,7 @@ void CTVNewSequenceDialog::OnOK()
         return;
     }
 
-    for (int k = 0; k < GetIEditor()->GetSequenceManager()->GetCount(); ++k)
+    for (unsigned int k = 0; k < GetIEditor()->GetSequenceManager()->GetCount(); ++k)
     {
         CTrackViewSequence* pSequence = GetIEditor()->GetSequenceManager()->GetSequenceByIndex(k);
         QString fullname = pSequence->GetName();

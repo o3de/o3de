@@ -504,7 +504,7 @@ static inline QString CopyAndRemoveColorCode(const char* sText)
         *d++ = *s++;
     }
 
-    ret.resize(d - ret.data());
+    ret.resize(static_cast<int>(d - ret.data()));
 
     return QString::fromLatin1(ret);
 }

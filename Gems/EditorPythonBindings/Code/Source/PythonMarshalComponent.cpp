@@ -795,7 +795,7 @@ namespace EditorPythonBindings
                     }
                 }
 
-                AZ_Warning("python", PyDict_Size(pyObj.ptr()) == mapDataContainer->Size(mapInstance.m_address), "Python Dict size:%d does not match the size of the unordered_map:%d", pos, mapDataContainer->Size(mapInstance.m_address));
+                AZ_Warning("python", static_cast<size_t>(PyDict_Size(pyObj.ptr())) == mapDataContainer->Size(mapInstance.m_address), "Python Dict size:%d does not match the size of the unordered_map:%d", pos, mapDataContainer->Size(mapInstance.m_address));
                 outValue.m_value = mapInstance.m_address;
                 outValue.m_typeId = mapInstance.m_typeId;
                 outValue.m_traits = traits;

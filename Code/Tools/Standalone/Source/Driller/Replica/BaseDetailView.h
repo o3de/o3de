@@ -203,7 +203,7 @@ namespace Driller
 
         void RedrawGraph()
         {
-            AZ_PROFILE_TIMER("Standalone Tools", __FUNCTION__);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
             switch (m_displayMode)
             {
             case DisplayMode::Active:
@@ -518,7 +518,7 @@ namespace Driller
 
         void RefreshView(FrameNumberType frameId)
         {
-            AZ_PROFILE_TIMER("Standalone Tools", __FUNCTION__);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
             AZStd::unordered_set< Key > discoveredSet;
 
             m_tableViewOrdering.clear();

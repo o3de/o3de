@@ -190,7 +190,7 @@ namespace GradientSignal
 
     float ImageGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         AZ::Vector3 uvw = sampleParams.m_position;
 

@@ -20,13 +20,6 @@
 #include <AzCore/std/typetraits/remove_cvref.h>
 #include <AzCore/std/createdestroy.h>
 
-#if defined(AZ_COMPILER_MSVC)
-#   pragma warning( push )
-#   pragma warning( disable : 4793 ) // complaint about native code generation
-#   pragma warning( disable : 4127 ) // "conditional expression is constant"
-#   pragma warning( disable : 4275 ) // non dll-interface class 'stdext::exception' used as base for dll-interface class 'std::bad_cast'
-#endif
-
 #define AZSTD_FUNCTION_TARGET_FIX(x)
 #define AZSTD_FUNCTION_ENABLE_IF_NOT_INTEGRAL(Functor, Type)  AZStd::enable_if_t<!std::is_integral_v<Functor>, Type>
 
@@ -795,13 +788,6 @@ namespace AZStd
 #undef AZSTD_FUNCTION_ENABLE_IF_NOT_INTEGRAL
 //#undef aztypeid
 //#undef aztypeid_cmp
-
-#if defined(AZ_COMPILER_MSVC)
-#   pragma warning( default : 4793 ) // complaint about native code generation
-#   pragma warning( default : 4127 ) // "conditional expression is constant"
-#   pragma warning( default : 4275 ) // non dll-interface class 'stdext::exception' used as base for dll-interface class 'std::bad_cast'
-#   pragma warning( pop )
-#endif
 
 #endif // AZSTD_FUNCTION_BASE_HEADER
 #pragma once

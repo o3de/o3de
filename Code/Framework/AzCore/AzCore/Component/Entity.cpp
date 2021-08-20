@@ -189,7 +189,7 @@ namespace AZ
 
     void Entity::Activate()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         AZ_Assert(m_state == State::Init, "Entity should be in Init state to be Activated!");
 
@@ -226,7 +226,7 @@ namespace AZ
 
     void Entity::Deactivate()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         AZ::ComponentApplicationRequests* componentApplication = AZ::Interface<AZ::ComponentApplicationRequests>::Get();
         if (componentApplication != nullptr)
@@ -1034,7 +1034,7 @@ namespace AZ
 
     Entity::DependencySortOutcome Entity::DependencySort(ComponentArrayType& inOutComponents)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         using DependencySortInternal::ComponentInfo;
         using DependencySortInternal::InvalidEntry;

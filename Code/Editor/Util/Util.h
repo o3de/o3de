@@ -137,8 +137,6 @@ namespace Util
     {
         x = x - 1;
 
-#pragma warning(push)
-#pragma warning(disable : 4293)
         if (sizeof(TInteger) > 0)
         {
             x |= x >> 1;
@@ -163,7 +161,6 @@ namespace Util
         {
             x |= x >> 32;
         }
-#pragma warning(pop)
 
         return x + 1;
     }

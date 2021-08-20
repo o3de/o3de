@@ -52,8 +52,11 @@ namespace AtomToolsFramework
         virtual void SelectPreviousTab();
         virtual void SelectNextTab();
 
+        void SetStatusMessage(const QString& message);
+        void SetStatusWarning(const QString& message);
+        void SetStatusError(const QString& message);
+
         AzQtComponents::FancyDocking* m_advancedDockManager = nullptr;
-        QMenuBar* m_menuBar = nullptr;
         AzQtComponents::TabWidget* m_tabWidget = nullptr;
         QLabel* m_statusMessage = nullptr;
 

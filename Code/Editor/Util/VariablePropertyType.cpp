@@ -171,7 +171,7 @@ namespace Prop
         {
             // Limit step size to 1000.
             int nPrec = max(3 - int(log(m_rangeMax - m_rangeMin) / log(10.f)), 0);
-            m_step = max(m_step, powf(10.f, -nPrec));
+            m_step = max<float>(m_step, powf(10.f, static_cast<float>(-nPrec)));
         }
     }
 

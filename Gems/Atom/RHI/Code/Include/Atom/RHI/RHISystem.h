@@ -68,7 +68,6 @@ namespace AZ
             RHI::FrameScheduler m_frameScheduler;
             RHI::FrameSchedulerCompileRequest m_compileRequest;
 
-            ConstPtr<PlatformLimitsDescriptor> m_platformLimitsDescriptor = nullptr;
             RHI::CpuProfilerImpl m_cpuProfiler;
         };
     } // namespace RPI
