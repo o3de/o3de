@@ -55,37 +55,38 @@ struct HairShadeParams
     float m_roughness;
 };
 
-// Returns a float3 which is the scale for diffuse, spec term, and colored spec term.
-//
-// The diffuse term is from Kajiya.
-// 
-// The spec term is what Marschner calls "R", reflecting directly off the surface of the hair, 
-// taking the color of the light like a dielectric specular term.  This highlight is shifted 
-// towards the root of the hair.
-//
-// The colored spec term is caused by light passing through the hair, bouncing off the back, and 
-// coming back out.  It therefore picks up the color of the light.  
-// Marschner refers to this term as the "TRT" term.  This highlight is shifted towards the 
-// tip of the hair.
-//
-// vEyeDir, vLightDir and vTangentDir are all pointing out.
-// coneAngleRadians explained below.
-//
-// 
-// hair has a tiled-conical shape along its lenght.  Sort of like the following.
-// 
-// \    /
-//  \  /
-// \    /
-//  \  /  
-//
-// The angle of the cone is the last argument, in radians.  
-// It's typically in the range of 5 to 10 degrees
+//! Original TressFX enhanced Kajiya-Kay lighting model code
+//!  
+//! Returns a float3 which is the scale for diffuse, spec term, and colored spec term.
+//! 
+//! The diffuse term is from Kajiya.
+//! 
+//! The spec term is what Marschner refers to as "R", reflecting directly off the surface 
+//! of the hair, taking the color of the light like a dielectric specular term.  This 
+//! highlight is shifted towards the root of the hair.
+//! 
+//! The colored spec term is caused by light passing through the hair, bouncing off the 
+//! back, and coming back out. It therefore picks up the color of the light.  
+//! Marschner refers to this term as the "TRT" term.  This highlight is shifted towards the 
+//! tip of the hair.
+//! 
+//! vEyeDir, vLightDir and vTangentDir are all pointing out.
+//! coneAngleRadians explained below.
+//! 
+//! hair has a tiled-conical shape along its lenght.  Sort of like the following.
+//! 
+//! \    /
+//!  \  /
+//! \    /
+//!  \  /  
+//! 
+//! The angle of the cone is the last argument, in radians.  
+//! It's typically in the range of 5 to 10 degrees
 float3 ComputeDiffuseSpecFactors(
     float3 vEyeDir, float3 vLightDir, float3 vTangentDir, HairShadeParams params, 
     float coneAngleRadians = 10 * AMD_PI / 180)
 {
-    // in Kajiya's model: diffuse component: sin(t, l)
+    // In Kajiya's model: diffuse component: sin(t, l)
     float cosTL = (dot(vTangentDir, vLightDir));
     float sinTL = sqrt(1 - cosTL * cosTL);
     float diffuse = sinTL;
@@ -95,12 +96,12 @@ float3 ComputeDiffuseSpecFactors(
     float cosTE = (dot(vTangentDir, vEyeDir));
     float sinTE = sqrt(1 - cosTE * cosTE);
 
-    // primary highlight: reflected direction shift towards root (2 * coneAngleRadians)
+    // Primary highlight: reflected direction shift towards root (2 * coneAngleRadians)
     float cosTRL_root = cosTRL * cos(2 * coneAngleRadians) - sinTRL * sin(2 * coneAngleRadians);
     float sinTRL_root = sqrt(1 - cosTRL_root * cosTRL_root);
     float specular_root = max(0, cosTRL_root * cosTE + sinTRL_root * sinTE);
 
-    // secondary highlight: reflected direction shifted toward tip (3*coneAngleRadians)
+    // Secondary highlight: reflected direction shifted toward tip (3*coneAngleRadians)
     float cosTRL_tip = cosTRL * cos(-3 * coneAngleRadians) - sinTRL * sin(-3 * coneAngleRadians);
     float sinTRL_tip = sqrt(1 - cosTRL_tip * cosTRL_tip);
     float specular_tip = max(0, cosTRL_tip * cosTE + sinTRL_tip * sinTE);
@@ -116,80 +117,9 @@ float LinearizeDepth(float depthNDC, float fNear, float fFar)
     return fNear * fFar / (fFar - depthNDC * (fFar - fNear));
 }
 
-/*
-// fDepthDistanceWS is the world space distance between the point on the surface and the point in the shadow map.
-// fFiberSpacing is the assumed, average, world space distance between hair fibers.
-// fFiberRadius in the assumed average hair radius.
-// fHairAlpha is the alpha value for the hair (in terms of translucency, not coverage.)
-// Output is a number between 0 (totally shadowed) and 1 (lets everything through)
-float ComputeShadowAttenuation(float fDepthDistanceWS, float fFiberSpacing, float fFiberRadius, float fHairAlpha)
-{
-    float numFibers = fDepthDistanceWS / (fFiberSpacing * fFiberRadius);	// fiberSpacing + fiberRadius is total distance from 1 fiber to another
-
-    // if occluded by hair, there is at least one fiber
-    [flatten] if (fDepthDistanceWS > 1e-5)
-        numFibers = max(numFibers, 1);
-
-    return pow(abs(1 - fHairAlpha), numFibers);
-}
-
-float ComputeLightShadow(int lightIndex, float3 vPositionWS, in HairShadeParams params)
-{
-    if (LightData[lightIndex].ShadowMapIndex < 0)
-        return 1.f;
-    
-    float4 shadowTexCoord = MatrixMult( LightData[lightIndex].ShadowProjection, float4(vPositionWS, 1.f) );
-    shadowTexCoord.xyz /= shadowTexCoord.w;
-
-    // remember we are splitting the shadow map in 4 quarters 
-    // and at this point, everything's in -1 to 1
-    // So bring back to 0 -> 0.5 and flip the Y coordinate
-    shadowTexCoord.x = (1.0 + shadowTexCoord.x) * 0.25;
-    shadowTexCoord.y = (1.0 - shadowTexCoord.y) * 0.25;
-
-    // Bias the depth value (note, we need better depth bias settings)
-    shadowTexCoord.z -= LightData[lightIndex].ShadowParams.x;
-
-    float LinearZ = LinearizeDepth(shadowTexCoord.z, LightData[lightIndex].ShadowParams.y, LightData[lightIndex].ShadowParams.z);
-
-    if ((shadowTexCoord.y < 0) || (shadowTexCoord.y > .5)) return 1.f;
-    if ((shadowTexCoord.x < 0) || (shadowTexCoord.x > .5)) return 1.f;
-
-    // offsets of the center of the shadow map atlas
-    float offsetsX[4] = { 0.0, 1.0, 0.0, 1.0 };
-    float offsetsY[4] = { 0.0, 0.0, 1.0, 1.0 };
-    shadowTexCoord.x += offsetsX[LightData[lightIndex].ShadowMapIndex] * .5;
-    shadowTexCoord.y += offsetsY[LightData[lightIndex].ShadowMapIndex] * .5;
-
-    // Sample shadow map
-    float shadow = 0.0;
-
-    static const int kernelLevel = 2;
-    static const int kernelWidth = 2 * kernelLevel + 1;
-    [unroll] for (int i = -kernelLevel; i <= kernelLevel; i++)
-    {
-        [unroll] for (int j = -kernelLevel; j <= kernelLevel; j++)
-        {
-            float distToLight = ShadowTexture.Sample(LinearWrapSampler, shadowTexCoord.xy, int2(i, j)).r;
-            float LinearSample = LinearizeDepth(distToLight, LightData[lightIndex].ShadowParams.y, LightData[lightIndex].ShadowParams.z);
-            bool isLit = UseDepthApproximation ? LinearZ < LinearSample : shadowTexCoord.z < distToLight;
-
-            if (isLit)
-                shadow += 1.f;
-            else
-            {
-                shadow += UseDepthApproximation ? ComputeShadowAttenuation(LinearZ - LinearSample, params.m_fiberSpacing, params.m_fiberRadius, params.m_hairShadowAlpha) : 0.f;
-            }
-        }
-    }
-
-    // Average the values according to number of samples
-    shadow /= (kernelWidth * kernelWidth);
-    
-    return shadow;
-}
-*/
-
+//! The following code is for reference only and should be removed once the 
+//! Kajiya-Kay original TressFX lighting model is connected to Atom as was 
+//! done for the Marshcner lighting model.
 #define DEMO_NUMBER_OF_LIGHTS 3
 #define DEMO_NUMBER_OF_LIGHTS 3
 float3 SimplifiedHairLighting(float3 vTangent, float3 vPositionWS, float3 vViewDirWS, in HairShadeParams params, float3 vNDC)
@@ -212,7 +142,7 @@ float3 SimplifiedHairLighting(float3 vTangent, float3 vPositionWS, float3 vViewD
         float3(1,1,1)
     };
 
-    // Fake static lights not connected to Atom
+    // Static lights loop for reference - not connected to Atom
     // [To Do] - connect to Atom lighting ala HairLightTypes loop
     for (int l = 0; l < DEMO_NUMBER_OF_LIGHTS ; l++)
     {
@@ -222,6 +152,7 @@ float3 SimplifiedHairLighting(float3 vTangent, float3 vPositionWS, float3 vViewD
         float3 LightColor = lightColorVec[l]; 
         float3 L = LightVector;
 
+        // Reference usage of shadow
 //        float shadowTerm = ComputeLightShadow(l, vPositionWS, params);
 //        if (shadowTerm <= 0.f)
 //              continue;
@@ -286,44 +217,16 @@ float3 CalculateLighting(
     PassSrg::m_linearDepth.GetDimensions(dimensions.x, dimensions.y);
     screenPositionForLighting.y = 1.0 - screenPositionForLighting.y;
     screenPositionForLighting.xy = (screenPositionForLighting.xy * 0.5 + 0.5) * dimensions;
-//    screenPositionForLighting.xyz = screenPosNDC; // no go
 
-    // Light iterator
-    // screenPositionForLighting.xy in the iterator init should be in XY pixel location on screen (based on LightCullingShared)
-    // screenPositionForLighting.z should be depth 0..1 (or reverse Z in our case).
-    uint tileWidth, tileHeight;     // GOOD acording to RenderDoc dimensions
-    uint2 tileId;
-    uint bin;
-
-//    lightingData.tileIterator.TestInit(
-//        screenPositionForLighting, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData,
-//        tileWidth, tileHeight, tileId, bin
-//    );
-
-    lightingData.tileIterator.TestInit(
-        screenCoords, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData,
-        tileWidth, tileHeight, tileId, bin
-    );
-//    lightingData.tileIterator.Init(screenCoords, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
-//    lightingData.tileIterator.Init(screenPositionForLighting, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData); // DOES NOT work!! requires pixels coords
+    // Light iterator - required for the init but the culling is not used yet.
+    lightingData.tileIterator.Init(screenCoords, PassSrg::m_lightListRemapped, PassSrg::m_tileLightData);
 
     // The normal assignment will be overriden afterwards per light
     lightingData.Init(surface.position, surface.normal, surface.roughnessLinear);
 
-    // Remark: all indices were checked out ok with the exception of the bin 
-    // that seems to always be 0.  Need to verify that we are running on the correct 
-    // light array.
-//    return float3(tileWidth / 103.0, 0, 0);
-//    return float3(0, tileHeight/75.0, 0);
-//    return float3(float(tileId.x) / float(tileWidth), 0, 0);
-//    return float3(0, float(tileId.y) / float(tileHeight), 0);
-//    return float3(float(tileId.x) / float(tileWidth), float(tileId.y) / float(tileHeight), 0);
-//    return float3(0, float(bin), 0);
-//    return float3(0, float(bin) / NVLC_MAX_BINS, 0);
-
     ApplyLighting(surface, lightingData);
 
-    return lightingData.diffuseLighting + lightingData.specularLighting;// + lightingData.translucentBackLighting;
+    return lightingData.diffuseLighting + lightingData.specularLighting;
 }
 
 float3 TressFXShading(float2 pixelCoord, float depth, float3 vTangentCoverage, float3 baseColor, float thickness, int shaderParamIndex)
@@ -362,7 +265,6 @@ float3 TressFXShading(float2 pixelCoord, float depth, float3 vTangentCoverage, f
     if (o_hairLightingModel == HairLightingModel::Kajiya)
     {
         accumulatedLight = SimplifiedHairLighting(vTangent, vPositionWS, vViewDirWS, params, vNDC);    
-//        accumulatedLight = AccumulateHairLight(vTangent, vPositionWS, vViewDirWS, params, vNDC);
     }
     else
     {

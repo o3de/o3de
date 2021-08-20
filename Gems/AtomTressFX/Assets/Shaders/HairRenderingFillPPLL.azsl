@@ -51,7 +51,7 @@ ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     RWStructuredBuffer<PPLL_STRUCT> m_linkedListNodes;
     RWStructuredBuffer<uint>        m_linkedListCounter;  // [To Do] - change to RWBuffer
 
-    // Linera depth is used for getting the screen to world transform
+    // Linear depth is used for getting the screen to world transform
     Texture2D<float>                m_linearDepth;
 }
 
@@ -119,8 +119,9 @@ PS_INPUT_HAIR RenderHairVS(uint vertexId : SV_VertexID)
 //    PassSrg::m_linearDepth.GetDimensions(scrSize.x, scrSize.y);
 //    TressFXVertex tressfxVert = GetExpandedTressFXVert(vertexId, g_vEye.xyz, float2(scrSize), g_mVP);
 
-    // [To Do] Hair: the above code should replace the existing - verify that the input
-    // is valid - this might not be the case right now.  g_vViewport is aspect ratio and NOT size.
+    // [To Do] Hair: the above code should replace the existing but requires modifications to 
+    // the function GetExpandedTressFXVert. 
+    // Note that in Atom g_vViewport is aspect ratio and NOT size.
     TressFXVertex tressfxVert = GetExpandedTressFXVert(vertexId, g_vEye.xyz, g_vViewport.zw, g_mVP);
 
 
@@ -166,6 +167,7 @@ void WriteFragmentAttributes(int nAddress, int nPreviousLink, float4 vData, floa
 }
 
 
+// Use the following structure for debug purposes for outputting test results to RT
 struct PSOutput
 {
 //    float4 m_color : SV_Target0;
@@ -178,11 +180,8 @@ struct PSOutput
 // First pass of PPLL implementation
 // Builds up the linked list of hair fragments
 [earlydepthstencil]
-//PSOutput PPLLFillPS(PS_INPUT_HAIR input)
 void PPLLFillPS(PS_INPUT_HAIR input)
 {
-//    PSOutput pixelOut;
-
     // Strand Color read in is either the BaseMatColor, or BaseMatColor modulated with a color read from texture on vertex shader for base color;
     //along with modulation by the tip color  
     float4 strandColor = float4(input.StrandColor.rgb, MatBaseColor.a);
@@ -202,13 +201,13 @@ void PPLLFillPS(PS_INPUT_HAIR input)
     }
 
     //////////////////////////////////////////////////////////////////////
-    // [To Do] Hair: anti aliasing via coverage here requires TNL
+    // [To Do] Hair: anti aliasing via coverage requires work and is disabled for now
     float3 vNDC = ScreenPosToNDC(PassSrg::m_linearDepth, input.Position.xy, input.Position.z);
     uint2  dimensions;
     PassSrg::m_linearDepth.GetDimensions(dimensions.x, dimensions.y);
 //    float coverage = ComputeCoverage(input.p0p1.xy, input.p0p1.zw, vNDC.xy, float2(dimensions.x, dimensions.y));
-    /////////////////////////////////////////////////////////////////////
     float coverage = 1.0;  
+    /////////////////////////////////////////////////////////////////////
 
     // Update the alpha to have proper value (accounting for coverage, base alpha, and strand alpha)
     float alpha = coverage * strandColor.w;
@@ -231,11 +230,4 @@ void PPLLFillPS(PS_INPUT_HAIR input)
         strandColor.xyz, 
         input.Position.z
     );
-
-//    pixelOut.m_depth = input.Position.z;
-//    pixelOut.m_color = float4(input.Position.z, input.Position.z, input.Position.z, 1);// .2);
-//    pixelOut.m_color = float4(1, 0, 1, 0.5 + 0.5 * alpha);// .001);
-//    discard;
-
-//    return pixelOut;
 }

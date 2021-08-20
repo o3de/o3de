@@ -19,11 +19,6 @@
                     "Name": "Depth",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "DepthStencil"
-//                    "SlotType": "InputOutput",
-//                    "LoadStoreAction": {
-//                        "LoadAction": "Load",
-//                        "StoreAction": "Store"
-//                    }
                 },
                 {
                     "Name": "RenderTargetInputOutput",

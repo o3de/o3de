@@ -197,7 +197,7 @@ namespace AZ
                 uint32_t iterations = m_allowSimIterations ? AZ::GetMax(hairObject->GetCPULocalShapeIterations(), 1) : 1;
                 AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
 
-                for (int j = 0; j < iterations; ++j)
+                for (uint32_t j = 0; j < iterations; ++j)
                 {
                     m_dispatchItems.insert(dispatchItem);
                 }
