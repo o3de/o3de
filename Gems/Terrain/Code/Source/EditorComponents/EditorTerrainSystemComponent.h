@@ -20,7 +20,7 @@ namespace Terrain
         , private AzToolsFramework::EditorEvents::Bus::Handler
     {
     public:
-        AZ_COMPONENT(EditorTerrainSystemComponent, "{5e9f2200-9099-4325-babd-6a533a1abea8}");
+        AZ_COMPONENT(EditorTerrainSystemComponent, "{5E9f2200-9099-4325-BABD-6A533A1ABEA8}");
         static void Reflect(AZ::ReflectContext* context);
 
         EditorTerrainSystemComponent() = default;
