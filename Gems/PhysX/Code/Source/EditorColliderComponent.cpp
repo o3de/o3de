@@ -196,6 +196,7 @@ namespace PhysX
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorColliderComponent::m_shapeConfiguration, "Shape Configuration", "Configuration of the shape")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorColliderComponent::OnConfigurationChanged)
+                    ->Attribute(AZ::Edit::Attributes::RemoveNotify, &EditorColliderComponent::ValidateRigidBodyMeshGeometryType)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorColliderComponent::m_componentModeDelegate, "Component Mode", "Collider Component Mode")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorColliderComponent::m_colliderDebugDraw,
@@ -450,6 +451,7 @@ namespace PhysX
 
         UpdateShapeConfigurationScale();
         CreateStaticEditorCollider();
+        ValidateRigidBodyMeshGeometryType();
 
         m_colliderDebugDraw.ClearCachedGeometry();
 
@@ -752,15 +754,16 @@ namespace PhysX
         {
             m_componentWarnings.clear();
             m_configuration.m_materialSelection.SetMaterialSlots(Physics::MaterialSelection::SlotsArray());
+            AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
         }
-        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
     }
 
     void EditorColliderComponent::ValidateRigidBodyMeshGeometryType()
     {
         const PhysX::EditorRigidBodyComponent* entityRigidbody = m_entity->FindComponent<PhysX::EditorRigidBodyComponent>();
 
-        if (m_shapeConfiguration.m_physicsAsset.m_configuration.GetShapeType() == Physics::ShapeType::PhysicsAsset && entityRigidbody)
+
+        if (m_shapeConfiguration.m_physicsAsset.m_pxAsset && (m_shapeConfiguration.m_shapeType == Physics::ShapeType::PhysicsAsset) && entityRigidbody)
         {
             AZStd::vector<AZStd::shared_ptr<Physics::Shape>> shapes;
             Utils::GetShapesFromAsset(m_shapeConfiguration.m_physicsAsset.m_configuration, m_configuration, m_hasNonUniformScale,
@@ -768,6 +771,9 @@ namespace PhysX
 
             if (shapes.empty())
             {
+                m_componentWarnings.clear();
+                AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+                    &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
                 return;
             }
 
@@ -813,6 +819,10 @@ namespace PhysX
         {
             m_componentWarnings.clear();
         }
+
+        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree);
+
     }
 
     void EditorColliderComponent::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
