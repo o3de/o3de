@@ -255,6 +255,7 @@ SEditorSettings::SEditorSettings()
     g_TemporaryLevelName = nullptr;
 
     sliceSettings.dynamicByDefault = false;
+    prefabSettings.savePrefabsPreference = AzToolsFramework::SavePrefabsPreference::Unspecified;
 }
 
 void SEditorSettings::Connect()
@@ -669,12 +670,20 @@ void SEditorSettings::Save()
     AzFramework::ApplicationRequests::Bus::Broadcast(
         &AzFramework::ApplicationRequests::SetPrefabSystemEnabled, prefabSystem);
 
+    AzToolsFramework::PrefabEditorEntityOwnershipInterface* prefabEditorEntityOwnershipService =
+        AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+    prefabEditorEntityOwnershipService->SetSavePrefabsPreference(prefabSettings.savePrefabsPreference);
+
     SaveSettingsRegistryFile();
 }
 
 //////////////////////////////////////////////////////////////////////////
 void SEditorSettings::Load()
 {
+    AzToolsFramework::PrefabEditorEntityOwnershipInterface* prefabEditorEntityOwnershipService =
+        AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+    prefabSettings.savePrefabsPreference = prefabEditorEntityOwnershipService->GetSavePrefabsPreference();
+
     // Load from Settings Registry
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
         prefabSystem, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
@@ -1073,6 +1082,11 @@ void SEditorSettings::ConvertPath(const AZStd::string_view sourcePath, AZStd::st
     AZStd::replace(category.begin(), category.end(), '|', '\\');
 }
 
+void SEditorSettings::SetSavePrefabsPreference(AzToolsFramework::SavePrefabsPreference savePrefabsPreference)
+{
+    prefabSettings.savePrefabsPreference = savePrefabsPreference;
+}
+
 AzToolsFramework::EditorSettingsAPIRequests::SettingOutcome SEditorSettings::GetValue(const AZStd::string_view path)
 {
     if (path.find("|") == AZStd::string_view::npos)
@@ -1148,11 +1162,17 @@ void SEditorSettings::SaveSettingsRegistryFile()
 
     AZ::SettingsRegistryMergeUtils::DumperSettings dumperSettings;
     dumperSettings.m_prettifyOutput = true;
-    dumperSettings.m_jsonPointerPrefix = "/Amazon/Preferences";
+    dumperSettings.m_includeFilter = [](AZStd::string_view path)
+    {
+        AZStd::string_view amazonPrefixPath("/Amazon/Preferences");
+        AZStd::string_view o3dePrefixPath("/O3DE/Preferences");
+        return amazonPrefixPath.starts_with(path.substr(0, amazonPrefixPath.size())) ||
+            o3dePrefixPath.starts_with(path.substr(0, o3dePrefixPath.size()));
+    };
 
     AZStd::string stringBuffer;
     AZ::IO::ByteContainerStream stringStream(&stringBuffer);
-    if (!AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(*registry, "/Amazon/Preferences", stringStream, dumperSettings))
+    if (!AZ::SettingsRegistryMergeUtils::DumpSettingsRegistryToStream(*registry, "", stringStream, dumperSettings))
     {
         AZ_Warning("SEditorSettings", false, R"(Unable to save changes to the Editor Preferences registry file at "%s"\n)",
             editorPreferencesFilePath.c_str());

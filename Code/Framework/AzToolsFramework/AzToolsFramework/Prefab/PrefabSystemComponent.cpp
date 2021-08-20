@@ -753,6 +753,17 @@ namespace AzToolsFramework
             }
         }
 
+        void PrefabSystemComponent::SaveAllDirtyTemplates()
+        {
+            for (auto& [id, templateObject] : m_templateIdMap)
+            {
+                if (IsTemplateDirty(id))
+                {
+                    m_prefabLoader.SaveTemplate(id);
+                }
+            }
+        }
+
         bool PrefabSystemComponent::ConnectTemplates(
             Link& link,
             TemplateId sourceTemplateId,

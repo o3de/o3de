@@ -244,3 +244,27 @@ QTableWidget#recentLevelTable::item {
     max-height: 16px;
     qproperty-iconSize: 16px 16px;
 }
+
+#LevelSavedMessageFrame{
+    border: 1px solid green;
+    border-radius: 2px;
+    margin: 5px 20px 5px 20px;
+    padding: 5px 2px 5px 2px;
+}
+
+#SaveAllPrefabsDialog #PrefabSaveQuestionFrame, #SaveDirtyLevelDialog #LevelEntitiesSaveQuestionFrame, #SaveAllPrefabsCheckbox{
+    border: 1px solid orange;
+    border-radius: 2px;
+    margin: 5px 20px 5px 20px;
+    padding: 5px 2px 5px 2px;
+    color : white;
+}
+
+#SaveAllPrefabsDialog #FooterSeparatorLine, #SaveDirtyLevelDialog #FooterSeparatorLine{
+    color: gray;
+}
+
+#SaveAllPrefabsDialog #PrefabSavePreferenceHint, #SaveDirtyLevelDialog #PrefabSavePreferenceHint{
+    font: italic;
+    color: #999999;
+}
