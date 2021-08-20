@@ -6,7 +6,7 @@
  *
  */
 
-#include <TerrainSurfaceDataSystemComponent.h>
+#include <Components/TerrainSurfaceDataSystemComponent.h>
 #include <AzCore/Debug/Profiler.h> 
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Serialization/EditContext.h>
