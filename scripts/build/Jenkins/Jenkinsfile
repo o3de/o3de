@@ -619,7 +619,7 @@ try {
                     }
                     pipelineProperties.add(disableConcurrentBuilds())
 
-                    echo "Running repository: \"${repositoryName}\", pipeline: \"${pipelineName}\", branch: \"${branchName}\"..."
+                    echo "Running repository: \"${repositoryName}\", pipeline: \"${pipelineName}\", branch: \"${branchName}\", CHANGE_ID: \"${env.CHANGE_ID}\", GIT_COMMMIT: \"${scm.GIT_COMMIT}\"..."
 
                     CheckoutBootstrapScripts(branchName)
 
