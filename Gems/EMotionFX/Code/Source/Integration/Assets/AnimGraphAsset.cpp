@@ -53,8 +53,7 @@ namespace EMotionFX
             AnimGraphAsset* assetData = asset.GetAs<AnimGraphAsset>();
             assetData->m_emfxAnimGraph.reset(EMotionFX::GetImporter().LoadAnimGraph(
                 assetData->m_emfxNativeData.data(),
-                assetData->m_emfxNativeData.size(),
-                nullptr));
+                assetData->m_emfxNativeData.size()));
 
             if (assetData->m_emfxAnimGraph)
             {

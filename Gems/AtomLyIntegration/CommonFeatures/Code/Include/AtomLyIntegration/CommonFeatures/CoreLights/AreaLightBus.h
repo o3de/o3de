@@ -101,6 +101,12 @@ namespace AZ
 
             //! Sets if shadows should be enabled.
             virtual void SetEnableShadow(bool enabled) = 0;
+            
+            //! Returns the shadow bias.
+            virtual float GetShadowBias() const = 0;
+            
+            //! Sets the shadow bias.
+            virtual void SetShadowBias(float bias) = 0;
 
             //! Returns the maximum width and height of shadowmap.
             virtual ShadowmapSize GetShadowmapMaxSize() const = 0;

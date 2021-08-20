@@ -3072,6 +3072,7 @@ namespace AssetProcessor
 
         QElapsedTimer elapsedTimer;
         elapsedTimer.start();
+
         for (auto jobIter = m_jobsToProcess.begin(); jobIter != m_jobsToProcess.end();)
         {
             JobDetails& job = *jobIter;
@@ -3082,7 +3083,7 @@ namespace AssetProcessor
                 jobIter = m_jobsToProcess.erase(jobIter);
                 m_numOfJobsToAnalyze--;
 
-                // Update the remaining job status occasionally 
+                // Update the remaining job status occasionally
                 if (elapsedTimer.elapsed() >= MILLISECONDS_BETWEEN_PROCESS_JOBS_STATUS_UPDATE)
                 {
                     Q_EMIT NumRemainingJobsChanged(m_activeFiles.size() + m_filesToExamine.size() + m_numOfJobsToAnalyze);
@@ -3102,7 +3103,8 @@ namespace AssetProcessor
                 // Process the first job if no jobs were analyzed.
                 auto jobIter = m_jobsToProcess.begin();
                 JobDetails& job = *jobIter;
-                AZ_Warning(AssetProcessor::DebugChannel, false, " Cyclic job dependency detected. Processing job (%s, %s, %s, %s) to unblock.", 
+                AZ_Warning(
+                    AssetProcessor::DebugChannel, false, " Cyclic job dependency detected. Processing job (%s, %s, %s, %s) to unblock.",
                     job.m_jobEntry.m_databaseSourceName.toUtf8().data(), job.m_jobEntry.m_jobKey.toUtf8().data(),
                     job.m_jobEntry.m_platformInfo.m_identifier.c_str(), job.m_jobEntry.m_builderGuid.ToString<AZStd::string>().c_str());
                 ProcessJob(job);

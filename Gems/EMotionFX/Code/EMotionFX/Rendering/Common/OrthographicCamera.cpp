@@ -7,6 +7,7 @@
  */
 
 #include "OrthographicCamera.h"
+#include <MCore/Source/AABB.h>
 #include <MCore/Source/Compare.h>
 #include <MCore/Source/Distance.h>
 #include <EMotionFX/Source/EMotionFXManager.h>

@@ -42,6 +42,15 @@ namespace AZ
 
         void CommandQueue::ExecuteWork(const RHI::ExecuteWorkRequest& rhiRequest)
         {
+#if defined(PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB)
+            for (RHI::SwapChain* swapChain : rhiRequest.m_swapChainsToPresent)
+            {
+                if (!swapChain->m_resized)
+                {
+                    return;
+                }
+            }
+#endif // PAL_TRAIT_LINUX_WINDOW_MANAGER_XCB
             const ExecuteWorkRequest& request = static_cast<const ExecuteWorkRequest&>(rhiRequest);
             QueueCommand([=](void* queue) 
             {

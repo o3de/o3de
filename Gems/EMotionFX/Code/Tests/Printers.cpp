@@ -34,18 +34,6 @@ namespace AZStd
     }
 } // namespace AZStd
 
-namespace MCore
-{
-    void PrintTo(const Quaternion& quaternion, ::std::ostream* os)
-    {
-        *os << "(x: " << quaternion.x
-            << ", y: " << quaternion.y
-            << ", z: " << quaternion.z
-            << ", w: " << quaternion.w
-            << ")";
-    }
-} // namespace MCore
-
 namespace EMotionFX
 {
     void PrintTo(const Transform& transform, ::std::ostream* os)

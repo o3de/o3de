@@ -112,17 +112,8 @@ namespace WhiteBox
         AddLodBuffers(modelLodCreator);
         modelLodCreator.BeginMesh();
         modelLodCreator.SetMeshAabb(meshData.GetAabb());
-
-        // set the default material
-        if (auto materialAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::MaterialAsset>(TexturedMaterialPath.data()))
-        {
-            modelLodCreator.SetMeshMaterialAsset(materialAsset);
-        }
-        else
-        {
-            AZ_Error("CreateLodAsset", false, "Could not load material.");
-            return false;
-        }
+        
+        modelLodCreator.SetMeshMaterialSlot(OneMaterialSlotId);
 
         AddMeshBuffers(modelLodCreator);
         modelLodCreator.EndMesh();
@@ -154,6 +145,20 @@ namespace WhiteBox
         modelCreator.Begin(AZ::Data::AssetId(AZ::Uuid::CreateRandom()));
         modelCreator.SetName(ModelName);
         modelCreator.AddLodAsset(AZStd::move(m_lodAsset));
+        
+        if (auto materialAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::MaterialAsset>(TexturedMaterialPath.data()))
+        {
+            AZ::RPI::ModelMaterialSlot materialSlot;
+            materialSlot.m_stableId = OneMaterialSlotId;
+            materialSlot.m_defaultMaterialAsset = materialAsset;
+            modelCreator.AddMaterialSlot(materialSlot);
+        }
+        else
+        {
+            AZ_Error("CreateLodAsset", false, "Could not load material.");
+            return;
+        }
+
         modelCreator.End(m_modelAsset);
     }
 

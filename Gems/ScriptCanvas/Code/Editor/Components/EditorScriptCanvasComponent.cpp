@@ -474,6 +474,8 @@ namespace ScriptCanvasEditor
                 OnScriptCanvasAssetReady(memoryAsset);
             }
         }
+
+        AzToolsFramework::ToolsApplicationNotificationBus::Broadcast(&AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_EntireTree_NewContent);
     }
 
     void EditorScriptCanvasComponent::OnStartPlayInEditor()

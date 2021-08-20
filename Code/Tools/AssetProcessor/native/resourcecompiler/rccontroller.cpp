@@ -163,6 +163,11 @@ namespace AssetProcessor
         return ((!m_RCQueueSortModel.GetNextPendingJob()) && (m_RCJobListModel.jobsInFlight() == 0));
     }
 
+    void RCController::SetQueueSortOnDBSourceName()
+    {
+        m_RCQueueSortModel.SetQueueSortOnDBSourceName();
+    }
+
     void RCController::JobSubmitted(JobDetails details)
     {
         AssetProcessor::QueueElementID checkFile(details.m_jobEntry.m_databaseSourceName, details.m_jobEntry.m_platformInfo.m_identifier.c_str(), details.m_jobEntry.m_jobKey);
