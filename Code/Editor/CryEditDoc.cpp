@@ -672,7 +672,29 @@ bool CCryEditDoc::SaveModified()
     bool usePrefabSystemForLevels = false;
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
         usePrefabSystemForLevels, &AzFramework::ApplicationRequests::IsPrefabSystemForLevelsEnabled);
-    if (usePrefabSystemForLevels)
+    if (!usePrefabSystemForLevels)
+    {
+        QMessageBox saveModifiedMessageBox(AzToolsFramework::GetActiveWindow());
+        saveModifiedMessageBox.setText(QString("Save changes to %1?").arg(GetTitle()));
+        saveModifiedMessageBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+        saveModifiedMessageBox.setIcon(QMessageBox::Icon::Question);
+
+        auto button = QMessageBox::question(
+            AzToolsFramework::GetActiveWindow(), QString(), tr("Save changes to %1?").arg(GetTitle()),
+            QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+        switch (button)
+        {
+        case QMessageBox::Cancel:
+            return false;
+        case QMessageBox::Yes:
+            return DoFileSave();
+        case QMessageBox::No:
+            SetModifiedFlag(false);
+            return true;
+        }
+        Q_UNREACHABLE();
+    }
+    else
     {
         auto prefabSystemComponentInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get();
         auto prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
@@ -681,21 +703,26 @@ bool CCryEditDoc::SaveModified()
         QDialog saveModifiedMessageBox(AzToolsFramework::GetActiveWindow());
         saveModifiedMessageBox.setObjectName("SaveDirtyLevelDialog");
 
+        // Main Content section begins.
         QVBoxLayout* contentLayout = new QVBoxLayout(&saveModifiedMessageBox);
         QFrame* levelEntitiesSaveQuestionFrame = new QFrame(&saveModifiedMessageBox);
         QHBoxLayout* levelEntitiesSaveQuestionLayout = new QHBoxLayout(&saveModifiedMessageBox);
         levelEntitiesSaveQuestionFrame->setObjectName("LevelEntitiesSaveQuestionFrame");
-        QLabel* levelEntitiesSaveQuestionLabel = new QLabel("Do you want to save unsaved entities in the level?");
-        
+
+        // Add a warning icon next to save entities question.
         levelEntitiesSaveQuestionFrame->setLayout(levelEntitiesSaveQuestionLayout);
-        QPixmap warningIcon(QString(":/Cards/img/UI20/Cards/warning.svg"));
+        QPixmap warningIcon(QString(":/Notifications/warning.svg"));
         QLabel* warningIconContainer = new QLabel();
         warningIconContainer->setPixmap(warningIcon);
         warningIconContainer->setFixedWidth(warningIcon.width());
         levelEntitiesSaveQuestionLayout->addWidget(warningIconContainer);
+
+        // Ask user if they want to save entities in level.
+        QLabel* levelEntitiesSaveQuestionLabel = new QLabel("Do you want to save unsaved entities in the level?");
         levelEntitiesSaveQuestionLayout->addWidget(levelEntitiesSaveQuestionLabel);
         contentLayout->addWidget(levelEntitiesSaveQuestionFrame);
 
+        // Ask user if they want to save unsaved prefabs in the level too.
         QCheckBox* saveAllPrefabsCheckbox = new QCheckBox("Save all unsaved prefabs in the level too.");
         AzQtComponents::CheckBox::applyToggleSwitchStyle(saveAllPrefabsCheckbox);
         saveAllPrefabsCheckbox->setObjectName("SaveAllPrefabsCheckbox");
@@ -708,11 +735,15 @@ bool CCryEditDoc::SaveModified()
                     : AzToolsFramework::SavePrefabsPreference::SaveNone;
             });
         contentLayout->addWidget(saveAllPrefabsCheckbox);
+
+        // Footer section begins.
         QFrame* footerSeparatorLine = new QFrame();
         footerSeparatorLine->setObjectName("FooterSeparatorLine");
         footerSeparatorLine->setFrameShape(QFrame::HLine);
         contentLayout->addWidget(footerSeparatorLine);
         QHBoxLayout* footerLayout = new QHBoxLayout(&saveModifiedMessageBox);
+
+        // Provide option for user to remember their prefab save preference.
         QCheckBox* saveAllPrefabsPreferenceCheckBox = new QCheckBox("Remember my preference.");
         AzQtComponents::CheckBox::applyToggleSwitchStyle(saveAllPrefabsPreferenceCheckBox);
         if (savePrefabsPreference == AzToolsFramework::SavePrefabsPreference::SaveAll)
@@ -728,9 +759,7 @@ bool CCryEditDoc::SaveModified()
         footerLayout->addLayout(footerPreferenceLayout);
         QDialogButtonBox* prefabSaveConfirmationButtons = new QDialogButtonBox(QDialogButtonBox::Save | QDialogButtonBox::Cancel);
         footerLayout->addWidget(prefabSaveConfirmationButtons);
-
         contentLayout->addLayout(footerLayout);
-
         connect(prefabSaveConfirmationButtons, &QDialogButtonBox::accepted, &saveModifiedMessageBox, &QDialog::accept);
         connect(prefabSaveConfirmationButtons, &QDialogButtonBox::rejected, &saveModifiedMessageBox, &QDialog::reject);
         AzQtComponents::StyleManager::setStyleSheet(saveModifiedMessageBox.parentWidget(), QStringLiteral("style:Editor.qss"));
@@ -754,28 +783,6 @@ bool CCryEditDoc::SaveModified()
             return true;
         case QDialog::Rejected:
             return false;
-        }
-        Q_UNREACHABLE();
-    }
-    else
-    {
-        QMessageBox saveModifiedMessageBox(AzToolsFramework::GetActiveWindow());
-        saveModifiedMessageBox.setText(QString("Save changes to %1?").arg(GetTitle()));
-        saveModifiedMessageBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
-        saveModifiedMessageBox.setIcon(QMessageBox::Icon::Question);
-
-        auto button = QMessageBox::question(
-            AzToolsFramework::GetActiveWindow(), QString(), tr("Save changes to %1?").arg(GetTitle()),
-            QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
-        switch (button)
-        {
-        case QMessageBox::Cancel:
-            return false;
-        case QMessageBox::Yes:
-            return DoFileSave();
-        case QMessageBox::No:
-            SetModifiedFlag(false);
-            return true;
         }
         Q_UNREACHABLE();
     }
@@ -1360,42 +1367,6 @@ bool CCryEditDoc::SaveLevel(const QString& filename)
             if (openResult)
             {
                 AZ::IO::FileIOStream stream(tempSaveFileHandle, AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeBinary, false);
-                //SaveAllPrefabsDialog dlg(MainWindow::instance());
-                //dlg.exec();
-                /*
-                AzToolsFramework::SavePrefabsPreference savePrefabsPreference =
-                    prefabEditorEntityOwnershipInterface->GetSavePrefabsPreference();
-                if (savePrefabsPreference == AzToolsFramework::SavePrefabsPreference::Unspecified && !m_modified)
-                {
-                    QMessageBox prefabSavePreferenceBox(AzToolsFramework::GetActiveWindow());
-                    prefabSavePreferenceBox.setText(QString("Save all prefabs in %1?").arg(GetTitle()));
-                    prefabSavePreferenceBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-                    QCheckBox* checkbox = new QCheckBox("Remember my preference.");
-                    prefabSavePreferenceBox.setCheckBox(checkbox);
-                    prefabSavePreferenceBox.checkBox();
-                    int button = prefabSavePreferenceBox.exec();
-                    switch (button)
-                    {
-                    case QMessageBox::Yes:
-                        if (checkbox->checkState() == Qt::CheckState::Checked)
-                        {
-                            prefabEditorEntityOwnershipInterface->SetSavePrefabsPreference(
-                                AzToolsFramework::SavePrefabsPreference::SaveAll);
-                            gSettings.SetSavePrefabsPreference(AzToolsFramework::SavePrefabsPreference::SaveAll);
-                        }
-                        prefabEditorEntityOwnershipInterface->SetSaveAllPrefabs(true);
-                        break;
-                    case QMessageBox::No:
-                        if (checkbox->checkState() == Qt::CheckState::Checked)
-                        {
-                            prefabEditorEntityOwnershipInterface->SetSavePrefabsPreference(
-                                AzToolsFramework::SavePrefabsPreference::SaveNone);
-                            gSettings.SetSavePrefabsPreference(AzToolsFramework::SavePrefabsPreference::SaveNone);
-                        }
-                        prefabEditorEntityOwnershipInterface->SetSaveAllPrefabs(false);
-                        break;
-                    }
-                }*/
                 contentsAllSaved = prefabEditorEntityOwnershipInterface->SaveToStream(stream, AZStd::string_view(filenameStrData.data(), filenameStrData.size()));
                 stream.Close();
             }

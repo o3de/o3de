@@ -747,55 +747,65 @@ void CCryEditApp::OnFileSave()
         else if (savePrefabsPreference == AzToolsFramework::SavePrefabsPreference::Unspecified)
         {
             QDialog saveModifiedMessageBox(AzToolsFramework::GetActiveWindow());
+
+            // Main Content section begins.
             saveModifiedMessageBox.setObjectName("SaveAllPrefabsDialog");
             QBoxLayout* contentLayout = new QVBoxLayout(&saveModifiedMessageBox);
-
             QFrame* levelSavedMessageFrame = new QFrame(&saveModifiedMessageBox);
             QHBoxLayout* levelSavedMessageLayout = new QHBoxLayout(&saveModifiedMessageBox);
             levelSavedMessageFrame->setObjectName("LevelSavedMessageFrame");
+
+            // Add a checkMark icon next to the level entities saved message.
             QPixmap checkMarkIcon(QString(":/Notifications/checkmark.svg"));
-            QLabel* levelSavedSuccessfullyIcon = new QLabel();
-            levelSavedSuccessfullyIcon->setPixmap(checkMarkIcon);
-            levelSavedSuccessfullyIcon->setFixedWidth(checkMarkIcon.width());
+            QLabel* levelSavedSuccessfullyIconContainer = new QLabel();
+            levelSavedSuccessfullyIconContainer->setPixmap(checkMarkIcon);
+            levelSavedSuccessfullyIconContainer->setFixedWidth(checkMarkIcon.width());
+
+            // Add a message that level entities are saved successfully.
             QLabel* levelSavedSuccessfullyLabel = new QLabel("All entities inside level have been saved successfully.");
             levelSavedSuccessfullyLabel->setObjectName("LevelSavedSuccessfullyLabel");
-            levelSavedMessageLayout->addWidget(levelSavedSuccessfullyIcon);
+            levelSavedMessageLayout->addWidget(levelSavedSuccessfullyIconContainer);
             levelSavedMessageLayout->addWidget(levelSavedSuccessfullyLabel);
             levelSavedMessageFrame->setLayout(levelSavedMessageLayout);
 
+            
             QFrame* prefabSaveQuestionFrame = new QFrame(&saveModifiedMessageBox);
             QHBoxLayout* prefabSaveQuestionLayout = new QHBoxLayout(&saveModifiedMessageBox);
+
+            // Add a warning icon next to prefabs save question.
             QLabel* warningIconContainer = new QLabel();
-            QPixmap warningIcon(QString(":/Cards/img/UI20/Cards/warning.svg"));
+            QPixmap warningIcon(QString(":/Notifications/warning.svg"));
             warningIconContainer->setPixmap(warningIcon);
             warningIconContainer->setFixedWidth(warningIcon.width());
             prefabSaveQuestionLayout->addWidget(warningIconContainer);
+
+            // Ask if user wants all prefabs saved.
             QLabel* prefabSaveQuestionLabel = new QLabel("Do you want to save all unsaved prefabs?");
             prefabSaveQuestionFrame->setObjectName("PrefabSaveQuestionFrame");
             prefabSaveQuestionLayout->addWidget(prefabSaveQuestionLabel);
             prefabSaveQuestionFrame->setLayout(prefabSaveQuestionLayout);
-            
             contentLayout->addWidget(levelSavedMessageFrame);
             contentLayout->addWidget(prefabSaveQuestionFrame);
-            
+
+            // Footer section begins.
             QFrame* footerSeparatorLine = new QFrame();
             footerSeparatorLine->setObjectName("FooterSeparatorLine");
             footerSeparatorLine->setFrameShape(QFrame::HLine);
             contentLayout->addWidget(footerSeparatorLine);
             QHBoxLayout* footerLayout = new QHBoxLayout(&saveModifiedMessageBox);
+
+            // Provide option for user to remember their prefab save preference.
             QCheckBox* saveAllPrefabsPreference = new QCheckBox("Remember my preference.");
             AzQtComponents::CheckBox::applyToggleSwitchStyle(saveAllPrefabsPreference);
             QVBoxLayout* footerPreferenceLayout = new QVBoxLayout(&saveModifiedMessageBox);
             footerPreferenceLayout->addWidget(saveAllPrefabsPreference);
-            QLabel* prefabSavePreferenceHint = new QLabel("You can change this anytime in Edit->GlobalPreferences.");
+            QLabel* prefabSavePreferenceHint = new QLabel("You can change this anytime in Edit -> Editor Settings -> GlobalPreferences.");
             prefabSavePreferenceHint->setObjectName("PrefabSavePreferenceHint");
             footerPreferenceLayout->addWidget(prefabSavePreferenceHint);
             footerLayout->addLayout(footerPreferenceLayout);
             QDialogButtonBox* prefabSaveConfirmationButtons = new QDialogButtonBox(QDialogButtonBox::Save | QDialogButtonBox::No);
             footerLayout->addWidget(prefabSaveConfirmationButtons);
-
             contentLayout->addLayout(footerLayout);
-
             connect(prefabSaveConfirmationButtons, &QDialogButtonBox::accepted, &saveModifiedMessageBox, &QDialog::accept);
             connect(prefabSaveConfirmationButtons, &QDialogButtonBox::rejected, &saveModifiedMessageBox, &QDialog::reject);
             AzQtComponents::StyleManager::setStyleSheet(saveModifiedMessageBox.parentWidget(), QStringLiteral("style:Editor.qss"));

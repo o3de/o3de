@@ -18,7 +18,7 @@
 #include <QSettings>
 
 #include <AzToolsFramework/Editor/EditorSettingsAPIBus.h>
-#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipService.h>
+#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzCore/JSON/document.h>
 
 #include <AzQtComponents/Components/Widgets/ToolBar.h>
