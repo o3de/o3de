@@ -834,8 +834,10 @@ namespace AZ
                             {
                                 // Check whether it should be sorted by name.
                                 const uint32_t sortType = static_cast<uint32_t>(m_sortType);
+                                AZ_PUSH_DISABLE_WARNING(4296, "-Wunknown-warning-option")
                                 bool sortByName = (sortType >= static_cast<uint32_t>(ProfilerSortType::Alphabetical) &&
                                     (sortType < static_cast<uint32_t>(ProfilerSortType::AlphabeticalCount)));
+                                AZ_POP_DISABLE_WARNING
 
                                 if (ImGui::Selectable("Pass Names", sortByName))
                                 {
@@ -1011,7 +1013,7 @@ namespace AZ
             const uint32_t countNumerical = static_cast<uint32_t>(count);
             const uint32_t offset = static_cast<uint32_t>(m_sortType) - startNumerical;
 
-            if (offset < countNumerical && offset >= 0u)
+            if (offset < countNumerical)
             {
                 // Change the sorting order.
                 m_sortType = static_cast<ProfilerSortType>(((offset + 1u) % countNumerical) + startNumerical);
