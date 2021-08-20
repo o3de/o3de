@@ -1416,7 +1416,7 @@ void CEntityObject::PostClone(CBaseObject* pFromObject, CObjectCloneContext& ctx
 void CEntityObject::ResolveEventTarget(CBaseObject* object, unsigned int index)
 {
     // Find target id.
-    assert(index >= 0 && index < m_eventTargets.size());
+    assert(index < m_eventTargets.size());
     if (object)
     {
         object->AddEventListener(this);
