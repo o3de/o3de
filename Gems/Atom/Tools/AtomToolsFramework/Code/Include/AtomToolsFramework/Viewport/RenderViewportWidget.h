@@ -138,7 +138,11 @@ namespace AtomToolsFramework
         void mouseMoveEvent(QMouseEvent* event) override;
 
     private:
+        AzFramework::NativeWindowHandle GetNativeWindowHandle() const;
+
+        void SetScreen(QScreen* screen);
         void SendWindowResizeEvent();
+        void NotifyUpdateRefreshRate();
 
         // The underlying ViewportContext, our entry-point to the Atom RPI.
         AZ::RPI::ViewportContextPtr m_viewportContext;
@@ -163,5 +167,7 @@ namespace AtomToolsFramework
         const AzToolsFramework::ViewportInteraction::ViewportSettings* m_viewportSettings = nullptr;
         // Maps our internal Qt events into AzFramework InputChannels for our ViewportControllerList.
         AzToolsFramework::QtEventToAzInputMapper* m_inputChannelMapper = nullptr;
+        // Stores our current screen, used for tracking the current refresh rate.
+        QScreen* m_screen = nullptr;
     };
 } //namespace AtomToolsFramework
