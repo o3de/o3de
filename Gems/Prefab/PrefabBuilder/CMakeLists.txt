@@ -20,6 +20,9 @@ ly_add_target(
             AZ::AzCore
             AZ::AzToolsFramework
             AZ::AssetBuilderSDK
+            AZ::SceneCore
+            AZ::SceneData
+            3rdParty::RapidJSON
 )
 
 ly_add_target(

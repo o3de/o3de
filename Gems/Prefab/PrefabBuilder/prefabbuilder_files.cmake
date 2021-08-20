@@ -9,4 +9,7 @@
 set(FILES
     PrefabBuilderComponent.h
     PrefabBuilderComponent.cpp
+    IPrefabGroup.h
+    PrefabGroup.cpp
+    PrefabGroup.h
 )

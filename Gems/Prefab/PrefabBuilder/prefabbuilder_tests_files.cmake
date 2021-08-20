@@ -9,4 +9,5 @@
 set(FILES
     PrefabBuilderTests.h
     PrefabBuilderTests.cpp
+    PrefabGroupTests.cpp
 )
