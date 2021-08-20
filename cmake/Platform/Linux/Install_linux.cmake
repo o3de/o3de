@@ -15,8 +15,7 @@ function(ly_copy source_file target_directory)
         get_filename_component(target_filename "${source_file}" NAME)
         file(RPATH_CHANGE FILE "${target_directory}/${target_filename}" OLD_RPATH "\$ORIGIN/../../lib" NEW_RPATH "\$ORIGIN/..")
     endif()
-endfunction()
-]])
+endfunction()]])
 
 string(CONFIGURE "${ly_copy_template}" ly_copy_function_linux @ONLY)
 
