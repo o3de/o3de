@@ -97,14 +97,14 @@ static const char* GetModulePath()
     return getenv(gEnvName);
 }
 
-inline static void SetModulePath(const char* pModulePath)
+inline void SetModulePath(const char* pModulePath)
 {
     setenv(gEnvName, pModulePath ? pModulePath : "", true);
 }
 
 // bInModulePath is only ever set to false in RC, because rc needs to load dlls from a $PATH that
 // it has modified to include ..
-inline static HMODULE CryLoadLibrary(const char* libName, bool bLazy = false, bool bInModulePath = true)
+inline HMODULE CryLoadLibrary(const char* libName, bool bLazy = false, bool bInModulePath = true)
 {
     const char* libPath = nullptr;
     char pathBuffer[MAX_PATH] = {0};
@@ -161,7 +161,7 @@ inline static HMODULE CryLoadLibrary(const char* libName, bool bLazy = false, bo
     return module;
 }
 
-inline static bool CryFreeLibrary(void* lib)
+inline bool CryFreeLibrary(void* lib)
 {
     if (lib)
     {

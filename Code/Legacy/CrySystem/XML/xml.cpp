@@ -1756,9 +1756,9 @@ XmlNodeRef XmlParserImp::ParseFile(const char* filename, XmlString& errorString,
         {
             // not binary XML - refuse to load if in scripts dir and not in bin xml to help reduce hacking
             // wish we could compile the text xml parser out, but too much work to get everything moved over
-            AZStd::fixed_string<32> strScripts = {"Scripts/"};
+            constexpr AZStd::fixed_string<32> strScripts{"Scripts/"};
             // exclude files and PAKs from Mods folder
-            AZStd::fixed_string<8> modsStr = {"Mods/"};
+            constexpr AZStd::fixed_string<8> modsStr{"Mods/"};
             if (_strnicmp(filename, strScripts.c_str(), strScripts.length()) == 0 &&
                 _strnicmp(adjustedFilename.c_str(), modsStr.c_str(), modsStr.length()) != 0 &&
                 _strnicmp(pakPath.c_str(), modsStr.c_str(), modsStr.length()) != 0)

@@ -66,7 +66,7 @@ typedef const GUID& REFIID;
 const GUID name \
 = { l, w1, w2, { b1, b2,  b3,  b4,  b5,  b6,  b7,  b8 } }
 
-inline static REFGUID GUID_NULL()
+inline REFGUID GUID_NULL()
 {
     static GUID guid = { 0x00000000L, 0x0000, 0x0000, {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00} };
     return guid;

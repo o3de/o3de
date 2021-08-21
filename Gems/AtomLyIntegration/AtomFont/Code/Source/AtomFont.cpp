@@ -328,7 +328,6 @@ namespace
 }
 
 AZ::AtomFont::AtomFont([[maybe_unused]] ISystem* system)
-    : m_fonts()
 {
     CryLogAlways("Using FreeType %d.%d.%d", FREETYPE_MAJOR, FREETYPE_MINOR, FREETYPE_PATCH);
 
