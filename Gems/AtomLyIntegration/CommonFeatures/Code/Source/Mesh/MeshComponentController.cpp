@@ -38,7 +38,7 @@ namespace AZ
             {
                 if (classElement.GetVersion() < 2)
                 {
-                    RPI::Cullable::LodOverride lodOverride = classElement.FindElement(AZ_CRC("LodOverride"));
+                    RPI::Cullable::LodOverride lodOverride = aznumeric_cast<RPI::Cullable::LodOverride>(classElement.FindElement(AZ_CRC("LodOverride")));
                     static constexpr uint8_t old_NoLodOverride = AZStd::numeric_limits <RPI::Cullable::LodOverride>::max();
                     if (lodOverride == old_NoLodOverride)
                     {
