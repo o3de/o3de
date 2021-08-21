@@ -40,6 +40,8 @@ ly_append_configurations_options(
         # Enabling warnings that are disabled by default from /W4
         # https://docs.microsoft.com/en-us/cpp/preprocessor/compiler-warnings-that-are-off-by-default?view=vs-2019
         /we4296 # 'operator': expression is always false
+        /we5233 # explicit lambda capture 'identifier' is not used
+
         # /we4426 # optimization flags changed after including header, may be due to #pragma optimize()
         # /we4464 # relative include path contains '..'
         # /we4619 # #pragma warning: there is no warning number 'number'
