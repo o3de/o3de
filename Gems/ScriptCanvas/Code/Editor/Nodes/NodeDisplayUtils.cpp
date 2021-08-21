@@ -744,7 +744,6 @@ namespace ScriptCanvasEditor::Nodes
             return graphCanvasNodeId;
         }
 
-        auto busId = senderNode->GetBusSlotId();
         for (const auto& slot : senderNode->GetSlots())
         {
             if (slot.IsVisible())

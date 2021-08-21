@@ -1461,8 +1461,6 @@ namespace ScriptCanvas
             return slot.GetDataType();
         }
 
-        Endpoint endpoint = slot.GetEndpoint();
-
         auto connectedNodes = GetConnectedNodes(slot);
 
         for (auto endpointPair : connectedNodes)

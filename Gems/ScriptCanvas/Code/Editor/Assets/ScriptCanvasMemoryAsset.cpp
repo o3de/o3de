@@ -374,7 +374,6 @@ namespace ScriptCanvasEditor
         }
         else
         {
-            AZ::Data::AssetId assetId = asset.GetId();
             Internal::MemoryAssetSystemNotificationBus::Broadcast(&Internal::MemoryAssetSystemNotifications::OnAssetReloaded, this);
         }
     }
@@ -392,7 +391,6 @@ namespace ScriptCanvasEditor
         }
         else
         {
-            AZ::Data::AssetId assetId = asset.GetId();
             Internal::MemoryAssetSystemNotificationBus::Broadcast(&Internal::MemoryAssetSystemNotifications::OnAssetError, this);
         }
     }
@@ -505,7 +503,7 @@ namespace ScriptCanvasEditor
         m_pendingSave.emplace_back(normPath);
 
         m_assetSaveFinalizer.Reset();
-        m_assetSaveFinalizer.Start(this, fileInfo, saveInfo, onSaveCallback, AssetSaveFinalizer::OnCompleteHandler([this, saveInfo](AZ::Data::AssetId /*assetId*/)
+        m_assetSaveFinalizer.Start(this, fileInfo, saveInfo, onSaveCallback, AssetSaveFinalizer::OnCompleteHandler([saveInfo](AZ::Data::AssetId /*assetId*/)
             {
             }));
     }
