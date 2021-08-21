@@ -27,6 +27,8 @@
 #include <AzFramework/TargetManagement/TargetManagementComponent.h>
 #include <AzFramework/Visibility/OctreeSystemComponent.h>
 
+AZ_DEFINE_BUDGET(AzFramework);
+
 namespace AzFramework
 {
     AzFrameworkModule::AzFrameworkModule()

@@ -93,20 +93,17 @@ set(FILES
     Debug/AssetTracking.h
     Debug/AssetTrackingTypesImpl.h
     Debug/AssetTrackingTypes.h
+    Debug/Budget.h
+    Debug/Budget.cpp
+    Debug/BudgetsComponent.h
+    Debug/BudgetsComponent.cpp
     Debug/LocalFileEventLogger.h
     Debug/LocalFileEventLogger.cpp
-    Debug/FrameProfiler.h
-    Debug/FrameProfilerBus.h
-    Debug/FrameProfilerComponent.cpp
-    Debug/FrameProfilerComponent.h
     Debug/IEventLogger.h
     Debug/MemoryProfiler.h
     Debug/Profiler.cpp
     Debug/Profiler.h
     Debug/ProfilerBus.h
-    Debug/ProfilerDriller.cpp
-    Debug/ProfilerDriller.h
-    Debug/ProfilerDrillerBus.h
     Debug/StackTracer.h
     Debug/EventTrace.h
     Debug/EventTrace.cpp
@@ -572,8 +569,6 @@ set(FILES
     Statistics/StatisticalProfilerProxySystemComponent.cpp
     Statistics/StatisticalProfilerProxySystemComponent.h
     Statistics/StatisticsManager.h
-    Statistics/TimeDataStatisticsManager.cpp
-    Statistics/TimeDataStatisticsManager.h
     StringFunc/StringFunc.cpp
     StringFunc/StringFunc.h
     UserSettings/UserSettings.cpp

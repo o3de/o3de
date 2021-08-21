@@ -51,7 +51,6 @@
 #include <AzCore/Driller/Driller.h>
 #include <AzCore/Memory/MemoryDriller.h>
 #include <AzCore/Debug/TraceMessagesDriller.h>
-#include <AzCore/Debug/ProfilerDriller.h>
 #include <AzCore/Debug/EventTraceDriller.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Script/ScriptSystemBus.h>
@@ -918,8 +917,6 @@ namespace AZ
             {
                 m_drillerManager->Register(aznew Debug::MemoryDriller);
             }
-            // Profiler driller will consume resources only when started.
-            m_drillerManager->Register(aznew Debug::ProfilerDriller);
             // Trace messages driller will consume resources only when started.
             m_drillerManager->Register(aznew Debug::TraceMessagesDriller);
             m_drillerManager->Register(aznew Debug::EventTraceDriller);

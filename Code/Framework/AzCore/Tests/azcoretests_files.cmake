@@ -66,7 +66,6 @@ set(FILES
     SystemFile.cpp
     TaskTests.cpp
     TickBusTest.cpp
-    TimeDataStatistics.cpp
     UUIDTests.cpp
     XML.cpp
     Debug/AssetTracking.cpp

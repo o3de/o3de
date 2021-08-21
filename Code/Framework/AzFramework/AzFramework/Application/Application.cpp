@@ -25,7 +25,6 @@
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/string/regex.h>
 #include <AzCore/Serialization/DataPatch.h>
-#include <AzCore/Debug/FrameProfilerComponent.h>
 #include <AzCore/NativeUI/NativeUISystemComponent.h>
 #include <AzCore/Module/ModuleManagerBus.h>
 #include <AzCore/Interface/Interface.h>
@@ -296,7 +295,6 @@ namespace AzFramework
             azrtti_typeid<AZ::JobManagerComponent>(),
             azrtti_typeid<AZ::AssetManagerComponent>(),
             azrtti_typeid<AZ::UserSettingsComponent>(),
-            azrtti_typeid<AZ::Debug::FrameProfilerComponent>(),
             azrtti_typeid<AZ::SliceComponent>(),
             azrtti_typeid<AZ::SliceSystemComponent>(),
 

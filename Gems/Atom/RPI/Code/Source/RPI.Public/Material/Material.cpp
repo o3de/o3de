@@ -310,7 +310,7 @@ namespace AZ
 
             if (NeedsCompile() && CanCompile())
             {
-                AZ_PROFILE_BEGIN(AzRender, "Material::Compile() Processing Functors");
+                AZ_PROFILE_BEGIN(RPI, "Material::Compile() Processing Functors");
                 for (const Ptr<MaterialFunctor>& functor : m_materialAsset->GetMaterialFunctors())
                 {
                     if (functor)

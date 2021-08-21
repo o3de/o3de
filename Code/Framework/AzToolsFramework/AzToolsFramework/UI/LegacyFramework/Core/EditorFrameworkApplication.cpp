@@ -38,7 +38,6 @@
 #include <AzFramework/Driller/RemoteDrillerInterface.h>
 
 #include <AzCore/Driller/Driller.h>
-#include <AzCore/Debug/ProfilerDriller.h>
 
 #ifdef AZ_PLATFORM_WINDOWS
 #include "shlobj.h"

@@ -377,8 +377,6 @@ void CLyShine::SetViewportSize(AZ::Vector2 viewportSize)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void CLyShine::Update(float deltaTimeInSeconds)
 {
-    FRAME_PROFILER(__FUNCTION__, gEnv->pSystem, PROFILE_UI);
-
     if (!m_uiRenderer->IsReady())
     {
         return;
@@ -408,8 +406,6 @@ void CLyShine::Update(float deltaTimeInSeconds)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void CLyShine::Render()
 {
-    FRAME_PROFILER(__FUNCTION__, gEnv->pSystem, PROFILE_UI);
-
     if (AZ::RHI::IsNullRenderer())
     {
         return;
@@ -587,8 +583,6 @@ AZ::Vector2 CLyShine::GetUiCursorPosition()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 bool CLyShine::OnInputChannelEventFiltered(const AzFramework::InputChannel& inputChannel)
 {
-    FUNCTION_PROFILER(GetISystem(), PROFILE_ACTION);
-
     // disable UI inputs when console is open except for a primary release
     // if we ignore the primary release when there is an active interactable then it will miss its release
     // which leaves it in a bad state. E.g. a drag operation will be left in flight and not properly
@@ -624,8 +618,6 @@ bool CLyShine::OnInputChannelEventFiltered(const AzFramework::InputChannel& inpu
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 bool CLyShine::OnInputTextEventFiltered(const AZStd::string& textUTF8)
 {
-    FUNCTION_PROFILER(GetISystem(), PROFILE_ACTION);
-
     if (gEnv->pConsole->GetStatus()) // disable UI inputs when console is open
     {
         return false;

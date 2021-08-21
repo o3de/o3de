@@ -21,6 +21,8 @@
 #define ENABLE_PHYSX_TIMESTEP_WARNING
 #endif
 
+AZ_DEFINE_BUDGET(Physics);
+
 namespace PhysX
 {
     AZ_CLASS_ALLOCATOR_IMPL(PhysXSystem, AZ::SystemAllocator, 0);
