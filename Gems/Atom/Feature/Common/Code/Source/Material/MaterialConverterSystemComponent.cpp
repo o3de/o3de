@@ -23,12 +23,12 @@ namespace AZ
     {
         void MaterialConverterSettings::Reflect(AZ::ReflectContext* context)
         {
-            if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext)
+            if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<MaterialConverterSettings>()
-                                ->Version(1)
-                                ->Field("Enable", &MaterialConverterSettings::m_enable)
-                                ->Field("DefaultMaterial", &MaterialConverterSettings::m_defaultMaterial);
+                    ->Version(1)
+                    ->Field("Enable", &MaterialConverterSettings::m_enable)
+                    ->Field("DefaultMaterial", &MaterialConverterSettings::m_defaultMaterial);
             }
         }
 
@@ -176,16 +176,9 @@ namespace AZ
             return true;
         }
 
-        const char* MaterialConverterSystemComponent::GetMaterialTypePath() const
+        AZStd::string MaterialConverterSystemComponent::GetMaterialTypePath() const
         {
-            if (m_settings.m_enable)
-            {
-                return "Materials/Types/StandardPBR.materialtype";
-            }
-            else
-            {
-                return nullptr;
-            }
+            return "Materials/Types/StandardPBR.materialtype";
         }
 
         AZStd::string MaterialConverterSystemComponent::GetDefaultMaterialPath() const

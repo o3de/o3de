@@ -75,10 +75,10 @@ namespace AZ
             RPI::MaterialConverterBus::BroadcastResult(conversionEnabled, &RPI::MaterialConverterBus::Events::IsEnabled);
             
             // Right now, scene file importing only supports a single material type, once that changes, this will have to be re-designed, see ATOM-3554
-            const char* materialTypePath = nullptr;
+            AZStd::string materialTypePath;
             RPI::MaterialConverterBus::BroadcastResult(materialTypePath, &RPI::MaterialConverterBus::Events::GetMaterialTypePath);
 
-            if (conversionEnabled && materialTypePath)
+            if (conversionEnabled && !materialTypePath.empty())
             {
                 AssetBuilderSDK::SourceFileDependency materialTypeSource;
                 materialTypeSource.m_sourceFileDependencyPath = materialTypePath;
