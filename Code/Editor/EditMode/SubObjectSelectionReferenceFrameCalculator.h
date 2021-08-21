@@ -32,7 +32,6 @@ private:
     Vec3 pos;
     Vec3 normal;
     int nNormals;
-    ESubObjElementType selectionType;
     std::vector<Vec3> positions;
     Matrix34 m_refFrame;
     bool bUseExplicitFrame;

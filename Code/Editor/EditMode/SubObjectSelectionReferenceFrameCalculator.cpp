@@ -13,12 +13,11 @@
 
 #include "SubObjectSelectionReferenceFrameCalculator.h"
 
-SubObjectSelectionReferenceFrameCalculator::SubObjectSelectionReferenceFrameCalculator(ESubObjElementType selectionType)
+SubObjectSelectionReferenceFrameCalculator::SubObjectSelectionReferenceFrameCalculator([[maybe_unused]] ESubObjElementType selectionType)
     :   m_anySelected(false)
     , pos(0.0f, 0.0f, 0.0f)
     , normal(0.0f, 0.0f, 0.0f)
     , nNormals(0)
-    , selectionType(selectionType)
     , bUseExplicitFrame(false)
     , bExplicitAnySelected(false)
 {

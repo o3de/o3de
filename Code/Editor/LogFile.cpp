@@ -180,18 +180,17 @@ void CLogFile::FormatLineV(const char * format, va_list argList)
 void CLogFile::AboutSystem()
 {
     char szBuffer[MAX_LOGBUFFER_SIZE];
-    wchar_t szBufferW[MAX_LOGBUFFER_SIZE];
 #if defined(AZ_PLATFORM_WINDOWS) || defined(AZ_PLATFORM_LINUX)
     //////////////////////////////////////////////////////////////////////
     // Write the system informations to the log
     //////////////////////////////////////////////////////////////////////
 
-    wchar_t szLanguageBufferW[64];
     //wchar_t szCPUModel[64];
     MEMORYSTATUS MemoryStatus;
 #endif // defined(AZ_PLATFORM_WINDOWS) || defined(AZ_PLATFORM_LINUX)
 
 #if defined(AZ_PLATFORM_WINDOWS)
+    wchar_t szLanguageBufferW[64];
     DEVMODE DisplayConfig;
     OSVERSIONINFO OSVerInfo;
     OSVerInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
@@ -296,6 +295,7 @@ AZ_POP_DISABLE_WARNING
     //////////////////////////////////////////////////////////////////////
 
     str += " (";
+    wchar_t szBufferW[MAX_LOGBUFFER_SIZE];
     GetWindowsDirectoryW(szBufferW, sizeof(szBufferW));
     AZStd::to_string(szBuffer, MAX_LOGBUFFER_SIZE, szBufferW);
     str += szBuffer;

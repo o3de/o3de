@@ -1018,14 +1018,6 @@ bool CCryEditDoc::AfterSaveDocument([[maybe_unused]] const QString& lpszPathName
     return bSaved;
 }
 
-
-static void GetUserSettingsFile(const QString& levelFolder, QString& userSettings)
-{
-    const char* pUserName = GetISystem()->GetUserName();
-    QString fileName = QStringLiteral("%1_usersettings.editor_xml").arg(pUserName);
-    userSettings = Path::Make(levelFolder, fileName);
-}
-
 static bool TryRenameFile(const QString& oldPath, const QString& newPath, int retryAttempts=10)
 {
     QFile(newPath).setPermissions(QFile::ReadOther | QFile::WriteOther);
