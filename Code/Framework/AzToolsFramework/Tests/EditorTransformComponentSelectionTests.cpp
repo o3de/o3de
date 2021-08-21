@@ -1579,7 +1579,7 @@ namespace UnitTest
         ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
         // Given
         AZ::Entity* entity = nullptr;
-        const AZ::EntityId entityId = CreateDefaultEditorEntity("Entity", &entity);
+        CreateDefaultEditorEntity("Entity", &entity);
 
         entity->Deactivate();
         const auto* entityInfoComponent = entity->CreateComponent<EditorEntityInfoRequestActivateTestComponent>();
