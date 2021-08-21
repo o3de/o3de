@@ -697,14 +697,12 @@ namespace EditorPythonBindings
         class TypeConverterDictionary final
             : public PythonMarshalComponent::TypeConverter
         {
-            AZ::GenericClassInfo* m_genericClassInfo = nullptr;
             const AZ::SerializeContext::ClassData* m_classData = nullptr;
             const AZ::TypeId m_typeId = {};
 
         public:
-            TypeConverterDictionary(AZ::GenericClassInfo* genericClassInfo, const AZ::SerializeContext::ClassData* classData, const AZ::TypeId& typeId)
-                : m_genericClassInfo(genericClassInfo)
-                , m_classData(classData)
+            TypeConverterDictionary([[maybe_unused]] AZ::GenericClassInfo* genericClassInfo, const AZ::SerializeContext::ClassData* classData, const AZ::TypeId& typeId)
+                : m_classData(classData)
                 , m_typeId(typeId)
             {
             }
