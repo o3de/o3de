@@ -12,29 +12,29 @@ namespace AZ
 {
     namespace Simd
     {
-        static AZ_ALIGN(constexpr float g_sinCoef1[4],    16) = { -0.0001950727f, -0.0001950727f, -0.0001950727f, -0.0001950727f };
-        static AZ_ALIGN(constexpr float g_sinCoef2[4],    16) = {  0.0083320758f,  0.0083320758f,  0.0083320758f,  0.0083320758f };
-        static AZ_ALIGN(constexpr float g_sinCoef3[4],    16) = { -0.1666665247f, -0.1666665247f, -0.1666665247f, -0.1666665247f };
-        static AZ_ALIGN(constexpr float g_cosCoef1[4],    16) = { -0.0013602249f, -0.0013602249f, -0.0013602249f, -0.0013602249f };
-        static AZ_ALIGN(constexpr float g_cosCoef2[4],    16) = {  0.0416566950f,  0.0416566950f,  0.0416566950f,  0.0416566950f };
-        static AZ_ALIGN(constexpr float g_cosCoef3[4],    16) = { -0.4999990225f, -0.4999990225f, -0.4999990225f, -0.4999990225f };
-        static AZ_ALIGN(constexpr float g_acosHiCoef1[4], 16) = { -0.0012624911f, -0.0012624911f, -0.0012624911f, -0.0012624911f };
-        static AZ_ALIGN(constexpr float g_acosHiCoef2[4], 16) = {  0.0066700901f,  0.0066700901f,  0.0066700901f,  0.0066700901f };
-        static AZ_ALIGN(constexpr float g_acosHiCoef3[4], 16) = { -0.0170881256f, -0.0170881256f, -0.0170881256f, -0.0170881256f };
-        static AZ_ALIGN(constexpr float g_acosHiCoef4[4], 16) = {  0.0308918810f,  0.0308918810f,  0.0308918810f,  0.0308918810f };
-        static AZ_ALIGN(constexpr float g_acosLoCoef1[4], 16) = { -0.0501743046f, -0.0501743046f, -0.0501743046f, -0.0501743046f };
-        static AZ_ALIGN(constexpr float g_acosLoCoef2[4], 16) = {  0.0889789874f,  0.0889789874f,  0.0889789874f,  0.0889789874f };
-        static AZ_ALIGN(constexpr float g_acosLoCoef3[4], 16) = { -0.2145988016f, -0.2145988016f, -0.2145988016f, -0.2145988016f };
-        static AZ_ALIGN(constexpr float g_acosLoCoef4[4], 16) = {  1.5707963050f,  1.5707963050f,  1.5707963050f,  1.5707963050f };
-        static AZ_ALIGN(constexpr float g_acosCoef1[4],   16) = { -0.0200752200f, -0.0200752200f, -0.0200752200f, -0.0200752200f };
-        static AZ_ALIGN(constexpr float g_acosCoef2[4],   16) = {  0.0759031500f,  0.0759031500f,  0.0759031500f,  0.0759031500f };
-        static AZ_ALIGN(constexpr float g_acosCoef3[4],   16) = { -0.2126757000f, -0.2126757000f, -0.2126757000f, -0.2126757000f };
-        static AZ_ALIGN(constexpr float g_atanHiRange[4], 16) = {  2.4142135624f,  2.4142135624f,  2.4142135624f,  2.4142135624f };
-        static AZ_ALIGN(constexpr float g_atanLoRange[4], 16) = {  0.4142135624f,  0.4142135624f,  0.4142135624f,  0.4142135624f };
-        static AZ_ALIGN(constexpr float g_atanCoef1[4],   16) = {  8.05374449538e-2f, 8.05374449538e-2f, 8.05374449538e-2f, 8.05374449538e-2f };
-        static AZ_ALIGN(constexpr float g_atanCoef2[4],   16) = {  -1.38776856032e-1f, -1.38776856032e-1f, -1.38776856032e-1f, -1.38776856032e-1f };
-        static AZ_ALIGN(constexpr float g_atanCoef3[4],   16) = {  1.99777106478e-1f, 1.99777106478e-1f, 1.99777106478e-1f, 1.99777106478e-1f };
-        static AZ_ALIGN(constexpr float g_atanCoef4[4],   16) = {  -3.33329491539e-1f, -3.33329491539e-1f, -3.33329491539e-1f, -3.33329491539e-1f };
+        static constexpr alignas(16) float g_sinCoef1[4]    = { -0.0001950727f, -0.0001950727f, -0.0001950727f, -0.0001950727f };
+        static constexpr alignas(16) float g_sinCoef2[4]    = {  0.0083320758f,  0.0083320758f,  0.0083320758f,  0.0083320758f };
+        static constexpr alignas(16) float g_sinCoef3[4]    = { -0.1666665247f, -0.1666665247f, -0.1666665247f, -0.1666665247f };
+        static constexpr alignas(16) float g_cosCoef1[4]    = { -0.0013602249f, -0.0013602249f, -0.0013602249f, -0.0013602249f };
+        static constexpr alignas(16) float g_cosCoef2[4]    = {  0.0416566950f,  0.0416566950f,  0.0416566950f,  0.0416566950f };
+        static constexpr alignas(16) float g_cosCoef3[4]    = { -0.4999990225f, -0.4999990225f, -0.4999990225f, -0.4999990225f };
+        static constexpr alignas(16) float g_acosHiCoef1[4] = { -0.0012624911f, -0.0012624911f, -0.0012624911f, -0.0012624911f };
+        static constexpr alignas(16) float g_acosHiCoef2[4] = {  0.0066700901f,  0.0066700901f,  0.0066700901f,  0.0066700901f };
+        static constexpr alignas(16) float g_acosHiCoef3[4] = { -0.0170881256f, -0.0170881256f, -0.0170881256f, -0.0170881256f };
+        static constexpr alignas(16) float g_acosHiCoef4[4] = {  0.0308918810f,  0.0308918810f,  0.0308918810f,  0.0308918810f };
+        static constexpr alignas(16) float g_acosLoCoef1[4] = { -0.0501743046f, -0.0501743046f, -0.0501743046f, -0.0501743046f };
+        static constexpr alignas(16) float g_acosLoCoef2[4] = {  0.0889789874f,  0.0889789874f,  0.0889789874f,  0.0889789874f };
+        static constexpr alignas(16) float g_acosLoCoef3[4] = { -0.2145988016f, -0.2145988016f, -0.2145988016f, -0.2145988016f };
+        static constexpr alignas(16) float g_acosLoCoef4[4] = {  1.5707963050f,  1.5707963050f,  1.5707963050f,  1.5707963050f };
+        static constexpr alignas(16) float g_acosCoef1[4]   = { -0.0200752200f, -0.0200752200f, -0.0200752200f, -0.0200752200f };
+        static constexpr alignas(16) float g_acosCoef2[4]   = {  0.0759031500f,  0.0759031500f,  0.0759031500f,  0.0759031500f };
+        static constexpr alignas(16) float g_acosCoef3[4]   = { -0.2126757000f, -0.2126757000f, -0.2126757000f, -0.2126757000f };
+        static constexpr alignas(16) float g_atanHiRange[4] = {  2.4142135624f,  2.4142135624f,  2.4142135624f,  2.4142135624f };
+        static constexpr alignas(16) float g_atanLoRange[4] = {  0.4142135624f,  0.4142135624f,  0.4142135624f,  0.4142135624f };
+        static constexpr alignas(16) float g_atanCoef1[4]   = {  8.05374449538e-2f, 8.05374449538e-2f, 8.05374449538e-2f, 8.05374449538e-2f };
+        static constexpr alignas(16) float g_atanCoef2[4]   = {  -1.38776856032e-1f, -1.38776856032e-1f, -1.38776856032e-1f, -1.38776856032e-1f };
+        static constexpr alignas(16) float g_atanCoef3[4]   = {  1.99777106478e-1f, 1.99777106478e-1f, 1.99777106478e-1f, 1.99777106478e-1f };
+        static constexpr alignas(16) float g_atanCoef4[4]   = {  -3.33329491539e-1f, -3.33329491539e-1f, -3.33329491539e-1f, -3.33329491539e-1f };
 
         namespace Common
         {
