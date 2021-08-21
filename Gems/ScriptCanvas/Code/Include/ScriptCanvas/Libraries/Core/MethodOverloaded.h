@@ -97,8 +97,7 @@ namespace ScriptCanvas
                 // SerializeContextReadWriteHandler
                 void OnReadBegin() {}
                 void OnReadEnd() {}
-
-                void OnWriteBegin();
+                void OnWriteBegin() {}
                 void OnWriteEnd();
 #endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
 

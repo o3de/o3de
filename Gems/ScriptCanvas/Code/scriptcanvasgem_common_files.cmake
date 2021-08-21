@@ -540,10 +540,10 @@ set(FILES
     Include/ScriptCanvas/Profiler/Aggregator.cpp
     Include/ScriptCanvas/Profiler/DrillerEvents.h
     Include/ScriptCanvas/Profiler/DrillerEvents.cpp
+    Include/ScriptCanvas/Serialization/BehaviorContextObjectSerializer.h
+    Include/ScriptCanvas/Serialization/BehaviorContextObjectSerializer.cpp
     Include/ScriptCanvas/Serialization/DatumSerializer.h
     Include/ScriptCanvas/Serialization/DatumSerializer.cpp
-    Include/ScriptCanvas/Serialization/GraphDataSerializer.cpp
-    Include/ScriptCanvas/Serialization/GraphDataSerializer.h
     Include/ScriptCanvas/Serialization/RuntimeVariableSerializer.h
     Include/ScriptCanvas/Serialization/RuntimeVariableSerializer.cpp
     Include/ScriptCanvas/Data/DataTrait.cpp

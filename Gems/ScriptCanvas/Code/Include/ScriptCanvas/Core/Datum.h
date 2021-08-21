@@ -241,13 +241,6 @@ namespace ScriptCanvas
         {
         public:
             /// Called after we are done writing to the instance pointed by classPtr.
-            void OnReadBegin(void* classPtr) override
-            {
-                Datum* datum = reinterpret_cast<Datum*>(classPtr);
-                datum->OnReadBegin();
-            }
-
-            /// Called after we are done writing to the instance pointed by classPtr.
             void OnWriteEnd(void* classPtr) override
             {
                 Datum* datum = reinterpret_cast<Datum*>(classPtr);
@@ -352,13 +345,9 @@ namespace ScriptCanvas
 
         void OnDatumEdited();
 
-        void OnSerializeBegin() override;
-
         void OnDeserialize() override;
                
 #if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
-        void OnReadBegin();
-
         void OnWriteEnd();
 #endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
 

@@ -213,7 +213,7 @@ namespace AZ
         void* object, const Uuid& typeId, const rapidjson::Value& value, JsonDeserializerContext& context, ContinuationFlags flags)
     {
         bool loadAsNewInstance = (flags & ContinuationFlags::LoadAsNewInstance) == ContinuationFlags::LoadAsNewInstance;
-        JsonDeserializer::UseTypeDeserializer useCustom = (flags & ContinuationFlags::NoTypeSerializer) == ContinuationFlags::NoTypeSerializer
+        JsonDeserializer::UseTypeDeserializer useCustom = (flags & ContinuationFlags::IgnoreTypeSerializer) == ContinuationFlags::IgnoreTypeSerializer
             ? JsonDeserializer::UseTypeDeserializer::No
             : JsonDeserializer::UseTypeDeserializer::Yes;
 
@@ -228,7 +228,7 @@ namespace AZ
     {
         using namespace JsonSerializationResult;
 
-        JsonSerializer::UseTypeSerializer useCustom = (flags & ContinuationFlags::NoTypeSerializer) == ContinuationFlags::NoTypeSerializer
+        JsonSerializer::UseTypeSerializer useCustom = (flags & ContinuationFlags::IgnoreTypeSerializer) == ContinuationFlags::IgnoreTypeSerializer
             ? JsonSerializer::UseTypeSerializer::No
             : JsonSerializer::UseTypeSerializer::Yes;
 

@@ -6,15 +6,16 @@
  *
  */
 
-#include <ExpressionEvaluationSystemComponent.h>
-
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
-
+#include <AzCore/Serialization/Json/RegistrationContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <ExpressionEngine/InternalTypes.h>
 #include <ExpressionEngine/MathOperators/MathExpressionOperators.h>
 #include <ExpressionEngine/Utils.h>
+#include <ExpressionEvaluationSystemComponent.h>
+#include <ExpressionPrimitivesSerializers.inl>
+#include <ElementInformationSerializer.inl>
 
 namespace ExpressionEvaluation
 {
@@ -144,6 +145,12 @@ namespace ExpressionEvaluation
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
+        }
+
+        if (AZ::JsonRegistrationContext* jsonContext = azrtti_cast<AZ::JsonRegistrationContext*>(context))
+        {
+            jsonContext->Serializer<AZ::ExpressionTreeVariableDescriptorSerializer>()->HandlesType<ExpressionTree::VariableDescriptor>();
+            jsonContext->Serializer<AZ::ElementInformationSerializer>()->HandlesType<ElementInformation>();
         }
     }
 

@@ -22,7 +22,7 @@
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Utils/Utils.h>
 
-#include "JsonUtils.h"
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 namespace AZ
 {

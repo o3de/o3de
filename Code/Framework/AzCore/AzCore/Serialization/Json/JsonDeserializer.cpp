@@ -73,7 +73,9 @@ namespace AZ
             }
             
             if (BaseJsonSerializer* serializer
-                = context.GetRegistrationContext()->GetSerializerForType(classData->m_azRtti->GetGenericTypeId()))
+                = (custom == UseTypeDeserializer::Yes)
+                    ? context.GetRegistrationContext()->GetSerializerForType(classData->m_azRtti->GetGenericTypeId())
+                    : nullptr)
             {
                 return DeserializerDefaultCheck(serializer, object, typeId, value, isNewInstance, context);
             }

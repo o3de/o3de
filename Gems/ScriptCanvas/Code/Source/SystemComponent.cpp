@@ -23,7 +23,7 @@
 #include <ScriptCanvas/Execution/Interpreted/ExecutionInterpretedAPI.h>
 #include <ScriptCanvas/Execution/RuntimeComponent.h>
 #include <ScriptCanvas/Serialization/DatumSerializer.h>
-#include <ScriptCanvas/Serialization/GraphDataSerializer.h>
+#include <ScriptCanvas/Serialization/BehaviorContextObjectSerializer.h>
 #include <ScriptCanvas/Serialization/RuntimeVariableSerializer.h>
 #include <ScriptCanvas/SystemComponent.h>
 #include <ScriptCanvas/Variable/GraphVariableManagerComponent.h>
@@ -90,7 +90,7 @@ namespace ScriptCanvas
         if (AZ::JsonRegistrationContext* jsonContext = azrtti_cast<AZ::JsonRegistrationContext*>(context))
         {
             jsonContext->Serializer<AZ::DatumSerializer>()->HandlesType<Datum>();
-            jsonContext->Serializer<AZ::GraphDataSerializer>()->HandlesType<GraphData>();
+            jsonContext->Serializer<AZ::BehaviorContextObjectSerializer>()->HandlesType<BehaviorContextObject>();
             jsonContext->Serializer<AZ::RuntimeVariableSerializer>()->HandlesType<RuntimeVariable>();
         }
 

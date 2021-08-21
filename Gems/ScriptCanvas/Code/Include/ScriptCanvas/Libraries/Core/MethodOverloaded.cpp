@@ -188,6 +188,7 @@ namespace ScriptCanvas
                 RefreshActiveIndexes();
 
                 ConfigureContracts();
+                SetWarnOnMissingFunction(true);
             }
 
             SlotId MethodOverloaded::AddMethodInputSlot(const MethodConfiguration& config, size_t argumentIndex)
@@ -400,10 +401,6 @@ namespace ScriptCanvas
             }
 
 #if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
-            void MethodOverloaded::OnWriteBegin()
-            {
-            }
-
             void MethodOverloaded::OnWriteEnd()
             {
                 OnDeserialize();

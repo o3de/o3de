@@ -22,6 +22,7 @@
 namespace AZ
 {
     class ReflectContext;
+    class BehaviorContextObjectSerializer;
 }
 
 namespace ScriptCanvas
@@ -30,6 +31,7 @@ namespace ScriptCanvas
     {
         friend struct AZStd::IntrusivePtrCountPolicy<BehaviorContextObject>;
         friend class Datum;
+        friend class AZ::BehaviorContextObjectSerializer;
 
     public:
         AZ_TYPE_INFO(BehaviorContextObject, "{B735214D-5182-4536-B748-61EC83C1F007}");
@@ -81,6 +83,8 @@ namespace ScriptCanvas
 
         AZ_INLINE static BehaviorContextObject* CreateDefaultHeap(const AZ::BehaviorClass& behaviorClass);
 
+        static void Deserialize(BehaviorContextObject& target, const AZ::BehaviorClass& behaviorClass, AZStd::any& source);
+
         // use the SSO optimization on behavior class size ALIGNED with a placement new of behavior class create
         AZ_FORCE_INLINE static AnyTypeInfo GetAnyTypeInfoObject(const AZ::BehaviorClass& behaviorClass);
 
@@ -104,10 +108,10 @@ namespace ScriptCanvas
         //...so don't use the ctors, use the Create functions...
         //...the friend declarations are here for compatibility with the serialization system only
         AZ_FORCE_INLINE BehaviorContextObject() = default;
-
-        BehaviorContextObject& operator=(const BehaviorContextObject&) = delete;
-
-        BehaviorContextObject(const BehaviorContextObject&) = delete;
+        BehaviorContextObject& operator=(const BehaviorContextObject&) = default;
+        BehaviorContextObject(const BehaviorContextObject&) = default;
+        BehaviorContextObject(BehaviorContextObject&&) = default;
+        BehaviorContextObject& operator=(BehaviorContextObject&& source) = default;
 
         // copy ctor
         AZ_FORCE_INLINE BehaviorContextObject(const void* source, const AnyTypeInfo& typeInfo, AZ::u32 flags);
@@ -118,8 +122,6 @@ namespace ScriptCanvas
         AZ_FORCE_INLINE void Clear();
 
         AZ_FORCE_INLINE bool IsOwned() const;
-
-        void OnSerializeBegin();
 
         AZ_FORCE_INLINE void add_ref();
 

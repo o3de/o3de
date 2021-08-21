@@ -17,14 +17,6 @@
 
 namespace ScriptCanvas
 {
-    void BehaviorContextObject::OnSerializeBegin()
-    {
-        if (!IsOwned())
-        {
-            Clear();
-        }
-    }
-
     void BehaviorContextObject::Reflect(AZ::ReflectContext* reflection)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection))
@@ -102,6 +94,12 @@ namespace ScriptCanvas
         return ownedObject
             ? BehaviorContextObjectPtr(ownedObject)
             : BehaviorContextObjectPtr(aznew BehaviorContextObject(reference, GetAnyTypeInfoReference(typeID), referenceFlags));
+    }
+
+    void BehaviorContextObject::Deserialize(BehaviorContextObject& target, const AZ::BehaviorClass& behaviorClass, AZStd::any& source)
+    {
+        target.m_object = AZStd::move(AZStd::any(AZStd::any_cast<void>(&source), GetAnyTypeInfoObject(behaviorClass)));
+        target.m_flags = Owned;
     }
 
     void BehaviorContextObject::release()

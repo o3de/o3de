@@ -44,18 +44,10 @@ namespace {{attribute_Namespace}}
 {
 {% endif %}
 {% set className = Class.attrib['Name'] %}
-{% if Class.attrib['Base'] is defined %}
-{%      if Class.attrib['Base'].split(';')|length > 1 %}
-{%          set baseClass = Class.attrib['Base'].split(';')[0] %}
-{%          set baseClasses = ", ".join(Class.attrib['Base'].split(';')) %}
-{%      else %}
-{%          set baseClass = Class.attrib['Base'] %}
-{%          set baseClasses = Class.attrib['Base'] %}
-{%      endif %}
-{% else %}
-{%      set baseClass = "ScriptCanvas::Node" %}
-{%      set baseClasses = "ScriptCanvas::Node" %}
-{% endif %}
+{% set baseClassPair = [] %}
+{% if macros.CreateBaseClassVariables(Class, baseClassPair) %}{% endif %}
+{% set baseClass = baseClassPair[0] %}
+{% set baseClasses = baseClassPair[1] %}
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////

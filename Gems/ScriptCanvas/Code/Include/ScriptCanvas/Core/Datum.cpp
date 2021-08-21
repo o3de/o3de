@@ -2041,21 +2041,6 @@ namespace ScriptCanvas
         }
     }
 
-    void Datum::OnSerializeBegin()
-    {
-        if (m_type.GetType() == Data::eType::BehaviorContextObject)
-        {
-            if (BehaviorContextObjectPtr ptr = (*AZStd::any_cast<BehaviorContextObjectPtr>(&m_storage.value)))
-            {
-                ptr->OnSerializeBegin();
-            }
-            else
-            {
-                AZ_Error("ScriptCanvas", false, AZStd::string::format("Datum type (%s) failed to serialized, did not store BehaviorContextObjectPtr properly", m_type.GetAZType().ToString<AZStd::string>().c_str()).c_str());
-            }
-        }
-    }
-
     void Datum::OnDeserialize()
     {
         if (m_type.GetType() == Data::eType::BehaviorContextObject)
@@ -2080,14 +2065,9 @@ namespace ScriptCanvas
     }
 
 #if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
-    void Datum::OnReadBegin()
-    {
-        OnSerializeBegin();
-    }
-
     void Datum::OnWriteEnd()
     {
-        OnSerializeEnd();
+        OnDeserialize();
     }
 #endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
 

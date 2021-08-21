@@ -14,11 +14,11 @@
 
 namespace AZ
 {
-    class GraphDataSerializer
+    class BehaviorContextObjectSerializer
         : public BaseJsonSerializer
     {
     public:
-        AZ_RTTI(GraphDataSerializer, "{2DFF5794-785F-4434-9314-52BB3EF1D00E}", BaseJsonSerializer);
+        AZ_RTTI(BehaviorContextObjectSerializer, "{88469C4C-923F-4508-A45C-33DDBB91074E}", BaseJsonSerializer);
         AZ_CLASS_ALLOCATOR_DECL;
 
     private:

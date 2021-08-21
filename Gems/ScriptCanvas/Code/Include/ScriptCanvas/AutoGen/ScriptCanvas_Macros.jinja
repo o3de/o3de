@@ -173,11 +173,29 @@ AZStd::tuple<{{returnTypes|join(", ")}}>
 
 {# ------- #}
 
+{# CreateBaseClassVariables #}
+{# Creates "baseClass" and "baseClasses" variables to use when needed "baseClasses" is a comma separated list that in includes baseClass #}
+{%- macro CreateBaseClassVariables(Class, baseClassPair) -%}
+{% set baseAttrib = Class.attrib['Base'] %}
+{% if baseAttrib is defined %}
+{%      if baseAttrib.split(';')|length > 1 %}
+{%          if baseClassPair.append(baseAttrib.split(';')[0]) %}{% endif %}
+{%          if baseClassPair.append(", ".join(baseAttrib.split(';'))) %}{% endif %}
+{%      else %}
+{%          if baseClassPair.append(baseAttrib) %}{% endif %}
+{%          if baseClassPair.append(baseAttrib) %}{% endif %}
+{%      endif %}
+{% else %}
+{%      if baseClassPair.append("ScriptCanvas::Node") %}{% endif %}
+{%      if baseClassPair.append("ScriptCanvas::Node") %}{% endif %}
+{% endif %}
+{%- endmacro -%}
+{# ------- #}
 
 {# ------------------------------------------------------------------------------------- #}
 {# NODEABLES #}
 
-{# TODO-LS: This macro lacks parsing the parameters provided to a Contract tag #}
+{# TODO: This macro lacks parsing the parameters provided to a Contract tag #}
 {%- macro AddContract(configurationName, item) -%}
 
 {% set contracts = [] %}
