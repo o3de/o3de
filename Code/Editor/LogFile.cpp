@@ -388,7 +388,7 @@ AZ_POP_DISABLE_WARNING
         L"(Unknown graphics card)", szLanguageBufferW, sizeof(szLanguageBufferW),
         L"system.ini");
     AZStd::to_string(szLanguageBuffer, szLanguageBufferW);
-    azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, "Current display mode is %dx%dx%d, %s",
+    azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, "Current display mode is %ldx%ldx%ld, %s",
         DisplayConfig.dmPelsWidth, DisplayConfig.dmPelsHeight,
         DisplayConfig.dmBitsPerPel, szLanguageBuffer.c_str());
     CryLog("%s", szBuffer);
