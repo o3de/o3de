@@ -496,7 +496,6 @@ namespace Driller
                 m_persistentState->m_treeExpansionData.clear();
                 QSet<QString> qSetQString;
                 m_gui->widgetProfilerData->WriteTreeViewStateTo(qSetQString);
-                QSet<QString>::iterator iter = qSetQString.begin();
                 for (auto iterStrings = qSetQString.begin(); iterStrings != qSetQString.end(); ++iterStrings)
                 {
                     m_persistentState->m_treeExpansionData.push_back(iterStrings->toUtf8().data());

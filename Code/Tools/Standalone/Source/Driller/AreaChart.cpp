@@ -23,9 +23,8 @@ namespace AreaChart
     // LineSeries
     ///////////////
     
-    LineSeries::LineSeries(AreaChart* owner, size_t seriesId, const QString& name, const QColor& color, size_t seriesSize)
-        : m_owner(owner)
-        , m_seriesId(seriesId)
+    LineSeries::LineSeries([[maybe_unused]] AreaChart* owner, size_t seriesId, const QString& name, const QColor& color, size_t seriesSize)
+        : m_seriesId(seriesId)
         , m_name(name)
         , m_color(color)
         , m_highlighted(false)

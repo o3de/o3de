@@ -69,7 +69,6 @@ namespace AreaChart
         
     private:
     
-        AreaChart* m_owner;
         LinePoints m_linePoints;
     
         size_t m_seriesId;
@@ -182,7 +181,6 @@ namespace AreaChart
 
         size_t                                  m_inspectionSeries;
         
-        size_t                                  m_mouseOverArea;
         AZStd::vector< AZStd::vector<HitArea> > m_hitAreas;
 
         bool        m_clicked;

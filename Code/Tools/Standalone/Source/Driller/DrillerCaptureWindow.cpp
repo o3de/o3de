@@ -744,7 +744,6 @@ namespace Driller
 
             bool wascapturing = IsInCaptureMode(CaptureMode::Capturing);
 
-            CaptureMode::Inspecting;
             emit OnCaptureModeChange(m_captureMode);
 
             if (m_data)

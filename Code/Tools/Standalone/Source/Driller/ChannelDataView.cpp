@@ -439,7 +439,6 @@ namespace Driller
 
                 QColor drawColor = budgetMarker.GetColor();
 
-                QRect sizeRect = rect();
                 int x = rect().left();
                 float normalizedValue = ((budgetMarker.GetValue() + 1.0f) / 2.0f);
                 int y = static_cast<int>(rect().bottom() - (rect().height() * normalizedValue));

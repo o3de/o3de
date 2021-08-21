@@ -319,13 +319,6 @@ void UtilitiesUnitTests::StartTest()
 
     // --------------- TEST FilePatternMatcher
     {
-        const char* wildcardMatch[] = {
-            "*.cfg",
-            "*.txt",
-            "abf*.llm"
-            "sdf.c*",
-            "a.bcd"
-        };
         {
             AssetBuilderSDK::FilePatternMatcher extensionWildcardTest(AssetBuilderSDK::AssetBuilderPattern("*.cfg", AssetBuilderSDK::AssetBuilderPattern::Wildcard));
             UNIT_TEST_EXPECT_TRUE(extensionWildcardTest.MatchesPath(AZStd::string("foo.cfg")));
