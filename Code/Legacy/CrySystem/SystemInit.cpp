@@ -476,7 +476,7 @@ bool CSystem::UnloadDLL(const char* dllName)
 {
     bool isSuccess = false;
 
-    CCryNameCRC key(dllName);
+    AZ::Crc32 key(dllName);
     AZStd::unique_ptr<AZ::DynamicModuleHandle> empty;
     AZStd::unique_ptr<AZ::DynamicModuleHandle>& hModule = stl::find_in_map_ref(m_moduleDLLHandles, key, empty);
     if ((hModule) && (hModule->IsLoaded()))
@@ -1185,7 +1185,7 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
     {
         azConsole->LinkDeferredFunctors(AZ::ConsoleFunctorBase::GetDeferredHead());
     }
-    
+
     if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry)
     {
         AZ::SettingsRegistryInterface::FixedValueString assetPlatform;

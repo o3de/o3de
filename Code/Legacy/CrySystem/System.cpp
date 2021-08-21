@@ -255,7 +255,6 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
     // Initialize global environment interface pointers.
     m_env.pSystem = this;
     m_env.pTimer = &m_Time;
-    m_env.pNameTable = &m_nameTable;
     m_env.bIgnoreAllAsserts = false;
     m_env.bNoAssertDialog = false;
 

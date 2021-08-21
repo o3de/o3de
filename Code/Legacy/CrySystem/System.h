@@ -631,9 +631,6 @@ private: // ------------------------------------------------------
 
     class CLocalizedStringsManager* m_pLocalizationManager;
 
-    // Name table.
-    CNameTable m_nameTable;
-
     ESystemConfigSpec m_nServerConfigSpec;
     ESystemConfigSpec m_nMaxConfigSpec;
     ESystemConfigPlatform m_ConfigPlatform;

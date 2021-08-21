@@ -11,6 +11,7 @@
 
 #include "smartptr.h"           // TYPEDEF_AUTOPTR
 #include "IMaterial.h"
+#include "ISerialize.h"
 
 // forward declarations
 //////////////////////////////////////////////////////////////////////

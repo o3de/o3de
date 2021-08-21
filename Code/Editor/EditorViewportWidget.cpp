@@ -54,6 +54,7 @@
 
 // CryCommon
 #include <CryCommon/HMDBus.h>
+#include <CryCommon/physinterface.h>
 
 // AzFramework
 #include <AzFramework/Render/IntersectorInterface.h>
@@ -99,7 +100,7 @@
 #include <QtGui/private/qhighdpiscaling_p.h>
 
 #include <IEntityRenderState.h>
-//#include <IPhysics.h>
+#include <IPhysics.h>
 #include <IStatObj.h>
 
 AZ_CVAR(
@@ -1291,7 +1292,7 @@ void EditorViewportWidget::SetViewportId(int id)
     m_renderViewport->GetControllerList()->Add(AZStd::make_shared<SandboxEditor::ViewportManipulatorController>());
 
     m_renderViewport->GetControllerList()->Add(CreateModularViewportCameraController(AzFramework::ViewportId(id)));
-    
+
     m_renderViewport->SetViewportSettings(&g_EditorViewportSettings);
 
     UpdateScene();
@@ -1651,7 +1652,7 @@ void EditorViewportWidget::SetViewTM(const Matrix34& camMatrix, bool bMoveOnly)
             {
                 // Should be impossible anyways
                 AZ_Assert(false, "Internal logic error - view entity Id and view source type out of sync. Please report this as a bug");
-                return ShouldUpdateObject::No; 
+                return ShouldUpdateObject::No;
             }
 
             // Check that the current view is the same view as the view entity view
@@ -2515,7 +2516,7 @@ void EditorViewportWidget::SetViewFromEntityPerspective(const AZ::EntityId& enti
 void EditorViewportWidget::SetViewAndMovementLockFromEntityPerspective(const AZ::EntityId& entityId, [[maybe_unused]] bool lockCameraMovement)
 {
     // This is an editor event, so is only serviced during edit mode, not play game mode
-    // 
+    //
     if (m_playInEditorState != PlayInEditorState::Editor)
     {
         AZ_Warning("EditorViewportWidget", false,
