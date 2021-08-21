@@ -182,7 +182,6 @@ private:
 
     // Drag and drop
     CUiAnimViewAnimNodeBundle m_draggedNodes;
-    CUiAnimViewAnimNode* m_pDragTarget;
 
     std::unordered_map<const CUiAnimViewNode*, CRecord*> m_nodeToRecordMap;
 

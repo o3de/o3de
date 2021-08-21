@@ -192,7 +192,6 @@ void CUiAnimViewDopeSheetBase::SetTimeRange(float start, float end)
 void CUiAnimViewDopeSheetBase::SetTimeScale(float timeScale, float fAnchorTime)
 {
     const double fOldOffset = -fAnchorTime * m_timeScale;
-    const double fOldScale = m_timeScale;
 
     timeScale = std::max(timeScale, 0.001f);
     timeScale = std::min(timeScale, 100000.0f);
@@ -1308,8 +1307,6 @@ void CUiAnimViewDopeSheetBase::OnCaptureChanged()
 //////////////////////////////////////////////////////////////////////////
 bool CUiAnimViewDopeSheetBase::IsOkToAddKeyHere(const CUiAnimViewTrack* pTrack, float time) const
 {
-    const float timeEpsilon = 0.05f;
-
     for (unsigned int i = 0; i < pTrack->GetKeyCount(); ++i)
     {
         CUiAnimViewKeyHandle keyHandle = const_cast<CUiAnimViewTrack*>(pTrack)->GetKey(i);
@@ -1795,8 +1792,6 @@ void CUiAnimViewDopeSheetBase::AcceptUndo()
 {
     if (UiAnimUndo::IsRecording())
     {
-        const QPoint mousePos = mapFromGlobal(QCursor::pos());
-
         if (m_mouseMode == eUiAVMouseMode_Paste)
         {
             UiAnimUndoManager::Get()->Cancel();
@@ -2242,7 +2237,6 @@ void CUiAnimViewDopeSheetBase::DrawBoolTrack(const Range& timeRange, QPainter* p
 {
     int x0 = TimeToClient(timeRange.start);
     float t0 = timeRange.start;
-    QRect trackRect;
 
     const QBrush prevBrush = painter->brush();
     painter->setBrush(m_visibilityBrush);

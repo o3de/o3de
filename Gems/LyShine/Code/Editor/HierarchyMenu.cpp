@@ -330,7 +330,7 @@ void HierarchyMenu::SliceMenuItems(HierarchyWidget* hierarchy,
                                 slicesAddedToMenu.push_back(sliceAsset.GetId());
 
                                 QAction* action = menu->addAction(assetPath.c_str());
-                                QObject::connect(action, &QAction::triggered, [this, hierarchy, sliceAsset]
+                                QObject::connect(action, &QAction::triggered, [hierarchy, sliceAsset]
                                     {
                                         hierarchy->GetEditorWindow()->EditSliceInNewTab(sliceAsset.GetId());
                                     }

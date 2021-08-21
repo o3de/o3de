@@ -589,7 +589,6 @@ void CUiAnimViewSplineCtrl::mouseMoveEvent(QMouseEvent* event)
 
     CUiAnimViewSequenceNotificationContext context(pSequence);
 
-    QPoint cMousePosPrev = m_cMousePos;
     m_cMousePos = point;
 
     if (m_editMode == SelectMode)
