@@ -770,7 +770,7 @@ _MS_ALIGN(16) struct SSkinningData
     SSkinningData*          pNextSkinningData;          // List to the next element which needs SW-Skinning
 } _ALIGN(16);
 
-struct SRenderObjData
+struct _MS_ALIGN(16) SRenderObjData
 {
     uintptr_t m_uniqueObjectId;
 
