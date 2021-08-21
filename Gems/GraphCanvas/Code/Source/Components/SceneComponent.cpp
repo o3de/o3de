@@ -3262,8 +3262,6 @@ namespace GraphCanvas
         {
             for (const auto& sceneMember : sceneMemberList)
             {
-                QRectF boundingArea;
-
                 QGraphicsItem* sceneItem = nullptr;
                 VisualRequestBus::EventResult(sceneItem, sceneMember->GetId(), &VisualRequests::AsGraphicsItem);
 
@@ -3292,8 +3290,6 @@ namespace GraphCanvas
         {
             for (const auto& sceneMember : sceneMemberList)
             {
-                QRectF boundingArea;
-
                 QGraphicsItem* sceneItem = nullptr;
                 VisualRequestBus::EventResult(sceneItem, sceneMember->GetId(), &VisualRequests::AsGraphicsItem);
 

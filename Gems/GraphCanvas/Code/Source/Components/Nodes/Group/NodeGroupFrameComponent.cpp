@@ -2295,8 +2295,6 @@ namespace GraphCanvas
         {
             QScopedValueRollback<bool> allowMovement(m_allowMovement, false);
 
-            QRectF rect = boundingRect();
-
             qreal originalHeight = boundingRect().height();
             qreal newHeight = boundingRect().height() + (newSize.height() - oldSize.height());
 
