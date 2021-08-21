@@ -161,7 +161,7 @@ inline static HMODULE CryLoadLibrary(const char* libName, bool bLazy = false, bo
     return module;
 }
 
-bool CryFreeLibrary(void* lib)
+inline static bool CryFreeLibrary(void* lib)
 {
     if (lib)
     {
