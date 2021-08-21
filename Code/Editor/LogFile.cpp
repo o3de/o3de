@@ -288,7 +288,7 @@ AZ_POP_DISABLE_WARNING
             str += "Version Unknown";
         }
     }
-    azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, " %d.%d", OSVerInfo.dwMajorVersion, OSVerInfo.dwMinorVersion);
+    azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, " %ld.%ld", OSVerInfo.dwMajorVersion, OSVerInfo.dwMinorVersion);
     str += szBuffer;
 
     //////////////////////////////////////////////////////////////////////
@@ -338,7 +338,7 @@ AZ_POP_DISABLE_WARNING
     str += " ";
     azstrdate(szBuffer);
     str += szBuffer;
-    azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, ", system running for %d minutes", GetTickCount() / 60000);
+    azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, ", system running for %ld minutes", GetTickCount() / 60000);
     str += szBuffer;
     CryLog("%s", str.toUtf8().data());
 #else
