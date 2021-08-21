@@ -304,7 +304,7 @@ namespace MaterialEditor
             }
         }, QKeySequence::New);
 
-        m_actionOpen = m_menuFile->addAction("&Open...", [this]() {
+        m_actionOpen = m_menuFile->addAction("&Open...", []() {
             const AZStd::vector<AZ::Data::AssetType> assetTypes = { azrtti_typeid<AZ::RPI::MaterialAsset>() };
             const AZStd::string filePath = AtomToolsFramework::GetOpenFileInfo(assetTypes).absoluteFilePath().toUtf8().constData();
             if (!filePath.empty())
@@ -369,7 +369,7 @@ namespace MaterialEditor
             AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::CloseDocument, documentId);
         }, QKeySequence::Close);
 
-        m_actionCloseAll = m_menuFile->addAction("Close All", [this]() {
+        m_actionCloseAll = m_menuFile->addAction("Close All", []() {
             AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::CloseAllDocuments);
         });
 
@@ -436,7 +436,7 @@ namespace MaterialEditor
             SetDockWidgetVisible(label, !IsDockWidgetVisible(label));
         });
 
-        m_actionConsole = m_menuView->addAction("&Console", [this]() {
+        m_actionConsole = m_menuView->addAction("&Console", []() {
         });
 
         m_actionPythonTerminal = m_menuView->addAction("Python &Terminal", [this]() {
@@ -471,7 +471,7 @@ namespace MaterialEditor
             dialog.exec();
         });
 
-        m_actionAbout = m_menuHelp->addAction("&About...", [this]() {
+        m_actionAbout = m_menuHelp->addAction("&About...", []() {
         });
     }
 

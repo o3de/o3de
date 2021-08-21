@@ -149,8 +149,6 @@ namespace AZ::RPI
         const float tolerance = CalcPositionDeltaTolerance(sourceMesh);
         AZ::Aabb deltaPositionAabb = AZ::Aabb::CreateNull();
 
-        const uint32_t numFaces = blendShapeData->GetFaceCount();
-
         AZStd::vector<PackedCompressedMorphTargetDelta>& packedCompressedMorphTargetVertexData = productMesh.m_morphTargetVertexData;
 
         MorphTargetMetaAsset::MorphTarget metaData;

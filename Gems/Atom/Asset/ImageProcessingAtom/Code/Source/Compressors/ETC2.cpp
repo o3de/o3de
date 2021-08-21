@@ -115,8 +115,6 @@ namespace ImageProcessingAtom
     IImageObjectPtr ETC2Compressor::CompressImage(IImageObjectPtr srcImage, EPixelFormat fmtDst,
         const CompressOption* compressOption) const
     {
-        const size_t srcPixelSize = 4;
-
         //validate input
         EPixelFormat fmtSrc = srcImage->GetPixelFormat();
 

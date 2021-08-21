@@ -154,7 +154,8 @@ namespace AZ
                 // Remark: for MacOS & Linux it is important to call va_start again before
                 // each call to azvsnprintf. Not required for Windows.
                 va_start(args, format);
-                count = azvscprintf(format, args) + 1; // vscprintf returns a size that doesn't include the null character.
+                count = azvscprintf(format, args);
+                count += 1; // vscprintf returns a size that doesn't include the null character.
                 va_end(args);
                 
                 biggerData.reset(new char[count]);

@@ -959,7 +959,6 @@ namespace AZ
             size_t numInfluencesAdded = 0;
             for (const auto& skinData : sourceMesh.m_skinData)
             {
-                const size_t numJoints = skinData->GetBoneCount();
                 const AZ::u32 controlPointIndex = sourceMeshData->GetControlPointIndex(static_cast<int>(vertexIndex));
                 const size_t numSkinInfluences = skinData->GetLinkCount(controlPointIndex);
 
