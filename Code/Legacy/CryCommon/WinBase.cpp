@@ -829,7 +829,7 @@ const int comparePathNames(const char* cpFirst, const char* cpSecond, unsigned i
     return memicmp(first.c_str(), second.c_str(), length);
 }
 
-#if defined(LINUX) || defined(APPLE) || defined(DEFINE_FIX_ONE_PATH_ELEMENT)
+#if (defined(LINUX) || defined(APPLE)) && defined(DEFINE_FIX_ONE_PATH_ELEMENT)
 static bool FixOnePathElement(char* path)
 {
     if (*path == '\0')

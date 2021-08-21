@@ -92,7 +92,7 @@ using DetachEnvironmentFunction = void(*)();
     #define HMODULE void*
 static const char* gEnvName("MODULE_PATH");
 
-static const char* GetModulePath()
+inline const char* GetModulePath()
 {
     return getenv(gEnvName);
 }
@@ -107,8 +107,6 @@ inline void SetModulePath(const char* pModulePath)
 inline HMODULE CryLoadLibrary(const char* libName, bool bLazy = false, bool bInModulePath = true)
 {
     const char* libPath = nullptr;
-    char pathBuffer[MAX_PATH] = {0};
-    
     libPath = libName;
 
 #if !defined(AZ_PLATFORM_ANDROID)
@@ -135,6 +133,7 @@ inline HMODULE CryLoadLibrary(const char* libName, bool bLazy = false, bool bInM
                 }
             #endif
         }
+        char pathBuffer[MAX_PATH] = {0};
         sprintf_s(pathBuffer, "%s/%s", modulePath, libName);
         libPath = pathBuffer;
     }

@@ -632,6 +632,9 @@ namespace AzFramework
 
     static void CreateUserCache(const AZ::IO::FixedMaxPath& cacheUserPath, AZ::IO::FileIOBase& fileIoBase)
     {
+        constexpr const char* userCachePathFilename{ "Cache" };
+        AZ::IO::FixedMaxPath userCachePath = cacheUserPath / userCachePathFilename;
+#if AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
         // The number of max attempts ultimately dictates the number of Lumberyard instances that can run
         // simultaneously.  This should be a reasonably high number so that it doesn't artificially limit
         // the number of instances (ex: parallel level exports via multiple Editor runs).  It also shouldn't
@@ -640,9 +643,6 @@ namespace AzFramework
         // 128 seems like a reasonable compromise.
         constexpr int maxAttempts = 128;
 
-        constexpr const char* userCachePathFilename{ "Cache" };
-        AZ::IO::FixedMaxPath userCachePath = cacheUserPath / userCachePathFilename;
-#if AZ_TRAIT_OS_IS_HOST_OS_PLATFORM
         int attemptNumber;
         for (attemptNumber = 0; attemptNumber < maxAttempts; ++attemptNumber)
         {
