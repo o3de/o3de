@@ -338,6 +338,10 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
         else command += '.cmd'
         command += " -u ${pipelineConfig.BUILD_ENTRY_POINT} --platform ${platform} --type clean"
         palSh(command, "Running ${platform} clean")
+
+        if(fileExists('.lfsconfig')) {
+            palSh("git lfs install", "LFS config exists. Installing LFS hooks to local repo")
+        }
     }
 }
 
