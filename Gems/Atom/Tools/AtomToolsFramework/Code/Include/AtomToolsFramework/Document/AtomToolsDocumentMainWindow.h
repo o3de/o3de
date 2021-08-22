@@ -12,6 +12,7 @@
 #include <AtomToolsFramework/Document/AtomToolsDocumentNotificationBus.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindow.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzQtComponents/Components/Widgets/TabWidget.h>
 #endif
 
 namespace AtomToolsFramework
@@ -30,7 +31,35 @@ namespace AtomToolsFramework
         AtomToolsDocumentMainWindow(QWidget* parent = 0);
         ~AtomToolsDocumentMainWindow();
 
-    private:
+    protected:
+        void AddDocumentMenus();
+        void AddDocumentTabBar();
+
+        QString GetDocumentPath(const AZ::Uuid& documentId) const;
+
+        AZ::Uuid GetDocumentIdFromTab(const int tabIndex) const;
+
+        void AddTabForDocumentId(
+            const AZ::Uuid& documentId,
+            const AZStd::string& label,
+            const AZStd::string& toolTip);
+
+        void RemoveTabForDocumentId(const AZ::Uuid& documentId);
+
+        void UpdateTabForDocumentId(
+            const AZ::Uuid& documentId, const AZStd::string& label, const AZStd::string& toolTip, bool isModified);
+
+        void SelectPreviousTab();
+
+        void SelectNextTab();
+
+        virtual void OpenTabContextMenu() const;
+        virtual bool GetCreateFileInfo(AZStd::string& openPath, AZStd::string& savePath) const;
+        virtual bool GetOpenFileInfo(AZStd::string& openPath) const;
+        virtual QWidget* CreateViewForDocumemt(const AZ::Uuid& documentId) const;
+        virtual void OpenSettings() const;
+        virtual void OpenHelp() const;
+        virtual void OpenAbout() const;
 
         // AtomToolsDocumentNotificationBus::Handler overrides...
         void OnDocumentOpened(const AZ::Uuid& documentId) override;
@@ -38,13 +67,6 @@ namespace AtomToolsFramework
         void OnDocumentModified(const AZ::Uuid& documentId) override;
         void OnDocumentUndoStateChanged(const AZ::Uuid& documentId) override;
         void OnDocumentSaved(const AZ::Uuid& documentId) override;
-
-        void CreateMenu() override;
-        void CreateTabBar() override;
-
-        QString GetDocumentPath(const AZ::Uuid& documentId) const;
-
-        void OpenTabContextMenu() override;
 
         void closeEvent(QCloseEvent* closeEvent) override;
 
@@ -73,5 +95,6 @@ namespace AtomToolsFramework
         QMenu* m_menuHelp = {};
         QAction* m_actionHelp = {};
         QAction* m_actionAbout = {};
+        AzQtComponents::TabWidget* m_tabWidget = {};
     };
 } // namespace AtomToolsFramework
