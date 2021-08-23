@@ -58,36 +58,26 @@ bool C3DConnexionDriver::InitDevice()
         //Doc says RIM_TYPEHID: Data comes from an HID that is not a keyboard or a mouse.
         if (m_pRawInputDeviceList[i].dwType == RIM_TYPEHID)
         {
-            UINT nchars = 300;
-            TCHAR deviceName[300];
-            if (GetRawInputDeviceInfo(m_pRawInputDeviceList[i].hDevice,
-                    RIDI_DEVICENAME, deviceName, &nchars) >= 0)
-            {
-                //_RPT3(_CRT_WARN, "Device[%d]: handle=0x%x name = %S\n", i, g_pRawInputDeviceList[i].hDevice, deviceName);
-            }
-
             RID_DEVICE_INFO dinfo;
             UINT sizeofdinfo = sizeof(dinfo);
             dinfo.cbSize = sizeofdinfo;
-            if (GetRawInputDeviceInfo(m_pRawInputDeviceList[i].hDevice,
-                    RIDI_DEVICEINFO, &dinfo, &sizeofdinfo) >= 0)
+            GetRawInputDeviceInfo(m_pRawInputDeviceList[i].hDevice,
+                RIDI_DEVICEINFO, &dinfo, &sizeofdinfo);
+            if (dinfo.dwType == RIM_TYPEHID)
             {
-                if (dinfo.dwType == RIM_TYPEHID)
+                RID_DEVICE_INFO_HID* phidInfo = &dinfo.hid;
+                // Add this one to the list of interesting devices?
+                // Actually only have to do this once to get input from all usage 1, usagePage 8 devices
+                // This just keeps out the other usages.
+                // You might want to put up a list for users to select amongst the different devices.
+                // In particular, to assign separate functionality to the different devices.
+                if (phidInfo->usUsagePage == 1 && phidInfo->usUsage == 8)
                 {
-                    RID_DEVICE_INFO_HID* phidInfo = &dinfo.hid;
-                    // Add this one to the list of interesting devices?
-                    // Actually only have to do this once to get input from all usage 1, usagePage 8 devices
-                    // This just keeps out the other usages.
-                    // You might want to put up a list for users to select amongst the different devices.
-                    // In particular, to assign separate functionality to the different devices.
-                    if (phidInfo->usUsagePage == 1 && phidInfo->usUsage == 8)
-                    {
-                        m_pRawInputDevices[m_nUsagePage1Usage8Devices].usUsagePage = phidInfo->usUsagePage;
-                        m_pRawInputDevices[m_nUsagePage1Usage8Devices].usUsage     = phidInfo->usUsage;
-                        m_pRawInputDevices[m_nUsagePage1Usage8Devices].dwFlags     = 0;
-                        m_pRawInputDevices[m_nUsagePage1Usage8Devices].hwndTarget  = nullptr;
-                        m_nUsagePage1Usage8Devices++;
-                    }
+                    m_pRawInputDevices[m_nUsagePage1Usage8Devices].usUsagePage = phidInfo->usUsagePage;
+                    m_pRawInputDevices[m_nUsagePage1Usage8Devices].usUsage     = phidInfo->usUsage;
+                    m_pRawInputDevices[m_nUsagePage1Usage8Devices].dwFlags     = 0;
+                    m_pRawInputDevices[m_nUsagePage1Usage8Devices].hwndTarget  = nullptr;
+                    m_nUsagePage1Usage8Devices++;
                 }
             }
         }

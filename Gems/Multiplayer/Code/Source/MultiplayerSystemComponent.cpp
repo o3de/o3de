@@ -643,6 +643,7 @@ namespace Multiplayer
             {
                 controlledEntity.GetNetBindComponent()->SetOwningConnectionId(connection->GetConnectionId());
             }
+            controlledEntity.Activate();
             
             if (connection->GetUserData() == nullptr) // Only add user data if the connect event handler has not already done so
             {
@@ -763,6 +764,7 @@ namespace Multiplayer
             {
                 controlledEntityNetBindComponent->SetAllowAutonomy(true);
             }
+            controlledEntity.Activate();
         }
         
         AZLOG_INFO("Multiplayer operating in %s mode", GetEnumString(m_agentType));
@@ -969,7 +971,7 @@ namespace Multiplayer
     NetworkEntityHandle MultiplayerSystemComponent::SpawnDefaultPlayerPrefab()
     {
         PrefabEntityId playerPrefabEntityId(AZ::Name(static_cast<AZ::CVarFixedString>(sv_defaultPlayerSpawnAsset).c_str()));
-        INetworkEntityManager::EntityList entityList = m_networkEntityManager.CreateEntitiesImmediate(playerPrefabEntityId, NetEntityRole::Authority, AZ::Transform::CreateIdentity());
+        INetworkEntityManager::EntityList entityList = m_networkEntityManager.CreateEntitiesImmediate(playerPrefabEntityId, NetEntityRole::Authority, AZ::Transform::CreateIdentity(), Multiplayer::AutoActivate::DoNotActivate);
 
         NetworkEntityHandle controlledEntity;
         if (entityList.size() > 0)

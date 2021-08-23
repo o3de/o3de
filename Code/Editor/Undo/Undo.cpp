@@ -49,7 +49,7 @@ public:
     }
     void Undo(bool bUndo) override
     {
-        for (size_t i = m_undoSteps.size() - 1; i >= 0; i--)
+        for (int i = static_cast<int>(m_undoSteps.size()) - 1; i >= 0; i--)
         {
             m_undoSteps[i]->Undo(bUndo);
         }

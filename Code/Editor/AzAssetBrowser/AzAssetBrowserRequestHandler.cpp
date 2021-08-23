@@ -675,14 +675,14 @@ void AzAssetBrowserRequestHandler::OpenAssetInAssociatedEditor(const AZ::Data::A
                     firstValidOpener = &openerDetails;
                 }
                 // bind a callback such that when the menu item is clicked, it sets that as the opener to use.
-                menu.addAction(openerDetails.m_iconToUse, QObject::tr(openerDetails.m_displayText.c_str()), mainWindow, AZStd::bind(switchToOpener, &openerDetails));
+                menu.addAction(openerDetails.m_iconToUse, QObject::tr(openerDetails.m_displayText.c_str()), mainWindow, [switchToOpener, details = &openerDetails] { return switchToOpener(details); });
             }
         }
 
         if (numValidOpeners > 1) // more than one option was added
         {
             menu.addSeparator();
-            menu.addAction(QObject::tr("Cancel"), AZStd::bind(switchToOpener, nullptr)); // just something to click on to avoid doing anything.
+            menu.addAction(QObject::tr("Cancel"), [switchToOpener] { return switchToOpener(nullptr); }); // just something to click on to avoid doing anything.
             menu.exec(QCursor::pos());
         }
         else if (numValidOpeners == 1)

@@ -21,6 +21,8 @@
 #include <AzFramework/Network/AssetProcessorConnection.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
+#include <AzQtComponents/Components/GlobalEventFilter.h>
+
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 #include <AzToolsFramework/Asset/AssetSystemComponent.h>
@@ -61,14 +63,26 @@ namespace AtomToolsFramework
         : Application(argc, argv)
         , AzQtApplication(*argc, *argv)
     {
+        // Suppress spam from the Source Control system
+        m_traceLogger.AddWindowFilter(AzToolsFramework::SCC_WINDOW);
+
+        installEventFilter(new AzQtComponents::GlobalEventFilter(this));
+
+        AZ::IO::FixedMaxPath engineRootPath;
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            settingsRegistry->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+        }
+
+        m_styleManager.reset(new AzQtComponents::StyleManager(this));
+        m_styleManager->initialize(this, engineRootPath);
+
         connect(&m_timer, &QTimer::timeout, this, [&]()
         {
             this->PumpSystemEventLoopUntilEmpty();
             this->Tick();
         });
 
-        // Suppress spam from the Source Control system
-        m_traceLogger.AddWindowFilter(AzToolsFramework::SCC_WINDOW);
     }
 
     AtomToolsApplication ::~AtomToolsApplication()

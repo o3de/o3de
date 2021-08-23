@@ -10,12 +10,11 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/EBus/EBus.h>
-#include <CrySystemBus.h>
-#include <HeightmapUpdateNotificationBus.h>
+#include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <SurfaceData/SurfaceDataModifierRequestBus.h>
 #include <SurfaceData/SurfaceDataProviderRequestBus.h>
 
-namespace SurfaceData
+namespace Terrain
 {
     class TerrainSurfaceDataSystemConfig
         : public AZ::ComponentConfig
@@ -31,9 +30,8 @@ namespace SurfaceData
     */
     class TerrainSurfaceDataSystemComponent
         : public AZ::Component
-        , private SurfaceDataProviderRequestBus::Handler
-        , private AZ::HeightmapUpdateNotificationBus::Handler
-        , private CrySystemEventBus::Handler
+        , private SurfaceData::SurfaceDataProviderRequestBus::Handler
+        , private AzFramework::Terrain::TerrainDataNotificationBus::Handler
     {
         friend class EditorTerrainSurfaceDataSystemComponent;
         TerrainSurfaceDataSystemComponent(const TerrainSurfaceDataSystemConfig&);
@@ -58,25 +56,19 @@ namespace SurfaceData
 
         //////////////////////////////////////////////////////////////////////////
         // SurfaceDataProviderRequestBus
-        void GetSurfacePoints(const AZ::Vector3& inPosition, SurfacePointList& surfacePointList) const;
-
-        ////////////////////////////////////////////////////////////////////////////
-        // CrySystemEvents
-        void OnCrySystemInitialized(ISystem& system, const SSystemInitParams& systemInitParams) override;
-        void OnCrySystemShutdown(ISystem& system) override;
+        void GetSurfacePoints(const AZ::Vector3& inPosition, SurfaceData::SurfacePointList& surfacePointList) const;
 
         //////////////////////////////////////////////////////////////////////////
-        // AZ::HeightmapUpdateNotificationBus
-        void HeightmapModified(const AZ::Aabb& bounds) override;
+        // AzFramework::Terrain::TerrainDataNotificationBus
+        void OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask) override;
 
     private:
         void UpdateTerrainData(const AZ::Aabb& dirtyRegion);
         AZ::Aabb GetSurfaceAabb() const;
-        SurfaceTagVector GetSurfaceTags() const;
-        SurfaceDataRegistryHandle m_providerHandle = InvalidSurfaceDataRegistryHandle;
+        SurfaceData::SurfaceTagVector GetSurfaceTags() const;
+        SurfaceData::SurfaceDataRegistryHandle m_providerHandle = SurfaceData::InvalidSurfaceDataRegistryHandle;
 
         TerrainSurfaceDataSystemConfig m_configuration;
-        ISystem* m_system = nullptr;
 
         AZ::Aabb m_terrainBounds = AZ::Aabb::CreateNull();
         AZStd::atomic_bool m_terrainBoundsIsValid{ false };
