@@ -32,7 +32,7 @@ namespace Terrain
                     ->Attribute(AZ::Edit::Attributes::Category, "Terrain")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/Components/TerrainWorld.svg")
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Editor/Icons/Components/Viewport/TerrainWorld.svg")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZStd::vector<AZ::Crc32>({ AZ_CRC("Level") }))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("Level") }))
                 ;
             }
         }

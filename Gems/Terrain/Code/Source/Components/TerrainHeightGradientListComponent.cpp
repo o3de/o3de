@@ -45,7 +45,7 @@ namespace Terrain
                     ->DataElement(0, &TerrainHeightGradientListConfig::m_gradientEntities, "Gradient Entities", "Ordered list of gradients to use as height providers.")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, true)
-                    ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC("GradientService", 0x21c18d23))
+                    ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("GradientService"))
                 ;
             }
         }
@@ -53,19 +53,19 @@ namespace Terrain
 
     void TerrainHeightGradientListComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("TerrainHeightProviderService"));
+        services.push_back(AZ_CRC_CE("TerrainHeightProviderService"));
     }
 
     void TerrainHeightGradientListComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("TerrainHeightProviderService"));
-        services.push_back(AZ_CRC("GradientService"));
+        services.push_back(AZ_CRC_CE("TerrainHeightProviderService"));
+        services.push_back(AZ_CRC_CE("GradientService"));
     }
 
     void TerrainHeightGradientListComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("TerrainAreaService"));
-        services.push_back(AZ_CRC("BoxShapeService"));
+        services.push_back(AZ_CRC_CE("TerrainAreaService"));
+        services.push_back(AZ_CRC_CE("BoxShapeService"));
     }
 
     void TerrainHeightGradientListComponent::Reflect(AZ::ReflectContext* context)

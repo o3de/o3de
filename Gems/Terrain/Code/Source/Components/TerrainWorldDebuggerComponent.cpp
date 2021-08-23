@@ -40,7 +40,7 @@ namespace Terrain
                 edit->Class<TerrainWorldDebuggerConfig>(
                     "Terrain World Debugger Component", "Optional component for enabling terrain debugging features.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZStd::vector<AZ::Crc32>({ AZ_CRC("Level") }))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("Level") }))
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
 
@@ -52,17 +52,17 @@ namespace Terrain
 
     void TerrainWorldDebuggerComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("TerrainDebugService"));
+        services.push_back(AZ_CRC_CE("TerrainDebugService"));
     }
 
     void TerrainWorldDebuggerComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("TerrainDebugService"));
+        services.push_back(AZ_CRC_CE("TerrainDebugService"));
     }
 
     void TerrainWorldDebuggerComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& services)
     {
-        services.push_back(AZ_CRC("TerrainService"));
+        services.push_back(AZ_CRC_CE("TerrainService"));
     }
 
     void TerrainWorldDebuggerComponent::Reflect(AZ::ReflectContext* context)
