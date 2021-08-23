@@ -366,7 +366,7 @@ namespace AzFramework
             AZStd::set<AZStd::string> tags;
             AZStd::string resolvedFilePath = ResolveFilePath(filePath);
 
-            auto found = AZStd::find_if(m_fileTagsMap.begin(), m_fileTagsMap.end(), [filePath, resolvedFilePath](auto& entry) -> bool
+            auto found = AZStd::find_if(m_fileTagsMap.begin(), m_fileTagsMap.end(), [resolvedFilePath](auto& entry) -> bool
             {
                 return resolvedFilePath == ResolveFilePath(entry.first);
             });

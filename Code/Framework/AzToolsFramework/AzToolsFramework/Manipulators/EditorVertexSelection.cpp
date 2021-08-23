@@ -1306,7 +1306,7 @@ namespace AzToolsFramework
     void EditorVertexSelectionVariable<Vertex>::PrepareActions()
     {
         ActionOverride deleteAction = CreateDeleteAction(
-            s_deleteVerticesTitle, s_duplicateVerticesDesc,
+            s_deleteVerticesTitle, s_deleteVerticesDesc,
             [this]()
             {
                 DestroySelected();

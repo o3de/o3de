@@ -469,7 +469,7 @@ namespace JsonSerializationTests
             *this->m_jsonDocument,
             *this->m_jsonDeserializationContext);
 
-        ASSERT_EQ(Outcomes::Success, result.GetOutcome());
+        ASSERT_EQ(Outcomes::DefaultsUsed, result.GetOutcome());
         EXPECT_TRUE(defaultValue == output);
     }
 
