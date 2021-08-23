@@ -87,7 +87,6 @@ namespace AZ
         void MaterialComponentController::Deactivate()
         {
             MaterialComponentRequestBus::Handler::BusDisconnect();
-            MeshComponentNotificationBus::Handler::BusDisconnect();
             TickBus::Handler::BusDisconnect();
             ReleaseMaterials();
 
@@ -115,55 +114,6 @@ namespace AZ
             InitializeMaterialInstance(asset);
         }
         
-        void MaterialComponentController::OnModelReady(const Data::Asset<RPI::ModelAsset>&, const Data::Instance<RPI::Model>&)
-        {
-            MeshComponentNotificationBus::Handler::BusDisconnect();
-
-            // If there is a circumstance where the saved material assignments are empty, fill them in with the default material.
-            // (This could happen as a result of LoadMaterials() clearing the asset reference to deal with an edge case)
-
-            // Now that a model asset is ready, see if there are any empty assignments that need to be filled...
-            RPI::ModelMaterialSlotMap modelMaterialSlots;
-            MaterialReceiverRequestBus::EventResult(modelMaterialSlots, m_entityId, &MaterialReceiverRequestBus::Events::GetModelMaterialSlots);
-
-            AZStd::vector<Data::Asset<RPI::MaterialAsset>> newMaterialAssets;
-            newMaterialAssets.reserve(m_configuration.m_materials.size());
-
-            // First we fill the empty slots but don't connect to AssetBus yet. If the same material asset appears multiple times,
-            // AssetBus will call OnAssetReady only the *first* time we connect for that asset. The full list of m_configuration.m_materials
-            // needs to be updated before that happens.
-            for (auto& materialPair : m_configuration.m_materials)
-            {
-                auto& materialAsset = materialPair.second.m_materialAsset;
-
-                if (!materialAsset.GetId().IsValid())
-                {
-                    auto slotIter = modelMaterialSlots.find(materialPair.first.m_materialSlotStableId);
-                    if (slotIter != modelMaterialSlots.end())
-                    {
-                        materialAsset = slotIter->second.m_defaultMaterialAsset;
-                        newMaterialAssets.push_back(materialAsset);
-                    }
-                    else
-                    {
-                        AZ_Error("MaterialComponentController", false, "Could not find material slot %d", materialPair.first.m_materialSlotStableId);
-                    }
-                }
-            }
-
-            // Now that the configuration is updated with all the default material assets, we can load and connect them.
-            // If there are duplicates in this list, the redundant calls will be ignored.
-            for (auto& materialAsset : newMaterialAssets)
-            {
-                if (!materialAsset.IsReady())
-                {
-                    materialAsset.QueueLoad();
-                }
-
-                Data::AssetBus::MultiHandler::BusConnect(materialAsset.GetId());
-            }
-        }
-
         void MaterialComponentController::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
         {
             AZStd::unordered_set<MaterialAssignmentId> propertyOverrides;
@@ -239,41 +189,11 @@ namespace AZ
             {
                 auto& materialAsset = materialPair.second.m_materialAsset;
 
-                // This is a special case where a material was auto-generated from the model file, connected to a Material Component by the user,
-                // and then later a setting was changed to NOT auto-generate the model materials anymore. We need to switch to the new default
-                // material rather than trying to use the old default material which no longer exists. If that's the case, we reset the asset
-                // and OnModelReady will fill in the appropriate default material asset later.
+                if (materialAsset.GetId().IsValid() && !Data::AssetBus::MultiHandler::BusIsConnectedId(materialAsset.GetId()))
                 {
-                    Data::AssetId modelAssetId;
-                    MeshComponentRequestBus::EventResult(modelAssetId, m_entityId, &MeshComponentRequestBus::Events::GetModelAssetId);
-                    bool materialWasGeneratedFromModel = (modelAssetId.m_guid == materialAsset.GetId().m_guid);
-
-                    Data::AssetInfo assetInfo;
-                    Data::AssetCatalogRequestBus::BroadcastResult(assetInfo, &Data::AssetCatalogRequestBus::Events::GetAssetInfoById, materialAsset.GetId());
-                    bool materialAssetExists = assetInfo.m_assetId.IsValid();
-
-                    if (materialWasGeneratedFromModel && !materialAssetExists)
-                    {
-                        AZ_Warning("MaterialComponentController", false, "The default material assignment for this slot has changed and will be replaced (was '%s').",
-                            materialAsset.ToString<AZStd::string>().c_str());
-                        materialAsset.Reset();
-                    }
-                }
-
-                if (materialAsset.GetId().IsValid())
-                {
-                    if (!Data::AssetBus::MultiHandler::BusIsConnectedId(materialAsset.GetId()))
-                    {
-                        anyQueued = true;
-                        materialAsset.QueueLoad();
-                        Data::AssetBus::MultiHandler::BusConnect(materialAsset.GetId());
-                    }
-                }
-                else
-                {
-                    // Since a material asset wasn't found, we'll need to supply a default material. But the default materials
-                    // won't be known until after the mesh component has loaded the model data.
-                    MeshComponentNotificationBus::Handler::BusConnect(m_entityId);
+                    anyQueued = true;
+                    materialAsset.QueueLoad();
+                    Data::AssetBus::MultiHandler::BusConnect(materialAsset.GetId());
                 }
             }
 
