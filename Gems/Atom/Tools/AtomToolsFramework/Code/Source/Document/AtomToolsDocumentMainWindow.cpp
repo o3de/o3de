@@ -320,7 +320,7 @@ namespace AtomToolsFramework
         }
     }
 
-    inline QWidget* AtomToolsDocumentMainWindow::CreateDocumentTabView(const AZ::Uuid& documentId)
+    QWidget* AtomToolsDocumentMainWindow::CreateDocumentTabView(const AZ::Uuid& documentId)
     {
         AZ_UNUSED(documentId);
         auto contentWidget = new QWidget(centralWidget());
@@ -356,14 +356,14 @@ namespace AtomToolsFramework
         }
     }
 
-    inline bool AtomToolsDocumentMainWindow::GetCreateDocumentParams(AZStd::string& openPath, AZStd::string& savePath)
+    bool AtomToolsDocumentMainWindow::GetCreateDocumentParams(AZStd::string& openPath, AZStd::string& savePath)
     {
         AZ_UNUSED(openPath);
         AZ_UNUSED(savePath);
         return false;
     }
 
-    inline bool AtomToolsDocumentMainWindow::GetOpenDocumentParams(AZStd::string& openPath)
+    bool AtomToolsDocumentMainWindow::GetOpenDocumentParams(AZStd::string& openPath)
     {
         AZ_UNUSED(openPath);
         return false;
