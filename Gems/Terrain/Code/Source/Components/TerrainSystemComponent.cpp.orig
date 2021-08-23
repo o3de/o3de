@@ -14,8 +14,11 @@
 #include <AzCore/Serialization/EditContextConstants.inl>
 
 #include <Atom/RPI.Public/FeatureProcessorFactory.h>
+<<<<<<< HEAD
 #include <TerrainRenderer/TerrainFeatureProcessor.h>
 #include <TerrainSystem/TerrainSystem.h>
+=======
+>>>>>>> development
 
 namespace Terrain
 {
@@ -34,8 +37,11 @@ namespace Terrain
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                 ;
             }
+<<<<<<< HEAD
 
             Terrain::TerrainFeatureProcessor::Reflect(context);
+=======
+>>>>>>> development
         }
     }
 
@@ -64,18 +70,24 @@ namespace Terrain
 
     void TerrainSystemComponent::Activate()
     {
+<<<<<<< HEAD
         // Currently, the Terrain System Component owns the Terrain System instance because the Terrain World component gets recreated
         // every time an entity is added or removed to a level.  If this ever changes, the Terrain System ownership could move into
         // the level component.
         m_terrainSystem = new TerrainSystem();
         AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessor<Terrain::TerrainFeatureProcessor>();
+=======
+>>>>>>> development
     }
 
     void TerrainSystemComponent::Deactivate()
     {
+<<<<<<< HEAD
         delete m_terrainSystem;
         m_terrainSystem = nullptr;
 
         AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<Terrain::TerrainFeatureProcessor>();
+=======
+>>>>>>> development
     }
 }

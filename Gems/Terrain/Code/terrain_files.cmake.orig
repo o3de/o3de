@@ -7,14 +7,18 @@
 #
 
 set(FILES
+<<<<<<< HEAD
     Source/Components/TerrainHeightGradientListComponent.cpp
     Source/Components/TerrainHeightGradientListComponent.h
     Source/Components/TerrainLayerSpawnerComponent.cpp
     Source/Components/TerrainLayerSpawnerComponent.h
+=======
+>>>>>>> development
     Source/Components/TerrainSurfaceDataSystemComponent.cpp
     Source/Components/TerrainSurfaceDataSystemComponent.h
     Source/Components/TerrainSystemComponent.cpp
     Source/Components/TerrainSystemComponent.h
+<<<<<<< HEAD
     Source/Components/TerrainWorldComponent.cpp
     Source/Components/TerrainWorldComponent.h
     Source/Components/TerrainWorldDebuggerComponent.cpp
@@ -24,4 +28,6 @@ set(FILES
     Source/TerrainSystem/TerrainSystem.cpp
     Source/TerrainSystem/TerrainSystem.h
     Source/TerrainSystem/TerrainSystemBus.h
+=======
+>>>>>>> development
 )

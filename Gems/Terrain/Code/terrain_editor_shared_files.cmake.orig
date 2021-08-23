@@ -7,6 +7,7 @@
 #
 
 set(FILES
+<<<<<<< HEAD
     Source/EditorComponents/EditorTerrainHeightGradientListComponent.cpp
     Source/EditorComponents/EditorTerrainHeightGradientListComponent.h
     Source/EditorComponents/EditorTerrainLayerSpawnerComponent.cpp
@@ -15,6 +16,8 @@ set(FILES
     Source/EditorComponents/EditorTerrainWorldComponent.h
     Source/EditorComponents/EditorTerrainWorldDebuggerComponent.cpp
     Source/EditorComponents/EditorTerrainWorldDebuggerComponent.h
+=======
+>>>>>>> development
     Source/EditorComponents/EditorTerrainSystemComponent.cpp
     Source/EditorComponents/EditorTerrainSystemComponent.h
     Source/EditorTerrainModule.cpp
