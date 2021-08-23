@@ -44,7 +44,7 @@ namespace LogCVars
     int max_backup_directory_size_mb = 200; //200MB default
 };
 
-#ifndef _RELEASE
+#if defined(SUPPORT_LOG_IDENTER)
 static CLog::LogStringType indentString ("    ");
 #endif
 
