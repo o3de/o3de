@@ -11,7 +11,6 @@
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AtomCore/Instance/InstanceDatabase.h>
-#include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
 
 namespace AZ
 {
