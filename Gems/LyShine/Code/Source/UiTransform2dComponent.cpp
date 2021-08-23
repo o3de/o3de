@@ -24,6 +24,7 @@
 #include "UiCanvasComponent.h"
 
 #include <set>
+#include <list>
 
 namespace
 {
@@ -275,7 +276,7 @@ AZ::Vector2 UiTransform2dComponent::GetViewportSpacePivot()
         AZ::Matrix4x4 transform;
         parentTransformComponent->GetTransformToViewport(transform);
 
-        point3 = transform * point3;    
+        point3 = transform * point3;
     }
 
     return AZ::Vector2(point3.GetX(), point3.GetY());

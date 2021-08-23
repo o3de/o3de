@@ -20,10 +20,8 @@
 #include <Range.h>
 #include <AnimKey.h>
 #include <ISplines.h>
-#include <IRenderer.h>
-#include <IRenderAuxGeom.h>
+#include <Cry_Camera.h>
 #include <VectorSet.h>
-//#include <CryName.h>
 
 // forward declaration.
 struct IAnimTrack;
@@ -116,7 +114,7 @@ public:
     {
         *this = name;
     }
-   
+
     CAnimParamType(AnimParamType type)
     {
         *this = type;
@@ -838,7 +836,7 @@ public:
     // override this method to handle explicit setting of time
     virtual void TimeChanged([[maybe_unused]] float newTime) {};
 
-    // Compares all of the node's track values at the given time with the associated property value and 
+    // Compares all of the node's track values at the given time with the associated property value and
     //     sets a key at that time if they are different to match the latter
     // Returns the number of keys set
     virtual int SetKeysForChangedTrackValues([[maybe_unused]] float time) { return 0; };
@@ -1309,7 +1307,7 @@ struct IMovieSystem
 
     // Disable Fixed Step cvars and return to previous settings
     virtual void DisableFixedStepForCapture() = 0;
- 
+
     // Signal the capturing start.
     virtual void StartCapture(const ICaptureKey& key, int frame) = 0;
 

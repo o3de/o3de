@@ -27,7 +27,6 @@ class CXMLPatcher;
 //////////////////////////////////////////////////////////////////////////
 class CXmlUtils
     : public IXmlUtils
-//    , public ISystemEventListener
 {
 public:
     CXmlUtils(ISystem* pSystem);

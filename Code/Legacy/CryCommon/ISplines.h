@@ -11,7 +11,6 @@
 #define CRYINCLUDE_CRYCOMMON_ISPLINES_H
 #pragma once
 
-//#include <CrySizer.h>
 #include <IXml.h>
 
 //////////////////////////////////////////////////////////////////////////
@@ -638,7 +637,7 @@ namespace spline
         //////////////////////////////////////////////////////////////////////////
 
         static void Reflect(AZ::SerializeContext* serializeContext) {}
-     
+
         inline void add_ref()
         {
             ++m_refCount;

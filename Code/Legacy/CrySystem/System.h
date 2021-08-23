@@ -16,7 +16,6 @@
 #include "Timer.h"
 #include <CryVersion.h>
 #include "CmdLine.h"
-//#include "CryName.h"
 
 #include <AzFramework/Archive/ArchiveVars.h>
 #include "RenderBus.h"

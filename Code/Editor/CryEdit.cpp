@@ -78,7 +78,6 @@ AZ_POP_DISABLE_WARNING
 
 // CryCommon
 #include <CryCommon/ITimer.h>
-//#include <CryCommon/IPhysics.h>
 #include <CryCommon/ILevelSystem.h>
 
 // Editor

@@ -54,6 +54,7 @@
 
 // CryCommon
 #include <CryCommon/HMDBus.h>
+#include <CryCommon/IRenderAuxGeom.h>
 #include <CryCommon/physinterface.h>
 
 // AzFramework

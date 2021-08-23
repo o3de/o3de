@@ -18,6 +18,8 @@
 
 #include "TrackEventTrack.h"
 
+#include <list>
+
 class CAnimSequence
     : public IAnimSequence
 {
