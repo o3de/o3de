@@ -44,11 +44,9 @@ namespace {{attribute_Namespace}}
 {
 {% endif %}
 {% set className = Class.attrib['Name'] %}
-{% set baseClassPair = [] %}
-{% if macros.CreateBaseClassVariables(Class, baseClassPair) %}{% endif %}
-{% set baseClass = baseClassPair[0] %}
-{% set baseClasses = baseClassPair[1] %}
-
+{% set bases = Class.attrib['Base'].split(';') if Class.attrib['Base'] is string else ["ScriptCanvas::Node", "ScriptCanvas::Node"] %}
+{% set baseClass = bases[0] %}
+{% set baseClasses = bases[1] if bases|length() > 1 else "ScriptCanvas::Node" %}
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////
@@ -68,7 +66,7 @@ namespace {{attribute_Namespace}}
 // You must #include the generated header into the source header
 #define SCRIPTCANVAS_NODE_{{ className }} \
 public: \
-    AZ_COMPONENT({{ className }}, "{{ classUuid }}", {{ baseClasses}} ); \
+    AZ_COMPONENT({{ className }}, "{{ classUuid }}", {{ baseClasses }} ); \
     static void Reflect(AZ::ReflectContext* reflection); \
     void ConfigureSlots() override; \
     bool RequiresDynamicSlotOrdering() const override; \

@@ -105,13 +105,14 @@ namespace ScriptCanvas
         // it is very important to track these from the moment they are created...
         friend struct AZ::Serialize::InstanceFactory<BehaviorContextObject, true, false>;
         friend struct AZ::AnyTypeInfoConcept<BehaviorContextObject, void>;
+
         //...so don't use the ctors, use the Create functions...
         //...the friend declarations are here for compatibility with the serialization system only
         AZ_FORCE_INLINE BehaviorContextObject() = default;
-        BehaviorContextObject& operator=(const BehaviorContextObject&) = default;
-        BehaviorContextObject(const BehaviorContextObject&) = default;
-        BehaviorContextObject(BehaviorContextObject&&) = default;
-        BehaviorContextObject& operator=(BehaviorContextObject&& source) = default;
+
+        BehaviorContextObject& operator=(const BehaviorContextObject&) = delete;
+
+        BehaviorContextObject(const BehaviorContextObject&) = delete;
 
         // copy ctor
         AZ_FORCE_INLINE BehaviorContextObject(const void* source, const AnyTypeInfo& typeInfo, AZ::u32 flags);

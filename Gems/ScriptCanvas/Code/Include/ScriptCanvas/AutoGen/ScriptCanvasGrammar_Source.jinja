@@ -28,11 +28,9 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 #include "{{ xml.attrib['Include'] }}"
 
 {%     for Class in xml.iter('Class') %}
-{% set baseClassPair = [] %}
-{% if macros.CreateBaseClassVariables(Class, baseClassPair) %}{% endif %}
-{% set baseClass = baseClassPair[0] %}
-{% set baseClasses = baseClassPair[1] %}
-
+{% set bases = Class.attrib['Base'].split(';') if Class.attrib['Base'] is string else ["ScriptCanvas::Node", "ScriptCanvas::Node"] %}
+{% set baseClass = bases[0] %}
+{% set baseClasses = bases[1] if bases|length() > 1 else "ScriptCanvas::Node" %}
 void {{ Class.attrib['QualifiedName'] }}::ConfigureSlots()
 {
     {{ baseClass }}::ConfigureSlots();
