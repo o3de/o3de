@@ -43,32 +43,25 @@ enum EProfiledSubsystem
 };
 #undef X
 
-static_assert(static_cast<AZ::Debug::ProfileCategory>(PROFILE_LAST_SUBSYSTEM) == AZ::Debug::ProfileCategory::LegacyLast, "Mismatched AZ and Legacy profile categories");
 #include <AzCore/Debug/EventTrace.h>
 
 
 
 #define FUNCTION_PROFILER_LEGACYONLY(pISystem, subsystem)
 
-#define FUNCTION_PROFILER(pISystem, subsystem) \
-    AZ_PROFILE_FUNCTION(static_cast<AZ::Debug::ProfileCategory>(subsystem));
+#define FUNCTION_PROFILER(pISystem, subsystem)
 
-#define FUNCTION_PROFILER_FAST(pISystem, subsystem, bProfileEnabled) \
-    AZ_PROFILE_FUNCTION(static_cast<AZ::Debug::ProfileCategory>(subsystem));
+#define FUNCTION_PROFILER_FAST(pISystem, subsystem, bProfileEnabled)
 
-#define FUNCTION_PROFILER_ALWAYS(pISystem, subsystem) \
-    AZ_PROFILE_FUNCTION(static_cast<AZ::Debug::ProfileCategory>(subsystem));
+#define FUNCTION_PROFILER_ALWAYS(pISystem, subsystem)
 
 #define FRAME_PROFILER_LEGACYONLY(szProfilerName, pISystem, subsystem)
 
-#define FRAME_PROFILER(szProfilerName, pISystem, subsystem) \
-    AZ_PROFILE_SCOPE(static_cast<AZ::Debug::ProfileCategory>(subsystem), szProfilerName);
+#define FRAME_PROFILER(szProfilerName, pISystem, subsystem)
 
-#define FRAME_PROFILER_FAST(szProfilerName, pISystem, subsystem, bProfileEnabled) \
-    AZ_PROFILE_SCOPE(static_cast<AZ::Debug::ProfileCategory>(subsystem), szProfilerName);
+#define FRAME_PROFILER_FAST(szProfilerName, pISystem, subsystem, bProfileEnabled)
 
-#define FUNCTION_PROFILER_SYS(subsystem) \
-    FUNCTION_PROFILER(gEnv->pSystem, PROFILE_##subsystem)
+#define FUNCTION_PROFILER_SYS(subsystem)
 
 #define STALL_PROFILER(cause)
 

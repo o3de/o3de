@@ -189,7 +189,7 @@ namespace AZ
         void PassSystem::BuildPasses()
         {
             m_state = PassSystemState::BuildingPasses;
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
             AZ_ATOM_PROFILE_FUNCTION("RPI", "PassSystem: BuildPassAttachments");
 
             m_passHierarchyChanged = m_passHierarchyChanged || !m_buildPassList.empty();
@@ -239,7 +239,7 @@ namespace AZ
         void PassSystem::InitializePasses()
         {
             m_state = PassSystemState::InitializingPasses;
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
             AZ_ATOM_PROFILE_FUNCTION("RPI", "PassSystem: BuildPassAttachments");
 
             m_passHierarchyChanged = m_passHierarchyChanged || !m_initializePassList.empty();
@@ -286,7 +286,7 @@ namespace AZ
                     return;
                 }
 
-                AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+                AZ_PROFILE_FUNCTION(AzRender);
 
                 PassValidationResults validationResults;
                 m_rootPass->Validate(validationResults);
@@ -307,7 +307,7 @@ namespace AZ
 
         void PassSystem::FrameUpdate(RHI::FrameGraphBuilder& frameGraphBuilder)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
             AZ_ATOM_PROFILE_FUNCTION("RPI", "PassSystem: FrameUpdate");
 
             ResetFrameStatistics();

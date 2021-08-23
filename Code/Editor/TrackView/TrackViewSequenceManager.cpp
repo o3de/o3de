@@ -227,7 +227,7 @@ void CTrackViewSequenceManager::AddTrackViewSequence(CTrackViewSequence* sequenc
 ////////////////////////////////////////////////////////////////////////////
 void CTrackViewSequenceManager::DeleteSequence(CTrackViewSequence* sequence)
 {
-    const int numSequences = m_sequences.size();
+    const int numSequences = static_cast<int>(m_sequences.size());
     for (int sequenceIndex = 0; sequenceIndex < numSequences; ++sequenceIndex)
     {
         if (m_sequences[sequenceIndex].get() == sequence)
@@ -246,7 +246,7 @@ void CTrackViewSequenceManager::DeleteSequence(CTrackViewSequence* sequence)
                 {
                     AZ::ComponentTypeList requiredComponents;
                     AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(requiredComponents, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetRequiredComponentTypes);
-                    const int numComponentToDeleteEntity = requiredComponents.size() + 1;
+                    const int numComponentToDeleteEntity = static_cast<int>(requiredComponents.size() + 1);
 
                     AZ::Entity::ComponentArrayType entityComponents = entity->GetComponents();
                     if (entityComponents.size() == numComponentToDeleteEntity)
@@ -413,9 +413,9 @@ void CTrackViewSequenceManager::OnDataBaseItemEvent([[maybe_unused]] IDataBaseIt
 {
     if (event != EDataBaseItemEvent::EDB_ITEM_EVENT_ADD)
     {
-        const uint numSequences = m_sequences.size();
+        const size_t numSequences = m_sequences.size();
 
-        for (uint i = 0; i < numSequences; ++i)
+        for (size_t i = 0; i < numSequences; ++i)
         {
             m_sequences[i]->UpdateDynamicParams();
         }

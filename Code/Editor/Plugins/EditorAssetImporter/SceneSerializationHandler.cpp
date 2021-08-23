@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/string/conversions.h>
@@ -37,7 +38,7 @@ namespace AZ
     AZStd::shared_ptr<SceneAPI::Containers::Scene> SceneSerializationHandler::LoadScene(
         const AZStd::string& filePath, Uuid sceneSourceGuid)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+        AZ_PROFILE_FUNCTION(Editor);
         namespace Utilities = AZ::SceneAPI::Utilities;
         using AZ::SceneAPI::Events::AssetImportRequest;
 

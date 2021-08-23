@@ -110,7 +110,7 @@ namespace AZ
             void DestroyBufferResource(VkBuffer vkBuffer) const;
 
         private:
-            Device() = default;
+            Device();
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::Object
@@ -120,7 +120,6 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
             // RHI::Device
             RHI::ResultCode InitInternal(RHI::PhysicalDevice& physicalDevice) override;
-            RHI::ResultCode PostInitInternal(const RHI::DeviceDescriptor& params) override;
 
             void ShutdownInternal() override;
             void BeginFrameInternal() override;
@@ -131,6 +130,7 @@ namespace AZ
             AZStd::vector<RHI::Format> GetValidSwapChainImageFormats(const RHI::WindowHandle& windowHandle) const override;
             AZStd::chrono::microseconds GpuTimestampToMicroseconds(uint64_t gpuTimestamp, RHI::HardwareQueueClass queueClass) const override;
             void FillFormatsCapabilitiesInternal(FormatCapabilitiesList& formatsCapabilities) override;
+            RHI::ResultCode InitializeLimits() override;
             void PreShutdown() override;
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements(const RHI::ImageDescriptor& descriptor) override;
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements(const RHI::BufferDescriptor& descriptor) override;
@@ -152,7 +152,7 @@ namespace AZ
 
             VkDevice m_nativeDevice = VK_NULL_HANDLE;
             VkPhysicalDeviceFeatures m_enabledDeviceFeatures{};
-            VkPipelineStageFlags m_supportedPipelineStageFlagsMask = ~0;
+            VkPipelineStageFlags m_supportedPipelineStageFlagsMask = std::numeric_limits<VkPipelineStageFlags>::max();
 
             AZStd::vector<VkQueueFamilyProperties> m_queueFamilyProperties;
             RHI::Ptr<AsyncUploadQueue> m_asyncUploadQueue;

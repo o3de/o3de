@@ -66,7 +66,7 @@ namespace NvCloth
         MeshNodeInfo& meshNodeInfo,
         MeshClothInfo& meshClothInfo)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Cloth);
+        AZ_PROFILE_FUNCTION(Cloth);
 
         AZ::Data::Asset<AZ::RPI::ModelAsset> modelDataAsset;
         AZ::Render::MeshComponentRequestBus::EventResult(

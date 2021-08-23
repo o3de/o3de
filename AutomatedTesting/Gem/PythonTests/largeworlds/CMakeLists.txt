@@ -130,8 +130,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         NAME AutomatedTesting::LandscapeCanvasTests_Main
         TEST_SERIAL
         TEST_SUITE main
-        PATH ${CMAKE_CURRENT_LIST_DIR}/landscape_canvas
-        PYTEST_MARKS "not SUITE_sandbox and not SUITE_periodic and not SUITE_benchmark"
+        PATH ${CMAKE_CURRENT_LIST_DIR}/landscape_canvas/test_LandscapeCanvas_Main.py
         RUNTIME_DEPENDENCIES
            AZ::AssetProcessor
            Legacy::Editor
@@ -144,8 +143,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         NAME AutomatedTesting::LandscapeCanvasTests_Periodic
         TEST_SERIAL
         TEST_SUITE periodic
-        PATH ${CMAKE_CURRENT_LIST_DIR}/landscape_canvas
-        PYTEST_MARKS "SUITE_periodic"
+        PATH ${CMAKE_CURRENT_LIST_DIR}/landscape_canvas/test_LandscapeCanvas_Periodic.py
         RUNTIME_DEPENDENCIES
            AZ::AssetProcessor
            Legacy::Editor
@@ -159,7 +157,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS AND PAL_TRAIT_
         NAME AutomatedTesting::GradientSignalTests_Periodic
         TEST_SERIAL
         TEST_SUITE periodic
-        PATH ${CMAKE_CURRENT_LIST_DIR}/gradient_signal
+        PATH ${CMAKE_CURRENT_LIST_DIR}/gradient_signal/test_GradientSignal_Periodic.py
         RUNTIME_DEPENDENCIES
             AZ::AssetProcessor
             Legacy::Editor

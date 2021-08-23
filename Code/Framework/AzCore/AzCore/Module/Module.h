@@ -9,7 +9,6 @@
 #define AZCORE_MODULE_INCLUDE_H 1
 
 #include <AzCore/Component/Component.h>
-#include <AzCore/Debug/ProfileModuleInit.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Module/Environment.h>
 #include <AzCore/Interface/Interface.h>
@@ -78,9 +77,6 @@ namespace AZ
 
     protected:
         AZStd::list<AZ::ComponentDescriptor*> m_descriptors;
-
-    private:
-        AZ::Debug::ProfileModuleInitializer m_moduleProfilerInit;
     };
 } // namespace AZ
 

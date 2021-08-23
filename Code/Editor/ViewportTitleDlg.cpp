@@ -311,7 +311,7 @@ void CViewportTitleDlg::OnInitDialog()
     AZ::VR::VREventBus::Handler::BusConnect();
 
     QFontMetrics metrics({});
-    int width = metrics.boundingRect("-9999.99").width() * m_fieldWidthMultiplier;
+    int width = static_cast<int>(metrics.boundingRect("-9999.99").width() * m_fieldWidthMultiplier);
 
     m_cameraSpeed->setFixedWidth(width);
 
@@ -462,7 +462,7 @@ void CViewportTitleDlg::AddFOVMenus(QMenu* menu, std::function<void(float)> call
 
             float fov = gSettings.viewports.fDefaultFov;
             bool ok;
-            float f = customPreset.toDouble(&ok);
+            float f = customPreset.toFloat(&ok);
             if (ok)
             {
                 fov = std::max(1.0f, f);
@@ -482,7 +482,7 @@ void CViewportTitleDlg::OnMenuFOVCustom()
 
     if (ok)
     {
-        m_pViewPane->SetViewportFOV(fov);
+        m_pViewPane->SetViewportFOV(static_cast<float>(fov));
 
         // Update the custom presets.
         const QString text = QString::number(fov);
@@ -986,12 +986,12 @@ void CViewportTitleDlg::OnAngleSnappingToggled()
 
 void CViewportTitleDlg::OnGridSpinBoxChanged(double value)
 {
-    SandboxEditor::SetGridSnappingSize(value);
+    SandboxEditor::SetGridSnappingSize(static_cast<float>(value));
 }
 
 void CViewportTitleDlg::OnAngleSpinBoxChanged(double value)
 {
-    SandboxEditor::SetAngleSnappingSize(value);
+    SandboxEditor::SetAngleSnappingSize(static_cast<float>(value));
 }
 
 void CViewportTitleDlg::UpdateOverFlowMenuState()

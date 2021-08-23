@@ -115,7 +115,7 @@ static int Create2DTexture(int width, int height, byte* data, ETEX_Format format
 static AZ::Vector2 GetTextureSize(AZ::Data::Instance<AZ::RPI::Image> image)
 {
     AZ::RHI::Size size = image->GetDescriptor().m_size;
-    return AZ::Vector2(size.m_width, size.m_height);
+    return AZ::Vector2(static_cast<float>(size.m_width), static_cast<float>(size.m_height));
 }
 #endif
 

@@ -20,6 +20,12 @@
 
 namespace AZ
 {
+    uint32_t ProfileScope::GetSystemID(const char* system)
+    {
+        // TODO: stable ids for registered budgets
+        return AZ::Crc32(system);
+    }
+
     namespace Debug
     {
         //////////////////////////////////////////////////////////////////////////
@@ -537,6 +543,7 @@ namespace AZ
         void ProfilerRegister::TimerStart(ProfilerSection* section)
         {
             ProfilerRegister* reg = this;
+
             if (reg->m_isActive)
             {
                 section->m_register = reg;
