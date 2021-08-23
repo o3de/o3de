@@ -13,6 +13,9 @@ endif()
 ly_add_target(
     NAME PrefabBuilder.Static STATIC
     NAMESPACE Gem
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            .
     FILES_CMAKE
         prefabbuilder_files.cmake
     BUILD_DEPENDENCIES

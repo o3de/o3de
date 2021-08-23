@@ -6,7 +6,7 @@
  *
  */
 
-#include "PrefabBuilderTests.h"
+#include <PrefabBuilderTests.h>
 #include <IPrefabGroup.h>
 #include <PrefabGroup.h>
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
@@ -26,7 +26,7 @@ namespace UnitTest
         {
             auto it = AZStd::find_if(classData->m_elements.begin(), classData->m_elements.end(), [name](const auto& element)
             {
-                return std::strcmp(element.m_name, name) == 0;
+                return strcmp(element.m_name, name) == 0;
             });
             return it != classData->m_elements.end();
         };
@@ -84,8 +84,8 @@ namespace UnitTest
         document.Parse<rapidjson::kParseCommentsFlag>(input.data(), input.size());
 
         SceneData::PrefabGroup prefabGroup;
-        prefabGroup.SetId(AZ::Uuid::CreateRandom());
-        prefabGroup.SetName("tester");
+        prefabGroup.SetId(AZStd::move(AZ::Uuid::CreateRandom()));
+        prefabGroup.SetName(AZStd::move("tester"));
         prefabGroup.SetPrefabDom(AZStd::move(document));
 
         const auto& dom = prefabGroup.GetPrefabDom();
@@ -103,9 +103,9 @@ namespace UnitTest
         })JSON";
 
         SceneData::PrefabGroup prefabGroup;
-        prefabGroup.SetId(AZ::Uuid::CreateRandom());
-        prefabGroup.SetName("tester");
-        prefabGroup.SetPrefabDomBuffer(inputJson);
+        prefabGroup.SetId(AZStd::move(AZ::Uuid::CreateRandom()));
+        prefabGroup.SetName(AZStd::move("tester"));
+        prefabGroup.SetPrefabDomBuffer(std::move(inputJson));
 
         const auto& dom = prefabGroup.GetPrefabDom();
         EXPECT_TRUE(dom.IsNull());
@@ -152,7 +152,6 @@ namespace UnitTest
 
     TEST_F(PrefabBuilderBehaviorTests, PrefabGroup_PrefabGroupAssignment_Works)
     {
-        // Uuid.CreateString('{A19F5FDB-C5FB-478F-A0B0-B697D2C10DB5}', 0)
         ExpectExecute("group = PrefabGroup() ");
         ExpectExecute("group.name = 'tester' ");
         ExpectExecute("group.id = Uuid.CreateString('{AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE}', 0) ");
@@ -160,7 +159,5 @@ namespace UnitTest
 
         ExpectExecute("result = (group.name == 'tester')");
         ExpectExecute("assert(result == false)");
-        //ExpectExecute("assert(tostring(group.id) == '{AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE}')");
-        //ExpectExecute("assert(group.prefabDomBuffer = '{}')");
     }
 }

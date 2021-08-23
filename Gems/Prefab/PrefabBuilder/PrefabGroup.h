@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include "IPrefabGroup.h"
+#include <IPrefabGroup.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/containers/vector.h>
@@ -48,11 +48,11 @@ namespace AZ::SceneAPI::SceneData
         DataTypes::ISceneNodeSelectionList& GetSceneNodeSelectionList() override;
         const DataTypes::ISceneNodeSelectionList& GetSceneNodeSelectionList() const override;
 
-        // Internal API
-        void SetId(Uuid&& id);
-        void SetName(AZStd::string&& name);
-        void SetPrefabDom(AzToolsFramework::Prefab::PrefabDom&& prefabDom);
-        void SetPrefabDomBuffer(AZStd::string&& prefabDomBuffer);
+        // Concrete API
+        void SetId(Uuid id);
+        void SetName(AZStd::string name);
+        void SetPrefabDom(AzToolsFramework::Prefab::PrefabDom prefabDom);
+        void SetPrefabDomBuffer(AZStd::string prefabDomBuffer);
 
     private:
         SceneNodeSelectionList m_nodeSelectionList;

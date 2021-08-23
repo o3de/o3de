@@ -6,7 +6,7 @@
  *
  */
 
-#include "PrefabGroup.h"
+#include <PrefabGroup.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/JSON/error/error.h>
@@ -26,7 +26,7 @@ namespace AZ::SceneAPI::SceneData
         return m_name;
     }
 
-    void PrefabGroup::SetName(AZStd::string&& name)
+    void PrefabGroup::SetName(AZStd::string name)
     {
         m_name = AZStd::move(name);
     }
@@ -36,7 +36,7 @@ namespace AZ::SceneAPI::SceneData
         return m_id;
     }
 
-    void PrefabGroup::SetId(Uuid&& id)
+    void PrefabGroup::SetId(Uuid id)
     {
         m_id = AZStd::move(id);
     }
@@ -61,13 +61,13 @@ namespace AZ::SceneAPI::SceneData
         return m_nodeSelectionList;
     }
 
-    void PrefabGroup::SetPrefabDom(AzToolsFramework::Prefab::PrefabDom&& prefabDom)
+    void PrefabGroup::SetPrefabDom(AzToolsFramework::Prefab::PrefabDom prefabDom)
     {
         m_prefabDom = AZStd::move(prefabDom);
         m_prefabDomBuffer.clear();
     }
 
-    void PrefabGroup::SetPrefabDomBuffer(AZStd::string&& prefabDomBuffer)
+    void PrefabGroup::SetPrefabDomBuffer(AZStd::string prefabDomBuffer)
     {
         m_prefabDomBuffer = AZStd::move(prefabDomBuffer);
         m_prefabDom.SetNull();
