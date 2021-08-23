@@ -44,9 +44,7 @@ namespace {{attribute_Namespace}}
 {
 {% endif %}
 {% set className = Class.attrib['Name'] %}
-{% set bases = Class.attrib['Base'].split(';') if Class.attrib['Base'] is string else ["ScriptCanvas::Node", "ScriptCanvas::Node"] %}
-{% set baseClass = bases[0] %}
-{% set baseClasses = bases[1] if bases|length() > 1 else "ScriptCanvas::Node" %}
+{% set baseClasses = ", ".join(Class.attrib['Base'].split(';')) if Class.attrib['Base'] is string else "ScriptCanvas::Node" %}
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////
