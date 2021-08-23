@@ -20,6 +20,7 @@
 
 QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
 QT_FORWARD_DECLARE_CLASS(QLabel)
+QT_FORWARD_DECLARE_CLASS(QSpacerItem)
 
 namespace O3DE::ProjectManager
 {
@@ -71,10 +72,14 @@ namespace O3DE::ProjectManager
         LinkLabel* m_directoryLinkLabel = nullptr;
         LinkLabel* m_documentationLinkLabel = nullptr;
 
+        // Preview Image
+        QLabel* m_previewImage = nullptr;
+
         // Requirements
-        QLabel* m_reqirementsTitleLabel = nullptr;
-        QLabel* m_reqirementsIconLabel = nullptr;
-        QLabel* m_reqirementsTextLabel = nullptr;
+        QLabel* m_requirementsTitleLabel = nullptr;
+        QLabel* m_requirementsIcon = nullptr;
+        QLabel* m_requirementsTextLabel = nullptr;
+        QSpacerItem* m_requirementsSpacer = nullptr;
 
         // Depending and conflicting gems
         GemsSubWidget* m_dependingGems = nullptr;

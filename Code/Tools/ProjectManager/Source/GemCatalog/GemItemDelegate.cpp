@@ -8,9 +8,12 @@
 
 #include <GemCatalog/GemItemDelegate.h>
 #include <GemCatalog/GemModel.h>
+#include <ProjectManagerDefs.h>
+
 #include <QEvent>
 #include <QPainter>
 #include <QMouseEvent>
+#include <QDir>
 
 namespace O3DE::ProjectManager
 {
@@ -97,8 +100,15 @@ namespace O3DE::ProjectManager
         painter->setFont(standardFont);
         gemCreatorRect = painter->boundingRect(gemCreatorRect, Qt::TextSingleLine, gemCreator);
         painter->drawText(gemCreatorRect, Qt::TextSingleLine, gemCreator);
-
-        // Gem summary
+        
+        // Gem preview
+        QString previewPath = QDir(GemModel::GetPath(modelIndex)).filePath(ProjectPreviewImagePath);
+        QPixmap gemPreviewImage(previewPath);
+        QRect gemPreviewRect(
+            contentRect.left() + firstColumnMaxTextWidth / 2 - GemPreviewImageMinWidth / 2,
+            contentRect.top() + gemNameRect.height() + gemCreatorRect.height(),
+            GemPreviewImageMinWidth, GemPreviewImageMinHeight);
+        painter->drawPixmap(gemPreviewRect, gemPreviewImage);
 
         // In case there are feature tags displayed at the bottom, decrease the size of the summary text field.
         const QStringList featureTags = GemModel::GetFeatures(modelIndex);
