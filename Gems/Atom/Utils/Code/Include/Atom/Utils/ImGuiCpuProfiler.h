@@ -43,7 +43,7 @@ namespace AZ
             };
 
             // Update running statistics with new region data 
-            void RecordRegion(const AZ::RHI::CachedTimeRegion& region, AZStd::thread_id threadId);
+            void RecordRegion(const AZ::RHI::CachedTimeRegion& region, size_t threadId);
 
             void ResetPerFrameStatistics();
 
@@ -58,7 +58,7 @@ namespace AZ
             u64 m_invocationsLastFrame = 0;
 
             // NOTE: set over unordered_set so the threads can be shown in increasing order in tooltip.
-            AZStd::set<AZStd::thread_id> m_executingThreads;
+            AZStd::set<size_t> m_executingThreads;
 
             AZStd::sys_time_t m_lastFrameTotalTicks = 0;
 
@@ -95,7 +95,7 @@ namespace AZ
             void Draw(bool& keepDrawing, const AZ::RHI::CpuTimingStatistics& cpuTimingStatistics);
 
         private:
-            static constexpr float RowHeight = 50.0;
+            static constexpr float RowHeight = 35.0;
             static constexpr int DefaultFramesToCollect = 50;
             static constexpr float MediumFrameTimeLimit = 16.6; // 60 fps
             static constexpr float HighFrameTimeLimit = 33.3; // 30 fps
@@ -134,7 +134,7 @@ namespace AZ
             void DrawThreadSeparator(u64 threadBoundary, u64 maxDepth);
 
             // Draw the "Thread XXXXX" label onto the viewport
-            void DrawThreadLabel(u64 baseRow, AZStd::thread_id threadId);
+            void DrawThreadLabel(u64 baseRow, size_t threadId);
 
             // Draw the vertical lines separating frames in the timeline
             void DrawFrameBoundaries();
@@ -169,7 +169,9 @@ namespace AZ
             AZStd::sys_time_t m_viewportEndTick;
 
             // Map to store each thread's TimeRegions, individual vectors are sorted by start tick
-            AZStd::unordered_map<AZStd::thread_id, AZStd::vector<TimeRegion>> m_savedData;
+            // note: we use size_t as a proxy for thread_id because native_thread_id_type differs differs from
+            // platform to platform, which causes problems when deserializing saved captures.
+            AZStd::unordered_map<size_t, AZStd::vector<TimeRegion>> m_savedData;
 
             // Region color cache
             AZStd::unordered_map<const GroupRegionName*, ImVec4> m_regionColorMap;
@@ -213,6 +215,11 @@ namespace AZ
 
             // Index into the file picker, used to determine which file to load when "Load File" is pressed.
             int m_currentFileIndex = 0;
+
+
+            // --- Loading capture state ---
+            AZStd::unordered_set<AZStd::string> m_deserializedStringPool;
+            AZStd::unordered_set<RHI::CachedTimeRegion::GroupRegionName, RHI::CachedTimeRegion::GroupRegionName::Hash> m_deserializedGroupRegionNamePool;
         };
     } // namespace Render
 } // namespace AZ

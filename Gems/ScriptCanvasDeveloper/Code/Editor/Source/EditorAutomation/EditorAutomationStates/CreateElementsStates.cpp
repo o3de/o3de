@@ -70,7 +70,7 @@ namespace ScriptCanvasDeveloper
 
                 if (dropPoint)
                 {
-                    QPointF qPoint = QPoint(dropPoint->GetX(), dropPoint->GetY());
+                    QPointF qPoint = QPoint(static_cast<int>(dropPoint->GetX()), static_cast<int>(dropPoint->GetY()));
                     m_createNodeAction = aznew CreateNodeFromPaletteAction(m_nodePaletteWidget, (*graphId), m_nodeName, qPoint);
                 }
                 break;
@@ -218,7 +218,7 @@ namespace ScriptCanvasDeveloper
 
                 if (dropPoint)
                 {
-                    QPointF qPoint = QPoint(dropPoint->GetX(), dropPoint->GetY());
+                    QPointF qPoint = QPoint(static_cast<int>(dropPoint->GetX()), static_cast<int>(dropPoint->GetY()));
                     m_createNodeAction = aznew CreateNodeFromContextMenuAction((*graphId), m_nodeName, qPoint);
                 }
                 break;

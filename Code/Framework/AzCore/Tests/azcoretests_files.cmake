@@ -60,7 +60,6 @@ set(FILES
     SerializeContextFixture.h
     Slice.cpp
     State.cpp
-    StatisticalProfiler.cpp
     Statistics.cpp
     StreamerTests.cpp
     StringFunc.cpp

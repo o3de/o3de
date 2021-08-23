@@ -1736,7 +1736,7 @@ namespace Benchmark
                                                                        std::numeric_limits<AZ::s8>::max());
             std::generate(m_randomPriorities.begin(), m_randomPriorities.end(), [&randomPriorityDistribution, &randomPriorityGenerator]()
             {
-                return randomPriorityDistribution(randomPriorityGenerator);
+                return static_cast<AZ::s8>(randomPriorityDistribution(randomPriorityGenerator));
             });
 
             // Generate some random depths

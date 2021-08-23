@@ -201,7 +201,7 @@ void CTriMesh::SetFromMesh(CMesh& mesh)
                 face.v [j] = numv;
                 face.uv[j] = numv;
                 face.n [j] = mesh.m_pNorms[idx].GetN();
-                face.MatID = subset.nMatID;
+                face.MatID = static_cast<unsigned char>(subset.nMatID);
                 face.flags = 0;
 
                 numv++;
@@ -269,7 +269,7 @@ void CTriMesh::SharePositions()
         for (int i = 0; i < 3; i++)
         {
             const Vec3& v = pVertices[face.v[i]].pos;
-            uint8 nHash = RoundFloatToInt((v.x + v.y + v.z) * fHashScale);
+            uint8 nHash = static_cast<uint8>(RoundFloatToInt((v.x + v.y + v.z) * fHashScale));
 
             int find = FindVertexInHash(v, pNewVerts, arrHashTable[nHash], fEpsilon);
             if (find < 0)
@@ -320,7 +320,7 @@ void CTriMesh::ShareUV()
         for (int i = 0; i < 3; i++)
         {
             const Vec2 uv = pUV[face.uv[i]].GetUV();
-            uint8 nHash = RoundFloatToInt((uv.x + uv.y) * fHashScale);
+            uint8 nHash = static_cast<uint8>(RoundFloatToInt((uv.x + uv.y) * fHashScale));
 
             int find = FindTexCoordInHash(pUV[face.uv[i]], pNewUV, arrHashTable[nHash], fEpsilon);
             if (find < 0)
@@ -380,7 +380,7 @@ void CTriMesh::UpdateIndexedMesh(IIndexedMesh* pIndexedMesh) const
     // To find really used materials
     std::vector<int> usedMaterialIds;
     uint16 MatIdToSubset[MAX_SUB_MATERIALS];
-    int nLastSubsetId = 0;
+    uint16 nLastSubsetId = 0;
     memset(MatIdToSubset, 0, sizeof(MatIdToSubset));
     //////////////////////////////////////////////////////////////////////////
 
@@ -398,7 +398,7 @@ void CTriMesh::UpdateIndexedMesh(IIndexedMesh* pIndexedMesh) const
             MatIdToSubset[face.MatID] = 1 + nLastSubsetId++;
             usedMaterialIds.push_back(face.MatID); // Order of material ids in usedMaterialIds correspond to the indices of chunks.
         }
-        meshFace.nSubset = MatIdToSubset[face.MatID] - 1;
+        meshFace.nSubset = static_cast<unsigned char>(MatIdToSubset[face.MatID] - 1);
 
         for (int j = 0; j < 3; ++j)
         {
@@ -420,7 +420,7 @@ void CTriMesh::UpdateIndexedMesh(IIndexedMesh* pIndexedMesh) const
 
     pIndexedMesh->SetBBox(bb);
 
-    pIndexedMesh->SetSubSetCount(usedMaterialIds.size());
+    pIndexedMesh->SetSubSetCount(static_cast<int>(usedMaterialIds.size()));
     for (int i = 0; i < usedMaterialIds.size(); i++)
     {
         pIndexedMesh->SetSubsetMaterialId(i, usedMaterialIds[i]);
@@ -677,11 +677,11 @@ void CTriMesh::GetEdgesByVertex(MeshElementsArray& inVertices, MeshElementsArray
     std::sort(inVertices.begin(), inVertices.end());
     for (int i = 0; i < GetEdgeCount(); i++)
     {
-        if (stl::binary_find(inVertices.begin(), inVertices.end(), pEdges[i].v[0]) != inVertices.end())
+        if (stl::binary_find(inVertices.begin(), inVertices.end(), static_cast<int>(pEdges[i].v[0])) != inVertices.end())
         {
             outEdges.push_back(i);
         }
-        else if (stl::binary_find(inVertices.begin(), inVertices.end(), pEdges[i].v[1]) != inVertices.end())
+        else if (stl::binary_find(inVertices.begin(), inVertices.end(), static_cast<int>(pEdges[i].v[1])) != inVertices.end())
         {
             outEdges.push_back(i);
         }
@@ -696,15 +696,15 @@ void CTriMesh::GetFacesByVertex(MeshElementsArray& inVertices, MeshElementsArray
     std::sort(inVertices.begin(), inVertices.end());
     for (int i = 0; i < GetFacesCount(); i++)
     {
-        if (stl::binary_find(inVertices.begin(), inVertices.end(), pFaces[i].v[0]) != inVertices.end())
+        if (stl::binary_find(inVertices.begin(), inVertices.end(), static_cast<int>(pFaces[i].v[0])) != inVertices.end())
         {
             outFaces.push_back(i);
         }
-        else if (stl::binary_find(inVertices.begin(), inVertices.end(), pFaces[i].v[1]) != inVertices.end())
+        else if (stl::binary_find(inVertices.begin(), inVertices.end(), static_cast<int>(pFaces[i].v[1])) != inVertices.end())
         {
             outFaces.push_back(i);
         }
-        else if (stl::binary_find(inVertices.begin(), inVertices.end(), pFaces[i].v[2]) != inVertices.end())
+        else if (stl::binary_find(inVertices.begin(), inVertices.end(), static_cast<int>(pFaces[i].v[2])) != inVertices.end())
         {
             outFaces.push_back(i);
         }

@@ -583,7 +583,7 @@ namespace UnitTest
             AzToolsFramework::EditorInteractionSystemViewportSelectionRequestBus::EventResult(
                 m_mouseInteractionResult, AzToolsFramework::GetEntityContextId(),
                 &AzToolsFramework::EditorInteractionSystemViewportSelectionRequestBus::Events::InternalHandleAllMouseInteractions,
-                vi::MouseInteractionEvent(mouseInteraction, ev->angleDelta().y()));
+                vi::MouseInteractionEvent(mouseInteraction, static_cast<float>(ev->angleDelta().y())));
         }
 
         MouseInteractionResult m_mouseInteractionResult;

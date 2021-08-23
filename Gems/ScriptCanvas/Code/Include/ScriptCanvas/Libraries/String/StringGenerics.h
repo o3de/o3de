@@ -34,7 +34,7 @@ namespace ScriptCanvas
         {
             length = AZ::GetClamp<AZ::u32>(length, 0, aznumeric_cast<AZ::u32>(sourceString.size()));
 
-            if (length == 0 || index < 0 || index >= sourceString.size())
+            if (length == 0 || index >= sourceString.size())
             {
                 return {};
             }

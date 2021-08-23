@@ -88,7 +88,7 @@ namespace AZ
                     AZ_Error(
                         Utilities::ErrorWindow,
                         meshesPerTextureCoordinateIndex[texCoordIndex] == 0 ||
-                            meshesPerTextureCoordinateIndex[texCoordIndex] == currentNode->mNumMeshes,
+                            meshesPerTextureCoordinateIndex[texCoordIndex] == static_cast<int>(currentNode->mNumMeshes),
                         "Texture coordinate index %d for node %s is not on all meshes on this node. "
                             "Placeholder arbitrary texture values will be generated to allow the data to process, but the source art "
                             "needs to be fixed to correct this. All meshes on this node should have the same number of texture coordinate channels.",

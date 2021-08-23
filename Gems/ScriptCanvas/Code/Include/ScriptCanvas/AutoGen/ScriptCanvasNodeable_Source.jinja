@@ -199,7 +199,8 @@ void {{attribute_QualifiedName}}::Reflect(AZ::ReflectContext* context)
 {% if item.attrib['Description'] is defined %}
     {% set description = item.attrib['Description'] %}
 {% endif %}
-        // {{ item.attrib['Name'] }}
+
+                        // {{ item.attrib['Name'] }}
                         {{preEdit}}->DataElement({{ uihandler }}, &{{ attribute_Name }}::{{ item.attrib['Name'] }}, "{{ item.attrib['Name'] }}", "{{ description }}"){{postEdit}}
 {%          for EditAttribute in item.iter('EditAttribute') %}
                         {{preEdit}}->Attribute({{ EditAttribute.attrib['Key'] }}, {{ EditAttribute.attrib['Value'] }}){{postEdit}}
@@ -274,6 +275,9 @@ void Nodes::{{ nodeableNodeName }}::Reflect(AZ::ReflectContext* context)
         {
             {% if ExtendReflectionEdit is defined %}auto {{preEdit}} = {%endif%}editContext->Class<{{ nodeableNodeName }}>("{{ attribute_PreferredClassName }}", "{{ attribute_Description }}"){{postEdit}}
                 {{preEdit}}->ClassElement(AZ::Edit::ClassElements::EditorData, ""){{postEdit}}
+{% if attribute_Category is defined %}
+                {{preEdit}}->Attribute(AZ::Edit::Attributes::Category, "{{ attribute_Category }}"){{postEdit}}
+{% endif %}
                 {{preEdit}}->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly){{postEdit}}
                 {{preEdit}}->Attribute(AZ::Edit::Attributes::AutoExpand, true){{postEdit}}
                 ;

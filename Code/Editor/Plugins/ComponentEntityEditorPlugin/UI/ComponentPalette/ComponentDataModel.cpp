@@ -262,7 +262,7 @@ QModelIndex ComponentDataModel::parent([[maybe_unused]] const QModelIndex &child
 
 int ComponentDataModel::rowCount([[maybe_unused]] const QModelIndex &parent /*= QModelIndex()*/) const
 {
-    return m_componentList.size();
+    return static_cast<int>(m_componentList.size());
 }
 
 int ComponentDataModel::columnCount([[maybe_unused]] const QModelIndex &parent /*= QModelIndex()*/) const

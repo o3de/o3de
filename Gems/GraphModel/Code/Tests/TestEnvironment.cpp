@@ -51,7 +51,7 @@ namespace GraphModelIntegrationTest
 
     GraphModel::DataTypePtr TestGraphContext::GetDataType(GraphModel::DataType::Enum typeEnum) const
     {
-        if (0 <= typeEnum && typeEnum < m_dataTypes.size())
+        if (typeEnum < m_dataTypes.size())
         {
             return m_dataTypes[typeEnum];
         }

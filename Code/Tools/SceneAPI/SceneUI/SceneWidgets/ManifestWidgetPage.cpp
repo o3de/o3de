@@ -76,7 +76,7 @@ namespace AZ
 
             bool ManifestWidgetPage::AddObject(const AZStd::shared_ptr<DataTypes::IManifestObject>& object)
             {
-                AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+                AZ_PROFILE_FUNCTION(Editor);
                 if (!SupportsType(object))
                 {
                     return false;
@@ -218,7 +218,7 @@ namespace AZ
 
             void ManifestWidgetPage::RefreshPage()
             {
-                AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+                AZ_PROFILE_FUNCTION(Editor);
                 m_propertyEditor->InvalidateAll();
                 m_propertyEditor->ExpandAll();
             }

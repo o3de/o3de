@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
@@ -258,7 +259,7 @@ namespace ExpressionEvaluation
 
     AZ::Outcome<void, ParsingError> ExpressionEvaluationSystemComponent::ParseRestrictedExpressionInPlace(const AZStd::unordered_set<ExpressionParserId>& parsers, AZStd::string_view expressionString, ExpressionTree& expressionTree) const
     {
-        AZ_PROFILE_TIMER("ExpressionEvaluation", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(ExpressionEvaluation);
 
         expressionTree.ClearTree();
 
@@ -520,7 +521,7 @@ namespace ExpressionEvaluation
 
     ExpressionResult ExpressionEvaluationSystemComponent::Evaluate(const ExpressionTree& expressionTree) const
     {
-        AZ_PROFILE_TIMER("ExpressionEvaluation", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(ExpressionEvaluation);
 
         ExpressionResultStack resultStack;
 

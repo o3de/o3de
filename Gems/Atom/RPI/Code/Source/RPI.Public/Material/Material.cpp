@@ -310,7 +310,7 @@ namespace AZ
 
             if (NeedsCompile() && CanCompile())
             {
-                AZ_PROFILE_EVENT_BEGIN(Debug::ProfileCategory::AzRender, "Material::Compile() Processing Functors");
+                AZ_PROFILE_BEGIN(AzRender, "Material::Compile() Processing Functors");
                 for (const Ptr<MaterialFunctor>& functor : m_materialAsset->GetMaterialFunctors())
                 {
                     if (functor)
@@ -339,7 +339,7 @@ namespace AZ
                         AZ_Error(s_debugTraceName, false, "Material functor is null.");
                     }
                 }
-                AZ_PROFILE_EVENT_END(Debug::ProfileCategory::AzRender);
+                AZ_PROFILE_END();
 
                 m_propertyDirtyFlags.reset();
 

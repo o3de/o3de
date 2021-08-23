@@ -40,7 +40,7 @@ namespace GridMate
         , m_priority(0)
         , m_revision(1)
     {
-        AZ_PROFILE_TIMER("GridMate");
+        AZ_PROFILE_FUNCTION(GridMate);
 
         m_upstreamHop = nullptr;
         m_dirtyHook.m_next = m_dirtyHook.m_prev = nullptr;
@@ -86,7 +86,7 @@ namespace GridMate
     //-----------------------------------------------------------------------------
     void Replica::PreDestruct()
     {
-        AZ_PROFILE_TIMER("GridMate");
+        AZ_PROFILE_FUNCTION(GridMate);
 
         for (auto chunk : m_chunks)
         {
@@ -137,7 +137,7 @@ namespace GridMate
     //-----------------------------------------------------------------------------
     bool Replica::AttachReplicaChunk(const ReplicaChunkPtr& chunk)
     {
-        AZ_PROFILE_TIMER("GridMate");
+        AZ_PROFILE_FUNCTION(GridMate);
 
         // Check for duplicate attach
         if (!chunk->GetReplica())
@@ -174,7 +174,7 @@ namespace GridMate
     //-----------------------------------------------------------------------------
     bool Replica::DetachReplicaChunk(const ReplicaChunkPtr& chunk)
     {
-        AZ_PROFILE_TIMER("GridMate");
+        AZ_PROFILE_FUNCTION(GridMate);
 
         if (!IsActive())
         {
@@ -213,7 +213,7 @@ namespace GridMate
     //-----------------------------------------------------------------------------
     void Replica::UpdateReplica(const ReplicaContext& rc)
     {
-        AZ_PROFILE_TIMER("GridMate");
+        AZ_PROFILE_FUNCTION(GridMate);
 
         for (auto chunk : m_chunks)
         {
@@ -226,7 +226,7 @@ namespace GridMate
     //-----------------------------------------------------------------------------
     void Replica::UpdateFromReplica(const ReplicaContext& rc)
     {
-        AZ_PROFILE_TIMER("GridMate");
+        AZ_PROFILE_FUNCTION(GridMate);
 
         for (auto chunk : m_chunks)
         {
@@ -239,7 +239,7 @@ namespace GridMate
     //-----------------------------------------------------------------------------
     bool Replica::AcceptChangeOwnership(PeerId requestor, const ReplicaContext& rc)
     {
-        AZ_PROFILE_TIMER("GridMate");
+        AZ_PROFILE_FUNCTION(GridMate);
 
         for (auto chunk : m_chunks)
         {
@@ -274,7 +274,7 @@ namespace GridMate
     //-----------------------------------------------------------------------------
     void Replica::OnDeactivate(const ReplicaContext& rc)
     {
-        AZ_PROFILE_TIMER("GridMate");
+        AZ_PROFILE_FUNCTION(GridMate);
 
         EBUS_EVENT_ID(rc.m_rm->GetGridMate(), ReplicaMgrCallbackBus, OnDeactivateReplica, GetRepId(), rc.m_rm);
         EBUS_EVENT(Debug::ReplicaDrillerBus, OnDeactivateReplica, this);
@@ -294,7 +294,7 @@ namespace GridMate
     //-----------------------------------------------------------------------------
     void Replica::OnChangeOwnership(const ReplicaContext& rc)
     {
-        AZ_PROFILE_TIMER("GridMate");
+        AZ_PROFILE_FUNCTION(GridMate);
 
         for (auto chunk : m_chunks)
         {
@@ -319,7 +319,7 @@ namespace GridMate
     {
         (void) rpcContext;
 
-        AZ_PROFILE_TIMER("GridMate");
+        AZ_PROFILE_FUNCTION(GridMate);
 
         if (IsActive())
         {
@@ -382,7 +382,7 @@ namespace GridMate
     //-----------------------------------------------------------------------------
     void Replica::Activate(const ReplicaContext& rc)
     {
-        AZ_PROFILE_TIMER("GridMate");
+        AZ_PROFILE_FUNCTION(GridMate);
 
         // Resolve whether we're migratable or not from the chunks
         // present when we're attached to the network.
@@ -410,7 +410,7 @@ namespace GridMate
     //-----------------------------------------------------------------------------
     void Replica::Deactivate(const ReplicaContext& rc)
     {
-        AZ_PROFILE_TIMER("GridMate");
+        AZ_PROFILE_FUNCTION(GridMate);
 
         if (IsActive())
         {
@@ -440,7 +440,7 @@ namespace GridMate
     //-----------------------------------------------------------------------------
     bool Replica::ProcessRPCs(const ReplicaContext& rc)
     {
-        AZ_PROFILE_TIMER("GridMate");
+        AZ_PROFILE_FUNCTION(GridMate);
 
         bool isProcessed = true;
         for (auto chunk : m_chunks)
@@ -508,7 +508,7 @@ namespace GridMate
     //-----------------------------------------------------------------------------
     PrepareDataResult Replica::PrepareData(EndianType endianType, AZ::u32 marshalFlags)
     {
-        //AZ_PROFILE_TIMER("GridMate");
+        //AZ_PROFILE_SCOPE("GridMate");
 
         PrepareDataResult pdr(false, false, false, false);
         bool dataSetChange = false;
@@ -536,7 +536,7 @@ namespace GridMate
     //-----------------------------------------------------------------------------
     void Replica::Marshal(MarshalContext& mc)
     {
-        //AZ_PROFILE_TIMER("GridMate");
+        //AZ_PROFILE_SCOPE("GridMate");
 
         // We are going to replace the outBuffer with a temporary chunk buffer for each chunk,
         // hold on to the original so we can restore it later and write the chunk buffers into
@@ -639,7 +639,7 @@ namespace GridMate
     //-----------------------------------------------------------------------------
     bool Replica::Unmarshal(UnmarshalContext& mc)
     {
-        AZ_PROFILE_TIMER("GridMate");
+        AZ_PROFILE_FUNCTION(GridMate);
 
         UnmarshalContext chunkContext(mc);
         ReadBuffer& buffer = *mc.m_iBuf;
@@ -715,7 +715,7 @@ namespace GridMate
     //-----------------------------------------------------------------------------
     ReplicaChunkPtr Replica::CreateReplicaChunkFromStream(ReplicaChunkClassId classId, UnmarshalContext& mc)
     {
-        AZ_PROFILE_TIMER("GridMate");
+        AZ_PROFILE_FUNCTION(GridMate);
 
         ReplicaChunkPtr chunk = nullptr;
         ReplicaChunkDescriptor* pDesc = ReplicaChunkDescriptorTable::Get().FindReplicaChunkDescriptor(classId);

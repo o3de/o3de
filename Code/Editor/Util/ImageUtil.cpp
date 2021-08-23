@@ -106,9 +106,9 @@ bool CImageUtil::SavePGM(const QString& fileName, const CImageEx& image)
     fprintf(file, fileHeader.c_str());
 
     // Then print all the pixels.
-    for (int32 y = 0; y < height; y++)
+    for (uint32 y = 0; y < height; y++)
     {
-        for (int32 x = 0; x < width; x++)
+        for (uint32 x = 0; x < width; x++)
         {
             fprintf(file, "%d ", pixels[x + (y * width)]);
         }
@@ -478,7 +478,7 @@ unsigned char CImageUtil::GetBilinearFilteredAt(const int iniX256, const int ini
     DWORD x = (DWORD)(iniX256) >> 8;
     DWORD y = (DWORD)(iniY256) >> 8;
 
-    if (x >= image.GetWidth() - 1 || y >= image.GetHeight() - 1)
+    if (x >= static_cast<DWORD>(image.GetWidth() - 1) || y >= static_cast<DWORD>(image.GetHeight() - 1))
     {
         return image.ValueAt(x, y);                                                          // border is not filtered, 255 to get in range 0..1
     }

@@ -120,7 +120,7 @@ bool CXmlArchive::SaveToPak([[maybe_unused]] const QString& levelPath, CPakFile&
 
     // Save xml file.
     QString xmlFilename = "Level.editor_xml";
-    pakFile.UpdateFile(xmlFilename.toUtf8().data(), (void*)pXmlStrData->GetString(), pXmlStrData->GetStringLength());
+    pakFile.UpdateFile(xmlFilename.toUtf8().data(), (void*)pXmlStrData->GetString(), static_cast<int>(pXmlStrData->GetStringLength()));
 
     if (pakFile.GetArchive())
     {
