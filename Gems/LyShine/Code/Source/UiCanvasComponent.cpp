@@ -3637,9 +3637,10 @@ void UiCanvasComponent::DestroyRenderTarget()
     if (m_renderTargetHandle > 0)
     {
         ISystem::CrySystemNotificationBus::Handler::BusDisconnect();
-        gEnv->pRenderer->DestroyDepthSurface(m_renderTargetDepthSurface);
+        AZ_Assert(false,"gEnv->pRenderer is alway null, cannot call methods on it");
+        //gEnv->pRenderer->DestroyDepthSurface(m_renderTargetDepthSurface);
         m_renderTargetDepthSurface = nullptr;
-        gEnv->pRenderer->DestroyRenderTarget(m_renderTargetHandle);
+        //gEnv->pRenderer->DestroyRenderTarget(m_renderTargetHandle);
         m_renderTargetHandle = -1;
     }
 }

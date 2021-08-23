@@ -20,6 +20,7 @@
 #include "System.h" // to access InitLocalization()
 #include <CryPath.h>
 #include <IConsole.h>
+#include <IFont.h>
 #include <locale.h>
 #include <time.h>
 

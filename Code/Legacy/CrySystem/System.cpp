@@ -19,6 +19,7 @@
 #include "CryLibrary.h"
 #include <CryPath.h>
 #include <CrySystemBus.h>
+#include <CryCommon/IFont.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/API/ApplicationAPI_Platform.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>

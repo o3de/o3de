@@ -16,6 +16,7 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <StlUtils.h>
 
+#include <StaticInstance.h>
 #include <ISystem.h>
 #include <ILog.h>
 #include <IConsole.h>
@@ -746,8 +747,9 @@ void UiAnimationSystem::ShowPlayedSequencesDebug()
             continue;
         }
 
-        const char* fullname = playingSequence.sequence->GetName();
-        gEnv->pRenderer->Draw2dLabel(1.0f, y, 1.3f, green, false, "Sequence %s : %f (x %f)", fullname, playingSequence.currentTime, playingSequence.currentSpeed);
+        AZ_Assert(false,"gEnv->pRenderer is always null so it can't be used here");
+        //const char* fullname = playingSequence.sequence->GetName();
+        //gEnv->pRenderer->Draw2dLabel(1.0f, y, 1.3f, green, false, "Sequence %s : %f (x %f)", fullname, playingSequence.currentTime, playingSequence.currentSpeed);
 
         y += 16.0f;
 
@@ -771,7 +773,7 @@ void UiAnimationSystem::ShowPlayedSequencesDebug()
                 names.push_back(name);
             }
 
-            gEnv->pRenderer->Draw2dLabel((21.0f + 100.0f * i), ((i % 2) ? (y + 8.0f) : y), 1.0f, alreadyThere ? white : purple, false, "%s", name);
+            //gEnv->pRenderer->Draw2dLabel((21.0f + 100.0f * i), ((i % 2) ? (y + 8.0f) : y), 1.0f, alreadyThere ? white : purple, false, "%s", name);
         }
 
         y += 32.0f;

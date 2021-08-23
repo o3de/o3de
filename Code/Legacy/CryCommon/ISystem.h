@@ -624,7 +624,6 @@ struct SSystemGlobalEnvironment
     ISystem*                   pSystem = nullptr;
     ILog*                      pLog;
     IMovieSystem*              pMovieSystem;
-    IRenderer*                 pRenderer;
     ILyShine*                      pLyShine;
     SharedEnvironmentInstance*      pSharedEnvironment;
 

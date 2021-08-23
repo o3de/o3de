@@ -21,6 +21,7 @@
 #include <IAudioSystemImplementation.h>
 
 #include <ISystem.h>
+#include <CryCommon/StlUtils.h>
 #include <algorithm>
 #include <IRenderAuxGeom.h>
 

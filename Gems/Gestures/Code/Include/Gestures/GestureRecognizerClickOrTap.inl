@@ -6,9 +6,12 @@
  *
  */
 
+
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <CryCommon/ISystem.h>
+#include <CryCommon/TimeValue.h>
+#include <CryCommon/ITimer.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 inline void Gestures::RecognizerClickOrTap::Config::Reflect(AZ::ReflectContext* context)

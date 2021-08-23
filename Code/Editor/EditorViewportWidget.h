@@ -220,7 +220,6 @@ private:
     // Draw a selected region if it has been selected
     void RenderSelectedRegion();
 
-    bool AdjustObjectPosition(const ray_hit& hit, Vec3& outNormal, Vec3& outPos) const;
     bool RayRenderMeshIntersection(IRenderMesh* pRenderMesh, const Vec3& vInPos, const Vec3& vInDir, Vec3& vOutPos, Vec3& vOutNormal) const;
 
     bool AddCameraMenuItems(QMenu* menu);

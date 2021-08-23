@@ -23,6 +23,8 @@
 #include "UiElementComponent.h"
 #include "UiCanvasComponent.h"
 
+#include <set>
+
 namespace
 {
     bool AxisAlignedBoxesIntersect(const AZ::Vector2& minA, const AZ::Vector2& maxA, const AZ::Vector2& minB, const AZ::Vector2& maxB)

@@ -18,7 +18,6 @@
 struct ShadowMapFrustum;
 struct SRenderingPassInfo;
 struct SRendItemSorter;
-struct IShader;
 struct ITetrLattice;
 struct SPhysGeomArray;
 struct CStatObj;
@@ -26,7 +25,6 @@ struct CStatObj;
 class CRenderObject;
 class CDLight;
 class IReadStream;
-class CRenderObject;
 class CLodValue;
 
 
@@ -403,10 +401,6 @@ struct IStatObj
     //     Set the physic representation
     virtual void SetPhysGeom(phys_geometry* pPhysGeom, int nType = 0) = 0;
 
-    // Description:
-    //     Returns a tetrahedral lattice, if any (used for breakable objects)
-    virtual ITetrLattice* GetTetrLattice() = 0;
-
     virtual float GetAIVegetationRadius() const = 0;
     virtual void SetAIVegetationRadius(float radius) = 0;
 
@@ -762,12 +756,6 @@ struct IStatObj
     virtual int GetLoadedLodsNum() = 0;
 
     virtual bool UpdateStreamableComponents(float fImportance, const Matrix34A& objMatrix, bool bFullUpdate, int nNewLod) = 0;
-
-    virtual void RenderInternal(CRenderObject* pRenderObject, uint64 nSubObjectHideMask, const CLodValue& lodValue, const SRenderingPassInfo& passInfo, const SRendItemSorter& rendItemSorter, bool forceStaticDraw) = 0;
-    virtual void RenderObjectInternal(CRenderObject* pRenderObject, int nLod, uint8 uLodDissolveRef, bool dissolveOut, const SRenderingPassInfo& passInfo, const SRendItemSorter& rendItemSorter, bool forceStaticDraw) = 0;
-    virtual void RenderSubObject(CRenderObject* pRenderObject, int nLod, int nSubObjId, const Matrix34A& renderTM, const SRenderingPassInfo& passInfo, const SRendItemSorter& rendItemSorter, bool forceStaticDraw) = 0;
-    virtual void RenderSubObjectInternal(CRenderObject* pRenderObject, int nLod, const SRenderingPassInfo& passInfo, const SRendItemSorter& rendItemSorter, bool forceStaticDraw) = 0;
-    virtual void RenderRenderMesh(CRenderObject* pObj, struct SInstancingInfo* pInstInfo, const SRenderingPassInfo& passInfo, const SRendItemSorter& rendItemSorter) = 0;
 
     virtual SPhysGeomArray& GetArrPhysGeomInfo() = 0;
     virtual bool IsLodsAreLoadedFromSeparateFile() = 0;
