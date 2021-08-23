@@ -108,12 +108,6 @@ using namespace AzToolsFramework;
 #define LAYOUTS_WILDCARD "*.layout"
 #define DUMMY_LAYOUT_NAME "Dummy_Layout"
 
-static const char* g_openViewPaneEventName = "OpenViewPaneEvent"; //Sent when users open view panes;
-static const char* g_viewPaneAttributeName = "ViewPaneName"; //Name of the current view pane
-static const char* g_openLocationAttributeName = "OpenLocation"; //Indicates where the current view pane is opened from
-
-static const char* g_assetImporterName = "AssetImporter";
-
 class CEditorOpenViewCommand
     : public _i_reference_target_t
 {

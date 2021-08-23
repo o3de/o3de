@@ -49,11 +49,6 @@
  * Scalars for icon drawing behavior.
  */
 static const int s_kIconSize              = 36;       /// Icon display size (in pixels)
-static const float s_kIconMaxWorldDist    = 200.f;    /// Icons are culled past this range
-static const float s_kIconMinScale        = 0.1f;     /// Minimum scale for icons in the distance
-static const float s_kIconMaxScale        = 1.0f;     /// Maximum scale for icons near the camera
-static const float s_kIconCloseDist       = 3.f;      /// Distance at which icons are at maximum scale
-static const float s_kIconFarDist         = 40.f;     /// Distance at which icons are at minimum scale
 
 CComponentEntityObject::CComponentEntityObject()
     : m_hasIcon(false)
