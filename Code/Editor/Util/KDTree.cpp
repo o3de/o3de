@@ -467,7 +467,7 @@ bool CKDTree::FindNearestVertexRecursively(KDTreeNode* pNode, const Vec3& raySrc
             uint32 nVertexIndex = pNode->GetVertexIndex(i);
             uint32 nObjIndex = pNode->GetObjIndex(i);
 
-            assert(nObjIndex < m_StatObjectList.size() && nObjIndex >= 0);
+            assert(nObjIndex < m_StatObjectList.size());
 
             const SStatObj* pStatObjInfo = &(m_StatObjectList[nObjIndex]);
 
