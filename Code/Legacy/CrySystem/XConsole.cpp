@@ -3133,6 +3133,9 @@ char* CXConsole::GetCheatVarAt(uint32 nOffset)
 //////////////////////////////////////////////////////////////////////////
 size_t CXConsole::GetSortedVars(AZStd::vector<AZStd::string_view>& pszArray, const char* szPrefix)
 {
+    // This method used to insert instead of push_back, so we need to clear first
+    pszArray.clear();
+
     size_t iPrefixLen = szPrefix ? strlen(szPrefix) : 0;
 
     // variables

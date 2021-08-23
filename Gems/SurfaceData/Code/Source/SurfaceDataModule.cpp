@@ -20,7 +20,7 @@ namespace SurfaceData
             SurfaceDataSystemComponent::CreateDescriptor(),
             SurfaceDataColliderComponent::CreateDescriptor(),
             SurfaceDataShapeComponent::CreateDescriptor(),
-            TerrainSurfaceDataSystemComponent::CreateDescriptor(),
+            Terrain::TerrainSurfaceDataSystemComponent::CreateDescriptor(),
         });
     }
 
@@ -28,7 +28,7 @@ namespace SurfaceData
     {
         return AZ::ComponentTypeList{
             azrtti_typeid<SurfaceDataSystemComponent>(),
-            azrtti_typeid<TerrainSurfaceDataSystemComponent>(),
+            azrtti_typeid<Terrain::TerrainSurfaceDataSystemComponent>(),
         };
     }
 }

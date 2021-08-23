@@ -769,7 +769,9 @@ namespace
 
     void PySetViewPaneLayout(unsigned int layoutId)
     {
+        AZ_PUSH_DISABLE_WARNING(4296, "-Wunknown-warning-option")
         if ((layoutId >= ET_Layout0) && (layoutId <= ET_Layout8))
+        AZ_POP_DISABLE_WARNING
         {
             CLayoutWnd* layout = GetIEditor()->GetViewManager()->GetLayout();
             if (layout)

@@ -35,9 +35,6 @@ namespace PhysX
 
             static const AZ::u32 s_maxCollisionLayerNameLength = 32;
             static const AZStd::string s_defaultCollisionLayerName;
-#ifdef TOUCHBENDING_LAYER_BIT
-            static const AZStd::string s_touchBendCollisionLayerName;
-#endif
 
             explicit CollisionLayersWidget(QWidget* parent = nullptr);
 

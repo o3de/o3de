@@ -13,14 +13,6 @@
 
 #include <AzFramework/Physics/CollisionBus.h>
 
-//This bit is defined in the TouchBending Gem wscript.
-//Make sure the bit has a valid value.
-#ifdef TOUCHBENDING_LAYER_BIT
-#if (TOUCHBENDING_LAYER_BIT < 1) || (TOUCHBENDING_LAYER_BIT > 63)
-#error Invalid Bit Definition For the TouchBending Layer Bit
-#endif
-#endif //#ifdef TOUCHBENDING_LAYER_BIT
-
 namespace AzPhysics
 {
     AZ_CLASS_ALLOCATOR_IMPL(CollisionGroup, AZ::SystemAllocator, 0);
@@ -30,10 +22,6 @@ namespace AzPhysics
 
     const CollisionGroup CollisionGroup::None = 0x0000000000000000ULL;
     const CollisionGroup CollisionGroup::All = 0xFFFFFFFFFFFFFFFFULL;
-
-#ifdef TOUCHBENDING_LAYER_BIT
-    const CollisionGroup CollisionGroup::All_NoTouchBend = CollisionGroup::All.GetMask() & ~CollisionLayer::TouchBend.GetMask();
-#endif
 
     void CollisionGroupScriptConstructor(CollisionGroup* thisPtr, AZ::ScriptDataContext& scriptDataContext)
     {
