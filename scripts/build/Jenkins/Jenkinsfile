@@ -341,6 +341,7 @@ def PreBuildCommonSteps(Map pipelineConfig, String snapshot, String repositoryNa
 
         if(fileExists('.lfsconfig')) {
             palSh("git lfs install", "LFS config exists. Installing LFS hooks to local repo")
+            palSh("git lfs pull", "Pulling new LFS objects")
         }
     }
 }
