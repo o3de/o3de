@@ -476,6 +476,9 @@ def CreateSingleNode(Map pipelineConfig, def platform, def build_job, Map envVar
                                 if (envVars['NONBLOCKING_STEP']?.toBoolean()) {
                                     unstable(message: "Build step ${build_step} failed but it's a non-blocking step in build job ${build_job.key}")
                                 }
+                                else {
+                                    error "FAILURE: ${e}"
+                                }
                             }
                         }
                     } else {
