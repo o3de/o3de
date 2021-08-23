@@ -248,8 +248,6 @@ def CheckoutRepo(boolean disableSubmodules = false) {
             ],
             userRemoteConfigs: scm.userRemoteConfigs
        ]
-
-       env.GIT_COMMIT = scm.GIT_COMMIT;
     }
 
     // CHANGE_ID is used by some scripts to identify uniquely the current change (usually metric jobs)
@@ -621,7 +619,7 @@ try {
                     }
                     pipelineProperties.add(disableConcurrentBuilds())
 
-                    echo "Running repository: \"${repositoryName}\", pipeline: \"${pipelineName}\", branch: \"${branchName}\", CHANGE_ID: \"${env.CHANGE_ID}\", GIT_COMMMIT: \"${env.GIT_COMMIT}\"..."
+                    echo "Running repository: \"${repositoryName}\", pipeline: \"${pipelineName}\", branch: \"${branchName}\", CHANGE_ID: \"${env.CHANGE_ID}\", GIT_COMMMIT: \"${env.GIT_COMMIT_ID}\"..."
 
                     CheckoutBootstrapScripts(branchName)
 
