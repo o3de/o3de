@@ -19,13 +19,11 @@ AZ_POP_DISABLE_WARNING
 
 namespace MaterialEditor
 {
-    /**
-     * MaterialEditorWindow is the main class. Its responsibility is limited to initializing and connecting
-     * its panels, managing selection of assets, and performing high-level actions like saving. It contains...
-     * 1) MaterialBrowser        - The user browses for Material (.material) assets.
-     * 2) MaterialViewport        - The user can see the selected Material applied to a model.
-     * 3) MaterialPropertyInspector  - The user edits the properties of the selected Material.
-     */
+    //! MaterialEditorWindow is the main class. Its responsibility is limited to initializing and connecting
+    //! its panels, managing selection of assets, and performing high-level actions like saving. It contains...
+    //! 1) MaterialBrowser        - The user browses for Material (.material) assets.
+    //! 2) MaterialViewport        - The user can see the selected Material applied to a model.
+    //! 3) MaterialPropertyInspector  - The user edits the properties of the selected Material.
     class MaterialEditorWindow
         : public AtomToolsFramework::AtomToolsDocumentMainWindow
     {
@@ -36,19 +34,17 @@ namespace MaterialEditor
         using Base = AtomToolsFramework::AtomToolsDocumentMainWindow;
 
         MaterialEditorWindow(QWidget* parent = 0);
-        ~MaterialEditorWindow();
+        ~MaterialEditorWindow() = default;
 
     protected:
         void ResizeViewportRenderTarget(uint32_t width, uint32_t height) override;
         void LockViewportRenderTargetSize(uint32_t width, uint32_t height) override;
         void UnlockViewportRenderTargetSize() override;
 
-        bool GetCreateFileInfo(AZStd::string& openPath, AZStd::string& savePath) override;
-        bool GetOpenFileInfo(AZStd::string& openPath) override;
-        QWidget* CreateViewForDocumemt(const AZ::Uuid& documentId) override;
+        bool GetCreateDocumentParams(AZStd::string& openPath, AZStd::string& savePath) override;
+        bool GetOpenDocumentParams(AZStd::string& openPath) override;
         void OpenSettings() override;
         void OpenHelp() override;
-        void OpenAbout() override;
 
         void closeEvent(QCloseEvent* closeEvent) override;
 

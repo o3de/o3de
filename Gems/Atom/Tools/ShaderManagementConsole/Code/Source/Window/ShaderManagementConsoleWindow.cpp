@@ -5,12 +5,12 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
- 
+
+#include <Atom/Document/ShaderManagementConsoleDocumentRequestBus.h>
+#include <AtomToolsFramework/Util/Util.h>
 #include <AzCore/Name/Name.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
 #include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
-#include <AtomToolsFramework/Util/Util.h>
-#include <Atom/Document/ShaderManagementConsoleDocumentRequestBus.h>
 #include <Window/ShaderManagementConsoleWindow.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
@@ -49,14 +49,16 @@ namespace ShaderManagementConsole
         // Restore geometry and show the window
         mainWindowWrapper->showFromSettings();
 
+        // Disable unused actions
+        m_actionNew->setVisible(false);
+        m_actionNew->setEnabled(false);
+        m_actionSaveAsChild->setVisible(false);
+        m_actionSaveAsChild->setEnabled(false);
+
         OnDocumentOpened(AZ::Uuid::CreateNull());
     }
 
-    ShaderManagementConsoleWindow::~ShaderManagementConsoleWindow()
-    {
-    }
-
-    QWidget* ShaderManagementConsoleWindow::CreateViewForDocumemt(const AZ::Uuid& documentId)
+    QWidget* ShaderManagementConsoleWindow::CreateDocumentTabView(const AZ::Uuid& documentId)
     {
         AZStd::unordered_set<AZStd::string> optionNames;
 

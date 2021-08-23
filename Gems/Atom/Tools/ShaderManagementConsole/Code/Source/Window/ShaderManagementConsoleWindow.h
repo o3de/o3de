@@ -23,10 +23,8 @@ AZ_POP_DISABLE_WARNING
 
 namespace ShaderManagementConsole
 {
-    /**
-     * ShaderManagementConsoleWindow is the main class. Its responsibility is limited to initializing and connecting
-     * its panels, managing selection of assets, and performing high-level actions like saving. It contains...
-     */
+    //! ShaderManagementConsoleWindow is the main class. Its responsibility is limited to initializing and connecting
+    //! its panels, managing selection of assets, and performing high-level actions like saving. It contains...
     class ShaderManagementConsoleWindow
         : public AtomToolsFramework::AtomToolsDocumentMainWindow
     {
@@ -37,10 +35,10 @@ namespace ShaderManagementConsole
         using Base = AtomToolsFramework::AtomToolsDocumentMainWindow;
 
         ShaderManagementConsoleWindow(QWidget* parent = 0);
-        ~ShaderManagementConsoleWindow();
+        ~ShaderManagementConsoleWindow() = default;
 
     protected:
-        QWidget* CreateViewForDocumemt(const AZ::Uuid& documentId) override;
+        QWidget* CreateDocumentTabView(const AZ::Uuid& documentId) override;
 
         ShaderManagementConsoleToolBar* m_toolBar = nullptr;
     };

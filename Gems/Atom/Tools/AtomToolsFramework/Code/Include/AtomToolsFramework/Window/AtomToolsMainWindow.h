@@ -54,5 +54,6 @@ namespace AtomToolsFramework
         QMenu* m_menuHelp = {};
 
         AZStd::unordered_map<AZStd::string, AzQtComponents::StyledDockWidget*> m_dockWidgets;
+        AZStd::unordered_map<AZStd::string, QAction*> m_dockActions;
     };
 } // namespace AtomToolsFramework

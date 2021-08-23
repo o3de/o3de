@@ -98,10 +98,6 @@ namespace MaterialEditor
         OnDocumentOpened(AZ::Uuid::CreateNull());
     }
 
-    MaterialEditorWindow::~MaterialEditorWindow()
-    {
-    }
-    
     void MaterialEditorWindow::ResizeViewportRenderTarget(uint32_t width, uint32_t height)
     {
         QSize requestedViewportSize = QSize(width, height) / devicePixelRatioF();
@@ -133,7 +129,7 @@ namespace MaterialEditor
         m_materialViewport->UnlockRenderTargetSize();
     }
 
-    bool MaterialEditorWindow::GetCreateFileInfo(AZStd::string& openPath, AZStd::string& savePath)
+    bool MaterialEditorWindow::GetCreateDocumentParams(AZStd::string& openPath, AZStd::string& savePath)
     {
         CreateMaterialDialog createDialog(this);
         createDialog.adjustSize();
@@ -149,20 +145,11 @@ namespace MaterialEditor
         return false;
     }
 
-    bool MaterialEditorWindow::GetOpenFileInfo(AZStd::string& openPath)
+    bool MaterialEditorWindow::GetOpenDocumentParams(AZStd::string& openPath)
     {
         const AZStd::vector<AZ::Data::AssetType> assetTypes = { azrtti_typeid<AZ::RPI::MaterialAsset>() };
         openPath = AtomToolsFramework::GetOpenFileInfo(assetTypes).absoluteFilePath().toUtf8().constData();
         return !openPath.empty();
-    }
-
-    QWidget* MaterialEditorWindow::CreateViewForDocumemt(const AZ::Uuid& documentId)
-    {
-        AZ_UNUSED(documentId);
-        auto contentWidget = new QWidget(centralWidget());
-        contentWidget->setContentsMargins(0, 0, 0, 0);
-        contentWidget->setFixedSize(0, 0);
-        return contentWidget;
     }
 
     void MaterialEditorWindow::OpenSettings()
@@ -175,10 +162,6 @@ namespace MaterialEditor
     {
         HelpDialog dialog(this);
         dialog.exec();
-    }
-
-    void MaterialEditorWindow::OpenAbout()
-    {
     }
 
     void MaterialEditorWindow::closeEvent(QCloseEvent* closeEvent)

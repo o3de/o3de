@@ -37,26 +37,25 @@ namespace AtomToolsFramework
 
         QString GetDocumentPath(const AZ::Uuid& documentId) const;
 
-        AZ::Uuid GetDocumentIdFromTab(const int tabIndex) const;
+        AZ::Uuid GetDocumentTabId(const int tabIndex) const;
 
-        void AddTabForDocumentId(
+        void AddDocumentTab(
             const AZ::Uuid& documentId,
             const AZStd::string& label,
             const AZStd::string& toolTip);
 
-        void RemoveTabForDocumentId(const AZ::Uuid& documentId);
+        void RemoveDocumentTab(const AZ::Uuid& documentId);
 
-        void UpdateTabForDocumentId(
+        void UpdateDocumentTab(
             const AZ::Uuid& documentId, const AZStd::string& label, const AZStd::string& toolTip, bool isModified);
 
-        void SelectPreviousTab();
+        void SelectPrevDocumentTab();
+        void SelectNextDocumentTab();
 
-        void SelectNextTab();
-
-        virtual void OpenTabContextMenu();
-        virtual bool GetCreateFileInfo(AZStd::string& openPath, AZStd::string& savePath);
-        virtual bool GetOpenFileInfo(AZStd::string& openPath);
-        virtual QWidget* CreateViewForDocumemt(const AZ::Uuid& documentId);
+        virtual QWidget* CreateDocumentTabView(const AZ::Uuid& documentId);
+        virtual void OpenDocumentTabContextMenu();
+        virtual bool GetCreateDocumentParams(AZStd::string& openPath, AZStd::string& savePath);
+        virtual bool GetOpenDocumentParams(AZStd::string& openPath);
 
         // AtomToolsDocumentNotificationBus::Handler overrides...
         void OnDocumentOpened(const AZ::Uuid& documentId) override;

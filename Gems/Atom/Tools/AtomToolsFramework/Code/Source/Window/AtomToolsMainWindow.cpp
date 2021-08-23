@@ -72,6 +72,10 @@ namespace AtomToolsFramework
         addDockWidget(aznumeric_cast<Qt::DockWidgetArea>(area), dockWidget);
         resizeDocks({ dockWidget }, { 400 }, aznumeric_cast<Qt::Orientation>(orientation));
         m_dockWidgets[name] = dockWidget;
+
+        m_dockActions[name] = m_menuView->addAction(name.c_str(), [this, name](){
+            SetDockWidgetVisible(name, !IsDockWidgetVisible(name));
+        });
         return true;
     }
 
@@ -82,6 +86,12 @@ namespace AtomToolsFramework
         {
             delete dockWidgetItr->second;
             m_dockWidgets.erase(dockWidgetItr);
+        }
+        auto dockActionItr = m_dockActions.find(name);
+        if (dockActionItr != m_dockActions.end())
+        {
+            delete dockActionItr->second;
+            m_dockActions.erase(dockActionItr);
         }
     }
 
