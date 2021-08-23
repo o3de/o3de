@@ -10,7 +10,6 @@
 
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
-#include <Atom/Features/PBR/ForwardPassSrg.azsli>
 #include <Atom/Features/Shadow/ShadowmapAtlasLib.azsli>
 #include <Atom/RPI/Math.azsli>
 #include "BicubicPcfFilters.azsli"

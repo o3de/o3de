@@ -8,14 +8,14 @@
 
 #pragma once
 
-option bool o_specularF0_enableMultiScatterCompensation;
+option bool o_specularF0_enableMultiScatterCompensation = true;
 option bool o_enableShadows = true;
 option bool o_enableDirectionalLights = true;
 option bool o_enablePunctualLights = true;
 option bool o_enableAreaLights = true;
 option bool o_enableIBL = true;
-option bool o_enableSubsurfaceScattering;
-option bool o_clearCoat_feature_enabled;
+option bool o_enableSubsurfaceScattering = false;
+option bool o_clearCoat_feature_enabled = false;
 option enum class TransmissionMode {None, ThickObject, ThinObject} o_transmission_mode;
 option bool o_meshUseForwardPassIBLSpecular = false;
 option bool o_materialUseForwardPassIBLSpecular = false;

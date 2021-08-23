@@ -31,6 +31,23 @@ void swap(inout float a, inout float b)
     b = c;
 }
 
+float Pow2(float x)
+{
+    return x * x;
+}
+float Pow3(float x)
+{
+    return x * x * x;
+}
+float Pow4(float x)
+{
+    x *= x;
+    return x * x;
+}
+float Pow5(float x)
+{
+    return x * Pow4(x);
+}
 // ---------- Intersection -----------
 
 // a simple ray sphere intersection function, didn't take limited precision 
@@ -233,4 +250,20 @@ float LerpInverse(float a, float b, float value)
     {
         return (value - a) / (b - a);
     }
+}
+//-------- Gaussinan distribution functions ---------
+// https://en.wikipedia.org/wiki/Gaussian_function
+// Parameter:
+// amplitude - the height of the curve's peak
+// median - the position of the Mean / Median - the center of the "bell"
+// standardDeviation - controls the width of the "bell"
+float Gaussian(float x, float amplitude, float median, float standardDeviation)
+{
+    float exponent = -0.5 * Pow2((x - median) / standardDeviation);
+    return amplitude * exp(exponent);
+}
+float GaussianNormalized(float x, float expectedValue, float standardDeviation)
+{
+    float normalizedAmplitude = 1.0f / (standardDeviation * sqrt(TWO_PI));
+    return Gaussian(x, normalizedAmplitude, expectedValue, standardDeviation);
 }
