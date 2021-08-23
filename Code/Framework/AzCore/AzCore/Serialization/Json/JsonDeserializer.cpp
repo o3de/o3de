@@ -578,14 +578,14 @@ namespace AZ
                             "Unable to resolve provided type: %.*s." : 
                             "Unable to resolve provided type %.*s because the same name points to multiple types.";
                         status = context.Report(Tasks::RetrieveInfo, Outcomes::Unknown, 
-                            AZStd::string::format("Unable to resolve provided type: %.*s.", typeField->value.GetStringLength(), typeField->value.GetString()));
+                            AZStd::string::format(format, typeField->value.GetStringLength(), typeField->value.GetString()));
                     }
                     else
                     {
                         const char* message = loadedTypeId.m_determination == TypeIdDetermination::FailedToDetermine ?
                             "Unable to resolve provided type." :
-                            "Unable to resolve provided type because the same name points to multiple types."
-                        status = context.Report(Tasks::RetrieveInfo, Outcomes::Unknown, "Unable to resolve provided type.");
+                            "Unable to resolve provided type because the same name points to multiple types.";
+                        status = context.Report(Tasks::RetrieveInfo, Outcomes::Unknown, message);
                     }
                     return ResolvePointerResult::FullyProcessed;
             }
