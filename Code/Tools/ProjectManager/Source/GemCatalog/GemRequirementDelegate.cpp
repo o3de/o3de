@@ -51,7 +51,7 @@ namespace O3DE::ProjectManager
         painter->fillRect(itemRect, itemBackgroundColor);
 
         // Gem name
-        QString gemName = GemModel::GetName(modelIndex);
+        QString gemName = GemModel::GetDisplayName(modelIndex);
         QFont gemNameFont(options.font);
         const int firstColumnMaxTextWidth = s_summaryStartX - 30;
         gemName = QFontMetrics(gemNameFont).elidedText(gemName, Qt::TextElideMode::ElideRight, firstColumnMaxTextWidth);
