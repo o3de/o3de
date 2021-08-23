@@ -145,7 +145,7 @@ class TestRemoteConsole():
         rc_instance = remote_console.RemoteConsole()
         rc_instance.on_display = mock.MagicMock()
         rc_instance.ready = mock.MagicMock()
-        msg = b'I0'  # in python3 socket.recv returns byte array. 7 is AUTOCOMPLETELISTDONE
+        msg = b'I0'  # in python3 socket.recv returns byte array. I is CONNECTMESSAGE
 
         rc_instance._handle_message(msg)
 
