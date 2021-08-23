@@ -825,7 +825,7 @@ const int comparePathNames(const char* cpFirst, const char* cpSecond, unsigned i
     return memicmp(first.c_str(), second.c_str(), length);
 }
 
-#if defined(FIX_FILENAME_CASE)
+#if FIX_FILENAME_CASE
 static bool FixOnePathElement(char* path)
 {
     if (*path == '\0')
