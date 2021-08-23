@@ -20,8 +20,7 @@ QPushButton:focus {
 QTabBar {
     background-color: transparent;
 }
-QTabWidget::tab-bar
-{
+QTabWidget::tab-bar {
     left: 78px; /* make room for the logo */
 }
 QTabBar::tab {
@@ -32,32 +31,35 @@ QTabBar::tab {
     margin-right:40px;
     border-bottom: 3px solid transparent;
 }
-QTabBar::tab:text
-{
+QTabBar::tab:text {
     text-align:left;
 }
 QTabWidget::pane {
     background-color: #333333;
     border:0 none;
 }
-QTabBar::tab:selected
-{
+QTabBar::tab:selected {
+    background-color: transparent;
     border-bottom: 3px solid #1e70eb;
     color: #1e70eb;
+    font-weight: 500;
 }
-QTabBar::tab:hover
-{
+QTabBar::tab:hover {
     color: #1e70eb;
+    font-weight: 500;
 }
-QTabBar::tab:pressed
-{
+QTabBar::tab:pressed {
     color: #0e60eb;
 }
 QTabBar::focus {
     outline: 0px;
     outline: none;
     outline-style: none;
- }
+}
+QTabBar::tab:focus {
+    background-color: #525252;
+    color: #4082eb;
+}
 
 /************** General (Forms) **************/
 
