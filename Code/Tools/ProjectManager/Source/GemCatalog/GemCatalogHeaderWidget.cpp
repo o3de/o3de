@@ -117,7 +117,7 @@ namespace O3DE::ProjectManager
         gemNames.reserve(gems.size());
         for (const QModelIndex& modelIndex : gems)
         {
-            gemNames.push_back(GemModel::GetName(modelIndex));
+            gemNames.push_back(GemModel::GetDisplayName(modelIndex));
         }
         return gemNames;
     }

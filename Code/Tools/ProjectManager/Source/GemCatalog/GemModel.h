@@ -37,6 +37,7 @@ namespace O3DE::ProjectManager
         QStringList GetConflictingGemNames(const QModelIndex& modelIndex);
 
         static QString GetName(const QModelIndex& modelIndex);
+        static QString GetDisplayName(const QModelIndex& modelIndex);
         static QString GetCreator(const QModelIndex& modelIndex);
         static GemInfo::GemOrigin GetGemOrigin(const QModelIndex& modelIndex);
         static GemInfo::Platforms GetPlatforms(const QModelIndex& modelIndex);
@@ -69,6 +70,7 @@ namespace O3DE::ProjectManager
         enum UserRole
         {
             RoleName = Qt::UserRole,
+            RoleDisplayName,
             RoleCreator,
             RoleGemOrigin,
             RolePlatforms,
