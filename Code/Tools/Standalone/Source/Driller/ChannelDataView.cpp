@@ -24,10 +24,6 @@
 
 namespace Driller
 {
-    static const int k_contractedSize = 28;
-    static const int k_expandedSize = 64;
-    static const int k_textWidth = 128;
-
     static const int k_barHeight = 5;
 
     ////////////////////////

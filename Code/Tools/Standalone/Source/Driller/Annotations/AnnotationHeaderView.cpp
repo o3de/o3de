@@ -14,7 +14,6 @@
 namespace Driller
 {
     static const int k_contractedSize = 20;
-    static const int k_textWidth = 153;
 
     AnnotationHeaderView::AnnotationHeaderView(AnnotationsProvider* ptrAnnotations, QWidget* parent, Qt::WindowFlags flags)
         : QWidget(parent, flags)
