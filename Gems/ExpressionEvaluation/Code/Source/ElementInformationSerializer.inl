@@ -28,6 +28,19 @@ namespace AZ
     private:
         using ElementInformation = ExpressionEvaluation::ElementInformation;
 
+        static const char* EmptyAnyIdentifier;
+
+        static bool IsEmptyAny(const rapidjson::Value& typeId)
+        {
+            if (typeId.IsString())
+            {
+                AZStd::string_view typeName(typeId.GetString(), typeId.GetStringLength());
+                return typeName == EmptyAnyIdentifier;
+            }
+
+            return false;
+        }
+
         JsonSerializationResult::Result Load
             ( void* outputValue
             , const Uuid& outputValueTypeId
@@ -50,44 +63,38 @@ namespace AZ
                 , context));
 
             // any storage begin
-            auto isEmptyAny = inputValue.FindMember("isEmptyAny");
-            if (isEmptyAny == inputValue.MemberEnd())
-            {
-                return context.Report
-                (JSR::Tasks::ReadField
-                    , JSR::Outcomes::Missing
-                    , "ElementInformationSerializer::Load failed to load the 'isEmptyAny'' member");
-            }
-
-            if (!isEmptyAny->value.GetBool())
             {
                 AZ::Uuid typeId = AZ::Uuid::CreateNull();
                 auto typeIdMember = inputValue.FindMember(JsonSerialization::TypeIdFieldIdentifier);
                 if (typeIdMember == inputValue.MemberEnd())
                 {
                     return context.Report
-                    (JSR::Tasks::ReadField
+                        ( JSR::Tasks::ReadField
                         , JSR::Outcomes::Missing
                         , AZStd::string::format("ElementInformationSerializer::Load failed to load the %s member"
                             , JsonSerialization::TypeIdFieldIdentifier));
                 }
 
-                result.Combine(LoadTypeId(typeId, typeIdMember->value, context));
-                if (typeId.IsNull())
+                if (!IsEmptyAny(typeIdMember->value))
                 {
-                    return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Catastrophic
-                        , "ElementInformationSerializer::Load failed to load the AZ TypeId of the value");
-                }
+                    result.Combine(LoadTypeId(typeId, typeIdMember->value, context));
+                    if (typeId.IsNull())
+                    {
+                        return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Catastrophic
+                            , "ElementInformationSerializer::Load failed to load the AZ TypeId of the value");
+                    }
 
-                AZStd::any storage = context.GetSerializeContext()->CreateAny(typeId);
-                if (storage.empty() || storage.type() != typeId)
-                {
-                    return context.Report(result, "ElementInformationSerializer::Load failed to load a value matched the "
-                        "reported AZ TypeId. The C++ declaration may have been deleted or changed.");
-                }
+                    AZStd::any storage = context.GetSerializeContext()->CreateAny(typeId);
+                    if (storage.empty() || storage.type() != typeId)
+                    {
+                        return context.Report(result, "ElementInformationSerializer::Load failed to load a value matched the "
+                            "reported AZ TypeId. The C++ declaration may have been deleted or changed.");
+                    }
 
-                result.Combine(ContinueLoadingFromJsonObjectField(AZStd::any_cast<void>(&storage), typeId, inputValue, "Value", context));
-                outputDatum->m_extraStore = storage;
+                    result.Combine
+                        ( ContinueLoadingFromJsonObjectField(AZStd::any_cast<void>(&storage), typeId, inputValue, "Value", context));
+                    outputDatum->m_extraStore = storage;
+                }
             }
             // any storage end
 
@@ -114,7 +121,7 @@ namespace AZ
              if (defaultScriptDataPtr)
              {
                  if (inputScriptDataPtr->m_id == defaultScriptDataPtr->m_id
-                     && AZ::Helpers::CompareAnyValue(inputScriptDataPtr->m_extraStore, defaultScriptDataPtr->m_extraStore))
+                 && AZ::Helpers::CompareAnyValue(inputScriptDataPtr->m_extraStore, defaultScriptDataPtr->m_extraStore))
                  {
                      return context.Report
                              ( JSR::Tasks::WriteValue, JSR::Outcomes::DefaultsUsed, "ElementInformation Store used defaults for "
@@ -133,15 +140,12 @@ namespace AZ
                 , azrtti_typeid<decltype(inputScriptDataPtr->m_id)>()
                 , context));
 
-
-            outputValue.AddMember("isEmptyAny", rapidjson::Value(inputScriptDataPtr->m_extraStore.empty()), context.GetJsonAllocator());
-
             if (!inputScriptDataPtr->m_extraStore.empty())
             {
                 rapidjson::Value typeValue;
                 result.Combine(StoreTypeId(typeValue, inputScriptDataPtr->m_extraStore.type(), context));
                 outputValue.AddMember
-                (rapidjson::StringRef(JsonSerialization::TypeIdFieldIdentifier)
+                    ( rapidjson::StringRef(JsonSerialization::TypeIdFieldIdentifier)
                     , AZStd::move(typeValue)
                     , context.GetJsonAllocator());
 
@@ -154,6 +158,16 @@ namespace AZ
                     , context));
 
             }
+            else
+            {
+                rapidjson::Value emptyAny;
+                AZStd::string emptyAnyName(EmptyAnyIdentifier);
+                emptyAny.SetString(emptyAnyName.c_str(), aznumeric_caster(emptyAnyName.size()), context.GetJsonAllocator());
+                outputValue.AddMember
+                    ( rapidjson::StringRef(JsonSerialization::TypeIdFieldIdentifier)
+                    , AZStd::move(emptyAny)
+                    , context.GetJsonAllocator());
+            }
 
             return context.Report(result, result.GetProcessing() != JSR::Processing::Halted
                 ? "ElementInformation Store finished saving ElementInformation"
@@ -162,4 +176,6 @@ namespace AZ
     };
 
     AZ_CLASS_ALLOCATOR_IMPL(ElementInformationSerializer, SystemAllocator, 0);
+
+    const char* ElementInformationSerializer::EmptyAnyIdentifier = "Empty AZStd::any";
 }
