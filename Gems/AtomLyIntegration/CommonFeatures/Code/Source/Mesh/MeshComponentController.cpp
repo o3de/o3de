@@ -109,7 +109,7 @@ namespace AZ
             }
 
             values.reserve(lodCount + 1);
-            values.push_back({0, "Default (Highest)" });
+            values.push_back({ aznumeric_cast<RPI::Cullable::LodOverride>(0), "Default (Highest)" });
 
             for (uint32_t i = 1; i < lodCount; ++i)
             {
