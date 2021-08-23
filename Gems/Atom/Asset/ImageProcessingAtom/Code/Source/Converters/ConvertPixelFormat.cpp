@@ -99,7 +99,15 @@ namespace ImageProcessingAtom
                 IImageObjectPtr dstImage = nullptr;
                 if (isSrcUncompressed)
                 {
+                    AZStd::sys_time_t startTime = AZStd::GetTimeUTCMilliSecond();
                     dstImage = compressor->CompressImage(Get(), fmtDst, &m_compressOption);
+                    AZStd::sys_time_t endTime = AZStd::GetTimeUTCMilliSecond();
+                    float processTime = static_cast<double>(endTime - startTime) / 1000.0;
+                    if (dstImage)
+                    {
+                        AZ_TracePrintf("Image Processing", "Image [%dx%d] was compressed by [%s] in %f seconds\n",
+                            Get()->GetWidth(0), Get()->GetHeight(0), compressor->GetName(), processTime);
+                    }
                 }
                 else
                 {

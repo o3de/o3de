@@ -20,7 +20,7 @@
 
 namespace ImageProcessingAtom
 {
-    ICompressorPtr ICompressor::FindCompressor(EPixelFormat fmt, ColorSpace colorSpace, bool isCompressing)
+    ICompressorPtr ICompressor::FindCompressor(EPixelFormat fmt, [[maybe_unused]] ColorSpace colorSpace, bool isCompressing)
     {
         // The ISPC texture compressor is able to compress BC1, BC3, BC6H and BC7 formats, and all of the ASTC formats.
         // Note: The ISPC texture compressor is only able to compress images that are a multiple of the compressed format's blocksize.

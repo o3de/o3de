@@ -141,6 +141,11 @@ namespace ImageProcessingAtom
     ColorSpace CTSquisher::GetSupportedColorSpace([[maybe_unused]] EPixelFormat compressFormat) const
     {
         return ColorSpace::autoSelect;
+    }    
+        
+    const char* CTSquisher::GetName() const
+    {
+        return "CTSquisher";
     }
 
     EPixelFormat CTSquisher::GetSuggestedUncompressedFormat(EPixelFormat compressedfmt, EPixelFormat uncompressedfmt) const
