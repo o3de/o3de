@@ -67,8 +67,8 @@ namespace AZ
 
         ImGuiPass::ImGuiPass(const RPI::PassDescriptor& descriptor)
             : Base(descriptor)
-            , AzFramework::InputChannelEventListener(AzFramework::InputChannelEventListener::GetPriorityUI())
-            , AzFramework::InputTextEventListener(AzFramework::InputTextEventListener::GetPriorityUI())
+            , AzFramework::InputChannelEventListener(AzFramework::InputChannelEventListener::GetPriorityDebugUI() - 1) // Give ImGui manager priority over the pass
+            , AzFramework::InputTextEventListener(AzFramework::InputTextEventListener::GetPriorityDebugUI() - 1) // Give ImGui manager priority over the pass
         {
 
             const ImGuiPassData* imguiPassData = RPI::PassUtils::GetPassData<ImGuiPassData>(descriptor);
@@ -155,11 +155,6 @@ namespace AZ
             auto& io = ImGui::GetIO();
             io.AddInputCharactersUTF8(textUTF8.c_str());
             return io.WantTextInput;
-        }
-
-        AZ::s32 ImGuiPass::GetPriority() const
-        {
-            return AzFramework::InputChannelEventListener::GetPriorityUI();
         }
 
         bool ImGuiPass::OnInputChannelEventFiltered(const AzFramework::InputChannel& inputChannel)
