@@ -8,13 +8,3 @@
 
 #include <AzCore/Debug/Profiler.h>
 
-#include <AzCore/Math/Crc.h>
-
-namespace AZ::Debug
-{
-    uint32_t ProfileScope::GetSystemID(const char* system)
-    {
-        // TODO: stable ids for registered budgets
-        return AZ::Crc32(system);
-    }
-} // namespace AZ::Debug

@@ -7,9 +7,8 @@
  */
 #pragma once
 
-#include <AzCore/Module/Environment.h>
-#include <AzCore/std/parallel/scoped_lock.h>
 #include <AzCore/std/parallel/atomic.h>
+#include <AzCore/Debug/BudgetTracker.h>
 
 #pragma warning(push)
 // This warning must be disabled because Budget::Get<T> may not have an implementation if this file is transitively included
@@ -24,9 +23,6 @@ namespace AZ::Debug
     class Budget final
     {
     public:
-        // Invoked once at the start of the frame to reset per-frame counters
-        static void ResetAll();
-
         // If you encounter a linker error complaining that this function is not defined, you have likely forgotten to either
         // define or declare the budget used in a profile or memory marker. See AZ_DEFINE_BUDGET and AZ_DECLARE_BUDGET below
         // for usage.
@@ -34,6 +30,13 @@ namespace AZ::Debug
         static Budget* Get();
 
         explicit Budget(const char* name);
+        ~Budget();
+
+        void PerFrameReset();
+        void BeginProfileRegion();
+        void EndProfileRegion();
+        void TrackAllocation(uint64_t bytes);
+        void UntrackAllocation(uint64_t bytes);
 
         const char* Name() const
         {
@@ -48,11 +51,14 @@ namespace AZ::Debug
     private:
         const char* m_name;
         uint32_t m_crc;
+        struct BudgetImpl* m_impl = nullptr;
     };
 } // namespace AZ::Debug
 #pragma warning(pop)
 
-#define AZ_BUDGET_NAME(name) AzBudget##name
+// Budgets are registered and retrieved using the proxy type specialization of Budget::Get<T>. The type itself has no declaration/definition
+// other than this forward type pointer declaration
+#define AZ_BUDGET_PROXY_TYPE(name) class AzBudget##name*
 
 // Usage example:
 // In a single C++ source file:
@@ -62,45 +68,26 @@ namespace AZ::Debug
 // AZ_DECLARE_BUDGET(AzCore);
 //
 // The budget is usable in the same file it was defined without needing an additional declaration
-
-// Implementation notes:
-// Every budget definition is declared in static storage along with the environment variable and mutex. This imposes a slight
-// memory overhead in the data segment only in instances where the same static module defining a budget is linked against multiple
-// DLLs, however, this simplifies the implementation and works regardless of whether the budget is defined in a static or dynamic
-// library. When loading the budget, a relaxed load is sufficient because Environment::CreateVariable internally locks and returns
-// the element found if the environment variable was already created (skipping construction in the process). Thus, the budget pointer
-// will reference the statically stored budget for the first thread that grabs the lock.
 #define AZ_DEFINE_BUDGET(name)                                                                                                             \
     template<>                                                                                                                             \
-    ::AZ::Debug::Budget* ::AZ::Debug::Budget::Get<class AZ_BUDGET_NAME(name)*>()                                                           \
+    ::AZ::Debug::Budget* ::AZ::Debug::Budget::Get<AZ_BUDGET_PROXY_TYPE(name)>()                                                            \
     {                                                                                                                                      \
-        static ::AZStd::mutex s_azBudgetMutex##name;                                                                                       \
-        static ::AZ::EnvironmentVariable<::AZ::Debug::Budget*> s_azBudgetEnv##name;                                                        \
-        static ::AZ::Debug::Budget s_azBudget##name{ #name };                                                                              \
         static ::AZStd::atomic<::AZ::Debug::Budget*> budget;                                                                               \
-        ::AZ::Debug::Budget* out = budget.load(AZStd::memory_order_relaxed);                                                               \
+        ::AZ::Debug::Budget* out = budget.load(AZStd::memory_order_acquire);                                                               \
         if (out)                                                                                                                           \
         {                                                                                                                                  \
             return out;                                                                                                                    \
         }                                                                                                                                  \
         else                                                                                                                               \
         {                                                                                                                                  \
-            {                                                                                                                              \
-                AZStd::scoped_lock lock{ s_azBudgetMutex##name };                                                                          \
-                if (!s_azBudgetEnv##name)                                                                                                  \
-                {                                                                                                                          \
-                    s_azBudgetEnv##name = ::AZ::Environment::CreateVariable<::AZ::Debug::Budget*>("budgetEnv" #name, &s_azBudget##name);   \
-                }                                                                                                                          \
-            }                                                                                                                              \
-            out = *s_azBudgetEnv##name;                                                                                                    \
-            budget = out;                                                                                                                  \
-            return out;                                                                                                                    \
+            budget.store(&::AZ::Debug::BudgetTracker::GetBudgetFromEnvironment(#name), AZStd::memory_order_release);                       \
+            return budget;                                                                                                                 \
         }                                                                                                                                  \
     }
 
 // If using a budget defined in a different C++ source file, add AZ_DECLARE_BUDGET(yourBudget); somewhere in your source file at namespace
 // scope Alternatively, AZ_DECLARE_BUDGET can be used in a header to declare the budget for use across any users of the header
-#define AZ_DECLARE_BUDGET(name) extern template ::AZ::Debug::Budget* ::AZ::Debug::Budget::Get<class AZ_BUDGET_NAME(name)*>()
+#define AZ_DECLARE_BUDGET(name) extern template ::AZ::Debug::Budget* ::AZ::Debug::Budget::Get<AZ_BUDGET_PROXY_TYPE(name)>()
 
 // Declare budgets that are core engine budgets, or may be shared/needed across multiple external gems
 // You should NOT need to declare user-space or budgets with isolated usage here. Prefer declaring them local to the module(s) that use

@@ -95,8 +95,8 @@ set(FILES
     Debug/AssetTrackingTypes.h
     Debug/Budget.h
     Debug/Budget.cpp
-    Debug/BudgetsComponent.h
-    Debug/BudgetsComponent.cpp
+    Debug/BudgetTracker.h
+    Debug/BudgetTracker.cpp
     Debug/LocalFileEventLogger.h
     Debug/LocalFileEventLogger.cpp
     Debug/IEventLogger.h

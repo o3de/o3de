@@ -433,7 +433,7 @@ namespace Blast
 
     void BlastSystemComponent::AZBlastProfilerCallback::zoneEnd()
     {
-        AZ_PROFILE_END();
+        AZ_PROFILE_END(Physics);
     }
 
     static void CmdToggleBlastDebugVisualization(IConsoleCmdArgs* args)

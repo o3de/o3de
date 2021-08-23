@@ -29,7 +29,6 @@ set(FILES
     Console/ConsoleTests.cpp
     Debug.cpp
     DLL.cpp
-    Driller.cpp
     EBus.cpp
     EntityIdTests.cpp
     EntityTests.cpp

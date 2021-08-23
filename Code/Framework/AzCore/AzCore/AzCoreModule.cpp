@@ -10,7 +10,6 @@
 
 // Component includes
 #include <AzCore/Asset/AssetManagerComponent.h>
-#include <AzCore/Debug/BudgetsComponent.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
@@ -36,7 +35,6 @@ namespace AZ
             JsonSystemComponent::CreateDescriptor(),
             AssetManagerComponent::CreateDescriptor(),
             UserSettingsComponent::CreateDescriptor(),
-            Debug::BudgetsComponent::CreateDescriptor(),
             SliceComponent::CreateDescriptor(),
             SliceSystemComponent::CreateDescriptor(),
             SliceMetadataInfoComponent::CreateDescriptor(),
@@ -54,7 +52,6 @@ namespace AZ
     {
         return AZ::ComponentTypeList
         {
-            azrtti_typeid<Debug::BudgetsComponent>(),
             azrtti_typeid<TimeSystemComponent>(),
             azrtti_typeid<LoggerSystemComponent>(),
             azrtti_typeid<EventSchedulerSystemComponent>(),

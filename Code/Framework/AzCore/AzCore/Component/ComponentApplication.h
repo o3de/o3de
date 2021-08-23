@@ -11,6 +11,7 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/Debug/BudgetTracker.h>
 #include <AzCore/Memory/AllocationRecords.h>
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Module/DynamicModuleHandle.h>
@@ -225,11 +226,6 @@ namespace AZ
         /// Returns the path to the folder the executable is in.
         const char* GetExecutableFolder() const override { return m_exeDirectory.c_str(); }
 
-
-        /// Returns pointer to the driller manager if it's enabled, otherwise NULL.
-        Debug::DrillerManager* GetDrillerManager() override { return m_drillerManager; }
-        //////////////////////////////////////////////////////////////////////////
-
         //////////////////////////////////////////////////////////////////////////
         /// TickRequestBus
         float GetTickDeltaTime() override;
@@ -324,9 +320,6 @@ namespace AZ
         /// Create the system allocator using the data in the m_descriptor
         void        CreateSystemAllocator();
 
-        /// Create the drillers
-        void        CreateDrillers();
-
         virtual void MergeSettingsToRegistry(SettingsRegistryInterface& registry);
 
         //! Sets the specializations that will be used when loading the Settings Registry. Extend this in derived
@@ -409,7 +402,7 @@ namespace AZ
         char                                        m_commandLineBuffer[AZ_MAX_PATH_LEN];
         char*                                       m_commandLineBufferAddress{ m_commandLineBuffer };
 
-        Debug::DrillerManager*                      m_drillerManager{ nullptr };
+        AZ::Debug::BudgetTracker                    m_budgetTracker;
 
         StartupParameters                           m_startupParameters;
 

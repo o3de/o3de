@@ -339,7 +339,7 @@ namespace AZ
                         AZ_Error(s_debugTraceName, false, "Material functor is null.");
                     }
                 }
-                AZ_PROFILE_END();
+                AZ_PROFILE_END(RPI);
 
                 m_propertyDirtyFlags.reset();
 

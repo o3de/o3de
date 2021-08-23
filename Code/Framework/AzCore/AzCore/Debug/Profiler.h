@@ -29,15 +29,15 @@
 #define AZ_PROFILE_SCOPE(budget, ...)                                                                                                      \
     ::AZ::Debug::ProfileScope AZ_JOIN(azProfileScope, __LINE__)                                                                            \
     {                                                                                                                                      \
-        *::AZ::Debug::Budget::Get<class AZ_BUDGET_NAME(budget)*>(), __VA_ARGS__                                                            \
+        *::AZ::Debug::Budget::Get<AZ_BUDGET_PROXY_TYPE(budget)>(), __VA_ARGS__                                                             \
     }
 
 #define AZ_PROFILE_FUNCTION(category) AZ_PROFILE_SCOPE(category, AZ_FUNCTION_SIGNATURE)
 
 // Prefer using the scoped macros which automatically end the event (AZ_PROFILE_SCOPE/AZ_PROFILE_FUNCTION)
 #define AZ_PROFILE_BEGIN(budget, ...)                                                                                                      \
-    ::AZ::Debug::ProfileScope::BeginRegion(*::AZ::Debug::Budget::Get<class AZ_BUDGET_NAME(budget)*>(), __VA_ARGS__)
-#define AZ_PROFILE_END() ::AZ::Debug::ProfileScope::EndRegion()
+    ::AZ::Debug::ProfileScope::BeginRegion(*::AZ::Debug::Budget::Get<AZ_BUDGET_PROXY_TYPE(budget)>(), __VA_ARGS__)
+#define AZ_PROFILE_END(budget) ::AZ::Debug::ProfileScope::EndRegion(*::AZ::Debug::Budget::Get<AZ_BUDGET_PROXY_TYPE(budget)>())
 
 #endif // AZ_PROFILER_MACRO_DISABLE
 
@@ -63,26 +63,25 @@ namespace AZ::Debug
     class ProfileScope
     {
     public:
-        static uint32_t GetSystemID(const char* system);
-
         template<typename... T>
-        static void BeginRegion(
-            [[maybe_unused]] const Budget& budget, [[maybe_unused]] const char* eventName, [[maybe_unused]] T const&... args)
+        static void BeginRegion([[maybe_unused]] Budget& budget, [[maybe_unused]] const char* eventName, [[maybe_unused]] T const&... args)
         {
 #if !defined(_RELEASE)
             // TODO: Verification that the supplied system name corresponds to a known budget
 #if defined(USE_PIX)
             PIXBeginEvent(PIX_COLOR_INDEX(budget.Crc() & 0xff), eventName, args...);
 #endif
+            budget.BeginProfileRegion();
 // TODO: injecting instrumentation for other profilers
 // NOTE: external profiler registration won't occur inline in a header necessarily in this manner, but the exact mechanism
 //       will be introduced in a future PR
 #endif
         }
 
-        static void EndRegion()
+        static void EndRegion([[maybe_unused]] Budget& budget)
         {
 #if !defined(_RELEASE)
+            budget.EndProfileRegion();
 #if defined(USE_PIX)
             PIXEndEvent();
 #endif
@@ -90,15 +89,19 @@ namespace AZ::Debug
         }
 
         template<typename... T>
-        ProfileScope(const Budget& budget, char const* eventName, T const&... args)
+        ProfileScope(Budget& budget, char const* eventName, T const&... args)
+            : m_budget{ budget }
         {
             BeginRegion(budget, eventName, args...);
         }
 
         ~ProfileScope()
         {
-            EndRegion();
+            EndRegion(m_budget);
         }
+
+    private:
+        Budget& m_budget;
     };
 } // namespace AZ::Debug
 

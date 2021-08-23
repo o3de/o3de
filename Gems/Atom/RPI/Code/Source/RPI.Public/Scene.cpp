@@ -542,7 +542,7 @@ namespace AZ
                     {
                         view->FinalizeDrawLists();
                     }
-                    AZ_PROFILE_END();
+                    AZ_PROFILE_END(RPI);
                 }
                 else
                 {
@@ -558,7 +558,7 @@ namespace AZ
                         finalizeDrawListsJob->SetDependent(finalizeDrawListsCompletion);
                         finalizeDrawListsJob->Start();
                     }
-                    AZ_PROFILE_END();
+                    AZ_PROFILE_END(RPI);
                     WaitAndCleanCompletionJob(finalizeDrawListsCompletion);
                 }
             }

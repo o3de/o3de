@@ -10,6 +10,7 @@
 
 #include <AzCore/Module/Environment.h>
 #include <AzCore/Math/Crc.h>
+#include <AzCore/Memory/SystemAllocator.h>
 
 AZ_DEFINE_BUDGET(AzCore);
 AZ_DEFINE_BUDGET(Editor);
@@ -21,25 +22,46 @@ AZ_DEFINE_BUDGET(Animation);
 
 namespace AZ::Debug
 {
-    // Global container for all registered budgets
-    class BudgetRegistry
+    struct BudgetImpl
     {
-    public:
-        static BudgetRegistry& Instance()
-        {
-        }
-
-    private:
+        AZ_CLASS_ALLOCATOR(BudgetImpl, AZ::SystemAllocator, 0);
+        // TODO: Budget implementation for tracking budget wall time per-core, memory, etc.
     };
-
-    void Budget::ResetAll()
-    {
-    }
 
     Budget::Budget(const char* name)
         : m_name{ name }
         , m_crc{ Crc32(name) }
     {
-        // TODO: Register budget with singleton budget registry
+        m_impl = aznew BudgetImpl;
+    }
+
+    Budget::~Budget()
+    {
+        if (m_impl)
+        {
+            delete m_impl;
+        }
+    }
+
+    // TODO:Budgets Methods below are stubbed pending future work to both update budget data and visualize it
+
+    void Budget::PerFrameReset()
+    {
+    }
+
+    void Budget::BeginProfileRegion()
+    {
+    }
+
+    void Budget::EndProfileRegion()
+    {
+    }
+
+    void Budget::TrackAllocation(uint64_t)
+    {
+    }
+
+    void Budget::UntrackAllocation(uint64_t)
+    {
     }
 } // namespace AZ::Debug

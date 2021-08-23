@@ -59,7 +59,6 @@
 #include <AzFramework/StreamingInstall/StreamingInstall.h>
 #include <AzFramework/TargetManagement/TargetManagementComponent.h>
 #include <AzFramework/Viewport/CameraState.h>
-#include <AzFramework/Driller/RemoteDrillerInterface.h>
 #include <AzFramework/Metrics/MetricsPlainTextNameRegistration.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
@@ -310,7 +309,6 @@ namespace AzFramework
 #endif
             azrtti_typeid<AzFramework::AssetSystem::AssetSystemComponent>(),
             azrtti_typeid<AzFramework::InputSystemComponent>(),
-            azrtti_typeid<AzFramework::DrillerNetworkAgentComponent>(),
 
 #if !defined(AZCORE_EXCLUDE_LUA)
             azrtti_typeid<AZ::ScriptSystemComponent>(),
@@ -372,7 +370,6 @@ namespace AzFramework
             azrtti_typeid<AzFramework::RenderGeometry::GameIntersectorComponent>(),
             azrtti_typeid<AzFramework::AssetSystem::AssetSystemComponent>(),
             azrtti_typeid<AzFramework::InputSystemComponent>(),
-            azrtti_typeid<AzFramework::DrillerNetworkAgentComponent>(),
             azrtti_typeid<AzFramework::StreamingInstall::StreamingInstallSystemComponent>(),
             azrtti_typeid<AzFramework::SpawnableSystemComponent>(),
             AZ::Uuid("{624a7be2-3c7e-4119-aee2-1db2bdb6cc89}"), // ScriptDebugAgent

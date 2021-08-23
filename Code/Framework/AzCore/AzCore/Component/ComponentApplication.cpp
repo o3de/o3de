@@ -593,6 +593,8 @@ namespace AZ
         CreateOSAllocator();
         CreateSystemAllocator();
 
+        m_budgetTracker.Init();
+
         // This can be moved to the ComponentApplication constructor if need be
         // This is reading the *.setreg files using SystemFile and merging the settings
         // to the settings registry.
@@ -623,8 +625,6 @@ namespace AZ
 
             m_eventLogger->Start(outputPath.Native(), baseFileName);
         }
-
-        CreateDrillers();
 
         Sfmt::Create();
 
@@ -744,12 +744,6 @@ namespace AZ
         // Disconnect from application and tick request buses
         ComponentApplicationBus::Handler::BusDisconnect();
         TickRequestBus::Handler::BusDisconnect();
-
-        if (m_drillerManager)
-        {
-            Debug::DrillerManager::Destroy(m_drillerManager);
-            m_drillerManager = nullptr;
-        }
 
         m_eventLogger->Stop();
 
@@ -896,31 +890,6 @@ namespace AZ
         }
 
         allocatorManager.FinalizeConfiguration();
-    }
-
-    //=========================================================================
-    // CreateDrillers
-    // [2/20/2013]
-    //=========================================================================
-    void ComponentApplication::CreateDrillers()
-    {
-        // Create driller manager and register drillers if requested
-        if (m_descriptor.m_enableDrilling)
-        {
-            m_drillerManager = Debug::DrillerManager::Create();
-            // Memory driller is responsible for tracking allocations.
-            // Tracking type and overhead is determined by app configuration.
-
-            // Only one MemoryDriller is supported at a time
-            // Only create the memory driller if there is no handlers connected to the MemoryDrillerBus
-            if (!Debug::MemoryDrillerBus::HasHandlers())
-            {
-                m_drillerManager->Register(aznew Debug::MemoryDriller);
-            }
-            // Trace messages driller will consume resources only when started.
-            m_drillerManager->Register(aznew Debug::TraceMessagesDriller);
-            m_drillerManager->Register(aznew Debug::EventTraceDriller);
-        }
     }
 
     void ComponentApplication::MergeSettingsToRegistry(SettingsRegistryInterface& registry)
@@ -1412,10 +1381,6 @@ namespace AZ
                 AZ_PROFILE_SCOPE(AzCore, "ComponentApplication::Tick:OnTick");
                 EBUS_EVENT(TickBus, OnTick, m_deltaTime, ScriptTimePoint(now));
             }
-        }
-        if (m_drillerManager)
-        {
-            m_drillerManager->FrameUpdate();
         }
     }
 

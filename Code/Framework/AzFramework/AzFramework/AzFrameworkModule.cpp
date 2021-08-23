@@ -14,7 +14,6 @@
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Components/NonUniformScaleComponent.h>
 #include <AzFramework/Components/AzFrameworkConfigurationSystemComponent.h>
-#include <AzFramework/Driller/RemoteDrillerInterface.h>
 #include <AzFramework/Entity/GameEntityContextComponent.h>
 #include <AzFramework/FileTag/FileTagComponent.h>
 #include <AzFramework/Input/System/InputSystemComponent.h>
@@ -48,7 +47,6 @@ namespace AzFramework
             AzFramework::CreateScriptDebugAgentFactory(),
             AzFramework::AssetSystem::AssetSystemComponent::CreateDescriptor(),
             AzFramework::InputSystemComponent::CreateDescriptor(),
-            AzFramework::DrillerNetworkAgentComponent::CreateDescriptor(),
 
     #if !defined(AZCORE_EXCLUDE_LUA)
             AzFramework::ScriptComponent::CreateDescriptor(),
