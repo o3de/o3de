@@ -7,6 +7,10 @@
  */
 
 #include <AtomToolsFramework/Window/AtomToolsMainWindow.h>
+#include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
+
+#include <QFileDialog>
+#include <QMenu>
 #include <QMenuBar>
 #include <QStatusBar>
 #include <QVBoxLayout>
@@ -24,12 +28,10 @@ namespace AtomToolsFramework
         setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
         setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
 
+        AddCommonMenus();
+
         m_statusMessage = new QLabel(statusBar());
         statusBar()->addPermanentWidget(m_statusMessage, 1);
-
-        auto menuBar = new QMenuBar(this);
-        menuBar->setObjectName("MenuBar");
-        setMenuBar(menuBar);
 
         auto centralWidget = new QWidget(this);
         auto centralWidgetLayout = new QVBoxLayout(centralWidget);
@@ -126,5 +128,51 @@ namespace AtomToolsFramework
     void AtomToolsMainWindow::SetStatusError(const QString& message)
     {
         m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(message));
+    }
+
+    void AtomToolsMainWindow::AddCommonMenus()
+    {
+        m_menuFile = menuBar()->addMenu("&File");
+        m_menuEdit = menuBar()->addMenu("&Edit");
+        m_menuView = menuBar()->addMenu("&View");
+        m_menuHelp = menuBar()->addMenu("&Help");
+
+        m_menuFile->addAction("Run &Python...", [this]() {
+            const QString script = QFileDialog::getOpenFileName(this, "Run Script", QString(), QString("*.py"));
+            if (!script.isEmpty())
+            {
+                AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(&AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilename, script.toUtf8().constData());
+            }
+        });
+
+        m_menuFile->addSeparator();
+
+        m_menuFile->addAction("E&xit", [this]() {
+            close();
+        }, QKeySequence::Quit);
+
+        m_menuEdit->addAction("&Settings...", [this]() {
+            OpenSettings();
+        }, QKeySequence::Preferences);
+
+        m_menuHelp->addAction("&Help...", [this]() {
+            OpenHelp();
+        });
+
+        m_menuHelp->addAction("&About...", [this]() {
+            OpenAbout();
+        });
+    }
+
+    void AtomToolsMainWindow::OpenSettings()
+    {
+    }
+
+    void AtomToolsMainWindow::OpenHelp()
+    {
+    }
+
+    void AtomToolsMainWindow::OpenAbout()
+    {
     }
 } // namespace AtomToolsFramework

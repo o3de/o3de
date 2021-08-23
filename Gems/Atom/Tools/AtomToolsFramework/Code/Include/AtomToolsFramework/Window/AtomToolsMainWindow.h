@@ -38,8 +38,20 @@ namespace AtomToolsFramework
         void SetStatusWarning(const QString& message);
         void SetStatusError(const QString& message);
 
-        AzQtComponents::FancyDocking* m_advancedDockManager = nullptr;
-        QLabel* m_statusMessage = nullptr;
+        void AddCommonMenus();
+
+        virtual void OpenSettings();
+        virtual void OpenHelp();
+        virtual void OpenAbout();
+
+        AzQtComponents::FancyDocking* m_advancedDockManager = {};
+
+        QLabel* m_statusMessage = {};
+
+        QMenu* m_menuFile = {};
+        QMenu* m_menuEdit = {};
+        QMenu* m_menuView = {};
+        QMenu* m_menuHelp = {};
 
         AZStd::unordered_map<AZStd::string, AzQtComponents::StyledDockWidget*> m_dockWidgets;
     };

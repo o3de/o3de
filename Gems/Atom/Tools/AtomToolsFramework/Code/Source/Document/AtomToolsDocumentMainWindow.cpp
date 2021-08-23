@@ -12,15 +12,11 @@
 #include <AtomToolsFramework/Util/Util.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindowNotificationBus.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-#include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
 
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QApplication>
 #include <QByteArray>
 #include <QCloseEvent>
-#include <QDesktopWidget>
-#include <QFileDialog>
 #include <QLayout>
 #include <QMenu>
 #include <QMenuBar>
@@ -45,10 +41,10 @@ namespace AtomToolsFramework
 
     void AtomToolsDocumentMainWindow::AddDocumentMenus()
     {
-        // Generating the main menu manually because it's easier and we will have some dynamic or data driven entries
-        m_menuFile = menuBar()->addMenu("&File");
+        QAction* insertPostion = !m_menuFile->actions().empty() ? m_menuFile->actions().front() : nullptr;
 
-        m_actionNew = m_menuFile->addAction("&New...", [this]() {
+        // Generating the main menu manually because it's easier and we will have some dynamic or data driven entries
+        m_actionNew = CreateAction("&New...", [this]() {
             AZStd::string openPath;
             AZStd::string savePath;
             if (GetCreateFileInfo(openPath, savePath))
@@ -57,20 +53,19 @@ namespace AtomToolsFramework
                     &AtomToolsDocumentSystemRequestBus::Events::CreateDocumentFromFile, openPath, savePath);
             }
         }, QKeySequence::New);
+        m_menuFile->insertAction(insertPostion, m_actionNew);
 
-        m_actionOpen = m_menuFile->addAction("&Open...", [this]() {
+        m_actionOpen = CreateAction("&Open...", [this]() {
             AZStd::string openPath;
             if (GetOpenFileInfo(openPath))
             {
                 AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsDocumentSystemRequestBus::Events::OpenDocument, openPath);
             }
         }, QKeySequence::Open);
+        m_menuFile->insertAction(insertPostion, m_actionOpen);
+        m_menuFile->insertSeparator(insertPostion);
 
-        m_actionOpenRecent = m_menuFile->addAction("Open &Recent");
-
-        m_menuFile->addSeparator();
-
-        m_actionSave = m_menuFile->addAction("&Save", [this]() {
+        m_actionSave = CreateAction("&Save", [this]() {
             const AZ::Uuid documentId = GetDocumentIdFromTab(m_tabWidget->currentIndex());
             bool result = false;
             AtomToolsDocumentSystemRequestBus::BroadcastResult(result, &AtomToolsDocumentSystemRequestBus::Events::SaveDocument, documentId);
@@ -79,8 +74,9 @@ namespace AtomToolsFramework
                 SetStatusError(tr("Document save failed: %1").arg(GetDocumentPath(documentId)));
             }
         }, QKeySequence::Save);
+        m_menuFile->insertAction(insertPostion, m_actionSave);
 
-        m_actionSaveAsCopy = m_menuFile->addAction("Save &As...", [this]() {
+        m_actionSaveAsCopy = CreateAction("Save &As...", [this]() {
             const AZ::Uuid documentId = GetDocumentIdFromTab(m_tabWidget->currentIndex());
             const QString documentPath = GetDocumentPath(documentId);
 
@@ -92,8 +88,9 @@ namespace AtomToolsFramework
                 SetStatusError(tr("Document save failed: %1").arg(GetDocumentPath(documentId)));
             }
         }, QKeySequence::SaveAs);
+        m_menuFile->insertAction(insertPostion, m_actionSaveAsCopy);
 
-        m_actionSaveAsChild = m_menuFile->addAction("Save As &Child...", [this]() {
+        m_actionSaveAsChild = CreateAction("Save As &Child...", [this]() {
             const AZ::Uuid documentId = GetDocumentIdFromTab(m_tabWidget->currentIndex());
             const QString documentPath = GetDocumentPath(documentId);
 
@@ -105,8 +102,9 @@ namespace AtomToolsFramework
                 SetStatusError(tr("Document save failed: %1").arg(GetDocumentPath(documentId)));
             }
         });
+        m_menuFile->insertAction(insertPostion, m_actionSaveAsChild);
 
-        m_actionSaveAll = m_menuFile->addAction("Save A&ll", [this]() {
+        m_actionSaveAll = CreateAction("Save A&ll", [this]() {
             bool result = false;
             AtomToolsDocumentSystemRequestBus::BroadcastResult(result, &AtomToolsDocumentSystemRequestBus::Events::SaveAllDocuments);
             if (!result)
@@ -114,42 +112,30 @@ namespace AtomToolsFramework
                 SetStatusError(tr("Document save all failed"));
             }
         });
+        m_menuFile->insertAction(insertPostion, m_actionSaveAll);
+        m_menuFile->insertSeparator(insertPostion);
 
-        m_menuFile->addSeparator();
-
-        m_actionClose = m_menuFile->addAction("&Close", [this]() {
+        m_actionClose = CreateAction("&Close", [this]() {
             const AZ::Uuid documentId = GetDocumentIdFromTab(m_tabWidget->currentIndex());
             AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsDocumentSystemRequestBus::Events::CloseDocument, documentId);
         }, QKeySequence::Close);
+        m_menuFile->insertAction(insertPostion, m_actionClose);
 
-        m_actionCloseAll = m_menuFile->addAction("Close All", [this]() {
+        m_actionCloseAll = CreateAction("Close All", [this]() {
             AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsDocumentSystemRequestBus::Events::CloseAllDocuments);
         });
+        m_menuFile->insertAction(insertPostion, m_actionCloseAll);
 
-        m_actionCloseOthers = m_menuFile->addAction("Close Others", [this]() {
+        m_actionCloseOthers = CreateAction("Close Others", [this]() {
             const AZ::Uuid documentId = GetDocumentIdFromTab(m_tabWidget->currentIndex());
             AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsDocumentSystemRequestBus::Events::CloseAllDocumentsExcept, documentId);
         });
+        m_menuFile->insertAction(insertPostion, m_actionCloseOthers);
+        m_menuFile->insertSeparator(insertPostion);
 
-        m_menuFile->addSeparator();
+        insertPostion = !m_menuEdit->actions().empty() ? m_menuEdit->actions().front() : nullptr;
 
-        m_menuFile->addAction("Run &Python...", [this]() {
-            const QString script = QFileDialog::getOpenFileName(this, "Run Script", QString(), QString("*.py"));
-            if (!script.isEmpty())
-            {
-                AzToolsFramework::EditorPythonRunnerRequestBus::Broadcast(&AzToolsFramework::EditorPythonRunnerRequestBus::Events::ExecuteByFilename, script.toUtf8().constData());
-            }
-        });
-
-        m_menuFile->addSeparator();
-
-        m_actionExit = m_menuFile->addAction("E&xit", [this]() {
-            close();
-        }, QKeySequence::Quit);
-
-        m_menuEdit = menuBar()->addMenu("&Edit");
-
-        m_actionUndo = m_menuEdit->addAction("&Undo", [this]() {
+        m_actionUndo = CreateAction("&Undo", [this]() {
             const AZ::Uuid documentId = GetDocumentIdFromTab(m_tabWidget->currentIndex());
             bool result = false;
             AtomToolsDocumentRequestBus::EventResult(result, documentId, &AtomToolsDocumentRequestBus::Events::Undo);
@@ -158,8 +144,9 @@ namespace AtomToolsFramework
                 SetStatusError(tr("Document undo failed: %1").arg(GetDocumentPath(documentId)));
             }
         }, QKeySequence::Undo);
+        m_menuEdit->insertAction(insertPostion, m_actionUndo);
 
-        m_actionRedo = m_menuEdit->addAction("&Redo", [this]() {
+        m_actionRedo = CreateAction("&Redo", [this]() {
             const AZ::Uuid documentId = GetDocumentIdFromTab(m_tabWidget->currentIndex());
             bool result = false;
             AtomToolsDocumentRequestBus::EventResult(result, documentId, &AtomToolsDocumentRequestBus::Events::Redo);
@@ -168,34 +155,24 @@ namespace AtomToolsFramework
                 SetStatusError(tr("Document redo failed: %1").arg(GetDocumentPath(documentId)));
             }
         }, QKeySequence::Redo);
+        m_menuEdit->insertAction(insertPostion, m_actionRedo);
+        m_menuEdit->insertSeparator(insertPostion);
 
-        m_menuEdit->addSeparator();
+        insertPostion = !m_menuView->actions().empty() ? m_menuView->actions().front() : nullptr;
 
-        m_actionSettings = m_menuEdit->addAction("&Settings...", [this]() {
-            OpenSettings();
-        }, QKeySequence::Preferences);
-
-        m_menuView = menuBar()->addMenu("&View");
-
-        m_menuView->addSeparator();
-
-        m_actionPreviousTab = m_menuView->addAction("&Previous Tab", [this]() {
+        m_actionPreviousTab = CreateAction(
+            "&Previous Tab",
+            [this]()
+            {
             SelectPreviousTab();
         }, Qt::CTRL | Qt::SHIFT | Qt::Key_Tab); //QKeySequence::PreviousChild is mapped incorrectly in Qt
+        m_menuView->insertAction(insertPostion, m_actionPreviousTab);
 
-        m_actionNextTab = m_menuView->addAction("&Next Tab", [this]() {
+        m_actionNextTab = CreateAction("&Next Tab", [this]() {
             SelectNextTab();
         }, Qt::CTRL | Qt::Key_Tab); //QKeySequence::NextChild works as expected but mirroring Previous
-
-        m_menuHelp = menuBar()->addMenu("&Help");
-
-        m_actionHelp = m_menuHelp->addAction("&Help...", [this]() {
-            OpenHelp();
-        });
-
-        m_actionAbout = m_menuHelp->addAction("&About...", [this]() {
-            OpenAbout();
-        });
+        m_menuView->insertAction(insertPostion, m_actionNextTab);
+        m_menuView->insertSeparator(insertPostion);
     }
 
     void AtomToolsDocumentMainWindow::AddDocumentTabBar()
@@ -343,7 +320,7 @@ namespace AtomToolsFramework
         }
     }
 
-    void AtomToolsDocumentMainWindow::OpenTabContextMenu() const
+    void AtomToolsDocumentMainWindow::OpenTabContextMenu()
     {
         const QTabBar* tabBar = m_tabWidget->tabBar();
         const QPoint position = tabBar->mapFromGlobal(QCursor::pos());
@@ -370,38 +347,26 @@ namespace AtomToolsFramework
         }
     }
 
-    inline bool AtomToolsDocumentMainWindow::GetCreateFileInfo(AZStd::string& openPath, AZStd::string& savePath) const
+    inline bool AtomToolsDocumentMainWindow::GetCreateFileInfo(AZStd::string& openPath, AZStd::string& savePath)
     {
         AZ_UNUSED(openPath);
         AZ_UNUSED(savePath);
         return false;
     }
 
-    inline bool AtomToolsDocumentMainWindow::GetOpenFileInfo(AZStd::string& openPath) const
+    inline bool AtomToolsDocumentMainWindow::GetOpenFileInfo(AZStd::string& openPath)
     {
         AZ_UNUSED(openPath);
         return false;
     }
 
-    inline QWidget* AtomToolsDocumentMainWindow::CreateViewForDocumemt(const AZ::Uuid& documentId) const
+    inline QWidget* AtomToolsDocumentMainWindow::CreateViewForDocumemt(const AZ::Uuid& documentId)
     {
         AZ_UNUSED(documentId);
         auto contentWidget = new QWidget(centralWidget());
         contentWidget->setContentsMargins(0, 0, 0, 0);
         contentWidget->setFixedSize(0, 0);
         return contentWidget;
-    }
-
-    inline void AtomToolsDocumentMainWindow::OpenSettings() const
-    {
-    }
-
-    inline void AtomToolsDocumentMainWindow::OpenHelp() const
-    {
-    }
-
-    inline void AtomToolsDocumentMainWindow::OpenAbout() const
-    {
     }
 
     void AtomToolsDocumentMainWindow::OnDocumentOpened(const AZ::Uuid& documentId)
@@ -434,7 +399,6 @@ namespace AtomToolsFramework
         // Update menu options
         m_actionNew->setEnabled(true);
         m_actionOpen->setEnabled(true);
-        m_actionOpenRecent->setEnabled(false);
         m_actionClose->setEnabled(hasTabs);
         m_actionCloseAll->setEnabled(hasTabs);
         m_actionCloseOthers->setEnabled(hasTabs);
@@ -444,16 +408,11 @@ namespace AtomToolsFramework
         m_actionSaveAsChild->setEnabled(isOpen);
         m_actionSaveAll->setEnabled(hasTabs);
 
-        m_actionExit->setEnabled(true);
-
         m_actionUndo->setEnabled(canUndo);
         m_actionRedo->setEnabled(canRedo);
-        m_actionSettings->setEnabled(true);
 
         m_actionPreviousTab->setEnabled(m_tabWidget->count() > 1);
         m_actionNextTab->setEnabled(m_tabWidget->count() > 1);
-
-        m_actionAbout->setEnabled(false);
 
         activateWindow();
         raise();
@@ -519,6 +478,15 @@ namespace AtomToolsFramework
         }
 
         AtomToolsMainWindowNotificationBus::Broadcast(&AtomToolsMainWindowNotifications::OnMainWindowClosing);
+    }
+
+    template<typename Functor>
+    QAction* AtomToolsDocumentMainWindow::CreateAction(const QString& text, Functor functor, const QKeySequence& shortcut)
+    {
+        QAction* action = new QAction(text, this);
+        action->setShortcut(shortcut);
+        connect(action, &QAction::triggered, this, functor);
+        return action;
     }
 } // namespace AtomToolsFramework
 
