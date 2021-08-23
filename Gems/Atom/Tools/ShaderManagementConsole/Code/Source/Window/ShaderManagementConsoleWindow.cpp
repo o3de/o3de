@@ -202,7 +202,7 @@ namespace ShaderManagementConsole
         // Generating the main menu manually because it's easier and we will have some dynamic or data driven entries
         m_menuFile = menuBar()->addMenu("&File");
 
-        m_actionOpen = m_menuFile->addAction("&Open...", [this]() {
+        m_actionOpen = m_menuFile->addAction("&Open...", []() {
             const AZStd::vector<AZ::Data::AssetType> assetTypes = {
             };
 
@@ -256,7 +256,7 @@ namespace ShaderManagementConsole
             AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::CloseDocument, documentId);
         }, QKeySequence::Close);
 
-        m_actionCloseAll = m_menuFile->addAction("Close All", [this]() {
+        m_actionCloseAll = m_menuFile->addAction("Close All", []() {
             AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsFramework::AtomToolsDocumentSystemRequestBus::Events::CloseAllDocuments);
         });
 
@@ -305,7 +305,7 @@ namespace ShaderManagementConsole
 
         m_menuEdit->addSeparator();
 
-        m_actionSettings = m_menuEdit->addAction("&Settings...", [this]() {
+        m_actionSettings = m_menuEdit->addAction("&Settings...", []() {
         }, QKeySequence::Preferences);
         m_actionSettings->setEnabled(false);
 
@@ -334,10 +334,10 @@ namespace ShaderManagementConsole
 
         m_menuHelp = menuBar()->addMenu("&Help");
 
-        m_actionHelp = m_menuHelp->addAction("&Help...", [this]() {
+        m_actionHelp = m_menuHelp->addAction("&Help...", []() {
         });
 
-        m_actionAbout = m_menuHelp->addAction("&About...", [this]() {
+        m_actionAbout = m_menuHelp->addAction("&About...", []() {
         });
     }
 

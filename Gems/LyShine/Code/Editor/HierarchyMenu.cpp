@@ -236,14 +236,14 @@ void HierarchyMenu::SliceMenuItems(HierarchyWidget* hierarchy,
         if (showMask & Show::kNewSlice)
         {
             QAction* action = addAction("Make Cascaded Slice from Selected Slices && Entities...");
-            QObject::connect(action, &QAction::triggered, hierarchy, [hierarchy, selectedEntities]
+            QObject::connect(action, &QAction::triggered, hierarchy, [hierarchy]
                 {
                     hierarchy->GetEditorWindow()->GetSliceManager()->MakeSliceFromSelectedItems(hierarchy, true);
                 }
             );
 
             action = addAction(QObject::tr("Make Detached Slice from Selected Entities..."));
-            QObject::connect(action, &QAction::triggered, hierarchy, [hierarchy, selectedEntities]
+            QObject::connect(action, &QAction::triggered, hierarchy, [hierarchy]
                 {
                     hierarchy->GetEditorWindow()->GetSliceManager()->MakeSliceFromSelectedItems(hierarchy, false);
                 }

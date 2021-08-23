@@ -22,16 +22,12 @@
 ////////////////////////////////////////////////////////////////////////////
 void CTrackViewKeyConstHandle::GetKey(IKey* pKey) const
 {
-    assert(m_bIsValid);
-
     m_pTrack->GetKey(m_keyIndex, pKey);
 }
 
 ////////////////////////////////////////////////////////////////////////////
 float CTrackViewKeyConstHandle::GetTime() const
 {
-    assert(m_bIsValid);
-
     return m_pTrack->GetKeyTime(m_keyIndex);
 }
 

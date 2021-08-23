@@ -4094,7 +4094,7 @@ namespace AzToolsFramework
 
                     using SCCommandBus = AzToolsFramework::SourceControlCommandBus;
                     SCCommandBus::Broadcast(&SCCommandBus::Events::RequestEdit, fullFilePath.c_str(), true,
-                        [sliceEntity, fullFilePath, tmpFileName, tmpFilesaved](bool /*success*/, const AzToolsFramework::SourceControlFileInfo& info)
+                        [fullFilePath, tmpFileName, tmpFilesaved](bool /*success*/, const AzToolsFramework::SourceControlFileInfo& info)
                     {
                         if (!info.IsReadOnly())
                         {

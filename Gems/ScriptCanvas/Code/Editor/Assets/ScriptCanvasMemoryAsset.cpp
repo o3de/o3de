@@ -503,7 +503,7 @@ namespace ScriptCanvasEditor
         m_pendingSave.emplace_back(normPath);
 
         m_assetSaveFinalizer.Reset();
-        m_assetSaveFinalizer.Start(this, fileInfo, saveInfo, onSaveCallback, AssetSaveFinalizer::OnCompleteHandler([saveInfo](AZ::Data::AssetId /*assetId*/)
+        m_assetSaveFinalizer.Start(this, fileInfo, saveInfo, onSaveCallback, AssetSaveFinalizer::OnCompleteHandler([](AZ::Data::AssetId /*assetId*/)
             {
             }));
     }
