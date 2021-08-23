@@ -30,8 +30,6 @@ static constexpr const char TEST_EXPECTED_BUCKET_TYPE[] = "AWS::S3::Bucket";
 static constexpr const char TEST_EXPECTED_BUCKET_NAMEID[] = "MyTestS3Bucket";
 
 static constexpr const char TEST_EXPECTED_SERVICE_KEYNAME[] = "TestService";
-static constexpr const char TEST_EXPECTED_RESTAPI_ID_KEYNAME[] = "TestService.RESTApiId";
-static constexpr const char TEST_EXPECTED_RESTAPI_STAGE_KEYNAME[] = "TestService.RESTApiStage";
 
 static constexpr const char TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE[] =
 R"({

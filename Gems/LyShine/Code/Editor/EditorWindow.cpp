@@ -2103,24 +2103,6 @@ void EditorWindow::RestoreModeSettings(UiEditorMode mode)
     settings.endGroup();    // UI canvas editor
 }
 
-static const char* UIEDITOR_UNLOAD_SAVED_CANVAS_METRIC_EVENT_NAME = "UiEditorUnloadSavedCanvas";
-static const char* UIEDITOR_CANVAS_ID_ATTRIBUTE_NAME = "CanvasId";
-static const char* UIEDITOR_CANVAS_WIDTH_METRIC_NAME = "CanvasWidth";
-static const char* UIEDITOR_CANVAS_HEIGHT_METRIC_NAME = "CanvasHeight";
-static const char* UIEDITOR_CANVAS_MAX_HIERARCHY_DEPTH_METRIC_NAME = "MaxHierarchyDepth";
-static const char* UIEDITOR_CANVAS_NUM_ELEMENT_METRIC_NAME = "NumElement";
-static const char* UIEDITOR_CANVAS_NUM_ELEMENTS_WITH_COMPONENT_PREFIX_METRIC_NAME = "Num";
-static const char* UIEDITOR_CANVAS_NUM_ELEMENTS_WITH_CUSTOM_COMPONENT_METRIC_NAME = "NumCustomElement";
-static const char* UIEDITOR_CANVAS_NUM_UNIQUE_CUSTOM_COMPONENT_NAME = "NumUniqueCustomComponent";
-static const char* UIEDITOR_CANVAS_NUM_AVAILABLE_CUSTOM_COMPONENT_NAME = "NumAvailableCustomComponent";
-static const char* UIEDITOR_CANVAS_NUM_ANCHOR_PRESETS_ATTRIBUTE_NAME = "NumAnchorPreset";
-static const char* UIEDITOR_CANVAS_NUM_ANCHOR_CUSTOM_ATTRIBUTE_NAME = "NumAnchorCustom";
-static const char* UIEDITOR_CANVAS_NUM_PIVOT_PRESETS_ATTRIBUTE_NAME = "NumPivotPreset";
-static const char* UIEDITOR_CANVAS_NUM_PIVOT_CUSTOM_ATTRIBUTE_NAME = "NumPivotCustom";
-static const char* UIEDITOR_CANVAS_NUM_ROTATED_ELEMENT_METRIC_NAME = "NumRotatedElement";
-static const char* UIEDITOR_CANVAS_NUM_SCALED_ELEMENT_METRIC_NAME = "NumScaledElement";
-static const char* UIEDITOR_CANVAS_NUM_SCALE_TO_DEVICE_ELEMENT_METRIC_NAME = "NumScaleToDeviceElement";
-
 int EditorWindow::GetCanvasMaxHierarchyDepth(const LyShine::EntityArray& rootChildElements)
 {
     int depth = 0;

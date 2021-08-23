@@ -42,8 +42,6 @@
 #define s_nodeParams s_nodeParamsSene
 #define AddSupportedParam AddSupportedParamScene
 
-float const kDefaultCameraFOV = 60.0f;
-
 namespace {
     bool s_nodeParamsInitialized = false;
     StaticInstance<std::vector<CAnimNode::SParamInfo>> s_nodeParams;

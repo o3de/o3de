@@ -472,8 +472,6 @@ TEST_F(ScriptCanvasTestFixture, Contracts)
     delete graph->GetEntity();
 }
 
-const int k_executionCount = 998;
-
 TEST_F(ScriptCanvasTestFixture, While)
 {
     RunUnitTestGraph("LY_SC_UnitTest_While", ScriptCanvas::ExecutionMode::Interpreted);

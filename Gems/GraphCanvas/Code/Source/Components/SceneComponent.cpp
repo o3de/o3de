@@ -1070,8 +1070,6 @@ namespace GraphCanvas
     // SceneComponent
     ///////////////////
 
-    static const char* k_copyPasteKey = "GraphCanvasScene";
-
     void SceneComponent::Reflect(AZ::ReflectContext* context)
     {
         GraphSerialization::Reflect(context);

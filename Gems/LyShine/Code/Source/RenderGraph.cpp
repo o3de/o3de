@@ -21,9 +21,6 @@
 
 namespace LyShine
 {
-    static const char* s_maskIncrProfileMarker = "UI_MASK_STENCIL_INCR";
-    static const char* s_maskDecrProfileMarker = "UI_MASK_STENCIL_DECR";
-
     enum UiColorOp
     {
         ColorOp_Unused = 0,             // reusing shader flag value, FixedPipelineEmu shader uses 0 to mean eCO_NOSET

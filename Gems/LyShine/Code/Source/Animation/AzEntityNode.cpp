@@ -27,18 +27,6 @@
 #define s_nodeParams s_nodeParamsEnt
 #define AddSupportedParam AddSupportedParamEnt
 
-static const float TIMEJUMPED_TRANSITION_TIME = 1.0f;
-static const float EPSILON = 0.01f;
-
-static const char* s_VariablePrefixes[] =
-{
-    "n", "i", "b", "f", "s", "ei", "es",
-    "shader", "clr", "color", "vector",
-    "snd", "sound", "dialog", "tex", "texture",
-    "obj", "object", "file", "text", "equip", "reverbpreset", "eaxpreset",
-    "aianchor", "customaction", "gametoken", "seq_", "mission_", "seqid_", "lightanimation_"
-};
-
 //////////////////////////////////////////////////////////////////////////
 namespace
 {

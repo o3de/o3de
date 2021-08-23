@@ -15,8 +15,6 @@
 
 namespace EntityNodeTest
 {
-    // dummy entity id
-    const int ENTITY_ID = 0;
     // consants to set up test key frame, at 1.0 seconds, lasting for 1.0 seconds
     const int   KEY_IDX = 0;
     const float KEY_TIME = 1.0f;

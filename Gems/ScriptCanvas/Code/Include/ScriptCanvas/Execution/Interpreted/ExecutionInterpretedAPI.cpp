@@ -34,8 +34,6 @@ namespace ExecutionInterpretedAPICpp
 
     constexpr size_t k_StringFastSize = 32;
 
-    constexpr size_t k_MaxNodeableOuts = 64;
-
     constexpr size_t k_UuidSize = 16;
 
     constexpr unsigned char k_Bad = 77;
