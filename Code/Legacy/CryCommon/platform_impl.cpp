@@ -18,6 +18,7 @@
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/Utils/Utils.h>
 
+
 // Section dictionary
 #if defined(AZ_RESTRICTED_PLATFORM)
 #define PLATFORM_IMPL_H_SECTION_TRAITS 1
@@ -404,7 +405,7 @@ _MS_ALIGN(64) uint32  BoxSides[0x40 * 8] = {
     0, 0, 0, 0, 0, 0, 0, 0, //3d
     0, 0, 0, 0, 0, 0, 0, 0, //3e
     0, 0, 0, 0, 0, 0, 0, 0, //3f
-} _ALIGN(64);
+};
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #if defined(AZ_RESTRICTED_PLATFORM)
