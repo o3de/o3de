@@ -46,7 +46,6 @@ namespace AZ
 #if AZ_TRAIT_ATOM_METAL_COUNTER_SAMPLING
                 case RHI::QueryType::Timestamp:
                 {
-                    NSError* error = nil;
                     NSUInteger timeStampCounterIndex = [counterSets indexOfObjectPassingTest:^BOOL(id<MTLCounterSet> mtlCounterSet, NSUInteger idx, BOOL *stop)
                     {
                         if ([mtlCounterSet.name isEqualToString:MTLCommonCounterSetTimestamp])
