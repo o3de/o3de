@@ -55,28 +55,29 @@ shaper_presets = {"Log2-48nits": (-6.5, 6.5),
                  "Log2-2000nits": (-12.0, 11.0),
                  "Log2-4000nits": (-12.0, 12.0)}
 
-def transform_write_exr(image_buffer, out_image_path, op):
-    # Create a writing image
-    out_image_spec = oiio.ImageSpec(image_buffer.spec().width, image_buffer.spec().height, 3, "float")
-    out_image_buffer = oiio.ImageBuf(out_image_spec)
-
+def transform_exr(image_buffer, out_image_buffer, op, out_path, write_exr):
     # Set the destination image pixels by applying the shaperfunction
     for y in range(out_image_buffer.ybegin, out_image_buffer.yend):
         for x in range(out_image_buffer.xbegin, out_image_buffer.xend):
             src_pixel = image_buffer.getpixel(x, y)
             # _LOGGER.debug(f'src_pixel is: {src_pixel}')
             if op == 0:
-                dst_pixel = (inv_shaper_transform(bias, scale, src_pixel[0]), inv_shaper_transform(bias, scale, src_pixel[1]), inv_shaper_transform(bias, scale, src_pixel[2]))
+                dst_pixel = (inv_shaper_transform(bias, scale, src_pixel[0]),
+                             inv_shaper_transform(bias, scale, src_pixel[1]),
+                             inv_shaper_transform(bias, scale, src_pixel[2]))
                 out_image_buffer.setpixel(x, y, dst_pixel)
             elif op == 1:
-                dst_pixel = (shaper_transform(bias, scale, src_pixel[0]), shaper_transform(bias, scale, src_pixel[1]), shaper_transform(bias, scale, src_pixel[2]))
+                dst_pixel = (shaper_transform(bias, scale, src_pixel[0]),
+                             shaper_transform(bias, scale, src_pixel[1]),
+                             shaper_transform(bias, scale, src_pixel[2]))
                 out_image_buffer.setpixel(x, y, dst_pixel)
             else:
                 # Unspecified operation. Just write zeroes
                 out_image_buffer.setpixel(x, y, 0.0, 0.0, 0.0)
-                
-    _LOGGER.info(f"writing {out_image_path}.exr ...")
-    out_image_buffer.write(out_image_path + '.exr', "float")
+
+    if write_exr:
+        _LOGGER.info(f"writing {out_path}.exr ...")
+        out_image_buffer.write(out_path + '.exr', "float")
     
     return out_image_buffer
 
@@ -95,8 +96,9 @@ if __name__ == '__main__':
                         help='shaper preset. Should be one of \'Log2-48nits\', \'Log2-1000nits\', \'Log2-2000nits\', \'Log2-4000nits\'')
     parser.add_argument('--op', type=str, required=True, help='operation. Should be \'pre-grading\' or \'post-grading\'')
     parser.add_argument('--o', type=str, required=True, help='output file')
-    parser.add_argument('-l', dest='write3dl', action='store_true', help='output 3dl file')
-    parser.add_argument('-a', dest='writeAsset', action='store_true', help='write out azasset file')
+    parser.add_argument('-e', dest='writeExr', action='store_true', help='output lut as exr file (float)')
+    parser.add_argument('-l', dest='write3dl', action='store_true', help='output lut as .3dl file')
+    parser.add_argument('-a', dest='writeAsset', action='store_true', help='write out lut as O3dE .azasset file')
     args = parser.parse_args()
 
     # Check for valid shaper type
@@ -127,6 +129,7 @@ if __name__ == '__main__':
     #buf = oiio.ImageBuf("linear_lut.exr")
     image_buffer = oiio.ImageBuf(args.i)
     image_spec = image_buffer.spec()
+
     _LOGGER.info(f"Resolution is x:{image_spec.height}, y:{image_spec.width}")
 
     if image_spec.height < 16:
@@ -157,9 +160,16 @@ if __name__ == '__main__':
                   log_min, log_max, scale, bias))
     
     buffer_name = Path(args.o).name
+    
+    # Create a writing image
+    out_image_spec = oiio.ImageSpec(image_buffer.spec().width, image_buffer.spec().height, 3, "float")
+    out_image_buffer = oiio.ImageBuf(out_image_spec)
 
     # write out the modified exr file
-    out_image_buffer = transform_write_exr(image_buffer, args.o, op)
+    write_exr = False
+    if args.writeExr:
+         write_exr = True
+    out_image_buffer = transform_exr(image_buffer, out_image_buffer, op, args.o, write_exr)
 
     from ColorGrading.exr_to_3dl_azasset import generate_lut_values
     lut_intervals, lut_values = generate_lut_values(image_spec, out_image_buffer)

@@ -29,6 +29,7 @@ def Shaper(bias, scale, v):
 
     # this is probably not correct, clamps, avoids a math domain error
     elif v <= 0.0:
+        print(f'Clipping a value: bias={bias}, scale={scale}, v={v}')
         return math.log(FLOAT_EPSILON, 2.0) * scale + bias
 
 def GetUvCoord(size, r, g, b):

@@ -56,14 +56,16 @@ def generate_lut_values(image_spec, image_buffer):
     # First line contains the vertex intervals
     dv = 1023.0 / float(lut_size-1)
     for i in range(lut_size):
-        lut_intervals.append(np.uint64(dv * i))
+        lut_intervals.append(np.uint16(dv * i))
     # Texels are in R G B per line with indices increasing first with blue, then green, and then red.
     for r in range(lut_size):
         for g in range(lut_size):
             for b in range(lut_size):
                 uv = get_uv_coord(lut_size, r, g, b)
-                px = image_buffer.getpixel(uv[0], uv[1])
-                lut_values.append((np.uint64(px[0] * 4095), np.uint64(px[1] * 4095), np.uint64(px[2] * 4095)))
+                px = np.array(image_buffer.getpixel(uv[0], uv[1]), dtype='f')
+                px = np.clip(px, 0.0, 1.0)
+                px = np.uint16(px * 4095)
+                lut_values.append(px)
 
     return lut_intervals, lut_values
 
