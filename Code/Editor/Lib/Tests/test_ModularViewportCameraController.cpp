@@ -177,7 +177,7 @@ namespace UnitTest
         void RepeatDiagonalMouseMovements(const AZStd::function<float()>& deltaTimeFn)
         {
             // move to the center of the screen
-            auto start = QPoint(WidgetSize.width() / 2, WidgetSize.height() / 2);
+            const auto start = QPoint(WidgetSize.width() / 2, WidgetSize.height() / 2);
             MouseMove(m_rootWidget.get(), start, QPoint(0, 0));
             m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTimeFn()), AZ::ScriptTimePoint() });
 
@@ -293,16 +293,61 @@ namespace UnitTest
 
         // move the cursor right
         const auto mouseDelta = QPoint(5, 0);
+
+        MousePressAndMove(m_rootWidget.get(), start, mouseDelta, Qt::MouseButton::RightButton);
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
+
         for (int i = 0; i < 50; ++i)
         {
-            auto current = m_rootWidget->mapFromGlobal(QCursor::pos());
-            MousePressAndMove(m_rootWidget.get(), current, mouseDelta, Qt::MouseButton::RightButton);
+            MousePressAndMove(m_rootWidget.get(), start + mouseDelta, mouseDelta, Qt::MouseButton::RightButton);
             m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
         }
 
-        const auto last = m_rootWidget->mapFromGlobal(QCursor::pos());
-        QTest::mouseRelease(m_rootWidget.get(), Qt::MouseButton::RightButton, Qt::KeyboardModifier::NoModifier, last);
+        // move the cursor left (do an extra iteration moving left to account for the initial dead-zone)
+        for (int i = 0; i < 51; ++i)
+        {
+            MousePressAndMove(m_rootWidget.get(), start + mouseDelta, -mouseDelta, Qt::MouseButton::RightButton);
+            m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
+        }
+
+        QTest::mouseRelease(m_rootWidget.get(), Qt::MouseButton::RightButton, Qt::KeyboardModifier::NoModifier, start + mouseDelta);
         m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
+
+        // Then
+        // retrieve the amount of yaw rotation
+        const AZ::Quaternion cameraRotation = m_cameraViewportContextView->GetCameraTransform().GetRotation();
+        const auto eulerAngles = AzFramework::EulerAngles(AZ::Matrix3x3::CreateFromQuaternion(cameraRotation));
+
+        using ::testing::FloatNear;
+        EXPECT_THAT(eulerAngles.GetZ(), FloatNear(0.0f, 0.001f));
+
+        // Clean-up
+        HaltCollaborators();
+    }
+
+    TEST_F(ModularViewportCameraControllerFixture, CameraDoesNotContinueToRotateGivenNoInputWhenCaptured)
+    {
+        // Given
+        PrepareCollaborators();
+        SandboxEditor::SetCameraCaptureCursorForLook(true);
+
+        const float deltaTime = 1.0f / 60.0f;
+
+        // When
+        // move to the center of the screen
+        auto start = QPoint(WidgetSize.width() / 2, WidgetSize.height() / 2);
+        MouseMove(m_rootWidget.get(), start, QPoint(0, 0));
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
+
+        // will move a small amount initially
+        const auto mouseDelta = QPoint(5, 0);
+        MousePressAndMove(m_rootWidget.get(), start, mouseDelta, Qt::MouseButton::RightButton);
+
+        // ensure further updates to not continue to rotate
+        for (int i = 0; i < 50; ++i)
+        {
+            m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
+        }
 
         // Then
         // ensure the camera rotation is no longer the identity
@@ -310,7 +355,7 @@ namespace UnitTest
         const auto eulerAngles = AzFramework::EulerAngles(AZ::Matrix3x3::CreateFromQuaternion(cameraRotation));
 
         using ::testing::FloatNear;
-        EXPECT_THAT(eulerAngles.GetZ(), FloatNear(1.0f, 0.001f));
+        EXPECT_THAT(eulerAngles.GetZ(), FloatNear(-0.025f, 0.001f));
 
         // Clean-up
         HaltCollaborators();

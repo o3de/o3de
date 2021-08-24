@@ -220,6 +220,7 @@ namespace AzToolsFramework
         if (m_capturingCursor != enabled)
         {
             m_capturingCursor = enabled;
+
             if (m_capturingCursor)
             {
                 m_mouseDevice->SetSystemCursorState(AzFramework::SystemCursorState::ConstrainedAndHidden);
