@@ -194,7 +194,7 @@ def GetEnvStringList(Map envVarMap) {
 
 def CheckoutBootstrapScripts(String branchName) {
     echo "ENTER: CheckoutBootstrapScripts"
-    checkout([$class: 'GitSCM',
+    map_vars = checkout([$class: 'GitSCM',
         branches: [[name: "*/${branchName}"]],
         doGenerateSubmoduleConfigurations: false,
         extensions: [
@@ -211,6 +211,7 @@ def CheckoutBootstrapScripts(String branchName) {
         submoduleCfg: [],
         userRemoteConfigs: scm.userRemoteConfigs
     ])
+    echo map_vars
     echo "EXIT: CheckoutBootstrapScripts"
 }
 
