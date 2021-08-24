@@ -99,7 +99,6 @@ namespace AZ
 
             MaterialPropertyFlags prevOverrideFlags = m_propertyOverrideFlags;
             AZStd::vector<MaterialPropertyValue> prevPropertyValues = m_propertyValues;
-
             // Initialize the shader runtime data like shader constant buffers and shader variants by applying the 
             // material's property values. This will feed through the normal runtime material value-change data flow, which may
             // include custom property change handlers provided by the material type.
@@ -110,13 +109,30 @@ namespace AZ
                 m_propertyValues.resize(materialAsset.GetPropertyValues().size());
                 AZ_Assert(m_propertyValues.size() == m_layout->GetPropertyCount(), "The number of properties in this material doesn't match the property layout");
 
-                for (size_t i = 0; i < materialAsset.GetPropertyValues().size(); ++i)
+                // Material Asset property names will only be empty when the cvar r_enableMaterialPropertyNames is false. By default, it is true.
+                auto& propertyNames = materialAsset.GetPropertyNames();
+                if (!propertyNames.empty())
                 {
-                    const MaterialPropertyValue& value = materialAsset.GetPropertyValues()[i];
-                    MaterialPropertyIndex propertyIndex{i};
-                    if (!SetPropertyValue(propertyIndex, value))
+                    for (auto& propertyName : propertyNames)
                     {
-                        return RHI::ResultCode::Fail;
+                        auto propertyIndex = materialAsset.GetMaterialPropertiesLayout()->FindPropertyIndex(propertyName);
+                        const MaterialPropertyValue& value = materialAsset.GetPropertyValues()[propertyIndex.GetIndex()];
+                        if (!SetPropertyValue(propertyIndex, value))
+                        {
+                            return RHI::ResultCode::Fail;
+                        }
+                    }
+                }
+                else
+                {
+                    for (size_t i = 0; i < materialAsset.GetPropertyValues().size(); ++i)
+                    {
+                        const MaterialPropertyValue& value = materialAsset.GetPropertyValues()[i];
+                        MaterialPropertyIndex propertyIndex{ i };
+                        if (!SetPropertyValue(propertyIndex, value))
+                        {
+                            return RHI::ResultCode::Fail;
+                        }
                     }
                 }
 

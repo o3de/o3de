@@ -81,6 +81,22 @@ namespace UnitTest
             EXPECT_EQ(materialAsset->GetPropertyValues()[7].GetValue<Color>(), Color(1.0f, 1.0f, 1.0f, 1.0f));
             EXPECT_EQ(materialAsset->GetPropertyValues()[8].GetValue<Data::Asset<ImageAsset>>(), m_testImageAsset);
             EXPECT_EQ(materialAsset->GetPropertyValues()[9].GetValue<uint32_t>(), 1u);
+
+            // Material Asset property names will only be empty when the cvar r_enableMaterialPropertyNames is false
+            if (!materialAsset->GetPropertyNames().empty())
+            {
+                const MaterialPropertiesLayout *propertiesLayout = materialAsset->GetMaterialPropertiesLayout();
+                EXPECT_EQ(materialAsset->GetPropertyValues()[0], materialAsset->GetPropertyValues()[propertiesLayout->FindPropertyIndex(Name{"MyBool"}).GetIndex()]);
+                EXPECT_EQ(materialAsset->GetPropertyValues()[1], materialAsset->GetPropertyValues()[propertiesLayout->FindPropertyIndex(Name{"MyInt"}).GetIndex()]);
+                EXPECT_EQ(materialAsset->GetPropertyValues()[2], materialAsset->GetPropertyValues()[propertiesLayout->FindPropertyIndex(Name{"MyUInt"}).GetIndex()]);
+                EXPECT_EQ(materialAsset->GetPropertyValues()[3], materialAsset->GetPropertyValues()[propertiesLayout->FindPropertyIndex(Name{"MyFloat"}).GetIndex()]);
+                EXPECT_EQ(materialAsset->GetPropertyValues()[4], materialAsset->GetPropertyValues()[propertiesLayout->FindPropertyIndex(Name{"MyFloat2"}).GetIndex()]);
+                EXPECT_EQ(materialAsset->GetPropertyValues()[5], materialAsset->GetPropertyValues()[propertiesLayout->FindPropertyIndex(Name{"MyFloat3"}).GetIndex()]);
+                EXPECT_EQ(materialAsset->GetPropertyValues()[6], materialAsset->GetPropertyValues()[propertiesLayout->FindPropertyIndex(Name{"MyFloat4"}).GetIndex()]);
+                EXPECT_EQ(materialAsset->GetPropertyValues()[7], materialAsset->GetPropertyValues()[propertiesLayout->FindPropertyIndex(Name{"MyColor"}).GetIndex()]);
+                EXPECT_EQ(materialAsset->GetPropertyValues()[8], materialAsset->GetPropertyValues()[propertiesLayout->FindPropertyIndex(Name{"MyImage"}).GetIndex()]);
+                EXPECT_EQ(materialAsset->GetPropertyValues()[9], materialAsset->GetPropertyValues()[propertiesLayout->FindPropertyIndex(Name{"MyEnum"}).GetIndex()]);
+            }
         };
 
         // Test basic process of creating a valid asset...

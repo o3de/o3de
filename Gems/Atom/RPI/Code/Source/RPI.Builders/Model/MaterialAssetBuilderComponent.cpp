@@ -7,7 +7,7 @@
  */
 
 #include <Model/MaterialAssetBuilderComponent.h>
-
+#include <AzCore/Console/Console.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Math/Color.h>
@@ -78,7 +78,9 @@ namespace AZ
             AZStd::string materialTypePath;
             RPI::MaterialConverterBus::BroadcastResult(materialTypePath, &RPI::MaterialConverterBus::Events::GetMaterialTypePath);
 
-            if (conversionEnabled && !materialTypePath.empty())
+            bool enableMaterialPropertyNames = false;
+            AZ::Interface<AZ::IConsole>::Get()->GetCvarValue("r_enableMaterialPropertyNames", enableMaterialPropertyNames);
+            if (conversionEnabled && !materialTypePath.empty() && !enableMaterialPropertyNames)
             {
                 AssetBuilderSDK::SourceFileDependency materialTypeSource;
                 materialTypeSource.m_sourceFileDependencyPath = materialTypePath;

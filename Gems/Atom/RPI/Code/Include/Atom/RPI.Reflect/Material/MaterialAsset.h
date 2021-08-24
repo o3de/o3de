@@ -105,6 +105,7 @@ namespace AZ
             //! their parent material, they all get flattened at build time so every MaterialAsset has the full set of values.
             AZStd::array_view<MaterialPropertyValue> GetPropertyValues() const;
 
+            const AZStd::vector<AZ::Name>& GetPropertyNames() const;
         private:
             bool PostLoadInit() override;
 
@@ -126,6 +127,9 @@ namespace AZ
             //! Holds values for each material property, used to initialize Material instances.
             //! This is indexed by MaterialPropertyIndex and aligns with entries in m_materialPropertiesLayout.
             AZStd::vector<MaterialPropertyValue> m_propertyValues;
+            //! This is used to find the MaterialPropertyIndex from materialTypeAsset.m_materialPropertiesLayout
+            //! to match to the appropriate shader index and property value. 
+            AZStd::vector<AZ::Name> m_propertyNames;
         };
        
 

@@ -11,6 +11,14 @@
 #include <Atom/RPI.Reflect/Image/AttachmentImageAsset.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/std/bind/bind.h>
+#include <AzCore/Console/Console.h>
+
+AZ_CVAR(bool,
+    r_enableMaterialPropertyNames,
+    true,
+    nullptr,
+    AZ::ConsoleFunctorFlags::Null,
+    "Enables the use material property names in material assets, breaking its AP job dependency on material type assets.");
 
 namespace AZ
 {
@@ -59,7 +67,7 @@ namespace AZ
             if (ValidateIsReady())
             {
                 m_asset->m_materialTypeAsset = { &materialType, AZ::Data::AssetLoadBehavior::PreLoad };
-                
+
                 if (!m_asset->m_materialTypeAsset)
                 {
                     ReportError("MaterialTypeAsset is null");
@@ -67,6 +75,17 @@ namespace AZ
                 }
 
                 m_materialPropertiesLayout = m_asset->GetMaterialPropertiesLayout();
+                // add option to store material property names from materialType
+                if (r_enableMaterialPropertyNames)
+                {
+                    for (int i = 0; i < m_materialPropertiesLayout->GetPropertyCount(); ++i)
+                    {
+                        MaterialPropertyIndex propertyIndex{ i };
+                        auto& propertyName = m_materialPropertiesLayout->GetPropertyDescriptor(propertyIndex)->GetName();
+                        m_asset->m_propertyNames.emplace_back(propertyName);
+                    }
+                }
+
                 if (!m_materialPropertiesLayout)
                 {
                     ReportError("MaterialPropertiesLayout is null");

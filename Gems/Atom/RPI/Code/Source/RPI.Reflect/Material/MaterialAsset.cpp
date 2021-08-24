@@ -102,6 +102,11 @@ namespace AZ
             return m_propertyValues;
         }
 
+        const AZStd::vector<AZ::Name>& MaterialAsset::GetPropertyNames() const
+        {
+            return m_propertyNames;
+        }
+
         void MaterialAsset::SetReady()
         {
             m_status = AssetStatus::Ready;
