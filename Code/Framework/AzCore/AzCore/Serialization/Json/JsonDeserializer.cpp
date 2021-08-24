@@ -571,11 +571,23 @@ namespace AZ
             if (loadedTypeId.m_determination == TypeIdDetermination::FailedToDetermine ||
                 loadedTypeId.m_determination == TypeIdDetermination::FailedDueToMultipleTypeIds)
             {
-                AZStd::string_view message = loadedTypeId.m_determination == TypeIdDetermination::FailedDueToMultipleTypeIds ?
-                    "Unable to resolve provided type because the same name points to multiple types." :
-                    "Unable to resolve provided type.";
-                status = context.Report(Tasks::RetrieveInfo, Outcomes::Unknown, message);
-                return ResolvePointerResult::FullyProcessed;
+                    auto typeField = pointerData.FindMember(JsonSerialization::TypeIdFieldIdentifier);
+                    if (typeField != pointerData.MemberEnd() && typeField->value.IsString())
+                    {
+                        const char* format = loadedTypeId.m_determination == TypeIdDetermination::FailedToDetermine ?
+                            "Unable to resolve provided type: %.*s." : 
+                            "Unable to resolve provided type %.*s because the same name points to multiple types.";
+                        status = context.Report(Tasks::RetrieveInfo, Outcomes::Unknown, 
+                            AZStd::string::format(format, typeField->value.GetStringLength(), typeField->value.GetString()));
+                    }
+                    else
+                    {
+                        const char* message = loadedTypeId.m_determination == TypeIdDetermination::FailedToDetermine ?
+                            "Unable to resolve provided type." :
+                            "Unable to resolve provided type because the same name points to multiple types.";
+                        status = context.Report(Tasks::RetrieveInfo, Outcomes::Unknown, message);
+                    }
+                    return ResolvePointerResult::FullyProcessed;
             }
 
             if (loadedTypeId.m_typeId != objectType)
