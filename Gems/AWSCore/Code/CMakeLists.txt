@@ -167,8 +167,4 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     endif()
 endif()
 
-install(DIRECTORY "Tools/ResourceMappingTool"
-    DESTINATION "Gems/AWSCore/Code/Tools"
-    COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME}
-    PATTERN "__pycache__" EXCLUDE
-)
+ly_install_directory(DIRECTORIES Tools/ResourceMappingTool)
