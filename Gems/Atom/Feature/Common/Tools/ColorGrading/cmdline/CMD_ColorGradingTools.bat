@@ -7,7 +7,7 @@ REM SPDX-License-Identifier: Apache-2.0 OR MIT
 REM
 REM
 
-:: Set up and run LY Python CMD prompt
+:: Set up and run O3DE Python CMD prompt
 :: Sets up the DccScriptingInterface_Env,
 :: Puts you in the CMD within the dev environment
 
