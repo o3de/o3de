@@ -1243,7 +1243,6 @@ struct Matrix33_tpl
 typedef Matrix33_tpl<f32>  Matrix33;  //always 32 bit
 typedef Matrix33_tpl<f64>  Matrix33d; //always 64 bit
 typedef Matrix33_tpl<real> Matrix33r; //variable float precision. depending on the target system it can be between 32, 64 or 80 bit
-typedef _MS_ALIGN(16) Matrix33_tpl<f32> _ALIGN (16) Matrix33A;
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------

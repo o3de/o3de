@@ -18,8 +18,6 @@ namespace AZ
         class Buffer;
         class InputStreamLayout;
 
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_BEGIN
-
         /**
          * Provides a view into a buffer, to be used as vertex stream. The content of the view is a contiguous
          * list of input vertex data. It is provided to the RHI back-end at draw time.
@@ -67,8 +65,6 @@ namespace AZ
             // Padding the size so it's 8 bytes aligned
             uint32_t m_pad = 0;
         };
-
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_END
 
         /// Utility function for checking that the set of StreamBufferViews aligns with the InputStreamLayout
         bool ValidateStreamBufferViews(const InputStreamLayout& inputStreamLayout, AZStd::array_view<StreamBufferView> streamBufferViews);
