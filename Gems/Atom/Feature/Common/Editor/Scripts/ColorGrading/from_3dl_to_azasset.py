@@ -36,11 +36,16 @@ except ImportError as e:
 # ------------------------------------------------------------------------
 from ColorGrading import AZASSET_LUT
 
+
+# ------------------------------------------------------------------------
 def find_first_line(alist):
     for lno, line in enumerate(alist):
         if line[0].isdigit():  # skip non-number metadata
             return lno
+# ------------------------------------------------------------------------
 
+
+# ------------------------------------------------------------------------
 def write_azasset(file_path, lut_intervals, lut_values, azasset_json=AZASSET_LUT):
     values_str = ''
     for idx, px in enumerate(lut_values):
