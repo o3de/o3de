@@ -82,7 +82,6 @@ namespace UnitTest
             EXPECT_EQ(materialAsset->GetPropertyValues()[8].GetValue<Data::Asset<ImageAsset>>(), m_testImageAsset);
             EXPECT_EQ(materialAsset->GetPropertyValues()[9].GetValue<uint32_t>(), 1u);
 
-            // Material Asset property names will only be empty when the cvar r_enableMaterialPropertyNames is false
             if (!materialAsset->GetPropertyNames().empty())
             {
                 const MaterialPropertiesLayout *propertiesLayout = materialAsset->GetMaterialPropertiesLayout();

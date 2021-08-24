@@ -79,7 +79,7 @@ namespace AZ
             materialAssetCreator.SetElevateWarnings(elevateWarnings);
 
             bool includeMaterialPropertyNames = true;
-            RPI::MaterialConverterBus::BroadcastResult(includeMaterialPropertyNames, &RPI::MaterialConverterBus::Events::IncludeMaterialPropertyNames);
+            RPI::MaterialConverterBus::BroadcastResult(includeMaterialPropertyNames, &RPI::MaterialConverterBus::Events::IsMaterialPropertyNamesIncluded);
             if (m_parentMaterial.empty())
             {
                 auto materialTypeAsset = AssetUtils::LoadAsset<MaterialTypeAsset>(materialSourceFilePath, m_materialType);
