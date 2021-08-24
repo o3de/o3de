@@ -22,9 +22,6 @@
 #include <QWheelEvent>
 #include <QWidget>
 
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
 namespace AzToolsFramework
 {
     void QtEventToAzInputMapper::InitializeKeyMappings()
@@ -161,7 +158,7 @@ namespace AzToolsFramework
         SetImplementation(nullptr);
     }
 
-    void QtEventToAzInputMapper::EditorQtMouseDevice::SetSystemCursorState(AzFramework::SystemCursorState systemCursorState)
+    void QtEventToAzInputMapper::EditorQtMouseDevice::SetSystemCursorState(const AzFramework::SystemCursorState systemCursorState)
     {
         m_systemCursorState = systemCursorState;
     }
@@ -276,7 +273,7 @@ namespace AzToolsFramework
         else if (
             eventType == QEvent::Type::KeyPress || eventType == QEvent::Type::KeyRelease || eventType == QEvent::Type::ShortcutOverride)
         {
-            QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+            auto keyEvent = static_cast<QKeyEvent*>(event);
             HandleKeyEvent(keyEvent);
         }
         // Map mouse events to input channels.
@@ -284,7 +281,7 @@ namespace AzToolsFramework
             eventType == QEvent::Type::MouseButtonPress || eventType == QEvent::Type::MouseButtonRelease ||
             eventType == QEvent::Type::MouseButtonDblClick)
         {
-            QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
+            auto mouseEvent = static_cast<QMouseEvent*>(event);
             HandleMouseButtonEvent(mouseEvent);
         }
         // Map mouse movement to the movement input channels.
@@ -297,7 +294,7 @@ namespace AzToolsFramework
         // Map wheel events to the mouse Z movement channel.
         else if (eventType == QEvent::Type::Wheel)
         {
-            QWheelEvent* wheelEvent = static_cast<QWheelEvent*>(event);
+            auto wheelEvent = static_cast<QWheelEvent*>(event);
             HandleWheelEvent(wheelEvent);
         }
 

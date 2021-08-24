@@ -394,7 +394,3 @@ private:
 //! Creates a modular camera controller in the configuration used by the editor viewport.
 SANDBOX_API AZStd::shared_ptr<AtomToolsFramework::ModularViewportCameraController> CreateModularViewportCameraController(
     const AzFramework::ViewportId viewportId);
-
-//! Set if the cursor should be captured during camera look.
-//! @note This is a config setting usually set at start-up (ed_showCursorCameraLook), this utility function is used to aid with testing.
-SANDBOX_API void CaptureCursorForCameraLook(bool captureCursor);

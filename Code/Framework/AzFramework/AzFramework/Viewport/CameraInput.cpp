@@ -15,9 +15,6 @@
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Windowing/WindowBus.h>
 
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
 namespace AzFramework
 {
     AZ_CVAR(
@@ -794,31 +791,25 @@ namespace AzFramework
                 const auto* position = inputChannel.GetCustomData<AzFramework::InputChannel::PositionData2D>();
                 AZ_Assert(position, "Expected PositionData2D but found nullptr");
 
-                auto x = position->m_normalizedPosition.GetX() * aznumeric_cast<float>(windowSize.m_width);
-                auto y = position->m_normalizedPosition.GetY() * aznumeric_cast<float>(windowSize.m_height);
-
-                auto xi = std::lround(x);
-                auto yi = std::lround(y);
+                const auto x = position->m_normalizedPosition.GetX() * aznumeric_cast<float>(windowSize.m_width);
+                const auto y = position->m_normalizedPosition.GetY() * aznumeric_cast<float>(windowSize.m_height);
 
                 auto currentCursorState = AzFramework::SystemCursorState::Unknown;
                 AzFramework::InputSystemCursorRequestBus::EventResult(
                     currentCursorState, inputDeviceId, &AzFramework::InputSystemCursorRequestBus::Events::GetSystemCursorState);
 
-                return CursorEvent{ ScreenPoint(xi, yi), currentCursorState == AzFramework::SystemCursorState::ConstrainedAndHidden };
+                return CursorEvent{ ScreenPoint(AZStd::lround(x), AZStd::lround(y)),
+                                    currentCursorState == AzFramework::SystemCursorState::ConstrainedAndHidden };
             }
             else if (inputChannelId == InputDeviceMouse::Movement::X)
             {
-                auto x = inputChannel.GetValue();
-                auto xi = std::lround(x);
-
-                return HorizontalMotionEvent{ aznumeric_cast<int>(xi) };
+                const auto x = inputChannel.GetValue();
+                return HorizontalMotionEvent{ aznumeric_cast<int>(AZStd::lround(x)) };
             }
             else if (inputChannelId == InputDeviceMouse::Movement::Y)
             {
-                auto y = inputChannel.GetValue();
-                auto yi = std::lround(y);
-
-                return VerticalMotionEvent{ aznumeric_cast<int>(yi) };
+                const auto y = inputChannel.GetValue();
+                return VerticalMotionEvent{ aznumeric_cast<int>(AZStd::lround(y)) };
             }
             else if (inputChannelId == InputDeviceMouse::Movement::Z)
             {

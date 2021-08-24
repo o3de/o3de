@@ -102,17 +102,8 @@
 #include <IPhysics.h>
 #include <IStatObj.h>
 
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
 AZ_CVAR(
     bool, ed_visibility_logTiming, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Output the timing of the new IVisibilitySystem query");
-AZ_CVAR(bool, ed_showCursorCameraLook, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Show the cursor when using free look with the new camera system");
-
-void CaptureCursorForCameraLook(bool captureCursor)
-{
-    ed_showCursorCameraLook = !captureCursor;
-}
 
 EditorViewportWidget* EditorViewportWidget::m_pPrimaryViewport = nullptr;
 
@@ -1087,13 +1078,19 @@ AZStd::shared_ptr<AtomToolsFramework::ModularViewportCameraController> CreateMod
         {
             const auto hideCursor = [viewportId]
             {
-                AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Event(
-                    viewportId, &AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Events::BeginCursorCapture);
+                if (SandboxEditor::CameraCaptureCursorForLook())
+                {
+                    AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Event(
+                        viewportId, &AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Events::BeginCursorCapture);
+                }
             };
             const auto showCursor = [viewportId]
             {
-                AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Event(
-                    viewportId, &AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Events::EndCursorCapture);
+                if (SandboxEditor::CameraCaptureCursorForLook())
+                {
+                    AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Event(
+                        viewportId, &AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Events::EndCursorCapture);
+                }
             };
 
             auto firstPersonRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(SandboxEditor::CameraFreeLookChannelId());
@@ -1102,12 +1099,9 @@ AZStd::shared_ptr<AtomToolsFramework::ModularViewportCameraController> CreateMod
                 return SandboxEditor::CameraRotateSpeed();
             };
 
-            if (!ed_showCursorCameraLook)
-            {
-                // default behavior is to hide the cursor but this can be disabled (useful for remote desktop)
-                firstPersonRotateCamera->SetActivationBeganFn(hideCursor);
-                firstPersonRotateCamera->SetActivationEndedFn(showCursor);
-            }
+            // default behavior is to hide the cursor but this can be disabled (useful for remote desktop)
+            firstPersonRotateCamera->SetActivationBeganFn(hideCursor);
+            firstPersonRotateCamera->SetActivationEndedFn(showCursor);
 
             auto firstPersonPanCamera =
                 AZStd::make_shared<AzFramework::PanCameraInput>(SandboxEditor::CameraFreePanChannelId(), AzFramework::LookPan);

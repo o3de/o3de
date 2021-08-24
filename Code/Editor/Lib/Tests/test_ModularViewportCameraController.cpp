@@ -13,9 +13,6 @@
 #include <EditorViewportWidget.h>
 #include <Mocks/MockWindowRequests.h>
 
-#pragma optimize("", off)
-#pragma inline_depth(0)
-
 namespace UnitTest
 {
     const QSize WidgetSize = QSize(1920, 1080);
@@ -270,7 +267,7 @@ namespace UnitTest
     TEST_F(ModularViewportCameraControllerFixture, Mouse_movement_orientates_camera_when_cursor_is_captured)
     {
         // Given
-        CaptureCursorForCameraLook(true);
+        SandboxEditor::SetCameraCaptureCursorForLook(true);
         PrepareCollaborators();
 
         const float deltaTime = 1.0f / 60.0f;
@@ -302,7 +299,7 @@ namespace UnitTest
         using ::testing::FloatNear;
         EXPECT_THAT(eulerAngles.GetZ(), FloatNear(1.0f, 0.001f));
 
-        CaptureCursorForCameraLook(false);
+        SandboxEditor::SetCameraCaptureCursorForLook(false);
 
         // Clean-up
         HaltCollaborators();

@@ -105,6 +105,7 @@ namespace AzToolsFramework
         public:
             EditorQtMouseDevice(AzFramework::InputDeviceId id);
 
+            // AzFramework::InputDeviceMouse overrides ...
             void SetSystemCursorState(AzFramework::SystemCursorState systemCursorState) override;
             AzFramework::SystemCursorState GetSystemCursorState() const override;
 
@@ -128,7 +129,6 @@ namespace AzToolsFramework
         // Handle mouse click events.
         void HandleMouseButtonEvent(QMouseEvent* mouseEvent);
         // Handle mouse move events.
-        // Return the mouse delta for this mouse move event.
         void HandleMouseMoveEvent(const QPoint& cursorPosition);
         // Handles key press / release events (or ShortcutOverride events for keys listed in m_highPriorityKeys).
         void HandleKeyEvent(QKeyEvent* keyEvent);
