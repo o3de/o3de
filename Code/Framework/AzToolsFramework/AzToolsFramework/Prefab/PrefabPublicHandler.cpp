@@ -996,12 +996,12 @@ namespace AzToolsFramework
             // the full nested hierarchy with what is returned from RetrieveAndSortPrefabEntitiesAndInstances
             AzToolsFramework::EntityIdSet duplicationSet = AzToolsFramework::GetCulledEntityHierarchy(entityIdsNoLevelInstance);
 
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             ScopedUndoBatch undoBatch("Duplicate Entities");
 
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "DuplicateEntitiesInInstance::UndoCaptureAndDuplicateEntities");
+                AZ_PROFILE_SCOPE(AzToolsFramework, "DuplicateEntitiesInInstance::UndoCaptureAndDuplicateEntities");
 
                 AZStd::vector<AZ::Entity*> entities;
                 AZStd::vector<Instance*> instances;
@@ -1123,7 +1123,7 @@ namespace AzToolsFramework
             // Retrieve entityList from entityIds
             EntityList inputEntityList = EntityIdListToEntityList(entityIdsNoLevelInstance);
 
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             ScopedUndoBatch undoBatch("Delete Selected");
 
@@ -1145,7 +1145,7 @@ namespace AzToolsFramework
             }
 
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "Internal::DeleteEntities:UndoCaptureAndPurgeEntities");
+                AZ_PROFILE_SCOPE(AzToolsFramework, "Internal::DeleteEntities:UndoCaptureAndPurgeEntities");
 
                 Prefab::PrefabDom instanceDomBefore;
                 m_instanceToTemplateInterface->GenerateDomForInstance(instanceDomBefore, commonOwningInstance->get());
@@ -1205,7 +1205,7 @@ namespace AzToolsFramework
 
             selCommand->SetParent(undoBatch.GetUndoBatch());
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "Internal::DeleteEntities:RunRedo");
+                AZ_PROFILE_SCOPE(AzToolsFramework, "Internal::DeleteEntities:RunRedo");
                 selCommand->RunRedo();
             }
 
@@ -1230,10 +1230,10 @@ namespace AzToolsFramework
                 return AZ::Failure(AZStd::string("Input entity should be its owning Instance's container entity."));
             }
 
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
 
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "Internal::DetachPrefab:UndoCapture");
+                AZ_PROFILE_SCOPE(AzToolsFramework, "Internal::DetachPrefab:UndoCapture");
 
                 ScopedUndoBatch undoBatch("Detach Prefab");
 
@@ -1294,7 +1294,7 @@ namespace AzToolsFramework
                     command->Capture(instanceDomBefore, instanceDomAfter, parentTemplateId);
                     command->SetParent(undoBatch.GetUndoBatch());
                     {
-                        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "Internal::DetachPrefab:RunRedo");
+                        AZ_PROFILE_SCOPE(AzToolsFramework, "Internal::DetachPrefab:RunRedo");
                         command->RunRedo();
                     }
 

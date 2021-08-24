@@ -34,8 +34,6 @@
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
 #include <AzToolsFramework/Undo/UndoSystem.h>
 
-#pragma warning(disable: 4355) // 'this' : used in base member initializer list
-
 class CanvasSizeToolbarSection;
 class CommandCanvasPropertiesChange;
 class CommandCanvasSizeToolbarIndex;

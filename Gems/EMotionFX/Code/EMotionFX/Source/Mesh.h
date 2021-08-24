@@ -64,7 +64,7 @@ namespace EMotionFX
          * VertexAttributeLayerAbstractData::GetType() values for the vertex data
          * Use these with the Mesh::FindVertexData() and Mesh::FindOriginalVertexData() methods.
          */
-        enum
+        enum : uint32
         {
             ATTRIB_POSITIONS        = 0,    /**< Vertex positions. Typecast to AZ::Vector3. Positions are always exist. */
             ATTRIB_NORMALS          = 1,    /**< Vertex normals. Typecast to AZ::Vector3. Normals are always exist. */

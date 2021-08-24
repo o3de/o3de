@@ -260,7 +260,7 @@ unsigned int CAnimSceneNode::GetParamCount() const
 //////////////////////////////////////////////////////////////////////////
 CAnimParamType CAnimSceneNode::GetParamType(unsigned int nIndex) const
 {
-    if (nIndex >= 0 && nIndex < (int)s_nodeParams.size())
+    if (nIndex < s_nodeParams.size())
     {
         return s_nodeParams[nIndex].paramType;
     }

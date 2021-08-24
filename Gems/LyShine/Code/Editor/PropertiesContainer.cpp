@@ -595,7 +595,7 @@ bool PropertiesContainer::DoesIntersectNonSelectedComponentEditor(const QRect& g
 
 void PropertiesContainer::ClearComponentEditorSelection()
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+    AZ_PROFILE_FUNCTION(AzToolsFramework);
     for (auto componentEditor : m_componentEditors)
     {
         componentEditor->SetSelected(false);

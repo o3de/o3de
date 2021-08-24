@@ -26,7 +26,7 @@ namespace EMotionFX
 
         using WeightedMaskEntry = AZStd::pair<AZStd::string, float>;
 
-        enum
+        enum : uint16
         {
             INPUTPORT_POSE_A    = 0,
             INPUTPORT_POSE_B    = 1,
@@ -34,7 +34,7 @@ namespace EMotionFX
             OUTPUTPORT_POSE     = 0
         };
 
-        enum
+        enum : uint16
         {
             PORTID_INPUT_POSE_A = 0,
             PORTID_INPUT_POSE_B = 1,

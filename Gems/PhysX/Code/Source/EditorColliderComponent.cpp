@@ -122,7 +122,10 @@ namespace PhysX
         if (m_shapeType != Physics::ShapeType::PhysicsAsset &&
             m_lastShapeType == Physics::ShapeType::PhysicsAsset)
         {
+            //clean up any reference to a physics assets, and re-initialize to an empty Pipeline::MeshAsset asset.
             m_physicsAsset.m_pxAsset.Reset();
+            m_physicsAsset.m_pxAsset = AZ::Data::Asset<Pipeline::MeshAsset>(AZ::Data::AssetLoadBehavior::QueueLoad);
+
             m_physicsAsset.m_configuration = Physics::PhysicsAssetShapeConfiguration();
         }
         m_lastShapeType = m_shapeType;

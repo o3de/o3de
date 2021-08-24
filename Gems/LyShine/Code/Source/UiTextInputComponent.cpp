@@ -63,7 +63,7 @@ namespace
     //! \brief Given a UTF8 string and index, return the raw string buffer index that maps to the UTF8 index.
     int GetCharArrayIndexFromUtf8CharIndex(const AZStd::string& utf8String, const uint utf8Index)
     {
-        int utfIndexIter = 0;
+        uint utfIndexIter = 0;
         int rawIndex = 0;
 
         const AZStd::string::size_type stringLength = utf8String.length();

@@ -49,7 +49,7 @@ public:
     }
     void Undo(bool bUndo) override
     {
-        for (int i = m_undoSteps.size() - 1; i >= 0; i--)
+        for (int i = static_cast<int>(m_undoSteps.size()) - 1; i >= 0; i--)
         {
             m_undoSteps[i]->Undo(bUndo);
         }
@@ -624,13 +624,13 @@ void CUndoManager::SuperCancel()
 //////////////////////////////////////////////////////////////////////////
 int CUndoManager::GetUndoStackLen() const
 {
-    return m_undoStack.size();
+    return static_cast<int>(m_undoStack.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
 int CUndoManager::GetRedoStackLen() const
 {
-    return m_redoStack.size();
+    return static_cast<int>(m_redoStack.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -817,7 +817,7 @@ void CUndoManager::SignalNumUndoRedoToListeners()
 {
     for (IUndoManagerListener* listener : m_listeners)
     {
-        listener->SignalNumUndoRedo(m_undoStack.size(), m_redoStack.size());
+        listener->SignalNumUndoRedo(static_cast<unsigned int>(m_undoStack.size()), static_cast<unsigned int>(m_redoStack.size()));
     }
 }
 

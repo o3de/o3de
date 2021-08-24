@@ -13,11 +13,6 @@
 
 #include <AzCore/std/parallel/spin_mutex.h>
 
-#ifdef AZ_COMPILER_MSVC
-# pragma warning(push)
-# pragma warning(disable: 4355) // 'this' : used in base member initializer list
-#endif
-
 // A reasonable define for a stack allocator size for the high level jobs.
 #define AZ_JOBS_DEFAULT_STACK_ALLOCATOR_SIZE AZStd::GetMax<unsigned>(2048,512 * AZStd::thread::hardware_concurrency())
 
@@ -768,10 +763,6 @@ namespace AZ
         group.run_and_wait(f8);
     }
 }
-
-#ifdef AZ_COMPILER_MSVC
-# pragma warning(pop)
-#endif
 
 #endif
 #pragma once

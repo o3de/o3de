@@ -111,7 +111,7 @@ namespace AZ
 
         void DiffuseProbeGridFeatureProcessor::Simulate([[maybe_unused]] const FeatureProcessor::SimulatePacket& packet)
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(AzRender);
 
             // update pipeline states
             if (m_needUpdatePipelineStates)
@@ -149,7 +149,7 @@ namespace AZ
             // if the volumes changed we need to re-sort the probe list
             if (m_probeGridSortRequired)
             {
-                AZ_PROFILE_SCOPE(Debug::ProfileCategory::AzRender, "Sort diffuse probe grids");
+                AZ_PROFILE_SCOPE(AzRender, "Sort diffuse probe grids");
 
                 // sort the probes by descending inner volume size, so the smallest volumes are rendered last
                 auto sortFn = [](AZStd::shared_ptr<DiffuseProbeGrid> const& probe1, AZStd::shared_ptr<DiffuseProbeGrid> const& probe2) -> bool

@@ -36,10 +36,13 @@ namespace AZ
 
         void NameData::release()
         {
+            // this could be released after we decrement the counter, therefore we will
+            // base the release on the hash which is stable
+            Hash hash = m_hash;
             AZ_Assert(m_useCount > 0, "m_useCount is already 0!");
             if (m_useCount.fetch_sub(1) == 1)
             {
-                AZ::NameDictionary::Instance().TryReleaseName(this);
+                AZ::NameDictionary::Instance().TryReleaseName(hash);
             }
         }
     }

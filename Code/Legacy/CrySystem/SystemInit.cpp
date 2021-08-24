@@ -1626,6 +1626,9 @@ AZ_POP_DISABLE_WARNING
     // Send out EBus event
     EBUS_EVENT(CrySystemEventBus, OnCrySystemInitialized, *this, startupParams);
 
+    // Execute any deferred commands that uses the CVar commands that were just registered
+    AZ::Interface<AZ::IConsole>::Get()->ExecuteDeferredConsoleCommands();
+
     // Verify that the Maestro Gem initialized the movie system correctly. This can be removed if and when Maestro is not a required Gem
     if (gEnv->IsEditor() && !gEnv->pMovieSystem)
     {
@@ -1641,7 +1644,7 @@ AZ_POP_DISABLE_WARNING
 
     m_bInitializedSuccessfully = true;
 
-    return (true);
+    return true;
 }
 
 

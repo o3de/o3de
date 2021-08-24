@@ -31,7 +31,7 @@ int PixmapLabelPreview::heightForWidth(int width) const
         return width;
     }
 
-    return ((qreal)m_pixmap.height() * width) / m_pixmap.width();
+    return static_cast<int>(((qreal)m_pixmap.height() * width) / m_pixmap.width());
 }
 
 

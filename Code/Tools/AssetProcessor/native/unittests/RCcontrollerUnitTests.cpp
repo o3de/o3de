@@ -147,7 +147,7 @@ void RCcontrollerUnitTests::RunRCControllerTests()
 
     if (returnedCount != expectedCount)
     {
-        Q_EMIT UnitTestFailed("RCJobListModel has " + QString(returnedCount) + " elements, which is invalid. Expected " + expectedCount);
+        Q_EMIT UnitTestFailed("RCJobListModel has " + QString(returnedCount) + " elements, which is invalid. Expected " + QString(expectedCount));
         return;
     }
 

@@ -98,7 +98,7 @@ public:
     void AddSpline(ISplineInterpolator * pSpline, ISplineInterpolator * pDetailSpline, QColor anColorArray[4]);
     void RemoveSpline(ISplineInterpolator* pSpline);
     void RemoveAllSplines();
-    int  GetSplineCount() const { return m_splines.size(); }
+    int  GetSplineCount() const { return static_cast<int>(m_splines.size()); }
     ISplineInterpolator* GetSpline(int nIndex) const { return m_splines[nIndex].pSpline; }
 
     void SetTimeMarker(float fTime);

@@ -840,7 +840,7 @@ void CToolsConfigPage::FillScriptCmds()
     {
         EditorPythonConsoleInterface::GlobalFunctionCollection globalFunctionCollection;
         editorPythonConsoleInterface->GetGlobalFunctionList(globalFunctionCollection);
-        commands.reserve(globalFunctionCollection.size());
+        commands.reserve(static_cast<int>(globalFunctionCollection.size()));
         for (const EditorPythonConsoleInterface::GlobalFunction& globalFunction : globalFunctionCollection)
         {
             const QString fullCmd = QString("%1.%2()").arg(globalFunction.m_moduleName.data()).arg(globalFunction.m_functionName.data());

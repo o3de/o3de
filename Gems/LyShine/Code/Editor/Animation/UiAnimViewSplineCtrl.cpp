@@ -667,7 +667,7 @@ void CUiAnimViewSplineCtrl::mouseMoveEvent(QMouseEvent* event)
         QString                         tipText;
         bool                            boFoundTheSelectedKey(false);
 
-        for (int splineIndex = 0, endSpline = m_splines.size(); splineIndex < endSpline; ++splineIndex)
+        for (size_t splineIndex = 0, endSpline = m_splines.size(); splineIndex < endSpline; ++splineIndex)
         {
             ISplineInterpolator* pSpline = m_splines[splineIndex].pSpline;
             CUiAnimViewTrack* pTrack = m_tracks[splineIndex];
@@ -757,7 +757,7 @@ void CUiAnimViewSplineCtrl::AdjustTCB(float d_tension, float d_continuity, float
 
     SendNotifyEvent(SPLN_BEFORE_CHANGE);
 
-    for (int splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
+    for (size_t splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
     {
         ISplineInterpolator* pSpline = m_splines[splineIndex].pSpline;
         CUiAnimViewTrack* pTrack = m_tracks[splineIndex];
@@ -866,16 +866,16 @@ void CUiAnimViewSplineCtrl::OnUserCommand(UINT cmd)
 
 bool CUiAnimViewSplineCtrl::IsUnifiedKeyCurrentlySelected() const
 {
-    for (int splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
+    for (size_t splineIndex = 0, splineCount = m_splines.size(); splineIndex < splineCount; ++splineIndex)
     {
         ISplineInterpolator* pSpline = m_splines[splineIndex].pSpline;
 
-        if (pSpline == NULL)
+        if (!pSpline)
         {
             continue;
         }
 
-        for (int i = 0; i < (int)pSpline->GetKeyCount(); i++)
+        for (int i = 0; i < pSpline->GetKeyCount(); i++)
         {
             // If the key is selected in any dimension...
             for (

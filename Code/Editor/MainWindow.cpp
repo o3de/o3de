@@ -1672,7 +1672,7 @@ void MainWindow::OnUpdateConnectionStatus()
         tooltip += m_connectionListener->LastAssetProcessorTask().c_str();
         tooltip += "\n";
         AZStd::set<AZStd::string> failedJobs = m_connectionListener->FailedJobsList();
-        int failureCount = failedJobs.size();
+        int failureCount = static_cast<int>(failedJobs.size());
         if (failureCount)
         {
             tooltip += "\n Failed Jobs\n";
@@ -1767,7 +1767,7 @@ void MainWindow::RegisterOpenWndCommands()
         cmdUI.tooltip = (QString("Open ") + className).toUtf8().data();
         cmdUI.iconFilename = className.toUtf8().data();
         GetIEditor()->GetCommandManager()->RegisterUICommand("editor", openCommandName.toUtf8().data(),
-            "", "", AZStd::bind(&CEditorOpenViewCommand::Execute, pCmd), cmdUI);
+            "", "", [pCmd] { pCmd->Execute(); }, cmdUI);
         GetIEditor()->GetCommandManager()->GetUIInfo("editor", openCommandName.toUtf8().data(), cmdUI);
     }
 }
