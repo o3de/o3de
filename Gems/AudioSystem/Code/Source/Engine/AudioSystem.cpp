@@ -17,8 +17,6 @@
 #include <AzCore/std/bind/bind.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
-AZ_DEFINE_BUDGET(Audio);
-
 namespace Audio
 {
     extern CAudioLogger g_audioLogger;

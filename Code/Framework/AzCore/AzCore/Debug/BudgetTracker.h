@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Module/Environment.h>
+#include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/parallel/mutex.h>
 
 namespace AZ::Debug
@@ -18,17 +19,19 @@ namespace AZ::Debug
     class BudgetTracker
     {
     public:
-        static Budget& GetBudgetFromEnvironment(const char* budgetName);
+        AZ_RTTI(BudgetTracker, "{E14A746D-BFFE-4C02-90FB-4699B79864A5}");
+        static Budget* GetBudgetFromEnvironment(const char* budgetName, uint32_t crc);
 
         ~BudgetTracker();
 
-        void Init();
+        // Returns false if the budget tracker was already present in the environment (initialized already elsewhere)
+        bool Init();
+        void Reset();
 
-        Budget& GetBudget(const char* budgetName);
+        Budget& GetBudget(const char* budgetName, uint32_t crc);
 
     private:
         AZStd::mutex m_mutex;
-        AZ::EnvironmentVariable<BudgetTracker*> m_envVar;
 
         // The BudgetTracker is likely included in proportionally high number of files throughout the
         // engine, so indirection is used here to avoid imposing excessive recompilation in periods

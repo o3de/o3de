@@ -17,8 +17,6 @@
 #include <AzCore/Component/ComponentBus.h>
 #include "PropertyEditorAPI_Internals.h"
 
-AZ_DECLARE_BUDGET(AzToolsFramework);
-
 class QWidget;
 class QCheckBox;
 class QLabel;

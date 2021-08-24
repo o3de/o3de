@@ -11,8 +11,8 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TickBus.h>
-#include <AzCore/Debug/BudgetTracker.h>
 #include <AzCore/Memory/AllocationRecords.h>
+#include <AzCore/Debug/BudgetTracker.h>
 #include <AzCore/Memory/OSAllocator.h>
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/Module/ModuleManager.h>
@@ -395,14 +395,14 @@ namespace AZ
         // from the m_console member when it goes out of scope
         AZ::SettingsRegistryConsoleUtils::ConsoleFunctorHandle m_settingsRegistryConsoleFunctors;
 
+        Debug::BudgetTracker m_budgetTracker;
+
         // this is used when no argV/ArgC is supplied.
         // in order to have the same memory semantics (writable, non-const)
         // we create a buffer that can be written to (up to AZ_MAX_PATH_LEN) and then
         // pack it with a single param.
         char                                        m_commandLineBuffer[AZ_MAX_PATH_LEN];
         char*                                       m_commandLineBufferAddress{ m_commandLineBuffer };
-
-        AZ::Debug::BudgetTracker                    m_budgetTracker;
 
         StartupParameters                           m_startupParameters;
 

@@ -10,6 +10,7 @@
 
 #include <AzCore/base.h>
 #include <AzCore/Debug/Budget.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/parallel/scoped_lock.h>
@@ -20,40 +21,54 @@ namespace AZ::Debug
 
     struct BudgetTrackerImpl
     {
-        AZ_CLASS_ALLOCATOR(BudgetTrackerImpl, AZ::SystemAllocator, 0);
-
         AZStd::unordered_map<const char*, Budget> m_budgets;
     };
 
-    Budget& BudgetTracker::GetBudgetFromEnvironment(const char* budgetName)
+    Budget* BudgetTracker::GetBudgetFromEnvironment(const char* budgetName, uint32_t crc)
     {
-        return (*Environment::FindVariable<BudgetTracker*>(BudgetTrackerEnvName))->GetBudget(budgetName);
+        BudgetTracker* tracker = Interface<BudgetTracker>::Get();
+        if (tracker)
+        {
+            return &tracker->GetBudget(budgetName, crc);
+        }
+        return nullptr;
     }
 
     BudgetTracker::~BudgetTracker()
     {
+        Reset();
+    }
+
+    bool BudgetTracker::Init()
+    {
+        if (Interface<BudgetTracker>::Get())
+        {
+            return false;
+        }
+
+        Interface<BudgetTracker>::Register(this);
+        m_impl = new BudgetTrackerImpl;
+        return true;
+    }
+
+    void BudgetTracker::Reset()
+    {
         if (m_impl)
         {
+            Interface<BudgetTracker>::Unregister(this);
             delete m_impl;
+            m_impl = nullptr;
         }
     }
 
-    void BudgetTracker::Init()
-    {
-        AZ_Assert(!m_impl, "BudgetTracker::Init called more than once");
-
-        m_impl = aznew BudgetTrackerImpl;
-        m_envVar = Environment::CreateVariable<BudgetTracker*>(BudgetTrackerEnvName, this);
-    }
-
-    Budget& BudgetTracker::GetBudget(const char* budgetName)
+    Budget& BudgetTracker::GetBudget(const char* budgetName, uint32_t crc)
     {
         AZStd::scoped_lock lock{ m_mutex };
 
         auto it = m_impl->m_budgets.find(budgetName);
         if (it == m_impl->m_budgets.end())
         {
-            it = m_impl->m_budgets.emplace(budgetName, budgetName).first;
+            it = m_impl->m_budgets.try_emplace(budgetName, budgetName, crc).first;
         }
 
         return it->second;

@@ -12,13 +12,14 @@
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Memory/SystemAllocator.h>
 
+AZ_DEFINE_BUDGET(Animation);
+AZ_DEFINE_BUDGET(Audio);
 AZ_DEFINE_BUDGET(AzCore);
 AZ_DEFINE_BUDGET(Editor);
 AZ_DEFINE_BUDGET(Entity);
 AZ_DEFINE_BUDGET(Game);
 AZ_DEFINE_BUDGET(System);
-AZ_DEFINE_BUDGET(Audio);
-AZ_DEFINE_BUDGET(Animation);
+AZ_DEFINE_BUDGET(Physics);
 
 namespace AZ::Debug
 {
@@ -28,9 +29,9 @@ namespace AZ::Debug
         // TODO: Budget implementation for tracking budget wall time per-core, memory, etc.
     };
 
-    Budget::Budget(const char* name)
+    Budget::Budget(const char* name, uint32_t crc)
         : m_name{ name }
-        , m_crc{ Crc32(name) }
+        , m_crc{ crc }
     {
         m_impl = aznew BudgetImpl;
     }

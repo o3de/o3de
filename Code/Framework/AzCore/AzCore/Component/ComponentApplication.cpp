@@ -545,6 +545,8 @@ namespace AZ
         m_entityActivatedEvent.DisconnectAllHandlers();
         m_entityDeactivatedEvent.DisconnectAllHandlers();
 
+        m_budgetTracker.Reset();
+
         DestroyAllocator();
     }
 

@@ -102,6 +102,7 @@ set(FILES
     Debug/IEventLogger.h
     Debug/MemoryProfiler.h
     Debug/Profiler.cpp
+    Debug/Profiler.inl
     Debug/Profiler.h
     Debug/ProfilerBus.h
     Debug/StackTracer.h
