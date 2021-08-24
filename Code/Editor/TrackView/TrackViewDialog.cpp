@@ -2033,7 +2033,8 @@ void CTrackViewDialog::UpdateTracksToolBar()
                     continue;
                 }
 
-                name = pAnimNode->GetParamName(paramType);
+                AZStd::string paramName = pAnimNode->GetParamName(paramType);
+                name = paramName.c_str();
 
                 QString sToolTipText("Add " + name + " Track");
                 QIcon hIcon = m_wndNodesCtrl->GetIconForTrack(pTrack);

@@ -82,7 +82,7 @@ const char* CAnimNode::GetParamName(const CAnimParamType& paramType) const
     SParamInfo info;
     if (GetParamInfoFromType(paramType, info))
     {
-        return info.name;
+        return info.name.c_str();
     }
 
     return "Unknown";

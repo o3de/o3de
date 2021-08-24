@@ -625,7 +625,7 @@ public:
             , valueType(_valueType)
             , flags(_flags) {};
 
-        const char* name;           // parameter name.
+        AZStd::string name;           // parameter name.
         CAnimParamType paramType;     // parameter id.
         AnimValueType valueType;       // value type, defines type of track to use for animating this parameter.
         ESupportedParamFlags flags; // combination of flags from ESupportedParamFlags.

@@ -616,7 +616,8 @@ CTrackViewNodesCtrl::CRecord* CTrackViewNodesCtrl::AddAnimNodeRecord(CRecord* pP
 {
     CRecord* pNewRecord = new CRecord(animNode);
 
-    pNewRecord->setText(0, animNode->GetName());
+    AZStd::string nodeName = animNode->GetName();
+    pNewRecord->setText(0, nodeName.c_str());
     UpdateAnimNodeRecord(pNewRecord, animNode);
     pParentRecord->insertChild(GetInsertPosition(pParentRecord, animNode), pNewRecord);
     FillNodesRec(pNewRecord, animNode);
@@ -629,7 +630,8 @@ CTrackViewNodesCtrl::CRecord* CTrackViewNodesCtrl::AddTrackRecord(CRecord* pPare
 {
     CRecord* pNewTrackRecord = new CRecord(pTrack);
     pNewTrackRecord->setSizeHint(0, QSize(30, 18));
-    pNewTrackRecord->setText(0, pTrack->GetName());
+    AZStd::string trackName = pTrack->GetName();
+    pNewTrackRecord->setText(0, trackName.c_str());
     UpdateTrackRecord(pNewTrackRecord, pTrack);
     pParentRecord->insertChild(GetInsertPosition(pParentRecord, pTrack), pNewTrackRecord);
     FillNodesRec(pNewTrackRecord, pTrack);
@@ -2348,13 +2350,13 @@ bool CTrackViewNodesCtrl::FillAddTrackMenu(STrackMenuTreeNode& menuAddTrack, con
                 continue;
             }
         }
-        name = animNode->GetParamName(paramType);
+        AZStd::string paramName = animNode->GetParamName(paramType);
+        name = paramName.c_str();
         QStringList splittedName = name.split("/", Qt::SkipEmptyParts);
 
         STrackMenuTreeNode* pCurrentNode = &menuAddTrack;
-        for (int j = 0; j < splittedName.size() - 1; ++j)
+        for (const QString& segment : splittedName)
         {
-            const QString& segment = splittedName[j];
             auto findIter = pCurrentNode->children.find(segment);
             if (findIter != pCurrentNode->children.end())
             {
@@ -2370,7 +2372,7 @@ bool CTrackViewNodesCtrl::FillAddTrackMenu(STrackMenuTreeNode& menuAddTrack, con
 
         // only add tracks to the that STrackMenuTreeNode tree that haven't already been added
         CTrackViewTrackBundle matchedTracks = animNode->GetTracksByParam(paramType);
-        if (matchedTracks.GetCount() == 0)
+        if (matchedTracks.GetCount() == 0 && !splittedName.isEmpty())
         {
             STrackMenuTreeNode* pParamNode = new STrackMenuTreeNode;
             pCurrentNode->children[splittedName.back()] = std::unique_ptr<STrackMenuTreeNode>(pParamNode);
@@ -2580,10 +2582,11 @@ void CTrackViewNodesCtrl::Update()
             {
                 const CTrackViewAnimNode* track = static_cast<const CTrackViewAnimNode*>(node);
                 if (track)
-                { 
-                    record->setText(0, track->GetName());
+                {
+                    AZStd::string trackName = track->GetName();
+                    record->setText(0, trackName.c_str());
                 }
-            }            
+            }
         }
     }
 }
