@@ -38,7 +38,5 @@ ly_set(CMAKE_XCODE_GENERATE_SCHEME TRUE)
 
 ly_set(CMAKE_OSX_ARCHITECTURES "x86_64")
 
-ly_set(CMAKE_INSTALL_DO_STRIP FALSE)
-
 # Make modules have the dylib extension
 ly_set(CMAKE_SHARED_MODULE_SUFFIX .dylib)
