@@ -26,8 +26,8 @@ namespace AZ
         public:
             friend class MaterialSourceData;
 
-            void Begin(const Data::AssetId& assetId, MaterialAsset& parentMaterial);
-            void Begin(const Data::AssetId& assetId, MaterialTypeAsset& materialType);
+            void Begin(const Data::AssetId& assetId, MaterialAsset& parentMaterial, bool includeMaterialPropertyNames = true);
+            void Begin(const Data::AssetId& assetId, MaterialTypeAsset& materialType, bool includeMaterialPropertyNames = true);
             bool End(Data::Asset<MaterialAsset>& result);
 
         private:

@@ -12,6 +12,7 @@
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialPropertyId.h>
 #include <Atom/RPI.Edit/Material/MaterialUtils.h>
+#include <Atom/RPI.Edit/Material/MaterialConverterBus.h>
 
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Edit/Common/JsonFileLoadContext.h>
@@ -77,6 +78,8 @@ namespace AZ
             MaterialAssetCreator materialAssetCreator;
             materialAssetCreator.SetElevateWarnings(elevateWarnings);
 
+            bool includeMaterialPropertyNames = true;
+            RPI::MaterialConverterBus::BroadcastResult(includeMaterialPropertyNames, &RPI::MaterialConverterBus::Events::IncludeMaterialPropertyNames);
             if (m_parentMaterial.empty())
             {
                 auto materialTypeAsset = AssetUtils::LoadAsset<MaterialTypeAsset>(materialSourceFilePath, m_materialType);
@@ -85,7 +88,7 @@ namespace AZ
                     return Failure();
                 }
 
-                materialAssetCreator.Begin(assetId, *materialTypeAsset.GetValue().Get());
+                materialAssetCreator.Begin(assetId, *materialTypeAsset.GetValue().Get(), includeMaterialPropertyNames);
             }
             else
             {
@@ -115,7 +118,7 @@ namespace AZ
                     }
                 }
 
-                materialAssetCreator.Begin(assetId, *parentMaterialAsset.GetValue().Get());
+                materialAssetCreator.Begin(assetId, *parentMaterialAsset.GetValue().Get(), includeMaterialPropertyNames);
             }
 
             for (auto& group : m_properties)
