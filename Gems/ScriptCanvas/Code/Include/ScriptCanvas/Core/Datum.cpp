@@ -2041,7 +2041,7 @@ namespace ScriptCanvas
         }
     }
 
-    void Datum::OnWriteEnd()
+    void Datum::OnDeserialize()
     {
         if (m_type.GetType() == Data::eType::BehaviorContextObject)
         {
@@ -2059,10 +2059,17 @@ namespace ScriptCanvas
             }
             else
             {
-                AZ_Error("Script Canvas", false, AZStd::string::format("Datum type (%s) de-serialized, but no such class found in the behavior context", m_type.GetAZType().ToString<AZStd::string>().c_str()).c_str());
+                AZ_Error("ScriptCanvas", false, AZStd::string::format("Datum type (%s) de-serialized, but no such class found in the behavior context", m_type.GetAZType().ToString<AZStd::string>().c_str()).c_str());
             }
         }
     }
+
+#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
+    void Datum::OnWriteEnd()
+    {
+        OnDeserialize();
+    }
+#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
 
     void Datum::Reflect(AZ::ReflectContext* reflection)
     {
@@ -2070,7 +2077,9 @@ namespace ScriptCanvas
         {
             serializeContext->Class<Datum>()
                 ->Version(DatumHelpers::Version::Current, &DatumHelpers::VersionConverter)
+#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
                 ->EventHandler<SerializeContextEventHandler>()
+#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
                 ->Field("m_isUntypedStorage", &Datum::m_isOverloadedStorage)
                 ->Field("m_type", &Datum::m_type)
                 ->Field("m_originality", &Datum::m_originality)

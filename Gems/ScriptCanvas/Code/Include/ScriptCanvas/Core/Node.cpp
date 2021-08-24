@@ -60,6 +60,7 @@ namespace ScriptCanvas
     // Node
     /////////
 
+#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
     class NodeEventHandler
         : public AZ::SerializeContext::IEventHandler
     {
@@ -67,9 +68,10 @@ namespace ScriptCanvas
         void OnWriteEnd(void* objectPtr) override
         {
             auto node = reinterpret_cast<Node*>(objectPtr);
-            node->RebuildInternalState();
+            node->OnDeserialize();
         }
     };
+#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
 
     bool NodeVersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& nodeElementNode)
     {
@@ -420,7 +422,9 @@ namespace ScriptCanvas
             serializeContext->RegisterGenericType<AZStd::unordered_map<SlotId, Deprecated::VariableInfo>>();
 
             serializeContext->Class<Node, AZ::Component>()
+#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
                 ->EventHandler<NodeEventHandler>()
+#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
                 ->Version(NodeCpp::Version::Current, &NodeVersionConverter)
                 ->Field("Slots", &Node::m_slots)
                 ->Field("Datums", &Node::m_slotDatums)
@@ -2612,6 +2616,11 @@ namespace ScriptCanvas
         {
             NodeNotificationsBus::Event((GetEntity() != nullptr) ? GetEntityId() : AZ::EntityId(), &NodeNotifications::OnSlotInputChanged, slotId);
         }        
+    }
+
+    void Node::OnDeserialize()
+    {
+        RebuildInternalState();
     }
 
     void Node::OnEndpointConnected(const Endpoint& endpoint)

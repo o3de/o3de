@@ -104,6 +104,7 @@ set(FILES
     Serialization/Json/JsonSerializationResultTests.cpp
     Serialization/Json/JsonSerializationTests.h
     Serialization/Json/JsonSerializationTests.cpp
+    Serialization/Json/JsonSerializationUtilsTests.cpp
     Serialization/Json/JsonSerializerConformityTests.h
     Serialization/Json/JsonSerializerMock.h
     Serialization/Json/MapSerializerTests.cpp
