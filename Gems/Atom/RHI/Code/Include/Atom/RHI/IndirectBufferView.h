@@ -17,8 +17,6 @@ namespace AZ
         class Buffer;
         class IndirectBufferSignature;
 
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_BEGIN
-
         //! Provides a view into a buffer, to be used as an indirect buffer. The content of the view is a contiguous
         //! list of commands sequences. It is provided to the RHI back-end at draw time.
         class alignas(8) IndirectBufferView
@@ -60,7 +58,5 @@ namespace AZ
             uint32_t m_byteCount = 0;
             uint32_t m_byteStride = 0;
         };
-
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_END
     }
 }

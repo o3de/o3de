@@ -141,8 +141,14 @@ namespace AZ
             AZ::Data::Instance<RPI::Model> GetModel() const override;
             void SetSortKey(RHI::DrawItemSortKey sortKey) override;
             RHI::DrawItemSortKey GetSortKey() const override;
+            void SetLodType(RPI::Cullable::LodType lodType) override;
+            RPI::Cullable::LodType GetLodType() const override;
             void SetLodOverride(RPI::Cullable::LodOverride lodOverride) override;
             RPI::Cullable::LodOverride GetLodOverride() const override;
+            void SetMinimumScreenCoverage(float minimumScreenCoverage) override;
+            float GetMinimumScreenCoverage() const override;
+            void SetQualityDecayRate(float qualityDecayRate) override;
+            float GetQualityDecayRate() const override;
             void SetVisibility(bool visible) override;
             bool GetVisibility() const override;
             // GetWorldBounds/GetLocalBounds already overridden by BoundsRequestBus::Handler

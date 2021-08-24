@@ -109,7 +109,6 @@ namespace AtomToolsFramework
         // AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Handler ...
         void BeginCursorCapture() override;
         void EndCursorCapture() override;
-        AzFramework::ScreenPoint ViewportCursorScreenPosition() override;
         bool IsMouseOver() const override;
 
         // AzFramework::WindowRequestBus::Handler ...

@@ -58,7 +58,7 @@ namespace O3DE::ProjectManager
             m_mainWidget->hide();
         }
 
-        m_nameLabel->setText(m_model->GetName(modelIndex));
+        m_nameLabel->setText(m_model->GetDisplayName(modelIndex));
         m_creatorLabel->setText(m_model->GetCreator(modelIndex));
 
         m_summaryLabel->setText(m_model->GetSummary(modelIndex));

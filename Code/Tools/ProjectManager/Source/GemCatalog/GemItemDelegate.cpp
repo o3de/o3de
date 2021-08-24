@@ -75,7 +75,7 @@ namespace O3DE::ProjectManager
         }
 
         // Gem name
-        QString gemName = GemModel::GetName(modelIndex);
+        QString gemName = GemModel::GetDisplayName(modelIndex);
         QFont gemNameFont(options.font);
         const int firstColumnMaxTextWidth = s_summaryStartX - 30;
         gemNameFont.setPixelSize(static_cast<int>(s_gemNameFontSize));

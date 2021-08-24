@@ -126,10 +126,6 @@ typedef uint8                               byte;
 #define STDMETHODCALLTYPE
 #endif
 
-#define _ALIGN(num) \
-    __attribute__ ((aligned(num))) \
-    AZ_POP_DISABLE_WARNING
-
 #define _PACK __attribute__ ((packed))
 
 // Safe memory freeing
@@ -264,9 +260,6 @@ typedef union _LARGE_INTEGER
 #define FILE_ATTRIBUTE_ENCRYPTED            0x00004000
 
 #define INVALID_FILE_ATTRIBUTES (-1)
-
-#define DEFINE_ALIGNED_DATA(type, name, alignment) \
-    type __attribute__ ((aligned(alignment))) name;
 
 #define BST_UNCHECKED   0x0000
 

@@ -24,8 +24,6 @@ namespace AZ
 
         uint32_t GetIndexFormatSize(IndexFormat indexFormat);
 
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_BEGIN
-
         class alignas(8) IndexBufferView
         {
         public:
@@ -59,7 +57,5 @@ namespace AZ
             uint32_t m_byteCount = 0;
             IndexFormat m_format = IndexFormat::Uint32;
         };
-
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_END
     }
 }

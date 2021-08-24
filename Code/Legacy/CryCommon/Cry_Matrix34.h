@@ -1224,7 +1224,11 @@ struct Matrix34_tpl
 typedef Matrix34_tpl<f32>  Matrix34; //always 32 bit
 typedef Matrix34_tpl<f64>  Matrix34d;//always 64 bit
 typedef Matrix34_tpl<real> Matrix34r;//variable float precision. depending on the target system it can be between 32, 64 or bit
-typedef _MS_ALIGN(16) Matrix34_tpl<f32> _ALIGN (16) Matrix34A;
+#if AZ_COMPILER_MSVC
+    typedef __declspec(align(16)) Matrix34_tpl<f32> Matrix34A;
+#elif AZ_COMPILER_CLANG
+    typedef Matrix34_tpl<f32> __attribute__((aligned(16))) Matrix34A;
+#endif
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
