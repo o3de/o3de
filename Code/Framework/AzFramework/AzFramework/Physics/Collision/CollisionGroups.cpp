@@ -309,5 +309,12 @@ namespace AzPhysics
         group.SetLayer(layer, true);
         return group;
     }
+
+    CollisionGroup MakeCollisionGroup(const CollisionGroups::Id& id)
+    {
+        CollisionGroup group;
+        Physics::CollisionRequestBus::BroadcastResult(group, &Physics::CollisionRequests::GetCollisionGroupById, id);
+        return group;
+    }
 }
 

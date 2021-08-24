@@ -9,9 +9,8 @@
 
 namespace PhysX
 {
-    // BaseActorData START ****************************************************
-    inline BaseActorData::BaseActorData(BaseActorType type, physx::PxActor* actor) :
-        m_sanity(s_sanityValue), m_actorType(type)
+    inline ActorData::ActorData(physx::PxActor* actor)
+        : m_sanity(s_sanityValue)
     {
         auto nullUserData = [](physx::PxActor* actorToSet)
         {
@@ -23,36 +22,24 @@ namespace PhysX
         actor->userData = this;
     }
 
-    inline BaseActorData::BaseActorData(BaseActorData&& other) :
-        m_sanity(s_sanityValue), m_actorType(other.m_actorType), m_actor(AZStd::move(other.m_actor))
+    inline ActorData::ActorData(ActorData&& other)
+        : m_sanity(s_sanityValue)
+        , m_actor(AZStd::move(other.m_actor))
     {
         m_actor->userData = this;
     }
 
-    inline BaseActorData& BaseActorData::operator=(BaseActorData&& other)
+    inline ActorData& ActorData::operator=(ActorData&& other)
     {
         m_sanity = s_sanityValue;
-        m_actorType = other.m_actorType;
         m_actor = AZStd::move(other.m_actor);
         m_actor->userData = this;
         return *this;
     }
 
-    inline bool BaseActorData::IsValid() const
+    inline bool ActorData::IsValid() const
     {
         return m_sanity == s_sanityValue;
-    }
-
-    inline BaseActorType BaseActorData::GetType() const
-    {
-        return m_actorType;
-    }
-    // BaseActorData END ******************************************************
-
-
-    // ActorData START ********************************************************
-    inline ActorData::ActorData(physx::PxActor* actor) : BaseActorData(BaseActorType::PHYSX_DEFAULT, actor)
-    {
     }
 
     inline void ActorData::Invalidate()
