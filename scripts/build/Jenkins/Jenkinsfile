@@ -243,7 +243,7 @@ def CheckoutRepo(boolean disableSubmodules = false) {
             sleep random.nextInt(60 * retryAttempt)  // Stagger checkouts to prevent HTTP 429 (Too Many Requests) response from CodeCommit
         }
         retryAttempt = retryAttempt + 1
-        checkout scm: [
+        map_vars = checkout scm: [
             $class: 'GitSCM',
             branches: scm.branches,
             extensions: [
@@ -255,9 +255,10 @@ def CheckoutRepo(boolean disableSubmodules = false) {
             userRemoteConfigs: scm.userRemoteConfigs
        ]
 
-        echo "scm: ${scm}"
-        echo "scm.GIT_COMMIT: ${scm.GIT_COMMIT}"
-        echo "scm.GIT_BRANCH: ${scm.GIT_BRANCH}"
+        echo "OUTPUTTING MAP VARS"
+        for (element in map_vars) {
+            echo "${element.key} ${element.value}"
+        }
     }
 
     // CHANGE_ID is used by some scripts to identify uniquely the current change (usually metric jobs)
