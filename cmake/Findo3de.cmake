@@ -19,7 +19,7 @@ o3de_current_file_path(current_path)
 
 # Make sure the cmake configure dependency added here is a normalized path to engine.json,
 # because later it's read again using a path like ${LY_ROOT_FOLDER}/engine.json, which
-# is also normalized.  The should match to avoid errors on some build systems.
+# is also normalized.  They should match to avoid errors on some build systems.
 cmake_path(SET engine_json_path NORMALIZE ${current_path}/../engine.json)
 file(READ ${engine_json_path} engine_json)
 set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS ${engine_json_path})
