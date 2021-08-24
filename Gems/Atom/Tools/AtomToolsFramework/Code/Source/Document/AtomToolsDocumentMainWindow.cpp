@@ -121,7 +121,7 @@ namespace AtomToolsFramework
         }, QKeySequence::Close);
         m_menuFile->insertAction(insertPostion, m_actionClose);
 
-        m_actionCloseAll = CreateAction("Close All", [this]() {
+        m_actionCloseAll = CreateAction("Close All", []() {
             AtomToolsDocumentSystemRequestBus::Broadcast(&AtomToolsDocumentSystemRequestBus::Events::CloseAllDocuments);
         });
         m_menuFile->insertAction(insertPostion, m_actionCloseAll);
