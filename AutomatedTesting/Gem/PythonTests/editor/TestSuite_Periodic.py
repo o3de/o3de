@@ -48,13 +48,9 @@ class TestAutomation(TestAutomationBase):
         from .EditorScripts import ComponentCRUD_Add_Delete_Components as test_module
         self._run_test(request, workspace, editor, test_module, batch_mode=False)
 
-
-
     def test_InputBindings_Add_Remove_Input_Events(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import InputBindings_Add_Remove_Input_Events as test_module
         self._run_test(request, workspace, editor, test_module, batch_mode=False, autotest_mode=False)
-
-
 
     def test_Menus_ViewMenuOptions_Work(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import Menus_ViewMenuOptions as test_module
