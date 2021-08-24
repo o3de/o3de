@@ -69,6 +69,11 @@ namespace CommandSystem
         AZ::Data::AssetId actorAssetId;
         EBUS_EVENT_RESULT(
             actorAssetId, AZ::Data::AssetCatalogRequestBus, GetAssetIdByPath, filename.c_str(), AZ::Data::s_invalidAssetType, false);
+        if (!actorAssetId.IsValid())
+        {
+            outResult = AZStd::string::format("Cannot import actor. Cannot find asset at path %s.", filename.c_str());
+            return false;
+        }
 
         // check if we have already loaded the actor
         const size_t actorIndex = EMotionFX::GetActorManager().FindActorIndex(actorAssetId);
