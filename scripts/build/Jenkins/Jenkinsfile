@@ -619,8 +619,6 @@ try {
                     }
                     pipelineProperties.add(disableConcurrentBuilds())
 
-                    echo "Running repository: \"${repositoryName}\", pipeline: \"${pipelineName}\", branch: \"${branchName}\", CHANGE_ID: \"${env.CHANGE_ID}\", GIT_COMMMIT: \"${env.GIT_COMMIT_ID}\"..."
-
                     CheckoutBootstrapScripts(branchName)
 
                     // Load configs
@@ -702,7 +700,9 @@ try {
                 buildConfigs["${platform.key} [${build_job.key}]"] = CreateBuildJobs(pipelineConfig, platform, build_job, envVars, branchName, pipelineName, repositoryName, projectName)
             }
         }
-    }
+    }    
+
+    echo "Running repository: \"${repositoryName}\", pipeline: \"${pipelineName}\", branch: \"${branchName}\", CHANGE_ID: \"${env.CHANGE_ID}\", GIT_COMMMIT: \"${env.GIT_COMMIT_ID}\"..."
 
     timestamps {
 
