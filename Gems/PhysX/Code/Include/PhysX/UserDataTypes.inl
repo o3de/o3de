@@ -10,7 +10,6 @@
 namespace PhysX
 {
     inline ActorData::ActorData(physx::PxActor* actor)
-        : m_sanity(s_sanityValue)
     {
         auto nullUserData = [](physx::PxActor* actorToSet)
         {
@@ -23,23 +22,25 @@ namespace PhysX
     }
 
     inline ActorData::ActorData(ActorData&& other)
-        : m_sanity(s_sanityValue)
+        : m_sanity(other.m_sanity)
         , m_actor(AZStd::move(other.m_actor))
+        , m_payload(AZStd::move(other.m_payload))
     {
         m_actor->userData = this;
     }
 
     inline ActorData& ActorData::operator=(ActorData&& other)
     {
-        m_sanity = s_sanityValue;
+        m_sanity = other.m_sanity;
         m_actor = AZStd::move(other.m_actor);
         m_actor->userData = this;
+        m_payload = AZStd::move(other.m_payload);
         return *this;
     }
 
     inline bool ActorData::IsValid() const
     {
-        return m_sanity == s_sanityValue;
+        return m_sanity == SanityValue;
     }
 
     inline void ActorData::Invalidate()
@@ -136,5 +137,4 @@ namespace PhysX
             return nullptr;
         }
     }
-    // ActorData END ********************************************************
 } //namespace PhysX

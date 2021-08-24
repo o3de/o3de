@@ -60,9 +60,9 @@ namespace PhysX
         ///This is an arbitary value used to verify the cast from void* userdata pointer on a pxActor to ActorData
         ///is safe. If m_sanity does not have this value, then it is not safe to use the casted pointer.
         ///Helps to debug if someone is setting userData pointer to something other than this class during development
-        static const AZ::u32 s_sanityValue = 0xba5eba11;
+        static constexpr AZ::u32 SanityValue = 0xba5eba11;
 
-        AZ::u32 m_sanity = s_sanityValue;
+        AZ::u32 m_sanity = SanityValue;
         PxActorUniquePtr m_actor;
 
         struct Payload

@@ -310,7 +310,7 @@ namespace AzPhysics
         return group;
     }
 
-    CollisionGroup MakeCollisionGroup(const CollisionGroups::Id& id)
+    CollisionGroup GetCollisionGroupById(const CollisionGroups::Id& id)
     {
         CollisionGroup group;
         Physics::CollisionRequestBus::BroadcastResult(group, &Physics::CollisionRequests::GetCollisionGroupById, id);
