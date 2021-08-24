@@ -15,12 +15,13 @@ from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorSharedTest, E
 @pytest.mark.SUITE_main
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
-class TestAutomation(EditorTestSuite):
+class TestAutomationNoAutoTestMode(EditorTestSuite):
+
+    # Disable -autotest_mode and -BatchMode. Tests cannot run in -BatchMode due to UI interactions, and these tests
+    # interact with modal dialogs
+    global_extra_cmdline_args = []
 
     class test_BasicEditorWorkflows_LevelEntityComponentCRUD(EditorSingleTest):
-        # Disable -BatchMode and -autotest_mode
-        EditorTestSuite.global_extra_cmdline_args = []
-
         # Custom teardown to remove slice asset created during test
         def teardown(self, request, workspace, editor, editor_test_results, launcher_platform):
             file_system.delete([os.path.join(workspace.paths.engine_root(), "AutomatedTesting", "Levels", "tmp_level")],
@@ -29,8 +30,7 @@ class TestAutomation(EditorTestSuite):
 
     @pytest.mark.REQUIRES_gpu
     class test_BasicEditorWorkflows_GPU_LevelEntityComponentCRUD(EditorSingleTest):
-        # Disable -BatchMode, -autotest_mode, and null renderer
-        EditorTestSuite.global_extra_cmdline_args = []
+        # Disable null renderer
         EditorTestSuite.use_null_renderer = False
 
         # Custom teardown to remove slice asset created during test
