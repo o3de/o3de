@@ -7,6 +7,7 @@
  */
 
 #include <AtomToolsFramework/Viewport/ModularViewportCameraController.h>
+#include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzFramework/Viewport/ViewportControllerList.h>
 #include <AzToolsFramework/Input/QtEventToAzInputManager.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
@@ -95,10 +96,16 @@ namespace UnitTest
             m_controllerList->RegisterViewportContext(TestViewportId);
 
             m_inputChannelMapper = AZStd::make_unique<AzToolsFramework::QtEventToAzInputMapper>(m_rootWidget.get(), TestViewportId);
+
+            m_settingsRegistry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
+            AZ::SettingsRegistry::Register(m_settingsRegistry.get());
         }
 
         void TearDown() override
         {
+            AZ::SettingsRegistry::Unregister(m_settingsRegistry.get());
+            m_settingsRegistry.reset();
+
             m_inputChannelMapper.reset();
 
             m_controllerList->UnregisterViewportContext(TestViewportId);
@@ -204,12 +211,15 @@ namespace UnitTest
         ::testing::NiceMock<MockWindowRequests> m_mockWindowRequests;
         ViewportMouseCursorRequestImpl m_viewportMouseCursorRequests;
         AtomToolsFramework::ModularCameraViewportContext* m_cameraViewportContextView = nullptr;
+        AZStd::unique_ptr<AZ::SettingsRegistryInterface> m_settingsRegistry;
     };
 
     const AzFramework::ViewportId ModularViewportCameraControllerFixture::TestViewportId = AzFramework::ViewportId(0);
 
     TEST_F(ModularViewportCameraControllerFixture, MouseMovementDoesNotAccumulateExcessiveDriftInModularViewportCameraWithVaryingDeltaTime)
     {
+        SandboxEditor::SetCameraCaptureCursorForLook(false);
+
         // Given
         PrepareCollaborators();
 
@@ -242,6 +252,8 @@ namespace UnitTest
         ModularViewportCameraControllerDeltaTimeParamFixture,
         MouseMovementDoesNotAccumulateExcessiveDriftInModularViewportCameraWithFixedDeltaTime)
     {
+        SandboxEditor::SetCameraCaptureCursorForLook(false);
+
         // Given
         PrepareCollaborators();
 
@@ -264,11 +276,12 @@ namespace UnitTest
     INSTANTIATE_TEST_CASE_P(
         All, ModularViewportCameraControllerDeltaTimeParamFixture, testing::Values(1.0f / 60.0f, 1.0f / 50.0f, 1.0f / 30.0f));
 
-    TEST_F(ModularViewportCameraControllerFixture, Mouse_movement_orientates_camera_when_cursor_is_captured)
+    TEST_F(ModularViewportCameraControllerFixture, MouseMovementOrientatesCameraWhenCursorIsCaptured)
     {
         // Given
-        SandboxEditor::SetCameraCaptureCursorForLook(true);
         PrepareCollaborators();
+        // ensure cursor is captured
+        SandboxEditor::SetCameraCaptureCursorForLook(true);
 
         const float deltaTime = 1.0f / 60.0f;
 
@@ -280,7 +293,7 @@ namespace UnitTest
 
         // move the cursor right
         const auto mouseDelta = QPoint(5, 0);
-        for (int i = 0; i < 40; ++i)
+        for (int i = 0; i < 50; ++i)
         {
             auto current = m_rootWidget->mapFromGlobal(QCursor::pos());
             MousePressAndMove(m_rootWidget.get(), current, mouseDelta, Qt::MouseButton::RightButton);
@@ -298,8 +311,6 @@ namespace UnitTest
 
         using ::testing::FloatNear;
         EXPECT_THAT(eulerAngles.GetZ(), FloatNear(1.0f, 0.001f));
-
-        SandboxEditor::SetCameraCaptureCursorForLook(false);
 
         // Clean-up
         HaltCollaborators();
