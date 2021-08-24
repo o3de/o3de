@@ -834,8 +834,10 @@ namespace AZ
                             {
                                 // Check whether it should be sorted by name.
                                 const uint32_t sortType = static_cast<uint32_t>(m_sortType);
+                                AZ_PUSH_DISABLE_WARNING(4296, "-Wunknown-warning-option")
                                 bool sortByName = (sortType >= static_cast<uint32_t>(ProfilerSortType::Alphabetical) &&
                                     (sortType < static_cast<uint32_t>(ProfilerSortType::AlphabeticalCount)));
+                                AZ_POP_DISABLE_WARNING
 
                                 if (ImGui::Selectable("Pass Names", sortByName))
                                 {
@@ -1011,7 +1013,7 @@ namespace AZ
             const uint32_t countNumerical = static_cast<uint32_t>(count);
             const uint32_t offset = static_cast<uint32_t>(m_sortType) - startNumerical;
 
-            if (offset < countNumerical && offset >= 0u)
+            if (offset < countNumerical)
             {
                 // Change the sorting order.
                 m_sortType = static_cast<ProfilerSortType>(((offset + 1u) % countNumerical) + startNumerical);
@@ -1092,8 +1094,8 @@ namespace AZ
                 AZStd::sort(m_tableRows.begin(), m_tableRows.end(),
                     [ascending](const TableRow& lhs, const TableRow& rhs)
                     {
-                        const float lhsSize = lhs.m_sizeInBytes;
-                        const float rhsSize = rhs.m_sizeInBytes;
+                        const float lhsSize = static_cast<float>(lhs.m_sizeInBytes);
+                        const float rhsSize = static_cast<float>(rhs.m_sizeInBytes);
                         return ascending ? lhsSize < rhsSize : lhsSize > rhsSize;
                     });
                 break;
@@ -1107,7 +1109,7 @@ namespace AZ
             {
                 ImGui::TableSetupColumn("Parent pool");
                 ImGui::TableSetupColumn("Name");
-                ImGui::TableSetupColumn("Size (MB)", 0, 100.0f);
+                ImGui::TableSetupColumn("Size (MB)");
                 ImGui::TableSetupColumn("BindFlags", ImGuiTableColumnFlags_NoSort);
                 ImGui::TableHeadersRow();
                 ImGui::TableNextColumn();
@@ -1133,7 +1135,7 @@ namespace AZ
                     ImGui::TableNextColumn();
                     ImGui::Text(tableRow.m_bufImgName.GetCStr());
                     ImGui::TableNextColumn();
-                    ImGui::Text("%.2f", 1.0f * tableRow.m_sizeInBytes / GpuProfilerImGuiHelper::MB);
+                    ImGui::Text("%.4f", 1.0f * tableRow.m_sizeInBytes / GpuProfilerImGuiHelper::MB);
                     ImGui::TableNextColumn();
                     ImGui::Text(tableRow.m_bindFlags.c_str());
                     ImGui::TableNextColumn();
@@ -1271,6 +1273,7 @@ namespace AZ
                 m_nameFilter.Draw("Search");
                 DrawTable();
             }
+            ImGui::End();
         }
 
         // --- ImGuiGpuProfiler ---

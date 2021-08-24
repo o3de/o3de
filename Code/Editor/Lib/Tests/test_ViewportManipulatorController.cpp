@@ -24,10 +24,10 @@ namespace UnitTest
         void Disconnect();
 
         // EditorInteractionSystemViewportSelectionRequestBus overrides ...
-        void SetHandler(const AzToolsFramework::ViewportSelectionRequestsBuilderFn& interactionRequestsBuilder);
-        void SetDefaultHandler();
-        bool InternalHandleMouseViewportInteraction(const MouseInteractionEvent& mouseInteraction);
-        bool InternalHandleMouseManipulatorInteraction(const MouseInteractionEvent& mouseInteraction);
+        void SetHandler(const AzToolsFramework::ViewportSelectionRequestsBuilderFn& interactionRequestsBuilder) override;
+        void SetDefaultHandler() override;
+        bool InternalHandleMouseViewportInteraction(const MouseInteractionEvent& mouseInteraction) override;
+        bool InternalHandleMouseManipulatorInteraction(const MouseInteractionEvent& mouseInteraction) override;
 
         AZStd::function<bool(const MouseInteractionEvent& mouseInteraction)> m_internalHandleMouseViewportInteraction;
         AZStd::function<bool(const MouseInteractionEvent& mouseInteraction)> m_internalHandleMouseManipulatorInteraction;
@@ -77,7 +77,7 @@ namespace UnitTest
     class ViewportManipulatorControllerFixture : public AllocatorsTestFixture
     {
     public:
-        static const AzFramework::ViewportId TestViewportId = AzFramework::ViewportId(0);
+        static const AzFramework::ViewportId TestViewportId;
 
         void SetUp() override
         {
@@ -92,7 +92,7 @@ namespace UnitTest
             m_inputChannelMapper = AZStd::make_unique<AzToolsFramework::QtEventToAzInputMapper>(m_rootWidget.get(), TestViewportId);
         }
 
-        void TearDown()
+        void TearDown() override
         {
             m_inputChannelMapper.reset();
 
@@ -107,6 +107,8 @@ namespace UnitTest
         AzFramework::ViewportControllerListPtr m_controllerList;
         AZStd::unique_ptr<AzToolsFramework::QtEventToAzInputMapper> m_inputChannelMapper;
     };
+
+    const AzFramework::ViewportId ViewportManipulatorControllerFixture::TestViewportId = AzFramework::ViewportId(0);
 
     TEST_F(ViewportManipulatorControllerFixture, An_event_is_not_propagated_to_the_viewport_when_a_manipulator_handles_it_first)
     {

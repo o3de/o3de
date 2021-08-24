@@ -26,8 +26,6 @@ namespace AZ
 
             //! The set of globally declared draw list tags, which will be registered with the registry at startup.
             AZStd::vector<AZ::Name> m_drawListTags;
-
-            const RHI::PlatformLimits* m_platformLimits = nullptr;
         };
     } // namespace RHI
 } // namespace AZ

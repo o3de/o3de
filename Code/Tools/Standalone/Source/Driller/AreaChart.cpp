@@ -173,10 +173,7 @@ namespace AreaChart
 
     void AreaChart::ConfigureVerticalAxis(QString label, unsigned int minimumHeight)
     {
-        if (minimumHeight >= 0)
-        {
-            SetMinimumValueRange(minimumHeight);
-        }
+        SetMinimumValueRange(minimumHeight);
 
         if (m_verticalAxis == nullptr)
         {
@@ -231,14 +228,14 @@ namespace AreaChart
     
     void AreaChart::AddPoint(size_t seriesId, int position, unsigned int value)
     {
-        AZ_PROFILE_TIMER("Standalone Tools", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         LinePoint linePoint(position,value);
         AddPoint(seriesId,linePoint);
     }
     
     void AreaChart::AddPoint(size_t seriesId, const LinePoint& linePoint)
     {
-        AZ_PROFILE_TIMER("Standalone Tools", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         if (!IsValidSeriesId(seriesId))
         {
             AZ_Error("AreaChart", false, "Invalid SeriesId given.");
@@ -323,7 +320,7 @@ namespace AreaChart
                 // Need to handle the areas right at the edge of the polygons
                 for (int i = -1; i <= 1; ++i)
                 {
-                    if ((counter+i) < 0 || (counter + i) >= m_hitAreas.size())
+                    if ((counter + i) >= m_hitAreas.size())
                     {
                         continue;
                     }
@@ -419,7 +416,7 @@ namespace AreaChart
     
     void AreaChart::paintEvent(QPaintEvent* event)
     {
-        AZ_PROFILE_TIMER("Standalone Tools", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         (void)event;
         
         if (m_sizingDirty)
@@ -435,7 +432,7 @@ namespace AreaChart
 
         if (m_regenGraph)
         {
-            AZ_PROFILE_TIMER("Standalone Tools", "Generating Graph Data");
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
             m_regenGraph = false;
 
             if (m_verticalAxis)

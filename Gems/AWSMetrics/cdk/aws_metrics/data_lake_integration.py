@@ -50,8 +50,7 @@ class DataLakeIntegration:
         # a specific name here, only one customer can deploy the bucket successfully.
         self._analytics_bucket = s3.Bucket(
             self._stack,
-            id=f'AnalyticsBucket'.lower(),
-            bucket_name=resource_name_sanitizer.sanitize_resource_name(
+            id=resource_name_sanitizer.sanitize_resource_name(
                 f'{self._stack.stack_name}-AnalyticsBucket'.lower(), 's3_bucket'),
             encryption=s3.BucketEncryption.S3_MANAGED,
             block_public_access=s3.BlockPublicAccess(
@@ -67,6 +66,13 @@ class DataLakeIntegration:
         # For Amazon S3 buckets, you must delete all objects in the bucket for deletion to succeed.
         cfn_bucket = self._analytics_bucket.node.find_child('Resource')
         cfn_bucket.apply_removal_policy(core.RemovalPolicy.DESTROY)
+
+        analytics_bucket_output = core.CfnOutput(
+            self._stack,
+            id='AnalyticsBucketName',
+            description='Name of the S3 bucket for storing metrics event data',
+            export_name=f"{self._application_name}:AnalyticsBucket",
+            value=self._analytics_bucket.bucket_name)
 
     def _create_events_database(self) -> None:
         """

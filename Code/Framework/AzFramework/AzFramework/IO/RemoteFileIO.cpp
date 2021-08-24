@@ -1081,16 +1081,6 @@ namespace AZ
                 return ResultCode::Error;
             }
 
-            //bound check
-            //note that seeking beyond end or before beginning is system dependent
-            //therefore we will define that on all platforms it is not allowed
-            if (newFilePosition < 0)
-            {
-                AZ_TracePrintf(RemoteFileIOChannel, "RemoteFileIO::Seek(fileHandle=%u, offset=%i, type=%s) seek to a position before the begining of a file!", fileHandle, offset, type == SeekType::SeekFromCurrent ? "SeekFromCurrent" : type == SeekType::SeekFromEnd ? "SeekFromEnd" : type == SeekType::SeekFromStart ? "SeekFromStart" : "Unknown");
-                REMOTEFILE_LOG_APPEND(AZStd::string::format("RemoteFileIO::Seek(fileHandle=%u, offset=%i, type=%s) seek to a position before the begining of a file!", fileHandle, offset, type == SeekType::SeekFromCurrent ? "SeekFromCurrent" : type == SeekType::SeekFromEnd ? "SeekFromEnd" : type == SeekType::SeekFromStart ? "SeekFromStart" : "Unknown").c_str());
-                newFilePosition = 0;
-            }
-            else
             {
                 AZ::u64 fileSize = 0;
                 Size(fileHandle, fileSize);

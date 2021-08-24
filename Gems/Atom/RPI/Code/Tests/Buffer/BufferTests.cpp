@@ -67,7 +67,8 @@ namespace UnitTest
             bufferData.resize(bufferSize);
 
             // The actual data doesn't matter
-            for (uint32_t i = 0; i < bufferData.size(); ++i)
+            const uint8_t bufferDataSize = static_cast<uint8_t>(bufferData.size());
+            for (uint8_t i = 0; i < bufferDataSize; ++i)
             {
                 bufferData[i] = i;
             }

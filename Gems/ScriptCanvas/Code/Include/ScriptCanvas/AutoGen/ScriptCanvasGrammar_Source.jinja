@@ -26,6 +26,20 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 #include "{{ xml.attrib['Include'] }}"
 
 {%     for Class in xml.iter('Class') %}
+
+{% set attribute_Namespace = undefined %}
+{%- if Class.attrib['Namespace'] is defined %}
+{%      if Class.attrib['Namespace'] != "None" %}
+{%          set attribute_Namespace = Class.attrib['Namespace'] %}
+{%      endif %}
+{% endif %}
+
+{% if attribute_Namespace is defined %}
+namespace {{attribute_Namespace}} 
+{
+{% endif %}
+
+
 void {{ Class.attrib['QualifiedName'] }}::ConfigureSlots()
 {
 {% if Class.attrib['Base'] is defined %}
@@ -269,7 +283,12 @@ void {{ Class.attrib['QualifiedName'] }}::Reflect(AZ::ReflectContext* context)
     return datumValue ? *datumValue : {{ Property.attrib['Type'] }}();
 }
 
-
 {%         endfor %}
+
+{% if attribute_Namespace is defined %}
+}
+{% endif %}
+
+
 {%     endfor %}
 {% endfor %}
