@@ -68,6 +68,9 @@ int main(int argc, char* argv[])
 
     AzFramework::ProcessWatcher* processWatcher = AzFramework::ProcessWatcher::LaunchProcess(processLaunchInfo, AzFramework::ProcessCommunicationType::COMMUNICATOR_TYPE_NONE);
     
+    // When launching the app from Finder when it's downloaded from the web,
+    // the child process terminates if the parent exits immediately.
+    AZStd::this_thread::sleep_for(AZStd::chrono::seconds(1));
     application.Destroy();
 
     return 0;

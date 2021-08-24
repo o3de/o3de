@@ -359,6 +359,10 @@ function(ly_setup_o3de_install)
     ly_setup_runtime_dependencies()
     ly_setup_others()
 
+    if(COMMAND ly_post_install_steps)
+        ly_post_install_steps()
+    endif()
+
 endfunction()
 
 #! ly_setup_cmake_install: install the "cmake" folder
@@ -490,10 +494,6 @@ endfunction()"
     list(JOIN runtime_commands "    " runtime_commands_str) # the spaces are just to see the right identation in the cmake_install.cmake file
     install(CODE "${runtime_commands_str}"
     )
-
-    if(COMMAND ly_post_install_steps)
-        ly_post_install_steps()
-    endif()
 
 endfunction()
 

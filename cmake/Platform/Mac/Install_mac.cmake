@@ -102,19 +102,21 @@ endfunction()
 #! ly_post_install_steps: Any additional platform specific post install steps
 function(ly_post_install_steps)
 
-    # On Mac, after CMake is done installing, the code signatures on all our built binaries will be invalid.
-    # We need to now codesign each dynamic library, executable, and app bundle. It's specific to each target
-    # because there could potentially be different entitlements for different targets.
-    get_property(all_targets GLOBAL PROPERTY LY_ALL_TARGETS)
-    foreach(alias_target IN LISTS all_targets)
-        ly_de_alias_target(${alias_target} target)
-        # Exclude targets that dont produce runtime outputs
-        get_target_property(target_type ${target} TYPE)
-        if(NOT target_type IN_LIST LY_TARGET_TYPES_WITH_RUNTIME_OUTPUTS)
-            continue()
-        endif()
-        install(SCRIPT ${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/${target}.cmake)
-    endforeach()
+    if(LY_ENABLE_HARDENED_RUNTIME)
+        # On Mac, after CMake is done installing, the code signatures on all our built binaries will be invalid.
+        # We need to now codesign each dynamic library, executable, and app bundle. It's specific to each target
+        # because there could potentially be different entitlements for different targets.
+        get_property(all_targets GLOBAL PROPERTY LY_ALL_TARGETS)
+        foreach(alias_target IN LISTS all_targets)
+            ly_de_alias_target(${alias_target} target)
+            # Exclude targets that dont produce runtime outputs
+            get_target_property(target_type ${target} TYPE)
+            if(NOT target_type IN_LIST LY_TARGET_TYPES_WITH_RUNTIME_OUTPUTS)
+                continue()
+            endif()
+            install(SCRIPT ${CMAKE_BINARY_DIR}/runtime_install/$<CONFIG>/${target}.cmake)
+        endforeach()
+    endif()
 
 endfunction()
 

@@ -20,8 +20,14 @@ function(ly_apply_platform_properties target)
         if ((${target_type} STREQUAL "MODULE_LIBRARY") OR (${target_type} STREQUAL "SHARED_LIBRARY") OR (${target_type} STREQUAL "EXECUTABLE"))
             set_target_properties(${target} PROPERTIES
                 XCODE_ATTRIBUTE_ENABLE_HARDENED_RUNTIME YES
-                XCODE_ATTRIBUTE_CODE_SIGN_ENTITLEMENTS cmake/Platform/Mac/O3DE.entitlements
-                XCODE_ATTRIBUTE_CODE_SIGN_INJECT_BASE_ENTITLEMENTS NO)
+                XCODE_ATTRIBUTE_CODE_SIGN_INJECT_BASE_ENTITLEMENTS NO
+            )
+
+            if(${target_type} STREQUAL "EXECUTABLE")
+                set_target_properties(${target} PROPERTIES
+                    XCODE_ATTRIBUTE_CODE_SIGN_ENTITLEMENTS cmake/Platform/Mac/O3DE.entitlements
+                )
+            endif()
         endif()
     endif()
 

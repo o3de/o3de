@@ -13,11 +13,23 @@ cmake_path(SET file_path "${CMAKE_INSTALL_PREFIX}/bin/Mac/@config@/@runtime_outp
 
 function(codesign_file file)
 
-    exec_program("/usr/bin/codesign" 
-        ARGS "--force" "--sign" "@CODE_SIGN_IDENTITY@" "--deep" "-o" "runtime" "--entitlements" "@entitlement_file@" "${file}"
-        OUTPUT_VARIABLE codesign_out
-        RETURN_VALUE codesign_ret)
-    message("Code sign for ${file}: ${codesign_out} ReturnValue: ${codesign_ret}")
+    if(EXISTS @entitlement_file@)
+        execute_process(COMMAND "/usr/bin/codesign" "--force" "--sign" "@CODE_SIGN_IDENTITY@" "--deep" "-o" "runtime" "--timestamp" "--entitlements" "@entitlement_file@" "${file}"
+            TIMEOUT 300
+            OUTPUT_VARIABLE codesign_out
+            RESULT_VARIABLE codesign_ret
+        )
+    else()
+        execute_process(COMMAND "/usr/bin/codesign" "--force" "--sign" "@CODE_SIGN_IDENTITY@" "-o" "runtime" "--timestamp" "${file}"
+            TIMEOUT 300
+            OUTPUT_VARIABLE codesign_out
+            RESULT_VARIABLE codesign_ret
+        )
+    endif()
+
+    if(NOT ${codesign_ret} EQUAL "0")
+        message("Codesign operation for ${file_path} returned ${codesign_ret} with message ${codesign_out}")
+    endif()
 
 endfunction()
 
@@ -28,6 +40,10 @@ function(codesign_binaries_in_folder folder)
         "${folder}/**")
 
     foreach(file ${files})
+        if(NOT EXISTS ${file})
+            file(REMOVE ${file})
+            continue()
+        endif()
         cmake_path(SET path_var "${file}")
         cmake_path(GET path_var EXTENSION LAST_ONLY extension)
         set(should_codesign FALSE)
