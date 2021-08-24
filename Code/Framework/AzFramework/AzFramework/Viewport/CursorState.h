@@ -21,6 +21,8 @@ namespace AzFramework
         [[nodiscard]] ScreenVector CursorDelta() const;
         //! Call this in a 'handle event' call to update the most recent cursor position.
         void SetCurrentPosition(const ScreenPoint& currentPosition);
+        //! Set whether the cursor is currently being constrained (and hidden).
+        void SetConstrained(bool constrained);
         //! Call this in an 'update' call to copy the current cursor position to the last
         //! cursor position.
         void Update();
@@ -28,7 +30,13 @@ namespace AzFramework
     private:
         AZStd::optional<ScreenPoint> m_lastCursorPosition;
         AZStd::optional<ScreenPoint> m_currentCursorPosition;
+        bool m_constrained = false;
     };
+
+    inline void CursorState::SetConstrained(const bool constrained)
+    {
+        m_constrained = constrained;
+    }
 
     inline void CursorState::SetCurrentPosition(const ScreenPoint& currentPosition)
     {
@@ -44,9 +52,16 @@ namespace AzFramework
 
     inline void CursorState::Update()
     {
-        if (m_currentCursorPosition.has_value())
+        if (!m_constrained)
         {
-            m_lastCursorPosition = m_currentCursorPosition;
+            if (m_currentCursorPosition.has_value())
+            {
+                m_lastCursorPosition = m_currentCursorPosition;
+            }
+        }
+        else
+        {
+            m_currentCursorPosition = m_lastCursorPosition;
         }
     }
 } // namespace AzFramework

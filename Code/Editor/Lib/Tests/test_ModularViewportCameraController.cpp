@@ -13,6 +13,9 @@
 #include <EditorViewportWidget.h>
 #include <Mocks/MockWindowRequests.h>
 
+#pragma optimize("", off)
+#pragma inline_depth(0)
+
 namespace UnitTest
 {
     const QSize WidgetSize = QSize(1920, 1080);
@@ -263,4 +266,45 @@ namespace UnitTest
 
     INSTANTIATE_TEST_CASE_P(
         All, ModularViewportCameraControllerDeltaTimeParamFixture, testing::Values(1.0f / 60.0f, 1.0f / 50.0f, 1.0f / 30.0f));
+
+    TEST_F(ModularViewportCameraControllerFixture, Mouse_movement_orientates_camera_when_cursor_is_captured)
+    {
+        // Given
+        CaptureCursorForCameraLook(true);
+        PrepareCollaborators();
+
+        const float deltaTime = 1.0f / 60.0f;
+
+        // When
+        // move to the center of the screen
+        auto start = QPoint(WidgetSize.width() / 2, WidgetSize.height() / 2);
+        MouseMove(m_rootWidget.get(), start, QPoint(0, 0));
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
+
+        // move the cursor right
+        const auto mouseDelta = QPoint(5, 0);
+        for (int i = 0; i < 40; ++i)
+        {
+            auto current = m_rootWidget->mapFromGlobal(QCursor::pos());
+            MousePressAndMove(m_rootWidget.get(), current, mouseDelta, Qt::MouseButton::RightButton);
+            m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
+        }
+
+        const auto last = m_rootWidget->mapFromGlobal(QCursor::pos());
+        QTest::mouseRelease(m_rootWidget.get(), Qt::MouseButton::RightButton, Qt::KeyboardModifier::NoModifier, last);
+        m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
+
+        // Then
+        // ensure the camera rotation is no longer the identity
+        const AZ::Quaternion cameraRotation = m_cameraViewportContextView->GetCameraTransform().GetRotation();
+        const auto eulerAngles = AzFramework::EulerAngles(AZ::Matrix3x3::CreateFromQuaternion(cameraRotation));
+
+        using ::testing::FloatNear;
+        EXPECT_THAT(eulerAngles.GetZ(), FloatNear(1.0f, 0.001f));
+
+        CaptureCursorForCameraLook(false);
+
+        // Clean-up
+        HaltCollaborators();
+    }
 } // namespace UnitTest

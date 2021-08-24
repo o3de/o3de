@@ -102,9 +102,17 @@
 #include <IPhysics.h>
 #include <IStatObj.h>
 
+#pragma optimize("", off)
+#pragma inline_depth(0)
+
 AZ_CVAR(
     bool, ed_visibility_logTiming, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Output the timing of the new IVisibilitySystem query");
 AZ_CVAR(bool, ed_showCursorCameraLook, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Show the cursor when using free look with the new camera system");
+
+void CaptureCursorForCameraLook(bool captureCursor)
+{
+    ed_showCursorCameraLook = !captureCursor;
+}
 
 EditorViewportWidget* EditorViewportWidget::m_pPrimaryViewport = nullptr;
 

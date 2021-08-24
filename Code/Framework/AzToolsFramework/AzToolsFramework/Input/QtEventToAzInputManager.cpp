@@ -22,6 +22,9 @@
 #include <QWheelEvent>
 #include <QWidget>
 
+#pragma optimize("", off)
+#pragma inline_depth(0)
+
 namespace AzToolsFramework
 {
     void QtEventToAzInputMapper::InitializeKeyMappings()
@@ -158,6 +161,16 @@ namespace AzToolsFramework
         SetImplementation(nullptr);
     }
 
+    void QtEventToAzInputMapper::EditorQtMouseDevice::SetSystemCursorState(AzFramework::SystemCursorState systemCursorState)
+    {
+        m_systemCursorState = systemCursorState;
+    }
+
+    AzFramework::SystemCursorState QtEventToAzInputMapper::EditorQtMouseDevice::GetSystemCursorState() const
+    {
+        return m_systemCursorState;
+    }
+
     QtEventToAzInputMapper::QtEventToAzInputMapper(QWidget* sourceWidget, int syntheticDeviceId)
         : QObject(sourceWidget)
         , m_sourceWidget(sourceWidget)
@@ -212,10 +225,12 @@ namespace AzToolsFramework
             m_capturingCursor = enabled;
             if (m_capturingCursor)
             {
+                m_mouseDevice->SetSystemCursorState(AzFramework::SystemCursorState::ConstrainedAndHidden);
                 qApp->setOverrideCursor(Qt::BlankCursor);
             }
             else
             {
+                m_mouseDevice->SetSystemCursorState(AzFramework::SystemCursorState::UnconstrainedAndVisible);
                 qApp->restoreOverrideCursor();
             }
         }
@@ -242,6 +257,15 @@ namespace AzToolsFramework
         if (eventType == QEvent::FocusIn || eventType == QEvent::FocusOut)
         {
             HandleFocusChange(event);
+
+            if (eventType == QEvent::FocusIn)
+            {
+                const auto widgetCursorPosition = m_sourceWidget->mapFromGlobal(QCursor::pos());
+                if (m_sourceWidget->geometry().contains(widgetCursorPosition))
+                {
+                    ProcessPendingMouseEvents(HandleMouseMoveEvent(widgetCursorPosition));
+                }
+            }
         }
         // Map key events to input channels.
         // ShortcutOverride is used in lieu of KeyPress for high priority input channels like Alt
@@ -264,8 +288,8 @@ namespace AzToolsFramework
         // This includes SystemCursorPosition alongside Movement::X and Movement::Y.
         else if (eventType == QEvent::Type::MouseMove)
         {
-            QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
-            HandleMouseMoveEvent(mouseEvent);
+            auto mouseEvent = static_cast<QMouseEvent*>(event);
+            ProcessPendingMouseEvents(HandleMouseMoveEvent(mouseEvent->pos()));
         }
         // Map wheel events to the mouse Z movement channel.
         else if (eventType == QEvent::Type::Wheel)
@@ -345,29 +369,25 @@ namespace AzToolsFramework
         return QPoint{ denormalizedX, denormalizedY };
     }
 
-    void QtEventToAzInputMapper::HandleMouseMoveEvent(QMouseEvent* mouseEvent)
+    QPoint QtEventToAzInputMapper::HandleMouseMoveEvent(const QPoint& cursorPosition)
     {
-        const QPoint cursorPosition = mouseEvent->pos();
         const QPoint cursorDelta = cursorPosition - m_previousCursorPosition;
 
         m_mouseDevice->m_cursorPositionData2D->m_normalizedPosition = WidgetPositionToNormalizedPosition(cursorPosition);
         m_mouseDevice->m_cursorPositionData2D->m_normalizedPositionDelta = WidgetPositionToNormalizedPosition(cursorDelta);
 
-        ProcessPendingMouseEvents(cursorDelta);
-
         if (m_capturingCursor)
         {
-            // Reset our cursor position to the previous point.
-            const QPoint targetScreenPosition = m_sourceWidget->mapToGlobal(m_previousCursorPosition);
-            AzQtComponents::SetCursorPos(targetScreenPosition);
-
-            // Even though we just set the cursor position, there are edge cases such as remote desktop that will leave
-            // the cursor position unchanged. For safety, we re-cache our last cursor position for delta generation.
-            const QPoint actualWidgetPosition = m_sourceWidget->mapFromGlobal(QCursor::pos());
-            m_mouseDevice->m_cursorPositionData2D->m_normalizedPosition = WidgetPositionToNormalizedPosition(actualWidgetPosition);
+            // Reset our cursor position to the previous point
+            const QPoint screenCursorPosition = m_sourceWidget->mapToGlobal(m_previousCursorPosition);
+            AzQtComponents::SetCursorPos(screenCursorPosition);
+        }
+        else
+        {
+            m_previousCursorPosition = cursorPosition;
         }
 
-        m_previousCursorPosition = cursorPosition;
+        return cursorDelta;
     }
 
     void QtEventToAzInputMapper::HandleKeyEvent(QKeyEvent* keyEvent)

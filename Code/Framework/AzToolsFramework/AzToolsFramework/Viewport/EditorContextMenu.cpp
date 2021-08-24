@@ -40,8 +40,12 @@ namespace AzToolsFramework
             const QPoint currentScreenCoords =
                 ViewportInteraction::QPointFromScreenPoint(mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates);
 
+            AZ_Printf("tom-debug", "click point           (x: %d, y: %d)\n", contextMenu.m_clickPoint.x(), contextMenu.m_clickPoint.y());
+            AZ_Printf("tom-debug", "current screen coords (x: %d, y: %d)\n", currentScreenCoords.x(), currentScreenCoords.y());
+
             // if the mouse hasn't moved, open the pop-up menu
-            if ((currentScreenCoords - contextMenu.m_clickPoint).manhattanLength() < ed_contextMenuDisplayThreshold)
+            if ((currentScreenCoords - contextMenu.m_clickPoint).manhattanLength() < ed_contextMenuDisplayThreshold &&
+                !mouseInteraction.m_wasCaptured)
             {
                 QWidget* parent = nullptr;
                 ViewportInteraction::MainEditorViewportInteractionRequestBus::EventResult(
