@@ -130,7 +130,7 @@ namespace AzNetworking
         //! @param listener   a connection listener to receive connection related events
         //! @param header     the packet header received to process
         //! @param serializer the output serializer containing the transmitted packet data
-        //! @return boolean true on successful handling of the received header
+        //! @return PacketDispatchResult result of processing the core packet
         PacketDispatchResult HandleCorePacket(IConnectionListener& listener, UdpPacketHeader& header, ISerializer& serializer);
 
         AZ_DISABLE_COPY_MOVE(UdpConnection);
