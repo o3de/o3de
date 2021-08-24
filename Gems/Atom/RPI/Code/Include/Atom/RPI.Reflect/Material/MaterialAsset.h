@@ -128,7 +128,8 @@ namespace AZ
             //! This is indexed by MaterialPropertyIndex and aligns with entries in m_materialPropertiesLayout.
             AZStd::vector<MaterialPropertyValue> m_propertyValues;
             //! This is used to find the MaterialPropertyIndex from materialTypeAsset.m_materialPropertiesLayout
-            //! to match to the appropriate shader index and property value. 
+            //! to match to the appropriate shader index and property value. If empty, this implies that m_propertyValues
+            //! above is aligned with entries in m_materialPropertiesLayout. 
             AZStd::vector<AZ::Name> m_propertyNames;
         };
        

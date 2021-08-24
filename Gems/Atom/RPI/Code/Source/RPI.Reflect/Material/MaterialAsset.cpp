@@ -29,9 +29,10 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<MaterialAsset, AZ::Data::AssetData>()
-                    ->Version(9)
+                    ->Version(10)
                     ->Field("materialTypeAsset", &MaterialAsset::m_materialTypeAsset)
                     ->Field("propertyValues", &MaterialAsset::m_propertyValues)
+                    ->Field("propertyNames", &MaterialAsset::m_propertyNames)
                     ;
             }
         }
