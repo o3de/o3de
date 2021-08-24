@@ -36,7 +36,12 @@ except ImportError as e:
 # ------------------------------------------------------------------------
 from ColorGrading import AZASSET_LUT
 
-def write_azasset(file_path, lut_size, lut_intervals, lut_values, azasset_json=AZASSET_LUT):
+def find_first_line(alist):
+    for lno, line in enumerate(alist):
+        if line[0].isdigit():  # skip non-number metadata
+            return lno
+
+def write_azasset(file_path, lut_intervals, lut_values, azasset_json=AZASSET_LUT):
     values_str = ''
     for idx, px in enumerate(lut_values):
         values_str += f"{px[0]}, {px[1]}, {px[2]}"
@@ -60,19 +65,18 @@ def convert_3dl_to_azasset(input_file, output_file):
     lut_values = []
     with open(input_file) as lut_file:
         alist = [line.rstrip().lstrip() for line in lut_file]
-        for idx, ln in enumerate(alist):
-            # if type(ln[0]) == int:  # skip lines that don't start with number
-            if idx == 0:
-                values = ln.split(" ")
-                for v in values:
-                    lut_intervals.append(v)
-            else:
-                values = ln.split(" ")
-                if values is None or len(values) < 3:
-                    continue
-                lut_values.append(values)
+        intervals_idx = find_first_line(alist)
+        
+        lut_intervals = alist[intervals_idx].split(" ")
 
-    write_azasset(output_file)
+        lut_values_range = range(intervals_idx + 1, len(alist))
+        for ln in lut_values_range:
+            values = alist[ln].split(" ")
+            if values is None or len(values) < 3:
+                continue
+            lut_values.append(values)
+
+    write_azasset(output_file, lut_intervals, lut_values)
 # ------------------------------------------------------------------------
 
 

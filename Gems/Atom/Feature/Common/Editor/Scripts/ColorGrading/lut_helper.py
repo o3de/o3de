@@ -150,8 +150,10 @@ if __name__ == '__main__':
     lower_stops = shaper_limits[0]
     upper_stops = shaper_limits[1]
 
-    log_min = math.log(middle_grey * math.pow(2.0, lower_stops), 2.0)
-    log_max = math.log(middle_grey * math.pow(2.0, upper_stops), 2.0)
+    middle_grey = math.log(middle_grey, 2.0)
+    log_min = middle_grey + lower_stops
+    log_max = middle_grey + upper_stops
+    
     scale = 1.0 / (log_max - log_min)
     bias = -scale * log_min
 
@@ -181,4 +183,4 @@ if __name__ == '__main__':
     if args.writeAsset:
         from ColorGrading import AZASSET_LUT
         from ColorGrading.from_3dl_to_azasset import write_azasset
-        write_azasset(args.o, lut_size, lut_intervals, lut_values, AZASSET_LUT)
+        write_azasset(args.o, lut_intervals, lut_values, AZASSET_LUT)
