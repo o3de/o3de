@@ -1100,6 +1100,7 @@ AZStd::shared_ptr<AtomToolsFramework::ModularViewportCameraController> CreateMod
             };
 
             // default behavior is to hide the cursor but this can be disabled (useful for remote desktop)
+            // note: See CaptureCursorLook in the Settings Registry
             firstPersonRotateCamera->SetActivationBeganFn(hideCursor);
             firstPersonRotateCamera->SetActivationEndedFn(showCursor);
 

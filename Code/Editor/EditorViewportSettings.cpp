@@ -33,7 +33,7 @@ namespace SandboxEditor
     constexpr AZStd::string_view CameraTranslateSmoothnessSetting = "/Amazon/Preferences/Editor/Camera/TranslateSmoothness";
     constexpr AZStd::string_view CameraTranslateSmoothingSetting = "/Amazon/Preferences/Editor/Camera/TranslateSmoothing";
     constexpr AZStd::string_view CameraRotateSmoothingSetting = "/Amazon/Preferences/Editor/Camera/RotateSmoothing";
-    constexpr AZStd::string_view CameraCaptureCursorSetting = "/Amazon/Preferences/Editor/Camera/CaptureCursor";
+    constexpr AZStd::string_view CameraCaptureCursorLookSetting = "/Amazon/Preferences/Editor/Camera/CaptureCursorLook";
     constexpr AZStd::string_view CameraTranslateForwardIdSetting = "/Amazon/Preferences/Editor/Camera/CameraTranslateForwardId";
     constexpr AZStd::string_view CameraTranslateBackwardIdSetting = "/Amazon/Preferences/Editor/Camera/CameraTranslateBackwardId";
     constexpr AZStd::string_view CameraTranslateLeftIdSetting = "/Amazon/Preferences/Editor/Camera/CameraTranslateLeftId";
@@ -284,12 +284,12 @@ namespace SandboxEditor
 
     bool CameraCaptureCursorForLook()
     {
-        return GetRegistry(CameraCaptureCursorSetting, true);
+        return GetRegistry(CameraCaptureCursorLookSetting, true);
     }
 
     void SetCameraCaptureCursorForLook(const bool capture)
     {
-        SetRegistry(CameraCaptureCursorSetting, capture);
+        SetRegistry(CameraCaptureCursorLookSetting, capture);
     }
 
     AzFramework::InputChannelId CameraTranslateForwardChannelId()

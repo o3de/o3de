@@ -291,12 +291,13 @@ namespace UnitTest
         MouseMove(m_rootWidget.get(), start, QPoint(0, 0));
         m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
 
-        // move the cursor right
         const auto mouseDelta = QPoint(5, 0);
 
+        // initial movement to begin the camera behavior
         MousePressAndMove(m_rootWidget.get(), start, mouseDelta, Qt::MouseButton::RightButton);
         m_controllerList->UpdateViewport({ TestViewportId, AzFramework::FloatSeconds(deltaTime), AZ::ScriptTimePoint() });
 
+        // move the cursor right
         for (int i = 0; i < 50; ++i)
         {
             MousePressAndMove(m_rootWidget.get(), start + mouseDelta, mouseDelta, Qt::MouseButton::RightButton);
@@ -318,6 +319,7 @@ namespace UnitTest
         const AZ::Quaternion cameraRotation = m_cameraViewportContextView->GetCameraTransform().GetRotation();
         const auto eulerAngles = AzFramework::EulerAngles(AZ::Matrix3x3::CreateFromQuaternion(cameraRotation));
 
+        // camera should be back at the center (no yaw)
         using ::testing::FloatNear;
         EXPECT_THAT(eulerAngles.GetZ(), FloatNear(0.0f, 0.001f));
 
@@ -354,6 +356,7 @@ namespace UnitTest
         const AZ::Quaternion cameraRotation = m_cameraViewportContextView->GetCameraTransform().GetRotation();
         const auto eulerAngles = AzFramework::EulerAngles(AZ::Matrix3x3::CreateFromQuaternion(cameraRotation));
 
+        // initial amount of rotation after first mouse move
         using ::testing::FloatNear;
         EXPECT_THAT(eulerAngles.GetZ(), FloatNear(-0.025f, 0.001f));
 

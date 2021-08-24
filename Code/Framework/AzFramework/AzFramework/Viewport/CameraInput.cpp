@@ -144,7 +144,7 @@ namespace AzFramework
         if (const auto& cursor = AZStd::get_if<CursorEvent>(&event))
         {
             m_cursorState.SetCurrentPosition(cursor->m_position);
-            m_cursorState.SetConstrained(cursor->m_constrained);
+            m_cursorState.SetCaptured(cursor->m_captured);
         }
         else if (const auto& horizontalMotion = AZStd::get_if<HorizontalMotionEvent>(&event))
         {

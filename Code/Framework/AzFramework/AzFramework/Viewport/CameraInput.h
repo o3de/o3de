@@ -88,7 +88,7 @@ namespace AzFramework
     struct CursorEvent
     {
         ScreenPoint m_position;
-        bool m_constrained = false;
+        bool m_captured = false;
     };
 
     struct ScrollEvent

@@ -22,7 +22,7 @@ namespace AzFramework
         //! Call this in a 'handle event' call to update the most recent cursor position.
         void SetCurrentPosition(const ScreenPoint& currentPosition);
         //! Set whether the cursor is currently being constrained (and hidden).
-        void SetConstrained(bool constrained);
+        void SetCaptured(bool captured);
         //! Call this in an 'update' call to copy the current cursor position to the last
         //! cursor position.
         void Update();
@@ -30,12 +30,12 @@ namespace AzFramework
     private:
         AZStd::optional<ScreenPoint> m_lastCursorPosition;
         AZStd::optional<ScreenPoint> m_currentCursorPosition;
-        bool m_constrained = false;
+        bool m_captured = false;
     };
 
-    inline void CursorState::SetConstrained(const bool constrained)
+    inline void CursorState::SetCaptured(const bool captured)
     {
-        m_constrained = constrained;
+        m_captured = captured;
     }
 
     inline void CursorState::SetCurrentPosition(const ScreenPoint& currentPosition)
@@ -52,7 +52,7 @@ namespace AzFramework
 
     inline void CursorState::Update()
     {
-        if (!m_constrained)
+        if (!m_captured)
         {
             if (m_currentCursorPosition.has_value())
             {

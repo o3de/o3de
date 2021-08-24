@@ -114,8 +114,8 @@ namespace SandboxEditor
                     windowSize, event.m_windowHandle, &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
 
                 const auto screenPoint = AzFramework::ScreenPoint(
-                    static_cast<int>(position->m_normalizedPosition.GetX() * windowSize.m_width),
-                    static_cast<int>(position->m_normalizedPosition.GetY() * windowSize.m_height));
+                    aznumeric_cast<int>(position->m_normalizedPosition.GetX() * windowSize.m_width),
+                    aznumeric_cast<int>(position->m_normalizedPosition.GetY() * windowSize.m_height));
 
                 m_mouseInteraction.m_mousePick.m_screenCoordinates = screenPoint;
                 AZStd::optional<ProjectedViewportRay> ray;
