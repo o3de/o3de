@@ -237,5 +237,14 @@ namespace AZ
             static constexpr D3D12_RANGE InvalidRange = {0,0};
             m_readBackBuffer->Unmap(0, &InvalidRange);
         }
+
+        void QueryPool::ShutdownInternal()
+        {
+            auto& device = static_cast<Device&>(GetDevice());
+            device.QueueForRelease(m_queryHeap);
+            m_queryHeap = nullptr;
+            device.QueueForRelease(m_readBackBuffer);
+            m_readBackBuffer = nullptr;
+        }
     }
 }

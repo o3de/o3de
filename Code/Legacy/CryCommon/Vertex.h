@@ -1037,7 +1037,7 @@ namespace AZ
                 }
                 AZ_Assert(stride < (0x1 << (sizeof(m_stride) * 8)), "Vertex stride is larger than the maximum supported, update the type for m_stride in Vertex.h");
 
-                m_stride = stride;
+                m_stride = static_cast<uint8>(stride);
             }
             
 

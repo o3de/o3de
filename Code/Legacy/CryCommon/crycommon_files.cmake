@@ -53,7 +53,6 @@ set(FILES
     HMDBus.h
     VRCommon.h
     StereoRendererBus.h
-    HeightmapUpdateNotificationBus.h
     INavigationSystem.h
     IMNM.h
     SFunctor.h
@@ -90,6 +89,7 @@ set(FILES
     CryVersion.h
     FrameProfiler.h
     HeapAllocator.h
+    LegacyAllocator.cpp
     LegacyAllocator.h
     MetaUtils.h
     MiniQueue.h

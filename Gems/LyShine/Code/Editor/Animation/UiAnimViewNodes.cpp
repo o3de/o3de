@@ -95,88 +95,16 @@ public:
     }
 
 protected:
-    void dragMoveEvent(QDragMoveEvent* event)
+    void dragMoveEvent([[maybe_unused]] QDragMoveEvent* event)
     {
         // For now we do not support any drag and drop in the Nodes pane
         return;
-
-        CUiAnimViewNodesCtrl::CRecord* pRecord = (CUiAnimViewNodesCtrl::CRecord*) itemAt(event->pos());
-        if (!pRecord)
-        {
-            return;
-        }
-        CUiAnimViewNode* pTargetNode = pRecord->GetNode();
-
-        QTreeWidget::dragMoveEvent(event);
-        if (!event->isAccepted())
-        {
-            return;
-        }
-
-        if (pTargetNode && pTargetNode->IsGroupNode() /*&& !m_draggedNodes.DoesContain(pTargetNode)*/)
-        {
-            CUiAnimViewAnimNode* pDragTarget = static_cast<CUiAnimViewAnimNode*>(pTargetNode);
-            bool bAllValidReparenting = true;
-            QList<CUiAnimViewAnimNode*> nodes = draggedNodes(event);
-            Q_FOREACH(CUiAnimViewAnimNode * pDraggedNode, nodes)
-            {
-                if (!pDraggedNode->IsValidReparentingTo(pDragTarget))
-                {
-                    bAllValidReparenting = false;
-                    break;
-                }
-            }
-
-            if (!bAllValidReparenting)
-            {
-                event->ignore();
-            }
-
-            return;
-        }
     }
 
-    void dropEvent(QDropEvent* event)
+    void dropEvent([[maybe_unused]] QDropEvent* event)
     {
         // For now we do not support any drag and drop in the Nodes pane
         return;
-
-        CUiAnimViewNodesCtrl::CRecord* pRecord = (CUiAnimViewNodesCtrl::CRecord*) itemAt(event->pos());
-        if (!pRecord)
-        {
-            return;
-        }
-        CUiAnimViewNode* pTargetNode = pRecord->GetNode();
-
-        QTreeWidget::dropEvent(event);
-        if (!event->isAccepted())
-        {
-            return;
-        }
-
-        if (pTargetNode && pTargetNode->IsGroupNode() /*&& !m_draggedNodes.DoesContain(pTargetNode)*/)
-        {
-            CUiAnimViewAnimNode* pDragTarget = static_cast<CUiAnimViewAnimNode*>(pTargetNode);
-            bool bAllValidReparenting = true;
-            QList<CUiAnimViewAnimNode*> nodes = draggedNodes(event);
-            Q_FOREACH(CUiAnimViewAnimNode * pDraggedNode, nodes)
-            {
-                if (!pDraggedNode->IsValidReparentingTo(pDragTarget))
-                {
-                    bAllValidReparenting = false;
-                    break;
-                }
-            }
-
-            if (bAllValidReparenting)
-            {
-                UiAnimUndo undo("Drag and Drop UiAnimView Nodes");
-                Q_FOREACH(CUiAnimViewAnimNode * pDraggedNode, nodes)
-                {
-                    pDraggedNode->SetNewParent(pDragTarget);
-                }
-            }
-        }
     }
 
     void keyPressEvent(QKeyEvent* event)

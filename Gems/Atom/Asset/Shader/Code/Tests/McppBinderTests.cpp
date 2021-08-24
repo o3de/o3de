@@ -32,7 +32,7 @@ namespace UnitTest
         {
             for (int bufferPos = 0, rollback = 0; bufferPos < (bufferSize - 1); ++bufferPos)
             {
-                const char value = 'a' + rollback++;
+                const char value = 'a' + static_cast<char>(rollback++);
                 buffer[bufferPos] = value;
                 if (value == 'z')
                 {

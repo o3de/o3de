@@ -394,7 +394,7 @@ void SEditorSettings::LoadValue(const char* sSection, const char* sKey, float& v
     {
         const SettingsGroup sg(sSection);
         const QString defaultVal = s_editorSettings()->value(sKey, QString::number(value)).toString();
-        value = defaultVal.toDouble();
+        value = defaultVal.toFloat();
 
         if (GetIEditor()->GetSettingsManager())
         {
@@ -1061,7 +1061,7 @@ void SEditorSettings::ConvertPath(const AZStd::string_view sourcePath, AZStd::st
     // The reason for the difference is to have this API be consistent with the path syntax in Open 3D Engine Python APIs.
 
     // Find the last pipe separator ("|") in the path
-    int lastSeparator = sourcePath.find_last_of("|");
+    size_t lastSeparator = sourcePath.find_last_of("|");
 
     // Everything before the last separator is the category (since only the category is hierarchical)
     category = sourcePath.substr(0, lastSeparator);

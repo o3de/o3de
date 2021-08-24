@@ -1224,7 +1224,7 @@ bool CCryEditDoc::SaveLevel(const QString& filename)
         if (savedEntities)
         {
             AZ_PROFILE_SCOPE(AzToolsFramework, "CCryEditDoc::SaveLevel Updated PakFile levelEntities.editor_xml");
-            pakFile.UpdateFile("LevelEntities.editor_xml", entitySaveBuffer.begin(), entitySaveBuffer.size());
+            pakFile.UpdateFile("LevelEntities.editor_xml", entitySaveBuffer.begin(), static_cast<int>(entitySaveBuffer.size()));
 
             // Save XML archive to pak file.
             bool bSaved = xmlAr.SaveToPak(Path::GetPath(tempSaveFile), pakFile);
@@ -2055,7 +2055,7 @@ void CCryEditDoc::OnEnvironmentPropertyChanged(IVariable* pVar)
     }
 
     // QVariant will not convert a void * to int, so do it manually.
-    int nKey = reinterpret_cast<intptr_t>(pVar->GetUserData().value<void*>());
+    int nKey = static_cast<int>(reinterpret_cast<intptr_t>(pVar->GetUserData().value<void*>()));
 
     int nGroup = (nKey & 0xFFFF0000) >> 16;
     int nChild = (nKey & 0x0000FFFF);

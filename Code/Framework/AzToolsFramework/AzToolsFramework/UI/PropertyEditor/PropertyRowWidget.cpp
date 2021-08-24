@@ -1867,7 +1867,7 @@ namespace AzToolsFramework
         }
 
         const auto dpr = devicePixelRatioF();
-        QPixmap dragImage(width * dpr, height * dpr);
+        QPixmap dragImage(static_cast<int>(width * dpr), static_cast<int>(height * dpr));
         dragImage.setDevicePixelRatio(dpr);
         dragImage.fill(Qt::transparent);
 

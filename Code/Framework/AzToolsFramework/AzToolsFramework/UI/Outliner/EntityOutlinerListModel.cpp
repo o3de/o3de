@@ -2180,7 +2180,7 @@ namespace AzToolsFramework
         QPainterPath path;
 
         auto newRect = option.rect;
-        newRect.setHeight(newRect.height() - 1.0);
+        newRect.setHeight(newRect.height() - 1);
         path.addRect(newRect);
 
         // Get the foreground color of the current object to draw our sub-object-selected box

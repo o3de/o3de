@@ -8,12 +8,11 @@
 
 # shared by other platforms:
 ly_associate_package(PACKAGE_NAME ilmbase-2.3.0-rev4-multiplatform                  TARGETS ilmbase                     PACKAGE_HASH 97547fdf1fbc4d81b8ccf382261f8c25514ed3b3c4f8fd493f0a4fa873bba348)
-ly_associate_package(PACKAGE_NAME hdf5-1.0.11-rev2-multiplatform                    TARGETS hdf5                        PACKAGE_HASH 11d5e04df8a93f8c52a5684a4cacbf0d9003056360983ce34f8d7b601082c6bd)
 ly_associate_package(PACKAGE_NAME assimp-5.0.1-rev11-multiplatform                  TARGETS assimplib                   PACKAGE_HASH 1a9113788b893ef4a2ee63ac01eb71b981a92894a5a51175703fa225f5804dec)
 ly_associate_package(PACKAGE_NAME squish-ccr-20150601-rev3-multiplatform            TARGETS squish-ccr                  PACKAGE_HASH c878c6c0c705e78403c397d03f5aa7bc87e5978298710e14d09c9daf951a83b3)
 ly_associate_package(PACKAGE_NAME ASTCEncoder-2017_11_14-rev2-multiplatform         TARGETS ASTCEncoder                 PACKAGE_HASH c240ffc12083ee39a5ce9dc241de44d116e513e1e3e4cc1d05305e7aa3bdc326)
 ly_associate_package(PACKAGE_NAME md5-2.0-multiplatform                             TARGETS md5                         PACKAGE_HASH 29e52ad22c78051551f78a40c2709594f0378762ae03b417adca3f4b700affdf)
-ly_associate_package(PACKAGE_NAME RapidJSON-1.1.0-multiplatform                     TARGETS RapidJSON                   PACKAGE_HASH 18b0aef4e6e849389916ff6de6682ab9c591ebe15af6ea6017014453c1119ea1)
+ly_associate_package(PACKAGE_NAME RapidJSON-1.1.0-rev1-multiplatform                TARGETS RapidJSON                   PACKAGE_HASH 2f5e26ecf86c3b7a262753e7da69ac59928e78e9534361f3d00c1ad5879e4023)
 ly_associate_package(PACKAGE_NAME RapidXML-1.13-multiplatform                       TARGETS RapidXML                    PACKAGE_HASH 510b3c12f8872c54b34733e34f2f69dd21837feafa55bfefa445c98318d96ebf)
 ly_associate_package(PACKAGE_NAME pybind11-2.4.3-rev2-multiplatform                 TARGETS pybind11                    PACKAGE_HASH d8012f907b6c54ac990b899a0788280857e7c93a9595405a28114b48c354eb1b)
 ly_associate_package(PACKAGE_NAME cityhash-1.1-multiplatform                        TARGETS cityhash                    PACKAGE_HASH 0ace9e6f0b2438c5837510032d2d4109125845c0efd7d807f4561ec905512dd2)
@@ -28,7 +27,7 @@ ly_associate_package(PACKAGE_NAME xxhash-0.7.4-rev1-multiplatform               
 ly_associate_package(PACKAGE_NAME PVRTexTool-4.24.0-rev4-multiplatform              TARGETS PVRTexTool                  PACKAGE_HASH d0d6da61c7557de0d2c71fc35ba56c3be49555b703f0e853d4c58225537acf1e)
 
 # platform-specific:
-ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxc-1.6.2104-o3de-rev2-mac   TARGETS DirectXShaderCompilerDxc    PACKAGE_HASH 2bede9a7ef3573027c005e38139237559eebf845c13ffb54c33c5b8675f962e2)
+ly_associate_package(PACKAGE_NAME DirectXShaderCompilerDxc-1.6.2104-o3de-rev3-mac   TARGETS DirectXShaderCompilerDxc    PACKAGE_HASH 3f77367dbb0342136ec4ebbd44bc1fedf7198089a0f83c5631248530769b2be6)
 ly_associate_package(PACKAGE_NAME SPIRVCross-2021.04.29-rev1-mac                    TARGETS SPIRVCross                  PACKAGE_HASH 78c6376ed2fd195b9b1f5fb2b56e5267a32c3aa21fb399e905308de470eb4515)
 ly_associate_package(PACKAGE_NAME freetype-2.10.4.14-mac-ios                        TARGETS freetype                    PACKAGE_HASH 67b4f57aed92082d3fd7c16aa244a7d908d90122c296b0a63f73e0a0b8761977)
 ly_associate_package(PACKAGE_NAME tiff-4.2.0.15-mac-ios                             TARGETS tiff                        PACKAGE_HASH a23ae1f8991a29f8e5df09d6d5b00d7768a740f90752cef465558c1768343709)

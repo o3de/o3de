@@ -7,6 +7,8 @@
  */
 
 #include <Atom/RHI.Loader/FunctionLoader.h>
+#include <Atom/RHI.Reflect/Vulkan/PlatformLimitsDescriptor.h>
+#include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/TransientAttachmentPool.h>
 #include <AzCore/std/containers/set.h>
@@ -31,6 +33,13 @@ namespace AZ
 {
     namespace Vulkan
     {
+        Device::Device()
+        {
+            RHI::Ptr<PlatformLimitsDescriptor> platformLimitsDescriptor = aznew PlatformLimitsDescriptor();
+            platformLimitsDescriptor->LoadPlatformLimitsDescriptor(RHI::Factory::Get().GetName().GetCStr());
+            m_descriptor.m_platformLimitsDescriptor = RHI::Ptr<RHI::PlatformLimitsDescriptor>(platformLimitsDescriptor);
+        }
+
         RHI::Ptr<Device> Device::Create()
         {
             return aznew Device();
@@ -69,7 +78,7 @@ namespace AZ
 
             BuildDeviceQueueInfo(physicalDevice);
 
-            m_supportedPipelineStageFlagsMask = ~0;
+            m_supportedPipelineStageFlagsMask = std::numeric_limits<VkPipelineStageFlags>::max();
 
             const auto& deviceFeatures = physicalDevice.GetPhysicalDeviceFeatures();
             m_enabledDeviceFeatures.samplerAnisotropy = deviceFeatures.samplerAnisotropy;
@@ -232,7 +241,7 @@ namespace AZ
             return RHI::ResultCode::Success;
         }
 
-        RHI::ResultCode Device::PostInitInternal( const RHI::DeviceDescriptor& descriptor)
+        RHI::ResultCode Device::InitializeLimits()
         {
             CommandQueueContext::Descriptor commandQueueContextDescriptor;
             commandQueueContextDescriptor.m_frameCountMax = RHI::Limits::Device::FrameCountMax;
@@ -241,7 +250,7 @@ namespace AZ
 
             // Initialize member variables.
             ReleaseQueue::Descriptor releaseQueueDescriptor;
-            releaseQueueDescriptor.m_collectLatency = descriptor.m_frameCountMax - 1;
+            releaseQueueDescriptor.m_collectLatency = m_descriptor.m_frameCountMax - 1;
             m_releaseQueue.Init(releaseQueueDescriptor);
             
 
@@ -272,7 +281,7 @@ namespace AZ
             poolDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Host;
             poolDesc.m_hostMemoryAccess = RHI::HostMemoryAccess::Write;
             poolDesc.m_bindFlags = RHI::BufferBindFlags::CopyRead;
-            poolDesc.m_budgetInBytes = RHI::RHISystemInterface::Get()->GetPlatformLimitsDescriptor()->m_platformDefaultValues.m_stagingBufferBudgetInBytes;
+            poolDesc.m_budgetInBytes = m_descriptor.m_platformLimitsDescriptor->m_platformDefaultValues.m_stagingBufferBudgetInBytes;
             result = m_stagingBufferPool->Init(*this, poolDesc);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 

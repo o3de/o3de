@@ -14,7 +14,6 @@
 #include <AzCore/Math/IntersectSegment.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Math/Vector3.h>
-#include <MathConversion.h>
 
 namespace AZ
 {

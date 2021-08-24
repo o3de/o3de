@@ -259,7 +259,8 @@ namespace AZ
 
         void DirectionalLightComponentController::SetCascadeCount(uint32_t cascadeCount)
         {
-            const uint16_t cascadeCount16 = cascadeCount = GetMin(Shadow::MaxNumberOfCascades, GetMax<uint16_t>(1, aznumeric_cast<uint16_t>(cascadeCount)));
+            const uint16_t cascadeCount16 = GetMin(static_cast<uint16_t>(Shadow::MaxNumberOfCascades), GetMax<uint16_t>(1, aznumeric_cast<uint16_t>(cascadeCount)));
+            cascadeCount = cascadeCount16;
             m_configuration.m_cascadeCount = cascadeCount16;
             if (m_featureProcessor)
             {
