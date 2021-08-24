@@ -150,7 +150,7 @@ namespace AMD
         float       HairEx2 = 11.80f;
         float3      fPadding0;
 
-        float4      MatKValue = { 0.f, 0.07f, 0.0017f, 14.40f };   // KAmbient, KDiffuse, KSpec1, Exp1
+        float4      MatKValue = {{0.f, 0.07f, 0.0017f, 14.40f}};   // KAmbient, KDiffuse, KSpec1, Exp1
 
         int         MaxShadowFibers = 50;
 
@@ -165,8 +165,8 @@ namespace AMD
     struct TressFXStrandParams // TressFXStrandParameters
     {
         // For lighting/shading
-        float4      MatBaseColor = { 1.f, 1.f, 1.f, 0.63f };
-        float4      MatTipColor = { 0.5f, 0.5f, 1.f, 0.63f };
+        float4      MatBaseColor = {{1.f, 1.f, 1.f, 0.63f}};
+        float4      MatTipColor = {{0.5f, 0.5f, 1.f, 0.63f}};
 
         // General information
         float       TipPercentage = 0.5f;
@@ -204,7 +204,7 @@ namespace AMD
 
         // Original TressFX Kajiya lighting model parameters
         float       HairEx2 = 11.80f;
-        float4      MatKValue = { 0.f, 0.07f, 0.0017f, 14.40f };   // KAmbient, KDiffuse, KSpec1, Exp1
+        float4      MatKValue = {{0.f, 0.07f, 0.0017f, 14.40f}};   // KAmbient, KDiffuse, KSpec1, Exp1
         float       HairKs2 = 0.072f;
 
         // Marschner lighting model parameters 
@@ -233,12 +233,12 @@ namespace AMD
         float  LightInnerConeCos = 0.70710678f;        // vLightConeAngles.y in Sushi
         float  LightRange = 100.f;                     // vLightConeAngles.z in Sushi
 
-        float4 LightPositionWS = { 0.f, 0.f, 0.f, 0.f };    // vLightPosWS in Sushi
-        float4 LightDirWS = { 0.f, -1.f, 0.f, 0.f };        // vLightDirWS in Sushi
-        float4 LightColor = { 1.f, 1.f, 1.f, 0.f };         // vLightColor in Sushi
+        float4 LightPositionWS = {{0.f, 0.f, 0.f, 0.f}};// vLightPosWS in Sushi
+        float4 LightDirWS = {{0.f, -1.f, 0.f, 0.f}};    // vLightDirWS in Sushi
+        float4 LightColor = {{1.f, 1.f, 1.f, 0.f}};     // vLightColor in Sushi
 
         float4x4 ShadowProjection;
-        float4   ShadowParams = { 0.0007f, 0.f, 0.f, 0.f };
+        float4   ShadowParams = {{0.0007f, 0.f, 0.f, 0.f}};
 
         int     LightType = 3;                              // vLightParams.x in Sushi
         int     ShadowMapIndex = -1;

@@ -873,7 +873,9 @@ namespace AZ
                 float distance, bool shadowUpdate /*= false*/)
             {
                 // Update Render Parameters
-                m_renderCB->FiberRadius = parameters->m_FiberRadius;	// Don't modify radius by LOD multiplier as this one is used to calculate shadowing and that calculation should remain unaffected
+                // If you alter FiberRadius make sure to change it also in the material properties
+                // passed by the Feature Processor for the shading. 
+                m_renderCB->FiberRadius = parameters->m_FiberRadius;
 
                 m_renderCB->ShadowAlpha = parameters->m_HairShadowAlpha;
                 m_renderCB->FiberSpacing = parameters->m_HairFiberSpacing;
