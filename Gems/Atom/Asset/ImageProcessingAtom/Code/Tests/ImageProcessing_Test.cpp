@@ -280,7 +280,7 @@ namespace UnitTest
             }
 
             //create the directory if it's not exist
-            AZStd::string outputDir = s_gemFolder + AZStd::string("Code/Tests/TestAssets/Temp/");
+            AZStd::string outputDir = s_gemFolder + AZStd::string("Code/Tests/TestAssets/temp/");
             QDir dir(outputDir.data());
             if (!dir.exists())
             {
