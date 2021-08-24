@@ -9,7 +9,9 @@
 #include <HairModule.h>
 #include <Components/HairSystemComponent.h>
 #include <Components/HairComponent.h>
-#include <Components/EditorHairComponent.h>
+#if defined (ATOMTRESSFX_EDITOR)
+    #include <Components/EditorHairComponent.h>
+#endif // ATOMTRESSFX_EDITOR
 
 namespace AZ
 {
@@ -25,9 +27,10 @@ namespace AZ
                     {
                         HairSystemComponent::CreateDescriptor(),
                         HairComponent::CreateDescriptor(),
-//#ifdef ATOMLYINTEGRATION_FEATURE_COMMON_EDITOR
+#if defined (ATOMTRESSFX_EDITOR)
+                        // Prevent adding editor component when editor and tools are not built
                         EditorHairComponent::CreateDescriptor(),
-//#endif
+#endif // ATOMTRESSFX_EDITOR
                     });
             }
 

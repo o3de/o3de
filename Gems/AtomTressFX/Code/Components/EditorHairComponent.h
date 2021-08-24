@@ -8,6 +8,8 @@
 
 #pragma once
 
+#if defined (ATOMTRESSFX_EDITOR)
+
 #include <AzToolsFramework/ToolsComponents/EditorComponentAdapter.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 
@@ -61,3 +63,5 @@ namespace AZ
         } // namespace Hair
     } // namespace Render
 } // namespace AZ
+
+#endif // ATOMTRESSFX_EDITOR
