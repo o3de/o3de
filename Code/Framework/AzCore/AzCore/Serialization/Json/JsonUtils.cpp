@@ -6,7 +6,6 @@
  *
  */
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/base.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
@@ -22,6 +21,8 @@
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Utils/Utils.h>
+
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 namespace AZ
 {
@@ -332,6 +333,11 @@ namespace AZ
 
             // validate class name 
             auto classData = loadSettings.m_serializeContext->FindClassData(classId);
+            if (!classData)
+            {
+                return AZ::Failure(AZStd::string::format("Try to load class from Id %s", classId.ToString<AZStd::string>().c_str()));
+            }
+
             if (azstricmp(classData->m_name, className) != 0)
             {
                 return AZ::Failure(AZStd::string::format("Try to load class %s from class %s data", classData->m_name, className));
@@ -343,9 +349,9 @@ namespace AZ
             {
                 return AZ::Failure(deserializeErrors);
             }
+
             return AZ::Success();
-        }
-       
+        }       
         
         AZ::Outcome<AZStd::any, AZStd::string> LoadAnyObjectFromStream(IO::GenericStream& stream, const JsonDeserializerSettings* settings)
         {

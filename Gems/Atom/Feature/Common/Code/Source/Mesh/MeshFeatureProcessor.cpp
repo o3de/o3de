@@ -346,7 +346,7 @@ namespace AZ
             }
         }
 
-        RHI::DrawItemSortKey MeshFeatureProcessor::GetSortKey(const MeshHandle& meshHandle)
+        RHI::DrawItemSortKey MeshFeatureProcessor::GetSortKey(const MeshHandle& meshHandle) const
         {
             if (meshHandle.IsValid())
             {
@@ -359,24 +359,24 @@ namespace AZ
             }
         }
 
-        void MeshFeatureProcessor::SetLodOverride(const MeshHandle& meshHandle, RPI::Cullable::LodOverride lodOverride)
+        void MeshFeatureProcessor::SetMeshLodConfiguration(const MeshHandle& meshHandle, const RPI::Cullable::LodConfiguration& meshLodConfig)
         {
             if (meshHandle.IsValid())
             {
-                meshHandle->SetLodOverride(lodOverride);
+                meshHandle->SetMeshLodConfiguration(meshLodConfig);
             }
         }
 
-        RPI::Cullable::LodOverride MeshFeatureProcessor::GetLodOverride(const MeshHandle& meshHandle)
+        RPI::Cullable::LodConfiguration MeshFeatureProcessor::GetMeshLodConfiguration(const MeshHandle& meshHandle) const
         {
             if (meshHandle.IsValid())
             {
-                return meshHandle->GetLodOverride();
+                return meshHandle->GetMeshLodConfiguration();
             }
             else
             {
                 AZ_Assert(false, "Invalid mesh handle");
-                return 0;
+                return {RPI::Cullable::LodType::Default, 0, 0.0f, 0.0f };
             }
         }
 
@@ -968,19 +968,19 @@ namespace AZ
             }
         }
 
-        RHI::DrawItemSortKey MeshDataInstance::GetSortKey()
+        RHI::DrawItemSortKey MeshDataInstance::GetSortKey() const
         {
             return m_sortKey;
         }
 
-        void MeshDataInstance::SetLodOverride(RPI::Cullable::LodOverride lodOverride)
+        void MeshDataInstance::SetMeshLodConfiguration(RPI::Cullable::LodConfiguration meshLodConfig)
         {
-            m_cullable.m_lodData.m_lodOverride = lodOverride;
+            m_cullable.m_lodData.m_lodConfiguration = meshLodConfig;
         }
 
-        RPI::Cullable::LodOverride MeshDataInstance::GetLodOverride()
+        RPI::Cullable::LodConfiguration MeshDataInstance::GetMeshLodConfiguration() const
         {
-            return m_cullable.m_lodData.m_lodOverride;
+            return m_cullable.m_lodData.m_lodConfiguration;
         }
 
         void MeshDataInstance::UpdateDrawPackets(bool forceUpdate /*= false*/)
@@ -1022,9 +1022,6 @@ namespace AZ
             {
                 //initialize the lod
                 RPI::Cullable::LodData::Lod& lod = lodData.m_lods[lodIndex];
-                //[GFX TODO][ATOM-5562] - Level of detail: override lod distances and add global lod multiplier(s)
-                static const float MinimumScreenCoverage = 1.0f/1080.0f;        //mesh should cover at least a screen pixel at 1080p to be drawn
-                static const float ReductionFactor = 0.5f;
                 if (lodIndex == 0)
                 {
                     //first lod
@@ -1033,17 +1030,18 @@ namespace AZ
                 else
                 {
                     //every other lod: use the previous lod's min
-                    lod.m_screenCoverageMax = AZStd::GetMax(lodData.m_lods[lodIndex-1].m_screenCoverageMin, MinimumScreenCoverage);
+                    lod.m_screenCoverageMax = AZStd::GetMax(lodData.m_lods[lodIndex - 1].m_screenCoverageMin, lodData.m_lodConfiguration.m_minimumScreenCoverage);
                 }
+
                 if (lodIndex < lodAssets.size() - 1)
                 {
                     //first and middle lods: compute a stepdown value for the min
-                    lod.m_screenCoverageMin = AZStd::GetMax(ReductionFactor * lod.m_screenCoverageMax, MinimumScreenCoverage);
+                    lod.m_screenCoverageMin = AZStd::GetMax(lodData.m_lodConfiguration.m_qualityDecayRate * lod.m_screenCoverageMax, lodData.m_lodConfiguration.m_minimumScreenCoverage);
                 }
                 else
                 {
                     //last lod: use MinimumScreenCoverage for the min
-                    lod.m_screenCoverageMin = MinimumScreenCoverage;
+                    lod.m_screenCoverageMin = lodData.m_lodConfiguration.m_minimumScreenCoverage;
                 }
 
                 lod.m_drawPackets.clear();

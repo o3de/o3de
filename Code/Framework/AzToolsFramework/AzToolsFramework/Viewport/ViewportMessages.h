@@ -275,9 +275,7 @@ namespace AzToolsFramework
             virtual void BeginCursorCapture() = 0;
             //! Restores the cursor and ends locking it in place, allowing it to be moved freely.
             virtual void EndCursorCapture() = 0;
-            //! Gets the most recent recorded cursor position in the viewport in screen space coordinates.
-            virtual AzFramework::ScreenPoint ViewportCursorScreenPosition() = 0;
-            //! Is mouse over viewport.
+            //! Is the mouse over the viewport.
             virtual bool IsMouseOver() const = 0;
 
         protected:

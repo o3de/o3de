@@ -339,7 +339,7 @@ inline void CryDebugStr([[maybe_unused]] const char* format, ...)
      */
 }
 
-_MS_ALIGN(64) uint32  BoxSides[0x40 * 8] = {
+alignas(64) uint32  BoxSides[0x40 * 8] = {
     0, 0, 0, 0, 0, 0, 0, 0, //00
     0, 4, 6, 2, 0, 0, 0, 4, //01
     7, 5, 1, 3, 0, 0, 0, 4, //02
