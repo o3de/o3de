@@ -2146,7 +2146,7 @@ inline uint8 CCamera::IsOBBVisible_EH(const Vec3& wpos, const OBB& obb, f32 usca
 //---                         ADDITIONAL-TEST                                ---
 //------------------------------------------------------------------------------
 
-extern _MS_ALIGN(64) uint32 BoxSides[] _ALIGN(64);
+alignas(64) extern uint32 BoxSides[];
 
 // Description:
 //   A box can easily straddle one of the view-frustum planes far

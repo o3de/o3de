@@ -403,11 +403,6 @@ namespace AtomToolsFramework
         return aznumeric_cast<float>(devicePixelRatioF());
     }
 
-    AzFramework::ScreenPoint RenderViewportWidget::ViewportCursorScreenPosition()
-    {
-        return AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(m_mousePosition.toPoint());
-    }
-
     bool RenderViewportWidget::IsMouseOver() const
     {
         return m_mouseOver;

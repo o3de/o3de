@@ -753,7 +753,7 @@ struct SBending
 // Description:
 //   Interface for the skinnable objects (renderer calls its functions to get the skinning data).
 // should only created by EF_CreateSkinningData
-_MS_ALIGN(16) struct SSkinningData
+struct alignas(16) SSkinningData
 {
     uint32                  nNumBones;
     uint32                  nHWSkinningFlags;
@@ -768,9 +768,10 @@ _MS_ALIGN(16) struct SSkinningData
     // members below are for Software Skinning
     void*                   pCustomData; // client specific data, used for example for sw-skinning on animation side
     SSkinningData*          pNextSkinningData;          // List to the next element which needs SW-Skinning
-} _ALIGN(16);
+    [[maybe_unused]] int    m_padding[2]; // padding to avoid MSVC warning 4324
+};
 
-struct _MS_ALIGN(16) SRenderObjData
+struct alignas(16) SRenderObjData
 {
     uintptr_t m_uniqueObjectId;
 
@@ -837,7 +838,7 @@ struct _MS_ALIGN(16) SRenderObjData
     {
         AZ_UNUSED(pSizer);
     }
-} _ALIGN(16);
+};
 
 //////////////////////////////////////////////////////////////////////
 // Objects using in shader pipeline
@@ -856,7 +857,7 @@ struct ShadowMapFrustum;
 /// It can be compiled into the platform specific efficient rendering compiled object.
 ///
 //////////////////////////////////////////////////////////////////////
-_MS_ALIGN(16) class CRenderObject
+class alignas(16) CRenderObject
 {
 public:
     AZ_CLASS_ALLOCATOR(CRenderObject, AZ::LegacyAllocator, 0);
@@ -928,6 +929,8 @@ public:
     IRenderElement*             m_pRE;                    //!< RenderElement used by this CRenderObject
 
     PerInstanceConstantBufferKey m_PerInstanceConstantBufferKey;
+
+    [[maybe_unused]] int m_padding[1]; // padding to avoid MSVC warning 4324
 
     //! Embedded SRenderObjData, optional data carried by CRenderObject
     SRenderObjData             m_data;
@@ -1007,7 +1010,7 @@ protected:
     }
 
     friend class CRenderer;
-} _ALIGN(16);
+};
 
 enum EResClassName
 {
@@ -1200,8 +1203,8 @@ struct SEfTexModificator
         return false;
     }
 
-    _MS_ALIGN(16) Matrix44 m_TexGenMatrix _ALIGN(16);
-    _MS_ALIGN(16) Matrix44 m_TexMatrix _ALIGN(16);
+    alignas(16) Matrix44 m_TexGenMatrix;
+    alignas(16) Matrix44 m_TexMatrix;
 
     float m_Tiling[3];
     float m_Offs[3];

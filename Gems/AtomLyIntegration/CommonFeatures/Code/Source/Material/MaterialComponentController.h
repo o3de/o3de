@@ -92,11 +92,11 @@ namespace AZ
 
             AZ_DISABLE_COPY(MaterialComponentController);
 
-            //! Data::AssetBus interface
+            //! Data::AssetBus overrides...
             void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
             void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
 
-            //! AZ::TickBus interface implementation
+            // AZ::TickBus overrides...
             void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
             void LoadMaterials();

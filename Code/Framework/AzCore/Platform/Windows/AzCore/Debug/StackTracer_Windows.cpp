@@ -1073,7 +1073,7 @@ cleanup:
             }
 
             HANDLE hThread = nativeThread;
-            AZ_ALIGN(CONTEXT context, 8); // Without this alignment the function randomly crashes in release.
+            CONTEXT alignas(8) context; // Without this alignment the function randomly crashes in release.
             context.ContextFlags = CONTEXT_ALL;
             GetThreadContext(hThread, &context);
 
