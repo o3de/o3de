@@ -702,7 +702,7 @@ try {
         }
     }    
 
-    echo "Running repository: \"${repositoryName}\", pipeline: \"${pipelineName}\", branch: \"${branchName}\", CHANGE_ID: \"${env.CHANGE_ID}\", GIT_COMMMIT: \"${env.GIT_COMMIT_ID}\"..."
+    echo "Running repository: \"${repositoryName}\", pipeline: \"${pipelineName}\", branch: \"${branchName}\", CHANGE_ID: \"${env.CHANGE_ID}\", GIT_COMMIT: \"${env.GIT_COMMIT}\"..."
 
     timestamps {
 
