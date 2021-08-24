@@ -109,7 +109,6 @@ namespace AZ
                 m_propertyValues.resize(materialAsset.GetPropertyValues().size());
                 AZ_Assert(m_propertyValues.size() == m_layout->GetPropertyCount(), "The number of properties in this material doesn't match the property layout");
 
-                // Material Asset property names will only be empty when the cvar r_enableMaterialPropertyNames is false. By default, it is true.
                 auto& propertyNames = materialAsset.GetPropertyNames();
                 if (!propertyNames.empty())
                 {

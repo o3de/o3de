@@ -69,6 +69,11 @@ namespace AZ
             return m_settings.m_enable;
         }
 
+        bool MaterialConverterSystemComponent::IncludeMaterialPropertyNames() const
+        {
+            return true;
+        }
+
         bool MaterialConverterSystemComponent::ConvertMaterial(
             const AZ::SceneAPI::DataTypes::IMaterialData& materialData, RPI::MaterialSourceData& sourceData)
         {

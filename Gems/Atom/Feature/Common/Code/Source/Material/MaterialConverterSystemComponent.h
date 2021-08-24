@@ -45,6 +45,7 @@ namespace AZ
 
             // MaterialConverterBus overrides ...
             bool IsEnabled() const override;
+            bool IncludeMaterialPropertyNames() const override;
             bool ConvertMaterial(const AZ::SceneAPI::DataTypes::IMaterialData& materialData, RPI::MaterialSourceData& out) override;
             AZStd::string GetMaterialTypePath() const override;
             AZStd::string GetDefaultMaterialPath() const override;

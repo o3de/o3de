@@ -11,20 +11,12 @@
 #include <Atom/RPI.Reflect/Image/AttachmentImageAsset.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/std/bind/bind.h>
-#include <AzCore/Console/Console.h>
-
-AZ_CVAR(bool,
-    r_enableMaterialPropertyNames,
-    true,
-    nullptr,
-    AZ::ConsoleFunctorFlags::Null,
-    "Enables the use material property names in material assets, breaking its AP job dependency on material type assets.");
 
 namespace AZ
 {
     namespace RPI
     {
-        void MaterialAssetCreator::Begin(const Data::AssetId& assetId, MaterialAsset& parentMaterial)
+        void MaterialAssetCreator::Begin(const Data::AssetId& assetId, MaterialAsset& parentMaterial, bool includeMaterialPropertyNames)
         {
             BeginCommon(assetId);
             
@@ -44,6 +36,15 @@ namespace AZ
                     ReportError("MaterialPropertiesLayout is null");
                     return;
                 }
+                if (includeMaterialPropertyNames)
+                {
+                    for (int i = 0; i < m_materialPropertiesLayout->GetPropertyCount(); ++i)
+                    {
+                        MaterialPropertyIndex propertyIndex{ i };
+                        auto& propertyName = m_materialPropertiesLayout->GetPropertyDescriptor(propertyIndex)->GetName();
+                        m_asset->m_propertyNames.emplace_back(propertyName);
+                    }
+                }
 
                 // Note we don't have to check the validity of these property values because the parent material's AssetCreator already did that.
                 m_asset->m_propertyValues.assign(parentMaterial.GetPropertyValues().begin(), parentMaterial.GetPropertyValues().end());
@@ -60,7 +61,7 @@ namespace AZ
             }
         }
 
-        void MaterialAssetCreator::Begin(const Data::AssetId& assetId, MaterialTypeAsset& materialType)
+        void MaterialAssetCreator::Begin(const Data::AssetId& assetId, MaterialTypeAsset& materialType, bool includeMaterialPropertyNames)
         {
             BeginCommon(assetId);
 
@@ -75,8 +76,7 @@ namespace AZ
                 }
 
                 m_materialPropertiesLayout = m_asset->GetMaterialPropertiesLayout();
-                // add option to store material property names from materialType
-                if (r_enableMaterialPropertyNames)
+                if (includeMaterialPropertyNames)
                 {
                     for (int i = 0; i < m_materialPropertiesLayout->GetPropertyCount(); ++i)
                     {

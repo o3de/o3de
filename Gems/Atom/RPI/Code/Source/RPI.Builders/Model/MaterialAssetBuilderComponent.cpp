@@ -7,7 +7,6 @@
  */
 
 #include <Model/MaterialAssetBuilderComponent.h>
-#include <AzCore/Console/Console.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Math/Color.h>
@@ -78,9 +77,9 @@ namespace AZ
             AZStd::string materialTypePath;
             RPI::MaterialConverterBus::BroadcastResult(materialTypePath, &RPI::MaterialConverterBus::Events::GetMaterialTypePath);
 
-            bool enableMaterialPropertyNames = false;
-            AZ::Interface<AZ::IConsole>::Get()->GetCvarValue("r_enableMaterialPropertyNames", enableMaterialPropertyNames);
-            if (conversionEnabled && !materialTypePath.empty() && !enableMaterialPropertyNames)
+            bool includeMaterialPropertyNames = true;
+            RPI::MaterialConverterBus::BroadcastResult(includeMaterialPropertyNames, &RPI::MaterialConverterBus::Events::IncludeMaterialPropertyNames);
+            if (conversionEnabled && !materialTypePath.empty() && !includeMaterialPropertyNames)
             {
                 AssetBuilderSDK::SourceFileDependency materialTypeSource;
                 materialTypeSource.m_sourceFileDependencyPath = materialTypePath;
@@ -102,6 +101,10 @@ namespace AZ
             bool conversionEnabled = false;
             RPI::MaterialConverterBus::BroadcastResult(conversionEnabled, &RPI::MaterialConverterBus::Events::IsEnabled);
             fingerprintInfo.insert(AZStd::string::format("[MaterialConverter enabled=%d]", conversionEnabled));
+
+            bool includeMaterialPropertyNames = true;
+            RPI::MaterialConverterBus::BroadcastResult(includeMaterialPropertyNames, &RPI::MaterialConverterBus::Events::IncludeMaterialPropertyNames);
+            fingerprintInfo.insert(AZStd::string::format("[MaterialConverter includeMaterialPropertyNames=%d]", includeMaterialPropertyNames));
 
             if (!conversionEnabled)
             {
