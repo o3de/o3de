@@ -395,7 +395,9 @@ namespace AZ
         // from the m_console member when it goes out of scope
         AZ::SettingsRegistryConsoleUtils::ConsoleFunctorHandle m_settingsRegistryConsoleFunctors;
 
+#if !defined(_RELEASE)
         Debug::BudgetTracker m_budgetTracker;
+#endif
 
         // this is used when no argV/ArgC is supplied.
         // in order to have the same memory semantics (writable, non-const)

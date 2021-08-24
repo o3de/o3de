@@ -545,7 +545,9 @@ namespace AZ
         m_entityActivatedEvent.DisconnectAllHandlers();
         m_entityDeactivatedEvent.DisconnectAllHandlers();
 
+#if !defined(_RELEASE)
         m_budgetTracker.Reset();
+#endif
 
         DestroyAllocator();
     }
@@ -595,7 +597,9 @@ namespace AZ
         CreateOSAllocator();
         CreateSystemAllocator();
 
+#if !defined(_RELEASE)
         m_budgetTracker.Init();
+#endif
 
         // This can be moved to the ComponentApplication constructor if need be
         // This is reading the *.setreg files using SystemFile and merging the settings

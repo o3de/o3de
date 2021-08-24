@@ -9,7 +9,6 @@
 
 #include <AzCore/Debug/BudgetTracker.h>
 #include <AzCore/Math/Crc.h>
-#include <AzCore/std/parallel/atomic.h>
 
 namespace AZ::Debug
 {
@@ -17,6 +16,7 @@ namespace AZ::Debug
     class Budget final
     {
     public:
+        explicit Budget(const char* name);
         Budget(const char* name, uint32_t crc);
         ~Budget();
 
@@ -38,7 +38,7 @@ namespace AZ::Debug
 
     private:
         const char* m_name;
-        uint32_t m_crc;
+        const uint32_t m_crc;
         struct BudgetImpl* m_impl = nullptr;
     };
 } // namespace AZ::Debug
@@ -49,6 +49,13 @@ namespace AZ::Debug
 // for usage.
 #define AZ_BUDGET_GETTER(name) GetAzBudget##name
 
+#if defined(_RELEASE)
+#define AZ_DEFINE_BUDGET(name)                                                                                                             \
+    ::AZ::Debug::Budget* AZ_BUDGET_GETTER(name)()                                                                                          \
+    {                                                                                                                                      \
+        return nullptr;                                                                                                                    \
+    }
+#else
 // Usage example:
 // In a single C++ source file:
 // AZ_DEFINE_BUDGET(AzCore);
@@ -59,18 +66,10 @@ namespace AZ::Debug
     ::AZ::Debug::Budget* AZ_BUDGET_GETTER(name)()                                                                                          \
     {                                                                                                                                      \
         constexpr static uint32_t crc = AZ_CRC_CE(#name);                                                                                  \
-        static ::AZStd::atomic<::AZ::Debug::Budget*> budget;                                                                               \
-        ::AZ::Debug::Budget* out = budget.load(AZStd::memory_order_acquire);                                                               \
-        if (out)                                                                                                                           \
-        {                                                                                                                                  \
-            return out;                                                                                                                    \
-        }                                                                                                                                  \
-        else                                                                                                                               \
-        {                                                                                                                                  \
-            budget.store(::AZ::Debug::BudgetTracker::GetBudgetFromEnvironment(#name, crc), AZStd::memory_order_release);                   \
-            return budget;                                                                                                                 \
-        }                                                                                                                                  \
+        static ::AZ::Debug::Budget* budget = ::AZ::Debug::BudgetTracker::GetBudgetFromEnvironment(#name, crc);                             \
+        return budget;                                                                                                                     \
     }
+#endif
 
 // If using a budget defined in a different C++ source file, add AZ_DECLARE_BUDGET(yourBudget); somewhere in your source file at namespace
 // scope Alternatively, AZ_DECLARE_BUDGET can be used in a header to declare the budget for use across any users of the header

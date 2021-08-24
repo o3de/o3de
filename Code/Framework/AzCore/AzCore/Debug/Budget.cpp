@@ -29,6 +29,12 @@ namespace AZ::Debug
         // TODO: Budget implementation for tracking budget wall time per-core, memory, etc.
     };
 
+    Budget::Budget(const char* name)
+        : m_name{ name }
+        , m_crc{ Crc32(name) }
+    {
+    }
+
     Budget::Budget(const char* name, uint32_t crc)
         : m_name{ name }
         , m_crc{ crc }
