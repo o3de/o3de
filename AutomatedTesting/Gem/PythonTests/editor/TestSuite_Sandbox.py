@@ -7,21 +7,21 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 
 import os
 import pytest
+import sys
 
-from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorSharedTest, EditorParallelTest, EditorTestSuite
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../automatedtesting_shared')
+from base import TestAutomationBase
 
 
-@pytest.mark.xfail(reason="Optimized tests are experimental, we will enable xfail and monitor them temporarily.")
 @pytest.mark.SUITE_sandbox
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
-class TestAutomationAutoTestMode(EditorTestSuite):
+class TestAutomation(TestAutomationBase):
 
-    # Enable only -autotest_mode for these tests. Tests cannot run in -BatchMode due to UI interactions
-    global_extra_cmdline_args = ["-autotest_mode"]
-
-    class test_Docking_BasicDockedTools(EditorSharedTest):
-        from .EditorScripts import Docking_BasicDockedTools as test_module
-
-    class test_Menus_EditMenuOptions_Work(EditorSharedTest):
+    def test_Menus_EditMenuOptions_Work(self, request, workspace, editor, launcher_platform):
         from .EditorScripts import Menus_EditMenuOptions as test_module
+        self._run_test(request, workspace, editor, test_module, batch_mode=False)
+
+    def test_Docking_BasicDockedTools(self, request, workspace, editor, launcher_platform):
+        from .EditorScripts import Docking_BasicDockedTools as test_module
+        self._run_test(request, workspace, editor, test_module, batch_mode=False)
