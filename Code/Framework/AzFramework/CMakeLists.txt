@@ -10,8 +10,6 @@
 ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
 ly_get_list_relative_pal_filename(common_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/Common)
 
-set(LY_TOUCHBENDING_LAYER_BIT 63 CACHE STRING "Use TouchBending as the collision layer. The TouchBending layer can be a number from 1 to 63 (Default=63).")
-
 ly_add_target(
     NAME AzFramework STATIC
     NAMESPACE AZ
@@ -35,14 +33,6 @@ ly_add_target(
             3rdParty::zlib
             3rdParty::zstd
             3rdParty::lz4
-)
-
-ly_add_source_properties(
-    SOURCES 
-        AzFramework/Physics/Collision/CollisionGroups.cpp
-        AzFramework/Physics/Collision/CollisionLayers.cpp
-    PROPERTY COMPILE_DEFINITIONS
-    VALUES TOUCHBENDING_LAYER_BIT=${LY_TOUCHBENDING_LAYER_BIT}
 )
 
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)

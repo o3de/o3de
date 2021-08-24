@@ -23,11 +23,6 @@ namespace PhysX
             configuration.m_collisionGroups.CreateGroup("All", AzPhysics::CollisionGroup::All, AzPhysics::CollisionGroups::Id(), true);
             configuration.m_collisionGroups.CreateGroup("None", AzPhysics::CollisionGroup::None, AzPhysics::CollisionGroups::Id::Create(), true);
 
-#ifdef TOUCHBENDING_LAYER_BIT
-            configuration.m_collisionLayers.SetName(AzPhysics::CollisionLayer::TouchBend, "TouchBend");
-            configuration.m_collisionGroups.CreateGroup("All_NoTouchBend", AzPhysics::CollisionGroup::All_NoTouchBend, AzPhysics::CollisionGroups::Id::Create(), true);
-#endif
-
             return configuration;
         }
 

@@ -22,9 +22,6 @@ namespace PhysX
     namespace Editor
     {
         const AZStd::string CollisionLayersWidget::s_defaultCollisionLayerName = "Default";
-#ifdef TOUCHBENDING_LAYER_BIT
-        const AZStd::string CollisionLayersWidget::s_touchBendCollisionLayerName = "TouchBend";
-#endif
 
         CollisionLayersWidget::CollisionLayersWidget(QWidget* parent)
             : QWidget(parent)
@@ -150,12 +147,6 @@ namespace PhysX
                 {
                     lineEditCtrl->setEnabled(false);
                 }
-#ifdef TOUCHBENDING_LAYER_BIT
-                else if (lineEditCtrl->value() == s_touchBendCollisionLayerName)
-                {
-                        lineEditCtrl->setEnabled(false);
-                }
-#endif
             }
         }
 
