@@ -219,7 +219,7 @@ def CheckoutBootstrapScripts(String branchName) {
 }
 
 def CheckoutRepo(boolean disableSubmodules = false) {
-
+    echo "ENTER: CheckoutRepo"
     if (!fileExists(ENGINE_REPOSITORY_NAME)) {
         palMkdir(ENGINE_REPOSITORY_NAME)
     }
@@ -274,6 +274,8 @@ def CheckoutRepo(boolean disableSubmodules = false) {
     env.CHANGE_DATE = readFile file: 'commitdate'
     env.CHANGE_DATE = env.CHANGE_DATE.trim()
     palRm('commitdate')
+
+    echo "EXIT: CheckoutRepo"
 }
 
 def HandleDriveMount(String snapshot, String repositoryName, String projectName, String pipeline, String branchName, String platform, String buildType, String workspace, boolean recreateVolume = false) {   
