@@ -10,16 +10,26 @@ import OpenImageIO as oiio
 
 # Transform from high dynamic range to normalized
 def ShaperInv(bias, scale, v):
-    return math.pow(2.0, (v - bias)/scale)
+    return math.pow(2.0, (v - bias) / scale)
+
+## Transform from normalized range to high dynamic range
+#def Shaper(bias, scale, v):
+    # return math.log(v, 2.0) * scale + bias
+    
+# pow(f, e) won't work if f is negative, or may cause inf / NAN.
+FLOAT_EPSILON = sys.float_info.epsilon
+
+def no_nan_pow(base, power):
+    return pow(max(abs(base), (FLOAT_EPSILON, FLOAT_EPSILON, FLOAT_EPSILON)), power)
 
 # Transform from normalized range to high dynamic range
 def Shaper(bias, scale, v):
     if v > 0.0:
-        value = math.log(v, 2.0) * scale + bias
+        return math.log(v, 2.0) * scale + bias
 
     # this is probably not correct, clamps, avoids a math domain error
     elif v <= 0.0:
-        value = math.log(0.002, 2.0) * scale + bias
+        return math.log(FLOAT_EPSILON, 2.0) * scale + bias
 
 def GetUvCoord(size, r, g, b):
     u = g * lutSize + r

@@ -213,19 +213,27 @@ AZASSET_LUT = """\
     }
 }"""
 
+# pow(f, e) won't work if f is negative, or may cause inf / NAN.
+FLOAT_EPSILON = sys.float_info.epsilon
+def no_nan_pow(base, power):
+    return pow(max(abs(base), (FLOAT_EPSILON, FLOAT_EPSILON, FLOAT_EPSILON)), power)
+
 # Transform from high dynamic range to normalized
 def inv_shaper_transform(bias, scale, v):
-    return math.pow(2.0, (v - bias) / scale)
+    return no_nan_pow(2.0, (v - bias) / scale)
 
 # Transform from normalized range to high dynamic range
 def shaper_transform(bias, scale, v):
     if v > 0.0:
-        value = math.log(v, 2.0) * scale + bias
+        return math.log(v, 2.0) * scale + bias
 
     # this is probably not correct, clamps, avoids a math domain error
     elif v <= 0.0:
-        value = math.log(0.002, 2.0) * scale + bias
         _LOGGER.debug(f'Clipping a value: bias={bias}, scale={scale}, v={v}')
+        return math.log(FLOAT_EPSILON, 2.0) * scale + bias
+    
+    else:  # unknown?
+        return 0.0
 
 def get_uv_coord(size, r, g, b):
     u = g * size + r
