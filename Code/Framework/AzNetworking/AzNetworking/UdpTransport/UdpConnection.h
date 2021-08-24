@@ -131,7 +131,7 @@ namespace AzNetworking
         //! @param header     the packet header received to process
         //! @param serializer the output serializer containing the transmitted packet data
         //! @return boolean true on successful handling of the received header
-        bool HandleCorePacket(IConnectionListener& listener, UdpPacketHeader& header, ISerializer& serializer);
+        PacketDispatchResult HandleCorePacket(IConnectionListener& listener, UdpPacketHeader& header, ISerializer& serializer);
 
         AZ_DISABLE_COPY_MOVE(UdpConnection);
 

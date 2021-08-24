@@ -2,7 +2,7 @@
 namespace {{ xml.attrib['Name'] }}
 {
     template <typename HANDLER>
-    inline bool DispatchPacket(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, AzNetworking::ISerializer& serializer, HANDLER& handler)
+    inline AzNetworking::PacketDispatchResult DispatchPacket(AzNetworking::IConnection* connection, const AzNetworking::IPacketHeader& packetHeader, AzNetworking::ISerializer& serializer, HANDLER& handler)
     {
         switch (aznumeric_cast<int32_t>(packetHeader.GetPacketType()))
         {
@@ -10,16 +10,26 @@ namespace {{ xml.attrib['Name'] }}
             case aznumeric_cast<int32_t>({{ Packet.attrib['Name'] }}::Type):
             {
                 AZLOG(Debug_DispatchPackets, "Received packet %s", "{{ Packet.attrib['Name'] }}");
+{%      if ('HandshakePacket' not in Packet.attrib) or (Packet.attrib['HandshakePacket'] == 'false') %}
+                if (!handler.IsHandshakeComplete())
+                {
+                    return AzNetworking::PacketDispatchResult::Pending;
+                }
+{% endif %}
+
                 {{ Packet.attrib['Name'] }} packet;
                 if (!serializer.Serialize(packet, "Packet"))
                 {
-                    return false;
+                    return AzNetworking::PacketDispatchResult::Failure;
                 }
-                return handler.HandleRequest(connection, packetHeader, packet);
+                if(handler.HandleRequest(connection, packetHeader, packet))
+                {
+                    return AzNetworking::PacketDispatchResult::Success;
+                }
             }
 {%      endfor %}
         }
-        return false;
+        return AzNetworking::PacketDispatchResult::Failure;
     }
 }
 {% endfor %}

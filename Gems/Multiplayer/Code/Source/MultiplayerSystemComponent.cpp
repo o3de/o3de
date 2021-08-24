@@ -441,6 +441,11 @@ namespace Multiplayer
         MultiplayerPackets::SyncConsole m_syncPacket;
     };
 
+    bool MultiplayerSystemComponent::IsHandshakeComplete()
+    {
+        return m_didHandshake;
+    }
+
     bool MultiplayerSystemComponent::HandleRequest
     (
         [[maybe_unused]] AzNetworking::IConnection* connection,
@@ -465,6 +470,8 @@ namespace Multiplayer
 
         if (connection->SendReliablePacket(MultiplayerPackets::Accept(InvalidHostId, sv_map)))
         {
+            m_didHandshake = true;
+
             // Sync our console
             ConsoleReplicator consoleReplicator(connection);
             AZ::Interface<AZ::IConsole>::Get()->VisitRegisteredFunctors([&consoleReplicator](AZ::ConsoleFunctorBase* functor) { consoleReplicator.Visit(functor); });
@@ -480,6 +487,8 @@ namespace Multiplayer
         [[maybe_unused]] MultiplayerPackets::Accept& packet
     )
     {
+        m_didHandshake = true;
+
         AZ::CVarFixedString commandString = "sv_map " + packet.GetMap();
         AZ::Interface<AZ::IConsole>::Get()->PerformCommand(commandString.c_str());
 
@@ -670,7 +679,7 @@ namespace Multiplayer
         }
     }
 
-    bool MultiplayerSystemComponent::OnPacketReceived(AzNetworking::IConnection* connection, const IPacketHeader& packetHeader, ISerializer& serializer)
+    AzNetworking::PacketDispatchResult MultiplayerSystemComponent::OnPacketReceived(AzNetworking::IConnection* connection, const IPacketHeader& packetHeader, ISerializer& serializer)
     {
         return MultiplayerPackets::DispatchPacket(connection, packetHeader, serializer, *this);
     }
