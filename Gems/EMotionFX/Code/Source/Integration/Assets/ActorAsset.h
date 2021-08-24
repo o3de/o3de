@@ -15,7 +15,6 @@
 
 #include <Integration/Assets/AssetCommon.h>
 #include <Integration/Rendering/RenderActor.h>
-//#include <EMotionFX/Source/AutoRegisteredActor.h>
 
 
 namespace EMotionFX
