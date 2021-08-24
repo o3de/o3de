@@ -17,7 +17,7 @@
 #include <Atom/Utils/DdsFile.h>
 #include <Atom/Utils/PpmFile.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Jobs/JobCompletion.h>
 

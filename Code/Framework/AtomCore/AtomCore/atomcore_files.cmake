@@ -13,8 +13,6 @@ set(FILES
     Instance/InstanceData.h
     Instance/InstanceData.cpp
     Instance/InstanceDatabase.h
-    Serialization/Json/JsonUtils.h
-    Serialization/Json/JsonUtils.cpp
     std/containers/array_view.h
     std/containers/fixed_vector_set.h
     std/containers/lru_cache.h
