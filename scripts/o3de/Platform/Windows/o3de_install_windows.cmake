@@ -6,4 +6,6 @@
 #
 #
 
-ly_install_directory(DIRECTORIES .)
+ly_install_files(FILES ../o3de.bat PROGRAMS
+    DESTINATION scripts
+)

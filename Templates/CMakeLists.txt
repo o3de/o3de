@@ -6,4 +6,4 @@
 #
 #
 
-ly_install_directory(DIRECTORY .)
+ly_install_directory(DIRECTORIES .)

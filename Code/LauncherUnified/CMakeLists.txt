@@ -100,19 +100,17 @@ endif()
 
 ly_install_files(
     FILES
-        ${LY_ROOT_FOLDER}/Code/LauncherUnified/launcher_generator.cmake
-        ${LY_ROOT_FOLDER}/Code/LauncherUnified/launcher_project_files.cmake
-        ${LY_ROOT_FOLDER}/Code/LauncherUnified/LauncherProject.cpp
-        ${LY_ROOT_FOLDER}/Code/LauncherUnified/StaticModules.in
+        launcher_generator.cmake
+        launcher_project_files.cmake
+        LauncherProject.cpp
+        StaticModules.in
     DESTINATION LauncherGenerator
 )
 ly_install_directory(
-    DIRECTORY Platform/${PAL_PLATFORM_NAME}
-    DESTINATION LauncherGenerator
-)
-ly_install_directory(
-    DIRECTORY Platform/Common
-    DESTINATION LauncherGenerator
+    DIRECTORIES 
+        Platform/${PAL_PLATFORM_NAME}
+        Platform/Common
+    DESTINATION LauncherGenerator/Platform
 )
 ly_install_files(
     FILES FindLauncherGenerator.cmake

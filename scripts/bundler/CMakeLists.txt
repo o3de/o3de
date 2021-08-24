@@ -6,8 +6,6 @@
 #
 #
 
-ly_install_directory(DIRECTORY .
-    EXCLUDE_PATTERNS 
-        __pycache__
-        CMakeLists.txt
+ly_install_directory(DIRECTORIES .
+    EXCLUDE_PATTERNS tests
 )

@@ -8,15 +8,22 @@
 
 add_subdirectory(tests)
 
-file(GLOB o3de_scripts "${LY_ROOT_FOLDER}/scripts/o3de.*")
-ly_install_files(FILES ${o3de_scripts}
-PROGRAMS
-    DESTINATION ./scripts
+ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
+include(${pal_dir}/o3de_install_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+
+ly_install_files(FILES ../o3de.py 
+    DESTINATION scripts
 )
 
-ly_install_directory(DIRECTORY .
+ly_install_files(FILES setup.py PROGRAMS
+    DESTINATION scripts/o3de
+)
+ly_install_files(FILES README.txt
+    DESTINATION scripts/o3de
+)
+
+ly_install_directory(DIRECTORIES .
     EXCLUDE_PATTERNS
-        __pycache__
-        CMakeLists.txt
         tests
+        Platform
 )

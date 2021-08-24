@@ -11,4 +11,4 @@ if(NOT PAL_PLATFORM_NAME STREQUAL "Mac")
     add_subdirectory(tests)
 endif()
 
-ly_install_directory(DIRECTORY .)
+ly_install_directory(DIRECTORIES .)
