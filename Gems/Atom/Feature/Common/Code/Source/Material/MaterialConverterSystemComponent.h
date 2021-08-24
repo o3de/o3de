@@ -36,6 +36,8 @@ namespace AZ
         public:
             AZ_COMPONENT(MaterialConverterSystemComponent, "{C2338D45-6456-4521-B469-B000A13F2493}");
 
+            static constexpr bool IncludeMaterialPropertyNames = true;
+
             static void Reflect(AZ::ReflectContext* context);
             
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services);
@@ -45,7 +47,7 @@ namespace AZ
 
             // MaterialConverterBus overrides ...
             bool IsEnabled() const override;
-            bool IncludeMaterialPropertyNames() const override;
+            bool IsMaterialPropertyNamesIncluded() const override;
             bool ConvertMaterial(const AZ::SceneAPI::DataTypes::IMaterialData& materialData, RPI::MaterialSourceData& out) override;
             AZStd::string GetMaterialTypePath() const override;
             AZStd::string GetDefaultMaterialPath() const override;

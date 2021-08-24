@@ -69,9 +69,9 @@ namespace AZ
             return m_settings.m_enable;
         }
 
-        bool MaterialConverterSystemComponent::IncludeMaterialPropertyNames() const
+        bool MaterialConverterSystemComponent::IsMaterialPropertyNamesIncluded() const
         {
-            return true;
+            return IncludeMaterialPropertyNames;
         }
 
         bool MaterialConverterSystemComponent::ConvertMaterial(
