@@ -750,6 +750,13 @@ finally {
             } else {
                 buildFailure = tm('${BUILD_FAILURE_ANALYZER}')
                 emailBody = "${BUILD_URL}\n${buildFailure}!"
+                if(env.SNS_TOPIC_GITHUB_ISSUE) {
+                    snsPublish(
+                        topicArn: env.SNS_TOPIC_GITHUB_ISSUE,
+                        subject:'Build Result',
+                        message:"${scm.userRemoteConfigs}:${buildFailure}"
+                    )
+                }
             }
             emailext (
                 body: "${emailBody}",
