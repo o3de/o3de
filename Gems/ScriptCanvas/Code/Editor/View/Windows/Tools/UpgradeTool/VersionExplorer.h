@@ -117,9 +117,10 @@ namespace ScriptCanvasEditor
         size_t m_currentAssetIndex = 0;
         size_t m_inspectedAssets = 0;
 
+        AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>> m_activeAssets;
+
         IUpgradeRequests::AssetList m_assetsToInspect;
         IUpgradeRequests::AssetList::iterator m_inspectingAsset;
-
         using UpgradeAssets = AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>;
         UpgradeAssets m_assetsToUpgrade;
         UpgradeAssets::iterator m_inProgressAsset;
@@ -157,5 +158,7 @@ namespace ScriptCanvasEditor
 
         bool m_overwriteAll = false;
         void PerformMove(AZ::Data::Asset<AZ::Data::AssetData>& asset, const AZStd::string& source, const AZStd::string& target);
+
+        void Log(const char* format, ...);
     };
 }
