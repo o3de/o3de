@@ -239,10 +239,6 @@ namespace AzFramework
         }
         else if (rootSpawnableKeyType == AZ::SettingsRegistryInterface::Type::NoType)
         {
-            AZ_Warning(
-                "Spawnables", false,
-                "No root spawnable assigned. The root spawnable can be assigned in the Settings Registry under the key '%s'.\n",
-                RootSpawnableRegistryKey);
             ReleaseRootSpawnable();
         }
     }
