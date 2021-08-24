@@ -6,6 +6,10 @@
 #
 #
 
+if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
+    return()
+endif()
+
 # common files to all platforms
 ly_install_files(
     FILES

@@ -17,7 +17,12 @@ endif()
 # \arg:DESTINATION (optional) destination to install the directory to (relative to CMAKE_PREFIX_PATH)
 # \arg:EXCLUDE_PATTERNS (optional) patterns to exclude
 #
-# \notes: refer to cmake's install(DIRECTORY documentation for more information
+# \notes: 
+#  - refer to cmake's install(DIRECTORY documentation for more information
+#  - If the directory contains programs/scripts, exclude them from this call and add a specific ly_install_files with 
+#      PROGRAMS set. This is necessary to set the proper execution permissions.
+#  - This function will automatically filter out __pycache__, *.egg-info, CMakeLists.txt, *.cmake files. If those files
+#      need to be installed, use ly_install_files.
 #
 function(ly_install_directory)
 
@@ -75,10 +80,11 @@ endfunction()
 #! ly_install_files: specifies files to be copied to the install layout at install time
 #
 # \arg:FILES files to install
-# \arg:DESTINATION (optional) destination to install the directory to (relative to CMAKE_PREFIX_PATH)
+# \arg:DESTINATION destination to install the directory to (relative to CMAKE_PREFIX_PATH)
 # \arg:PROGRAMS (optional) indicates if the files are programs that should be installed with EXECUTE permissions
 #
-# \notes: refer to cmake's install(FILES/PROGRAMS documentation for more information
+# \notes: 
+#  - refer to cmake's install(FILES/PROGRAMS documentation for more information
 #
 function(ly_install_files)
 
@@ -92,7 +98,7 @@ function(ly_install_files)
         message(FATAL_ERROR "You must provide a list of files to install")
     endif()
     if(NOT ly_install_files_DESTINATION)
-        message(FATAL_ERROR "You must provide a destination to install filest to")
+        message(FATAL_ERROR "You must provide a destination to install files to")
     endif()
 
     unset(files)
@@ -109,7 +115,7 @@ function(ly_install_files)
 
     install(${install_type} ${files}
         DESTINATION ${ly_install_files_DESTINATION}
-        COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME} # use the deafult for the time being
+        COMPONENT ${CMAKE_INSTALL_DEFAULT_COMPONENT_NAME} # use the default for the time being
     )
 
 endfunction()
