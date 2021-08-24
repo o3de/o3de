@@ -52,10 +52,10 @@ namespace AMD
 {
 #define TRESSFX_MAX_INFLUENTIAL_BONE_COUNT 4
 
-    static constexpr char* TFXFileExtension = "tfx";                // Contains the hair vertices data.
-    static constexpr char* TFXBoneFileExtension = "tfxbone";        // Contains the hair skinning data.
-    static constexpr char* TFXMeshFileExtension = "tfxmesh";        // Contains the hair collision object.
-    static constexpr char* TFXCombinedFileExtension = "tfxhair";    // A container file with all the above data.
+    static constexpr char TFXFileExtension[] = "tfx";               // Contains the hair vertices data.
+    static constexpr char TFXBoneFileExtension[] = "tfxbone";       // Contains the hair skinning data.
+    static constexpr char TFXMeshFileExtension[] = "tfxmesh";       // Contains the hair collision object.
+    static constexpr char TFXCombinedFileExtension[] = "tfxhair";   // A container file with all the above data.
     static constexpr float s_hairBoundingBoxMaxExtent = 10.0f;      // Value used to check if the scale of the hair exceed usual.
 
     // The header struct for the .tfxhair file generated in cache. The .tfxhair file is a combined file of .tfx, .tfxbone

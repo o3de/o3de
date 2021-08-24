@@ -16,7 +16,7 @@ set(FILES
     External/Code/src/Math/Quaternion.cpp
     External/Code/src/Math/Matrix33.h
     External/Code/src/Math/Matrix33.cpp
-	
+
     External/Code/src/TressFX/AMD_Types.h
     External/Code/src/TressFX/AMD_TressFX.h
     External/Code/src/TressFX/TressFXCommon.h
