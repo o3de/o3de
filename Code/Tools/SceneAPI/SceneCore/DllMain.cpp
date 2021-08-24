@@ -186,6 +186,7 @@ namespace AZ
 
                     // Register utilities
                     AZ::SceneAPI::SceneCore::PatternMatcher::Reflect(context);
+                    AZ::SceneAPI::Utilities::DebugSceneGraph::Reflect(context);
                 }
             }
 

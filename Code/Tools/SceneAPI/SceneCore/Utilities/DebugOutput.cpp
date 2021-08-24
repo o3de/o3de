@@ -10,6 +10,7 @@
 #include <AzCore/std/optional.h>
 
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/Serialization/Utils.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Containers/Views/PairIterator.h>
@@ -20,6 +21,36 @@
 
 namespace AZ::SceneAPI::Utilities
 {
+    void DebugNode::Reflect(AZ::ReflectContext* context)
+    {
+        AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
+
+        if (serialize)
+        {
+            serialize->Class<DebugNode>()
+                ->Field("Name", &DebugNode::m_name)
+                ->Field("Path", &DebugNode::m_path)
+                ->Field("Type", &DebugNode::m_type)
+                ->Field("Data", &DebugNode::m_data);
+        }
+    }
+
+    void DebugSceneGraph::Reflect(AZ::ReflectContext* context)
+    {
+        DebugNode::Reflect(context);
+
+        AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
+
+        if (serialize)
+        {
+            serialize->Class<DebugSceneGraph>()
+            ->Field("Version", &DebugSceneGraph::m_version)
+            ->Field("ProductName", &DebugSceneGraph::m_productName)
+            ->Field("SceneName", &DebugSceneGraph::m_sceneName)
+            ->Field("Nodes", &DebugSceneGraph::m_nodes);
+        }
+    }
+
     void DebugOutput::Write(const char* name, const char* data)
     {
         m_output += AZStd::string::format("\t%s: %s\n", name, data);
@@ -38,21 +69,29 @@ namespace AZ::SceneAPI::Utilities
     void DebugOutput::Write(const char* name, const AZStd::string& data)
     {
         Write(name, data.c_str());
+
+        AddToNode(name, data);
     }
 
     void DebugOutput::Write(const char* name, double data)
     {
         m_output += AZStd::string::format("\t%s: %f\n", name, data);
+
+        AddToNode(name, data);
     }
 
     void DebugOutput::Write(const char* name, uint64_t data)
     {
         m_output += AZStd::string::format("\t%s: %" PRIu64 "\n", name, data);
+
+        AddToNode(name, data);
     }
 
     void DebugOutput::Write(const char* name, int64_t data)
     {
         m_output += AZStd::string::format("\t%s: %" PRId64 "\n", name, data);
+
+        AddToNode(name, data);
     }
 
     void DebugOutput::Write(const char* name, const DataTypes::MatrixType& data)
@@ -63,6 +102,7 @@ namespace AZ::SceneAPI::Utilities
         AZ::Vector3 translation{};
         data.GetBasisAndTranslation(&basisX, &basisY, &basisZ, &translation);
 
+        m_pauseNodeData = true;
         m_output += AZStd::string::format("\t%s:\n", name);
 
         m_output += "\t";
@@ -76,16 +116,23 @@ namespace AZ::SceneAPI::Utilities
 
         m_output += "\t";
         Write("Transl", translation);
+        m_pauseNodeData = false;
+
+        AddToNode(name, data);
     }
 
     void DebugOutput::Write(const char* name, bool data)
     {
         m_output += AZStd::string::format("\t%s: %s\n", name, data ? "true" : "false");
+
+        AddToNode(name, data);
     }
 
     void DebugOutput::Write(const char* name, Vector3 data)
     {
         m_output += AZStd::string::format("\t%s: <% f, % f, % f>\n", name, data.GetX(), data.GetY(), data.GetZ());
+
+        AddToNode(name, data);
     }
 
     void DebugOutput::Write(const char* name, AZStd::optional<bool> data)
@@ -128,6 +175,11 @@ namespace AZ::SceneAPI::Utilities
         return m_output;
     }
 
+    DebugNode DebugOutput::GetDebugNode() const
+    {
+        return m_currentNode;
+    }
+
     void WriteAndLog(AZ::IO::SystemFile& dbgFile, const char* strToWrite)
     {
         AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "%s", strToWrite);
@@ -137,7 +189,6 @@ namespace AZ::SceneAPI::Utilities
 
     void DebugOutput::BuildDebugSceneGraph(const char* outputFolder, AZ::SceneAPI::Events::ExportProductList& productList, const AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene>& scene, AZStd::string productName)
     {
-        const int debugSceneGraphVersion = 1;
         AZStd::string debugSceneFile;
 
         AzFramework::StringFunc::Path::ConstructFull(outputFolder, productName.c_str(), debugSceneFile);
@@ -147,7 +198,7 @@ namespace AZ::SceneAPI::Utilities
         if (dbgFile.Open(debugSceneFile.c_str(), AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY))
         {
             WriteAndLog(dbgFile, AZStd::string::format("ProductName: %s", productName.c_str()).c_str());
-            WriteAndLog(dbgFile, AZStd::string::format("debugSceneGraphVersion: %d", debugSceneGraphVersion).c_str());
+            WriteAndLog(dbgFile, AZStd::string::format("debugSceneGraphVersion: %d", SceneGraphVersion).c_str());
             WriteAndLog(dbgFile, scene->GetName().c_str());
 
             const AZ::SceneAPI::Containers::SceneGraph& sceneGraph = scene->GetGraph();
@@ -157,6 +208,11 @@ namespace AZ::SceneAPI::Utilities
             auto view = AZ::SceneAPI::Containers::Views::MakeSceneGraphDownwardsView<
                 AZ::SceneAPI::Containers::Views::BreadthFirst>(
                     sceneGraph, sceneGraph.GetRoot(), pairView.cbegin(), true);
+
+            DebugSceneGraph debugSceneGraph;
+            debugSceneGraph.m_version = SceneGraphVersion;
+            debugSceneGraph.m_productName = productName;
+            debugSceneGraph.m_sceneName = scene->GetName().c_str();
 
             for (auto&& viewIt : view)
             {
@@ -170,19 +226,30 @@ namespace AZ::SceneAPI::Utilities
                 WriteAndLog(dbgFile, AZStd::string::format("Node Name: %s", viewIt.first.GetName()).c_str());
                 WriteAndLog(dbgFile, AZStd::string::format("Node Path: %s", viewIt.first.GetPath()).c_str());
                 WriteAndLog(dbgFile, AZStd::string::format("Node Type: %s", graphObject->RTTI_GetTypeName()).c_str());
-
-                AZ::SceneAPI::Utilities::DebugOutput debugOutput;
+                
+                AZ::SceneAPI::Utilities::DebugOutput debugOutput(
+                    DebugNode(viewIt.first.GetName(), viewIt.first.GetPath(), graphObject->RTTI_GetTypeName()));
+                
                 viewIt.second->GetDebugOutput(debugOutput);
 
                 if (!debugOutput.GetOutput().empty())
                 {
                     WriteAndLog(dbgFile, debugOutput.GetOutput().c_str());
                 }
+
+                debugSceneGraph.m_nodes.push_back(debugOutput.GetDebugNode());
             }
             dbgFile.Close();
 
+            Utils::SaveObjectToFile((debugSceneFile + ".xml").c_str(), DataStream::StreamType::ST_XML, &debugSceneGraph);
+
             static const AZ::Data::AssetType dbgSceneGraphAssetType("{07F289D1-4DC7-4C40-94B4-0A53BBCB9F0B}");
             productList.AddProduct(productName, AZ::Uuid::CreateName(productName.c_str()), dbgSceneGraphAssetType,
+                AZStd::nullopt, AZStd::nullopt);
+
+            static const AZ::Data::AssetType dbgSceneGraphXmlAssetType("{51F37614-0D77-4F36-9AC6-7ED70A0AC868}");
+            productList.AddProduct(
+                (productName + ".xml"), AZ::Uuid::CreateName((productName + ".xml").c_str()), dbgSceneGraphXmlAssetType,
                 AZStd::nullopt, AZStd::nullopt);
         }
     }
