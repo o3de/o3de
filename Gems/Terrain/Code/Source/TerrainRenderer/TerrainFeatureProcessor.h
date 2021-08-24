@@ -33,7 +33,7 @@ namespace Terrain
     {
     public:
         AZ_RTTI(TerrainFeatureProcessor, "{D7DAC1F9-4A9F-4D3C-80AE-99579BF8AB1C}", AZ::RPI::FeatureProcessor);
-        AZ_DISABLE_COPY(TerrainFeatureProcessor);
+        AZ_DISABLE_COPY_MOVE(TerrainFeatureProcessor);
         AZ_FEATURE_PROCESSOR(TerrainFeatureProcessor);
 
         static void Reflect(AZ::ReflectContext* context);

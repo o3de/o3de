@@ -93,15 +93,6 @@ namespace Terrain
         float GetHeightSynchronous(float x, float y) const;
         AZ::Vector3 GetNormalSynchronous(float x, float y) const;
 
-        /*
-        void GetSurfaceWeights(const AZ::Vector3& inPosition, Sampler sampleFilter, SurfaceData::SurfaceTagWeightMap& outSurfaceWeights)
-        override; void GetSurfacePoint(const AZ::Vector3& inPosition, Sampler sampleFilter, SurfaceData::SurfacePoint& outSurfacePoint)
-        override; void ProcessHeightsFromRegion(const AZ::Aabb& inRegion, const AZ::Vector2 stepSize, Sampler sampleFilter,
-        SurfacePointRegionFillCallback perPositionCallback, TerrainDataReadyCallback onComplete = nullptr) override; void
-        ProcessSurfacePointsFromRegion(const AZ::Aabb& inRegion, const AZ::Vector2 stepSize, Sampler sampleFilter,
-        SurfacePointRegionFillCallback perPositionCallback, TerrainDataReadyCallback onComplete = nullptr) override;
-        */
-
         // AZ::TickBus::Handler overrides ...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
