@@ -104,14 +104,17 @@ float3 SampleCatmullRom5Tap(Texture2D<float4> texture, SamplerState linearSample
     // Think of sample locations in the 4x4 neighborhood as having a top left coordinate of 0,0 and
     // a bottom right coordinate of 3,3.
 
-    // Use the local area green value as a measurement of luminance, and tweak the sharpness
+    // Due to Catmull-Rom's use of negative weights, it's possible to have a very high value
+    // neighbor sample that turns into a large negative value when multiplied by its weight.
+    // This can completely overwhelm the final result leading to negative output. To fix this,
+    // use the local area green value as a measurement of luminance, and tweak the sharpness
     // based on the difference between the max and min values. This will reduce the contribution
     // of negative weights in high contrast areas and help prevent ringing artifacts.
     float4 gatheredGreen = texture.GatherGreen(linearSampler, uv, int2(0, 0));
     float minGreen = min(gatheredGreen.x, min(gatheredGreen.y, min(gatheredGreen.z, gatheredGreen.w)));
     float maxGreen = max(gatheredGreen.x, max(gatheredGreen.y, max(gatheredGreen.z, gatheredGreen.w)));
     float diff = maxGreen - minGreen;
-    sharpness /= diff + 1.0;
+    sharpness = sharpness / (diff + 1.0);
 
     // Find the position in texture space then round it to get the center of the 1,1 pixel (tc1)
     float2 texelPos = uv * textureSize;
