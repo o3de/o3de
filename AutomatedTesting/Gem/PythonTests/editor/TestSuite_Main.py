@@ -67,12 +67,6 @@ class TestAutomationAutoTestMode(EditorTestSuite):
     class test_ComponentCRUD_Add_Delete_Components(EditorSharedTest):
         from .EditorScripts import ComponentCRUD_Add_Delete_Components as test_module
 
-    class test_Docking_BasicDockedTools(EditorSharedTest):
-        from .EditorScripts import Docking_BasicDockedTools as test_module
-
-    class test_Menus_EditMenuOptions_Work(EditorSharedTest):
-        from .EditorScripts import Menus_EditMenuOptions as test_module
-
     class test_Menus_ViewMenuOptions_Work(EditorSharedTest):
         from .EditorScripts import Menus_ViewMenuOptions as test_module
 
