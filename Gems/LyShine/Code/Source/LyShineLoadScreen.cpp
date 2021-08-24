@@ -62,8 +62,10 @@ namespace LyShine
             return false;
         }
         //TODO: gEnv->pRenderer is always null, fix the logic below
-        AZ_ErrorOnce(nullptr, gEnv && gEnv->pLyShine, "NotifyGameLoadStart needs to be removed/ported to use Atom");
-        if (!gEnv || true || !gEnv->pLyShine)
+        AZ_ErrorOnce(nullptr, false, "NotifyGameLoadStart needs to be removed/ported to use Atom");
+        return false;
+#if 0
+        if (!gEnv || gEnv->pRenderer || !gEnv->pLyShine)
         {
             return false;
         }
@@ -88,6 +90,7 @@ namespace LyShine
         }
 
         return m_isPlaying;
+#endif
     }
 
     bool LyShineLoadScreenComponent::NotifyLevelLoadStart(bool usingLoadingThread)
@@ -98,9 +101,11 @@ namespace LyShine
             return false;
         }
 
+        AZ_ErrorOnce(nullptr, false, "NotifyLevelLoadStart needs to be removed/ported to use Atom");
+        return false;
         //TODO: gEnv->pRenderer is always null, fix the logic below
-        AZ_ErrorOnce(nullptr, gEnv && gEnv->pLyShine, "NotifyLevelLoadStart needs to be removed/ported to use Atom");
-        if (!gEnv || true || !gEnv->pLyShine)
+#if 0
+        if (!gEnv || gEnv->pRenderer || !gEnv->pLyShine)
         {
             return false;
         }
@@ -126,6 +131,7 @@ namespace LyShine
         }
 
         return m_isPlaying;
+#endif
     }
 
     void LyShineLoadScreenComponent::NotifyLoadEnd()
