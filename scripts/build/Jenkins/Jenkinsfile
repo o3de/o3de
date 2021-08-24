@@ -211,7 +211,10 @@ def CheckoutBootstrapScripts(String branchName) {
         submoduleCfg: [],
         userRemoteConfigs: scm.userRemoteConfigs
     ])
-    echo map_vars
+    echo "OUTPUTTING MAP VARS"
+    for (element in map_vars) {
+        echo "${element.key} ${element.value}"
+    }
     echo "EXIT: CheckoutBootstrapScripts"
 }
 
