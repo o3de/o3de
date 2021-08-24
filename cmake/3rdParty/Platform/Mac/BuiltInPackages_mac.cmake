@@ -44,4 +44,5 @@ ly_associate_package(PACKAGE_NAME qt-5.15.2-rev5-mac                            
 ly_associate_package(PACKAGE_NAME libsamplerate-0.2.1-rev2-mac                      TARGETS libsamplerate               PACKAGE_HASH b912af40c0ac197af9c43d85004395ba92a6a859a24b7eacd920fed5854a97fe)
 ly_associate_package(PACKAGE_NAME zlib-1.2.11-rev1-mac                              TARGETS zlib                        PACKAGE_HASH 7fd8a77b3598423d9d6be5f8c60d52aecf346ab4224f563a5282db283aa0da02)
 ly_associate_package(PACKAGE_NAME squish-ccr-deb557d-rev1-mac                       TARGETS squish-ccr                  PACKAGE_HASH 153676b1299a5a6280ef901b10511c90666c5d53c0b2340f6cd101160e71d4c4)
+ly_associate_package(PACKAGE_NAME ISPCTexComp-36b80aa-rev1-mac                      TARGETS ISPCTexComp                 PACKAGE_HASH 153676b1299a5a6280ef901b10511c90666c5d53c0b2340f6cd101160e71d4c4)
 

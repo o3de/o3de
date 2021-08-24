@@ -97,6 +97,7 @@ namespace ImageProcessingAtom
             else
             {
                 IImageObjectPtr dstImage = nullptr;
+                const PixelFormatInfo* compressedInfo = CPixelFormats::GetInstance().GetPixelFormatInfo(compressedFmt);
                 if (isSrcUncompressed)
                 {
                     AZStd::sys_time_t startTime = AZStd::GetTimeUTCMilliSecond();
@@ -105,8 +106,8 @@ namespace ImageProcessingAtom
                     float processTime = static_cast<double>(endTime - startTime) / 1000.0;
                     if (dstImage)
                     {
-                        AZ_TracePrintf("Image Processing", "Image [%dx%d] was compressed by [%s] in %f seconds\n",
-                            Get()->GetWidth(0), Get()->GetHeight(0), compressor->GetName(), processTime);
+                        AZ_TracePrintf("Image Processing", "Image [%dx%d] was compressed to [%s] format by [%s] in %f seconds\n",
+                            Get()->GetWidth(0), Get()->GetHeight(0), compressedInfo->szName, compressor->GetName(), processTime);
                     }
                 }
                 else
@@ -115,11 +116,13 @@ namespace ImageProcessingAtom
                 }
 
                 Set(dstImage);
-            }
-
-            if (Get() == nullptr)
-            {
-                AZ_Error("Image Processing", false, "The selected compressor failed to compress this image");
+                
+                if (dstImage == nullptr)
+                {
+                    AZ_Error("Image Processing", false, "Failed to use [%s] to %s [%s] format", compressor->GetName(),
+                        isSrcUncompressed ? "compress" : "decompress",
+                        compressedInfo->szName);
+                }
             }
         }
     }

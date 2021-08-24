@@ -51,4 +51,5 @@ ly_associate_package(PACKAGE_NAME civetweb-1.8-rev1-windows                     
 ly_associate_package(PACKAGE_NAME OpenSSL-1.1.1b-rev2-windows                           TARGETS OpenSSL                     PACKAGE_HASH 9af1c50343f89146b4053101a7aeb20513319a3fe2f007e356d7ce25f9241040)
 ly_associate_package(PACKAGE_NAME Crashpad-0.8.0-rev1-windows                           TARGETS Crashpad                    PACKAGE_HASH d162aa3070147bc0130a44caab02c5fe58606910252caf7f90472bd48d4e31e2)
 ly_associate_package(PACKAGE_NAME zlib-1.2.11-rev1-windows                              TARGETS zlib                        PACKAGE_HASH 6fb46a0ef8c8614cde3517b50fca47f2a6d1fd059b21f3b8ff13e635ca7f2fa6)
-ly_associate_package(PACKAGE_NAME squish-ccr-deb557d-rev1-windows                       TARGETS squish-ccr                  PACKAGE_HASH e091cccb8d7d1f9a9595cfa3bbb9033541e630023faa09a1112d1b7e4d817af5)
+ly_associate_package(PACKAGE_NAME squish-ccr-deb557d-rev1-windows                       TARGETS squish-ccr                  PACKAGE_HASH 8aa667a0b28c588c621e145b32b05e535e230c4dcc59781c5637b28d1c4ebc89)
+ly_associate_package(PACKAGE_NAME ISPCTexComp-36b80aa-rev1-windows                      TARGETS ISPCTexComp                 PACKAGE_HASH 105cead68c2a61842599728b8c286ff56ad9161d87999478f725a945b54de144)
