@@ -372,16 +372,6 @@ threadID CryGetCurrentThreadId();
     #define __PACKED
 #endif
 
-// Fallback for Alignment macro of GCC/CLANG (must be after the class definition)
-#if !defined(_ALIGN)
-    #define _ALIGN(num) AZ_POP_DISABLE_WARNING
-#endif
-
-// Fallback for Alignment macro of MSVC (must be before the class definition)
-#if !defined(_MS_ALIGN)
-        #define _MS_ALIGN(num) AZ_PUSH_DISABLE_WARNING(4324, "-Wunknown-warning-option")
-#endif
-
 #if defined(AZ_RESTRICTED_PLATFORM)
     #define AZ_RESTRICTED_SECTION PLATFORM_H_SECTION_13
     #include AZ_RESTRICTED_FILE(platform_h)
