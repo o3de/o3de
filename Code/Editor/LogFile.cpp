@@ -183,13 +183,12 @@ void CLogFile::AboutSystem()
     //////////////////////////////////////////////////////////////////////
     // Write the system informations to the log
     //////////////////////////////////////////////////////////////////////
-
+    char szBuffer[MAX_LOGBUFFER_SIZE];
     //wchar_t szCPUModel[64];
     MEMORYSTATUS MemoryStatus;
 #endif // defined(AZ_PLATFORM_WINDOWS) || defined(AZ_PLATFORM_LINUX)
 
 #if defined(AZ_PLATFORM_WINDOWS)
-    char szBuffer[MAX_LOGBUFFER_SIZE];
     wchar_t szLanguageBufferW[64];
     DEVMODE DisplayConfig;
     OSVERSIONINFO OSVerInfo;
