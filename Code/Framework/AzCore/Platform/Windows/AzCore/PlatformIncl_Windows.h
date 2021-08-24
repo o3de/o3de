@@ -57,13 +57,8 @@
     #define NOMINMAX    // - Dont define Macros min(a,b) and max(a,b)
 #endif
 
-#pragma warning(push)
-#pragma warning(disable: 5032) // winioctl.h(161,17): error C5032: detected #pragma warning(push) with no corresponding #pragma warning(pop)
-
 #include <WinSock2.h>
 #include <windows.h>
-
-#pragma warning(pop)
 
 // Undef common function names that Windows.h defines
 #if defined(SetJob)
