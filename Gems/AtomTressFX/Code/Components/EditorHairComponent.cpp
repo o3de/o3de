@@ -6,6 +6,8 @@
  *
  */
 
+#if defined (ATOMTRESSFX_EDITOR)
+
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <Components/EditorHairComponent.h>
 #include <Rendering/HairRenderObject.h>
@@ -143,3 +145,5 @@ namespace AZ
         } // namespace Hair
     } // namespace Render
 } // namespace AZ
+
+#endif // ATOMTRESSFX_EDITOR

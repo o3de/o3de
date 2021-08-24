@@ -8,6 +8,18 @@
 
 set(GemUUID d4a3e3d6b9b14e12982c774f35f48a7c)
 
+# Next declare ATOMTRESSFX_EDITOR only when tools pipeline is built
+if(PAL_TRAIT_BUILD_HOST_TOOLS)
+    set_source_files_properties(
+        Code/HairModule.cpp
+        Code/Components/EditorHairComponent.h
+        Code/Components/EditorHairComponent.cpp
+        PROPERTIES
+            COMPILE_DEFINITIONS
+                ATOMTRESSFX_EDITOR
+    )
+endif()
+
 ly_add_target(
     NAME AtomTressFX.Static STATIC
     NAMESPACE Gem
@@ -44,7 +56,7 @@ ly_add_target(
             External
             External/Code/src
         PUBLIC
-            ./Code/Include
+            Code/Include
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
@@ -53,12 +65,12 @@ ly_add_target(
             Gem::EMotionFXStaticLib
             Gem::AtomTressFX.Static
 )
-
+# Clients and servers use the AtomTressFX module
 ly_create_alias(NAME AtomTressFX.Clients NAMESPACE Gem TARGETS Gem::AtomTressFX)
 ly_create_alias(NAME AtomTressFX.Servers NAMESPACE Gem TARGETS Gem::AtomTressFX)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
-    
+
     ly_add_target(
         NAME AtomTressFX.Builders.Static STATIC
         NAMESPACE Gem
@@ -93,7 +105,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PRIVATE
                 Gem::AtomTressFX.Builders.Static
     )
-
+    
+    # builders and tools use the AtomTressFX.Builders and AtomTressFX modules
     ly_create_alias(NAME AtomTressFX.Tools   NAMESPACE Gem TARGETS Gem::AtomTressFX Gem::AtomTressFX.Builders)
 
 endif()
