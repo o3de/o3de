@@ -253,17 +253,20 @@ namespace AzToolsFramework
             return false;
         }
 
-        // If our focus changes, go ahead and reset all input devices.
         if (eventType == QEvent::FocusIn || eventType == QEvent::FocusOut)
         {
+            // If our focus changes, go ahead and reset all input devices.
             HandleFocusChange(event);
 
+            // If we focus in on the source widget and the mouse is contained in its
+            // bounds, refresh the cached cursor position to ensure it is up to date (this
+            // ensures cursor positions are refreshed correctly with context menu focus changes)
             if (eventType == QEvent::FocusIn)
             {
                 const auto widgetCursorPosition = m_sourceWidget->mapFromGlobal(QCursor::pos());
                 if (m_sourceWidget->geometry().contains(widgetCursorPosition))
                 {
-                    ProcessPendingMouseEvents(HandleMouseMoveEvent(widgetCursorPosition));
+                    HandleMouseMoveEvent(widgetCursorPosition);
                 }
             }
         }
@@ -289,7 +292,7 @@ namespace AzToolsFramework
         else if (eventType == QEvent::Type::MouseMove)
         {
             auto mouseEvent = static_cast<QMouseEvent*>(event);
-            ProcessPendingMouseEvents(HandleMouseMoveEvent(mouseEvent->pos()));
+            HandleMouseMoveEvent(mouseEvent->pos());
         }
         // Map wheel events to the mouse Z movement channel.
         else if (eventType == QEvent::Type::Wheel)
@@ -369,12 +372,14 @@ namespace AzToolsFramework
         return QPoint{ denormalizedX, denormalizedY };
     }
 
-    QPoint QtEventToAzInputMapper::HandleMouseMoveEvent(const QPoint& cursorPosition)
+    void QtEventToAzInputMapper::HandleMouseMoveEvent(const QPoint& cursorPosition)
     {
         const QPoint cursorDelta = cursorPosition - m_previousCursorPosition;
 
         m_mouseDevice->m_cursorPositionData2D->m_normalizedPosition = WidgetPositionToNormalizedPosition(cursorPosition);
         m_mouseDevice->m_cursorPositionData2D->m_normalizedPositionDelta = WidgetPositionToNormalizedPosition(cursorDelta);
+
+        ProcessPendingMouseEvents(cursorDelta);
 
         if (m_capturingCursor)
         {
@@ -386,8 +391,6 @@ namespace AzToolsFramework
         {
             m_previousCursorPosition = cursorPosition;
         }
-
-        return cursorDelta;
     }
 
     void QtEventToAzInputMapper::HandleKeyEvent(QKeyEvent* keyEvent)

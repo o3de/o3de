@@ -129,7 +129,7 @@ namespace AzToolsFramework
         void HandleMouseButtonEvent(QMouseEvent* mouseEvent);
         // Handle mouse move events.
         // Return the mouse delta for this mouse move event.
-        QPoint HandleMouseMoveEvent(const QPoint& cursorPosition);
+        void HandleMouseMoveEvent(const QPoint& cursorPosition);
         // Handles key press / release events (or ShortcutOverride events for keys listed in m_highPriorityKeys).
         void HandleKeyEvent(QKeyEvent* keyEvent);
         // Handles mouse wheel events.
