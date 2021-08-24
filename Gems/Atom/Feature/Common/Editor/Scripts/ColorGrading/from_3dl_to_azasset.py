@@ -1,18 +1,19 @@
 # coding:utf-8
 #!/usr/bin/python
 #
-# Copyright (c) Contributors to the Open 3D Engine Project
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
-
-# Takes a 3dl file and encodes it into a .azasset file that can be read by the
-# AssetProcessor
-
+"""Takes a 3dl file and encodes it into a .azasset file that can be read by the AssetProcessor"""
+# ------------------------------------------------------------------------
 import json
 import sys, getopt
 import logging as _logging
+# ------------------------------------------------------------------------
+
 
 # ------------------------------------------------------------------------
 _MODULENAME = 'ColorGrading.from_3dl_to_azasset'
@@ -31,17 +32,9 @@ except ImportError as e:
     sys.exit(1)
 # ------------------------------------------------------------------------
 
-AZASSET_LUT = """\
-{
-    "Type": "JsonSerialization",
-    "Version": 1,
-    "ClassName": "LookupTableAsset",
-    "ClassData": {
-        "Name": "LookupTable",
-        "Intervals": [%s],
-        "Values": [%s]
-    }
-}"""
+
+# ------------------------------------------------------------------------
+from ColorGrading import AZASSET_LUT
 
 def write_azasset(file_path, lut_size, lut_intervals, lut_values, azasset_json=AZASSET_LUT):
     values_str = ''
@@ -58,6 +51,7 @@ def write_azasset(file_path, lut_size, lut_intervals, lut_values, azasset_json=A
     _LOGGER.info(f"Writting {asset_file_path}...")
     asset_file = open(asset_file_path, 'w')
     asset_file.write(azasset_json)
+# ------------------------------------------------------------------------
 
 
 # ------------------------------------------------------------------------
@@ -79,6 +73,7 @@ def convert_3dl_to_azasset(input_file, output_file):
                 lut_values.append(values)
 
     write_azasset(output_file)
+# ------------------------------------------------------------------------
 
 
 ###########################################################################
@@ -86,7 +81,6 @@ def convert_3dl_to_azasset(input_file, output_file):
 # -------------------------------------------------------------------------
 if __name__ == '__main__':
     """Run this file as main"""
-
     input_file = ''
     output_file = ''
     try:

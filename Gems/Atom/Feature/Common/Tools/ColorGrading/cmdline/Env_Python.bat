@@ -65,9 +65,12 @@ echo     DCCSI_PY_BASE = %DCCSI_PY_BASE%
 :: ide and debugger plug
 set DCCSI_PY_DEFAULT=%DCCSI_PY_BASE%
 
-:: Wing and other IDEs probably prefer access directly to the python.exe
 set DCCSI_PY_IDE=%DCCSI_PYTHON_INSTALL%\runtime\python-3.7.10-rev1-windows\python
 echo     DCCSI_PY_IDE = %DCCSI_PY_IDE%
+
+:: Wing and other IDEs probably prefer access directly to the python.exe
+set DCCSI_PY_EXE=%DCCSI_PYTHON_INSTALL%\runtime\python-3.7.10-rev1-windows\python\python.exe
+echo     DCCSI_PY_EXE = %DCCSI_PY_EXE%
 
 set DCCSI_PY_IDE_PACKAGES=%DCCSI_PY_IDE%\Lib\site-packages
 echo     DCCSI_PY_IDE_PACKAGES = %DCCSI_PY_IDE_PACKAGES% 
@@ -79,7 +82,7 @@ set DCCSI_COLORGRADING_SCRIPTS=%DCCSI_FEATURECOMMON_SCRIPTS%\ColorGrading
 echo     DCCSI_COLORGRADING_SCRIPTS = %DCCSI_COLORGRADING_SCRIPTS% 
 
 :: add to the PATH
-SET PATH=%DCCSI_PYTHON_INSTALL%;%DCCSI_PY_IDE%;%DCCSI_PY_IDE_PACKAGES%;%DCCSI_COLORGRADING_SCRIPTS%;%PATH%
+SET PATH=%DCCSI_PYTHON_INSTALL%;%DCCSI_PY_IDE%;%DCCSI_PY_IDE_PACKAGES%;%DCCSI_PY_EXE%;%DCCSI_COLORGRADING_SCRIPTS%;%PATH%
 
 :: add all python related paths to PYTHONPATH for package imports
 set PYTHONPATH=%DCCSIG_PATH%;%DCCSI_PYTHON_LIB_PATH%;%O3DE_BIN_PATH%;%DCCSI_COLORGRADING_SCRIPTS%;%DCCSI_FEATURECOMMON_SCRIPTS%;%PYTHONPATH%

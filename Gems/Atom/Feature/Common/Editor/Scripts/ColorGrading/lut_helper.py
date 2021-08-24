@@ -1,8 +1,9 @@
 # coding:utf-8
 #!/usr/bin/python
 #
-# Copyright (c) Contributors to the Open 3D Engine Project
-# 
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
+#
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
@@ -16,30 +17,17 @@ import site
 import pathlib
 from pathlib import Path
 import logging as _logging
-from env_bool import env_bool
 import numpy as np
+from pathlib import Path
 
 # ------------------------------------------------------------------------
 _MODULENAME = 'ColorGrading.lut_helper'
 
-# set these true if you want them set globally for debugging
-_DCCSI_GDEBUG = env_bool('DCCSI_GDEBUG', False)
-_DCCSI_DEV_MODE = env_bool('DCCSI_DEV_MODE', False)
-_DCCSI_GDEBUGGER = env_bool('DCCSI_GDEBUGGER', False)
-_DCCSI_LOGLEVEL = env_bool('DCCSI_LOGLEVEL', int(20))
-
-if _DCCSI_GDEBUG:
-    _DCCSI_LOGLEVEL = int(10)
-
-FRMT_LOG_LONG = "[%(name)s][%(levelname)s] >> %(message)s (%(asctime)s; %(filename)s:%(lineno)d)"
-_logging.basicConfig(level=_DCCSI_LOGLEVEL,
-                     format=FRMT_LOG_LONG,
-                     datefmt='%m-%d %H:%M')
-_LOGGER = _logging.getLogger(_MODULENAME)
-_LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
-
 import ColorGrading.initialize
 ColorGrading.initialize.start()
+
+_LOGGER = _logging.getLogger(_MODULENAME)
+_LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 
 try:
     import OpenImageIO as oiio
@@ -52,182 +40,135 @@ except ImportError as e:
 
 # ------------------------------------------------------------------------
 # Transform from high dynamic range to normalized
-def ShaperInv(bias, scale, v):
-    return math.pow(2.0, (v - bias)/scale)
+from ColorGrading import inv_shaper_transform
 
 # Transform from normalized range to high dynamic range
-def Shaper(bias, scale, v):
+from ColorGrading import shaper_transform
+
+# utils
+from ColorGrading import get_uv_coord
+from ColorGrading import log2
+from ColorGrading import is_power_of_two
+
+shaper_presets = {"Log2-48nits": (-6.5, 6.5),
+                 "Log2-1000nits": (-12.0, 10.0),
+                 "Log2-2000nits": (-12.0, 11.0),
+                 "Log2-4000nits": (-12.0, 12.0)}
+
+def transform_write_exr(image_buffer, out_image_path, op):
+    # Create a writing image
+    out_image_spec = oiio.ImageSpec(image_buffer.spec().width, image_buffer.spec().height, 3, "float")
+    out_image_buffer = oiio.ImageBuf(out_image_spec)
+
+    # Set the destination image pixels by applying the shaperfunction
+    for y in range(out_image_buffer.ybegin, out_image_buffer.yend):
+        for x in range(out_image_buffer.xbegin, out_image_buffer.xend):
+            src_pixel = image_buffer.getpixel(x, y)
+            # _LOGGER.debug(f'src_pixel is: {src_pixel}')
+            if op == 0:
+                dst_pixel = (inv_shaper_transform(bias, scale, src_pixel[0]), inv_shaper_transform(bias, scale, src_pixel[1]), inv_shaper_transform(bias, scale, src_pixel[2]))
+                out_image_buffer.setpixel(x, y, dst_pixel)
+            elif op == 1:
+                dst_pixel = (shaper_transform(bias, scale, src_pixel[0]), shaper_transform(bias, scale, src_pixel[1]), shaper_transform(bias, scale, src_pixel[2]))
+                out_image_buffer.setpixel(x, y, dst_pixel)
+            else:
+                # Unspecified operation. Just write zeroes
+                out_image_buffer.setpixel(x, y, 0.0, 0.0, 0.0)
+                
+    _LOGGER.info(f"writing {out_image_path}.exr ...")
+    out_image_buffer.write(out_image_path + '.exr', "float")
     
-    if v > 0.0:
-        value = math.log(v, 2.0) * scale + bias
+    return out_image_buffer
+
+
+###########################################################################
+# Main Code Block, runs this script as main (testing)
+# -------------------------------------------------------------------------
+if __name__ == '__main__':
+    """Run this file as main"""
+
+    operations = {"pre-grading": 0, "post-grading": 1}
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--i', type=str, required=True, help='input file')
+    parser.add_argument('--shaper', type=str, required=True,
+                        help='shaper preset. Should be one of \'Log2-48nits\', \'Log2-1000nits\', \'Log2-2000nits\', \'Log2-4000nits\'')
+    parser.add_argument('--op', type=str, required=True, help='operation. Should be \'pre-grading\' or \'post-grading\'')
+    parser.add_argument('--o', type=str, required=True, help='output file')
+    parser.add_argument('-l', dest='write3dl', action='store_true', help='output 3dl file')
+    parser.add_argument('-a', dest='writeAsset', action='store_true', help='write out azasset file')
+    args = parser.parse_args()
+
+    # Check for valid shaper type
+    invalid_shaper = (0, 0)
+    invalid_op = -1
+
+    shaper_limits = shaper_presets.get(args.shaper, invalid_shaper)
+    if shaper_limits == invalid_shaper:
+        _LOGGER.error("invalid shaper")
+        sys.exit(1)
+    op = operations.get(args.op, invalid_op)
+    if op == invalid_op:
+        _LOGGER.error("invalid operation")
+        sys.exit(1)
+
+    # input validation
+    input_file = Path(args.i)
+    if input_file.is_file():
+        # file exists
+        pass
+    else:
+        FILE_ERROR_MSG = f'File does not exist: {input_file}'
+        _LOGGER.error(FILE_ERROR_MSG)
+        #raise FileNotFoundError(FILE_ERROR_MSG)
+        sys.exit(1)
+
+    # Read input image
+    #buf = oiio.ImageBuf("linear_lut.exr")
+    image_buffer = oiio.ImageBuf(args.i)
+    image_spec = image_buffer.spec()
+    _LOGGER.info(f"Resolution is x:{image_spec.height}, y:{image_spec.width}")
+
+    if image_spec.height < 16:
+        _LOGGER.info(f"invalid input file dimensions: x is {image_spec.height}. Expected LUT with height dimension >= 16 pixels")
+        sys.exit(1)
+
+    if not is_power_of_two(image_buffer.spec().height):
+        _LOGGER.info(f"invalid input file dimensions: {buf.spec().height}. Expected LUT dimensions power of 2: 16, 32, or 64 height")
+        sys.exit(1)
+
+    elif image_spec.width != image_spec.height * image_spec.height:
+        _LOGGER.info("invalid input file dimensions. Expect lengthwise LUT with dimension W: s*s  X  H: s, where s is the size of the LUT")
+        sys.exit(1)
+
+    lut_size = image_spec.height
+
+    middle_grey = 0.18
+    lower_stops = shaper_limits[0]
+    upper_stops = shaper_limits[1]
+
+    log_min = math.log(middle_grey * math.pow(2.0, lower_stops), 2.0)
+    log_max = math.log(middle_grey * math.pow(2.0, upper_stops), 2.0)
+    scale = 1.0 / (log_max - log_min)
+    bias = -scale * log_min
+
+    _LOGGER.info("Shaper: range in stops  %.1f -> %.1f  (linear: %.3f -> %.3f)  logMin %.3f  logMax %.3f  scale %.3f  bias %.3f\n" %
+                 (lower_stops, upper_stops, middle_grey * math.pow(2.0, lower_stops), middle_grey * math.pow(2.0, upper_stops),
+                  log_min, log_max, scale, bias))
     
-    elif v <= 0.0:
-        value = math.log(0.002, 2.0) * scale + bias
-        _LOGGER.debug(f'Clipping a value: bias={bias}, scale={scale}, v={v}')
+    buffer_name = Path(args.o).name
 
-    return value
+    # write out the modified exr file
+    out_image_buffer = transform_write_exr(image_buffer, args.o, op)
 
-def GetUvCoord(size, r, g, b):
-    u = g * lutSize + r
-    v = b
-    return (u, v)
+    from ColorGrading.exr_to_3dl_azasset import generate_lut_values
+    lut_intervals, lut_values = generate_lut_values(image_spec, out_image_buffer)
 
-def clamp(v):
-    return max(0.0, min(1.0, v))
+    if args.write3dl:
+        from ColorGrading.exr_to_3dl_azasset import write_3DL
+        write_3DL(args.o, lut_size, lut_intervals, lut_values)
 
-shaperPresets = {"Log2-48nits":(-6.5, 6.5),
-                 "Log2-1000nits":(-12.0, 10.0),
-                 "Log2-2000nits":(-12.0, 11.0),
-                 "Log2-4000nits":(-12.0, 12.0)}
-
-operations = {"pre-grading":0, "post-grading":1}
-
-parser = argparse.ArgumentParser()
-parser.add_argument('--i', type=str, required=True, help='input file')
-parser.add_argument('--shaper', type=str, required=True, help='shaper preset. Should be one of \'Log2-48nits\', \'Log2-1000nits\', \'Log2-2000nits\', \'Log2-4000nits\'')
-parser.add_argument('--op', type=str, required=True, help='operation. Should be \'pre-grading\' or \'post-grading\'')
-parser.add_argument('--o', type=str, required=True, help='output file')
-parser.add_argument('-l', dest='write3dl', action='store_true', help='output 3dl file')
-parser.add_argument('-a', dest='writeAsset', action='store_true', help='write out azasset file')
-args = parser.parse_args()
-
-# Check for valid shaper type
-invalidShaper = (0,0)
-invalidOp = -1
-
-shaperLimits = shaperPresets.get(args.shaper, invalidShaper)
-if shaperLimits == invalidShaper:
-    _LOGGER.error("invalid shaper")
-    sys.exit(1)
-op = operations.get(args.op, invalidOp)
-if op == invalidOp:
-    _LOGGER.error("invalid operation")
-    sys.exit(1)
-
-# input validation
-from pathlib import Path
-input_file = Path(args.i)
-if input_file.is_file():
-    # file exists
-    pass
-else:
-    FILE_ERROR_MSG = f'File does not exist: {input_file}'
-    _LOGGER.error(FILE_ERROR_MSG)
-    #raise FileNotFoundError(FILE_ERROR_MSG)
-    sys.exit(1)
-
-# Read input image
-#buf = oiio.ImageBuf("linear_lut.exr")
-buf = oiio.ImageBuf(args.i)
-inSpec = buf.spec()
-_LOGGER.info(f"Resolution is x:{inSpec.height}, y:{inSpec.width}")
-
-if inSpec.height < 16:
-    _LOGGER.info(f"invalid input file dimensions: x is {inSpec.height}. Expected LUT with height dimension >= 16 pixels")
-    sys.exit(1)
-    
-def log2(x):
-    return (math.log10(x) /
-            math.log10(2))
-
-def is_power_of_two(n):
-    return (math.ceil(log2(n)) == math.floor(log2(n)))
-    
-if not is_power_of_two(buf.spec().height):
-    _LOGGER.info(f"invalid input file dimensions: {buf.spec().height}. Expected LUT dimensions power of 2: 16, 32, or 64 height")
-    sys.exit(1)
-
-elif inSpec.width != inSpec.height * inSpec.height:
-    _LOGGER.info("invalid input file dimensions. Expect lengthwise LUT with dimension W: s*s  X  H: s, where s is the size of the LUT")
-    sys.exit(1)
-
-lutSize = inSpec.height
-
-middleGrey = 0.18
-lowerStops = shaperLimits[0]
-upperStops = shaperLimits[1]
-
-logMin = math.log(middleGrey * math.pow(2.0, lowerStops), 2.0)
-logMax = math.log(middleGrey * math.pow(2.0, upperStops), 2.0)
-scale = 1.0/(logMax - logMin)
-bias = -scale * logMin
-
-_LOGGER.info("Shaper: range in stops  %.1f -> %.1f  (linear: %.3f -> %.3f)  logMin %.3f  logMax %.3f  scale %.3f  bias %.3f\n" %
-             (lowerStops, upperStops, middleGrey * math.pow(2.0, lowerStops), middleGrey * math.pow(2.0, upperStops),
-       logMin, logMax, scale, bias))
-
-# Create a writing image
-outSpec = oiio.ImageSpec(buf.spec().width, buf.spec().height, 3, "float")
-outBuf = oiio.ImageBuf(outSpec)
-
-# Set the destination image pixels by applying the shaperfunction
-for y in range(outBuf.ybegin, outBuf.yend):
-    for x in range(outBuf.xbegin, outBuf.xend):
-        srcPx = buf.getpixel(x, y)
-        # _LOGGER.debug(f'srcPx is: {srcPx}')
-        if op == 0:
-            dstPx = (ShaperInv(bias, scale, srcPx[0]), ShaperInv(bias, scale, srcPx[1]), ShaperInv(bias, scale, srcPx[2]))
-            outBuf.setpixel(x, y, dstPx)
-        elif op == 1:
-            dstPx = (Shaper(bias, scale, srcPx[0]), Shaper(bias, scale, srcPx[1]), Shaper(bias, scale, srcPx[2]))
-            outBuf.setpixel(x,y, dstPx)
-        else:
-            # Unspecified operation. Just write zeroes
-            outBuf.setpixel(x, y, 0.0, 0.0, 0.0)
-_LOGGER.info("writing %s..." % (args.o))
-outBuf.write(args.o, "float")
-
-lutIntervals = []
-lutValues = []
-if args.write3dl or args.writeAsset:
-    # First line contains the vertex intervals
-    dv = 1023.0 / float(lutSize-1)
-    for i in range(lutSize):
-        lutIntervals.append(np.uint64(dv * i))
-    # Texels are in R G B per line with indices increasing first with blue, then green, and then red.
-    for r in range(lutSize):
-        for g in range(lutSize):
-            for b in range(lutSize):
-                uv = GetUvCoord(lutSize, r, g, b)
-                px = outBuf.getpixel(uv[0], uv[1])
-                lutValues.append((np.uint64(px[0] * 4095), np.uint64(px[1] * 4095), np.uint64(px[2] * 4095)))
-
-if args.write3dl:
-    lutFileName = "%s.3dl" % (args.o)
-    _LOGGER.info("writing %s..." % (lutFileName))
-    lutFile = open(lutFileName, 'w')
-    # First line contains the vertex intervals
-    dv = 1023.0 / float(lutSize)
-    for i in range(lutSize):
-        lutFile.write("%d " % (lutIntervals[i]))
-    lutFile.write("\n")
-    for px in lutValues:
-        lutFile.write("%d %d %d\n" % (px[0], px[1], px[2]))
-    lutFile.close()
-
-if args.writeAsset:
-    assetFileName = "%s.azasset" % (args.o)
-    _LOGGER.info("writing %s...", (assetFileName))
-    assetFile = open(assetFileName, 'w')
-    assetFile.write("{\n")
-    assetFile.write("    \"Type\": \"JsonSerialization\",\n")
-    assetFile.write("    \"Version\": 1,\n")
-    assetFile.write("    \"ClassName\": \"LookupTableAsset\",\n")
-    assetFile.write("    \"ClassData\": {\n")
-    assetFile.write("        \"Name\": \"LookupTable\",\n")
-    assetFile.write("        \"Intervals\": [\n")
-    for i in range(lutSize):
-        assetFile.write(" %d" % (lutIntervals[i]))
-        if i < (lutSize-1):
-            assetFile.write(", ")
-    assetFile.write("],\n")
-    assetFile.write("        \"Values\": [\n")
-    for idx, px in enumerate(lutValues):
-        assetFile.write(" %d, %d, %d" % (px[0], px[1], px[2]))
-        if idx < (len(lutValues) - 1):
-            assetFile.write(",")
-        assetFile.write("\n")
-    assetFile.write("]\n")
-    assetFile.write("    }\n")
-    assetFile.write("}\n")
-    assetFile.close()
+    if args.writeAsset:
+        from ColorGrading import AZASSET_LUT
+        from ColorGrading.from_3dl_to_azasset import write_azasset
+        write_azasset(args.o, lut_size, lut_intervals, lut_values, AZASSET_LUT)

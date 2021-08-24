@@ -1,7 +1,8 @@
 # coding:utf-8
 #!/usr/bin/python
 #
-# Copyright (c) Contributors to the Open 3D Engine Project
+# Copyright (c) Contributors to the Open 3D Engine Project.
+# For complete copyright and license terms please see the LICENSE at the root of this distribution.
 #
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
@@ -16,7 +17,7 @@ from pathlib import Path
 import logging as _logging
 
 # local imports
-from ColorGrading.env_bool import env_bool
+from ColorGrading import env_bool
 from ColorGrading import initialize_logger
 from ColorGrading import DCCSI_GDEBUG
 from ColorGrading import DCCSI_DEV_MODE
