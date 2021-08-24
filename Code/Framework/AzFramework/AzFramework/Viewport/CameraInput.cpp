@@ -791,14 +791,13 @@ namespace AzFramework
                 const auto* position = inputChannel.GetCustomData<AzFramework::InputChannel::PositionData2D>();
                 AZ_Assert(position, "Expected PositionData2D but found nullptr");
 
-                const auto x = position->m_normalizedPosition.GetX() * aznumeric_cast<float>(windowSize.m_width);
-                const auto y = position->m_normalizedPosition.GetY() * aznumeric_cast<float>(windowSize.m_height);
-
                 auto currentCursorState = AzFramework::SystemCursorState::Unknown;
                 AzFramework::InputSystemCursorRequestBus::EventResult(
                     currentCursorState, inputDeviceId, &AzFramework::InputSystemCursorRequestBus::Events::GetSystemCursorState);
 
-                return CursorEvent{ ScreenPoint(AZStd::lround(x), AZStd::lround(y)),
+                const auto x = position->m_normalizedPosition.GetX() * aznumeric_cast<float>(windowSize.m_width);
+                const auto y = position->m_normalizedPosition.GetY() * aznumeric_cast<float>(windowSize.m_height);
+                return CursorEvent{ ScreenPoint(aznumeric_cast<int>(AZStd::lround(x)), aznumeric_cast<int>(AZStd::lround(y))),
                                     currentCursorState == AzFramework::SystemCursorState::ConstrainedAndHidden };
             }
             else if (inputChannelId == InputDeviceMouse::Movement::X)
