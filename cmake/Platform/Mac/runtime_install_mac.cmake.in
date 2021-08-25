@@ -65,7 +65,6 @@ if(@runtime_output_filename@ MATCHES ".app")
         codesign_binaries_in_folder("${file_path}/Contents/Frameworks/Python.framework/Versions/3.7/bin")
         codesign_binaries_in_folder("${file_path}/Contents/Frameworks/Python.framework/Versions/3.7/lib")
         codesign_binaries_in_folder("${file_path}/Contents/Frameworks/Python.framework/Versions/3.7/Resources")
-        codesign_file("${file_path}/Contents/Frameworks/Python.framework")
     endif()
 
     codesign_file(${file_path})
