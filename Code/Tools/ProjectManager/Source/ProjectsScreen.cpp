@@ -204,6 +204,7 @@ namespace O3DE::ProjectManager
 
                 if (!keepProject.contains(projectButtonsIter.key()))
                 {
+                    projectButtonsIter.value()->deleteLater();
                     projectButtonsIter = m_projectButtons.erase(projectButtonsIter);
                 }
                 else
