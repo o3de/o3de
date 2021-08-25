@@ -126,7 +126,7 @@ namespace AZ
                 {
                     AZ_Error(warningHeader, false, "Failed to find shader input index for [%s] in the SRG.",
                         bufferDesc.m_paramNameInSrg.GetCStr());
-                    return nullptr;
+                    return false;
                 }
 
                 if (!srg->SetBufferView(bufferIndex, buffer->GetBufferView()))
