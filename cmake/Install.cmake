@@ -16,17 +16,18 @@ endif()
 # \arg:DIRECTORIES directories to install
 # \arg:DESTINATION (optional) destination to install the directory to (relative to CMAKE_PREFIX_PATH)
 # \arg:EXCLUDE_PATTERNS (optional) patterns to exclude
+# \arg:VERBATIM (optional) copies the directories as they are, this excludes the default exclude patterns
 #
 # \notes: 
 #  - refer to cmake's install(DIRECTORY documentation for more information
 #  - If the directory contains programs/scripts, exclude them from this call and add a specific ly_install_files with 
 #      PROGRAMS set. This is necessary to set the proper execution permissions.
 #  - This function will automatically filter out __pycache__, *.egg-info, CMakeLists.txt, *.cmake files. If those files
-#      need to be installed, use ly_install_files.
+#      need to be installed, use ly_install_files. Use VERBATIM to exclude such filters.
 #
 function(ly_install_directory)
 
-    set(options)
+    set(options VERBATIM)
     set(oneValueArgs DESTINATION)
     set(multiValueArgs DIRECTORIES EXCLUDE_PATTERNS)
 
@@ -60,13 +61,15 @@ function(ly_install_directory)
             endforeach()
         endif()
         
-        # Exclude cmake since that has to be generated
-        list(APPEND exclude_patterns PATTERN CMakeLists.txt EXCLUDE)
-        list(APPEND exclude_patterns PATTERN *.cmake EXCLUDE)
+        if(NOT ly_install_directory_VERBATIM)
+            # Exclude cmake since that has to be generated
+            list(APPEND exclude_patterns PATTERN CMakeLists.txt EXCLUDE)
+            list(APPEND exclude_patterns PATTERN *.cmake EXCLUDE)
 
-        # Exclude python-related things that dont need to be installed
-        list(APPEND exclude_patterns PATTERN __pycache__ EXCLUDE)
-        list(APPEND exclude_patterns PATTERN *.egg-info EXCLUDE)     
+            # Exclude python-related things that dont need to be installed
+            list(APPEND exclude_patterns PATTERN __pycache__ EXCLUDE)
+            list(APPEND exclude_patterns PATTERN *.egg-info EXCLUDE)
+        endif()
 
         install(DIRECTORY ${directory}
             DESTINATION ${ly_install_directory_DESTINATION}
