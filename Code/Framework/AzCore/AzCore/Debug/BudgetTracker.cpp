@@ -19,7 +19,7 @@ namespace AZ::Debug
 {
     constexpr static const char* BudgetTrackerEnvName = "budgetTrackerEnv";
 
-    struct BudgetTrackerImpl
+    struct BudgetTracker::BudgetTrackerImpl
     {
         AZStd::unordered_map<const char*, Budget> m_budgets;
     };
@@ -65,11 +65,7 @@ namespace AZ::Debug
     {
         AZStd::scoped_lock lock{ m_mutex };
 
-        auto it = m_impl->m_budgets.find(budgetName);
-        if (it == m_impl->m_budgets.end())
-        {
-            it = m_impl->m_budgets.try_emplace(budgetName, budgetName, crc).first;
-        }
+        auto it = m_impl->m_budgets.try_emplace(budgetName, budgetName, crc).first;
 
         return it->second;
     }

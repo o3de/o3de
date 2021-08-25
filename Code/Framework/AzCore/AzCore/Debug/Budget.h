@@ -73,7 +73,7 @@ namespace AZ::Debug
 
 // If using a budget defined in a different C++ source file, add AZ_DECLARE_BUDGET(yourBudget); somewhere in your source file at namespace
 // scope Alternatively, AZ_DECLARE_BUDGET can be used in a header to declare the budget for use across any users of the header
-#define AZ_DECLARE_BUDGET(name) extern ::AZ::Debug::Budget* AZ_BUDGET_GETTER(name)()
+#define AZ_DECLARE_BUDGET(name) ::AZ::Debug::Budget* AZ_BUDGET_GETTER(name)()
 
 // Declare budgets that are core engine budgets, or may be shared/needed across multiple external gems
 // You should NOT need to declare user-space or budgets with isolated usage here. Prefer declaring them local to the module(s) that use

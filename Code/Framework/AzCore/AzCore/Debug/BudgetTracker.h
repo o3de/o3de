@@ -31,11 +31,13 @@ namespace AZ::Debug
         Budget& GetBudget(const char* budgetName, uint32_t crc);
 
     private:
+        struct BudgetTrackerImpl;
+
         AZStd::mutex m_mutex;
 
         // The BudgetTracker is likely included in proportionally high number of files throughout the
         // engine, so indirection is used here to avoid imposing excessive recompilation in periods
         // while the budget system is iterated on.
-        struct BudgetTrackerImpl* m_impl = nullptr;
+        BudgetTrackerImpl* m_impl = nullptr;
     };
 } // namespace AZ::Debug
