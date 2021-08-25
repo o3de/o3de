@@ -106,6 +106,28 @@ namespace O3DE::ProjectManager
         // Depending and conflicting gems
         m_dependingGems->Update("Depending Gems", "The following Gems will be automatically enabled with this Gem.", m_model->GetDependingGemNames(modelIndex));
         m_conflictingGems->Update("Conflicting Gems", "The following Gems will be automatically disabled with this Gem.", m_model->GetConflictingGemNames(modelIndex));
+        
+        if (m_dependingGems->GemCount())
+        {
+            m_dependingGems->show();
+            m_dependingGemsSpacer->changeSize(0, 20, QSizePolicy::Fixed, QSizePolicy::Fixed);
+        }
+        else
+        {
+            m_dependingGems->hide();
+            m_dependingGemsSpacer->changeSize(0, 0, QSizePolicy::Fixed, QSizePolicy::Fixed);
+        }
+
+        if (m_conflictingGems->GemCount())
+        {
+            m_conflictingGems->show();
+            m_conflictingGemsSpacer->changeSize(0, 20, QSizePolicy::Fixed, QSizePolicy::Fixed);
+        }
+        else
+        {
+            m_conflictingGems->hide();
+            m_conflictingGemsSpacer->changeSize(0, 0, QSizePolicy::Fixed, QSizePolicy::Fixed);
+        }
 
         // Additional information
         m_versionLabel->setText(QString("Gem Version: %1").arg(m_model->GetVersion(modelIndex)));
@@ -215,11 +237,15 @@ namespace O3DE::ProjectManager
         // Depending and conflicting gems
         m_dependingGems = new GemsSubWidget();
         m_mainLayout->addWidget(m_dependingGems);
-        m_mainLayout->addSpacing(20);
+
+        m_dependingGemsSpacer = new QSpacerItem(0, 20, QSizePolicy::Fixed, QSizePolicy::Fixed);
+        m_mainLayout->addSpacerItem(m_dependingGemsSpacer);
 
         m_conflictingGems = new GemsSubWidget();
         m_mainLayout->addWidget(m_conflictingGems);
-        m_mainLayout->addSpacing(20);
+
+        m_conflictingGemsSpacer = new QSpacerItem(0, 20, QSizePolicy::Fixed, QSizePolicy::Fixed);
+        m_mainLayout->addSpacerItem(m_conflictingGemsSpacer);
 
         // Additional information
         QLabel* additionalInfoLabel = CreateStyledLabel(m_mainLayout, 14, s_headerColor);
@@ -251,5 +277,10 @@ namespace O3DE::ProjectManager
         m_titleLabel->setText(title);
         m_textLabel->setText(text);
         m_tagWidget->Update(gemNames);
+    }
+
+    int GemInspector::GemsSubWidget::GemCount()
+    {
+        return m_tagWidget->TagCount();
     }
 } // namespace O3DE::ProjectManager

@@ -51,6 +51,7 @@ namespace O3DE::ProjectManager
         public:
             GemsSubWidget(QWidget* parent = nullptr);
             void Update(const QString& title, const QString& text, const QStringList& gemNames);
+            int GemCount();
 
         private:
             QLabel* m_titleLabel = nullptr;
@@ -84,6 +85,8 @@ namespace O3DE::ProjectManager
         // Depending and conflicting gems
         GemsSubWidget* m_dependingGems = nullptr;
         GemsSubWidget* m_conflictingGems = nullptr;
+        QSpacerItem* m_dependingGemsSpacer = nullptr;
+        QSpacerItem* m_conflictingGemsSpacer = nullptr;
 
         // Additional information
         QLabel* m_versionLabel = nullptr;

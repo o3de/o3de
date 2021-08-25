@@ -42,6 +42,7 @@ namespace O3DE::ProjectManager
             // Hide the old widget and request deletion.
             m_widget->hide();
             m_widget->deleteLater();
+            m_tagWidgets.clear();
         }
 
         QVBoxLayout* vLayout = new QVBoxLayout();
@@ -60,6 +61,7 @@ namespace O3DE::ProjectManager
         {
             // Create the new tag widget.
             TagWidget* tagWidget = new TagWidget(tags[i]);
+            m_tagWidgets.append(tagWidget);
             const int tagWidgetWidth = tagWidget->minimumSizeHint().width();
 
             // Calculate the width we're currently using in the current row. Does the new tag still fit in the current row?
@@ -90,5 +92,10 @@ namespace O3DE::ProjectManager
             // Add the tag widget to the current row.
             hLayout->addWidget(tagWidget);
         }
+    }
+
+    int TagContainerWidget::TagCount()
+    {
+        return m_tagWidgets.size();
     }
 } // namespace O3DE::ProjectManager

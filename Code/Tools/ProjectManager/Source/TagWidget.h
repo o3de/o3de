@@ -40,9 +40,11 @@ namespace O3DE::ProjectManager
         ~TagContainerWidget() = default;
 
         void Update(const QStringList& tags);
+        int TagCount();
 
     private:
         QVBoxLayout* m_layout = nullptr;
         QWidget* m_widget = nullptr;
+        QVector<TagWidget*> m_tagWidgets;
     };
 } // namespace O3DE::ProjectManager
