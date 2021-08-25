@@ -277,7 +277,7 @@ namespace AzNetworking
 
                 timeoutItem->UpdateTimeoutTime(startTimeMs);
 
-                PacketDispatchResult handledPacket;
+                PacketDispatchResult handledPacket = PacketDispatchResult::Failure;
                 if (header.GetPacketType() < aznumeric_cast<PacketType>(CorePackets::PacketType::MAX))
                 {
                     handledPacket = connection->HandleCorePacket(m_connectionListener, header, packetSerializer);

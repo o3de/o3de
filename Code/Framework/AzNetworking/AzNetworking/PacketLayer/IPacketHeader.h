@@ -16,9 +16,9 @@
 namespace AzNetworking
 {
     AZ_ENUM_CLASS(PacketDispatchResult
-        , Success
-        , Pending
         , Failure
+        , Pending
+        , Success
     );
 
     AZ_ENUM_CLASS(PacketFlag
