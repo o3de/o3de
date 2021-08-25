@@ -86,7 +86,6 @@ set(FILES
     CrySystemBus.h
     CryTypeInfo.h
     CryVersion.h
-    FrameProfiler.h
     LegacyAllocator.cpp
     LegacyAllocator.h
     MetaUtils.h
