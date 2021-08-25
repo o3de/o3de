@@ -70,3 +70,13 @@
 #if defined(GetCommandLine)
     #undef GetCommandLine
 #endif
+#if defined(LoadImage)
+#undef LoadImage
+#endif
+#if defined(DeleteFile)
+#undef DeleteFile
+#endif
+#if defined(GetCurrentTime)
+#undef GetCurrentTime
+#endif
+
