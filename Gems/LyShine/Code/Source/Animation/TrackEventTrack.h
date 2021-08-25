@@ -9,6 +9,7 @@
 #pragma once
 
 #include <LyShine/Animation/IUiAnimation.h>
+#include "CryCommon/StlUtils.h"
 #include "AnimTrack.h"
 #include "AnimKey.h"
 

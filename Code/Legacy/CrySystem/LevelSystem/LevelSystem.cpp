@@ -16,6 +16,7 @@
 #include "CryPath.h"
 
 #include <LoadScreenBus.h>
+#include <CryCommon/StaticInstance.h>
 
 #include <AzCore/Debug/AssetTracking.h>
 #include <AzFramework/API/ApplicationAPI.h>

@@ -62,8 +62,11 @@ class EditorTestBase(ABC):
 
 # Test that will be run alone in one editor
 class EditorSingleTest(EditorTestBase):
+    #- Configurable params -#
     # Extra cmdline arguments to supply to the editor for the test
     extra_cmdline_args = []
+    # Whether to use null renderer, this will override use_null_renderer for the Suite if not None
+    use_null_renderer = None
 
     # Custom setup function, will run before the test
     @staticmethod
@@ -584,7 +587,7 @@ class EditorTestSuite():
                           test_spec : EditorTestBase, cmdline_args : List[str] = []):
 
         test_cmdline_args = self.global_extra_cmdline_args + cmdline_args
-        if self.use_null_renderer:
+        if test_spec.use_null_renderer or (test_spec.use_null_renderer is None and self.use_null_renderer):
             test_cmdline_args += ["-rhi=null"]
             
         # Cycle any old crash report in case it wasn't cycled properly
