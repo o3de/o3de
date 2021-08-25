@@ -17,6 +17,12 @@ from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorSharedTest, E
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestAutomation(EditorTestSuite):
 
+    class test_LandscapeCanvas_SlotConnections_UpdateComponentReferences(EditorSharedTest):
+        from .EditorScripts import SlotConnections_UpdateComponentReferences as test_module
+
+    class test_LandscapeCanvas_GradientMixer_NodeConstruction(EditorSharedTest):
+        from .EditorScripts import GradientMixer_NodeConstruction as test_module
+
     class test_LandscapeCanvas_AreaNodes_DependentComponentsAdded(EditorSharedTest):
         from .EditorScripts import AreaNodes_DependentComponentsAdded as test_module
 
