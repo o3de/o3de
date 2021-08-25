@@ -75,7 +75,7 @@ namespace O3DE::ProjectManager
         // Separating line
         QFrame* hLine = new QFrame();
         hLine->setFrameShape(QFrame::HLine);
-        hLine->setStyleSheet("color: #666666;");
+        hLine->setObjectName("horizontalSeparatingLine");
         vLayout->addWidget(hLine);
 
         vLayout->addSpacing(GemItemDelegate::s_contentMargins.top());
@@ -87,11 +87,17 @@ namespace O3DE::ProjectManager
         const int gemNameStartX = GemItemDelegate::s_itemMargins.left() + GemItemDelegate::s_contentMargins.left() - 1;
         columnHeaderLayout->addSpacing(gemNameStartX);
 
+        QLabel* gemImageLabel = new QLabel(tr("Gem Image"));
+        gemImageLabel->setObjectName("GemCatalogHeaderLabel");
+        columnHeaderLayout->addWidget(gemImageLabel);
+
+        columnHeaderLayout->addSpacing(27);
+
         QLabel* gemNameLabel = new QLabel(tr("Gem Name"));
         gemNameLabel->setObjectName("GemCatalogHeaderLabel");
         columnHeaderLayout->addWidget(gemNameLabel);
 
-        columnHeaderLayout->addSpacing(89);
+        columnHeaderLayout->addSpacing(79);
 
         QLabel* gemSummaryLabel = new QLabel(tr("Gem Summary"));
         gemSummaryLabel->setObjectName("GemCatalogHeaderLabel");
@@ -104,7 +110,7 @@ namespace O3DE::ProjectManager
         gemSelectedLabel->setObjectName("GemCatalogHeaderLabel");
         columnHeaderLayout->addWidget(gemSelectedLabel);
 
-        columnHeaderLayout->addSpacing(65);
+        columnHeaderLayout->addSpacing(37);
 
         vLayout->addLayout(columnHeaderLayout);
     }

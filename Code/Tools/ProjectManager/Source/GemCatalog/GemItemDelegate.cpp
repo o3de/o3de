@@ -8,7 +8,6 @@
 
 #include <GemCatalog/GemItemDelegate.h>
 #include <GemCatalog/GemModel.h>
-#include <ProjectManagerDefs.h>
 
 #include <QEvent>
 #include <QPainter>
@@ -77,15 +76,23 @@ namespace O3DE::ProjectManager
             painter->restore();
         }
 
+        // Gem preview
+        QString previewPath = QDir(GemModel::GetPath(modelIndex)).filePath(ProjectPreviewImagePath);
+        QPixmap gemPreviewImage(previewPath);
+        QRect gemPreviewRect(
+            contentRect.left(), contentRect.center().y() - GemPreviewImageMinHeight / 2,
+            GemPreviewImageMinWidth, GemPreviewImageMinHeight);
+        painter->drawPixmap(gemPreviewRect, gemPreviewImage);
+
         // Gem name
         QString gemName = GemModel::GetDisplayName(modelIndex);
         QFont gemNameFont(options.font);
-        const int firstColumnMaxTextWidth = s_summaryStartX - 30;
+        const int nameColumnMaxTextWidth = s_summaryStartX - GemPreviewImageMinWidth - s_contentSpacing * 2;
         gemNameFont.setPixelSize(static_cast<int>(s_gemNameFontSize));
         gemNameFont.setBold(true);
-        gemName = QFontMetrics(gemNameFont).elidedText(gemName, Qt::TextElideMode::ElideRight, firstColumnMaxTextWidth);
+        gemName = QFontMetrics(gemNameFont).elidedText(gemName, Qt::TextElideMode::ElideRight, nameColumnMaxTextWidth);
         QRect gemNameRect = GetTextRect(gemNameFont, gemName, s_gemNameFontSize);
-        gemNameRect.moveTo(contentRect.left(), contentRect.top());
+        gemNameRect.moveTo(contentRect.left() + GemPreviewImageMinWidth + s_contentSpacing, contentRect.top());
         painter->setFont(gemNameFont);
         painter->setPen(m_textColor);
         gemNameRect = painter->boundingRect(gemNameRect, Qt::TextSingleLine, gemName);
@@ -93,31 +100,20 @@ namespace O3DE::ProjectManager
 
         // Gem creator
         QString gemCreator = GemModel::GetCreator(modelIndex);
-        gemCreator = standardFontMetrics.elidedText(gemCreator, Qt::TextElideMode::ElideRight, firstColumnMaxTextWidth);
+        gemCreator = standardFontMetrics.elidedText(gemCreator, Qt::TextElideMode::ElideRight, nameColumnMaxTextWidth);
         QRect gemCreatorRect = GetTextRect(standardFont, gemCreator, s_fontSize);
-        gemCreatorRect.moveTo(contentRect.left(), contentRect.top() + gemNameRect.height());
+        gemCreatorRect.moveTo(contentRect.left() + GemPreviewImageMinWidth + s_contentSpacing, contentRect.top() + gemNameRect.height());
 
         painter->setFont(standardFont);
         gemCreatorRect = painter->boundingRect(gemCreatorRect, Qt::TextSingleLine, gemCreator);
         painter->drawText(gemCreatorRect, Qt::TextSingleLine, gemCreator);
-        
-        // Gem preview
-        QString previewPath = QDir(GemModel::GetPath(modelIndex)).filePath(ProjectPreviewImagePath);
-        QPixmap gemPreviewImage(previewPath);
-        QRect gemPreviewRect(
-            contentRect.left() + firstColumnMaxTextWidth / 2 - GemPreviewImageMinWidth / 2,
-            contentRect.top() + gemNameRect.height() + gemCreatorRect.height(),
-            GemPreviewImageMinWidth, GemPreviewImageMinHeight);
-        painter->drawPixmap(gemPreviewRect, gemPreviewImage);
 
+        // Gem summary
         // In case there are feature tags displayed at the bottom, decrease the size of the summary text field.
         const QStringList featureTags = GemModel::GetFeatures(modelIndex);
-        const int featureTagAreaHeight = 30;
+        const int featureTagAreaHeight = 40;
         const int summaryHeight = contentRect.height() - (!featureTags.empty() * featureTagAreaHeight);
-
-        const int additionalSummarySpacing = s_itemMargins.right() * 3;
-        const QSize summarySize = QSize(contentRect.width() - s_summaryStartX - s_buttonWidth - additionalSummarySpacing,
-            summaryHeight);
+        const QSize summarySize = QSize(contentRect.width() - s_summaryStartX - s_buttonWidth - s_contentSpacing, summaryHeight);
         const QRect summaryRect = QRect(/*topLeft=*/QPoint(contentRect.left() + s_summaryStartX, contentRect.top()), summarySize);
 
         painter->setFont(standardFont);
@@ -194,7 +190,7 @@ namespace O3DE::ProjectManager
 
     QRect GemItemDelegate::CalcButtonRect(const QRect& contentRect) const
     {
-        const QPoint topLeft = QPoint(contentRect.right() - s_buttonWidth - s_itemMargins.right(), contentRect.top() + contentRect.height() / 2 - s_buttonHeight / 2);
+        const QPoint topLeft = QPoint(contentRect.right() - s_buttonWidth, contentRect.top() + contentRect.height() / 2 - s_buttonHeight / 2);
         const QSize size = QSize(s_buttonWidth, s_buttonHeight);
         return QRect(topLeft, size);
     }
@@ -202,7 +198,7 @@ namespace O3DE::ProjectManager
     void GemItemDelegate::DrawPlatformIcons(QPainter* painter, const QRect& contentRect, const QModelIndex& modelIndex) const
     {
         const GemInfo::Platforms platforms = GemModel::GetPlatforms(modelIndex);
-        int startX = 0;
+        int startX = GemPreviewImageMinWidth + s_contentSpacing;
 
         // Iterate and draw the platforms in the order they are defined in the enum.
         for (int i = 0; i < GemInfo::NumPlatforms; ++i)
@@ -280,7 +276,7 @@ namespace O3DE::ProjectManager
         }
         else
         {
-            circleCenter = buttonRect.center() + QPoint(-buttonRect.width() / 2 + s_buttonBorderRadius, 1);
+            circleCenter = buttonRect.center() + QPoint(-buttonRect.width() / 2 + s_buttonBorderRadius + 1, 1);
         }
 
         // Rounded rect

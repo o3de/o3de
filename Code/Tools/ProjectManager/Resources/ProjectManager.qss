@@ -213,6 +213,10 @@ QTabBar::tab:focus {
                             stop: 0 #555555, stop: 1.0 #777777);
 }
 
+#horizontalSeparatingLine {
+    color: #666666;
+}
+
 /************** Project Settings **************/
 #projectSettings {
     margin-top:42px;
@@ -292,8 +296,6 @@ QTabBar::tab:focus {
     outline: none;
     border:none;
 }
-
-
 
 #projectSettingsTab::tab-bar {
     left: 60px;

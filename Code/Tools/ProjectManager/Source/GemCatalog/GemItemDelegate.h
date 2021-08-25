@@ -10,7 +10,9 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QStyledItemDelegate>
-#include "GemInfo.h"
+#include <ProjectManagerDefs.h>
+#include <GemCatalog/GemInfo.h>
+
 #include <QAbstractItemModel>
 #include <QHash>
 #endif
@@ -44,17 +46,18 @@ namespace O3DE::ProjectManager
         inline constexpr static int s_height = 105; // Gem item total height
         inline constexpr static qreal s_gemNameFontSize = 13.0;
         inline constexpr static qreal s_fontSize = 12.0;
-        inline constexpr static int s_summaryStartX = 150;
+        inline constexpr static int s_summaryStartX = 230;
 
         // Margin and borders
-        inline constexpr static QMargins s_itemMargins = QMargins(/*left=*/16, /*top=*/8, /*right=*/16, /*bottom=*/8); // Item border distances
-        inline constexpr static QMargins s_contentMargins = QMargins(/*left=*/20, /*top=*/12, /*right=*/15, /*bottom=*/12); // Distances of the elements within an item to the item borders
+        inline constexpr static QMargins s_itemMargins = QMargins(/*left=*/16, /*top=*/5, /*right=*/16, /*bottom=*/5); // Item border distances
+        inline constexpr static QMargins s_contentMargins = QMargins(/*left=*/20, /*top=*/12, /*right=*/20, /*bottom=*/12); // Distances of the elements within an item to the item borders
         inline constexpr static int s_borderWidth = 4;
+        inline constexpr static int s_contentSpacing = 20;
 
         // Button
-        inline constexpr static int s_buttonWidth = 55;
-        inline constexpr static int s_buttonHeight = 18;
-        inline constexpr static int s_buttonBorderRadius = 9;
+        inline constexpr static int s_buttonWidth = 32;
+        inline constexpr static int s_buttonHeight = 16;
+        inline constexpr static int s_buttonBorderRadius = s_buttonHeight / 2;
         inline constexpr static int s_buttonCircleRadius = s_buttonBorderRadius - 2;
         inline constexpr static qreal s_buttonFontSize = 10.0;
 
