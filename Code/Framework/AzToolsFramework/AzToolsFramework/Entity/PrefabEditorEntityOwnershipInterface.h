@@ -18,13 +18,6 @@
 
 namespace AzToolsFramework
 {
-    enum class SavePrefabsPreference : AZ::s64
-    {
-        Unspecified = 0,
-        SaveAll = 1,
-        SaveNone = -1
-    };
-
     class PrefabEditorEntityOwnershipInterface
     {
     public:
@@ -60,7 +53,5 @@ namespace AzToolsFramework
         virtual void StopPlayInEditor() = 0;
 
         virtual void CreateNewLevelPrefab(AZStd::string_view filename, const AZStd::string& templateFilename) = 0;
-        virtual SavePrefabsPreference GetSavePrefabsPreference() = 0;
-        virtual void SetSavePrefabsPreference(SavePrefabsPreference savePrefabsPreference) = 0;
     };
 }

@@ -101,9 +101,9 @@ void CEditorPreferencesPage_General::Reflect(AZ::SerializeContext& serialize)
             ->DataElement(
                 AZ::Edit::UIHandlers::ComboBox, &PrefabSettings::m_savePrefabsPreference, "Save Prefabs Preference",
                     "When saving levels, this option controls whether and how prefabs should be saved along with the level.")
-                    ->EnumAttribute(AzToolsFramework::SavePrefabsPreference::Unspecified, "Unspecified")
-                    ->EnumAttribute(AzToolsFramework::SavePrefabsPreference::SaveAll, "Save All")
-                    ->EnumAttribute(AzToolsFramework::SavePrefabsPreference::SaveNone, "Save None");
+                    ->EnumAttribute(AzToolsFramework::Prefab::SavePrefabsPreference::Unspecified, "Unspecified")
+                    ->EnumAttribute(AzToolsFramework::Prefab::SavePrefabsPreference::SaveAll, "Save All")
+                    ->EnumAttribute(AzToolsFramework::Prefab::SavePrefabsPreference::SaveNone, "Save None");
 
         editContext->Class<Messaging>("Messaging", "")
             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Messaging::m_showDashboard, "Show Welcome to Open 3D Engine at startup", "Show Welcome to Open 3D Engine at startup")

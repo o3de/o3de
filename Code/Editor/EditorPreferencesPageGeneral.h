@@ -14,7 +14,7 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzQtComponents/Components/Widgets/ToolBar.h>
 #include <AzToolsFramework/Editor/EditorSettingsAPIBus.h>
-#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipService.h>
+#include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <QIcon>
 
 #include "Settings.h"
@@ -61,7 +61,7 @@ private:
     struct PrefabSettings
     {
         AZ_TYPE_INFO(PrefabSettings, "{E297DAE3-3985-4BC2-8B43-45F3B1522F6B}");
-        AzToolsFramework::SavePrefabsPreference m_savePrefabsPreference;
+        AzToolsFramework::Prefab::SavePrefabsPreference m_savePrefabsPreference;
     };
 
     struct Messaging

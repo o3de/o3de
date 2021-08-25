@@ -18,7 +18,7 @@
 #include <QSettings>
 
 #include <AzToolsFramework/Editor/EditorSettingsAPIBus.h>
-#include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
+#include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <AzCore/JSON/document.h>
 
 #include <AzQtComponents/Components/Widgets/ToolBar.h>
@@ -233,7 +233,7 @@ struct SSliceSettings
 
 struct SPrefabSettings
 {
-    AzToolsFramework::SavePrefabsPreference savePrefabsPreference;
+    AzToolsFramework::Prefab::SavePrefabsPreference savePrefabsPreference;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -476,7 +476,7 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 
     bool prefabSystem = true;                  ///< Toggle to enable/disable the Prefab system for level entities.
 
-    void SetSavePrefabsPreference(AzToolsFramework::SavePrefabsPreference savePrefabsPreference);
+    void SetSavePrefabsPreference(AzToolsFramework::Prefab::SavePrefabsPreference savePrefabsPreference);
 
 private:
     void SaveValue(const char* sSection, const char* sKey, int value);

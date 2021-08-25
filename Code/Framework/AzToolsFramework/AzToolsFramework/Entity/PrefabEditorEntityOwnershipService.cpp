@@ -28,8 +28,6 @@
 
 namespace AzToolsFramework
 {
-    static constexpr const char s_savePrefabsKey[] = "/O3DE/Preferences/SavePrefabs";
-
     PrefabEditorEntityOwnershipService::PrefabEditorEntityOwnershipService(const AzFramework::EntityContextId& entityContextId,
         AZ::SerializeContext* serializeContext)
         : m_entityContextId(entityContextId)
@@ -608,24 +606,6 @@ namespace AzToolsFramework
         AZ::TickBus::ExecuteQueuedEvents();
 
         m_playInEditorData.m_isEnabled = false;
-    }
-
-    SavePrefabsPreference PrefabEditorEntityOwnershipService::GetSavePrefabsPreference()
-    {
-        AZ::s64 savePrefabsPreference = static_cast<AZ::s64>(SavePrefabsPreference::Unspecified);
-        if (auto* registry = AZ::SettingsRegistry::Get())
-        {
-            registry->Get(savePrefabsPreference, s_savePrefabsKey);
-        }
-        return static_cast<SavePrefabsPreference>(savePrefabsPreference);
-    }
-
-    void PrefabEditorEntityOwnershipService::SetSavePrefabsPreference(SavePrefabsPreference savePrefabsPreference)
-    {
-        if (auto* registry = AZ::SettingsRegistry::Get())
-        {
-            registry->Set(s_savePrefabsKey, static_cast<AZ::s64>(savePrefabsPreference));
-        }
     }
 
     //////////////////////////////////////////////////////////////////////////

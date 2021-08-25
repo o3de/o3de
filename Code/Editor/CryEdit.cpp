@@ -3182,6 +3182,8 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
         }
         else
         {
+            using namespace AzToolsFramework::Prefab;
+
             auto prefabSystemComponentInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get();
             auto prefabSaveSelectionDialog = GetIEditor()->GetDocument()->ConstructSaveLevelDialog();
 
@@ -3189,9 +3191,9 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
             QCheckBox* saveAllPrefabsPreferenceCheckBox =
                 prefabSaveSelectionDialog->findChild<QCheckBox*>("SaveAllPrefabsPreferenceCheckBox");
             QCheckBox* saveAllPrefabsCheckBox = prefabSaveSelectionDialog->findChild<QCheckBox*>("SaveAllPrefabsCheckbox");
-            AzToolsFramework::SavePrefabsPreference savePrefabsPreference = saveAllPrefabsCheckBox->isChecked()
-                ? AzToolsFramework::SavePrefabsPreference::SaveAll
-                : AzToolsFramework::SavePrefabsPreference::SaveNone;
+            SavePrefabsPreference savePrefabsPreference = saveAllPrefabsCheckBox->isChecked()
+                ? SavePrefabsPreference::SaveAll
+                : SavePrefabsPreference::SaveNone;
 
             switch (1 - prefabSaveSelection)
             {
@@ -3208,7 +3210,7 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
                     gSettings.SetSavePrefabsPreference(savePrefabsPreference);
                     gSettings.Save();
                 }
-                if (savePrefabsPreference == AzToolsFramework::SavePrefabsPreference::SaveAll)
+                if (savePrefabsPreference == SavePrefabsPreference::SaveAll)
                 {
                     prefabSystemComponentInterface->SaveAllDirtyTemplates();
                 }

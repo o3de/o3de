@@ -17,6 +17,13 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
+        enum class SavePrefabsPreference : AZ::u8
+        {
+            Unspecified = 0,
+            SaveAll = 1,
+            SaveNone = 2
+        };
+
         /*!
          * PrefabLoaderInterface
          * Interface for saving/loading Prefab files.
@@ -84,6 +91,9 @@ namespace AzToolsFramework
             //! The path will always use the '/' separator.
             virtual AZ::IO::Path GenerateRelativePath(AZ::IO::PathView path) = 0;
 
+            virtual SavePrefabsPreference GetSavePrefabsPreference() = 0;
+            virtual void SetSavePrefabsPreference(SavePrefabsPreference savePrefabsPreference) = 0;
+
         protected:
 
             // Generates a new path
@@ -92,4 +102,9 @@ namespace AzToolsFramework
 
     } // namespace Prefab
 } // namespace AzToolsFramework
+
+namespace AZ
+{
+    AZ_TYPE_INFO_SPECIALIZE(AzToolsFramework::Prefab::SavePrefabsPreference, "{7E61EA82-4DE4-4A3F-945F-C8FEDC1114B5}");
+}
 

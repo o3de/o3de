@@ -35,6 +35,7 @@
 #include <AzToolsFramework/UI/Layer/NameConflictWarning.hxx>
 #include <AzToolsFramework/API/EditorLevelNotificationBus.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
+#include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 
 // Editor
@@ -696,15 +697,16 @@ bool CCryEditDoc::SaveModified()
     }
     else
     {
+        using namespace AzToolsFramework::Prefab;
+
         auto prefabSystemComponentInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get();
         auto prefabSaveSelectionDialog = ConstructSaveLevelDialog();
         
         int prefabSaveSelection = prefabSaveSelectionDialog->exec();
         QCheckBox* saveAllPrefabsPreferenceCheckBox = prefabSaveSelectionDialog->findChild<QCheckBox*>("SaveAllPrefabsPreferenceCheckBox");
         QCheckBox* saveAllPrefabsCheckBox = prefabSaveSelectionDialog->findChild<QCheckBox*>("SaveAllPrefabsCheckbox");
-        AzToolsFramework::SavePrefabsPreference savePrefabsPreference = saveAllPrefabsCheckBox->isChecked()
-            ? AzToolsFramework::SavePrefabsPreference::SaveAll
-            : AzToolsFramework::SavePrefabsPreference::SaveNone;
+        SavePrefabsPreference savePrefabsPreference =
+            saveAllPrefabsCheckBox->isChecked() ? SavePrefabsPreference::SaveAll : SavePrefabsPreference::SaveNone;
         
         switch (1 - prefabSaveSelection)
         {
@@ -715,7 +717,7 @@ bool CCryEditDoc::SaveModified()
                 gSettings.SetSavePrefabsPreference(savePrefabsPreference);
                 gSettings.Save();
             }
-            if (savePrefabsPreference == AzToolsFramework::SavePrefabsPreference::SaveAll)
+            if (savePrefabsPreference == SavePrefabsPreference::SaveAll)
             {
                 prefabSystemComponentInterface->SaveAllDirtyTemplates();
             }
@@ -2263,8 +2265,9 @@ void CCryEditDoc::OnSliceInstantiationFailed(const AZ::Data::AssetId& sliceAsset
 
 AZStd::shared_ptr<QDialog> CCryEditDoc::ConstructSaveLevelDialog()
 {
-    auto prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
-    AzToolsFramework::SavePrefabsPreference savePrefabsPreference = prefabEditorEntityOwnershipInterface->GetSavePrefabsPreference();
+    using namespace AzToolsFramework::Prefab;
+    auto prefabLoaderInterface = AZ::Interface<PrefabLoaderInterface>::Get();
+    SavePrefabsPreference savePrefabsPreference = prefabLoaderInterface->GetSavePrefabsPreference();
 
     AZStd::shared_ptr<QDialog> saveModifiedMessageBox = AZStd::make_shared<QDialog>(AzToolsFramework::GetActiveWindow());
     AZStd::weak_ptr<QDialog> saveModifiedMessageBoxWeakPtr(saveModifiedMessageBox);
@@ -2294,7 +2297,7 @@ AZStd::shared_ptr<QDialog> CCryEditDoc::ConstructSaveLevelDialog()
     QCheckBox* saveAllPrefabsCheckbox = new QCheckBox("Save all unsaved prefabs in the level too.");
     AzQtComponents::CheckBox::applyToggleSwitchStyle(saveAllPrefabsCheckbox);
     saveAllPrefabsCheckbox->setObjectName("SaveAllPrefabsCheckbox");
-    if (savePrefabsPreference == AzToolsFramework::SavePrefabsPreference::SaveAll)
+    if (savePrefabsPreference == SavePrefabsPreference::SaveAll)
     {
         saveAllPrefabsCheckbox->setCheckState(Qt::CheckState::Checked);
     }
@@ -2302,9 +2305,8 @@ AZStd::shared_ptr<QDialog> CCryEditDoc::ConstructSaveLevelDialog()
         saveAllPrefabsCheckbox, &QCheckBox::stateChanged,
         [&savePrefabsPreference](int state)
         {
-            savePrefabsPreference = static_cast<Qt::CheckState>(state) == Qt::CheckState::Checked
-                ? AzToolsFramework::SavePrefabsPreference::SaveAll
-                : AzToolsFramework::SavePrefabsPreference::SaveNone;
+            savePrefabsPreference = static_cast<Qt::CheckState>(state) == Qt::CheckState::Checked ? SavePrefabsPreference::SaveAll
+                                                                                                  : SavePrefabsPreference::SaveNone;
         });
     contentLayout->addWidget(saveAllPrefabsCheckbox);
 
@@ -2319,7 +2321,7 @@ AZStd::shared_ptr<QDialog> CCryEditDoc::ConstructSaveLevelDialog()
     QCheckBox* saveAllPrefabsPreferenceCheckBox = new QCheckBox("Remember my preference.");
     saveAllPrefabsPreferenceCheckBox->setObjectName("SaveAllPrefabsPreferenceCheckBox");
     AzQtComponents::CheckBox::applyToggleSwitchStyle(saveAllPrefabsPreferenceCheckBox);
-    if (savePrefabsPreference != AzToolsFramework::SavePrefabsPreference::Unspecified)
+    if (savePrefabsPreference != SavePrefabsPreference::Unspecified)
     {
         saveAllPrefabsPreferenceCheckBox->setCheckState(Qt::CheckState::Checked);
     }
@@ -2348,23 +2350,25 @@ AZStd::shared_ptr<QDialog> CCryEditDoc::ConstructSaveLevelDialog()
 
 void CCryEditDoc::ExecuteSavePrefabsDialog()
 {
-    auto prefabSystemComponentInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get();
-    auto prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
-    AzToolsFramework::SavePrefabsPreference savePrefabsPreference = prefabEditorEntityOwnershipInterface->GetSavePrefabsPreference();
+    using namespace AzToolsFramework::Prefab;
 
-    if (savePrefabsPreference == AzToolsFramework::SavePrefabsPreference::SaveAll)
+    auto prefabSystemComponentInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get();
+    auto prefabLoaderInterface = AZ::Interface<PrefabLoaderInterface>::Get();
+    SavePrefabsPreference savePrefabsPreference = prefabLoaderInterface->GetSavePrefabsPreference();
+
+    if (savePrefabsPreference == SavePrefabsPreference::SaveAll)
     {
         prefabSystemComponentInterface->SaveAllDirtyTemplates();
         SetModifiedFlag(false);
     }
-    else if (savePrefabsPreference == AzToolsFramework::SavePrefabsPreference::SaveNone)
+    else if (savePrefabsPreference == SavePrefabsPreference::SaveNone)
     {
         if (prefabSystemComponentInterface->AreDirtyTemplatesPresent())
         {
             SetModifiedFlag(true);
         }
     }
-    else // AzToolsFramework::SavePrefabsPreference::Unspecified
+    else // SavePrefabsPreference::Unspecified
     {
         QDialog saveModifiedMessageBox(AzToolsFramework::GetActiveWindow());
 

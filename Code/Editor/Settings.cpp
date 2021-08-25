@@ -255,7 +255,7 @@ SEditorSettings::SEditorSettings()
     g_TemporaryLevelName = nullptr;
 
     sliceSettings.dynamicByDefault = false;
-    prefabSettings.savePrefabsPreference = AzToolsFramework::SavePrefabsPreference::Unspecified;
+    prefabSettings.savePrefabsPreference = AzToolsFramework::Prefab::SavePrefabsPreference::Unspecified;
 }
 
 void SEditorSettings::Connect()
@@ -670,9 +670,9 @@ void SEditorSettings::Save()
     AzFramework::ApplicationRequests::Bus::Broadcast(
         &AzFramework::ApplicationRequests::SetPrefabSystemEnabled, prefabSystem);
 
-    AzToolsFramework::PrefabEditorEntityOwnershipInterface* prefabEditorEntityOwnershipService =
-        AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
-    prefabEditorEntityOwnershipService->SetSavePrefabsPreference(prefabSettings.savePrefabsPreference);
+    AzToolsFramework::Prefab::PrefabLoaderInterface* prefabLoaderInterface =
+        AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
+    prefabLoaderInterface->SetSavePrefabsPreference(prefabSettings.savePrefabsPreference);
 
     SaveSettingsRegistryFile();
 }
@@ -680,9 +680,9 @@ void SEditorSettings::Save()
 //////////////////////////////////////////////////////////////////////////
 void SEditorSettings::Load()
 {
-    AzToolsFramework::PrefabEditorEntityOwnershipInterface* prefabEditorEntityOwnershipService =
-        AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
-    prefabSettings.savePrefabsPreference = prefabEditorEntityOwnershipService->GetSavePrefabsPreference();
+    AzToolsFramework::Prefab::PrefabLoaderInterface* prefabLoaderInterface =
+        AZ::Interface<AzToolsFramework::Prefab::PrefabLoaderInterface>::Get();
+    prefabSettings.savePrefabsPreference = prefabLoaderInterface->GetSavePrefabsPreference();
 
     // Load from Settings Registry
     AzFramework::ApplicationRequests::Bus::BroadcastResult(
@@ -1082,7 +1082,7 @@ void SEditorSettings::ConvertPath(const AZStd::string_view sourcePath, AZStd::st
     AZStd::replace(category.begin(), category.end(), '|', '\\');
 }
 
-void SEditorSettings::SetSavePrefabsPreference(AzToolsFramework::SavePrefabsPreference savePrefabsPreference)
+void SEditorSettings::SetSavePrefabsPreference(AzToolsFramework::Prefab::SavePrefabsPreference savePrefabsPreference)
 {
     prefabSettings.savePrefabsPreference = savePrefabsPreference;
 }
