@@ -57,6 +57,11 @@ namespace Terrain
         }
     }
 
+    void TerrainLayerSpawnerConfig::SetEntityId(AZ::EntityId id)
+    {
+        m_entityId = id;
+    }
+
     AZStd::vector<AZStd::pair<AZ::u32, AZStd::string>> TerrainLayerSpawnerConfig::GetSelectableLayers() const
     {
         AZStd::vector<AZStd::pair<AZ::u32, AZStd::string>> selectableLayers;
@@ -102,18 +107,28 @@ namespace Terrain
 
     void TerrainLayerSpawnerComponent::Activate()
     {
+        m_configuration.SetEntityId(GetEntityId());
+
         AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusConnect(GetEntityId());
         TerrainAreaRequestBus::Handler::BusConnect(GetEntityId());
-    TerrainSpawnerRequestBus::Handler::BusConnect(GetEntityId());
+        TerrainSpawnerRequestBus::Handler::BusConnect(GetEntityId());
+        LmbrCentral::DependencyNotificationBus::Handler::BusConnect(GetEntityId());
+
+        m_dependencyMonitor.Reset();
+        m_dependencyMonitor.ConnectOwner(GetEntityId());
+        m_dependencyMonitor.ConnectDependency(GetEntityId());
 
         TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::RegisterArea, GetEntityId());
     }
 
     void TerrainLayerSpawnerComponent::Deactivate()
     {
+        m_dependencyMonitor.Reset();
+
         TerrainAreaRequestBus::Handler::BusDisconnect();
         TerrainSpawnerRequestBus::Handler::BusDisconnect();
+        LmbrCentral::DependencyNotificationBus::Handler::BusDisconnect();
         TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::UnregisterArea, GetEntityId());
 
         AZ::TransformNotificationBus::Handler::BusDisconnect();
@@ -138,6 +153,11 @@ namespace Terrain
             return true;
         }
         return false;
+    }
+
+    void TerrainLayerSpawnerComponent::OnCompositionChanged()
+    {
+        RefreshArea();
     }
 
     void TerrainLayerSpawnerComponent::OnTransformChanged([[maybe_unused]] const AZ::Transform& local, [[maybe_unused]] const AZ::Transform& world)

@@ -20,6 +20,8 @@
 
 #include <AzCore/Component/TransformBus.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
+#include <LmbrCentral/Dependency/DependencyMonitor.h>
+#include <LmbrCentral/Dependency/DependencyNotificationBus.h>
 #include <AzCore/Math/Aabb.h>
 
 namespace LmbrCentral
@@ -47,10 +49,15 @@ namespace Terrain
         AZ_RTTI(TerrainLayerSpawnerConfig, "{8E0695DE-E843-4858-BAEA-70953E74C810}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 
+        void SetEntityId(AZ::EntityId id);
+        void OnLayerChanged();
+        void OnPriorityChanged();
+
         AZStd::vector<AZStd::pair<AZ::u32, AZStd::string>> GetSelectableLayers() const;
         AZ::u32 m_layer = AreaConstants::s_foregroundLayer;
         AZ::u32 m_priority = AreaConstants::s_priorityMin;
         bool m_useGroundPlane = true;
+        AZ::EntityId m_entityId;
     };
 
 
@@ -60,6 +67,7 @@ namespace Terrain
         , private LmbrCentral::ShapeComponentNotificationsBus::Handler
         , private Terrain::TerrainAreaRequestBus::Handler
         , private Terrain::TerrainSpawnerRequestBus::Handler
+        , private LmbrCentral::DependencyNotificationBus::Handler
     {
     public:
         template<typename, typename>
@@ -81,7 +89,6 @@ namespace Terrain
         bool ReadInConfig(const AZ::ComponentConfig* baseConfig) override;
         bool WriteOutConfig(AZ::ComponentConfig* outBaseConfig) const override;
 
-
         //////////////////////////////////////////////////////////////////////////
         // AZ::TransformNotificationBus::Handler
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
@@ -92,11 +99,15 @@ namespace Terrain
         // TerrainSpawnerRequestBus
         void GetPriority(AZ::u32& outLayer, AZ::u32& outPriority) override;
         void GetUseGroundPlane(bool& outUseGroundPlane) override;
+
+        // DependencyNotificationBus
+        void OnCompositionChanged() override;
         
         void RegisterArea() override;
         void RefreshArea() override;
 
     private:
         TerrainLayerSpawnerConfig m_configuration;
+        LmbrCentral::DependencyMonitor m_dependencyMonitor;
     };
 }
