@@ -1,10 +1,10 @@
 {
     "gem_name": "Terrain",
-    "display_name": "Terrain (WIP)",
+    "display_name": "Terrain",
     "license": "Apache-2.0 Or MIT",
     "origin": "Open 3D Engine - o3de.org",
-    "summary": "The Terrain Gem is a WIP (work-in-progress) Gem for providing terrain services including authoring workflows, rendering, and physics.",
+    "summary": "The Terrain Gem is a work-in-progress terrain system.  The terrain system maps height, color, and surface data to regions of the world, provides gradient-based and shape-based authoring tools and workflows, includes specialized rendering for efficient display, and integrates with physics for physical simulation.",
     "canonical_tags": [ "Gem" ],
-    "user_tags": [ "Environment", "Terrain" ],
-    "icon_path": "preview.png"
+    "user_tags": [ "Environment", "Tools", "Design", "Terrain" ],
+    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/terrain/"
 }
