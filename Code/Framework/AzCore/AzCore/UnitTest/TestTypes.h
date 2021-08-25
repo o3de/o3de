@@ -11,6 +11,7 @@
 #include <AzCore/base.h>
 #include <AzCore/UnitTest/UnitTest.h>
 
+#include <AzCore/Debug/BudgetTracker.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Driller/Driller.h>
 #include <AzCore/Memory/MemoryDriller.h>

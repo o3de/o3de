@@ -393,8 +393,6 @@ void EditorViewportWidget::UpdateContent(int flags)
 //////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::Update()
 {
-    FUNCTION_PROFILER(GetIEditor()->GetSystem(), PROFILE_EDITOR);
-
     if (Editor::EditorQtApplication::instance()->isMovingOrResizing())
     {
         return;
@@ -956,15 +954,11 @@ AzFramework::CameraState EditorViewportWidget::GetCameraState()
 
 AZ::Vector3 EditorViewportWidget::PickTerrain(const AzFramework::ScreenPoint& point)
 {
-    FUNCTION_PROFILER(GetIEditor()->GetSystem(), PROFILE_EDITOR);
-
     return LYVec3ToAZVec3(ViewToWorld(AzToolsFramework::ViewportInteraction::QPointFromScreenPoint(point), nullptr, true));
 }
 
 AZ::EntityId EditorViewportWidget::PickEntity(const AzFramework::ScreenPoint& point)
 {
-    FUNCTION_PROFILER(GetIEditor()->GetSystem(), PROFILE_EDITOR);
-
     PreWidgetRendering();
 
     AZ::EntityId entityId;
@@ -991,8 +985,6 @@ float EditorViewportWidget::TerrainHeight(const AZ::Vector2& position)
 
 void EditorViewportWidget::FindVisibleEntities(AZStd::vector<AZ::EntityId>& visibleEntitiesOut)
 {
-    FUNCTION_PROFILER(GetIEditor()->GetSystem(), PROFILE_EDITOR);
-
     visibleEntitiesOut.assign(m_entityVisibilityQuery.Begin(), m_entityVisibilityQuery.End());
 }
 

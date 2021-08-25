@@ -12,6 +12,8 @@
 #include <AzFramework/Visibility/BoundsBus.h>
 #include <cstring>
 
+AZ_DECLARE_BUDGET(AzFramework);
+
 namespace AzFramework
 {
     EntityVisibilityBoundsUnionSystem::EntityVisibilityBoundsUnionSystem()
