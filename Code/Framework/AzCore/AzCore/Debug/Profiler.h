@@ -77,11 +77,4 @@ namespace AZ::Debug
     };
 } // namespace AZ::Debug
 
-#ifdef USE_PIX
-// The pix3 header unfortunately brings in other Windows macros we need to undef
-#undef DeleteFile
-#undef LoadImage
-#undef GetCurrentTime
-#endif
-
 #include <AzCore/Debug/Profiler.inl>
