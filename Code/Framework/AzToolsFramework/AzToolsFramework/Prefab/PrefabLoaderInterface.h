@@ -17,11 +17,11 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
-        enum class SavePrefabsPreference : AZ::u8
+        enum class SavePrefabsPreference
         {
-            Unspecified = 0,
-            SaveAll = 1,
-            SaveNone = 2
+            Unspecified,
+            SaveAll,
+            SaveNone 
         };
 
         /*!
