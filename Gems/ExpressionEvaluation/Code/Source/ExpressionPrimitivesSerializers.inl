@@ -30,7 +30,7 @@ namespace AZ
 
         JsonSerializationResult::Result Load
             ( void* outputValue
-            , const Uuid& outputValueTypeId
+            , [[maybe_unused]] const Uuid& outputValueTypeId
             , const rapidjson::Value& inputValue
             , JsonDeserializerContext& context) override
         {
