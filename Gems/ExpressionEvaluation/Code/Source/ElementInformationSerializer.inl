@@ -28,7 +28,7 @@ namespace AZ
     private:
         using ElementInformation = ExpressionEvaluation::ElementInformation;
 
-        static const char* EmptyAnyIdentifier;
+        static constexpr AZStd::string_view EmptyAnyIdentifier = "Empty AZStd::any";
 
         static bool IsEmptyAny(const rapidjson::Value& typeId)
         {
@@ -161,8 +161,7 @@ namespace AZ
             else
             {
                 rapidjson::Value emptyAny;
-                AZStd::string emptyAnyName(EmptyAnyIdentifier);
-                emptyAny.SetString(emptyAnyName.c_str(), aznumeric_caster(emptyAnyName.size()), context.GetJsonAllocator());
+                emptyAny.SetString(EmptyAnyIdentifier.data(), aznumeric_caster(EmptyAnyIdentifier.size()), context.GetJsonAllocator());
                 outputValue.AddMember
                     ( rapidjson::StringRef(JsonSerialization::TypeIdFieldIdentifier)
                     , AZStd::move(emptyAny)
@@ -176,6 +175,4 @@ namespace AZ
     };
 
     AZ_CLASS_ALLOCATOR_IMPL(ElementInformationSerializer, SystemAllocator, 0);
-
-    const char* ElementInformationSerializer::EmptyAnyIdentifier = "Empty AZStd::any";
 }

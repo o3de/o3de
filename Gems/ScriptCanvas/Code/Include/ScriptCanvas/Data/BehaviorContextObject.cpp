@@ -98,7 +98,7 @@ namespace ScriptCanvas
 
     void BehaviorContextObject::Deserialize(BehaviorContextObject& target, const AZ::BehaviorClass& behaviorClass, AZStd::any& source)
     {
-        target.m_object = AZStd::move(AZStd::any(AZStd::any_cast<void>(&source), GetAnyTypeInfoObject(behaviorClass)));
+        target.m_object = AZStd::any(AZStd::any_cast<void>(&source), GetAnyTypeInfoObject(behaviorClass));
         target.m_flags = Owned;
     }
 
