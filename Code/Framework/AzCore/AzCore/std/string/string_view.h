@@ -9,6 +9,7 @@
 
 #include <AzCore/std/createdestroy.h>
 #include <AzCore/std/iterator.h>
+#include <AzCore/std/limits.h>
 
 
 namespace AZStd

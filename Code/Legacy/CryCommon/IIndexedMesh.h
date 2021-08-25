@@ -15,6 +15,7 @@
 #include "Cry_Color.h"
 #include "StlUtils.h"
 #include "CryEndian.h"
+
 #include <CrySizer.h>
 #include <Cry_Geo.h>    // for AABB
 #include <VertexFormats.h>
@@ -145,14 +146,6 @@ public:
         a = othera;
     }
 
-    explicit SMeshColor(const Vec4& otherc)
-    {
-        r = aznumeric_caster(FtoI(otherc.x));
-        g = aznumeric_caster(FtoI(otherc.y));
-        b = aznumeric_caster(FtoI(otherc.z));
-        a = aznumeric_caster(FtoI(otherc.w));
-    }
-
     void TransferRGBTo(SMeshColor& other) const
     {
         other.r = r;
@@ -198,18 +191,6 @@ public:
     void GetRGBA(Vec4& otherc) const
     {
         otherc = Vec4(r, g, b, a);
-    }
-
-    void Lerp(const SMeshColor& other, float pos)
-    {
-        Vec4 clrA;
-        Vec4 clrB;
-        this->GetRGBA(clrA);
-        other.GetRGBA(clrB);
-
-        clrA.SetLerp(clrA, clrB, pos);
-
-        *this = SMeshColor(clrA);
     }
 
     AUTO_STRUCT_INFO

@@ -18,7 +18,6 @@
 #include <Cry_Math.h>
 #include <Cry_Geo.h>
 #include <MemoryAccess.h>
-#include <Cry_XOptimise.h>
 //DOC-IGNORE-END
 
 //////////////////////////////////////////////////////////////////////
@@ -557,9 +556,6 @@ public:
     ILINE Vec3 GetPosition() const { return m_Matrix.GetTranslation(); }
     ILINE void SetPosition(const Vec3& p)   { m_Matrix.SetTranslation(p); UpdateFrustum(); }
     ILINE void SetPositionNoUpdate(const Vec3& p)   { m_Matrix.SetTranslation(p); }
-    ILINE bool Project(const Vec3& p, Vec3& result, Vec2i topLeft = Vec2i(0, 0), Vec2i widthHeight = Vec2i(0, 0)) const;
-    ILINE bool Unproject(const Vec3& viewportPos, Vec3& result, Vec2i topLeft = Vec2i(0, 0), Vec2i widthHeight = Vec2i(0, 0)) const;
-    ILINE void CalcScreenBounds(int* vOut, const AABB* pAABB, int nWidth, int nHeight) const;
     ILINE Vec3 GetUp() const { return m_Matrix.GetColumn2(); }
 
     //------------------------------------------------------------
@@ -894,190 +890,6 @@ ILINE Vec3 CCamera::CreateViewdir(const Ang3& ypr)
     return Vec3(-sz * cx, cz * cx, sx); //calculate the view-direction
 }
 
-// Description
-//   <PRE>
-//p=world space position
-//result=spreen space pos
-//retval=is visible on screen
-// </PRE>
-ILINE bool CCamera::Project(const Vec3& p, Vec3& result, Vec2i topLeft, Vec2i widthHeight) const
-{
-    Matrix44A mProj, mView;
-    Vec4 in, transformed, projected;
-
-    mathMatrixPerspectiveFov(&mProj, GetFov(), GetProjRatio(), GetNearPlane(), GetFarPlane());
-
-    mathMatrixLookAt(&mView, GetPosition(), GetPosition() + GetViewdir(), GetUp());
-
-    int pViewport[4] = {0, 0, GetViewSurfaceX(), GetViewSurfaceZ()};
-
-    if (!topLeft.IsZero() || !widthHeight.IsZero())
-    {
-        pViewport[0] = topLeft.x;
-        pViewport[1] = topLeft.y;
-        pViewport[2] = widthHeight.x;
-        pViewport[3] = widthHeight.y;
-    }
-
-    in.x = p.x;
-    in.y = p.y;
-    in.z = p.z;
-    in.w = 1.0f;
-    mathVec4Transform((f32*)&transformed, (f32*)&mView, (f32*)&in);
-
-    bool visible = transformed.z < 0.0f;
-
-    mathVec4Transform((f32*)&projected, (f32*)&mProj, (f32*)&transformed);
-
-    if (projected.w == 0.0f)
-    {
-        result = Vec3(0.f, 0.f, 0.f);
-        return false;
-    }
-
-    projected.x /= projected.w;
-    projected.y /= projected.w;
-    projected.z /= projected.w;
-
-    visible = visible && (fabs_tpl(projected.x) <= 1.0f) && (fabs_tpl(projected.y) <= 1.0f);
-
-    //output coords
-    result.x = pViewport[0] + (1 + projected.x) * pViewport[2] / 2;
-    result.y = pViewport[1] + (1 - projected.y) * pViewport[3] / 2;  //flip coords for y axis
-    result.z = projected.z;
-
-    return visible;
-}
-
-ILINE bool CCamera::Unproject(const Vec3& viewportPos, Vec3& result, Vec2i topLeft, Vec2i widthHeight) const
-{
-    Matrix44A mProj, mView;
-
-    mathMatrixPerspectiveFov(&mProj, GetFov(), GetProjRatio(), GetNearPlane(), GetFarPlane());
-    mathMatrixLookAt(&mView, GetPosition(), GetPosition() + GetViewdir(), Vec3(0, 0, 1));
-
-    int viewport[4] = {0, 0, GetViewSurfaceX(), GetViewSurfaceZ()};
-
-    if (!topLeft.IsZero() || !widthHeight.IsZero())
-    {
-        viewport[0] = topLeft.x;
-        viewport[1] = topLeft.y;
-        viewport[2] = widthHeight.x;
-        viewport[3] = widthHeight.y;
-    }
-
-    Vec4 vIn;
-    vIn.x = (viewportPos.x - viewport[0]) * 2 / viewport[2] - 1.0f;
-    vIn.y = (viewportPos.y - viewport[1]) * 2 / viewport[3] - 1.0f;
-    vIn.z = viewportPos.z;
-    vIn.w = 1.0;
-
-    Matrix44A m;
-    const float* proj = mProj.GetData();
-    const float* view = mView.GetData();
-    float* mdata = m.GetData();
-    for (int i = 0; i < 4; i++)
-    {
-        float ai0 = proj[i],  ai1 = proj[4 + i],  ai2 = proj[8 + i],  ai3 = proj[12 + i];
-        mdata[i] = ai0 * view[0] + ai1 * view[1] + ai2 * view[2] + ai3 * view[3];
-        mdata[4 + i] = ai0 * view[4] + ai1 * view[5] + ai2 * view[6] + ai3 * view[7];
-        mdata[8 + i] = ai0 * view[8] + ai1 * view[9] + ai2 * view[10] + ai3 * view[11];
-        mdata[12 + i] = ai0 * view[12] + ai1 * view[13] + ai2 * view[14] + ai3 * view[15];
-    }
-
-    m.Invert();
-    if (!m.IsValid())
-    {
-        return false;
-    }
-
-    Vec4 vOut = vIn * m;
-    if (vOut.w == 0.0)
-    {
-        return false;
-    }
-
-    result = Vec3(vOut.x / vOut.w, vOut.y / vOut.w, vOut.z / vOut.w);
-
-    return true;
-}
-
-ILINE void CCamera::CalcScreenBounds(int* vOut, const AABB* pAABB, int nWidth, int nHeight) const
-{
-    Matrix44A mProj, mView, mVP;
-    mathMatrixPerspectiveFov(&mProj, GetFov(), GetProjRatio(), GetNearPlane(), GetFarPlane());
-    mathMatrixLookAt(&mView, GetPosition(), GetPosition() + GetViewdir(), GetMatrix().GetColumn2());
-    mVP = mView * mProj;
-
-    Vec3 verts[8];
-
-    Vec2i   topLeft = Vec2i(0, 0);
-    Vec2i widthHeight = Vec2i(nWidth, nHeight);
-    float pViewport[4] = {0.0f, 0.0f, (float)widthHeight.x, (float)widthHeight.y};
-
-    float x0 = 9999.9f, x1 = -9999.9f, y0 = 9999.9f, y1 = -9999.9f;
-    float fIntersect = 1.0f;
-
-    Vec3 vDir = GetViewdir();
-    Vec3 vPos = GetPosition();
-    float d = vPos.Dot(vDir);
-
-    verts[0] = Vec3(pAABB->min.x, pAABB->min.y, pAABB->min.z);
-    verts[1] = Vec3(pAABB->max.x, pAABB->min.y, pAABB->min.z);
-    verts[2] = Vec3(pAABB->min.x, pAABB->max.y, pAABB->min.z);
-    verts[3] = Vec3(pAABB->max.x, pAABB->max.y, pAABB->min.z);
-    verts[4] = Vec3(pAABB->min.x, pAABB->min.y, pAABB->max.z);
-    verts[5] = Vec3(pAABB->max.x, pAABB->min.y, pAABB->max.z);
-    verts[6] = Vec3(pAABB->min.x, pAABB->max.y, pAABB->max.z);
-    verts[7] = Vec3(pAABB->max.x, pAABB->max.y, pAABB->max.z);
-
-    for (int i = 0; i < 8; i++)
-    {
-        float fDist = verts[i].Dot(vDir) - d;
-        fDist = (float)fsel(fDist, 0.0f, -fDist);
-
-        //Project(verts[i],vertsOut[i], topLeft, widthHeight);
-
-        Vec3 result = Vec3(0.0f, 0.0f, 0.0f);
-        Vec4 transformed, projected, vIn;
-
-        vIn = Vec4(verts[i].x, verts[i].y, verts[i].z, 1.0f);
-
-        mathVec4Transform((f32*)&projected, (f32*)&mVP, (f32*)&vIn);
-
-        fIntersect = (float)fsel(-projected.w, 0.0f, 1.0f);
-
-        if (!fzero(fIntersect) && !fzero(projected.w))
-        {
-            projected.x /= projected.w;
-            projected.y /= projected.w;
-            projected.z /= projected.w;
-
-            //output coords
-            result.x = pViewport[0] + (1.0f + projected.x) * pViewport[2] / 2.0f;
-            result.y = pViewport[1] + (1.0f - projected.y) * pViewport[3] / 2.0f;  //flip coords for y axis
-            result.z = projected.z;
-        }
-        else
-        {
-            vOut[0] = topLeft.x;
-            vOut[1] = topLeft.y;
-            vOut[2] = widthHeight.x;
-            vOut[3] = widthHeight.y;
-            return;
-        }
-
-        x0 = min(x0, result.x);
-        x1 = max(x1, result.x);
-        y0 = min(y0, result.y);
-        y1 = max(y1, result.y);
-    }
-
-    vOut[0] = (int)max(0.0f, min(pViewport[2], x0));
-    vOut[1] = (int)max(0.0f, min(pViewport[3], y0));
-    vOut[2] = (int)max(0.0f, min(pViewport[2], x1));
-    vOut[3] = (int)max(0.0f, min(pViewport[3], y1));
-}
 
 //---------------------------------------------------------------------------
 //---------------------------------------------------------------------------

@@ -40,6 +40,7 @@
 #include <LmbrCentral/Rendering/MaterialOwnerBus.h>
 
 #include <IDisplayViewport.h>
+#include <CryCommon/Cry_GeoIntersect.h>
 #include <MathConversion.h>
 #include <TrackView/TrackViewAnimNode.h>
 #include <ViewManager.h>
