@@ -1221,15 +1221,14 @@ bool   CFileUtil::CreatePath(const QString& strPath)
     if (!strDriveLetter.isEmpty())
     {
         strCurrentDirectoryPath = strDriveLetter;
-        strCurrentDirectoryPath += "\\";
+        strCurrentDirectoryPath += AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING;
     }
-
 
     nTotalPathQueueElements = cstrDirectoryQueue.size();
     for (nCurrentPathQueue = 0; nCurrentPathQueue < nTotalPathQueueElements; ++nCurrentPathQueue)
     {
         strCurrentDirectoryPath += cstrDirectoryQueue[static_cast<int>(nCurrentPathQueue)];
-        strCurrentDirectoryPath += "\\";
+        strCurrentDirectoryPath += AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING;
         // The value which will go out of this loop is the result of the attempt to create the
         // last directory, only.
 
@@ -2158,7 +2157,7 @@ uint32 CFileUtil::GetAttributes(const char* filename, bool bUseSourceControl /*=
         return SCC_FILE_ATTRIBUTE_READONLY | SCC_FILE_ATTRIBUTE_INPAK;
     }
 
-    
+
     const char* adjustedFile = file.GetAdjustedFilename();
     if (!AZ::IO::SystemFile::Exists(adjustedFile))
     {
