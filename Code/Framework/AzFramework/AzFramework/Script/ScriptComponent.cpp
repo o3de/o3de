@@ -33,6 +33,8 @@ extern "C" {
 #   include <Lua/lauxlib.h>
 }
 
+AZ_DEFINE_BUDGET(Script);
+
 namespace ScriptComponentCpp
 {
     template<typename T>

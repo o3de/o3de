@@ -29,7 +29,6 @@ set(FILES
     Console/ConsoleTests.cpp
     Debug.cpp
     DLL.cpp
-    Driller.cpp
     EBus.cpp
     EntityIdTests.cpp
     EntityTests.cpp
@@ -66,7 +65,6 @@ set(FILES
     SystemFile.cpp
     TaskTests.cpp
     TickBusTest.cpp
-    TimeDataStatistics.cpp
     UUIDTests.cpp
     XML.cpp
     Debug/AssetTracking.cpp
