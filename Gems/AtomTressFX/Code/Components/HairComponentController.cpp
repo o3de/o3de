@@ -286,7 +286,7 @@ namespace AZ
                 }
 
                 const uint32_t numBones = uint32_t(skeleton->GetNumNodes());
-                globalNameToIndexMap.reserve(numBones);
+                globalNameToIndexMap.reserve(size_t(numBones));
                 for (uint32_t i = 0; i < numBones; ++i)
                 {
                     const char* boneName = skeleton->GetNode(i)->GetName();

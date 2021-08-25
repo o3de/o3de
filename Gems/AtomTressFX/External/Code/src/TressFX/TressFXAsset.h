@@ -78,7 +78,7 @@ namespace AMD
 
     using LocalToGlobalBoneIndexLookup = AZStd::vector<uint32>; // Index -> TressFX Bone Index (Local set of bones)
                                                                 // Value -> EmotionFX Bone Index (Global set of bones)
-    using BoneNameToIndexMap = std::unordered_map<std::string, int>;
+    using BoneNameToIndexMap = AZStd::unordered_map<std::string, int>;
 
     class TressFXCollisionMesh
     {

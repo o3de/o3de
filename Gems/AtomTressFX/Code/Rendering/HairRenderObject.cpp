@@ -882,7 +882,7 @@ namespace AZ
 
                 // original TressFX lighting parameters - two specular lobes approximating
                 // the Marschner R and and TRT lobes + diffuse component. 
-                m_renderCB->MatKValue.v = { 0.f, parameters->m_HairKDiffuse, parameters->m_HairKSpec1, parameters->m_HairSpecExp1 };
+                m_renderCB->MatKValue = {{{0.f, parameters->m_HairKDiffuse, parameters->m_HairKSpec1, parameters->m_HairSpecExp1}}};
                 m_renderCB->HairKs2 = parameters->m_HairKSpec2;
                 m_renderCB->HairEx2 = parameters->m_HairSpecExp2;
 
