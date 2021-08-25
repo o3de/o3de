@@ -741,9 +741,13 @@ void EditorViewportWidget::OnBeginPrepareRender()
     RenderAll();
 
     // Draw 2D helpers.
-    //TransformationMatrices backupSceneMatrices;
+#ifdef LYSHINE_ATOM_TODO
+    TransformationMatrices backupSceneMatrices;
+#endif
     m_debugDisplay->DepthTestOff();
-    //m_renderer->Set2DMode(m_rcClient.right(), m_rcClient.bottom(), backupSceneMatrices);
+#ifdef LYSHINE_ATOM_TODO
+    m_renderer->Set2DMode(m_rcClient.right(), m_rcClient.bottom(), backupSceneMatrices);
+#endif
     auto prevState = m_debugDisplay->GetState();
     m_debugDisplay->SetState(e_Mode3D | e_AlphaBlended | e_FillModeSolid | e_CullModeBack | e_DepthWriteOn | e_DepthTestOn);
 
