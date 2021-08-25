@@ -9,9 +9,6 @@
 #include <TestImpactConsoleUtils.h>
 #include <AzCore/Casting/numeric_cast.h>
 
-#include "AzCore/Casting/numeric_cast.h"
-
-
 namespace TestImpact
 {
     namespace Console
