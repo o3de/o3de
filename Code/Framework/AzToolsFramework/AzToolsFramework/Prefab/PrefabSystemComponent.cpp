@@ -753,6 +753,18 @@ namespace AzToolsFramework
             }
         }
 
+        bool PrefabSystemComponent::AreDirtyTemplatesPresent()
+        {
+            for (const auto& [id, templateObject] : m_templateIdMap)
+            {
+                if (IsTemplateDirty(id))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         void PrefabSystemComponent::SaveAllDirtyTemplates()
         {
             for (auto& [id, templateObject] : m_templateIdMap)

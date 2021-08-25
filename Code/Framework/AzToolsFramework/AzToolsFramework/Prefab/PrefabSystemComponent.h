@@ -183,6 +183,8 @@ namespace AzToolsFramework
              */
             void SetTemplateDirtyFlag(const TemplateId& templateId, bool dirty) override;
 
+            bool AreDirtyTemplatesPresent() override;
+
             void SaveAllDirtyTemplates() override;
 
             //////////////////////////////////////////////////////////////////////////

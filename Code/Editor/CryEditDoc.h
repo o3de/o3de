@@ -104,6 +104,12 @@ public: // Create from serialization only
 
     bool CanCloseFrame();
 
+    //! Returns a Modal containing options to save the current level.
+    AZStd::shared_ptr<QDialog> ConstructSaveLevelDialog();
+
+    //! Executes a Modal asking users about their prefabs save preference.
+    void ExecuteSavePrefabsDialog();
+
     enum class FetchPolicy
     {
         DELETE_FOLDER,

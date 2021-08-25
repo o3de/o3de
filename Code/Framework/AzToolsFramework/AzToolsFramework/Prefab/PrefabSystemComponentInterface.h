@@ -49,6 +49,7 @@ namespace AzToolsFramework
 
             virtual bool IsTemplateDirty(const TemplateId& templateId) = 0;
             virtual void SetTemplateDirtyFlag(const TemplateId& templateId, bool dirty) = 0;
+            virtual bool AreDirtyTemplatesPresent() = 0;
             virtual void SaveAllDirtyTemplates() = 0;
 
             virtual PrefabDom& FindTemplateDom(TemplateId templateId) = 0;
