@@ -17,7 +17,6 @@
 #include <AzCore/std/bind/bind.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
-
 namespace Audio
 {
     extern CAudioLogger g_audioLogger;

@@ -23,7 +23,6 @@
 #include <AzCore/Utils/Utils.h>
 
 #include <AzFramework/Asset/AssetCatalogComponent.h>
-#include <AzFramework/Driller/RemoteDrillerInterface.h>
 #include <AzFramework/Entity/GameEntityContextComponent.h>
 #include <AzFramework/FileTag/FileTagComponent.h>
 #include <AzFramework/Input/System/InputSystemComponent.h>
@@ -169,7 +168,6 @@ namespace AssetBundler
             if (*iter == azrtti_typeid<AzFramework::GameEntityContextComponent>() ||
                 *iter == azrtti_typeid<AzFramework::AzFrameworkConfigurationSystemComponent>() ||
                 *iter == azrtti_typeid<AzFramework::InputSystemComponent>() ||
-                *iter == azrtti_typeid<AzFramework::DrillerNetworkAgentComponent>() ||
                 *iter == azrtti_typeid<AZ::SliceSystemComponent>())
             {
                 // Asset Bundler does not require the above components to be active

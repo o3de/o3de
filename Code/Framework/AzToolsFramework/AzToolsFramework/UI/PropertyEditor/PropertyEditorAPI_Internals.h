@@ -25,6 +25,8 @@ class QColor;
 class QString;
 class QPoint;
 
+AZ_DECLARE_BUDGET(AzToolsFramework);
+
 namespace AzToolsFramework
 {
     namespace Components
