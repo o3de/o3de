@@ -928,7 +928,7 @@ namespace AZ
                 m_strandCB->NumVerticesPerStrand = m_NumVerticesPerStrand;  // Always constant
                 m_strandCB->EnableThinTip = parameters->m_EnableThinTip;
                 m_strandCB->NodePoolSize = nodePoolSize;
-                m_strandCB->RenderParamsIndex = m_RenderIndex;				// Always constant
+                m_strandCB->RenderParamsIndex = m_RenderIndex;              // Always constant
 
                 m_strandCB->EnableStrandUV = parameters->m_EnableStrandUV;
                 m_strandCB->EnableStrandTangent = parameters->m_EnableStrandTangent;
