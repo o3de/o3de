@@ -2,6 +2,10 @@
 # create identity LUT
 ociolutimage --generate --cubesize 16 --output C:\Depot\o3de\Gems\Atom\Feature\Common\Tools\ColorGrading\Resources\LUTs\linear_16_LUT.exr
 
+NOTE:	ociolutimage is a OpenColorIO (ocio) app.  O3DE does NOT currently build these, however you can build them yourself.
+		for example, we used vcpkg and cmake gui to build them locally.
+		we intend to add a fully built integration of ocio in the future.
+		for now, we have provided all of the LUTs below so that most users will not need the ocio tools.
 
 ################################
 # create base 16x16x16 LUT shaped for grading in 48-nits (LDR), in 1000-nits (HDR), 2000nits, 4000-nits
@@ -49,27 +53,46 @@ Examples: 	C:\Depot\o3de-engine\Gems\Atom\Feature\Common\Tools\ColorGrading\Reso
 	1. This must be installed (righ-click) before launching photoshop:
 		Gems\Atom\Feature\Common\Tools\ColorGrading\Resources\LUTs\from_ACEScg_to_sRGB.icc
 		^ this is to be used as 'custom color proof' (ACES view transform)
+
 	2. This is the O3DE 'displaymapper passthrough' capture, re-saved as a .exr:
-		"HDR_in_LDR_Log2-48nits\LUT_PreShaped_Composite\framebuffer_ACEScg_to_sRGB_icc.exr"
+		"ColorGrading\Resources\TestData\Photoshop\Log2-48nits\framebuffer_ACEScg_to_sRGB_icc.exr"
 		^ open in photoshop, color proof with the above .icc
-		  the image should proof such that it looks the same as camer in O3DE viewport
+		  the image should proof such that it looks the same as camera in O3DE viewport
 		  with the Displaymapper set to ACES
+
 	3. Composite this base LUT in a layer on top:
 		"Gems\Atom\Feature\Common\Tools\ColorGrading\Resources\LUTs\base_Log2-48nits_32_LUT.exr"
-		^ this is a pre-shaped LUT we generated above
-	4. Color Grade using adjustment layers (and hope for the best)
-	5. Select/crop just the LUT, 'Copy Merged' into a new document, save:
-		"HDR_in_LDR_Log2-48nits\LUT_PreShaped_Composite\shaper-Log2-48nits_hue-sat_post-grade_32_LUT.exr"
-		^ this lut is post-grade BUT still shaped
+		^ this is a pre-shaped 32x32x32 LUT we generated above
+
+	4. Color Grade using adjustment layers (and hope for the best, some photoshop grades may cause values to clip)
+
+	5. Select/crop just the LUT, 'Copy Merged' into a new document, save into a folder such as:
+		"ColorGrading\Resources\TestData\Photoshop\Log2-48nits\i_shaped\test_hue-sat_32_LUT.exr"
+			^ this lut is post-grade BUT still shaped (need to inv shape back to normailzed 0-1 values)
+
 	6. Use the provided cmd/python tools, we need to inverse shape:
 
-		Run: "Gems\Atom\Feature\Common\Tools\ColorGrading\cmdline\CMD_ColorGradinTools.bat"
+		Run: "Gems\Atom\Feature\Common\Tools\ColorGrading\cmdline\CMD_ColorGradingTools.bat"
 
 		C:\Depot\o3de-engine\Gems\Atom\Feature\Common\Tools\ColorGrading>>
 
-		python %DCCSI_COLORGRADING_SCRIPTS%\lut_helper.py --i "Resources\TestData\Photoshop\HDR_in_LDR_Log2-48nits\LUT_PreShaped_Composite\shaper-Log2-48nits_hue-sat_post-grade_32_LUT.exr" --op post-grading --shaper Log2-48nits --o Resources\TestData\Photoshop\HDR_in_LDR_Log2-48nits\LUT_PreShaped_Composite\hue-sat_inv-Log2-48nits_32_LUT.exr -l -a
+		python %DCCSI_COLORGRADING_SCRIPTS%\lut_helper.py --i "Resources\TestData\TestData\Photoshop\Log2-48nits\i_shaped\test_hue-sat_32_LUT.exr" --op post-grading --shaper Log2-48nits --o Resources\TestData\Photoshop\Log2-48nits\o_invShaped\test_hue-sat_32_LUT -l -a
 
-		^ this will inv-shape the LUT (3DL's are normalized, values may clip!)
-		^ generates LUT as .exr
+		^ this will inv-shaped LUT (3DL's are normalized in 0-1 space, values may clip!!!)
+		^ -e generates LUT as .exr
 		^ -l generates a .3DL version
 		^ -a generates a .azasset version <-- this copies/moves to an asset folder
+
+Using LUTs In-engine:
+		Only the <LUT NAME>.azasset needs to be copied to a O3DE project assets folder to use in engine, example:
+			"C:\Depot\o3de-engine\Gems\Atom\Feature\Common\Assets\ColorGrading\TestData\Photoshop\inv-Log2-48nits\test_hue-sat_32_LUT.azasset"
+			^ this is just an example path within the engine folder
+
+		The <LUT NAME>.azasset can be loaded into a 'Look Modification Component'
+
+		If there are multiple properly configured 'Look Modification Components' you can blend LUTs/Looks (in world space, in a cinematic, etc.)
+
+		By default LUTs utilize linear sampling, but you can use the following CVAR to improve quality for 'any difficult lut':
+			r_lutSampleQuality=0, linear
+			r_lutSampleQuality=1, b-spline 7 taps 
+			r_lutSampleQuality=2, b-spline 19 taps (highest quality)
