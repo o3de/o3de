@@ -359,6 +359,43 @@ void TerrainSystem::RefreshArea(AZ::EntityId areaId)
     m_terrainHeightDirty = true;
 }
 
+AZ::EntityId TerrainSystem::FindBestLayerSpawnerAt(const AZ::u32 x, const AZ::u32 y) const
+{
+    // Returns the entityId that contains the highest priority layer encompassing the given position.
+    // If more than one layer has the same priority, will return the last one seen.
+
+    AZ::EntityId bestId;
+    AZ::u32 bestPriority = 0;
+    AZ::u32 bestLayer = 0;
+
+    for (auto& [areaId, areaBounds] : m_registeredAreas)
+    {
+        AZ::Vector3 inPosition(
+            (x * m_currentSettings.m_heightQueryResolution.GetX()) + m_currentSettings.m_worldBounds.GetMin().GetX(),
+            (y * m_currentSettings.m_heightQueryResolution.GetY()) + m_currentSettings.m_worldBounds.GetMin().GetY(),
+            areaBounds.GetMin().GetZ());
+
+        if (!areaBounds.Contains(inPosition))
+        {
+            continue;
+        }
+
+        AZ::u32 priority, layer;
+        Terrain::TerrainSpawnerRequestBus::Event(areaId, &Terrain::TerrainSpawnerRequestBus::Events::GetPriority, layer, priority);
+
+        if (layer < bestLayer || priority < bestPriority)
+        {
+            continue;
+        }
+
+        bestLayer = layer;
+        bestPriority = priority;
+        bestId = areaId;
+    }
+
+    return bestId;
+}
+
 void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
 {
     bool terrainSettingsChanged = false;
@@ -421,29 +458,32 @@ void TerrainSystem::OnTick(float /*deltaTime*/, AZ::ScriptTimePoint /*time*/)
         const uint32_t pixelDataSize = width * height * sizeof(float);
         memset(pixels.data(), 0, pixelDataSize);
 
-        for (auto& [areaId, areaBounds] : m_registeredAreas)
+        for (uint32_t y = 0; y < height; y++)
         {
-            for (uint32_t y = 0; y < height; y++)
+            for (uint32_t x = 0; x < width; x++)
             {
-                for (uint32_t x = 0; x < width; x++)
+                AZ::EntityId spawnerId = FindBestLayerSpawnerAt(x, y);
+                if (!spawnerId.IsValid())
                 {
-                    AZ::Vector3 inPosition(
-                        (x * m_currentSettings.m_heightQueryResolution.GetX()) + m_currentSettings.m_worldBounds.GetMin().GetX(),
-                        (y * m_currentSettings.m_heightQueryResolution.GetY()) + m_currentSettings.m_worldBounds.GetMin().GetY(),
-                        areaBounds.GetMin().GetZ());
-                    if (areaBounds.Contains(inPosition))
-                    {
-                        AZ::Vector3 outPosition;
-                        const Terrain::TerrainAreaHeightRequests::Sampler sampleFilter =
-                            Terrain::TerrainAreaHeightRequests::Sampler::DEFAULT;
-
-                        Terrain::TerrainAreaHeightRequestBus::Event(
-                            areaId, &Terrain::TerrainAreaHeightRequestBus::Events::GetHeight, inPosition, outPosition, sampleFilter);
-
-                        pixels[(y * width) + x] = (outPosition.GetZ() - m_currentSettings.m_worldBounds.GetMin().GetZ()) /
-                            m_currentSettings.m_worldBounds.GetExtents().GetZ();
-                    }
+                    continue;
                 }
+
+                AZ::Aabb bounds = m_registeredAreas[spawnerId];
+                AZ::Vector3 inPosition(
+                    (x * m_currentSettings.m_heightQueryResolution.GetX()) + m_currentSettings.m_worldBounds.GetMin().GetX(),
+                    (y * m_currentSettings.m_heightQueryResolution.GetY()) + m_currentSettings.m_worldBounds.GetMin().GetY(),
+                    bounds.GetMin().GetZ());
+                    
+                AZ::Vector3 outPosition;
+                const Terrain::TerrainAreaHeightRequests::Sampler sampleFilter =
+                    Terrain::TerrainAreaHeightRequests::Sampler::DEFAULT;
+
+                Terrain::TerrainAreaHeightRequestBus::Event(
+                    spawnerId, &Terrain::TerrainAreaHeightRequestBus::Events::GetHeight, inPosition, outPosition, sampleFilter);
+
+                pixels[(y * width) + x] = (outPosition.GetZ() - m_currentSettings.m_worldBounds.GetMin().GetZ()) /
+                    m_currentSettings.m_worldBounds.GetExtents().GetZ();
+
             }
         }
 

@@ -93,6 +93,8 @@ namespace Terrain
         float GetHeightSynchronous(float x, float y) const;
         AZ::Vector3 GetNormalSynchronous(float x, float y) const;
 
+        AZ::EntityId TerrainSystem::FindBestLayerSpawnerAt(const AZ::u32 x, const AZ::u32 y) const;
+
         // AZ::TickBus::Handler overrides ...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 

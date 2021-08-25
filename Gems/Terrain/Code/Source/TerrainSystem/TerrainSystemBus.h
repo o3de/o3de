@@ -116,5 +116,26 @@ namespace Terrain
     };
 
     using TerrainAreaHeightRequestBus = AZ::EBus<TerrainAreaHeightRequests>;
+    
+    /**
+    * A bus for the TerrainSystem to interrogate TerrainLayerSpawners.
+    */
+    class TerrainSpawnerRequests
+        : public AZ::ComponentBus
+    {
+    public:
+        ////////////////////////////////////////////////////////////////////////
+        // EBusTraits
+        using MutexType = AZStd::recursive_mutex;
+        ////////////////////////////////////////////////////////////////////////
+
+        virtual ~TerrainSpawnerRequests() = default;
+
+        virtual void GetPriority(AZ::u32& outLayer, AZ::u32& outPriority) = 0;
+        virtual void GetUseGroundPlane(bool& outUseGroundPlane) = 0;
+
+    };
+
+    using TerrainSpawnerRequestBus = AZ::EBus<TerrainSpawnerRequests>;
 
 }

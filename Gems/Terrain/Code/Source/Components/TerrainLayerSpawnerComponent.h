@@ -59,6 +59,7 @@ namespace Terrain
         , private AZ::TransformNotificationBus::Handler
         , private LmbrCentral::ShapeComponentNotificationsBus::Handler
         , private Terrain::TerrainAreaRequestBus::Handler
+        , private Terrain::TerrainSpawnerRequestBus::Handler
     {
     public:
         template<typename, typename>
@@ -88,6 +89,10 @@ namespace Terrain
         // ShapeComponentNotificationsBus
         void OnShapeChanged(ShapeChangeReasons changeReason) override;
 
+        // TerrainSpawnerRequestBus
+        void GetPriority(AZ::u32& outLayer, AZ::u32& outPriority) override;
+        void GetUseGroundPlane(bool& outUseGroundPlane) override;
+        
         void RegisterArea() override;
         void RefreshArea() override;
 
