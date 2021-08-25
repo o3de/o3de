@@ -143,7 +143,8 @@ foreach(pal_restricted_file ${pal_restricted_files})
     # Retrieve the first path segment which should be the restricted platform
     list(GET pal_restricted_segments 0 platform)
     # Append the new restricted platform
-    list(APPEND PAL_RESTRICTED_PLATFORMS ${platform})
+    string(TOLOWER ${platform} platform_lower)
+    list(APPEND PAL_RESTRICTED_PLATFORMS ${platform_lower})
 endforeach()
 ly_set(PAL_RESTRICTED_PLATFORMS ${PAL_RESTRICTED_PLATFORMS})
 
