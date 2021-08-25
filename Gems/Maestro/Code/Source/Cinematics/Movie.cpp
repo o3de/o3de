@@ -27,6 +27,7 @@
 
 #include <StlUtils.h>
 #include <MathConversion.h>
+#include <StaticInstance.h>
 
 #include <ISystem.h>
 #include <ILog.h>

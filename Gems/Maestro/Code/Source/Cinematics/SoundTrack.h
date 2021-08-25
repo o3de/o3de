@@ -11,6 +11,7 @@
 #define CRYINCLUDE_CRYMOVIE_SOUNDTRACK_H
 
 #include "AnimTrack.h"
+#include <CryCommon/CrySizer.h>
 
 struct SSoundInfo
 {
