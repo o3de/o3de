@@ -306,7 +306,7 @@ namespace AzNetworking
                 }
                 else if (handledPacket == PacketDispatchResult::Pending)
                 {
-                    // If we did not handle due to a handshake pending completion, defer it
+                    // If we did not handle due to a handshake pending completion, skip it
                     continue;
                 }
                 else if (connection->GetConnectionState() != ConnectionState::Disconnecting)

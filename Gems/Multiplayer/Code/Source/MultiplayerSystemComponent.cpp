@@ -441,7 +441,7 @@ namespace Multiplayer
         MultiplayerPackets::SyncConsole m_syncPacket;
     };
 
-    bool MultiplayerSystemComponent::IsHandshakeComplete()
+    bool MultiplayerSystemComponent::IsHandshakeComplete() const
     {
         return m_didHandshake;
     }
