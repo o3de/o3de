@@ -3637,10 +3637,13 @@ void UiCanvasComponent::DestroyRenderTarget()
     if (m_renderTargetHandle > 0)
     {
         ISystem::CrySystemNotificationBus::Handler::BusDisconnect();
-        AZ_Assert(false,"gEnv->pRenderer is alway null, cannot call methods on it");
-        //gEnv->pRenderer->DestroyDepthSurface(m_renderTargetDepthSurface);
+#ifdef LYSHINE_ATOM_TODO // [LYN-3359] Support RTT using Atom
+        gEnv->pRenderer->DestroyDepthSurface(m_renderTargetDepthSurface);
+#endif
         m_renderTargetDepthSurface = nullptr;
-        //gEnv->pRenderer->DestroyRenderTarget(m_renderTargetHandle);
+#ifdef LYSHINE_ATOM_TODO // [LYN-3359] Support RTT using Atom
+        gEnv->pRenderer->DestroyRenderTarget(m_renderTargetHandle);
+#endif
         m_renderTargetHandle = -1;
     }
 }
