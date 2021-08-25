@@ -3774,8 +3774,7 @@ namespace AZ
         template<class... Functions>
         inline void OnDemandReflectFunctions(OnDemandReflectionOwner* onDemandReflection, AZStd::Internal::pack_traits_arg_sequence<Functions...>)
         {
-            using PackExpander = bool[];
-            [[maybe_unused]] PackExpander pe = { true, (BehaviorOnDemandReflectHelper<typename AZStd::function_traits<Functions>::raw_fp_type>::QueueReflect(onDemandReflection), true)... };
+            (BehaviorOnDemandReflectHelper<typename AZStd::function_traits<Functions>::raw_fp_type>::QueueReflect(onDemandReflection), ...);
         }
 
         // Assumes parameters array is big enough to store all parameters

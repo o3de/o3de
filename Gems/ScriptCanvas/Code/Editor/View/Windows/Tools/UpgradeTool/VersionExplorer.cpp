@@ -762,7 +762,7 @@ namespace ScriptCanvasEditor
                 rowGoToButton->setEnabled(false);
 
                 m_inProgressAsset = AZStd::find_if(m_assetsToUpgrade.begin(), m_assetsToUpgrade.end()
-                    , [this, asset](const UpgradeAssets::value_type& assetToUpgrade)
+                    , [asset](const UpgradeAssets::value_type& assetToUpgrade)
                 {
                     return assetToUpgrade.GetId() == asset.GetId();
                 });

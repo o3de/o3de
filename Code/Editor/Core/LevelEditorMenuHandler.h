@@ -33,7 +33,7 @@ class LevelEditorMenuHandler
 {
     Q_OBJECT
 public:
-    LevelEditorMenuHandler(MainWindow* mainWindow, QtViewPaneManager* const viewPaneManager, QSettings& settings);
+    LevelEditorMenuHandler(MainWindow* mainWindow, QtViewPaneManager* const viewPaneManager);
     ~LevelEditorMenuHandler();
 
     void Initialize();

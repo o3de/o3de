@@ -154,8 +154,7 @@ namespace
     }
 }
 
-LevelEditorMenuHandler::LevelEditorMenuHandler(
-    MainWindow* mainWindow, QtViewPaneManager* const viewPaneManager, [[maybe_unused]] QSettings& settings)
+LevelEditorMenuHandler::LevelEditorMenuHandler(MainWindow* mainWindow, QtViewPaneManager* const viewPaneManager)
     : QObject(mainWindow)
     , m_mainWindow(mainWindow)
     , m_viewPaneManager(viewPaneManager)

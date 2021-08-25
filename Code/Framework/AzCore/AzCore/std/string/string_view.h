@@ -869,30 +869,13 @@ namespace AZStd
     constexpr size_t hash_string(RandomAccessIterator first, size_t length)
     {
         size_t hash = 14695981039346656037ULL;
-#if AZ_COMPILER_MSVC >= 1924
         constexpr size_t fnvPrime = 1099511628211ULL;
-#endif
 
         const RandomAccessIterator last(first + length);
         for (; first != last; ++first)
         {
             hash ^= static_cast<size_t>(*first);
-#if AZ_COMPILER_MSVC < 1924
-            // Workaround for integer overflow warning for hash function when used in a constexpr context
-            // The warning must be disabled at the call site and is a compiler bug that has been fixed
-            // with Visual Studio 2019 version 16.4
-            // https://developercommunity.visualstudio.com/content/problem/211134/unsigned-integer-overflows-in-constexpr-functionsa.html?childToView=211580#comment-211580
-            constexpr size_t fnvPrimeHigh{ 0x100ULL };
-            constexpr size_t fnvPrimeLow{ 0x000001b3 };
-            const uint64_t hashHigh{ hash >> 32 };
-            const uint64_t hashLow{ hash & 0xFFFF'FFFF };
-            const uint64_t lowResult{ hashLow * fnvPrimeLow };
-            const uint64_t fnvPrimeHighResult{ hashLow * fnvPrimeHigh };
-            const uint64_t hashHighResult{ hashHigh * fnvPrimeLow };
-            hash = (lowResult & 0xffff'ffff) + (((lowResult >> 32) + (fnvPrimeHighResult & 0xffff'ffff) + (hashHighResult & 0xffff'ffff)) << 32);
-#else
             hash *= fnvPrime;
-#endif
         }
         return hash;
     }
