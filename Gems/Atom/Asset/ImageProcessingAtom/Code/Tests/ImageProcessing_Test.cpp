@@ -71,11 +71,6 @@ using namespace ImageProcessingAtom;
 
 namespace UnitTest
 {
-    namespace
-    {
-        static const char* s_gemFolder;
-    }
-
     // Expose AZ::AssetManagerComponent::Reflect function for testing
     class MyAssetManagerComponent
         : public AZ::AssetManagerComponent
@@ -126,6 +121,8 @@ namespace UnitTest
         AZStd::unique_ptr<AZ::JsonSystemComponent> m_jsonSystemComponent;
         AZStd::vector<AZStd::unique_ptr<AZ::Data::AssetHandler>> m_assetHandlers;
         AZStd::string m_gemFolder;
+        AZStd::string m_outputRootFolder;
+        AZStd::string m_outputFolder;
 
         void SetUp() override
         {
@@ -173,7 +170,7 @@ namespace UnitTest
             AzQtComponents::PrepareQtPaths();
 
             m_gemFolder = AZ::Test::GetEngineRootPath() + "/Gems/Atom/Asset/ImageProcessingAtom/";
-            s_gemFolder = m_gemFolder.c_str();
+            m_outputFolder = m_gemFolder + AZStd::string("Code/Tests/TestAssets/temp/");
 
             m_defaultSettingFolder = m_gemFolder + AZStd::string("Config/");
             m_testFileFolder = m_gemFolder + AZStd::string("Code/Tests/TestAssets/");
@@ -186,7 +183,7 @@ namespace UnitTest
         void TearDown() override
         {
             m_gemFolder = AZStd::string();
-            s_gemFolder = "";
+            m_outputFolder = AZStd::string();
             m_defaultSettingFolder = AZStd::string();
             m_testFileFolder = AZStd::string();
 
@@ -268,8 +265,20 @@ namespace UnitTest
         }
 
     public:
+        void SetOutputSubFolder(const char* subFolderName)
+        {
+            if (subFolderName)
+            {
+                m_outputFolder = m_outputRootFolder + "/" + subFolderName;
+            }
+            else
+            {
+                m_outputFolder  = m_outputRootFolder;
+            }
+        }
+
         //helper function to save an image object to a file through QtImage
-        static void SaveImageToFile(const IImageObjectPtr imageObject, const AZStd::string imageName, AZ::u32 maxMipCnt = 100)
+        void SaveImageToFile(const IImageObjectPtr imageObject, const AZStd::string imageName, AZ::u32 maxMipCnt = 100)
         {
     #ifndef DEBUG_OUTPUT_IMAGES
             return;
@@ -279,12 +288,12 @@ namespace UnitTest
                 return;
             }
 
-            //create the directory if it's not exist
-            AZStd::string outputDir = s_gemFolder + AZStd::string("Code/Tests/TestAssets/temp/");
-            QDir dir(outputDir.data());
-            if (!dir.exists())
+            // create dir if it doesn't exist
+            QDir dir;
+            QDir outputDir(m_outputFolder.c_str());
+            if (!outputDir.exists())
             {
-                dir.mkpath(".");
+                dir.mkpath(m_outputFolder.c_str());
             }
 
             //save origin file pixel format so we could use it to generate name later
@@ -308,7 +317,7 @@ namespace UnitTest
 
                 //generate file name
                 char filePath[2048];
-                azsprintf(filePath, "%s%s_%s_mip%d_%dx%d_%d.png", outputDir.data(), imageName.c_str()
+                azsprintf(filePath, "%s%s_%s_mip%d_%dx%d_%d.png", m_outputFolder.data(), imageName.c_str()
                     , CPixelFormats::GetInstance().GetPixelFormatInfo(originPixelFormat)->szName
                     , mip, width, height, originalSize);
 
@@ -386,7 +395,7 @@ namespace UnitTest
         }
 
 
-        static bool CompareDDSImage(const QString& imagePath1, const QString& imagePath2, QString& output)
+        bool CompareDDSImage(const QString& imagePath1, const QString& imagePath2, QString& output)
         {
             IImageObjectPtr image1, alphaImage1, image2, alphaImage2;
 
@@ -792,13 +801,11 @@ namespace UnitTest
             auto formatInfo = CPixelFormats::GetInstance().GetPixelFormatInfo(pixelFormat);
             if (formatInfo->bCompressed)
             {
-                // exclude some formats until we supported it
-                if (pixelFormat != ePixelFormat_ASTC_5x4 && pixelFormat != ePixelFormat_ASTC_6x5
-                    && pixelFormat != ePixelFormat_ASTC_8x5 && pixelFormat != ePixelFormat_ASTC_8x6
-                    && pixelFormat != ePixelFormat_ASTC_10x6 && pixelFormat != ePixelFormat_ASTC_10x8
-                    && pixelFormat != ePixelFormat_ASTC_12x10
+                // exclude astc formats until we add astc compressor to all platforms
+                // exclude pvrtc formats (deprecating) 
+                if (!IsASTCFormat(pixelFormat)
                     && pixelFormat != ePixelFormat_PVRTC2 && pixelFormat != ePixelFormat_PVRTC4
-                    && !IsETCFormat(pixelFormat))   // skip ETC since it's too slow
+                    && !IsETCFormat(pixelFormat)) // skip ETC since it's very slow
                 {
                     compressedFormats.push_back(pixelFormat);
                 }
@@ -833,10 +840,15 @@ namespace UnitTest
                     continue;
                 }
                 ASSERT_TRUE(imageToProcess.Get());
-                ASSERT_TRUE(imageToProcess.Get()->GetPixelFormat() == pixelFormat);                                
+                ASSERT_TRUE(imageToProcess.Get()->GetPixelFormat() == pixelFormat);
+
+                // Get compressor name
+                ColorSpace sourceColorSpace = srcImage->HasImageFlags(EIF_SRGBRead) ? ColorSpace::sRGB : ColorSpace::linear;
+                ICompressorPtr compressor = ICompressor::FindCompressor(pixelFormat, sourceColorSpace, true);
 
                 //save the image to a file so we can check the visual result
-                SaveImageToFile(imageToProcess.Get(), imageName, 1);
+                AZStd::string outputName = AZStd::string::format("%s_%s", imageName.c_str(), compressor->GetName());
+                SaveImageToFile(imageToProcess.Get(), outputName, 1);
 
                 //convert back to an uncompressed format and expect it will be successful
                 imageToProcess.ConvertFormat(ePixelFormat_R8G8B8A8);
@@ -917,12 +929,11 @@ namespace UnitTest
         auto outcome = BuilderSettingManager::Instance()->LoadConfigFromFolder(m_defaultSettingFolder);
         ASSERT_TRUE(outcome.IsSuccess());
 
-        const AZStd::string outputFolder = m_gemFolder + AZStd::string("Code/Tests/TestAssets/temp/");
         AZStd::string inputFile;
         AZStd::vector<AssetBuilderSDK::JobProduct> outProducts;
 
         inputFile = m_imagFileNameMap[Image_128x128_Transparent_Tga];
-        ImageConvertProcess* process = CreateImageConvertProcess(inputFile, outputFolder, "pc", outProducts, m_context.get());
+        ImageConvertProcess* process = CreateImageConvertProcess(inputFile, m_outputFolder, "pc", outProducts, m_context.get());
 
         if (process != nullptr)
         {
@@ -952,12 +963,11 @@ namespace UnitTest
         auto outcome = BuilderSettingManager::Instance()->LoadConfigFromFolder(m_defaultSettingFolder);
         ASSERT_TRUE(outcome.IsSuccess());
 
-        const AZStd::string outputFolder = m_gemFolder + AZStd::string("Code/Tests/TestAssets/temp/");
         AZStd::string inputFile;
         AZStd::vector<AssetBuilderSDK::JobProduct> outProducts;
 
         inputFile = m_imagFileNameMap[Image_workshop_iblskyboxcm_exr];
-        ImageConvertProcess* process = CreateImageConvertProcess(inputFile, outputFolder, "pc", outProducts, m_context.get());
+        ImageConvertProcess* process = CreateImageConvertProcess(inputFile, m_outputFolder, "pc", outProducts, m_context.get());
 
         if (process != nullptr)
         {
