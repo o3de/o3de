@@ -707,7 +707,8 @@ bool CCryEditDoc::SaveModified()
         QCheckBox* saveAllPrefabsCheckBox = prefabSaveSelectionDialog->findChild<QCheckBox*>("SaveAllPrefabsCheckbox");
         SavePrefabsPreference savePrefabsPreference =
             saveAllPrefabsCheckBox->isChecked() ? SavePrefabsPreference::SaveAll : SavePrefabsPreference::SaveNone;
-        
+
+        // In order to get the accept and reject codes of QDialog and QDialogButtonBox aligned, we do (1-prefabSaveSelection) here.
         switch (1 - prefabSaveSelection)
         {
         case QDialogButtonBox::AcceptRole:

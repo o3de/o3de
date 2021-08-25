@@ -18,6 +18,7 @@
 
 namespace AzToolsFramework
 {
+
     class PrefabEditorEntityOwnershipInterface
     {
     public:

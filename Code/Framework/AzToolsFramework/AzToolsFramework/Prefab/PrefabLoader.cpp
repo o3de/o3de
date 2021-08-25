@@ -676,7 +676,7 @@ namespace AzToolsFramework
             {
                 registry->GetObject(savePrefabsPreference, s_savePrefabsKey);
             }
-            return static_cast<SavePrefabsPreference>(savePrefabsPreference);
+            return savePrefabsPreference;
         }
 
         void PrefabLoader::SetSavePrefabsPreference(SavePrefabsPreference savePrefabsPreference)

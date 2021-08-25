@@ -10,7 +10,6 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Script/ScriptSystemBus.h>
 #include <AzCore/Serialization/Utils.h>
-#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>

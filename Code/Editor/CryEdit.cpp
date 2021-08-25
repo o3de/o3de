@@ -736,7 +736,11 @@ void CCryEditApp::OnFileSave()
 
     if (usePrefabSystemForLevels)
     {
-        GetIEditor()->GetDocument()->ExecuteSavePrefabsDialog();
+        auto prefabSystemComponentInterface = AZ::Interface<AzToolsFramework::Prefab::PrefabSystemComponentInterface>::Get();
+        if (prefabSystemComponentInterface->AreDirtyTemplatesPresent())
+        {
+            GetIEditor()->GetDocument()->ExecuteSavePrefabsDialog();
+        }
     }
 }
 
@@ -3195,6 +3199,7 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
                 ? SavePrefabsPreference::SaveAll
                 : SavePrefabsPreference::SaveNone;
 
+            // In order to get the accept and reject codes of QDialog and QDialogButtonBox aligned, we do (1-prefabSaveSelection) here.
             switch (1 - prefabSaveSelection)
             {
             case QDialogButtonBox::AcceptRole:
