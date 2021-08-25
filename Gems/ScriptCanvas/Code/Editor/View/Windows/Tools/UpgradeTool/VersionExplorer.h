@@ -119,8 +119,6 @@ namespace ScriptCanvasEditor
         size_t m_failedAssets = 0;
         size_t m_discoveredAssets = 0;
 
-        // AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>> m_activeAssets;
-
         IUpgradeRequests::AssetList m_assetsToInspect;
         IUpgradeRequests::AssetList::iterator m_inspectingAsset;
         using UpgradeAssets = AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>;

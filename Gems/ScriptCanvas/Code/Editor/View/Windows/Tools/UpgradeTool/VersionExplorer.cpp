@@ -602,19 +602,10 @@ namespace ScriptCanvasEditor
     {
         m_assetsToUpgrade.clear();
         m_assetsToInspect.clear();
-
         m_ui->tableWidget->setRowCount(0);
         m_inspectedAssets = 0;
-
         IUpgradeRequests* upgradeRequests = AZ::Interface<IUpgradeRequests>::Get();
         m_assetsToInspect = upgradeRequests->GetAssetsToUpgrade();
-
-//         for (auto& entry : m_assetsToInspect)
-//         {
-//             m_activeAssets.push_back(AZ::Data::AssetManager::Instance().GetAsset
-//                 (entry.m_assetId, entry.m_assetType, AZ::Data::AssetLoadBehavior::PreLoad));
-//         }
-
         DoScan();
     }
 
