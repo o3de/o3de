@@ -41,13 +41,11 @@ ly_append_configurations_options(
         # https://docs.microsoft.com/en-us/cpp/preprocessor/compiler-warnings-that-are-off-by-default?view=vs-2019
         /we4296 # 'operator': expression is always false
         /we5233 # explicit lambda capture 'identifier' is not used
-
-        # /we4426 # optimization flags changed after including header, may be due to #pragma optimize()
-        # /we4464 # relative include path contains '..'
-        # /we4619 # #pragma warning: there is no warning number 'number'
-        # /we4777 # 'function' : format string 'string' requires an argument of type 'type1', but variadic argument number has type 'type2'
-        # /we5031 # #pragma warning(pop): likely mismatch, popping warning state pushed in different file
-        # /WE5032 # detected #pragma warning(push) with no corresponding #pragma warning(pop)
+        /we4426 # optimization flags changed after including header, may be due to #pragma optimize()
+        #/we4619 # #pragma warning: there is no warning number 'number'. Unfortunately some versions of MSVC 16.X dont filter this warning coming from external headers and Qt has a bad warning in QtCore/qvector.h(340,12)
+        /we4777 # 'function' : format string 'string' requires an argument of type 'type1', but variadic argument number has type 'type2
+        /we5031 # #pragma warning(pop): likely mismatch, popping warning state pushed in different file
+        /we5032 # detected #pragma warning(push) with no corresponding #pragma warning(pop)
 
         /Zc:forScope    # Force Conformance in for Loop Scope
         /diagnostics:caret # Compiler diagnostic options: includes the column where the issue was found and places a caret (^) under the location in the line of code where the issue was detected.

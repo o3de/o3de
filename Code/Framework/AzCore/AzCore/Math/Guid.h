@@ -8,18 +8,21 @@
 #ifndef AZ_CORE_GUID_H
 #define AZ_CORE_GUID_H 1
 
-#ifndef GUID_DEFINED
+#if defined(GUID_DEFINED)
+#define GUID_FORMAT_DATA1 "lX"
+#else
 #define GUID_DEFINED
 
 #include <AzCore/std/containers/array.h>
 
 struct _GUID {
-    uint32_t       Data1;
+    uint32_t  Data1;
     unsigned short Data2;
     unsigned short Data3;
     AZStd::array<unsigned char,8> Data4;
 };
 using GUID = _GUID;
+#define GUID_FORMAT_DATA1 "X"
 #endif // GUID_DEFINED
 
 #if !defined _SYS_GUID_OPERATOR_EQ_ && !defined _NO_SYS_GUID_OPERATOR_EQ_
