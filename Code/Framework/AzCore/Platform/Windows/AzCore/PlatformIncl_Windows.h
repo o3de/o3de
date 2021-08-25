@@ -34,7 +34,6 @@
 ////#define NOMB              //- MB_* and MessageBox()
 //#define NOMEMMGR          //- GMEM_*, LMEM_*, GHND, LHND, associated routines
 //#define NOMETAFILE        //- typedef METAFILEPICT
-////#define NOMINMAX          //- Macros min(a,b) and max(a,b)
 //#define NOMSG             //- typedef MSG and associated routines
 //#define NOOPENFILE        //- OpenFile(), OemToAnsi, AnsiToOem, and OF_*
 //#define NOSCROLL          //- SB_* and scrolling routines
@@ -50,27 +49,24 @@
 //#define NODEFERWINDOWPOS  //- DeferWindowPos routines
 //#define NOMCX             //- Modem Configuration Extensions
 
-//  //declare intrinsics to make sure we get the inline intrinsic versions and not a function call
 #if !defined(_WIN32_WINNT) || (_WIN32_WINNT < 0x0602)
-#   undef _WIN32_WINNT
-#   define _WIN32_WINNT 0x0602   // Windows Server 2012 and later
+    #undef _WIN32_WINNT
+    #define _WIN32_WINNT 0x0602   // Windows Server 2012 and later
 #endif
-#ifdef NOMINMAX
-#   include <WinSock2.h>
-#   include <windows.h>
-#else
-#   define NOMINMAX
-#       include <WinSock2.h>
-#       include <windows.h>
-#   undef NOMINMAX
+#if !defined(NOMINMAX)
+    #define NOMINMAX    // - Dont define Macros min(a,b) and max(a,b)
 #endif
+
+#include <WinSock2.h>
+#include <windows.h>
+
 // Undef common function names that Windows.h defines
 #if defined(SetJob)
-#undef SetJob
+    #undef SetJob
 #endif
 #if defined(GetObject)
-#undef GetObject
+    #undef GetObject
 #endif
 #if defined(GetCommandLine)
-#undef GetCommandLine
+    #undef GetCommandLine
 #endif
