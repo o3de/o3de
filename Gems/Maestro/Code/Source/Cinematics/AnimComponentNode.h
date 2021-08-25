@@ -150,8 +150,8 @@ private:
         }
         BehaviorPropertyInfo(const BehaviorPropertyInfo& other)
         {
-            m_displayName = AZStd::move(other.m_displayName);
-            m_animNodeParamInfo.paramType = m_displayName;
+            m_displayName = other.m_displayName;
+            m_animNodeParamInfo.paramType = other.m_displayName;
             m_animNodeParamInfo.name = m_displayName;
         }
         BehaviorPropertyInfo& operator=(const AZStd::string& str)

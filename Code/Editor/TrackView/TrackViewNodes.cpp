@@ -616,8 +616,7 @@ CTrackViewNodesCtrl::CRecord* CTrackViewNodesCtrl::AddAnimNodeRecord(CRecord* pP
 {
     CRecord* pNewRecord = new CRecord(animNode);
 
-    AZStd::string nodeName = animNode->GetName();
-    pNewRecord->setText(0, nodeName.c_str());
+    pNewRecord->setText(0, QString::fromUtf8(animNode->GetName().c_str()));
     UpdateAnimNodeRecord(pNewRecord, animNode);
     pParentRecord->insertChild(GetInsertPosition(pParentRecord, animNode), pNewRecord);
     FillNodesRec(pNewRecord, animNode);
@@ -630,8 +629,7 @@ CTrackViewNodesCtrl::CRecord* CTrackViewNodesCtrl::AddTrackRecord(CRecord* pPare
 {
     CRecord* pNewTrackRecord = new CRecord(pTrack);
     pNewTrackRecord->setSizeHint(0, QSize(30, 18));
-    AZStd::string trackName = pTrack->GetName();
-    pNewTrackRecord->setText(0, trackName.c_str());
+    pNewTrackRecord->setText(0, QString::fromUtf8(pTrack->GetName().c_str()));
     UpdateTrackRecord(pNewTrackRecord, pTrack);
     pParentRecord->insertChild(GetInsertPosition(pParentRecord, pTrack), pNewTrackRecord);
     FillNodesRec(pNewTrackRecord, pTrack);
@@ -862,7 +860,7 @@ void CTrackViewNodesCtrl::OnFillItems()
         m_nodeToRecordMap.clear();
 
         CRecord* pRootGroupRec = new CRecord(sequence);
-        pRootGroupRec->setText(0, sequence->GetName());
+        pRootGroupRec->setText(0, QString::fromUtf8(sequence->GetName().c_str()));
         QFont f = font();
         f.setBold(true);
         pRootGroupRec->setData(0, Qt::FontRole, f);
@@ -1034,8 +1032,8 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
                 return;
             }
 
-            QString file = QString(sequence2->GetName()) + QString(".fbx");
-            QString selectedSequenceFBXStr = QString(sequence2->GetName()) + ".fbx";
+            QString file = QString::fromUtf8(sequence2->GetName().c_str()) + QString(".fbx");
+            QString selectedSequenceFBXStr = QString::fromUtf8(sequence2->GetName().c_str()) + ".fbx";
 
             if (numSelectedNodes > 1)
             {
@@ -1043,7 +1041,7 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
             }
             else
             {
-                file = QString(selectedNodes.GetNode(0)->GetName()) + QString(".fbx");
+                file = QString::fromUtf8(selectedNodes.GetNode(0)->GetName().c_str()) + QString(".fbx");
             }
 
             QString path = QFileDialog::getSaveFileName(this, tr("Export Selected Nodes To FBX File"), QString(), tr("FBX Files (*.fbx)"));
@@ -1340,7 +1338,7 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
         if (animNode || groupNode)
         {
             CTrackViewAnimNode* animNode2 = static_cast<CTrackViewAnimNode*>(pNode);
-            QString oldName = animNode2->GetName();
+            QString oldName = QString::fromUtf8(animNode2->GetName().c_str());
 
             StringDlg dlg(tr("Rename Node"));
             dlg.SetString(oldName);
@@ -1496,7 +1494,7 @@ void CTrackViewNodesCtrl::OnNMRclick(QPoint point)
         if (animNode)
         {
             QString matName;
-            GetMatNameAndSubMtlIndexFromName(matName, animNode->GetName());
+            GetMatNameAndSubMtlIndexFromName(matName, animNode->GetName().c_str());
             QString newMatName;
             newMatName = tr("%1.[%2]").arg(matName).arg(cmd - eMI_SelectSubmaterialBase + 1);
             CUndo undo("Rename TrackView node");
@@ -1578,7 +1576,7 @@ CTrackViewTrack* CTrackViewNodesCtrl::GetTrackViewTrack(const Export::EntityAnim
     for (unsigned int trackID = 0; trackID < trackBundle.GetCount(); ++trackID)
     {
         CTrackViewTrack* pTrack = trackBundle.GetTrack(trackID);
-        const QString bundleTrackName = pTrack->GetAnimNode()->GetName();
+        const QString bundleTrackName = QString::fromUtf8(pTrack->GetAnimNode()->GetName().c_str());
 
         if (bundleTrackName.compare(nodeName, Qt::CaseInsensitive) != 0)
         {
@@ -2166,7 +2164,7 @@ int CTrackViewNodesCtrl::ShowPopupMenuSingleSelection(SContextMenu& contextMenu,
     if (bOnNode && !pNode->IsGroupNode())
     {
         AddMenuSeperatorConditional(contextMenu.main, bAppended);
-        QString string = QString("%1 Tracks").arg(animNode->GetName());
+        QString string = QString("%1 Tracks").arg(animNode->GetName().c_str());
         contextMenu.main.addAction(string)->setEnabled(false);
 
         bool bAppendedTrackFlag = false;
@@ -2184,7 +2182,7 @@ int CTrackViewNodesCtrl::ShowPopupMenuSingleSelection(SContextMenu& contextMenu,
                     continue;
                 }
 
-                QAction* a = contextMenu.main.addAction(QString("  %1").arg(pTrack2->GetName()));
+                QAction* a = contextMenu.main.addAction(QString("  %1").arg(pTrack2->GetName().c_str()));
                 a->setData(eMI_ShowHideBase + childIndex);
                 a->setCheckable(true);
                 a->setChecked(!pTrack2->IsHidden());
@@ -2350,12 +2348,11 @@ bool CTrackViewNodesCtrl::FillAddTrackMenu(STrackMenuTreeNode& menuAddTrack, con
                 continue;
             }
         }
-        AZStd::string paramName = animNode->GetParamName(paramType);
-        name = paramName.c_str();
-        QStringList splittedName = name.split("/", Qt::SkipEmptyParts);
+        name = QString::fromUtf8(animNode->GetParamName(paramType).c_str());
+        QStringList splitName = name.split("/", Qt::SkipEmptyParts);
 
         STrackMenuTreeNode* pCurrentNode = &menuAddTrack;
-        for (const QString& segment : splittedName)
+        for (const QString& segment : splitName)
         {
             auto findIter = pCurrentNode->children.find(segment);
             if (findIter != pCurrentNode->children.end())
@@ -2372,10 +2369,10 @@ bool CTrackViewNodesCtrl::FillAddTrackMenu(STrackMenuTreeNode& menuAddTrack, con
 
         // only add tracks to the that STrackMenuTreeNode tree that haven't already been added
         CTrackViewTrackBundle matchedTracks = animNode->GetTracksByParam(paramType);
-        if (matchedTracks.GetCount() == 0 && !splittedName.isEmpty())
+        if (matchedTracks.GetCount() == 0 && !splitName.isEmpty())
         {
             STrackMenuTreeNode* pParamNode = new STrackMenuTreeNode;
-            pCurrentNode->children[splittedName.back()] = std::unique_ptr<STrackMenuTreeNode>(pParamNode);
+            pCurrentNode->children[splitName.back()] = std::unique_ptr<STrackMenuTreeNode>(pParamNode);
             pParamNode->paramType = paramType;
 
             bTracksToAdd = true;
@@ -2466,7 +2463,7 @@ void CTrackViewNodesCtrl::FillAutoCompletionListForFilter()
 
         for (unsigned int i = 0; i < animNodeCount; ++i)
         {
-            strings << animNodes.GetNode(i)->GetName();
+            strings << QString::fromUtf8(animNodes.GetNode(i)->GetName().c_str());
         }
     }
     else
@@ -2583,8 +2580,7 @@ void CTrackViewNodesCtrl::Update()
                 const CTrackViewAnimNode* track = static_cast<const CTrackViewAnimNode*>(node);
                 if (track)
                 {
-                    AZStd::string trackName = track->GetName();
-                    record->setText(0, trackName.c_str());
+                    record->setText(0, QString::fromUtf8(track->GetName().c_str()));
                 }
             }
         }
@@ -2858,7 +2854,7 @@ void CTrackViewNodesCtrl::OnNodeRenamed(CTrackViewNode* pNode, [[maybe_unused]] 
     if (!m_bIgnoreNotifications)
     {
         CRecord* pNodeRecord = GetNodeRecord(pNode);
-        pNodeRecord->setText(0, pNode->GetName());
+        pNodeRecord->setText(0, QString::fromUtf8(pNode->GetName().c_str()));
 
         update();
     }

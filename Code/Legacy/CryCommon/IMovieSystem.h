@@ -378,7 +378,7 @@ struct IAnimTrack
     virtual int GetSubTrackCount() const = 0;
     // Retrieve pointer the specfied sub track.
     virtual IAnimTrack* GetSubTrack(int nIndex) const = 0;
-    virtual const char* GetSubTrackName(int nIndex) const = 0;
+    virtual AZStd::string GetSubTrackName(int nIndex) const = 0;
     virtual void SetSubTrackName(int nIndex, const char* name) = 0;
     //////////////////////////////////////////////////////////////////////////
 
@@ -738,7 +738,7 @@ public:
     //      Returns name of supported parameter of this animation node or NULL if not available
     // Arguments:
     //          paramType - parameter id
-    virtual const char* GetParamName(const CAnimParamType& paramType) const = 0;
+    virtual AZStd::string GetParamName(const CAnimParamType& paramType) const = 0;
 
     // Description:
     //      Returns the params value type

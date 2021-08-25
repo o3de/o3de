@@ -626,7 +626,7 @@ bool CTrackViewNode::operator<(const CTrackViewNode& otherNode) const
         if (thisTypeOrder == otherTypeOrder)
         {
             // Same node type, sort by name
-            return azstricmp(thisAnimNode.GetName(), otherAnimNode.GetName()) < 0;
+            return thisAnimNode.GetName() < otherAnimNode.GetName();
         }
 
         return thisTypeOrder < otherTypeOrder;
@@ -638,7 +638,7 @@ bool CTrackViewNode::operator<(const CTrackViewNode& otherNode) const
         if (thisTrack.GetParameterType() == otherTrack.GetParameterType())
         {
             // Same parameter type, sort by name
-            return azstricmp(thisTrack.GetName(), otherTrack.GetName()) < 0;
+            return thisTrack.GetName() < otherTrack.GetName();
         }
 
         return thisTrack.GetParameterType() < otherTrack.GetParameterType();
