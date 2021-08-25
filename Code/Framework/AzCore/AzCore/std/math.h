@@ -30,4 +30,44 @@ namespace AZStd
     using std::sqrt;
     using std::tan;
     using std::trunc;
+
+    // from c++20 standard
+    template<typename T>
+    constexpr T __lerp(T a, T b, T t) noexcept
+    {
+        if ((a <= 0 && b >= 0) || (a >= 0 && b <= 0))
+        {
+            return t * b + (1 - t) * a;
+        }
+
+        if (t == 1)
+        {
+            return b;
+        }
+        const T x = a + t * (b - a);
+        if ((t > 1) == (b > a))
+        {
+            return b < x ? x : b;
+        }
+        else
+        {
+            return x < b ? x : b;
+        }
+    }
+
+    constexpr float lerp(float a, float b, float t) noexcept
+    {
+        return __lerp(a, b, t);
+    }
+
+    constexpr double lerp(double a, double b, double t) noexcept
+    {
+        return __lerp(a, b, t);
+    }
+
+    constexpr long double lerp(long double a, long double b, long double t) noexcept
+    {
+        return __lerp(a, b, t);
+    }
+
 } // namespace AZStd
