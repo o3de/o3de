@@ -6,10 +6,5 @@
 #
 #
 
-if(PAL_TRAIT_BUILD_HOST_TOOLS)
-    add_subdirectory(bundler)
-    add_subdirectory(commit_validation)
-    add_subdirectory(ctest)
-    add_subdirectory(detect_file_changes)
-    add_subdirectory(o3de)    
-endif()
+add_subdirectory(LyTestTools)
+add_subdirectory(RemoteConsole)

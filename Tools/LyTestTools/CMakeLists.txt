@@ -6,10 +6,9 @@
 #
 #
 
-if(PAL_TRAIT_BUILD_HOST_TOOLS)
-    add_subdirectory(bundler)
-    add_subdirectory(commit_validation)
-    add_subdirectory(ctest)
-    add_subdirectory(detect_file_changes)
-    add_subdirectory(o3de)    
+# SPEC-1417 will investigate and fix this
+if(NOT PAL_PLATFORM_NAME STREQUAL "Mac")
+    add_subdirectory(tests)
 endif()
+
+ly_install_directory(DIRECTORIES .)
