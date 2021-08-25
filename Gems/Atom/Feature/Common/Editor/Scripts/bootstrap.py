@@ -28,9 +28,8 @@ _MODULENAME = 'Gems.Atom.Feature.Common.bootstrap'
 _MODULE_PATH = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 _MODULE_PATH = Path(_MODULE_PATH)
 site.addsitedir(_MODULE_PATH.resolve())
-_LOGGER.info(f'site.addsitedir({_MODULE_PATH.resolve()})')
 
-from ColorGrading.env_bool import env_bool
+from ColorGrading import env_bool
 from ColorGrading import initialize_logger
 from ColorGrading import DCCSI_GDEBUG
 from ColorGrading import DCCSI_DEV_MODE
@@ -40,8 +39,8 @@ if DCCSI_GDEBUG:
     DCCSI_LOGLEVEL = int(10)
 
 _LOGGER = initialize_logger(_MODULENAME, log_to_file=False, default_log_level=DCCSI_LOGLEVEL)
-
-_LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
+_LOGGER.info('Initializing: {0}.'.format({_MODULENAME}))
+_LOGGER.info(f'site.addsitedir({_MODULE_PATH.resolve()})')
 
 # early connect to the debugger
 if DCCSI_DEV_MODE:
