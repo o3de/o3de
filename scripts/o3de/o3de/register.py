@@ -373,8 +373,8 @@ def register_external_subdirectory(json_data: dict,
         if not project_path:
             engine_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('engine.json'), external_subdir_path)
     return register_o3de_object_path(json_data, external_subdir_path, 'external_subdirectories', '', None, remove,
-                                     engine_path.resolve() if engine_path else None,
-                                     project_path.resolve() if project_path else None)
+                                     pathlib.Path(engine_path).resolve() if engine_path else None,
+                                     pathlib.Path(project_path).resolve() if project_path else None)
 
 
 def register_gem_path(json_data: dict,
@@ -389,8 +389,8 @@ def register_gem_path(json_data: dict,
             engine_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('engine.json'), gem_path)
     return register_o3de_object_path(json_data, gem_path, 'external_subdirectories', 'gem.json',
                                      validation.valid_o3de_gem_json, remove,
-                                     engine_path.resolve() if engine_path else None,
-                                     project_path.resolve() if project_path else None)
+                                     pathlib.Path(engine_path).resolve() if engine_path else None,
+                                     pathlib.Path(project_path).resolve() if project_path else None)
 
 
 def register_project_path(json_data: dict,
@@ -404,7 +404,7 @@ def register_project_path(json_data: dict,
 
     result = register_o3de_object_path(json_data, project_path, 'projects', 'project.json',
                                        validation.valid_o3de_project_json, remove,
-                                       engine_path.resolve() if engine_path else None)
+                                       pathlib.Path(engine_path).resolve() if engine_path else None)
 
     if result != 0:
         return result
@@ -446,8 +446,8 @@ def register_template_path(json_data: dict,
             engine_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('engine.json'), template_path)
     return register_o3de_object_path(json_data, template_path, 'templates', 'template.json',
                                      validation.valid_o3de_template_json, remove,
-                                     engine_path.resolve() if engine_path else None,
-                                     project_path.resolve() if project_path else None)
+                                     pathlib.Path(engine_path).resolve() if engine_path else None,
+                                     pathlib.Path(project_path).resolve() if project_path else None)
 
 
 def register_restricted_path(json_data: dict,
@@ -462,8 +462,8 @@ def register_restricted_path(json_data: dict,
             engine_path = utils.find_ancestor_dir_containing_file(pathlib.PurePath('engine.json'), restricted_path)
     return register_o3de_object_path(json_data, restricted_path, 'restricted', 'restricted.json',
                                      validation.valid_o3de_restricted_json, remove,
-                                     engine_path.resolve() if engine_path else None,
-                                     project_path.resolve() if project_path else None)
+                                     pathlib.Path(engine_path).resolve() if engine_path else None,
+                                     pathlib.Path(project_path).resolve() if project_path else None)
 
 
 def register_repo(json_data: dict,
