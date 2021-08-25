@@ -71,7 +71,7 @@ void CEditorPreferencesPage_ViewportMovement::Reflect(AZ::SerializeContext& seri
                 AZ::Edit::UIHandlers::SpinBox, &CameraMovementSettings::m_rotateSmoothness, "Camera Rotate Smoothness",
                 "Amount of camera smoothing to apply while rotating the camera")
             ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
-            ->Attribute(AZ::Edit::Attributes::Visibility, &CameraMovementSettings::RotateSmoothing)
+            ->Attribute(AZ::Edit::Attributes::Visibility, &CameraMovementSettings::RotateSmoothingVisibility)
             ->DataElement(
                 AZ::Edit::UIHandlers::CheckBox, &CameraMovementSettings::m_translateSmoothing, "Camera Translate Smoothing",
                 "Is camera translation smoothing enabled or disabled")
@@ -80,7 +80,7 @@ void CEditorPreferencesPage_ViewportMovement::Reflect(AZ::SerializeContext& seri
                 AZ::Edit::UIHandlers::SpinBox, &CameraMovementSettings::m_translateSmoothness, "Camera Translate Smoothness",
                 "Amount of camera smoothing to apply while translating the camera")
             ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
-            ->Attribute(AZ::Edit::Attributes::Visibility, &CameraMovementSettings::TranslateSmoothing)
+            ->Attribute(AZ::Edit::Attributes::Visibility, &CameraMovementSettings::TranslateSmoothingVisibility)
             ->DataElement(
                 AZ::Edit::UIHandlers::CheckBox, &CameraMovementSettings::m_orbitYawRotationInverted, "Camera Orbit Yaw Inverted",
                 "Inverted yaw rotation while orbiting")

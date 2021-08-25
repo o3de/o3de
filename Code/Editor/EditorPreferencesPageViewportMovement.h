@@ -14,6 +14,11 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <QIcon>
 
+inline AZ::Crc32 EditorPropertyVisibility(const bool enabled)
+{
+    return enabled ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
+}
+
 class CEditorPreferencesPage_ViewportMovement : public IPreferencesPage
 {
 public:
@@ -63,14 +68,14 @@ private:
         bool m_panInvertedX;
         bool m_panInvertedY;
 
-        AZ::Crc32 RotateSmoothing() const
+        AZ::Crc32 RotateSmoothingVisibility() const
         {
-            return m_rotateSmoothing ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
+            return EditorPropertyVisibility(m_rotateSmoothing);
         }
 
-        AZ::Crc32 TranslateSmoothing() const
+        AZ::Crc32 TranslateSmoothingVisibility() const
         {
-            return m_translateSmoothing ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
+            return EditorPropertyVisibility(m_translateSmoothing);
         }
     };
 
