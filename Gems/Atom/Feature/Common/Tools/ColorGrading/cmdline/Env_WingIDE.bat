@@ -1,8 +1,10 @@
 @echo off
+
 REM 
 REM Copyright (c) Contributors to the Open 3D Engine Project
 REM 
 REM SPDX-License-Identifier: Apache-2.0 OR MIT
+REM For complete copyright and license terms please see the LICENSE at the root of this distribution.
 REM
 REM
 
@@ -33,8 +35,8 @@ echo     DCCSI_PY_IDE = %DCCSI_PY_IDE%
 set DCCSI_PY_DEFAULT=%DCCSI_PY_IDE%\python.exe
 
 :: put project env variables/paths here
-set WINGHOME=%PROGRAMFILES(X86)%\Wing Pro %DCCSI_WING_VERSION_MAJOR%.%DCCSI_WING_VERSION_MINOR%
-SET WING_PROJ=%O3DE_PROJECT_PATH%\.solutions\.wing\o3de_color_grading_%DCCSI_WING_VERSION_MAJOR%x.wpr
+IF "%WINGHOME%"=="" (set WINGHOME="%PROGRAMFILES(X86)%\Wing Pro %DCCSI_WING_VERSION_MAJOR%.%DCCSI_WING_VERSION_MINOR%")
+IF "%WING_PROJ%"=="" (set WING_PROJ=%O3DE_PROJECT_PATH%\.solutions\.wing\o3de_color_grading_%DCCSI_WING_VERSION_MAJOR%x.wpr)
 
 ::SETLOCAL ENABLEDELAYEDEXPANSION
 
