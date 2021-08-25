@@ -2157,7 +2157,6 @@ uint32 CFileUtil::GetAttributes(const char* filename, bool bUseSourceControl /*=
         return SCC_FILE_ATTRIBUTE_READONLY | SCC_FILE_ATTRIBUTE_INPAK;
     }
 
-
     const char* adjustedFile = file.GetAdjustedFilename();
     if (!AZ::IO::SystemFile::Exists(adjustedFile))
     {
