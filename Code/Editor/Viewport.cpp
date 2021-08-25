@@ -400,7 +400,6 @@ void QtViewport::UpdateContent(int flags)
 //////////////////////////////////////////////////////////////////////////
 void QtViewport::Update()
 {
-    FUNCTION_PROFILER(GetIEditor()->GetSystem(), PROFILE_EDITOR);
     m_viewportUi.Update();
 
     m_bAdvancedSelectMode = false;
@@ -1436,9 +1435,6 @@ bool QtViewport::MouseCallback(EMouseEvent event, const QPoint& point, Qt::Keybo
 //////////////////////////////////////////////////////////////////////////
 void QtViewport::ProcessRenderLisneters(DisplayContext& rstDisplayContext)
 {
-    FUNCTION_PROFILER(GetIEditor()->GetSystem(), PROFILE_EDITOR);
-
-
     size_t nCount(0);
     size_t nTotal(0);
 

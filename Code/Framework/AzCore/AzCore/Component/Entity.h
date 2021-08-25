@@ -16,6 +16,7 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
+#include <AzCore/Debug/Budget.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/EBus/Event.h>
 #include <AzCore/std/string/string.h>
@@ -438,3 +439,4 @@ namespace AZ
         return component;
     }
 } // namespace AZ
+

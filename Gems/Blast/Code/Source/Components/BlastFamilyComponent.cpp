@@ -187,7 +187,7 @@ namespace Blast
 
     void BlastFamilyComponent::Activate()
     {
-        AZ_PROFILE_FUNCTION(System);
+        AZ_PROFILE_FUNCTION(Physics);
 
         AZ_Assert(m_blastAsset.GetId().IsValid(), "BlastFamilyComponent created with invalid blast asset.");
 
@@ -199,7 +199,7 @@ namespace Blast
 
     void BlastFamilyComponent::Deactivate()
     {
-        AZ_PROFILE_FUNCTION(System);
+        AZ_PROFILE_FUNCTION(Physics);
 
         // cleanup collision handlers
         for (auto& itr : m_collisionHandlers)

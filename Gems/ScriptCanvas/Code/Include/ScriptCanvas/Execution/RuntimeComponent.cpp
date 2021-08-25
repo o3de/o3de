@@ -23,6 +23,8 @@
 #define SCRIPT_CANVAS_RUNTIME_ASSET_CHECK
 #endif
 
+AZ_DECLARE_BUDGET(ScriptCanvas);
+
 namespace RuntimeComponentCpp
 {
     enum class RuntimeComponentVersion : unsigned int
