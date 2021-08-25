@@ -172,8 +172,6 @@ CViewSystem::~CViewSystem()
 //------------------------------------------------------------------------
 void CViewSystem::Update(float frameTime)
 {
-    FUNCTION_PROFILER(GetISystem(), PROFILE_ACTION);
-
     if (gEnv->IsDedicated())
     {
         return;

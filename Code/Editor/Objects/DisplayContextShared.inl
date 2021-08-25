@@ -1261,10 +1261,6 @@ void DisplayContext::DrawTextureLabel(const Vec3& pos, int nWidth, int nHeight, 
 //////////////////////////////////////////////////////////////////////////
 void DisplayContext::Flush2D()
 {
-#ifndef PHYSICS_EDITOR
-    FUNCTION_PROFILER(GetIEditor()->GetSystem(), PROFILE_EDITOR);
-#endif
-
     if (m_textureLabels.empty())
     {
         return;

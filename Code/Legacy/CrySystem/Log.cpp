@@ -396,7 +396,6 @@ void CLog::LogV(const ELogType type, [[maybe_unused]]int flags, const char* szFo
         }
     }
 
-    FUNCTION_PROFILER(GetISystem(), PROFILE_SYSTEM);
 
     bool bfile = false, bconsole = false;
     const char* szCommand = szFormat;
@@ -1439,8 +1438,6 @@ void CLog::RemoveCallback(ILogCallback* pCallback)
 //////////////////////////////////////////////////////////////////////////
 void CLog::Update()
 {
-    FUNCTION_PROFILER_FAST(m_pSystem, PROFILE_SYSTEM, g_bProfilerEnabled);
-
     if (CryGetCurrentThreadId() == m_nMainThreadId)
     {
         if (!m_threadSafeMsgQueue.empty())

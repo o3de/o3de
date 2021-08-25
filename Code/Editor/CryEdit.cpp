@@ -3910,11 +3910,19 @@ void CCryEditApp::OpenLUAEditor(const char* files)
     AZStd::string_view exePath;
     AZ::ComponentApplicationBus::BroadcastResult(exePath, &AZ::ComponentApplicationRequests::GetExecutableFolder);
 
-    AZStd::string process = AZStd::string::format("\"%.*s" AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING "LuaIDE"
+#if defined(AZ_PLATFORM_LINUX)
+    // On Linux platforms, launching a process is not done through a shell and its arguments are passed in
+    // separately. There is no need to wrap the process path in case of spaces in the path
+    constexpr const char* argumentQuoteString = "";
+#else
+    constexpr const char* argumentQuoteString = "\"";
+#endif    
+
+    AZStd::string process = AZStd::string::format("%s%.*s" AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING "LuaIDE"
 #if defined(AZ_PLATFORM_WINDOWS)
         ".exe"
 #endif
-        "\"", aznumeric_cast<int>(exePath.size()), exePath.data());
+        "%s", argumentQuoteString, aznumeric_cast<int>(exePath.size()), exePath.data(), argumentQuoteString);
 
     AZStd::string processArgs = AZStd::string::format("%s -engine-path \"%s\"", args.c_str(), engineRoot);
     StartProcessDetached(process.c_str(), processArgs.c_str());

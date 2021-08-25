@@ -460,6 +460,10 @@ namespace AZ
                 {
                     platformId = AzFramework::PlatformId::PC;
                 }
+                else if (platformIdentifier == "linux")
+                {
+                    platformId = AzFramework::PlatformId::LINUX_ID;
+                }
                 else if (platformIdentifier == "mac")
                 {
                     platformId = AzFramework::PlatformId::MAC_ID;

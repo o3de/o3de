@@ -104,7 +104,6 @@
 
 AZ_CVAR(
     bool, ed_visibility_logTiming, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Output the timing of the new IVisibilitySystem query");
-AZ_CVAR(bool, ed_showCursorCameraLook, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Show the cursor when using free look with the new camera system");
 
 EditorViewportWidget* EditorViewportWidget::m_pPrimaryViewport = nullptr;
 
@@ -394,8 +393,6 @@ void EditorViewportWidget::UpdateContent(int flags)
 //////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::Update()
 {
-    FUNCTION_PROFILER(GetIEditor()->GetSystem(), PROFILE_EDITOR);
-
     if (Editor::EditorQtApplication::instance()->isMovingOrResizing())
     {
         return;
@@ -957,15 +954,11 @@ AzFramework::CameraState EditorViewportWidget::GetCameraState()
 
 AZ::Vector3 EditorViewportWidget::PickTerrain(const AzFramework::ScreenPoint& point)
 {
-    FUNCTION_PROFILER(GetIEditor()->GetSystem(), PROFILE_EDITOR);
-
     return LYVec3ToAZVec3(ViewToWorld(AzToolsFramework::ViewportInteraction::QPointFromScreenPoint(point), nullptr, true));
 }
 
 AZ::EntityId EditorViewportWidget::PickEntity(const AzFramework::ScreenPoint& point)
 {
-    FUNCTION_PROFILER(GetIEditor()->GetSystem(), PROFILE_EDITOR);
-
     PreWidgetRendering();
 
     AZ::EntityId entityId;
@@ -992,8 +985,6 @@ float EditorViewportWidget::TerrainHeight(const AZ::Vector2& position)
 
 void EditorViewportWidget::FindVisibleEntities(AZStd::vector<AZ::EntityId>& visibleEntitiesOut)
 {
-    FUNCTION_PROFILER(GetIEditor()->GetSystem(), PROFILE_EDITOR);
-
     visibleEntitiesOut.assign(m_entityVisibilityQuery.Begin(), m_entityVisibilityQuery.End());
 }
 
@@ -1079,13 +1070,19 @@ AZStd::shared_ptr<AtomToolsFramework::ModularViewportCameraController> CreateMod
         {
             const auto hideCursor = [viewportId]
             {
-                AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Event(
-                    viewportId, &AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Events::BeginCursorCapture);
+                if (SandboxEditor::CameraCaptureCursorForLook())
+                {
+                    AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Event(
+                        viewportId, &AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Events::BeginCursorCapture);
+                }
             };
             const auto showCursor = [viewportId]
             {
-                AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Event(
-                    viewportId, &AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Events::EndCursorCapture);
+                if (SandboxEditor::CameraCaptureCursorForLook())
+                {
+                    AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Event(
+                        viewportId, &AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Events::EndCursorCapture);
+                }
             };
 
             auto firstPersonRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(SandboxEditor::CameraFreeLookChannelId());
@@ -1094,12 +1091,10 @@ AZStd::shared_ptr<AtomToolsFramework::ModularViewportCameraController> CreateMod
                 return SandboxEditor::CameraRotateSpeed();
             };
 
-            if (!ed_showCursorCameraLook)
-            {
-                // default behavior is to hide the cursor but this can be disabled (useful for remote desktop)
-                firstPersonRotateCamera->SetActivationBeganFn(hideCursor);
-                firstPersonRotateCamera->SetActivationEndedFn(showCursor);
-            }
+            // default behavior is to hide the cursor but this can be disabled (useful for remote desktop)
+            // note: See CaptureCursorLook in the Settings Registry
+            firstPersonRotateCamera->SetActivationBeganFn(hideCursor);
+            firstPersonRotateCamera->SetActivationEndedFn(showCursor);
 
             auto firstPersonPanCamera =
                 AZStd::make_shared<AzFramework::PanCameraInput>(SandboxEditor::CameraFreePanChannelId(), AzFramework::LookPan);

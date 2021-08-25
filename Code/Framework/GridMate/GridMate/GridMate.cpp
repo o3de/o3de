@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Debug/Budget.h>
 #include <AzCore/Memory/AllocationRecords.h>
 #include <AzCore/std/hash.h>
 
@@ -13,6 +14,8 @@
 #include <GridMate/GridMateService.h>
 #include <GridMate/GridMateEventsBus.h>
 #include <GridMate/Version.h>
+
+AZ_DEFINE_BUDGET(GridMate);
 
 namespace GridMate
 {

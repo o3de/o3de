@@ -36,6 +36,8 @@
 #include <ScriptCanvas/Deprecated/VariableHelpers.h>
 ////
 
+AZ_DECLARE_BUDGET(ScriptCanvas);
+
 namespace NodeCpp
 {
     enum Version

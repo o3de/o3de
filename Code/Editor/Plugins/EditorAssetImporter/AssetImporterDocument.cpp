@@ -31,6 +31,7 @@
 #include <QMessageBox>
 #include <QPushButton>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 

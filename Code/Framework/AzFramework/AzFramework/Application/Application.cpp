@@ -25,7 +25,6 @@
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/string/regex.h>
 #include <AzCore/Serialization/DataPatch.h>
-#include <AzCore/Debug/FrameProfilerComponent.h>
 #include <AzCore/NativeUI/NativeUISystemComponent.h>
 #include <AzCore/Module/ModuleManagerBus.h>
 #include <AzCore/Interface/Interface.h>
@@ -60,7 +59,6 @@
 #include <AzFramework/StreamingInstall/StreamingInstall.h>
 #include <AzFramework/TargetManagement/TargetManagementComponent.h>
 #include <AzFramework/Viewport/CameraState.h>
-#include <AzFramework/Driller/RemoteDrillerInterface.h>
 #include <AzFramework/Metrics/MetricsPlainTextNameRegistration.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
@@ -296,7 +294,6 @@ namespace AzFramework
             azrtti_typeid<AZ::JobManagerComponent>(),
             azrtti_typeid<AZ::AssetManagerComponent>(),
             azrtti_typeid<AZ::UserSettingsComponent>(),
-            azrtti_typeid<AZ::Debug::FrameProfilerComponent>(),
             azrtti_typeid<AZ::SliceComponent>(),
             azrtti_typeid<AZ::SliceSystemComponent>(),
 
@@ -312,7 +309,6 @@ namespace AzFramework
 #endif
             azrtti_typeid<AzFramework::AssetSystem::AssetSystemComponent>(),
             azrtti_typeid<AzFramework::InputSystemComponent>(),
-            azrtti_typeid<AzFramework::DrillerNetworkAgentComponent>(),
 
 #if !defined(AZCORE_EXCLUDE_LUA)
             azrtti_typeid<AZ::ScriptSystemComponent>(),
@@ -374,7 +370,6 @@ namespace AzFramework
             azrtti_typeid<AzFramework::RenderGeometry::GameIntersectorComponent>(),
             azrtti_typeid<AzFramework::AssetSystem::AssetSystemComponent>(),
             azrtti_typeid<AzFramework::InputSystemComponent>(),
-            azrtti_typeid<AzFramework::DrillerNetworkAgentComponent>(),
             azrtti_typeid<AzFramework::StreamingInstall::StreamingInstallSystemComponent>(),
             azrtti_typeid<AzFramework::SpawnableSystemComponent>(),
             AZ::Uuid("{624a7be2-3c7e-4119-aee2-1db2bdb6cc89}"), // ScriptDebugAgent

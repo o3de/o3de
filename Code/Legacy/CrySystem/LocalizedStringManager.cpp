@@ -1898,7 +1898,6 @@ static void LogDecompTimer(__int64 nTotalTicks, __int64 nDecompTicks, __int64 nA
 
 AZStd::string CLocalizedStringsManager::SLocalizedStringEntry::GetTranslatedText(const SLanguage* pLanguage) const
 {
-    FUNCTION_PROFILER_FAST(GetISystem(), PROFILE_SYSTEM, g_bProfilerEnabled);
     if ((flags & IS_COMPRESSED) != 0)
     {
 #if defined(LOG_DECOMP_TIMES)
