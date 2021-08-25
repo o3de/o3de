@@ -13,6 +13,7 @@
     #include <AzCore/Math/Color.h>
 #endif // !AUDIO_RELEASE
 
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
 #include <SoundCVars.h>

@@ -35,10 +35,8 @@
 #include <AzFramework/Asset/AssetCatalogComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/TargetManagement/TargetManagementComponent.h>
-#include <AzFramework/Driller/RemoteDrillerInterface.h>
 
 #include <AzCore/Driller/Driller.h>
-#include <AzCore/Debug/ProfilerDriller.h>
 
 #ifdef AZ_PLATFORM_WINDOWS
 #include "shlobj.h"
@@ -485,8 +483,6 @@ namespace LegacyFramework
     void Application::CreateApplicationComponents()
     {
         EnsureComponentCreated(AzFramework::TargetManagementComponent::RTTI_Type());
-        EnsureComponentCreated(AzFramework::DrillerNetworkConsoleComponent::RTTI_Type());
-        EnsureComponentCreated(AzFramework::DrillerNetworkAgentComponent::RTTI_Type());
     }
 
     void Application::CreateSystemComponents()
@@ -507,8 +503,6 @@ namespace LegacyFramework
         ComponentApplication::RegisterCoreComponents();
 
         RegisterComponentDescriptor(AzFramework::TargetManagementComponent::CreateDescriptor());
-        RegisterComponentDescriptor(AzFramework::DrillerNetworkConsoleComponent::CreateDescriptor());
-        RegisterComponentDescriptor(AzFramework::DrillerNetworkAgentComponent::CreateDescriptor());
         RegisterComponentDescriptor(AzToolsFramework::Framework::CreateDescriptor());
     }
 }

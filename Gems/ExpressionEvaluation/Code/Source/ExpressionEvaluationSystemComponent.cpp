@@ -18,6 +18,8 @@
 #include <ExpressionPrimitivesSerializers.inl>
 #include <ElementInformationSerializer.inl>
 
+AZ_DEFINE_BUDGET(ExpressionEvaluation);
+
 namespace ExpressionEvaluation
 {
     namespace StructuralParsers

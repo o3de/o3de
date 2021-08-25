@@ -37,7 +37,6 @@ AZ_CVAR(
     bool, ed_visibility_use, true, nullptr, AZ::ConsoleFunctorFlags::Null,
     "Enable/disable using the new IVisibilitySystem for Entity visibility determination");
 
-
 /*!
  *  Class Description used for object templates.
  *  This description filled from Xml template files.

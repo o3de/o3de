@@ -36,6 +36,9 @@
 
 #include <AzFramework/Asset/AssetSystemBus.h>
 
+AZ_DEFINE_BUDGET(AzRender);
+AZ_DEFINE_BUDGET(RPI);
+
 // This will cause the RPI System to print out global state (like the current pass hierarchy) when an assert is hit
 // This is useful for rendering engineers debugging a crash in the RPI/RHI layers
 #define AZ_RPI_PRINT_GLOBAL_STATE_ON_ASSERT 0
@@ -270,7 +273,7 @@ namespace AZ
                 return;
             }
 
-            AZ_PROFILE_FUNCTION(AzRender);
+            AZ_PROFILE_FUNCTION(RPI);
             AZ_ATOM_PROFILE_FUNCTION("RPI", "RPISystem: RenderTick");
 
             // Query system update is to increment the frame count
