@@ -1830,7 +1830,7 @@ void UiTextComponent::Render(LyShine::IRenderGraph* renderGraph)
             DynUiPrimitive* primitive = renderGraph->GetDynamicQuadPrimitive(rect.pt, packedColor);
             primitive->m_next = nullptr;
 
-            LyShine::RenderGraph* lyRenderGraph = dynamic_cast<LyShine::RenderGraph*>(renderGraph);
+            LyShine::RenderGraph* lyRenderGraph = static_cast<LyShine::RenderGraph*>(renderGraph);
             if (lyRenderGraph)
             {
                 lyRenderGraph->AddPrimitiveAtom(primitive, systemImage, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, blendMode);
@@ -1856,7 +1856,7 @@ void UiTextComponent::Render(LyShine::IRenderGraph* renderGraph)
             }
 
             bool isClampTextureMode = true;
-            LyShine::RenderGraph* lyRenderGraph = dynamic_cast<LyShine::RenderGraph*>(renderGraph);
+            LyShine::RenderGraph* lyRenderGraph = static_cast<LyShine::RenderGraph*>(renderGraph);
             if (lyRenderGraph)
             {
                 lyRenderGraph->AddPrimitiveAtom(&batch->m_cachedPrimitive, texture,

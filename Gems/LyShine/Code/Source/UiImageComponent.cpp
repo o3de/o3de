@@ -280,7 +280,7 @@ namespace
         AZ::Data::Instance<AZ::RPI::Image> image;
         if (sprite)
         {
-            CSprite* cSprite = dynamic_cast<CSprite*>(sprite); // LYSHINE_ATOM_TODO - find a different solution from downcasting
+            CSprite* cSprite = static_cast<CSprite*>(sprite); // LYSHINE_ATOM_TODO - find a different solution from downcasting
             if (cSprite)
             {
                 image = cSprite->GetImage();
@@ -484,7 +484,7 @@ void UiImageComponent::Render(LyShine::IRenderGraph* renderGraph)
         bool isTextureSRGB = IsSpriteTypeRenderTarget() && m_isRenderTargetSRGB;
         bool isTexturePremultipliedAlpha = false; // we are not rendering from a render target with alpha in it
 
-        LyShine::RenderGraph* lyRenderGraph = dynamic_cast<LyShine::RenderGraph*>(renderGraph); // LYSHINE_ATOM_TODO - find a different solution from downcasting
+        LyShine::RenderGraph* lyRenderGraph = static_cast<LyShine::RenderGraph*>(renderGraph); // LYSHINE_ATOM_TODO - find a different solution from downcasting
         if (lyRenderGraph)
         {
             lyRenderGraph->AddPrimitiveAtom(&m_cachedPrimitive, image, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, m_blendMode);

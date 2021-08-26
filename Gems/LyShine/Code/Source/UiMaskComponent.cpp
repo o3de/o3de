@@ -722,7 +722,7 @@ void UiMaskComponent::RenderUsingGradientMask(LyShine::IRenderGraph* renderGraph
     // mask render target
     {
         // Start building the render to texture node in the render graph
-        LyShine::RenderGraph* lyRenderGraph = dynamic_cast<LyShine::RenderGraph*>(renderGraph);
+        LyShine::RenderGraph* lyRenderGraph = static_cast<LyShine::RenderGraph*>(renderGraph);
         lyRenderGraph->BeginRenderToTexture(maskAttachmentImage, m_viewportTopLeft, m_viewportSize, clearColor);
 
         // Render the visual component for this element (if there is one) plus the child mask element (if there is one)
@@ -735,7 +735,7 @@ void UiMaskComponent::RenderUsingGradientMask(LyShine::IRenderGraph* renderGraph
     // content render target
     {
         // Start building the render to texture node for the content render target in the render graph
-        LyShine::RenderGraph* lyRenderGraph = dynamic_cast<LyShine::RenderGraph*>(renderGraph);
+        LyShine::RenderGraph* lyRenderGraph = static_cast<LyShine::RenderGraph*>(renderGraph);
         lyRenderGraph->BeginRenderToTexture(contentAttachmentImage, m_viewportTopLeft, m_viewportSize, clearColor);
 
         // Render the "content" - the child elements excluding the child mask element (if any)
@@ -772,7 +772,7 @@ void UiMaskComponent::RenderUsingGradientMask(LyShine::IRenderGraph* renderGraph
 
         // Add a primitive to do the alpha mask
         {
-            LyShine::RenderGraph* lyRenderGraph = dynamic_cast<LyShine::RenderGraph*>(renderGraph);
+            LyShine::RenderGraph* lyRenderGraph = static_cast<LyShine::RenderGraph*>(renderGraph);
             if (lyRenderGraph)
             {
                 // Set the texture and other render state required

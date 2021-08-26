@@ -575,7 +575,7 @@ void UiFaderComponent::RenderRttFader(LyShine::IRenderGraph* renderGraph, UiElem
         AZ::Color clearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
         // Start building the render to texture node in the render graph
-        LyShine::RenderGraph* lyRenderGraph = dynamic_cast<LyShine::RenderGraph*>(renderGraph);
+        LyShine::RenderGraph* lyRenderGraph = static_cast<LyShine::RenderGraph*>(renderGraph);
         lyRenderGraph->BeginRenderToTexture(attachmentImage, m_viewportTopLeft, m_viewportSize, clearColor);
 
         // We don't want this fader or parent faders to affect what is rendered to the render target since we will
@@ -615,7 +615,7 @@ void UiFaderComponent::RenderRttFader(LyShine::IRenderGraph* renderGraph, UiElem
 
         // Add a primitive to render a quad using the render target we have created
         {
-            LyShine::RenderGraph* lyRenderGraph = dynamic_cast<LyShine::RenderGraph*>(renderGraph);
+            LyShine::RenderGraph* lyRenderGraph = static_cast<LyShine::RenderGraph*>(renderGraph);
             if (lyRenderGraph)
             {
                 // Set the texture and other render state required
