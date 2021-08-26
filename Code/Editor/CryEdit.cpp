@@ -524,8 +524,6 @@ public:
 
     bool m_bSkipWelcomeScreenDialog = false;
     bool m_bAutotestMode = false;
-    bool m_bAttachDebugger = false;
-    bool m_bWaitForDebugger = false;
 
     struct CommandLineStringOption
     {
