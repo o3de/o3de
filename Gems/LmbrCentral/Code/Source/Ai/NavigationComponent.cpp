@@ -748,7 +748,7 @@ namespace LmbrCentral
 
             PathFollowResult result;
 
-            const bool arrived = pathFollower->Update(
+            [[maybe_unused]] const bool arrived = pathFollower->Update(
                 result,
                 AZVec3ToLYVec3(agentPosition),
                 AZVec3ToLYVec3(agentVelocity),

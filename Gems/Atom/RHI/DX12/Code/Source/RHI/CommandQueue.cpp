@@ -108,7 +108,7 @@ namespace AZ
 
         void CommandQueue::QueueGpuSignal(Fence& fence)
         {
-            QueueCommand([this, &fence](void* commandQueue)
+            QueueCommand([&fence](void* commandQueue)
             {
                 AZ_PROFILE_SCOPE(RHI, "SignalFence");
                 ID3D12CommandQueue* dx12CommandQueue = static_cast<ID3D12CommandQueue*>(commandQueue);

@@ -76,8 +76,6 @@ static int  numused;
 const char* id87 = "GIF87a";
 const char* id89 = "GIF89a";
 
-static int   log2 (int);
-
 /* Fetch the next code from the raster data stream.  The codes can be
  * any length from 3 to 12 bits, packed into 8-bit bytes, so we have to
  * maintain our location in the Raster array as a BIT Offset.  We compute

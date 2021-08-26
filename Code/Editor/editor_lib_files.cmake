@@ -290,7 +290,6 @@ set(FILES
     Include/IPreferencesPage.h
     Include/IRenderListener.h
     Include/ISourceControl.h
-    Include/ISubObjectSelectionReferenceFrameCalculator.h
     Include/ITextureDatabaseUpdater.h
     Include/ITransformManipulator.h
     Include/IViewPane.h
@@ -460,8 +459,6 @@ set(FILES
     Dialogs/PythonScriptsDialog.ui
     Dialogs/Generic/UserOptions.cpp
     Dialogs/Generic/UserOptions.h
-    EditMode/SubObjectSelectionReferenceFrameCalculator.cpp
-    EditMode/SubObjectSelectionReferenceFrameCalculator.h
     Export/ExportManager.cpp
     Export/ExportManager.h
     Export/OBJExporter.cpp

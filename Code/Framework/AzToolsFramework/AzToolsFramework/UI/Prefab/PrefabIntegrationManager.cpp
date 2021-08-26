@@ -157,7 +157,7 @@ namespace AzToolsFramework
                             QAction* createAction = menu->addAction(QObject::tr("Create Prefab..."));
                             createAction->setToolTip(QObject::tr("Creates a prefab out of the currently selected entities."));
 
-                            QObject::connect(createAction, &QAction::triggered, createAction, [this, selectedEntities] {
+                            QObject::connect(createAction, &QAction::triggered, createAction, [selectedEntities] {
                                 ContextMenu_CreatePrefab(selectedEntities);
                             });
                         }
@@ -171,7 +171,7 @@ namespace AzToolsFramework
                 instantiateAction->setToolTip(QObject::tr("Instantiates a prefab file in the scene."));
 
                 QObject::connect(
-                    instantiateAction, &QAction::triggered, instantiateAction, [this] { ContextMenu_InstantiatePrefab(); });
+                    instantiateAction, &QAction::triggered, instantiateAction, [] { ContextMenu_InstantiatePrefab(); });
             }
 
             menu->addSeparator();
@@ -196,7 +196,7 @@ namespace AzToolsFramework
                                 QAction* editAction = menu->addAction(QObject::tr("Edit Prefab"));
                                 editAction->setToolTip(QObject::tr("Edit the prefab in focus mode."));
 
-                                QObject::connect(editAction, &QAction::triggered, editAction, [this, selectedEntity] {
+                                QObject::connect(editAction, &QAction::triggered, editAction, [selectedEntity] {
                                     ContextMenu_EditPrefab(selectedEntity);
                                 });
 
@@ -213,7 +213,7 @@ namespace AzToolsFramework
                             QAction* saveAction = menu->addAction(QObject::tr("Save Prefab to file"));
                             saveAction->setToolTip(QObject::tr("Save the changes to the prefab to disk."));
 
-                            QObject::connect(saveAction, &QAction::triggered, saveAction, [this, selectedEntity] {
+                            QObject::connect(saveAction, &QAction::triggered, saveAction, [selectedEntity] {
                                 ContextMenu_SavePrefab(selectedEntity);
                             });
 
@@ -229,7 +229,7 @@ namespace AzToolsFramework
             }
 
             QAction* deleteAction = menu->addAction(QObject::tr("Delete"));
-            QObject::connect(deleteAction, &QAction::triggered, deleteAction, [this] { ContextMenu_DeleteSelected(); });
+            QObject::connect(deleteAction, &QAction::triggered, deleteAction, [] { ContextMenu_DeleteSelected(); });
             if (selectedEntities.size() == 0 ||
                 (selectedEntities.size() == 1 && s_prefabPublicInterface->IsLevelInstanceContainerEntity(selectedEntities[0])))
             {
@@ -247,7 +247,7 @@ namespace AzToolsFramework
                     QAction* detachPrefabAction = menu->addAction(QObject::tr("Detach Prefab..."));
                     QObject::connect(
                         detachPrefabAction, &QAction::triggered, detachPrefabAction,
-                        [this, selectedEntity]
+                        [selectedEntity]
                         {
                             ContextMenu_DetachPrefab(selectedEntity);
                         });

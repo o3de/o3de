@@ -2529,7 +2529,7 @@ namespace AzToolsFramework
         AZ_Warning("SlicePush", levelSlice, "SlicePushWidget::CalculateReferenceCount could not find root slice, displayed counts will be inaccurate!");
         size_t instanceCount = 0;
         AZ::Data::AssetBus::EnumerateHandlersId(assetId,
-            [&instanceCount, assetId, levelSlice] (AZ::Data::AssetEvents* handler) -> bool
+            [&instanceCount, assetId] (AZ::Data::AssetEvents* handler) -> bool
             {
                 AZ::SliceComponent* component = azrtti_cast<AZ::SliceComponent*>(handler);
                 if (component)

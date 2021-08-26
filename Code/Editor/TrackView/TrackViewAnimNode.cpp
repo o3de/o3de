@@ -1819,7 +1819,6 @@ bool CTrackViewAnimNode::IsDisabled() const
 //////////////////////////////////////////////////////////////////////////
 void CTrackViewAnimNode::SetPos(const Vec3& position)
 {
-    const float time = GetSequence()->GetTime();
     CTrackViewTrack* track = GetTrackForParameter(AnimParamType::Position);
 
     if (track)

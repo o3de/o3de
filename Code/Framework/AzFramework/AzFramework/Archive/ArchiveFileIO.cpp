@@ -16,7 +16,6 @@
 
 namespace AZ::IO
 {
-    constexpr size_t ArchiveFileiOMaxBuffersize = 16 * 1024;
     ArchiveFileIO::ArchiveFileIO(IArchive* archive)
         : m_archive(archive)
     {

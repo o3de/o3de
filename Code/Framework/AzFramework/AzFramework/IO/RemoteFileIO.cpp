@@ -27,7 +27,9 @@ namespace AZ
         const char* const NetworkFileIOChannel = "NetworkFileIO";
 #ifndef REMOTEFILEIO_IS_NETWORKFILEIO
         const char* const RemoteFileIOChannel = "RemoteFileIO";
+    #ifdef REMOTEFILEIO_SYNC_CHECK
         const char* const RemoteFileCacheChannel = "RemoteFileCache";
+    #endif
 #endif
 
         const size_t READ_CHUNK_SIZE = 1024 * 256;

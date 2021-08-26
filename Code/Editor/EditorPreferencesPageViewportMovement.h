@@ -5,17 +5,21 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+
 #pragma once
 
 #include "Include/IPreferencesPage.h"
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/RTTI.h>
+#include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <QIcon>
 
+inline AZ::Crc32 EditorPropertyVisibility(const bool enabled)
+{
+    return enabled ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
+}
 
-class CEditorPreferencesPage_ViewportMovement
-    : public IPreferencesPage
+class CEditorPreferencesPage_ViewportMovement : public IPreferencesPage
 {
 public:
     AZ_RTTI(CEditorPreferencesPage_ViewportMovement, "{BC593332-7EAF-4171-8A35-1C5DE5B40909}", IPreferencesPage)
@@ -25,12 +29,22 @@ public:
     CEditorPreferencesPage_ViewportMovement();
     virtual ~CEditorPreferencesPage_ViewportMovement() = default;
 
-    virtual const char* GetCategory() override { return "Viewports"; }
+    virtual const char* GetCategory() override
+    {
+        return "Viewports";
+    }
+
     virtual const char* GetTitle();
     virtual QIcon& GetIcon() override;
     virtual void OnApply() override;
-    virtual void OnCancel() override {}
-    virtual bool OnQueryCancel() override { return true; }
+    virtual void OnCancel() override
+    {
+    }
+
+    virtual bool OnQueryCancel() override
+    {
+        return true;
+    }
 
 private:
     void InitializeSettings();
@@ -39,16 +53,32 @@ private:
     {
         AZ_TYPE_INFO(CameraMovementSettings, "{60B8C07E-5F48-4171-A50B-F45558B5CCA1}")
 
-        float m_moveSpeed;
+        float m_translateSpeed;
         float m_rotateSpeed;
-        float m_fastMoveSpeed;
-        float m_wheelZoomSpeed;
-        bool m_invertYRotation;
-        bool m_invertPan;
+        float m_scrollSpeed;
+        float m_dollySpeed;
+        float m_panSpeed;
+        float m_boostMultiplier;
+        float m_rotateSmoothness;
+        bool m_rotateSmoothing;
+        float m_translateSmoothness;
+        bool m_translateSmoothing;
+        bool m_captureCursorLook;
+        bool m_orbitYawRotationInverted;
+        bool m_panInvertedX;
+        bool m_panInvertedY;
+
+        AZ::Crc32 RotateSmoothingVisibility() const
+        {
+            return EditorPropertyVisibility(m_rotateSmoothing);
+        }
+
+        AZ::Crc32 TranslateSmoothingVisibility() const
+        {
+            return EditorPropertyVisibility(m_translateSmoothing);
+        }
     };
 
     CameraMovementSettings m_cameraMovementSettings;
     QIcon m_icon;
 };
-
-
