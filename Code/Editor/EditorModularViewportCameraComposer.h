@@ -11,6 +11,7 @@
 #include <AtomToolsFramework/Viewport/ModularViewportCameraController.h>
 #include <AzFramework/Viewport/CameraInput.h>
 #include <EditorModularViewportCameraComposerBus.h>
+#include <SandboxAPI.h>
 
 namespace SandboxEditor
 {
@@ -18,11 +19,11 @@ namespace SandboxEditor
     class EditorModularViewportCameraComposer : private EditorModularViewportCameraComposerNotificationBus::Handler
     {
     public:
-        explicit EditorModularViewportCameraComposer(AzFramework::ViewportId viewportId);
-        ~EditorModularViewportCameraComposer();
+        SANDBOX_API explicit EditorModularViewportCameraComposer(AzFramework::ViewportId viewportId);
+        SANDBOX_API ~EditorModularViewportCameraComposer();
 
         //! Build a ModularViewportCameraController from the associated camera inputs.
-        AZStd::shared_ptr<AtomToolsFramework::ModularViewportCameraController> CreateModularViewportCameraController();
+        SANDBOX_API AZStd::shared_ptr<AtomToolsFramework::ModularViewportCameraController> CreateModularViewportCameraController();
 
     private:
         //! Setup all internal camera inputs.
