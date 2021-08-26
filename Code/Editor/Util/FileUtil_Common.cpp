@@ -11,10 +11,10 @@
 
 namespace Common
 {
-    bool   Exists(const QString& strPath, bool boDirectory, IFileUtil::FileDesc* pDesc)
+    bool Exists(const QString& strPath, bool boDirectory, IFileUtil::FileDesc* pDesc)
     {
         auto pIPak = GetIEditor()->GetSystem()->GetIPak();
-        bool                        boIsDirectory(false);
+        bool boIsDirectory(false);
 
         AZ::IO::ArchiveFileIterator nFindHandle = pIPak->FindFirst(strPath.toUtf8().data());
         // If it found nothing, no matter if it is a file or directory, it was not found.
