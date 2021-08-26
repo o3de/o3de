@@ -687,13 +687,18 @@ namespace AZ
 
             // we assert above, but we also need to properly handle the case when the resolvedPath buffer size
             // is too small to copy the source into.
-            size_t pathLen = strlen(path) + 1; // account for null
+            size_t pathLen = strnlen_s(path, AZ::IO::MaxPathLength) + 1; // account for null
             if (path == resolvedPath || (resolvedPathSize < pathLen))
             {
                 return false;
             }
 
-            azstrncpy(resolvedPath, resolvedPathSize, path, pathLen);
+            errno_t error = azstrncpy(resolvedPath, resolvedPathSize, path, pathLen);
+            if (error != 0)
+            {
+                return false;
+            }
+
             for (const auto& alias : m_aliases)
             {
                 const char* key = alias.first.c_str();
@@ -707,20 +712,24 @@ namespace AZ
                     const char* dest = alias.second.c_str();
                     size_t destLen = alias.second.length();
                     char* afterKey = resolvedPath + keyLen;
-                    size_t afterKeyLen = pathLen - keyLen;
-                    // must ensure that we are replacing the entire folder name, not a partial (e.g. @GAME01@/ vs @GAME0@/)
-                    if (*afterKey == '/' || *afterKey == '\\' || *afterKey == 0)
+                    if (pathLen >= keyLen)
                     {
-                        if (afterKeyLen + destLen + 1 < resolvedPathSize)//if after replacing the alias the length is greater than the max path size than skip
+                        size_t afterKeyLen = pathLen - keyLen;
+                        // must ensure that we are replacing the entire folder name, not a partial (e.g. @GAME01@/ vs @GAME0@/)
+                        if (*afterKey == '/' || *afterKey == '\\' || *afterKey == 0)
                         {
-                            // scoot the right hand side of the replacement over to make room
-                            memmove(resolvedPath + destLen, afterKey, afterKeyLen + 1); // make sure null is copied
-                            memcpy(resolvedPath, dest, destLen); // insert replacement
-                            pathLen -= keyLen;
-                            pathLen += destLen;
+                            if (afterKeyLen + destLen + 1 <
+                                resolvedPathSize) // if after replacing the alias the length is greater than the max path size than skip
+                            {
+                                // scoot the right hand side of the replacement over to make room
+                                memmove(resolvedPath + destLen, afterKey, afterKeyLen + 1); // make sure null is copied
+                                memcpy(resolvedPath, dest, destLen); // insert replacement
+                                pathLen -= keyLen;
+                                pathLen += destLen;
 
-                            AZStd::replace(resolvedPath, resolvedPath + resolvedPathSize, '\\', '/');
-                            return true;
+                                AZStd::replace(resolvedPath, resolvedPath + resolvedPathSize, '\\', '/');
+                                return true;
+                            }
                         }
                     }
                 }
