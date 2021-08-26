@@ -29,6 +29,12 @@
                 "Streaming": false,
                 "Enable": true
             },
+            "linux": {
+                "GlossScale": 16.0,
+                "GlossBias": 0.0,
+                "Streaming": false,
+                "Enable": true
+            },
             "provo": {
                 "GlossScale": 16.0,
                 "GlossBias": 0.0,
