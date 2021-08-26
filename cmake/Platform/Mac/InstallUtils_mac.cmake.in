@@ -84,7 +84,7 @@ function(codesign_file file entitlement_file)
     endif()
 
     if(NOT ${codesign_ret} EQUAL "0")
-        message("Codesign operation for ${file_path} returned ${codesign_ret} with message ${codesign_out}")
+        message(FATAL_ERROR "Codesign operation for ${file_path} returned ${codesign_ret} with message ${codesign_out}")
     endif()
 
 endfunction()

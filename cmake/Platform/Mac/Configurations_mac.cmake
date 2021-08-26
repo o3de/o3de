@@ -36,7 +36,5 @@ ly_set(CMAKE_XCODE_ATTRIBUTE_OTHER_CODE_SIGN_FLAGS "--deep")
 # Generate scheme files for Xcode
 ly_set(CMAKE_XCODE_GENERATE_SCHEME TRUE)
 
-ly_set(CMAKE_OSX_ARCHITECTURES "x86_64")
-
 # Make modules have the dylib extension
 ly_set(CMAKE_SHARED_MODULE_SUFFIX .dylib)
