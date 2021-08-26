@@ -207,7 +207,7 @@ class TestMaterialEditor(object):
             request,
             TEST_DIRECTORY,
             generic_launcher,
-            "",
+            editor_script="",
             run_python="--runpython",
             timeout=30,
             expected_lines=expected_lines,
