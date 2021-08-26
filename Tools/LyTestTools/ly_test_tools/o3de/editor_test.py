@@ -690,48 +690,50 @@ class EditorTestSuite():
                 # If the editor crashed, find out in which test it happened and update the results
                 has_crashed = return_code != EditorTestSuite._TEST_FAIL_RETCODE
                 if has_crashed:
-                    crashed_test = None
+                    crashed_result = None
                     for test_spec_name, result in results.items():
                         if isinstance(result, Result.Unknown):
-                            if not crashed_test:
+                            if not crashed_result:
                                 # The first test with "Unknown" result (no data in output) is likely the one that crashed
                                 crash_error = editor_utils.retrieve_crash_output(run_id, workspace, self._TIMEOUT_CRASH_LOG)
                                 editor_utils.cycle_crash_report(run_id, workspace)
                                 results[test_spec_name] = Result.Crash.create(result.test_spec, output, return_code, crash_error, result.editor_log)
-                                crashed_test = result
+                                crashed_result = result
                             else:
                                 # If there are remaning "Unknown" results, these couldn't execute because of the crash, update with info about the offender 
-                                results[test_spec_name].extra_info = f"This test has unknown result, test '{crashed_test.__name__}' crashed before this test could be executed"
+                                results[test_spec_name].extra_info = f"This test has unknown result, test '{crashed_result.test_spec.__name__}' crashed before this test could be executed"
 
                     # if all the tests ran, the one that has caused the crash is the last test
-                    if not crashed_test:
+                    if not crashed_result:
                         crash_error = editor_utils.retrieve_crash_output(run_id, workspace, self._TIMEOUT_CRASH_LOG)
                         editor_utils.cycle_crash_report(run_id, workspace)
-                        results[test_spec_name] = Result.Crash.create(crashed_test.test_spec, output, return_code, crash_error, crashed_test.editor_log)
+                        results[test_spec_name] = Result.Crash.create(crashed_result.test_spec, output, return_code, crash_error, crashed_result.editor_log)
 
 
-        except WaitTimeoutError:
+        except WaitTimeoutError:            
+            editor.kill()
+
+            output = editor.get_output()
+            editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
+
             # The editor timed out when running the tests, get the data from the output to find out which ones ran
             results = self._get_results_using_output(test_spec_list, output, editor_log_content)
             assert len(results) == len(test_spec_list), "bug in _get_results_using_output(), the number of results don't match the tests ran"
-
-            editor_log_content = editor_utils.retrieve_editor_log_content(run_id, log_name, workspace)
-            editor.kill()
             
             # Similar logic here as crashes, the first test that has no result is the one that timed out
-            timed_out_test = None
+            timed_out_result = None
             for test_spec_name, result in results.items():
                 if isinstance(result, Result.Unknown):
-                    if not timed_out_test:
-                        results[test_spec_name] = Result.Timeout.create(test_spec, result.output, self.timeout_editor_shared_test, result.editor_log)
-                        timed_out_test = result.test_spec
+                    if not timed_out_result:
+                        results[test_spec_name] = Result.Timeout.create(result.test_spec, result.output, self.timeout_editor_shared_test, result.editor_log)
+                        timed_out_result = result
                     else:
                         # If there are remaning "Unknown" results, these couldn't execute because of the timeout, update with info about the offender 
-                        results[test_spec_name].extra_info = f"This test has unknown result, test '{timed_out_test.__name__}' timed out the execution before this test could be executed"
+                        results[test_spec_name].extra_info = f"This test has unknown result, test '{timed_out_result.test_spec.__name__}' timed out before this test could be executed"
 
             # if all the tests ran, the one that has caused the timeout is the last test, as it didn't close the editor
-            if not timed_out_test:
-                results[test_spec_name] = Result.Timeout.create(test_spec, results[test_spec_name].output, self.timeout_editor_shared_test, result.editor_log)
+            if not timed_out_result:
+                results[test_spec_name] = Result.Timeout.create(timed_out_result.test_spec, results[test_spec_name].output, self.timeout_editor_shared_test, result.editor_log)
 
         return results
     
