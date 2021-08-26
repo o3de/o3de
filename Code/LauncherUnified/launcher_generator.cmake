@@ -6,8 +6,8 @@
 #
 #
 
-
 set_property(GLOBAL PROPERTY LAUNCHER_UNIFIED_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
+
 # Launcher targets for a project need to be generated when configuring a project.
 # When building the engine source, this file will be included by LauncherUnified's CMakeLists.txt
 # When using an installed engine, this file will be included by the FindLauncherGenerator.cmake script
@@ -129,6 +129,9 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
         set_property(TARGET ${project_name}.GameLauncher APPEND PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "--project-path=\"${LY_DEFAULT_PROJECT_PATH}\"")
     endif()
 
+    # Associate the Clients Gem Variant with each projects GameLauncher
+    ly_set_gem_variant_to_load(TARGETS ${project_name}.GameLauncher VARIANTS Clients)
+
     ################################################################################
     # Server
     ################################################################################
@@ -173,6 +176,9 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
             if(LY_DEFAULT_PROJECT_PATH)
                 set_property(TARGET ${project_name}.ServerLauncher APPEND PROPERTY VS_DEBUGGER_COMMAND_ARGUMENTS "--project-path=\"${LY_DEFAULT_PROJECT_PATH}\"")
             endif()
+
+            # Associate the Servers Gem Variant with each projects ServerLauncher
+            ly_set_gem_variant_to_load(TARGETS ${project_name}.ServerLauncher VARIANTS Servers)
         endif()
 
     endif()

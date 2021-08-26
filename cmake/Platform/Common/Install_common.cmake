@@ -288,44 +288,9 @@ function(ly_setup_subdirectory absolute_target_source_dir)
         string(APPEND all_configured_targets "${configured_target}")
     endforeach()
 
-    # Replicate the ly_create_alias() calls based on the SOURCE_DIR for each target that generates an installed CMakeLists.txt
-    string(JOIN "\n" create_alias_template
-        "if(NOT TARGET @ALIAS_NAME@)"
-        "   ly_create_alias(NAME @ALIAS_NAME@ NAMESPACE @ALIAS_NAMESPACE@ TARGETS @ALIAS_TARGETS@)"
-        "endif()"
-        ""
-    )
-    get_property(create_alias_commands_arg_list DIRECTORY ${absolute_target_source_dir} PROPERTY LY_CREATE_ALIAS_ARGUMENTS)
-    foreach(create_alias_single_command_arg_list ${create_alias_commands_arg_list})
-        # Split the ly_create_alias arguments back out based on commas
-        string(REPLACE "," ";" create_alias_single_command_arg_list "${create_alias_single_command_arg_list}")
-        list(POP_FRONT create_alias_single_command_arg_list ALIAS_NAME)
-        list(POP_FRONT create_alias_single_command_arg_list ALIAS_NAMESPACE)
-        # The rest of the list are the target dependencies
-        set(ALIAS_TARGETS ${create_alias_single_command_arg_list})
-        string(CONFIGURE "${create_alias_template}" create_alias_command @ONLY)
-        string(APPEND CREATE_ALIASES_PLACEHOLDER ${create_alias_command})
-    endforeach()
-
-
-    # Reproduce the ly_enable_gems() calls made in the the SOURCE_DIR for this target into the CMakeLists.txt that
-    # is about to be generated
-    set(enable_gems_template "ly_enable_gems(@enable_gem_PROJECT_NAME@ @enable_gem_GEMS@ @enable_gem_GEM_FILE@ @enable_gem_VARIANTS@ @enable_gem_TARGETS@)\n")
-    get_property(enable_gems_commands_arg_list DIRECTORY ${absolute_target_source_dir} PROPERTY LY_ENABLE_GEMS_ARGUMENTS)
-    foreach(enable_gems_single_command_arg_list ${enable_gems_commands_arg_list})
-        # Split the ly_enable_gems arguments back out based on commas
-        string(REPLACE "," ";" enable_gems_single_command_arg_list "${enable_gems_single_command_arg_list}")
-        foreach(enable_gem_arg_kw IN ITEMS PROJECT_NAME GEMS GEM_FILE VARIANTS TARGETS)
-            list(POP_FRONT enable_gems_single_command_arg_list enable_gem_${enable_gem_arg_kw})
-            if(enable_gem_${enable_gem_arg_kw})
-                # if the argument exist append to argument keyword to the front
-                string(PREPEND enable_gem_${enable_gem_arg_kw} "${enable_gem_arg_kw} ")
-            endif()
-        endforeach()
-
-        string(CONFIGURE "${enable_gems_template}" enable_gems_command @ONLY)
-        string(APPEND ENABLE_GEMS_PLACEHOLDER ${enable_gems_command})
-    endforeach()
+    ly_setup_subdirectory_create_alias("${absolute_target_source_dir}" CREATE_ALIASES_PLACEHOLDER)
+    ly_setup_subdirectory_set_gem_variant_to_load("${absolute_target_source_dir}" GEM_VARIANT_TO_LOAD_PLACEHOLDER)
+    ly_setup_subdirectory_enable_gems("${absolute_target_source_dir}" ENABLE_GEMS_PLACEHOLDER)
 
     ly_file_read(${LY_ROOT_FOLDER}/cmake/install/Copyright.in cmake_copyright_comment)
 
@@ -337,6 +302,7 @@ function(ly_setup_subdirectory absolute_target_source_dir)
         "${all_configured_targets}"
         "\n"
         "${CREATE_ALIASES_PLACEHOLDER}"
+        "${GEM_VARIANT_TO_LOAD_PLACEHOLDER}"
         "${ENABLE_GEMS_PLACEHOLDER}"
     )
 
@@ -589,4 +555,59 @@ function(ly_setup_assets)
 
     endforeach()
 
+endfunction()
+
+
+#! ly_setup_subdirectory_create_alias: Replicates the call to the `ly_create_alias` function
+#! within the generated CMakeLists.txt in the same relative install layout directory
+function(ly_setup_subdirectory_create_alias absolute_target_source_dir output_script)
+    # Replicate the create_alias() calls made in the SOURCE_DIR into the generated CMakeLists.txt
+    string(JOIN "\n" create_alias_template
+        "if(NOT TARGET @alias_name@)"
+        "   ly_create_alias(@create_alias_args@)"
+        "endif()"
+        "")
+
+    unset(${output_script} PARENT_SCOPE)
+    get_property(create_alias_args_list DIRECTORY ${absolute_target_source_dir} PROPERTY LY_CREATE_ALIAS_ARGUMENTS)
+    foreach(create_alias_args IN LISTS create_alias_args_list)
+        # Create a list out of the comma separated arguments and store it into the same variable
+        string(REPLACE "," ";" create_alias_args ${create_alias_args})
+        # The first argument of the create alias argument list is the ALIAS NAME so pop it from the list
+        # It is used to protect against registering the same alias twice
+        list(POP_FRONT create_alias_args alias_name)
+        string(CONFIGURE "${create_alias_template}" create_alias_command @ONLY)
+        string(APPEND create_alias_calls ${create_alias_command})
+    endforeach()
+    set(${output_script} ${create_alias_calls} PARENT_SCOPE)
+endfunction()
+
+#! ly_setup_subdirectory_set_gem_variant_to_load: Replicates the call to the `ly_set_gem_variant_to_load` function
+#! within the generated CMakeLists.txt in the same relative install layout directory
+function(ly_setup_subdirectory_set_gem_variant_to_load absolute_target_source_dir output_script)
+    # Replicate the ly_set_gem_variant_to_load() calls made in the SOURCE_DIR for into the generated CMakeLists.txt
+    set(set_gem_variant_args_template "ly_set_gem_variant_to_load(@set_gem_variant_args@)\n")
+
+    unset(${output_script} PARENT_SCOPE)
+    get_property(set_gem_variant_args_lists DIRECTORY ${absolute_target_source_dir} PROPERTY LY_SET_GEM_VARIANT_TO_LOAD_ARGUMENTS)
+    foreach(set_gem_variant_args IN LISTS set_gem_variant_args_lists)
+        string(CONFIGURE "${set_gem_variant_args_template}" set_gem_variant_to_load_command @ONLY)
+        string(APPEND set_gem_variant_calls ${set_gem_variant_to_load_command})
+    endforeach()
+    set(${output_script} ${set_gem_variant_calls} PARENT_SCOPE)
+endfunction()
+
+#! ly_setup_subdirectory_enable_gems: Replicates the call to the `ly_enable_gems` function
+#! within the generated CMakeLists.txt in the same relative install layout directory
+function(ly_setup_subdirectory_enable_gems absolute_target_source_dir output_script)
+    # Replicate the ly_set_gem_variant_to_load() calls made in the SOURCE_DIR into the generated CMakeLists.txt
+    set(enable_gems_template "ly_enable_gems(@enable_gems_args@)\n")
+
+    unset(${output_script} PARENT_SCOPE)
+    get_property(enable_gems_args_list DIRECTORY ${absolute_target_source_dir} PROPERTY LY_ENABLE_GEMS_ARGUMENTS)
+    foreach(enable_gems_args IN LISTS enable_gems_args_list)
+        string(CONFIGURE "${enable_gems_template}" enable_gems_command @ONLY)
+        string(APPEND enable_gems_calls ${enable_gems_command})
+    endforeach()
+    set(${output_script} ${enable_gems_calls} PARENT_SCOPE)
 endfunction()

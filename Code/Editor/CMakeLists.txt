@@ -174,6 +174,8 @@ ly_add_target(
         Legacy::EditorLib
         ProjectManager
 )
+
+ly_set_gem_variant_to_load(TARGETS Editor VARIANTS Tools)
 set_property(SOURCE
     CryEdit.cpp
     APPEND PROPERTY
