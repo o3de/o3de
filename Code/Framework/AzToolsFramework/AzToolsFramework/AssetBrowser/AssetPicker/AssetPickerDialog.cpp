@@ -102,20 +102,29 @@ namespace AzToolsFramework
 
             m_persistentState = AZ::UserSettings::CreateFind<AzToolsFramework::QWidgetSavedState>(AZ::Crc32(("AssetBrowserTreeView_Dialog_" + name).toUtf8().data()), AZ::UserSettings::CT_GLOBAL);
 
+            m_ui->m_assetBrowserTableViewWidget->setVisible(false);
             if (ed_useNewAssetBrowserTableView)
             {
+                m_ui->m_assetBrowserTreeViewWidget->setVisible(false);
+                m_ui->m_assetBrowserTableViewWidget->setVisible(true);
                 m_tableModel->setSourceModel(m_filterModel.get());
                 m_ui->m_assetBrowserTableViewWidget->setModel(m_tableModel.get());
-                m_ui->m_assetBrowserTreeViewWidget->setVisible(false);
+
                 m_ui->m_assetBrowserTableViewWidget->SetName("AssetBrowserTableView_" + name);
+                m_ui->m_assetBrowserTableViewWidget->setDragEnabled(false);
+                m_ui->m_assetBrowserTableViewWidget->setSelectionMode(
+                    selection.GetMultiselect() ? QAbstractItemView::SelectionMode::ExtendedSelection
+                                               : QAbstractItemView::SelectionMode::SingleSelection);
+                //m_ui->m_assetBrowserTableViewWidget->hideColumn(1);
+
+                // if the current selection is invalid, disable the Ok button
+                m_ui->m_buttonBox->button(QDialogButtonBox::Ok)->setEnabled(EvaluateSelection());
+
                 connect(
                     m_filterModel.data(), &AssetBrowserFilterModel::filterChanged, this,
                     [this]()
                     {
-                        if (!m_ui->m_searchWidget->GetFilterString().isEmpty())
-                        {
-                            m_tableModel->UpdateTableModelMaps();
-                        }
+                        m_tableModel->UpdateTableModelMaps();
                     });
 
                 connect(
@@ -124,10 +133,6 @@ namespace AzToolsFramework
                     {
                         AssetPickerDialog::SelectionChangedSlot();
                     });
-
-                connect(
-                    m_ui->m_assetBrowserTableViewWidget, &AssetBrowserTableView::selectionChangedSignal, this,
-                    &AssetPickerDialog::SelectionChangedSlot);
 
                 connect(m_ui->m_assetBrowserTableViewWidget, &QAbstractItemView::doubleClicked, this, &AssetPickerDialog::DoubleClickedSlot);
 
@@ -180,6 +185,7 @@ namespace AzToolsFramework
                 {
                     m_ui->m_assetBrowserTreeViewWidget->expandAll();
                 });
+                m_tableModel->UpdateTableModelMaps();
             }
 
             if (m_hasFilter && !hasFilter)

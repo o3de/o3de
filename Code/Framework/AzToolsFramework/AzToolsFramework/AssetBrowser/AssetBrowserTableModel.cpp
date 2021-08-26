@@ -16,7 +16,7 @@ namespace AzToolsFramework
         AssetBrowserTableModel::AssetBrowserTableModel(QObject* parent /* = nullptr */)
             : QSortFilterProxyModel(parent)
         {
-            setDynamicSortFilter(false);
+            setDynamicSortFilter(true);
         }
 
         void AssetBrowserTableModel::setSourceModel(QAbstractItemModel* sourceModel)
@@ -30,7 +30,7 @@ namespace AzToolsFramework
 
         QModelIndex AssetBrowserTableModel::mapToSource(const QModelIndex& proxyIndex) const
         {
-            Q_ASSERT(!proxyIndex.isValid() || proxyIndex.model() == this);
+            Q_ASSERT(!proxyIndex.isValid() || proxyIndex.model() != this);
             if (!proxyIndex.isValid())
             {
                 return QModelIndex();
@@ -103,7 +103,8 @@ namespace AzToolsFramework
                     QModelIndex index = model->index(currentRow, 0, parent);
                     AssetBrowserEntry* entry = GetAssetEntry(m_filterModel->mapToSource(index));
                     // We only want to see the source assets.
-                    if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
+                    if (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source ||
+                        entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product)
                     {
                         beginInsertRows(parent, row, row);
                         m_indexMap[row] = index;

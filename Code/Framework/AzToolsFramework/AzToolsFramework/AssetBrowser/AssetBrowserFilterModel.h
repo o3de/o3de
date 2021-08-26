@@ -27,6 +27,8 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
+        typedef AZStd::fixed_unordered_set<int, 3, aznumeric_cast<int>(AssetBrowserEntry::Column::Count)> ShowColumnsSet;
+
         class AssetBrowserFilterModel
             : public QSortFilterProxyModel
             , public AssetBrowserComponentNotificationBus::Handler
@@ -42,6 +44,7 @@ namespace AzToolsFramework
             void SetFilter(FilterConstType filter);
             void FilterUpdatedSlotImmediate();
             const FilterConstType& GetFilter() const { return m_filter; }
+            const ShowColumnsSet& GetShowColumns() const { return m_showColumn; }
             //////////////////////////////////////////////////////////////////////////
             // AssetBrowserComponentNotificationBus
             //////////////////////////////////////////////////////////////////////////
@@ -61,9 +64,9 @@ namespace AzToolsFramework
             void filterUpdatedSlot();
 
         protected:
-            //set for filtering columns
-            //if the column is in the set the column is not filtered and is shown
-            AZStd::fixed_unordered_set<int, 3, aznumeric_cast<int>(AssetBrowserEntry::Column::Count)> m_showColumn;
+            // set for filtering columns
+            // if the column is in the set the column is not filtered and is shown
+            ShowColumnsSet m_showColumn;
             bool m_alreadyRecomputingFilters = false;
             //asset source name match filter
             FilterConstType m_filter;
