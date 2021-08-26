@@ -103,7 +103,7 @@ namespace ImageProcessingAtom
                     AZStd::sys_time_t startTime = AZStd::GetTimeUTCMilliSecond();
                     dstImage = compressor->CompressImage(Get(), fmtDst, &m_compressOption);
                     AZStd::sys_time_t endTime = AZStd::GetTimeUTCMilliSecond();
-                    float processTime = static_cast<double>(endTime - startTime) / 1000.0;
+                    [[maybe_unused]] float processTime = static_cast<double>(endTime - startTime) / 1000.0;
                     if (dstImage)
                     {
                         AZ_TracePrintf("Image Processing", "Image [%dx%d] was compressed to [%s] format by [%s] in %f seconds\n",
