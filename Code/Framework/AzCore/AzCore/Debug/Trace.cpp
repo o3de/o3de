@@ -33,6 +33,7 @@ namespace AZ
         namespace Platform
         {
 #if defined(AZ_ENABLE_DEBUG_TOOLS)
+            bool AttachDebugger();
             bool IsDebuggerPresent();
             void HandleExceptions(bool isEnabled);
             void DebugBreak();
@@ -139,6 +140,36 @@ namespace AZ
         return Platform::IsDebuggerPresent();
 #else
         return false;
+#endif
+    }
+
+    bool
+    Trace::AttachDebugger()
+    {
+#if defined(AZ_ENABLE_DEBUG_TOOLS)
+        return Platform::AttachDebugger();
+#else
+        return false;
+#endif
+    }
+
+    bool
+    Trace::WaitForDebugger(float timeoutSeconds/*=-1.f*/)
+    {
+#if defined(AZ_ENABLE_DEBUG_TOOLS)
+        using namespace AZStd::chrono;
+        system_clock clock;
+        time_point start = clock.now();
+        auto hasTimedOut = [&]()
+        {
+            return timeoutSeconds >= 0 && (clock.now() - start) >= milliseconds(static_cast<int>(timeoutSeconds * 1000));
+        };
+
+        while (!AZ::Debug::Trace::IsDebuggerPresent() && !hasTimedOut())
+        {
+            AZStd::this_thread::sleep_for(milliseconds(1));
+        }
+        return AZ::Debug::Trace::IsDebuggerPresent();
 #endif
     }
 

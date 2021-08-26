@@ -56,6 +56,12 @@ namespace AZ
                 return ((info.kp_proc.p_flag & P_TRACED) != 0);
             }
 
+            bool AttachDebugger()
+            {
+                // Not supported yet
+                return false;
+            }
+
             void HandleExceptions(bool)
             {}
 

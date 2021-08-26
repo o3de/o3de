@@ -524,6 +524,8 @@ public:
 
     bool m_bSkipWelcomeScreenDialog = false;
     bool m_bAutotestMode = false;
+    bool m_bAttachDebugger = false;
+    bool m_bWaitForDebugger = false;
 
     struct CommandLineStringOption
     {
@@ -558,7 +560,9 @@ public:
             { "NSDocumentRevisionsDebugMode", nsDocumentRevisionsDebugMode},
             { "skipWelcomeScreenDialog", m_bSkipWelcomeScreenDialog},
             { "autotest_mode", m_bAutotestMode},
-            { "regdumpall", dummy }
+            { "regdumpall", dummy },
+            { "attach-debugger", dummy }, // Attaches a debugger for the current application
+            { "wait-for-debugger", dummy }, // Waits until a debugger is attached to the current application
         };
 
         QString dummyString;
@@ -2297,7 +2301,7 @@ int CCryEditApp::IdleProcessing(bool bBackgroundUpdate)
     int res = 0;
     if (bIsAppWindow || m_bForceProcessIdle || m_bKeepEditorActive
         // Automated tests must always keep the editor active, or they can get stuck
-        || m_bAutotestMode)
+        || m_bAutotestMode || m_bRunPythonTestScript)
     {
         res = 1;
         bActive = true;
@@ -4017,6 +4021,19 @@ struct CryAllocatorsRAII
 extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
 {
     CryAllocatorsRAII cryAllocatorsRAII;
+
+    // Debugging utilities
+    for (int i = 1; i < argc; ++i)
+    {
+        if (azstricmp(argv[i], "--attach-debugger") == 0)
+        {
+            AZ::Debug::Trace::AttachDebugger();
+        }
+        else if (azstricmp(argv[i], "--wait-for-debugger") == 0)
+        {
+            AZ::Debug::Trace::WaitForDebugger();
+        }
+    }
 
     // ensure the EditorEventsBus context gets created inside EditorLib
     [[maybe_unused]] const auto& editorEventsContext = AzToolsFramework::EditorEvents::Bus::GetOrCreateContext();
