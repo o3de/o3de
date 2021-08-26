@@ -14,7 +14,7 @@ cmake_path(SET file_path "${CMAKE_INSTALL_PREFIX}/bin/Mac/@config@/@runtime_outp
 if(@runtime_output_filename@ MATCHES ".app")
 
     if(@depends_on_python@)
-    codesign_python_framework_binaries("${file_path}/Contents/Frameworks/Python.framework")
+        codesign_python_framework_binaries("${file_path}/Contents/Frameworks/Python.framework")
     endif()
 
     codesign_file(${file_path} @entitlement_file@)

@@ -30,13 +30,6 @@ int main(int argc, char* argv[])
     {
         const char* dyldLibPathOrig = std::getenv("DYLD_LIBRARY_PATH");
         AZStd::string dyldSearchPath = AZStd::string::format("DYLD_LIBRARY_PATH=%s", dyldLibPathOrig);
-        if (AZ::IO::FixedMaxPath projectModulePath;
-            settingsRegistry->Get(projectModulePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectConfigurationBinPath))
-        {
-            dyldSearchPath.append(":");
-            dyldSearchPath.append(projectModulePath.c_str());
-        }
-        
         if (AZ::IO::FixedMaxPath installedBinariesFolder;
             settingsRegistry->Get(installedBinariesFolder.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_InstalledBinaryFolder))
         {
@@ -48,6 +41,14 @@ int main(int argc, char* argv[])
                 dyldSearchPath.append(installedBinariesFolder.c_str());
             }
         }
+
+        if (AZ::IO::FixedMaxPath projectModulePath;
+            settingsRegistry->Get(projectModulePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectConfigurationBinPath))
+        {
+            dyldSearchPath.append(":");
+            dyldSearchPath.append(projectModulePath.c_str());
+        }
+        
         envVars.push_back(dyldSearchPath);
     }
     
