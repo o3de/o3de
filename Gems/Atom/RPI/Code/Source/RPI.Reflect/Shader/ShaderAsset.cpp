@@ -587,6 +587,8 @@ namespace AZ
         {
             Data::Asset<ShaderVariantAsset> shaderVariantAsset = { asset.GetAs<ShaderVariantAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
             AZ_Assert(shaderVariantAsset->GetStableId() == RootShaderVariantStableId, "Was expecting to update the root variant");
+            SupervariantIndex supervariantIndex = GetSupervariantIndexFromAssetId(asset.GetId());
+            GetCurrentShaderApiData().m_supervariants[supervariantIndex.GetIndex()].m_rootShaderVariantAsset = asset;
             ShaderReloadNotificationBus::Event(GetId(), &ShaderReloadNotificationBus::Events::OnShaderAssetReinitialized, Data::Asset<ShaderAsset>{ this, AZ::Data::AssetLoadBehavior::PreLoad } );
         }
 
@@ -607,17 +609,7 @@ namespace AZ
             //    so it continues using the old ShaderVariantAsset instead of the new one.
             // The OnAssetReady bus function is called automatically whenever a connection to AssetBus is made, so listening to this gives
             // us the opportunity to assign the appropriate ShaderVariantAsset.
-
-            ShaderReloadNotificationBus::Event(GetId(), &ShaderReloadNotificationBus::Events::OnShaderAssetReinitialized, Data::Asset<ShaderAsset>{ this, AZ::Data::AssetLoadBehavior::PreLoad } );
-
-            Data::Asset<ShaderVariantAsset> shaderVariantAsset = { asset.GetAs<ShaderVariantAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
-            AZ_Assert(shaderVariantAsset->GetStableId() == RootShaderVariantStableId,
-                "Was expecting to update the root variant");
-            SupervariantIndex supervariantIndex = GetSupervariantIndexFromAssetId(asset.GetId());
-            GetCurrentShaderApiData().m_supervariants[supervariantIndex.GetIndex()].m_rootShaderVariantAsset = asset;
-
-            ShaderReloadNotificationBus::Event(GetId(), &ShaderReloadNotificationBus::Events::OnShaderAssetReinitialized, Data::Asset<ShaderAsset>{ this, AZ::Data::AssetLoadBehavior::PreLoad } );
-
+            
             ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->ShaderAsset::OnAssetReady %s", this, asset.GetHint().c_str());
             ReinitializeRootShaderVariant(asset);
         }
