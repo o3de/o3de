@@ -259,37 +259,53 @@ endfunction()
 # call this before runtime dependencies are used to add any relevant targets
 # saved by the above function
 function(ly_enable_gems_delayed)
+    # Query the list of targets that are associated with a gem variant
     get_property(targets_with_variants GLOBAL PROPERTY LY_TARGETS_WITH_GEM_VARIANTS)
+    # Query the projects that have made calls to ly_enable_gems
+    get_property(enable_gem_projects GLOBAL PROPERTY LY_DELAYED_ENABLE_GEMS)
+
     foreach(target ${targets_with_variants})
         if (NOT TARGET ${target})
             message(FATAL_ERROR "ly_set_gem_variant_to_load specified TARGET '${target}' but no such target was found.")
         endif()
 
-        # Gather the Gem variants associated with this target and iterate over them to combine them with the enabled
-        # gems for the each project
-        get_property(target_gem_variants GLOBAL PROPERTY LY_GEM_VARIANTS_"${target}")
-        foreach(variant ${target_gem_variants})
-            get_property(enable_gem_projects GLOBAL PROPERTY LY_DELAYED_ENABLE_GEMS)
-            foreach(project ${enable_gem_projects})
-                get_property(gem_dependencies GLOBAL PROPERTY LY_DELAYED_ENABLE_GEMS_"${project}")
-                if (NOT gem_dependencies)
-                    get_property(gem_dependencies_defined GLOBAL PROPERTY LY_DELAYED_ENABLE_GEMS_"${project}" DEFINED)
-                    if (gem_dependencies_defined)
-                        # special case, if the LY_DELAYED_ENABLE_GEMS_"${project_target_variant}" property is DEFINED
-                        # but empty, add an entry to the LY_DELAYED_LOAD_DEPENDENCIES to have the
-                        # cmake_dependencies.*.setreg file for the (project, target) tuple to be regenerated
-                        # This is needed if the ENABLED_GEMS list for a project goes from >0 to 0. In this case
-                        # the cmake_dependencies would have a stale list of gems to load unless it is regenerated
-                        get_property(delayed_load_target_set GLOBAL PROPERTY LY_DELAYED_LOAD_"${project},${target}" SET)
-                        if(NOT delayed_load_target_set)
-                            set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LOAD_DEPENDENCIES "${project},${target}")
-                            set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LOAD_"${project},${target}" "")
-                        endif()
-                    endif()
-                    # Continue to the next iteration loop regardless as there are no gem dependencies
-                    continue()
-                endif()
+        # Lookup if the target is scoped to a project
+        # In that case the target can only use gem targets that is
+        # - not project specific: i.e "__NOPROJECT__"
+        # - or specific to the <LY_PROJECT_NAME> project
+        get_property(target_project_association TARGET ${target} PROPERTY LY_PROJECT_NAME)
 
+        foreach(project ${enable_gem_projects})
+            if (target_project_association AND
+                (NOT (project STREQUAL "__NOPROJECT__") AND NOT (project STREQUAL target_project_association)))
+                # Skip adding the gem dependencies to this target if it is associated with a project
+                # and the current project doesn't match
+                continue()
+            endif()
+
+            get_property(gem_dependencies GLOBAL PROPERTY LY_DELAYED_ENABLE_GEMS_"${project}")
+            if (NOT gem_dependencies)
+                get_property(gem_dependencies_defined GLOBAL PROPERTY LY_DELAYED_ENABLE_GEMS_"${project}" DEFINED)
+                if (gem_dependencies_defined)
+                    # special case, if the LY_DELAYED_ENABLE_GEMS_"${project_target_variant}" property is DEFINED
+                    # but empty, add an entry to the LY_DELAYED_LOAD_DEPENDENCIES to have the
+                    # cmake_dependencies.*.setreg file for the (project, target) tuple to be regenerated
+                    # This is needed if the ENABLED_GEMS list for a project goes from >0 to 0. In this case
+                    # the cmake_dependencies would have a stale list of gems to load unless it is regenerated
+                    get_property(delayed_load_target_set GLOBAL PROPERTY LY_DELAYED_LOAD_"${project},${target}" SET)
+                    if(NOT delayed_load_target_set)
+                        set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LOAD_DEPENDENCIES "${project},${target}")
+                        set_property(GLOBAL APPEND PROPERTY LY_DELAYED_LOAD_"${project},${target}" "")
+                    endif()
+                endif()
+                # Continue to the next iteration loop regardless as there are no gem dependencies
+                continue()
+            endif()
+
+            # Gather the Gem variants associated with this target and iterate over them to combine them with the enabled
+            # gems for the each project
+            get_property(target_gem_variants GLOBAL PROPERTY LY_GEM_VARIANTS_"${target}")
+            foreach(variant ${target_gem_variants})
                 ly_add_gem_dependencies_to_project_variants(
                     PROJECT_NAME ${project}
                     TARGET ${target}

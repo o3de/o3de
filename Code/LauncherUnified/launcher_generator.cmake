@@ -121,6 +121,7 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
     set_target_properties(${project_name}.GameLauncher
         PROPERTIES 
             FOLDER ${project_name}
+            LY_PROJECT_NAME ${project_name}
     )
 
     # After ensuring that we correctly support DPI scaling, this should be switched to "PerMonitor"
@@ -171,6 +172,7 @@ foreach(project_name project_path IN ZIP_LISTS LY_PROJECTS_TARGET_NAME LY_PROJEC
             set_target_properties(${project_name}.ServerLauncher
                 PROPERTIES 
                     FOLDER ${project_name}
+                    LY_PROJECT_NAME ${project_name}
             )
 
             if(LY_DEFAULT_PROJECT_PATH)
