@@ -40,6 +40,8 @@ AZ_PUSH_DISABLE_WARNING(4702, "-Wunknown-warning-option") // OpenMesh\Core\Utils
 #include <OpenMesh/Core/Utils/vector_traits.hh>
 AZ_POP_DISABLE_WARNING
 
+AZ_DECLARE_BUDGET(AzToolsFramework);
+
 namespace OpenMesh
 {
     template<>
