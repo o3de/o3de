@@ -2974,7 +2974,7 @@ void CUiAnimViewDopeSheetBase::DrawNodeTrack(CUiAnimViewAnimNode* pAnimNode, QPa
 
     const QRect textRect = trackRect.adjusted(4, 0, -4, 0);
 
-    QString sAnimNodeName = pAnimNode->GetName();
+    QString sAnimNodeName = QString::fromUtf8(pAnimNode->GetName().c_str());
     const bool hasObsoleteTrack = pAnimNode->HasObsoleteTrack();
 
     if (hasObsoleteTrack)

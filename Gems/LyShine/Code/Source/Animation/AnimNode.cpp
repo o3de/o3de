@@ -56,7 +56,7 @@ int CUiAnimNode::GetTrackCount() const
     return static_cast<int>(m_tracks.size());
 }
 
-const char* CUiAnimNode::GetParamName(const CUiAnimParamType& paramType) const
+AZStd::string CUiAnimNode::GetParamName(const CUiAnimParamType& paramType) const
 {
     SParamInfo info;
     if (GetParamInfoFromType(paramType, info))
@@ -627,7 +627,7 @@ void CUiAnimNode::Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyT
         EUiAnimNodeType nodeType = GetType();
         static_cast<UiAnimationSystem*>(GetUiAnimationSystem())->SerializeNodeType(nodeType, xmlNode, bLoading, IUiAnimSequence::kSequenceVersion, m_flags);
 
-        xmlNode->setAttr("Name", GetName());
+        xmlNode->setAttr("Name", GetName().c_str());
 
         // Don't store expanded or selected flags
         int flags = GetFlags() & ~(eUiAnimNodeFlags_Expanded | eUiAnimNodeFlags_EntitySelected);

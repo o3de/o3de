@@ -28,7 +28,7 @@ public:
     CUndoUiAnimViewSplineCtrl(CUiAnimViewSplineCtrl* pCtrl, std::vector<ISplineInterpolator*>& splineContainer)
         : CUndoAnimKeySelection(CUiAnimViewSequenceManager::GetSequenceManager()->GetAnimationContext()->GetSequence())
     {
-        m_sequenceName = CUiAnimViewSequenceManager::GetSequenceManager()->GetAnimationContext()->GetSequence()->GetName();
+        m_sequenceName = QString::fromUtf8(CUiAnimViewSequenceManager::GetSequenceManager()->GetAnimationContext()->GetSequence()->GetName().c_str());
 
         m_pCtrl = pCtrl;
 

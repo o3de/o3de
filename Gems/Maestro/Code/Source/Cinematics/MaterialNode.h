@@ -37,7 +37,7 @@ public:
     //////////////////////////////////////////////////////////////////////////
     virtual unsigned int GetParamCount() const;
     virtual CAnimParamType GetParamType(unsigned int nIndex) const;
-    virtual const char* GetParamName(const CAnimParamType& paramType) const;
+    AZStd::string GetParamName(const CAnimParamType& paramType) const override;
 
     virtual void GetKeyValueRange(float& fMin, float& fMax) const { fMin = m_fMinKeyValue; fMax = m_fMaxKeyValue; };
     virtual void SetKeyValueRange(float fMin, float fMax){ m_fMinKeyValue = fMin; m_fMaxKeyValue = fMax; };

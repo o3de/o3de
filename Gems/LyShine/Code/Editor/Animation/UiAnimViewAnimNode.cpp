@@ -1241,7 +1241,7 @@ CUiAnimViewAnimNodeBundle CUiAnimViewAnimNode::GetAnimNodesByName(const char* pN
 {
     CUiAnimViewAnimNodeBundle bundle;
 
-    QString nodeName = GetName();
+    QString nodeName = QString::fromUtf8(GetName().c_str());
     if (GetNodeType() == eUiAVNT_AnimNode && QString::compare(pName, nodeName, Qt::CaseInsensitive) == 0)
     {
         bundle.AppendAnimNode(this);
@@ -1261,17 +1261,15 @@ CUiAnimViewAnimNodeBundle CUiAnimViewAnimNode::GetAnimNodesByName(const char* pN
 }
 
 //////////////////////////////////////////////////////////////////////////
-const char* CUiAnimViewAnimNode::GetParamName(const CUiAnimParamType& paramType) const
+AZStd::string CUiAnimViewAnimNode::GetParamName(const CUiAnimParamType& paramType) const
 {
-    const char* pName = m_pAnimNode->GetParamName(paramType);
-    return pName ? pName : "";
+    return m_pAnimNode->GetParamName(paramType);
 }
 
 //////////////////////////////////////////////////////////////////////////
-const char* CUiAnimViewAnimNode::GetParamNameForTrack(const CUiAnimParamType& paramType, const IUiAnimTrack* track) const
+AZStd::string CUiAnimViewAnimNode::GetParamNameForTrack(const CUiAnimParamType& paramType, const IUiAnimTrack* track) const
 {
-    const char* pName = m_pAnimNode->GetParamNameForTrack(paramType, track);
-    return pName ? pName : "";
+    return m_pAnimNode->GetParamNameForTrack(paramType, track);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1408,7 +1406,7 @@ void CUiAnimViewAnimNode::UpdateDynamicParams()
 void CUiAnimViewAnimNode::CopyKeysToClipboard(XmlNodeRef& xmlNode, const bool bOnlySelectedKeys, const bool bOnlyFromSelectedTracks)
 {
     XmlNodeRef childNode = xmlNode->createNode("Node");
-    childNode->setAttr("name", GetName());
+    childNode->setAttr("name", GetName().c_str());
     childNode->setAttr("type", GetType());
 
     for (auto iter = m_childNodes.begin(); iter != m_childNodes.end(); ++iter)
@@ -1552,7 +1550,7 @@ bool CUiAnimViewAnimNode::IsValidReparentingTo(CUiAnimViewAnimNode* pNewParent)
     }
 
     // Check if the new parent already contains a node with this name
-    CUiAnimViewAnimNodeBundle foundNodes = pNewParent->GetAnimNodesByName(GetName());
+    CUiAnimViewAnimNodeBundle foundNodes = pNewParent->GetAnimNodesByName(GetName().c_str());
     if (foundNodes.GetCount() > 1 || (foundNodes.GetCount() == 1 && foundNodes.GetNode(0) != this))
     {
         return false;

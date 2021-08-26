@@ -622,7 +622,7 @@ bool CExportManager::ShowFBXExportDialog()
 
     if (pivotObjectNode && !pivotObjectNode->IsGroupNode())
     {
-        m_pivotEntityObject = static_cast<CEntityObject*>(GetIEditor()->GetObjectManager()->FindObject(pivotObjectNode->GetName()));
+        m_pivotEntityObject = static_cast<CEntityObject*>(GetIEditor()->GetObjectManager()->FindObject(pivotObjectNode->GetName().c_str()));
 
         if (m_pivotEntityObject)
         {
@@ -807,7 +807,7 @@ void CExportManager::FillAnimTimeNode(XmlNodeRef writeNode, CTrackViewAnimNode* 
 
     if (numAllTracks > 0)
     {
-        XmlNodeRef objNode = writeNode->createNode(CleanXMLText(pObjectNode->GetName()).toUtf8().data());
+        XmlNodeRef objNode = writeNode->createNode(CleanXMLText(pObjectNode->GetName().c_str()).toUtf8().data());
         writeNode->setAttr("time", m_animTimeExportPrimarySequenceCurrentTime);
 
         for (unsigned int trackID = 0; trackID < numAllTracks; ++trackID)
@@ -818,7 +818,7 @@ void CExportManager::FillAnimTimeNode(XmlNodeRef writeNode, CTrackViewAnimNode* 
 
             if (trackType == AnimParamType::Animation || trackType == AnimParamType::Sound)
             {
-                QString childName = CleanXMLText(childTrack->GetName());
+                QString childName = CleanXMLText(childTrack->GetName().c_str());
 
                 if (childName.isEmpty())
                 {
@@ -976,7 +976,7 @@ bool CExportManager::AddObjectsFromSequence(CTrackViewSequence* pSequence, XmlNo
                     else
                     {
                         // In case of exporting animation/sound times data
-                        const QString sequenceName = pSubSequence->GetName();
+                        const QString sequenceName = QString::fromUtf8(pSubSequence->GetName().c_str());
                         XmlNodeRef subSeqNode2 = seqNode->createNode(sequenceName.toUtf8().data());
 
                         if (sequenceName == m_animTimeExportPrimarySequenceName)
@@ -1253,14 +1253,14 @@ void CExportManager::SaveNodeKeysTimeToXML()
         m_soundKeyTimeExport = exportDialog.IsSoundExportChecked();
 
         QString filters = "All files (*.xml)";
-        QString defaultName = QString(pSequence->GetName()) + ".xml";
+        QString defaultName = QString::fromUtf8(pSequence->GetName().c_str()) + ".xml";
 
         QtUtil::QtMFCScopedHWNDCapture cap;
         CAutoDirectoryRestoreFileDialog dlg(QFileDialog::AcceptSave, QFileDialog::AnyFile, "xml", defaultName, filters, {}, {}, cap);
         if (dlg.exec())
         {
-            m_animTimeNode = XmlHelpers::CreateXmlNode(pSequence->GetName());
-            m_animTimeExportPrimarySequenceName = pSequence->GetName();
+            m_animTimeNode = XmlHelpers::CreateXmlNode(pSequence->GetName().c_str());
+            m_animTimeExportPrimarySequenceName = QString::fromUtf8(pSequence->GetName().c_str());
 
             m_data.Clear();
             m_animTimeExportPrimarySequenceCurrentTime = 0.0;

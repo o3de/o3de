@@ -363,7 +363,7 @@ void CUiAnimAzEntityNode::ComputeOffsetsFromElementNames()
 }
 
 //////////////////////////////////////////////////////////////////////////
-const char* CUiAnimAzEntityNode::GetParamName(const CUiAnimParamType& param) const
+AZStd::string CUiAnimAzEntityNode::GetParamName(const CUiAnimParamType& param) const
 {
     SParamInfo info;
     if (GetParamInfoFromType(param, info))
@@ -381,7 +381,7 @@ const char* CUiAnimAzEntityNode::GetParamName(const CUiAnimParamType& param) con
 }
 
 //////////////////////////////////////////////////////////////////////////
-const char* CUiAnimAzEntityNode::GetParamNameForTrack(const CUiAnimParamType& param, const IUiAnimTrack* track) const
+AZStd::string CUiAnimAzEntityNode::GetParamNameForTrack(const CUiAnimParamType& param, const IUiAnimTrack* track) const
 {
     // for Az Component Fields we use the name from the ClassElement
     if (param == eUiAnimParamType_AzComponentField)
