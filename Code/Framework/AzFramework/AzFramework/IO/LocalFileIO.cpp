@@ -673,18 +673,20 @@ namespace AZ
         {
             AZ_Assert(path && path[0] != '%', "%% is deprecated, @ is the only valid alias token");
             AZStd::string_view pathView(path);
-            AZStd::string_view aliasKey;
-            AZStd::string_view aliasValue;
-            for (const auto& alias : m_aliases)
-            {
-                AZStd::string_view key{ alias.first };
-                if (AZ::StringFunc::StartsWith(pathView, key)) // we only support aliases at the front of the path
+
+            const auto found = AZStd::find_if(m_aliases.begin(), m_aliases.end(),
+                [pathView](const auto& alias)
                 {
-                    aliasKey = key;
-                    aliasValue = alias.second;
-                    break;
-                }
+                    return pathView.starts_with(alias.first);
+                });
+
+            auto [aliasKey, aliasValue] = (found != m_aliases.end()) ? AZStd::pair<AZStd::string_view, AZStd::string_view>(*found)
+                                                                     : AZStd::pair<AZStd::string_view, AZStd::string_view>{};
+            if (pathView.size() < aliasKey.size())
+            {
+
             }
+
             size_t requiredResolvedPathSize = pathView.size() - aliasKey.size() + aliasValue.size() + 1;
             AZ_Assert(path != resolvedPath && resolvedPathSize >= requiredResolvedPathSize, "Resolved path is incorrect");
             // we assert above, but we also need to properly handle the case when the resolvedPath buffer size
