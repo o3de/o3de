@@ -318,7 +318,11 @@ void {{ ClassName }}::{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.join(par
     constexpr AzNetworking::ReliabilityType isReliable = Multiplayer::ReliabilityType::Unreliable;
 {% endif %}
 
+{%     if InvokeFrom == 'Server' or InvokeFrom =='Client' %}
+    const Multiplayer::NetComponentId netComponentId = GetNetComponentId();
+{%     else %}
     const Multiplayer::NetComponentId netComponentId = GetParent().GetNetComponentId();
+{%     endif %}
     Multiplayer::NetworkEntityRpcMessage rpcMessage(Multiplayer::RpcDeliveryType::{{ InvokeFrom }}To{{ HandleOn }}, GetNetEntityId(), netComponentId, rpcId, isReliable);
 {%     if paramNames|count > 0 %}
     {{ UpperFirst(Component.attrib['Name']) }}Internal::{{ UpperFirst(Property.attrib['Name']) }}RpcStruct rpcStruct({{ ', '.join(paramNames) }});
@@ -345,9 +349,9 @@ void {{ ClassName }}::Signal{{ UpperFirst(Property.attrib['Name']) }}({{ ', '.jo
 {#
 
 #}
-{% macro DefineRpcInvocations(Component, ClassName, InvokeFrom, HandleOn, ProctectedSection) %}
+{% macro DefineRpcInvocations(Component, ClassName, InvokeFrom, HandleOn, IsProtected) %}
 {% call(Property) AutoComponentMacros.ParseRemoteProcedures(Component, InvokeFrom, HandleOn) %}
-{%    if Property.attrib['IsPublic']|booleanTrue == ProctectedSection %}
+{%    if Property.attrib['IsPublic']|booleanTrue != IsProtected %}
 {{ DefineRpcInvocation(Component, ClassName, Property, InvokeFrom, HandleOn) -}}
 {%    if Property.attrib['GenerateEventBindings']|booleanTrue == true %}
 {{ DefineRpcSignal(Component, ClassName, Property, InvokeFrom) -}}
@@ -643,16 +647,15 @@ bool {{ ClassName }}::Serialize{{ AutoComponentMacros.GetNetPropertiesSetName(Re
         const uint32_t lastBit = static_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesQualifiedPropertyDirtyEnum(Component.attrib['Name'], ReplicateFrom, ReplicateTo, Property, 'End') }});
 {%         endif %}
         
-{% if Property.attrib['IsRewindable']|booleanTrue %}
         AzNetworking::FixedSizeBitsetView deltaRecord(replicationRecord.m_{{ LowerFirst(AutoComponentMacros.GetNetPropertiesSetName(ReplicateFrom, ReplicateTo)) }}, firstBit, lastBit - firstBit + 1);
-        m_{{ LowerFirst(Property.attrib['Name']) }}.Serialize(serializer, deltaRecord);
-{% else %}
+        if (deltaRecord.AnySet())
+        {
 {%       if Property.attrib['Container'] == 'Vector' %}
-        serializer.Serialize<AZStd::fixed_vector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>>(m_{{ LowerFirst(Property.attrib['Name']) }}, "{{ LowerFirst(Property.attrib['Name']) }}");
+            serializer.Serialize<AZStd::fixed_vector<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>>(m_{{ LowerFirst(Property.attrib['Name']) }}, "{{ LowerFirst(Property.attrib['Name']) }}");
 {%       elif Property.attrib['Container'] == 'Array' %}
-        serializer.Serialize<AZStd::array<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>>(m_{{ LowerFirst(Property.attrib['Name']) }}, "{{ LowerFirst(Property.attrib['Name']) }}");
+            serializer.Serialize<AZStd::array<{{ Property.attrib['Type'] }}, {{ Property.attrib['Count'] }}>>(m_{{ LowerFirst(Property.attrib['Name']) }}, "{{ LowerFirst(Property.attrib['Name']) }}");
 {%       endif %}
-{% endif %}
+        }
     }
 {%     else %}
     Multiplayer::SerializeNetworkPropertyHelper
@@ -1251,10 +1254,12 @@ namespace {{ Component.attrib['Namespace'] }}
     bool {{ RecordName }}::CanAttachRecord(Multiplayer::ReplicationRecord& replicationRecord)
     {
         bool canAttach{ true };
+    AZ_PUSH_DISABLE_WARNING(4296, "-Wunknown-warning-option") // expression is always true
         canAttach &= replicationRecord.ContainsAuthorityToClientBits() ? (replicationRecord.GetRemainingAuthorityToClientBits() >= static_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesDirtyEnumName(ComponentName, 'Authority', 'Client') }}::Count)) : true;
         canAttach &= replicationRecord.ContainsAuthorityToServerBits() ? (replicationRecord.GetRemainingAuthorityToServerBits() >= static_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesDirtyEnumName(ComponentName, 'Authority', 'Server') }}::Count)) : true;
         canAttach &= replicationRecord.ContainsAuthorityToAutonomousBits() ? (replicationRecord.GetRemainingAuthorityToAutonomousBits() >= static_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesDirtyEnumName(ComponentName, 'Authority', 'Autonomous') }}::Count)) : true;
         canAttach &= replicationRecord.ContainsAutonomousToAuthorityBits() ? (replicationRecord.GetRemainingAutonomousToAuthorityBits() >= static_cast<uint32_t>({{ AutoComponentMacros.GetNetPropertiesDirtyEnumName(ComponentName, 'Autonomous', 'Authority') }}::Count)) : true;
+    AZ_POP_DISABLE_WARNING
         return canAttach;
     }
 
@@ -1491,6 +1496,10 @@ namespace {{ Component.attrib['Namespace'] }}
 {% endif %}
     }
 
+    {{ ComponentBaseName }}::{{ ComponentBaseName }}() = default;
+
+    {{ ComponentBaseName }}::~{{ ComponentBaseName }}() = default;
+
     void {{ ComponentBaseName }}::Init()
     {
         if (m_netBindComponent == nullptr)
@@ -1569,8 +1578,7 @@ namespace {{ Component.attrib['Namespace'] }}
         return s_netComponentId;
     }
 
-#pragma warning(push)
-#pragma warning(disable: 4065) // switch statement contains 'default' but no 'case' labels 
+    AZ_PUSH_DISABLE_WARNING(4065, "-Wunknown-warning-option") // switch statement contains 'default' but no 'case' labels 
     bool {{ ComponentBaseName }}::HandleRpcMessage
     (
         [[maybe_unused]] AzNetworking::IConnection* invokingConnection, 
@@ -1588,10 +1596,8 @@ namespace {{ Component.attrib['Namespace'] }}
         default:
             return false;
         }
-        AZ_Assert(0, "Got unhandled RpcType %d in {{ ComponentBaseName }}", static_cast<int32_t>(rpcType));
-        return false;
     }
-#pragma warning(pop)
+    AZ_POP_DISABLE_WARNING
 
     bool {{ ComponentBaseName }}::SerializeStateDeltaMessage(Multiplayer::ReplicationRecord& replicationRecord, AzNetworking::ISerializer& serializer)
     {

@@ -15,7 +15,7 @@ namespace LmbrCentral
 
     inline void DependencyMonitor::Reset()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         AZ::Data::AssetBus::MultiHandler::BusDisconnect();
         AZ::EntityBus::MultiHandler::BusDisconnect();
@@ -35,7 +35,7 @@ namespace LmbrCentral
 
     inline void DependencyMonitor::ConnectDependency(const AZ::EntityId& entityId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
         if (entityId.IsValid())
         {
             AZ::EntityBus::MultiHandler::BusConnect(entityId);
@@ -47,7 +47,7 @@ namespace LmbrCentral
 
     inline void DependencyMonitor::ConnectDependencies(const AZStd::vector<AZ::EntityId>& entityIds)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         for (const auto& entityId : entityIds)
         {
@@ -57,7 +57,7 @@ namespace LmbrCentral
 
     inline void DependencyMonitor::ConnectDependency(const AZ::Data::AssetId& assetId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         if (assetId.IsValid())
         {
@@ -120,7 +120,7 @@ namespace LmbrCentral
 
     inline void DependencyMonitor::SendNotification()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Entity);
 
         //test if notification is in progress to prevent recursion in case of nested dependencies
         if (!m_notificationInProgress)

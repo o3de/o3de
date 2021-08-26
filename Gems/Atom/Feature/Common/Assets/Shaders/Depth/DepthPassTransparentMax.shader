@@ -13,5 +13,16 @@
     "CompilerHints" : {
     },
 
+    "ProgramSettings" : 
+    {
+        "EntryPoints":
+        [
+            {
+                "name": "DepthPassVS",
+                "type" : "Vertex"
+            }
+        ] 
+    },
+
     "DrawList" : "depthTransparentMax"
 }

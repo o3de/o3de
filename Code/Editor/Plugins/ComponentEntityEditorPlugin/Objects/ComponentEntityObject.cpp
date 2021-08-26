@@ -40,6 +40,7 @@
 #include <LmbrCentral/Rendering/MaterialOwnerBus.h>
 
 #include <IDisplayViewport.h>
+#include <CryCommon/Cry_GeoIntersect.h>
 #include <MathConversion.h>
 #include <TrackView/TrackViewAnimNode.h>
 #include <ViewManager.h>
@@ -661,8 +662,8 @@ bool CComponentEntityObject::HitHelperTest(HitContext& hc)
         if (IsEntityIconVisible())
         {
             const QPoint entityScreenPos = hc.view->WorldToView(GetWorldPos());
-            const float screenPosX = entityScreenPos.x();
-            const float screenPosY = entityScreenPos.y();
+            const float screenPosX = static_cast<float>(entityScreenPos.x());
+            const float screenPosY = static_cast<float>(entityScreenPos.y());
             const float iconRange = static_cast<float>(s_kIconSize / 2);
 
             if ((hc.point2d.x() >= screenPosX - iconRange && hc.point2d.x() <= screenPosX + iconRange)
@@ -679,7 +680,7 @@ bool CComponentEntityObject::HitHelperTest(HitContext& hc)
 
 bool CComponentEntityObject::HitTest(HitContext& hc)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+    AZ_PROFILE_FUNCTION(Entity);
 
     if (m_iconOnlyHitTest)
     {
@@ -705,7 +706,7 @@ bool CComponentEntityObject::HitTest(HitContext& hc)
                     [&hc, &closestDistance, &rayIntersection, &preciseSelectionRequired, viewportId](
                         AzToolsFramework::EditorComponentSelectionRequests* handler) -> bool
                 {
-                    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+                    AZ_PROFILE_FUNCTION(Entity);
 
                     if (handler->SupportsEditorRayIntersect())
                     {
@@ -768,7 +769,7 @@ bool CComponentEntityObject::HitTest(HitContext& hc)
 
 void CComponentEntityObject::GetBoundBox(AABB& box)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+    AZ_PROFILE_FUNCTION(Entity);
 
     box.Reset();
 

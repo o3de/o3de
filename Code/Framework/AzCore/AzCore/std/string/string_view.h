@@ -7,9 +7,9 @@
  */
 #pragma once
 
-#include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/std/createdestroy.h>
 #include <AzCore/std/iterator.h>
+#include <AzCore/std/limits.h>
 
 
 namespace AZStd
@@ -46,6 +46,10 @@ namespace AZStd
                     return npos;
                 }
                 size_t foundIndex = searchIndex + charFindIndex;
+                if (foundIndex + count > size)
+                {
+                    return npos; // the rest of the string doesnt fit in the remainder of the data buffer
+                }
                 if (Traits::compare(&data[foundIndex], ptr, count) == 0)
                 {
                     return foundIndex;

@@ -14,6 +14,7 @@
 #include <QPoint>
 #include <QRect>
 #include "Cry_Vector2.h"
+#include <AzCore/Casting/numeric_cast.h>
 
 //////////////////////////////////////////////////////////////////////////
 class CWndGridHelper

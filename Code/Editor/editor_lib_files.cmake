@@ -289,7 +289,6 @@ set(FILES
     Include/IPlugin.h
     Include/IPreferencesPage.h
     Include/IRenderListener.h
-    Include/IResourceSelectorHost.h
     Include/ISourceControl.h
     Include/ISubObjectSelectionReferenceFrameCalculator.h
     Include/ITextureDatabaseUpdater.h
@@ -360,8 +359,6 @@ set(FILES
     Controls/TimelineCtrl.cpp
     Controls/TimelineCtrl.h
     Controls/WndGridHelper.h
-    Controls/ReflectedPropertyControl/PropertyAnimationCtrl.cpp
-    Controls/ReflectedPropertyControl/PropertyAnimationCtrl.h
     Controls/ReflectedPropertyControl/PropertyGenericCtrl.cpp
     Controls/ReflectedPropertyControl/PropertyGenericCtrl.h
     Controls/ReflectedPropertyControl/PropertyMiscCtrl.cpp
@@ -372,8 +369,6 @@ set(FILES
     Controls/ReflectedPropertyControl/PropertyResourceCtrl.h
     Controls/ReflectedPropertyControl/PropertyCtrl.cpp
     Controls/ReflectedPropertyControl/PropertyCtrl.h
-    Controls/ReflectedPropertyControl/ReflectedPropertiesPanel.cpp
-    Controls/ReflectedPropertyControl/ReflectedPropertiesPanel.h
     MainStatusBar.cpp
     MainStatusBar.h
     MainStatusBarItems.h
@@ -508,6 +503,7 @@ set(FILES
     LogFileImpl.h
     Objects/ClassDesc.cpp
     Objects/ClassDesc.h
+    Objects/DisplayContextShared.inl
     Objects/IEntityObjectListener.h
     Objects/SelectionGroup.cpp
     Objects/SelectionGroup.h
@@ -590,8 +586,6 @@ set(FILES
     FBXExporterDialog.ui
     FileTypeUtils.cpp
     LightmapCompiler/SimpleTriangleRasterizer.cpp
-    ResourceSelectorHost.cpp
-    ResourceSelectorHost.h
     ToolBox.cpp
     TrackViewNewSequenceDialog.cpp
     TrackViewNewSequenceDialog.ui
@@ -668,7 +662,6 @@ set(FILES
     TrackView/2DBezierKeyUIControls.cpp
     TrackView/AssetBlendKeyUIControls.cpp
     TrackView/CaptureKeyUIControls.cpp
-    TrackView/CharacterKeyUIControls.cpp
     TrackView/ConsoleKeyUIControls.cpp
     TrackView/EventKeyUIControls.cpp
     TrackView/GotoKeyUIControls.cpp

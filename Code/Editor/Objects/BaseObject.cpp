@@ -38,7 +38,6 @@
 // To use the Andrew's algorithm in order to make convex hull from the points, this header is needed.
 #include "Util/GeometryUtil.h"
 
-
 namespace {
     QColor kLinkColorParent = QColor(0, 255, 255);
     QColor kLinkColorChild = QColor(0, 0, 255);
@@ -840,8 +839,8 @@ void CBaseObject::DrawDefault(DisplayContext& dc, const QColor& labelColor)
         {
             dc.DrawLine(GetParentAttachPointWorldTM().GetTranslation(), wp, IsFrozen() ? kLinkColorGray : kLinkColorParent, IsFrozen() ? kLinkColorGray : kLinkColorChild);
         }
-        int nChildCount = GetChildCount();
-        for (int i = 0; i < nChildCount; ++i)
+        size_t nChildCount = GetChildCount();
+        for (size_t i = 0; i < nChildCount; ++i)
         {
             const CBaseObject* pChild = GetChild(i);
             dc.DrawLine(pChild->GetParentAttachPointWorldTM().GetTranslation(), pChild->GetWorldPos(), pChild->IsFrozen() ? kLinkColorGray : kLinkColorParent, pChild->IsFrozen() ? kLinkColorGray : kLinkColorChild);
@@ -1022,10 +1021,10 @@ void CBaseObject::DrawLabel(DisplayContext& dc, const Vec3& pos, const QColor& l
     if (camDist < dc.settings->GetLabelsDistance() || (dc.flags & DISPLAY_SELECTION_HELPERS))
     {
         float range = maxDist / 2.0f;
-        Vec3 c(labelColor.redF(), labelColor.greenF(), labelColor.redF());
+        Vec3 c(static_cast<f32>(labelColor.redF()), static_cast<f32>(labelColor.greenF()), static_cast<f32>(labelColor.redF()));
         if (IsSelected())
         {
-            c = Vec3(dc.GetSelectedColor().redF(), dc.GetSelectedColor().greenF(), dc.GetSelectedColor().blueF());
+            c = Vec3(static_cast<f32>(dc.GetSelectedColor().redF()), static_cast<f32>(dc.GetSelectedColor().greenF()), static_cast<f32>(dc.GetSelectedColor().blueF()));
         }
 
         float col[4] = { c.x, c.y, c.z, 1 };
@@ -1033,7 +1032,7 @@ void CBaseObject::DrawLabel(DisplayContext& dc, const Vec3& pos, const QColor& l
         {
             if (IsHighlighted())
             {
-                c = Vec3(dc.GetSelectedColor().redF(), dc.GetSelectedColor().greenF(), dc.GetSelectedColor().blueF());
+                c = Vec3(static_cast<f32>(dc.GetSelectedColor().redF()), static_cast<f32>(dc.GetSelectedColor().greenF()), static_cast<f32>(dc.GetSelectedColor().blueF()));
             }
             col[0] = c.x;
             col[1] = c.y;
@@ -1233,7 +1232,7 @@ float CBaseObject::GetCameraVisRatio(const CCamera& camera)
 //////////////////////////////////////////////////////////////////////////
 int CBaseObject::MouseCreateCallback(CViewport* view, EMouseEvent event, QPoint& point, int flags)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
 
     if (event == eMouseMove || event == eMouseLDown)
     {
@@ -1263,9 +1262,9 @@ int CBaseObject::MouseCreateCallback(CViewport* view, EMouseEvent event, QPoint&
 
     if (event == eMouseWheel)
     {
-        double angle = 1;
+        float angle = 1;
         Quat rot = GetRotation();
-        rot.SetRotationXYZ(Ang3(0, 0, rot.GetRotZ() + DEG2RAD(flags > 0 ? angle * (-1) : angle)));
+        rot.SetRotationXYZ(Ang3(0.f, 0.f, rot.GetRotZ() + DEG2RAD(flags > 0 ? angle * (-1) : angle)));
         SetRotation(rot);
     }
     return MOUSECREATE_CONTINUE;
@@ -1375,7 +1374,7 @@ bool CBaseObject::IsHiddenBySpec() const
         return false;
     }
 
-    return (m_nMinSpec != 0 && gSettings.editorConfigSpec != 0 && m_nMinSpec > gSettings.editorConfigSpec);
+    return (m_nMinSpec != 0 && gSettings.editorConfigSpec != 0 && m_nMinSpec > static_cast<uint32>(gSettings.editorConfigSpec));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1515,8 +1514,8 @@ void CBaseObject::Serialize(CObjectArchive& ar)
         SetFrozen(bFrozen);
         SetHidden(bHidden);
 
-        ar.SetResolveCallback(this, parentId, AZStd::bind(&CBaseObject::ResolveParent, this, AZStd::placeholders::_1 ));
-        ar.SetResolveCallback(this, lookatId, AZStd::bind(&CBaseObject::SetLookAt, this, AZStd::placeholders::_1));
+        ar.SetResolveCallback(this, parentId, [this](CBaseObject* parent) { ResolveParent(parent); });
+        ar.SetResolveCallback(this, lookatId, [this](CBaseObject* target) { SetLookAt(target); });
 
         InvalidateTM(0);
         SetModified(false);
@@ -1857,10 +1856,10 @@ bool CBaseObject::HitTestRectBounds(HitContext& hc, const AABB& box)
 
         const int kMaxSizeOfEdgeList0(4);
         Edge2D edgelist0[kMaxSizeOfEdgeList0] = {
-            Edge2D(Vec2(hc.rect.left(), hc.rect.top()), Vec2(hc.rect.right(), hc.rect.top())),
-            Edge2D(Vec2(hc.rect.right(), hc.rect.top()), Vec2(hc.rect.right(), hc.rect.bottom())),
-            Edge2D(Vec2(hc.rect.right(), hc.rect.bottom()), Vec2(hc.rect.left(), hc.rect.bottom())),
-            Edge2D(Vec2(hc.rect.left(), hc.rect.bottom()), Vec2(hc.rect.left(), hc.rect.top()))
+            Edge2D(Vec2(static_cast<f32>(hc.rect.left()),  static_cast<f32>(hc.rect.top())),    Vec2(static_cast<f32>(hc.rect.right()), static_cast<f32>(hc.rect.top()))),
+            Edge2D(Vec2(static_cast<f32>(hc.rect.right()), static_cast<f32>(hc.rect.top())),    Vec2(static_cast<f32>(hc.rect.right()), static_cast<f32>(hc.rect.bottom()))),
+            Edge2D(Vec2(static_cast<f32>(hc.rect.right()), static_cast<f32>(hc.rect.bottom())), Vec2(static_cast<f32>(hc.rect.left()),  static_cast<f32>(hc.rect.bottom()))),
+            Edge2D(Vec2(static_cast<f32>(hc.rect.left()),  static_cast<f32>(hc.rect.bottom())), Vec2(static_cast<f32>(hc.rect.left()),  static_cast<f32>(hc.rect.top())))
         };
 
         const int kMaxSizeOfEdgeList1(8);
@@ -1888,12 +1887,12 @@ bool CBaseObject::HitTestRectBounds(HitContext& hc, const AABB& box)
         pointsForRegion1.reserve(kMaxSizeOfEdgeList1);
         for (int i = 0; i < kMaxSizeOfEdgeList1; ++i)
         {
-            pointsForRegion1.push_back(Vec3(obb_p[i].x(), obb_p[i].y(), 0));
+            pointsForRegion1.push_back(Vec3(static_cast<f32>(obb_p[i].x()), static_cast<f32>(obb_p[i].y()), 0.0f));
         }
 
         std::vector<Vec3> convexHullForRegion1;
         ConvexHull2D(convexHullForRegion1, pointsForRegion1);
-        nEdgeList1Count = convexHullForRegion1.size();
+        nEdgeList1Count = static_cast<int>(convexHullForRegion1.size());
         if (nEdgeList1Count < 3 || nEdgeList1Count > kMaxSizeOfEdgeList1)
         {
             return true;
@@ -1928,7 +1927,7 @@ bool CBaseObject::HitTestRectBounds(HitContext& hc, const AABB& box)
 //////////////////////////////////////////////////////////////////////////
 bool CBaseObject::HitTestRect(HitContext& hc)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+    AZ_PROFILE_FUNCTION(Editor);
 
     AABB box;
 
@@ -1965,7 +1964,7 @@ bool CBaseObject::HitHelperTest(HitContext& hc)
 //////////////////////////////////////////////////////////////////////////
 bool CBaseObject::HitHelperAtTest(HitContext& hc, const Vec3& pos)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+    AZ_PROFILE_FUNCTION(Editor);
 
     bool bResult = false;
 
@@ -1978,8 +1977,8 @@ bool CBaseObject::HitHelperAtTest(HitContext& hc, const Vec3& pos)
         {
             float fScreenScale = hc.view->GetScreenScaleFactor(pos);
 
-            iconSizeX *= OBJECT_TEXTURE_ICON_SCALE / fScreenScale;
-            iconSizeY *= OBJECT_TEXTURE_ICON_SCALE / fScreenScale;
+            iconSizeX = static_cast<int>(static_cast<float>(iconSizeX) * OBJECT_TEXTURE_ICON_SCALE / fScreenScale);
+            iconSizeY = static_cast<int>(static_cast<float>(iconSizeY) * OBJECT_TEXTURE_ICON_SCALE / fScreenScale);
         }
 
         // Hit Test icon of this object.
@@ -2038,7 +2037,7 @@ bool CBaseObject::HitHelperAtTest(HitContext& hc, const Vec3& pos)
 //////////////////////////////////////////////////////////////////////////
 CBaseObject* CBaseObject::GetChild(size_t const i) const
 {
-    assert(i >= 0 && i < m_childs.size());
+    assert(i < m_childs.size());
     return m_childs[i];
 }
 
@@ -2062,7 +2061,7 @@ void CBaseObject::GetAllChildren(TBaseObjects& outAllChildren, CBaseObject* pObj
 {
     const CBaseObject* pBaseObj = pObj ? pObj : this;
 
-    for (int i = 0, iChildCount(pBaseObj->GetChildCount()); i < iChildCount; ++i)
+    for (size_t i = 0, iChildCount(pBaseObj->GetChildCount()); i < iChildCount; ++i)
     {
         CBaseObject* pChild = pBaseObj->GetChild(i);
         if (pChild == nullptr)
@@ -2078,7 +2077,7 @@ void CBaseObject::GetAllChildren(DynArray< _smart_ptr<CBaseObject> >& outAllChil
 {
     const CBaseObject* pBaseObj = pObj ? pObj : this;
 
-    for (int i = 0, iChildCount(pBaseObj->GetChildCount()); i < iChildCount; ++i)
+    for (size_t i = 0, iChildCount(pBaseObj->GetChildCount()); i < iChildCount; ++i)
     {
         CBaseObject* pChild = pBaseObj->GetChild(i);
         if (pChild == nullptr)
@@ -2094,7 +2093,7 @@ void CBaseObject::GetAllChildren(CSelectionGroup& outAllChildren, CBaseObject* p
 {
     const CBaseObject* pBaseObj = pObj ? pObj : this;
 
-    for (int i = 0, iChildCount(pBaseObj->GetChildCount()); i < iChildCount; ++i)
+    for (size_t i = 0, iChildCount(pBaseObj->GetChildCount()); i < iChildCount; ++i)
     {
         CBaseObject* pChild = pBaseObj->GetChild(i);
         if (pChild == nullptr)
@@ -2114,7 +2113,7 @@ void CBaseObject::CloneChildren(CBaseObject* pFromObject)
         return;
     }
 
-    for (int i = 0, nChildCount(pFromObject->GetChildCount()); i < nChildCount; ++i)
+    for (size_t i = 0, nChildCount(pFromObject->GetChildCount()); i < nChildCount; ++i)
     {
         CBaseObject* pFromChildObject = pFromObject->GetChild(i);
 
@@ -2729,7 +2728,7 @@ void CBaseObject::SetMinSpec(uint32 nSpec, bool bSetChildren)
     // Set min spec for all childs.
     if (bSetChildren)
     {
-        for (int i = m_childs.size() - 1; i >= 0; --i)
+        for (int i = static_cast<int>(m_childs.size()) - 1; i >= 0; --i)
         {
             m_childs[i]->SetMinSpec(nSpec, true);
         }

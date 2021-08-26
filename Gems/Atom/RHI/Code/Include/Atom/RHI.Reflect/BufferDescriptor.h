@@ -67,8 +67,6 @@ namespace AZ
 
         BufferBindFlags GetBufferBindFlags(ScopeAttachmentUsage usage, ScopeAttachmentAccess access);
 
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_BEGIN
-
         /**
          * A buffer corresponds to a region of linear memory and used for rendering operations.
          * Its lifecycle is managed by buffer pools.
@@ -103,8 +101,6 @@ namespace AZ
             /// The mask of queue classes supporting shared access of this resource.
             HardwareQueueClassMask m_sharedQueueMask = HardwareQueueClassMask::All;
         };
-
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_END
     }
 
 

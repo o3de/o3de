@@ -1235,7 +1235,8 @@ namespace AZ
             // ProductMesh. That large buffer gets set on the LOD directly
             // rather than a Mesh in the LOD.
             ProductMeshContentAllocInfo lodBufferInfo;
-            
+
+            bool isFirstMesh = true;
             for (const ProductMeshContent& mesh : lodMeshList)
             {
                 if (lodBufferInfo.m_uvSetFloatCounts.size() < mesh.m_uvSets.size())
@@ -1347,6 +1348,14 @@ namespace AZ
 
                 if (!mesh.m_skinJointIndices.empty() && !mesh.m_skinWeights.empty())
                 {
+                    if (!isFirstMesh && lodBufferInfo.m_skinInfluencesCount == 0)
+                    {
+                        AZ_Error(
+                            s_builderName, false,
+                            "Attempting to merge a mix of static and skinned meshes, this will fail on buffer generation later. Mesh with "
+                            "name %s is skinned, but previous meshes were not skinned.",
+                            mesh.m_name.GetCStr());
+                    }
                     AZ_Assert(mesh.m_skinJointIndices.size() == mesh.m_skinWeights.size(),
                         "Number of skin influence joint indices (%d) should match the number of weights (%d).",
                         mesh.m_skinJointIndices.size(), mesh.m_skinWeights.size());
@@ -1363,6 +1372,11 @@ namespace AZ
 
                     lodBufferInfo.m_skinInfluencesCount += numNewSkinInfluences;
                 }
+                else if (lodBufferInfo.m_skinInfluencesCount > 0)
+                {
+                    AZ_Error(s_builderName, false, "Attempting to merge a mix of static and skinned meshes, this will fail on buffer generation later. Mesh with name %s is not skinned, but previous meshes were skinned.",
+                        mesh.m_name.GetCStr());
+                }
 
                 if (!mesh.m_morphTargetVertexData.empty())
                 {
@@ -1375,6 +1389,7 @@ namespace AZ
                 }
 
                 meshViews.emplace_back(AZStd::move(meshView));
+                isFirstMesh = false;
             }
 
             // Now that we have the views settled, we can just merge the mesh
@@ -1807,7 +1822,7 @@ namespace AZ
                 if (iter != materialAssetsByUid.end())
                 {
                     ModelMaterialSlot materialSlot;
-                    materialSlot.m_stableId = meshView.m_materialUid;
+                    materialSlot.m_stableId = static_cast<AZ::RPI::ModelMaterialSlot::StableId>(meshView.m_materialUid);
                     materialSlot.m_displayName = iter->second.m_name;
                     materialSlot.m_defaultMaterialAsset = iter->second.m_asset;
 

@@ -6,43 +6,19 @@
  *
  */
 
-#include <AzCore/IO/Path/Path.h>
-#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <AzQtComponents/Components/StyleManager.h>
-#include <AzQtComponents/Utilities/QtPluginPaths.h>
-#include <AzQtComponents/Components/GlobalEventFilter.h>
-#include <AzQtComponents/Components/StyledDockWidget.h>
-#include <AzQtComponents/Components/O3DEStylesheet.h>
-#include <AzQtComponents/Utilities/QtPluginPaths.h>
-#include <AzQtComponents/Utilities/HandleDpiAwareness.h>
-#include <AzQtComponents/Components/WindowDecorationWrapper.h>
-#include <AzQtComponents/Application/AzQtApplication.h>
-
-#include <QtWidgets/QApplication>
-#include <QtGui/private/qhighdpiscaling_p.h>
-
-#include <Source/ShaderManagementConsoleApplication.h>
+#include <ShaderManagementConsoleApplication.h>
 
 int main(int argc, char** argv)
 {
     AzQtComponents::AzQtApplication::InitializeDpiScaling();
 
     ShaderManagementConsole::ShaderManagementConsoleApplication app(&argc, &argv);
-
-    AZ::IO::FixedMaxPath engineRootPath;
-    if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+    if (app.LaunchLocalServer())
     {
-        settingsRegistry->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+        app.Start(AZ::ComponentApplication::Descriptor{});
+        app.exec();
+        app.Stop();
     }
 
-    auto globalEventFilter = new AzQtComponents::GlobalEventFilter(&app);
-    app.installEventFilter(globalEventFilter);
-
-    AzQtComponents::StyleManager styleManager(&app);
-    styleManager.initialize(&app, engineRootPath);
-
-    app.Start({});
-    app.exec();
-    app.Stop();
     return 0;
 }

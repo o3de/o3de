@@ -14,8 +14,6 @@
 #include <AudioControlsLoader.h>
 #include <AudioControlsWriter.h>
 
-#include <AudioResourceSelectors.h>
-
 #include <IAudioSystem.h>
 #include <IAudioSystemEditor.h>
 #include <ImplementationManager.h>
@@ -41,7 +39,6 @@ CAudioControlsEditorPlugin::CAudioControlsEditorPlugin(IEditor* editor)
     QtViewOptions options;
     options.canHaveMultipleInstances = true;
     RegisterQtViewPane<CAudioControlsEditorWindow>(editor, LyViewPane::AudioControlsEditor, LyViewPane::CategoryOther, options);
-    RegisterAudioControlsResourceSelectors();
 
     Audio::AudioSystemRequestBus::BroadcastResult(ms_pIAudioProxy, &Audio::AudioSystemRequestBus::Events::GetFreeAudioProxy);
 

@@ -16,6 +16,11 @@ namespace AZ
             return aznew Device();
         }
 
+        Device::Device()
+        {
+            m_descriptor.m_platformLimitsDescriptor = aznew RHI::PlatformLimitsDescriptor;
+        }
+
         void Device::FillFormatsCapabilitiesInternal(FormatCapabilitiesList& formatsCapabilities)
         {
             formatsCapabilities.fill(static_cast<RHI::FormatCapabilities>(~0));

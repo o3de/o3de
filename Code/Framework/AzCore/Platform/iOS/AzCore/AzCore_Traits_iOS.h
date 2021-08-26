@@ -110,6 +110,20 @@
 #define AZ_TRAIT_USE_ERRNO_T_TYPEDEF 0
 #define AZ_TRAIT_USE_POSIX_TEMP_FOLDER 0
 
+// wchar_t/char formatting
+// Reason: https://docs.microsoft.com/en-us/cpp/c-runtime-library/format-specification-syntax-printf-and-wprintf-functions?view=msvc-160
+// The Z type character, and the behavior of the c, C, s, and S type characters when they're used with the printf and wprintf functions, 
+// are Microsoft extensions. The ISO C standard uses c and s consistently for narrow characters and strings, and C and S for wide characters
+// and strings, in all formatting functions.
+#define AZ_TRAIT_FORMAT_STRING_PRINTF_CHAR "%c"
+#define AZ_TRAIT_FORMAT_STRING_PRINTF_WCHAR "%C"
+#define AZ_TRAIT_FORMAT_STRING_WPRINTF_CHAR "%c"
+#define AZ_TRAIT_FORMAT_STRING_WPRINTF_WCHAR "%C"
+#define AZ_TRAIT_FORMAT_STRING_PRINTF_STRING "%s"
+#define AZ_TRAIT_FORMAT_STRING_PRINTF_WSTRING "%S"
+#define AZ_TRAIT_FORMAT_STRING_WPRINTF_STRING "%s"
+#define AZ_TRAIT_FORMAT_STRING_WPRINTF_WSTRING "%S"
+
 // Legacy traits ...
 #define AZ_TRAIT_LEGACY_CRYCOMMON_USE_WINDOWS_STUBS 1
 #define AZ_TRAIT_LEGACY_CRYPAK_UNIX_LIKE_FILE_SYSTEM 1

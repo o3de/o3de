@@ -989,10 +989,10 @@ void CUiAnimViewDialog::ReloadSequencesComboBox()
         CUiAnimViewSequenceManager* pSequenceManager = CUiAnimViewSequenceManager::GetSequenceManager();
         const unsigned int numSequences = pSequenceManager->GetCount();
 
-        for (int k = 0; k < numSequences; ++k)
+        for (unsigned int k = 0; k < numSequences; ++k)
         {
             CUiAnimViewSequence* pSequence = pSequenceManager->GetSequenceByIndex(k);
-            QString fullname = pSequence->GetName();
+            QString fullname = QString::fromUtf8(pSequence->GetName().c_str());
             m_sequencesComboBox->addItem(fullname);
         }
     }
@@ -1132,7 +1132,7 @@ void CUiAnimViewDialog::OnSequenceChanged(CUiAnimViewSequence* pSequence)
 
     if (pSequence)
     {
-        m_currentSequenceName = pSequence->GetName();
+        m_currentSequenceName = QString::fromUtf8(pSequence->GetName().c_str());
 
         pSequence->Reset(true);
         SaveZoomScrollSettings();
@@ -1470,7 +1470,7 @@ void CUiAnimViewDialog::OnSnapFPS()
     if (ok)
     {
         m_wndDopeSheet->SetSnapFPS(fps);
-        m_wndCurveEditor->SetFPS(fps);
+        m_wndCurveEditor->SetFPS(static_cast<float>(fps));
 
         SetCursorPosText(m_animationContext->GetTime());
     }
@@ -1541,7 +1541,7 @@ void CUiAnimViewDialog::ReadMiscSettings()
 
     if (settings.contains(s_kFrameSnappingFPSEntry))
     {
-        float fps = settings.value(s_kFrameSnappingFPSEntry).toDouble();
+        float fps = settings.value(s_kFrameSnappingFPSEntry).toFloat();
         m_wndDopeSheet->SetSnapFPS(FloatToIntRet(fps));
         m_wndCurveEditor->SetFPS(fps);
     }
@@ -1733,7 +1733,7 @@ void CUiAnimViewDialog::OnNodeRenamed(CUiAnimViewNode* pNode, const char* pOldNa
     {
         if (m_currentSequenceName == QString(pOldName))
         {
-            m_currentSequenceName = pNode->GetName();
+            m_currentSequenceName = QString::fromUtf8(pNode->GetName().c_str());
         }
 
         ReloadSequencesComboBox();

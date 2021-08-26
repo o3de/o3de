@@ -52,7 +52,7 @@ namespace AZ
             // load the ray tracing shader
             // Note: the shader may not be available on all platforms
             AZStd::string shaderFilePath = "Shaders/DiffuseGlobalIllumination/DiffuseProbeGridRayTracing.azshader";
-            m_rayTracingShader = RPI::LoadShader(shaderFilePath);
+            m_rayTracingShader = RPI::LoadCriticalShader(shaderFilePath);
             if (m_rayTracingShader == nullptr)
             {
                 return;
@@ -64,7 +64,7 @@ namespace AZ
 
             // closest hit shader
             AZStd::string closestHitShaderFilePath = "Shaders/DiffuseGlobalIllumination/DiffuseProbeGridRayTracingClosestHit.azshader";
-            m_closestHitShader = RPI::LoadShader(closestHitShaderFilePath);
+            m_closestHitShader = RPI::LoadCriticalShader(closestHitShaderFilePath);
 
             auto closestHitShaderVariant = m_closestHitShader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId);
             RHI::PipelineStateDescriptorForRayTracing closestHitShaderDescriptor;
@@ -72,7 +72,7 @@ namespace AZ
 
             // miss shader
             AZStd::string missShaderFilePath = "Shaders/DiffuseGlobalIllumination/DiffuseProbeGridRayTracingMiss.azshader";
-            m_missShader = RPI::LoadShader(missShaderFilePath);
+            m_missShader = RPI::LoadCriticalShader(missShaderFilePath);
 
             auto missShaderVariant = m_missShader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId);
             RHI::PipelineStateDescriptorForRayTracing missShaderDescriptor;

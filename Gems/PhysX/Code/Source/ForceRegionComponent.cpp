@@ -115,7 +115,7 @@ namespace PhysX
 
     void ForceRegionComponent::PostPhysicsSubTick(float fixedDeltaTime)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
+        AZ_PROFILE_FUNCTION(Physics);
 
         for (auto entityId : m_entities)
         {

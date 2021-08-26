@@ -288,7 +288,7 @@ AZ_POP_DISABLE_WARNING
             str += "Version Unknown";
         }
     }
-    azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, " %d.%d", OSVerInfo.dwMajorVersion, OSVerInfo.dwMinorVersion);
+    azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, " %ld.%ld", OSVerInfo.dwMajorVersion, OSVerInfo.dwMinorVersion);
     str += szBuffer;
 
     //////////////////////////////////////////////////////////////////////
@@ -338,7 +338,7 @@ AZ_POP_DISABLE_WARNING
     str += " ";
     azstrdate(szBuffer);
     str += szBuffer;
-    azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, ", system running for %d minutes", GetTickCount() / 60000);
+    azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, ", system running for %ld minutes", GetTickCount() / 60000);
     str += szBuffer;
     CryLog("%s", str.toUtf8().data());
 #else
@@ -388,7 +388,7 @@ AZ_POP_DISABLE_WARNING
         L"(Unknown graphics card)", szLanguageBufferW, sizeof(szLanguageBufferW),
         L"system.ini");
     AZStd::to_string(szLanguageBuffer, szLanguageBufferW);
-    azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, "Current display mode is %dx%dx%d, %s",
+    azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, "Current display mode is %ldx%ldx%ld, %s",
         DisplayConfig.dmPelsWidth, DisplayConfig.dmPelsHeight,
         DisplayConfig.dmBitsPerPel, szLanguageBuffer.c_str());
     CryLog("%s", szBuffer);
@@ -504,7 +504,7 @@ static inline QString CopyAndRemoveColorCode(const char* sText)
         *d++ = *s++;
     }
 
-    ret.resize(d - ret.data());
+    ret.resize(static_cast<int>(d - ret.data()));
 
     return QString::fromLatin1(ret);
 }

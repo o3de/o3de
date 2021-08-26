@@ -59,10 +59,15 @@ namespace UnitTest
             m_cameraSystem->m_cameras.AddCamera(m_firstPersonRotateCamera);
             m_cameraSystem->m_cameras.AddCamera(m_firstPersonTranslateCamera);
             m_cameraSystem->m_cameras.AddCamera(orbitCamera);
+
+            // these tests rely on using motion delta, not cursor positions (default is true)
+            AzFramework::ed_cameraSystemUseCursor = false;
         }
 
         void TearDown() override
         {
+            AzFramework::ed_cameraSystemUseCursor = true;
+
             m_firstPersonRotateCamera.reset();
             m_firstPersonTranslateCamera.reset();
 

@@ -220,7 +220,7 @@ void ConsoleLineEdit::keyPressEvent(QKeyEvent* ev)
             }
 
             // If a history command was reused directly via up arrow enter, do not reset history index
-            if (m_history.size() > 0 && m_historyIndex < m_history.size() && m_history[m_historyIndex] == str)
+            if (m_history.size() > 0 && m_historyIndex < static_cast<unsigned int>(m_history.size()) && m_history[m_historyIndex] == str)
             {
                 m_bReusedHistory = true;
             }
@@ -833,15 +833,15 @@ static void SetEditorRange(EditorType* editor, IVariable* var)
     // If this variable has custom limits set, then use that as the min/max
     // Otherwise, the min/max for the input box will be bounded by the type
     // limit, but the slider will be constricted to a smaller default range
-    static const double defaultMin = -100.0f;
-    static const double defaultMax = 100.0f;
+    static const float defaultMin = -100.0f;
+    static const float defaultMax = 100.0f;
     if (var->HasCustomLimits())
     {
-        editor->setRange(min, max);
+        editor->setRange(static_cast<typename EditorType::value_type>(min), static_cast<typename EditorType::value_type>(max));
     }
     else
     {
-        editor->setSoftRange(defaultMin, defaultMax);
+        editor->setSoftRange(static_cast<typename EditorType::value_type>(defaultMin), static_cast<typename EditorType::value_type>(defaultMax));
     }
 
     // Set the step size. The default variable step is 0, so if it's
@@ -850,7 +850,7 @@ static void SetEditorRange(EditorType* editor, IVariable* var)
     // use that for the int values
     if (step > 0)
     {
-        editor->spinbox()->setSingleStep(step);
+        editor->spinbox()->setSingleStep(static_cast<int>(step));
     }
     else if (auto doubleSpinBox = qobject_cast<AzQtComponents::DoubleSpinBox*>(editor->spinbox()))
     {

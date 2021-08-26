@@ -624,8 +624,6 @@ struct SSystemGlobalEnvironment
     ISystem*                   pSystem = nullptr;
     ILog*                      pLog;
     IMovieSystem*              pMovieSystem;
-    INameTable*                pNameTable;
-    IRenderer*                 pRenderer;
     ILyShine*                      pLyShine;
     SharedEnvironmentInstance*      pSharedEnvironment;
 
@@ -852,7 +850,6 @@ struct ISystem
     //
     virtual IViewSystem* GetIViewSystem() = 0;
     virtual ILevelSystem* GetILevelSystem() = 0;
-    virtual INameTable* GetINameTable() = 0;
     virtual ICmdLine* GetICmdLine() = 0;
     virtual ILog* GetILog() = 0;
     virtual AZ::IO::IArchive* GetIPak() = 0;
@@ -1149,21 +1146,10 @@ struct DiskOperationInfo
 
 #endif
 
-#if defined(ENABLE_LOADING_PROFILER) && AZ_PROFILE_TELEMETRY
-
-#define LOADING_TIME_PROFILE_SECTION AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore)
-#define LOADING_TIME_PROFILE_SECTION_ARGS(...) AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::AzCore, __VA_ARGS__)
-#define LOADING_TIME_PROFILE_SECTION_NAMED(sectionName) AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzCore, sectionName)
-#define LOADING_TIME_PROFILE_SECTION_NAMED_ARGS(sectionName, ...) AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::AzCore, sectionName, __VA_ARGS__)
-
-#else
-
 #define LOADING_TIME_PROFILE_SECTION
 #define LOADING_TIME_PROFILE_SECTION_ARGS(...)
 #define LOADING_TIME_PROFILE_SECTION_NAMED(sectionName)
 #define LOADING_TIME_PROFILE_SECTION_NAMED_ARGS(sectionName, ...)
-
-#endif
 
 //////////////////////////////////////////////////////////////////////////
 // CrySystem DLL Exports.
@@ -1665,11 +1651,4 @@ inline void CryLogAlways(const char* format, ...)
 }
 
 #endif // EXCLUDE_NORMAL_LOG
-
-//////////////////////////////////////////////////////////////////////////
-// Additional headers.
-//////////////////////////////////////////////////////////////////////////
-#include <FrameProfiler.h>
-
 #endif // CRYINCLUDE_CRYCOMMON_ISYSTEM_H
-

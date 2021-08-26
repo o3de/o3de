@@ -11,12 +11,12 @@
 
 #include "CrySystem_precompiled.h"
 #include "LevelSystem.h"
-#include <IAudioSystem.h>
 #include "IMovieSystem.h"
 #include <ILocalizationManager.h>
 #include "CryPath.h"
 
 #include <LoadScreenBus.h>
+#include <CryCommon/StaticInstance.h>
 
 #include <AzCore/Debug/AssetTracking.h>
 #include <AzFramework/API/ApplicationAPI.h>
@@ -630,41 +630,6 @@ ILevel* CLevelSystem::LoadLevelInternal(const char* _levelName)
             pSpamDelay->Set(0.0f);
         }
 
-        // Parse level specific config data.
-        AZStd::string const sLevelNameOnly(PathUtil::GetFileName(levelName));
-
-        if (!sLevelNameOnly.empty())
-        {
-            const char* controlsPath = nullptr;
-            Audio::AudioSystemRequestBus::BroadcastResult(controlsPath, &Audio::AudioSystemRequestBus::Events::GetControlsPath);
-            if (controlsPath)
-            {
-                AZStd::string sAudioLevelPath(controlsPath);
-                sAudioLevelPath.append("levels/");
-                sAudioLevelPath += sLevelNameOnly;
-
-                Audio::SAudioManagerRequestData<Audio::eAMRT_PARSE_CONTROLS_DATA> oAMData(sAudioLevelPath.c_str(), Audio::eADS_LEVEL_SPECIFIC);
-                Audio::SAudioRequest oAudioRequestData;
-                oAudioRequestData.nFlags = (Audio::eARF_PRIORITY_HIGH | Audio::eARF_EXECUTE_BLOCKING); // Needs to be blocking so data is available for next preloading request!
-                oAudioRequestData.pData = &oAMData;
-                Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
-
-                Audio::SAudioManagerRequestData<Audio::eAMRT_PARSE_PRELOADS_DATA> oAMData2(sAudioLevelPath.c_str(), Audio::eADS_LEVEL_SPECIFIC);
-                oAudioRequestData.pData = &oAMData2;
-                Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
-
-                Audio::TAudioPreloadRequestID nPreloadRequestID = INVALID_AUDIO_PRELOAD_REQUEST_ID;
-
-                Audio::AudioSystemRequestBus::BroadcastResult(nPreloadRequestID, &Audio::AudioSystemRequestBus::Events::GetAudioPreloadRequestID, sLevelNameOnly.c_str());
-                if (nPreloadRequestID != INVALID_AUDIO_PRELOAD_REQUEST_ID)
-                {
-                    Audio::SAudioManagerRequestData<Audio::eAMRT_PRELOAD_SINGLE_REQUEST> requestData(nPreloadRequestID, true);
-                    oAudioRequestData.pData = &requestData;
-                    Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
-                }
-            }
-        }
-
         {
             AZStd::string missionXml("Mission_");
             missionXml += pLevelInfo->m_defaultGameTypeName;
@@ -925,22 +890,6 @@ void CLevelSystem::UnloadLevel()
         gEnv->pMovieSystem->Reset(false, false);
         gEnv->pMovieSystem->RemoveAllSequences();
     }
-
-    // Unload level specific audio binary data.
-    Audio::SAudioManagerRequestData<Audio::eAMRT_UNLOAD_AFCM_DATA_BY_SCOPE> oAMData(Audio::eADS_LEVEL_SPECIFIC);
-    Audio::SAudioRequest oAudioRequestData;
-    oAudioRequestData.nFlags = (Audio::eARF_PRIORITY_HIGH | Audio::eARF_EXECUTE_BLOCKING);
-    oAudioRequestData.pData = &oAMData;
-    Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
-
-    // Now unload level specific audio config data.
-    Audio::SAudioManagerRequestData<Audio::eAMRT_CLEAR_CONTROLS_DATA> oAMData2(Audio::eADS_LEVEL_SPECIFIC);
-    oAudioRequestData.pData = &oAMData2;
-    Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
-
-    Audio::SAudioManagerRequestData<Audio::eAMRT_CLEAR_PRELOADS_DATA> oAMData3(Audio::eADS_LEVEL_SPECIFIC);
-    oAudioRequestData.pData = &oAMData3;
-    Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
 
     OnUnloadComplete(m_lastLevelName.c_str());
 

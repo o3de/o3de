@@ -334,7 +334,7 @@ void CUiAnimViewSequence::OnNodeRenamed(CUiAnimViewNode* pNode, const char* pOld
     bool bLightAnimationSetActive = GetFlags() & IUiAnimSequence::eSeqFlags_LightAnimationSet;
     if (bLightAnimationSetActive)
     {
-        UpdateLightAnimationRefs(pOldName, pNode->GetName());
+        UpdateLightAnimationRefs(pOldName, pNode->GetName().c_str());
     }
 
     if (m_bNoNotifications)

@@ -1096,7 +1096,7 @@ UiTextComponent::InlineImage::InlineImage(const AZStd::string& texturePathname,
         if (m_texture)
         {
             AZ::RHI::Size size = m_texture->GetDescriptor().m_size;
-            m_size = AZ::Vector2(size.m_width, size.m_height);
+            m_size = AZ::Vector2(static_cast<float>(size.m_width), static_cast<float>(size.m_height));
         }
     }
 
@@ -1827,7 +1827,7 @@ void UiTextComponent::Render(LyShine::IRenderGraph* renderGraph)
 
         for (UiTransformInterface::RectPoints& rect : rectPoints)
         {
-            IRenderer::DynUiPrimitive* primitive = renderGraph->GetDynamicQuadPrimitive(rect.pt, packedColor);
+            DynUiPrimitive* primitive = renderGraph->GetDynamicQuadPrimitive(rect.pt, packedColor);
             primitive->m_next = nullptr;
 
             LyShine::RenderGraph* lyRenderGraph = dynamic_cast<LyShine::RenderGraph*>(renderGraph);
@@ -2068,7 +2068,7 @@ int UiTextComponent::GetFontEffect()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiTextComponent::SetFontEffect(int effectIndex)
 {
-    if (m_fontEffectIndex != effectIndex)
+    if (m_fontEffectIndex != static_cast<unsigned int>(effectIndex))
     {
         m_fontEffectIndex = effectIndex;
 
@@ -4149,7 +4149,7 @@ void UiTextComponent::RenderDrawBatchLines(
                     imageQuad[i] = transformToViewport * imageQuad[i];
                 }
 
-                static const uint32 packedColor = (255 << 24) | (255 << 16) | (255 << 8) | 255;
+                static const uint32 packedColor = (255u << 24) | (255u << 16) | (255u << 8) | 255u;
 
                 RenderCacheImageBatch* cacheImageBatch = new RenderCacheImageBatch;
 

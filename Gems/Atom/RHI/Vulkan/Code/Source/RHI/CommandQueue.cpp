@@ -54,7 +54,7 @@ namespace AZ
             const ExecuteWorkRequest& request = static_cast<const ExecuteWorkRequest&>(rhiRequest);
             QueueCommand([=](void* queue) 
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "ExecuteWork");
+                AZ_PROFILE_SCOPE(RHI, "ExecuteWork");
                 AZ_PROFILE_RHI_VARIABLE(m_lastExecuteDuration);
 
                 Queue* vulkanQueue = static_cast<Queue*>(queue);

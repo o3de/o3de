@@ -745,7 +745,7 @@ private:
 
     void Update()
     {
-        if (m_index >= 0 && m_index < m_parentNode->getChildCount())
+        if (m_index < m_parentNode->getChildCount())
         {
             m_currentChildNode = m_parentNode->getChild(static_cast<int>(m_index));
         }

@@ -237,7 +237,7 @@ namespace AZ
 
         void View::FinalizeDrawLists()
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(RPI);
             m_drawListContext.FinalizeLists();
             SortFinalizedDrawLists();
         }

@@ -169,7 +169,7 @@ namespace AZ::IO
 
     void StorageDriveWin::PrepareRequest(FileRequest* request)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
         AZ_Assert(request, "PrepareRequest was provided a null request.");
 
         if (AZStd::holds_alternative<FileRequest::ReadRequestData>(request->GetCommand()))
@@ -189,7 +189,7 @@ namespace AZ::IO
 
     void StorageDriveWin::QueueRequest(FileRequest* request)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
         AZ_Assert(request, "QueueRequest was provided a null request.");
 
         AZStd::visit([this, request](auto&& args)
@@ -459,7 +459,7 @@ namespace AZ::IO
 
             // Adding explicit scope here for profiling file Open & Close
             {
-                AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::AzCore, "StorageDriveWin::ReadRequest OpenFile %s", m_name.c_str());
+                AZ_PROFILE_SCOPE(AzCore, "StorageDriveWin::ReadRequest OpenFile %s", m_name.c_str());
                 TIMED_AVERAGE_WINDOW_SCOPE(m_fileOpenCloseTimeAverage);
 
                 // All reads are overlapped (asynchronous).
@@ -516,7 +516,7 @@ namespace AZ::IO
 
     bool StorageDriveWin::ReadRequest(FileRequest* request)
     {
-        AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::AzCore, "StorageDriveWin::ReadRequest %s", m_name.c_str());
+        AZ_PROFILE_SCOPE(AzCore, "StorageDriveWin::ReadRequest %s", m_name.c_str());
 
         if (!m_cachesInitialized)
         {
@@ -545,7 +545,7 @@ namespace AZ::IO
 
     bool StorageDriveWin::ReadRequest(FileRequest* request, size_t readSlot)
     {
-        AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::AzCore, "StorageDriveWin::ReadRequest %s", m_name.c_str());
+        AZ_PROFILE_SCOPE(AzCore, "StorageDriveWin::ReadRequest %s", m_name.c_str());
 
         if (!m_context->GetStreamerThreadSynchronizer().AreEventHandlesAvailable())
         {
@@ -666,7 +666,7 @@ namespace AZ::IO
 
         bool result = false;
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzCore, "StorageDriveWin::ReadRequest ::ReadFile");
+            AZ_PROFILE_SCOPE(AzCore, "StorageDriveWin::ReadRequest ::ReadFile");
             result = ::ReadFile(file, output, readSize, nullptr, overlapped);
         }
 
@@ -782,7 +782,7 @@ namespace AZ::IO
     {
         auto& fileExists = AZStd::get<FileRequest::FileExistsCheckData>(request->GetCommand());
 
-        AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::AzCore, "StorageDriveWin::FileExistsRequest %s : %s",
+        AZ_PROFILE_SCOPE(AzCore, "StorageDriveWin::FileExistsRequest %s : %s",
             m_name.c_str(), fileExists.m_path.GetRelativePath());
         TIMED_AVERAGE_WINDOW_SCOPE(m_getFileExistsTimeAverage);
 
@@ -838,7 +838,7 @@ namespace AZ::IO
     {
         auto& command = AZStd::get<FileRequest::FileMetaDataRetrievalData>(request->GetCommand());
 
-        AZ_PROFILE_SCOPE_DYNAMIC(AZ::Debug::ProfileCategory::AzCore, "StorageDriveWin::FileMetaDataRetrievalRequest %s : %s",
+        AZ_PROFILE_SCOPE(AzCore, "StorageDriveWin::FileMetaDataRetrievalRequest %s : %s",
             m_name.c_str(), command.m_path.GetRelativePath());
         TIMED_AVERAGE_WINDOW_SCOPE(m_getFileMetaDataRetrievalTimeAverage);
 
@@ -954,7 +954,7 @@ namespace AZ::IO
 
     bool StorageDriveWin::FinalizeReads()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_FUNCTION(AzCore);
 
         bool hasWorked = false;
         for (size_t readSlot = 0; readSlot < m_readSlots_active.size(); ++readSlot)

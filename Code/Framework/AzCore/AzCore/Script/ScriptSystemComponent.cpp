@@ -287,14 +287,6 @@ void    ScriptSystemComponent::OnSystemTick()
             contextContainer.m_context->GetDebugContext()->ProcessDebugCommands();
         }
 
-#ifdef AZ_PROFILE_TELEMETRY
-        if (contextContainer.m_context->GetId() == ScriptContextIds::DefaultScriptContextId)
-        {
-            size_t memoryUsageBytes = contextContainer.m_context->GetMemoryUsage();
-            AZ_PROFILE_DATAPOINT(AZ::Debug::ProfileCategory::Script, memoryUsageBytes / 1024.0, "Script Memory (KB)");
-        }
-#endif // AZ_PROFILE_TELEMETRY
-
         contextContainer.m_context->GarbageCollectStep(contextContainer.m_garbageCollectorSteps);
     }
 }
