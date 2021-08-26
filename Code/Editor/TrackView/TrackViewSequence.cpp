@@ -894,14 +894,14 @@ bool CTrackViewSequence::SetName(const char* name)
         return false;
     }
 
-    const char* oldName = GetName();
-    if (0 != strcmp(name, oldName))
+    AZStd::string oldName = GetName();
+    if (name != oldName)
     {
         m_pAnimSequence->SetName(name);
         MarkAsModified();
 
         AzToolsFramework::ScopedUndoBatch undoBatch("Rename Sequence");
-        GetSequence()->OnNodeRenamed(this, oldName);
+        GetSequence()->OnNodeRenamed(this, oldName.c_str());
         undoBatch.MarkEntityDirty(m_pAnimSequence->GetSequenceEntityId());
     }
 

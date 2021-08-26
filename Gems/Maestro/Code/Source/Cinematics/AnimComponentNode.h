@@ -152,14 +152,14 @@ private:
         {
             m_displayName = other.m_displayName;
             m_animNodeParamInfo.paramType = other.m_displayName;
-            m_animNodeParamInfo.name = &m_displayName[0];
+            m_animNodeParamInfo.name = m_displayName;
         }
         BehaviorPropertyInfo& operator=(const AZStd::string& str)
         {
             // TODO: clean this up - this weird memory sharing was copied from legacy Cry - could be better.
             m_displayName = str;
             m_animNodeParamInfo.paramType = str;   // set type to AnimParamType::ByString by assigning a string
-            m_animNodeParamInfo.name = &m_displayName[0];
+            m_animNodeParamInfo.name = m_displayName;
             return *this;
         }
 
