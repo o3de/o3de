@@ -72,15 +72,35 @@ namespace O3DE::ProjectManager
 
         if (QDir(GemModel::GetPath(modelIndex)).exists(ProjectPreviewImagePath))
         {
-            m_previewImage->show();
+            m_previewLabel->show();
 
-            QString previewPath = QDir(GemModel::GetPath(modelIndex)).filePath(ProjectPreviewImagePath);
-            m_previewImage->setPixmap(QPixmap(previewPath).scaled(
-                QSize(GemPreviewImageMaxWidth, GemPreviewImageMaxWidth), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+            m_previewImage1->show();
+            QString previewPath1 = QDir(GemModel::GetPath(modelIndex)).filePath(ProjectPreviewImagePath);
+            m_previewImage1->setPixmap(QPixmap(previewPath1)
+                .scaled(QSize(GemPreviewImageWidth, GemPreviewImageHeight), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+
+            if (QDir(GemModel::GetPath(modelIndex)).exists(ProjectPreviewImagePath))
+            {
+                m_previewImage2->show();
+                QString previewPath2 = QDir(GemModel::GetPath(modelIndex)).filePath(ProjectPreviewImagePath);
+                m_previewImage2->setPixmap(QPixmap(previewPath2)
+                    .scaled(QSize(GemPreviewImageWidth, GemPreviewImageHeight), Qt::KeepAspectRatio, Qt::SmoothTransformation));
+            }
+            else
+            {
+                m_previewImage2->hide();
+            }
+
+            m_previewTopSpacer->changeSize(0, 10, QSizePolicy::Fixed, QSizePolicy::Fixed);
+            m_previewBottomSpacer->changeSize(0, 20, QSizePolicy::Fixed, QSizePolicy::Fixed);
         }
         else
         {
-            m_previewImage->hide();
+            m_previewLabel->hide();
+            m_previewImage1->hide();
+
+            m_previewTopSpacer->changeSize(0, 0, QSizePolicy::Fixed, QSizePolicy::Fixed);
+            m_previewBottomSpacer->changeSize(0, 0, QSizePolicy::Fixed, QSizePolicy::Fixed);
         }
 
         if (m_model->HasRequirement(modelIndex))
@@ -183,25 +203,6 @@ namespace O3DE::ProjectManager
             m_mainLayout->addSpacing(8);
         }
 
-        // Preview Image
-        {
-            QHBoxLayout* previewHLayout = new QHBoxLayout();
-            previewHLayout->setMargin(0);
-
-            QSpacerItem* spacerLeft = new QSpacerItem(0, 0, QSizePolicy::Expanding);
-            previewHLayout->addSpacerItem(spacerLeft);
-
-            m_previewImage = new QLabel(this);
-            previewHLayout->addWidget(m_previewImage);
-
-            QSpacerItem* spacerRight = new QSpacerItem(0, 0, QSizePolicy::Expanding);
-            previewHLayout->addSpacerItem(spacerRight);
-
-            m_mainLayout->addLayout(previewHLayout);
-
-            m_mainLayout->addSpacing(8);
-        }
-
         // Separating line
         QFrame* hLine = new QFrame();
         hLine->setFrameShape(QFrame::HLine);
@@ -210,8 +211,35 @@ namespace O3DE::ProjectManager
 
         m_mainLayout->addSpacing(10);
 
+        // Preview Images
+        {
+            m_previewLabel = GemInspector::CreateStyledLabel(m_mainLayout, 14, s_headerColor);
+            m_previewLabel->setText("Images Attached (#)");
+
+            m_previewTopSpacer = new QSpacerItem(0, 10, QSizePolicy::Fixed, QSizePolicy::Fixed);
+            m_mainLayout->addSpacerItem(m_previewTopSpacer);
+
+            QHBoxLayout* previewHLayout = new QHBoxLayout();
+            previewHLayout->setMargin(0);
+            previewHLayout->setSpacing(15);
+
+            m_previewImage1 = new QLabel(this);
+            previewHLayout->addWidget(m_previewImage1);
+
+            m_previewImage2 = new QLabel(this);
+            previewHLayout->addWidget(m_previewImage2);
+
+            QSpacerItem* spacerRight = new QSpacerItem(0, 0, QSizePolicy::Expanding);
+            previewHLayout->addSpacerItem(spacerRight);
+
+            m_mainLayout->addLayout(previewHLayout);
+
+            m_previewBottomSpacer = new QSpacerItem(0, 20, QSizePolicy::Fixed, QSizePolicy::Fixed);
+            m_mainLayout->addSpacerItem(m_previewBottomSpacer);
+        }
+
         // Requirements
-        m_requirementsTitleLabel = GemInspector::CreateStyledLabel(m_mainLayout, 16, s_headerColor);
+        m_requirementsTitleLabel = GemInspector::CreateStyledLabel(m_mainLayout, 14, s_headerColor);
 
         QHBoxLayout* requirementsLayout = new QHBoxLayout();
         requirementsLayout->setMargin(0);
@@ -264,7 +292,7 @@ namespace O3DE::ProjectManager
         m_layout->setMargin(0);
         setLayout(m_layout);
 
-        m_titleLabel = GemInspector::CreateStyledLabel(m_layout, 16, s_headerColor);
+        m_titleLabel = GemInspector::CreateStyledLabel(m_layout, 14, s_headerColor);
         m_textLabel = GemInspector::CreateStyledLabel(m_layout, 10, s_textColor);
         m_textLabel->setWordWrap(true);
 

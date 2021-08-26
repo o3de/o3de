@@ -14,10 +14,8 @@ namespace O3DE::ProjectManager
     inline constexpr static int ProjectPreviewImageWidth = 210;
     inline constexpr static int ProjectPreviewImageHeight = 280;
     inline constexpr static int ProjectTemplateImageWidth = 92;
-    inline constexpr static int GemPreviewImageMinWidth = 70;
-    inline constexpr static int GemPreviewImageMinHeight = 40;
-    inline constexpr static int GemPreviewImageMaxWidth = 140;
-    inline constexpr static int GemPreviewImageMaxHeight = 80;
+    inline constexpr static int GemPreviewImageWidth = 70;
+    inline constexpr static int GemPreviewImageHeight = 40;
 
     static const QString ProjectBuildDirectoryName = "build";
     extern const QString ProjectBuildPathPostfix;

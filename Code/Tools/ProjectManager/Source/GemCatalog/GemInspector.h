@@ -74,7 +74,11 @@ namespace O3DE::ProjectManager
         LinkLabel* m_documentationLinkLabel = nullptr;
 
         // Preview Image
-        QLabel* m_previewImage = nullptr;
+        QLabel* m_previewLabel = nullptr;
+        QLabel* m_previewImage1 = nullptr;
+        QLabel* m_previewImage2 = nullptr;
+        QSpacerItem* m_previewTopSpacer = nullptr;
+        QSpacerItem* m_previewBottomSpacer = nullptr;
 
         // Requirements
         QLabel* m_requirementsTitleLabel = nullptr;

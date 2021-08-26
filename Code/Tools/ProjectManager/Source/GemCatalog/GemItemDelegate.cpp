@@ -80,19 +80,19 @@ namespace O3DE::ProjectManager
         QString previewPath = QDir(GemModel::GetPath(modelIndex)).filePath(ProjectPreviewImagePath);
         QPixmap gemPreviewImage(previewPath);
         QRect gemPreviewRect(
-            contentRect.left(), contentRect.center().y() - GemPreviewImageMinHeight / 2,
-            GemPreviewImageMinWidth, GemPreviewImageMinHeight);
+            contentRect.left(), contentRect.center().y() - GemPreviewImageHeight / 2,
+            GemPreviewImageWidth, GemPreviewImageHeight);
         painter->drawPixmap(gemPreviewRect, gemPreviewImage);
 
         // Gem name
         QString gemName = GemModel::GetDisplayName(modelIndex);
         QFont gemNameFont(options.font);
-        const int nameColumnMaxTextWidth = s_summaryStartX - GemPreviewImageMinWidth - s_contentSpacing * 2;
+        const int nameColumnMaxTextWidth = s_summaryStartX - GemPreviewImageWidth - s_contentSpacing * 2;
         gemNameFont.setPixelSize(static_cast<int>(s_gemNameFontSize));
         gemNameFont.setBold(true);
         gemName = QFontMetrics(gemNameFont).elidedText(gemName, Qt::TextElideMode::ElideRight, nameColumnMaxTextWidth);
         QRect gemNameRect = GetTextRect(gemNameFont, gemName, s_gemNameFontSize);
-        gemNameRect.moveTo(contentRect.left() + GemPreviewImageMinWidth + s_contentSpacing, contentRect.top());
+        gemNameRect.moveTo(contentRect.left() + GemPreviewImageWidth + s_contentSpacing, contentRect.top());
         painter->setFont(gemNameFont);
         painter->setPen(m_textColor);
         gemNameRect = painter->boundingRect(gemNameRect, Qt::TextSingleLine, gemName);
@@ -102,7 +102,7 @@ namespace O3DE::ProjectManager
         QString gemCreator = GemModel::GetCreator(modelIndex);
         gemCreator = standardFontMetrics.elidedText(gemCreator, Qt::TextElideMode::ElideRight, nameColumnMaxTextWidth);
         QRect gemCreatorRect = GetTextRect(standardFont, gemCreator, s_fontSize);
-        gemCreatorRect.moveTo(contentRect.left() + GemPreviewImageMinWidth + s_contentSpacing, contentRect.top() + gemNameRect.height());
+        gemCreatorRect.moveTo(contentRect.left() + GemPreviewImageWidth + s_contentSpacing, contentRect.top() + gemNameRect.height());
 
         painter->setFont(standardFont);
         gemCreatorRect = painter->boundingRect(gemCreatorRect, Qt::TextSingleLine, gemCreator);
@@ -198,7 +198,7 @@ namespace O3DE::ProjectManager
     void GemItemDelegate::DrawPlatformIcons(QPainter* painter, const QRect& contentRect, const QModelIndex& modelIndex) const
     {
         const GemInfo::Platforms platforms = GemModel::GetPlatforms(modelIndex);
-        int startX = GemPreviewImageMinWidth + s_contentSpacing;
+        int startX = GemPreviewImageWidth + s_contentSpacing;
 
         // Iterate and draw the platforms in the order they are defined in the enum.
         for (int i = 0; i < GemInfo::NumPlatforms; ++i)
