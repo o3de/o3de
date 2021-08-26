@@ -22,7 +22,6 @@ namespace AZ
 #if defined(AZ_ENABLE_DEBUG_TOOLS)
     LONG WINAPI ExceptionHandler(PEXCEPTION_POINTERS ExceptionInfo);
     LPTOP_LEVEL_EXCEPTION_FILTER g_previousExceptionHandler = nullptr;
-    bool g_coInitialized = false;
 #endif
 
     constexpr int g_maxMessageLength = 4096;
@@ -66,7 +65,7 @@ namespace AZ
                 PROCESS_INFORMATION processInfo = {0};
 
                 char cmdline[MAX_PATH];
-                azsprintf(cmdline, "vsjitdebugger.exe -p %i", ::GetCurrentProcessId());
+                azsprintf(cmdline, "vsjitdebugger.exe -p %li", ::GetCurrentProcessId());
                 bool success = ::CreateProcessA(
                     NULL,           // No module name (use command line)
                     cmdline,        // Command line
