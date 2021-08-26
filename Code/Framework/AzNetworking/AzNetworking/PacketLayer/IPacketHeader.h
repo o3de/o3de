@@ -17,7 +17,7 @@ namespace AzNetworking
 {
     AZ_ENUM_CLASS(PacketDispatchResult
         , Failure
-        , Pending
+        , Skipped
         , Success
     );
 

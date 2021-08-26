@@ -304,9 +304,9 @@ namespace AzNetworking
                     // If it's not an expected unencrypted type then skip it for now
                     continue;
                 }
-                else if (handledPacket == PacketDispatchResult::Pending)
+                else if (handledPacket == PacketDispatchResult::Skipped)
                 {
-                    // If we did not handle due to a handshake pending completion, skip it
+                    // If the result is marked as skipped then do so (i.e. if a handshake is not yet complete)
                     continue;
                 }
                 else if (connection->GetConnectionState() != ConnectionState::Disconnecting)

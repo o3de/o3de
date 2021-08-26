@@ -13,7 +13,7 @@ namespace {{ xml.attrib['Name'] }}
 {%      if ('HandshakePacket' not in Packet.attrib) or (Packet.attrib['HandshakePacket'] == 'false') %}
                 if (!handler.IsHandshakeComplete())
                 {
-                    return AzNetworking::PacketDispatchResult::Pending;
+                    return AzNetworking::PacketDispatchResult::Skipped;
                 }
 {% endif %}
 
