@@ -596,7 +596,7 @@ namespace AZ
             jobData->m_maskedOcclusionCulling = maskedOcclusionCulling;
 #endif
 
-            auto nodeVisitorLambda = [this, jobData, &parentJob, &frustum, &worklist](const AzFramework::IVisibilityScene::NodeData& nodeData) -> void
+            auto nodeVisitorLambda = [jobData, &parentJob, &worklist](const AzFramework::IVisibilityScene::NodeData& nodeData) -> void
             {
                 AZ_PROFILE_SCOPE(RPI, "nodeVisitorLambda()");
                 AZ_Assert(nodeData.m_entries.size() > 0, "should not get called with 0 entries");

@@ -20,7 +20,6 @@ namespace AssetBlendTrackTest
     const AZ::Data::AssetId KEY1_ASSET_ID = AZ::Data::AssetId(AZ::Uuid("{86CE36B5-D996-4CEF-943E-3F12008694E1}"), 1);
     const AZ::Data::AssetId KEY2_ASSET_ID = AZ::Data::AssetId(AZ::Uuid("{94D54D20-BACC-4A60-8A03-0DC9B5033E03}"), 2);
     const AZ::Data::AssetId KEY3_ASSET_ID = AZ::Data::AssetId(AZ::Uuid("{94D54D20-BACC-4A60-8A03-0DC9B5033E03}"), 3);
-    const float KEY_TIME = 1.0f;
 
     /////////////////////////////////////////////////////////////////////////////////////
     // Testing sub-class

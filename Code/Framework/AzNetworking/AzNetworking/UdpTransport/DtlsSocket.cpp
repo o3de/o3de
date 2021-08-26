@@ -86,7 +86,7 @@ namespace AzNetworking
 #if AZ_TRAIT_USE_OPENSSL
         uint8_t encrpytedSendBuffer[MaxUdpTransmissionUnit];
         // Write out the packet we were requested to send
-        const int32_t sentBytesRaw = SSL_write(dtlsEndpoint.m_sslSocket, data, size);
+        SSL_write(dtlsEndpoint.m_sslSocket, data, size);
         const int32_t sentBytesEnc = BIO_read(dtlsEndpoint.m_writeBio, encrpytedSendBuffer, sizeof(encrpytedSendBuffer));
 
         // Track encryption metrics

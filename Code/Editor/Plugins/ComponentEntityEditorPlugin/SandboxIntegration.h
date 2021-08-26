@@ -280,7 +280,6 @@ private:
 
 private:
     AZ::Vector2 m_contextMenuViewPoint;
-    AZ::Vector3 m_sliceWorldPos;
 
     int m_inObjectPickMode;
     short m_startedUndoRecordingNestingLevel;   // used in OnBegin/EndUndo to ensure we only accept undo's we started recording
@@ -297,8 +296,6 @@ private:
     const AZStd::string m_defaultComponentIconLocation = "Icons/Components/Component_Placeholder.svg";
     const AZStd::string m_defaultComponentViewportIconLocation = "Icons/Components/Viewport/Component_Placeholder.svg";
     const AZStd::string m_defaultEntityIconLocation = "Icons/Components/Viewport/Transform.svg";
-
-    bool m_debugDisplayBusImplementationActive = false;
 
     AzToolsFramework::Prefab::PrefabIntegrationManager* m_prefabIntegrationManager = nullptr;
 

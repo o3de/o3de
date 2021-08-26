@@ -1675,8 +1675,6 @@ XmlNodeRef XmlParserImp::ParseBuffer(const char* buffer, size_t bufLen, XmlStrin
 //////////////////////////////////////////////////////////////////////////
 XmlNodeRef XmlParserImp::ParseFile(const char* filename, XmlString& errorString, bool bCleanPools)
 {
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
-
     if (!filename)
     {
         return 0;
@@ -1739,8 +1737,6 @@ XmlNodeRef XmlParserImp::ParseFile(const char* filename, XmlString& errorString,
 
     if (g_bEnableBinaryXmlLoading)
     {
-        LOADING_TIME_PROFILE_SECTION_NAMED("XMLBinaryReader::Parse");
-
         XMLBinary::XMLBinaryReader reader;
         XMLBinary::XMLBinaryReader::EResult result;
         root = reader.LoadFromBuffer(XMLBinary::XMLBinaryReader::eBufferMemoryHandling_TakeOwnership, pFileContents, fileSize, result);
@@ -1760,21 +1756,9 @@ XmlNodeRef XmlParserImp::ParseFile(const char* filename, XmlString& errorString,
         {
             // not binary XML - refuse to load if in scripts dir and not in bin xml to help reduce hacking
             // wish we could compile the text xml parser out, but too much work to get everything moved over
-            static const char SCRIPTS_DIR[] = "Scripts/";
-            AZStd::fixed_string<32> strScripts("S");
-            strScripts += "c";
-            strScripts += "r";
-            strScripts += "i";
-            strScripts += "p";
-            strScripts += "t";
-            strScripts += "s";
-            strScripts += "/";
+            constexpr AZStd::fixed_string<32> strScripts{"Scripts/"};
             // exclude files and PAKs from Mods folder
-            AZStd::fixed_string<8> modsStr("M");
-            modsStr += "o";
-            modsStr += "d";
-            modsStr += "s";
-            modsStr += "/";
+            constexpr AZStd::fixed_string<8> modsStr{"Mods/"};
             if (_strnicmp(filename, strScripts.c_str(), strScripts.length()) == 0 &&
                 _strnicmp(adjustedFilename.c_str(), modsStr.c_str(), modsStr.length()) != 0 &&
                 _strnicmp(pakPath.c_str(), modsStr.c_str(), modsStr.length()) != 0)

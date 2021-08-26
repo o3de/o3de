@@ -155,7 +155,6 @@ namespace ScriptCanvasDeveloper
             m_startPosition = QCursor::pos();
         }
 
-        QPointF currentPosition = QCursor::pos();
         QPointF targetPoint = m_targetPosition;
         
         float percentage = aznumeric_cast<float>(m_tickCount)/aznumeric_cast<float>(m_tickDuration);
@@ -170,6 +169,7 @@ namespace ScriptCanvasDeveloper
 
 #if defined(AZ_COMPILER_MSVC)
         INPUT osInput = { 0 };
+        QPointF currentPosition = QCursor::pos();
 
         osInput.type = INPUT_MOUSE;
         osInput.mi.mouseData = 0;

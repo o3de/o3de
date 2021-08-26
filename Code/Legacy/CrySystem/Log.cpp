@@ -44,7 +44,7 @@ namespace LogCVars
     int max_backup_directory_size_mb = 200; //200MB default
 };
 
-#ifndef _RELEASE
+#if defined(SUPPORT_LOG_IDENTER)
 static CLog::LogStringType indentString ("    ");
 #endif
 
@@ -396,7 +396,6 @@ void CLog::LogV(const ELogType type, [[maybe_unused]]int flags, const char* szFo
         }
     }
 
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
 
     bool bfile = false, bconsole = false;
     const char* szCommand = szFormat;
@@ -442,8 +441,6 @@ void CLog::LogV(const ELogType type, [[maybe_unused]]int flags, const char* szFo
     {
         return;
     }
-
-    LogStringType tempString;
 
     char szBuffer[MAX_WARNING_LENGTH + 32];
     char* szString = szBuffer;
@@ -573,8 +570,6 @@ void CLog::LogPlus(const char* szFormat, ...)
     { // Vlad: SpamDelay does not work correctly with LogPlus
         return;
     }
-
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
 
     if (!szFormat)
     {
@@ -1188,7 +1183,6 @@ void CLog::LogToFile(const char* szFormat, ...)
 //////////////////////////////////////////////////////////////////////
 void CLog::CreateBackupFile() const
 {
-    LOADING_TIME_PROFILE_SECTION;
     if (!m_backupLogs)
     {
         return;
@@ -1296,7 +1290,7 @@ void CLog::CheckAndPruneBackupLogs() const
     AZStd::list<fileInfo> fileInfoList;
 
     // Now that we've copied the new log over, lets check the size of the backup folder and trim it as necessary to keep it within appropriate limits
-    AZ::IO::Result res = fileSystem->FindFiles(LOG_BACKUP_PATH, "*",
+    fileSystem->FindFiles(LOG_BACKUP_PATH, "*",
         [&totalBackupDirectorySize, &fileSystem, &fileInfoList](const char* fileName)
     {
         AZ::u64 size;

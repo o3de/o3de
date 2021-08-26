@@ -27,18 +27,6 @@
 #define s_nodeParams s_nodeParamsEnt
 #define AddSupportedParam AddSupportedParamEnt
 
-static const float TIMEJUMPED_TRANSITION_TIME = 1.0f;
-static const float EPSILON = 0.01f;
-
-static const char* s_VariablePrefixes[] =
-{
-    "n", "i", "b", "f", "s", "ei", "es",
-    "shader", "clr", "color", "vector",
-    "snd", "sound", "dialog", "tex", "texture",
-    "obj", "object", "file", "text", "equip", "reverbpreset", "eaxpreset",
-    "aianchor", "customaction", "gametoken", "seq_", "mission_", "seqid_", "lightanimation_"
-};
-
 //////////////////////////////////////////////////////////////////////////
 namespace
 {
@@ -56,16 +44,7 @@ namespace
         param.flags = (IUiAnimNode::ESupportedParamFlags)flags;
         nodeParams.push_back(param);
     }
-
-    // Quat::IsEquivalent has numerical problems with very similar values
-    bool CompareRotation(const Quat& q1, const Quat& q2, float epsilon)
-    {
-        return (fabs_tpl(q1.v.x - q2.v.x) <= epsilon)
-               && (fabs_tpl(q1.v.y - q2.v.y) <= epsilon)
-               && (fabs_tpl(q1.v.z - q2.v.z) <= epsilon)
-               && (fabs_tpl(q1.w - q2.w) <= epsilon);
-    }
-};
+}
 
 //////////////////////////////////////////////////////////////////////////
 CUiAnimAzEntityNode::CUiAnimAzEntityNode(const int id)

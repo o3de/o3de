@@ -67,7 +67,6 @@ namespace AWSCore
 
         AZStd::string GetContent()
         {
-            std::istream::pos_type pos = m_is.tellg();
             m_is.seekg(0);
             std::istreambuf_iterator<AZStd::string::value_type> eos;
             AZStd::string content{ std::istreambuf_iterator<AZStd::string::value_type>(m_is),eos };

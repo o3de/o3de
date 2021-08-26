@@ -1555,11 +1555,8 @@ void CObjectManager::DeleteSelection()
     // Make sure to unlock selection.
     GetIEditor()->LockSelection(false);
 
-    GUID bID = GUID_NULL;
-
-    int i;
     CSelectionGroup objects;
-    for (i = 0; i < m_currSelection->GetCount(); i++)
+    for (int i = 0; i < m_currSelection->GetCount(); i++)
     {
         // Check condition(s) if object could be deleted
         if (!IsObjectDeletionAllowed(m_currSelection->GetObject(i)))
@@ -2896,17 +2893,6 @@ namespace
             throw std::logic_error((QString("\"") + pName + "\" is an invalid object.").toUtf8().data());
         }
         Vec3 position = pObject->GetPos();
-        return AZ::Vector3(position.x, position.y, position.z);
-    }
-
-    AZ::Vector3 PyGetWorldObjectPosition(const char* pName)
-    {
-        CBaseObject* pObject = GetIEditor()->GetObjectManager()->FindObject(pName);
-        if (!pObject)
-        {
-            throw std::logic_error((QString("\"") + pName + "\" is an invalid object.").toUtf8().data());
-        }
-        Vec3 position = pObject->GetWorldPos();
         return AZ::Vector3(position.x, position.y, position.z);
     }
 

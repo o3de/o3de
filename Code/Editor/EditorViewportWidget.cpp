@@ -1976,12 +1976,12 @@ Vec3 EditorViewportWidget::ViewToWorld(
 {
     AZ_PROFILE_FUNCTION(Editor);
 
-    AZ_UNUSED(collideWithTerrain)
-    AZ_UNUSED(onlyTerrain)
-    AZ_UNUSED(bTestRenderMesh)
-    AZ_UNUSED(bSkipVegetation)
-    AZ_UNUSED(bSkipVegetation)
-    AZ_UNUSED(collideWithObject)
+    AZ_UNUSED(collideWithTerrain);
+    AZ_UNUSED(onlyTerrain);
+    AZ_UNUSED(bTestRenderMesh);
+    AZ_UNUSED(bSkipVegetation);
+    AZ_UNUSED(bSkipVegetation);
+    AZ_UNUSED(collideWithObject);
 
     auto ray = m_renderViewport->ViewportScreenToWorldRay(AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(vp));
     if (!ray.has_value())
@@ -2005,9 +2005,9 @@ Vec3 EditorViewportWidget::ViewToWorld(
 //////////////////////////////////////////////////////////////////////////
 Vec3 EditorViewportWidget::ViewToWorldNormal(const QPoint& vp, bool onlyTerrain, bool bTestRenderMesh)
 {
-    AZ_UNUSED(vp)
-    AZ_UNUSED(onlyTerrain)
-    AZ_UNUSED(bTestRenderMesh)
+    AZ_UNUSED(vp);
+    AZ_UNUSED(onlyTerrain);
+    AZ_UNUSED(bTestRenderMesh);
 
     AZ_PROFILE_FUNCTION(Editor);
 

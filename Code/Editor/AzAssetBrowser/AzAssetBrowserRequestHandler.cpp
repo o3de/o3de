@@ -327,7 +327,7 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
         if (!vetoOpenerFound)
         {
             // if we found no valid openers and no veto openers then just allow it to be opened with the operating system itself.
-            menu->addAction(QObject::tr("Open with associated application..."), [this, fullFilePath]()
+            menu->addAction(QObject::tr("Open with associated application..."), [fullFilePath]()
             {
                 OpenWithOS(fullFilePath);
             });

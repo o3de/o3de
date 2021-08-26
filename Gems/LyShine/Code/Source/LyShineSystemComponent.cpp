@@ -342,8 +342,6 @@ namespace LyShine
         // Build a map of entity Ids to their parent Ids, for faster lookup during processing.
         for (AZ::Entity* exportParentEntity : exportSliceEntities)
         {
-            AZ::EntityId exportParentId = exportParentEntity->GetId();
-
             UiElementComponent* exportParentComponent = exportParentEntity->FindComponent<UiElementComponent>();
             if (!exportParentComponent)
             {

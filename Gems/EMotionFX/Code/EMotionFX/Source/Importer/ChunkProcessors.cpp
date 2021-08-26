@@ -1585,9 +1585,6 @@ namespace EMotionFX
             // get the expression name
             const char* morphTargetName = SharedHelperData::ReadString(file, importParams.m_sharedData, endianType);
 
-            // get the level of detail of the expression part
-            const uint32 morphTargetLOD = morphTargetChunk.m_lod;
-
             if (GetLogging())
             {
                 MCore::LogDetailedInfo("  + Morph Target:");
@@ -1731,9 +1728,6 @@ namespace EMotionFX
 
             // get the expression name
             const char* morphTargetName = SharedHelperData::ReadString(file, importParams.m_sharedData, endianType);
-
-            // get the level of detail of the expression part
-            const uint32 morphTargetLOD = morphTargetChunk.m_lod;
 
             if (GetLogging())
             {

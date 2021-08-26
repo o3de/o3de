@@ -453,7 +453,7 @@ namespace AZ
                 RHI::CpuProfiler::Get()->SetProfilerEnabled(true);
             }
 
-            const bool captureStarted = m_cpuFrameTimeStatisticsCapture.StartCapture([this, outputFilePath, wasEnabled]()
+            const bool captureStarted = m_cpuFrameTimeStatisticsCapture.StartCapture([outputFilePath, wasEnabled]()
             {
                 JsonSerializerSettings serializationSettings;
                 serializationSettings.m_keepDefaults = true;
@@ -603,7 +603,7 @@ namespace AZ
                 RHI::CpuProfiler::Get()->SetProfilerEnabled(true);
             }
 
-            const bool captureStarted = m_cpuProfilingStatisticsCapture.StartCapture([this, outputFilePath, wasEnabled]()
+            const bool captureStarted = m_cpuProfilingStatisticsCapture.StartCapture([outputFilePath, wasEnabled]()
             {
                 // Blocking call for a single frame of data, avoid thread overhead
                 AZStd::ring_buffer<RHI::CpuProfiler::TimeRegionMap> singleFrameData(1);
@@ -669,7 +669,7 @@ namespace AZ
 
         bool ProfilingCaptureSystemComponent::CaptureBenchmarkMetadata(const AZStd::string& benchmarkName, const AZStd::string& outputFilePath)
         {
-            const bool captureStarted = m_benchmarkMetadataCapture.StartCapture([this, benchmarkName, outputFilePath]()
+            const bool captureStarted = m_benchmarkMetadataCapture.StartCapture([benchmarkName, outputFilePath]()
             {
                 JsonSerializerSettings serializationSettings;
                 serializationSettings.m_keepDefaults = true;

@@ -167,60 +167,6 @@ SSystemCVars g_cvars;
 #include <AzCore/Component/ComponentApplication.h>
 #include "AZCoreLogSink.h"
 
-#if defined(ANDROID)
-namespace
-{
-    struct Callstack
-    {
-        Callstack()
-            : addrs(NULL)
-            , ignore(0)
-            , count(0)
-        {
-        }
-        Callstack(void** addrs, size_t ignore, size_t count)
-        {
-            this->addrs = addrs;
-            this->ignore = ignore;
-            this->count = count;
-        }
-        void** addrs;
-        size_t ignore;
-        size_t count;
-    };
-
-    static _Unwind_Reason_Code trace_func(struct _Unwind_Context* context, void* arg)
-    {
-        Callstack* cs = static_cast<Callstack*>(arg);
-        if (cs->count)
-        {
-            void* ip = (void*) _Unwind_GetIP(context);
-            if (ip)
-            {
-                if (cs->ignore)
-                {
-                    cs->ignore--;
-                }
-                else
-                {
-                    cs->addrs[0] = ip;
-                    cs->addrs++;
-                    cs->count--;
-                }
-            }
-        }
-        return _URC_NO_REASON;
-    }
-
-    static int Backtrace(void** addrs, size_t ignore, size_t size)
-    {
-        Callstack cs(addrs, ignore, size);
-        _Unwind_Backtrace(trace_func, (void*) &cs);
-        return size - cs.count;
-    }
-}
-#endif
-
 /////////////////////////////////////////////////////////////////////////////////
 // System Implementation.
 //////////////////////////////////////////////////////////////////////////
@@ -1032,15 +978,12 @@ IXmlUtils* CSystem::GetXmlUtils()
 //////////////////////////////////////////////////////////////////////////
 XmlNodeRef CSystem::LoadXmlFromFile(const char* sFilename, bool bReuseStrings)
 {
-    LOADING_TIME_PROFILE_SECTION_ARGS(sFilename);
-
     return m_pXMLUtils->LoadXmlFromFile(sFilename, bReuseStrings);
 }
 
 //////////////////////////////////////////////////////////////////////////
 XmlNodeRef CSystem::LoadXmlFromBuffer(const char* buffer, size_t size, bool bReuseStrings, bool bSuppressWarnings)
 {
-    LOADING_TIME_PROFILE_SECTION
     return m_pXMLUtils->LoadXmlFromBuffer(buffer, size, bReuseStrings, bSuppressWarnings);
 }
 
@@ -1250,9 +1193,6 @@ ILocalizationManager* CSystem::GetLocalizationManager()
 //////////////////////////////////////////////////////////////////////////
 void CSystem::debug_GetCallStackRaw(void** callstack, uint32& callstackLength)
 {
-    uint32 callstackCapacity = callstackLength;
-    uint32 nNumStackFramesToSkip = 1;
-
     memset(callstack, 0, sizeof(void*) * callstackLength);
 
 #if !defined(ANDROID)
@@ -1260,6 +1200,8 @@ void CSystem::debug_GetCallStackRaw(void** callstack, uint32& callstackLength)
 #endif
 
 #if AZ_LEGACY_CRYSYSTEM_TRAIT_CAPTURESTACK
+    uint32 nNumStackFramesToSkip = 1;
+    uint32 callstackCapacity = callstackLength;
     if (callstackCapacity > 0x40)
     {
         callstackCapacity = 0x40;
