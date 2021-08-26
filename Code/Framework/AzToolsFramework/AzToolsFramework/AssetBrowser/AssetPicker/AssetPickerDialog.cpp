@@ -28,6 +28,9 @@ AZ_PUSH_DISABLE_WARNING(4251 4244, "-Wunknown-warning-option") // disable warnin
 #include <QTimer>
 AZ_POP_DISABLE_WARNING
 
+AZ_CVAR(
+    bool, ed_hideAssetPickerPathColumn, false, nullptr, AZ::ConsoleFunctorFlags::Null,
+    "Hide AssetPicker path column for a clearer view.");
 AZ_CVAR_EXTERNED(bool, ed_useNewAssetBrowserTableView);
 
 namespace AzToolsFramework
@@ -115,7 +118,11 @@ namespace AzToolsFramework
                 m_ui->m_assetBrowserTableViewWidget->setSelectionMode(
                     selection.GetMultiselect() ? QAbstractItemView::SelectionMode::ExtendedSelection
                                                : QAbstractItemView::SelectionMode::SingleSelection);
-                //m_ui->m_assetBrowserTableViewWidget->hideColumn(1);
+
+                if (ed_hideAssetPickerPathColumn)
+                {
+                    m_ui->m_assetBrowserTableViewWidget->hideColumn(1);
+                }
 
                 // if the current selection is invalid, disable the Ok button
                 m_ui->m_buttonBox->button(QDialogButtonBox::Ok)->setEnabled(EvaluateSelection());
