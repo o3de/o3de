@@ -286,8 +286,6 @@ namespace AZ
                 }
             }
 
-            AZ_TracePrintf(ShaderAssetBuilderName, "Build Timestamp %zu", shaderAssetBuildTimestamp);
-
             auto supervariantList = ShaderBuilderUtility::GetSupervariantListFromShaderSourceData(shaderSourceData);
 
             RPI::ShaderAssetCreator shaderAssetCreator;
@@ -666,7 +664,7 @@ namespace AZ
             
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
                         
-            AZ_TracePrintf(ShaderAssetBuilderName, "Finished processing %s in %.2f seconds\n", request.m_sourceFile.c_str(), timer.GetDeltaTimeInSeconds());
+            AZ_TracePrintf(ShaderAssetBuilderName, "Finished processing %s in %.3f seconds\n", request.m_sourceFile.c_str(), timer.GetDeltaTimeInSeconds());
             
             ShaderBuilderUtility::LogProfilingData(ShaderAssetBuilderName, shaderFileName);
         }

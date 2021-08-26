@@ -778,7 +778,6 @@ namespace AZ
             }
             
             const AZStd::sys_time_t shaderVariantAssetBuildTimestamp = AZStd::GetTimeNowMicroSecond();
-            AZ_TracePrintf(ShaderVariantAssetBuilderName, "Build Timestamp %zu", shaderVariantAssetBuildTimestamp);
 
             auto supervariantList = ShaderBuilderUtility::GetSupervariantListFromShaderSourceData(shaderSourceDescriptor);
 
