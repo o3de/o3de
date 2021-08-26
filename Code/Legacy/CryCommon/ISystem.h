@@ -624,8 +624,6 @@ struct SSystemGlobalEnvironment
     ISystem*                   pSystem = nullptr;
     ILog*                      pLog;
     IMovieSystem*              pMovieSystem;
-    INameTable*                pNameTable;
-    IRenderer*                 pRenderer;
     ILyShine*                      pLyShine;
     SharedEnvironmentInstance*      pSharedEnvironment;
 
@@ -852,7 +850,6 @@ struct ISystem
     //
     virtual IViewSystem* GetIViewSystem() = 0;
     virtual ILevelSystem* GetILevelSystem() = 0;
-    virtual INameTable* GetINameTable() = 0;
     virtual ICmdLine* GetICmdLine() = 0;
     virtual ILog* GetILog() = 0;
     virtual AZ::IO::IArchive* GetIPak() = 0;
@@ -1654,11 +1651,4 @@ inline void CryLogAlways(const char* format, ...)
 }
 
 #endif // EXCLUDE_NORMAL_LOG
-
-//////////////////////////////////////////////////////////////////////////
-// Additional headers.
-//////////////////////////////////////////////////////////////////////////
-#include <FrameProfiler.h>
-
 #endif // CRYINCLUDE_CRYCOMMON_ISYSTEM_H
-

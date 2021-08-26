@@ -9,6 +9,8 @@
 
 #include <AzCore/Debug/Profiler.h>
 
+AZ_DECLARE_BUDGET(RHI);
+
 namespace AZ
 {
     namespace RHI
@@ -126,7 +128,7 @@ namespace AZ
                 return;
             }
 
-            AZ_PROFILE_FUNCTION(AzRender);
+            AZ_PROFILE_FUNCTION(RHI);
 
             AZStd::unique_lock<AZStd::mutex> lock(m_waitWorkItemMutex);
             m_waitWorkItemCondition.wait(lock, [&]() {return HasFinishedWork(workHandle); });

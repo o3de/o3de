@@ -1827,7 +1827,7 @@ void UiTextComponent::Render(LyShine::IRenderGraph* renderGraph)
 
         for (UiTransformInterface::RectPoints& rect : rectPoints)
         {
-            IRenderer::DynUiPrimitive* primitive = renderGraph->GetDynamicQuadPrimitive(rect.pt, packedColor);
+            DynUiPrimitive* primitive = renderGraph->GetDynamicQuadPrimitive(rect.pt, packedColor);
             primitive->m_next = nullptr;
 
             LyShine::RenderGraph* lyRenderGraph = dynamic_cast<LyShine::RenderGraph*>(renderGraph);

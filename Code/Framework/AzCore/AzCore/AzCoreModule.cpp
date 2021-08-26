@@ -10,7 +10,6 @@
 
 // Component includes
 #include <AzCore/Asset/AssetManagerComponent.h>
-#include <AzCore/Debug/FrameProfilerComponent.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
@@ -36,7 +35,6 @@ namespace AZ
             JsonSystemComponent::CreateDescriptor(),
             AssetManagerComponent::CreateDescriptor(),
             UserSettingsComponent::CreateDescriptor(),
-            Debug::FrameProfilerComponent::CreateDescriptor(),
             SliceComponent::CreateDescriptor(),
             SliceSystemComponent::CreateDescriptor(),
             SliceMetadataInfoComponent::CreateDescriptor(),

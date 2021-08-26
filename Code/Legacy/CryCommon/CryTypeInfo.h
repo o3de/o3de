@@ -21,10 +21,6 @@
 
 class ICrySizer;
 
-class CCryName;
-AZStd::string ToString(CCryName const& val);
-bool FromString(CCryName& val, const char* s);
-
 //---------------------------------------------------------------------------
 // Specify options for converting data to/from strings
 struct FToString

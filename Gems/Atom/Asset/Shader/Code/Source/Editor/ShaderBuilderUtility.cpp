@@ -21,7 +21,7 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <Atom/RPI.Edit/Common/JsonReportingHelper.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
@@ -459,6 +459,10 @@ namespace AZ
                 if (platformIdentifier == "pc")
                 {
                     platformId = AzFramework::PlatformId::PC;
+                }
+                else if (platformIdentifier == "linux")
+                {
+                    platformId = AzFramework::PlatformId::LINUX_ID;
                 }
                 else if (platformIdentifier == "mac")
                 {

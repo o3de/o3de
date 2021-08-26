@@ -19,9 +19,12 @@
 #include "CryLibrary.h"
 #include <CryPath.h>
 #include <CrySystemBus.h>
+#include <CryCommon/IFont.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/API/ApplicationAPI_Platform.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
+#include <AzCore/Debug/Profiler.h>
+#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/Debug/IEventLogger.h>
 #include <AzCore/Interface/Interface.h>
@@ -255,7 +258,6 @@ CSystem::CSystem(SharedEnvironmentInstance* pSharedEnvironment)
     // Initialize global environment interface pointers.
     m_env.pSystem = this;
     m_env.pTimer = &m_Time;
-    m_env.pNameTable = &m_nameTable;
     m_env.bIgnoreAllAsserts = false;
     m_env.bNoAssertDialog = false;
 
@@ -659,8 +661,6 @@ ISystem* CSystem::GetCrySystem()
 //////////////////////////////////////////////////////////////////////////
 void CSystem::SleepIfNeeded()
 {
-    FUNCTION_PROFILER_FAST(this, PROFILE_SYSTEM, g_bProfilerEnabled);
-
     ITimer* const pTimer = gEnv->pTimer;
     static bool firstCall = true;
 
@@ -738,7 +738,6 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
     _mm_setcsr(_mm_getcsr() & ~0x280 | (g_cvars.sys_float_exceptions > 0 ? 0 : 0x280));
 #endif //WIN32
 
-    FUNCTION_PROFILER_LEGACYONLY(GetISystem(), PROFILE_SYSTEM);
     AZ_TRACE_METHOD();
 
     m_nUpdateCounter++;
@@ -832,8 +831,6 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
     //limit frame rate if vsync is turned off
     //for consoles this is done inside renderthread to be vsync dependent
     {
-        FRAME_PROFILER_LEGACYONLY("FRAME_CAP", gEnv->pSystem, PROFILE_SYSTEM);
-        AZ_TRACE_METHOD_NAME("FrameLimiter");
         static ICVar* pSysMaxFPS = NULL;
         static ICVar* pVSync = NULL;
 
@@ -882,7 +879,6 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
     //update console system
     if (m_env.pConsole)
     {
-        FRAME_PROFILER("SysUpdate:Console", this, PROFILE_SYSTEM);
         m_env.pConsole->Update();
     }
 
@@ -898,7 +894,6 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
     // Run movie system pre-update
     if (!bNoUpdate)
     {
-        FRAME_PROFILER("SysUpdate:UpdateMovieSystem", this, PROFILE_SYSTEM);
         UpdateMovieSystem(updateFlags, fMovieFrameTime, true);
     }
 
@@ -914,7 +909,6 @@ bool CSystem::UpdatePostTickBus(int updateFlags, int /*nPauseMode*/)
     if (!m_bNoUpdate)
     {
         const float fMovieFrameTime = m_Time.GetFrameTime(ITimer::ETIMER_UI);
-        FRAME_PROFILER("SysUpdate:UpdateMovieSystem", this, PROFILE_SYSTEM);
         UpdateMovieSystem(updateFlags, fMovieFrameTime, false);
     }
 
@@ -922,7 +916,6 @@ bool CSystem::UpdatePostTickBus(int updateFlags, int /*nPauseMode*/)
     // Update sound system
     if (!m_bNoUpdate)
     {
-        FRAME_PROFILER("SysUpdate:UpdateAudioSystems", this, PROFILE_SYSTEM);
         UpdateAudioSystems();
     }
 
@@ -949,10 +942,7 @@ bool CSystem::UpdatePostTickBus(int updateFlags, int /*nPauseMode*/)
         m_updateTimes.push_back(std::make_pair(cur_time, updateTime));
     }
 
-    {
-        FRAME_PROFILER("SysUpdate - SystemEventDispatcher::Update", this, PROFILE_SYSTEM);
-        m_pSystemEventDispatcher->Update();
-    }
+    m_pSystemEventDispatcher->Update();
 
     if (!gEnv->IsEditing() && m_eRuntimeState == ESYSTEM_EVENT_LEVEL_GAMEPLAY_START)
     {
@@ -973,8 +963,6 @@ bool CSystem::UpdateLoadtime()
 
 void CSystem::UpdateAudioSystems()
 {
-    AZ_TRACE_METHOD();
-    FRAME_PROFILER_LEGACYONLY("SysUpdate:Audio", this, PROFILE_SYSTEM);
     Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::ExternalUpdate);
 }
 

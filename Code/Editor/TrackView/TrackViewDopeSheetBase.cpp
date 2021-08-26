@@ -3453,7 +3453,7 @@ void CTrackViewDopeSheetBase::DrawNodeTrack(CTrackViewAnimNode* animNode, QPaint
 
     const QRect textRect = trackRect.adjusted(4, 0, -4, 0);
 
-    QString sAnimNodeName = animNode->GetName();
+    QString sAnimNodeName = QString::fromUtf8(animNode->GetName().c_str());
     const bool hasObsoleteTrack = animNode->HasObsoleteTrack();
 
     if (hasObsoleteTrack)

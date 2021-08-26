@@ -20,8 +20,6 @@ namespace AZ
 
     namespace RHI
     {
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_BEGIN
-
         /**
          * Image views map to a range of mips / array slices in an image.
          */
@@ -124,7 +122,5 @@ namespace AZ
             /// This is needed because a texture array can have 1 layer only.
             uint32_t m_isArray = 0;            
         };
-
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_END
     }
 }

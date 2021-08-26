@@ -128,5 +128,21 @@ namespace AZ
             return m_pcfMethod != PcfMethod::BoundarySearch;
         }
 
+        bool DirectionalLightComponentConfig::IsEsmDisabled() const
+        {
+            return !(m_shadowFilterMethod == ShadowFilterMethod::Esm || m_shadowFilterMethod == ShadowFilterMethod::EsmPcf);
+        }
+
+        bool DirectionalLightComponentConfig::IsSofteningBoundaryWidthDisabled() const
+        {
+            // softening boundary width is always available with ESM. It controls the width of the blur kernel during the ESM gaussian
+            // blur passes
+            if (!IsEsmDisabled())
+                return false;
+
+            // with PCF, softening boundary width is used with the boundary search method and NOT the bicubic pcf methods
+            return IsPcfBoundarySearchDisabled();
+        }
+
     } // namespace Render
 } // namespace AZ

@@ -97,7 +97,6 @@
 #include <CrySystemBus.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/Jobs/JobManagerBus.h>
-#include <AzFramework/Driller/DrillerConsoleAPI.h>
 
 #if defined(ANDROID)
     #include <AzCore/Android/Utils.h>
@@ -476,7 +475,7 @@ bool CSystem::UnloadDLL(const char* dllName)
 {
     bool isSuccess = false;
 
-    CCryNameCRC key(dllName);
+    AZ::Crc32 key(dllName);
     AZStd::unique_ptr<AZ::DynamicModuleHandle> empty;
     AZStd::unique_ptr<AZ::DynamicModuleHandle>& hModule = stl::find_in_map_ref(m_moduleDLLHandles, key, empty);
     if ((hModule) && (hModule->IsLoaded()))
@@ -1185,7 +1184,7 @@ bool CSystem::Init(const SSystemInitParams& startupParams)
     {
         azConsole->LinkDeferredFunctors(AZ::ConsoleFunctorBase::GetDeferredHead());
     }
-    
+
     if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry)
     {
         AZ::SettingsRegistryInterface::FixedValueString assetPlatform;
@@ -1696,46 +1695,6 @@ void CmdSetAwsLogLevel(IConsoleCmdArgs* pArgs)
     }
 }
 
-void CmdDrillToFile(IConsoleCmdArgs* pArgs)
-{
-    if (azstricmp(pArgs->GetArg(0), "DrillerStop") == 0)
-    {
-        EBUS_EVENT(AzFramework::DrillerConsoleCommandBus, StopDrillerSession, AZ::Crc32("DefaultDrillerSession"));
-    }
-    else
-    {
-        if (pArgs->GetArgCount() > 1)
-        {
-            AZ::Debug::DrillerManager::DrillerListType drillersToEnable;
-            for (int iArg = 1; iArg < pArgs->GetArgCount(); ++iArg)
-            {
-                if (azstricmp(pArgs->GetArg(iArg), "Replica") == 0)
-                {
-                    drillersToEnable.push_back();
-                    drillersToEnable.back().id = AZ::Crc32("ReplicaDriller");
-                }
-                else if (azstricmp(pArgs->GetArg(iArg), "Carrier") == 0)
-                {
-                    drillersToEnable.push_back();
-                    drillersToEnable.back().id = AZ::Crc32("CarrierDriller");
-                }
-                else
-                {
-                    CryLogAlways("Driller %s not supported.", pArgs->GetArg(iArg));
-                }
-            }
-            EBUS_EVENT(AzFramework::DrillerConsoleCommandBus, StartDrillerSession, drillersToEnable, AZ::Crc32("DefaultDrillerSession"));
-        }
-        else
-        {
-            CryLogAlways("Syntax: DrillerStart [Driller1] [Driller2] [...]");
-            CryLogAlways("Supported Drillers:");
-            CryLogAlways("    Carrier");
-            CryLogAlways("    Replica");
-        }
-    }
-}
-
 //////////////////////////////////////////////////////////////////////////
 void CSystem::CreateSystemVars()
 {
@@ -2113,9 +2072,6 @@ void CSystem::CreateSystemVars()
     // Since the UI Canvas Editor is incomplete, we have a variable to enable it.
     // By default it is now enabled. Modify system.cfg or game.cfg to disable it
     REGISTER_INT("sys_enableCanvasEditor", 1, VF_NULL, "Enables the UI Canvas Editor");
-
-    REGISTER_COMMAND_DEV_ONLY("DrillerStart", CmdDrillToFile, VF_DEV_ONLY, "Start a driller capture.");
-    REGISTER_COMMAND_DEV_ONLY("DrillerStop", CmdDrillToFile, VF_DEV_ONLY, "Stop a driller capture.");
 
     REGISTER_COMMAND("sys_SetLogLevel", CmdSetAwsLogLevel, 0, "Set AWS log level [0 - 6].");
 }

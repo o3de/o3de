@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_IEDITOR_H
-#define CRYINCLUDE_EDITOR_IEDITOR_H
 #pragma once
 
 #ifdef PLUGIN_EXPORTS
@@ -25,6 +22,7 @@
 #include <WinWidgetId.h>
 
 #include <AzCore/Component/EntityId.h>
+#include <AzCore/Debug/Budget.h>
 
 class QMenu;
 
@@ -738,4 +736,5 @@ struct IInitializeUIInfo
     virtual void SetInfoText(const char* text) = 0;
 };
 
-#endif // CRYINCLUDE_EDITOR_IEDITOR_H
+AZ_DECLARE_BUDGET(Editor);
+

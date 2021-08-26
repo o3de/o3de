@@ -81,7 +81,7 @@ namespace AZ
                 return ResultCode::InvalidOperation;
             }
 
-            AZ_PROFILE_FUNCTION(AzRender);
+            AZ_PROFILE_FUNCTION(RHI);
             WaitOnCpuInternal();
             return ResultCode::Success;
         }

@@ -115,7 +115,7 @@ namespace UnitTest
                     handled, AzToolsFramework::GetEntityContextId(),
                     &EditorInteractionSystemViewportSelectionRequestBus::Events::InternalHandleMouseViewportInteraction,
                     AzToolsFramework::ViewportInteraction::MouseInteractionEvent(
-                        mouseInteraction, AzToolsFramework::ViewportInteraction::MouseEvent::Down));
+                        mouseInteraction, AzToolsFramework::ViewportInteraction::MouseEvent::Down, /*captured=*/false));
                 return handled;
             }
         }
