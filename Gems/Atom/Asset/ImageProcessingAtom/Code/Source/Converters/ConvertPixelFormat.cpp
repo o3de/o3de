@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/std/time.h>
 
 #include <Processing/ImageFlags.h>
 #include <Processing/ImageObjectImpl.h>
@@ -100,13 +101,13 @@ namespace ImageProcessingAtom
                 const PixelFormatInfo* compressedInfo = CPixelFormats::GetInstance().GetPixelFormatInfo(compressedFmt);
                 if (isSrcUncompressed)
                 {
-                    AZStd::sys_time_t startTime = AZStd::GetTimeUTCMilliSecond();
+                    AZ::u64 startTime = AZStd::GetTimeUTCMilliSecond();
                     dstImage = compressor->CompressImage(Get(), fmtDst, &m_compressOption);
-                    AZStd::sys_time_t endTime = AZStd::GetTimeUTCMilliSecond();
-                    [[maybe_unused]] float processTime = static_cast<double>(endTime - startTime) / 1000.0;
+                    AZ::u64 endTime = AZStd::GetTimeUTCMilliSecond();
+                    [[maybe_unused]] double processTime = static_cast<double>(endTime - startTime) / 1000.0;
                     if (dstImage)
                     {
-                        AZ_TracePrintf("Image Processing", "Image [%dx%d] was compressed to [%s] format by [%s] in %f seconds\n",
+                        AZ_TracePrintf("Image Processing", "Image [%dx%d] was compressed to [%s] format by [%s] in %.3f seconds\n",
                             Get()->GetWidth(0), Get()->GetHeight(0), compressedInfo->szName, compressor->GetName(), processTime);
                     }
                 }
