@@ -107,8 +107,6 @@ namespace AZ
                 //! Hair render object for connecting to the skeleton and connecting to the feature processor.
                 Data::Instance<HairRenderObject> m_renderObject;     // unique to this component - this is the data source.
 
-                AZStd::mutex m_mutex;
-
                 EntityId m_entityId;
 
                 // Store a cache of the bone index lookup we generated during the creation of hair object.

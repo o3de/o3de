@@ -265,22 +265,12 @@ namespace AMD
     }
 
     TressFXAsset::TressFXAsset()
-        : m_positions(NULL)
-        , m_strandUV(NULL)
-        , m_tangents(NULL)
-        , m_followRootOffsets(NULL)
-        , m_strandTypes(NULL)
-        , m_thicknessCoeffs(NULL)
-        , m_restLengths(NULL)
-        , m_triangleIndices(NULL)
-        , m_boneSkinningData(NULL)
-        , m_numTotalStrands(0)
+        : m_numTotalStrands(0)
         , m_numTotalVertices(0)
         , m_numVerticesPerStrand(0)
         , m_numGuideStrands(0)
         , m_numGuideVertices(0)
         , m_numFollowStrandsPerGuide(0)
-
     {
     }
 

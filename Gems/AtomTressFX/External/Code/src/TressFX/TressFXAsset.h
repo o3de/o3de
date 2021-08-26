@@ -26,11 +26,7 @@
 //
 #pragma once
 
-//#ifndef AMD_TRESSFX_ASSET_H
-//#define AMD_TRESSFX_ASSET_H
-
 #include <TressFX/AMD_Types.h>
-//#include <TressFX/TressFXCommon.h>
 #include <TressFX/AMD_TressFX.h>
 #include <Math/Transform.h>
 
@@ -39,6 +35,7 @@
 
 #include <assert.h>
 #include <vector>
+#include <unordered_map>
 #include <string>
 
 #include <AzCore/std/containers/unordered_map.h>
@@ -76,9 +73,9 @@ namespace AMD
     #define EI_Read(ptr, size, pFile) fread(ptr, size, 1, pFile)
     #define EI_Seek(pFile, offset) fseek(pFile, offset, SEEK_SET)
 
-    using LocalToGlobalBoneIndexLookup = AZStd::vector<uint32>; // Index -> TressFX Bone Index (Local set of bones)
+    using LocalToGlobalBoneIndexLookup = std::vector<uint32>; // Index -> TressFX Bone Index (Local set of bones)
                                                                 // Value -> EmotionFX Bone Index (Global set of bones)
-    using BoneNameToIndexMap = AZStd::unordered_map<std::string, int>;
+    using BoneNameToIndexMap = std::unordered_map<std::string, int>;
 
     class TressFXCollisionMesh
     {
@@ -129,12 +126,12 @@ namespace AMD
 
         // Currently we only deal with a single collision mesh assumed to be the skinned mesh.
         // This might not always be the case and a new scheme might be required.
-        std::unique_ptr<TressFXCollisionMesh> m_collisionMesh = nullptr;
+        std::unique_ptr<TressFXCollisionMesh> m_collisionMesh;
 
         // Loads *.tfx hair data 
         bool LoadHairData(FILE* ioObject);
 
-        // Generates follow hairs procedually.  If numFollowHairsPerGuideHair is zero, then this function won't do anything. 
+        // Generates follow hairs procedurally.  If numFollowHairsPerGuideHair is zero, then this function won't do anything. 
         bool GenerateFollowHairs(int numFollowHairsPerGuideHair = 0, float tipSeparationFactor = 0, float maxRadiusAroundGuideHair = 0);
 
         // Computes various parameters for simulation and rendering. After calling this function, data is ready to be passed to hair object. 
@@ -149,12 +146,12 @@ namespace AMD
         bool LoadBoneData(FILE* ioObject, std::vector<int32_t> skeletonBoneIndices);
 
         // This function load the combined hair data (.tfxhair file) generated in the cache using the custom builder.
-        // Inside the function it will call loadhairdata, loadboneData and loadcollisiondata function. The TressFX asset
+        // Inside the function it will call LoadHairData, LoadBoneData and LoadCollisionData function. The TressFX asset
         // will be fully populated after this function return true.
         bool LoadCombinedHairData(AZ::Data::AssetDataStream* stream);
 
         // Similar function to the above but read the assetDataStream instead. Those function will eventually replacing their counterpart.
-        // Notice: The loadCombineHairData will control the seek position of the stream, which guranteed those stream will be at the correct
+        // Notice: The loadCombineHairData will control the seek position of the stream, which guaranteed those stream will be at the correct
         // position when entering those function.
         bool LoadHairData(AZ::Data::AssetDataStream* stream);
         void GetBonesNames(AZ::Data::AssetDataStream* stream, std::vector<std::string>& boneNames);
