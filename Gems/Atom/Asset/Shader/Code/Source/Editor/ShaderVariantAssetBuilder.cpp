@@ -743,7 +743,6 @@ namespace AZ
 
         void ShaderVariantAssetBuilder::ProcessShaderVariantJob(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const
         {
-            const AZStd::sys_time_t startTime = AZStd::GetTimeNowTicks();
             AssetBuilderSDK::JobCancelListener jobCancelListener(request.m_jobId);
 
             AZStd::string fullPath;
@@ -777,6 +776,9 @@ namespace AZ
                 response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
                 return;
             }
+            
+            const AZStd::sys_time_t shaderVariantAssetBuildTimestamp = AZStd::GetTimeNowMicroSecond();
+            AZ_TracePrintf(ShaderVariantAssetBuilderName, "Build Timestamp %zu", shaderVariantAssetBuildTimestamp);
 
             auto supervariantList = ShaderBuilderUtility::GetSupervariantListFromShaderSourceData(shaderSourceDescriptor);
 
@@ -911,7 +913,7 @@ namespace AZ
                     ShaderVariantCreationContext shaderVariantCreationContext =
                     {
                         *shaderPlatformInterface, request.m_platformInfo, buildOptions.m_compilerArguments, request.m_tempDirPath,
-                        startTime,
+                        shaderVariantAssetBuildTimestamp,
                         shaderSourceDescriptor,
                         *shaderOptionGroupLayout.get(),
                         shaderEntryPoints,
