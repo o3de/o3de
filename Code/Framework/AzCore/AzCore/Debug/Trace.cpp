@@ -25,6 +25,7 @@
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/Module/Environment.h>
 #include <AzCore/Console/IConsole.h>
+#include <AzCore/std/chrono/chrono.h>
 
 namespace AZ 
 {
