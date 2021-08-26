@@ -22,6 +22,7 @@ namespace AZ
 #if defined(AZ_ENABLE_DEBUG_TOOLS)
     LONG WINAPI ExceptionHandler(PEXCEPTION_POINTERS ExceptionInfo);
     LPTOP_LEVEL_EXCEPTION_FILTER g_previousExceptionHandler = nullptr;
+    bool g_coInitialized = false;
 #endif
 
     constexpr int g_maxMessageLength = 4096;
@@ -47,6 +48,45 @@ namespace AZ
                     ::SetUnhandledExceptionFilter(g_previousExceptionHandler);
                     g_previousExceptionHandler = NULL;
                 }
+            }
+
+            bool AttachDebugger()
+            {
+                if (IsDebuggerPresent())
+                {
+                    return true;
+                }
+
+                // Launch vsjitdebugger.exe, this app is always present in System32 folder
+                // with an installation of any version of visual studio.
+                // It will open a debugging dialog asking the user what debugger to use
+
+                STARTUPINFOA startupInfo = {0};
+                startupInfo.cb = sizeof(startupInfo);
+                PROCESS_INFORMATION processInfo = {0};
+
+                char cmdline[MAX_PATH];
+                azsprintf(cmdline, "vsjitdebugger.exe -p %i", ::GetCurrentProcessId());
+                bool success = ::CreateProcessA(
+                    NULL,           // No module name (use command line)
+                    cmdline,        // Command line
+                    NULL,           // Process handle not inheritable
+                    NULL,           // Thread handle not inheritable
+                    FALSE,          // No handle inheritance
+                    0,              // No creation flags
+                    NULL,           // Use parent's environment block
+                    NULL,           // Use parent's starting directory 
+                    &startupInfo,   // Pointer to STARTUPINFO structure
+                    &processInfo);  // Pointer to PROCESS_INFORMATION structure
+
+                if (success)
+                {
+                    ::WaitForSingleObject(processInfo.hProcess, INFINITE);
+                    ::CloseHandle(processInfo.hProcess);
+                    ::CloseHandle(processInfo.hThread);
+                    return true;
+                }
+                return false;
             }
 
             void DebugBreak()

@@ -60,6 +60,12 @@ namespace AZ
                 return s_debuggerDetected;
             }
 
+            bool AttachDebugger()
+            {
+                // Not supported yet
+                return false;
+            }
+
             void HandleExceptions(bool)
             {}
 
