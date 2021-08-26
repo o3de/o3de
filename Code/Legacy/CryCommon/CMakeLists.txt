@@ -13,14 +13,14 @@ ly_add_target(
     NAMESPACE Legacy
     FILES_CMAKE
         crycommon_files.cmake
-        ${pal_dir}/crycommon_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
+        ${pal_dir}/crycommon_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake # Required for restricted platforms
     PLATFORM_INCLUDE_FILES
-        ${pal_dir}/crycommon_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
+        ${pal_dir}/crycommon_${PAL_PLATFORM_NAME_LOWERCASE}.cmake # Required for restricted platforms
     INCLUDE_DIRECTORIES
         PUBLIC
             .         # Lots of code without CryCommon/
             ..        # Dangerous since exports Legacy's path (client code can do CrySystem/ without depending on that target)
-            ${pal_dir}
+            ${pal_dir} # Required for restricted platforms
     BUILD_DEPENDENCIES
         PUBLIC
             AZ::AzCore
