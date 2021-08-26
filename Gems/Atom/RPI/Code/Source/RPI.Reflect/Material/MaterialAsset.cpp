@@ -114,7 +114,7 @@ namespace AZ
 
         bool MaterialAsset::PostLoadInit()
         {
-            if (!m_materialTypeAsset.Get())
+            if (!(m_materialTypeAsset.GetStatus() == AssetStatus::Ready))
             {
                 AssetInitBus::Handler::BusDisconnect();
 
@@ -123,6 +123,12 @@ namespace AZ
             }
             else
             {
+                // Realign property values to MaterialPropertyLayout if m_propertyNames is populated.
+                if (!m_propertyNames.empty())
+                {
+                    RealignPropertyValues();
+                }
+
                 Data::AssetBus::Handler::BusConnect(m_materialTypeAsset.GetId());
                 MaterialReloadNotificationBus::Handler::BusConnect(m_materialTypeAsset.GetId());
                 
@@ -177,12 +183,11 @@ namespace AZ
 
                 // Notify interested parties that this MaterialAsset is changed and may require other data to reinitialize as well
                 MaterialReloadNotificationBus::Event(GetId(), &MaterialReloadNotifications::OnMaterialAssetReinitialized, Data::Asset<MaterialAsset>{this, AZ::Data::AssetLoadBehavior::PreLoad});
-            }
 
-            // Realign property values to MaterialPropertyLayout if m_propertyNames is populated.
-            if (!m_propertyNames.empty())
-            {
-                RealignPropertyValues();
+                if (!m_propertyNames.empty())
+                {
+                    RealignPropertyValues();
+                }
             }
         }
 
