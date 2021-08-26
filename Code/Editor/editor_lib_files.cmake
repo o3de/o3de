@@ -790,6 +790,9 @@ set(FILES
     EditorViewportSettings.h
     EditorViewportCamera.cpp
     EditorViewportCamera.h
+    EditorModularViewportCameraComposer.cpp
+    EditorModularViewportCameraComposer.h
+    EditorModularViewportCameraComposerBus.h
     ViewportManipulatorController.cpp
     ViewportManipulatorController.h
     TopRendererWnd.cpp

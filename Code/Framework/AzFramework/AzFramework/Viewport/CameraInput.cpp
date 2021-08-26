@@ -332,6 +332,11 @@ namespace AzFramework
         return nextCamera;
     }
 
+    void RotateCameraInput::SetRotateInputChannelId(const InputChannelId& rotateChannelId)
+    {
+        m_rotateChannelId = rotateChannelId;
+    }
+
     PanCameraInput::PanCameraInput(const InputChannelId& panChannelId, PanAxesFn panAxesFn)
         : m_panAxesFn(AZStd::move(panAxesFn))
         , m_panChannelId(panChannelId)
@@ -379,35 +384,40 @@ namespace AzFramework
         return nextCamera;
     }
 
-    TranslateCameraInput::TranslationType TranslateCameraInput::TranslationFromKey(
-        const InputChannelId& channelId, const TranslateCameraInputChannels& translateCameraInputChannels)
+    void PanCameraInput::SetPanInputChannelId(const InputChannelId& panChannelId)
     {
-        if (channelId == translateCameraInputChannels.m_forwardChannelId)
+        m_panChannelId = panChannelId;
+    }
+
+    TranslateCameraInput::TranslationType TranslateCameraInput::TranslationFromKey(
+        const InputChannelId& channelId, const TranslateCameraInputChannelIds& translateCameraInputChannelIds)
+    {
+        if (channelId == translateCameraInputChannelIds.m_forwardChannelId)
         {
             return TranslationType::Forward;
         }
 
-        if (channelId == translateCameraInputChannels.m_backwardChannelId)
+        if (channelId == translateCameraInputChannelIds.m_backwardChannelId)
         {
             return TranslationType::Backward;
         }
 
-        if (channelId == translateCameraInputChannels.m_leftChannelId)
+        if (channelId == translateCameraInputChannelIds.m_leftChannelId)
         {
             return TranslationType::Left;
         }
 
-        if (channelId == translateCameraInputChannels.m_rightChannelId)
+        if (channelId == translateCameraInputChannelIds.m_rightChannelId)
         {
             return TranslationType::Right;
         }
 
-        if (channelId == translateCameraInputChannels.m_downChannelId)
+        if (channelId == translateCameraInputChannelIds.m_downChannelId)
         {
             return TranslationType::Down;
         }
 
-        if (channelId == translateCameraInputChannels.m_upChannelId)
+        if (channelId == translateCameraInputChannelIds.m_upChannelId)
         {
             return TranslationType::Up;
         }
@@ -416,9 +426,9 @@ namespace AzFramework
     }
 
     TranslateCameraInput::TranslateCameraInput(
-        TranslationAxesFn translationAxesFn, const TranslateCameraInputChannels& translateCameraInputChannels)
+        TranslationAxesFn translationAxesFn, const TranslateCameraInputChannelIds& translateCameraInputChannelIds)
         : m_translationAxesFn(AZStd::move(translationAxesFn))
-        , m_translateCameraInputChannels(translateCameraInputChannels)
+        , m_translateCameraInputChannelIds(translateCameraInputChannelIds)
     {
         m_translateSpeedFn = []() constexpr
         {
@@ -438,13 +448,13 @@ namespace AzFramework
         {
             if (input->m_state == InputChannel::State::Began)
             {
-                m_translation |= TranslationFromKey(input->m_channelId, m_translateCameraInputChannels);
+                m_translation |= TranslationFromKey(input->m_channelId, m_translateCameraInputChannelIds);
                 if (m_translation != TranslationType::Nil)
                 {
                     BeginActivation();
                 }
 
-                if (input->m_channelId == m_translateCameraInputChannels.m_boostChannelId)
+                if (input->m_channelId == m_translateCameraInputChannelIds.m_boostChannelId)
                 {
                     m_boost = true;
                 }
@@ -452,12 +462,12 @@ namespace AzFramework
             // ensure we don't process end events in the idle state
             else if (input->m_state == InputChannel::State::Ended && !Idle())
             {
-                m_translation &= ~(TranslationFromKey(input->m_channelId, m_translateCameraInputChannels));
+                m_translation &= ~(TranslationFromKey(input->m_channelId, m_translateCameraInputChannelIds));
                 if (m_translation == TranslationType::Nil)
                 {
                     EndActivation();
                 }
-                if (input->m_channelId == m_translateCameraInputChannels.m_boostChannelId)
+                if (input->m_channelId == m_translateCameraInputChannelIds.m_boostChannelId)
                 {
                     m_boost = false;
                 }
@@ -527,6 +537,11 @@ namespace AzFramework
     {
         m_translation = TranslationType::Nil;
         m_boost = false;
+    }
+
+    void TranslateCameraInput::SetTranslateCameraInputChannelIds(const TranslateCameraInputChannelIds& translateCameraInputChannelIds)
+    {
+        m_translateCameraInputChannelIds = translateCameraInputChannelIds;
     }
 
     OrbitCameraInput::OrbitCameraInput(const InputChannelId& orbitChannelId)
@@ -620,6 +635,11 @@ namespace AzFramework
         return nextCamera;
     }
 
+    void OrbitCameraInput::SetOrbitInputChannelId(const InputChannelId& orbitChanneId)
+    {
+        m_orbitChannelId = orbitChanneId;
+    }
+
     OrbitDollyScrollCameraInput::OrbitDollyScrollCameraInput()
     {
         m_scrollSpeedFn = []() constexpr
@@ -676,6 +696,11 @@ namespace AzFramework
         Camera nextCamera = targetCamera;
         nextCamera.m_lookDist = AZ::GetMin(nextCamera.m_lookDist + float(cursorDelta.m_y) * m_cursorSpeedFn(), 0.0f);
         return nextCamera;
+    }
+
+    void OrbitDollyCursorMoveCameraInput::SetDollyInputChannelId(const InputChannelId& dollyChannelId)
+    {
+        m_dollyChannelId = dollyChannelId;
     }
 
     ScrollTranslationCameraInput::ScrollTranslationCameraInput()
