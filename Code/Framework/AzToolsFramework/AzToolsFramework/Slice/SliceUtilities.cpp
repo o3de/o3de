@@ -461,7 +461,7 @@ namespace AzToolsFramework
                     msgBox.setStandardButtons(QMessageBox::Cancel);
                     msgBox.setDefaultButton(QMessageBox::Yes);
                     msgBox.setDetailedText(message.c_str());
-                    const int response = msgBox.exec();
+                    msgBox.exec();
 
                     if (msgBox.clickedButton() == moveButton)
                     {
