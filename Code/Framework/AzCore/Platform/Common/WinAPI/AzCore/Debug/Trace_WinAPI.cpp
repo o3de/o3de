@@ -60,13 +60,13 @@ namespace AZ
                 // with an installation of any version of visual studio.
                 // It will open a debugging dialog asking the user what debugger to use
 
-                STARTUPINFOA startupInfo = {0};
+                STARTUPINFOW startupInfo = {0};
                 startupInfo.cb = sizeof(startupInfo);
                 PROCESS_INFORMATION processInfo = {0};
 
-                char cmdline[MAX_PATH];
-                azsprintf(cmdline, "vsjitdebugger.exe -p %li", ::GetCurrentProcessId());
-                bool success = ::CreateProcessA(
+                wchar_t cmdline[MAX_PATH];
+                swprintf_s(cmdline, L"vsjitdebugger.exe -p %li", ::GetCurrentProcessId());
+                bool success = ::CreateProcessW(
                     NULL,           // No module name (use command line)
                     cmdline,        // Command line
                     NULL,           // Process handle not inheritable
