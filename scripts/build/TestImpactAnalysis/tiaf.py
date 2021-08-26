@@ -50,7 +50,7 @@ class TestImpact:
                     logger.warning(f"Could not find TIAF binary at location {self._tiaf_bin}, TIAF will be turned off.")
                     self._use_test_impact_analysis = False
                 else:
-                    logger.info(f"Runtime binary found at location {self._tiaf_bin}")
+                    logger.info(f"Runtime binary found at location '{self._tiaf_bin}'")
 
                 # Workspaces
                 self._active_workspace = self._config["workspace"]["active"]["root"]
@@ -61,31 +61,39 @@ class TestImpact:
             logger.error(f"The config does not contain the key {str(e)}.")
             return
 
-    def _attempt_to_generate_change_list(self, last_commit_hash, instance_id: str):
+    def _attempt_to_generate_change_list(self):
         """
         Attempts to determine the change list bewteen now and the last tiaf run (if any).
-
-        @param last_commit_hash: The commit hash of the last TIAF run.
-        @param instance_id:      The unique id to derive the change list file name from.
         """
 
         self._has_change_list = False
         self._change_list_path = None
 
         # Check whether or not a previous commit hash exists (no hash is not a failure)
-        self._src_commit = last_commit_hash
         if self._src_commit:
-            if self._repo.is_descendent(self._src_commit, self._dst_commit) == False:
-                logger.info(f"Source commit '{self._src_commit}' and destination commit '{self._dst_commit}' are not related.")
-                return
-            self._commit_distance = self._repo.commit_distance(self._src_commit, self._dst_commit)
-            diff_path = pathlib.Path(pathlib.PurePath(self._temp_workspace).joinpath(f"changelist.{instance_id}.diff"))
+            if self._is_source_of_truth_branch:
+                # For branch builds, the dst commit must be descended from the src commit
+                if not self._repo.is_descendent(self._src_commit, self._dst_commit):
+                    logger.error(f"Source commit '{self._src_commit}' and destination commit '{self._dst_commit}' must be related for branch builds.")
+                    return
+
+                # Calculate the distance (in commits) between the src and dst commits
+                self._commit_distance = self._repo.commit_distance(self._src_commit, self._dst_commit)
+                logger.info(f"The distance between '{self._src_commit}' and '{self._dst_commit}' commits is '{self._commit_distance}' commits.")
+                multi_branch = False
+            else:
+                # For pull request builds, the src and dst commits are on different branches so we need to ensure a common ancestor is used for the diff
+                multi_branch = True
+
             try:
-                self._repo.create_diff_file(self._src_commit, self._dst_commit, diff_path)
+                # Attempt to generate a diff between the src and dst commits
+                logger.info(f"Source '{self._src_commit}' and destination '{self._dst_commit}' will be diff'd.")
+                diff_path = pathlib.Path(pathlib.PurePath(self._temp_workspace).joinpath(f"changelist.{self._instance_id}.diff"))
+                self._repo.create_diff_file(self._src_commit, self._dst_commit, diff_path, multi_branch)
             except RuntimeError as e:
                 logger.error(e)
                 return
-                
+
             # A diff was generated, attempt to parse the diff and construct the change list
             logger.info(f"Generated diff between commits '{self._src_commit}' and '{self._dst_commit}': '{diff_path}'.") 
             with open(diff_path, "r") as diff_data:
@@ -112,7 +120,7 @@ class TestImpact:
 
             # Serialize the change list to the JSON format the test impact analysis runtime expects
             change_list_json = json.dumps(self._change_list, indent = 4)
-            change_list_path = pathlib.PurePath(self._temp_workspace).joinpath(f"changelist.{instance_id}.json")
+            change_list_path = pathlib.PurePath(self._temp_workspace).joinpath(f"changelist.{self._instance_id}.json")
             f = open(change_list_path, "w")
             f.write(change_list_json)
             f.close()
@@ -153,7 +161,7 @@ class TestImpact:
         result["change_list"] = self._change_list
         return result
 
-    def run(self, commit: str, src_branch: str, dst_branch: str, s3_bucket: str, suite: str, test_failure_policy: str, safe_mode: bool, test_timeout: int, global_timeout: int):
+    def run(self, commit: str, src_branch: str, dst_branch: str, s3_bucket: str, s3_top_level_dir: str, suite: str, test_failure_policy: str, safe_mode: bool, test_timeout: int, global_timeout: int):
         """
         Determins the type of sequence to run based on the commit, source branch and test branch before running the
         sequence with the specified values.
@@ -162,6 +170,7 @@ class TestImpact:
         @param src_branch:          If not equal to dst_branch, the branch that is being built.
         @param dst_branch:          If not equal to src_branch, the destination branch for the PR being built.
         @param s3_bucket:           Location of S3 bucket to use for persistent storage, otherwise local disk storage will be used.
+        @param s3_top_level_dir:    Top level directory to use in the S3 bucket.
         @param suite:               Test suite to run.
         @param test_failure_policy: Test failure policy for regular and test impact sequences (ignored when seeding).
         @param safe_mode:           Flag to run impact analysis tests in safe mode (ignored when seeding).
@@ -189,7 +198,7 @@ class TestImpact:
             self._is_source_of_truth_branch = True
             self._source_of_truth_branch = self._src_branch
         else:
-            # PR builds use their destination as the source of truth and never update the coverage data for the source of truth
+            # Pull request builds use their destination as the source of truth and never update the coverage data for the source of truth
             self._is_source_of_truth_branch = False
             self._source_of_truth_branch = self._dst_branch
 
@@ -203,24 +212,46 @@ class TestImpact:
         self._commit_distance = None
 
         # Generate a unique ID to be used as part of the file name for required runtime dynamic artifacts.
-        instance_id = uuid.uuid4().hex
+        self._instance_id = uuid.uuid4().hex
         
         if self._use_test_impact_analysis:
             logger.info("Test impact analysis is enabled.")
             try:
                 # Persistent storage location
                 if s3_bucket:
-                    persistent_storage = PersistentStorageS3(self._config, suite, s3_bucket, self._source_of_truth_branch)
+                    persistent_storage = PersistentStorageS3(self._config, suite, self._dst_commit, s3_bucket, s3_top_level_dir, self._source_of_truth_branch)
                 else:
-                    persistent_storage = PersistentStorageLocal(self._config, suite)
+                    persistent_storage = PersistentStorageLocal(self._config, suite, self._dst_commit)
             except SystemError as e:
                 logger.warning(f"The persistent storage encountered an irrecoverable error, test impact analysis will be disabled: '{e}'")
                 persistent_storage = None
 
             if persistent_storage:
+                
+                # Flag for corner case where:
+                # 1. TIAF was already run previously for this commit.
+                # 2. There was no last commit hash when TIAF last ran on this commit (due to no coverage data existing yet for this branch)
+                # 3. TIAF has not been run on any other commits between the run for this commit and the last run for this commit.
+                # The above results in TIAF being stuck in a state of generating an empty change list (and thus doing no work until another
+                # commit comes in) which is problematic if the commit needs to be re-run for whatever reason so in these conditions we revert
+                # back to a regular test run until another commit comes in
+                can_rerun_with_instrumentation = True
+
                 if persistent_storage.has_historic_data:
                     logger.info("Historic data found.")
-                    self._attempt_to_generate_change_list(persistent_storage.last_commit_hash, instance_id)
+                    self._src_commit = persistent_storage.last_commit_hash
+
+                    # Check to see if this is a re-run for this commit before any other changes have come in
+                    if persistent_storage.is_repeat_sequence:
+                        if persistent_storage.can_rerun_sequence:
+                            logger.info(f"This sequence is being re-run before any other changes have come in so the last commit '{persistent_storage.this_commit_last_commit_hash}' used for the previous sequence will be used instead.")
+                            self._src_commit = persistent_storage.this_commit_last_commit_hash
+                        else:
+                            logger.info(f"This sequence is being re-run before any other changes have come in but there is no useful historic data. A regular sequence will be performed instead.")
+                            persistent_storage = None
+                            can_rerun_with_instrumentation = False
+                    else:
+                        self._attempt_to_generate_change_list()
                 else:
                     logger.info("No historic data found.")
                     
@@ -246,7 +277,7 @@ class TestImpact:
                     args.append(f"--changelist={self._change_list_path}")
                     logger.info(f"Change list is set to '{self._change_list_path}'.")
                 else:
-                    if self._is_source_of_truth_branch:
+                    if self._is_source_of_truth_branch and can_rerun_with_instrumentation:
                         # Use seed sequence (instrumented all tests) for coverage updating branches so we can generate the coverage bed for future sequences
                         sequence_type = "seed"
                         # We always continue after test failures when seeding to ensure we capture the coverage for all test targets
@@ -271,7 +302,7 @@ class TestImpact:
         logger.info(f"Test failure policy is set to '{test_failure_policy}'.")
 
         # Sequence report
-        report_file = pathlib.PurePath(self._temp_workspace).joinpath(f"report.{instance_id}.json")
+        report_file = pathlib.PurePath(self._temp_workspace).joinpath(f"report.{self._instance_id}.json")
         args.append(f"--report={report_file}")
         logger.info(f"Sequence report file is set to '{report_file}'.")
 
@@ -292,14 +323,17 @@ class TestImpact:
         logger.info(f"Args: {unpacked_args}")
         runtime_result = subprocess.run([str(self._tiaf_bin)] + args)
         report = None
-
         # If the sequence completed (with or without failures) we will update the historical meta-data
         if runtime_result.returncode == 0 or runtime_result.returncode == 7:
             logger.info("Test impact analysis runtime returned successfully.")
-            if self._is_source_of_truth_branch and persistent_storage is not None:
-                persistent_storage.update_and_store_historic_data(self._dst_commit)
+
+            # Get the sequence report the runtime generated
             with open(report_file) as json_file:
                 report = json.load(json_file)
+
+            # Attempt to store the historic data for this branch and sequence
+            if self._is_source_of_truth_branch and persistent_storage is not None:
+                persistent_storage.update_and_store_historic_data()
         else:
             logger.error(f"The test impact analysis runtime returned with error: '{runtime_result.returncode}'.")
     

@@ -74,6 +74,20 @@ namespace AZ
         {
         }
 
+        AZStd::size_t CachedTimeRegion::GroupRegionName::Hash::operator()(const CachedTimeRegion::GroupRegionName& name) const
+        {
+            AZStd::size_t seed = 0;
+            AZStd::hash_combine(seed, name.m_groupName);
+            AZStd::hash_combine(seed, name.m_regionName);
+            return seed;
+        }
+
+        bool CachedTimeRegion::GroupRegionName::operator==(const GroupRegionName& other) const
+        {
+            return (m_groupName == other.m_groupName) && (m_regionName == other.m_regionName);
+        }
+
+
         // --- CpuProfilerImpl ---
 
         void CpuProfilerImpl::Init()
@@ -218,6 +232,19 @@ namespace AZ
             return m_enabled;
         }
 
+        const CachedTimeRegion::GroupRegionName& CpuProfilerImpl::InsertDynamicName(const char* groupName, const AZStd::string& regionName)
+        {
+            AZStd::scoped_lock lock(m_dynamicNameMutex);
+            AZ_Warning("CpuProfiler", m_regionNameStringPool.size() < MaxRegionStringPoolSize,
+                "Stored dynamic region names are accumulating. Consider removing a AZ_ATOM_PROFILE_DYNAMIC invocation.");
+            auto [regionNameItr, wasRegionInserted] =  m_regionNameStringPool.insert(regionName);
+
+            CachedTimeRegion::GroupRegionName newGroupRegionName(groupName, regionNameItr->c_str());
+            auto [groupRegionNameItr, wasGroupRegionInserted] = m_dynamicGroupRegionNamePool.insert(newGroupRegionName);
+
+            return *groupRegionNameItr;
+        }
+
         void CpuProfilerImpl::OnSystemTick()
         {
             if (!m_enabled)
@@ -293,7 +320,7 @@ namespace AZ
                 m_cachedTimeRegions.clear();
             }
 
-            timeRegion.m_stackDepth = m_stackLevel;
+            timeRegion.m_stackDepth = static_cast<uint16_t>(m_stackLevel);
 
             AZ_Assert(m_timeRegionStack.size() < TimeRegionStackSize, "Adding too many time regions to the stack. Increase the size of TimeRegionStackSize.");
             m_timeRegionStack.push_back(&timeRegion);
@@ -382,5 +409,67 @@ namespace AZ
                 m_cachedTimeRegionMutex.unlock();
             }
         }
-    }
-}
+
+        // --- CpuProfilingStatisticsSerializer ---
+
+        CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializer(const AZStd::ring_buffer<RHI::CpuProfiler::TimeRegionMap>& continuousData)
+        {
+            // Create serializable entries
+            for (const auto& timeRegionMap : continuousData)
+            {
+                for (const auto& [threadId, regionMap] : timeRegionMap)
+                {
+                    for (const auto& [regionName, regionVec] : regionMap)
+                    {
+                        for (const auto& region : regionVec)
+                        {
+                            m_cpuProfilingStatisticsSerializerEntries.emplace_back(region, threadId);
+                        }
+                    }
+                }
+            }
+        }
+
+        void CpuProfilingStatisticsSerializer::Reflect(AZ::ReflectContext* context)
+        {
+            if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+            {
+                serializeContext->Class<CpuProfilingStatisticsSerializer>()
+                    ->Version(1)
+                    ->Field("cpuProfilingStatisticsSerializerEntries", &CpuProfilingStatisticsSerializer::m_cpuProfilingStatisticsSerializerEntries)
+                    ;
+            }
+
+            CpuProfilingStatisticsSerializerEntry::Reflect(context);
+        }
+
+        // --- CpuProfilingStatisticsSerializerEntry ---
+
+        CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializerEntry::CpuProfilingStatisticsSerializerEntry(
+            const RHI::CachedTimeRegion& cachedTimeRegion, AZStd::thread_id threadId)
+        {
+            m_groupName = cachedTimeRegion.m_groupRegionName->m_groupName;
+            m_regionName = cachedTimeRegion.m_groupRegionName->m_regionName;
+            m_stackDepth = cachedTimeRegion.m_stackDepth;
+            m_startTick = cachedTimeRegion.m_startTick;
+            m_endTick = cachedTimeRegion.m_endTick;
+            m_threadId = AZStd::hash<AZStd::thread_id>{}(threadId);
+        }
+
+        void CpuProfilingStatisticsSerializer::CpuProfilingStatisticsSerializerEntry::Reflect(AZ::ReflectContext* context)
+        {
+            if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+            {
+                serializeContext->Class<CpuProfilingStatisticsSerializerEntry>()
+                    ->Version(1)
+                    ->Field("groupName", &CpuProfilingStatisticsSerializerEntry::m_groupName)
+                    ->Field("regionName", &CpuProfilingStatisticsSerializerEntry::m_regionName)
+                    ->Field("stackDepth", &CpuProfilingStatisticsSerializerEntry::m_stackDepth)
+                    ->Field("startTick", &CpuProfilingStatisticsSerializerEntry::m_startTick)
+                    ->Field("endTick", &CpuProfilingStatisticsSerializerEntry::m_endTick)
+                    ->Field("threadId", &CpuProfilingStatisticsSerializerEntry::m_threadId)
+                    ;
+            }
+        }
+    } // namespace RHI
+} // namespace AZ

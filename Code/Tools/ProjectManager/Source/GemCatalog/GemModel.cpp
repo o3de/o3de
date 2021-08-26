@@ -8,6 +8,7 @@
 
 #include <AzCore/std/string/string.h>
 #include <GemCatalog/GemModel.h>
+#include <AzCore/Casting/numeric_cast.h>
 
 namespace O3DE::ProjectManager
 {
@@ -29,6 +30,7 @@ namespace O3DE::ProjectManager
         item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
 
         item->setData(gemInfo.m_name, RoleName);
+        item->setData(gemInfo.m_displayName, RoleDisplayName);
         item->setData(gemInfo.m_creator, RoleCreator);
         item->setData(gemInfo.m_gemOrigin, RoleGemOrigin);
         item->setData(aznumeric_cast<int>(gemInfo.m_platforms), RolePlatforms);
@@ -61,6 +63,20 @@ namespace O3DE::ProjectManager
     QString GemModel::GetName(const QModelIndex& modelIndex)
     {
         return modelIndex.data(RoleName).toString();
+    }
+
+    QString GemModel::GetDisplayName(const QModelIndex& modelIndex)
+    {
+        QString displayName = modelIndex.data(RoleDisplayName).toString();
+
+        if (displayName.isEmpty())
+        {
+            return GetName(modelIndex);
+        }
+        else
+        {
+            return displayName;
+        }
     }
 
     QString GemModel::GetCreator(const QModelIndex& modelIndex)
@@ -116,7 +132,7 @@ namespace O3DE::ProjectManager
             QModelIndex modelIndex = FindIndexByNameString(dependingGemString);
             if (modelIndex.isValid())
             {
-                dependingGemString = GetName(modelIndex);
+                dependingGemString = GetDisplayName(modelIndex);
             }
         }
     }

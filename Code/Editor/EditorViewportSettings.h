@@ -80,6 +80,15 @@ namespace SandboxEditor
     SANDBOX_API float CameraTranslateSmoothness();
     SANDBOX_API void SetCameraTranslateSmoothness(float smoothness);
 
+    SANDBOX_API bool CameraRotateSmoothingEnabled();
+    SANDBOX_API void SetCameraRotateSmoothingEnabled(bool enabled);
+
+    SANDBOX_API bool CameraTranslateSmoothingEnabled();
+    SANDBOX_API void SetCameraTranslateSmoothingEnabled(bool enabled);
+
+    SANDBOX_API bool CameraCaptureCursorForLook();
+    SANDBOX_API void SetCameraCaptureCursorForLook(bool capture);
+
     SANDBOX_API AzFramework::InputChannelId CameraTranslateForwardChannelId();
     SANDBOX_API void SetCameraTranslateForwardChannelId(AZStd::string_view cameraTranslateForwardId);
 
@@ -118,8 +127,4 @@ namespace SandboxEditor
 
     SANDBOX_API AzFramework::InputChannelId CameraOrbitPanChannelId();
     SANDBOX_API void SetCameraOrbitPanChannelId(AZStd::string_view cameraOrbitPanId);
-
-    //! Return if the new editor camera system is enabled or not.
-    //! @note This is implemented in EditorViewportWidget.cpp
-    SANDBOX_API bool UsingNewCameraSystem();
 } // namespace SandboxEditor

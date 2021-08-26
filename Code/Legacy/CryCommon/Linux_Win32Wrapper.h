@@ -326,8 +326,6 @@ inline uint32 GetTickCount()
 #define _strlwr_s(BUF, SIZE) strlwr(BUF)
 #define _strups strupr
 
-#define _wtof(str) wcstod(str, 0)
-
 typedef struct __finddata64_t
 {
     //!< atributes set by find request
@@ -416,65 +414,10 @@ inline void SetLastError(DWORD dwErrCode) { errno = dwErrCode; }
 extern threadID GetCurrentThreadId();
 
 //////////////////////////////////////////////////////////////////////////
-extern HANDLE CreateEvent(
-    LPSECURITY_ATTRIBUTES lpEventAttributes,
-    BOOL bManualReset,
-    BOOL bInitialState,
-    LPCSTR lpName
-    );
-
-//////////////////////////////////////////////////////////////////////////
 extern DWORD Sleep(DWORD dwMilliseconds);
 
 //////////////////////////////////////////////////////////////////////////
 extern DWORD SleepEx(DWORD dwMilliseconds, BOOL bAlertable);
-
-//////////////////////////////////////////////////////////////////////////
-extern DWORD WaitForSingleObjectEx(
-    HANDLE hHandle,
-    DWORD dwMilliseconds,
-    BOOL bAlertable);
-
-//////////////////////////////////////////////////////////////////////////
-extern DWORD WaitForMultipleObjectsEx(
-    DWORD nCount,
-    const HANDLE* lpHandles,
-    BOOL bWaitAll,
-    DWORD dwMilliseconds,
-    BOOL bAlertable);
-
-//////////////////////////////////////////////////////////////////////////
-extern DWORD WaitForSingleObject(HANDLE hHandle, DWORD dwMilliseconds);
-
-//////////////////////////////////////////////////////////////////////////
-extern BOOL SetEvent(HANDLE hEvent);
-
-//////////////////////////////////////////////////////////////////////////
-extern BOOL ResetEvent(HANDLE hEvent);
-
-//////////////////////////////////////////////////////////////////////////
-extern HANDLE CreateMutex(
-    LPSECURITY_ATTRIBUTES lpMutexAttributes,
-    BOOL bInitialOwner,
-    LPCSTR lpName
-    );
-
-//////////////////////////////////////////////////////////////////////////
-extern BOOL ReleaseMutex(HANDLE hMutex);
-
-//////////////////////////////////////////////////////////////////////////
-typedef DWORD (* PTHREAD_START_ROUTINE)(LPVOID lpThreadParameter);
-typedef PTHREAD_START_ROUTINE LPTHREAD_START_ROUTINE;
-
-//////////////////////////////////////////////////////////////////////////
-extern HANDLE CreateThread(
-    LPSECURITY_ATTRIBUTES lpThreadAttributes,
-    SIZE_T dwStackSize,
-    LPTHREAD_START_ROUTINE lpStartAddress,
-    LPVOID lpParameter,
-    DWORD dwCreationFlags,
-    LPDWORD lpThreadId
-    );
 
 extern BOOL GetComputerName(LPSTR lpBuffer, LPDWORD lpnSize); //required for CryOnline
 extern DWORD GetCurrentProcessId(void);
@@ -489,8 +432,6 @@ extern void adaptFilenameToLinux(char* rAdjustedFilename);
 extern const int comparePathNames(const char* cpFirst, const char* cpSecond, unsigned int len);//returns 0 if identical
 extern void replaceDoublePathFilename(char* szFileName);//removes "\.\" to "\" and "/./" to "/"
 
-//////////////////////////////////////////////////////////////////////////
-extern char* _fullpath(char* absPath, const char* relPath, size_t maxLength);
 //////////////////////////////////////////////////////////////////////////
 extern void _makepath(char* path, const char* drive, const char* dir, const char* filename, const char* ext);
 

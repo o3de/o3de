@@ -15,6 +15,7 @@
 
 #include <AzCore/base.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/std/containers/fixed_vector.h>
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 
@@ -204,8 +205,6 @@ namespace AzFramework
 
     bool ProcessLauncher::LaunchProcess(const ProcessLaunchInfo& processLaunchInfo, ProcessData& processData)
     {
-        bool result = false;
-
         // note that the convention here is that it uses windows-shell style escaping of combined args with spaces in it
         // (so surrounding with quotes like param="hello world")
         // this is so that the callers (which could be numerous) do not have to worry about this and sprinkle ifdefs

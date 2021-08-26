@@ -32,9 +32,6 @@
 #include <AzToolsFramework/API/EditorLevelNotificationBus.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 
-// CryCommon
-#include <CryCommon/IAudioSystem.h>
-
 // Editor
 #include "Settings.h"
 
@@ -60,6 +57,7 @@
 #include <Atom/RPI.Public/ViewportContextBus.h>
 
 // LmbrCentral
+#include <LmbrCentral/Audio/AudioSystemComponentBus.h>
 #include <LmbrCentral/Rendering/EditorLightComponentBus.h> // for LmbrCentral::EditorLightComponentRequestBus
 
 //#define PROFILE_LOADING_WITH_VTUNE
@@ -269,20 +267,7 @@ void CCryEditDoc::DeleteContents()
     CErrorReportDialog::Clear();
 
     // Unload level specific audio binary data.
-    Audio::SAudioManagerRequestData<Audio::eAMRT_UNLOAD_AFCM_DATA_BY_SCOPE> oAMData(Audio::eADS_LEVEL_SPECIFIC);
-    Audio::SAudioRequest oAudioRequestData;
-    oAudioRequestData.nFlags = (Audio::eARF_PRIORITY_HIGH | Audio::eARF_EXECUTE_BLOCKING);
-    oAudioRequestData.pData = &oAMData;
-    Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
-
-    // Now unload level specific audio config data.
-    Audio::SAudioManagerRequestData<Audio::eAMRT_CLEAR_CONTROLS_DATA> oAMData2(Audio::eADS_LEVEL_SPECIFIC);
-    oAudioRequestData.pData = &oAMData2;
-    Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
-
-    Audio::SAudioManagerRequestData<Audio::eAMRT_CLEAR_PRELOADS_DATA> oAMData3(Audio::eADS_LEVEL_SPECIFIC);
-    oAudioRequestData.pData = &oAMData3;
-    Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
+    LmbrCentral::AudioSystemComponentRequestBus::Broadcast(&LmbrCentral::AudioSystemComponentRequestBus::Events::LevelUnloadAudio);
 
     GetIEditor()->Notify(eNotify_OnSceneClosed);
     CrySystemEventBus::Broadcast(&CrySystemEventBus::Events::OnCryEditorSceneClosed);
@@ -357,7 +342,7 @@ void CCryEditDoc::Load(TDocMultiArchive& arrXmlAr, const QString& szFilename)
     // Register this level and its content hash as version
     GetIEditor()->GetSettingsManager()->AddToolVersion(fileName, levelHash);
     GetIEditor()->GetSettingsManager()->RegisterEvent(loadEvent);
-    LOADING_TIME_PROFILE_SECTION(gEnv->pSystem);
+
     CAutoDocNotReady autoDocNotReady;
 
     HEAP_CHECK
@@ -413,32 +398,11 @@ void CCryEditDoc::Load(TDocMultiArchive& arrXmlAr, const QString& szFilename)
 #ifdef PROFILE_LOADING_WITH_VTUNE
         VTResume();
 #endif
-        // Parse level specific config data.
-        const char* controlsPath = nullptr;
-        Audio::AudioSystemRequestBus::BroadcastResult(controlsPath, &Audio::AudioSystemRequestBus::Events::GetControlsPath);
-        QString sAudioLevelPath(controlsPath);
-        sAudioLevelPath += "levels/";
-        AZStd::string const sLevelNameOnly = PathUtil::GetFileName(fileName.toUtf8().data());
-        sAudioLevelPath += sLevelNameOnly.c_str();
-        QByteArray path = sAudioLevelPath.toUtf8();
-        Audio::SAudioManagerRequestData<Audio::eAMRT_PARSE_CONTROLS_DATA> oAMData(path, Audio::eADS_LEVEL_SPECIFIC);
-        Audio::SAudioRequest oAudioRequestData;
-        oAudioRequestData.nFlags = (Audio::eARF_PRIORITY_HIGH | Audio::eARF_EXECUTE_BLOCKING); // Needs to be blocking so data is available for next preloading request!
-        oAudioRequestData.pData = &oAMData;
-        Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
-
-        Audio::SAudioManagerRequestData<Audio::eAMRT_PARSE_PRELOADS_DATA> oAMData2(path, Audio::eADS_LEVEL_SPECIFIC);
-        oAudioRequestData.pData = &oAMData2;
-        Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
-
-        Audio::TAudioPreloadRequestID nPreloadRequestID = INVALID_AUDIO_PRELOAD_REQUEST_ID;
-        Audio::AudioSystemRequestBus::BroadcastResult(nPreloadRequestID, &Audio::AudioSystemRequestBus::Events::GetAudioPreloadRequestID, sLevelNameOnly.c_str());
-        if (nPreloadRequestID != INVALID_AUDIO_PRELOAD_REQUEST_ID)
-        {
-            Audio::SAudioManagerRequestData<Audio::eAMRT_PRELOAD_SINGLE_REQUEST> oAMData3(nPreloadRequestID);
-            oAudioRequestData.pData = &oAMData3;
-            Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
-        }
+        // Load level-specific audio data.
+        AZStd::string levelFileName{ fileName.toUtf8().constData() };
+        AZStd::to_lower(levelFileName.begin(), levelFileName.end());
+        LmbrCentral::AudioSystemComponentRequestBus::Broadcast(
+            &LmbrCentral::AudioSystemComponentRequestBus::Events::LevelLoadAudio, AZStd::string_view{ levelFileName });
 
         {
             CAutoLogTime logtime("Game Engine level load");
@@ -1054,14 +1018,6 @@ bool CCryEditDoc::AfterSaveDocument([[maybe_unused]] const QString& lpszPathName
     return bSaved;
 }
 
-
-static void GetUserSettingsFile(const QString& levelFolder, QString& userSettings)
-{
-    const char* pUserName = GetISystem()->GetUserName();
-    QString fileName = QStringLiteral("%1_usersettings.editor_xml").arg(pUserName);
-    userSettings = Path::Make(levelFolder, fileName);
-}
-
 static bool TryRenameFile(const QString& oldPath, const QString& newPath, int retryAttempts=10)
 {
     QFile(newPath).setPermissions(QFile::ReadOther | QFile::WriteOther);
@@ -1083,7 +1039,7 @@ static bool TryRenameFile(const QString& oldPath, const QString& newPath, int re
 
 bool CCryEditDoc::SaveLevel(const QString& filename)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+    AZ_PROFILE_FUNCTION(Editor);
     QWaitCursor wait;
 
     CAutoCheckOutDialogEnableForAll enableForAll;
@@ -1103,7 +1059,7 @@ bool CCryEditDoc::SaveLevel(const QString& filename)
 
     {
 
-        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "CCryEditDoc::SaveLevel BackupBeforeSave");
+        AZ_PROFILE_SCOPE(Editor, "CCryEditDoc::SaveLevel BackupBeforeSave");
         BackupBeforeSave();
     }
 
@@ -1214,7 +1170,7 @@ bool CCryEditDoc::SaveLevel(const QString& filename)
         CPakFile pakFile;
 
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "CCryEditDoc::SaveLevel Open PakFile");
+            AZ_PROFILE_SCOPE(Editor, "CCryEditDoc::SaveLevel Open PakFile");
             if (!pakFile.Open(tempSaveFile.toUtf8().data(), false))
             {
                 gEnv->pLog->LogWarning("Unable to open pack file %s for writing", tempSaveFile.toUtf8().data());
@@ -1245,7 +1201,7 @@ bool CCryEditDoc::SaveLevel(const QString& filename)
 
         AZ::IO::ByteContainerStream<AZStd::vector<char>> entitySaveStream(&entitySaveBuffer);
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "CCryEditDoc::SaveLevel Save Entities To Stream");
+            AZ_PROFILE_SCOPE(Editor, "CCryEditDoc::SaveLevel Save Entities To Stream");
             EBUS_EVENT_RESULT(
                 savedEntities, AzToolsFramework::EditorEntityContextRequestBus, SaveToStreamForEditor, entitySaveStream, layerEntities,
                 instancesInLayers);
@@ -1259,8 +1215,8 @@ bool CCryEditDoc::SaveLevel(const QString& filename)
 
         if (savedEntities)
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "CCryEditDoc::SaveLevel Updated PakFile levelEntities.editor_xml");
-            pakFile.UpdateFile("LevelEntities.editor_xml", entitySaveBuffer.begin(), entitySaveBuffer.size());
+            AZ_PROFILE_SCOPE(AzToolsFramework, "CCryEditDoc::SaveLevel Updated PakFile levelEntities.editor_xml");
+            pakFile.UpdateFile("LevelEntities.editor_xml", entitySaveBuffer.begin(), static_cast<int>(entitySaveBuffer.size()));
 
             // Save XML archive to pak file.
             bool bSaved = xmlAr.SaveToPak(Path::GetPath(tempSaveFile), pakFile);
@@ -2091,7 +2047,7 @@ void CCryEditDoc::OnEnvironmentPropertyChanged(IVariable* pVar)
     }
 
     // QVariant will not convert a void * to int, so do it manually.
-    int nKey = reinterpret_cast<intptr_t>(pVar->GetUserData().value<void*>());
+    int nKey = static_cast<int>(reinterpret_cast<intptr_t>(pVar->GetUserData().value<void*>()));
 
     int nGroup = (nKey & 0xFFFF0000) >> 16;
     int nChild = (nKey & 0x0000FFFF);

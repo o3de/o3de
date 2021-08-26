@@ -10,6 +10,7 @@
 #pragma once
 
 #include <QString>
+#include <CryCommon/StlUtils.h>
 
 #include <QApplication>
 #include <QDropEvent>

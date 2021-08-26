@@ -338,32 +338,25 @@ void CSystem::FatalError(const char* format, ...)
     IDebugCallStack::instance()->FatalError(szBuffer);
 #endif
 
-    CryDebugBreak();
-
     // app can not continue
+    AZ::Debug::Trace::Break();
+
 #ifdef _DEBUG
+    #if defined(WIN32) || defined(WIN64)
+        _flushall();
+        // on windows, _exit does all sorts of things which can cause cleanup to fail during a crash, we need to terminate instead.
+        TerminateProcess(GetCurrentProcess(), 1);
+    #endif
 
-#if defined(WIN32) && !defined(WIN64)
-    DEBUG_BREAK;
-#endif
-
-#else
-
-#if defined(WIN32) || defined(WIN64)
-    _flushall();
-    // on windows, _exit does all sorts of things which can cause cleanup to fail during a crash, we need to terminate instead.
-    TerminateProcess(GetCurrentProcess(), 1);
-#endif
-
-#if defined(AZ_RESTRICTED_PLATFORM)
-#define AZ_RESTRICTED_SECTION SYSTEMWIN32_CPP_SECTION_2
-#include AZ_RESTRICTED_FILE(SystemWin32_cpp)
-#endif
-#if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
-#undef AZ_RESTRICTED_SECTION_IMPLEMENTED
-#else
-    _exit(1);
-#endif
+    #if defined(AZ_RESTRICTED_PLATFORM)
+        #define AZ_RESTRICTED_SECTION SYSTEMWIN32_CPP_SECTION_2
+        #include AZ_RESTRICTED_FILE(SystemWin32_cpp)
+    #endif
+    #if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
+        #undef AZ_RESTRICTED_SECTION_IMPLEMENTED
+    #else
+        _exit(1);
+    #endif
 #endif
 }
 

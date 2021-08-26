@@ -13,11 +13,11 @@
 #include <IConsole.h>
 
 #include <AzCore/Debug/Profiler.h>
-#include <AzCore/Debug/ProfileModuleInit.h>
 #include <AzCore/Memory/AllocatorManager.h>
 #include <AzCore/Module/Environment.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/Utils/Utils.h>
+
 
 // Section dictionary
 #if defined(AZ_RESTRICTED_PLATFORM)
@@ -37,10 +37,6 @@ struct SSystemGlobalEnvironment* gEnv = nullptr;
     #define AZ_RESTRICTED_SECTION PLATFORM_IMPL_H_SECTION_TRAITS
     #include AZ_RESTRICTED_FILE(platform_impl_h)
 #endif
-
-//////////////////////////////////////////////////////////////////////////
-// If not in static library.
-#include <CryThreadImpl.h>
 
 #if defined(WIN32) || defined(WIN64)
 void CryPureCallHandler()
@@ -98,7 +94,6 @@ extern "C" AZ_DLL_EXPORT void ModuleInitISystem(ISystem* pSystem, [[maybe_unused
             AZ::Environment::Attach(gEnv->pSharedEnvironment);
             AZ::AllocatorManager::Instance();  // Force the AllocatorManager to instantiate and register any allocators defined in data sections
         }
-        AZ::Debug::ProfileModuleInit();
     } // if pSystem
 }
 
@@ -205,36 +200,10 @@ void __stl_debug_message(const char* format_str, ...)
 #include "CryAssert_impl.h"
 
 //////////////////////////////////////////////////////////////////////////
-void CryDebugBreak()
-{
-#if defined(WIN32) && !defined(RELEASE)
-    if (IsDebuggerPresent())
-#endif
-    {
-        DebugBreak();
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CrySleep(unsigned int dwMilliseconds)
 {
-    AZ_PROFILE_FUNCTION_IDLE(AZ::Debug::ProfileCategory::System);
+    AZ_PROFILE_FUNCTION(System);
     Sleep(dwMilliseconds);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CryLowLatencySleep(unsigned int dwMilliseconds)
-{
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::System);
-#if defined(AZ_RESTRICTED_PLATFORM)
-    #define AZ_RESTRICTED_SECTION PLATFORM_IMPL_H_SECTION_CRYLOWLATENCYSLEEP
-    #include AZ_RESTRICTED_FILE(platform_impl_h)
-#endif
-#if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
-#undef AZ_RESTRICTED_SECTION_IMPLEMENTED
-#else
-    CrySleep(dwMilliseconds);
-#endif
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -305,140 +274,6 @@ void InitRootDir(char szExeFileName[], uint nExeSize, char szExeRootName[], uint
 }
 
 //////////////////////////////////////////////////////////////////////////
-short CryGetAsyncKeyState([[maybe_unused]] int vKey)
-{
-#ifdef WIN32
-    return GetAsyncKeyState(vKey);
-#else
-    return 0;
-#endif
-}
-
-//////////////////////////////////////////////////////////////////////////
-LONG  CryInterlockedIncrement(int volatile* lpAddend)
-{
-    return InterlockedIncrement((volatile LONG*)lpAddend);
-}
-
-//////////////////////////////////////////////////////////////////////////
-LONG  CryInterlockedDecrement(int volatile* lpAddend)
-{
-    return InterlockedDecrement((volatile LONG*)lpAddend);
-}
-
-//////////////////////////////////////////////////////////////////////////
-LONG  CryInterlockedExchangeAdd(LONG volatile* lpAddend, LONG Value)
-{
-    return InterlockedExchangeAdd(lpAddend, Value);
-}
-
-LONG  CryInterlockedOr(LONG volatile* Destination, LONG Value)
-{
-    return InterlockedOr(Destination, Value);
-}
-
-LONG  CryInterlockedCompareExchange(LONG volatile* dst, LONG exchange, LONG comperand)
-{
-    return InterlockedCompareExchange(dst, exchange, comperand);
-}
-
-void* CryInterlockedCompareExchangePointer(void* volatile* dst, void* exchange, void* comperand)
-{
-    return InterlockedCompareExchangePointer(dst, exchange, comperand);
-}
-
-void* CryInterlockedExchangePointer(void* volatile* dst, void* exchange)
-{
-    return InterlockedExchangePointer(dst, exchange);
-}
-
-void CryInterlockedAdd(volatile size_t* pVal, ptrdiff_t iAdd)
-{
-#if defined (PLATFORM_64BIT)
-#if !defined(NDEBUG)
-    size_t v = (size_t)
-#endif
-        InterlockedAdd64((volatile int64*)pVal, iAdd);
-#else
-    size_t v = (size_t)CryInterlockedExchangeAdd((volatile long*)pVal, (long)iAdd);
-    v += iAdd;
-#endif
-    assert((iAdd == 0) || (iAdd < 0 && v < v - (size_t)iAdd) || (iAdd > 0 && v > v - (size_t)iAdd));
-}
-
-//////////////////////////////////////////////////////////////////////////
-void* CryCreateCriticalSection()
-{
-    CRITICAL_SECTION* pCS = new CRITICAL_SECTION;
-    InitializeCriticalSection(pCS);
-    return pCS;
-}
-
-void  CryCreateCriticalSectionInplace(void* pCS)
-{
-    InitializeCriticalSection((CRITICAL_SECTION*)pCS);
-}
-//////////////////////////////////////////////////////////////////////////
-void  CryDeleteCriticalSection(void* cs)
-{
-    CRITICAL_SECTION* pCS = (CRITICAL_SECTION*)cs;
-    if (pCS->LockCount >= 0)
-    {
-        CryFatalError("Critical Section hanging lock");
-    }
-    DeleteCriticalSection(pCS);
-    delete pCS;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void  CryDeleteCriticalSectionInplace(void* cs)
-{
-    CRITICAL_SECTION* pCS = (CRITICAL_SECTION*)cs;
-    if (pCS->LockCount >= 0)
-    {
-        CryFatalError("Critical Section hanging lock");
-    }
-    DeleteCriticalSection(pCS);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void  CryEnterCriticalSection(void* cs)
-{
-    EnterCriticalSection((CRITICAL_SECTION*)cs);
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool  CryTryCriticalSection(void* cs)
-{
-    return TryEnterCriticalSection((CRITICAL_SECTION*)cs) != 0;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void  CryLeaveCriticalSection(void* cs)
-{
-    LeaveCriticalSection((CRITICAL_SECTION*)cs);
-}
-
-//////////////////////////////////////////////////////////////////////////
-uint32 CryGetFileAttributes(const char* lpFileName)
-{
-    WIN32_FILE_ATTRIBUTE_DATA data;
-    BOOL res;
-#if defined(AZ_RESTRICTED_PLATFORM)
-    #define AZ_RESTRICTED_SECTION PLATFORM_IMPL_H_SECTION_CRYGETFILEATTRIBUTES
-    #include AZ_RESTRICTED_FILE(platform_impl_h)
-#endif
-#if defined(AZ_RESTRICTED_SECTION_IMPLEMENTED)
-#undef AZ_RESTRICTED_SECTION_IMPLEMENTED
-#else
-    AZStd::wstring lpFileNameW;
-    AZStd::to_wstring(lpFileNameW, lpFileName);
-    res = GetFileAttributesExW(lpFileNameW.c_str(), GetFileExInfoStandard, &data);
-#endif
-    return res ? data.dwFileAttributes : -1;
-}
-
-//////////////////////////////////////////////////////////////////////////
 bool CrySetFileAttributes(const char* lpFileName, uint32 dwFileAttributes)
 {
 #if defined(AZ_RESTRICTED_PLATFORM)
@@ -505,7 +340,7 @@ inline void CryDebugStr([[maybe_unused]] const char* format, ...)
      */
 }
 
-_MS_ALIGN(64) uint32  BoxSides[0x40 * 8] = {
+alignas(64) uint32  BoxSides[0x40 * 8] = {
     0, 0, 0, 0, 0, 0, 0, 0, //00
     0, 4, 6, 2, 0, 0, 0, 4, //01
     7, 5, 1, 3, 0, 0, 0, 4, //02

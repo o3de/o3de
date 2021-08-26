@@ -11,20 +11,20 @@
 
 #include "smartptr.h"           // TYPEDEF_AUTOPTR
 #include "IMaterial.h"
+#include "ISerialize.h"
 
 // forward declarations
 //////////////////////////////////////////////////////////////////////
 struct ShadowMapFrustum;
 struct SRenderingPassInfo;
 struct SRendItemSorter;
-struct IShader;
+struct ITetrLattice;
 struct SPhysGeomArray;
 struct CStatObj;
 
 class CRenderObject;
 class CDLight;
 class IReadStream;
-class CRenderObject;
 class CLodValue;
 
 
@@ -39,9 +39,11 @@ class CRenderObject;
 struct SMeshLodInfo;
 
 #include "CryHeaders.h"
+#include "Cry_Color.h"
 #include "Cry_Math.h"
 #include "Cry_Geo.h"
-#include "IPhysics.h"
+#include "CrySizer.h"
+#include "stridedptr.h"
 
 #define MAX_STATOBJ_LODS_NUM 6
 
@@ -399,10 +401,6 @@ struct IStatObj
     //     Set the physic representation
     virtual void SetPhysGeom(phys_geometry* pPhysGeom, int nType = 0) = 0;
 
-    // Description:
-    //     Returns a tetrahedral lattice, if any (used for breakable objects)
-    virtual ITetrLattice* GetTetrLattice() = 0;
-
     virtual float GetAIVegetationRadius() const = 0;
     virtual void SetAIVegetationRadius(float radius) = 0;
 
@@ -635,15 +633,6 @@ struct IStatObj
     //    adds a new sub object
     virtual IStatObj::SSubObject& AddSubObject(IStatObj* pStatObj) = 0;
 
-    // Summary:
-    //      Adds subobjects to pent, meshes as parts, joint helpers as breakable joints
-    virtual int PhysicalizeSubobjects(IPhysicalEntity* pent, const Matrix34* pMtx, float mass, float density = 0.0f, int id0 = 0, strided_pointer<int> pJointsIdMap = 0, const char* szPropsOverride = 0) = 0;
-    // Summary:
-    //      Adds all phys geometries to pent, assigns ids starting from id; takes mass and density from the StatObj properties if not set in pgp
-    //    for compound objects calls PhysicalizeSubobjects
-    //    returns the physical id of the last physicalized part
-    virtual int Physicalize(IPhysicalEntity* pent, pe_geomparams* pgp, int id = 0, const char* szPropsOverride = 0) = 0;
-
     virtual bool IsDeformable() = 0;
 
     //////////////////////////////////////////////////////////////////////////
@@ -767,12 +756,6 @@ struct IStatObj
     virtual int GetLoadedLodsNum() = 0;
 
     virtual bool UpdateStreamableComponents(float fImportance, const Matrix34A& objMatrix, bool bFullUpdate, int nNewLod) = 0;
-
-    virtual void RenderInternal(CRenderObject* pRenderObject, uint64 nSubObjectHideMask, const CLodValue& lodValue, const SRenderingPassInfo& passInfo, const SRendItemSorter& rendItemSorter, bool forceStaticDraw) = 0;
-    virtual void RenderObjectInternal(CRenderObject* pRenderObject, int nLod, uint8 uLodDissolveRef, bool dissolveOut, const SRenderingPassInfo& passInfo, const SRendItemSorter& rendItemSorter, bool forceStaticDraw) = 0;
-    virtual void RenderSubObject(CRenderObject* pRenderObject, int nLod, int nSubObjId, const Matrix34A& renderTM, const SRenderingPassInfo& passInfo, const SRendItemSorter& rendItemSorter, bool forceStaticDraw) = 0;
-    virtual void RenderSubObjectInternal(CRenderObject* pRenderObject, int nLod, const SRenderingPassInfo& passInfo, const SRendItemSorter& rendItemSorter, bool forceStaticDraw) = 0;
-    virtual void RenderRenderMesh(CRenderObject* pObj, struct SInstancingInfo* pInstInfo, const SRenderingPassInfo& passInfo, const SRendItemSorter& rendItemSorter) = 0;
 
     virtual SPhysGeomArray& GetArrPhysGeomInfo() = 0;
     virtual bool IsLodsAreLoadedFromSeparateFile() = 0;

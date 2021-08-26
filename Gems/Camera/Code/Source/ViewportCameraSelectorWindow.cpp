@@ -125,7 +125,7 @@ namespace Camera
                 });
             if (cameraIt != m_cameraItems.end())
             {
-                int listIndex = cameraIt - m_cameraItems.begin();
+                int listIndex = static_cast<int>(cameraIt - m_cameraItems.begin());
                 beginRemoveRows(QModelIndex(), listIndex, listIndex);
                 m_cameraItems.erase(cameraIt);
                 endRemoveRows();

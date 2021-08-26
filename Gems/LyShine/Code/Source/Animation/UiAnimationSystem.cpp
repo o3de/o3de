@@ -16,6 +16,7 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <StlUtils.h>
 
+#include <StaticInstance.h>
 #include <ISystem.h>
 #include <ILog.h>
 #include <IConsole.h>
@@ -26,12 +27,12 @@
 //////////////////////////////////////////////////////////////////////////
 // Serialization for anim nodes & param types
 #define REGISTER_NODE_TYPE(name) assert(g_animNodeEnumToStringMap.find(eUiAnimNodeType_ ## name) == g_animNodeEnumToStringMap.end()); \
-    g_animNodeEnumToStringMap[eUiAnimNodeType_ ## name] = STRINGIFY(name);                                                            \
-    g_animNodeStringToEnumMap[AZStd::string(STRINGIFY(name))] = eUiAnimNodeType_ ## name;
+    g_animNodeEnumToStringMap[eUiAnimNodeType_ ## name] = AZ_STRINGIZE(name);                                                            \
+    g_animNodeStringToEnumMap[AZStd::string(AZ_STRINGIZE(name))] = eUiAnimNodeType_ ## name;
 
 #define REGISTER_PARAM_TYPE(name) assert(g_animParamEnumToStringMap.find(eUiAnimParamType_ ## name) == g_animParamEnumToStringMap.end()); \
-    g_animParamEnumToStringMap[eUiAnimParamType_ ## name] = STRINGIFY(name);                                                              \
-    g_animParamStringToEnumMap[AZStd::string(STRINGIFY(name))] = eUiAnimParamType_ ## name;
+    g_animParamEnumToStringMap[eUiAnimParamType_ ## name] = AZ_STRINGIZE(name);                                                              \
+    g_animParamStringToEnumMap[AZStd::string(AZ_STRINGIZE(name))] = eUiAnimParamType_ ## name;
 
 namespace
 {
@@ -106,7 +107,6 @@ void UiAnimationSystem::DoNodeStaticInitialisation()
 bool UiAnimationSystem::Load(const char* pszFile, const char* pszMission)
 {
     INDENT_LOG_DURING_SCOPE (true, "UI Animation system is loading the file '%s' (mission='%s')", pszFile, pszMission);
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
 
     XmlNodeRef rootNode = m_pSystem->LoadXmlFromFile(pszFile);
     if (!rootNode)
@@ -731,11 +731,11 @@ void UiAnimationSystem::StillUpdate()
 //////////////////////////////////////////////////////////////////////////
 void UiAnimationSystem::ShowPlayedSequencesDebug()
 {
-    f32 green[4] = {0, 1, 0, 1};
-    f32 purple[4] = {1, 0, 1, 1};
-    f32 white[4] = {1, 1, 1, 1};
+    //f32 green[4] = {0, 1, 0, 1};
+    //f32 purple[4] = {1, 0, 1, 1};
+    //f32 white[4] = {1, 1, 1, 1};
     float y = 10.0f;
-    std::vector<const char*> names;
+    AZStd::vector<AZStd::string> names;
 
     for (PlayingSequences::iterator it = m_playingSequences.begin(); it != m_playingSequences.end(); ++it)
     {
@@ -746,8 +746,9 @@ void UiAnimationSystem::ShowPlayedSequencesDebug()
             continue;
         }
 
-        const char* fullname = playingSequence.sequence->GetName();
-        gEnv->pRenderer->Draw2dLabel(1.0f, y, 1.3f, green, false, "Sequence %s : %f (x %f)", fullname, playingSequence.currentTime, playingSequence.currentSpeed);
+        AZ_Assert(false,"gEnv->pRenderer is always null so it can't be used here");
+        //const char* fullname = playingSequence.sequence->GetName();
+        //gEnv->pRenderer->Draw2dLabel(1.0f, y, 1.3f, green, false, "Sequence %s : %f (x %f)", fullname, playingSequence.currentTime, playingSequence.currentSpeed);
 
         y += 16.0f;
 
@@ -755,23 +756,18 @@ void UiAnimationSystem::ShowPlayedSequencesDebug()
         {
             // Checks nodes which happen to be in several sequences.
             // Those can be a bug, since several sequences may try to control the same entity.
-            const char* name = playingSequence.sequence->GetNode(i)->GetName();
+            AZStd::string name = playingSequence.sequence->GetNode(i)->GetName();
             bool alreadyThere = false;
-            for (size_t k = 0; k < names.size(); ++k)
+            if (AZStd::find(names.begin(), names.end(), name) != names.end())
             {
-                if (strcmp(names[k], name) == 0)
-                {
-                    alreadyThere = true;
-                    break;
-                }
+                alreadyThere = true;
             }
-
-            if (alreadyThere == false)
+            else
             {
                 names.push_back(name);
             }
 
-            gEnv->pRenderer->Draw2dLabel((21.0f + 100.0f * i), ((i % 2) ? (y + 8.0f) : y), 1.0f, alreadyThere ? white : purple, false, "%s", name);
+            //gEnv->pRenderer->Draw2dLabel((21.0f + 100.0f * i), ((i % 2) ? (y + 8.0f) : y), 1.0f, alreadyThere ? white : purple, false, "%s", name.c_str());
         }
 
         y += 32.0f;

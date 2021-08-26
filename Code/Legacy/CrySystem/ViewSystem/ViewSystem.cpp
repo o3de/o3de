@@ -26,7 +26,7 @@
         if (count > 0)                                                                                              \
         {                                                                                                           \
             const size_t memSize = count * sizeof(IViewSystemListener*);                                            \
-            PREFAST_SUPPRESS_WARNING(6255) IViewSystemListener * *pArray = (IViewSystemListener**) alloca(memSize); \
+            IViewSystemListener* *pArray = (IViewSystemListener**) alloca(memSize);                                 \
             memcpy(pArray, &*m_listeners.begin(), memSize);                                                         \
             while (count--)                                                                                         \
             {                                                                                                       \
@@ -172,8 +172,6 @@ CViewSystem::~CViewSystem()
 //------------------------------------------------------------------------
 void CViewSystem::Update(float frameTime)
 {
-    FUNCTION_PROFILER(GetISystem(), PROFILE_ACTION);
-
     if (gEnv->IsDedicated())
     {
         return;
@@ -200,11 +198,6 @@ void CViewSystem::Update(float frameTime)
         if (bIsActive)
         {
             CCamera& rCamera = pView->GetCamera();
-            if (!s_debugCamera || !s_debugCamera->IsEnabled())
-            {
-                pView->UpdateAudioListener(rCamera.GetMatrix());
-            }
-
             if (const SViewParams* currentParams = pView->GetCurrentParams())
             {
                 SViewParams copyCurrentParams = *currentParams;
@@ -339,7 +332,7 @@ void CViewSystem::SetActiveView(IView* pView)
     }
     else
     {
-        m_activeViewId = ~0;
+        m_activeViewId = ~0u;
     }
 
     m_bActiveViewFromSequence = false;
@@ -552,12 +545,6 @@ void CViewSystem::SetOverrideCameraRotation(bool bOverride, Quat rotation)
 {
     m_bOverridenCameraRotation = bOverride;
     m_overridenCameraRotation = rotation;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CViewSystem::UpdateSoundListeners()
-{
-    AZ_ErrorOnce("CryLegacy", false, "CryLegacy view system no longer available (CViewSystem::UpdateSoundListeners)");
 }
 
 //////////////////////////////////////////////////////////////////

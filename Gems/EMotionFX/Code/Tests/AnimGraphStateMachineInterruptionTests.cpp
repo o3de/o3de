@@ -137,9 +137,9 @@ namespace EMotionFX
         m_eventHandler->m_numStatesEnded -= 1;
 
         Simulate(20.0f/*simulationTime*/, 60.0f/*expectedFps*/, 0.0f/*fpsVariance*/,
-            /*preCallback*/[this]([[maybe_unused]] AnimGraphInstance* animGraphInstance){},
-            /*postCallback*/[this]([[maybe_unused]] AnimGraphInstance* animGraphInstance){},
-            /*preUpdateCallback*/[this](AnimGraphInstance*, float, float, int) {},
+            /*preCallback*/[]([[maybe_unused]] AnimGraphInstance* animGraphInstance){},
+            /*postCallback*/[]([[maybe_unused]] AnimGraphInstance* animGraphInstance){},
+            /*preUpdateCallback*/[](AnimGraphInstance*, float, float, int) {},
             /*postUpdateCallback*/[this](AnimGraphInstance* animGraphInstance, [[maybe_unused]] float time, [[maybe_unused]] float timeDelta, int frame)
             {
                 const std::vector<AnimGraphStateMachine_InterruptionTestData::ActiveObjectsAtFrame>& activeObjectsAtFrame = GetParam().m_activeObjectsAtFrame;
@@ -165,7 +165,7 @@ namespace EMotionFX
 
                 for (const auto& activeObjects : activeObjectsAtFrame)
                 {
-                    if (activeObjects.m_frameNr == frame)
+                    if (activeObjects.m_frameNr == static_cast<AZ::u32>(frame))
                     {
                         // Check which states and transitions are active and compare it to the expected ones.
                         EXPECT_EQ(activeObjects.m_stateA, compareAgainst.m_stateA)
@@ -457,14 +457,11 @@ namespace EMotionFX
         float prevBlendWeight = 0.0f;
 
         Simulate(2.0f /*simulationTime*/, 10.0f /*expectedFps*/, 0.0f /*fpsVariance*/,
-            /*preCallback*/[this]([[maybe_unused]] AnimGraphInstance* animGraphInstance) {},
-            /*postCallback*/[this]([[maybe_unused]] AnimGraphInstance* animGraphInstance) {},
-            /*preUpdateCallback*/[this](AnimGraphInstance*, float, float, int) {},
+            /*preCallback*/[]([[maybe_unused]] AnimGraphInstance* animGraphInstance) {},
+            /*postCallback*/[]([[maybe_unused]] AnimGraphInstance* animGraphInstance) {},
+            /*preUpdateCallback*/[](AnimGraphInstance*, float, float, int) {},
             /*postUpdateCallback*/[this, &prevGotInterrupted, &prevBlendWeight](AnimGraphInstance* animGraphInstance, [[maybe_unused]] float time, [[maybe_unused]] float timeDelta, [[maybe_unused]] int frame)
             {
-                const AnimGraphStateMachine_InterruptionPropertiesTestData param = GetParam();
-
-                const AnimGraphStateTransition::EInterruptionMode interruptionMode = m_transitionLeft->GetInterruptionMode();
                 const float maxInterruptionBlendWeight = m_transitionLeft->GetMaxInterruptionBlendWeight();
                 const bool gotInterrupted = m_transitionLeft->GotInterrupted(animGraphInstance);
                 const bool gotInterruptedThisFrame = gotInterrupted && !prevGotInterrupted;

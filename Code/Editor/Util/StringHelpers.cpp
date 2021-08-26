@@ -9,8 +9,7 @@
 
 #include "StringHelpers.h"
 #include "Util.h"
-
-#include <AzCore/std/string/string.h>
+#include <cwctype>
 
 int StringHelpers::CompareIgnoreCase(const AZStd::string& str0, const AZStd::string& str1)
 {

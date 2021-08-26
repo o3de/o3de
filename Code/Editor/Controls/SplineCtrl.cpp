@@ -86,13 +86,13 @@ QPoint CSplineCtrl::KeyToPoint(int nKey)
 QPoint CSplineCtrl::TimeToPoint(float time)
 {
     QPoint point;
-    point.setX((time - m_fMinTime) * (m_rcSpline.width() / (m_fMaxTime - m_fMinTime)) + m_rcSpline.left());
+    point.setX(static_cast<int>((time - m_fMinTime) * (m_rcSpline.width() / (m_fMaxTime - m_fMinTime)) + m_rcSpline.left()));
     float val = 0;
     if (m_pSpline)
     {
         m_pSpline->InterpolateFloat(time, val);
     }
-    point.setY((floor((m_fMaxValue - val) * (m_rcSpline.height() / (m_fMaxValue - m_fMinValue)) + 0.5f) + m_rcSpline.top()));
+    point.setY(static_cast<int>((floor((m_fMaxValue - val) * (m_rcSpline.height() / (m_fMaxValue - m_fMinValue)) + 0.5f) + m_rcSpline.top())));
     return point;
 }
 
@@ -122,8 +122,6 @@ QPoint CSplineCtrl::XOfsToPoint(int x)
 void CSplineCtrl::paintEvent(QPaintEvent* event)
 {
     QPainter painter(this);
-
-    QRect rcClient = rect();
 
     if (m_pSpline)
     {

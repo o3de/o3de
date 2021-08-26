@@ -51,7 +51,6 @@
 #include <AzCore/Driller/Driller.h>
 #include <AzCore/Memory/MemoryDriller.h>
 #include <AzCore/Debug/TraceMessagesDriller.h>
-#include <AzCore/Debug/ProfilerDriller.h>
 #include <AzCore/Debug/EventTraceDriller.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Script/ScriptSystemBus.h>
@@ -546,6 +545,10 @@ namespace AZ
         m_entityActivatedEvent.DisconnectAllHandlers();
         m_entityDeactivatedEvent.DisconnectAllHandlers();
 
+#if !defined(_RELEASE)
+        m_budgetTracker.Reset();
+#endif
+
         DestroyAllocator();
     }
 
@@ -594,6 +597,10 @@ namespace AZ
         CreateOSAllocator();
         CreateSystemAllocator();
 
+#if !defined(_RELEASE)
+        m_budgetTracker.Init();
+#endif
+
         // This can be moved to the ComponentApplication constructor if need be
         // This is reading the *.setreg files using SystemFile and merging the settings
         // to the settings registry.
@@ -624,8 +631,6 @@ namespace AZ
 
             m_eventLogger->Start(outputPath.Native(), baseFileName);
         }
-
-        CreateDrillers();
 
         Sfmt::Create();
 
@@ -728,6 +733,7 @@ namespace AZ
         DestroyReflectionManager();
 
         static_cast<SettingsRegistryImpl*>(m_settingsRegistry.get())->ClearNotifiers();
+        static_cast<SettingsRegistryImpl*>(m_settingsRegistry.get())->ClearMergeEvents();
 
         // Uninit and unload any dynamic modules.
         m_moduleManager->UnloadModules();
@@ -744,12 +750,6 @@ namespace AZ
         // Disconnect from application and tick request buses
         ComponentApplicationBus::Handler::BusDisconnect();
         TickRequestBus::Handler::BusDisconnect();
-
-        if (m_drillerManager)
-        {
-            Debug::DrillerManager::Destroy(m_drillerManager);
-            m_drillerManager = nullptr;
-        }
 
         m_eventLogger->Stop();
 
@@ -896,33 +896,6 @@ namespace AZ
         }
 
         allocatorManager.FinalizeConfiguration();
-    }
-
-    //=========================================================================
-    // CreateDrillers
-    // [2/20/2013]
-    //=========================================================================
-    void ComponentApplication::CreateDrillers()
-    {
-        // Create driller manager and register drillers if requested
-        if (m_descriptor.m_enableDrilling)
-        {
-            m_drillerManager = Debug::DrillerManager::Create();
-            // Memory driller is responsible for tracking allocations.
-            // Tracking type and overhead is determined by app configuration.
-
-            // Only one MemoryDriller is supported at a time
-            // Only create the memory driller if there is no handlers connected to the MemoryDrillerBus
-            if (!Debug::MemoryDrillerBus::HasHandlers())
-            {
-                m_drillerManager->Register(aznew Debug::MemoryDriller);
-            }
-            // Profiler driller will consume resources only when started.
-            m_drillerManager->Register(aznew Debug::ProfilerDriller);
-            // Trace messages driller will consume resources only when started.
-            m_drillerManager->Register(aznew Debug::TraceMessagesDriller);
-            m_drillerManager->Register(aznew Debug::EventTraceDriller);
-        }
     }
 
     void ComponentApplication::MergeSettingsToRegistry(SettingsRegistryInterface& registry)
@@ -1293,7 +1266,7 @@ namespace AZ
             void Visit(AZStd::string_view path, AZStd::string_view, AZ::SettingsRegistryInterface::Type, AZStd::string_view value) override
             {
                 // Remove last path segment and check if the key corresponds to the Modules array
-                AZStd::optional<AZStd::string_view> moduleIndex = AZ::StringFunc::TokenizeLast(path, "/");
+                AZ::StringFunc::TokenizeLast(path, "/");
                 if (path.ends_with("/Modules"))
                 {
                     // Remove the "Modules" path segment to be at the GemName key
@@ -1393,8 +1366,7 @@ namespace AZ
     void ComponentApplication::Tick(float deltaOverride /*= -1.f*/)
     {
         {
-            AZ_PROFILE_TIMER("System", "Component application simulation tick function");
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+            AZ_PROFILE_SCOPE(System, "Component application simulation tick");
 
             AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
 
@@ -1407,18 +1379,14 @@ namespace AZ
             }
 
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzCore, "ComponentApplication::Tick:ExecuteQueuedEvents");
+                AZ_PROFILE_SCOPE(AzCore, "ComponentApplication::Tick:ExecuteQueuedEvents");
                 TickBus::ExecuteQueuedEvents();
             }
             m_currentTime = now;
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzCore, "ComponentApplication::Tick:OnTick");
+                AZ_PROFILE_SCOPE(AzCore, "ComponentApplication::Tick:OnTick");
                 EBUS_EVENT(TickBus, OnTick, m_deltaTime, ScriptTimePoint(now));
             }
-        }
-        if (m_drillerManager)
-        {
-            m_drillerManager->FrameUpdate();
         }
     }
 
@@ -1427,8 +1395,7 @@ namespace AZ
     //=========================================================================
     void ComponentApplication::TickSystem()
     {
-        AZ_PROFILE_TIMER("System", "Component application system tick function");
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzCore);
+        AZ_PROFILE_SCOPE(System, "Component application tick");
 
         SystemTickBus::ExecuteQueuedEvents();
         EBUS_EVENT(SystemTickBus, OnSystemTick);

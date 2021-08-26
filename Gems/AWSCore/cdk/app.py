@@ -25,7 +25,7 @@ ACCOUNT = os.environ.get('O3DE_AWS_DEPLOY_ACCOUNT', os.environ.get('CDK_DEFAULT_
 PROJECT_NAME = os.environ.get('O3DE_AWS_PROJECT_NAME', f'O3DE-AWS-PROJECT').upper()
 
 # The name of this feature
-FEATURE_NAME = 'Core'
+FEATURE_NAME = 'AWSCore'
 
 # The name of this CDK application
 PROJECT_FEATURE_NAME = f'{PROJECT_NAME}-{FEATURE_NAME}'

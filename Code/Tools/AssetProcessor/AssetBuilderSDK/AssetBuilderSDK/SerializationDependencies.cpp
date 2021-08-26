@@ -101,7 +101,6 @@ namespace AssetBuilderSDK
 
         for (const auto& thisEntry : productDependencySet)
         {
-            constexpr int flags = 0;
             productDependencies.emplace_back(thisEntry.first, thisEntry.second);
         }
     }

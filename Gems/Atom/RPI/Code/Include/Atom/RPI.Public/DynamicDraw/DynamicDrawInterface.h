@@ -54,7 +54,7 @@ namespace AZ
 
             //! Get a DynamicBuffer from DynamicDrawSystem.
             //! The returned buffer will be invalidated every time the RPISystem's RenderTick is called
-            virtual RHI::Ptr<DynamicBuffer> GetDynamicBuffer(uint32_t size, uint32_t alignment = 1) = 0;
+            virtual RHI::Ptr<DynamicBuffer> GetDynamicBuffer(uint32_t size, uint32_t alignment) = 0;
 
             //! Draw a geometry to a scene with a given material
             virtual void DrawGeometry(Data::Instance<Material> material, const GeometryData& geometry, ScenePtr scene) = 0;

@@ -153,7 +153,7 @@ def main():
     azlmbr.shader.SaveShaderVariantListSourceData(shaderVariantListFilePath, shaderVariantList)
     
     # Open the document in shader management console
-    result = azlmbr.shadermanagementconsole.ShaderManagementConsoleDocumentSystemRequestBus(
+    result = azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(
         azlmbr.bus.Broadcast,
         'OpenDocument',
         shaderVariantListFilePath

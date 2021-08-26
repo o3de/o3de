@@ -27,6 +27,7 @@
 
 #include <StlUtils.h>
 #include <MathConversion.h>
+#include <StaticInstance.h>
 
 #include <ISystem.h>
 #include <ILog.h>
@@ -74,12 +75,12 @@ static SMovieSequenceAutoComplete s_movieSequenceAutoComplete;
 //////////////////////////////////////////////////////////////////////////
 // Serialization for anim nodes & param types
 #define REGISTER_NODE_TYPE(name) assert(g_animNodeEnumToStringMap.find(AnimNodeType::name) == g_animNodeEnumToStringMap.end()); \
-    g_animNodeEnumToStringMap[AnimNodeType::name] = STRINGIFY(name);                                                            \
-    g_animNodeStringToEnumMap[AZStd::string(STRINGIFY(name))] = AnimNodeType::name;
+    g_animNodeEnumToStringMap[AnimNodeType::name] = AZ_STRINGIZE(name);                                                         \
+    g_animNodeStringToEnumMap[AZStd::string(AZ_STRINGIZE(name))] = AnimNodeType::name;
 
 #define REGISTER_PARAM_TYPE(name) assert(g_animParamEnumToStringMap.find(AnimParamType::name) == g_animParamEnumToStringMap.end()); \
-    g_animParamEnumToStringMap[AnimParamType::name] = STRINGIFY(name);                                                              \
-    g_animParamStringToEnumMap[AZStd::string(STRINGIFY(name))] = AnimParamType::name;
+    g_animParamEnumToStringMap[AnimParamType::name] = AZ_STRINGIZE(name);                                                           \
+    g_animParamStringToEnumMap[AZStd::string(AZ_STRINGIZE(name))] = AnimParamType::name;
 
 namespace
 {
@@ -973,9 +974,6 @@ void CMovieSystem::StillUpdate()
 //////////////////////////////////////////////////////////////////////////
 void CMovieSystem::ShowPlayedSequencesDebug()
 {
-    f32 green[4] = {0, 1, 0, 1};
-    f32 purple[4] = {1, 0, 1, 1};
-    f32 white[4] = {1, 1, 1, 1};
     float y = 10.0f;
     std::vector<const char*> names;
 

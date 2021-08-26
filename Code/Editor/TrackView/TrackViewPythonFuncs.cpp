@@ -113,7 +113,7 @@ namespace
 
     AZStd::string PyTrackViewGetSequenceName(unsigned int index)
     {
-        if (index < PyTrackViewGetNumSequences())
+        if (static_cast<int>(index) < PyTrackViewGetNumSequences())
         {
             const CTrackViewSequenceManager* pSequenceManager = GetIEditor()->GetSequenceManager();
             return pSequenceManager->GetSequenceByIndex(index)->GetName();
@@ -293,8 +293,8 @@ namespace
             CTrackViewTrack* pTrack = pNode->GetTrackForParameter(paramType);
             if (!pTrack || (paramFlags & IAnimNode::eSupportedParamFlags_MultipleTracks))
             {
-                const char* name = pNode->GetParamName(paramType);
-                if (_stricmp(name, paramName) == 0)
+                AZStd::string name = pNode->GetParamName(paramType);
+                if (name == paramName)
                 {
                     CUndo undo("Create track");
                     if (!pNode->CreateTrack(paramType))
@@ -378,7 +378,7 @@ namespace
         }
 
         CTrackViewAnimNodeBundle foundNodes = pParentDirector->GetAllAnimNodes();
-        if (index < 0 || index >= foundNodes.GetCount())
+        if (index < 0 || index >= static_cast<int>(foundNodes.GetCount()))
         {
             throw std::runtime_error("Invalid node index");
         }

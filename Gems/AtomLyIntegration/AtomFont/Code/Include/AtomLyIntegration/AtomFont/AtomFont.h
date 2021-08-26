@@ -20,6 +20,7 @@
 #include <AzCore/std/parallel/shared_mutex.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <map>
+#include <unordered_map>
 
 #include <AzFramework/Font/FontInterface.h>
 #include <AzFramework/Scene/SceneSystemInterface.h>
@@ -96,7 +97,7 @@ namespace AZ
         void UnregisterFont(const char* fontName);
 
     private:
-        using FontMap = std::unordered_map<AzFramework::FontId, FFont*>;
+        using FontMap = AZStd::unordered_map<AzFramework::FontId, FFont*>;
         using FontMapItor = FontMap::iterator;
         using FontMapConstItor = FontMap::const_iterator;
 
@@ -135,7 +136,6 @@ namespace AZ
         FontMap m_fonts;
         FontFamilyMap m_fontFamilies; //!< Map font family names to weak ptrs so we can construct shared_ptrs but not keep a ref ourselves.
         FontFamilyReverseLookupMap m_fontFamilyReverseLookup; //<! FontFamily pointer reverse-lookup for quick removal
-        ISystem* m_system;
 
         AzFramework::FontDrawInterface* m_defaultFontDrawInterface = nullptr;
 

@@ -29,7 +29,7 @@ def teardown_editor(editor):
 
 def launch_and_validate_results(request, test_directory, editor, editor_script, expected_lines, unexpected_lines=[],
                                 halt_on_unexpected=False, run_python="--runpythontest", auto_test_mode=True, null_renderer=True, cfg_args=[],
-                                timeout=300):
+                                timeout=300, log_file_name="Editor.log"):
     """
     Runs the Editor with the specified script, and monitors for expected log lines.
     :param request: Special fixture providing information of the requesting test function.
@@ -44,6 +44,7 @@ def launch_and_validate_results(request, test_directory, editor, editor_script, 
     :param null_renderer: Specifies the test does not require the renderer. Defaults to True.
     :param cfg_args: Additional arguments for CFG, such as LevelName.
     :param timeout: Length of time for test to run. Default is 60.
+    :param log_file_name: Name of the log file created by the editor. Defaults to 'Editor.log'
     """
     test_case = os.path.join(test_directory, editor_script)
     request.addfinalizer(lambda: teardown_editor(editor))
@@ -58,7 +59,17 @@ def launch_and_validate_results(request, test_directory, editor, editor_script, 
 
     with editor.start():
 
-        editorlog_file = os.path.join(editor.workspace.paths.project_log(), 'Editor.log')
+        editorlog_file = os.path.join(editor.workspace.paths.project_log(), log_file_name)
+
+        # Log monitor requires the file to exist.
+        logger.debug(f"Waiting until log file <{editorlog_file}> exists...")
+        waiter.wait_for(
+            lambda: os.path.exists(editorlog_file),
+            timeout=60,
+            exc=f"Log file '{editorlog_file}' was never created by another process.",
+            interval=1,
+        )
+        logger.debug(f"Done! log file <{editorlog_file}> exists.")
 
         # Initialize the log monitor and set time to wait for log creation
         log_monitor = ly_test_tools.log.log_monitor.LogMonitor(launcher=editor, log_file_path=editorlog_file)

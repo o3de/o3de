@@ -8,10 +8,6 @@
 
 
 // Description : IMaterial interface declaration.
-
-
-#ifndef CRYINCLUDE_CRYCOMMON_IMATERIAL_H
-#define CRYINCLUDE_CRYCOMMON_IMATERIAL_H
 #pragma once
 
 struct ISurfaceType;
@@ -19,18 +15,13 @@ struct ISurfaceTypeManager;
 class ICrySizer;
 
 enum EEfResTextures : int; // Need to specify a fixed size for the forward declare to work on clang
-struct IRenderShaderResources;
-struct SEfTexModificator;
-struct SInputShaderResources;
 
 struct SShaderItem;
 struct SShaderParam;
 struct IShader;
-struct IShaderPublicParams;
 struct IMaterial;
 struct IMaterialManager;
 struct CMaterialCGF;
-struct CRenderChunk;
 struct IRenderMesh;
 
 #include <Tarray.h>
@@ -40,7 +31,7 @@ struct IRenderMesh;
 
 #ifdef MAX_SUB_MATERIALS
 // This checks that the values are in sync in the different files.
-COMPILE_TIME_ASSERT(MAX_SUB_MATERIALS == 128);
+static_assert(MAX_SUB_MATERIALS == 128);
 #else
 #define MAX_SUB_MATERIALS 128
 #endif
@@ -162,90 +153,6 @@ enum EMaterialCopyFlags
     MTL_COPY_TEXTURES = BIT(1),
 };
 
-struct IMaterialHelpers
-{
-    virtual ~IMaterialHelpers() {}
-
-    //////////////////////////////////////////////////////////////////////////
-    virtual EEfResTextures FindTexSlot(const char* texName) const = 0;
-    virtual const char* FindTexName(EEfResTextures texSlot) const = 0;
-    virtual const char* LookupTexName(EEfResTextures texSlot) const = 0;
-    virtual const char* LookupTexDesc(EEfResTextures texSlot) const = 0;
-    virtual const char* LookupTexEnum(EEfResTextures texSlot) const = 0;
-    virtual const char* LookupTexSuffix(EEfResTextures texSlot) const = 0;
-    virtual bool IsAdjustableTexSlot(EEfResTextures texSlot) const = 0;
-
-    //////////////////////////////////////////////////////////////////////////
-    virtual bool SetGetMaterialParamFloat(IRenderShaderResources& pShaderResources, const char* sParamName, float& v, bool bGet) const = 0;
-    virtual bool SetGetMaterialParamVec3(IRenderShaderResources& pShaderResources, const char* sParamName, Vec3& v, bool bGet) const = 0;
-
-    //////////////////////////////////////////////////////////////////////////
-    virtual void SetTexModFromXml(SEfTexModificator& pShaderResources, const XmlNodeRef& node) const = 0;
-    virtual void SetXmlFromTexMod(const SEfTexModificator& pShaderResources, XmlNodeRef& node) const = 0;
-
-    //////////////////////////////////////////////////////////////////////////
-    virtual void SetTexturesFromXml(SInputShaderResources& pShaderResources, const XmlNodeRef& node) const = 0;
-    virtual void SetXmlFromTextures( SInputShaderResources& pShaderResources, XmlNodeRef& node) const = 0;
-
-    //////////////////////////////////////////////////////////////////////////
-    virtual void SetVertexDeformFromXml(SInputShaderResources& pShaderResources, const XmlNodeRef& node) const = 0;
-    virtual void SetXmlFromVertexDeform(const SInputShaderResources& pShaderResources, XmlNodeRef& node) const = 0;
-
-    //////////////////////////////////////////////////////////////////////////
-    virtual void SetLightingFromXml(SInputShaderResources& pShaderResources, const XmlNodeRef& node) const = 0;
-    virtual void SetXmlFromLighting(const SInputShaderResources& pShaderResources, XmlNodeRef& node) const = 0;
-
-    //////////////////////////////////////////////////////////////////////////
-    virtual void SetShaderParamsFromXml(SInputShaderResources& pShaderResources, const XmlNodeRef& node) const = 0;
-    virtual void SetXmlFromShaderParams(const SInputShaderResources& pShaderResources, XmlNodeRef& node) const = 0;
-
-    //////////////////////////////////////////////////////////////////////////
-    virtual void MigrateXmlLegacyData(SInputShaderResources& pShaderResources, const XmlNodeRef& node) const = 0;
-};
-
-//////////////////////////////////////////////////////////////////////////////////////
-// Description:
-//    IMaterialLayer is group of material layer properties.
-//    Each layer is composed of shader item, specific layer textures, lod info, etc
-struct IMaterialLayer
-{
-    // <interfuscator:shuffle>
-    virtual ~IMaterialLayer(){}
-    // Reference counting
-    virtual void AddRef() = 0;
-    virtual void Release() = 0;
-
-    // Description:
-    //    - Enable/disable layer usage
-    virtual void Enable(bool bEnable = true) = 0;
-    // Description:
-    //    - Check if layer enabled
-    virtual bool IsEnabled() const = 0;
-    // Description:
-    //    - Enable/disable fade out
-    virtual void FadeOut(bool bFadeOut = true) = 0;
-    // Description:
-    //    - Check if layer fades out
-    virtual bool DoesFadeOut() const = 0;
-    // Description:
-    //    - Set shader item
-    virtual void SetShaderItem(const _smart_ptr<IMaterial> pParentMtl, const SShaderItem& pShaderItem) = 0;
-    // Description:
-    //    - Return shader item
-    virtual const SShaderItem& GetShaderItem() const = 0;
-    virtual SShaderItem& GetShaderItem() = 0;
-    // Description:
-    //    - Set layer usage flags
-    virtual void SetFlags(uint8 nFlags) = 0;
-    // Description:
-    //    - Get layer usage flags
-    virtual uint8 GetFlags() const = 0;
-
-    // todo: layer specific textures support
-    //
-    // </interfuscator:shuffle>
-};
-
 struct IMaterial
 {
     // TODO: Remove it!
@@ -254,7 +161,7 @@ struct IMaterial
     float m_fDefautMappingScale;
 
     // <interfuscator:shuffle>
-    virtual ~IMaterial() {};
+    virtual ~IMaterial() {}
 
     //////////////////////////////////////////////////////////////////////////
     // Reference counting.
@@ -263,7 +170,6 @@ struct IMaterial
     virtual void Release() = 0;
     virtual int GetNumRefs() = 0;
 
-    virtual IMaterialHelpers& GetMaterialHelpers() = 0;
     virtual IMaterialManager* GetMaterialManager() = 0;
 
     //////////////////////////////////////////////////////////////////////////
@@ -295,10 +201,6 @@ struct IMaterial
     virtual ISurfaceType* GetSurfaceType() = 0;
 
     // shader item
-    virtual void ReleaseCurrentShaderItem() = 0;
-    virtual void SetShaderItem(const SShaderItem& _ShaderItem) = 0;
-    // [Alexey] EF_LoadShaderItem return value with RefCount = 1, so if you'll use SetShaderItem after EF_LoadShaderItem use Assign function
-    virtual void AssignShaderItem(const SShaderItem& _ShaderItem) = 0;
     virtual SShaderItem& GetShaderItem() = 0;
     virtual const SShaderItem& GetShaderItem() const = 0;
 
@@ -309,41 +211,6 @@ struct IMaterial
 
     // Returns true if streamed in
     virtual bool IsStreamedIn(const int nMinPrecacheRoundIds[MAX_STREAM_PREDICTION_ZONES], IRenderMesh* pRenderMesh) const = 0;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Sub materials access.
-    //////////////////////////////////////////////////////////////////////////
-    //! Returns number of child sub materials holded by this material.
-    virtual void SetSubMtlCount(int numSubMtl) = 0;
-    //! Returns number of child sub materials holded by this material.
-    virtual int GetSubMtlCount() = 0;
-    //! Return sub material at specified index.
-    virtual _smart_ptr<IMaterial> GetSubMtl(int nSlot) = 0;
-    // Assign material to the sub mtl slot.
-    // Must first allocate slots using SetSubMtlCount.
-    virtual void SetSubMtl(int nSlot, _smart_ptr<IMaterial> pMtl) = 0;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Layers access.
-    //////////////////////////////////////////////////////////////////////////
-    //! Returns number of layers in this material.
-    virtual void SetLayerCount(uint32 nCount) = 0;
-    //! Returns number of layers in this material.
-    virtual uint32 GetLayerCount() const = 0;
-    //! Set layer at slot id (### MUST ALOCATE SLOTS FIRST ### USING SetLayerCount)
-    virtual void SetLayer(uint32 nSlot, IMaterialLayer* pLayer) = 0;
-    //! Return active layer
-    virtual const IMaterialLayer* GetLayer(uint8 nLayersMask, uint8 nLayersUsageMask) const = 0;
-    //! Return layer at slot id
-    virtual const IMaterialLayer* GetLayer(uint32 nSlot) const = 0;
-    //! Create a new layer
-    virtual IMaterialLayer* CreateLayer() = 0;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Always get a valid material.
-    // If not multi material return this material.
-    // If Multi material return Default material if wrong id.
-    virtual _smart_ptr<IMaterial> GetSafeSubMtl(int nSlot) = 0;
 
     // Description:
     //    Fill an array of integeres representing surface ids of the sub materials or the material itself.
@@ -431,8 +298,6 @@ struct IMaterial
 
     virtual uint32 GetDccMaterialHash() const = 0;
     virtual void SetDccMaterialHash(uint32 hash) = 0;
-
-    virtual CryCriticalSection& GetSubMaterialResizeLock() = 0;
 
     virtual void UpdateShaderItems() = 0;
 
@@ -569,12 +434,5 @@ struct IMaterialManager
     // Updates material data in the renderer
     virtual void RefreshMaterialRuntime() = 0;
 
-    //// Forcing to create ISurfaceTypeManager
-    //virtual void CreateSurfaceTypeManager() = 0;
-    //// Forcing to destroy ISurfaceTypeManager
-    //virtual void ReleaseSurfaceTypeManager() = 0;
-
     // </interfuscator:shuffle>
 };
-
-#endif // CRYINCLUDE_CRYCOMMON_IMATERIAL_H

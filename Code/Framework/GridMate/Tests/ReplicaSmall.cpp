@@ -388,7 +388,7 @@ public:
         // If data set was not changed it should remain as non-dirty even after several PrepareData calls
         for (auto i = 0; i < 10; ++i)
         {
-            auto pdr = chunk->Data1.PrepareData(EndianType::BigEndian, 0);
+            [[maybe_unused]] auto pdr = chunk->Data1.PrepareData(EndianType::BigEndian, 0);
 
             AZ_TEST_ASSERT(chunk->Data1.IsDefaultValue() == true);
         }

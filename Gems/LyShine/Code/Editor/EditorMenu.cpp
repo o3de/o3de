@@ -704,7 +704,7 @@ void EditorWindow::AddMenu_View()
         action->setEnabled(canvasLoaded);
         QObject::connect(action,
             &QAction::triggered,
-            [this]([[maybe_unused]] bool checked)
+            []([[maybe_unused]] bool checked)
         {
             gEnv->pCryFont->ReloadAllFonts();
         });

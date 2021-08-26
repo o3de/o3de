@@ -109,7 +109,7 @@ bool XMLBinary::CXMLBinaryWriter::WriteNode(IDataWriter* pFile, XmlNodeRef node,
 
     BinaryFileHeader header;
     static const char signature[] = "CryXmlB";
-    COMPILE_TIME_ASSERT(sizeof(signature) == sizeof(header.szSignature));
+    static_assert(sizeof(signature) == sizeof(header.szSignature));
     memcpy(header.szSignature, signature, sizeof(header.szSignature));
     nTheoreticalPosition += sizeof(header);
     align(nTheoreticalPosition, nAlignment);
@@ -244,7 +244,7 @@ bool XMLBinary::CXMLBinaryWriter::CompileTablesForNode(XmlNodeRef node, int nPar
         nd.nContentStringOffset = nContentStringOffset;
         nd.nParentIndex = nParentIndex;
         nd.nFirstAttributeIndex = nFirstAttributeIndex;
-        nd.nAttributeCount = nAttributeCount;
+        nd.nAttributeCount = static_cast<uint16>(nAttributeCount);
 
         m_nodes.push_back(nd);
     }
@@ -271,7 +271,7 @@ bool XMLBinary::CXMLBinaryWriter::CompileTablesForNode(XmlNodeRef node, int nPar
         }
     }
 
-    m_nodes[nIndex].nChildCount = nChildCount;
+    m_nodes[nIndex].nChildCount = static_cast<uint16>(nChildCount);
 
     return true;
 }
