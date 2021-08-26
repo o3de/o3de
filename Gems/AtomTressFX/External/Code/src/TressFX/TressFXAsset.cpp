@@ -37,7 +37,6 @@
 #include <AzCore/Math/Aabb.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
-#pragma optimize("", off)
 namespace AMD
 {
     static void GetTangentVectors(const Vector3& n, Vector3& t0, Vector3& t1)

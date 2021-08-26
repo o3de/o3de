@@ -33,6 +33,7 @@
 #include <TressFX/TressFXCommon.h>
 
 
+#include <memory>
 #include <assert.h>
 #include <vector>
 #include <unordered_map>
