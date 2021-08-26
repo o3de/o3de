@@ -928,7 +928,7 @@ namespace UnitTest
         PlatformNameList platforms = BuilderSettingManager::Instance()->GetPlatformList();
 
     #ifndef AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS
-        ASSERT_TRUE(platforms.size() == 4);
+        EXPECT_THAT(platforms, testing::UnorderedPointwise(testing::Eq(), {"pc", "linux", "mac", "ios", "android"}));
     #endif //AZ_TOOLS_EXPAND_FOR_RESTRICTED_PLATFORMS
     }
 

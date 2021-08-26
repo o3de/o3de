@@ -284,11 +284,18 @@ namespace AZ
         void LocalFileIO::CheckInvalidWrite([[maybe_unused]] const char* path)
         {
 #if defined(AZ_ENABLE_TRACING)
-            const char* assetsAlias = GetAlias("@assets@");
-            if (path && assetsAlias && AZ::IO::PathView(path).IsRelativeTo(assetsAlias))
+            const char* assetAliasPath = GetAlias("@assets@");
+            if (path && assetAliasPath)
             {
-                AZ_Error("FileIO", false, "You may not alter data inside the asset cache.  Please check the call stack and consider writing into the source asset folder instead.\n"
-                    "Attempted write location: %s", path);
+                AZStd::string assetsAlias(assetAliasPath);
+                AZStd::string pathString = path;
+                AZStd::to_lower(assetsAlias.begin(), assetsAlias.end());
+                AZStd::to_lower(pathString.begin(), pathString.end());
+                if (AZ::IO::PathView(pathString.c_str()).IsRelativeTo(assetsAlias.c_str()))
+                {
+                    AZ_Error("FileIO", false, "You may not alter data inside the asset cache.  Please check the call stack and consider writing into the source asset folder instead.\n"
+                        "Attempted write location: %s", path);
+                }
             }
 #endif
         }
