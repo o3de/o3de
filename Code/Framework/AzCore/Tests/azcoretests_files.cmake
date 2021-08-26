@@ -191,6 +191,7 @@ set(FILES
     AZStd/LockFreeQueues.cpp
     AZStd/LockFreeStacks.cpp
     AZStd/LockTests.cpp
+    AZStd/Math.cpp
     AZStd/Numeric.cpp
     AZStd/Ordered.cpp
     AZStd/Optional.cpp
