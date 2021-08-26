@@ -66,7 +66,7 @@ public:
         CRecord(CTrackViewNode* pNode = nullptr);
         CTrackViewNode* GetNode() const { return m_pNode; }
         bool IsGroup() const { return m_pNode->GetChildCount() != 0; }
-        const QString GetName() const { return m_pNode->GetName(); }
+        const QString GetName() const { return QString::fromUtf8(m_pNode->GetName().c_str()); }
 
         // Workaround: CXTPReportRecord::IsVisible is
         // unreliable after the last visible element

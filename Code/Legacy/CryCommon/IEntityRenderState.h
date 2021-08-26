@@ -6,14 +6,14 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_IENTITYRENDERSTATE_H
-#define CRYINCLUDE_CRYCOMMON_IENTITYRENDERSTATE_H
 #pragma once
+
+#include "IStatObj.h"
 
 #include <IRenderer.h>
 #include <limits>
 #include <AzCore/Component/EntityId.h>
+
 
 namespace AZ 
 {
@@ -21,6 +21,7 @@ namespace AZ
 }
 
 struct IMaterial;
+struct IRenderNode;
 struct IVisArea;
 struct SRenderingPassInfo;
 struct SRendItemSorter;
@@ -576,51 +577,6 @@ struct IVoxelObject
     // </interfuscator:shuffle>
 };
 
-// Summary:
-//   IFogVolumeRenderNode is an interface to the Fog Volume Render Node object.
-struct SFogVolumeProperties
-{
-    // Common parameters.
-    // Center position & rotation values are taken from the entity matrix.
-
-    int           m_volumeType;
-    Vec3      m_size;
-    ColorF        m_color;
-    bool      m_useGlobalFogColor;
-    bool        m_ignoresVisAreas;
-    bool        m_affectsThisAreaOnly;
-    float     m_globalDensity;
-    float     m_densityOffset;
-    float     m_softEdges;
-    float     m_fHDRDynamic;            // 0 to get the same results in LDR, <0 to get darker, >0 to get brighter.
-    float     m_nearCutoff;
-
-    float m_heightFallOffDirLong;       // Height based fog specifics.
-    float m_heightFallOffDirLati;       // Height based fog specifics.
-    float m_heightFallOffShift;             // Height based fog specifics.
-    float m_heightFallOffScale;             // Height based fog specifics.
-
-    float m_rampStart;
-    float m_rampEnd;
-    float m_rampInfluence;
-    float m_windInfluence;
-    float m_densityNoiseScale;
-    float m_densityNoiseOffset;
-    float m_densityNoiseTimeFrequency;
-    Vec3 m_densityNoiseFrequency;
-};
-
-struct IFogVolumeRenderNode
-    : public IRenderNode
-{
-    // <interfuscator:shuffle>
-    virtual void SetFogVolumeProperties(const SFogVolumeProperties& properties) = 0;
-    virtual const Matrix34& GetMatrix() const = 0;
-
-    virtual void FadeGlobalDensity(float fadeTime, float newGlobalDensity) = 0;
-    // </interfuscator:shuffle>
-};
-
 // LY renderer system spec levels.
 enum class EngineSpec : AZ::u32
 {
@@ -630,159 +586,3 @@ enum class EngineSpec : AZ::u32
     VeryHigh,
     Never = UINT_MAX,
 };
-
-struct SDecalProperties
-{
-    SDecalProperties()
-    {
-        m_projectionType = ePlanar;
-        m_sortPrio = 0;
-        m_deferred = false;
-        m_pos = Vec3(0.0f, 0.0f, 0.0f);
-        m_normal = Vec3(0.0f, 0.0f, 1.0f);
-        m_explicitRightUpFront = Matrix33::CreateIdentity();
-        m_radius = 1.0f;
-        m_depth = 1.0f;
-        m_opacity = 1.0f;
-        m_angleAttenuation = 1.0f;
-        m_maxViewDist = 8000.0f;
-        m_minSpec = EngineSpec::Low;
-    }
-
-    enum EProjectionType : int
-    {
-        ePlanar,
-        eProjectOnTerrain,
-        eProjectOnTerrainAndStaticObjects
-    };
-
-    EProjectionType m_projectionType;
-    uint8 m_sortPrio;
-    uint8 m_deferred;
-    Vec3 m_pos;
-    Vec3 m_normal;
-    Matrix33 m_explicitRightUpFront;
-    float m_radius;
-    float m_depth;
-    const char* m_pMaterialName;
-    float m_opacity;
-    float m_angleAttenuation;
-    float m_maxViewDist;
-    EngineSpec m_minSpec;
-};
-
-// Description:
-//   IDecalRenderNode is an interface to the Decal Render Node object.
-struct IDecalRenderNode
-    : public IRenderNode
-{
-    // <interfuscator:shuffle>
-    virtual void SetDecalProperties(const SDecalProperties& properties) = 0;
-    virtual const SDecalProperties* GetDecalProperties() const = 0;
-    virtual const Matrix34& GetMatrix() = 0;
-    virtual void CleanUpOldDecals() = 0;
-    // </interfuscator:shuffle>
-};
-
-// Description:
-//   IWaterVolumeRenderNode is an interface to the Water Volume Render Node object.
-struct IWaterVolumeRenderNode
-    : public IRenderNode
-{
-    enum EWaterVolumeType
-    {
-        eWVT_Unknown,
-        eWVT_Ocean,
-        eWVT_Area,
-        eWVT_River
-    };
-
-    // <interfuscator:shuffle>
-    // Description:
-    // Sets if the render node is attached to a parent entity
-    // This must be called right after the object construction if it is the case
-    // Only supported for Areas (not rivers or ocean)
-    virtual void SetAreaAttachedToEntity() = 0;
-
-    virtual void SetFogDensity(float fogDensity) = 0;
-    virtual float GetFogDensity() const = 0;
-    virtual void SetFogColor(const Vec3& fogColor) = 0;
-    virtual void SetFogColorAffectedBySun(bool enable) = 0;
-    virtual void SetFogShadowing(float fogShadowing) = 0;
-
-    virtual void SetCapFogAtVolumeDepth(bool capFog) = 0;
-    virtual void SetVolumeDepth(float volumeDepth) = 0;
-    virtual void SetStreamSpeed(float streamSpeed) = 0;
-
-    virtual void SetCaustics(bool caustics) = 0;
-    virtual void SetCausticIntensity(float causticIntensity) = 0;
-    virtual void SetCausticTiling(float causticTiling) = 0;
-    virtual void SetCausticHeight(float causticHeight) = 0;
-    virtual void SetAuxPhysParams(pe_params_area*) = 0;
-
-    virtual void CreateOcean(uint64 volumeID, /* TBD */ bool keepSerializationParams = false) = 0;
-    virtual void CreateArea(uint64 volumeID, const Vec3* pVertices, unsigned int numVertices, const Vec2& surfUVScale, const Plane_tpl<f32>& fogPlane, bool keepSerializationParams = false, int nSID = -1) = 0;
-    virtual void CreateRiver(uint64 volumeID, const Vec3* pVertices, unsigned int numVertices, float uTexCoordBegin, float uTexCoordEnd, const Vec2& surfUVScale, const Plane_tpl<f32>& fogPlane, bool keepSerializationParams = false, int nSID = -1) = 0;
-    virtual void CreateRiver(uint64 volumeID, const AZStd::vector<AZ::Vector3>& verticies, const AZ::Transform& transform, float uTexCoordBegin, float uTexCoordEnd, const AZ::Vector2& surfUVScale, const AZ::Plane& fogPlane, bool keepSerializationParams = false, int nSID = -1) = 0;
-
-    virtual void SetAreaPhysicsArea(const Vec3* pVertices, unsigned int numVertices, bool keepSerializationParams = false) = 0;
-    virtual void SetRiverPhysicsArea(const Vec3* pVertices, unsigned int numVertices, bool keepSerializationParams = false) = 0;
-    virtual void SetRiverPhysicsArea(const AZStd::vector<AZ::Vector3>& verticies, const AZ::Transform& transform, bool keepSerializationParams = false) = 0;
-
-    // </interfuscator:shuffle>
-
-    // This flag is used to account for legacy entities which used to serialize the node without parent objects.
-    // Now there are runtime components which spawn the rendering node, however we need to support legacy code as well. 
-    // Remove this flag when legacy entities are removed entirely
-    bool m_hasToBeSerialised = true;
-};
-
-// Description:
-//   IDistanceCloudRenderNode is an interface to the Distance Cloud Render Node object.
-struct SDistanceCloudProperties
-{
-    Vec3 m_pos;
-    float m_sizeX;
-    float m_sizeY;
-    float m_rotationZ;
-    const char* m_pMaterialName;
-};
-
-struct IDistanceCloudRenderNode
-    : public IRenderNode
-{
-    virtual void SetProperties(const SDistanceCloudProperties& properties) = 0;
-};
-
-struct SVolumeObjectProperties
-{
-};
-
-struct SVolumeObjectMovementProperties
-{
-    bool m_autoMove;
-    Vec3 m_speed;
-    Vec3 m_spaceLoopBox;
-    float m_fadeDistance;
-};
-
-// Description:
-//   IVolumeObjectRenderNode is an interface to the Volume Object Render Node object.
-struct IVolumeObjectRenderNode
-    : public IRenderNode
-{
-    // <interfuscator:shuffle>
-    virtual void LoadVolumeData(const char* filePath) = 0;
-    virtual void SetProperties(const SVolumeObjectProperties& properties) = 0;
-    virtual void SetMovementProperties(const SVolumeObjectMovementProperties& properties) = 0;
-    // </interfuscator:shuffle>
-};
-
-#if !defined(EXCLUDE_DOCUMENTATION_PURPOSE)
-struct IPrismRenderNode
-    : public IRenderNode
-{
-};
-#endif // EXCLUDE_DOCUMENTATION_PURPOSE
-
-#endif // CRYINCLUDE_CRYCOMMON_IENTITYRENDERSTATE_H

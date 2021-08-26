@@ -657,64 +657,6 @@ namespace Overlap {
         return AfterStart >= 0.0f;
     }
 
-    /*!
-    *
-    * overlap-test between line-segment and a triangle.
-    * IMPORTANT: this is a single-sided test. That means its not sufficient
-    * that the triangle and line-segment overlap, its also important that the triangle
-    * is "visible" when you are looking along the linesegment from "start" to "end".
-    *
-    * If you need a double-sided test, you'll have to call this function twice with
-    * reversed order of triangle vertices.
-    *
-    * return values
-    * return "true" if linesegment and triangle overlap.
-    */
-    inline bool Lineseg_Triangle(const Lineseg& lineseg, const Vec3& v0, const Vec3& v1, const Vec3& v2)
-    {
-        const float Epsilon = 0.0000001f;
-
-        Vec3 edgeA = v1 - v0;
-        Vec3 edgeB = v2 - v0;
-
-        Vec3 dir = lineseg.end - lineseg.start;
-
-        Vec3 p = dir.Cross(edgeA);
-        Vec3 t = lineseg.start - v0;
-        Vec3 q = t.Cross(edgeB);
-
-        float dot = edgeB.Dot(p);
-
-        float u = t.Dot(p);
-        float v = dir.Dot(q);
-
-        float DotGreaterThanEpsilon = dot - Epsilon;
-        float VGreaterEqualThanZero = v;
-        float UGreaterEqualThanZero = u;
-        float UVLessThanDot = dot - (u + v);
-        float ULessThanDot = dot - u;
-
-        float UVGreaterEqualThanZero = (float)fsel(VGreaterEqualThanZero, UGreaterEqualThanZero, VGreaterEqualThanZero);
-        float UUVLessThanDot = (float)fsel(UVLessThanDot, ULessThanDot, UVLessThanDot);
-        float BothGood = (float)fsel(UVGreaterEqualThanZero, UUVLessThanDot, UVGreaterEqualThanZero);
-        float AllGood = (float)fsel(DotGreaterThanEpsilon, BothGood, DotGreaterThanEpsilon);
-
-        if (AllGood < 0.0f)
-        {
-            return false;
-        }
-
-        float dt = edgeA.Dot(q) / dot;
-
-        Vec3 result = (dir * dt) + lineseg.start;
-
-        float AfterStart = (result - lineseg.start).Dot(dir);
-        float BeforeEnd = -(result - lineseg.end).Dot(dir);
-        float Within = (float)fsel(AfterStart, BeforeEnd, AfterStart);
-
-        return Within >= 0.0f;
-    }
-
     /*----------------------------------------------------------------------------------
     * Sphere_AABB
     *   Sphere and AABB are assumed to be in the same space

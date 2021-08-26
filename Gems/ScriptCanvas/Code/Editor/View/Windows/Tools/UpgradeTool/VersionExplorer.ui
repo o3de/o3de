@@ -321,6 +321,26 @@
              </property>
             </widget>
            </item>
+          <item row="5" column="6">
+            <widget class="QCheckBox" name="forceUpgrade">
+              <property name="text">
+                <string>Force Upgrade</string>
+              </property>
+              <property name="checked">
+                <bool>false</bool>
+              </property>
+            </widget>
+          </item>
+          <item row="5" column="7">
+            <widget class="QCheckBox" name="verbose">
+              <property name="text">
+                <string>Verbose</string>
+              </property>
+              <property name="checked">
+                <bool>false</bool>
+              </property>
+            </widget>
+          </item>
            <item row="5" column="4">
             <widget class="QPushButton" name="closeButton">
              <property name="sizePolicy">
