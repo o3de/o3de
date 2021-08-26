@@ -277,9 +277,6 @@ class EditorTestSuite():
             editor_utils.kill_all_ly_processes(include_asset_processor=True)
         else:
             editor_utils.kill_all_ly_processes(include_asset_processor=False)
-        # Having attach_debugger will make the suite to fail on teardown to avoid submissions of this flag by accident
-        for test_spec_name, result in test_data.results.items():
-            assert not result.test_spec.attach_debugger, "Found attach_debugger=True in test '{test_spec_name}', please remove it once finished debugging" 
 
     class Runner():
         def __init__(self, name, func, tests):
