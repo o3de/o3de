@@ -103,11 +103,6 @@ namespace AZ
             return m_propertyValues;
         }
 
-        const AZStd::vector<AZ::Name>& MaterialAsset::GetPropertyNames() const
-        {
-            return m_propertyNames;
-        }
-
         void MaterialAsset::SetReady()
         {
             m_status = AssetStatus::Ready;
@@ -152,6 +147,23 @@ namespace AZ
             }
         }
         
+        void MaterialAsset::RealignPropertyValues()
+        {
+            const MaterialPropertiesLayout* propertyLayout = GetMaterialPropertiesLayout();
+            const size_t numProperties = m_propertyValues.size();
+            AZStd::vector<MaterialPropertyValue> alignedPropertyValues;
+            alignedPropertyValues.resize(numProperties);
+            for (size_t i = 0; i < numProperties; ++i)
+            {
+                const size_t index = propertyLayout->FindPropertyIndex(m_propertyNames[i]).GetIndex();
+                if (index < numProperties)
+                {
+                    alignedPropertyValues[index] = m_propertyValues[i];
+                }
+            }
+            AZStd::swap(alignedPropertyValues, m_propertyValues);
+        } 
+
         void MaterialAsset::ReinitializeMaterialTypeAsset(Data::Asset<Data::AssetData> asset)
         {
             Data::Asset<MaterialTypeAsset> newMaterialTypeAsset = { asset.GetAs<MaterialTypeAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
@@ -165,6 +177,12 @@ namespace AZ
 
                 // Notify interested parties that this MaterialAsset is changed and may require other data to reinitialize as well
                 MaterialReloadNotificationBus::Event(GetId(), &MaterialReloadNotifications::OnMaterialAssetReinitialized, Data::Asset<MaterialAsset>{this, AZ::Data::AssetLoadBehavior::PreLoad});
+            }
+
+            // Realign property values to MaterialPropertyLayout if m_propertyNames is populated.
+            if (!m_propertyNames.empty())
+            {
+                RealignPropertyValues();
             }
         }
 

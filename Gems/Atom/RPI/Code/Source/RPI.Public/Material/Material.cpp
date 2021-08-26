@@ -109,29 +109,13 @@ namespace AZ
                 m_propertyValues.resize(materialAsset.GetPropertyValues().size());
                 AZ_Assert(m_propertyValues.size() == m_layout->GetPropertyCount(), "The number of properties in this material doesn't match the property layout");
 
-                auto& propertyNames = materialAsset.GetPropertyNames();
-                if (!propertyNames.empty())
+                for (size_t i = 0; i < materialAsset.GetPropertyValues().size(); ++i)
                 {
-                    for (auto& propertyName : propertyNames)
+                    const MaterialPropertyValue& value = materialAsset.GetPropertyValues()[i];
+                    MaterialPropertyIndex propertyIndex{ i };
+                    if (!SetPropertyValue(propertyIndex, value))
                     {
-                        auto propertyIndex = materialAsset.GetMaterialPropertiesLayout()->FindPropertyIndex(propertyName);
-                        const MaterialPropertyValue& value = materialAsset.GetPropertyValues()[propertyIndex.GetIndex()];
-                        if (!SetPropertyValue(propertyIndex, value))
-                        {
-                            return RHI::ResultCode::Fail;
-                        }
-                    }
-                }
-                else
-                {
-                    for (size_t i = 0; i < materialAsset.GetPropertyValues().size(); ++i)
-                    {
-                        const MaterialPropertyValue& value = materialAsset.GetPropertyValues()[i];
-                        MaterialPropertyIndex propertyIndex{ i };
-                        if (!SetPropertyValue(propertyIndex, value))
-                        {
-                            return RHI::ResultCode::Fail;
-                        }
+                        return RHI::ResultCode::Fail;
                     }
                 }
 
