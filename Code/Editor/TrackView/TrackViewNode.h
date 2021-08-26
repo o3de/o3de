@@ -159,7 +159,7 @@ public:
     virtual ~CTrackViewNode() {}
 
     // Name
-    virtual const char* GetName() const = 0;
+    virtual AZStd::string GetName() const = 0;
     virtual bool SetName([[maybe_unused]] const char* pName) { return false; };
     virtual bool CanBeRenamed() const { return false; }
 

@@ -72,7 +72,7 @@ namespace AZ
 
         ShaderVariantSearchResult ShaderVariantTreeAsset::FindVariantStableId(const ShaderOptionGroupLayout* shaderOptionGroupLayout, const ShaderVariantId& shaderVariantId) const
         {
-            AZ_PROFILE_FUNCTION(AzRender);
+            AZ_PROFILE_FUNCTION(RPI);
 
             struct NodeToVisit
             {

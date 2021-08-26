@@ -144,7 +144,7 @@ namespace AZ
 
 #ifdef AZ_RHI_USE_TILED_RESOURCES
             {
-                AZ_PROFILE_SCOPE(AzRender, "StreamImagePool::CreateHeap");
+                AZ_PROFILE_SCOPE(RHI, "StreamImagePool::CreateHeap");
 
                 CD3DX12_HEAP_DESC heapDesc(descriptor.m_budgetInBytes, D3D12_HEAP_TYPE_DEFAULT, 0, D3D12_HEAP_FLAG_DENY_BUFFERS | D3D12_HEAP_FLAG_DENY_RT_DS_TEXTURES);
 

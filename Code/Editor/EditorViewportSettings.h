@@ -86,6 +86,9 @@ namespace SandboxEditor
     SANDBOX_API bool CameraTranslateSmoothingEnabled();
     SANDBOX_API void SetCameraTranslateSmoothingEnabled(bool enabled);
 
+    SANDBOX_API bool CameraCaptureCursorForLook();
+    SANDBOX_API void SetCameraCaptureCursorForLook(bool capture);
+
     SANDBOX_API AzFramework::InputChannelId CameraTranslateForwardChannelId();
     SANDBOX_API void SetCameraTranslateForwardChannelId(AZStd::string_view cameraTranslateForwardId);
 

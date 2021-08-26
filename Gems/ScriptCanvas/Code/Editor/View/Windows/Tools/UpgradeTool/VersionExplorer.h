@@ -82,7 +82,7 @@ namespace ScriptCanvasEditor
         void DoScan();
         void ScanComplete(const AZ::Data::Asset<AZ::Data::AssetData>&);
 
-        void InspectAsset(AZ::Data::Asset<AZ::Data::AssetData>& asset);
+        void InspectAsset(AZ::Data::Asset<AZ::Data::AssetData>& asset, AZ::Data::AssetInfo& assetInfo);
 
         void OnUpgradeAll();
 
@@ -116,10 +116,11 @@ namespace ScriptCanvasEditor
         bool m_inProgress = false;
         size_t m_currentAssetIndex = 0;
         size_t m_inspectedAssets = 0;
+        size_t m_failedAssets = 0;
+        size_t m_discoveredAssets = 0;
 
         IUpgradeRequests::AssetList m_assetsToInspect;
         IUpgradeRequests::AssetList::iterator m_inspectingAsset;
-
         using UpgradeAssets = AZStd::vector<AZ::Data::Asset<AZ::Data::AssetData>>;
         UpgradeAssets m_assetsToUpgrade;
         UpgradeAssets::iterator m_inProgressAsset;
@@ -138,7 +139,7 @@ namespace ScriptCanvasEditor
 
         bool m_isUpgradingSingleGraph = false;
 
-        void UpgradeSingle(QPushButton* item, AzQtComponents::StyledBusyLabel* spinner, const AZ::Data::Asset<AZ::Data::AssetData>& asset);
+        void UpgradeSingle(QPushButton* item, AzQtComponents::StyledBusyLabel* spinner, AZ::Data::AssetInfo assetInfo);
 
         void FlushLogs();
 
@@ -157,5 +158,7 @@ namespace ScriptCanvasEditor
 
         bool m_overwriteAll = false;
         void PerformMove(AZ::Data::Asset<AZ::Data::AssetData>& asset, const AZStd::string& source, const AZStd::string& target);
+
+        void Log(const char* format, ...);
     };
 }

@@ -24,7 +24,6 @@
 #include <md5.h>
 
 //////////////////////////////////////////////////////////////////////////
-CXmlNode_PoolAlloc* g_pCXmlNode_PoolAlloc = 0;
 #ifdef CRY_COLLECT_XML_NODE_STATS
 SXmlNodeStats* g_pCXmlNode_Stats = 0;
 #endif
@@ -35,11 +34,9 @@ extern bool g_bEnableBinaryXmlLoading;
 CXmlUtils::CXmlUtils(ISystem* pSystem)
 {
     m_pSystem = pSystem;
-    m_pSystem->GetISystemEventDispatcher()->RegisterListener(this);
 
     // create IReadWriteXMLSink object
     m_pReadWriteXMLSink = new CReadWriteXMLSink();
-    g_pCXmlNode_PoolAlloc = new CXmlNode_PoolAlloc;
 #ifdef CRY_COLLECT_XML_NODE_STATS
     g_pCXmlNode_Stats = new SXmlNodeStats();
 #endif
@@ -53,8 +50,6 @@ CXmlUtils::CXmlUtils(ISystem* pSystem)
 //////////////////////////////////////////////////////////////////////////
 CXmlUtils::~CXmlUtils()
 {
-    m_pSystem->GetISystemEventDispatcher()->RemoveListener(this);
-    delete g_pCXmlNode_PoolAlloc;
 #ifdef CRY_COLLECT_XML_NODE_STATS
     delete g_pCXmlNode_Stats;
 #endif
@@ -200,13 +195,8 @@ IXmlSerializer* CXmlUtils::CreateXmlSerializer()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CXmlUtils::GetMemoryUsage(ICrySizer* pSizer)
+void CXmlUtils::GetMemoryUsage([[maybe_unused]] ICrySizer* pSizer)
 {
-    {
-        SIZER_COMPONENT_NAME(pSizer, "Nodes");
-        g_pCXmlNode_PoolAlloc->GetMemoryUsage(pSizer);
-    }
-
 #ifdef CRY_COLLECT_XML_NODE_STATS
     // yes, slow
     std::vector<const CXmlNode*> rootNodes;
@@ -258,18 +248,6 @@ void CXmlUtils::GetMemoryUsage(ICrySizer* pSizer)
         pSizer->Add("#NumRootNodes", rootNodes.size() << 10);
     }
 #endif
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CXmlUtils::OnSystemEvent(ESystemEvent event, [[maybe_unused]] UINT_PTR wparam, [[maybe_unused]] UINT_PTR lparam)
-{
-    switch (event)
-    {
-    case ESYSTEM_EVENT_LEVEL_POST_UNLOAD:
-    case ESYSTEM_EVENT_LEVEL_LOAD_END:
-        g_pCXmlNode_PoolAlloc->FreeMemoryIfEmpty();
-        break;
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////

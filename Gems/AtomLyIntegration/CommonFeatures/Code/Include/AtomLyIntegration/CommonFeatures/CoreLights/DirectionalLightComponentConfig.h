@@ -121,6 +121,8 @@ namespace AZ
             bool IsShadowFilteringDisabled() const;
             bool IsShadowPcfDisabled() const;
             bool IsPcfBoundarySearchDisabled() const;
+            bool IsSofteningBoundaryWidthDisabled() const;
+            bool IsEsmDisabled() const;
         };
     } // namespace Render
 } // namespace AZ

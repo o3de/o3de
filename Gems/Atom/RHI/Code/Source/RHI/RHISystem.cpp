@@ -19,6 +19,8 @@
 #include <Atom/RHI.Reflect/PlatformLimitsDescriptor.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 
+AZ_DEFINE_BUDGET(RHI);
+
 namespace AZ
 {
     namespace RHI
@@ -193,11 +195,11 @@ namespace AZ
 
         void RHISystem::FrameUpdate(FrameGraphCallback frameGraphCallback)
         {
-            AZ_PROFILE_FUNCTION(AzRender);
+            AZ_PROFILE_FUNCTION(RHI);
             AZ_ATOM_PROFILE_FUNCTION("RHI", "RHISystem: FrameUpdate");
 
             {
-                AZ_PROFILE_SCOPE(AzRender, "main per-frame work");
+                AZ_PROFILE_SCOPE(RHI, "main per-frame work");
                 m_frameScheduler.BeginFrame();
 
                 frameGraphCallback(m_frameScheduler);

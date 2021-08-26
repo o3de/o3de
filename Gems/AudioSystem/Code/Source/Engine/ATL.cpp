@@ -13,6 +13,7 @@
     #include <AzCore/Math/Color.h>
 #endif // !AUDIO_RELEASE
 
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
 #include <SoundCVars.h>
@@ -21,7 +22,8 @@
 #include <IAudioSystemImplementation.h>
 
 #include <ISystem.h>
-#include <IPhysics.h>
+#include <CryCommon/StlUtils.h>
+#include <algorithm>
 #include <IRenderAuxGeom.h>
 
 namespace Audio

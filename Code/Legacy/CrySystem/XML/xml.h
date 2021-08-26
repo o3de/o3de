@@ -6,14 +6,10 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYSYSTEM_XML_XML_H
-#define CRYINCLUDE_CRYSYSTEM_XML_XML_H
 #pragma once
 
 
 #include <algorithm>
-#include <PoolAllocator.h>
 #include <stack>
 
 #include "IXml.h"
@@ -344,9 +340,6 @@ private:
     friend class XmlParserImp;
 };
 
-typedef stl::PoolAllocatorNoMT<sizeof(CXmlNode)> CXmlNode_PoolAlloc;
-extern CXmlNode_PoolAlloc* g_pCXmlNode_PoolAlloc;
-
 #ifdef CRY_COLLECT_XML_NODE_STATS
 typedef std::set<CXmlNode*> TXmlNodeSet; // yes, slow, but really only for one-shot debugging
 struct SXmlNodeStats
@@ -361,35 +354,6 @@ struct SXmlNodeStats
 extern SXmlNodeStats* g_pCXmlNode_Stats;
 #endif
 
-/*
-//////////////////////////////////////////////////////////////////////////
-inline void* CXmlNode::operator new( size_t nSize )
-{
-    void *ptr = g_pCXmlNode_PoolAlloc->Allocate();
-    if (ptr)
-    {
-        memset( ptr,0,nSize ); // Clear objects memory.
-#ifdef CRY_COLLECT_XML_NODE_STATS
-        g_pCXmlNode_Stats->nodeSet.insert(reinterpret_cast<CXmlNode*> (ptr));
-        ++g_pCXmlNode_Stats->nAllocs;
-#endif
-    }
-    return ptr;
-}
-
-//////////////////////////////////////////////////////////////////////////
-inline void CXmlNode::operator delete( void *ptr )
-{
-    if (ptr)
-    {
-        g_pCXmlNode_PoolAlloc->Deallocate(ptr);
-#ifdef CRY_COLLECT_XML_NODE_STATS
-        g_pCXmlNode_Stats->nodeSet.erase(reinterpret_cast<CXmlNode*> (ptr));
-        ++g_pCXmlNode_Stats->nFrees;
-#endif
-    }
-}
-*/
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -434,6 +398,3 @@ private:
     unsigned int m_nAllocated;
     std::stack<CXmlNodeReuse*> m_pNodePool;
 };
-
-
-#endif // CRYINCLUDE_CRYSYSTEM_XML_XML_H

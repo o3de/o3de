@@ -269,7 +269,7 @@ namespace Terrain
 
     void TerrainFeatureProcessor::ProcessSurfaces(const FeatureProcessor::RenderPacket& process)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+        AZ_PROFILE_FUNCTION(AzRender);
 
         if (m_drawListTag.IsNull())
         {

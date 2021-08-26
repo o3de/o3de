@@ -346,10 +346,10 @@ IAnimTrack* CCompoundSplineTrack::GetSubTrack(int nIndex) const
 }
 
 //////////////////////////////////////////////////////////////////////////
-const char* CCompoundSplineTrack::GetSubTrackName(int nIndex) const
+AZStd::string CCompoundSplineTrack::GetSubTrackName(int nIndex) const
 {
     assert(nIndex >= 0 && nIndex < m_nDimensions);
-    return m_subTrackNames[nIndex].c_str();
+    return m_subTrackNames[nIndex];
 }
 
 
