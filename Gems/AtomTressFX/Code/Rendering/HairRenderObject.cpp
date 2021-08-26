@@ -619,7 +619,7 @@ namespace AZ
                 // and / or reload textures only when it is specifically required!
                 if (!m_baseAlbedo)
                 {
-                    AZStd::string baseAlbedoName = "white.tif.streamingimage";
+                    AZStd::string baseAlbedoName = "defaultwhite.png.streamingimage";
                     if (pRenderSettings && pRenderSettings->m_BaseAlbedoName != "<none>")
                     {
                         baseAlbedoName = pRenderSettings->m_BaseAlbedoName;
@@ -628,7 +628,7 @@ namespace AZ
                 }
                 if (!m_strandAlbedo)
                 {
-                    AZStd::string strandAlbedoName = "white.tif.streamingimage";
+                    AZStd::string strandAlbedoName = "defaultwhite.png.streamingimage";
                     if (pRenderSettings && pRenderSettings->m_StrandAlbedoName != "<none>")
                     {
                         strandAlbedoName = pRenderSettings->m_StrandAlbedoName;

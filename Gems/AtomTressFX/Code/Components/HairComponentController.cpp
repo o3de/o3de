@@ -267,7 +267,6 @@ namespace AZ
                     m_cachedCollisionBoneMatrices[tressFXBoneIndex] = matrices[emfxBoneIndex];
                 }
 
-                AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
                 m_entityWorldMatrix = Matrix3x4::CreateFromTransform(actorInstance->GetWorldSpaceTransform().ToAZTransform());
                 m_renderObject->UpdateBoneMatrices(m_entityWorldMatrix, m_cachedHairBoneMatrices);
                 return true;
