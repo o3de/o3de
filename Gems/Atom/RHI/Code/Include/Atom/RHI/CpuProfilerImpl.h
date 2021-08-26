@@ -173,13 +173,14 @@ namespace AZ
                 static void Reflect(AZ::ReflectContext* context);
 
                 CpuProfilingStatisticsSerializerEntry() = default;
-                CpuProfilingStatisticsSerializerEntry(const RHI::CachedTimeRegion& cachedTimeRegion);
+                CpuProfilingStatisticsSerializerEntry(const RHI::CachedTimeRegion& cachedTimeRegion, AZStd::thread_id threadId);
 
                 Name m_groupName;
                 Name m_regionName;
                 uint16_t m_stackDepth;
                 AZStd::sys_time_t m_startTick;
                 AZStd::sys_time_t m_endTick;
+                size_t m_threadId;
             };
 
             AZ_TYPE_INFO(CpuProfilingStatisticsSerializer, "{D5B02946-0D27-474F-9A44-364C2706DD41}");

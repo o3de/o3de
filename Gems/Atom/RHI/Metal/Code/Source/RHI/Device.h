@@ -154,12 +154,11 @@ namespace AZ
             void ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction) override;
 
         private:
-            Device() = default;
+            Device();
             
             //////////////////////////////////////////////////////////////////////////
             // RHI::Device
             RHI::ResultCode InitInternal(RHI::PhysicalDevice& physicalDevice) override;
-            RHI::ResultCode PostInitInternal(const RHI::DeviceDescriptor& params) override;
             void ShutdownInternal() override;
             void CompileMemoryStatisticsInternal(RHI::MemoryStatisticsBuilder& builder) override;
             void UpdateCpuTimingStatisticsInternal(RHI::CpuTimingStatistics& cpuTimingStatistics) const override;
@@ -168,6 +167,7 @@ namespace AZ
             void WaitForIdleInternal() override;
             AZStd::chrono::microseconds GpuTimestampToMicroseconds(uint64_t gpuTimestamp, RHI::HardwareQueueClass queueClass) const override;
             void FillFormatsCapabilitiesInternal(FormatCapabilitiesList& formatsCapabilities) override;
+            RHI::ResultCode InitializeLimits() override;
             void PreShutdown() override;
             AZStd::vector<RHI::Format> GetValidSwapChainImageFormats(const RHI::WindowHandle& windowHandle) const override;
             //////////////////////////////////////////////////////////////////////////

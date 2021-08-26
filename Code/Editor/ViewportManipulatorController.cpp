@@ -12,6 +12,7 @@
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
+#include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
 #include <AzCore/Script/ScriptTimePoint.h>
 
@@ -112,9 +113,9 @@ namespace SandboxEditor
                 AzFramework::WindowRequestBus::EventResult(
                     windowSize, event.m_windowHandle, &AzFramework::WindowRequestBus::Events::GetClientAreaSize);
 
-                auto screenPoint = AzFramework::ScreenPoint(
-                    position->m_normalizedPosition.GetX() * windowSize.m_width,
-                    position->m_normalizedPosition.GetY() * windowSize.m_height);
+                const auto screenPoint = AzFramework::ScreenPoint(
+                    aznumeric_cast<int>(position->m_normalizedPosition.GetX() * windowSize.m_width),
+                    aznumeric_cast<int>(position->m_normalizedPosition.GetY() * windowSize.m_height));
 
                 m_mouseInteraction.m_mousePick.m_screenCoordinates = screenPoint;
                 AZStd::optional<ProjectedViewportRay> ray;
@@ -207,20 +208,27 @@ namespace SandboxEditor
                 ? &InteractionBus::Events::InternalHandleMouseManipulatorInteraction
                 : &InteractionBus::Events::InternalHandleMouseViewportInteraction;
 
-            const auto mouseInteractionEvent = [mouseInteraction, event = eventType.value(), wheelDelta] {
+            auto currentCursorState = AzFramework::SystemCursorState::Unknown;
+            AzFramework::InputSystemCursorRequestBus::EventResult(
+                currentCursorState, event.m_inputChannel.GetInputDevice().GetInputDeviceId(),
+                &AzFramework::InputSystemCursorRequestBus::Events::GetSystemCursorState);
+
+            const auto mouseInteractionEvent = [mouseInteraction, event = eventType.value(), wheelDelta,
+                                                cursorCaptured = currentCursorState == AzFramework::SystemCursorState::ConstrainedAndHidden]
+            {
                 switch (event)
                 {
                 case MouseEvent::Up:
                 case MouseEvent::Down:
                 case MouseEvent::Move:
                 case MouseEvent::DoubleClick:
-                    return MouseInteractionEvent(AZStd::move(mouseInteraction), event);
+                    return MouseInteractionEvent(AZStd::move(mouseInteraction), event, cursorCaptured);
                 case MouseEvent::Wheel:
                     return MouseInteractionEvent(AZStd::move(mouseInteraction), wheelDelta);
                 }
 
                 AZ_Assert(false, "Unhandled MouseEvent");
-                return MouseInteractionEvent(MouseInteraction{}, MouseEvent::Up);
+                return MouseInteractionEvent(MouseInteraction{}, MouseEvent::Up, false);
             }();
 
             InteractionBus::EventResult(

@@ -21,6 +21,7 @@
 
 #include <QEvent>
 #include <QObject>
+#include <QPoint>
 #endif //! defined(Q_MOC_RUN)
 
 class QWidget;
@@ -104,24 +105,31 @@ namespace AzToolsFramework
         public:
             EditorQtMouseDevice(AzFramework::InputDeviceId id);
 
+            // AzFramework::InputDeviceMouse overrides ...
+            void SetSystemCursorState(AzFramework::SystemCursorState systemCursorState) override;
+            AzFramework::SystemCursorState GetSystemCursorState() const override;
+
             friend class QtEventToAzInputMapper;
+
+        private:
+            AzFramework::SystemCursorState m_systemCursorState = AzFramework::SystemCursorState::UnconstrainedAndVisible;
         };
 
         // Emits InputChannelUpdated if channel has transitioned in state (i.e. has gone from active to inactive or vice versa).
         void NotifyUpdateChannelIfNotIdle(const AzFramework::InputChannel* channel, QEvent* event);
 
         // Processes any pending mouse movement events, this allows mouse movement channels to close themselves.
-        void ProcessPendingMouseEvents();
+        void ProcessPendingMouseEvents(const QPoint& cursorDelta);
 
         // Converts a point in logical source widget space [0..m_sourceWidget->size()] to normalized [0..1] space.
-        AZ::Vector2 WidgetPositionToNormalizedPosition(QPoint position);
+        AZ::Vector2 WidgetPositionToNormalizedPosition(const QPoint& position);
         // Converts a point in normalized [0..1] space to logical source widget space [0..m_sourceWidget->size()].
-        QPoint NormalizedPositionToWidgetPosition(AZ::Vector2 normalizedPosition);
+        QPoint NormalizedPositionToWidgetPosition(const AZ::Vector2& normalizedPosition);
 
         // Handle mouse click events.
         void HandleMouseButtonEvent(QMouseEvent* mouseEvent);
         // Handle mouse move events.
-        void HandleMouseMoveEvent(QMouseEvent* mouseEvent);
+        void HandleMouseMoveEvent(const QPoint& cursorPosition);
         // Handles key press / release events (or ShortcutOverride events for keys listed in m_highPriorityKeys).
         void HandleKeyEvent(QKeyEvent* keyEvent);
         // Handles mouse wheel events.
@@ -148,6 +156,8 @@ namespace AzToolsFramework
         AZStd::unordered_set<Qt::Key> m_highPriorityKeys;
         // A lookup table for AZ input channel ID -> physical input channel on our mouse or keyboard device.
         AZStd::unordered_map<AzFramework::InputChannelId, AzFramework::InputChannel*> m_channels;
+        // Where the position of the mouse cursor was at the last cursor event.
+        QPoint m_previousCursorPosition;
         // The source widget to map events from, used to calculate the relative mouse position within the widget bounds.
         QWidget* m_sourceWidget;
         // Flags whether or not Qt events should currently be processed.

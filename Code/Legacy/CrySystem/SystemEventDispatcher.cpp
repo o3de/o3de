@@ -9,6 +9,7 @@
 
 #include "CrySystem_precompiled.h"
 #include "SystemEventDispatcher.h"
+#include <AzCore/Debug/EventTrace.h>
 
 CSystemEventDispatcher::CSystemEventDispatcher()
     : m_listeners(0)

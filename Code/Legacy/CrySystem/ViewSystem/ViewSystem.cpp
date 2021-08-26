@@ -172,8 +172,6 @@ CViewSystem::~CViewSystem()
 //------------------------------------------------------------------------
 void CViewSystem::Update(float frameTime)
 {
-    FUNCTION_PROFILER(GetISystem(), PROFILE_ACTION);
-
     if (gEnv->IsDedicated())
     {
         return;
@@ -334,7 +332,7 @@ void CViewSystem::SetActiveView(IView* pView)
     }
     else
     {
-        m_activeViewId = ~0;
+        m_activeViewId = ~0u;
     }
 
     m_bActiveViewFromSequence = false;

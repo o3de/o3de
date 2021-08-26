@@ -9,6 +9,7 @@
 
 #include <ATLComponents.h>
 
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/std/functional.h>
 #include <AzCore/std/string/string_view.h>
@@ -304,7 +305,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CAudioObjectManager::Update(const float fUpdateIntervalMS, const SATLWorldPosition& rListenerPosition)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Audio);
+        AZ_PROFILE_FUNCTION(Audio);
 
         m_fTimeSinceLastVelocityUpdateMS += fUpdateIntervalMS;
         const bool bUpdateVelocity = m_fTimeSinceLastVelocityUpdateMS > s_fVelocityUpdateIntervalMS;
@@ -317,7 +318,7 @@ namespace Audio
 
             if (pObject->HasActiveEvents())
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Audio, "Inner Per-Object CAudioObjectManager::Update");
+                AZ_PROFILE_SCOPE(Audio, "Inner Per-Object CAudioObjectManager::Update");
 
                 pObject->Update(fUpdateIntervalMS, rListenerPosition);
 
@@ -936,7 +937,7 @@ namespace Audio
     void CAudioEventListenerManager::NotifyListener(const SAudioRequestInfo* const pResultInfo)
     {
         // This should always be on the main thread!
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Audio);
+        AZ_PROFILE_FUNCTION(Audio);
 
         auto found = AZStd::find_if(m_cListeners.begin(), m_cListeners.end(),
             [pResultInfo](const SAudioEventListener& currentListener)

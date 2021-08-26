@@ -23,6 +23,9 @@
 #include "UiElementComponent.h"
 #include "UiCanvasComponent.h"
 
+#include <set>
+#include <list>
+
 namespace
 {
     bool AxisAlignedBoxesIntersect(const AZ::Vector2& minA, const AZ::Vector2& maxA, const AZ::Vector2& minB, const AZ::Vector2& maxB)
@@ -273,7 +276,7 @@ AZ::Vector2 UiTransform2dComponent::GetViewportSpacePivot()
         AZ::Matrix4x4 transform;
         parentTransformComponent->GetTransformToViewport(transform);
 
-        point3 = transform * point3;    
+        point3 = transform * point3;
     }
 
     return AZ::Vector2(point3.GetX(), point3.GetY());

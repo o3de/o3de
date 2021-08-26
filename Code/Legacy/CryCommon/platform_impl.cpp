@@ -13,11 +13,11 @@
 #include <IConsole.h>
 
 #include <AzCore/Debug/Profiler.h>
-#include <AzCore/Debug/ProfileModuleInit.h>
 #include <AzCore/Memory/AllocatorManager.h>
 #include <AzCore/Module/Environment.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/Utils/Utils.h>
+
 
 // Section dictionary
 #if defined(AZ_RESTRICTED_PLATFORM)
@@ -94,7 +94,6 @@ extern "C" AZ_DLL_EXPORT void ModuleInitISystem(ISystem* pSystem, [[maybe_unused
             AZ::Environment::Attach(gEnv->pSharedEnvironment);
             AZ::AllocatorManager::Instance();  // Force the AllocatorManager to instantiate and register any allocators defined in data sections
         }
-        AZ::Debug::ProfileModuleInit();
     } // if pSystem
 }
 
@@ -203,7 +202,7 @@ void __stl_debug_message(const char* format_str, ...)
 //////////////////////////////////////////////////////////////////////////
 void CrySleep(unsigned int dwMilliseconds)
 {
-    AZ_PROFILE_FUNCTION_IDLE(AZ::Debug::ProfileCategory::System);
+    AZ_PROFILE_FUNCTION(System);
     Sleep(dwMilliseconds);
 }
 
@@ -341,7 +340,7 @@ inline void CryDebugStr([[maybe_unused]] const char* format, ...)
      */
 }
 
-_MS_ALIGN(64) uint32  BoxSides[0x40 * 8] = {
+alignas(64) uint32  BoxSides[0x40 * 8] = {
     0, 0, 0, 0, 0, 0, 0, 0, //00
     0, 4, 6, 2, 0, 0, 0, 4, //01
     7, 5, 1, 3, 0, 0, 0, 4, //02

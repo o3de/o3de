@@ -13,6 +13,7 @@
     #include <AzCore/Math/Color.h>
 #endif // !AUDIO_RELEASE
 
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
 #include <SoundCVars.h>
@@ -21,7 +22,8 @@
 #include <IAudioSystemImplementation.h>
 
 #include <ISystem.h>
-#include <IPhysics.h>
+#include <CryCommon/StlUtils.h>
+#include <algorithm>
 #include <IRenderAuxGeom.h>
 
 namespace Audio
@@ -148,7 +150,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CAudioTranslationLayer::Update()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Audio);
+        AZ_PROFILE_FUNCTION(Audio);
 
         auto current = AZStd::chrono::system_clock::now();
         m_elapsedTime = AZStd::chrono::duration_cast<duration_ms>(current - m_lastUpdateTime);
@@ -2016,7 +2018,7 @@ namespace Audio
     ///////////////////////////////////////////////////////////////////////////////////////////////////
     void CAudioTranslationLayer::DrawAudioSystemDebugInfo()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Audio);
+        AZ_PROFILE_FUNCTION(Audio);
 
         // ToDo: Update to work with Atom? LYN-3677
         /*if (CVars::s_debugDrawOptions.GetRawFlags() != 0)

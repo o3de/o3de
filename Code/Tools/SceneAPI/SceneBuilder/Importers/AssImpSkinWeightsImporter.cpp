@@ -97,7 +97,7 @@ namespace AZ
                         }
                         Pending pending;
                         pending.m_bone = bone;
-                        pending.m_numVertices = totalVertices;
+                        pending.m_numVertices = static_cast<unsigned int>(totalVertices);
                         pending.m_skinWeightData = skinWeightData;
                         pending.m_vertOffset = vertexCount;
                         m_pendingSkinWeights.push_back(pending);

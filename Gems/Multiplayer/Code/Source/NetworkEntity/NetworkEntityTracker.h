@@ -22,6 +22,7 @@ namespace Multiplayer
     public:
 
         using EntityMap = AZStd::unordered_map<NetEntityId, AZ::Entity*>;
+        using NetEntityIdMap = AZStd::unordered_map<AZ::EntityId, NetEntityId>;
         using iterator = EntityMap::iterator;
         using const_iterator = EntityMap::const_iterator;
 
@@ -35,6 +36,8 @@ namespace Multiplayer
         //! Returns an entity handle which can validate entity existence.
         NetworkEntityHandle Get(NetEntityId netEntityId);
         ConstNetworkEntityHandle Get(NetEntityId netEntityId) const;
+
+        NetEntityId Get(const AZ::EntityId& entityId) const;
 
         //! Returns true if the netEntityId exists.
         bool Exists(NetEntityId netEntityId) const;
@@ -74,6 +77,7 @@ namespace Multiplayer
     private:
 
         EntityMap m_entityMap;
+        NetEntityIdMap m_netEntityIdMap;
         uint32_t m_deleteChangeDirty = 0;
         uint32_t m_addChangeDirty = 0;
     };

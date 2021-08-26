@@ -161,7 +161,7 @@ namespace AZ
             const AZ::Color skeletonColor(0.604f, 0.804f, 0.196f, 1.0f);
             RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
             lineArgs.m_verts = m_auxVertices.data();
-            lineArgs.m_vertCount = aznumeric_caster(m_auxVertices.size());
+            lineArgs.m_vertCount = static_cast<uint32_t>(m_auxVertices.size());
             lineArgs.m_colors = &skeletonColor;
             lineArgs.m_colorCount = 1;
             lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
@@ -202,9 +202,9 @@ namespace AZ
 
             RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments lineArgs;
             lineArgs.m_verts = m_auxVertices.data();
-            lineArgs.m_vertCount = aznumeric_caster(m_auxVertices.size());
+            lineArgs.m_vertCount = static_cast<uint32_t>(m_auxVertices.size());
             lineArgs.m_colors = m_auxColors.data();
-            lineArgs.m_colorCount = aznumeric_caster(m_auxColors.size());
+            lineArgs.m_colorCount = static_cast<uint32_t>(m_auxColors.size());
             lineArgs.m_depthTest = RPI::AuxGeomDraw::DepthTest::Off;
             auxGeom->DrawLines(lineArgs);
         }
@@ -426,15 +426,53 @@ namespace AZ
         {
             return m_meshFeatureProcessor->GetSortKey(*m_meshHandle);
         }
+
+        void AtomActorInstance::SetLodType(RPI::Cullable::LodType lodType)
+        {
+            RPI::Cullable::LodConfiguration config = m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle);
+            config.m_lodType = lodType;
+            m_meshFeatureProcessor->SetMeshLodConfiguration(*m_meshHandle, config);
+        }
+
+        RPI::Cullable::LodType AtomActorInstance::GetLodType() const
+        {
+            return m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle).m_lodType;
+        }
         
         void AtomActorInstance::SetLodOverride(RPI::Cullable::LodOverride lodOverride)
         {
-            m_meshFeatureProcessor->SetLodOverride(*m_meshHandle, lodOverride);
+            RPI::Cullable::LodConfiguration config = m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle);
+            config.m_lodOverride = lodOverride;
+            m_meshFeatureProcessor->SetMeshLodConfiguration(*m_meshHandle, config);
         }
 
         RPI::Cullable::LodOverride AtomActorInstance::GetLodOverride() const
         {
-            return m_meshFeatureProcessor->GetLodOverride(*m_meshHandle);
+            return m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle).m_lodOverride;
+        }
+
+        void AtomActorInstance::SetMinimumScreenCoverage(float minimumScreenCoverage)
+        {
+            RPI::Cullable::LodConfiguration config = m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle);
+            config.m_minimumScreenCoverage = minimumScreenCoverage;
+            m_meshFeatureProcessor->SetMeshLodConfiguration(*m_meshHandle, config);
+        }
+
+        float AtomActorInstance::GetMinimumScreenCoverage() const
+        {
+            return m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle).m_minimumScreenCoverage;
+        }
+
+        void AtomActorInstance::SetQualityDecayRate(float qualityDecayRate)
+        {
+            RPI::Cullable::LodConfiguration config = m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle);
+            config.m_qualityDecayRate = qualityDecayRate;
+            m_meshFeatureProcessor->SetMeshLodConfiguration(*m_meshHandle, config);
+        }
+
+        float AtomActorInstance::GetQualityDecayRate() const
+        {
+            return m_meshFeatureProcessor->GetMeshLodConfiguration(*m_meshHandle).m_qualityDecayRate;
         }
 
         void AtomActorInstance::SetVisibility(bool visible)
@@ -861,7 +899,7 @@ namespace AZ
                             // Set the weights for any active masks
                             for (size_t i = 0; i < m_wrinkleMaskWeights.size(); ++i)
                             {
-                                wrinkleMaskObjectSrg->SetConstant(wrinkleMaskWeightsIndex, m_wrinkleMaskWeights[i], aznumeric_caster(i));
+                                wrinkleMaskObjectSrg->SetConstant(wrinkleMaskWeightsIndex, m_wrinkleMaskWeights[i], static_cast<uint32_t>(i));
                             }
                             AZ_Error("AtomActorInstance", m_wrinkleMaskWeights.size() <= s_maxActiveWrinkleMasks, "The skinning shader supports no more than %d active morph targets with wrinkle masks.", s_maxActiveWrinkleMasks);
                         }

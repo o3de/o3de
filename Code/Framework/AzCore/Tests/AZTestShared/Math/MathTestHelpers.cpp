@@ -95,7 +95,7 @@ namespace AZ
         auto printElement = [&os, &mat](int64_t row, int64_t col) -> std::ostream&
         {
             const std::streamsize width = 10;
-            os << std::setw(width) << std::fixed << mat.GetElement(row, col);
+            os << std::setw(width) << std::fixed << mat.GetElement(static_cast<int32_t>(row), static_cast<int32_t>(col));
             return os;
         };
 

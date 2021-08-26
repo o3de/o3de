@@ -145,7 +145,7 @@ namespace AZ
 
         char message[g_maxMessageLength];
         Debug::Trace::Instance().Output(nullptr, "==================================================================\n");
-        azsnprintf(message, g_maxMessageLength, "Exception : 0x%X - '%s' [%p]\n", ExceptionInfo->ExceptionRecord->ExceptionCode, GetExeptionName(ExceptionInfo->ExceptionRecord->ExceptionCode), ExceptionInfo->ExceptionRecord->ExceptionAddress);
+        azsnprintf(message, g_maxMessageLength, "Exception : 0x%lX - '%s' [%p]\n", ExceptionInfo->ExceptionRecord->ExceptionCode, GetExeptionName(ExceptionInfo->ExceptionRecord->ExceptionCode), ExceptionInfo->ExceptionRecord->ExceptionAddress);
         Debug::Trace::Instance().Output(nullptr, message);
 
         EBUS_EVENT(Debug::TraceMessageDrillerBus, OnException, message);

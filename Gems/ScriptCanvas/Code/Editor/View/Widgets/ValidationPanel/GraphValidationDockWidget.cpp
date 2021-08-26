@@ -734,7 +734,7 @@ namespace ScriptCanvasEditor
     {
         ui->statusTableView->clearSelection();
 
-        if (auto model = GetActiveData().second->GetModel())
+        if (auto model = GetActiveData().second ? GetActiveData().second->GetModel() : nullptr)
         {
             model->Clear();
             model->RunValidation(m_activeGraphIds.scriptCanvasId);

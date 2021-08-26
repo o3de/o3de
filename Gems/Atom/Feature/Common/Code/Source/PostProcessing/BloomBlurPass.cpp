@@ -153,8 +153,8 @@ namespace AZ
             inBinding.m_connectedBinding = isHorizontalPass ? &parentInOutBinding : &parentInBinding;
 
             RHI::ImageViewDescriptor viewDesc;
-            viewDesc.m_mipSliceMin = mipLevel;
-            viewDesc.m_mipSliceMax = mipLevel;
+            viewDesc.m_mipSliceMin = static_cast<uint16_t>(mipLevel);
+            viewDesc.m_mipSliceMax = static_cast<uint16_t>(mipLevel);
             inBinding.m_unifiedScopeDesc.SetAsImage(viewDesc);
 
             pass->AddAttachmentBinding(inBinding);

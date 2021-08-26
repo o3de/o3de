@@ -24,10 +24,10 @@ namespace UnitTest
         void Disconnect();
 
         // EditorInteractionSystemViewportSelectionRequestBus overrides ...
-        void SetHandler(const AzToolsFramework::ViewportSelectionRequestsBuilderFn& interactionRequestsBuilder);
-        void SetDefaultHandler();
-        bool InternalHandleMouseViewportInteraction(const MouseInteractionEvent& mouseInteraction);
-        bool InternalHandleMouseManipulatorInteraction(const MouseInteractionEvent& mouseInteraction);
+        void SetHandler(const AzToolsFramework::ViewportSelectionRequestsBuilderFn& interactionRequestsBuilder) override;
+        void SetDefaultHandler() override;
+        bool InternalHandleMouseViewportInteraction(const MouseInteractionEvent& mouseInteraction) override;
+        bool InternalHandleMouseManipulatorInteraction(const MouseInteractionEvent& mouseInteraction) override;
 
         AZStd::function<bool(const MouseInteractionEvent& mouseInteraction)> m_internalHandleMouseViewportInteraction;
         AZStd::function<bool(const MouseInteractionEvent& mouseInteraction)> m_internalHandleMouseManipulatorInteraction;
@@ -92,7 +92,7 @@ namespace UnitTest
             m_inputChannelMapper = AZStd::make_unique<AzToolsFramework::QtEventToAzInputMapper>(m_rootWidget.get(), TestViewportId);
         }
 
-        void TearDown()
+        void TearDown() override
         {
             m_inputChannelMapper.reset();
 

@@ -22,7 +22,7 @@
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>

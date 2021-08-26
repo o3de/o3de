@@ -78,7 +78,6 @@ AZ_POP_DISABLE_WARNING
 
 // CryCommon
 #include <CryCommon/ITimer.h>
-#include <CryCommon/IPhysics.h>
 #include <CryCommon/ILevelSystem.h>
 
 // Editor
@@ -613,7 +612,7 @@ public:
         }
 
         // Get boolean options
-        const int numOptions = options.size();
+        const int numOptions = static_cast<int>(options.size());
         for (int i = 0; i < numOptions; ++i)
         {
             options[i].second = parser.isSet(options[i].first);
@@ -3240,7 +3239,7 @@ bool CCryEditApp::CreateLevel(bool& wasCreateLevelOperationCancelled)
     {
         QFileInfo info(fullyQualifiedLevelName);
         const AZStd::string rawProjectDirectory = Path::GetEditingGameDataFolder();
-        const QString projectDirectory = QDir::toNativeSeparators(QString::fromUtf8(rawProjectDirectory.data(), rawProjectDirectory.size()));
+        const QString projectDirectory = QDir::toNativeSeparators(QString::fromUtf8(rawProjectDirectory.data(), static_cast<int>(rawProjectDirectory.size())));
         const QString elidedLevelName = QStringLiteral("%1...%2").arg(levelName.left(10)).arg(levelName.right(10));
         const QString elidedLevelFileName = QStringLiteral("%1...%2").arg(info.fileName().left(10)).arg(info.fileName().right(10));
         const QString message = QObject::tr(
@@ -3380,7 +3379,7 @@ CCryEditDoc* CCryEditApp::OpenDocumentFile(const char* lpszFileName)
 void CCryEditApp::OnResourcesReduceworkingset()
 {
 #ifdef WIN32 // no such thing on macOS
-    SetProcessWorkingSetSize(GetCurrentProcess(), -1, -1);
+    SetProcessWorkingSetSize(GetCurrentProcess(), std::numeric_limits<SIZE_T>::max(), std::numeric_limits<SIZE_T>::max());
 #endif
 }
 
@@ -3910,11 +3909,19 @@ void CCryEditApp::OpenLUAEditor(const char* files)
     AZStd::string_view exePath;
     AZ::ComponentApplicationBus::BroadcastResult(exePath, &AZ::ComponentApplicationRequests::GetExecutableFolder);
 
-    AZStd::string process = AZStd::string::format("\"%.*s" AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING "LuaIDE"
+#if defined(AZ_PLATFORM_LINUX)
+    // On Linux platforms, launching a process is not done through a shell and its arguments are passed in
+    // separately. There is no need to wrap the process path in case of spaces in the path
+    constexpr const char* argumentQuoteString = "";
+#else
+    constexpr const char* argumentQuoteString = "\"";
+#endif    
+
+    AZStd::string process = AZStd::string::format("%s%.*s" AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING "LuaIDE"
 #if defined(AZ_PLATFORM_WINDOWS)
         ".exe"
 #endif
-        "\"", aznumeric_cast<int>(exePath.size()), exePath.data());
+        "%s", argumentQuoteString, aznumeric_cast<int>(exePath.size()), exePath.data(), argumentQuoteString);
 
     AZStd::string processArgs = AZStd::string::format("%s -engine-path \"%s\"", args.c_str(), engineRoot);
     StartProcessDetached(process.c_str(), processArgs.c_str());
@@ -3922,7 +3929,7 @@ void CCryEditApp::OpenLUAEditor(const char* files)
 
 void CCryEditApp::PrintAlways(const AZStd::string& output)
 {
-    m_stdoutRedirection.WriteBypassingRedirect(output.c_str(), output.size());
+    m_stdoutRedirection.WriteBypassingRedirect(output.c_str(), static_cast<unsigned int>(output.size()));
 }
 
 QString CCryEditApp::GetRootEnginePath() const

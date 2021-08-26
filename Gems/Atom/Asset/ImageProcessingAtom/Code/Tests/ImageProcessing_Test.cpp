@@ -109,7 +109,6 @@ namespace UnitTest
         const char* GetAppRoot() const override { return nullptr; }
         const char* GetEngineRoot() const override { return nullptr; }
         const char* GetExecutableFolder() const override { return nullptr; }
-        AZ::Debug::DrillerManager* GetDrillerManager() override { return nullptr; }
         void EnumerateEntities(const AZ::ComponentApplicationRequests::EntityCallback& /*callback*/) override {}
         void QueryApplicationType(AZ::ApplicationTypeQuery& /*appType*/) const override {}
         //////////////////////////////////////////////////////////////////////////
@@ -278,11 +277,11 @@ namespace UnitTest
         }
 
         //helper function to save an image object to a file through QtImage
-        void SaveImageToFile(const IImageObjectPtr imageObject, const AZStd::string imageName, AZ::u32 maxMipCnt = 100)
+        void SaveImageToFile([[maybe_unused]] const IImageObjectPtr imageObject, [[maybe_unused]] const AZStd::string imageName, [[maybe_unused]] AZ::u32 maxMipCnt = 100)
         {
     #ifndef DEBUG_OUTPUT_IMAGES
             return;
-    #endif
+    #else
             if (imageObject == nullptr)
             {
                 return;
@@ -324,6 +323,7 @@ namespace UnitTest
                 QImage qimage(imageBuf, width, height, pitch, QImage::Format_RGBA8888);
                 qimage.save(filePath);
             }
+    #endif
         }
 
         static bool GetComparisonResult(IImageObjectPtr image1, IImageObjectPtr image2, QString& output)

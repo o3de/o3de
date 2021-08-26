@@ -20,8 +20,8 @@
 #include <IRenderer.h>
 #include <ISystem.h>
 #include <ILog.h>
-#include <IProcess.h>
-#include <IRenderAuxGeom.h>
+#include <IFont.h>
+#include <ITexture.h>
 #include "ConsoleHelpGen.h"         // CConsoleHelpGen
 
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
@@ -2464,8 +2464,9 @@ void CXConsole::DisplayVarValue(ICVar* pVar)
             sValue += " (";
             if (nonAlphaBits != 0)
             {
-                char nonAlphaChars[3];  // 1..63 + '\0'
-                sValue += azitoa(nonAlphaBits, nonAlphaChars, AZ_ARRAY_SIZE(nonAlphaChars), 10);
+                char nonAlphaChars[3] = { 0 };  // 1..63 + '\0'
+                azitoa(nonAlphaBits, nonAlphaChars, AZ_ARRAY_SIZE(nonAlphaChars), 10);
+                sValue += nonAlphaChars;
                 sValue += ", ";
             }
             sValue += alphaChars;
@@ -2856,7 +2857,7 @@ void CXConsole::Paste()
         Utf8::Unchecked::octet_iterator end(data.end());
         for (Utf8::Unchecked::octet_iterator it(data.begin()); it != end; ++it)
         {
-            const wchar_t cp = *it;
+            const wchar_t cp = static_cast<wchar_t>(*it);
             if (cp != '\r')
             {
                 // Convert UCS code-point into UTF-8 string
@@ -3132,6 +3133,9 @@ char* CXConsole::GetCheatVarAt(uint32 nOffset)
 //////////////////////////////////////////////////////////////////////////
 size_t CXConsole::GetSortedVars(AZStd::vector<AZStd::string_view>& pszArray, const char* szPrefix)
 {
+    // This method used to insert instead of push_back, so we need to clear first
+    pszArray.clear();
+
     size_t iPrefixLen = szPrefix ? strlen(szPrefix) : 0;
 
     // variables

@@ -24,8 +24,6 @@ namespace AZ
 
         uint32_t GetIndexFormatSize(IndexFormat indexFormat);
 
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_BEGIN
-
         class IndexBufferView
         {
         public:
@@ -61,7 +59,5 @@ namespace AZ
             // Padding the size so it's 8 bytes aligned
             uint32_t m_pad = 0;
         };
-
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_END
     }
 }

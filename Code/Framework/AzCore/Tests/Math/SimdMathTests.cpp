@@ -94,7 +94,7 @@ namespace UnitTest
         float testStoreValues[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
         VectorType::StoreUnaligned(testStoreValues, result);
 
-        for (int32_t i = 0; i < VectorType::ElementCount; ++i)
+        for (uint32_t i = 0; i < VectorType::ElementCount; ++i)
         {
             if (i == replaceIndex)
             {

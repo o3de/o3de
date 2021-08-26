@@ -16,6 +16,7 @@
 #include "UiEditorAnimationBus.h"
 
 #include <Util/EditorUtils.h>
+#include <CryCommon/StlUtils.h>
 
 //////////////////////////////////////////////////////////////////////////
 void CUiAnimViewTrackBundle::AppendTrack(CUiAnimViewTrack* pTrack)

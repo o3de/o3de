@@ -396,7 +396,6 @@ void CLog::LogV(const ELogType type, [[maybe_unused]]int flags, const char* szFo
         }
     }
 
-    FUNCTION_PROFILER(GetISystem(), PROFILE_SYSTEM);
     LOADING_TIME_PROFILE_SECTION(GetISystem());
 
     bool bfile = false, bconsole = false;
@@ -1228,7 +1227,7 @@ void CLog::CreateBackupFile() const
 
         while (!fileSystem->Eof(inFileHandle))
         {
-            uint8 c = AZ::IO::GetC(inFileHandle);
+            uint8 c = static_cast<uint8>(AZ::IO::GetC(inFileHandle));
 
             if (c == '\"')
             {
@@ -1445,8 +1444,6 @@ void CLog::RemoveCallback(ILogCallback* pCallback)
 //////////////////////////////////////////////////////////////////////////
 void CLog::Update()
 {
-    FUNCTION_PROFILER_FAST(m_pSystem, PROFILE_SYSTEM, g_bProfilerEnabled);
-
     if (CryGetCurrentThreadId() == m_nMainThreadId)
     {
         if (!m_threadSafeMsgQueue.empty())
