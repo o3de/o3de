@@ -11,67 +11,17 @@ cmake_policy(SET CMP0012 NEW)
 
 cmake_path(SET file_path "${CMAKE_INSTALL_PREFIX}/bin/Mac/@config@/@runtime_output_filename@")
 
-function(codesign_file file)
-
-    if(EXISTS @entitlement_file@)
-        execute_process(COMMAND "/usr/bin/codesign" "--force" "--sign" "@CODE_SIGN_IDENTITY@" "--deep" "-o" "runtime" "--timestamp" "--entitlements" "@entitlement_file@" "${file}"
-            TIMEOUT 300
-            OUTPUT_VARIABLE codesign_out
-            RESULT_VARIABLE codesign_ret
-        )
-    else()
-        execute_process(COMMAND "/usr/bin/codesign" "--force" "--sign" "@CODE_SIGN_IDENTITY@" "-o" "runtime" "--timestamp" "${file}"
-            TIMEOUT 300
-            OUTPUT_VARIABLE codesign_out
-            RESULT_VARIABLE codesign_ret
-        )
-    endif()
-
-    if(NOT ${codesign_ret} EQUAL "0")
-        message("Codesign operation for ${file_path} returned ${codesign_ret} with message ${codesign_out}")
-    endif()
-
-endfunction()
-
-function(codesign_binaries_in_folder folder)
-
-    file(GLOB_RECURSE files
-        LIST_DIRECTORIES false
-        "${folder}/**")
-
-    foreach(file ${files})
-        if(NOT EXISTS ${file})
-            file(REMOVE ${file})
-            continue()
-        endif()
-        cmake_path(SET path_var "${file}")
-        cmake_path(GET path_var EXTENSION LAST_ONLY extension)
-        set(should_codesign FALSE)
-        if (NOT extension)
-            set(should_codesign TRUE)
-        elseif(${extension} STREQUAL ".dylib" OR ${extension} STREQUAL ".so" OR ${extension} STREQUAL ".7m")
-            set(should_codesign TRUE)
-        endif()
-        if(${should_codesign})
-            codesign_file(${file})
-        endif()
-    endforeach()
-
-endfunction()
-
 if(@runtime_output_filename@ MATCHES ".app")
 
     if(@depends_on_python@)
-        codesign_binaries_in_folder("${file_path}/Contents/Frameworks/Python.framework/Versions/3.7/bin")
-        codesign_binaries_in_folder("${file_path}/Contents/Frameworks/Python.framework/Versions/3.7/lib")
-        codesign_binaries_in_folder("${file_path}/Contents/Frameworks/Python.framework/Versions/3.7/Resources")
+    codesign_python_framework_binaries("${file_path}/Contents/Frameworks/Python.framework")
     endif()
 
-    codesign_file(${file_path})
+    codesign_file(${file_path} @entitlement_file@)
 
 else()
 
-    codesign_file(${file_path})
+    codesign_file(${file_path} @entitlement_file@)
 
 endif()
 

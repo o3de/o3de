@@ -85,17 +85,8 @@ endfunction()
 #! ly_install_code_function_override: Mac specific copy function to handle frameworks
 function(ly_install_code_function_override)
 
-    install(CODE
-"function(ly_copy source_file target_directory)
-    if(\"\${source_file}\" MATCHES \"\\\\.[Ff]ramework[^\\\\.]\")
-
-        # fixup origin to copy the whole Framework folder
-        string(REGEX REPLACE \"(.*\\\\.[Ff]ramework).*\" \"\\\\1\" source_file \"\${source_file}\")
-        get_filename_component(target_filename \"\${source_file}\" NAME)
-
-    endif()
-    file(COPY \"\${source_file}\" DESTINATION \"\${target_directory}\" FILE_PERMISSIONS ${LY_COPY_PERMISSIONS} FOLLOW_SYMLINK_CHAIN)
-endfunction()")
+    configure_file(${LY_ROOT_FOLDER}/cmake/Platform/Mac/InstallUtils_mac.cmake.in ${CMAKE_BINARY_DIR}/runtime_install/InstallUtils_mac.cmake @ONLY)
+    install(SCRIPT ${CMAKE_BINARY_DIR}/runtime_install/InstallUtils_mac.cmake)
 
 endfunction()
 

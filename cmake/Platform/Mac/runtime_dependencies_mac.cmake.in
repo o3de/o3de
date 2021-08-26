@@ -227,7 +227,6 @@ else() # Non-bundle case
 
 endif()
 
-set(CODE_SIGN_IDENTITY @LY_CODE_SIGN_IDENTITY@)
 cmake_path(GET exec_path FILENAME runtime_output_filename)
 cmake_path(SET entitlement_file "$ENV{TARGET_TEMP_DIR}/${runtime_output_filename}.xcent")
 foreach(config @CMAKE_CONFIGURATION_TYPES@)
