@@ -25,11 +25,6 @@
 
 namespace AzQtComponents
 {
-    namespace CardConstants
-    {
-        static const char* kPropertySelected = "selected";
-    }
-
     static QPixmap ApplyAlphaToPixmap(const QPixmap& pixmap, float alpha)
     {
         QImage image = pixmap.toImage().convertToFormat(QImage::Format_ARGB32);

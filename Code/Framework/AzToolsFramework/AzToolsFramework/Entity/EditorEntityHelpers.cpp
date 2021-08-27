@@ -1324,7 +1324,7 @@ namespace AzToolsFramework
             AZ::SliceComponent::EntityAncestorList::const_iterator ancestorIter = ancestors.begin();
             // Skip the first, that would be a regular slice root and not a subslice root, which was already checked.
             ++ancestorIter;
-            for (ancestorIter; ancestorIter != ancestors.end(); ++ancestorIter)
+            for (; ancestorIter != ancestors.end(); ++ancestorIter)
             {
                 const AZ::SliceComponent::Ancestor& ancestor = *ancestorIter;
                 if (!ancestor.m_entity || !SliceUtilities::IsRootEntity(*ancestor.m_entity))

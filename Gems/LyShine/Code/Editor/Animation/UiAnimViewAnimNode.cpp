@@ -149,8 +149,6 @@ void CUiAnimViewAnimNode::UiElementPropertyChanged()
 
     bool valueChanged = false;
 
-    const float time = GetSequence()->GetTime();
-
     if (m_nodeEntityId.IsValid() && !m_azEntityDataCache.empty())
     {
         AZ::Entity* pNodeEntity = nullptr;
@@ -536,9 +534,6 @@ void CUiAnimViewAnimNode::BindToEditorObjects()
     }
 
     CUiAnimViewSequenceNotificationContext context(GetSequence());
-
-    CUiAnimViewAnimNode* pDirector = GetDirector();
-    const bool bBelongsToActiveDirector = pDirector ? pDirector->IsActiveDirector() : true;
 
     // if this node represents an AZ entity then register for updates
     if (m_nodeEntityId.IsValid())
@@ -1630,7 +1625,7 @@ void CUiAnimViewAnimNode::OnSelectionChanged(const bool bSelected)
 {
     if (m_pAnimNode)
     {
-        const EUiAnimNodeType animNodeType = GetType();
+        [[maybe_unused]] const EUiAnimNodeType animNodeType = GetType();
         assert(animNodeType == eUiAnimNodeType_Camera || animNodeType == eUiAnimNodeType_Entity || animNodeType == eUiAnimNodeType_GeomCache);
 
         const EUiAnimNodeFlags flags = (EUiAnimNodeFlags)m_pAnimNode->GetFlags();

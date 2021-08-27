@@ -2662,8 +2662,6 @@ void UiTextComponent::GetClickableTextRects(UiClickableTextInterface::ClickableT
     AZ::Vector2 pos = CalculateAlignedPositionWithYOffset(points);
 
     const DrawBatchLines& drawBatchLines = GetDrawBatchLines();
-    int requestFontSize = GetRequestFontSize();
-    STextDrawContext fontContext(GetTextDrawContextPrototype(requestFontSize, drawBatchLines.fontSizeScale));
     float newlinePosYIncrement = 0.0f;
 
     for (auto& drawBatchLine : drawBatchLines.batchLines)
@@ -3344,7 +3342,6 @@ void UiTextComponent::GetTextRect(UiTransformInterface::RectPoints& rect, const 
     // get the "no scale rotate" element box
     UiTransformInterface::RectPoints elemRect;
     EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetCanvasSpacePointsNoScaleRotate, elemRect);
-    AZ::Vector2 elemSize = elemRect.GetAxisAlignedSize();
 
     // given the text alignment work out the box of the actual text
     rect = elemRect;

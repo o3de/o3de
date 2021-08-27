@@ -378,7 +378,6 @@ namespace AZ
                                     }
 
                                     const uint32_t endRow = AZStd::GetMin(startRow + rowsPerSplit, subresourceLayout.m_rowCount);
-                                    const uint32_t numRowsToCopy = endRow - startRow;
 
                                     // Calculate the blocksize for BC formatted images; the copy command works in texels.
                                     uint32_t heightToCopy = (endRow - startRow) * compressedTexelBlockSizeHeight;

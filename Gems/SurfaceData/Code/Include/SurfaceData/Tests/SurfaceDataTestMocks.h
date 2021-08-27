@@ -293,7 +293,7 @@ namespace UnitTest
         SurfaceData::SurfaceDataRegistryHandle GetEntryHandle(AZ::EntityId id, const AZStd::vector<SurfaceData::SurfaceDataRegistryEntry>& entryList)
         {
             // Look up the requested entity Id and see if we have a registered surface entry with that handle.  If so, return the handle.
-            auto result = AZStd::find_if(entryList.begin(), entryList.end(), [this, id](const SurfaceData::SurfaceDataRegistryEntry& entry) { return entry.m_entityId == id; });
+            auto result = AZStd::find_if(entryList.begin(), entryList.end(), [id](const SurfaceData::SurfaceDataRegistryEntry& entry) { return entry.m_entityId == id; });
             if (result == entryList.end())
             {
                 return SurfaceData::InvalidSurfaceDataRegistryHandle;

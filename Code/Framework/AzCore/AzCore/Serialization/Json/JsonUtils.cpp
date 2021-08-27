@@ -32,7 +32,6 @@ namespace AZ
         static const char* FileType = "JsonSerialization";
         static const char* VersionTag = "Version";
         static const char* ClassNameTag = "ClassName";
-        static const char* ClassIdTag = "ClassId";
         static const char* ClassDataTag = "ClassData";
 
         AZ::Outcome<void, AZStd::string> WriteJsonString(const rapidjson::Document& document, AZStd::string& jsonText, WriteJsonSettings settings)

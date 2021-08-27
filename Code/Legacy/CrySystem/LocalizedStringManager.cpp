@@ -874,7 +874,6 @@ inline YesNoType ToYesNoType(const char* szString)
 // Loads a string-table from a Excel XML Spreadsheet file.
 bool CLocalizedStringsManager::DoLoadExcelXmlSpreadsheet(const char* sFileName, uint8 nTagID, bool bReload)
 {
-    LOADING_TIME_PROFILE_SECTION_ARGS(sFileName)
     if (!m_pLanguage)
     {
         return false;
@@ -1927,11 +1926,9 @@ AZStd::string CLocalizedStringsManager::SLocalizedStringEntry::GetTranslatedText
 #endif  //LOG_DECOMP_TIMES
 
 #if !defined(NDEBUG)
-            size_t len =
-#endif
-                strnlen((const char*)decompressionBuffer, COMPRESSION_FIXED_BUFFER_LENGTH);
+            size_t len = strnlen((const char*)decompressionBuffer, COMPRESSION_FIXED_BUFFER_LENGTH);
             assert(len < COMPRESSION_FIXED_BUFFER_LENGTH && "Buffer not null-terminated");
-
+#endif
 
 #if defined(LOG_DECOMP_TIMES)
             nAllocTicks = CryGetTicks();

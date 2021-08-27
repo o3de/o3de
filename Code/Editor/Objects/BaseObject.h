@@ -33,7 +33,6 @@ class CGizmo;
 class CObjectArchive;
 struct SSubObjSelectionModifyContext;
 struct SRayHitInfo;
-class ISubObjectSelectionReferenceFrameCalculator;
 class CPopupMenuItem;
 class QMenu;
 struct IRenderNode;
@@ -571,7 +570,6 @@ public:
     // Return true if object support selecting of this sub object element type.
     virtual bool StartSubObjSelection([[maybe_unused]] int elemType) { return false; };
     virtual void EndSubObjectSelection() {};
-    virtual void CalculateSubObjectSelectionReferenceFrame([[maybe_unused]] ISubObjectSelectionReferenceFrameCalculator* pCalculator) { };
     virtual void ModifySubObjSelection([[maybe_unused]] SSubObjSelectionModifyContext& modCtx) {};
     virtual void AcceptSubObjectModify() {};
 

@@ -418,7 +418,6 @@ namespace AZ::Render
             }
             const FilterParameter& filter = m_shadowData.GetElement<FilterParamIndex>(shadowProperty.m_shadowId.GetIndex());
             const float boundaryWidthAngle = shadow.m_boundaryScale * 2.0f;
-            constexpr float SmallAngle = 0.01f;
             const float fieldOfView = GetMax(shadowProperty.m_desc.m_fieldOfViewYRadians, MinimumFieldOfView);
             const float ratioToEntireWidth = boundaryWidthAngle / fieldOfView;
             const float widthInPixels = ratioToEntireWidth * filter.m_shadowmapSize;

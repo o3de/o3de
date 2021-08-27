@@ -471,7 +471,7 @@ namespace AZ
             const RPI::RenderPipelineId& renderPipelineId)
         {
             ShadowProperty& property = m_shadowProperties.GetData(handle.GetIndex());
-            auto update = [this, handle, &property, &baseCameraConfiguration](const RPI::View* view)
+            auto update = [&property, &baseCameraConfiguration](const RPI::View* view)
             {
                 CascadeShadowCameraConfiguration& cameraConfig = property.m_cameraConfigurations[view];
                 if (!cameraConfig.HasSameConfiguration(baseCameraConfiguration))

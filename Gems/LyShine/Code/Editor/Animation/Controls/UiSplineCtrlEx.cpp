@@ -824,8 +824,6 @@ void SplineWidget::DrawSpline(QPainter* painter, SSplineInfo& splineInfo, float 
 {
     const QPen pOldPen = painter->pen();
 
-    const QRect rcClip = painter->clipBoundingRect().intersected(m_rcSpline).toRect();
-
     //////////////////////////////////////////////////////////////////////////
     ISplineInterpolator* pSpline = splineInfo.pSpline;
     ISplineInterpolator* pDetailSpline = splineInfo.pDetailSpline;

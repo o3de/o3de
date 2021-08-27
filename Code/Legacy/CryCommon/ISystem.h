@@ -1146,11 +1146,6 @@ struct DiskOperationInfo
 
 #endif
 
-#define LOADING_TIME_PROFILE_SECTION
-#define LOADING_TIME_PROFILE_SECTION_ARGS(...)
-#define LOADING_TIME_PROFILE_SECTION_NAMED(sectionName)
-#define LOADING_TIME_PROFILE_SECTION_NAMED_ARGS(sectionName, ...)
-
 //////////////////////////////////////////////////////////////////////////
 // CrySystem DLL Exports.
 //////////////////////////////////////////////////////////////////////////

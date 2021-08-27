@@ -26,7 +26,6 @@ namespace AZ
         {
             Device& device = static_cast<Device&>(deviceBase);
             m_device = &device;
-            const RHI::ShaderResourceGroupLayout& layout = *descriptor.m_layout;
             m_srgLayout = descriptor.m_layout;
             return RHI::ResultCode::Success;
         }

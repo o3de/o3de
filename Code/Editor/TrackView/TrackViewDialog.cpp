@@ -77,9 +77,6 @@ inline namespace TrackViewInternal
     const int s_kMinimumFrameSnappingFPS = 1;
     const int s_kMaximumFrameSnappingFPS = 120;
 
-    const int TRACKVIEW_LAYOUT_VERSION = 0x0001; // Bump this up on every substantial pane layout change
-    const int TRACKVIEW_REBAR_VERSION = 0x0002; // Bump this up on every substantial rebar change
-
     CTrackViewSequence* GetSequenceByEntityIdOrName(const CTrackViewSequenceManager* pSequenceManager, const char* entityIdOrName)
     {
         // the "name" string will be an AZ::EntityId in string form if this was called from

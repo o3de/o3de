@@ -88,7 +88,7 @@ namespace AZ
                     }
                     else
                     {
-                        itEntry->second == value;
+                        itEntry->second = value;
                     }
                 }
             }

@@ -58,10 +58,10 @@ namespace PhysX
     {
         if (m_shapeType == ShapeType::Cylinder)
         {
-            return AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Show;
+            return AZ::Edit::PropertyVisibility::Show;
         }
         
-        return AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide;
+        return AZ::Edit::PropertyVisibility::Hide;
     }
 
     void EditorShapeColliderComponent::Reflect(AZ::ReflectContext* context)
