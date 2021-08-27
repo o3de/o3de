@@ -57,11 +57,6 @@ namespace Terrain
         }
     }
 
-    void TerrainLayerSpawnerConfig::SetEntityId(AZ::EntityId id)
-    {
-        m_entityId = id;
-    }
-
     AZStd::vector<AZStd::pair<AZ::u32, AZStd::string>> TerrainLayerSpawnerConfig::GetSelectableLayers() const
     {
         AZStd::vector<AZStd::pair<AZ::u32, AZStd::string>> selectableLayers;
@@ -107,8 +102,6 @@ namespace Terrain
 
     void TerrainLayerSpawnerComponent::Activate()
     {
-        m_configuration.SetEntityId(GetEntityId());
-
         AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusConnect(GetEntityId());
         TerrainAreaRequestBus::Handler::BusConnect(GetEntityId());

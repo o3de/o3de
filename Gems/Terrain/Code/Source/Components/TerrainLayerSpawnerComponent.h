@@ -47,13 +47,10 @@ namespace Terrain
         AZ_RTTI(TerrainLayerSpawnerConfig, "{8E0695DE-E843-4858-BAEA-70953E74C810}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 
-        void SetEntityId(AZ::EntityId id);
-
         AZStd::vector<AZStd::pair<AZ::u32, AZStd::string>> GetSelectableLayers() const;
         AZ::u32 m_layer = AreaConstants::s_foregroundLayer;
         AZ::u32 m_priority = AreaConstants::s_priorityMin;
         bool m_useGroundPlane = true;
-        AZ::EntityId m_entityId;
     };
 
 
