@@ -107,6 +107,11 @@ namespace ImageProcessingAtom
         return ColorSpace::autoSelect;
     }
 
+    const char* PVRTCCompressor::GetName() const
+    {
+        return "PVRTCCompressor";
+    }
+
     bool PVRTCCompressor::DoesSupportDecompress([[maybe_unused]] EPixelFormat fmtDst)
     {
         return true;
