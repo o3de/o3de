@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/containers/vector.h>
@@ -22,8 +23,9 @@ namespace AzToolsFramework
 
     namespace Prefab
     {
-        using PrefabOperationResult = AZ::Outcome<void, AZStd::string>;
+        using CreatePrefabResult = AZ::Outcome<AZ::EntityId, AZStd::string>;
         using InstantiatePrefabResult = AZ::Outcome<AZ::EntityId, AZStd::string>;
+        using PrefabOperationResult = AZ::Outcome<void, AZStd::string>;
 
         /**
         * The primary purpose of this bus is to facilitate writing automated tests for prefabs.
@@ -47,9 +49,9 @@ namespace AzToolsFramework
             /**
              * Create a prefab out of the entities provided, at the path provided, and keep it in memory.
              * Automatically detects descendants of entities, and discerns between entities and child instances.
-             * Return whether the creation succeeded or not.
+             * Return the container entity id of the prefab created if creation succeeded.
              */
-            virtual PrefabOperationResult CreatePrefabInMemory(
+            virtual CreatePrefabResult CreatePrefabInMemory(
                 const EntityIdList& entityIds, AZStd::string_view filePath) = 0;
 
             /**
@@ -65,7 +67,6 @@ namespace AzToolsFramework
              * Return whether the deletion succeeded or not.
              */
             virtual PrefabOperationResult DeleteEntitiesAndAllDescendantsInInstance(const EntityIdList& entityIds) = 0;
-
         };
 
         using PrefabPublicRequestBus = AZ::EBus<PrefabPublicRequests>;
