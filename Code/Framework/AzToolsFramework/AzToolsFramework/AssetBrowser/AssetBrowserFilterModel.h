@@ -27,7 +27,7 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
-        typedef AZStd::fixed_unordered_set<int, 3, aznumeric_cast<int>(AssetBrowserEntry::Column::Count)> ShowColumnsSet;
+        using ShownColumnsSet = AZStd::fixed_unordered_set<int, 3, aznumeric_cast<int>(AssetBrowserEntry::Column::Count)>;
 
         class AssetBrowserFilterModel
             : public QSortFilterProxyModel
@@ -44,7 +44,6 @@ namespace AzToolsFramework
             void SetFilter(FilterConstType filter);
             void FilterUpdatedSlotImmediate();
             const FilterConstType& GetFilter() const { return m_filter; }
-            const ShowColumnsSet& GetShowColumns() const { return m_showColumn; }
             //////////////////////////////////////////////////////////////////////////
             // AssetBrowserComponentNotificationBus
             //////////////////////////////////////////////////////////////////////////
@@ -64,11 +63,11 @@ namespace AzToolsFramework
             void filterUpdatedSlot();
 
         protected:
-            // set for filtering columns
-            // if the column is in the set the column is not filtered and is shown
-            ShowColumnsSet m_showColumn;
+            // Set for filtering columns
+            // If the column is in the set the column is not filtered and is shown
+            ShownColumnsSet m_shownColumns;
             bool m_alreadyRecomputingFilters = false;
-            //asset source name match filter
+            //Asset source name match filter
             FilterConstType m_filter;
             AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: class '...' needs to have dll-interface to be used by clients of class '...'
             QWeakPointer<const StringFilter> m_stringFilter;

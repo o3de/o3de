@@ -153,8 +153,8 @@ namespace AzToolsFramework
 
                 m_ui->m_assetBrowserTableViewWidget->SetName("AssetBrowserTableView_main");
                 m_tableModel->UpdateTableModelMaps();
-
             }
+
             QTimer::singleShot(0, this, &AssetPickerDialog::RestoreState);
             SelectionChangedSlot();
         }
