@@ -23,10 +23,11 @@ namespace UnitTest
     {
         using AZStd::lerp;
         using ::testing::Eq;
+	using T = gtest_TypeParam_;
 
-        constexpr T inf = AZtd::numeric_limits<T>::infinity();
-        constexpr T maxNumber = AZtd::numeric_limits<T>::max();
-        constexpr T eps = AZtd::numeric_limits<T>::epsilon();
+        constexpr T inf = AZStd::numeric_limits<T>::infinity();
+        constexpr T maxNumber = AZStd::numeric_limits<T>::max();
+        constexpr T eps = AZStd::numeric_limits<T>::epsilon();
         constexpr T a{ 42 };
 
         // exactness: lerp(a,b,0)==a && lerp(a,b,1)==b
