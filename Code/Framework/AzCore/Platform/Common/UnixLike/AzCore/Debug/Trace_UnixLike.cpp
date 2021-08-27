@@ -63,6 +63,7 @@ namespace AZ
             bool AttachDebugger()
             {
                 // Not supported yet
+                AZ_Assert(false, "AttachDebugger() is not supported for Unix platform yet");
                 return false;
             }
 

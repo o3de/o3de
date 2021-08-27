@@ -158,12 +158,16 @@ namespace AZ
     Trace::WaitForDebugger(float timeoutSeconds/*=-1.f*/)
     {
 #if defined(AZ_ENABLE_DEBUG_TOOLS)
-        using namespace AZStd::chrono;
+        using AZStd::chrono::system_clock;
+        using AZStd::chrono::time_point;
+        using AZStd::chrono::milliseconds;
+
+        milliseconds timeoutMs = milliseconds(aznumeric_cast<long long>(timeoutSeconds * 1000));
         system_clock clock;
         time_point start = clock.now();
-        auto hasTimedOut = [&]()
+        auto hasTimedOut = [&clock, start, timeoutMs]()
         {
-            return timeoutSeconds >= 0 && (clock.now() - start) >= milliseconds(static_cast<int>(timeoutSeconds * 1000));
+            return timeoutMs.count() >= 0 && (clock.now() - start) >= timeoutMs;
         };
 
         while (!AZ::Debug::Trace::IsDebuggerPresent() && !hasTimedOut())

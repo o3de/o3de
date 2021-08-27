@@ -59,6 +59,7 @@ namespace AZ
             bool AttachDebugger()
             {
                 // Not supported yet
+                AZ_Assert(false, "AttachDebugger() is not supported for Mac platform yet");
                 return false;
             }
 

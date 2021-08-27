@@ -60,7 +60,7 @@ class EditorTestBase(ABC):
     # Test file that this test will run
     test_module = None
     # Attach debugger when running the test, useful for debugging crashes. This should never be True on production.
-    # it's also recommended to switch to EditorSingleTest for debugging in isolation
+    # It's also recommended to switch to EditorSingleTest for debugging in isolation
     attach_debugger = False
     # Wait until a debugger is attached at the startup of the test, this is another way of debugging.
     wait_for_debugger = False
