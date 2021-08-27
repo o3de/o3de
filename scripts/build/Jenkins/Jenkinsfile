@@ -378,7 +378,7 @@ def TestMetrics(Map pipelineConfig, String workspace, String branchName, String 
     }
 }
 
-def BenchmarkMetrics(String workspace, String branchName, String outputDirectory) {
+def BenchmarkMetrics(Map pipelineConfig, String workspace, String branchName, String outputDirectory) {
     catchError(buildResult: null, stageResult: null) {
         def cmakeBuildDir = [workspace, ENGINE_REPOSITORY_NAME, outputDirectory].join('/')
         dir("${workspace}/${ENGINE_REPOSITORY_NAME}") {
@@ -452,7 +452,7 @@ def CreateTestMetricsStage(Map pipelineConfig, String branchName, Map environmen
     return {
         stage("${buildJobName}_metrics") {
             TestMetrics(pipelineConfig, environmentVars['WORKSPACE'], branchName, env.DEFAULT_REPOSITORY_NAME, buildJobName, outputDirectory, configuration)
-            BenchmarkMetrics(environmentVars['WORKSPACE'], branchName, outputDirectory)
+            BenchmarkMetrics(pipelineConfig, environmentVars['WORKSPACE'], branchName, outputDirectory)
         }
     }
 }
