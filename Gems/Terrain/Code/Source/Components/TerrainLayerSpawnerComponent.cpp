@@ -113,26 +113,21 @@ namespace Terrain
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusConnect(GetEntityId());
         TerrainAreaRequestBus::Handler::BusConnect(GetEntityId());
         TerrainSpawnerRequestBus::Handler::BusConnect(GetEntityId());
-        LmbrCentral::DependencyNotificationBus::Handler::BusConnect(GetEntityId());
-
-        m_dependencyMonitor.Reset();
-        m_dependencyMonitor.ConnectOwner(GetEntityId());
-        m_dependencyMonitor.ConnectDependency(GetEntityId());
 
         TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::RegisterArea, GetEntityId());
     }
 
     void TerrainLayerSpawnerComponent::Deactivate()
     {
-        m_dependencyMonitor.Reset();
+        TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::UnregisterArea, GetEntityId());
 
         TerrainAreaRequestBus::Handler::BusDisconnect();
         TerrainSpawnerRequestBus::Handler::BusDisconnect();
-        LmbrCentral::DependencyNotificationBus::Handler::BusDisconnect();
-        TerrainSystemServiceRequestBus::Broadcast(&TerrainSystemServiceRequestBus::Events::UnregisterArea, GetEntityId());
-
         AZ::TransformNotificationBus::Handler::BusDisconnect();
         LmbrCentral::ShapeComponentNotificationsBus::Handler::BusDisconnect();
+
+        m_cachedLayer = m_configuration.m_layer;
+        m_cachedPriority = m_configuration.m_priority;
     }
 
     bool TerrainLayerSpawnerComponent::ReadInConfig(const AZ::ComponentConfig* baseConfig)
@@ -155,11 +150,6 @@ namespace Terrain
         return false;
     }
 
-    void TerrainLayerSpawnerComponent::OnCompositionChanged()
-    {
-        RefreshArea();
-    }
-
     void TerrainLayerSpawnerComponent::OnTransformChanged([[maybe_unused]] const AZ::Transform& local, [[maybe_unused]] const AZ::Transform& world)
     {
         RefreshArea();
@@ -172,8 +162,10 @@ namespace Terrain
     
     void TerrainLayerSpawnerComponent::GetPriority(AZ::u32& outLayer, AZ::u32& outPriority)
     {
-        outLayer = m_configuration.m_layer;
-        outPriority = m_configuration.m_priority;
+        // Return the cached priority values so that when they are changed in the editor, the TerrainSystem
+        // will be able to erase the registered entity during the editor redraw.
+        outLayer = m_cachedLayer;
+        outPriority = m_cachedPriority;
     }
 
     void TerrainLayerSpawnerComponent::GetUseGroundPlane(bool& outUseGroundPlane)

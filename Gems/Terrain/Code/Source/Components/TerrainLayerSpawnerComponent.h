@@ -20,8 +20,6 @@
 
 #include <AzCore/Component/TransformBus.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
-#include <LmbrCentral/Dependency/DependencyMonitor.h>
-#include <LmbrCentral/Dependency/DependencyNotificationBus.h>
 #include <AzCore/Math/Aabb.h>
 
 namespace LmbrCentral
@@ -50,8 +48,6 @@ namespace Terrain
         static void Reflect(AZ::ReflectContext* context);
 
         void SetEntityId(AZ::EntityId id);
-        void OnLayerChanged();
-        void OnPriorityChanged();
 
         AZStd::vector<AZStd::pair<AZ::u32, AZStd::string>> GetSelectableLayers() const;
         AZ::u32 m_layer = AreaConstants::s_foregroundLayer;
@@ -67,7 +63,6 @@ namespace Terrain
         , private LmbrCentral::ShapeComponentNotificationsBus::Handler
         , private Terrain::TerrainAreaRequestBus::Handler
         , private Terrain::TerrainSpawnerRequestBus::Handler
-        , private LmbrCentral::DependencyNotificationBus::Handler
     {
     public:
         template<typename, typename>
@@ -99,15 +94,14 @@ namespace Terrain
         // TerrainSpawnerRequestBus
         void GetPriority(AZ::u32& outLayer, AZ::u32& outPriority) override;
         void GetUseGroundPlane(bool& outUseGroundPlane) override;
-
-        // DependencyNotificationBus
-        void OnCompositionChanged() override;
         
         void RegisterArea() override;
         void RefreshArea() override;
 
     private:
         TerrainLayerSpawnerConfig m_configuration;
-        LmbrCentral::DependencyMonitor m_dependencyMonitor;
+
+        AZ::u32 m_cachedLayer = 0;
+        AZ::u32 m_cachedPriority = 0;
     };
 }
