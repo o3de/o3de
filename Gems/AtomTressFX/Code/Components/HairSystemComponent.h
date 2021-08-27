@@ -10,6 +10,8 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Asset/AssetCommon.h>
 
+#include <Atom/RPI.Public/Pass/PassSystemInterface.h>
+
 namespace AZ
 {
     namespace Render
@@ -34,6 +36,8 @@ namespace AZ
                 static void GetRequiredServices(ComponentDescriptor::DependencyArrayType& required);
 
             private:
+                //! Loads the pass templates mapping file 
+                void LoadPassTemplateMappings();
 
                 ////////////////////////////////////////////////////////////////////////
                 // Component interface implementation
@@ -41,6 +45,9 @@ namespace AZ
                 void Activate() override;
                 void Deactivate() override;
                 ////////////////////////////////////////////////////////////////////////
+
+                //! Used for loading the pass templates of the hair gem.
+                RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler m_loadTemplatesHandler;
             };
         } // namespace Hair
     } // End Render namespace
