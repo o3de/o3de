@@ -337,7 +337,7 @@ namespace AZ::IO
         AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
         auto visitor = [this, now](auto&& args) -> void
 #else
-        auto visitor = [this](auto&& args) -> void
+        auto visitor = [](auto&& args) -> void
 #endif
         {
             using Command = AZStd::decay_t<decltype(args)>;
