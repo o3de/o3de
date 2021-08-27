@@ -222,7 +222,7 @@ namespace AZ
             void SetFilteringSampleCount(LightHandle handle, uint16_t count) override;
             void SetShadowBoundaryWidth(LightHandle handle, float boundaryWidth) override;
             void SetPcfMethod(LightHandle handle, PcfMethod method) override;
-            void SetShadowReceiverPlaneBiasEnable(LightHandle handle, bool enable) override;
+            void SetShadowReceiverPlaneBiasEnabled(LightHandle handle, bool enable) override;
 
             const Data::Instance<RPI::Buffer> GetLightBuffer() const;
             uint32_t GetLightCount() const;

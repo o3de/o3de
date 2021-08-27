@@ -617,7 +617,7 @@ namespace AZ
             m_shadowBufferNeedsUpdate = true;
         }
 
-        void DirectionalLightFeatureProcessor::SetShadowReceiverPlaneBiasEnable(LightHandle handle, bool enable)
+        void DirectionalLightFeatureProcessor::SetShadowReceiverPlaneBiasEnabled(LightHandle handle, bool enable)
         {
             m_shadowProperties.GetData(handle.GetIndex()).m_isReceiverPlaneBiasEnabled = enable;
         }

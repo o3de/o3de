@@ -649,7 +649,7 @@ namespace AZ
         void DirectionalLightComponentController::SetShadowReceiverPlaneBiasEnabled(bool enable)
         {
             m_configuration.m_receiverPlaneBiasEnabled = enable;
-            m_featureProcessor->SetShadowReceiverPlaneBiasEnable(m_lightHandle, enable);
+            m_featureProcessor->SetShadowReceiverPlaneBiasEnabled(m_lightHandle, enable);
         }
 
     } // namespace Render
