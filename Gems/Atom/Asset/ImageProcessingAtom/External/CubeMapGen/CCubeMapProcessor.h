@@ -23,6 +23,10 @@
 //has routines for saving .rgbe files
 #define CG_RGBE_SUPPORT
 
+#ifndef WCHAR // For non-windows platforms, for Windows-based platforms it will be defined through PlatformIncl.h
+#define WCHAR wchar_t
+#endif // WCHAR
+
 //used to index cube faces
 #define CP_FACE_X_POS 0
 #define CP_FACE_X_NEG 1

@@ -16,6 +16,10 @@
 #include <ImageBuilderBaseType.h>
 #include <AzCore/PlatformIncl.h>
 
+#ifndef WCHAR // For non-windows platforms, for Windows-based platforms it will be defined through PlatformIncl.h
+#define WCHAR wchar_t
+#endif // WCHAR
+
 #ifndef SAFE_DELETE 
 #define SAFE_DELETE(p)       { if(p) { delete (p);   (p)=NULL; } }
 #endif
