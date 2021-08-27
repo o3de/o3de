@@ -31,12 +31,12 @@ namespace AZStd
     using std::tan;
     using std::trunc;
 
-    // from c++20 standard
-    template<typename T>
 }
+// from c++20 standard
 namespace AZStd::Internal
 {
-    constexpr T __lerp(T a, T b, T t) noexcept
+    template<typename T>
+    constexpr T lerp(T a, T b, T t) noexcept
     {
         if ((a <= 0 && b >= 0) || (a >= 0 && b <= 0))
         {
@@ -71,10 +71,9 @@ namespace AZStd
         return Internal::lerp(a, b, t);
     }
 
-
     constexpr long double lerp(long double a, long double b, long double t) noexcept
     {
-        return __lerp(a, b, t);
+        return Internal::lerp(a, b, t);
     }
 
 } // namespace AZStd
