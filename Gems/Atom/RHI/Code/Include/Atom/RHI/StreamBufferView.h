@@ -29,7 +29,7 @@ namespace AZ
          *   or interleaved in a single StreamBufferView (one view having multiple StreamChannelDescriptors).
          * - The view will correspond to a single StreamBufferDescriptor.
          */
-        class StreamBufferView
+        class alignas(8) StreamBufferView
         {
         public:
             StreamBufferView() = default;
@@ -62,8 +62,6 @@ namespace AZ
             uint32_t m_byteOffset = 0;
             uint32_t m_byteCount = 0;
             uint32_t m_byteStride = 0;
-            // Padding the size so it's 8 bytes aligned
-            uint32_t m_pad = 0;
         };
 
         /// Utility function for checking that the set of StreamBufferViews aligns with the InputStreamLayout

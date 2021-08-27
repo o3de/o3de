@@ -84,7 +84,7 @@ namespace UnitTest
 
                 for (AZ::u32 threadIdx = 0; threadIdx < numThreads; ++threadIdx)
                 {
-                    auto threadFunctor = [&testFunction, testIteration, threadIdx, &successCount]()
+                    auto threadFunctor = [&testFunction, &successCount]()
                     {
                         // Add some variability to thread timing by yielding each thread
                         AZStd::this_thread::yield();
@@ -769,7 +769,6 @@ namespace UnitTest
         AZStd::intrusive_ptr<AZ::IO::INestedArchive> pArchive = archive->OpenArchive(testArchivePath, nullptr, AZ::IO::INestedArchive::FLAGS_CREATE_NEW);
         EXPECT_NE(nullptr, pArchive);
 
-        char fillBuffer[32] = "Test";
         EXPECT_EQ(0, pArchive->UpdateFile("foundit.dat", const_cast<char*>("test"), 4, AZ::IO::INestedArchive::METHOD_COMPRESS, AZ::IO::INestedArchive::LEVEL_BEST));
 
         pArchive.reset();

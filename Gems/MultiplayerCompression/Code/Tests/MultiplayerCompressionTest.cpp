@@ -67,8 +67,6 @@ TEST_F(MultiplayerCompressionTest, MultiplayerCompression_CompressTest)
     EXPECT_TRUE(uncompressedSize = buffer.GetSize());
     EXPECT_TRUE(memcmp(pDecompressedBuffer, buffer.GetBuffer(), uncompressedSize) == 0);
 
-    const AZ::u64 unmarshalTime = (AZStd::chrono::system_clock::now() - startTime).count();
-
     delete [] pCompressedBuffer;
     delete [] pDecompressedBuffer;
 

@@ -102,7 +102,7 @@ public:
     // ITrackViewNode
     virtual ETrackViewNodeType GetNodeType() const override { return eTVNT_Sequence; }
 
-    virtual const char* GetName() const override { return m_pAnimSequence->GetName(); }
+    virtual AZStd::string GetName() const override { return m_pAnimSequence->GetName(); }
     virtual bool SetName(const char* pName) override;
     virtual bool CanBeRenamed() const override { return true; }
 

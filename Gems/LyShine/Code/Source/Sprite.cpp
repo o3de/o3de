@@ -509,20 +509,16 @@ ISprite::Borders CSprite::GetTextureSpaceCellUvBorders(int cellIndex) const
     if (CellIndexWithinRange(cellIndex))
     {
         const float cellWidth = GetCellUvSize(cellIndex).GetX();
-        const float cellMinUCoord = GetCellUvCoords(cellIndex).TopLeft().GetX();
         const float cellNormalizedLeftBorder = GetCellUvBorders(cellIndex).m_left * cellWidth;
         textureSpaceBorders.m_left = cellNormalizedLeftBorder;
 
-        const float cellMaxUCoord = GetCellUvCoords(cellIndex).TopRight().GetX();
         const float cellNormalizedRightBorder = GetCellUvBorders(cellIndex).m_right * cellWidth;
         textureSpaceBorders.m_right = cellNormalizedRightBorder;
 
         const float cellHeight = GetCellUvSize(cellIndex).GetY();
-        const float cellMinVCoord = GetCellUvCoords(cellIndex).TopLeft().GetY();
         const float cellNormalizedTopBorder = GetCellUvBorders(cellIndex).m_top * cellHeight;
         textureSpaceBorders.m_top = cellNormalizedTopBorder;
 
-        const float cellMaxVCoord = GetCellUvCoords(cellIndex).BottomLeft().GetY();
         const float cellNormalizedBottomBorder = GetCellUvBorders(cellIndex).m_bottom * cellHeight;
         textureSpaceBorders.m_bottom = cellNormalizedBottomBorder;
     }

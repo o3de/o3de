@@ -292,7 +292,7 @@ namespace Audio
         PushRequestBlocking(request);
 
         m_audioSystemThread.Deactivate();
-        const bool bSuccess = m_oATL.ShutDown();
+        m_oATL.ShutDown();
         m_bSystemInitialized = false;
     }
 

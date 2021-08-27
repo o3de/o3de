@@ -30,12 +30,6 @@ namespace ImageHistogram
     const QColor    kGreenSectionColor = QColor(220, 255, 220);
     const QColor    kBlueSectionColor = QColor(220, 220, 255);
     const QColor    kSplitSeparatorColor = QColor(100, 100, 0);
-    const QColor    kButtonBackColor = QColor(20, 20, 20);
-    const QColor    kBtnLightColor(200, 200, 200);
-    const QColor    kBtnShadowColor(50, 50, 50);
-    const int       kButtonWidth = 40;
-    const QColor    kButtonTextColor(255, 255, 0);
-    const int       kTextLeftSpacing = 4;
     const int       kTextFontSize = 70;
     const char*     kTextFontFace = "Arial";
     const QColor    kTextColor(255, 255, 255);

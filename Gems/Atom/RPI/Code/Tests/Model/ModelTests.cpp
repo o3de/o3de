@@ -783,7 +783,6 @@ namespace UnitTest
 
         const uint32_t vertexCount = 36;
         const uint32_t vertexSize = sizeof(float) * 3;
-        const uint32_t vertexBufferSize = vertexCount * vertexSize;
 
         RHI::BufferViewDescriptor validStreamBufferViewDescriptor =
             RHI::BufferViewDescriptor::CreateStructured(0, vertexCount, vertexSize);

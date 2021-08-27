@@ -161,7 +161,6 @@ namespace AZ
         using namespace JsonSerializationResult;
 
         StoreTypeId storeTypeId = StoreTypeId::No;
-        Uuid resolvedTypeId = classData.m_typeId;
         const SerializeContext::ClassData* resolvedClassData = &classData;
         AZStd::any defaultPointerObject;
 

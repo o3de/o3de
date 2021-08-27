@@ -123,8 +123,6 @@ void CSplineCtrl::paintEvent(QPaintEvent* event)
 {
     QPainter painter(this);
 
-    QRect rcClient = rect();
-
     if (m_pSpline)
     {
         m_bSelectedKeys.resize(m_pSpline->GetKeyCount());

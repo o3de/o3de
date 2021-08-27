@@ -179,19 +179,17 @@ void CLogFile::FormatLineV(const char * format, va_list argList)
 
 void CLogFile::AboutSystem()
 {
-    char szBuffer[MAX_LOGBUFFER_SIZE];
-    wchar_t szBufferW[MAX_LOGBUFFER_SIZE];
 #if defined(AZ_PLATFORM_WINDOWS) || defined(AZ_PLATFORM_LINUX)
     //////////////////////////////////////////////////////////////////////
     // Write the system informations to the log
     //////////////////////////////////////////////////////////////////////
-
-    wchar_t szLanguageBufferW[64];
+    char szBuffer[MAX_LOGBUFFER_SIZE];
     //wchar_t szCPUModel[64];
     MEMORYSTATUS MemoryStatus;
 #endif // defined(AZ_PLATFORM_WINDOWS) || defined(AZ_PLATFORM_LINUX)
 
 #if defined(AZ_PLATFORM_WINDOWS)
+    wchar_t szLanguageBufferW[64];
     DEVMODE DisplayConfig;
     OSVERSIONINFO OSVerInfo;
     OSVerInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
@@ -288,7 +286,7 @@ AZ_POP_DISABLE_WARNING
             str += "Version Unknown";
         }
     }
-    azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, " %d.%d", OSVerInfo.dwMajorVersion, OSVerInfo.dwMinorVersion);
+    azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, " %ld.%ld", OSVerInfo.dwMajorVersion, OSVerInfo.dwMinorVersion);
     str += szBuffer;
 
     //////////////////////////////////////////////////////////////////////
@@ -296,6 +294,7 @@ AZ_POP_DISABLE_WARNING
     //////////////////////////////////////////////////////////////////////
 
     str += " (";
+    wchar_t szBufferW[MAX_LOGBUFFER_SIZE];
     GetWindowsDirectoryW(szBufferW, sizeof(szBufferW));
     AZStd::to_string(szBuffer, MAX_LOGBUFFER_SIZE, szBufferW);
     str += szBuffer;
@@ -338,7 +337,7 @@ AZ_POP_DISABLE_WARNING
     str += " ";
     azstrdate(szBuffer);
     str += szBuffer;
-    azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, ", system running for %d minutes", GetTickCount() / 60000);
+    azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, ", system running for %ld minutes", GetTickCount() / 60000);
     str += szBuffer;
     CryLog("%s", str.toUtf8().data());
 #else
@@ -388,7 +387,7 @@ AZ_POP_DISABLE_WARNING
         L"(Unknown graphics card)", szLanguageBufferW, sizeof(szLanguageBufferW),
         L"system.ini");
     AZStd::to_string(szLanguageBuffer, szLanguageBufferW);
-    azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, "Current display mode is %dx%dx%d, %s",
+    azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, "Current display mode is %ldx%ldx%ld, %s",
         DisplayConfig.dmPelsWidth, DisplayConfig.dmPelsHeight,
         DisplayConfig.dmBitsPerPel, szLanguageBuffer.c_str());
     CryLog("%s", szBuffer);

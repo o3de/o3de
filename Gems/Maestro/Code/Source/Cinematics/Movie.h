@@ -16,6 +16,7 @@
 #include <AzCore/std/containers/map.h>
 
 #include "IMovieSystem.h"
+#include "IShader.h"
 
 struct PlayingSequence
 {

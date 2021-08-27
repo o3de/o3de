@@ -66,7 +66,6 @@ namespace AZ
     static const int assertLevel_log = 1;
     static const int assertLevel_nativeUI = 2;
     static const int assertLevel_crash = 3;
-    static const int logLevel_errorWarning = 1;
     static const int logLevel_full = 2;
     static AZ::EnvironmentVariable<AZStd::unordered_set<size_t>> g_ignoredAsserts;
     static AZ::EnvironmentVariable<int> g_assertVerbosityLevel;

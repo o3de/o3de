@@ -77,9 +77,6 @@ inline namespace TrackViewInternal
     const int s_kMinimumFrameSnappingFPS = 1;
     const int s_kMaximumFrameSnappingFPS = 120;
 
-    const int TRACKVIEW_LAYOUT_VERSION = 0x0001; // Bump this up on every substantial pane layout change
-    const int TRACKVIEW_REBAR_VERSION = 0x0002; // Bump this up on every substantial rebar change
-
     CTrackViewSequence* GetSequenceByEntityIdOrName(const CTrackViewSequenceManager* pSequenceManager, const char* entityIdOrName)
     {
         // the "name" string will be an AZ::EntityId in string form if this was called from
@@ -1125,7 +1122,7 @@ void CTrackViewDialog::ReloadSequencesComboBox()
         {
             CTrackViewSequence* sequence = pSequenceManager->GetSequenceByIndex(k);
             QString entityIdString = GetEntityIdAsString(sequence->GetSequenceComponentEntityId());
-            m_sequencesComboBox->addItem(sequence->GetName(), entityIdString);
+            m_sequencesComboBox->addItem(QString::fromUtf8(sequence->GetName().c_str()), entityIdString);
         }
     }
 
@@ -2033,7 +2030,7 @@ void CTrackViewDialog::UpdateTracksToolBar()
                     continue;
                 }
 
-                name = pAnimNode->GetParamName(paramType);
+                name = QString::fromUtf8(pAnimNode->GetParamName(paramType).c_str());
 
                 QString sToolTipText("Add " + name + " Track");
                 QIcon hIcon = m_wndNodesCtrl->GetIconForTrack(pTrack);
@@ -2309,7 +2306,7 @@ void CTrackViewDialog::SaveCurrentSequenceToFBX()
         return;
     }
 
-    QString selectedSequenceFBXStr = QString(sequence->GetName()) + ".fbx";
+    QString selectedSequenceFBXStr = QString::fromUtf8(sequence->GetName().c_str()) + ".fbx";
     CExportManager* pExportManager = static_cast<CExportManager*>(GetIEditor()->GetExportManager());
     const char szFilters[] = "FBX Files (*.fbx)";
 

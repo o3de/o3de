@@ -13,6 +13,7 @@
 #include "UiGameEntityContext.h"
 
 #include <IRenderer.h>
+#include <CryCommon/StlUtils.h>
 #include <LyShine/UiSerializeHelpers.h>
 
 #include <AzCore/Debug/AssetTracking.h>
