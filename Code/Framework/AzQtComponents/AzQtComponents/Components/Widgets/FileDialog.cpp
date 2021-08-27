@@ -38,7 +38,8 @@ namespace AzQtComponents
                 // If the filename had invalid characters, then show a warning message and then we will re-prompt the save filename dialog
                 if (shouldPromptAgain)
                 {
-                    QMessageBox::warning(parent, QObject::tr("Invalid filename"), QObject::tr("The filename contains invalid characters\n\n%1").arg(fileName));
+                    QMessageBox::warning(parent, QObject::tr("Invalid filename"),
+                        QObject::tr("O3DE assets are restricted to alphanumeric characters, hyphens (-), underscores (_), and dots (.)\n\n%1").arg(fileName));
                 }
             }
             else
