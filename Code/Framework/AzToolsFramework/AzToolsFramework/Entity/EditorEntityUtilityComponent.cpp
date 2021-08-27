@@ -6,24 +6,24 @@
  *
  */
 
+#include <AzFramework/Entity/EntityContext.h>
 #include <AzToolsFramework/Entity/EditorEntityUtilityComponent.h>
 #include <Entity/EditorEntityContextBus.h>
 
 namespace AzToolsFramework
 {
-    AZ::EntityId CreateEditorEntity(AZStd::string_view entityName)
+    AZ::EntityId EditorEntityUtilityComponent::CreateEditorReadyEntity(const AZStd::string& entityName)
     {
-        AZ::Entity* newEntity = aznew AZ::Entity(entityName);
+        auto* newEntity = m_entityContext->CreateEntity(entityName.c_str());
 
         AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
             &AzToolsFramework::EditorEntityContextRequestBus::Events::AddRequiredComponents, *newEntity);
 
         newEntity->Init();
-        newEntity->Activate();
 
         return newEntity->GetId();
     }
-
+    
     void EditorEntityUtilityComponent::Reflect(AZ::ReflectContext* context)
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -33,12 +33,24 @@ namespace AzToolsFramework
 
         if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->Method("CreateEditorEntity", &CreateEditorEntity)
-                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+            behaviorContext->EBus<EditorEntityUtilityBus>("EditorEntityUtilityBus")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Category, "Entity")
-                ->Attribute(AZ::Script::Attributes::Module, "entity");
+                ->Attribute(AZ::Script::Attributes::Module, "entity")
+                ->Event("CreateEditorReadyEntity", &EditorEntityUtilityBus::Events::CreateEditorReadyEntity);
         }
     }
 
-    
+    void EditorEntityUtilityComponent::Activate()
+    {
+        m_entityContext = AZStd::make_unique<AzFramework::EntityContext>(UtilityEntityContextId);
+        m_entityContext->InitContext();
+        EditorEntityUtilityBus::Handler::BusConnect();
+    }
+
+    void EditorEntityUtilityComponent::Deactivate()
+    {
+        EditorEntityUtilityBus::Handler::BusConnect();
+        m_entityContext = nullptr;
+    }
 }
