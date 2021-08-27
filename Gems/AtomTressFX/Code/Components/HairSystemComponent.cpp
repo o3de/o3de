@@ -53,6 +53,15 @@ namespace AZ
                 required.push_back(AZ_CRC("EMotionFXAnimationService", 0x3f8a6369));
             }
 
+            void HairSystemComponent::LoadPassTemplateMappings()
+            {
+                auto* passSystem = RPI::PassSystemInterface::Get();
+                AZ_Assert(passSystem, "Cannot get the pass system.");
+
+                const char* passTemplatesFile = "Passes/AtomTressFX_PassTemplates.azasset";
+                passSystem->LoadPassTemplateMappings(passTemplatesFile);
+            }
+
             void HairSystemComponent::Init()
             {
             }
@@ -63,8 +72,13 @@ namespace AZ
                 AZ::RPI::FeatureProcessorFactory::Get()->RegisterFeatureProcessor<Hair::HairFeatureProcessor>();
 
                 auto* passSystem = RPI::PassSystemInterface::Get();
-
                 AZ_Assert(passSystem, "Cannot get the pass system.");
+
+                // Setup handler for load pass templates mappings
+                m_loadTemplatesHandler = RPI::PassSystemInterface::OnReadyLoadTemplatesEvent::Handler([this]() { this->LoadPassTemplateMappings(); });
+                passSystem->ConnectEvent(m_loadTemplatesHandler);
+
+                // Load the AtomTressFX pass classes
                 passSystem->AddPassCreator(Name("HairSkinningComputePass"), &HairSkinningComputePass::Create);
                 passSystem->AddPassCreator(Name("HairPPLLRasterPass"), &HairPPLLRasterPass::Create);
                 passSystem->AddPassCreator(Name("HairPPLLResolvePass"), &HairPPLLResolvePass::Create);
@@ -73,6 +87,8 @@ namespace AZ
             void HairSystemComponent::Deactivate()
             {
                 AZ::RPI::FeatureProcessorFactory::Get()->UnregisterFeatureProcessor<Hair::HairFeatureProcessor>();
+
+                m_loadTemplatesHandler.Disconnect();
             }
         } // namespace Hair
     } // End Render namespace
