@@ -30,6 +30,7 @@ namespace AzToolsFramework
 
         void PrefabSystemComponent::Activate()
         {
+            PrefabSystemComponentBus::Handler::BusConnect();
             AZ::Interface<PrefabSystemComponentInterface>::Register(this);
             m_prefabLoader.RegisterPrefabLoaderInterface();
             m_instanceUpdateExecutor.RegisterInstanceUpdateExecutorInterface();
@@ -48,6 +49,7 @@ namespace AzToolsFramework
             m_instanceUpdateExecutor.UnregisterInstanceUpdateExecutorInterface();
             m_prefabLoader.UnregisterPrefabLoaderInterface();
             AZ::Interface<PrefabSystemComponentInterface>::Unregister(this);
+            PrefabSystemComponentBus::Handler::BusDisconnect();
         }
 
         void PrefabSystemComponent::Reflect(AZ::ReflectContext* context)
@@ -58,10 +60,18 @@ namespace AzToolsFramework
             AzToolsFramework::Prefab::PrefabConversionUtils::EditorInfoRemover::Reflect(context);
             PrefabPublicRequestHandler::Reflect(context);
 
-            AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
-            if (serialize)
+            if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serialize->Class<PrefabSystemComponent, AZ::Component>()->Version(1);
+            }
+
+            if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+            {
+                behaviorContext->EBus<PrefabSystemComponentBus>("PrefabSystemComponentBus")
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                    ->Attribute(AZ::Script::Attributes::Module, "types")
+                    ->Event("CreatePrefab", &PrefabSystemComponentBus::Events::CreatePrefabTemplate)
+                ;
             }
 
             AZ::JsonRegistrationContext* jsonRegistration = azrtti_cast<AZ::JsonRegistrationContext*>(context);
@@ -137,6 +147,26 @@ namespace AzToolsFramework
             }
 
             return newInstance;
+        }
+        
+        TemplateId PrefabSystemComponent::CreatePrefabTemplate(const AZStd::vector<AZ::EntityId>& entityIds, const AZStd::string& filePath, bool shouldCreateLinks)
+        {
+            AZStd::vector<AZ::Entity*> entities;
+
+            for (const auto& entityId : entityIds)
+            {
+                AZ::Entity* entity = nullptr;
+                AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
+
+                if (entity)
+                {
+                    entities.push_back(entity);
+                }
+            }
+            
+            auto prefab = CreatePrefab(entities, {}, AZ::IO::PathView(AZStd::string_view(filePath)), nullptr, shouldCreateLinks);
+            
+            return prefab->GetTemplateId();
         }
 
         void PrefabSystemComponent::PropagateTemplateChanges(TemplateId templateId, InstanceOptionalReference instanceToExclude)

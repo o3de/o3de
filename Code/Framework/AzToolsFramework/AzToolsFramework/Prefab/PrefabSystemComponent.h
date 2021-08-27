@@ -50,6 +50,7 @@ namespace AzToolsFramework
         class PrefabSystemComponent
             : public AZ::Component
             , private PrefabSystemComponentInterface
+            , private PrefabSystemComponentBus::Handler
             , private AZ::SystemTickBus::Handler
         {
         public:
@@ -201,6 +202,8 @@ namespace AzToolsFramework
                 const AZStd::vector<AZ::Entity*>& entities, AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume,
                 AZ::IO::PathView filePath, AZStd::unique_ptr<AZ::Entity> containerEntity = nullptr,
                 bool ShouldCreateLinks = true) override;
+
+            TemplateId CreatePrefabTemplate(const AZStd::vector<AZ::EntityId>& entities, const AZStd::string& filePath, bool shouldCreateLinks) override;
 
             PrefabDom& FindTemplateDom(TemplateId templateId) override;
 

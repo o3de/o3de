@@ -21,6 +21,11 @@ namespace UnitTest
     {
     }
 
+    PrefabTestToolsApplication::PrefabTestToolsApplication(AZStd::string applicationName, int argc, char** argv)
+        : ToolsTestApplication(AZStd::move(applicationName), argc, argv)
+    {
+    }
+
     bool PrefabTestToolsApplication::IsPrefabSystemEnabled() const
     {
         // Make sure our prefab tests always run with prefabs enabled
@@ -54,7 +59,17 @@ namespace UnitTest
 
     AZStd::unique_ptr<ToolsTestApplication> PrefabTestFixture::CreateTestApplication()
     {
-        return AZStd::make_unique<PrefabTestToolsApplication>("PrefabTestApplication");
+        constexpr size_t MaxCommandArgsCount = 8;
+        using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
+        using ArgumentContainer = AZStd::fixed_vector<char*, MaxCommandArgsCount>;
+        // The first command line argument is assumed to be the executable name so add a blank entry for it
+        ArgumentContainer argContainer{ {} };
+
+        auto projectPathOverride = FixedValueString{ R"(--project-path=AutomatedTesting)" };
+        argContainer.push_back(projectPathOverride.data());
+
+        return AZStd::make_unique<PrefabTestToolsApplication>(
+            "PrefabTestApplication", aznumeric_caster(argContainer.size()), argContainer.data());
     }
 
     AZ::Entity* PrefabTestFixture::CreateEntity(const char* entityName, const bool shouldActivate)
