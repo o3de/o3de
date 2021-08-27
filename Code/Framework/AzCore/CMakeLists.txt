@@ -12,11 +12,10 @@
 ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
 ly_get_list_relative_pal_filename(common_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/Common)
 
-if(LY_RAD_TELEMETRY_ENABLED)
-    set(AZ_CORE_RADTELEMETRY_FILES ${common_dir}/azcore_profile_telemetry_files.cmake)
-    set(AZ_CORE_RADTELEMETRY_PLATFORM_INCLUDES ${pal_dir}/profile_telemetry_platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
-    set(AZ_CORE_RADTELEMETRY_INCLUDE_DIRECTORIES ${common_dir})
-    set(AZ_CORE_RADTELEMETRY_BUILD_DEPENDENCIES 3rdParty::RadTelemetry)
+if(PAL_TRAIT_PROF_PIX_SUPPORTED AND LY_PIX_ENABLED)
+    set(LY_PIX_PATH "${LY_3RDPARTY_PATH}/winpixeventruntime" CACHE PATH "Path to the Windows Pix Event Runtime.")
+    set(AZ_CORE_PIX_BUILD_DEPENDENCIES 3rdParty::pix)
+    set(AZ_CORE_PIX_BUILD_DEFINES "USE_PIX")
 endif()
 
 ly_add_target(
@@ -26,16 +25,13 @@ ly_add_target(
         AzCore/azcore_files.cmake
         AzCore/std/azstd_files.cmake
         ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
-        ${AZ_CORE_RADTELEMETRY_FILES}
     PLATFORM_INCLUDE_FILES
         ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
-        ${AZ_CORE_RADTELEMETRY_PLATFORM_INCLUDES}
     INCLUDE_DIRECTORIES
         PUBLIC
             .
             ${pal_dir}
             ${common_dir}
-            ${AZ_CORE_RADTELEMETRY_INCLUDE_DIRECTORIES}
     BUILD_DEPENDENCIES
         PUBLIC
             3rdParty::Lua
@@ -44,7 +40,10 @@ ly_add_target(
             3rdParty::zlib
             3rdParty::zstd
             3rdParty::cityhash
-            ${AZ_CORE_RADTELEMETRY_BUILD_DEPENDENCIES}
+            ${AZ_CORE_PIX_BUILD_DEPENDENCIES}
+    COMPILE_DEFINITIONS
+        PUBLIC
+            ${AZ_CORE_PIX_BUILD_DEFINES}
 )
 ly_add_source_properties(
     SOURCES
@@ -53,6 +52,15 @@ ly_add_source_properties(
     PROPERTY COMPILE_DEFINITIONS
     VALUES ${LY_PAL_TOOLS_DEFINES}
 )
+
+if(LY_BUILD_WITH_ADDRESS_SANITIZER)
+    # Default to use Malloc schema so ASan works well
+    ly_add_source_properties(
+        SOURCES AzCore/Memory/SystemAllocator.cpp
+        PROPERTY COMPILE_DEFINITIONS
+        VALUES AZCORE_SYSTEM_ALLOCATOR=AZCORE_SYSTEM_ALLOCATOR_MALLOC
+    )
+endif()
 
 ################################################################################
 # Tests

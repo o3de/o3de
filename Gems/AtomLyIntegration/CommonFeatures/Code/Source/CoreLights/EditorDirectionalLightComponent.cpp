@@ -141,7 +141,7 @@ namespace AZ
                             ->Attribute(Edit::Attributes::Max, 0.1f)
                             ->Attribute(Edit::Attributes::Suffix, " m")
                             ->Attribute(Edit::Attributes::ChangeNotify, Edit::PropertyRefreshLevels::ValuesOnly)
-                        ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsPcfBoundarySearchDisabled)
+                        ->Attribute(Edit::Attributes::ReadOnly, &DirectionalLightComponentConfig::IsSofteningBoundaryWidthDisabled)
                         ->DataElement(Edit::UIHandlers::Slider, &DirectionalLightComponentConfig::m_predictionSampleCount, "Prediction sample count",
                             "Sample count for prediction of whether the pixel is on the boundary. "
                             "Specific to PCF and ESM+PCF.")

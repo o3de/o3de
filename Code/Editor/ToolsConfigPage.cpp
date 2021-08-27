@@ -39,8 +39,6 @@ namespace
     QColor COLOR_FOR_CONSOLE_COMMAND = QColor(0, 0, 255);
     QColor COLOR_FOR_TOGGLE_COMMAND = QColor(128, 0, 255);
     QColor COLOR_FOR_INVALID_COMMAND = QColor(255, 0, 0);
-
-    UINT CONSOLE_CMD_DROP_LIST_HEIGHT           = 300;
 };
 
 class IconListModel
@@ -840,7 +838,7 @@ void CToolsConfigPage::FillScriptCmds()
     {
         EditorPythonConsoleInterface::GlobalFunctionCollection globalFunctionCollection;
         editorPythonConsoleInterface->GetGlobalFunctionList(globalFunctionCollection);
-        commands.reserve(globalFunctionCollection.size());
+        commands.reserve(static_cast<int>(globalFunctionCollection.size()));
         for (const EditorPythonConsoleInterface::GlobalFunction& globalFunction : globalFunctionCollection)
         {
             const QString fullCmd = QString("%1.%2()").arg(globalFunction.m_moduleName.data()).arg(globalFunction.m_functionName.data());

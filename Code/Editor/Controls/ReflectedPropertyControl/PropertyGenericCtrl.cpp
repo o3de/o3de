@@ -73,16 +73,6 @@ void GenericPopupPropertyEditor::SetPropertyType(PropertyType type)
     m_propertyType = type;
 }
 
-void ReverbPresetPropertyEditor::onEditClicked()
-{
-    CSelectEAXPresetDlg PresetDlg(this);
-    PresetDlg.SetCurrPreset(GetValue());
-    if (PresetDlg.exec() == QDialog::Accepted)
-    {
-        SetValue(PresetDlg.GetCurrPreset());
-    }
-}
-
 void SequencePropertyEditor::onEditClicked()
 {
     CSelectSequenceDialog gtDlg(this);

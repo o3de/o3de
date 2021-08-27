@@ -56,8 +56,8 @@ CReflectedVarAnimation AnimationPropertyCtrl::value() const
 void AnimationPropertyCtrl::OnApplyClicked()
 {
     QStringList cSelectedAnimations;
-    size_t nTotalAnimations(0);
-    size_t nCurrentAnimation(0);
+    int nTotalAnimations(0);
+    int nCurrentAnimation(0);
 
     QString combinedString = GetIEditor()->GetResourceSelectorHost()->GetGlobalSelection("animation");
     SplitString(combinedString, cSelectedAnimations, ',');

@@ -24,11 +24,6 @@
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Script/ScriptContextAttributes.h>
 
-#if defined(AZ_COMPILER_MSVC)
-#   pragma warning(push)
-#   pragma warning(disable: 4127) // conditional expression is constant
-#endif
-
 namespace AZStd
 {
     template <typename T>
@@ -1855,7 +1850,7 @@ namespace AZ
  *      {
  *          // do any conversion of caching of the "data" here and forward this to behavior (often the reason for this is that you can't pass everything to behavior
  *          // plus behavior can't really handle all constructs pointer to pointer, rvalues, etc. as they don't make sense for most script environments
- *          int result = 0; // set the default value for your result if the behavior if there is no implmentation
+ *          int result = 0; // set the default value for your result if the behavior if there is no implementation
  *          // The AZ_EBUS_BEHAVIOR_BINDER defines FN_EventName for each index. You can also cache it yourself (but it's slower), static int cacheIndex = GetFunctionIndex("OnEvent1"); and use that .
  *          CallResult(result, FN_OnEvent1, data);  // forward to the binding (there can be none, this is why we need to always have properly set result, when there is one)
  *          return result; // return the result like you will in any normal EBus even with result
@@ -3779,8 +3774,7 @@ namespace AZ
         template<class... Functions>
         inline void OnDemandReflectFunctions(OnDemandReflectionOwner* onDemandReflection, AZStd::Internal::pack_traits_arg_sequence<Functions...>)
         {
-            using PackExpander = bool[];
-            PackExpander{ true, (BehaviorOnDemandReflectHelper<typename AZStd::function_traits<Functions>::raw_fp_type>::QueueReflect(onDemandReflection), true)... };
+            (BehaviorOnDemandReflectHelper<typename AZStd::function_traits<Functions>::raw_fp_type>::QueueReflect(onDemandReflection), ...);
         }
 
         // Assumes parameters array is big enough to store all parameters
@@ -4507,7 +4501,7 @@ namespace AZ
             params.resize(sizeof...(Args) + eBehaviorBusForwarderEventIndices::ParameterFirst);
             SetParameters<R>(&params[eBehaviorBusForwarderEventIndices::Result], nullptr);
             SetParameters<void*>(&params[eBehaviorBusForwarderEventIndices::UserData], nullptr);
-            if (sizeof...(Args) > 0)
+            if constexpr (sizeof...(Args) > 0)
             {
                 SetParameters<Args...>(&params[eBehaviorBusForwarderEventIndices::ParameterFirst], nullptr);
             }
@@ -4871,10 +4865,6 @@ namespace AZ
 
     } // namespace Internal
 } // namespace AZ
-
-#if defined(AZ_COMPILER_MSVC)
-#   pragma warning(pop)
-#endif
 
 // pull AzStd on demand reflection
 #include <AzCore/RTTI/AzStdOnDemandPrettyName.inl>

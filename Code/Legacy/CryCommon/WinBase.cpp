@@ -86,10 +86,6 @@ typedef struct stat FS_STAT_TYPE;
 #else
 typedef struct stat64 FS_STAT_TYPE;
 #endif
-static const int FS_O_RDWR = O_RDWR;
-static const int FS_O_RDONLY = O_RDONLY;
-static const int FS_O_WRONLY = O_WRONLY;
-static const FS_ERRNO_TYPE FS_EISDIR = EISDIR;
 
 #include <mutex>
 
@@ -829,7 +825,7 @@ const int comparePathNames(const char* cpFirst, const char* cpSecond, unsigned i
     return memicmp(first.c_str(), second.c_str(), length);
 }
 
-#if defined(LINUX) || defined(APPLE) || defined(DEFINE_FIX_ONE_PATH_ELEMENT)
+#if FIX_FILENAME_CASE
 static bool FixOnePathElement(char* path)
 {
     if (*path == '\0')
@@ -924,21 +920,6 @@ threadID GetCurrentThreadId()
 #endif
 
 //////////////////////////////////////////////////////////////////////////
-HANDLE CreateEvent
-(
-    LPSECURITY_ATTRIBUTES lpEventAttributes,
-    BOOL bManualReset,
-    BOOL bInitialState,
-    LPCSTR lpName
-)
-{
-    //TODO: implement
-    CRY_ASSERT_MESSAGE(0, "CreateEvent not implemented yet");
-    return 0;
-}
-
-
-//////////////////////////////////////////////////////////////////////////
 DWORD Sleep(DWORD dwMilliseconds)
 {
 #if defined(LINUX) || defined(APPLE)
@@ -1000,95 +981,6 @@ DWORD SleepEx(DWORD dwMilliseconds, BOOL bAlertable)
     //  CRY_ASSERT_MESSAGE(0, "SleepEx not implemented yet");
     printf("SleepEx not properly implemented yet\n");
     Sleep(dwMilliseconds);
-    return 0;
-}
-
-//////////////////////////////////////////////////////////////////////////
-DWORD WaitForSingleObjectEx(HANDLE hHandle, DWORD dwMilliseconds,   BOOL bAlertable)
-{
-    //TODO: implement
-    CRY_ASSERT_MESSAGE(0, "WaitForSingleObjectEx not implemented yet");
-    return 0;
-}
-
-#if 0
-//////////////////////////////////////////////////////////////////////////
-DWORD WaitForMultipleObjectsEx(
-    DWORD nCount,
-    const HANDLE* lpHandles,
-    BOOL bWaitAll,
-    DWORD dwMilliseconds,
-    BOOL bAlertable)
-{
-    //TODO: implement
-    return 0;
-}
-#endif
-
-//////////////////////////////////////////////////////////////////////////
-DWORD WaitForSingleObject(HANDLE hHandle, DWORD dwMilliseconds)
-{
-    //TODO: implement
-    CRY_ASSERT_MESSAGE(0, "WaitForSingleObject not implemented yet");
-    return 0;
-}
-
-//////////////////////////////////////////////////////////////////////////
-BOOL SetEvent(HANDLE hEvent)
-{
-    //TODO: implement
-    CRY_ASSERT_MESSAGE(0, "SetEvent not implemented yet");
-    return TRUE;
-}
-
-//////////////////////////////////////////////////////////////////////////
-BOOL ResetEvent(HANDLE hEvent)
-{
-    //TODO: implement
-    CRY_ASSERT_MESSAGE(0, "ResetEvent not implemented yet");
-    return TRUE;
-}
-
-//////////////////////////////////////////////////////////////////////////
-HANDLE CreateMutex
-(
-    LPSECURITY_ATTRIBUTES lpMutexAttributes,
-    BOOL bInitialOwner,
-    LPCSTR lpName
-)
-{
-    //TODO: implement
-    CRY_ASSERT_MESSAGE(0, "CreateMutex not implemented yet");
-    return 0;
-}
-
-//////////////////////////////////////////////////////////////////////////
-BOOL ReleaseMutex(HANDLE hMutex)
-{
-    //TODO: implement
-    CRY_ASSERT_MESSAGE(0, "ReleaseMutex not implemented yet");
-    return TRUE;
-}
-
-//////////////////////////////////////////////////////////////////////////
-
-
-typedef DWORD (* PTHREAD_START_ROUTINE)(LPVOID lpThreadParameter);
-typedef PTHREAD_START_ROUTINE LPTHREAD_START_ROUTINE;
-
-//////////////////////////////////////////////////////////////////////////
-HANDLE CreateThread
-(
-    LPSECURITY_ATTRIBUTES lpThreadAttributes,
-    SIZE_T dwStackSize,
-    LPTHREAD_START_ROUTINE lpStartAddress,
-    LPVOID lpParameter,
-    DWORD dwCreationFlags,
-    LPDWORD lpThreadId
-)
-{
-    //TODO: implement
-    CRY_ASSERT_MESSAGE(0, "CreateThread not implemented yet");
     return 0;
 }
 
@@ -1270,90 +1162,7 @@ int CryMessageBox(const char* lpText, const char* lpCaption, unsigned int uType)
 #endif
 }
 
-#if defined(LINUX) || defined(APPLE) || defined(DEFINE_CRY_INTERLOCKED_INCREMENT)
-//[K01]: http://www.memoryhole.net/kyle/2007/05/atomic_incrementing.html
-//http://forums.devx.com/archive/index.php/t-160558.html
-//////////////////////////////////////////////////////////////////////////
-DLL_EXPORT LONG  CryInterlockedIncrement(LONG volatile* lpAddend)
-{
-    /*int r;
-    __asm__ __volatile__ (
-        "lock ; xaddl %0, (%1) \n\t"
-        : "=r" (r)
-        : "r" (lpAddend), "0" (1)
-        : "memory"
-    );
-    return (LONG) (r + 1); */// add, since we get the original value back.
-    return __sync_fetch_and_add(lpAddend, 1) + 1;
-}
-
-//////////////////////////////////////////////////////////////////////////
-DLL_EXPORT LONG  CryInterlockedDecrement(LONG volatile* lpAddend)
-{
-    /*int r;
-    __asm__ __volatile__ (
-        "lock ; xaddl %0, (%1) \n\t"
-        : "=r" (r)
-        : "r" (lpAddend), "0" (-1)
-        : "memory"
-    );
-    return (LONG) (r - 1);  */// subtract, since we get the original value back.
-    return __sync_fetch_and_sub(lpAddend, 1) - 1;
-}
-
-//////////////////////////////////////////////////////////////////////////
-DLL_EXPORT LONG      CryInterlockedExchangeAdd(LONG  volatile* lpAddend, LONG  Value)
-{
-    /*  LONG r;
-        __asm__ __volatile__ (
-        #if defined(LINUX64) || defined(APPLE)  // long is 64 bits on amd64.
-            "lock ; xaddq %0, (%1) \n\t"
-        #else
-            "lock ; xaddl %0, (%1) \n\t"
-        #endif
-            : "=r" (r)
-            : "r" (lpAddend), "0" (Value)
-            : "memory"
-        );
-        return r;*/
-    return __sync_fetch_and_add(lpAddend, Value);
-}
-
-DLL_EXPORT LONG     CryInterlockedOr(LONG volatile* Destination, LONG Value)
-{
-    return __sync_fetch_and_or(Destination, Value);
-}
-
-DLL_EXPORT LONG     CryInterlockedCompareExchange(LONG  volatile* dst, LONG  exchange, LONG comperand)
-{
-    return __sync_val_compare_and_swap(dst, comperand, exchange);
-    /*LONG r;
-    __asm__ __volatile__ (
-    #if defined(LINUX64) || defined(APPLE)  // long is 64 bits on amd64.
-        "lock ; cmpxchgq %2, (%1) \n\t"
-    #else
-        "lock ; cmpxchgl %2, (%1) \n\t"
-    #endif
-        : "=a" (r)
-        : "r" (dst), "r" (exchange), "0" (comperand)
-        : "memory"
-    );
-    return r;*/
-}
-
-
-DLL_EXPORT void*     CryInterlockedCompareExchangePointer(void* volatile* dst, void* exchange, void* comperand)
-{
-    return __sync_val_compare_and_swap(dst, comperand, exchange);
-    //return (void*)CryInterlockedCompareExchange((long volatile*)dst, (long)exchange, (long)comperand);
-}
-
-DLL_EXPORT void*     CryInterlockedExchangePointer(void* volatile* dst, void* exchange)
-{
-    __sync_synchronize();
-    return __sync_lock_test_and_set(dst, exchange);
-    //return (void*)CryInterlockedCompareExchange((long volatile*)dst, (long)exchange, (long)comperand);
-}
+#if defined(LINUX) || defined(APPLE)
 
 threadID CryGetCurrentThreadId()
 {
@@ -1380,9 +1189,7 @@ DLL_EXPORT void OutputDebugString(const char* outputString)
 typedef DIR* FS_DIR_TYPE;
 typedef dirent FS_DIRENT_TYPE;
 static const FS_ERRNO_TYPE FS_ENOENT = ENOENT;
-static const FS_ERRNO_TYPE FS_EINVAL = EINVAL;
 static const FS_DIR_TYPE FS_DIR_NULL = NULL;
-static const unsigned char FS_TYPE_DIRECTORY = DT_DIR;
 
 typedef int FS_ERRNO_TYPE;
 
@@ -1492,13 +1299,8 @@ const bool GetFilenameNoCase
     char* slash;
     const char* dirname;
     char* name;
-    FS_ERRNO_TYPE fsErr = 0;
-    FS_DIRENT_TYPE dirent;
-    uint64_t direntSize = 0;
-    FS_DIR_TYPE fd = FS_DIR_NULL;
 
-    if (
-        (pAdjustedFilename) == (char*)-1)
+    if ((pAdjustedFilename) == (char*)-1)
     {
         return false;
     }
@@ -1530,9 +1332,6 @@ const bool GetFilenameNoCase
 #endif
 
     // Scan for the file.
-    bool found = false;
-    bool skipScan = false;
-
     if (slash)
     {
         *slash = '/';

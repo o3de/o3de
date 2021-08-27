@@ -641,7 +641,7 @@ bool CXmlNode::getAttr(const char* key, ColorB& value) const
             // If we only found 3 values, a should be unchanged, and still be 255
             if (r < 256 && g < 256 && b < 256 && a < 256)
             {
-                value = ColorB(r, g, b, a);
+                value = ColorB(static_cast<uint8>(r), static_cast<uint8>(g), static_cast<uint8>(b), static_cast<uint8>(a));
                 return true;
             }
         }
@@ -1293,7 +1293,6 @@ XmlString CXmlNode::getXMLUnsafe(int level, char* tmpBuffer, uint32 sizeOfTmpBuf
 // TODO: those 2 saving functions are a bit messy. should probably make a separate one for the use of PlatformAPI
 bool CXmlNode::saveToFile(const char* fileName)
 {
-    const size_t chunkSizeBytes = (15 * 1024);
     if (!fileName)
     {
         return false;
@@ -1310,6 +1309,7 @@ bool CXmlNode::saveToFile(const char* fileName)
             gEnv->pCryPak->FClose(fileHandle);
             return true;
 #else
+            constexpr size_t chunkSizeBytes = (15 * 1024);
             bool ret = saveToFile(fileName, chunkSizeBytes, fileHandle);
             gEnv->pCryPak->FClose(fileHandle);
             return ret;
@@ -1675,8 +1675,6 @@ XmlNodeRef XmlParserImp::ParseBuffer(const char* buffer, size_t bufLen, XmlStrin
 //////////////////////////////////////////////////////////////////////////
 XmlNodeRef XmlParserImp::ParseFile(const char* filename, XmlString& errorString, bool bCleanPools)
 {
-    LOADING_TIME_PROFILE_SECTION(GetISystem());
-
     if (!filename)
     {
         return 0;
@@ -1739,8 +1737,6 @@ XmlNodeRef XmlParserImp::ParseFile(const char* filename, XmlString& errorString,
 
     if (g_bEnableBinaryXmlLoading)
     {
-        LOADING_TIME_PROFILE_SECTION_NAMED("XMLBinaryReader::Parse");
-
         XMLBinary::XMLBinaryReader reader;
         XMLBinary::XMLBinaryReader::EResult result;
         root = reader.LoadFromBuffer(XMLBinary::XMLBinaryReader::eBufferMemoryHandling_TakeOwnership, pFileContents, fileSize, result);
@@ -1760,21 +1756,9 @@ XmlNodeRef XmlParserImp::ParseFile(const char* filename, XmlString& errorString,
         {
             // not binary XML - refuse to load if in scripts dir and not in bin xml to help reduce hacking
             // wish we could compile the text xml parser out, but too much work to get everything moved over
-            static const char SCRIPTS_DIR[] = "Scripts/";
-            AZStd::fixed_string<32> strScripts("S");
-            strScripts += "c";
-            strScripts += "r";
-            strScripts += "i";
-            strScripts += "p";
-            strScripts += "t";
-            strScripts += "s";
-            strScripts += "/";
+            constexpr AZStd::fixed_string<32> strScripts{"Scripts/"};
             // exclude files and PAKs from Mods folder
-            AZStd::fixed_string<8> modsStr("M");
-            modsStr += "o";
-            modsStr += "d";
-            modsStr += "s";
-            modsStr += "/";
+            constexpr AZStd::fixed_string<8> modsStr{"Mods/"};
             if (_strnicmp(filename, strScripts.c_str(), strScripts.length()) == 0 &&
                 _strnicmp(adjustedFilename.c_str(), modsStr.c_str(), modsStr.length()) != 0 &&
                 _strnicmp(pakPath.c_str(), modsStr.c_str(), modsStr.length()) != 0)

@@ -18,6 +18,7 @@
 
 #include <AzCore/Debug/StackTracer.h>
 #include <AzCore/Debug/EventTraceDrillerBus.h>
+#include <AzCore/std/parallel/spin_mutex.h>
 #include <AzCore/Utils/Utils.h>
 
 #define VS_VERSION_INFO                 1
@@ -153,13 +154,13 @@ void DebugCallStack::SetUserDialogEnable(const bool bUserDialogEnable)
 DWORD g_idDebugThreads[10];
 const char* g_nameDebugThreads[10];
 int g_nDebugThreads = 0;
-volatile int g_lockThreadDumpList = 0;
+AZStd::spin_mutex g_lockThreadDumpList;
 
 void MarkThisThreadForDebugging(const char* name)
 {
     EBUS_EVENT(AZ::Debug::EventTraceDrillerSetupBus, SetThreadName, AZStd::this_thread::get_id(), name);
 
-    WriteLock lock(g_lockThreadDumpList);
+    AZStd::scoped_lock lock(g_lockThreadDumpList);
     DWORD id = GetCurrentThreadId();
     if (g_nDebugThreads == sizeof(g_idDebugThreads) / sizeof(g_idDebugThreads[0]))
     {
@@ -179,7 +180,7 @@ void MarkThisThreadForDebugging(const char* name)
 
 void UnmarkThisThreadFromDebugging()
 {
-    WriteLock lock(g_lockThreadDumpList);
+    AZStd::scoped_lock lock(g_lockThreadDumpList);
     DWORD id = GetCurrentThreadId();
     for (int i = g_nDebugThreads - 1; i >= 0; i--)
     {
@@ -283,7 +284,7 @@ int DebugCallStack::handleException(EXCEPTION_POINTERS* exception_pointer)
         char excAddr[80];
         WriteLineToLog("<CRITICAL EXCEPTION>");
         sprintf_s(excAddr, "0x%04X:0x%p", exception_pointer->ContextRecord->SegCs, exception_pointer->ExceptionRecord->ExceptionAddress);
-        sprintf_s(excCode, "0x%08X", exception_pointer->ExceptionRecord->ExceptionCode);
+        sprintf_s(excCode, "0x%08lX", exception_pointer->ExceptionRecord->ExceptionCode);
         WriteLineToLog("Exception: %s, at Address: %s", excCode, excAddr);
     }
 
@@ -444,7 +445,7 @@ void DebugCallStack::LogExceptionInfo(EXCEPTION_POINTERS* pex)
     else
     {
         sprintf_s(excAddr, "0x%04X:0x%p", pex->ContextRecord->SegCs, pex->ExceptionRecord->ExceptionAddress);
-        sprintf_s(excCode, "0x%08X", pex->ExceptionRecord->ExceptionCode);
+        sprintf_s(excCode, "0x%08lX", pex->ExceptionRecord->ExceptionCode);
         excName = TranslateExceptionCode(pex->ExceptionRecord->ExceptionCode);
         azstrcpy(desc, AZ_ARRAY_SIZE(desc), "");
         sprintf_s(excDesc, "%s\r\n%s", excName, desc);

@@ -88,7 +88,7 @@ namespace PhysX
                         ->EnumAttribute(Physics::ShapeType::Box, "Box")
                         ->EnumAttribute(Physics::ShapeType::Capsule, "Capsule")
                         ->EnumAttribute(Physics::ShapeType::PhysicsAsset, "PhysicsAsset")
-                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                        ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorProxyShapeConfig::OnShapeTypeChanged)
                         // note: we do not want the user to be able to change shape types while in ComponentMode (there will
                         // potentially be different ComponentModes for different shape types)
                         ->Attribute(AZ::Edit::Attributes::ReadOnly, &AzToolsFramework::ComponentModeFramework::InComponentMode)
@@ -114,6 +114,22 @@ namespace PhysX
                     ;
             }
         }
+    }
+
+    AZ::u32 EditorProxyShapeConfig::OnShapeTypeChanged()
+    {
+        //reset the physics asset if the shape type was Physics Asset
+        if (m_shapeType != Physics::ShapeType::PhysicsAsset &&
+            m_lastShapeType == Physics::ShapeType::PhysicsAsset)
+        {
+            //clean up any reference to a physics assets, and re-initialize to an empty Pipeline::MeshAsset asset.
+            m_physicsAsset.m_pxAsset.Reset();
+            m_physicsAsset.m_pxAsset = AZ::Data::Asset<Pipeline::MeshAsset>(AZ::Data::AssetLoadBehavior::QueueLoad);
+
+            m_physicsAsset.m_configuration = Physics::PhysicsAssetShapeConfiguration();
+        }
+        m_lastShapeType = m_shapeType;
+        return AZ::Edit::PropertyRefreshLevels::EntireTree;
     }
 
     AZ::u32 EditorProxyShapeConfig::OnConfigurationChanged()

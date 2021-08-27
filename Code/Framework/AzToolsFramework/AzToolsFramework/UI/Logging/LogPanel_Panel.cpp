@@ -657,7 +657,6 @@ namespace AzToolsFramework
                 // if we have any elements, the last element is top right aligned:
                 QLayoutItem* pItem = m_children[m_children.size() - 1];
                 QSize lastItemSize = pItem->minimumSize();
-                QPoint topRight = effectiveRect.topRight();
                 QRect topRightCorner(effectiveRect.topRight() - QPoint(lastItemSize.width(), 0), lastItemSize);
                 pItem->setGeometry(topRightCorner);
             }

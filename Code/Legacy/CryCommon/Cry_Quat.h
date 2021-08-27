@@ -908,14 +908,6 @@ typedef Quat_tpl<f32>   CryQuat;
 typedef Quat_tpl<f32> quaternionf;
 typedef Quat_tpl<real>  quaternion;
 
-// alligned versions
-#ifndef MAX_API_NUM
-typedef DEFINE_ALIGNED_DATA (Quat, QuatA, 16);               // typedef __declspec(align(16)) Quat_tpl<f32>     CryQuatA;
-typedef DEFINE_ALIGNED_DATA (Quatd, QuatrA, 32); // typedef __declspec(align(16)) Quat_tpl<f32>     quaternionfA;
-#endif
-
-
-
 /*!
 *
 * The "inner product" or "dot product" operation.
@@ -1425,11 +1417,6 @@ typedef QuatT_tpl<f32>  QuatT; //always 32 bit
 typedef QuatT_tpl<f64>  QuatTd;//always 64 bit
 typedef QuatT_tpl<real> QuatTr;//variable float precision. depending on the target system it can be between 32, 64 or bit
 
-// alligned versions
-typedef DEFINE_ALIGNED_DATA (QuatT, QuatTA, 32);                 //wastest 4byte per quatT // typedef __declspec(align(16)) Quat_tpl<f32>       QuatTA;
-typedef DEFINE_ALIGNED_DATA (QuatTd, QuatTrA, 16);           // typedef __declspec(align(16)) Quat_tpl<f32>     QuatTrA;
-
-
 /*!
 *
 *  Implements the multiplication operator: QuatT=Quatpos*Quat
@@ -1711,10 +1698,6 @@ typedef QuatTS_tpl<f32>  QuatTS; //always 64 bit
 typedef QuatTS_tpl<f64>  QuatTSd;//always 64 bit
 typedef QuatTS_tpl<real> QuatTSr;//variable float precision. depending on the target system it can be between 32, 64 or 80 bit
 
-// alligned versions
-typedef DEFINE_ALIGNED_DATA (QuatTS, QuatTSA, 16);               // typedef __declspec(align(16)) Quat_tpl<f32>     QuatTSA;
-typedef DEFINE_ALIGNED_DATA (QuatTSd, QuatTSrA, 64);             // typedef __declspec(align(16)) QuatTS_tpl<f32>       QuatTSrA;
-
 template<class F1, class F2>
 ILINE QuatTS_tpl<F1> operator * (const QuatTS_tpl<F1>& a, const Quat_tpl<F2>& b)
 {
@@ -1971,11 +1954,6 @@ struct QuatTNS_tpl
 typedef QuatTNS_tpl<f32> QuatTNS;
 typedef QuatTNS_tpl<f64> QuatTNSr;
 typedef QuatTNS_tpl<f64> QuatTNS_f64;
-
-// alligned versions
-typedef DEFINE_ALIGNED_DATA (QuatTNS, QuatTNSA, 16);
-typedef DEFINE_ALIGNED_DATA (QuatTNSr, QuatTNSrA, 64);
-typedef DEFINE_ALIGNED_DATA (QuatTNS_f64, QuatTNS_f64A, 64);
 
 template<class F1, class F2>
 ILINE QuatTNS_tpl<F1> operator * (const QuatTNS_tpl<F1>& a, const Quat_tpl<F2>& b)

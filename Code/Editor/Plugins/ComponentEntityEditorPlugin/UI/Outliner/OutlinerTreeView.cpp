@@ -274,8 +274,8 @@ void OutlinerTreeView::drawBranches(QPainter* painter, const QRect& rect, const 
             // if the item has children offset the drawn line to compensate for drawn expander buttons
             bool hasChildren = previousIndex.model()->index(0, 0, previousIndex).isValid();
             int horizontalLineY = rect.top() + rectHalfHeight;
-            int horizontalLineLeft = rect.right() - indentation() * 1.5f;
-            int horizontalLineRight = hasChildren ? (lineBaseX - indentation()) : (lineBaseX - indentation() * 0.5f);
+            int horizontalLineLeft = static_cast<int>(rect.right() - indentation() * 1.5f);
+            int horizontalLineRight = hasChildren ? (lineBaseX - indentation()) : static_cast<int>(lineBaseX - indentation() * 0.5f);
             painter->drawLine(horizontalLineLeft, horizontalLineY, horizontalLineRight, horizontalLineY);
         }
 
@@ -284,7 +284,7 @@ void OutlinerTreeView::drawBranches(QPainter* painter, const QRect& rect, const 
         bool hasNext = previousIndex.sibling(previousIndex.row() + 1, previousIndex.column()).isValid();
         if (hasNext || previousIndex == index)
         {
-            int verticalLineX = lineBaseX - indentation() * 1.5f;
+            int verticalLineX = static_cast<int>(lineBaseX - indentation() * 1.5f);
             int verticalLineTop = rect.top();
             int verticalLineBottom = hasNext ? rect.bottom() : rect.bottom() - rectHalfHeight;
             painter->drawLine(verticalLineX, verticalLineTop, verticalLineX, verticalLineBottom);

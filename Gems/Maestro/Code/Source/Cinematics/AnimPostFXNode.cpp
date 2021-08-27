@@ -294,7 +294,7 @@ unsigned int CAnimPostFXNode::GetParamCount() const
 //-----------------------------------------------------------------------------
 CAnimParamType CAnimPostFXNode::GetParamType(unsigned int nIndex) const
 {
-    if (nIndex >= 0 && nIndex < (int)m_pDescription->m_nodeParams.size())
+    if (nIndex < m_pDescription->m_nodeParams.size())
     {
         return m_pDescription->m_nodeParams[nIndex].paramType;
     }

@@ -24,7 +24,7 @@
 #include <Atom/RHI.Reflect/PipelineLayoutDescriptor.h>
 #include <Atom/RHI.Reflect/ShaderStageFunction.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
@@ -43,6 +43,7 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
+#include <AzCore/Debug/Timer.h>
 
 #include "AzslCompiler.h"
 #include "ShaderVariantAssetBuilder.h"
@@ -139,8 +140,7 @@ namespace AZ
 
                 AssetBuilderSDK::JobDescriptor jobDescriptor;
                 jobDescriptor.m_priority = 2;
-                // [GFX TODO][ATOM-2830] Set 'm_critical' back to 'false' once proper fix for Atom startup issues are in 
-                jobDescriptor.m_critical = true;
+                jobDescriptor.m_critical = false;
                 jobDescriptor.m_jobKey = ShaderAssetBuilderJobKey;
                 jobDescriptor.SetPlatformIdentifier(platformInfo.m_identifier.c_str());
                 jobDescriptor.m_jobParameters.emplace(ShaderAssetBuildTimestampParam, AZStd::to_string(shaderAssetBuildTimestamp));
@@ -227,11 +227,9 @@ namespace AZ
 
             if (!hasRasterProgram && !hasComputeProgram && !hasRayTracingProgram)
             {
-                AZStd::string entryPointNames = ShaderBuilderUtility::GetAcceptableDefaultEntryPointNames(azslData);
                 return AZ::Failure(
-                    AZStd::string::format( "Shader asset descriptor has a program variant that does not define any entry points. Either declare entry "
-                    "points in the .shader file, or use one of the available default names (not case-sensitive): [%s]",
-                    entryPointNames.c_str()));
+                    AZStd::string( "Shader asset descriptor has a program variant that does not define any entry points."
+                        " Please declare entry points in the .shader file."));
             }
 
             return AZ::Success(attributeMaps);
@@ -239,7 +237,9 @@ namespace AZ
 
         void ShaderAssetBuilder::ProcessJob(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const
         {
-            const AZStd::sys_time_t startTime = AZStd::GetTimeNowTicks();
+            AZ::Debug::Timer timer;
+            timer.Stamp();
+
             AZStd::string shaderFullPath;
             AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.c_str(), request.m_sourceFile.c_str(), shaderFullPath, true);
             // Save .shader file name (no extension and no parent directory path)
@@ -479,21 +479,18 @@ namespace AZ
                         }
                     }
 
-                    // Discover entry points & type of programs.
-                    MapOfStringToStageType shaderEntryPoints;
                     if (shaderSourceData.m_programSettings.m_entryPoints.empty())
                     {
-                        AZ_TracePrintf(
-                            ShaderAssetBuilderName,
-                            "ProgramSettings do not specify entry points, will use GetDefaultEntryPointsFromShader()\n");
-                        ShaderBuilderUtility::GetDefaultEntryPointsFromFunctionDataList(azslData.m_functions, shaderEntryPoints);
+                        AZ_Error( ShaderAssetBuilderName, false, "ProgramSettings must specify entry points.");
+                        response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
+                        return;
                     }
-                    else
+
+                    // Discover entry points & type of programs.
+                    MapOfStringToStageType shaderEntryPoints;
+                    for (const auto& entryPoint : shaderSourceData.m_programSettings.m_entryPoints)
                     {
-                        for (const auto& entryPoint : shaderSourceData.m_programSettings.m_entryPoints)
-                        {
-                            shaderEntryPoints[entryPoint.m_name] = entryPoint.m_type;
-                        }
+                        shaderEntryPoints[entryPoint.m_name] = entryPoint.m_type;
                     }
 
                     bool hasRasterProgram = false;
@@ -585,7 +582,7 @@ namespace AZ
                         request.m_platformInfo,
                         buildOptions.m_compilerArguments,
                         request.m_tempDirPath,
-                        startTime,
+                        shaderAssetBuildTimestamp,
                         shaderSourceData,
                         *shaderOptionGroupLayout.get(),
                         shaderEntryPoints,
@@ -666,12 +663,8 @@ namespace AZ
             }
             
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-            
-            const AZStd::sys_time_t endTime = AZStd::GetTimeNowTicks();
-            const AZStd::sys_time_t deltaTime = endTime - startTime;
-            const float elapsedTimeSeconds = (float)(deltaTime) / (float)AZStd::GetTimeTicksPerSecond();
-            
-            AZ_TracePrintf(ShaderAssetBuilderName, "Finished processing %s in %.2f seconds\n", request.m_sourceFile.c_str(), elapsedTimeSeconds);
+                        
+            AZ_TracePrintf(ShaderAssetBuilderName, "Finished processing %s in %.3f seconds\n", request.m_sourceFile.c_str(), timer.GetDeltaTimeInSeconds());
             
             ShaderBuilderUtility::LogProfilingData(ShaderAssetBuilderName, shaderFileName);
         }

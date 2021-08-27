@@ -216,7 +216,7 @@ namespace AZ
 
         void RasterPass::CompileResources(const RHI::FrameGraphCompileContext& context)
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(RPI);
 
             if (m_shaderResourceGroup == nullptr)
             {
@@ -230,7 +230,7 @@ namespace AZ
 
         void RasterPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_FUNCTION(RPI);
 
             RHI::CommandList* commandList = context.GetCommandList();
 

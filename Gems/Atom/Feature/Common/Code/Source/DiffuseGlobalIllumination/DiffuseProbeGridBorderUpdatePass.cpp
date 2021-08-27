@@ -51,7 +51,7 @@ namespace AZ
         {
             // load shader
             // Note: the shader may not be available on all platforms
-            shader = RPI::LoadShader(shaderFilePath);
+            shader = RPI::LoadCriticalShader(shaderFilePath);
             if (shader == nullptr)
             {
                 return;
@@ -85,9 +85,9 @@ namespace AZ
                     return;
                 }
 
-                dispatchArgs.m_threadsPerGroupX = AZStd::any_cast<int>(args[0]);
-                dispatchArgs.m_threadsPerGroupY = AZStd::any_cast<int>(args[1]);
-                dispatchArgs.m_threadsPerGroupZ = AZStd::any_cast<int>(args[2]);
+                dispatchArgs.m_threadsPerGroupX = static_cast<uint16_t>(AZStd::any_cast<int>(args[0]));
+                dispatchArgs.m_threadsPerGroupY = static_cast<uint16_t>(AZStd::any_cast<int>(args[1]));
+                dispatchArgs.m_threadsPerGroupZ = static_cast<uint16_t>(AZStd::any_cast<int>(args[2]));
             }
         }
 

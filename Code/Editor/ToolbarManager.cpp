@@ -503,7 +503,7 @@ void ToolbarManager::InitializeStandardToolbars()
     {
         auto macroToolbars = GetIEditor()->GetToolBoxManager()->GetToolbars();
 
-        m_standardToolbars.reserve(5 + macroToolbars.size());
+        m_standardToolbars.reserve(static_cast<int>(5 + macroToolbars.size()));
         m_standardToolbars.push_back(GetEditModeToolbar());
         m_standardToolbars.push_back(GetObjectToolbar());
         m_standardToolbars.push_back(GetPlayConsoleToolbar());
@@ -1217,7 +1217,6 @@ void EditableQToolBar::dropEvent(QDropEvent* ev)
         return;
     }
 
-    const int actionId = action->data().toInt();
     QWidget* beforeWidget = insertPositionForDrop(ev->pos());
     QAction* beforeAction = beforeWidget ? ActionForWidget(beforeWidget) : nullptr;
 

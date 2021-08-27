@@ -398,7 +398,6 @@ namespace UnitTest
             .WillOnce(Return(successOutcome));
 
         AZStd::vector<AZStd::thread> testThreadPool;
-        AZStd::atomic<int> trueCount = 0;
         AZ_TEST_START_TRACE_SUPPRESSION;
         for (int index = 0; index < testThreadNumber; index++)
         {

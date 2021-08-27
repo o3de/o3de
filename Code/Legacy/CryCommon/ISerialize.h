@@ -31,7 +31,7 @@ class InterpolatedValue_tpl;
 // Unfortunately this needs to be here - should be in CryNetwork somewhere.
 struct SNetObjectID
 {
-    static const uint16 InvalidId = ~uint16(0);
+    static const uint16 InvalidId = std::numeric_limits<uint16>::max();
 
     SNetObjectID()
         : id(InvalidId)

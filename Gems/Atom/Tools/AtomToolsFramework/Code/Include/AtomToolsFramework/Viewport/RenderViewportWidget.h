@@ -109,7 +109,6 @@ namespace AtomToolsFramework
         // AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Handler ...
         void BeginCursorCapture() override;
         void EndCursorCapture() override;
-        AzFramework::ScreenPoint ViewportCursorScreenPosition() override;
         bool IsMouseOver() const override;
 
         // AzFramework::WindowRequestBus::Handler ...
@@ -160,8 +159,6 @@ namespace AtomToolsFramework
         QElapsedTimer m_renderTimer;
         // The time of the last recorded tick event from the system tick bus.
         AZ::ScriptTimePoint m_time;
-        // Whether the Viewport is currently hiding and capturing the cursor position.
-        bool m_capturingCursor = false;
         // The viewport settings (e.g. grid snapping, grid size) for this viewport.
         const AzToolsFramework::ViewportInteraction::ViewportSettings* m_viewportSettings = nullptr;
         // Maps our internal Qt events into AzFramework InputChannels for our ViewportControllerList.

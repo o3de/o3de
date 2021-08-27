@@ -213,10 +213,18 @@
       "ASSET_PROCESSOR_PLATFORMS": "pc,server"
     }
   },
-  "periodic_test_profile_vs2019": {
+  "periodic_test_profile_vs2019_pipe": {
     "TAGS": [
       "nightly-incremental",
-      "nightly-clean",
+      "nightly-clean"
+    ],
+    "steps": [
+      "awsi_deployment",
+      "periodic_test_profile_vs2019"
+    ]
+  },
+  "periodic_test_profile_vs2019": {
+    "TAGS": [
       "weekly-build-metrics"
     ],
     "COMMAND": "build_test_windows.cmd",
@@ -376,5 +384,13 @@
       "install_profile_vs2019",
       "project_engineinstall_profile_vs2019"
     ]
+  },
+  "awsi_deployment": {
+    "TAGS": [],
+    "PIPELINE_ENV": {
+      "NONBLOCKING_STEP": "True"
+    },
+    "COMMAND": "deploy_cdk_applications.cmd",
+    "PARAMETERS": {}
   }
 }

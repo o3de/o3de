@@ -33,11 +33,6 @@ ly_append_configurations_options(
         -Wno-tautological-compare
         -Wno-undefined-var-template
         -Wno-unknown-pragmas
-        -Wno-unused-function
-        -Wno-unused-private-field
-        -Wno-unused-value
-        -Wno-unused-variable
-        -Wno-unused-lambda-capture
         # Workaround for compiler seeing file case differently from what OS show in console.
         -Wno-nonportable-include-path
 

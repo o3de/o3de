@@ -79,7 +79,7 @@ void CDraw2d::OnBootstrapSceneReady([[maybe_unused]] AZ::RPI::Scene* bootstrapSc
 
     // Load the shader to be used for 2d drawing
     const char* shaderFilepath = "Shaders/SimpleTextured.azshader";
-    AZ::Data::Instance<AZ::RPI::Shader> shader = AZ::RPI::LoadShader(shaderFilepath);
+    AZ::Data::Instance<AZ::RPI::Shader> shader = AZ::RPI::LoadCriticalShader(shaderFilepath);
 
     // Set scene to be associated with the dynamic draw context
     AZ::RPI::ScenePtr scene;

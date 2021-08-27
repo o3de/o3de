@@ -441,8 +441,8 @@ namespace EMotionFX
 
     void SimulatedJointWidget::UpdateDetailsView(const QItemSelection& selected, const QItemSelection& deselected)
     {
-        AZ_UNUSED(selected)
-        AZ_UNUSED(deselected)
+        AZ_UNUSED(selected);
+        AZ_UNUSED(deselected);
 
         const SimulatedObjectModel* model = m_plugin->GetSimulatedObjectModel();
         const QItemSelectionModel* selectionModel = model->GetSelectionModel();

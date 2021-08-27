@@ -230,7 +230,6 @@ namespace Multiplayer
     void DrawNetworkingStats()
     {
         const float TEXT_BASE_WIDTH = ImGui::CalcTextSize("A").x;
-        const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
 
         const ImGuiTableFlags flags = ImGuiTableFlags_BordersV
             | ImGuiTableFlags_BordersOuterH
@@ -383,7 +382,6 @@ namespace Multiplayer
     void DrawMultiplayerStats()
     {
         const float TEXT_BASE_WIDTH = ImGui::CalcTextSize("A").x;
-        const float TEXT_BASE_HEIGHT = ImGui::GetTextLineHeightWithSpacing();
 
         IMultiplayer* multiplayer = AZ::Interface<IMultiplayer>::Get();
         MultiplayerComponentRegistry* componentRegistry = GetMultiplayerComponentRegistry();

@@ -14,7 +14,6 @@
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Components/NonUniformScaleComponent.h>
 #include <AzFramework/Components/AzFrameworkConfigurationSystemComponent.h>
-#include <AzFramework/Driller/RemoteDrillerInterface.h>
 #include <AzFramework/Entity/GameEntityContextComponent.h>
 #include <AzFramework/FileTag/FileTagComponent.h>
 #include <AzFramework/Input/System/InputSystemComponent.h>
@@ -26,6 +25,8 @@
 #include <AzFramework/StreamingInstall/StreamingInstall.h>
 #include <AzFramework/TargetManagement/TargetManagementComponent.h>
 #include <AzFramework/Visibility/OctreeSystemComponent.h>
+
+AZ_DEFINE_BUDGET(AzFramework);
 
 namespace AzFramework
 {
@@ -46,7 +47,6 @@ namespace AzFramework
             AzFramework::CreateScriptDebugAgentFactory(),
             AzFramework::AssetSystem::AssetSystemComponent::CreateDescriptor(),
             AzFramework::InputSystemComponent::CreateDescriptor(),
-            AzFramework::DrillerNetworkAgentComponent::CreateDescriptor(),
 
     #if !defined(AZCORE_EXCLUDE_LUA)
             AzFramework::ScriptComponent::CreateDescriptor(),

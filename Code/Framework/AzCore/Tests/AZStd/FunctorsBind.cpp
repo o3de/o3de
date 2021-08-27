@@ -940,9 +940,10 @@ namespace UnitTest
         // 64 Byte buffer is used to prevent AZStd::function for storing the 
         // lambda internal storage using the small buffer optimization
         // Therefore causing the supplied allocator to be used
-        AZStd::aligned_storage_t<64, 1> bufferToAvoidSmallBufferOptimization;
+        [[maybe_unused]] AZStd::aligned_storage_t<64, 1> bufferToAvoidSmallBufferOptimization;
         auto xValueAndConstXValueFunc = [bufferToAvoidSmallBufferOptimization](int lhs, int rhs) -> int
         {
+            AZ_UNUSED(bufferToAvoidSmallBufferOptimization);
             return lhs + rhs;
         };
 

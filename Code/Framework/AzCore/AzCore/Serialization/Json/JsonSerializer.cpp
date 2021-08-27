@@ -20,7 +20,7 @@
 namespace AZ
 {
     JsonSerializationResult::ResultCode JsonSerializer::Store(rapidjson::Value& output, const void* object, const void* defaultObject,
-        const Uuid& typeId, JsonSerializerContext& context)
+        const Uuid& typeId, UseTypeSerializer custom, JsonSerializerContext& context)
     {
         using namespace JsonSerializationResult;
 
@@ -32,8 +32,8 @@ namespace AZ
 
         // First check if there's a generic serializer registered for this. This makes it possible to use serializers that
         // are not (directly) registered with the Serialize Context.
-        auto serializer = context.GetRegistrationContext()->GetSerializerForType(typeId);
-        if (serializer)
+        if (BaseJsonSerializer* serializer
+            = (custom == UseTypeSerializer::Yes ? context.GetRegistrationContext()->GetSerializerForType(typeId) : nullptr))
         {
             // Start by setting the object to be an explicit default.
             output.SetObject();
@@ -57,17 +57,18 @@ namespace AZ
                     "No factory available to create a default object for comparison.");
             }
             void* defaultObjectPtr = AZStd::any_cast<void>(&defaultObjectInstance);
-            ResultCode conversionResult = StoreWithClassData(output, object, defaultObjectPtr, *classData, StoreTypeId::No, context);
+            ResultCode conversionResult = StoreWithClassData(output, object, defaultObjectPtr, *classData, StoreTypeId::No
+                , UseTypeSerializer::Yes, context);
             return ResultCode::Combine(result, conversionResult);
         }
         else
         {
-            return StoreWithClassData(output, object, defaultObject, *classData, StoreTypeId::No, context);
+            return StoreWithClassData(output, object, defaultObject, *classData, StoreTypeId::No, custom, context);
         }
     }
 
     JsonSerializationResult::ResultCode JsonSerializer::StoreFromPointer(rapidjson::Value& output, const void* object,
-        const void* defaultObject, const Uuid& typeId, JsonSerializerContext& context)
+        const void* defaultObject, const Uuid& typeId, UseTypeSerializer custom, JsonSerializerContext& context)
     {
         using namespace JsonSerializationResult;
 
@@ -85,19 +86,21 @@ namespace AZ
         AZ_Assert(classData->m_azRtti->GetTypeId() == typeId, "Type id mismatch in '%s' during serialization to a json file. (%s vs %s)",
             classData->m_name, classData->m_azRtti->GetTypeId().ToString<AZStd::string>().c_str(), typeId.ToString<AZStd::string>().c_str());
 
-        return StoreWithClassDataFromPointer(output, object, defaultObject, *classData, context);
+        return StoreWithClassDataFromPointer(output, object, defaultObject, *classData, custom, context);
     }
 
     JsonSerializationResult::ResultCode JsonSerializer::StoreWithClassData(rapidjson::Value& node, const void* object,
         const void* defaultObject, const SerializeContext::ClassData& classData, StoreTypeId storeTypeId,
-        JsonSerializerContext& context)
+        UseTypeSerializer custom, JsonSerializerContext& context)
     {
         using namespace JsonSerializationResult;
 
         // Start by setting the object to be an explicit default.
         node.SetObject();
 
-        auto serializer = context.GetRegistrationContext()->GetSerializerForType(classData.m_typeId);
+        auto serializer = custom == UseTypeSerializer::Yes
+            ? context.GetRegistrationContext()->GetSerializerForType(classData.m_typeId) : nullptr;
+
         if (serializer)
         {
             ResultCode result = serializer->Store(node, object, defaultObject, classData.m_typeId, context);
@@ -153,12 +156,11 @@ namespace AZ
     }
 
     JsonSerializationResult::ResultCode JsonSerializer::StoreWithClassDataFromPointer(rapidjson::Value& output, const void* object,
-        const void* defaultObject, const SerializeContext::ClassData& classData, JsonSerializerContext& context)
+        const void* defaultObject, const SerializeContext::ClassData& classData, UseTypeSerializer custom, JsonSerializerContext& context)
     {
         using namespace JsonSerializationResult;
 
         StoreTypeId storeTypeId = StoreTypeId::No;
-        Uuid resolvedTypeId = classData.m_typeId;
         const SerializeContext::ClassData* resolvedClassData = &classData;
         AZStd::any defaultPointerObject;
 
@@ -176,7 +178,7 @@ namespace AZ
         }
         else
         {
-            return StoreWithClassData(output, object, defaultObject, *resolvedClassData, storeTypeId, context);
+            return StoreWithClassData(output, object, defaultObject, *resolvedClassData, storeTypeId, custom, context);
         }
     }
 
@@ -221,8 +223,8 @@ namespace AZ
         {
             rapidjson::Value value;
             ResultCode result = classElement.m_flags & SerializeContext::ClassElement::FLG_POINTER ?
-                StoreWithClassDataFromPointer(value, object, defaultObject, *elementClassData, context):
-                StoreWithClassData(value, object, defaultObject, *elementClassData, StoreTypeId::No, context);
+                StoreWithClassDataFromPointer(value, object, defaultObject, *elementClassData, UseTypeSerializer::Yes, context):
+                StoreWithClassData(value, object, defaultObject, *elementClassData, StoreTypeId::No, UseTypeSerializer::Yes, context);
             if (result.GetProcessing() != Processing::Halted)
             {
                 if (parentNode.IsObject())

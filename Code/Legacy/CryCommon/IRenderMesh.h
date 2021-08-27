@@ -13,18 +13,15 @@
 
 #include "VertexFormats.h"
 #include <IMaterial.h>
-#include <IShader.h>
 #include <IRenderer.h>  // PublicRenderPrimitiveType
 #include <Cry_Geo.h>
 #include <CryArray.h>
 #include <ITimer.h>
 
 class CMesh;
-struct CRenderChunk;
 class CRenderObject;
 struct SSkinningData;
 struct IMaterial;
-struct IShader;
 struct IIndexedMesh;
 struct SMRendTexVert;
 struct UCol;
@@ -127,7 +124,7 @@ struct IRenderMesh
             , pNormals(0)
             , pIndices(0)
             , nIndexCount(0)
-            , nPrimetiveType(prtTriangleList)
+            , nPrimetiveType(PublicRenderPrimitiveType::prtTriangleList)
             , nRenderChunkCount(0)
             , nClientTextureBindID(0)
             , bOnlyVideoBuffer(false)
@@ -182,8 +179,6 @@ struct IRenderMesh
     virtual bool CheckUpdate(uint32 nStreamMask) = 0;
     virtual int GetStreamStride(int nStream) const = 0;
 
-    virtual const uintptr_t GetVBStream(int nStream) const = 0;
-    virtual const uintptr_t GetIBStream() const = 0;
     virtual int GetNumVerts() const  = 0;
     virtual int GetNumInds() const = 0;
     virtual const eRenderPrimitiveType GetPrimitiveType() const = 0;
@@ -207,33 +202,24 @@ struct IRenderMesh
     virtual bool UpdateVertices(const void* pVertBuffer, int nVertCount, int nOffset, int nStream, uint32 copyFlags, bool requiresLock = true) = 0;
     virtual bool UpdateIndices(const vtx_idx* pNewInds, int nInds, int nOffsInd, uint32 copyFlags, bool requiresLock = true) = 0;
     virtual void SetCustomTexID(int nCustomTID) = 0;
-    virtual void SetChunk(int nIndex, CRenderChunk& chunk) = 0;
-    virtual void SetChunk(_smart_ptr<IMaterial> pNewMat, int nFirstVertId, int nVertCount, int nFirstIndexId, int nIndexCount, float texelAreaDensity, const AZ::Vertex::Format& vertexFormat, int nMatID = 0) = 0;
-
-    // Assign array of render chunks.
-    // Initializes render element for each render chunk.
-    virtual void SetRenderChunks(CRenderChunk* pChunksArray, int nCount, bool bSubObjectChunks) = 0;
 
     virtual void GenerateQTangents() = 0;
     virtual void CreateChunksSkinned() = 0;
     virtual void NextDrawSkinned() = 0;
     virtual IRenderMesh* GetVertexContainer() = 0;
     virtual void SetVertexContainer(IRenderMesh* pBuf) = 0;
-    virtual TRenderChunkArray& GetChunks() = 0;
-    virtual TRenderChunkArray& GetChunksSkinned() = 0;
-    virtual TRenderChunkArray& GetChunksSubObjects() = 0;
     virtual void SetBBox(const Vec3& vBoxMin, const Vec3& vBoxMax) = 0;
     virtual void GetBBox(Vec3& vBoxMin, Vec3& vBoxMax) = 0;
     virtual void UpdateBBoxFromMesh() = 0;
     virtual uint32* GetPhysVertexMap() = 0;
     virtual bool IsEmpty() = 0;
 
-    virtual byte* GetPosPtrNoCache(int32& nStride, uint32 nFlags) = 0;
-    virtual byte* GetPosPtr(int32& nStride, uint32 nFlags) = 0;
-    virtual byte* GetColorPtr(int32& nStride, uint32 nFlags) = 0;
-    virtual byte* GetNormPtr(int32& nStride, uint32 nFlags) = 0;
+    virtual int8* GetPosPtrNoCache(int32& nStride, uint32 nFlags) = 0;
+    virtual int8* GetPosPtr(int32& nStride, uint32 nFlags) = 0;
+    virtual int8* GetColorPtr(int32& nStride, uint32 nFlags) = 0;
+    virtual int8* GetNormPtr(int32& nStride, uint32 nFlags) = 0;
     //! Returns a pointer to the first uv coordinate in the interleaved vertex stream
-    virtual byte* GetUVPtrNoCache(int32& nStride, uint32 nFlags, uint32 uvSetIndex = 0) = 0;
+    virtual int8* GetUVPtrNoCache(int32& nStride, uint32 nFlags, uint32 uvSetIndex = 0) = 0;
     /*! Get a pointer to the mesh's uv coordinates and the stride from the beginning of one uv coordinate to the next
         \param[out] nStride The stride in between successive uv coordinates.
         \param nFlags Stream lock flags (FSL_READ, FSL_WRITE, etc)
@@ -242,13 +228,13 @@ struct IRenderMesh
                 Either way, nStride is set such that the caller can use it to iterate over the data in the same way regardless of which pointer was returned
                 Returns nullptr if there is no uv coordinate stream at the given index
     */
-    virtual byte* GetUVPtr(int32& nStride, uint32 nFlags, uint32 uvSetIndex = 0) = 0;
+    virtual int8* GetUVPtr(int32& nStride, uint32 nFlags, uint32 uvSetIndex = 0) = 0;
 
-    virtual byte* GetTangentPtr(int32& nStride, uint32 nFlags) = 0;
-    virtual byte* GetQTangentPtr(int32& nStride, uint32 nFlags) = 0;
+    virtual int8* GetTangentPtr(int32& nStride, uint32 nFlags) = 0;
+    virtual int8* GetQTangentPtr(int32& nStride, uint32 nFlags) = 0;
 
-    virtual byte* GetHWSkinPtr(int32& nStride, uint32 nFlags, bool remapped = false) = 0;
-    virtual byte* GetVelocityPtr(int32& nStride, uint32 nFlags) = 0;
+    virtual int8* GetHWSkinPtr(int32& nStride, uint32 nFlags, bool remapped = false) = 0;
+    virtual int8* GetVelocityPtr(int32& nStride, uint32 nFlags) = 0;
 
     virtual void UnlockStream(int nStream) = 0;
     virtual void UnlockIndexStream() = 0;
@@ -261,8 +247,6 @@ struct IRenderMesh
 
     virtual void Render(const struct SRendParams& rParams, CRenderObject* pObj, _smart_ptr<IMaterial> pMaterial, const SRenderingPassInfo& passInfo, bool bSkinned = false) = 0;
     virtual void Render(CRenderObject* pObj, const SRenderingPassInfo& passInfo, const SRendItemSorter& rendItemSorter) = 0;
-    virtual void AddRenderElements(_smart_ptr<IMaterial> pIMatInfo, CRenderObject* pObj, const SRenderingPassInfo& passInfo, int nSortId = EFSLIST_GENERAL, int nAW = 1) = 0;
-    virtual void AddRE(_smart_ptr<IMaterial> pMaterial, CRenderObject* pObj, IShader* pEf, const SRenderingPassInfo& passInfo, int nList, int nAW, const SRendItemSorter& rendItemSorter) = 0;
     virtual void SetREUserData(float* pfCustomData, float fFogScale = 0, float fAlpha = 1) = 0;
 
     // Debug draw this render mesh.
@@ -293,17 +277,6 @@ struct IRenderMesh
 
     virtual void OffsetPosition(const Vec3& delta) = 0;
     // </interfuscator:shuffle>
-};
-
-struct SBufferStream
-{
-    void* m_pLocalData;       // pointer to buffer data
-    uintptr_t m_BufferHdl;
-    SBufferStream()
-    {
-        m_pLocalData = NULL;
-        m_BufferHdl = ~0u;
-    }
 };
 
 #endif // CRYINCLUDE_CRYCOMMON_IRENDERMESH_H
