@@ -35,6 +35,17 @@ QComboBox
     line-height: 16px;
 }
 
+[HighlightField=true]
+{
+    border:3px solid #E57829;
+}
+
+[HighlightText=true]
+{
+    font-weight: bold; 
+    color: #E57829;
+}
+
 QToolTip
 {
     color: black;

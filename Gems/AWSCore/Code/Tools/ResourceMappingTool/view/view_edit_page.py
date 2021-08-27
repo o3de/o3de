@@ -18,8 +18,8 @@ from model.resource_proxy_model import ResourceProxyModel
 from model.resource_table_model import (ResourceTableConstants, ResourceTableModel)
 from view.common_view_components import (NotificationFrame, SearchFilterLineEdit)
 
-HIGHLIGHT_ELEMENT_BORDER_STYLE = 'border:3px solid #E57829;'
-HIGHLIGHT_TEXT_STYLE = 'font-weight: bold; color: #E57829;'
+HIGHLIGHT_FIELD_PROPERTY = 'HighlightField'
+HIGHLIGHT_TEXT_PROPERTY = 'HighlightText'
 
 
 class ViewEditPageConstants(object):
@@ -206,7 +206,6 @@ class ViewEditPage(QWidget):
 
         self._config_location_button: QPushButton = QPushButton(self._header_area)
         self._config_location_button.setIcon(QIcon(":/Gallery/Folder.svg"))
-        self._config_location_button.setFlat(True)
         self._config_location_button.setMinimumSize(view_size_constants.INTERACTION_COMPONENT_HEIGHT,
                                                     view_size_constants.INTERACTION_COMPONENT_HEIGHT)
         header_area_layout.addWidget(self._config_location_button)
@@ -452,25 +451,36 @@ class ViewEditPage(QWidget):
 
     def _set_config_file_combobox_style(self):
         if self._config_file_combobox.count() > 0 and self._config_file_combobox.currentIndex() == -1:
-            self._config_file_combobox.setStyleSheet(HIGHLIGHT_ELEMENT_BORDER_STYLE)
+            self._config_file_combobox.setProperty(HIGHLIGHT_FIELD_PROPERTY, True)
         else:
-            self._config_file_combobox.setStyleSheet('')
+            self._config_file_combobox.setProperty(HIGHLIGHT_FIELD_PROPERTY, False)
+
+        # Update the style
+        self._config_file_combobox.setStyle(self._config_file_combobox.style())
 
     def set_config_location(self, config_location: str = None) -> None:
         """Set config file location in text label"""
         self._config_location_text.clear()
 
         if not config_location:
-            self._config_location_text.setStyleSheet(HIGHLIGHT_TEXT_STYLE)
             self._config_location_text.setText(notification_label_text.VIEW_EDIT_PAGE_INVALID_CONFIG_LOCATION_TEXT)
-            self._config_location_button.setStyleSheet(HIGHLIGHT_ELEMENT_BORDER_STYLE)
+            self._config_location_text.setProperty(HIGHLIGHT_TEXT_PROPERTY, True)
+
+            self._config_location_button.setFlat(False)
+            self._config_location_button.setProperty(HIGHLIGHT_FIELD_PROPERTY, True)
         else:
             metrics: QFontMetrics = QFontMetrics(self._config_location_text.font())
             elided_text: str = metrics.elidedText(config_location, Qt.ElideMiddle, self._config_location_text.width())
             self._config_location_text.setText(elided_text)
             self._config_location_text.setToolTip(config_location)
-            self._config_location_text.setStyleSheet('')
-            self._config_location_button.setStyleSheet('')
+            self._config_location_text.setProperty(HIGHLIGHT_TEXT_PROPERTY, False)
+
+            self._config_location_button.setFlat(True)
+            self._config_location_button.setProperty(HIGHLIGHT_FIELD_PROPERTY, False)
+
+        # Update the style
+        self._config_location_text.setStyle(self._config_location_text.style())
+        self._config_location_button.setStyle(self._config_location_button.style())
 
     def set_table_view_page_interactions_enabled(self, enabled: bool) -> None:
         self._table_view_page.setEnabled(enabled)

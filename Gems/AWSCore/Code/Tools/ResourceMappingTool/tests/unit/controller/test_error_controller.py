@@ -10,9 +10,9 @@ from unittest.mock import (call, MagicMock, patch)
 
 from controller.error_controller import ErrorController
 
-class TestViewEditController(TestCase):
+class TestErrorController(TestCase):
     """
-    ViewEditController unit test cases
+    ErrorController unit test cases
     """
     def setUp(self) -> None:
         view_manager_patcher: patch = patch("controller.error_controller.ViewManager")
