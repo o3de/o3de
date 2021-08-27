@@ -45,9 +45,4 @@ ly_create_alias(NAME Atom_Bootstrap.Clients NAMESPACE Gem TARGETS Gem::Atom_Boot
 ly_create_alias(NAME Atom_Bootstrap.Servers NAMESPACE Gem TARGETS Gem::Atom_Bootstrap)
 
 # The Atom_Bootstrap gem is responsible for making the NativeWindow handle in the launcher applications
-# Add gem as a dependency of all Client Launchers
-ly_add_dependencies(Atom_Bootstrap.Clients Launcher.Game.Static)
-if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
-    # Add gem as a dependency of all Server Launchers
-    ly_add_dependencies(Atom_Bootstrap.Servers Launcher.Server.Static)
-endif()
+ly_enable_gems(GEMS Atom_Bootstrap)
