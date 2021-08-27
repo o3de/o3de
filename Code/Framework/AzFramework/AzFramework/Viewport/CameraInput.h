@@ -303,6 +303,8 @@ namespace AzFramework
         bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
 
+        void SetRotateInputChannelId(const InputChannelId& rotateChannelId);
+
         AZStd::function<float()> m_rotateSpeedFn;
         AZStd::function<bool()> m_invertPitchFn;
         AZStd::function<bool()> m_invertYawFn;
@@ -355,6 +357,8 @@ namespace AzFramework
         bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
 
+        void SetPanInputChannelId(const InputChannelId& panChannelId);
+
         AZStd::function<float()> m_panSpeedFn;
         AZStd::function<bool()> m_invertPanXFn;
         AZStd::function<bool()> m_invertPanYFn;
@@ -398,7 +402,7 @@ namespace AzFramework
     }
 
     //! Groups all camera translation inputs.
-    struct TranslateCameraInputChannels
+    struct TranslateCameraInputChannelIds
     {
         InputChannelId m_forwardChannelId;
         InputChannelId m_backwardChannelId;
@@ -414,12 +418,14 @@ namespace AzFramework
     {
     public:
         explicit TranslateCameraInput(
-            TranslationAxesFn translationAxesFn, const TranslateCameraInputChannels& translateCameraInputChannels);
+            TranslationAxesFn translationAxesFn, const TranslateCameraInputChannelIds& translateCameraInputChannelIds);
 
         // CameraInput overrides ...
         bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
         void ResetImpl() override;
+
+        void SetTranslateCameraInputChannelIds(const TranslateCameraInputChannelIds& translateCameraInputChannelIds);
 
         AZStd::function<float()> m_translateSpeedFn;
         AZStd::function<float()> m_boostMultiplierFn;
@@ -482,11 +488,11 @@ namespace AzFramework
 
         //! Converts from a generic input channel id to a concrete translation type (based on the user's key mappings).
         TranslationType TranslationFromKey(
-            const InputChannelId& channelId, const TranslateCameraInputChannels& translateCameraInputChannels);
+            const InputChannelId& channelId, const TranslateCameraInputChannelIds& translateCameraInputChannelIds);
 
         TranslationType m_translation = TranslationType::Nil; //!< Types of translation the camera input is under.
         TranslationAxesFn m_translationAxesFn; //!< Builder for translation axes.
-        TranslateCameraInputChannels m_translateCameraInputChannels; //!< Input channel ids that map to internal translation types.
+        TranslateCameraInputChannelIds m_translateCameraInputChannelIds; //!< Input channel ids that map to internal translation types.
         bool m_boost = false; //!< Is the translation speed currently being multiplied/scaled upwards.
     };
 
@@ -512,6 +518,8 @@ namespace AzFramework
         // CameraInput overrides ...
         bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
+
+        void SetDollyInputChannelId(const InputChannelId& dollyChannelId);
 
         AZStd::function<float()> m_cursorSpeedFn;
 
@@ -547,6 +555,8 @@ namespace AzFramework
         bool HandleEvents(const InputEvent& event, const ScreenVector& cursorDelta, float scrollDelta) override;
         Camera StepCamera(const Camera& targetCamera, const ScreenVector& cursorDelta, float scrollDelta, float deltaTime) override;
         bool Exclusive() const override;
+
+        void SetOrbitInputChannelId(const InputChannelId& orbitChanneId);
 
         Cameras m_orbitCameras; //!< The camera inputs to run when this camera input is active (only these will run as it is exclusive).
 

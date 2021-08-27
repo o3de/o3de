@@ -63,7 +63,11 @@ namespace SandboxEditor
         AZStd::remove_cvref_t<T> value = AZStd::forward<T>(defaultValue);
         if (const auto* registry = AZ::SettingsRegistry::Get())
         {
-            registry->Get(value, setting);
+            T potentialValue;
+            if (registry->Get(potentialValue, setting))
+            {
+                value = AZStd::move(potentialValue);
+            }
         }
 
         return value;
@@ -363,7 +367,7 @@ namespace SandboxEditor
 
     void SetCameraTranslateBoostChannelId(AZStd::string_view cameraTranslateBoostId)
     {
-        SetRegistry(CameraTranslateDownIdSetting, cameraTranslateBoostId);
+        SetRegistry(CameraTranslateBoostIdSetting, cameraTranslateBoostId);
     }
 
     AzFramework::InputChannelId CameraOrbitChannelId()
@@ -371,7 +375,7 @@ namespace SandboxEditor
         return AzFramework::InputChannelId(GetRegistry(CameraOrbitIdSetting, AZStd::string("keyboard_key_modifier_alt_l")).c_str());
     }
 
-    void SetCameraOrbitChannelChannelId(AZStd::string_view cameraOrbitId)
+    void SetCameraOrbitChannelId(AZStd::string_view cameraOrbitId)
     {
         SetRegistry(CameraOrbitIdSetting, cameraOrbitId);
     }

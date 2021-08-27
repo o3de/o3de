@@ -111,7 +111,7 @@ namespace SandboxEditor
     SANDBOX_API void SetCameraTranslateBoostChannelId(AZStd::string_view cameraTranslateBoostId);
 
     SANDBOX_API AzFramework::InputChannelId CameraOrbitChannelId();
-    SANDBOX_API void SetCameraOrbitChannelChannelId(AZStd::string_view cameraOrbitId);
+    SANDBOX_API void SetCameraOrbitChannelId(AZStd::string_view cameraOrbitId);
 
     SANDBOX_API AzFramework::InputChannelId CameraFreeLookChannelId();
     SANDBOX_API void SetCameraFreeLookChannelId(AZStd::string_view cameraFreeLookId);
