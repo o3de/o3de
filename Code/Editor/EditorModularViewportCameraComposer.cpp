@@ -85,7 +85,7 @@ namespace SandboxEditor
             });
 
         controller->SetCameraListBuilderCallback(
-            [viewportId = m_viewportId, this](AzFramework::Cameras& cameras)
+            [this](AzFramework::Cameras& cameras)
             {
                 cameras.AddCamera(m_firstPersonRotateCamera);
                 cameras.AddCamera(m_firstPersonPanCamera);
