@@ -584,26 +584,11 @@ namespace AZ
                 // strings that are shorter than the alias's mapped path without checking.
                 if ((longestMatch == 0) || (resolvedAlias.size() > longestMatch) && (resolvedAlias.size() <= bufStringLength))
                 {
-                    // custom strcmp that ignores slash directions
-                    constexpr AZStd::string_view pathSeparators{ "/\\" };
-                    bool allMatch = AZStd::equal(resolvedAlias.begin(), resolvedAlias.end(), inBuffer.begin(),
-                        [&pathSeparators](const char lhs, const char rhs)
+                    // Check if the input path is relative to the alias value
+                    if (AZ::IO::PathView(inBuffer).IsRelativeTo(AZ::IO::PathView(resolvedAlias)))
                     {
-                        const bool lhsIsSeparator = pathSeparators.find_first_of(lhs) != AZStd::string_view::npos;
-                        const bool rhsIsSeparator = pathSeparators.find_first_of(lhs) != AZStd::string_view::npos;
-                        return (lhsIsSeparator && rhsIsSeparator) || tolower(lhs) == tolower(rhs);
-                    });
-
-                    if (allMatch)
-                    {
-                        // Either the resolvedAlias path must match the path exactly or the path must have a path separator character
-                        // right after the resolved alias
-                        if (const size_t matchLen = resolvedAlias.size();
-                            matchLen == bufStringLength || (pathSeparators.find_first_of(inBuffer[matchLen]) != AZStd::string_view::npos))
-                        {
-                            longestMatch = matchLen;
-                            longestAlias = alias;
-                        }
+                        longestMatch = resolvedAlias.size();
+                        longestAlias = alias;
                     }
                 }
             }
